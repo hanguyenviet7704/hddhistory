@@ -12,6 +12,7 @@ abstract class CourseEntity with _$CourseEntity {
     @Default(0) int numberOfLesson,
     @Default([]) List<OnboardingSymptom> onboardingSymptoms,
     @Default(CoursePublishStatus.published) CoursePublishStatus status,
+    @Default(false) bool isNew,
   }) = _CourseEntity;
 
   factory CourseEntity.fromJson(Map<String, dynamic> json) => _$CourseEntityFromJson(json);

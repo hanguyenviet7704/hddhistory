@@ -1,5 +1,28 @@
 part of '../../../course.dart';
 
+/// Maximum number of courses shown per skillset section in the Explore view.
+/// A "View more" button is shown when a skillset has more courses than this.
+const int _kMaxCoursesPerSection = 5;
+
+/// Sorts [courses] for display in the Explore screen.
+///
+/// Order: New (not coming-soon) → In Progress → Not Started → Coming Soon.
+List<CourseEntity> sortCoursesForExplore(
+  List<CourseEntity> courses,
+  List<UserProgressEntity> userProgresses,
+) {
+  int priority(CourseEntity c) {
+    if (c.isNew && c.status != CoursePublishStatus.comingSoon) return 0;
+    final progress = userProgresses.firstWhereOrNull((p) => p.courseId == c.id);
+    final completed = progress?.lessonsResult.where((r) => r.passed).length ?? 0;
+    if (completed > 0 && completed < c.numberOfLesson) return 1; // In Progress
+    if (c.status == CoursePublishStatus.comingSoon) return 3; // Coming Soon last
+    return 2; // Not Started
+  }
+
+  return [...courses]..sort((a, b) => priority(a).compareTo(priority(b)));
+}
+
 class AllCourseTab extends StatefulWidget {
   const AllCourseTab({super.key});
 
@@ -65,6 +88,12 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     CourseEntity course,
     int index,
   ) {
+    // Coming-soon courses show an informational bottom sheet instead of navigating.
+    if (course.status == CoursePublishStatus.comingSoon) {
+      _showComingSoonSheet(context, course);
+      return;
+    }
+
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
@@ -108,6 +137,47 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 }
 
+void _showComingSoonSheet(BuildContext context, CourseEntity course) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: AppCustomColor.backgroundWhite,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+    ),
+    builder: (_) => SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AppText(
+              course.title.text,
+              style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            16.verticalSpace,
+            AppText(
+              l10n.allcourse.comingSoonDescription,
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            24.verticalSpace,
+            AppButton.primary(
+              fullWidthBtn: true,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              child: AppText(
+                l10n.allcourse.comingSoonGotIt,
+                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 class _CourseSection extends StatelessWidget {
   final SkillsetEntity skillset;
   final ProgressState progressState;
@@ -125,7 +195,9 @@ class _CourseSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final courses = skillset.courses;
+    final sorted = sortCoursesForExplore(skillset.courses, progressState.userProgresses);
+    final displayed = sorted.take(_kMaxCoursesPerSection).toList();
+    final hasMore = sorted.length > _kMaxCoursesPerSection;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,22 +211,28 @@ class _CourseSection extends StatelessWidget {
           ),
         ),
         8.verticalSpace,
-        ...List.generate(courses.length, (index) {
-          final course = courses[index];
+        ...List.generate(displayed.length, (index) {
+          final course = displayed[index];
+          // Find the original index in skillset.courses for proper selection tracking.
+          final originalIndex = skillset.courses.indexWhere((c) => c.id == course.id);
           final progressInfo = _progressInfoFor(progressState, course);
           return Padding(
-            padding: EdgeInsets.only(bottom: index < courses.length - 1 ? 8.h : 0),
+            padding: EdgeInsets.only(bottom: index < displayed.length - 1 || hasMore ? 8.h : 0),
             child: CourseCard(
               course: course,
               showProgress: progressInfo.showProgress,
               completedLessons: progressInfo.completedLessons,
               totalLessons: progressInfo.totalLessons,
               isSelected: isSelected(course.id),
-              onTap: () => onTapCourse(course, index),
+              onTap: () => onTapCourse(course, originalIndex >= 0 ? originalIndex : index),
             ),
           );
         }),
-        if (showBottomSpacing) 16.verticalSpace,
+        if (hasMore) ...[
+          _ViewMoreButton(skillset: skillset),
+          8.verticalSpace,
+        ],
+        if (showBottomSpacing) 8.verticalSpace,
       ],
     );
   }
@@ -177,6 +255,63 @@ class _CourseSection extends StatelessWidget {
       showProgress: true,
       completedLessons: completedLessons,
       totalLessons: course.numberOfLesson,
+    );
+  }
+}
+
+class _ViewMoreButton extends StatelessWidget {
+  const _ViewMoreButton({required this.skillset});
+
+  final SkillsetEntity skillset;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
+      child: GestureDetector(
+        onTap: () => SkillsetCoursesRoute(skillsetId: skillset.id).push(context),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppCustomColor.borderDefault),
+            borderRadius: BorderRadius.circular(16.r),
+            color: AppCustomColor.backgroundGray,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      context.l10n.allcourse.viewMore,
+                      style: AppStyle.text14.copyWith(
+                        color: AppCustomColor.brandPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    2.verticalSpace,
+                    AppText(
+                      skillset.title.text,
+                      style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14.w,
+                color: AppCustomColor.brandPrimary,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

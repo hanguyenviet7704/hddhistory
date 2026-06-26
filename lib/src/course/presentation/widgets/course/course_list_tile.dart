@@ -96,20 +96,36 @@ class _CourseProgressChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Coming soon courses always show the coming-soon label, regardless of progress.
+    if (course.status == CoursePublishStatus.comingSoon) {
+      return AppText(
+        context.l10n.allcourse.comingSoonLabel,
+        style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary700),
+      );
+    }
+
     final progressState = context.watch<ProgressCubit>().state;
     final userProgress = progressState.userProgresses
         .firstWhereOrNull((p) => p.courseId == course.id);
 
-    if (userProgress == null || userProgress.lessonsResult.isEmpty) {
+    final completed = userProgress?.lessonsResult.where((r) => r.passed).length ?? 0;
+    final total = course.numberOfLesson;
+
+    // New course with zero progress — show "New course" label.
+    if (course.isNew && completed == 0) {
       return AppText(
-        context.l10n.allcourse.progressNotStarted,
-        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+        context.l10n.allcourse.newCourseLabel,
+        style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary),
       );
     }
 
-    final completed =
-        userProgress.lessonsResult.where((r) => r.passed).length;
-    final total = course.numberOfLesson;
+    if (userProgress == null || userProgress.lessonsResult.isEmpty) {
+      // Not started — show lesson count.
+      return AppText(
+        context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
+        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+      );
+    }
 
     if (total > 0 && completed >= total) {
       return Row(
@@ -120,8 +136,7 @@ class _CourseProgressChip extends StatelessWidget {
           4.horizontalSpace,
           AppText(
             context.l10n.allcourse.progressCompleted,
-            style:
-                AppStyle.text12.copyWith(color: AppCustomColor.successGreen),
+            style: AppStyle.text12.copyWith(color: AppCustomColor.successGreen),
           ),
         ],
       );
@@ -145,15 +160,15 @@ class _CourseProgressChip extends StatelessWidget {
           4.horizontalSpace,
           AppText(
             context.l10n.allcourse.progressPercent(percent: percent),
-            style:
-                AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary),
+            style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary),
           ),
         ],
       );
     }
 
+    // Not started — show lesson count.
     return AppText(
-      context.l10n.allcourse.progressNotStarted,
+      context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
       style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
     );
   }

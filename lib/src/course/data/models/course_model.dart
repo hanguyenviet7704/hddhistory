@@ -11,6 +11,7 @@ abstract class CourseModel with _$CourseModel {
     @Default(0) int numberOfLesson,
     @Default([]) @JsonKey(unknownEnumValue: OnboardingSymptom.unknown) List<OnboardingSymptom> onboardingSymptoms,
     @JsonKey(unknownEnumValue: CoursePublishStatus.unknown) @Default(CoursePublishStatus.published) CoursePublishStatus status,
+    @Default(false) bool isNew,
   }) = _CourseModel;
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
@@ -23,6 +24,8 @@ enum CoursePublishStatus {
   draft,
   @JsonValue('inactive')
   inactive,
+  @JsonValue('coming_soon')
+  comingSoon,
   @JsonValue('unknown')
   unknown,
 }
@@ -205,5 +208,6 @@ extension CourseModelExtension on CourseModel {
     numberOfLesson: numberOfLesson,
     onboardingSymptoms: onboardingSymptoms,
     status: status,
+    isNew: isNew,
   );
 }

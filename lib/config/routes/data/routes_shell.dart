@@ -22,6 +22,10 @@ part of '../routes.dart';
     ),
     TypedStatefulShellBranch<CourseShellBranchData>(
       routes: [
+        TypedGoRoute<SkillsetCoursesRoute>(
+          path: RoutePath.skillsetCourses,
+          name: RouteNamed.skillsetCourses,
+        ),
         TypedGoRoute<CourseRoadmapRoute>(
           path: RoutePath.courseRoadmap,
           name: RouteNamed.courseRoadmap,

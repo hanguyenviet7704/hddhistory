@@ -33,12 +33,25 @@ class CourseCard extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         child: Row(
           children: [
-            // Course image
-            CacheNetworkGraphic(
-              url: course.image,
-              width: 80.w,
-              height: 80.w,
-              borderRadius: BorderRadius.circular(12.r),
+            // Course image with badge overlay
+            Stack(
+              children: [
+                CacheNetworkGraphic(
+                  url: course.image,
+                  width: 80.w,
+                  height: 80.w,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                Positioned(
+                  top: 4.h,
+                  left: 4.w,
+                  child: _CourseBadge(
+                    course: course,
+                    completedLessons: completedLessons,
+                    totalLessons: totalLessons,
+                  ),
+                ),
+              ],
             ),
             16.horizontalSpace,
             // Course info
@@ -115,6 +128,80 @@ class CourseCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Badge shown in the top-left corner of a course thumbnail.
+/// Priority: comingSoon > isNew > in-progress percent > (nothing for not started).
+class _CourseBadge extends StatelessWidget {
+  const _CourseBadge({
+    required this.course,
+    this.completedLessons,
+    this.totalLessons,
+  });
+
+  final CourseEntity course;
+  final int? completedLessons;
+  final int? totalLessons;
+
+  @override
+  Widget build(BuildContext context) {
+    if (course.status == CoursePublishStatus.comingSoon) {
+      return _BadgeChip(
+        label: context.l10n.allcourse.comingSoonLabel,
+        backgroundColor: AppCustomColor.brandPrimary700,
+        textColor: AppCustomColor.textWhite,
+      );
+    }
+    if (course.isNew) {
+      return _BadgeChip(
+        label: context.l10n.allcourse.newCourseLabel,
+        backgroundColor: AppCustomColor.brandPrimary,
+        textColor: AppCustomColor.textWhite,
+      );
+    }
+    final completed = completedLessons ?? 0;
+    final total = totalLessons ?? course.numberOfLesson;
+    if (completed > 0 && total > 0) {
+      final pct = (completed / total * 100).round();
+      return _BadgeChip(
+        label: '$pct%',
+        backgroundColor: AppCustomColor.backgroundWhite.withValues(alpha: 0.9),
+        textColor: AppCustomColor.textPrimary,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+class _BadgeChip extends StatelessWidget {
+  const _BadgeChip({
+    required this.label,
+    required this.backgroundColor,
+    required this.textColor,
+  });
+
+  final String label;
+  final Color backgroundColor;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: AppText(
+        label,
+        style: AppStyle.text12.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.w600,
+          height: 1.2,
+        ),
+      ),
     );
   }
 }

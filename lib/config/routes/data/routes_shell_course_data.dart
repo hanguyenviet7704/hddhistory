@@ -47,6 +47,27 @@ class ChangeCourseRoute extends BaseTransitionRouteData with $ChangeCourseRoute 
   );
 }
 
+class SkillsetCoursesRoute extends BaseTransitionRouteData with $SkillsetCoursesRoute {
+  const SkillsetCoursesRoute({required this.skillsetId});
+
+  final String skillsetId;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+    ],
+    child: SkillsetCoursesPage(skillsetId: skillsetId),
+  );
+}
+
 class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
   const CourseRoadmapRoute();
 
