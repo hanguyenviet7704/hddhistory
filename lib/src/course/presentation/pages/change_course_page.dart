@@ -31,7 +31,7 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
             ),
           ),
         ),
-        title: Text(
+        title: AppText(
           context.l10n.allcourse.changeCourseTitle,
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
@@ -57,9 +57,9 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
           ),
           12.verticalSpace,
           Expanded(
-            child: BlocBuilder<CourseCubit, CourseState>(
-              builder: (context, state) {
-                final allCourses = state.courses;
+            child: BlocSelector<HomeCubit, HomeState, List<CourseEntity>>(
+              selector: (s) => s.skillsets.expand((sk) => sk.coursesWithSkillset).toList(),
+              builder: (context, allCourses) {
                 final skillsets = context.read<HomeCubit>().state.skillsets;
                 final filtered = _selectedTabIndex == 0
                     ? allCourses
@@ -68,9 +68,12 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                           (c) => c.skillset.id == skillsets[_selectedTabIndex - 1].id,
                         )
                         .toList();
-
                 final currentCourseId =
                     context.read<HomeCubit>().state.currentCourse.id;
+
+                if (filtered.isEmpty) {
+                  return const CourseEmptyState();
+                }
 
                 return ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
