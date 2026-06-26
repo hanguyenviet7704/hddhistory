@@ -14,25 +14,32 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Course title
+          // Course title — tappable to navigate to ChangeCoursePage
           BlocSelector<HomeCubit, HomeState, String>(
             selector: (state) => state.courseName,
             builder: (context, courseName) {
-              return Column(
-                children: [
-                  AppText(
-                    courseName,
-                    textWidthBasis: TextWidthBasis.longestLine,
-                    style: AppStyle.text20.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppCustomColor.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.fade,
+              return Semantics(
+                button: true,
+                label: context.l10n.allcourse.changeCourseTitle,
+                child: GestureDetector(
+                  onTap: () => const ChangeCourseRoute().push(context),
+                  child: Column(
+                    children: [
+                      AppText(
+                        courseName,
+                        textWidthBasis: TextWidthBasis.longestLine,
+                        style: AppStyle.text20.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppCustomColor.textPrimary,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.fade,
+                      ),
+                      8.verticalSpace,
+                    ],
                   ),
-                  8.verticalSpace,
-                ],
+                ),
               );
             },
           ),

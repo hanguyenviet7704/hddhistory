@@ -57,23 +57,31 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
           ),
           12.verticalSpace,
           Expanded(
-            child: BlocSelector<HomeCubit, HomeState, List<CourseEntity>>(
-              selector: (s) => s.skillsets.expand((sk) => sk.coursesWithSkillset).toList(),
-              builder: (context, allCourses) {
-                final skillsets = context.read<HomeCubit>().state.skillsets;
+            child: BlocSelector<HomeCubit, HomeState,
+                ({HomeStatus status, List<CourseEntity> courses, List<SkillsetEntity> skillsets})>(
+              selector: (s) => (
+                status: s.status,
+                courses: s.skillsets.expand((sk) => sk.coursesWithSkillset).toList(),
+                skillsets: s.skillsets,
+              ),
+              builder: (context, snap) {
+                if (snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppCustomColor.brandPrimary),
+                  );
+                }
+
                 final filtered = _selectedTabIndex == 0
-                    ? allCourses
-                    : allCourses
+                    ? snap.courses
+                    : snap.courses
                         .where(
-                          (c) => c.skillset.id == skillsets[_selectedTabIndex - 1].id,
+                          (c) => c.skillset.id == snap.skillsets[_selectedTabIndex - 1].id,
                         )
                         .toList();
-                final currentCourseId =
-                    context.read<HomeCubit>().state.currentCourse.id;
 
-                if (filtered.isEmpty) {
-                  return const CourseEmptyState();
-                }
+                final currentCourseId = context.read<HomeCubit>().state.currentCourse.id;
+
+                if (filtered.isEmpty) return const CourseEmptyState();
 
                 return ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
