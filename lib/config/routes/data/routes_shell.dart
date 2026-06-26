@@ -26,6 +26,11 @@ part of '../routes.dart';
           path: RoutePath.courseRoadmap,
           name: RouteNamed.courseRoadmap,
           routes: [
+            //? Change Course
+            TypedGoRoute<ChangeCourseRoute>(
+              path: RoutePath.changeCourse,
+              name: RouteNamed.changeCourse,
+            ),
             //? Course - Lesson
             TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
             TypedGoRoute<NoCorrectAnswerDocumentRoute>(

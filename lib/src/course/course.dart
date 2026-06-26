@@ -55,6 +55,7 @@ part 'presentation/cubits/course_lesson/course_lesson_state.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_cubit.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/change_course_page.dart';
 part 'presentation/pages/course_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 part 'presentation/pages/lesson_list_page.dart';

@@ -31,6 +31,24 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   );
 }
 
+class ChangeCourseRoute extends BaseTransitionRouteData with $ChangeCourseRoute {
+  const ChangeCourseRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+    ],
+    child: const ChangeCoursePage(),
+  );
+}
+
 class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
   const CourseRoadmapRoute();
 
