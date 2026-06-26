@@ -82,6 +82,8 @@ part 'select/radio_button.dart';
 part 'sliver/sliver_appbar.dart';
 part 'sliver/sliver_child.dart';
 part 'sliver/sliver_list_child.dart';
+//* Export all tab files
+part 'tab/filter_tab_bar.dart';
 //* Export all text files
 part 'text/d_text.dart';
 // part 'text/expandable_html_text.dart';
@@ -90,8 +92,6 @@ part 'text/gradient_text.dart';
 part 'text/high_light_text.dart';
 part 'text/icon_text.dart';
 part 'text/title_and_text.dart';
-//* Export all tab files
-part 'tab/filter_tab_bar.dart';
 //* Export all timer files
 part 'timer/count_down.dart';
 part 'timer/stop_watch.dart';

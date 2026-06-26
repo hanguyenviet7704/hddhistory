@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meup/meup.dart';
 
@@ -8,7 +6,6 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(375, 812));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    int tapped = -1;
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: const Size(375, 812),
@@ -19,7 +16,7 @@ void main() {
             body: FilterTabBar(
               tabs: const ['All', 'Feel better', 'Think better'],
               selectedIndex: 0,
-              onTabSelected: (i) => tapped = i,
+              onTabSelected: (_) {},
             ),
           ),
         ),

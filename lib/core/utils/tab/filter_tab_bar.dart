@@ -29,8 +29,9 @@ class FilterTabBar extends StatelessWidget {
             label: tabs[index],
             button: true,
             selected: isSelected,
-            child: GestureDetector(
+            child: InkWell(
               onTap: () => onTabSelected(index),
+              borderRadius: BorderRadius.circular(20.r),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
