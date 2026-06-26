@@ -86,51 +86,116 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
     );
   }
 
+  String _greetingPrefix() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentStreak = context.select((LearningStreakCubit cubit) => cubit.state.selectedItem.currentStreak);
-    return SizedBox(
+
+    return Container(
       width: double.infinity,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
-          children: [
-            20.verticalSpace,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: BlocSelector<ProfileCubit, ProfileState, String>(
-                    selector: (state) => state.user.name,
-                    builder: (context, username) {
-                      final title = AppText(
-                        context.l10n.home.homeGreetingTitle(username: username),
-                        enableFitScaleDown: true,
-                        style: AppStyle.text12.copyWith(
-                          color: AppCustomColor.textTertiary,
+      color: AppCustomColor.brandPrimary,
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                child: BlocSelector<ProfileCubit, ProfileState, String>(
+                  selector: (state) => state.user.name,
+                  builder: (context, username) {
+                    final firstName = username.trim().split(' ').first;
+
+                    final greetingWidget = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          '${_greetingPrefix()}, $firstName',
+                          style: AppStyle.text14.copyWith(
+                            color: AppCustomColor.backgroundWhite.withValues(alpha: 0.85),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      );
+                        4.verticalSpace,
+                        AppText(
+                          context.l10n.home.homeGreetingQuestion,
+                          style: AppStyle.textBold20.copyWith(
+                            color: AppCustomColor.backgroundWhite,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    );
 
-                      if (!kDebugMode) return title;
+                    if (!kDebugMode) return greetingWidget;
 
-                      // Debug-only manual QA hook. Remove after home widget state checks.
-                      return GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: _debugApplyNextHomeWidgetScenario,
-                        child: title,
-                      );
-                    },
+                    // Debug-only manual QA hook. Remove after home widget state checks.
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _debugApplyNextHomeWidgetScenario,
+                      child: greetingWidget,
+                    );
+                  },
+                ),
+              ),
+              10.horizontalSpace,
+              StreakHomeChip(
+                currentStreak: currentStreak,
+                onTap: () => _openStreakPopup(currentStreak),
+              ),
+            ],
+          ),
+          16.verticalSpace,
+          // Quote card
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundWhite.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: AppText(
+                    '"',
+                    style: AppStyle.text30.copyWith(
+                      color: AppCustomColor.backgroundWhite.withValues(alpha: 0.4),
+                      height: 1,
+                    ),
                   ),
                 ),
-                10.horizontalSpace,
-                StreakHomeChip(
-                  currentStreak: currentStreak,
-                  onTap: () => _openStreakPopup(currentStreak),
+                Padding(
+                  padding: EdgeInsets.only(right: 24.w),
+                  child: AppText(
+                    'Life isn\'t about finding yourself.\nLife is about creating yourself.',
+                    textAlign: TextAlign.center,
+                    style: AppStyle.text14.copyWith(
+                      color: AppCustomColor.backgroundWhite,
+                      fontStyle: FontStyle.italic,
+                      height: 1.5,
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
