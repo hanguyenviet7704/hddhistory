@@ -73,13 +73,15 @@ class CourseHeader extends StatelessWidget {
                     Semantics(
                       label: context.l10n.allcourse.searchClearSemanticLabel,
                       button: true,
-                      child: GestureDetector(
-                        onTap: () => context.read<CourseCubit>().clearSearch(),
-                        child: Icon(
+                      child: IconButton(
+                        onPressed: () => context.read<CourseCubit>().clearSearch(),
+                        icon: Icon(
                           Icons.cancel_rounded,
                           color: AppCustomColor.textTertiary,
                           size: 20.w,
                         ),
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(minWidth: 40.w, minHeight: 40.h),
                       ),
                     ),
                 ],

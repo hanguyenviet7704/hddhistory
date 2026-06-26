@@ -71,7 +71,6 @@ part 'presentation/widgets/course/course_empty_state.dart';
 part 'presentation/widgets/course/course_header.dart';
 part 'presentation/widgets/course/course_intro_popup.dart';
 part 'presentation/widgets/course/course_lesson_empty_noti_popup.dart';
-part 'presentation/widgets/course/course_segmented_control.dart';
 part 'presentation/widgets/course/course_tab_chip.dart';
 part 'presentation/widgets/course/course_tabbar.dart';
 part 'presentation/widgets/course/course_tabbar_view.dart';
