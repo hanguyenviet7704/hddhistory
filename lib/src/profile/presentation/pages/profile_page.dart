@@ -79,6 +79,40 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                     }
 
+                    if (state.status == AchievenmentProgressStatus.failure &&
+                        state.achievenments.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24.w),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error_outline_rounded,
+                                  size: 48.w, color: AppCustomColor.textTertiary),
+                              16.verticalSpace,
+                              AppText(
+                                state.errorMessage ?? '',
+                                textAlign: TextAlign.center,
+                                style: AppStyle.text14.copyWith(
+                                  color: AppCustomColor.textSecondary,
+                                ),
+                              ),
+                              16.verticalSpace,
+                              OutlinedButton(
+                                onPressed: _onRefresh,
+                                child: AppText(
+                                  context.l10n.monetization.retry,
+                                  style: AppStyle.text14.copyWith(
+                                    color: AppCustomColor.brandPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
                     return RefreshIndicator(
                       onRefresh: _onRefresh,
                       child: ListView(
@@ -116,7 +150,6 @@ class _ProfileHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _ProfileIdentityRow(),
-          16.verticalSpace,
           _PremiumBanner(),
         ],
       ),
@@ -147,7 +180,7 @@ class _ProfileIdentityRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppText(
-                    _resolveName(user),
+                    _resolveName(user, context),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyle.textBold20.copyWith(
@@ -179,8 +212,8 @@ class _ProfileIdentityRow extends StatelessWidget {
                   SettingRoute().go(context);
                 },
                 child: Container(
-                  width: 40.w,
-                  height: 40.w,
+                  width: 48.w,
+                  height: 48.w,
                   alignment: Alignment.center,
                   child: SvgPicture.asset(
                     AppAsset.svg.app.icSetting,
@@ -200,9 +233,9 @@ class _ProfileIdentityRow extends StatelessWidget {
     );
   }
 
-  String _resolveName(UserEntity user) {
+  String _resolveName(UserEntity user, BuildContext context) {
     final trimmed = user.name.trim();
-    return trimmed.isNotEmpty ? trimmed : 'Guest';
+    return trimmed.isNotEmpty ? trimmed : context.l10n.setting.settingGuestName;
   }
 
   String _resolveEmail(UserEntity user) {
@@ -239,7 +272,7 @@ class _ProfileAvatar extends StatelessWidget {
       );
     }
 
-    final String initial = _buildInitial();
+    final String initial = _buildInitial(context);
     return Container(
       width: size,
       height: size,
@@ -257,10 +290,10 @@ class _ProfileAvatar extends StatelessWidget {
     );
   }
 
-  String _buildInitial() {
+  String _buildInitial(BuildContext context) {
     String ref = user.name.trim();
     if (ref.isEmpty) ref = user.email.trim();
-    if (ref.isEmpty) ref = 'G';
+    if (ref.isEmpty) ref = context.l10n.setting.settingGuestName;
     return String.fromCharCode(ref.runes.first).toUpperCase();
   }
 }
@@ -281,7 +314,12 @@ class _PremiumBanner extends StatelessWidget {
 
         final text = context.l10n.setting;
 
-        return Semantics(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            16.verticalSpace,
+            Semantics(
           button: true,
           label: text.settingPremiumTitle,
           child: GestureDetector(
@@ -342,6 +380,8 @@ class _PremiumBanner extends StatelessWidget {
               ),
             ),
           ),
+            ),
+          ],
         );
       },
     );
