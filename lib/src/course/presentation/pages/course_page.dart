@@ -24,7 +24,7 @@ class _CoursePageState extends State<CoursePage> {
     context.read<CourseCubit>()
       ..selectTab(1)
       ..clearSearch()
-      ..selectCategory(-1);
+      ..selectCategory(_initialCategoryIndex);
   }
 
   Future<void> _tryOpenPaywallAutoOpen() async {
@@ -70,14 +70,9 @@ class _CoursePageState extends State<CoursePage> {
                 return Expanded(
                   child: Column(
                     children: [
-                      _CourseFilterTabBar(initialCategoryIndex: _initialCategoryIndex),
+                      const _CourseFilterTabBar(),
                       12.verticalSpace,
-                      Expanded(
-                        child: AllCourseTab(
-                          initialCategoryIndex: _initialCategoryIndex,
-                          isVisible: true,
-                        ),
-                      ),
+                      const Expanded(child: AllCourseTab()),
                     ],
                   ),
                 );
@@ -91,9 +86,7 @@ class _CoursePageState extends State<CoursePage> {
 }
 
 class _CourseFilterTabBar extends StatelessWidget {
-  final int initialCategoryIndex;
-
-  const _CourseFilterTabBar({required this.initialCategoryIndex});
+  const _CourseFilterTabBar();
 
   @override
   Widget build(BuildContext context) {

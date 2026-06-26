@@ -1,41 +1,35 @@
 part of '../../../course.dart';
 
 class AllCourseTab extends StatefulWidget {
-  final int initialCategoryIndex;
-  final bool isVisible;
-
-  const AllCourseTab({
-    super.key,
-    required this.initialCategoryIndex,
-    required this.isVisible,
-  });
+  const AllCourseTab({super.key});
 
   @override
   State<AllCourseTab> createState() => _AllCourseTabState();
 }
 
 class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClientMixin {
-  bool _wasVisible = false;
-
   @override
-  void didUpdateWidget(covariant AllCourseTab oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isVisible && !widget.isVisible) {
-      _wasVisible = false;
-    }
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackAllCourseScrView());
+  }
+
+  void _trackAllCourseScrView() {
+    if (!mounted) return;
+    final source = context.read<CourseCubit>().state.allCourseSource;
+    AppService.instance.appTrackingService.trackCourseSelectAllCourseView(source: source);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex,
       builder: (context, homeState) {
         final skillsets = homeState.skillsets;
         if (skillsets.isEmpty) {
           return const CourseEmptyState();
         }
-
-        _trackAllCourseScrViewIfNeeded();
         final progressState = context.watch<ProgressCubit>().state;
         final selectedCategoryIndex = context.watch<CourseCubit>().state.selectedCategoryIndex;
 
@@ -108,13 +102,6 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       ..selectCourseIndex(index);
     CourseRoadmapRoute().go(context);
     context.read<PageCubit>().setCurrentIndex(1);
-  }
-
-  void _trackAllCourseScrViewIfNeeded() {
-    if (!widget.isVisible || _wasVisible) return;
-    final source = context.read<CourseCubit>().state.allCourseSource;
-    AppService.instance.appTrackingService.trackCourseSelectAllCourseView(source: source);
-    _wasVisible = true;
   }
 
   @override
