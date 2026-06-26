@@ -72,20 +72,23 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                 }
 
                 if (snap.status == HomeStatus.failure) {
-                  return const Center(child: CourseEmptyState());
+                  return const CourseEmptyState();
                 }
 
                 final filtered = _selectedTabIndex == 0
                     ? snap.courses
-                    : snap.courses
-                        .where(
-                          (c) => c.skillset.id == snap.skillsets[_selectedTabIndex - 1].id,
-                        )
-                        .toList();
+                    : (_selectedTabIndex - 1 < snap.skillsets.length)
+                        ? snap.courses
+                            .where(
+                              (c) => c.skillset.id == snap.skillsets[_selectedTabIndex - 1].id,
+                            )
+                            .toList()
+                        : snap.courses;
 
                 final currentCourseId = context.read<HomeCubit>().state.currentCourse.id;
 
                 if (filtered.isEmpty) return const CourseEmptyState();
+                
 
                 return ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
