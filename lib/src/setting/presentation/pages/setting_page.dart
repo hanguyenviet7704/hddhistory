@@ -142,7 +142,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundWhite,
+      backgroundColor: AppCustomColor.backgroundGray,
       body: CupertinoScaffold(
         topRadius: const Radius.circular(24),
         transitionBackgroundColor: AppCustomColor.backgroundWhite,

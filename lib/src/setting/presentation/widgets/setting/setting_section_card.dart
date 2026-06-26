@@ -13,8 +13,8 @@ class SettingSectionCard extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppStyle.textBold12.copyWith(
-            color: AppCustomColor.textTertiary,
+          style: AppStyle.text12.copyWith(
+            color: AppCustomColor.textSecondary,
             letterSpacing: .2,
           ),
         ),
@@ -22,7 +22,7 @@ class SettingSectionCard extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
               BoxShadow(
                 color: AppCustomColor.textPrimary.op(.04),
@@ -32,7 +32,7 @@ class SettingSectionCard extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(24.r),
+            borderRadius: BorderRadius.circular(12.r),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
