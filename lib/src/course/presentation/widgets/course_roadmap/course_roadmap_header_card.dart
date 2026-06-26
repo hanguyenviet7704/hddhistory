@@ -21,8 +21,9 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
               return Semantics(
                 button: true,
                 label: context.l10n.allcourse.changeCourseTitle,
-                child: GestureDetector(
+                child: InkWell(
                   onTap: () => const ChangeCourseRoute().push(context),
+                  borderRadius: BorderRadius.circular(4.r),
                   child: Column(
                     children: [
                       AppText(

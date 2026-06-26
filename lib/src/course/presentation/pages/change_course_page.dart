@@ -71,6 +71,10 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                   );
                 }
 
+                if (snap.status == HomeStatus.failure) {
+                  return const Center(child: CourseEmptyState());
+                }
+
                 final filtered = _selectedTabIndex == 0
                     ? snap.courses
                     : snap.courses
