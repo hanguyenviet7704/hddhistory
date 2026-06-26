@@ -5,38 +5,81 @@ class CourseHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: SizedBox(
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
-                selector: (state) => state.roadmap.id.isNotEmpty,
-                builder: (context, isInitialized) {
-                  if (!isInitialized) return const SizedBox.shrink();
-                  if (!context.canPop()) return const SizedBox.shrink();
-
-                  return GestureDetector(
-                    onTap: () {
-                      AppService.instance.appTrackingService.trackCourseSelectExit();
-                      context.back();
-                    },
-                    child: Icon(
-                      Icons.close,
-                      size: 24.w,
-                      color: AppCustomColor.textTertiary,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+      child: BlocBuilder<CourseCubit, CourseState>(
+        buildWhen: (prev, curr) =>
+            prev.searchQuery != curr.searchQuery || prev.isSearchActive != curr.isSearchActive,
+        builder: (context, state) {
+          return GestureDetector(
+            onTap: state.isSearchActive
+                ? null
+                : () {
+                    context.read<CourseCubit>().activateSearch();
+                  },
+            child: Container(
+              height: 48.h,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              decoration: BoxDecoration(
+                color: state.isSearchActive
+                    ? AppCustomColor.backgroundWhite
+                    : AppCustomColor.backgroundGray,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: state.isSearchActive
+                      ? AppCustomColor.brandPrimary
+                      : AppCustomColor.borderDefault,
+                  width: state.isSearchActive ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.search_rounded,
+                    color: AppCustomColor.textTertiary,
+                    size: 20.w,
+                  ),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: state.isSearchActive
+                        ? TextField(
+                            autofocus: true,
+                            controller: context.read<CourseCubit>().searchController,
+                            style: AppStyle.text14.copyWith(
+                              color: AppCustomColor.textPrimary,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Finding...',
+                              hintStyle: AppStyle.text14.copyWith(
+                                color: AppCustomColor.textTertiary,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            onChanged: context.read<CourseCubit>().onSearchChanged,
+                          )
+                        : AppText(
+                            'Type title, keyword,...',
+                            style: AppStyle.text14.copyWith(
+                              color: AppCustomColor.textTertiary,
+                            ),
+                          ),
+                  ),
+                  if (state.isSearchActive)
+                    GestureDetector(
+                      onTap: () => context.read<CourseCubit>().clearSearch(),
+                      child: Icon(
+                        Icons.cancel_rounded,
+                        color: AppCustomColor.textTertiary,
+                        size: 20.w,
+                      ),
                     ),
-                  );
-                },
+                ],
               ),
             ),
-            const CourseSegmentedControl(),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

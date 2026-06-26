@@ -9,6 +9,8 @@ abstract class CourseState with _$CourseState {
     @Default([]) List<CourseEntity> courses,
     @Default(0) int selectedTabIndex,
     @Default('unknown') String allCourseSource,
+    @Default(false) bool isSearchActive,
+    @Default('') String searchQuery,
     CourseEntity? selectedItem,
     String? errorMessage,
   }) = _CourseState;
