@@ -34,10 +34,13 @@ class CourseHeader extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.search_rounded,
-                    color: AppCustomColor.textTertiary,
-                    size: 20.w,
+                  Semantics(
+                    label: context.l10n.allcourse.searchSemanticLabel,
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: AppCustomColor.textTertiary,
+                      size: 20.w,
+                    ),
                   ),
                   12.horizontalSpace,
                   Expanded(
@@ -49,7 +52,7 @@ class CourseHeader extends StatelessWidget {
                               color: AppCustomColor.textPrimary,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'Finding...',
+                              hintText: context.l10n.allcourse.searchPlaceholderActive,
                               hintStyle: AppStyle.text14.copyWith(
                                 color: AppCustomColor.textTertiary,
                               ),
@@ -60,19 +63,23 @@ class CourseHeader extends StatelessWidget {
                             onChanged: context.read<CourseCubit>().onSearchChanged,
                           )
                         : AppText(
-                            'Type title, keyword,...',
+                            context.l10n.allcourse.searchPlaceholder,
                             style: AppStyle.text14.copyWith(
                               color: AppCustomColor.textTertiary,
                             ),
                           ),
                   ),
                   if (state.isSearchActive)
-                    GestureDetector(
-                      onTap: () => context.read<CourseCubit>().clearSearch(),
-                      child: Icon(
-                        Icons.cancel_rounded,
-                        color: AppCustomColor.textTertiary,
-                        size: 20.w,
+                    Semantics(
+                      label: context.l10n.allcourse.searchClearSemanticLabel,
+                      button: true,
+                      child: GestureDetector(
+                        onTap: () => context.read<CourseCubit>().clearSearch(),
+                        child: Icon(
+                          Icons.cancel_rounded,
+                          color: AppCustomColor.textTertiary,
+                          size: 20.w,
+                        ),
                       ),
                     ),
                 ],

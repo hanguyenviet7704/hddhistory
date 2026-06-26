@@ -22,6 +22,7 @@ class _CoursePageState extends State<CoursePage> {
     HomeState homeState = context.read<HomeCubit>().state;
     _initialCategoryIndex = widget.selectedTabIndex ?? homeState.selectedSkillsetIndex;
     context.read<CourseCubit>().selectTab(1);
+    context.read<CourseCubit>().clearSearch();
   }
 
   void _trackMyCourseView() {
