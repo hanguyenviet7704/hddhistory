@@ -53,15 +53,21 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
           // Full-screen content — each page handles its own safe-area bottom
           // padding (or ignores it if it has a floating CTA of its own).
           Positioned.fill(child: widget.navigationShell),
-          // Floating pill navbar sits above content at the bottom edge.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _FloatingNavBar(
-              selectedIndex: _visualIndex,
-              onTap: _onTabTap,
-            ),
+          // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
+          BlocSelector<PageCubit, PageState, bool>(
+            selector: (state) => state.isPrimaryRoute,
+            builder: (context, isPrimary) {
+              if (!isPrimary) return const SizedBox.shrink();
+              return Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _FloatingNavBar(
+                  selectedIndex: _visualIndex,
+                  onTap: _onTabTap,
+                ),
+              );
+            },
           ),
         ],
       ),
