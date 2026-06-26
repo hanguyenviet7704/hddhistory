@@ -124,7 +124,7 @@ class _RoadmapCardThumbnail extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Semantics(
-                  label: 'Locked',
+                  label: context.l10n.courseroadmap.lockedSemanticLabel,
                   child: Icon(
                     Icons.lock_rounded,
                     color: AppCustomColor.backgroundWhite,
