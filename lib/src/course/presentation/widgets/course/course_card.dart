@@ -165,10 +165,36 @@ class _CourseBadge extends StatelessWidget {
     final total = totalLessons ?? course.numberOfLesson;
     if (completed > 0 && total > 0) {
       final pct = (completed / total * 100).round();
-      return _BadgeChip(
-        label: '$pct%',
-        backgroundColor: AppCustomColor.backgroundWhite.withValues(alpha: 0.9),
-        textColor: AppCustomColor.textPrimary,
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.textPrimary.withValues(alpha: 0.75),
+          borderRadius: BorderRadius.circular(4.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 12.w,
+              height: 12.w,
+              child: CircularProgressIndicator(
+                value: completed / total,
+                strokeWidth: 2,
+                backgroundColor: Colors.white.withValues(alpha: 0.4),
+                valueColor: const AlwaysStoppedAnimation(Colors.white),
+              ),
+            ),
+            4.horizontalSpace,
+            AppText(
+              '$pct%',
+              style: AppStyle.text10.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ),
       );
     }
     return const SizedBox.shrink();

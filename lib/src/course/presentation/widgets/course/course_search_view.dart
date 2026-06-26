@@ -7,6 +7,10 @@ class CourseSearchView extends StatelessWidget {
   const CourseSearchView({super.key});
 
   void _navigateToCourse(BuildContext context, CourseEntity course) {
+    if (course.status == CoursePublishStatus.comingSoon) {
+      _showComingSoonSheet(context, course);
+      return;
+    }
     context.read<PageCubit>().setCurrentIndex(1);
     context.read<CourseRoadmapCubit>().setRoadmapSource('search');
     context.read<HomeCubit>().selectCourseFromCourseId(course.id);
@@ -187,7 +191,7 @@ class _RecentSection extends StatelessWidget {
                         ),
                         8.horizontalSpace,
                         Icon(
-                          Icons.north_west_rounded,
+                          Icons.north_east_rounded,
                           size: 14.w,
                           color: AppCustomColor.textTertiary,
                         ),
@@ -251,9 +255,13 @@ class _SearchResultList extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       itemCount: courses.length,
-      separatorBuilder: (_, _) => 8.verticalSpace,
+      separatorBuilder: (_, _) => Divider(
+        height: 1,
+        color: AppCustomColor.borderDefault,
+      ),
       itemBuilder: (context, index) => CourseListTile(
         course: courses[index],
+        showBorder: false,
         onTap: () => onCourseTap(courses[index]),
       ),
     );

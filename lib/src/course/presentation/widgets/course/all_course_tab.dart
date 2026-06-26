@@ -64,7 +64,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
                 : <SkillsetEntity>[];
 
         return ListView.builder(
-          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
           itemCount: visibleSkillsets.length,
           itemBuilder: (context, index) {
             final skillset = visibleSkillsets[index];
@@ -199,40 +199,41 @@ class _CourseSection extends StatelessWidget {
     final displayed = sorted.take(_kMaxCoursesPerSection).toList();
     final hasMore = sorted.length > _kMaxCoursesPerSection;
 
+    // Build the grid children: course cards + optional view-more slot.
+    final gridChildren = <Widget>[
+      ...displayed.map((course) {
+        final originalIndex = skillset.courses.indexWhere((c) => c.id == course.id);
+        final progressInfo = _progressInfoFor(progressState, course);
+        return _CourseGridCard(
+          key: ValueKey(course.id),
+          course: course,
+          completedLessons: progressInfo.completedLessons,
+          totalLessons: progressInfo.totalLessons,
+          isSelected: isSelected(course.id),
+          onTap: () => onTapCourse(course, originalIndex >= 0 ? originalIndex : displayed.indexOf(course)),
+        );
+      }),
+      if (hasMore) _ViewMoreGridCard(skillset: skillset),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
-          skillset.title.text.toUpperCase(),
-          style: AppStyle.text12.copyWith(
-            color: AppCustomColor.textTertiary,
-            fontWeight: FontWeight.w600,
-            height: 1.75,
-          ),
+          skillset.title.text,
+          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
-        8.verticalSpace,
-        ...List.generate(displayed.length, (index) {
-          final course = displayed[index];
-          // Find the original index in skillset.courses for proper selection tracking.
-          final originalIndex = skillset.courses.indexWhere((c) => c.id == course.id);
-          final progressInfo = _progressInfoFor(progressState, course);
-          return Padding(
-            padding: EdgeInsets.only(bottom: index < displayed.length - 1 || hasMore ? 8.h : 0),
-            child: CourseCard(
-              course: course,
-              showProgress: progressInfo.showProgress,
-              completedLessons: progressInfo.completedLessons,
-              totalLessons: progressInfo.totalLessons,
-              isSelected: isSelected(course.id),
-              onTap: () => onTapCourse(course, originalIndex >= 0 ? originalIndex : index),
-            ),
-          );
-        }),
-        if (hasMore) ...[
-          _ViewMoreButton(skillset: skillset),
-          8.verticalSpace,
-        ],
-        if (showBottomSpacing) 8.verticalSpace,
+        12.verticalSpace,
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12.w,
+          mainAxisSpacing: 12.h,
+          childAspectRatio: 0.65,
+          children: gridChildren,
+        ),
+        if (showBottomSpacing) 24.verticalSpace,
       ],
     );
   }
@@ -259,8 +260,10 @@ class _CourseSection extends StatelessWidget {
   }
 }
 
-class _ViewMoreButton extends StatelessWidget {
-  const _ViewMoreButton({required this.skillset});
+/// Grid-slot card for "View more" — occupies one cell in the 2-column grid,
+/// matching the dimensions of [_CourseGridCard].
+class _ViewMoreGridCard extends StatelessWidget {
+  const _ViewMoreGridCard({required this.skillset});
 
   final SkillsetEntity skillset;
 
@@ -272,41 +275,136 @@ class _ViewMoreButton extends StatelessWidget {
       child: GestureDetector(
         onTap: () => SkillsetCoursesRoute(skillsetId: skillset.id).push(context),
         child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
-            border: Border.all(color: AppCustomColor.borderDefault),
+            border: Border.all(color: AppCustomColor.borderDefault, width: 1.5),
             borderRadius: BorderRadius.circular(16.r),
             color: AppCustomColor.backgroundGray,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      context.l10n.allcourse.viewMore,
-                      style: AppStyle.text14.copyWith(
-                        color: AppCustomColor.brandPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    2.verticalSpace,
-                    AppText(
-                      skillset.title.text,
-                      style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
+              Icon(
+                Icons.grid_view_rounded,
+                size: 28.w,
+                color: AppCustomColor.textSecondary,
+              ),
+              8.verticalSpace,
+              AppText(
+                context.l10n.allcourse.viewMore,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              4.verticalSpace,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: AppText(
+                  skillset.title.text,
+                  style: AppStyle.text12.copyWith(
+                    color: AppCustomColor.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 14.w,
-                color: AppCustomColor.brandPrimary,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Vertical grid card shared between [AllCourseTab] and [SkillsetCoursesPage].
+/// Displays thumbnail (portrait-dominant), badge overlay, title, and progress chip.
+class _CourseGridCard extends StatelessWidget {
+  const _CourseGridCard({
+    super.key,
+    required this.course,
+    this.completedLessons,
+    this.totalLessons,
+    this.isSelected = false,
+    required this.onTap,
+  });
+
+  final CourseEntity course;
+  final int? completedLessons;
+  final int? totalLessons;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: course.title.text,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected
+                  ? AppCustomColor.brandPrimary
+                  : AppCustomColor.borderDefault,
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+            color: AppCustomColor.backgroundWhite,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Thumbnail with badge overlay — fills top ~65% of the card.
+              Expanded(
+                flex: 65,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(14.r)),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CacheNetworkGraphic(
+                        url: course.image,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 6.h,
+                        left: 6.w,
+                        child: _CourseBadge(
+                          course: course,
+                          completedLessons: completedLessons,
+                          totalLessons: totalLessons,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Title + progress chip — bottom ~35% of the card.
+              Expanded(
+                flex: 35,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 8.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: AppText(
+                          course.title.text,
+                          style: AppStyle.textBold14.copyWith(
+                            color: AppCustomColor.textPrimary,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      4.verticalSpace,
+                      _CourseProgressChip(course: course),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

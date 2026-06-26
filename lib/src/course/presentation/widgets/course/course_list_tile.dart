@@ -5,11 +5,16 @@ class CourseListTile extends StatelessWidget {
     super.key,
     required this.course,
     this.isSelected = false,
+    this.showBorder = true,
     this.onTap,
   });
 
   final CourseEntity course;
   final bool isSelected;
+
+  /// When false, no card border or background is drawn.
+  /// Use this in search results where a Divider separator replaces card borders.
+  final bool showBorder;
   final VoidCallback? onTap;
 
   @override
@@ -22,17 +27,19 @@ class CourseListTile extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppCustomColor.brandPrimary50
-                : AppCustomColor.backgroundWhite,
-            border: Border.all(
-              color: isSelected
-                  ? AppCustomColor.brandPrimary
-                  : AppCustomColor.borderDefault,
-            ),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
+          decoration: showBorder
+              ? BoxDecoration(
+                  color: isSelected
+                      ? AppCustomColor.brandPrimary50
+                      : AppCustomColor.backgroundWhite,
+                  border: Border.all(
+                    color: isSelected
+                        ? AppCustomColor.brandPrimary
+                        : AppCustomColor.borderDefault,
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                )
+              : null,
           child: Row(
             children: [
               // Thumbnail
@@ -120,9 +127,9 @@ class _CourseProgressChip extends StatelessWidget {
     }
 
     if (userProgress == null || userProgress.lessonsResult.isEmpty) {
-      // Not started — show lesson count.
+      // Not started — show "Not started" label.
       return AppText(
-        context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
+        context.l10n.allcourse.progressNotStarted,
         style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
       );
     }
@@ -166,9 +173,9 @@ class _CourseProgressChip extends StatelessWidget {
       );
     }
 
-    // Not started — show lesson count.
+    // Completed at least one lesson but less than tracked minimum — show "Not started".
     return AppText(
-      context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
+      context.l10n.allcourse.progressNotStarted,
       style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
     );
   }

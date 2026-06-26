@@ -55,14 +55,13 @@ class SkillsetCoursesPage extends StatelessWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12.w,
                     mainAxisSpacing: 12.h,
-                    // Each card: square image + title + status label.
-                    childAspectRatio: 0.72,
+                    childAspectRatio: 0.65,
                   ),
                   itemCount: sorted.length,
                   itemBuilder: (context, index) {
                     final course = sorted[index];
                     final progressInfo = _progressInfoFor(progressState, course);
-                    return _SkillsetCourseGridCard(
+                    return _CourseGridCard(
                       key: ValueKey(course.id),
                       course: course,
                       completedLessons: progressInfo.completedLessons,
@@ -110,85 +109,3 @@ class SkillsetCoursesPage extends StatelessWidget {
   }
 }
 
-/// Compact vertical card used in the 2-column grid on [SkillsetCoursesPage].
-class _SkillsetCourseGridCard extends StatelessWidget {
-  const _SkillsetCourseGridCard({
-    super.key,
-    required this.course,
-    this.completedLessons,
-    this.totalLessons,
-    required this.onTap,
-  });
-
-  final CourseEntity course;
-  final int? completedLessons;
-  final int? totalLessons;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: course.title.text,
-      button: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppCustomColor.borderDefault),
-            borderRadius: BorderRadius.circular(16.r),
-            color: AppCustomColor.backgroundWhite,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Thumbnail with badge
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(14.r)),
-                child: Stack(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1,
-                      child: CacheNetworkGraphic(
-                        url: course.image,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Positioned(
-                      top: 6.h,
-                      left: 6.w,
-                      child: _CourseBadge(
-                        course: course,
-                        completedLessons: completedLessons,
-                        totalLessons: totalLessons,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Title + status
-              Padding(
-                padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 8.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      course.title.text,
-                      style: AppStyle.textBold14.copyWith(
-                        color: AppCustomColor.textPrimary,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    4.verticalSpace,
-                    _CourseProgressChip(course: course),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
