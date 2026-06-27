@@ -29,10 +29,20 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     ]);
   }
 
+  static final _fallbackQuote = QuoteEntity(
+    content: const BaseMultiLanguage(
+      en: "Life isn't about finding yourself.\nLife is about creating yourself.",
+      vi: 'Cuộc sống không phải là tìm thấy bản thân.\nCuộc sống là tạo ra bản thân.',
+    ),
+  );
+
   Future<void> loadRandomQuote() async {
     await runUseCase<QuoteEntity>(
       usecase: () => _getRandomQuoteUseCase(),
-      onFailure: (error) => emit(state.copyWith(errorMessage: error)),
+      onFailure: (error) => emit(state.copyWith(
+        errorMessage: error,
+        quote: _fallbackQuote,
+      )),
       onSuccess: (quote) => emit(state.copyWith(quote: quote)),
     );
   }
