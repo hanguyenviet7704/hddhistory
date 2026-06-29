@@ -9,8 +9,12 @@ abstract class CourseModel with _$CourseModel {
     @Default('') String image,
     @Default('') String skillsetId,
     @Default(0) int numberOfLesson,
+    @Default(0) int numberOfLessonPassed,
     @Default([]) @JsonKey(unknownEnumValue: OnboardingSymptom.unknown) List<OnboardingSymptom> onboardingSymptoms,
     @JsonKey(unknownEnumValue: CoursePublishStatus.unknown) @Default(CoursePublishStatus.published) CoursePublishStatus status,
+    @Default(false) bool isNew,
+    DateTime? publishAt,
+    int? newDurationDays,
   }) = _CourseModel;
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
@@ -23,6 +27,8 @@ enum CoursePublishStatus {
   draft,
   @JsonValue('inactive')
   inactive,
+  @JsonValue('coming_soon')
+  comingSoon,
   @JsonValue('unknown')
   unknown,
 }
@@ -203,7 +209,11 @@ extension CourseModelExtension on CourseModel {
     image: image,
     skillsetId: skillsetId,
     numberOfLesson: numberOfLesson,
+    numberOfLessonPassed: numberOfLessonPassed,
     onboardingSymptoms: onboardingSymptoms,
     status: status,
+    isNew: isNew,
+    publishAt: publishAt,
+    newDurationDays: newDurationDays,
   );
 }

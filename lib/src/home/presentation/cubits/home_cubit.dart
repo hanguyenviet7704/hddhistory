@@ -4,10 +4,14 @@ part of '../../home.dart';
 class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState> {
   final GetAllSkillsetsUseCase _getAllUseCase;
   final GetSkillsetUseCase _getUseCase;
+  final GetRandomQuoteUseCase _getRandomQuoteUseCase;
+  final GetSuggestCoursesUseCase _getSuggestCoursesUseCase;
 
   HomeCubit(
     this._getAllUseCase,
     this._getUseCase,
+    this._getRandomQuoteUseCase,
+    this._getSuggestCoursesUseCase,
   ) : super(HomeState.initial());
 
   bool _isInitialized = false;
@@ -18,9 +22,37 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     // Load both courses and skillsets]
     await Future.wait<void>([
       loadAllSkillsets(isInit: true),
+      loadRandomQuote(),
+      loadSuggestCourses(),
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
       AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
+  }
+
+  static final _fallbackQuote = QuoteEntity(
+    content: const BaseMultiLanguage(
+      en: "Life isn't about finding yourself.\nLife is about creating yourself.",
+      vi: 'Cuộc sống không phải là tìm thấy bản thân.\nCuộc sống là tạo ra bản thân.',
+    ),
+  );
+
+  Future<void> loadRandomQuote() async {
+    await runUseCase<QuoteEntity>(
+      usecase: () => _getRandomQuoteUseCase(),
+      onFailure: (error) => emit(state.copyWith(
+        errorMessage: error,
+        quote: _fallbackQuote,
+      )),
+      onSuccess: (quote) => emit(state.copyWith(quote: quote)),
+    );
+  }
+
+  Future<void> loadSuggestCourses() async {
+    await runUseCaseList<SuggestedCourseEntity>(
+      usecase: () => _getSuggestCoursesUseCase(6),
+      onFailure: (error) => emit(state.copyWith(errorMessage: error)),
+      onSuccess: (courses) => emit(state.copyWith(suggestedCourses: courses)),
+    );
   }
 
   void resetSelection({

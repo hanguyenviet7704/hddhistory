@@ -149,11 +149,11 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
         body: SafePage(
           child: ListView(
             controller: _scrollController,
-            padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 48.h),
             physics: const BouncingScrollPhysics(),
             children: [
               SettingHeader(),
-              24.verticalSpace,
+              8.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                 selector: (state) => state.user,
                 builder: (context, user) {
@@ -204,7 +204,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                   );
                 },
               ),
-              24.verticalSpace,
+              8.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                 selector: (state) => state.user,
                 builder: (context, user) {
@@ -262,9 +262,9 @@ class SettingHeader extends StatelessWidget {
         ),
         AppText(
           context.l10n.setting.settingTitle,
-          style: AppStyle.textBold16.copyWith(
+          style: AppStyle.textBold20.copyWith(
             color: AppCustomColor.textPrimary,
-            height: 1.25,
+            height: 1.5,
           ),
         ),
         SizedBox(width: 24.w),

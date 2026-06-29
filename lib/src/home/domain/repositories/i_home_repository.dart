@@ -5,4 +5,6 @@ abstract class IHomeRepository {
     PageBreakRequest<SkillsetFilterRequest> request,
   );
   TaskEither<AppException, SkillsetEntity> getSkillset(String id);
+  TaskEither<AppException, QuoteEntity> getRandomQuote();
+  TaskEither<AppException, List<SuggestedCourseEntity>> getSuggestCourses(int limit);
 }

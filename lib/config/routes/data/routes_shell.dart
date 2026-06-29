@@ -26,6 +26,16 @@ part of '../routes.dart';
           path: RoutePath.courseRoadmap,
           name: RouteNamed.courseRoadmap,
           routes: [
+            //? Skillset Courses (full grid for one skillset)
+            TypedGoRoute<SkillsetCoursesRoute>(
+              path: RoutePath.skillsetCourses,
+              name: RouteNamed.skillsetCourses,
+            ),
+            //? Change Course
+            TypedGoRoute<ChangeCourseRoute>(
+              path: RoutePath.changeCourse,
+              name: RouteNamed.changeCourse,
+            ),
             //? Course - Lesson
             TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
             TypedGoRoute<NoCorrectAnswerDocumentRoute>(
@@ -78,6 +88,16 @@ part of '../routes.dart';
         ),
       ],
     ),
+    //? Explore branch — appended last so existing branch indices (home=0,
+    //? course=1, setting=2) are unchanged; this branch is index 3.
+    TypedStatefulShellBranch<ExploreShellBranchData>(
+      routes: [
+        TypedGoRoute<CourseRoute>(
+          path: RoutePath.course,
+          name: RouteNamed.course,
+        ),
+      ],
+    ),
   ],
 )
 class MainShellRouteData extends StatefulShellRouteData {
@@ -91,17 +111,10 @@ class MainShellRouteData extends StatefulShellRouteData {
     GoRouterState state,
     StatefulNavigationShell navigationShell,
   ) {
-    final PageState pageState = context.watch<PageCubit>().state;
-    Widget child = navigationShell;
-
-    if (pageState.isPrimaryRoute) {
-      child = ScaffoldLayout(navigationShell: navigationShell);
-    }
-
     return CustomTransitionPage(
       name: RouteNamed.shellRoute,
       key: state.pageKey,
-      child: child,
+      child: ScaffoldLayout(navigationShell: navigationShell),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: CurveTween(curve: Curves.easeInOutCirc).animate(animation),

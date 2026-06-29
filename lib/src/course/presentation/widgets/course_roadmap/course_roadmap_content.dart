@@ -88,7 +88,9 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
                 return NotificationListener<ScrollNotification>(
                   onNotification: (notification) => _handleScrollNotification(notification, roadmap),
                   child: ListView.separated(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                    // Bottom padding so the last card scrolls clear of the
+                    // floating "Start lesson" CTA (which sits above the nav bar).
+                    padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 180.h),
                     separatorBuilder: (context, index) => 20.verticalSpace,
                     itemCount: roadmap.levels.length,
                     itemBuilder: (context, index) {

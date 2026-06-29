@@ -15,11 +15,18 @@ class StreakHomeChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.fromLTRB(16.w, 6.h, 12.w, 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
+          color: AppCustomColor.backgroundGray,
           borderRadius: BorderRadius.circular(50.r),
-          border: Border.all(color: AppCustomColor.borderDefault, width: 1.5),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              offset: Offset(0, 1),
+              blurRadius: 1.5,
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

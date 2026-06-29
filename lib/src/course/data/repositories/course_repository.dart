@@ -55,4 +55,52 @@ class CourseRepository with RestfulRequestHandlerMixin implements ICourseReposit
       defaultValue: RoadmapEntity(),
     );
   }
+
+  @override
+  TaskEither<AppException, List<String>> getSearchHistory() {
+    return callApiWithTransform<List<SearchHistoryModel>, List<String>>(
+      apiCall: () => _api.getSearchHistory(),
+      transform: (models) => models.map((m) => m.query).where((q) => q.isNotEmpty).toList(),
+      defaultValue: const [],
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> saveSearchQuery(String query) {
+    return executeApiAction(
+      apiCall: () => _api.saveSearchQuery({'query': query}),
+      enableErrorMessages: false,
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> clearSearchHistory() {
+    return executeApiAction(
+      apiCall: () => _api.clearSearchHistory(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, List<CourseEntity>> getRecentCourses() {
+    return callApiWithTransform<List<CourseModel>, List<CourseEntity>>(
+      apiCall: () => _api.getRecentlyViewedCourses(),
+      transform: (models) => models.map((m) => m.toEntity()).toList(),
+      defaultValue: const [],
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> recordCourseView(String courseId) {
+    return executeApiAction(
+      apiCall: () => _api.recordCourseView({'courseId': courseId}),
+      enableErrorMessages: false,
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> clearRecentCourses() {
+    return executeApiAction(
+      apiCall: () => _api.clearRecentlyViewed(),
+    );
+  }
 }

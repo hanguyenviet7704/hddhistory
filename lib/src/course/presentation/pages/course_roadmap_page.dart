@@ -127,13 +127,6 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       ],
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,
-        floatingActionButton: CourseRoadmapFloatingButton(
-          onPressed: () {
-            _trackRoadmapQuickLearningClick();
-            RoadmapNodeActionHelper.startLastInProgressAction(context);
-          },
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
           selector: (state) => state.status == CourseRoadmapStatus.loading && state.roadmap.levels.isEmpty,
           builder: (context, isLoading) {
@@ -145,10 +138,76 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
               );
             }
             return SafeBody(
-              child: Column(
+              child: Stack(
                 children: [
-                  TopProgressBar(),
-                  CourseRoadmapContent(),
+                  Column(
+                    children: [
+                      TopProgressBar(),
+                      CourseRoadmapContent(),
+                    ],
+                  ),
+                  // Sticky "Start lesson" CTA floating above the bottom nav bar.
+                  // (A centerDocked FAB would dock at the screen bottom and sit
+                  // behind the floating nav overlay, hiding it.)
+                  //
+                  // Decorative white fade behind the CTA — IgnorePointer so it
+                  // never blocks taps on the lesson nodes beneath it.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 200.h,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppCustomColor.backgroundWhite.withValues(alpha: 0),
+                              AppCustomColor.backgroundWhite,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 20.w,
+                    right: 20.w,
+                    // Sit above the floating nav bar (≈110.h tall incl. safe area).
+                    bottom: 120.h,
+                    child: Center(
+                      child: CourseRoadmapFloatingButton(
+                        onPressed: () {
+                          // Empty "My Course" state (no roadmap yet): the CTA
+                          // can't start a lesson, so send the user to Explore to
+                          // pick a course — mirrors the TopProgressBar dropdown.
+                          final hasRoadmap = context
+                              .read<CourseRoadmapCubit>()
+                              .state
+                              .roadmap
+                              .levels
+                              .isNotEmpty;
+                          if (!hasRoadmap) {
+                            final skillsetIndex = AppDI.injector
+                                .get<HomeCubit>()
+                                .state
+                                .selectedSkillsetIndex;
+                            AppDI.injector.get<CourseCubit>()
+                              ..setAllCourseSource('my_course_empty')
+                              ..jumpToSkillset(skillsetIndex);
+                            context.read<PageCubit>().setCurrentIndex(3);
+                            CourseRoute(selectedTabIndex: skillsetIndex)
+                                .go(context);
+                            return;
+                          }
+                          _trackRoadmapQuickLearningClick();
+                          RoadmapNodeActionHelper.startLastInProgressAction(context);
+                        },
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );

@@ -81,6 +81,12 @@ mixin AppEndpoint {
   //* Courses Reports API
   static const String coursesReports = '/api/v1/courses-reports';
 
+  //* Courses Search History API
+  static const String coursesSearchHistory = '/api/v1/courses-search-history';
+
+  //* Courses Recently Viewed API
+  static const String coursesRecentlyViewed = '/api/v1/courses-recently-viewed';
+
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';
@@ -92,6 +98,8 @@ mixin AppEndpoint {
   static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
   static const String coursesUserProgressWidgetInProgress = '/api/v1/courses-user-progress/widget/in-progress';
   static const String coursesUserProgressWidgetSuggestCourse = '/api/v1/courses-user-progress/widget/suggest-course';
+  static const String coursesQuotesRandom = '/api/v1/courses-quotes/random';
+  static const String coursesUserProgressSuggestCourses = '/api/v1/courses-user-progress/suggest-courses';
   static const String coursesUserProgressCompletedLevelAdditionalContentRequest = '/api/v1/courses-user-progress/completed-level/additional-content-request';
 
   //* Courses Output Practice API

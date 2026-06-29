@@ -2,7 +2,6 @@ library;
 
 //* Package imports
 //* Single project import
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
@@ -26,6 +25,7 @@ part 'data/datasources/remote/course_api.dart';
 part 'data/datasources/remote/course_lesson_api.dart';
 part 'data/models/course_model.dart';
 part 'data/models/keypoint_audio_model.dart';
+part 'data/models/search_history_model.dart';
 part 'data/models/keypoint_model.dart';
 part 'data/models/learning_item_model.dart';
 part 'data/models/roadmap_level_model.dart';
@@ -44,9 +44,15 @@ part 'domain/entities/roadmap_node_entity.dart';
 part 'domain/helpers/course_handoff_helper.dart';
 part 'domain/repositories/i_course_lesson_repository.dart';
 part 'domain/repositories/i_course_repository.dart';
+part 'domain/usecases/course/clear_recent_courses_usecase.dart';
+part 'domain/usecases/course/clear_search_history_usecase.dart';
 part 'domain/usecases/course/get_all_courses_usecase.dart';
 part 'domain/usecases/course/get_course_usecase.dart';
+part 'domain/usecases/course/get_recent_courses_usecase.dart';
 part 'domain/usecases/course/get_roadmap_usecase.dart';
+part 'domain/usecases/course/get_search_history_usecase.dart';
+part 'domain/usecases/course/record_course_view_usecase.dart';
+part 'domain/usecases/course/save_search_query_usecase.dart';
 part 'domain/usecases/course_lesson/get_all_course_lessons_usecase.dart';
 part 'domain/usecases/course_lesson/get_course_lesson_usecase.dart';
 part 'presentation/cubits/course/course_cubit.dart';
@@ -57,26 +63,23 @@ part 'presentation/cubits/course_lesson/course_lesson_state.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_cubit.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/change_course_page.dart';
 part 'presentation/pages/course_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 part 'presentation/pages/lesson_list_page.dart';
+part 'presentation/pages/skillset_courses_page.dart';
 part 'presentation/widgets/common/course_tracking_data.dart';
 part 'presentation/widgets/course/all_course_tab.dart';
-part 'presentation/widgets/course/all_course_tab_controller.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';
-part 'presentation/widgets/course/course_category_bar.dart';
 part 'presentation/widgets/course/course_category_chip.dart';
 part 'presentation/widgets/course/course_empty_state.dart';
 part 'presentation/widgets/course/course_header.dart';
 part 'presentation/widgets/course/course_intro_popup.dart';
 part 'presentation/widgets/course/course_lesson_empty_noti_popup.dart';
-part 'presentation/widgets/course/course_segmented_control.dart';
+part 'presentation/widgets/course/course_list_tile.dart';
+part 'presentation/widgets/course/course_search_view.dart';
 part 'presentation/widgets/course/course_tab_chip.dart';
-part 'presentation/widgets/course/course_tabbar.dart';
-part 'presentation/widgets/course/course_tabbar_view.dart';
-part 'presentation/widgets/course/my_course_tab.dart';
-part 'presentation/widgets/course/skill_set_tab.dart';
 part 'presentation/widgets/course_roadmap/course_level_content.dart';
 part 'presentation/widgets/course_roadmap/completed_level_additional_content_request_card.dart';
 part 'presentation/widgets/course_roadmap/completed_level_additional_content_request_options.dart';

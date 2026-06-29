@@ -10,6 +10,8 @@ abstract class HomeState with _$HomeState {
     @Default(0) int selectedSkillsetIndex,
     @Default(0) int selectedCourseIndex,
     String? errorMessage,
+    @Default(null) QuoteEntity? quote,
+    @Default([]) List<SuggestedCourseEntity> suggestedCourses,
   }) = _HomeState;
 
   factory HomeState.initial() => HomeState();

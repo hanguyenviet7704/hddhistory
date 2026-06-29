@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:darq/darq.dart';
@@ -82,6 +83,8 @@ part 'select/radio_button.dart';
 part 'sliver/sliver_appbar.dart';
 part 'sliver/sliver_child.dart';
 part 'sliver/sliver_list_child.dart';
+//* Export all tab files
+part 'tab/filter_tab_bar.dart';
 //* Export all text files
 part 'text/d_text.dart';
 // part 'text/expandable_html_text.dart';

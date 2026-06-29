@@ -170,6 +170,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     bool showPaywallAfterAuth = false,
     bool resetToFirstCourseCategory = false,
   }) async {
+    // Clear the previous account's roadmap/progress before loading the new
+    // one. CourseRoadmapCubit is a HydratedCubit, so without this an account
+    // switch (e.g. guest → login) would keep stale roadmap/lesson progress
+    // (wrong "x/y lessons" and completion %).
+    _resetAppCubits();
+
     final hasPendingFirstTimePaywallAfterAuth = _userCubit.state.hasPendingFirstTimePaywallAfterAuth;
     if (shouldConsumeFirstTimePaywallIntentAfterAuth(
       showPaywallAfterAuth: showPaywallAfterAuth,

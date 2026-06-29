@@ -86,52 +86,166 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
     );
   }
 
+  String _greetingPrefix(BuildContext context) {
+    return context.l10n.home.homeGreetingPrefix;
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentStreak = context.select((LearningStreakCubit cubit) => cubit.state.selectedItem.currentStreak);
-    return SizedBox(
+
+    return Container(
       width: double.infinity,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
-          children: [
-            20.verticalSpace,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: BlocSelector<ProfileCubit, ProfileState, String>(
-                    selector: (state) => state.user.name,
-                    builder: (context, username) {
-                      final title = AppText(
-                        context.l10n.home.homeGreetingTitle(username: username),
-                        enableFitScaleDown: true,
-                        style: AppStyle.text12.copyWith(
-                          color: AppCustomColor.textTertiary,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFBEBCF6), Color(0xFFDFDDF8)],
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                child: BlocSelector<ProfileCubit, ProfileState, String>(
+                  selector: (state) => state.user.name,
+                  builder: (context, username) {
+                    final firstName = username.trim().split(' ').first;
+
+                    final greetingWidget = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          '${_greetingPrefix(context)}, $firstName',
+                          style: AppStyle.text14.copyWith(
+                            color: AppCustomColor.textPrimary.withValues(alpha: 0.8),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      );
+                        4.verticalSpace,
+                        AppText(
+                          context.l10n.home.homeGreetingQuestion,
+                          style: AppStyle.textBold20.copyWith(
+                            color: AppCustomColor.textPrimary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    );
 
-                      if (!kDebugMode) return title;
+                    if (!kDebugMode) return greetingWidget;
 
-                      // Debug-only manual QA hook. Remove after home widget state checks.
-                      return GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: _debugApplyNextHomeWidgetScenario,
-                        child: title,
-                      );
-                    },
-                  ),
+                    // Debug-only manual QA hook. Remove after home widget state checks.
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _debugApplyNextHomeWidgetScenario,
+                      child: greetingWidget,
+                    );
+                  },
                 ),
-                10.horizontalSpace,
-                StreakHomeChip(
-                  currentStreak: currentStreak,
-                  onTap: () => _openStreakPopup(currentStreak),
+              ),
+              10.horizontalSpace,
+              StreakHomeChip(
+                currentStreak: currentStreak,
+                onTap: () => _openStreakPopup(currentStreak),
+              ),
+            ],
+          ),
+          16.verticalSpace,
+          // Quote card
+          _HomeInlineQuoteCard(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Inline quote card rendered inside the purple header.
+///
+/// Shows the dynamic quote from [HomeCubit] when available, otherwise renders
+/// nothing so the header collapses gracefully.
+class _HomeInlineQuoteCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<HomeCubit, HomeState, QuoteEntity?>(
+      selector: (state) => state.quote,
+      builder: (context, quote) {
+        final quoteText = (quote != null && quote.content.text.isNotEmpty)
+            ? quote.content.text
+            : null;
+
+        if (quoteText == null) return const SizedBox.shrink();
+
+        return Semantics(
+          label: context.l10n.home.homeQuoteLabel,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFB7B4F2),
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x14000000),
+                  offset: Offset(0, 1),
+                  blurRadius: 1.5,
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+            child: Stack(
+              children: [
+                // Quote text — Medium (w500), centered (Figma node 10725:31459).
+                // Inset horizontally so wrapped lines never run under the
+                // top-right quote mark.
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 28.w),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: AppText(
+                      quoteText,
+                      textAlign: TextAlign.center,
+                      style: AppStyle.text13.copyWith(
+                        color: AppCustomColor.textPrimary,
+                        fontWeight: FontWeight.w500,
+                        height: 1.75,
+                      ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                // Quote mark — hugs the top-right corner (Figma: 28px, 30%
+                // opacity, rotated 180°, ~6px from the card's top/right edge).
+                // Painted last so it sits above the text, never clipped.
+                Positioned(
+                  top: -10.h,
+                  right: -2.w,
+                  child: Opacity(
+                    opacity: 0.30,
+                    child: Transform.rotate(
+                      angle: 3.14159, // 180° in radians
+                      child: Icon(
+                        Icons.format_quote_rounded,
+                        size: 28.w,
+                        color: AppCustomColor.textPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

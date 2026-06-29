@@ -11,6 +11,7 @@ class AppConfig {
   late NavigatorObserver appRouterObserver;
   late NavigatorObserver homeRouterObserver;
   late NavigatorObserver courseRouterObserver;
+  late NavigatorObserver exploreRouterObserver;
   late NavigatorObserver settingRouterObserver;
 
   BuildContext? get context => rootNaviKey.currentContext;
@@ -25,6 +26,7 @@ class AppConfig {
     appRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.appRouterObserver);
     homeRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.homeRouterObserver);
     courseRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.courseRouterObserver);
+    exploreRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.exploreRouterObserver);
     settingRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.settingRouterObserver);
   }
 }

@@ -11,10 +11,22 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   bool _hasShownFeedbackPopup = false;
   bool _isHandlingPrimaryCta = false;
 
+  /// Keeps the floating nav pill hidden while this completion screen is shown.
+  /// The pill is gated on [PageStateX.isPrimaryRoute]; pushing/popping the
+  /// feedback popup (a named route) can reset the current route name back to a
+  /// primary one, so we re-assert it whenever the page regains focus.
+  void _ensureKeypointCompleteRouteName() {
+    if (!mounted) return;
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Assert this page's (non-primary) route name so the shell's floating
+      // nav pill stays hidden — otherwise it overlaps the primary CTA below.
+      _ensureKeypointCompleteRouteName();
       final trackingData = KeypointTrackingData.fromContext();
       if (trackingData == null) return;
       AppService.instance.appTrackingService.trackKeypointFinishScrView(trackingData);
@@ -140,7 +152,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
           courseId: courseId,
           lessonId: lessonId,
           keypointId: keypointId,
-        );
+        ).whenComplete(_ensureKeypointCompleteRouteName);
       },
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,

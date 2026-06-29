@@ -25,6 +25,15 @@ mixin _HomeInAppSurveyMixin on State<HomePage> {
     if (_surveyDialogOpen || !mounted) return;
 
     final cubit = context.read<InAppSurveyCubit>();
+
+    // The home init may skip loading the survey config (e.g. when the paywall
+    // or daily warm-up opens first). Ensure it's loaded on demand so tapping
+    // the "Có góp ý?" entry always opens the popup.
+    if (!cubit.state.hasUsableConfig) {
+      await cubit.loadInAppSurveyConfig();
+      if (!mounted) return;
+    }
+
     AppService.instance.appTrackingService.trackInAppSurveyEntryClick(source: 'home');
     cubit.openSurvey();
     if (cubit.state.step != InAppSurveyStep.rating) return;
