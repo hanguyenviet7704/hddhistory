@@ -31,6 +31,17 @@ interface Props {
   error?: string | null;
 }
 
+// ISO 8601 → "YYYY-MM-DDTHH:mm" (local time) for <input type="datetime-local">.
+function isoToLocalInput(iso?: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
 export default function CourseModal({
   isOpen,
   initial = null,
@@ -46,6 +57,10 @@ export default function CourseModal({
   const [titleError, setTitleError] = useState("");
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<CourseStatus>(CourseStatus.DRAFT);
+  // datetime-local value ("YYYY-MM-DDTHH:mm"); only used when status = Coming Soon.
+  const [publishAt, setPublishAt] = useState("");
+  // Days the "New course" badge lasts after publish (Coming Soon flow).
+  const [newDurationDays, setNewDurationDays] = useState("");
   const [prices, setPrices] = useState<IPrice[]>([]);
   const [onboardingSymptoms, setOnboardingSymptoms] = useState<
     OnboardingSymptom[]
@@ -69,6 +84,10 @@ export default function CourseModal({
       setDescription(initial.description ?? {});
       setImage(initial.image ?? "");
       setStatus(initial.status);
+      setPublishAt(isoToLocalInput(initial.publishAt));
+      setNewDurationDays(
+        initial.newDurationDays != null ? String(initial.newDurationDays) : ""
+      );
       setPrices(initial.prices ?? []);
       setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
       setSkillsetId(initial.skillsetId ?? "");
@@ -79,6 +98,8 @@ export default function CourseModal({
       setDescription({});
       setImage("");
       setStatus(CourseStatus.DRAFT);
+      setPublishAt("");
+      setNewDurationDays("");
       setPrices([]);
       setOnboardingSymptoms([]);
       setSkillsetId("");
@@ -159,6 +180,15 @@ export default function CourseModal({
       prices: prices,
       skillsetId, // Add skillsetId to payload
       onboardingSymptoms,
+      // Publish time + New-course duration only apply to Coming Soon.
+      publishAt:
+        status === CourseStatus.COMING_SOON && publishAt
+          ? new Date(publishAt).toISOString()
+          : null,
+      newDurationDays:
+        status === CourseStatus.COMING_SOON && newDurationDays
+          ? Number(newDurationDays)
+          : null,
     };
 
     // Only include description if it has values
@@ -417,6 +447,41 @@ export default function CourseModal({
                   </div>
                 </div>
               </div>
+
+              {/* Publish time — only for Coming Soon courses */}
+              {status === CourseStatus.COMING_SOON && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Publish time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={publishAt}
+                    onChange={(e) => setPublishAt(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    When this course should become available. Leave empty for no
+                    scheduled date.
+                  </p>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+                    New course duration (days)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={newDurationDays}
+                    onChange={(e) => setNewDurationDays(e.target.value)}
+                    placeholder="e.g. 7"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    After publishing, show the “New course” badge for this many
+                    days. Leave empty to skip the New-course phase.
+                  </p>
+                </div>
+              )}
 
               {/* Onboarding Symptoms */}
               <div>
