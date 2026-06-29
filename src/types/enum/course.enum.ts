@@ -1,6 +1,7 @@
 export enum CourseStatus {
   PUBLISHED = "published",
   DRAFT = "draft",
+  COMING_SOON = "coming_soon",
 }
 
 export enum CourseLevel {

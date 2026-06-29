@@ -196,6 +196,7 @@ const SkillsetList: React.FC = () => {
   const statusColors: Record<CourseStatus | SkillsetStatus, string> = {
     [SkillsetStatus.PUBLISHED]: "bg-green-100 text-green-700",
     [SkillsetStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
+    [CourseStatus.COMING_SOON]: "bg-blue-100 text-blue-700",
   };
 
   useEffect(() => {
