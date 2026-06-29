@@ -401,8 +401,11 @@ class _RecommendedCard extends StatelessWidget {
                       ),
                     ),
 
-                    // "New course" badge — top-left corner
-                    Positioned(
+                    // "New course" badge — top-left corner. Only for courses
+                    // that are actually new (manual isNew flag, or within their
+                    // scheduled new-course window), not every recommended card.
+                    if (course.isNewNow)
+                      Positioned(
                       top: 0,
                       left: 0,
                       child: Container(

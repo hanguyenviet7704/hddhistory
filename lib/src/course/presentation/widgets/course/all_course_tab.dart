@@ -308,7 +308,7 @@ void _showComingSoonSheet(BuildContext context, CourseEntity course) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
     ),
-    builder: (_) => SafeArea(
+    builder: (sheetContext) => SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
         child: Column(
@@ -329,7 +329,10 @@ void _showComingSoonSheet(BuildContext context, CourseEntity course) {
             24.verticalSpace,
             AppButton.primary(
               fullWidthBtn: true,
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              // Pop via the sheet's own context so we close exactly this
+              // bottom-sheet route — using rootNavigator popped the wrong
+              // navigator (the shell/page beneath), blanking the screen.
+              onPressed: () => Navigator.of(sheetContext).pop(),
               child: AppText(
                 l10n.allcourse.comingSoonGotIt,
                 style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
@@ -620,17 +623,18 @@ class _GridCourseBadge extends StatelessWidget {
       );
     }
 
-    // Not started — lesson count (book + tertiary text).
+    // Not started — lesson count (solid book + text/tertiary #5F6F86).
+    // The Figma icon (node 10840-20060) is a filled book (#95A7C2) with a
+    // white line; rendered with its baked colors (no srcIn) so the line shows.
     if (course.numberOfLesson > 0) {
       return _WhiteGridBadge(
         icon: SvgPicture.asset(
-          AppAsset.svg.app.icBook,
+          AppAsset.svg.app.icBookSolid,
           width: 20.w,
           height: 20.w,
-          colorFilter: const ColorFilter.mode(AppCustomColor.textTertiary, BlendMode.srcIn),
         ),
         label: context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
-        textColor: AppCustomColor.textTertiary,
+        textColor: AppCustomColor.streakTextMuted,
       );
     }
 
