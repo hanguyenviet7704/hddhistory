@@ -102,27 +102,31 @@ class _LimitedTimeOfferStrip extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.bolt,
-                  size: 16.w,
-                  color: AppCustomColor.textBrand,
-                ),
-                4.horizontalSpace,
-                AppText(
-                  l10n.monetization.saleCountdownLabel.toUpperCase(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  enableFitScaleDown: true,
-                  style: AppStyle.text14.copyWith(
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.bolt,
+                    size: 16.w,
                     color: AppCustomColor.textBrand,
-                    fontWeight: FontWeight.w700,
-                    height: 1.75,
                   ),
-                ),
-              ],
+                  4.horizontalSpace,
+                  Flexible(
+                    child: AppText(
+                      l10n.monetization.saleCountdownLabel.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      enableFitScaleDown: true,
+                      style: AppStyle.text14.copyWith(
+                        color: AppCustomColor.textBrand,
+                        fontWeight: FontWeight.w700,
+                        height: 1.75,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             12.horizontalSpace,
             _CountdownStrip(strategy: strategy, compact: true),

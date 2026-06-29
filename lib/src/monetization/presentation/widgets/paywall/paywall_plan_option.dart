@@ -160,7 +160,7 @@ class PaywallPlanOption extends StatelessWidget {
 
   bool get _showDiscountPill => product.hasDiscount;
 
-  bool get _showOriginalPrice => !selected && product.hasDiscount && product.originalPriceString.isNotEmpty;
+  bool get _showOriginalPrice => false;
 
   String _periodUnit(IapProductEntity product) {
     final label = product.periodLabel.trim();

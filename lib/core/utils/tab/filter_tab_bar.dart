@@ -1,12 +1,13 @@
 part of '../utils.dart';
 
-class FilterTabBar extends StatelessWidget {
+class FilterTabBar extends StatefulWidget {
   const FilterTabBar({
     super.key,
     required this.tabs,
     required this.selectedIndex,
     required this.onTabSelected,
     this.padding,
+    this.autoScrollToSelected = false,
   });
 
   final List<String> tabs;
@@ -14,23 +15,79 @@ class FilterTabBar extends StatelessWidget {
   final ValueChanged<int> onTabSelected;
   final EdgeInsets? padding;
 
+  /// When true, the strip animates the selected chip into view as
+  /// [selectedIndex] changes (used by the Explore scrollspy so the active chip
+  /// stays visible). Off by default — existing callers are unchanged.
+  final bool autoScrollToSelected;
+
+  @override
+  State<FilterTabBar> createState() => _FilterTabBarState();
+}
+
+class _FilterTabBarState extends State<FilterTabBar> {
+  final ScrollController _controller = ScrollController();
+  List<GlobalKey> _itemKeys = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _syncKeys();
+  }
+
+  void _syncKeys() {
+    if (_itemKeys.length != widget.tabs.length) {
+      _itemKeys = List.generate(widget.tabs.length, (_) => GlobalKey());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant FilterTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncKeys();
+    if (widget.autoScrollToSelected &&
+        widget.selectedIndex != oldWidget.selectedIndex &&
+        widget.selectedIndex >= 0 &&
+        widget.selectedIndex < _itemKeys.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _ensureSelectedVisible());
+    }
+  }
+
+  void _ensureSelectedVisible() {
+    final ctx = _itemKeys[widget.selectedIndex].currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      alignment: 0.5,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 36.h,
       child: ListView.separated(
+        controller: _controller,
         scrollDirection: Axis.horizontal,
-        padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: tabs.length,
+        padding: widget.padding ?? EdgeInsets.symmetric(horizontal: 16.w),
+        itemCount: widget.tabs.length,
         separatorBuilder: (_, _) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
-          final isSelected = index == selectedIndex;
+          final isSelected = index == widget.selectedIndex;
           return Semantics(
-            label: tabs[index],
+            key: _itemKeys[index],
+            label: widget.tabs[index],
             button: true,
             selected: isSelected,
             child: InkWell(
-              onTap: () => onTabSelected(index),
+              onTap: () => widget.onTabSelected(index),
               borderRadius: BorderRadius.circular(20.r),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -48,7 +105,7 @@ class FilterTabBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  tabs[index],
+                  widget.tabs[index],
                   style: AppStyle.text14.copyWith(
                     color: isSelected
                         ? AppCustomColor.backgroundWhite

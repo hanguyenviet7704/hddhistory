@@ -9,38 +9,68 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The course thumbnail belongs to the course as a whole, so it is shown
+    // once — above the first level's header — matching the Figma roadmap.
+    final isFirstLevel = context.select<CourseRoadmapCubit, bool>((cubit) {
+      final levels = cubit.state.roadmap.levels;
+      return levels.isNotEmpty && levels.first.level == roadmapLevel.level;
+    });
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Course title — tappable to navigate to ChangeCoursePage
+          if (isFirstLevel) ...[
+            BlocSelector<HomeCubit, HomeState, String>(
+              selector: (state) => state.currentCourse.image,
+              builder: (context, image) {
+                if (image.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 24.h),
+                  child: Container(
+                    width: 120.w,
+                    height: 120.w,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppCustomColor.borderDefault,
+                          blurRadius: 28.r,
+                        ),
+                      ],
+                    ),
+                    child: CacheNetworkGraphic(
+                      url: image,
+                      width: 120.w,
+                      height: 120.w,
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+          // Course title (display only — tapping no longer opens the
+          // "Change course" page).
           BlocSelector<HomeCubit, HomeState, String>(
             selector: (state) => state.courseName,
             builder: (context, courseName) {
-              return Semantics(
-                button: true,
-                label: context.l10n.allcourse.changeCourseTitle,
-                child: InkWell(
-                  onTap: () => const ChangeCourseRoute().push(context),
-                  borderRadius: BorderRadius.circular(4.r),
-                  child: Column(
-                    children: [
-                      AppText(
-                        courseName,
-                        textWidthBasis: TextWidthBasis.longestLine,
-                        style: AppStyle.text20.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppCustomColor.textPrimary,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.fade,
-                      ),
-                      8.verticalSpace,
-                    ],
+              return Column(
+                children: [
+                  AppText(
+                    courseName,
+                    textWidthBasis: TextWidthBasis.longestLine,
+                    style: AppStyle.text20.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppCustomColor.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
                   ),
-                ),
+                  8.verticalSpace,
+                ],
               );
             },
           ),

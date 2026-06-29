@@ -50,12 +50,14 @@ class UserAchievementCourseItem extends StatelessWidget {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AppText(
-                course.title,
-                maxLines: 2,
-                width: 100.w,
-                textAlign: TextAlign.center,
-                style: titleStyle,
+              SizedBox(
+                width: 140.w,
+                child: AppText(
+                  course.title,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  style: titleStyle,
+                ),
               ),
               if (!course.hideProgress) ...[
                 8.verticalSpace,
@@ -76,8 +78,8 @@ class _UserAchievementBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double width = 64.w;
-    final double height = 80.h;
+    final double width = 78.w;
+    final double height = 100.h;
 
     if (course.badgeUrl.isEmpty) {
       return Container(

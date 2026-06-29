@@ -14,53 +14,70 @@ class GotIdeasBanner extends StatelessWidget {
         onTap: onTap,
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20.w),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            // Figma node 10725:31646: #6964DB
+            // Figma node 10725:31664: #6964DB
             color: const Color(0xFF6964DB),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.lightbulb_outline_rounded,
-                color: AppCustomColor.backgroundWhite,
-                size: 20.w,
+              // Origami paper-bird mascot (Figma node 10725:31666).
+              SvgPicture.asset(
+                AppAsset.svg.app.icGotIdeasBird,
+                width: 50.8.w,
+                height: 35.2.w,
+                fit: BoxFit.contain,
               ),
-              12.horizontalSpace,
+              8.horizontalSpace,
+              // Title + subtitle sit inline (Figma node 10725:31678).
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    AppText(
-                      context.l10n.home.inAppSurveyEntryTitle,
-                      style: AppStyle.textBold16.copyWith(
-                        color: AppCustomColor.backgroundWhite,
+                    Flexible(
+                      child: AppText(
+                        context.l10n.home.inAppSurveyEntryTitle,
+                        style: AppStyle.textBold16.copyWith(
+                          color: AppCustomColor.backgroundWhite,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    2.verticalSpace,
-                    AppText(
-                      context.l10n.home.inAppSurveyEntrySubtitle,
-                      style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.backgroundWhite.withValues(alpha: 0.70),
+                    4.horizontalSpace,
+                    Flexible(
+                      child: AppText(
+                        context.l10n.home.inAppSurveyEntrySubtitle,
+                        style: AppStyle.text12.copyWith(
+                          color: AppCustomColor.backgroundWhite.withValues(alpha: 0.70),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
               ),
               8.horizontalSpace,
-              Container(
+              // Chevron affordance (Figma node 10725:31681) — white chevron,
+              // 36px tap target, soft drop shadow, no fill.
+              SizedBox(
                 width: 36.w,
                 height: 36.w,
-                decoration: BoxDecoration(
-                  color: AppCustomColor.backgroundWhite.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(50.r),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  color: AppCustomColor.backgroundWhite,
-                  size: 18.w,
+                child: Center(
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppCustomColor.backgroundWhite,
+                    size: 24.w,
+                    shadows: const [
+                      Shadow(
+                        color: Color(0x14000000),
+                        offset: Offset(0, 1),
+                        blurRadius: 1.5,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -13,26 +13,25 @@ class SettingSectionCard extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppStyle.text12.copyWith(
-            color: AppCustomColor.textSecondary,
-            letterSpacing: .2,
+          style: AppStyle.text14.copyWith(
+            color: AppCustomColor.textTertiary,
           ),
         ),
         SizedBox(height: 12.h),
         Container(
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: AppCustomColor.textPrimary.op(.04),
-                blurRadius: 40,
-                offset: Offset(0, 24.h),
+                color: AppCustomColor.borderDefault,
+                blurRadius: 2,
+                offset: Offset.zero,
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(20.r),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -56,7 +55,7 @@ class _SettingDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 1,
-      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       color: AppCustomColor.borderDefault,
     );
   }
@@ -94,14 +93,18 @@ class SettingOptionTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 18.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _SettingIcon(
-                asset: iconAsset,
-                backgroundColor: iconBackgroundColor ?? AppCustomColor.surfaceMuted,
-                color: iconColor ?? AppCustomColor.iconPrimary,
+              SvgPicture.asset(
+                iconAsset,
+                width: 24.w,
+                height: 24.w,
+                colorFilter: ColorFilter.mode(
+                  iconColor ?? AppCustomColor.iconPrimary,
+                  BlendMode.srcIn,
+                ),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -117,7 +120,7 @@ class SettingOptionTile extends StatelessWidget {
                 Text(
                   trailing,
                   style: AppStyle.textBold14.copyWith(
-                    color: trailingTextColor ?? AppCustomColor.textSecondary,
+                    color: trailingTextColor ?? AppCustomColor.textTertiary,
                   ),
                 ),
               ],
@@ -160,14 +163,15 @@ class SettingSwitchTile extends StatelessWidget {
       child: InkWell(
         onTap: onChanged == null ? null : () => onChanged!.call(!value),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 18.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _SettingIcon(
-                asset: iconAsset,
-                backgroundColor: AppCustomColor.surfaceMuted,
-                color: AppCustomColor.iconPrimary,
+              SvgPicture.asset(
+                iconAsset,
+                width: 24.w,
+                height: 24.w,
+                colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary, BlendMode.srcIn),
               ),
               SizedBox(width: 12.w),
               AppText(

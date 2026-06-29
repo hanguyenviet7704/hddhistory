@@ -113,6 +113,24 @@ class CourseRouterObserver extends BaseRouterObserver {
 }
 
 @LazySingleton(as: NavigatorObserver)
+@Named(DIKey.exploreRouterObserver)
+class ExploreRouterObserver extends BaseRouterObserver {
+  ExploreRouterObserver(
+    PageCubit pageCubit,
+  ) : super('ExploreRouterObserver', pageCubit);
+
+  @override
+  void onPopRoute(Route<dynamic>? route) {
+    super.onPopRoute(route);
+    // CoursePage (/course) lives in the Explore branch, so its pop is observed
+    // here. Reset the analytics source when leaving the explore grid.
+    if (route?.settings.name != RouteNamed.course) return;
+    final courseCubit = AppDI.injector.get<CourseCubit>();
+    courseCubit.setAllCourseSource('unknown');
+  }
+}
+
+@LazySingleton(as: NavigatorObserver)
 @Named(DIKey.settingRouterObserver)
 class SettingRouterObserver extends BaseRouterObserver {
   SettingRouterObserver(

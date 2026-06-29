@@ -6,31 +6,35 @@ class CourseHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: BlocBuilder<CourseCubit, CourseState>(
         buildWhen: (prev, curr) =>
             prev.searchQuery != curr.searchQuery || prev.isSearchActive != curr.isSearchActive,
         builder: (context, state) {
           return GestureDetector(
-            onTap: state.isSearchActive
-                ? null
-                : () {
-                    context.read<CourseCubit>().activateSearch();
-                  },
+            onTap: state.isSearchActive ? null : () => context.read<CourseCubit>().activateSearch(),
             child: Container(
-              height: 48.h,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              height: 56.h,
+              padding: EdgeInsets.only(
+                left: 22.w,
+                right: state.isSearchActive ? 14.w : 4.w,
+                top: 4.h,
+                bottom: 4.h,
+              ),
               decoration: BoxDecoration(
                 color: state.isSearchActive
                     ? AppCustomColor.backgroundWhite
                     : AppCustomColor.backgroundGray,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(50.r),
                 border: Border.all(
                   color: state.isSearchActive
-                      ? AppCustomColor.brandPrimary
+                      ? AppCustomColor.brandPrimary.withValues(alpha: 0.6)
                       : AppCustomColor.borderDefault,
-                  width: state.isSearchActive ? 1.5 : 1,
+                  width: 2,
                 ),
+                boxShadow: state.isSearchActive
+                    ? [const BoxShadow(color: Color(0xFFEBF0F7), blurRadius: 2)]
+                    : null,
               ),
               child: Row(
                 children: [
@@ -39,21 +43,21 @@ class CourseHeader extends StatelessWidget {
                     child: Icon(
                       Icons.search_rounded,
                       color: AppCustomColor.textTertiary,
-                      size: 20.w,
+                      size: 24.w,
                     ),
                   ),
-                  12.horizontalSpace,
+                  8.horizontalSpace,
                   Expanded(
                     child: state.isSearchActive
                         ? TextField(
                             autofocus: true,
                             controller: context.read<CourseCubit>().searchController,
-                            style: AppStyle.text14.copyWith(
+                            style: AppStyle.text16.copyWith(
                               color: AppCustomColor.textPrimary,
                             ),
                             decoration: InputDecoration(
                               hintText: context.l10n.allcourse.searchPlaceholderActive,
-                              hintStyle: AppStyle.text14.copyWith(
+                              hintStyle: AppStyle.text16.copyWith(
                                 color: AppCustomColor.textTertiary,
                               ),
                               border: InputBorder.none,
@@ -61,13 +65,14 @@ class CourseHeader extends StatelessWidget {
                               contentPadding: EdgeInsets.zero,
                             ),
                             textInputAction: TextInputAction.search,
+                            // Live filtering happens via onChanged; results show
+                            // as the user types. "Recent" now tracks viewed
+                            // courses, so there's nothing to persist on submit.
                             onChanged: context.read<CourseCubit>().onSearchChanged,
-                            onSubmitted: (query) =>
-                                context.read<CourseCubit>().saveSearchQuery(query),
                           )
                         : AppText(
                             context.l10n.allcourse.searchPlaceholder,
-                            style: AppStyle.text14.copyWith(
+                            style: AppStyle.text16.copyWith(
                               color: AppCustomColor.textTertiary,
                             ),
                           ),
@@ -76,15 +81,30 @@ class CourseHeader extends StatelessWidget {
                     Semantics(
                       label: context.l10n.allcourse.searchClearSemanticLabel,
                       button: true,
-                      child: IconButton(
-                        onPressed: () => context.read<CourseCubit>().clearSearch(),
-                        icon: Icon(
-                          Icons.cancel_rounded,
-                          color: AppCustomColor.textTertiary,
-                          size: 20.w,
+                      child: GestureDetector(
+                        // Spec: "X" clears the entered text (staying in search
+                        // → shows Recent); tapping it again when empty exits.
+                        onTap: () {
+                          final cubit = context.read<CourseCubit>();
+                          if (state.searchQuery.isEmpty) {
+                            cubit.deactivateSearch();
+                          } else {
+                            cubit.clearSearchText();
+                          }
+                        },
+                        child: Container(
+                          width: 24.w,
+                          height: 24.w,
+                          decoration: const BoxDecoration(
+                            color: AppCustomColor.neutral300,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 14.w,
+                            color: AppCustomColor.backgroundWhite,
+                          ),
                         ),
-                        padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(minWidth: 40.w, minHeight: 40.h),
                       ),
                     ),
                 ],

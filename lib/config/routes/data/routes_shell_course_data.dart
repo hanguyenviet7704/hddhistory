@@ -7,8 +7,15 @@ class CourseShellBranchData extends StatefulShellBranchData {
   static final List<NavigatorObserver> $observers = [AppConfig.instance.courseRouterObserver];
 }
 
-//* Course Route
-@TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
+//* Shell routes - Explore (course grid). Its own branch so the "Khám phá" tab
+//* shows the explore grid (CoursePage) independently of the "Khoá học" roadmap.
+class ExploreShellBranchData extends StatefulShellBranchData {
+  const ExploreShellBranchData();
+  static final List<NavigatorObserver> $observers = [AppConfig.instance.exploreRouterObserver];
+}
+
+//* Course Route — registered inside the Course shell branch (see routes_shell.dart)
+//* so CoursePage renders within the shell and keeps the bottom navigation bar.
 class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   final int? selectedTabIndex;
   const CourseRoute({this.selectedTabIndex});

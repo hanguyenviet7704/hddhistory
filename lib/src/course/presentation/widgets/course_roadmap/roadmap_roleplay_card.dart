@@ -22,37 +22,47 @@ class RoadmapLessonCard extends StatelessWidget {
       },
       builder: (context, isLastInProgress) {
         final isActive = isLastInProgress;
+        // Locked appearance mirrors the timeline indicator: a lesson that isn't
+        // the active one and hasn't been started yet (or is paywall-locked)
+        // shows the dimmed/grayscale "locked" card.
+        final isLockedVisual = !isActive &&
+            (isLocked || lesson.roadmapProgress == ProcessEnum.notStarted);
         return Semantics(
           button: true,
           label: lesson.title.text,
           child: GestureDetector(
             onTap: onTap,
             child: Container(
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
-                color: AppCustomColor.backgroundWhite,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: isActive
-                      ? AppCustomColor.brandPrimary
-                      : AppCustomColor.borderDefault,
-                  width: isActive ? 2.w : 1.w,
-                ),
+                color: isLockedVisual
+                    ? AppCustomColor.backgroundGray
+                    : AppCustomColor.backgroundWhite,
+                borderRadius: BorderRadius.circular(16.r),
+                border: isLockedVisual
+                    ? null
+                    : Border.all(
+                        color: isActive
+                            ? AppCustomColor.brandPrimary
+                            : AppCustomColor.neutral300,
+                        width: isActive ? 2.w : 1.w,
+                      ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _RoadmapCardThumbnail(
-                      imageUrl: lesson.roadmapDisplayImage,
-                      isLocked: isLocked,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 12.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _RoadmapCardThumbnail(
+                    imageUrl: lesson.roadmapDisplayImage,
+                    isLocked: isLockedVisual,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(12.w),
                       child: AppText(
                         lesson.title.text,
-                        style: AppStyle.textBold16.copyWith(
-                          color: isLocked
+                        style: AppStyle.text14.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isLockedVisual
                               ? AppCustomColor.textTertiary
                               : AppCustomColor.textPrimary,
                           height: 1.4,
@@ -61,8 +71,8 @@ class RoadmapLessonCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -72,8 +82,8 @@ class RoadmapLessonCard extends StatelessWidget {
   }
 }
 
-/// Shared full-width thumbnail widget used by roadmap lesson cards.
-/// Applies a grayscale filter and a centred lock badge when [isLocked] is true.
+/// Shared square thumbnail widget used by roadmap lesson cards.
+/// Applies a grayscale filter and a bottom-right lock badge when [isLocked] is true.
 class _RoadmapCardThumbnail extends StatelessWidget {
   final String imageUrl;
   final bool isLocked;
@@ -85,11 +95,6 @@ class _RoadmapCardThumbnail extends StatelessWidget {
     0,      0,      0,      1, 0,
   ]);
 
-  static const _identityMatrix = ColorFilter.mode(
-    Colors.transparent,
-    BlendMode.color,
-  );
-
   const _RoadmapCardThumbnail({
     required this.imageUrl,
     this.isLocked = false,
@@ -97,44 +102,53 @@ class _RoadmapCardThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        ColorFiltered(
-          colorFilter: isLocked ? _grayscaleMatrix : _identityMatrix,
-          child: imageUrl.isNotEmpty
-              ? DCachedImage(
-                  url: imageUrl,
-                  width: double.infinity,
-                  height: 140.h,
-                  fit: BoxFit.cover,
-                )
-              : Container(
-                  width: double.infinity,
-                  height: 140.h,
-                  color: AppCustomColor.neutral100,
-                ),
-        ),
-        if (isLocked)
-          Positioned.fill(
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.all(10.w),
-                decoration: BoxDecoration(
-                  color: AppCustomColor.textPrimary.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: Semantics(
-                  label: context.l10n.courseroadmap.lockedSemanticLabel,
-                  child: Icon(
-                    Icons.lock_rounded,
-                    color: AppCustomColor.backgroundWhite,
-                    size: 20.w,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15.r),
+      child: SizedBox(
+        width: 88.w,
+        height: 88.w,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColorFiltered(
+              colorFilter: isLocked
+                  ? _grayscaleMatrix
+                  : const ColorFilter.mode(Colors.transparent, BlendMode.color),
+              child: imageUrl.isNotEmpty
+                  ? DCachedImage(
+                      url: imageUrl,
+                      width: 88.w,
+                      height: 88.w,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 88.w,
+                      height: 88.w,
+                      color: AppCustomColor.neutral100,
+                    ),
+            ),
+            if (isLocked)
+              Center(
+                child: Container(
+                  width: 24.w,
+                  height: 24.w,
+                  decoration: const BoxDecoration(
+                    color: AppCustomColor.neutral100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Semantics(
+                    label: context.l10n.courseroadmap.lockedSemanticLabel,
+                    child: Icon(
+                      Icons.lock_rounded,
+                      color: AppCustomColor.textTertiary,
+                      size: 14.w,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 }

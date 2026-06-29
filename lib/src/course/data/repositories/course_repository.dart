@@ -79,4 +79,28 @@ class CourseRepository with RestfulRequestHandlerMixin implements ICourseReposit
       apiCall: () => _api.clearSearchHistory(),
     );
   }
+
+  @override
+  TaskEither<AppException, List<CourseEntity>> getRecentCourses() {
+    return callApiWithTransform<List<CourseModel>, List<CourseEntity>>(
+      apiCall: () => _api.getRecentlyViewedCourses(),
+      transform: (models) => models.map((m) => m.toEntity()).toList(),
+      defaultValue: const [],
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> recordCourseView(String courseId) {
+    return executeApiAction(
+      apiCall: () => _api.recordCourseView({'courseId': courseId}),
+      enableErrorMessages: false,
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> clearRecentCourses() {
+    return executeApiAction(
+      apiCall: () => _api.clearRecentlyViewed(),
+    );
+  }
 }

@@ -88,6 +88,16 @@ part of '../routes.dart';
         ),
       ],
     ),
+    //? Explore branch — appended last so existing branch indices (home=0,
+    //? course=1, setting=2) are unchanged; this branch is index 3.
+    TypedStatefulShellBranch<ExploreShellBranchData>(
+      routes: [
+        TypedGoRoute<CourseRoute>(
+          path: RoutePath.course,
+          name: RouteNamed.course,
+        ),
+      ],
+    ),
   ],
 )
 class MainShellRouteData extends StatefulShellRouteData {

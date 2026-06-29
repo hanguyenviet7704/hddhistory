@@ -43,6 +43,10 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
     }
     if (courseId.isEmpty) return;
 
+    // Opening a course's roadmap is the universal "view" signal — record it so
+    // the course surfaces in the search screen's "Recent" list.
+    AppDI.injector.get<CourseCubit>().recordCourseView(courseId);
+
     await runUseCase<RoadmapEntity>(
       usecase: () => _getRoadmapUseCase(courseId),
       buildLoadingState: () => state.copyWith(status: CourseRoadmapStatus.loading),

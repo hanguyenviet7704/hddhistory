@@ -56,28 +56,35 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
           // Extend gradient behind status bar
           backgroundColor: const Color(0xFFBEBCF6),
           body: SafeBody(
-            child: Column(
+            child: Stack(
               children: [
-                // ── Zone 1: Fixed purple header — never scrolls ────────────
-                const HomeHeaderWidget(),
-
-                // ── Zone 2: Scrollable white content area ─────────────────
-                Expanded(
-                  child: Stack(
-                    children: [
-                      RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<HomeCubit>().initializeData(isInit: true);
-                          await _prefetchLearningStreak();
-                          final didOpenPaywall = await _tryOpenPaywallAutoOpen();
-                          if (didOpenPaywall) return;
-                          final didOpenWarmUp = await _tryOpenDailyWarmUp();
-                          if (!didOpenWarmUp) await _loadInAppSurveyConfig();
-                        },
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: Container(
+                // The whole page scrolls as one unit — the purple header
+                // scrolls away together with the content (no pinned header).
+                RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<HomeCubit>().initializeData(isInit: true);
+                    await _prefetchLearningStreak();
+                    final didOpenPaywall = await _tryOpenPaywallAutoOpen();
+                    if (didOpenPaywall) return;
+                    final didOpenWarmUp = await _tryOpenDailyWarmUp();
+                    if (!didOpenWarmUp) await _loadInAppSurveyConfig();
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    // Soft-lavender backdrop (Figma #DFDDF8) so the white
+                    // sheet's rounded top corners reveal the same gentle tone
+                    // as the header gradient's bottom.
+                    child: ColoredBox(
+                      color: const Color(0xFFDFDDF8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Purple header — scrolls with the page.
+                          const HomeHeaderWidget(),
+                          Container(
                             width: double.infinity,
+                            // Rounded top corners — the white sheet rises out
+                            // of the lavender header (Figma home screen).
                             decoration: BoxDecoration(
                               color: AppCustomColor.backgroundWhite,
                               borderRadius: BorderRadius.only(
@@ -101,15 +108,24 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                 // ── Got ideas? banner ────────────────────
                                 20.verticalSpace,
                                 GotIdeasBanner(
-                                  onTap: () => const DataCollectFeedbackRoute().push(context),
+                                  // "Có góp ý?" is the in-app survey entry — it
+                                  // opens the survey popup overlay (same as the
+                                  // floating pill), not a full page.
+                                  onTap: _openInAppSurveyDialog,
                                 ),
                                 20.verticalSpace,
 
                                 // ── Recommended courses ──────────────────
                                 _RecommendedSection(
                                   onSeeAll: () {
-                                    context.read<CourseCubit>().setAllCourseSource('home_recommend_view');
-                                    CourseRoute().push(context);
+                                    context.read<CourseCubit>()
+                                      ..setAllCourseSource('home_recommend_view')
+                                      ..resetExploreToAll();
+                                    // Switch to the Explore shell branch (index 3).
+                                    // push() stays on the Home branch; go() switches
+                                    // branches and setCurrentIndex lights the right tab.
+                                    context.read<PageCubit>().setCurrentIndex(3);
+                                    CourseRoute().go(context);
                                   },
                                 ),
 
@@ -118,29 +134,29 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                               ],
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ── Floating InAppSurvey pill ──────────────────────
+                BlocSelector<InAppSurveyCubit, InAppSurveyState, bool>(
+                  selector: (state) => state.isEntryVisible,
+                  builder: (context, isEntryVisible) {
+                    if (!isEntryVisible) return const SizedBox.shrink();
+
+                    return Positioned(
+                      left: 20.w,
+                      right: 20.w,
+                      bottom: 20.h,
+                      child: Center(
+                        child: InAppSurveyEntryPill(
+                          onTap: _openInAppSurveyDialog,
                         ),
                       ),
-
-                      // ── Floating InAppSurvey pill ──────────────────────
-                      BlocSelector<InAppSurveyCubit, InAppSurveyState, bool>(
-                        selector: (state) => state.isEntryVisible,
-                        builder: (context, isEntryVisible) {
-                          if (!isEntryVisible) return const SizedBox.shrink();
-
-                          return Positioned(
-                            left: 20.w,
-                            right: 20.w,
-                            bottom: 20.h,
-                            child: Center(
-                              child: InAppSurveyEntryPill(
-                                onTap: _openInAppSurveyDialog,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -232,6 +248,7 @@ class _ContinueLearningSectionState extends State<_ContinueLearningSection> {
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: HomeLargePortraitCourseCard(
                     course: widget.courses[i].withSkillset,
+                    progressPercentage: widget.courses[i].completionPercentage,
                   ),
                 ),
               );
@@ -351,8 +368,12 @@ class _RecommendedCard extends StatelessWidget {
             CourseRoadmapRoute().go(context);
             context.read<PageCubit>().setCurrentIndex(1);
           } else {
-            context.read<CourseCubit>().setAllCourseSource('home_recommended');
-            CourseRoute().push(context);
+            context.read<CourseCubit>()
+              ..setAllCourseSource('home_recommended')
+              ..resetExploreToAll();
+            // Fall back to the Explore grid — switch shell branch, don't push.
+            context.read<PageCubit>().setCurrentIndex(3);
+            CourseRoute().go(context);
           }
         },
         child: SizedBox(

@@ -12,6 +12,7 @@ import 'package:injectable/injectable.dart';
 import 'package:meup/meup.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:timeline_tile_plus/timeline_tile_plus.dart';
 
 //* Parts for generated files
@@ -43,11 +44,14 @@ part 'domain/entities/roadmap_node_entity.dart';
 part 'domain/helpers/course_handoff_helper.dart';
 part 'domain/repositories/i_course_lesson_repository.dart';
 part 'domain/repositories/i_course_repository.dart';
+part 'domain/usecases/course/clear_recent_courses_usecase.dart';
 part 'domain/usecases/course/clear_search_history_usecase.dart';
 part 'domain/usecases/course/get_all_courses_usecase.dart';
 part 'domain/usecases/course/get_course_usecase.dart';
+part 'domain/usecases/course/get_recent_courses_usecase.dart';
 part 'domain/usecases/course/get_roadmap_usecase.dart';
 part 'domain/usecases/course/get_search_history_usecase.dart';
+part 'domain/usecases/course/record_course_view_usecase.dart';
 part 'domain/usecases/course/save_search_query_usecase.dart';
 part 'domain/usecases/course_lesson/get_all_course_lessons_usecase.dart';
 part 'domain/usecases/course_lesson/get_course_lesson_usecase.dart';

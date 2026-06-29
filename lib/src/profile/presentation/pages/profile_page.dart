@@ -49,10 +49,19 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: const Key('profile-page'),
-      backgroundColor: AppCustomColor.brandPrimary,
-      body: SafeBody(
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFBEBBF6), Color(0xFFDFDDFE)],
+          stops: [0.0, 1.0],
+        ),
+      ),
+      child: Scaffold(
+        key: const Key('profile-page'),
+        backgroundColor: Colors.transparent,
+        body: SafeBody(
         child: Column(
           children: [
             _ProfileHeader(),
@@ -117,7 +126,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       onRefresh: _onRefresh,
                       child: ListView(
                         controller: _scrollController,
-                        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 48.h),
+                        // Clear the floating nav bar so the last row isn't covered.
+                        // Larger than other pages: this page's content is short
+                        // and may not scroll, so the padding must keep the static
+                        // card clear of the nav overlay on its own.
+                        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 120.h),
                         physics: const BouncingScrollPhysics(),
                         children: [
                           UserAchievementList(),
@@ -130,13 +143,14 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// Purple header: avatar • name • email • settings icon • premium banner
+// Header: avatar • name • email • settings icon • premium banner
 // ---------------------------------------------------------------------------
 
 class _ProfileHeader extends StatelessWidget {
@@ -145,7 +159,7 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -172,8 +186,21 @@ class _ProfileIdentityRow extends StatelessWidget {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _ProfileAvatar(user: user),
-            16.horizontalSpace,
+            // Guests can tap their avatar to open the login screen.
+            if (user.anonymous)
+              Semantics(
+                button: true,
+                label: context.l10n.auth.authLogIn,
+                child: GestureDetector(
+                  key: const Key('profile-avatar-login-button'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => const RegisterRoute().push(context),
+                  child: _ProfileAvatar(user: user),
+                ),
+              )
+            else
+              _ProfileAvatar(user: user),
+            12.horizontalSpace,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,9 +210,9 @@ class _ProfileIdentityRow extends StatelessWidget {
                     _resolveName(user, context),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppStyle.textBold20.copyWith(
-                      color: AppCustomColor.backgroundWhite,
-                      height: 1.25,
+                    style: AppStyle.textBold24.copyWith(
+                      color: AppCustomColor.textPrimary,
+                      height: 1.5,
                     ),
                   ),
                   4.verticalSpace,
@@ -194,7 +221,7 @@ class _ProfileIdentityRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppStyle.text14.copyWith(
-                      color: AppCustomColor.backgroundWhite.withValues(alpha: 0.75),
+                      color: AppCustomColor.textSecondary,
                       height: 1.25,
                     ),
                   ),
@@ -220,7 +247,7 @@ class _ProfileIdentityRow extends StatelessWidget {
                     width: 24.w,
                     height: 24.w,
                     colorFilter: const ColorFilter.mode(
-                      AppCustomColor.backgroundWhite,
+                      AppCustomColor.textSecondary,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -255,7 +282,7 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double size = 60.w;
+    final double size = 48.w;
 
     if (user.avatar.trim().isNotEmpty) {
       return SizedBox(
@@ -318,7 +345,7 @@ class _PremiumBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            16.verticalSpace,
+            12.verticalSpace,
             Semantics(
           button: true,
           label: text.settingPremiumTitle,
@@ -331,10 +358,12 @@ class _PremiumBanner extends StatelessWidget {
             },
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
-                color: AppCustomColor.brandPrimary700,
-                borderRadius: BorderRadius.circular(12.r),
+                color: AppCustomColor.streakActive,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(16.r),
+                ),
               ),
               child: Row(
                 children: [
@@ -345,17 +374,16 @@ class _PremiumBanner extends StatelessWidget {
                       children: [
                         AppText(
                           text.settingPremiumTitle,
-                          style: AppStyle.textBold14.copyWith(
+                          style: AppStyle.textBold16.copyWith(
                             color: AppCustomColor.backgroundWhite,
-                            height: 1.25,
+                            height: 1.5,
                           ),
                         ),
-                        4.verticalSpace,
                         AppText(
                           text.settingPremiumSubtitle,
                           style: AppStyle.text12.copyWith(
-                            color: AppCustomColor.backgroundWhite.withValues(alpha: 0.75),
-                            height: 1.25,
+                            color: AppCustomColor.backgroundWhite.withValues(alpha: 0.8),
+                            height: 1.75,
                           ),
                         ),
                       ],

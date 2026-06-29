@@ -10,4 +10,8 @@ abstract class ICourseRepository {
   TaskEither<AppException, List<String>> getSearchHistory();
   TaskEither<AppException, Unit> saveSearchQuery(String query);
   TaskEither<AppException, Unit> clearSearchHistory();
+
+  TaskEither<AppException, List<CourseEntity>> getRecentCourses();
+  TaskEither<AppException, Unit> recordCourseView(String courseId);
+  TaskEither<AppException, Unit> clearRecentCourses();
 }

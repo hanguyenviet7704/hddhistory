@@ -12,16 +12,16 @@ class ScaffoldLayout extends StatefulWidget {
 }
 
 class _ScaffoldLayoutState extends State<ScaffoldLayout> {
-  // Maps visual tab index (0-4) to shell branch index (0-2).
+  // Maps visual tab index (0-4) to shell branch index (0-3).
   // Tab 0 Home   → branch 0
-  // Tab 1 Course → branch 1
-  // Tab 2 Explore→ branch 1 (same shell, future sub-route)
+  // Tab 1 Course → branch 1 (course roadmap)
+  // Tab 2 Explore→ branch 3 (CoursePage course grid)
   // Tab 3 Growth → branch 0 (same shell, future sub-route)
   // Tab 4 Profile→ branch 2
-  static const _tabToBranch = [0, 1, 1, 0, 2];
+  static const _tabToBranch = [0, 1, 3, 0, 2];
 
   // Default visual index for each branch when navigating from outside.
-  static const _branchToVisual = {0: 0, 1: 1, 2: 4};
+  static const _branchToVisual = {0: 0, 1: 1, 2: 4, 3: 2};
 
   int _visualIndex = 0;
 
@@ -40,6 +40,15 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
 
   @override
   Widget build(BuildContext context) {
+    // Keep the highlighted tab in sync with the branch the shell is actually
+    // showing. Navigations via go() (e.g. splash → CourseRoute for guests with
+    // no roadmap) switch the shell branch without going through _onTabTap,
+    // which would otherwise leave the wrong tab lit (e.g. "Home" highlighted
+    // while the Explore grid is on screen).
+    final activeBranch = widget.navigationShell.currentIndex;
+    if (_tabToBranch[_visualIndex] != activeBranch) {
+      _visualIndex = _branchToVisual[activeBranch] ?? _visualIndex;
+    }
     return BlocListener<PageCubit, PageState>(
       listenWhen: (prev, curr) => prev.currentIndex != curr.currentIndex,
       listener: (context, state) {
@@ -85,41 +94,35 @@ class _FloatingNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    // Solid white bar filling the full width to the bottom of the screen, with
+    // a lightly-rounded top edge + a thin top shadow as the only "border".
+    // No gradient shroud (no gray band).
     return Container(
-      // Gradient fade from transparent → white so content below scrolls
-      // beneath this bar without a hard clip edge.
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.transparent, Colors.white],
-          stops: [0.0, 0.35],
-        ),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        // Thin, crisp top edge only — no gray haze band.
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4.r,
+            offset: Offset(0, -1.h),
+          ),
+        ],
       ),
-      padding: EdgeInsets.fromLTRB(20.w, 32.h, 20.w, (16 + bottomInset).h),
+      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, (8 + bottomInset).h),
       child: Semantics(
         label: 'Bottom navigation',
         explicitChildNodes: true,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50.r),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-            child: Container(
-              height: 56.h,
-              padding: EdgeInsets.all(2.r),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(50.r),
-              ),
-              child: Row(
-                children: List.generate(
-                  5,
-                  (i) => _NavItem(
-                    index: i,
-                    selectedIndex: selectedIndex,
-                    onTap: onTap,
-                  ),
-                ),
+        child: SizedBox(
+          height: 56.h,
+          child: Row(
+            children: List.generate(
+              5,
+              (i) => _NavItem(
+                index: i,
+                selectedIndex: selectedIndex,
+                onTap: onTap,
               ),
             ),
           ),
@@ -190,9 +193,9 @@ class _NavItem extends StatelessWidget {
                 width: 24.w,
                 height: 24.w,
                 colorFilter: ColorFilter.mode(
-                  isActive
-                      ? _navColor
-                      : _navColor.withValues(alpha: 0.3),
+                  // Active = Text/Brand navy; inactive = Icon/Disable (#AAB8CD)
+                  // per Figma nav bar (node 10894-21520).
+                  isActive ? _navColor : AppCustomColor.textQuaternary,
                   BlendMode.srcIn,
                 ),
               ),

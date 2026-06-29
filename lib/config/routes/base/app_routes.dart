@@ -46,7 +46,7 @@ mixin RoutePath {
   static const String course = '/course';
   static const String courseRoadmap = '/course-roadmap';
   static const String changeCourse = 'change-course';
-  static const String skillsetCourses = '/skillset-courses/:skillsetId';
+  static const String skillsetCourses = 'skillset-courses/:skillsetId';
   static const String lessonList = 'lesson-list';
   static const String lessonExplainPopup = 'lesson-explain-popup';
   static const String courseLessonEmptyNotiPopup = 'course-lesson-empty-noti-popup';

@@ -26,37 +26,47 @@ class LessonKeypointCard extends StatelessWidget {
       },
       builder: (context, isLastInProgress) {
         final isActive = isLastInProgress;
+        // Locked appearance mirrors the timeline indicator: a lesson that isn't
+        // the active one and hasn't been started yet (or is paywall-locked)
+        // shows the dimmed/grayscale "locked" card.
+        final isLockedVisual = !isActive &&
+            (isLocked || lesson.roadmapProgress == ProcessEnum.notStarted);
         return Semantics(
           button: true,
           label: _keypoint.title.text,
           child: GestureDetector(
             onTap: onTap,
             child: Container(
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
-                color: AppCustomColor.backgroundWhite,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: isActive
-                      ? AppCustomColor.brandPrimary
-                      : AppCustomColor.borderDefault,
-                  width: isActive ? 2.w : 1.w,
-                ),
+                color: isLockedVisual
+                    ? AppCustomColor.backgroundGray
+                    : AppCustomColor.backgroundWhite,
+                borderRadius: BorderRadius.circular(16.r),
+                border: isLockedVisual
+                    ? null
+                    : Border.all(
+                        color: isActive
+                            ? AppCustomColor.brandPrimary
+                            : AppCustomColor.neutral300,
+                        width: isActive ? 2.w : 1.w,
+                      ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _RoadmapCardThumbnail(
-                      imageUrl: _thumbnailUrl,
-                      isLocked: isLocked,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 12.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _RoadmapCardThumbnail(
+                    imageUrl: _thumbnailUrl,
+                    isLocked: isLockedVisual,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(12.w),
                       child: AppText(
                         _keypoint.title.text,
-                        style: AppStyle.textBold16.copyWith(
-                          color: isLocked
+                        style: AppStyle.text14.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isLockedVisual
                               ? AppCustomColor.textTertiary
                               : AppCustomColor.textPrimary,
                           height: 1.4,
@@ -65,8 +75,8 @@ class LessonKeypointCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

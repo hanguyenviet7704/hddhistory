@@ -203,29 +203,43 @@ class _HomeInlineQuoteCard extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                // Quote mark — top-right, 30% opacity, size 28, rotated 180°
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Transform.rotate(
-                    angle: 3.14159, // 180° in radians
-                    child: Icon(
-                      Icons.format_quote_rounded,
-                      size: 28.w,
-                      color: AppCustomColor.textPrimary.withValues(alpha: 0.30),
+                // Quote text — Medium (w500), centered (Figma node 10725:31459).
+                // Inset horizontally so wrapped lines never run under the
+                // top-right quote mark.
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 28.w),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: AppText(
+                      quoteText,
+                      textAlign: TextAlign.center,
+                      style: AppStyle.text13.copyWith(
+                        color: AppCustomColor.textPrimary,
+                        fontWeight: FontWeight.w500,
+                        height: 1.75,
+                      ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
-                // Quote text — fully centered, icon is absolutely positioned
-                AppText(
-                  quoteText,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textPrimary,
-                    height: 1.75,
+                // Quote mark — hugs the top-right corner (Figma: 28px, 30%
+                // opacity, rotated 180°, ~6px from the card's top/right edge).
+                // Painted last so it sits above the text, never clipped.
+                Positioned(
+                  top: -10.h,
+                  right: -2.w,
+                  child: Opacity(
+                    opacity: 0.30,
+                    child: Transform.rotate(
+                      angle: 3.14159, // 180° in radians
+                      child: Icon(
+                        Icons.format_quote_rounded,
+                        size: 28.w,
+                        color: AppCustomColor.textPrimary,
+                      ),
+                    ),
                   ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

@@ -20,42 +20,26 @@ class UserAchievementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (totalCourses == 0) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
-      margin: EdgeInsets.only(bottom: 16.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppCustomColor.backgroundGray, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppCustomColor.borderDefault,
-            blurRadius: 4.r,
-            offset: Offset.zero,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _UserAchievementHeader(
+          title: achievement.skillsetTitle.text,
+          subtitle: subtitle(context),
+        ),
+        12.verticalSpace,
+        _UserAchievementCourseRow(
+          courses: achievement.courses,
+          skillsetId: achievement.skillsetId,
+          skillsetName: achievement.skillsetTitle.en.isNotEmpty ? achievement.skillsetTitle.en : achievement.skillsetTitle.text,
+          itemTitleStyle: AppStyle.text12.copyWith(
+            color: AppCustomColor.textPrimary,
+            fontWeight: FontWeight.w500,
+            height: 1.75,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _UserAchievementHeader(
-            title: achievement.skillsetTitle.text,
-            subtitle: subtitle(context),
-          ),
-          12.verticalSpace,
-          _UserAchievementCourseRow(
-            courses: achievement.courses,
-            skillsetId: achievement.skillsetId,
-            skillsetName: achievement.skillsetTitle.en.isNotEmpty ? achievement.skillsetTitle.en : achievement.skillsetTitle.text,
-            itemTitleStyle: AppStyle.text10.copyWith(
-              color: AppCustomColor.textPrimary,
-              fontWeight: FontWeight.w600,
-              height: 1.75,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -71,22 +55,25 @@ class _UserAchievementHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        AppText(
-          title,
-          style: AppStyle.text14.copyWith(
-            color: AppCustomColor.textPrimary,
-            fontWeight: FontWeight.w700,
-            height: 1.75,
+        Expanded(
+          child: AppText(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyle.textBold16.copyWith(
+              color: AppCustomColor.textPrimary,
+              height: 1.5,
+            ),
           ),
         ),
         AppText(
           subtitle,
-          style: AppStyle.text10.copyWith(
+          style: AppStyle.text12.copyWith(
             color: AppCustomColor.textTertiary,
-            fontWeight: FontWeight.w600,
             height: 1.75,
           ),
         ),
@@ -174,12 +161,13 @@ class _UserAchievementCourseRowBodyState extends State<_UserAchievementCourseRow
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.only(right: 20.w),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(
             widget.courses.length,
             (index) => Padding(
-              padding: EdgeInsets.only(right: index == widget.courses.length - 1 ? 0 : 24.w),
+              padding: EdgeInsets.only(right: index == widget.courses.length - 1 ? 0 : 8.w),
               child: UserAchievementCourseItem(
                 course: widget.courses[index],
                 titleStyle: widget.itemTitleStyle,

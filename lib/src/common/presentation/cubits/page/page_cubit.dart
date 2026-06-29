@@ -28,6 +28,7 @@ class PageCubit extends Cubit<PageState> {
     if (index == state.currentIndex && index == 0 && state.currentRouteName == RouteNamed.home) return;
     if (index == state.currentIndex && index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
     if (index == state.currentIndex && index == 2 && state.currentRouteName == RouteNamed.profile) return;
+    if (index == state.currentIndex && index == 3 && state.currentRouteName == RouteNamed.course) return;
 
     final tabType = _tabTypeForIndex(index);
     if (tabType != null) {
@@ -44,6 +45,12 @@ class PageCubit extends Cubit<PageState> {
         break;
       case 2:
         setCurrentRouteName(RouteNamed.profile);
+        break;
+      case 3:
+        AppDI.injector.get<CourseCubit>()
+          ..setAllCourseSource('nav_explore')
+          ..resetExploreToAll();
+        setCurrentRouteName(RouteNamed.course);
         break;
     }
 
@@ -64,7 +71,7 @@ class PageCubit extends Cubit<PageState> {
   }
 
   int? _normalizeTabIndex(int index) {
-    if (index < 0 || index > 2) return null;
+    if (index < 0 || index > 3) return null;
     return index;
   }
 
@@ -72,11 +79,12 @@ class PageCubit extends Cubit<PageState> {
     switch (routeName) {
       case RouteNamed.home:
         return 0;
-      case RouteNamed.course:
       case RouteNamed.courseRoadmap:
         return 1;
       case RouteNamed.profile:
         return 2;
+      case RouteNamed.course:
+        return 3;
       default:
         return null;
     }
@@ -90,6 +98,8 @@ class PageCubit extends Cubit<PageState> {
         return 'progress';
       case 2:
         return 'setting';
+      case 3:
+        return 'explore';
       default:
         return null;
     }

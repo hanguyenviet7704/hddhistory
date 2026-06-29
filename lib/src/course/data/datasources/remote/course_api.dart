@@ -25,4 +25,13 @@ abstract class CourseApi {
 
   @DELETE(AppEndpoint.coursesSearchHistory)
   Future<void> clearSearchHistory();
+
+  @GET(AppEndpoint.coursesRecentlyViewed)
+  Future<BaseResponse<List<CourseModel>>> getRecentlyViewedCourses();
+
+  @POST(AppEndpoint.coursesRecentlyViewed)
+  Future<void> recordCourseView(@Body() Map<String, dynamic> body);
+
+  @DELETE(AppEndpoint.coursesRecentlyViewed)
+  Future<void> clearRecentlyViewed();
 }

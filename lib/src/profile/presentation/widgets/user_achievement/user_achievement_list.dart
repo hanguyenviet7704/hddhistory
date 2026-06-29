@@ -7,31 +7,39 @@ class UserAchievementList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          context.l10n.setting.achievementsTitle,
-          style: AppStyle.text16.copyWith(
-            color: AppCustomColor.textSecondary,
-            fontWeight: FontWeight.w700,
-            height: 1.5,
-          ),
-        ),
-        8.verticalSpace,
-        BlocSelector<AchievenmentProgressCubit, AchievenmentProgressState, List<AchievenmentResponseEntity>>(
-          selector: (state) => state.achievenments,
-          builder: (context, achievenments) {
-            if (achievenments.isEmpty) return const SizedBox.shrink();
-            return Column(
-              children: List.generate(
-                achievenments.length,
-                (index) => UserAchievementCard(achievement: achievenments[index]),
+    return BlocSelector<AchievenmentProgressCubit, AchievenmentProgressState, List<AchievenmentResponseEntity>>(
+      selector: (state) => state.achievenments,
+      builder: (context, achievenments) {
+        final visible = achievenments.where((a) => a.totalCourse > 0).toList();
+        if (visible.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundWhite,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppCustomColor.backgroundGray, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: AppCustomColor.borderDefault,
+                blurRadius: 4.r,
+                offset: Offset.zero,
               ),
-            );
-          },
-        ),
-      ],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int i = 0; i < visible.length; i++) ...[
+                if (i > 0) 32.verticalSpace,
+                UserAchievementCard(achievement: visible[i]),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }

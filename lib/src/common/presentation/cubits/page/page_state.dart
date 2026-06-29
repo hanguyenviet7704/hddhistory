@@ -20,6 +20,7 @@ extension PageStateX on PageState {
     return [
       RouteNamed.shellRoute,
       RouteNamed.home,
+      RouteNamed.course,
       RouteNamed.courseRoadmap,
       RouteNamed.profile,
     ];
