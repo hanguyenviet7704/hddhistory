@@ -11,10 +11,13 @@ class CourseSearchView extends StatelessWidget {
       _showComingSoonSheet(context, course);
       return;
     }
-    context.read<PageCubit>().setCurrentIndex(1);
     context.read<CourseRoadmapCubit>().setRoadmapSource('search');
     context.read<HomeCubit>().selectCourseFromCourseId(course.id);
     CourseRoadmapRoute().go(context);
+    // Set the route name explicitly (not just the index): .go() to the roadmap
+    // branch root doesn't re-fire the observer, so otherwise currentRouteName
+    // stays non-primary and the bottom nav (the only exit) stays hidden.
+    context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 
   @override

@@ -61,15 +61,18 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                   AppText(
                     courseName,
                     textWidthBasis: TextWidthBasis.longestLine,
+                    // Heading/H3/Bold — Mulish Bold 20 / 1.5 (Figma 10735:49368).
                     style: AppStyle.text20.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: AppCustomColor.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.fade,
                   ),
-                  8.verticalSpace,
+                  // Title → level/progress: Figma title-block gap (12) + the
+                  // progress row's own top padding (8) = 20.
+                  20.verticalSpace,
                 ],
               );
             },

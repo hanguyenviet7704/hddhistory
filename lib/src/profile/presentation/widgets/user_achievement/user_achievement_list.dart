@@ -16,17 +16,11 @@ class UserAchievementList extends StatelessWidget {
         return Container(
           width: double.infinity,
           padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+          // Sections sit directly on the white sheet (Figma 10736:51182) — no
+          // outlined/shadowed card. Keep only the white fill + rounded top.
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: AppCustomColor.backgroundGray, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: AppCustomColor.borderDefault,
-                blurRadius: 4.r,
-                offset: Offset.zero,
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

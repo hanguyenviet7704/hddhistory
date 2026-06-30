@@ -129,7 +129,9 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
                       ),
                       4.horizontalSpace,
                       AppText(
-                        '${progress.toInt()}% complete',
+                        context.l10n.allcourse.progressPercent(
+                          percent: progress.toInt(),
+                        ),
                         style: AppStyle.textBold12.copyWith(
                           color: AppCustomColor.textPrimary,
                         ),
