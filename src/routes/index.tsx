@@ -37,6 +37,7 @@ import VideoDetail from "../pages/video/VideoDetail";
 import DriveUploadPage from "../pages/drive-upload/DriveUploadPage";
 import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
 import ReportList from "../pages/reports/ReportList";
+import ThumbnailsPage from "../pages/thumbnails/ThumbnailsPage";
 
 export default function AppRouter() {
   return (
@@ -102,6 +103,8 @@ export default function AppRouter() {
               />
 
               <Route path="reports" element={<ReportList />} />
+
+              <Route path="thumbnails" element={<ThumbnailsPage />} />
 
               <Route path="settings" element={<SettingsPage />} />
 
