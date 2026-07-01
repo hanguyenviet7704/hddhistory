@@ -25,6 +25,8 @@ export interface ICourse {
   publishAt?: string | null;
   /** Days the "New course" badge stays after the course publishes. */
   newDurationDays?: number | null;
+  /** Manual override: force the "New course" badge regardless of publish date. */
+  isNew?: boolean;
 }
 
 export type CoursePayload = Omit<ICourse, "_id">;
