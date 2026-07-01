@@ -108,6 +108,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final ProgressCubit _progressCubit;
   final PageCubit _pageCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
+
+  /// In-flight (or completed) home-dataset prewarm for the guest course-entry
+  /// flow. Started at splash warm-up so the list-course/progress/user calls
+  /// overlap with the DataCollect animations + the notification gate, instead
+  /// of blocking navigation at the end. Reset when a load comes back not-ready
+  /// so a later bootstrap can retry.
+  Future<void>? _courseEntryHomeInitFuture;
   final LocaleCubit _localeCubit;
   final IapCubit _iapCubit;
 
@@ -244,12 +251,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   Future<void> warmUpCourseEntrySession() async {
     try {
-      if (hasActiveAnonymousSession) return;
-      final payload = await _buildAnonymousDeviceLoginPayload();
-      await _authenticateAnonymousSession(payload);
+      if (!hasActiveAnonymousSession) {
+        final payload = await _buildAnonymousDeviceLoginPayload();
+        final success = await _authenticateAnonymousSession(payload);
+        if (!success) return;
+      }
+      // Session ready → prewarm the home dataset so it's loaded by the time the
+      // user finishes the DataCollect / notification gate and bootstrap runs.
+      unawaited(_prewarmCourseEntryHomeData());
     } catch (error) {
       LogDev.warning('[AuthBloc] warmUpCourseEntrySession failed: $error');
     }
+  }
+
+  /// Loads the home dataset at most once per warm-up, reusing the in-flight
+  /// future so bootstrap awaits the SAME fetch instead of a fresh one.
+  Future<void> _prewarmCourseEntryHomeData() {
+    return _courseEntryHomeInitFuture ??= _homeCubit.initializeData(isInit: true);
   }
 
   Future<CourseEntryBootstrapResult> bootstrapCourseEntrySession() async {
@@ -272,13 +290,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<bool> _initializeCourseEntryData() async {
-    await _homeCubit.initializeData(isInit: true);
+    // Await the prewarmed load (started at splash warm-up) — near-zero when it
+    // already finished, instead of a cold fetch on the critical path.
+    await _prewarmCourseEntryHomeData();
     final isReady = isCourseEntryDataReady(
       homeState: _homeCubit.state,
       progressState: _progressCubit.state,
       profileState: _profileCubit.state,
     );
     if (!isReady) {
+      // Drop the cached (incomplete) load so the next bootstrap re-fetches.
+      _courseEntryHomeInitFuture = null;
       LogDev.warning('[AuthBloc] Course entry data bootstrap incomplete');
       return false;
     }

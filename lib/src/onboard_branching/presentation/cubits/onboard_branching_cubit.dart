@@ -13,6 +13,13 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
   Future<bool>? _anonymousLoginFuture;
   int _flowSessionVersion = 0;
 
+  /// In-flight (or completed) home-dataset prewarm. Started once the
+  /// recommendation stage is reached so the list-course/skillset + progress +
+  /// user calls overlap with the loading animation and the time the user spends
+  /// reading the recommendation — instead of the "Try Now" handoff paying for a
+  /// cold fetch on the critical path. See [_prewarmHomeData].
+  Future<void>? _homeInitFuture;
+
   OnboardBranchingCubit(this._getUseCase) : super(OnboardBranchingState.initial());
 
   Future<void> initializeFlow({required String userName}) async {
@@ -20,6 +27,7 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
     final hasCachedScenario = cachedScenario.scenes.isNotEmpty;
     _flowSessionVersion += 1;
     _anonymousLoginFuture = null;
+    _homeInitFuture = null;
 
     emit(
       OnboardBranchingState.initial().copyWith(
@@ -178,6 +186,30 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
     emit(state.copyWith(stage: OnboardBranchingStage.recommendation));
     AppService.instance.appTrackingService.trackEvent(TrackingKey.obBranchingP7View);
     unawaited(_initializeRecommendationData(sessionVersion: _flowSessionVersion));
+    // Prewarm the home dataset now (in parallel with the recommendation fetch)
+    // so it is ready — or nearly ready — by the time the user taps "Try Now".
+    unawaited(_prewarmHomeData());
+  }
+
+  /// Loads the home dataset (skillsets/list-course, progress, user, quote,
+  /// suggestions) at most once per flow, after the anonymous session is ready.
+  /// Returns the shared in-flight future so the handoff can await the SAME
+  /// fetch instead of triggering a second one.
+  Future<void> _prewarmHomeData() {
+    return _homeInitFuture ??= _runHomePrewarm();
+  }
+
+  Future<void> _runHomePrewarm() async {
+    // initializeData hits authenticated endpoints (user progress, profile), so
+    // the anonymous session must exist first. Login was already kicked off at
+    // continueFromWelcome, so this usually resolves immediately.
+    final isAuthenticated = await _ensureAnonymousSessionForTryNow();
+    if (!isAuthenticated) {
+      // Let a later Try Now retry the prewarm rather than caching a failure.
+      _homeInitFuture = null;
+      return;
+    }
+    await AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
   }
 
   Future<OnboardBranchingTryNowAction> onTryNowPressed() async {
@@ -197,31 +229,43 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
 
     final recommendedCourseId = state.recommendedCourseId.trim();
     if (recommendedCourseId.isEmpty) {
+      // No recommended course → open the catalog, but make sure the home data
+      // is loaded first so CoursePage doesn't flash its empty state.
+      await _prewarmHomeData();
       _completeOnboardingTransition();
       emit(state.copyWith(isTryNowLoading: false));
       return OnboardBranchingTryNowAction.goCoursePage;
     }
 
-    final getCourseResult = await AppDI.injector.get<GetCourseUseCase>()(recommendedCourseId).run();
-    final action = await getCourseResult.fold(
-      (failure) async {
-        _completeOnboardingTransition();
-        return OnboardBranchingTryNowAction.goCoursePage;
-      },
-      (course) async {
-        final canOpenRoadmap = await _prepareCourseHandoff(course);
-        _completeOnboardingTransition();
-        return canOpenRoadmap ? OnboardBranchingTryNowAction.goCourseRoadmap : OnboardBranchingTryNowAction.goCoursePage;
-      },
-    );
+    // Reuse the course already fetched on the recommendation screen; only hit
+    // the API when it hasn't arrived yet (very fast tap / slow network).
+    CourseEntity? course =
+        state.recommendedCourse.id.trim().isNotEmpty ? state.recommendedCourse : null;
+    if (course == null) {
+      final getCourseResult = await AppDI.injector.get<GetCourseUseCase>()(recommendedCourseId).run();
+      course = getCourseResult.fold((_) => null, (c) => c);
+    }
 
+    if (course == null) {
+      await _prewarmHomeData();
+      _completeOnboardingTransition();
+      emit(state.copyWith(isTryNowLoading: false));
+      return OnboardBranchingTryNowAction.goCoursePage;
+    }
+
+    final canOpenRoadmap = await _prepareCourseHandoff(course);
+    _completeOnboardingTransition();
     emit(state.copyWith(isTryNowLoading: false));
-    return action;
+    return canOpenRoadmap
+        ? OnboardBranchingTryNowAction.goCourseRoadmap
+        : OnboardBranchingTryNowAction.goCoursePage;
   }
 
   void onChooseMyselfPressed() {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.obBranchingChooseMyselfClick);
-    unawaited(const CourseHandoffHelper().prepareCourseCatalog());
+    // Reuse the prewarmed home load (started at the recommendation stage) rather
+    // than kicking off a second catalog fetch.
+    unawaited(_prewarmHomeData());
     _completeOnboardingTransition();
   }
 
@@ -411,7 +455,13 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
   }
 
   Future<bool> _prepareCourseHandoff(CourseEntity course) async {
-    final intent = await const CourseHandoffHelper().prepareRecommendedCourse(course: course);
+    final intent = await const CourseHandoffHelper().prepareRecommendedCourse(
+      course: course,
+      // Await the prewarmed home load (already in-flight since the recommendation
+      // stage) instead of starting a fresh one — no duplicate fetch, and the
+      // wait is near-zero when the prewarm has already completed.
+      initializeHomeData: _prewarmHomeData,
+    );
     return intent == CourseHandoffRouteIntent.courseRoadmap;
   }
 

@@ -4,6 +4,24 @@ part of '../../../course.dart';
 /// A "View more" button is shown when a skillset has more courses than this.
 const int _kMaxCoursesPerSection = 5;
 
+/// Course-card thumbnail height (square-ish hero image).
+double get _kCourseThumbHeight => 160.w;
+
+/// Title always reserves exactly two lines (Body/Default/Bold 14 × line-height
+/// 1.4) so every card is the same height — rows align and the gap between rows
+/// is uniform regardless of title length.
+double get _kCourseTitleHeight => (14 * 1.4 * 2).sp;
+
+/// Exact height of a [_CourseGridCard] = thumbnail + 12 gap + 2-line title.
+/// Used as the grid cell extent so there is NO leftover slack and the visible
+/// row gap equals exactly the configured spacing (Figma Spacing/600 = 24).
+double get _kCourseCardExtent =>
+    _kCourseThumbHeight + 12.h + _kCourseTitleHeight;
+
+/// Inter-row / inter-column gaps for the course grids (Figma redline).
+double get _kCourseGridRowGap => 24.h; // Spacing/600 (vertical)
+double get _kCourseGridColGap => 20.w; // horizontal rhythm (matches page margin)
+
 /// Resolves the lesson-progress numbers for [course].
 ///
 /// The skillset list endpoint (HomeCubit.skillsets) returns courses WITHOUT
@@ -151,9 +169,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
             padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 16.w,
-              mainAxisSpacing: 24.h,
-              childAspectRatio: 0.75,
+              crossAxisSpacing: _kCourseGridColGap,
+              mainAxisSpacing: _kCourseGridRowGap,
+              // Exact card height (no slack) so the row gap is exactly 24.
+              mainAxisExtent: _kCourseCardExtent,
             ),
             itemCount: myCourses.length,
             itemBuilder: (context, index) {
@@ -191,7 +210,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
               itemScrollController: _scrollController,
               itemPositionsListener: _positionsListener,
               initialScrollIndex: initialIndex,
-              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 80.h),
+              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
               itemCount: skillsets.length,
               itemBuilder: (context, index) {
                 final skillset = skillsets[index];
@@ -259,7 +278,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       ..selectSkillset(skillset)
       ..selectCourseIndex(index);
     CourseRoadmapRoute().go(context);
-    context.read<PageCubit>().setCurrentIndex(1);
+    // Set the route name explicitly (not just the index): .go() to the roadmap
+    // branch root doesn't re-fire the observer, so otherwise currentRouteName
+    // stays non-primary and the bottom nav (the only exit) stays hidden.
+    context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 
   /// Handle a tap from the "My courses" grid. Resolves the owning skillset so
@@ -284,12 +306,12 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     if (context.read<HomeCubit>().trySelectCourseFromCourseId(course.id)) {
       context.read<CourseRoadmapCubit>().setRoadmapSource('my_courses');
       CourseRoadmapRoute().go(context);
-      context.read<PageCubit>().setCurrentIndex(1);
+      context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
     }
   }
 
   _CourseProgressInfo _myCourseProgress(CourseEntity course) {
-    if (course.numberOfLessonPassed <= 0) return const _CourseProgressInfo();
+    // Every "my course" is enrolled — always show its %, even at 0%.
     return _CourseProgressInfo(
       showProgress: true,
       completedLessons: course.numberOfLessonPassed,
@@ -308,7 +330,7 @@ void _showComingSoonSheet(BuildContext context, CourseEntity course) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
     ),
-    builder: (_) => SafeArea(
+    builder: (sheetContext) => SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
         child: Column(
@@ -329,7 +351,10 @@ void _showComingSoonSheet(BuildContext context, CourseEntity course) {
             24.verticalSpace,
             AppButton.primary(
               fullWidthBtn: true,
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              // Pop via the sheet's own context so we close exactly this
+              // bottom-sheet route — using rootNavigator popped the wrong
+              // navigator (the shell/page beneath), blanking the screen.
+              onPressed: () => Navigator.of(sheetContext).pop(),
               child: AppText(
                 l10n.allcourse.comingSoonGotIt,
                 style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
@@ -389,26 +414,46 @@ class _CourseSection extends StatelessWidget {
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
         12.verticalSpace,
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 24.h,
-          childAspectRatio: 0.75,
-          children: gridChildren,
-        ),
+        // Manual 2-column grid (not GridView.count): cells size to their own
+        // height so there is no aspect-ratio slack — the vertical gap is exactly
+        // _kCourseGridRowGap (Figma Spacing/600 = 24).
+        _buildGrid(gridChildren),
         if (showBottomSpacing) 24.verticalSpace,
       ],
     );
+  }
+
+  /// Lays [cells] out in a 2-column grid using plain Rows so each cell keeps its
+  /// natural height. Columns are [_kCourseGridColGap] apart, rows
+  /// [_kCourseGridRowGap] apart — no GridView aspect-ratio slack.
+  Widget _buildGrid(List<Widget> cells) {
+    final rows = <Widget>[];
+    for (var i = 0; i < cells.length; i += 2) {
+      if (i > 0) rows.add(SizedBox(height: _kCourseGridRowGap));
+      rows.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: cells[i]),
+            SizedBox(width: _kCourseGridColGap),
+            Expanded(
+              child: i + 1 < cells.length ? cells[i + 1] : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      );
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
   }
 
   _CourseProgressInfo _progressInfoFor(
     CourseEntity course,
     Map<String, CourseEntity> progressById,
   ) {
+    // Only enrolled courses (present in the user's progress list) show a
+    // percentage — even at 0% — matching Home. Others show the lesson count.
+    if (!progressById.containsKey(course.id)) return const _CourseProgressInfo();
     final p = resolveCourseProgress(course, progressById);
-    if (p.passed <= 0) return const _CourseProgressInfo();
     return _CourseProgressInfo(
       showProgress: true,
       completedLessons: p.passed,
@@ -431,43 +476,55 @@ class _ViewMoreGridCard extends StatelessWidget {
       label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
       child: GestureDetector(
         onTap: () => SkillsetCoursesRoute(skillsetId: skillset.id).push(context),
-        child: Container(
-          // Figma node 10907:22199 — soft brand card: background/brand-2
-          // (#E0DEFD), 2px border/brand (#C7C5FA), 12px radius.
-          decoration: BoxDecoration(
-            border: Border.all(color: AppCustomColor.brandPrimary200, width: 2),
-            borderRadius: BorderRadius.circular(12.r),
-            color: const Color(0xFFE0DEFD),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Both lines share Body/Small/SemiB — Mulish SemiBold 12/1.75,
-              // brand/primary-text (#362F82), centered.
-              AppText(
-                context.l10n.allcourse.viewMore,
-                style: AppStyle.text12.copyWith(
-                  fontWeight: FontWeight.w600,
-                  height: 1.75,
-                  color: AppCustomColor.brandPrimary700,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
+        // Align the card to the top of the cell and size it to the same height
+        // as a course thumbnail (160.w), so it sits as a square card in the
+        // thumbnail row instead of stretching down the whole cell. Matches the
+        // Figma layout (node 10907:22199).
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: 160.w,
+              alignment: Alignment.center,
+              // Figma node 10907:22199 — soft brand card: background/brand-2
+              // (#E0DEFD), 2px border/brand (#C7C5FA), 12px radius.
+              decoration: BoxDecoration(
+                border: Border.all(color: AppCustomColor.brandPrimary200, width: 2),
+                borderRadius: BorderRadius.circular(12.r),
+                color: const Color(0xFFE0DEFD),
               ),
-              AppText(
-                skillset.title.text,
-                style: AppStyle.text12.copyWith(
-                  fontWeight: FontWeight.w600,
-                  height: 1.75,
-                  color: AppCustomColor.brandPrimary700,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Both lines share Body/Small/SemiB — Mulish SemiBold 12/1.75,
+                  // brand/primary-text (#362F82), centered.
+                  AppText(
+                    context.l10n.allcourse.viewMore,
+                    style: AppStyle.text12.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.75,
+                      color: AppCustomColor.brandPrimary700,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                  ),
+                  AppText(
+                    skillset.title.text,
+                    style: AppStyle.text12.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.75,
+                      color: AppCustomColor.brandPrimary700,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -506,9 +563,11 @@ class _CourseGridCard extends StatelessWidget {
               height: 160.w,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12.r),
+                // Light hairline border so each card reads as separated from the
+                // background, matching the design; brand border when selected.
                 border: isSelected
                     ? Border.all(color: AppCustomColor.brandPrimary, width: 2)
-                    : null,
+                    : Border.all(color: AppCustomColor.borderSecondary, width: 1),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x14000000),
@@ -540,14 +599,19 @@ class _CourseGridCard extends StatelessWidget {
               ),
             ),
             12.verticalSpace,
-            AppText(
-              course.title.text,
-              style: AppStyle.textBold14.copyWith(
-                color: AppCustomColor.textPrimary,
-                height: 1.4,
+            // Fixed 2-line height so every card is the same height.
+            SizedBox(
+              height: _kCourseTitleHeight,
+              width: double.infinity,
+              child: AppText(
+                course.title.text,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.textPrimary,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -572,6 +636,7 @@ class _GridCourseBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // State 4 — Coming soon (filled purple clock + brand text).
+    // A coming-soon course is never enrolled, so it wins over everything.
     if (course.isComingSoonNow) {
       return _WhiteGridBadge(
         icon: Icon(Icons.access_time_filled_rounded, size: 20.w, color: AppCustomColor.brandPrimary),
@@ -580,29 +645,26 @@ class _GridCourseBadge extends StatelessWidget {
       );
     }
 
-    // New course (green sparkle + green text).
-    if (course.isNewNow) {
-      return _WhiteGridBadge(
-        icon: Icon(Icons.auto_awesome_rounded, size: 20.w, color: _kBadgeGreen),
-        label: context.l10n.allcourse.newCourseLabel,
-        textColor: _kBadgeGreen,
-      );
-    }
-
     final completed = completedLessons ?? 0;
     final total = totalLessons ?? course.numberOfLesson;
+    // A non-null [completedLessons] means the user is enrolled (the course is in
+    // their progress list). Enrolled courses always show their saved progress —
+    // even at 0% — matching Home's "Tiếp tục khoá học" card. Progress takes
+    // priority over the "New course" badge so it never hides real progress.
+    final isEnrolled = completedLessons != null && total > 0;
 
-    // State 5 — Complete (green check circle + green text).
-    if (total > 0 && completed >= total) {
-      return _WhiteGridBadge(
-        icon: Icon(Icons.check_circle_rounded, size: 20.w, color: _kBadgeGreen),
-        label: context.l10n.allcourse.progressCompleted,
-        textColor: _kBadgeGreen,
-      );
-    }
+    if (isEnrolled) {
+      // State 5 — Complete (green check circle + green text).
+      if (completed >= total) {
+        return _WhiteGridBadge(
+          icon: Icon(Icons.check_circle_rounded, size: 20.w, color: _kBadgeGreen),
+          label: context.l10n.allcourse.progressCompleted,
+          textColor: _kBadgeGreen,
+        );
+      }
 
-    // In progress — "{n}% complete" (ring + brand text).
-    if (completed > 0 && total > 0) {
+      // In progress — "{n}% complete" (ring + brand text). 0% shows an empty
+      // ring, same as Home.
       final pct = (completed / total * 100).round();
       return _WhiteGridBadge(
         icon: SizedBox(
@@ -620,17 +682,38 @@ class _GridCourseBadge extends StatelessWidget {
       );
     }
 
-    // Not started — lesson count (book + tertiary text).
+    // New course (green sparkle + green text) — only for not-enrolled courses.
+    if (course.isNewNow) {
+      return _WhiteGridBadge(
+        icon: Icon(Icons.auto_awesome_rounded, size: 20.w, color: _kBadgeGreen),
+        label: context.l10n.allcourse.newCourseLabel,
+        textColor: _kBadgeGreen,
+      );
+    }
+
+    // Not started — lesson count (solid book + text/tertiary #5F6F86).
+    // The Figma icon (node 10840-20060) is a filled book (#95A7C2) with a
+    // white line; rendered with its baked colors (no srcIn) so the line shows.
     if (course.numberOfLesson > 0) {
       return _WhiteGridBadge(
-        icon: SvgPicture.asset(
-          AppAsset.svg.app.icBook,
+        // Figma node 10840-20060: the book glyph is ~13×14 centred inside a
+        // 20px icon slot. The solid book SVG fills its viewBox edge-to-edge (no
+        // built-in padding like Material icons), so render it at 14px inside a
+        // 20px box — keeps the badge height aligned with the other states while
+        // the visible book matches the design.
+        icon: SizedBox(
           width: 20.w,
           height: 20.w,
-          colorFilter: const ColorFilter.mode(AppCustomColor.textTertiary, BlendMode.srcIn),
+          child: Center(
+            child: SvgPicture.asset(
+              AppAsset.svg.app.icBookSolid,
+              width: 14.w,
+              height: 14.w,
+            ),
+          ),
         ),
         label: context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
-        textColor: AppCustomColor.textTertiary,
+        textColor: AppCustomColor.streakTextMuted,
       );
     }
 

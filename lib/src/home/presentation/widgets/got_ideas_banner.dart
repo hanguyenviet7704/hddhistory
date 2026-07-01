@@ -32,21 +32,20 @@ class GotIdeasBanner extends StatelessWidget {
               8.horizontalSpace,
               // Title + subtitle sit inline (Figma node 10725:31678).
               Expanded(
+                // The title sizes to its content; the subtitle takes the rest
+                // of the row so it shows in full (no "…" truncation).
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Flexible(
-                      child: AppText(
-                        context.l10n.home.inAppSurveyEntryTitle,
-                        style: AppStyle.textBold16.copyWith(
-                          color: AppCustomColor.backgroundWhite,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    AppText(
+                      context.l10n.home.inAppSurveyEntryTitle,
+                      style: AppStyle.textBold16.copyWith(
+                        color: AppCustomColor.backgroundWhite,
                       ),
+                      maxLines: 1,
                     ),
                     4.horizontalSpace,
-                    Flexible(
+                    Expanded(
                       child: AppText(
                         context.l10n.home.inAppSurveyEntrySubtitle,
                         style: AppStyle.text12.copyWith(

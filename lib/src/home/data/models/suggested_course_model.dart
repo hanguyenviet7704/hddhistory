@@ -9,6 +9,9 @@ abstract class SuggestedCourseModel with _$SuggestedCourseModel {
     @Default('') String image,
     @Default('') String skillsetId,
     @Default(0) int numberOfLesson,
+    @Default(false) bool isNew,
+    DateTime? publishAt,
+    int? newDurationDays,
   }) = _SuggestedCourseModel;
 
   factory SuggestedCourseModel.fromJson(Map<String, dynamic> json) => _$SuggestedCourseModelFromJson(json);
@@ -22,6 +25,9 @@ extension SuggestedCourseModelX on SuggestedCourseModel {
         image: image,
         skillsetId: skillsetId,
         numberOfLesson: numberOfLesson,
+        isNew: isNew,
+        publishAt: publishAt,
+        newDurationDays: newDurationDays,
       );
 }
 

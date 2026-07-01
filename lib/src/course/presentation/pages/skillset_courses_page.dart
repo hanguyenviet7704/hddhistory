@@ -56,9 +56,10 @@ class SkillsetCoursesPage extends StatelessWidget {
                   padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 16.w,
-                    mainAxisSpacing: 24.h,
-                    childAspectRatio: 0.75,
+                    crossAxisSpacing: _kCourseGridColGap,
+                    mainAxisSpacing: _kCourseGridRowGap,
+                    // Exact card height (no slack) so the row gap is exactly 24.
+                    mainAxisExtent: _kCourseCardExtent,
                   ),
                   itemCount: sorted.length,
                   itemBuilder: (context, index) {
@@ -82,8 +83,10 @@ class SkillsetCoursesPage extends StatelessWidget {
     CourseEntity course,
     Map<String, CourseEntity> progressById,
   ) {
+    // Only enrolled courses (present in the user's progress list) show a
+    // percentage — even at 0% — matching Home. Others show the lesson count.
+    if (!progressById.containsKey(course.id)) return const _CourseProgressInfo();
     final p = resolveCourseProgress(course, progressById);
-    if (p.passed <= 0) return const _CourseProgressInfo();
     return _CourseProgressInfo(
       showProgress: true,
       completedLessons: p.passed,
@@ -105,7 +108,12 @@ class SkillsetCoursesPage extends StatelessWidget {
       ..selectSkillset(skillset)
       ..selectCourse(course);
     CourseRoadmapRoute().go(context);
-    context.read<PageCubit>().setCurrentIndex(1);
+    // .go() to the roadmap branch root from another branch does NOT re-fire the
+    // route observer, so currentRouteName would stay on this detail page
+    // (skillsetCourses → not a primary route) and the bottom nav — the only way
+    // back out of the roadmap — would stay hidden. Set the route name explicitly
+    // (this also lights the Course tab). Mirrors keypoint_complete_page.
+    context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 }
 

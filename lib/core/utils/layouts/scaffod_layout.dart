@@ -12,16 +12,15 @@ class ScaffoldLayout extends StatefulWidget {
 }
 
 class _ScaffoldLayoutState extends State<ScaffoldLayout> {
-  // Maps visual tab index (0-4) to shell branch index (0-3).
+  // Maps visual tab index (0-3) to shell branch index (0-3).
   // Tab 0 Home   → branch 0
   // Tab 1 Course → branch 1 (course roadmap)
   // Tab 2 Explore→ branch 3 (CoursePage course grid)
-  // Tab 3 Growth → branch 0 (same shell, future sub-route)
-  // Tab 4 Profile→ branch 2
-  static const _tabToBranch = [0, 1, 3, 0, 2];
+  // Tab 3 Profile→ branch 2
+  static const _tabToBranch = [0, 1, 3, 2];
 
   // Default visual index for each branch when navigating from outside.
-  static const _branchToVisual = {0: 0, 1: 1, 2: 4, 3: 2};
+  static const _branchToVisual = {0: 0, 1: 1, 2: 3, 3: 2};
 
   int _visualIndex = 0;
 
@@ -110,7 +109,9 @@ class _FloatingNavBar extends StatelessWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, (8 + bottomInset).h),
+      // Sit lower: keep only the device safe-area inset (don't scale it with
+      // .h, and drop the extra +8 that pushed the bar up).
+      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, bottomInset),
       child: Semantics(
         label: 'Bottom navigation',
         explicitChildNodes: true,
@@ -118,7 +119,7 @@ class _FloatingNavBar extends StatelessWidget {
           height: 56.h,
           child: Row(
             children: List.generate(
-              5,
+              4,
               (i) => _NavItem(
                 index: i,
                 selectedIndex: selectedIndex,
@@ -148,7 +149,6 @@ class _NavItem extends StatelessWidget {
     AppAsset.svg.common.navHome,
     AppAsset.svg.common.navCourse,
     AppAsset.svg.common.navExplore,
-    AppAsset.svg.common.navGrowth,
     AppAsset.svg.common.navProfile,
   ];
 
@@ -164,8 +164,6 @@ class _NavItem extends StatelessWidget {
       case 2:
         return l10n.homeExploreButton;
       case 3:
-        return l10n.homeGrowthButton;
-      case 4:
         return l10n.homeSettingButton;
       default:
         return '';

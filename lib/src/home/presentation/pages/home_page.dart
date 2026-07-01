@@ -140,24 +140,9 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                   ),
                 ),
 
-                // ── Floating InAppSurvey pill ──────────────────────
-                BlocSelector<InAppSurveyCubit, InAppSurveyState, bool>(
-                  selector: (state) => state.isEntryVisible,
-                  builder: (context, isEntryVisible) {
-                    if (!isEntryVisible) return const SizedBox.shrink();
-
-                    return Positioned(
-                      left: 20.w,
-                      right: 20.w,
-                      bottom: 20.h,
-                      child: Center(
-                        child: InAppSurveyEntryPill(
-                          onTap: _openInAppSurveyDialog,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                // The in-app survey entry is the inline "Có góp ý?" banner
+                // (GotIdeasBanner) above; the old floating pill was removed to
+                // avoid showing two identical survey entries at once.
               ],
             ),
           ),
@@ -401,8 +386,11 @@ class _RecommendedCard extends StatelessWidget {
                       ),
                     ),
 
-                    // "New course" badge — top-left corner
-                    Positioned(
+                    // "New course" badge — top-left corner. Only for courses
+                    // that are actually new (manual isNew flag, or within their
+                    // scheduled new-course window), not every recommended card.
+                    if (course.isNewNow)
+                      Positioned(
                       top: 0,
                       left: 0,
                       child: Container(
