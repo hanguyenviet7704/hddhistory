@@ -49,20 +49,20 @@ Map<String, CourseEntity> progressLookup(ProgressState progressState) => {
 
 /// Sorts [courses] for display in the Explore screen.
 ///
-/// Order: New (not coming-soon) → In Progress → Not Started → Coming Soon.
+/// Order: Coming Soon → New → In Progress → Not Started.
 /// Progress is resolved via [progressById] (see [resolveCourseProgress]).
 List<CourseEntity> sortCoursesForExplore(
   List<CourseEntity> courses, [
   Map<String, CourseEntity> progressById = const {},
 ]) {
   int priority(CourseEntity c) {
-    if (c.isNewNow) return 0;
+    if (c.isComingSoonNow) return 0; // Coming soon featured first (Figma)
+    if (c.isNewNow) return 1;
     final p = resolveCourseProgress(c, progressById);
     if (p.passed > 0 && p.passed < p.total) {
-      return 1; // In Progress
+      return 2; // In Progress
     }
-    if (c.isComingSoonNow) return 3; // Coming Soon last
-    return 2; // Not Started
+    return 3; // Not Started
   }
 
   return [...courses]..sort((a, b) => priority(a).compareTo(priority(b)));
