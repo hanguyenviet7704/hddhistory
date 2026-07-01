@@ -56,9 +56,10 @@ class SkillsetCoursesPage extends StatelessWidget {
                   padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 16.w,
-                    mainAxisSpacing: 16.h,
-                    childAspectRatio: 0.75,
+                    crossAxisSpacing: _kCourseGridColGap,
+                    mainAxisSpacing: _kCourseGridRowGap,
+                    // Exact card height (no slack) so the row gap is exactly 24.
+                    mainAxisExtent: _kCourseCardExtent,
                   ),
                   itemCount: sorted.length,
                   itemBuilder: (context, index) {

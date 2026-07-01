@@ -4,6 +4,24 @@ part of '../../../course.dart';
 /// A "View more" button is shown when a skillset has more courses than this.
 const int _kMaxCoursesPerSection = 5;
 
+/// Course-card thumbnail height (square-ish hero image).
+double get _kCourseThumbHeight => 160.w;
+
+/// Title always reserves exactly two lines (Body/Default/Bold 14 × line-height
+/// 1.4) so every card is the same height — rows align and the gap between rows
+/// is uniform regardless of title length.
+double get _kCourseTitleHeight => (14 * 1.4 * 2).sp;
+
+/// Exact height of a [_CourseGridCard] = thumbnail + 12 gap + 2-line title.
+/// Used as the grid cell extent so there is NO leftover slack and the visible
+/// row gap equals exactly the configured spacing (Figma Spacing/600 = 24).
+double get _kCourseCardExtent =>
+    _kCourseThumbHeight + 12.h + _kCourseTitleHeight;
+
+/// Inter-row / inter-column gaps for the course grids (Figma redline).
+double get _kCourseGridRowGap => 24.h; // Spacing/600 (vertical)
+double get _kCourseGridColGap => 20.w; // horizontal rhythm (matches page margin)
+
 /// Resolves the lesson-progress numbers for [course].
 ///
 /// The skillset list endpoint (HomeCubit.skillsets) returns courses WITHOUT
@@ -151,9 +169,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
             padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 16.w,
-              mainAxisSpacing: 16.h,
-              childAspectRatio: 0.75,
+              crossAxisSpacing: _kCourseGridColGap,
+              mainAxisSpacing: _kCourseGridRowGap,
+              // Exact card height (no slack) so the row gap is exactly 24.
+              mainAxisExtent: _kCourseCardExtent,
             ),
             itemCount: myCourses.length,
             itemBuilder: (context, index) {
@@ -191,7 +210,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
               itemScrollController: _scrollController,
               itemPositionsListener: _positionsListener,
               initialScrollIndex: initialIndex,
-              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 80.h),
+              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
               itemCount: skillsets.length,
               itemBuilder: (context, index) {
                 final skillset = skillsets[index];
@@ -395,18 +414,36 @@ class _CourseSection extends StatelessWidget {
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
         12.verticalSpace,
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 16.h,
-          childAspectRatio: 0.75,
-          children: gridChildren,
-        ),
+        // Manual 2-column grid (not GridView.count): cells size to their own
+        // height so there is no aspect-ratio slack — the vertical gap is exactly
+        // _kCourseGridRowGap (Figma Spacing/600 = 24).
+        _buildGrid(gridChildren),
         if (showBottomSpacing) 24.verticalSpace,
       ],
     );
+  }
+
+  /// Lays [cells] out in a 2-column grid using plain Rows so each cell keeps its
+  /// natural height. Columns are [_kCourseGridColGap] apart, rows
+  /// [_kCourseGridRowGap] apart — no GridView aspect-ratio slack.
+  Widget _buildGrid(List<Widget> cells) {
+    final rows = <Widget>[];
+    for (var i = 0; i < cells.length; i += 2) {
+      if (i > 0) rows.add(SizedBox(height: _kCourseGridRowGap));
+      rows.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: cells[i]),
+            SizedBox(width: _kCourseGridColGap),
+            Expanded(
+              child: i + 1 < cells.length ? cells[i + 1] : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      );
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
   }
 
   _CourseProgressInfo _progressInfoFor(
@@ -526,9 +563,11 @@ class _CourseGridCard extends StatelessWidget {
               height: 160.w,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12.r),
+                // Light hairline border so each card reads as separated from the
+                // background, matching the design; brand border when selected.
                 border: isSelected
                     ? Border.all(color: AppCustomColor.brandPrimary, width: 2)
-                    : null,
+                    : Border.all(color: AppCustomColor.borderSecondary, width: 1),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x14000000),
@@ -560,14 +599,19 @@ class _CourseGridCard extends StatelessWidget {
               ),
             ),
             12.verticalSpace,
-            AppText(
-              course.title.text,
-              style: AppStyle.textBold14.copyWith(
-                color: AppCustomColor.textPrimary,
-                height: 1.4,
+            // Fixed 2-line height so every card is the same height.
+            SizedBox(
+              height: _kCourseTitleHeight,
+              width: double.infinity,
+              child: AppText(
+                course.title.text,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.textPrimary,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

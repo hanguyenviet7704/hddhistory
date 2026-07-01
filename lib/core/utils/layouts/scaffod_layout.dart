@@ -109,7 +109,9 @@ class _FloatingNavBar extends StatelessWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, (8 + bottomInset).h),
+      // Sit lower: keep only the device safe-area inset (don't scale it with
+      // .h, and drop the extra +8 that pushed the bar up).
+      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, bottomInset),
       child: Semantics(
         label: 'Bottom navigation',
         explicitChildNodes: true,

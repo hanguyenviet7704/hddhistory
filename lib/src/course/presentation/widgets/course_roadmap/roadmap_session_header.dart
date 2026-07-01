@@ -51,8 +51,8 @@ class RoadmapSessionHeader extends StatelessWidget {
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              // Show the full description (no "…" truncation) — it wraps to as
+              // many lines as needed.
             ),
           ],
         ],
