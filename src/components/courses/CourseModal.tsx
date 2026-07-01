@@ -61,6 +61,8 @@ export default function CourseModal({
   const [publishAt, setPublishAt] = useState("");
   // Days the "New course" badge lasts after publish (Coming Soon flow).
   const [newDurationDays, setNewDurationDays] = useState("");
+  // Manual override to force the "New course" badge regardless of publish date.
+  const [isNew, setIsNew] = useState(false);
   const [prices, setPrices] = useState<IPrice[]>([]);
   const [onboardingSymptoms, setOnboardingSymptoms] = useState<
     OnboardingSymptom[]
@@ -88,6 +90,7 @@ export default function CourseModal({
       setNewDurationDays(
         initial.newDurationDays != null ? String(initial.newDurationDays) : ""
       );
+      setIsNew(initial.isNew ?? false);
       setPrices(initial.prices ?? []);
       setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
       setSkillsetId(initial.skillsetId ?? "");
@@ -100,6 +103,7 @@ export default function CourseModal({
       setStatus(CourseStatus.DRAFT);
       setPublishAt("");
       setNewDurationDays("");
+      setIsNew(false);
       setPrices([]);
       setOnboardingSymptoms([]);
       setSkillsetId("");
@@ -189,6 +193,8 @@ export default function CourseModal({
         status === CourseStatus.COMING_SOON && newDurationDays
           ? Number(newDurationDays)
           : null,
+      // Manual "New course" override (independent of publish date).
+      isNew,
     };
 
     // Only include description if it has values
@@ -482,6 +488,29 @@ export default function CourseModal({
                   </p>
                 </div>
               )}
+
+              {/* Manual "New course" toggle — forces the New badge regardless
+                  of publish date / duration. */}
+              <div>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isNew}
+                    onChange={(e) => setIsNew(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-gray-700">
+                      Mark as “New course”
+                    </span>
+                    <span className="mt-1 block text-xs text-gray-500">
+                      Forces the “New course” badge immediately, regardless of
+                      publish date or duration. Turn off to remove it. (Has no
+                      effect while the course is still Coming Soon.)
+                    </span>
+                  </span>
+                </label>
+              </div>
 
               {/* Onboarding Symptoms */}
               <div>
