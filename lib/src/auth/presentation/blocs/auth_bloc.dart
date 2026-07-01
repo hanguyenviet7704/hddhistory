@@ -166,8 +166,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<bool> _userHaveCourseData() async {
-    _courseRoadmapCubit.loadRoadmap();
-    await _progressCubit.loadUserProgressMyCourses(isInit: true, recent: true);
+    // Roadmap and my-courses loads are independent — run them together instead
+    // of firing roadmap then serially awaiting my-courses.
+    await Future.wait<void>([
+      _courseRoadmapCubit.loadRoadmap(),
+      _progressCubit.loadUserProgressMyCourses(isInit: true, recent: true),
+    ]);
     final List<CourseEntity> myCourses = _progressCubit.state.myCourses;
     return myCourses.isNotEmpty;
   }

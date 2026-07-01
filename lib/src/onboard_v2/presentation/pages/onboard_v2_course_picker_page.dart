@@ -108,7 +108,13 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
       return;
     }
 
-    final intent = await const CourseHandoffHelper().prepareRecommendedCourse(course: resolvedCourse);
+    final intent = await const CourseHandoffHelper().prepareRecommendedCourse(
+      course: resolvedCourse,
+      // Await the prewarmed home load (already in-flight since P8 opened)
+      // instead of a fresh cold fetch — no duplicate round-trips, and the wait
+      // is near-zero when the prewarm has already completed.
+      initializeHomeData: cubit.prewarmHomeData,
+    );
     if (!mounted) return;
     _dispatchRoute(intent, selectedCourseId: resolvedCourse.id);
   }
@@ -117,7 +123,9 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
     if (_isNavigating) return;
     setState(() => _isNavigating = true);
 
-    final intent = await const CourseHandoffHelper().prepareCourseCatalog();
+    final intent = await const CourseHandoffHelper().prepareCourseCatalog(
+      initializeHomeData: context.read<OnboardV2Cubit>().prewarmHomeData,
+    );
     if (!mounted) return;
     _dispatchRoute(intent);
   }

@@ -15,9 +15,25 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   ) : super(HomeState.initial());
 
   bool _isInitialized = false;
+  DateTime? _lastInitializedAt;
 
-  Future<void> initializeData({bool isInit = false}) async {
-    if (_isInitialized && !isInit) return;
+  /// How long a successful init stays "fresh". Within this window an
+  /// `isInit` re-entry (splash/auth/handoff/pull-to-refresh) is skipped so we
+  /// don't refetch all 5 endpoints again. A [force] request always refetches.
+  static const _initFreshnessWindow = Duration(seconds: 45);
+
+  Future<void> initializeData({bool isInit = false, bool force = false}) async {
+    if (!force) {
+      // First-load guard: only the initial call (or an explicit isInit) may
+      // load when not yet initialized.
+      if (_isInitialized && !isInit) return;
+      // Freshness guard: a very recent successful init is reused instead of
+      // hitting all endpoints again for another isInit re-entry.
+      final lastInitializedAt = _lastInitializedAt;
+      if (_isInitialized && lastInitializedAt != null && DateTime.now().difference(lastInitializedAt) < _initFreshnessWindow) {
+        return;
+      }
+    }
     _isInitialized = true;
     // Load both courses and skillsets]
     await Future.wait<void>([
@@ -27,6 +43,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
       AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
+    _lastInitializedAt = DateTime.now();
   }
 
   static final _fallbackQuote = QuoteEntity(

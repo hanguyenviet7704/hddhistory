@@ -88,8 +88,9 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
   void startAnalysis() {
     emit(state.copyWith(status: DataCollectStatus.loading));
 
-    // Simulate analysis progress
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Simulate analysis progress (staged, but kept short so onboarding isn't a
+    // multi-second forced wait).
+    Future.delayed(const Duration(milliseconds: 300), () {
       emit(
         state.copyWith(
           personalBackgroundProgress: 0.5,
@@ -100,7 +101,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
       );
     });
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(milliseconds: 600), () {
       emit(
         state.copyWith(
           personalBackgroundProgress: 1.0,
@@ -111,7 +112,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
       );
     });
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(milliseconds: 900), () {
       emit(
         state.copyWith(
           personalBackgroundProgress: 1.0,

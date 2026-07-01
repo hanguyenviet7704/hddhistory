@@ -56,6 +56,13 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   Future<void>? _courseLoadTask;
   Future<bool>? _anonymousSessionTask;
 
+  /// In-flight (or completed) home-dataset prewarm. Started once the P8 course
+  /// picker is reached so the skillset/list-course + progress + profile calls
+  /// overlap with the time the user spends browsing recommended courses —
+  /// instead of the "select course" handoff paying for a cold fetch on the
+  /// critical path. See [prewarmHomeData].
+  Future<void>? _homeInitFuture;
+
   Future<void> initialize() async {
     reset();
     unawaited(_ensureAnonymousSession(source: 'p1_background'));
@@ -69,6 +76,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     _isLoadingCourses = false;
     _courseLoadTask = null;
     _anonymousSessionTask = null;
+    _homeInitFuture = null;
     emit(OnboardV2State.initial());
   }
 
@@ -369,7 +377,30 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       ),
     );
     emit(state.copyWith(currentPage: OnboardV2PageStep.p8CoursePicker));
+    // Prewarm the home dataset now (in parallel with the course-list fetch) so
+    // it is ready — or nearly ready — by the time the user taps "select".
+    unawaited(prewarmHomeData());
     await loadCoursesForP8(force: true);
+  }
+
+  /// Loads the home dataset (skillsets/list-course, progress, profile, quote,
+  /// suggestions) at most once per flow, after the anonymous session is ready.
+  /// Returns the shared in-flight future so the handoff can await the SAME
+  /// fetch instead of triggering a second one.
+  Future<void> prewarmHomeData() => _homeInitFuture ??= _runHomePrewarm();
+
+  Future<void> _runHomePrewarm() async {
+    // initializeData hits authenticated endpoints (user progress, profile), so
+    // the anonymous session must exist first. Login was already kicked off at
+    // initialize(), so this usually resolves immediately.
+    final hasSession = await _ensureAnonymousSession(source: 'p8_home_prewarm');
+    if (!hasSession) {
+      // Let a later select/retry re-attempt the prewarm rather than caching a
+      // failure.
+      _homeInitFuture = null;
+      return;
+    }
+    await AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
   }
 
   Future<void> retryCoursesForP8() => loadCoursesForP8(force: true);
