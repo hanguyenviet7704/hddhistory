@@ -7,6 +7,7 @@ abstract class CourseEntity with _$CourseEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default('') String thumbnailUrl,
     @Default('') String skillsetId,
     @Default(SkillsetEntity()) SkillsetEntity skillset,
     @Default(0) int numberOfLesson,
@@ -23,6 +24,10 @@ abstract class CourseEntity with _$CourseEntity {
 
 
 extension CourseEntityExtension on CourseEntity {
+  /// Preferred image for list/grid/card thumbnails: the lightweight
+  /// [thumbnailUrl] (small WebP) when available, else the full [image].
+  String get displayImage => thumbnailUrl.isNotEmpty ? thumbnailUrl : image;
+
   CourseEntity get withSkillset {
     List<SkillsetEntity> skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
     SkillsetEntity skillset = skillsets.firstWhere(

@@ -266,6 +266,7 @@ class _SearchCourseCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r),
                 child: CacheNetworkGraphic(
                   url: course.image,
+                  thumbnailUrl: course.thumbnailUrl,
                   width: 100.w,
                   height: 100.w,
                   fit: BoxFit.cover,

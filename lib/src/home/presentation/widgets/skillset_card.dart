@@ -60,6 +60,7 @@ class SkillsetCardWidget extends StatelessWidget {
                   ? CacheNetworkGraphic(
                       borderRadius: BorderRadius.all(Radius.circular(16.r)),
                       url: skillset.image,
+                      thumbnailUrl: skillset.thumbnailUrl,
                       alignment: Alignment.bottomRight,
                       fit: BoxFit.contain,
                       width: double.infinity,

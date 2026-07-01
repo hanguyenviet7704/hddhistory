@@ -2,6 +2,11 @@ part of '../utils.dart';
 
 class DCachedImage extends StatelessWidget {
   final String url;
+
+  /// Optional lightweight thumbnail (e.g. a 600w WebP). When non-empty, it's
+  /// loaded as the primary image for fast first paint; on load error we fall
+  /// back to the full-resolution [url].
+  final String? thumbnailUrl;
   final double? width;
   final double? height;
   final BorderRadiusGeometry? borderRadius;
@@ -18,6 +23,7 @@ class DCachedImage extends StatelessWidget {
   const DCachedImage({
     super.key,
     required this.url,
+    this.thumbnailUrl,
     this.width,
     this.height,
     this.borderRadius,
@@ -46,7 +52,7 @@ class DCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = _buildImage();
+    Widget child = _buildImage(context);
 
     child = ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
@@ -79,20 +85,59 @@ class DCachedImage extends StatelessWidget {
     return child;
   }
 
-  Widget _buildImage() {
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return CachedNetworkImage(
-        imageUrl: url,
-        fit: fit,
-        alignment: alignment,
-        width: width,
-        height: height,
-        progressIndicatorBuilder: _buildProgressIndicator,
-        color: color,
-        // placeholder: (context, url) => _buildPlaceHolder(context, url),
-        // colorBlendMode: colorBlendMode,
-        errorWidget: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
-      );
+  bool _isNetwork(String value) =>
+      value.startsWith('http://') || value.startsWith('https://');
+
+  /// Builds a [CachedNetworkImage] for [imageUrl] with the shared decode/cache
+  /// sizing. [errorFallback] renders in place of the error icon (used to fall
+  /// back from a thumbnail to the full-resolution image).
+  Widget _buildNetworkImage(
+    BuildContext context,
+    String imageUrl, {
+    Widget Function(BuildContext context)? errorFallback,
+  }) {
+    // Decode + cache at display resolution (physical px), not the source's
+    // full resolution. A 160px thumbnail otherwise decodes a ~1000px+ image
+    // into memory and stores it full-size on disk — slow first paint, heavy
+    // RAM, and scroll jank. Cap at the screen width when no explicit width is
+    // given (full-bleed images), and clamp so we never over-shrink or blow up.
+    final media = MediaQuery.maybeOf(context);
+    final dpr = media?.devicePixelRatio ?? 2.0;
+    final logicalWidth =
+        (width != null && width!.isFinite) ? width! : (media?.size.width ?? 430.0);
+    final cacheWidth = (logicalWidth * dpr).round().clamp(1, 2000);
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: fit,
+      alignment: alignment,
+      width: width,
+      height: height,
+      // Downscale the in-memory decode and the on-disk copy to the display
+      // size. (Network bytes are still full-size — that needs a CDN/server
+      // resize; see the audit follow-up.)
+      memCacheWidth: cacheWidth,
+      maxWidthDiskCache: cacheWidth,
+      progressIndicatorBuilder: _buildProgressIndicator,
+      color: color,
+      errorWidget: (ctx, _, _) => errorFallback != null
+          ? errorFallback(ctx)
+          : const FaIcon(FontAwesomeIcons.circleExclamation),
+    );
+  }
+
+  Widget _buildImage(BuildContext context) {
+    if (_isNetwork(url)) {
+      final thumb = thumbnailUrl;
+      // Prefer the lightweight thumbnail for first paint, but fall back to the
+      // full-resolution [url] if the thumbnail fails to load.
+      if (thumb != null && thumb.isNotEmpty && _isNetwork(thumb)) {
+        return _buildNetworkImage(
+          context,
+          thumb,
+          errorFallback: (ctx) => _buildNetworkImage(ctx, url),
+        );
+      }
+      return _buildNetworkImage(context, url);
     }
 
     if (url.startsWith('/')) {

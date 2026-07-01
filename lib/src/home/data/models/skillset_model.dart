@@ -7,6 +7,7 @@ abstract class SkillsetModel with _$SkillsetModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default('') String thumbnailUrl,
     @Default([]) List<CourseModel> courses,
     @JsonKey(
       fromJson: _skillsetOnboardingIntroduceFromJson,
@@ -26,6 +27,7 @@ extension SkillsetModelExtension on SkillsetModel {
     title: title,
     description: description,
     image: image,
+    thumbnailUrl: thumbnailUrl,
     courses: courses.map((model) => model.toEntity()).toList(),
     onboardingIntroduce: onboardingIntroduce,
     createdAt: createdAt,

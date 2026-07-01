@@ -53,6 +53,7 @@ class RoadmapLessonCard extends StatelessWidget {
                 children: [
                   _RoadmapCardThumbnail(
                     imageUrl: lesson.roadmapDisplayImage,
+                    thumbnailUrl: lesson.thumbnailUrl,
                     isLocked: isLockedVisual,
                   ),
                   Expanded(
@@ -86,6 +87,9 @@ class RoadmapLessonCard extends StatelessWidget {
 /// Applies a grayscale filter and a bottom-right lock badge when [isLocked] is true.
 class _RoadmapCardThumbnail extends StatelessWidget {
   final String imageUrl;
+
+  /// Optional lightweight thumbnail loaded first, falling back to [imageUrl].
+  final String? thumbnailUrl;
   final bool isLocked;
 
   static const _grayscaleMatrix = ColorFilter.matrix([
@@ -97,6 +101,7 @@ class _RoadmapCardThumbnail extends StatelessWidget {
 
   const _RoadmapCardThumbnail({
     required this.imageUrl,
+    this.thumbnailUrl,
     this.isLocked = false,
   });
 
@@ -117,6 +122,7 @@ class _RoadmapCardThumbnail extends StatelessWidget {
               child: imageUrl.isNotEmpty
                   ? DCachedImage(
                       url: imageUrl,
+                      thumbnailUrl: thumbnailUrl,
                       width: 88.w,
                       height: 88.w,
                       fit: BoxFit.cover,

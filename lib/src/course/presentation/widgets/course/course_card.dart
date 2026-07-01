@@ -38,6 +38,7 @@ class CourseCard extends StatelessWidget {
               children: [
                 CacheNetworkGraphic(
                   url: course.image,
+                  thumbnailUrl: course.thumbnailUrl,
                   width: 80.w,
                   height: 80.w,
                   borderRadius: BorderRadius.circular(12.r),

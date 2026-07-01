@@ -11,6 +11,7 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage description,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
+    @Default('') String thumbnailUrl,
     @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionEntity> mainQuestions,
     @Default([]) List<QuestionEntity> subQuestions,
@@ -33,6 +34,10 @@ abstract class LearningItemEntity with _$LearningItemEntity {
 }
 
 extension LearningItemEntityExtension on LearningItemEntity {
+  /// Preferred image for list/grid/card thumbnails: the lightweight
+  /// [thumbnailUrl] (small WebP) when available, else the full [image].
+  String get displayImage => thumbnailUrl.isNotEmpty ? thumbnailUrl : image;
+
   List<QuestionEntity> get questions {
     // if (type == LearningItemType.exercise) return mainQuestions;
     //  if (type == LearningItemType.roleplay) {

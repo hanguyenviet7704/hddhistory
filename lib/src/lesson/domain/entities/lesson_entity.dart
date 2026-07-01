@@ -10,6 +10,7 @@ abstract class LessonEntity with _$LessonEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default('') String thumbnailUrl,
     @Default(LessonVideoEntity()) LessonVideoEntity video,
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<KeypointEntity> keypoints,
@@ -73,6 +74,10 @@ extension LessonEntityListExtension on List<LessonEntity> {
 }
 
 extension LessonEntityExtension on LessonEntity {
+  /// Preferred image for list/grid/card thumbnails: the lightweight
+  /// [thumbnailUrl] (small WebP) when available, else the full [image].
+  String get displayImage => thumbnailUrl.isNotEmpty ? thumbnailUrl : image;
+
   String get roadmapKey {
     final keypointId = firstKeypoint.id;
     if (keypointId.isNotEmpty) return keypointId;

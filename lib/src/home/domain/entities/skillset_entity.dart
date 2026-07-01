@@ -7,6 +7,7 @@ abstract class SkillsetEntity with _$SkillsetEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default('') String thumbnailUrl,
     @Default([]) List<CourseEntity> courses,
     SkillsetOnboardingIntroduce? onboardingIntroduce,
     DateTime? createdAt,
@@ -67,6 +68,10 @@ enum SkillsetOnboardingIntroduce {
 }
 
 extension SkillsetEntityExtension on SkillsetEntity {
+  /// Preferred image for list/grid/card thumbnails: the lightweight
+  /// [thumbnailUrl] (small WebP) when available, else the full [image].
+  String get displayImage => thumbnailUrl.isNotEmpty ? thumbnailUrl : image;
+
   List<CourseEntity> get coursesWithSkillset => courses.map((course) => course.copyWith(skillset: copyWith(courses: []))).toList();
 
   String get trackingName => title.en;

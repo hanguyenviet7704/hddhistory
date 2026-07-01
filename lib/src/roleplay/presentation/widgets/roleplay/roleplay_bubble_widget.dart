@@ -131,6 +131,7 @@ class _RoleplayParticipantAvatar extends StatelessWidget {
 
     Widget avatar = CacheNetworkGraphic(
       url: conversation.avatar.url,
+      thumbnailUrl: conversation.avatar.thumbnailUrl,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(50.r),
       width: 28.w,

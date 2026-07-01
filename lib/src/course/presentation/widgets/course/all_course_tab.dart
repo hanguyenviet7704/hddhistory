@@ -583,6 +583,7 @@ class _CourseGridCard extends StatelessWidget {
                   children: [
                     CacheNetworkGraphic(
                       url: course.image,
+                      thumbnailUrl: course.thumbnailUrl,
                       fit: BoxFit.cover,
                     ),
                     Positioned(

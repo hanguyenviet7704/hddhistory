@@ -7,6 +7,7 @@ abstract class SuggestedCourseEntity with _$SuggestedCourseEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default('') String thumbnailUrl,
     @Default('') String skillsetId,
     @Default(0) int numberOfLesson,
     @Default(false) bool isNew,
@@ -18,6 +19,10 @@ abstract class SuggestedCourseEntity with _$SuggestedCourseEntity {
 }
 
 extension SuggestedCourseEntityX on SuggestedCourseEntity {
+  /// Preferred image for list/grid/card thumbnails: the lightweight
+  /// [thumbnailUrl] (small WebP) when available, else the full [image].
+  String get displayImage => thumbnailUrl.isNotEmpty ? thumbnailUrl : image;
+
   /// Effective "New course" state for a recommended card. Suggested courses are
   /// always published, so there's no coming-soon case — a course is "new" via
   /// the manual [isNew] flag or while inside its scheduled new-course window
