@@ -15,7 +15,6 @@ import {
   ChartBarIcon,
   PlayCircleIcon,
   ExclamationTriangleIcon,
-  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -43,7 +42,6 @@ const menuItems = [
   { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
   { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
-  { name: "Thumbnails", icon: PhotoIcon, path: "/thumbnails" },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
