@@ -43,7 +43,7 @@ const menuItems = [
   { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
   { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
-  { name: "Thumbnails", icon: PhotoIcon, path: "/thumbnails" },
+  { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
