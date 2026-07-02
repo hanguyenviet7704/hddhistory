@@ -81,7 +81,7 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _initScreen(_) async {
     try {
       if (!mounted) return;
-      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 1500));
+      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 700));
       final shouldUpdate = await _shouldForceUpdate;
       if (!mounted) return;
       if (shouldUpdate) {

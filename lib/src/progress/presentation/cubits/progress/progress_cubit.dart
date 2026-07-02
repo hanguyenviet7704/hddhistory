@@ -221,7 +221,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        if ((lessonType == LessonType.lesson && courseLessonState.isAllOtherKeypointsCompleted) || (lessonType == LessonType.roleplay)) {
+        final bool didUpdateLesson =
+            (lessonType == LessonType.lesson && courseLessonState.isAllOtherKeypointsCompleted) || (lessonType == LessonType.roleplay);
+        if (didUpdateLesson) {
           updateUserProgressLesson(
             UpdateUserProgressLessonParams(
               lessonId: lessonId,
@@ -236,10 +238,19 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
           );
         }
         emit(state.copyWith(status: ProgressStatus.success));
+
         _courseLessonCubit.loadLesson(courseLessonState.selectedLesson.id);
-        _courseRoadmapCubit.loadRoadmap(courseId: courseId);
-        unawaited(loadAllUserProgresss(courseId: courseId, silent: true));
-        loadUserProgressMyCourses(isInit: true, recent: true);
+        // Refresh the roadmap completion + course-grade progress only when the
+        // lesson update didn't already trigger them (updateUserProgressLesson
+        // fires loadRoadmap + loadAllUserProgresss on success) — otherwise this
+        // duplicates two round-trips.
+        if (!didUpdateLesson) {
+          _courseRoadmapCubit.loadRoadmap(courseId: courseId);
+          unawaited(loadAllUserProgresss(courseId: courseId, silent: true));
+        }
+        // My-courses list drives Home; independent of the roadmap fetches, so
+        // don't serialize behind them.
+        unawaited(loadUserProgressMyCourses(isInit: true, recent: true));
         HomeWidgetSyncTrigger.requestDebouncedSync(changedCourseId: courseId);
 
         AppDI.injector.get<AchievenmentProgressCubit>()

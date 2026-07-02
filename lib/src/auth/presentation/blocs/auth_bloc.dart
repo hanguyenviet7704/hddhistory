@@ -166,8 +166,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<bool> _userHaveCourseData() async {
-    _courseRoadmapCubit.loadRoadmap();
-    await _progressCubit.loadUserProgressMyCourses(isInit: true, recent: true);
+    // Roadmap and my-courses loads are independent — run them together instead
+    // of firing roadmap then serially awaiting my-courses.
+    await Future.wait<void>([
+      _courseRoadmapCubit.loadRoadmap(),
+      _progressCubit.loadUserProgressMyCourses(isInit: true, recent: true),
+    ]);
     final List<CourseEntity> myCourses = _progressCubit.state.myCourses;
     return myCourses.isNotEmpty;
   }
@@ -267,7 +271,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   /// Loads the home dataset at most once per warm-up, reusing the in-flight
   /// future so bootstrap awaits the SAME fetch instead of a fresh one.
   Future<void> _prewarmCourseEntryHomeData() {
-    return _courseEntryHomeInitFuture ??= _homeCubit.initializeData(isInit: true);
+    return _courseEntryHomeInitFuture ??= _runCourseEntryHomePrewarm();
+  }
+
+  Future<void> _runCourseEntryHomePrewarm() async {
+    await _homeCubit.initializeData(isInit: true);
+    // Don't cache an empty/failed prewarm: if skillsets didn't load, drop the
+    // cache so bootstrap's retry re-fetches instead of reusing a blank result.
+    if (_homeCubit.state.skillsets.isEmpty) {
+      _courseEntryHomeInitFuture = null;
+    }
   }
 
   Future<CourseEntryBootstrapResult> bootstrapCourseEntrySession() async {

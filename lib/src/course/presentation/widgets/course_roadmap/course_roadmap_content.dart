@@ -84,6 +84,13 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
             final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
             final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig);
             return BlocBuilder<ProgressCubit, ProgressState>(
+              // The roadmap list only reads userCourseProgress + the
+              // additional-content submit flag. Without buildWhen the whole
+              // ListView.separated rebuilds on every unrelated progress change
+              // (lesson/keypoint/exercise results, status flips, etc.).
+              buildWhen: (previous, current) =>
+                  previous.userCourseProgress != current.userCourseProgress ||
+                  previous.isSubmittingCompletedLevelAdditionalContentRequest != current.isSubmittingCompletedLevelAdditionalContentRequest,
               builder: (context, progressState) {
                 return NotificationListener<ScrollNotification>(
                   onNotification: (notification) => _handleScrollNotification(notification, roadmap),

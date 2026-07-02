@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                 // scrolls away together with the content (no pinned header).
                 RefreshIndicator(
                   onRefresh: () async {
-                    context.read<HomeCubit>().initializeData(isInit: true);
+                    context.read<HomeCubit>().initializeData(isInit: true, force: true);
                     await _prefetchLearningStreak();
                     final didOpenPaywall = await _tryOpenPaywallAutoOpen();
                     if (didOpenPaywall) return;
