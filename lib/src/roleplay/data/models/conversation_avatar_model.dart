@@ -6,7 +6,6 @@ abstract class ConversationAvatarModel with _$ConversationAvatarModel {
     @Default('') @JsonKey(name: '_id') String id,
     @Default('') String name,
     @Default('') String url,
-    @Default('') String thumbnailUrl,
   }) = _ConversationAvatarModel;
 
   factory ConversationAvatarModel.fromJson(Map<String, dynamic> json) => _$ConversationAvatarModelFromJson(json);
@@ -17,6 +16,5 @@ extension ConversationAvatarModelExtension on ConversationAvatarModel {
     id: id,
     name: name,
     url: url,
-    thumbnailUrl: thumbnailUrl,
   );
 }

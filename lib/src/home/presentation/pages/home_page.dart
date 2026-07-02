@@ -382,7 +382,6 @@ class _RecommendedCard extends StatelessWidget {
                     Positioned.fill(
                       child: CacheNetworkGraphic(
                         url: course.image,
-                        thumbnailUrl: course.thumbnailUrl,
                         fit: BoxFit.cover,
                       ),
                     ),

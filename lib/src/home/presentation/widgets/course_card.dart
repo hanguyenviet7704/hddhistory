@@ -65,7 +65,6 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20.r),
                           child: CacheNetworkGraphic(
                             url: course.image,
-                            thumbnailUrl: course.thumbnailUrl,
                             width: 200.w,
                             height: 200.w,
                             fit: BoxFit.cover,
@@ -200,7 +199,6 @@ class CourseCardWidget extends StatelessWidget {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
                   child: CacheNetworkGraphic(
                     url: course.image,
-                    thumbnailUrl: course.thumbnailUrl,
                     width: double.infinity,
                     height: 130.h,
                     fit: BoxFit.cover,

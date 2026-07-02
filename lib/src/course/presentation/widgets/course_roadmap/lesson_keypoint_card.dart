@@ -14,12 +14,7 @@ class LessonKeypointCard extends StatelessWidget {
 
   KeypointEntity get _keypoint => lesson.firstKeypoint;
 
-  String get _imageUrl => _keypoint.image.isNotEmpty ? _keypoint.image : lesson.image;
-
-  /// Lightweight thumbnail paired with [_imageUrl]: prefer the keypoint's
-  /// thumbnail when its image is used, else the lesson's thumbnail.
-  String get _thumbnailUrl =>
-      _keypoint.image.isNotEmpty ? _keypoint.thumbnailUrl : lesson.thumbnailUrl;
+  String get _thumbnailUrl => _keypoint.image.isNotEmpty ? _keypoint.image : lesson.image;
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +56,7 @@ class LessonKeypointCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _RoadmapCardThumbnail(
-                    imageUrl: _imageUrl,
-                    thumbnailUrl: _thumbnailUrl,
+                    imageUrl: _thumbnailUrl,
                     isLocked: isLockedVisual,
                   ),
                   Expanded(

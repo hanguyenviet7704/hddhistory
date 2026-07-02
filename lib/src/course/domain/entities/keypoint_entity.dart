@@ -9,7 +9,6 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     KeypointAudioEntity? audio,
     @Default('') String image,
-    @Default('') String thumbnailUrl,
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevelData,
     @Default([]) List<LearningItemEntity> learningItems,
@@ -26,10 +25,6 @@ abstract class KeypointEntity with _$KeypointEntity {
 }
 
 extension KeypointEntityExtension on KeypointEntity {
-  /// Preferred image for list/grid/card thumbnails: the lightweight
-  /// [thumbnailUrl] (small WebP) when available, else the full [image].
-  String get displayImage => thumbnailUrl.isNotEmpty ? thumbnailUrl : image;
-
   String get resolvedAudioUrl => audio?.url?.text.trim() ?? '';
 
   bool get hasUsableAudio => resolvedAudioUrl.isNotEmpty;

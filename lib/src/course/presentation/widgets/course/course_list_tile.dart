@@ -47,7 +47,6 @@ class CourseListTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.r),
                 child: CacheNetworkGraphic(
                   url: course.image,
-                  thumbnailUrl: course.thumbnailUrl,
                   width: 64.w,
                   height: 64.w,
                   fit: BoxFit.cover,

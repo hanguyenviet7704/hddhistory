@@ -4,7 +4,6 @@ class CacheNetworkGraphic extends StatelessWidget {
   const CacheNetworkGraphic({
     super.key,
     required this.url,
-    this.thumbnailUrl,
     this.fit,
     this.borderRadius,
     this.decoration,
@@ -15,11 +14,6 @@ class CacheNetworkGraphic extends StatelessWidget {
   });
 
   final String url;
-
-  /// Optional lightweight thumbnail (e.g. a 600w WebP). When non-empty, it's
-  /// loaded first for fast first paint, falling back to [url] on load error.
-  /// Only applies to the raster (non-SVG/Lottie) path.
-  final String? thumbnailUrl;
   final BoxFit? fit;
   final BorderRadiusGeometry? borderRadius;
   final BoxDecoration? decoration;
@@ -38,7 +32,6 @@ class CacheNetworkGraphic extends StatelessWidget {
     // Fallback to regular cached image (handles network/file/asset)
     return DCachedImage(
       url: url,
-      thumbnailUrl: thumbnailUrl,
       fit: fit,
       borderRadius: borderRadius,
       decoration: decoration,
