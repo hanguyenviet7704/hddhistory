@@ -271,7 +271,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   /// Loads the home dataset at most once per warm-up, reusing the in-flight
   /// future so bootstrap awaits the SAME fetch instead of a fresh one.
   Future<void> _prewarmCourseEntryHomeData() {
-    return _courseEntryHomeInitFuture ??= _homeCubit.initializeData(isInit: true);
+    return _courseEntryHomeInitFuture ??= _runCourseEntryHomePrewarm();
+  }
+
+  Future<void> _runCourseEntryHomePrewarm() async {
+    await _homeCubit.initializeData(isInit: true);
+    // Don't cache an empty/failed prewarm: if skillsets didn't load, drop the
+    // cache so bootstrap's retry re-fetches instead of reusing a blank result.
+    if (_homeCubit.state.skillsets.isEmpty) {
+      _courseEntryHomeInitFuture = null;
+    }
   }
 
   Future<CourseEntryBootstrapResult> bootstrapCourseEntrySession() async {

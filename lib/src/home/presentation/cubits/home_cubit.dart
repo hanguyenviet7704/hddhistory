@@ -16,6 +16,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
 
   bool _isInitialized = false;
   DateTime? _lastInitializedAt;
+  Future<void>? _initInFlight;
 
   /// How long a successful init stays "fresh". Within this window an
   /// `isInit` re-entry (splash/auth/handoff/pull-to-refresh) is skipped so we
@@ -23,18 +24,31 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   static const _initFreshnessWindow = Duration(seconds: 45);
 
   Future<void> initializeData({bool isInit = false, bool force = false}) async {
+    // De-dupe concurrent callers (prewarm + handoff + page mount) onto the SAME
+    // in-flight fetch instead of each starting its own.
+    final inFlight = _initInFlight;
+    if (inFlight != null) return inFlight;
     if (!force) {
       // First-load guard: only the initial call (or an explicit isInit) may
       // load when not yet initialized.
       if (_isInitialized && !isInit) return;
-      // Freshness guard: a very recent successful init is reused instead of
+      // Freshness guard: a very recent SUCCESSFUL init is reused instead of
       // hitting all endpoints again for another isInit re-entry.
       final lastInitializedAt = _lastInitializedAt;
       if (_isInitialized && lastInitializedAt != null && DateTime.now().difference(lastInitializedAt) < _initFreshnessWindow) {
         return;
       }
     }
-    _isInitialized = true;
+    final future = _runInitializeData();
+    _initInFlight = future;
+    try {
+      await future;
+    } finally {
+      _initInFlight = null;
+    }
+  }
+
+  Future<void> _runInitializeData() async {
     // Load both courses and skillsets]
     await Future.wait<void>([
       loadAllSkillsets(isInit: true),
@@ -43,7 +57,14 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
       AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
-    _lastInitializedAt = DateTime.now();
+    // Only mark the init done + "fresh" when the CRITICAL dataset (skillsets)
+    // actually loaded. A transient failure — e.g. the onboarding prewarm fires
+    // before the anonymous token is attached, so skillsets 401 → empty — must
+    // NOT be cached as fresh, otherwise the freshness guard blocks every retry
+    // and Home/Explore stays blank with no API re-fire.
+    final loadedOk = state.skillsets.isNotEmpty;
+    _isInitialized = loadedOk;
+    _lastInitializedAt = loadedOk ? DateTime.now() : null;
   }
 
   static final _fallbackQuote = QuoteEntity(

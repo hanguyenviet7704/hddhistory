@@ -210,6 +210,13 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
       return;
     }
     await AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
+    // If the dataset still didn't load (e.g. token not yet attached at prewarm
+    // time), drop the cache so the Try Now / Choose Myself handoff re-runs the
+    // prewarm. HomeCubit no longer treats an empty load as "fresh", so the retry
+    // actually fetches instead of landing on a blank Explore/roadmap.
+    if (AppDI.injector.get<HomeCubit>().state.skillsets.isEmpty) {
+      _homeInitFuture = null;
+    }
   }
 
   Future<OnboardBranchingTryNowAction> onTryNowPressed() async {
