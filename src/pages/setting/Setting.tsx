@@ -8,6 +8,7 @@ import {
   PaintBrushIcon,
   ChatBubbleLeftRightIcon,
   FaceSmileIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import UserManagement from "../../components/setting/UserManagement";
 import TagManagement from "../../components/setting/TagManagement";
@@ -16,6 +17,7 @@ import IconManagement from "../../components/setting/IconManagement";
 import RoleplayColorManagement from "../../components/setting/RoleplayColorManagement";
 import QuoteManagement from "../../components/setting/QuoteManagement";
 import InAppSurveyManagement from "../../components/setting/InAppSurveyManagement";
+import WarmUpManagement from "../../components/setting/WarmUpManagement";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<
@@ -26,6 +28,7 @@ const SettingsPage = () => {
     | "roleplayColors"
     | "quotes"
     | "inAppSurvey"
+    | "warmUp"
   >("users");
 
   return (
@@ -131,6 +134,20 @@ const SettingsPage = () => {
             <FaceSmileIcon className="h-4 w-4 mr-2" />
             In-App Survey
           </button>
+          <button
+            onClick={() => setActiveTab("warmUp")}
+            className={`
+              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
+              ${
+                activeTab === "warmUp"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }
+            `}
+          >
+            <ClockIcon className="h-4 w-4 mr-2" />
+            Warm-up
+          </button>
         </div>
 
         {/* Content based on active tab */}
@@ -141,6 +158,7 @@ const SettingsPage = () => {
         {activeTab === "roleplayColors" && <RoleplayColorManagement />}
         {activeTab === "quotes" && <QuoteManagement />}
         {activeTab === "inAppSurvey" && <InAppSurveyManagement />}
+        {activeTab === "warmUp" && <WarmUpManagement />}
       </div>
     </div>
   );
