@@ -359,7 +359,16 @@ export default function ImageCompressionPage() {
                   {log.map((r, idx) => (
                     <TableRow key={`${r.key}-${idx}`} hover>
                       <TableCell sx={{ fontFamily: "monospace", fontSize: 12 }}>
-                        {r.key}
+                        <div>{r.key}</div>
+                        {r.action === "error" && r.error && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ display: "block", fontFamily: "inherit" }}
+                          >
+                            {r.error}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -372,7 +381,6 @@ export default function ImageCompressionPage() {
                               ? "error"
                               : "default"
                           }
-                          title={r.error}
                         />
                       </TableCell>
                       <TableCell align="right">
