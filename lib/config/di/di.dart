@@ -13,7 +13,9 @@ import 'package:injectable/injectable.dart';
 
 //* Import all files here
 import '../../core/constants/constants.dart';
+import '../../core/dev_tools/network_inspector.dart';
 import '../../core/helpers/helpers.dart';
+import '../../flavors.dart';
 import '../services/services.dart';
 import 'di.config.dart';
 

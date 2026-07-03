@@ -2,6 +2,14 @@ part of 'di.dart';
 
 @module
 abstract class NetworkModule {
+  /// Attach the in-app network inspector to a Dio client — DEV flavor only, so
+  /// staging/prod never capture request/response data. In-memory only (no disk).
+  void _attachDevInspector(Dio dio) {
+    if (F.appFlavor == Flavor.dev) {
+      dio.interceptors.add(NetworkInspectorInterceptor());
+    }
+  }
+
   @Named(DIKey.apiBaseUrl)
   @lazySingleton
   String get apiBaseUrl => EnvConstant.apiBaseUrl;
@@ -29,6 +37,7 @@ abstract class NetworkModule {
   Dio appDio(IRestfulService networkService, @Named(DIKey.appInterceptor) Interceptor interceptor) {
     final dio = networkService.createDio();
     dio.interceptors.add(interceptor);
+    _attachDevInspector(dio);
     return dio;
   }
 
@@ -37,6 +46,7 @@ abstract class NetworkModule {
   Dio aiDio(IRestfulService networkService, @Named(DIKey.appInterceptor) Interceptor interceptor) {
     final dio = networkService.createAIDio();
     dio.interceptors.add(interceptor);
+    _attachDevInspector(dio);
     return dio;
   }
 
@@ -45,6 +55,7 @@ abstract class NetworkModule {
   Dio thirdPartyDio(IRestfulService networkService, @Named(DIKey.thirdPartyInterceptor) Interceptor interceptor) {
     final dio = networkService.createDioThirdParty();
     dio.interceptors.add(interceptor);
+    _attachDevInspector(dio);
     return dio;
   }
 
