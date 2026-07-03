@@ -65,6 +65,12 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
       }
       if (uri != null && navigationFromService(uri)) return true;
 
+      // The home_widget plugin requires the iOS app-group id to be set before
+      // any other call in the session; otherwise this throws
+      // PlatformException(-7, "AppGroupId not set") on every cold start,
+      // breaking launch-from-widget deeplinks (the widget bridge only sets it
+      // when a widget sync runs, which is too late for this path).
+      await home_widget_plugin.HomeWidget.setAppGroupId(HomeWidgetAppGroups.current());
       uri = await home_widget_plugin.HomeWidget.initiallyLaunchedFromHomeWidget();
       if (uri == null) return false;
       if (_lastHandledInitialUriKey == uri.toString()) {
