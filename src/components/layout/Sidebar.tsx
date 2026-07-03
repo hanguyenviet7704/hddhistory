@@ -15,6 +15,7 @@ import {
   ChartBarIcon,
   PlayCircleIcon,
   ExclamationTriangleIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -42,6 +43,7 @@ const menuItems = [
   { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
   { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
+  { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
@@ -115,7 +117,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         `}
         >
           <img
-            src="https://cdn.meup.training/onboarding/IMG_5442.jpeg"
+            src="https://i.pinimg.com/736x/f9/5d/b0/f95db029418c8d27375b6851060d6f0c.jpg"
             alt="Logo"
             className={`
               transition-all duration-300

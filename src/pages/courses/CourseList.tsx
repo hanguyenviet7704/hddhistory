@@ -158,11 +158,13 @@ export default function CourseList() {
   const statusColors: Record<CourseStatus, string> = {
     [CourseStatus.PUBLISHED]: "bg-green-100 text-green-700",
     [CourseStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
+    [CourseStatus.COMING_SOON]: "bg-blue-100 text-blue-700",
   };
 
   const statusLabels: Record<CourseStatus, string> = {
     [CourseStatus.PUBLISHED]: "Published",
     [CourseStatus.DRAFT]: "Draft",
+    [CourseStatus.COMING_SOON]: "Coming Soon",
   };
 
   return (
