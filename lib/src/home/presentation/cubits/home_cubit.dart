@@ -23,6 +23,18 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   /// don't refetch all 5 endpoints again. A [force] request always refetches.
   static const _initFreshnessWindow = Duration(seconds: 45);
 
+  /// Self-heal for pages that render the home dataset (Home, Explore grid):
+  /// if the catalog is empty because an earlier load failed or never ran
+  /// (e.g. a first-session prewarm raced/failed right after install) and
+  /// nothing is in flight, force a refetch. No-op when data is present, so
+  /// it's safe to call on every page mount. Without this, a failed first
+  /// load leaves Home/Explore blank until the user pull-to-refreshes or
+  /// restarts the app.
+  Future<void> ensureHomeDataLoaded() {
+    if (!shouldSelfHealHomeData(state)) return Future.value();
+    return initializeData(isInit: true, force: true);
+  }
+
   Future<void> initializeData({bool isInit = false, bool force = false}) async {
     // De-dupe concurrent callers (prewarm + handoff + page mount) onto the SAME
     // in-flight fetch instead of each starting its own.

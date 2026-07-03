@@ -28,6 +28,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _trackHomeScrView();
+      // Recover from a failed/skipped first load (e.g. transient failure right
+      // after a fresh install) instead of showing a blank Home until the user
+      // pull-to-refreshes or restarts the app. No-op when data is present.
+      unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
       await _prefetchLearningStreak();
       final didOpenPaywall = await _tryOpenPaywallAutoOpen();
       if (didOpenPaywall) return;
@@ -46,6 +50,9 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       listener: (context, state) {
         if (state.currentIndex == 0) {
           _trackHomeScrView();
+          // Returning to the Home tab with an empty catalog (initial retry
+          // also failed) → try again.
+          unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
         }
       },
       child: BlocListener<InAppSurveyCubit, InAppSurveyState>(
