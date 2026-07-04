@@ -80,7 +80,25 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
         child: BlocBuilder<CourseRoadmapCubit, CourseRoadmapState>(
           builder: (context, roadmapState) {
             final roadmap = roadmapState.roadmap;
-            if (roadmap.levels.isEmpty) return const CourseEmptyState();
+            if (roadmap.levels.isEmpty) {
+              final loadFailed = roadmapState.status == CourseRoadmapStatus.failure && roadmap.courseId.isNotEmpty;
+              // A bare Center isn't scrollable, so RefreshIndicator could never
+              // be triggered from the empty/failed state — wrap in an
+              // always-scrollable view so pull-to-refresh works here too.
+              return LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: constraints.maxHeight,
+                    child: loadFailed
+                        ? CourseRoadmapLoadFailureState(
+                            onRetry: () => context.read<CourseRoadmapCubit>().loadRoadmap(),
+                          )
+                        : const CourseEmptyState(),
+                  ),
+                ),
+              );
+            }
             final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
             final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig);
             return BlocBuilder<ProgressCubit, ProgressState>(
