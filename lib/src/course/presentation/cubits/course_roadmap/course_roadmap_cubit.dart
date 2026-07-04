@@ -5,6 +5,12 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   final GetRoadmapUseCase _getRoadmapUseCase;
   LessonEntity? _cachedLessonAction;
 
+  /// Set when a loadRoadmap() succeeded during THIS app session. Hydration
+  /// restores state but not this flag, so a hydrated roadmap counts as stale
+  /// and gets one silent refresh on first page entry after cold start.
+  bool _hasLoadedThisSession = false;
+  Future<void>? _ensureInFlight;
+
   CourseRoadmapCubit(
     this._getRoadmapUseCase,
   ) : super(CourseRoadmapState.initial());
@@ -15,7 +21,10 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   @override
   Map<String, dynamic> toJson(CourseRoadmapState state) => state.toJson();
 
-  void reset() => emit(CourseRoadmapState.initial());
+  void reset() {
+    _hasLoadedThisSession = false;
+    emit(CourseRoadmapState.initial());
+  }
 
   void setRoadmapSource(String source) => emit(state.copyWith(roadmapSource: source));
 
@@ -36,6 +45,25 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   }
 
   LessonEntity? get cachedLessonAction => _cachedLessonAction;
+
+  /// Self-heal + stale-refresh for pages that render the roadmap: fetches when
+  /// the roadmap is blank for a known course (an earlier load failed or never
+  /// ran — e.g. splash routed here off hydrated state) or when hydrated data
+  /// hasn't been refreshed this session. No-op when data is fresh or a load is
+  /// already running, so it's safe to call on every page mount and tab return.
+  /// Mirrors [HomeCubit.ensureHomeDataLoaded]. Without this, a failed or
+  /// skipped first load leaves the roadmap blank until the user
+  /// pull-to-refreshes or restarts the app.
+  Future<void> ensureRoadmapLoaded() {
+    final inFlight = _ensureInFlight;
+    if (inFlight != null) return inFlight;
+    if (!shouldEnsureRoadmapReload(state, hasLoadedThisSession: _hasLoadedThisSession)) {
+      return Future.value();
+    }
+    final future = loadRoadmap().whenComplete(() => _ensureInFlight = null);
+    _ensureInFlight = future;
+    return future;
+  }
 
   Future<void> loadRoadmap({String courseId = ''}) async {
     if (courseId.isEmpty) {
@@ -59,6 +87,7 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
         );
       },
       onSuccess: (roadmap) {
+        _hasLoadedThisSession = true;
         final selection = roadmap.autoSelectedLesson(fallbackLevel: state.currentCourseLevel);
         final selectedLesson = selection.key;
         final selectedLevel = selection.value;
