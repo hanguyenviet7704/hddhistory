@@ -23,6 +23,7 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
 
   void reset() {
     _hasLoadedThisSession = false;
+    _ensureInFlight = null;
     emit(CourseRoadmapState.initial());
   }
 
