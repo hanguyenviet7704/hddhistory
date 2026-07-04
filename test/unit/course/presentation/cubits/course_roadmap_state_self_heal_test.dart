@@ -60,4 +60,22 @@ void main() {
       );
     });
   });
+
+  group('normalizeHydratedRoadmapState', () {
+    test('resets a persisted loading status to initial (process killed mid-fetch)', () {
+      final hydrated = CourseRoadmapState(
+        status: CourseRoadmapStatus.loading,
+        roadmap: RoadmapEntity(courseId: 'course-1'),
+      );
+      final normalized = normalizeHydratedRoadmapState(hydrated);
+      expect(normalized.status, CourseRoadmapStatus.initial);
+      expect(normalized.roadmap.courseId, 'course-1');
+      expect(shouldEnsureRoadmapReload(normalized, hasLoadedThisSession: false), isTrue);
+    });
+
+    test('leaves non-loading statuses untouched', () {
+      final success = CourseRoadmapState(status: CourseRoadmapStatus.success);
+      expect(identical(normalizeHydratedRoadmapState(success), success), isTrue);
+    });
+  });
 }

@@ -16,7 +16,7 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   ) : super(CourseRoadmapState.initial());
 
   @override
-  CourseRoadmapState fromJson(Map<String, dynamic> json) => CourseRoadmapState.fromJson(json);
+  CourseRoadmapState fromJson(Map<String, dynamic> json) => normalizeHydratedRoadmapState(CourseRoadmapState.fromJson(json));
 
   @override
   Map<String, dynamic> toJson(CourseRoadmapState state) => state.toJson();

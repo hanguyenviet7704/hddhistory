@@ -49,3 +49,12 @@ bool shouldEnsureRoadmapReload(
   if (state.roadmap.levels.isEmpty) return true;
   return !hasLoadedThisSession;
 }
+
+/// Hydration restores the last PERSISTED state — including a `loading` status
+/// captured if the process died mid-fetch. Nothing completes that phantom load
+/// after a cold start, and [shouldEnsureRoadmapReload] treats `loading` as
+/// "fetch in flight", so a hydrated `loading` would silently disable the
+/// self-heal for the whole session (or leave an eternal spinner on an empty
+/// roadmap). Normalize it back to `initial` on restore.
+CourseRoadmapState normalizeHydratedRoadmapState(CourseRoadmapState state) =>
+    state.status == CourseRoadmapStatus.loading ? state.copyWith(status: CourseRoadmapStatus.initial) : state;
