@@ -85,13 +85,30 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     unawaited(context.read<ProgressCubit>().loadAllUserProgresss(courseId: courseId, silent: true));
   }
 
+  String _lastCheckedWarmUpCourseId = '';
+
+  /// Resolves whether the "Let's warm up" return-refresher CTA should show for
+  /// the course the roadmap just loaded. Runs silently — a failure or "not
+  /// due" result simply leaves the floating CTA in its normal start/continue
+  /// lesson state (see [CourseRoadmapFloatingButton]).
+  void _checkWarmUpForRoadmap(String courseId) {
+    if (courseId.isEmpty || _lastCheckedWarmUpCourseId == courseId) return;
+    _lastCheckedWarmUpCourseId = courseId;
+    unawaited(AppDI.injector.get<WarmUpCubit>().check(courseId));
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.read<PageCubit>().state.currentRouteName == RouteNamed.courseRoadmap) {
+        // Recover from a blank/stale hydrated roadmap (e.g. splash routed here
+        // off persisted state without fetching). No-op when data is fresh.
+        unawaited(context.read<CourseRoadmapCubit>().ensureRoadmapLoaded());
         _trackRoadmapScrView();
-        _loadProgressForRoadmap(context.read<CourseRoadmapCubit>().state.roadmap.courseId);
+        final courseId = context.read<CourseRoadmapCubit>().state.roadmap.courseId;
+        _loadProgressForRoadmap(courseId);
+        _checkWarmUpForRoadmap(courseId);
       }
     });
   }
@@ -139,6 +156,9 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
           listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName,
           listener: (context, state) {
             if (state.currentRouteName == RouteNamed.courseRoadmap) {
+              // Returning to the Courses tab with a blank roadmap (initial
+              // self-heal also failed) → try again.
+              unawaited(context.read<CourseRoadmapCubit>().ensureRoadmapLoaded());
               _trackRoadmapScrView();
               return;
             }
@@ -151,12 +171,50 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
             _hasTrackedForVisibility = false;
             _trackRoadmapScrView();
             _loadProgressForRoadmap(state.roadmap.courseId);
+            _checkWarmUpForRoadmap(state.roadmap.courseId);
           },
         ),
         BlocListener<FeedbackCubit, FeedbackState>(
           listenWhen: (previous, current) => previous.pendingFeedbackIncompletePrompt != current.pendingFeedbackIncompletePrompt || previous.status != current.status,
           listener: (context, state) {
             _tryShowRoleplayIncompleteFeedback(state);
+          },
+        ),
+        // Each warm-up page sets its own non-primary route name on entry to
+        // hide the shell's floating nav (branch nav doesn't fire the root
+        // observer). When the flow closes, branch pops likewise don't restore
+        // the name, so do it here: if we're still on a warm-up route name,
+        // put it back to courseRoadmap (skip when a lesson route took over).
+        BlocListener<WarmUpCubit, WarmUpState>(
+          listenWhen: (previous, current) => previous.status != current.status,
+          listener: (context, state) {
+            const flowStatuses = {
+              WarmUpStatus.intro,
+              WarmUpStatus.question,
+              WarmUpStatus.result,
+              WarmUpStatus.completion,
+            };
+            if (flowStatuses.contains(state.status)) return;
+            const warmUpRouteNames = {
+              RouteNamed.warmUpIntro,
+              RouteNamed.warmUpQuestion,
+              RouteNamed.warmUpCompletion,
+            };
+            final page = context.read<PageCubit>();
+            if (warmUpRouteNames.contains(page.state.currentRouteName)) {
+              page.setCurrentRouteName(RouteNamed.courseRoadmap);
+            }
+            // "Start today's lesson" / "Skip to lesson": the warm-up pages only
+            // close the flow and return here; THIS page launches the lesson so
+            // the paywall/lesson stacks on the roadmap (dismissing the paywall
+            // lands back here, not on a dead-end warm-up screen).
+            if (state.isRoutingToLesson) {
+              context.read<WarmUpCubit>().setRoutingToLesson(false);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                RoadmapNodeActionHelper.startLastInProgressAction(context);
+              });
+            }
           },
         ),
       ],
@@ -271,6 +329,15 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                             context.read<PageCubit>().setCurrentIndex(3);
                             CourseRoute(selectedTabIndex: skillsetIndex)
                                 .go(context);
+                            return;
+                          }
+                          // Return-refresher available for this course: open
+                          // the warm-up intro instead of jumping straight into
+                          // the last in-progress lesson.
+                          final hasWarmUpAvailable = context.read<WarmUpCubit>().state.hasWarmUpAvailable;
+                          if (hasWarmUpAvailable) {
+                            context.read<WarmUpCubit>().openIntro();
+                            WarmUpIntroRoute().push(context);
                             return;
                           }
                           _trackRoadmapQuickLearningClick();
