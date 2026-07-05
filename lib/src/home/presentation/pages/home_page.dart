@@ -36,6 +36,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       // fail independently of skillsets since both load inside the same
       // Future.wait.
       unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
+      // And for the recommended-courses strip, hidden when empty.
+      unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
       await _prefetchLearningStreak();
       final didOpenPaywall = await _tryOpenPaywallAutoOpen();
       if (didOpenPaywall) return;
@@ -59,6 +61,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
           unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
           // Same recovery for the "Continue learning" my-courses list.
           unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
+          // And for the recommended-courses strip, hidden when empty.
+          unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
         }
       },
       child: BlocListener<InAppSurveyCubit, InAppSurveyState>(

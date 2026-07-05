@@ -24,6 +24,17 @@ abstract class HomeState with _$HomeState {
 /// so the self-heal trigger is unit-testable.
 bool shouldSelfHealHomeData(HomeState state) => state.skillsets.isEmpty && state.status != HomeStatus.loading;
 
+/// True when Home's "recommended" strip should (re)fetch: no suggested
+/// courses loaded — either the suggest call failed inside initializeData
+/// while skillsets succeeded (so [shouldSelfHealHomeData] never re-fires it)
+/// or it never ran. The section hides itself when empty, so without this a
+/// suggest-only failure stays invisible until pull-to-refresh. A genuinely
+/// empty suggestion list refetches on each Home entry — same accepted
+/// trade-off as [shouldSelfHealHomeData]. In-flight dedupe lives in
+/// [HomeCubit.ensureSuggestedCoursesLoaded] (loadSuggestCourses doesn't
+/// drive [HomeState.status]).
+bool shouldEnsureSuggestedCoursesReload(HomeState state) => state.suggestedCourses.isEmpty;
+
 extension HomeStateExtension on HomeState {
   List<SkillsetEntity> get skillsets => pageData.items;
   SkillsetEntity get currentSkillset {
