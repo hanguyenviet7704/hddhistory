@@ -18,6 +18,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
   final UserCubit _userCubit;
   final RoleplayCubit _roleplayCubit;
   int _courseProgressRequestSerial = 0;
+  Future<void>? _ensureInFlight;
 
   @override
   CreateCompletedLevelAdditionalContentRequestUseCase get completedLevelRequestUseCase => _createCompletedLevelAdditionalContentRequestUseCase;
@@ -48,7 +49,27 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     this._roleplayCubit,
   ) : super(ProgressState.initial());
 
-  void reset() => emit(ProgressState.initial());
+  void reset() {
+    _ensureInFlight = null;
+    emit(ProgressState.initial());
+  }
+
+  /// Self-heal for Home's "Continue learning" section: fetches when
+  /// my-courses is empty because an earlier load failed or never ran (e.g. it
+  /// lost the race against skillsets inside HomeCubit's Future.wait) and
+  /// nothing is in flight. No-op when data is present, so it's safe to call
+  /// on every Home mount and tab return. Mirrors
+  /// [HomeCubit.ensureHomeDataLoaded]. Without this, a myCourses-only failure
+  /// leaves "Continue learning" hidden until the user pull-to-refreshes or
+  /// restarts the app.
+  Future<void> ensureMyCoursesLoaded() {
+    final inFlight = _ensureInFlight;
+    if (inFlight != null) return inFlight;
+    if (!shouldEnsureMyCoursesReload(state)) return Future.value();
+    final future = loadUserProgressMyCourses(isInit: true, recent: true).whenComplete(() => _ensureInFlight = null);
+    _ensureInFlight = future;
+    return future;
+  }
 
   Future<void> loadAllUserProgresss({String? userId, String? courseId, String? lessonId, bool silent = false}) async {
     if (!silent && state.status == ProgressStatus.loading) return;
