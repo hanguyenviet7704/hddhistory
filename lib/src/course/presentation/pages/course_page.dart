@@ -13,6 +13,11 @@ class _CoursePageState extends State<CoursePage> {
   void initState() {
     super.initState();
     _initializeSelection();
+    // The Explore grid renders HomeCubit's skillsets — recover from a
+    // failed/skipped first load (e.g. transient failure right after a fresh
+    // install) instead of showing an empty grid until app restart. No-op
+    // when data is present.
+    unawaited(AppDI.injector.get<HomeCubit>().ensureHomeDataLoaded());
     WidgetsBinding.instance.addPostFrameCallback((_) => _tryOpenPaywallAutoOpen());
   }
 

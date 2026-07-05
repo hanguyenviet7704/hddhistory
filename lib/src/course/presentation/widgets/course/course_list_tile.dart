@@ -101,13 +101,33 @@ class _CourseProgressChip extends StatelessWidget {
 
   final CourseEntity course;
 
+  Widget _chip({required Widget icon, required String label, required Color color}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(width: 14.w, height: 14.w, child: Center(child: icon)),
+        4.horizontalSpace,
+        Flexible(
+          child: AppText(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyle.text12.copyWith(color: color),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Coming soon courses always show the coming-soon label, regardless of progress.
+    // Coming soon courses always show the coming-soon label, regardless of progress
+    // (Figma course-card state set, node 10840-20051 — clock + brand text).
     if (course.status == CoursePublishStatus.comingSoon) {
-      return AppText(
-        context.l10n.allcourse.comingSoonLabel,
-        style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary700),
+      return _chip(
+        icon: Icon(Icons.access_time_filled_rounded, size: 14.w, color: AppCustomColor.brandPrimary700),
+        label: context.l10n.allcourse.comingSoonLabel,
+        color: AppCustomColor.brandPrimary700,
       );
     }
 
@@ -118,65 +138,63 @@ class _CourseProgressChip extends StatelessWidget {
     final completed = userProgress?.lessonsResult.where((r) => r.passed).length ?? 0;
     final total = course.numberOfLesson;
 
-    // New course with zero progress — show "New course" label.
+    // New course with zero progress — sparkle + brand/secondary/700 green
+    // (Figma node 10736-50550, Card3X1 "new" state).
     if (course.isNew && completed == 0) {
-      return AppText(
-        context.l10n.allcourse.newCourseLabel,
-        style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary),
+      return _chip(
+        icon: Icon(Icons.auto_awesome_rounded, size: 14.w, color: _kBadgeGreen),
+        label: context.l10n.allcourse.newCourseLabel,
+        color: _kBadgeGreen,
       );
     }
 
     if (userProgress == null || userProgress.lessonsResult.isEmpty) {
-      // Not started — show "Not started" label.
+      // Not started — lesson count + solid book icon, matching the Explore grid
+      // badge and Figma's "not started" variant (which shows "N lessons", not
+      // literal "Not started" text).
+      if (total > 0) {
+        return _chip(
+          icon: SvgPicture.asset(AppAsset.svg.app.icBookSolid, width: 14.w, height: 14.w),
+          label: context.l10n.allcourse.lessonsCount(count: total),
+          color: AppCustomColor.streakTextMuted,
+        );
+      }
       return AppText(
         context.l10n.allcourse.progressNotStarted,
-        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+        style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
       );
     }
 
     if (total > 0 && completed >= total) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check_circle_rounded,
-              color: AppCustomColor.successGreen, size: 14.w),
-          4.horizontalSpace,
-          AppText(
-            context.l10n.allcourse.progressCompleted,
-            style: AppStyle.text12.copyWith(color: AppCustomColor.successGreen),
-          ),
-        ],
+      return _chip(
+        icon: Icon(Icons.check_circle_rounded, size: 14.w, color: _kBadgeGreen),
+        label: context.l10n.allcourse.progressCompleted,
+        color: _kBadgeGreen,
       );
     }
 
     final percent = (total > 0) ? (completed / total * 100).toInt() : 0;
     if (percent > 0) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 14.w,
-            height: 14.w,
-            child: CircularProgressIndicator(
-              value: total > 0 ? completed / total : 0,
-              strokeWidth: 2.w,
-              backgroundColor: AppCustomColor.borderDefault,
-              color: AppCustomColor.brandPrimary,
-            ),
+      return _chip(
+        icon: SizedBox(
+          width: 14.w,
+          height: 14.w,
+          child: CircularProgressIndicator(
+            value: total > 0 ? completed / total : 0,
+            strokeWidth: 2.w,
+            backgroundColor: AppCustomColor.borderDefault,
+            color: AppCustomColor.brandPrimary,
           ),
-          4.horizontalSpace,
-          AppText(
-            context.l10n.allcourse.progressPercent(percent: percent),
-            style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary),
-          ),
-        ],
+        ),
+        label: context.l10n.allcourse.progressPercent(percent: percent),
+        color: AppCustomColor.brandPrimary,
       );
     }
 
     // Completed at least one lesson but less than tracked minimum — show "Not started".
     return AppText(
       context.l10n.allcourse.progressNotStarted,
-      style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+      style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
     );
   }
 }

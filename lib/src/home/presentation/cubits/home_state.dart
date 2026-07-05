@@ -19,6 +19,11 @@ abstract class HomeState with _$HomeState {
   factory HomeState.fromJson(Map<String, dynamic> json) => _$HomeStateFromJson(json);
 }
 
+/// True when the home dataset should be (re)fetched by a page that needs it:
+/// no skillsets loaded and no load currently running. Kept as a pure function
+/// so the self-heal trigger is unit-testable.
+bool shouldSelfHealHomeData(HomeState state) => state.skillsets.isEmpty && state.status != HomeStatus.loading;
+
 extension HomeStateExtension on HomeState {
   List<SkillsetEntity> get skillsets => pageData.items;
   SkillsetEntity get currentSkillset {

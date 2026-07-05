@@ -21,8 +21,11 @@ class LocaleCubit extends HydratedCubit<AppLocale> {
   /// [emit] above, but this API-sourced content must be reloaded explicitly.
   void _reloadLocalizedServerContent() {
     // Refreshes Home skillsets (also drives the Explore grid), suggested
-    // courses, quote and my-courses progress.
-    AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
+    // courses, quote and my-courses progress. `force` bypasses HomeCubit's
+    // 45s freshness guard — without it, switching language right after Home
+    // loaded skips the refetch and skillset/course titles (e.g. the roadmap's
+    // skillset dropdown) stay in the previous language.
+    AppDI.injector.get<HomeCubit>().initializeData(isInit: true, force: true);
     // Refreshes the open roadmap, if any (no-op when no course is loaded).
     AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap();
   }
