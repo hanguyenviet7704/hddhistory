@@ -30,3 +30,31 @@ extension CourseRoadmapStateExtension on CourseRoadmapState {
     return currentLevelLessons.last.id == currentLesson.id;
   }
 }
+
+/// True when a page showing the roadmap should trigger a (re)fetch:
+/// - the roadmap is blank for a known course (a previous load failed or never
+///   ran — e.g. splash routed here off hydrated state without fetching), or
+/// - hydrated data is present but nothing was fetched this app session
+///   (stale-by-default cache after cold start).
+/// Never true while a load is in flight or when no course is known (that is a
+/// genuine "pick a course" empty state, not a failure).
+/// Kept as a pure function so the self-heal trigger is unit-testable
+/// (mirrors [shouldSelfHealHomeData]).
+bool shouldEnsureRoadmapReload(
+  CourseRoadmapState state, {
+  required bool hasLoadedThisSession,
+}) {
+  if (state.roadmap.courseId.isEmpty) return false;
+  if (state.status == CourseRoadmapStatus.loading) return false;
+  if (state.roadmap.levels.isEmpty) return true;
+  return !hasLoadedThisSession;
+}
+
+/// Hydration restores the last PERSISTED state — including a `loading` status
+/// captured if the process died mid-fetch. Nothing completes that phantom load
+/// after a cold start, and [shouldEnsureRoadmapReload] treats `loading` as
+/// "fetch in flight", so a hydrated `loading` would silently disable the
+/// self-heal for the whole session (or leave an eternal spinner on an empty
+/// roadmap). Normalize it back to `initial` on restore.
+CourseRoadmapState normalizeHydratedRoadmapState(CourseRoadmapState state) =>
+    state.status == CourseRoadmapStatus.loading ? state.copyWith(status: CourseRoadmapStatus.initial) : state;

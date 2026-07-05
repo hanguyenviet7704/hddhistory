@@ -51,6 +51,11 @@ mixin RoutePath {
   static const String lessonExplainPopup = 'lesson-explain-popup';
   static const String courseLessonEmptyNotiPopup = 'course-lesson-empty-noti-popup';
 
+  //? Course - Warm Up (return-refresher)
+  static const String warmUpIntro = 'warm-up-intro';
+  static const String warmUpQuestion = 'warm-up-question';
+  static const String warmUpCompletion = 'warm-up-completion';
+
   //? Course - Lesson
   static const String lesson = 'lesson';
   static const String noCorrectAnswerDocument = 'no-correct-answer-document/:groupId';
@@ -131,6 +136,11 @@ mixin RouteNamed {
   static const String lessonExplainPopup = 'Lesson Explain Popup';
   static const String roadmapDetailPopup = 'Roadmap Detail Popup';
   static const String courseLessonEmptyNotiPopup = 'Course Lesson Empty Noti Popup';
+
+  //? Course - Warm Up (return-refresher)
+  static const String warmUpIntro = 'Warm Up Intro';
+  static const String warmUpQuestion = 'Warm Up Question';
+  static const String warmUpCompletion = 'Warm Up Completion';
 
   //? Course - Lesson
   static const String lesson = 'Lesson';

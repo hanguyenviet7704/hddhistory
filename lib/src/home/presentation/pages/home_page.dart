@@ -32,6 +32,12 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       // after a fresh install) instead of showing a blank Home until the user
       // pull-to-refreshes or restarts the app. No-op when data is present.
       unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
+      // Same recovery for the "Continue learning" my-courses list — it can
+      // fail independently of skillsets since both load inside the same
+      // Future.wait.
+      unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
+      // And for the recommended-courses strip, hidden when empty.
+      unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
       await _prefetchLearningStreak();
       final didOpenPaywall = await _tryOpenPaywallAutoOpen();
       if (didOpenPaywall) return;
@@ -53,6 +59,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
           // Returning to the Home tab with an empty catalog (initial retry
           // also failed) → try again.
           unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
+          // Same recovery for the "Continue learning" my-courses list.
+          unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
+          // And for the recommended-courses strip, hidden when empty.
+          unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
         }
       },
       child: BlocListener<InAppSurveyCubit, InAppSurveyState>(

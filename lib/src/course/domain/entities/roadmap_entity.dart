@@ -34,7 +34,14 @@ extension RoadmapEntityExtension on RoadmapEntity {
     return config.lessonLock;
   }
 
-  Set<String> lockedLessonKeys(PaywallConfigEntity config) {
+  /// A premium user is never locked out of any lesson, regardless of the
+  /// remote-config lock index — this must be checked here, at the single
+  /// source both the roadmap list's lock badge and the tap-to-open gate read
+  /// from, so the two can't disagree (previously only the tap gate checked
+  /// premium, in RoadmapNodeActionHelper._handlePaywall, leaving the visual
+  /// badge showing "locked" on lessons a premium user could already open).
+  Set<String> lockedLessonKeys(PaywallConfigEntity config, {bool isPremium = false}) {
+    if (isPremium) return {};
     final startIndex = lockedLessonStartIndex(config);
     if (startIndex < 0) return {};
     final lessons = flatLessons;
@@ -42,10 +49,10 @@ extension RoadmapEntityExtension on RoadmapEntity {
     return lessons.skip(startIndex).map((lesson) => lesson.roadmapKey).where((key) => key.isNotEmpty).toSet();
   }
 
-  bool isLessonLocked(LessonEntity lesson, PaywallConfigEntity config) {
+  bool isLessonLocked(LessonEntity lesson, PaywallConfigEntity config, {bool isPremium = false}) {
     final key = lesson.roadmapKey;
     if (key.isEmpty) return false;
-    return lockedLessonKeys(config).contains(key);
+    return lockedLessonKeys(config, isPremium: isPremium).contains(key);
   }
 
   List<LessonEntity> get displayLessons {

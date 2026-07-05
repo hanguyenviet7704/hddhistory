@@ -35,6 +35,23 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     return initializeData(isInit: true, force: true);
   }
 
+  Future<void>? _ensureSuggestedInFlight;
+
+  /// Self-heal for Home's "recommended" strip: refetches only the suggested
+  /// courses when they're missing (a suggest-only failure inside
+  /// initializeData is hidden as an empty section and never retried by
+  /// [ensureHomeDataLoaded], whose gate only checks skillsets). No-op when
+  /// suggestions are present or a fetch is already running, so it's safe to
+  /// call on every Home mount and tab return.
+  Future<void> ensureSuggestedCoursesLoaded() {
+    final inFlight = _ensureSuggestedInFlight;
+    if (inFlight != null) return inFlight;
+    if (!shouldEnsureSuggestedCoursesReload(state)) return Future.value();
+    final future = loadSuggestCourses().whenComplete(() => _ensureSuggestedInFlight = null);
+    _ensureSuggestedInFlight = future;
+    return future;
+  }
+
   Future<void> initializeData({bool isInit = false, bool force = false}) async {
     // De-dupe concurrent callers (prewarm + handoff + page mount) onto the SAME
     // in-flight fetch instead of each starting its own.

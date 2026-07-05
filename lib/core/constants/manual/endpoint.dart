@@ -116,6 +116,9 @@ mixin AppEndpoint {
   //* Daily Warm Up API
   static const String dailyWarmUp = '/api/v1/courses-user-progress/daily-warm-up';
 
+  //* Warm Up (return-refresher) API
+  static const String warmUpForCourse = '/api/v1/warm-up/for-course/{courseId}';
+
   //* In App Survey API
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';
   static const String inAppSurveyResponses = '/api/v1/courses-in-app-survey/responses';

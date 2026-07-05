@@ -92,7 +92,72 @@ class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRout
       BlocProvider.value(value: AppDI.injector.get<RoleplayPointCubit>()),
       BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<WarmUpCubit>()),
     ],
     child: const CourseRoadmapPage(),
   );
+}
+
+/// The warm-up routes render on the ROOT navigator (above the shell), so they
+/// inherit NOTHING from CourseRoadmapRoute's provider tree. The start-lesson
+/// handoff (paywall check, tracking, roleplay/output launch) reads several of
+/// those cubits via context, so mirror the roadmap's provider set here — all
+/// DI singletons, same instances.
+Widget _warmUpProviders(Widget child) => MultiBlocProvider(
+  providers: [
+    BlocProvider.value(value: AppDI.injector.get<WarmUpCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<RoleplayPointCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+    BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+  ],
+  child: child,
+);
+
+class WarmUpIntroRoute extends BaseTransitionRouteData with $WarmUpIntroRoute {
+  const WarmUpIntroRoute();
+
+  // Render on the ROOT navigator (above the shell) so the full-screen warm-up
+  // flow covers the bottom nav instead of sitting inside a shell branch.
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = AppConfig.instance.rootNaviKey;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return _warmUpProviders(const WarmUpIntroPage());
+  }
+}
+
+class WarmUpQuestionRoute extends BaseTransitionRouteData with $WarmUpQuestionRoute {
+  const WarmUpQuestionRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = AppConfig.instance.rootNaviKey;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return _warmUpProviders(const WarmUpQuestionPage());
+  }
+}
+
+class WarmUpCompletionRoute extends BaseTransitionRouteData with $WarmUpCompletionRoute {
+  const WarmUpCompletionRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = AppConfig.instance.rootNaviKey;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return _warmUpProviders(const WarmUpCompletionPage());
+  }
 }

@@ -86,6 +86,7 @@ part 'presentation/widgets/course_roadmap/completed_level_additional_content_req
 part 'presentation/widgets/course_roadmap/completed_level_additional_content_request_popup.dart';
 part 'presentation/widgets/course_roadmap/completed_level_additional_content_request_popup_controls.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
+part 'presentation/widgets/course_roadmap/course_roadmap_load_failure_state.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_header_card.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_floating_button.dart';
 part 'presentation/widgets/course_roadmap/in_progress_badge.dart';

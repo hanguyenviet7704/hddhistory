@@ -4,6 +4,21 @@ extension on Route<dynamic> {
   String get str => 'route(${settings.name}: ${settings.arguments})';
 }
 
+/// [NavigatorObserver.didRemove] fires when a route is pruned from ANYWHERE
+/// in the stack, not only from the top — e.g. go_router pushes a sibling
+/// route (KeypointComplete) on top of the current one (Lesson, both direct
+/// children of course-roadmap) and then removes the now-unreachable Lesson
+/// route. Naively writing that removal's `previousRoute` as the new current
+/// route clobbers [PageCubit.currentRouteName] with a stale — often PRIMARY —
+/// name even though the actually-visible top route (KeypointComplete) never
+/// changed, un-hiding the shell's floating nav over its CTA. Only trust a
+/// didRemove signal when the removed route was the one actually being
+/// tracked as current (a real top-of-stack removal, e.g. Navigator.removeRoute).
+bool shouldUpdateCurrentRouteOnRemove({
+  required String removedRouteName,
+  required String trackedCurrentRouteName,
+}) => removedRouteName.isNotEmpty && removedRouteName == trackedCurrentRouteName;
+
 class BaseRouterObserver extends NavigatorObserver {
   final String observerName;
   final PageCubit _pageCubit;
@@ -26,7 +41,12 @@ class BaseRouterObserver extends NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     _log('didRemove', route, previousRoute);
-    onRouteChanged(previousRoute);
+    if (shouldUpdateCurrentRouteOnRemove(
+      removedRouteName: route.settings.name ?? '',
+      trackedCurrentRouteName: _pageCubit.state.currentRouteName,
+    )) {
+      onRouteChanged(previousRoute);
+    }
     onRemoveRoute(route);
   }
 
