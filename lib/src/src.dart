@@ -20,3 +20,4 @@ export 'roleplay/roleplay.dart';
 export 'setting/setting.dart';
 export 'feedback/feedback.dart';
 export 'video_lesson/video_lesson.dart';
+export 'warm_up/warm_up.dart';

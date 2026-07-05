@@ -31,6 +31,10 @@ part of '../routes.dart';
               path: RoutePath.skillsetCourses,
               name: RouteNamed.skillsetCourses,
             ),
+            //? Warm Up (return-refresher)
+            TypedGoRoute<WarmUpIntroRoute>(path: RoutePath.warmUpIntro, name: RouteNamed.warmUpIntro),
+            TypedGoRoute<WarmUpQuestionRoute>(path: RoutePath.warmUpQuestion, name: RouteNamed.warmUpQuestion),
+            TypedGoRoute<WarmUpCompletionRoute>(path: RoutePath.warmUpCompletion, name: RouteNamed.warmUpCompletion),
             //? Change Course
             TypedGoRoute<ChangeCourseRoute>(
               path: RoutePath.changeCourse,
