@@ -27,11 +27,14 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
 
   void setUser(UserEntity user) => emit(state.copyWith(user: user));
 
-  /// Self-heal for the Profile page: fetches when the user identity is blank
-  /// (an earlier loadUser() failed or never ran — e.g. it lost the race
-  /// against skillsets inside HomeCubit's Future.wait) or the last load
-  /// failed. No-op when data is present or a load is already running, so
-  /// it's safe to call on every page mount and tab return. Mirrors
+  /// Self-heal for the Profile page: refetches when the last load FAILED
+  /// (e.g. it lost the race against skillsets inside HomeCubit's
+  /// Future.wait), and recovers a blank identity by seeding it from
+  /// [UserCubit] — the auth-side source of truth, populated by setAuth and
+  /// hydrated independently — because [loadUser] is id-parameterized and
+  /// early-returns on a blank id. No-op when data is present, a load is
+  /// already running, or neither cubit knows the user yet, so it's safe to
+  /// call on every page mount and tab return. Mirrors
   /// [CourseRoadmapCubit.ensureRoadmapLoaded]. Without this, a failed or
   /// skipped first load leaves ProfilePage's identity/premium banner blank
   /// until the user pull-to-refreshes or restarts the app.
@@ -39,6 +42,11 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
     final inFlight = _ensureInFlight;
     if (inFlight != null) return inFlight;
     if (!shouldEnsureProfileReload(state)) return Future.value();
+    if (state.user.id.isEmpty) {
+      final authUser = AppDI.injector.get<UserCubit>().state.user;
+      if (authUser.id.isEmpty) return Future.value();
+      setUser(authUser);
+    }
     final future = loadUser().whenComplete(() => _ensureInFlight = null);
     _ensureInFlight = future;
     return future;

@@ -15,13 +15,13 @@ abstract class ProfileState with _$ProfileState {
   factory ProfileState.fromJson(Map<String, dynamic> json) => _$ProfileStateFromJson(json);
 }
 
-/// True when the profile page should trigger a (re)fetch: the user identity
-/// is blank (an earlier loadUser() failed before ever populating it, or it
-/// never ran — e.g. it lost the race against skillsets inside HomeCubit's
-/// Future.wait) or the last load failed. Never true while a load is in
-/// flight, so it's safe to call on every page mount and tab return. Kept as a
-/// pure function so the self-heal trigger is unit-testable (mirrors
-/// [shouldSelfHealHomeData]).
+/// True when the profile page should trigger a (re)fetch: the last load
+/// failed, or the user identity is blank. The blank-identity case is only
+/// recoverable when [UserCubit] knows the user — loadUser() is
+/// id-parameterized, so [ProfileCubit.ensureProfileLoaded] seeds the id from
+/// there before fetching. Never true while a load is in flight, so it's safe
+/// to call on every page mount and tab return. Kept as a pure function so the
+/// self-heal trigger is unit-testable (mirrors [shouldSelfHealHomeData]).
 bool shouldEnsureProfileReload(ProfileState state) {
   if (state.status == ProfileStatus.loading) return false;
   return state.user.id.isEmpty || state.status == ProfileStatus.failure;
