@@ -6,6 +6,8 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   final UpdateUserUseCase _updateUseCase;
   final GetUserIapSubscriptionsUseCase _getUserIapSubscriptionsUseCase;
 
+  Future<void>? _ensureInFlight;
+
   ProfileCubit(
     this._getUseCase,
     this._updateUseCase,
@@ -13,13 +15,34 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   ) : super(ProfileState.initial());
 
   @override
-  ProfileState fromJson(Map<String, dynamic> json) => ProfileState.fromJson(json);
+  ProfileState fromJson(Map<String, dynamic> json) => normalizeHydratedProfileState(ProfileState.fromJson(json));
 
   @override
   Map<String, dynamic> toJson(ProfileState state) => state.toJson();
 
-  void reset() => emit(ProfileState.initial());
+  void reset() {
+    _ensureInFlight = null;
+    emit(ProfileState.initial());
+  }
+
   void setUser(UserEntity user) => emit(state.copyWith(user: user));
+
+  /// Self-heal for the Profile page: fetches when the user identity is blank
+  /// (an earlier loadUser() failed or never ran — e.g. it lost the race
+  /// against skillsets inside HomeCubit's Future.wait) or the last load
+  /// failed. No-op when data is present or a load is already running, so
+  /// it's safe to call on every page mount and tab return. Mirrors
+  /// [CourseRoadmapCubit.ensureRoadmapLoaded]. Without this, a failed or
+  /// skipped first load leaves ProfilePage's identity/premium banner blank
+  /// until the user pull-to-refreshes or restarts the app.
+  Future<void> ensureProfileLoaded() {
+    final inFlight = _ensureInFlight;
+    if (inFlight != null) return inFlight;
+    if (!shouldEnsureProfileReload(state)) return Future.value();
+    final future = loadUser().whenComplete(() => _ensureInFlight = null);
+    _ensureInFlight = future;
+    return future;
+  }
 
   Future<void> loadUser({bool isInit = false}) async {
     if (state.user.id.isEmpty) return;
