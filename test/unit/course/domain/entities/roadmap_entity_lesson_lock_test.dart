@@ -105,5 +105,35 @@ void main() {
       expect(roadmap.lockedLessonStartIndex(config), -1);
       expect(roadmap.lockedLessonKeys(config), isEmpty);
     });
+
+    test('does not lock any lesson for a premium user, even past lessonLock', () {
+      final roadmap = _buildRoadmapWithLessonCount(10);
+      const config = PaywallConfigEntity(
+        enableLessonLock: true,
+        lessonLock: 0,
+      );
+
+      final lockedLessonKeys = roadmap.lockedLessonKeys(config, isPremium: true);
+
+      expect(lockedLessonKeys, isEmpty);
+      expect(
+        roadmap.isLessonLocked(
+          LessonEntity(id: 'lesson-0', keypoints: [KeypointEntity(id: 'kp-0')]),
+          config,
+          isPremium: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('still locks for a non-premium user (default)', () {
+      final roadmap = _buildRoadmapWithLessonCount(10);
+      const config = PaywallConfigEntity(
+        enableLessonLock: true,
+        lessonLock: 0,
+      );
+
+      expect(roadmap.lockedLessonKeys(config, isPremium: false), isNotEmpty);
+    });
   });
 }

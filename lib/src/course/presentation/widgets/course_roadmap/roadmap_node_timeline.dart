@@ -18,8 +18,11 @@ class RoadmapNodeActionHelper {
   }) {
     if (!isLocked) return LessonLockAction.proceed;
     if (progress == ProcessEnum.notStarted) return LessonLockAction.ignoreTap;
-    if (progress == ProcessEnum.inProgress) return LessonLockAction.showPaywall;
-    return LessonLockAction.proceed;
+    // Locked + started OR completed → gate behind the paywall (premium users
+    // pass through in _handlePaywall). Previously a locked lesson whose progress
+    // was `done` fell through to `proceed`, so a paywall-locked lesson could
+    // still be opened once completed — the "locked but still openable" bug.
+    return LessonLockAction.showPaywall;
   }
 
   static bool _handlePaywall(BuildContext context, LessonEntity lesson, bool isLocked) {
@@ -174,7 +177,8 @@ class RoadmapNodeActionHelper {
     context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
 
     final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
-    final lessonIsLocked = isLocked ?? state.roadmap.isLessonLocked(lesson, paywallConfig);
+    final isPremium = context.read<ProfileCubit>().state.user.isPremium;
+    final lessonIsLocked = isLocked ?? state.roadmap.isLessonLocked(lesson, paywallConfig, isPremium: isPremium);
     final lockAction = resolveLessonLockAction(
       isLocked: lessonIsLocked,
       progress: lesson.roadmapProgress,

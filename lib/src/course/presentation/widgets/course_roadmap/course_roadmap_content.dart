@@ -100,7 +100,8 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
               );
             }
             final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
-            final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig);
+            final isPremium = context.read<ProfileCubit>().state.user.isPremium;
+            final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig, isPremium: isPremium);
             return BlocBuilder<ProgressCubit, ProgressState>(
               // The roadmap list only reads userCourseProgress + the
               // additional-content submit flag. Without buildWhen the whole
