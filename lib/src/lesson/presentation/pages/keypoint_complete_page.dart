@@ -123,9 +123,28 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     );
     final nextTitle = nextLesson.displayTitleForNextLesson;
 
-    return BlocListener<FeedbackCubit, FeedbackState>(
-      listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
-      listener: (context, state) {
+    return MultiBlocListener(
+      listeners: [
+        // Any overlay dismissed above this page (streak, tutorial, dialogs…)
+        // makes the route observer write the UNDERLYING route's name — a
+        // primary one (shell/roadmap) — which un-hides the floating nav over
+        // this page's CTA. The asserts in initState/whenComplete only cover
+        // the writers we know about; this listener covers the rest: as long
+        // as this page is still the current route, take the name back.
+        BlocListener<PageCubit, PageState>(
+          bloc: AppDI.injector.get<PageCubit>(),
+          listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.isPrimaryRoute,
+          listener: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+              _ensureKeypointCompleteRouteName();
+            });
+          },
+        ),
+        BlocListener<FeedbackCubit, FeedbackState>(
+          listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
+          listener: (context, state) {
         if (_hasShownFeedbackPopup) return;
         if (state.userFeedback.userHasKeypointFeedbackComplete) return;
 
@@ -153,7 +172,9 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
           lessonId: lessonId,
           keypointId: keypointId,
         ).whenComplete(_ensureKeypointCompleteRouteName);
-      },
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,
         body: SafeArea(
