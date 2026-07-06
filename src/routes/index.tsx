@@ -29,6 +29,7 @@ import OnboardingManagemantScenarioBranching from "../pages/onboardings/Onboardi
 import KeypointDetail from "../pages/keypoints/KeypointDetail";
 import SettingsPage from "../pages/setting/Setting";
 import SkillsetList from "../pages/skillsets/skillsetList";
+import HabitList from "../pages/habits/HabitList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
 import VideoList from "../pages/video/VideoList";
@@ -56,6 +57,8 @@ export default function AppRouter() {
               <Route index element={<Navigate to="/course" replace />} />
 
               <Route path="skillset" element={<SkillsetList />} />
+
+              <Route path="habits" element={<HabitList />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />

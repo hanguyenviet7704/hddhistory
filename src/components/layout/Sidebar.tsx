@@ -16,6 +16,7 @@ import {
   PlayCircleIcon,
   ExclamationTriangleIcon,
   PhotoIcon,
+  FireIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -26,6 +27,7 @@ interface SidebarProps {
 
 const menuItems = [
   { name: "Skillset", icon: PuzzlePieceIcon, path: "/skillset" },
+  { name: "Habits", icon: FireIcon, path: "/habits" },
   { name: "Course", icon: BookOpenIcon, path: "/course" },
   { name: "Roleplay", icon: ArrowRightOnRectangleIcon, path: "/roleplay" },
   { name: "Lesson", icon: ClipboardDocumentListIcon, path: "/lesson" },
