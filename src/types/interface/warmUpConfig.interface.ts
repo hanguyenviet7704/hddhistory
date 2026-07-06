@@ -1,10 +1,14 @@
+export type WarmUpInactivityUnit = "seconds" | "minutes" | "hours" | "days";
+
 export interface IWarmUpConfig {
   configKey?: string;
   enabled: boolean;
-  inactivityDays: number;
+  inactivityValue: number;
+  inactivityUnit: WarmUpInactivityUnit;
 }
 
 export interface WarmUpConfigPayload {
   enabled?: boolean;
-  inactivityDays?: number;
+  inactivityValue?: number;
+  inactivityUnit?: WarmUpInactivityUnit;
 }

@@ -2,14 +2,23 @@ import { useCallback, useEffect, useState } from "react";
 import {
   IWarmUpConfig,
   WarmUpConfigPayload,
+  WarmUpInactivityUnit,
 } from "../../types/interface/warmUpConfig.interface";
 import { warmUpConfigService } from "../../services/warmUpConfigService";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 const defaultConfig: IWarmUpConfig = {
   enabled: false,
-  inactivityDays: 3,
+  inactivityValue: 3,
+  inactivityUnit: "days",
 };
+
+const UNIT_OPTIONS: { value: WarmUpInactivityUnit; label: string }[] = [
+  { value: "seconds", label: "Seconds" },
+  { value: "minutes", label: "Minutes" },
+  { value: "hours", label: "Hours" },
+  { value: "days", label: "Days" },
+];
 
 const WarmUpManagement = () => {
   const { showSuccess, showError } = useNotification();
@@ -18,7 +27,7 @@ const WarmUpManagement = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<IWarmUpConfig>(defaultConfig);
-  const [inactivityDaysInput, setInactivityDaysInput] = useState("3");
+  const [inactivityValueInput, setInactivityValueInput] = useState("3");
   const [fieldError, setFieldError] = useState<string | null>(null);
 
   const fetchConfig = useCallback(async () => {
@@ -26,8 +35,11 @@ const WarmUpManagement = () => {
       setLoading(true);
       setError(null);
       const res = await warmUpConfigService.get();
-      setConfig(res);
-      setInactivityDaysInput(String(res.inactivityDays ?? 3));
+      setConfig({
+        ...res,
+        inactivityUnit: res.inactivityUnit ?? "days",
+      });
+      setInactivityValueInput(String(res.inactivityValue ?? 3));
     } catch (err) {
       console.error("Failed to fetch warm-up config", err);
       setError("Tải cấu hình warm-up thất bại");
@@ -44,39 +56,54 @@ const WarmUpManagement = () => {
     setConfig((prev) => ({ ...prev, enabled: !prev.enabled }));
   };
 
-  const handleInactivityDaysChange = (
+  const handleInactivityValueChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const value = e.target.value;
-    setInactivityDaysInput(value);
+    setInactivityValueInput(value);
 
     const parsed = Number(value);
-    if (!value || Number.isNaN(parsed) || parsed < 1) {
-      setFieldError("Số ngày phải lớn hơn hoặc bằng 1");
+    if (!value || !Number.isInteger(parsed) || parsed < 1) {
+      setFieldError("Giá trị phải là số nguyên lớn hơn hoặc bằng 1");
     } else {
       setFieldError(null);
     }
   };
 
+  const handleUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setConfig((prev) => ({
+      ...prev,
+      inactivityUnit: e.target.value as WarmUpInactivityUnit,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsedDays = Number(inactivityDaysInput);
-    if (!inactivityDaysInput || Number.isNaN(parsedDays) || parsedDays < 1) {
-      setFieldError("Số ngày phải lớn hơn hoặc bằng 1");
+    const parsedValue = Number(inactivityValueInput);
+    if (
+      !inactivityValueInput ||
+      !Number.isInteger(parsedValue) ||
+      parsedValue < 1
+    ) {
+      setFieldError("Giá trị phải là số nguyên lớn hơn hoặc bằng 1");
       return;
     }
 
     const payload: WarmUpConfigPayload = {
       enabled: config.enabled,
-      inactivityDays: parsedDays,
+      inactivityValue: parsedValue,
+      inactivityUnit: config.inactivityUnit,
     };
 
     try {
       setSaving(true);
       const saved = await warmUpConfigService.update(payload);
-      setConfig(saved);
-      setInactivityDaysInput(String(saved.inactivityDays ?? parsedDays));
+      setConfig({
+        ...saved,
+        inactivityUnit: saved.inactivityUnit ?? "days",
+      });
+      setInactivityValueInput(String(saved.inactivityValue ?? parsedValue));
       showSuccess("Lưu cấu hình warm-up thành công");
     } catch (err) {
       console.error("Failed to save warm-up config", err);
@@ -152,30 +179,45 @@ const WarmUpManagement = () => {
 
         <div>
           <label
-            htmlFor="warm-up-inactivity-days"
+            htmlFor="warm-up-inactivity-value"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Inactivity days
+            Inactivity threshold
           </label>
-          <input
-            id="warm-up-inactivity-days"
-            type="number"
-            min={1}
-            step={1}
-            value={inactivityDaysInput}
-            onChange={handleInactivityDaysChange}
-            onBlur={handleInactivityDaysChange}
-            className={`w-40 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-              fieldError
-                ? "border-red-400 focus:ring-red-400"
-                : "border-gray-300 focus:ring-indigo-500"
-            }`}
-          />
+          <div className="flex items-center gap-2">
+            <input
+              id="warm-up-inactivity-value"
+              type="number"
+              min={1}
+              step={1}
+              value={inactivityValueInput}
+              onChange={handleInactivityValueChange}
+              onBlur={handleInactivityValueChange}
+              className={`w-40 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                fieldError
+                  ? "border-red-400 focus:ring-red-400"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
+            />
+            <select
+              id="warm-up-inactivity-unit"
+              aria-label="Inactivity threshold unit"
+              value={config.inactivityUnit}
+              onChange={handleUnitChange}
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {UNIT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
           {fieldError ? (
             <p className="mt-1 text-sm text-red-600">{fieldError}</p>
           ) : (
             <p className="mt-1 text-sm text-gray-500">
-              Days of inactivity before a returning user is offered the
+              Amount of inactivity time before a returning user is offered the
               lesson warm-up.
             </p>
           )}
