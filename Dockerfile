@@ -8,6 +8,10 @@ RUN npm ci --silent
 # Copy toàn bộ source (bao gồm cả .env)
 COPY . .
 
+# Tắt source map: bước tốn RAM nhất khi Terser minify, hay làm build bị
+# OOM-killed trong Docker khi host cạn RAM.
+ENV GENERATE_SOURCEMAP=false
+
 # Build - CRA sẽ TỰ ĐỘNG đọc file .env
 RUN npm run build
 
