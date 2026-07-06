@@ -26,7 +26,8 @@ import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { getTranslationValue } from "../../utils/translation";
-import { LangCode } from "../../types/enum/common.enum";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 import { useNotification } from "../../utils/hooks/useNotification";
 import HabitModal from "../../components/habits/HabitModal";
 import HabitConfirm from "../../components/habits/HabitConfirm";
@@ -41,6 +42,7 @@ const statusChipProps: Record<
 
 const HabitList: React.FC = () => {
   const { showSuccess, showError } = useNotification();
+  const lang = useSelector((state: RootState) => state.lang.code);
 
   const [habits, setHabits] = useState<IHabit[]>([]);
   const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
@@ -58,10 +60,10 @@ const HabitList: React.FC = () => {
   const skillsetNameById = useMemo(() => {
     const map = new Map<string, string>();
     skillsets.forEach((skillset) => {
-      map.set(skillset._id, getTranslationValue(skillset.title, LangCode.EN));
+      map.set(skillset._id, getTranslationValue(skillset.title, lang));
     });
     return map;
-  }, [skillsets]);
+  }, [skillsets, lang]);
 
   const fetchSkillsets = async () => {
     try {
@@ -113,9 +115,12 @@ const HabitList: React.FC = () => {
       if (statusFilter && habit.status !== statusFilter) return false;
       if (search.trim()) {
         const term = search.trim().toLowerCase();
-        const titleEn = (habit.title?.en ?? "").toLowerCase();
-        const titleVi = (habit.title?.vi ?? "").toLowerCase();
-        if (!titleEn.includes(term) && !titleVi.includes(term)) return false;
+        // Search across every locale so a habit is findable regardless of the
+        // language the admin is currently viewing.
+        const matches = Object.values(habit.title ?? {}).some((value) =>
+          (value ?? "").toLowerCase().includes(term)
+        );
+        if (!matches) return false;
       }
       return true;
     });
@@ -201,7 +206,7 @@ const HabitList: React.FC = () => {
           <MenuItem value="">All skillsets</MenuItem>
           {skillsets.map((skillset) => (
             <MenuItem key={skillset._id} value={skillset._id}>
-              {getTranslationValue(skillset.title, LangCode.EN)}
+              {getTranslationValue(skillset.title, lang)}
             </MenuItem>
           ))}
         </TextField>
@@ -225,8 +230,7 @@ const HabitList: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Icon</TableCell>
-                <TableCell>Title (EN)</TableCell>
-                <TableCell>Title (VI)</TableCell>
+                <TableCell>Title</TableCell>
                 <TableCell>Skillset</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Order</TableCell>
@@ -236,7 +240,7 @@ const HabitList: React.FC = () => {
             <TableBody>
               {Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 7 }).map((__, j) => (
+                  {Array.from({ length: 6 }).map((__, j) => (
                     <TableCell key={j}>
                       <Skeleton variant="text" />
                     </TableCell>
@@ -284,8 +288,7 @@ const HabitList: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Icon</TableCell>
-                <TableCell>Title (EN)</TableCell>
-                <TableCell>Title (VI)</TableCell>
+                <TableCell>Title</TableCell>
                 <TableCell>Skillset</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Order</TableCell>
@@ -300,8 +303,9 @@ const HabitList: React.FC = () => {
                       {habit.icon}
                     </Typography>
                   </TableCell>
-                  <TableCell>{habit.title?.en || "—"}</TableCell>
-                  <TableCell>{habit.title?.vi || "—"}</TableCell>
+                  <TableCell>
+                    {getTranslationValue(habit.title, lang) || "—"}
+                  </TableCell>
                   <TableCell>
                     {skillsetNameById.get(habit.skillsetId) ||
                       "Unknown skillset"}

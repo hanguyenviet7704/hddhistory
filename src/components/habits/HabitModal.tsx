@@ -12,11 +12,17 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
-import { getTranslationValue } from "../../utils/translation";
-import { LangCode } from "../../types/enum/common.enum";
+import { ITranslation } from "../../utils/translate";
+import {
+  cleanTranslation,
+  getTranslationValue,
+  updateTranslationValue,
+} from "../../utils/translation";
 
 interface Props {
   isOpen: boolean;
@@ -40,8 +46,12 @@ export default function HabitModal({
   onClose,
   onSubmit,
 }: Props) {
-  const [titleEn, setTitleEn] = useState("");
-  const [titleVi, setTitleVi] = useState("");
+  // Multi-language handled like the rest of the admin: a single field bound to
+  // the current UI language (header toggle → state.lang.code); the title object
+  // accumulates all locales (en/vi/zh/ja/ko) as the language is switched.
+  const lang = useSelector((state: RootState) => state.lang.code);
+
+  const [title, setTitle] = useState<ITranslation>({});
   const [icon, setIcon] = useState("");
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
@@ -60,8 +70,7 @@ export default function HabitModal({
     setSubmitError(null);
 
     if (initial) {
-      setTitleEn(initial.title?.[LangCode.EN] ?? "");
-      setTitleVi(initial.title?.[LangCode.VI] ?? "");
+      setTitle(initial.title ?? {});
       setIcon(initial.icon ?? "");
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
@@ -72,8 +81,7 @@ export default function HabitModal({
           : "0"
       );
     } else {
-      setTitleEn("");
-      setTitleVi("");
+      setTitle({});
       setIcon("");
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
@@ -85,8 +93,8 @@ export default function HabitModal({
   const validate = (): FormErrors => {
     const nextErrors: FormErrors = {};
 
-    if (!titleEn.trim() && !titleVi.trim()) {
-      nextErrors.title = "Provide a title in English or Vietnamese";
+    if (!cleanTranslation(title)) {
+      nextErrors.title = "Title is required in at least one language";
     }
     if (!icon.trim()) {
       nextErrors.icon = "Icon is required";
@@ -108,14 +116,11 @@ export default function HabitModal({
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const title = {
-      ...(titleEn.trim() && { [LangCode.EN]: titleEn.trim() }),
-      ...(titleVi.trim() && { [LangCode.VI]: titleVi.trim() }),
-    };
+    const cleanedTitle = cleanTranslation(title) ?? {};
     const trimmedOrder = orderValue.trim();
 
     const payload: HabitPayload = {
-      title,
+      title: cleanedTitle,
       icon: icon.trim(),
       skillsetId,
       status,
@@ -146,28 +151,20 @@ export default function HabitModal({
             {submitError && <Alert severity="error">{submitError}</Alert>}
 
             <TextField
-              label="Title (EN)"
-              value={titleEn}
+              label={`Title (${lang.toUpperCase()})`}
+              value={title[lang] ?? ""}
               onChange={(e) => {
-                setTitleEn(e.target.value);
+                setTitle((prev) => updateTranslationValue(prev, lang, e.target.value));
                 if (errors.title) setErrors((prev) => ({ ...prev, title: undefined }));
               }}
               error={!!errors.title}
-              helperText={errors.title ?? "At least one of EN / VI is required"}
+              helperText={
+                errors.title ??
+                "Switch the language in the top bar to add other locales"
+              }
               fullWidth
               size="small"
-            />
-
-            <TextField
-              label="Title (VI)"
-              value={titleVi}
-              onChange={(e) => {
-                setTitleVi(e.target.value);
-                if (errors.title) setErrors((prev) => ({ ...prev, title: undefined }));
-              }}
-              error={!!errors.title}
-              fullWidth
-              size="small"
+              required
             />
 
             <TextField
@@ -207,7 +204,7 @@ export default function HabitModal({
               )}
               {skillsets.map((skillset) => (
                 <MenuItem key={skillset._id} value={skillset._id}>
-                  {getTranslationValue(skillset.title, LangCode.EN)}
+                  {getTranslationValue(skillset.title, lang)}
                 </MenuItem>
               ))}
             </TextField>
