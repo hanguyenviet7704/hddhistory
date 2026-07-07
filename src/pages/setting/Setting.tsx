@@ -18,6 +18,7 @@ import RoleplayColorManagement from "../../components/setting/RoleplayColorManag
 import QuoteManagement from "../../components/setting/QuoteManagement";
 import InAppSurveyManagement from "../../components/setting/InAppSurveyManagement";
 import WarmUpManagement from "../../components/setting/WarmUpManagement";
+import DailyWarmUpQuestionTagging from "../../components/setting/DailyWarmUpQuestionTagging";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<
@@ -158,7 +159,12 @@ const SettingsPage = () => {
         {activeTab === "roleplayColors" && <RoleplayColorManagement />}
         {activeTab === "quotes" && <QuoteManagement />}
         {activeTab === "inAppSurvey" && <InAppSurveyManagement />}
-        {activeTab === "warmUp" && <WarmUpManagement />}
+        {activeTab === "warmUp" && (
+          <div className="space-y-6">
+            <WarmUpManagement />
+            <DailyWarmUpQuestionTagging />
+          </div>
+        )}
       </div>
     </div>
   );
