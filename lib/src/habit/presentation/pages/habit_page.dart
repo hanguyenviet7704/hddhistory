@@ -13,6 +13,26 @@ String _habitWeekRangeLabel(List<UserHabitEntity> activeHabits) {
   return '$startLabel–$endLabel';
 }
 
+/// Tracker grouping key (§9.5 — "1 khóa = 1 cụm habit quanh 1 vấn đề"): group
+/// by the course the habit was adopted from, falling back to its skillset for
+/// legacy habits with no sourceCourseId.
+String _habitGroupKey(UserHabitEntity h) =>
+    (h.sourceCourseId?.isNotEmpty ?? false) ? h.sourceCourseId! : (h.habit?.skillsetId ?? '');
+
+/// Human title for a group: the course's title ("the problem"), else the
+/// skillset title.
+String _habitGroupTitle(UserHabitEntity h) {
+  final courseId = h.sourceCourseId;
+  if (courseId != null && courseId.isNotEmpty) {
+    final course = AppDI.injector.get<ProgressCubit>().state.myCourses.where((c) => c.id == courseId).firstOrNull;
+    final title = course?.title.text ?? '';
+    if (title.isNotEmpty) return title;
+  }
+  final skillsetId = h.habit?.skillsetId ?? '';
+  final skillset = AppDI.injector.get<HomeCubit>().state.skillsets.where((s) => s.id == skillsetId).firstOrNull;
+  return skillset?.title.text ?? '';
+}
+
 class HabitPage extends StatefulWidget {
   const HabitPage({super.key});
 
@@ -353,9 +373,9 @@ class _HabitBody extends StatelessWidget {
       return SliverFillRemaining(child: HabitEmptyState(onGoToCourse: onGoToCourse));
     }
 
-    final bySkillset = <String, List<UserHabitEntity>>{};
+    final byGroup = <String, List<UserHabitEntity>>{};
     for (final userHabit in state.activeHabits) {
-      bySkillset.putIfAbsent(userHabit.habit?.skillsetId ?? '', () => []).add(userHabit);
+      byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
     }
     final isTaskView = state.toggle == HabitTabToggle.task;
 
@@ -385,9 +405,9 @@ class _HabitBody extends StatelessWidget {
               ),
               16.verticalSpace,
             ],
-            ...bySkillset.entries.map(
+            ...byGroup.entries.map(
               (entry) => _HabitCategoryCard(
-                skillsetId: entry.key,
+                title: _habitGroupTitle(entry.value.first),
                 userHabits: entry.value,
                 isTaskView: isTaskView,
                 onCheckIn: onCheckIn,
@@ -427,25 +447,19 @@ class _HabitBody extends StatelessWidget {
 /// One white category card (Figma): category title + its habits, rendered as
 /// checklist rows (Task view) or week-grid rows (Habit view).
 class _HabitCategoryCard extends StatelessWidget {
-  final String skillsetId;
+  final String title;
   final List<UserHabitEntity> userHabits;
   final bool isTaskView;
   final ValueChanged<UserHabitEntity> onCheckIn;
   final ValueChanged<UserHabitEntity> onOpenDetail;
 
   const _HabitCategoryCard({
-    required this.skillsetId,
+    required this.title,
     required this.userHabits,
     required this.isTaskView,
     required this.onCheckIn,
     required this.onOpenDetail,
   });
-
-  String _resolveCategoryTitle() {
-    final skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
-    final match = skillsets.firstWhere((s) => s.id == skillsetId, orElse: () => SkillsetEntity());
-    return match.title.text;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -473,7 +487,7 @@ class _HabitCategoryCard extends StatelessWidget {
               children: [
                 Flexible(
                   child: AppText(
-                    _resolveCategoryTitle(),
+                    title,
                     style: isTaskView
                         ? AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600)
                         : AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
@@ -521,7 +535,7 @@ class _HabitWeeklyRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppText(userHabit.displayIcon, style: AppStyle.text24),
+            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon),
             12.horizontalSpace,
             Expanded(
               child: Column(

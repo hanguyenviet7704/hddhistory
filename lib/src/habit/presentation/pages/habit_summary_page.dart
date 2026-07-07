@@ -36,9 +36,9 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
         child: BlocBuilder<HabitCubit, HabitState>(
           builder: (context, state) {
             final summary = state.summary;
-            final bySkillset = <String, List<UserHabitEntity>>{};
+            final byGroup = <String, List<UserHabitEntity>>{};
             for (final userHabit in state.activeHabits) {
-              bySkillset.putIfAbsent(userHabit.habit?.skillsetId ?? '', () => []).add(userHabit);
+              byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
             }
 
             return Column(
@@ -147,9 +147,9 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                           ),
                         ),
                         20.verticalSpace,
-                        ...bySkillset.entries.map(
+                        ...byGroup.entries.map(
                           (entry) => _HabitCategoryCard(
-                            skillsetId: entry.key,
+                            title: _habitGroupTitle(entry.value.first),
                             userHabits: entry.value,
                             isTaskView: false,
                             onCheckIn: (_) {},

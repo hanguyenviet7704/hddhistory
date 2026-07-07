@@ -16,6 +16,7 @@ part 'data/models/habit_model.dart';
 part 'data/models/user_habit_model.dart';
 part 'data/models/user_habit_summary_model.dart';
 part 'data/models/habit_checkin_model.dart';
+part 'data/models/reanchor_reason_model.dart';
 part 'data/datasources/remote/habit_api.dart';
 part 'data/repositories/habit_repository.dart';
 
@@ -24,6 +25,7 @@ part 'domain/entities/habit_entity.dart';
 part 'domain/entities/user_habit_entity.dart';
 part 'domain/entities/user_habit_summary_entity.dart';
 part 'domain/entities/habit_checkin_entity.dart';
+part 'domain/entities/reanchor_reason_entity.dart';
 part 'domain/repositories/i_habit_repository.dart';
 part 'domain/usecases/get_habits_usecase.dart';
 part 'domain/usecases/get_user_habits_usecase.dart';
@@ -33,6 +35,7 @@ part 'domain/usecases/update_user_habit_usecase.dart';
 part 'domain/usecases/remove_user_habit_usecase.dart';
 part 'domain/usecases/check_in_user_habit_usecase.dart';
 part 'domain/usecases/get_habit_checkins_usecase.dart';
+part 'domain/usecases/get_reanchor_reasons_usecase.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/habit_state.dart';
@@ -47,6 +50,7 @@ part 'presentation/pages/habit_summary_page.dart';
 part 'presentation/pages/upgrade_habit_page.dart';
 part 'presentation/pages/manage_slots_page.dart';
 part 'presentation/pages/habit_detail_page.dart';
+part 'presentation/pages/reanchor_page.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/habit_added_popup.dart';
@@ -56,6 +60,7 @@ part 'presentation/widgets/slot_full_upgrade_sheet.dart';
 part 'presentation/widgets/habit_week_grid.dart';
 part 'presentation/widgets/habit_task_row.dart';
 part 'presentation/widgets/habit_empty_state.dart';
+part 'presentation/widgets/habit_domain_icon.dart';
 part 'presentation/widgets/home_habit_reminder_card.dart';
 
 //* Parts for generated files

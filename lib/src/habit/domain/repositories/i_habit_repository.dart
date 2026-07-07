@@ -32,4 +32,6 @@ abstract class IHabitRepository {
   });
 
   TaskEither<AppException, List<HabitCheckinEntity>> getCheckins(String id);
+
+  TaskEither<AppException, List<ReanchorReasonEntity>> getReanchorReasons(String courseId);
 }

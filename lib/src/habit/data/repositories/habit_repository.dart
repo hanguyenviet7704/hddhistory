@@ -115,4 +115,13 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       defaultValue: const [],
     );
   }
+
+  @override
+  TaskEither<AppException, List<ReanchorReasonEntity>> getReanchorReasons(String courseId) {
+    return callApiWithTransform<List<ReanchorReasonModel>, List<ReanchorReasonEntity>>(
+      apiCall: () => _api.getReanchorReasons(courseId),
+      transform: (models) => models.map((model) => model.toEntity()).toList(),
+      defaultValue: const [],
+    );
+  }
 }

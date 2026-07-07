@@ -126,6 +126,7 @@ mixin AppEndpoint {
   static const String userHabitsById = '/api/v1/user-habits/{id}';
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
   static const String userHabitsCheckins = '/api/v1/user-habits/{id}/checkins';
+  static const String reanchorReasons = '/api/v1/reanchor-reasons';
 
   //* In App Survey API
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';

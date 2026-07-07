@@ -12,6 +12,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final RemoveUserHabitUseCase _removeUseCase;
   final CheckInUserHabitUseCase _checkInUseCase;
   final GetHabitCheckinsUseCase _getCheckinsUseCase;
+  final GetReanchorReasonsUseCase _getReanchorReasonsUseCase;
 
   HabitCubit(
     this._getHabitsUseCase,
@@ -22,6 +23,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._removeUseCase,
     this._checkInUseCase,
     this._getCheckinsUseCase,
+    this._getReanchorReasonsUseCase,
   ) : super(HabitState.initial());
 
   Future<void>? _ensureInFlight;
@@ -33,6 +35,10 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
 
   /// Mark the Sunday Weekly recap as shown today so it doesn't re-open (§9.9).
   void markWeeklyRecapShown() => emit(state.copyWith(weeklyRecapShownOn: DateTime.now()));
+
+  /// Mark a course's Re-anchor as shown so it appears at most once (§9.1).
+  void markReanchorShown(String courseId) =>
+      emit(state.copyWith(reanchorShownCourseIds: {...state.reanchorShownCourseIds, courseId}));
 
   Future<void> load({bool showLoading = true}) async {
     await runUseCaseList<UserHabitEntity>(
@@ -182,6 +188,13 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   Future<List<HabitCheckinEntity>> getCheckins(String userHabitId) async {
     final result = await _getCheckinsUseCase(userHabitId).run();
     return result.fold((_) => const [], (checkins) => checkins);
+  }
+
+  /// BTV-authored re-anchor reasons for a course (§9.1). Empty when none
+  /// configured — the caller then skips the Re-anchor screen entirely.
+  Future<List<ReanchorReasonEntity>> getReanchorReasons(String courseId) async {
+    final result = await _getReanchorReasonsUseCase(courseId).run();
+    return result.fold((_) => const [], (reasons) => reasons);
   }
 
   void _replaceUserHabit(UserHabitEntity updated) {

@@ -22,6 +22,9 @@ abstract class HabitState with _$HabitState {
     // Day the Sunday Weekly recap was auto-shown (§9.9); prevents re-opening it
     // repeatedly on the same Sunday.
     DateTime? weeklyRecapShownOn,
+    // Courses whose Re-anchor prompt (§9.1) has already been shown this session,
+    // so it appears at most once per course.
+    @Default(<String>{}) Set<String> reanchorShownCourseIds,
   }) = _HabitState;
 
   factory HabitState.initial() => const HabitState();

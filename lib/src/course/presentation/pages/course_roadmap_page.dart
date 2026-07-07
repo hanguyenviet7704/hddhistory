@@ -118,8 +118,23 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         final courseId = context.read<CourseRoadmapCubit>().state.roadmap.courseId;
         _loadProgressForRoadmap(courseId);
         _checkWarmUpForRoadmap(courseId);
+        unawaited(_maybeShowReanchor(courseId));
       }
     });
+  }
+
+  /// Re-anchor prompt (PRD §9.1) — shown once per course when entering its
+  /// roadmap, before the user starts learning. Guarded by BTV-authored reasons
+  /// existing for the course, so it's a no-op until content is configured.
+  Future<void> _maybeShowReanchor(String courseId) async {
+    if (courseId.isEmpty) return;
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    if (habitCubit.state.reanchorShownCourseIds.contains(courseId)) return;
+    final reasons = await habitCubit.getReanchorReasons(courseId);
+    if (!mounted || reasons.isEmpty) return;
+    if (context.read<PageCubit>().state.currentRouteName != RouteNamed.courseRoadmap) return;
+    habitCubit.markReanchorShown(courseId);
+    await ReanchorPage.push(context, reasons: reasons);
   }
 
   void _tryShowRoleplayIncompleteFeedback(FeedbackState state) {

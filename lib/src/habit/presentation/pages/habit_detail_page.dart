@@ -79,7 +79,7 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(habit.displayIcon, style: AppStyle.text40),
+                    HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', fallbackEmoji: habit.displayIcon, size: 44),
                     12.verticalSpace,
                     AppText(
                       habit.displayTitle,

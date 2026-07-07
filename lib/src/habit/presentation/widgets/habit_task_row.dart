@@ -24,7 +24,7 @@ class HabitTaskRow extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12.h),
         child: Row(
           children: [
-            AppText(userHabit.displayIcon, style: AppStyle.text24),
+            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon),
             12.horizontalSpace,
             Expanded(
               child: AppText(
