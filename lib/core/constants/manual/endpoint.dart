@@ -119,6 +119,14 @@ mixin AppEndpoint {
   //* Warm Up (return-refresher) API
   static const String warmUpForCourse = '/api/v1/warm-up/for-course/{courseId}';
 
+  //* Habit API
+  static const String habits = '/api/v1/habits';
+  static const String userHabits = '/api/v1/user-habits';
+  static const String userHabitsSummary = '/api/v1/user-habits/summary';
+  static const String userHabitsById = '/api/v1/user-habits/{id}';
+  static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
+  static const String userHabitsCheckins = '/api/v1/user-habits/{id}/checkins';
+
   //* In App Survey API
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';
   static const String inAppSurveyResponses = '/api/v1/courses-in-app-survey/responses';

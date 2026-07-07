@@ -52,7 +52,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
 
       await _handleLearningStreakGate();
       if (!mounted) return;
-      _navigateAfterCompletion(lessonState);
+      await _navigateAfterCompletion(lessonState);
     } finally {
       if (mounted) {
         setState(() => _isHandlingPrimaryCta = false);
@@ -90,7 +90,45 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
   }
 
-  void _navigateAfterCompletion(CourseLessonState lessonState) {
+  /// Post-lesson habit prompt (flowchart: Lesson complete → …). Best-effort —
+  /// pops back regardless of choice, so it never blocks the roadmap/badge
+  /// navigation below:
+  /// - no habit yet (first-time) → "Habit Forming" adopt flow, then "Habit
+  ///   added!".
+  /// - already building a habit → "Upgrade habit" with a suggested new one.
+  Future<void> _maybeShowHabitPrompt() async {
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    await habitCubit.ensureLoaded();
+    if (!mounted) return;
+    final habits = habitCubit.state.userHabits;
+
+    if (habits.isEmpty) {
+      final library = await habitCubit.loadLibrary();
+      if (!mounted || library.isEmpty) return;
+      final added = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: AppDI.injector.get<HabitCubit>(),
+            child: AdoptHabitPage(habits: library),
+          ),
+        ),
+      );
+      if (added == true && mounted) {
+        await HabitAddedPopup.show(context);
+      }
+      return;
+    }
+
+    final newHabit = await habitCubit.suggestNewHabit();
+    if (!mounted || newHabit == null) return;
+    final current = habits.firstWhere((h) => h.isActive, orElse: () => habits.first);
+    await UpgradeHabitPage.push(context, currentHabit: current, newHabit: newHabit);
+  }
+
+  Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
+    await _maybeShowHabitPrompt();
+    if (!mounted) return;
+
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final homeState = context.read<HomeCubit>().state;
     final courseId = resolveLessonFlowCourseId(

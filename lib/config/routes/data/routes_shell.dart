@@ -102,6 +102,22 @@ part of '../routes.dart';
         ),
       ],
     ),
+    //? Habit branch — appended last so existing branch indices are
+    //? unchanged; this branch is index 4.
+    TypedStatefulShellBranch<HabitShellBranchData>(
+      routes: [
+        TypedGoRoute<HabitRoute>(
+          path: RoutePath.habit,
+          name: RouteNamed.habit,
+          routes: [
+            TypedGoRoute<DailyCheckInRoute>(
+              path: RoutePath.dailyCheckIn,
+              name: RouteNamed.dailyCheckIn,
+            ),
+          ],
+        ),
+      ],
+    ),
   ],
 )
 class MainShellRouteData extends StatefulShellRouteData {

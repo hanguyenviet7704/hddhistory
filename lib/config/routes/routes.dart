@@ -30,4 +30,5 @@ part 'data/routes_shell_course_video_lesson_data.dart';
 part 'data/routes_shell_course_roleplay_data.dart';
 part 'data/routes_shell_home_data.dart';
 part 'data/routes_shell_setting_data.dart';
+part 'data/routes_shell_habit_data.dart';
 part 'routes.g.dart';

@@ -38,6 +38,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
       // And for the recommended-courses strip, hidden when empty.
       unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
+      // Habit data so the check-in reminder card (§9.4) knows today's count.
+      unawaited(AppDI.injector.get<HabitCubit>().ensureLoaded());
       await _prefetchLearningStreak();
       final didOpenPaywall = await _tryOpenPaywallAutoOpen();
       if (didOpenPaywall) return;
@@ -160,6 +162,16 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                 // The in-app survey entry is the inline "Có góp ý?" banner
                 // (GotIdeasBanner) above; the old floating pill was removed to
                 // avoid showing two identical survey entries at once.
+
+                // Habit check-in reminder — floats above the bottom nav,
+                // overlaying "Continue learning" (PRD §9.4). Renders nothing
+                // when there's nothing to check in today / already dismissed.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 96.h,
+                  child: const HomeHabitReminderCard(),
+                ),
               ],
             ),
           ),

@@ -255,6 +255,8 @@ final class AppTrackingService extends ITrackingService {
         return 'auto_open';
       case PaywallEntryPoint.courseRoadmap:
         return 'course_roadmap';
+      case PaywallEntryPoint.habit:
+        return 'habit';
       case PaywallEntryPoint.settingPre:
       case PaywallEntryPoint.profile:
       case PaywallEntryPoint.manageSubscription:

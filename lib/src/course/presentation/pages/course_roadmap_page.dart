@@ -47,6 +47,15 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     CourseRoute(selectedTabIndex: skillsetIndex).go(context);
   }
 
+  /// "Go to Habit" entry point (design.md 5.7) — jumps straight to the Habit
+  /// tab from the roadmap header.
+  void _goToHabit(BuildContext context) {
+    HabitRoute().go(context);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+    });
+  }
+
   void _trackRoadmapQuickLearningClick() {
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final courseId = roadmapState.roadmap.courseId;
@@ -269,6 +278,25 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                                 ),
                               );
                             },
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Semantics(
+                              button: true,
+                              label: context.l10n.habit.navLabel,
+                              child: IconButton(
+                                key: const Key('roadmap-go-to-habit'),
+                                padding: EdgeInsets.only(right: 12.w),
+                                constraints: const BoxConstraints(),
+                                icon: SvgPicture.asset(
+                                  AppAsset.svg.common.navGrowth,
+                                  width: 22.w,
+                                  height: 22.w,
+                                  colorFilter: ColorFilter.mode(AppCustomColor.textPrimary, BlendMode.srcIn),
+                                ),
+                                onPressed: () => _goToHabit(context),
+                              ),
+                            ),
                           ),
                         ],
                       ),

@@ -83,6 +83,11 @@ mixin RoutePath {
   static const String profileDeleteDialog = 'profile-delete-dialog';
   static const String userAchievementBottomSheet = 'user-achievement-bottom-sheet';
   static const String reportIssueSheet = 'report-issue-sheet';
+
+  //* Habit
+  static const String habit = '/habit';
+  static const String dailyCheckIn = 'daily-check-in';
+  static const String habitSummary = '/habit-summary';
 }
 
 mixin RouteNamed {
@@ -174,4 +179,9 @@ mixin RouteNamed {
   static const String profileDeleteDialog = 'Profile Delete Dialog';
   static const String userAchievementBottomSheet = 'User Achievement Bottom Sheet';
   static const String reportIssueSheet = 'Report Issue Sheet';
+
+  //* Habit
+  static const String habit = 'Habit';
+  static const String dailyCheckIn = 'Daily Check In';
+  static const String habitSummary = 'Habit Summary';
 }

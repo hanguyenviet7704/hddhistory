@@ -23,6 +23,7 @@ extension PageStateX on PageState {
       RouteNamed.course,
       RouteNamed.courseRoadmap,
       RouteNamed.profile,
+      RouteNamed.habit,
     ];
   }
 }
