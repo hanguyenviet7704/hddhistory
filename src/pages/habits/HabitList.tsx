@@ -22,9 +22,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { habitService } from "../../services/habitService";
 import { skillsetService } from "../../services/skillsetService";
+import { courseService } from "../../services/courseService";
 import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { getTranslationValue } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -46,6 +48,7 @@ const HabitList: React.FC = () => {
 
   const [habits, setHabits] = useState<IHabit[]>([]);
   const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
+  const [courses, setCourses] = useState<ICourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +80,20 @@ const HabitList: React.FC = () => {
     }
   };
 
+  // Fetched once and handed to HabitModal so it can offer a course-scoped
+  // lesson picker for `lessonIds` without re-fetching on every open.
+  const fetchCourses = async () => {
+    try {
+      const response = await courseService.getList({
+        isAll: true,
+        take: 1000,
+      });
+      setCourses(response.data?.items ?? []);
+    } catch (err) {
+      console.error("Failed to load courses", err);
+    }
+  };
+
   // The API ignores `status` whenever `isAll` is set (isAll wins), so the
   // admin list always fetches every status and filters by status client
   // side. `skillsetId` is not affected by that rule and is still sent to
@@ -102,6 +119,7 @@ const HabitList: React.FC = () => {
 
   useEffect(() => {
     fetchSkillsets();
+    fetchCourses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -345,6 +363,7 @@ const HabitList: React.FC = () => {
         isOpen={modalOpen}
         initial={selected}
         skillsets={skillsets}
+        courses={courses}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
       />
