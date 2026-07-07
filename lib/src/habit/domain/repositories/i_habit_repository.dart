@@ -1,7 +1,7 @@
 part of '../../habit.dart';
 
 abstract class IHabitRepository {
-  TaskEither<AppException, List<HabitEntity>> getHabits({String? skillsetId});
+  TaskEither<AppException, List<HabitEntity>> getHabits({String? skillsetId, String? lessonId});
 
   TaskEither<AppException, List<UserHabitEntity>> getUserHabits({UserHabitStateEntity? state});
 
@@ -11,6 +11,8 @@ abstract class IHabitRepository {
     required String habitId,
     String? reminderTime,
     int? packLength,
+    String? sourceLessonId,
+    String? sourceCourseId,
   });
 
   TaskEither<AppException, UserHabitEntity> updateUserHabit(

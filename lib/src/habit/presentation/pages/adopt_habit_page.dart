@@ -6,8 +6,15 @@ part of '../../habit.dart';
 /// [HabitAddedPopup]; pops `false`/null on "Remind me later" or back.
 class AdoptHabitPage extends StatefulWidget {
   final List<HabitEntity> habits;
+  final String? sourceLessonId;
+  final String? sourceCourseId;
 
-  const AdoptHabitPage({super.key, required this.habits});
+  const AdoptHabitPage({
+    super.key,
+    required this.habits,
+    this.sourceLessonId,
+    this.sourceCourseId,
+  });
 
   @override
   State<AdoptHabitPage> createState() => _AdoptHabitPageState();
@@ -46,6 +53,8 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
       habitId: _selectedHabit.id,
       reminderTime: _selectedReminderTime,
       packLength: _defaultPackLength,
+      sourceLessonId: widget.sourceLessonId,
+      sourceCourseId: widget.sourceCourseId,
     );
 
     if (!mounted) return;

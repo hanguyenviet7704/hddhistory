@@ -66,10 +66,10 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     return future;
   }
 
-  /// The published habit library (all categories). Used by the adopt picker
-  /// and the post-lesson "Upgrade habit" prompt.
-  Future<List<HabitEntity>> loadLibrary() async {
-    final result = await _getHabitsUseCase().run();
+  /// Published habit library. Pass [lessonId] for the per-lesson reflection
+  /// suggestions (§9.2); omit for the whole library.
+  Future<List<HabitEntity>> loadLibrary({String? lessonId}) async {
+    final result = await _getHabitsUseCase(lessonId: lessonId).run();
     return result.fold((_) => const [], (habits) => habits);
   }
 
@@ -94,8 +94,16 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     required String habitId,
     String? reminderTime,
     required int packLength,
+    String? sourceLessonId,
+    String? sourceCourseId,
   }) async {
-    final result = await _adoptUseCase(habitId: habitId, reminderTime: reminderTime, packLength: packLength).run();
+    final result = await _adoptUseCase(
+      habitId: habitId,
+      reminderTime: reminderTime,
+      packLength: packLength,
+      sourceLessonId: sourceLessonId,
+      sourceCourseId: sourceCourseId,
+    ).run();
     return result.fold(
       (exception) => _isSlotFullError(exception) ? AdoptHabitResult.slotFull : AdoptHabitResult.failure,
       (userHabit) {

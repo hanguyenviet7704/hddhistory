@@ -7,7 +7,10 @@ abstract class HabitApi {
   factory HabitApi(@Named(DIKey.appDio) Dio dio) = _HabitApi;
 
   @GET(AppEndpoint.habits)
-  Future<BaseResponse<List<HabitModel>>> getHabits(@Query('skillsetId') String? skillsetId);
+  Future<BaseResponse<List<HabitModel>>> getHabits(
+    @Query('skillsetId') String? skillsetId,
+    @Query('lessonId') String? lessonId,
+  );
 
   @GET(AppEndpoint.userHabits)
   Future<BaseResponse<List<UserHabitModel>>> getUserHabits(@Query('state') String? state);

@@ -17,6 +17,8 @@ abstract class UserHabitModel with _$UserHabitModel {
     @Default(false) bool todayDone,
     DateTime? weekStartDate,
     @Default([]) List<bool> weekGrid,
+    String? sourceLessonId,
+    String? sourceCourseId,
   }) = _UserHabitModel;
 
   factory UserHabitModel.fromJson(Map<String, dynamic> json) => _$UserHabitModelFromJson(json);
@@ -38,5 +40,7 @@ extension UserHabitModelX on UserHabitModel {
     todayDone: todayDone,
     weekStartDate: weekStartDate,
     weekGrid: weekGrid,
+    sourceLessonId: sourceLessonId,
+    sourceCourseId: sourceCourseId,
   );
 }

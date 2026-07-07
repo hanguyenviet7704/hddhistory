@@ -10,5 +10,13 @@ class AdoptHabitUseCase {
     required String habitId,
     String? reminderTime,
     int? packLength,
-  }) => _repository.adoptHabit(habitId: habitId, reminderTime: reminderTime, packLength: packLength);
+    String? sourceLessonId,
+    String? sourceCourseId,
+  }) => _repository.adoptHabit(
+    habitId: habitId,
+    reminderTime: reminderTime,
+    packLength: packLength,
+    sourceLessonId: sourceLessonId,
+    sourceCourseId: sourceCourseId,
+  );
 }

@@ -90,43 +90,51 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
   }
 
-  /// Post-lesson habit prompt (flowchart: Lesson complete → …). Best-effort —
-  /// pops back regardless of choice, so it never blocks the roadmap/badge
-  /// navigation below:
-  /// - no habit yet (first-time) → "Habit Forming" adopt flow, then "Habit
-  ///   added!".
-  /// - already building a habit → "Upgrade habit" with a suggested new one.
-  Future<void> _maybeShowHabitPrompt() async {
+  /// Post-lesson habit suggestion (PRD §9.2 Starter/Reflection — one screen,
+  /// shown after every lesson). Best-effort: pops back regardless of choice so
+  /// it never blocks the roadmap/badge navigation below.
+  /// - Per-lesson curated suggestions (BTV-authored, keyed by lessonId).
+  /// - FR2.8: skipped if the user already adopted a habit from this lesson.
+  /// - Adopted habits carry sourceLessonId/sourceCourseId (§9.5 grouping).
+  Future<void> _maybeShowHabitPrompt(CourseLessonState lessonState) async {
     final habitCubit = AppDI.injector.get<HabitCubit>();
     await habitCubit.ensureLoaded();
     if (!mounted) return;
-    final habits = habitCubit.state.userHabits;
 
-    if (habits.isEmpty) {
-      final library = await habitCubit.loadLibrary();
-      if (!mounted || library.isEmpty) return;
-      final added = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: AppDI.injector.get<HabitCubit>(),
-            child: AdoptHabitPage(habits: library),
-          ),
-        ),
-      );
-      if (added == true && mounted) {
-        await HabitAddedPopup.show(context);
-      }
+    final lessonId = lessonState.selectedLesson.id;
+    // FR2.8 — each lesson suggests a habit only once.
+    if (lessonId.isNotEmpty && habitCubit.state.userHabits.any((h) => h.sourceLessonId == lessonId)) {
       return;
     }
 
-    final newHabit = await habitCubit.suggestNewHabit();
-    if (!mounted || newHabit == null) return;
-    final current = habits.firstWhere((h) => h.isActive, orElse: () => habits.first);
-    await UpgradeHabitPage.push(context, currentHabit: current, newHabit: newHabit);
+    final suggestions = await habitCubit.loadLibrary(lessonId: lessonId);
+    if (!mounted || suggestions.isEmpty) return;
+
+    final courseId = resolveLessonFlowCourseId(
+      lessonCourseId: lessonState.selectedLesson.courseId,
+      roadmapCourseId: context.read<CourseRoadmapCubit>().state.roadmap.courseId,
+      homeCourseId: context.read<HomeCubit>().state.currentCourse.id,
+    );
+
+    final added = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: AppDI.injector.get<HabitCubit>(),
+          child: AdoptHabitPage(
+            habits: suggestions,
+            sourceLessonId: lessonId,
+            sourceCourseId: courseId,
+          ),
+        ),
+      ),
+    );
+    if (added == true && mounted) {
+      await HabitAddedPopup.show(context);
+    }
   }
 
   Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
-    await _maybeShowHabitPrompt();
+    await _maybeShowHabitPrompt(lessonState);
     if (!mounted) return;
 
     final roadmapState = context.read<CourseRoadmapCubit>().state;
