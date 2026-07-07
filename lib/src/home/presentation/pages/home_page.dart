@@ -48,7 +48,18 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         await _loadInAppSurveyConfig();
         if (mounted) _handleSurveyStateChanged(context.read<InAppSurveyCubit>().state);
       }
+      await _maybeOpenWeeklyRecap();
     });
+  }
+
+  /// Weekly recap auto-opens on Sundays (PRD §9.9), after the paywall/warm-up/
+  /// survey gates so it never stacks on top of them.
+  Future<void> _maybeOpenWeeklyRecap() async {
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    if (!habitCubit.state.shouldShowWeeklyRecap) return;
+    if (!mounted) return;
+    habitCubit.markWeeklyRecapShown();
+    await const HabitSummaryRoute().push(context);
   }
 
   @override

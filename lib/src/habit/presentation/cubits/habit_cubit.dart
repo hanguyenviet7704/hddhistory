@@ -31,6 +31,9 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   /// Hide the Home check-in reminder card for the rest of today (§9.4 FR4.4).
   void dismissHomeReminderToday() => emit(state.copyWith(homeReminderDismissedOn: DateTime.now()));
 
+  /// Mark the Sunday Weekly recap as shown today so it doesn't re-open (§9.9).
+  void markWeeklyRecapShown() => emit(state.copyWith(weeklyRecapShownOn: DateTime.now()));
+
   Future<void> load({bool showLoading = true}) async {
     await runUseCaseList<UserHabitEntity>(
       usecase: () => _getUserHabitsUseCase(),
