@@ -9,10 +9,10 @@ export interface IHabit {
   status: HabitStatus;
   defaultReminderTime?: string;
   order: number;
-  // Lessons this habit can be suggested in (many-to-many, PRD v2.0 §9.2). A
-  // habit may be suggested by several lessons; a lesson may suggest several
-  // habits.
-  lessonIds?: string[];
+  // Keypoints this habit can be suggested in (many-to-many, PRD v2.0 §9.2). A
+  // habit may be suggested by several keypoints; a keypoint may suggest
+  // several habits.
+  keypointIds?: string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -24,7 +24,7 @@ export interface HabitPayload {
   status?: HabitStatus;
   defaultReminderTime?: string;
   order?: number;
-  lessonIds?: string[];
+  keypointIds?: string[];
 }
 
 // GET /habits — the admin list always fetches with isAll=true (no pagination

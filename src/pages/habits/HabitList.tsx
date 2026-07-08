@@ -81,7 +81,7 @@ const HabitList: React.FC = () => {
   };
 
   // Fetched once and handed to HabitModal so it can offer a course-scoped
-  // lesson picker for `lessonIds` without re-fetching on every open.
+  // lesson/keypoint picker for `keypointIds` without re-fetching on every open.
   const fetchCourses = async () => {
     try {
       const response = await courseService.getList({

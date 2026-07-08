@@ -28,8 +28,10 @@ import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { ICourse } from "../../types/interface/course.interface";
 import { ILesson } from "../../types/interface/lesson.interface";
+import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { LessonType } from "../../types/enum/lesson.enum";
 import { lessonService } from "../../services/lessonService";
+import { keypointService } from "../../services/keypointService";
 import { ITranslation } from "../../utils/translate";
 import {
   cleanTranslation,
@@ -53,8 +55,10 @@ interface FormErrors {
   order?: string;
 }
 
-interface LessonMeta {
+interface KeypointMeta {
   title: string;
+  lessonId: string;
+  lessonTitle: string;
   courseId: string;
 }
 
@@ -81,21 +85,24 @@ export default function HabitModal({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // ---------- Suggested-in-lessons picker ----------
-  // Pragmatic UX: pick a course to narrow the list, then multi-select which
-  // of that course's lessons should suggest this habit. Selections accumulate
-  // across courses (a habit can be suggested from lessons in several
-  // courses), so we cache resolved titles per lesson id independently of
-  // which course is currently being browsed.
-  const [lessonBrowseCourseId, setLessonBrowseCourseId] = useState("");
+  // ---------- Suggested-in-keypoints picker ----------
+  // Pragmatic UX: pick a course, then a lesson within it, then multi-select
+  // which of that lesson's keypoints should suggest this habit. Selections
+  // accumulate across lessons/courses (a habit can be suggested from
+  // keypoints in several lessons), so we cache resolved titles per keypoint
+  // id independently of which lesson is currently being browsed.
+  const [keypointBrowseCourseId, setKeypointBrowseCourseId] = useState("");
   const [courseLessons, setCourseLessons] = useState<ILesson[]>([]);
   const [lessonsLoading, setLessonsLoading] = useState(false);
-  const [lessonSearch, setLessonSearch] = useState("");
-  const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
-  const [lessonMetaById, setLessonMetaById] = useState<
-    Record<string, LessonMeta>
+  const [keypointBrowseLessonId, setKeypointBrowseLessonId] = useState("");
+  const [lessonKeypoints, setLessonKeypoints] = useState<IKeypoint[]>([]);
+  const [keypointsLoading, setKeypointsLoading] = useState(false);
+  const [keypointSearch, setKeypointSearch] = useState("");
+  const [selectedKeypointIds, setSelectedKeypointIds] = useState<string[]>([]);
+  const [keypointMetaById, setKeypointMetaById] = useState<
+    Record<string, KeypointMeta>
   >({});
-  const [resolvingLessons, setResolvingLessons] = useState(false);
+  const [resolvingKeypoints, setResolvingKeypoints] = useState(false);
 
   const isEdit = !!initial?._id;
 
@@ -112,8 +119,9 @@ export default function HabitModal({
 
     setErrors({});
     setSubmitError(null);
-    setLessonBrowseCourseId("");
-    setLessonSearch("");
+    setKeypointBrowseCourseId("");
+    setKeypointBrowseLessonId("");
+    setKeypointSearch("");
 
     if (initial) {
       setTitle(initial.title ?? {});
@@ -126,7 +134,7 @@ export default function HabitModal({
           ? String(initial.order)
           : "0"
       );
-      setSelectedLessonIds(initial.lessonIds ?? []);
+      setSelectedKeypointIds(initial.keypointIds ?? []);
     } else {
       setTitle({});
       setIcon("");
@@ -134,54 +142,61 @@ export default function HabitModal({
       setStatus(HabitStatus.DRAFT);
       setDefaultReminderTime("");
       setOrderValue("0");
-      setSelectedLessonIds([]);
+      setSelectedKeypointIds([]);
     }
   }, [initial, isOpen]);
 
-  // Resolve display titles for lessons preselected on an existing habit
-  // (they may belong to courses the admin hasn't browsed to yet).
+  // Resolve display titles for keypoints preselected on an existing habit
+  // (they may belong to lessons the admin hasn't browsed to yet). Keypoints
+  // don't carry their own lesson/course ref, so these resolve to a bare
+  // title — no "Course · Lesson" breadcrumb — unlike ones picked by browsing.
   useEffect(() => {
-    if (!isOpen || selectedLessonIds.length === 0) return;
+    if (!isOpen || selectedKeypointIds.length === 0) return;
 
-    const idsToResolve = selectedLessonIds.filter((id) => !lessonMetaById[id]);
+    const idsToResolve = selectedKeypointIds.filter((id) => !keypointMetaById[id]);
     if (idsToResolve.length === 0) return;
 
     let cancelled = false;
-    setResolvingLessons(true);
+    setResolvingKeypoints(true);
 
-    Promise.allSettled(idsToResolve.map((id) => lessonService.getById(id)))
+    Promise.allSettled(idsToResolve.map((id) => keypointService.getById(id)))
       .then((results) => {
         if (cancelled) return;
-        const next: Record<string, LessonMeta> = {};
+        const next: Record<string, KeypointMeta> = {};
         results.forEach((result, index) => {
           if (result.status !== "fulfilled") return;
           const envelope: any = result.value;
-          const lesson: ILesson | undefined =
+          const keypoint: IKeypoint | undefined =
             envelope?.data?.data ?? envelope?.data;
-          if (!lesson) return;
+          if (!keypoint) return;
           next[idsToResolve[index]] = {
-            title: getTranslationValue(lesson.title, lang) || "Untitled lesson",
-            courseId: lesson.courseId,
+            title: getTranslationValue(keypoint.title, lang) || "Untitled keypoint",
+            lessonId: "",
+            lessonTitle: "",
+            courseId: "",
           };
         });
         if (Object.keys(next).length > 0) {
-          setLessonMetaById((prev) => ({ ...prev, ...next }));
+          setKeypointMetaById((prev) => ({ ...prev, ...next }));
         }
       })
-      .catch((err) => console.error("Failed to resolve lesson titles", err))
+      .catch((err) => console.error("Failed to resolve keypoint titles", err))
       .finally(() => {
-        if (!cancelled) setResolvingLessons(false);
+        if (!cancelled) setResolvingKeypoints(false);
       });
 
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, selectedLessonIds]);
+  }, [isOpen, selectedKeypointIds]);
 
   // Load the browsed course's lessons whenever the course selector changes.
   useEffect(() => {
-    if (!lessonBrowseCourseId) {
+    setKeypointBrowseLessonId("");
+    setLessonKeypoints([]);
+
+    if (!keypointBrowseCourseId) {
       setCourseLessons([]);
       return;
     }
@@ -191,7 +206,7 @@ export default function HabitModal({
 
     lessonService
       .getList({
-        courseId: lessonBrowseCourseId,
+        courseId: keypointBrowseCourseId,
         type: LessonType.LESSON,
         page: 1,
         take: 500,
@@ -200,16 +215,6 @@ export default function HabitModal({
         if (cancelled) return;
         const items: ILesson[] = res?.data?.items ?? [];
         setCourseLessons(items);
-        setLessonMetaById((prev) => {
-          const next = { ...prev };
-          items.forEach((lesson) => {
-            next[lesson._id] = {
-              title: getTranslationValue(lesson.title, lang) || "Untitled lesson",
-              courseId: lesson.courseId,
-            };
-          });
-          return next;
-        });
       })
       .catch((err) => {
         console.error("Failed to load lessons for course", err);
@@ -223,29 +228,80 @@ export default function HabitModal({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonBrowseCourseId]);
+  }, [keypointBrowseCourseId]);
 
-  const filteredCourseLessons = useMemo(() => {
-    const term = lessonSearch.trim().toLowerCase();
-    if (!term) return courseLessons;
-    return courseLessons.filter((lesson) =>
-      getTranslationValue(lesson.title, lang).toLowerCase().includes(term)
+  // Load the browsed lesson's keypoints (embedded on the full lesson detail,
+  // unlike the lightweight list response) whenever the lesson selector changes.
+  useEffect(() => {
+    if (!keypointBrowseLessonId) {
+      setLessonKeypoints([]);
+      return;
+    }
+
+    let cancelled = false;
+    setKeypointsLoading(true);
+    const lessonTitle =
+      getTranslationValue(
+        courseLessons.find((l) => l._id === keypointBrowseLessonId)?.title,
+        lang
+      ) || "Untitled lesson";
+
+    lessonService
+      .getById(keypointBrowseLessonId)
+      .then((res: any) => {
+        if (cancelled) return;
+        const lesson: ILesson | undefined = res?.data?.data ?? res?.data;
+        const keypoints = lesson?.keypoints ?? [];
+        setLessonKeypoints(keypoints);
+        setKeypointMetaById((prev) => {
+          const next = { ...prev };
+          keypoints.forEach((keypoint) => {
+            next[keypoint._id] = {
+              title: getTranslationValue(keypoint.title, lang) || "Untitled keypoint",
+              lessonId: keypointBrowseLessonId,
+              lessonTitle,
+              courseId: keypointBrowseCourseId,
+            };
+          });
+          return next;
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to load keypoints for lesson", err);
+        if (!cancelled) setLessonKeypoints([]);
+      })
+      .finally(() => {
+        if (!cancelled) setKeypointsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keypointBrowseLessonId]);
+
+  const filteredLessonKeypoints = useMemo(() => {
+    const term = keypointSearch.trim().toLowerCase();
+    if (!term) return lessonKeypoints;
+    return lessonKeypoints.filter((keypoint) =>
+      getTranslationValue(keypoint.title, lang).toLowerCase().includes(term)
     );
-  }, [courseLessons, lessonSearch, lang]);
+  }, [lessonKeypoints, keypointSearch, lang]);
 
-  const toggleLesson = (lessonId: string) => {
-    setSelectedLessonIds((prev) =>
-      prev.includes(lessonId)
-        ? prev.filter((id) => id !== lessonId)
-        : [...prev, lessonId]
+  const toggleKeypoint = (keypointId: string) => {
+    setSelectedKeypointIds((prev) =>
+      prev.includes(keypointId)
+        ? prev.filter((id) => id !== keypointId)
+        : [...prev, keypointId]
     );
   };
 
-  const lessonChipLabel = (lessonId: string) => {
-    const meta = lessonMetaById[lessonId];
+  const keypointChipLabel = (keypointId: string) => {
+    const meta = keypointMetaById[keypointId];
     if (!meta) return "Loading…";
-    const courseName = courseNameById.get(meta.courseId);
-    return courseName ? `${courseName} · ${meta.title}` : meta.title;
+    const courseName = meta.courseId ? courseNameById.get(meta.courseId) : undefined;
+    const prefix = [courseName, meta.lessonTitle || undefined].filter(Boolean).join(" · ");
+    return prefix ? `${prefix} · ${meta.title}` : meta.title;
   };
 
   const validate = (): FormErrors => {
@@ -282,7 +338,7 @@ export default function HabitModal({
       icon: icon.trim(),
       skillsetId,
       status,
-      lessonIds: selectedLessonIds,
+      keypointIds: selectedKeypointIds,
       ...(defaultReminderTime && { defaultReminderTime }),
       ...(trimmedOrder !== "" && { order: Number(trimmedOrder) }),
     };
@@ -407,22 +463,19 @@ export default function HabitModal({
 
             <Box>
               <Typography variant="subtitle2" className="mb-1">
-                Suggested in lessons
+                Suggested in keypoints
               </Typography>
               <Typography variant="body2" color="text.secondary" className="mb-3">
-                Choose a course to browse its lessons, then select which ones
-                should suggest this habit. Optional — leave empty if this
-                habit is not tied to specific lessons.
+                Choose a course, then a lesson within it, then select which of
+                its keypoints should suggest this habit. Optional — leave
+                empty if this habit is not tied to specific keypoints.
               </Typography>
 
               <TextField
                 select
                 label="Browse lessons in course"
-                value={lessonBrowseCourseId}
-                onChange={(e) => {
-                  setLessonBrowseCourseId(e.target.value);
-                  setLessonSearch("");
-                }}
+                value={keypointBrowseCourseId}
+                onChange={(e) => setKeypointBrowseCourseId(e.target.value)}
                 fullWidth
                 size="small"
                 className="mb-2"
@@ -435,17 +488,47 @@ export default function HabitModal({
                 ))}
               </TextField>
 
-              {!lessonBrowseCourseId ? (
+              {!keypointBrowseCourseId ? (
                 <Typography variant="body2" color="text.secondary">
                   Select a course above to see its lessons.
                 </Typography>
               ) : (
+                <TextField
+                  select
+                  label="Browse keypoints in lesson"
+                  value={keypointBrowseLessonId}
+                  onChange={(e) => {
+                    setKeypointBrowseLessonId(e.target.value);
+                    setKeypointSearch("");
+                  }}
+                  fullWidth
+                  size="small"
+                  className="mb-2"
+                  disabled={lessonsLoading}
+                  helperText={
+                    lessonsLoading
+                      ? "Loading lessons…"
+                      : courseLessons.length === 0
+                        ? "No lessons in this course yet."
+                        : undefined
+                  }
+                >
+                  <MenuItem value="">Select a lesson</MenuItem>
+                  {courseLessons.map((lesson) => (
+                    <MenuItem key={lesson._id} value={lesson._id}>
+                      {getTranslationValue(lesson.title, lang) || "Untitled lesson"}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+
+              {keypointBrowseCourseId && keypointBrowseLessonId && (
                 <>
                   <TextField
                     size="small"
-                    label="Filter lessons"
-                    value={lessonSearch}
-                    onChange={(e) => setLessonSearch(e.target.value)}
+                    label="Filter keypoints"
+                    value={keypointSearch}
+                    onChange={(e) => setKeypointSearch(e.target.value)}
                     fullWidth
                     className="mb-2"
                   />
@@ -459,28 +542,28 @@ export default function HabitModal({
                       borderRadius: 1,
                     }}
                   >
-                    {lessonsLoading ? (
+                    {keypointsLoading ? (
                       <Box className="p-3 flex items-center justify-center">
                         <CircularProgress size={20} />
                       </Box>
-                    ) : filteredCourseLessons.length === 0 ? (
+                    ) : filteredLessonKeypoints.length === 0 ? (
                       <Typography
                         variant="body2"
                         color="text.secondary"
                         className="p-3"
                       >
-                        {courseLessons.length === 0
-                          ? "No lessons in this course yet."
-                          : "No lessons match your filter."}
+                        {lessonKeypoints.length === 0
+                          ? "No keypoints in this lesson yet."
+                          : "No keypoints match your filter."}
                       </Typography>
                     ) : (
                       <List dense disablePadding>
-                        {filteredCourseLessons.map((lesson) => {
-                          const checked = selectedLessonIds.includes(lesson._id);
+                        {filteredLessonKeypoints.map((keypoint) => {
+                          const checked = selectedKeypointIds.includes(keypoint._id);
                           return (
                             <ListItemButton
-                              key={lesson._id}
-                              onClick={() => toggleLesson(lesson._id)}
+                              key={keypoint._id}
+                              onClick={() => toggleKeypoint(keypoint._id)}
                               dense
                             >
                               <ListItemIcon sx={{ minWidth: 36 }}>
@@ -494,8 +577,8 @@ export default function HabitModal({
                               </ListItemIcon>
                               <ListItemText
                                 primary={
-                                  getTranslationValue(lesson.title, lang) ||
-                                  "Untitled lesson"
+                                  getTranslationValue(keypoint.title, lang) ||
+                                  "Untitled keypoint"
                                 }
                               />
                             </ListItemButton>
@@ -509,24 +592,24 @@ export default function HabitModal({
 
               <Box className="mt-3 flex items-center gap-2">
                 <Typography variant="body2" fontWeight={500}>
-                  Selected lessons ({selectedLessonIds.length})
+                  Selected keypoints ({selectedKeypointIds.length})
                 </Typography>
-                {resolvingLessons && <CircularProgress size={14} />}
+                {resolvingKeypoints && <CircularProgress size={14} />}
               </Box>
 
-              {selectedLessonIds.length === 0 ? (
+              {selectedKeypointIds.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
-                  No lessons selected — this habit will not be suggested from
-                  any lesson.
+                  No keypoints selected — this habit will not be suggested
+                  from any keypoint.
                 </Typography>
               ) : (
                 <Box className="mt-1 flex flex-wrap gap-1">
-                  {selectedLessonIds.map((lessonId) => (
+                  {selectedKeypointIds.map((keypointId) => (
                     <Chip
-                      key={lessonId}
+                      key={keypointId}
                       size="small"
-                      label={lessonChipLabel(lessonId)}
-                      onDelete={() => toggleLesson(lessonId)}
+                      label={keypointChipLabel(keypointId)}
+                      onDelete={() => toggleKeypoint(keypointId)}
                     />
                   ))}
                 </Box>
