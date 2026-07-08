@@ -1,5 +1,8 @@
 part of '../../habit.dart';
 
+// Figma 10788:52956 "Bullseye" — pulled from the design file.
+const String _kHabitAddedPlant = 'assets/svg/common/habit_added_plant.svg';
+
 /// Success popup shown right after adopting ("Habit added!", design.md 5.2) or
 /// upgrading ("Habit upgraded!", flowchart) a habit. "Go to Habit" routes to
 /// the Habit tab (pops `true`); "Continue" just dismisses (pops `false`) and
@@ -34,10 +37,10 @@ class HabitAddedPopup extends StatelessWidget {
 
   /// Convenience for the post-upgrade success popup (flowchart "Habit upgraded!").
   static Future<bool?> showUpgraded(BuildContext context) => show(
-        context,
-        title: context.l10n.habit.upgradedTitle,
-        subtitle: context.l10n.habit.upgradedSubtitle,
-      );
+    context,
+    title: context.l10n.habit.upgradedTitle,
+    subtitle: context.l10n.habit.upgradedSubtitle,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -45,49 +48,61 @@ class HabitAddedPopup extends StatelessWidget {
       color: Colors.transparent,
       child: SafeArea(
         child: Center(
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 24.w),
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite,
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
               children: [
-                AppText('🌱', style: AppStyle.text40),
-                16.verticalSpace,
-                AppText(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
-                ),
-                8.verticalSpace,
-                AppText(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary),
-                ),
-                24.verticalSpace,
-                Row(
-                  children: [
-                    Expanded(
-                      child: DButton(
-                        text: context.l10n.habit.adoptGoToHabitButton,
-                        buttonType: DButtonType.outline,
-                        textColor: AppCustomColor.brandPrimary,
-                        onPressed: () => Navigator.of(context).pop(true),
+                Container(
+                  margin: EdgeInsets.only(top: 40.w),
+                  padding: EdgeInsets.fromLTRB(20.w, 52.h, 20.w, 20.h),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.backgroundWhite,
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
                       ),
-                    ),
-                    12.horizontalSpace,
-                    Expanded(
-                      child: DButton(
-                        text: context.l10n.common.kContinue,
-                        onPressed: () => Navigator.of(context).pop(false),
+                      4.verticalSpace,
+                      AppText(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
                       ),
-                    ),
-                  ],
+                      24.verticalSpace,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DButton(
+                              text: context.l10n.habit.adoptGoToHabitButton,
+                              backgroundColor: AppCustomColor.backgroundBrandSoft,
+                              size: Size(double.infinity, 54.h),
+                              style: AppStyle.textBold16.copyWith(color: AppCustomColor.streakActive),
+                              onPressed: () => Navigator.of(context).pop(true),
+                            ),
+                          ),
+                          8.horizontalSpace,
+                          Expanded(
+                            child: DButton(
+                              text: context.l10n.common.kContinue,
+                              backgroundColor: AppCustomColor.brandPrimary,
+                              size: Size(double.infinity, 54.h),
+                              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                              onPressed: () => Navigator.of(context).pop(false),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+                SvgPicture.asset(_kHabitAddedPlant, width: 90.w, height: 90.w),
               ],
             ),
           ),

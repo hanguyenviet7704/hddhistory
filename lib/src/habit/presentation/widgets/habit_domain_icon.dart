@@ -18,12 +18,8 @@ class HabitDomainIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = AppDI.injector.get<HomeCubit>().state.skillsets
-            .where((s) => s.id == skillsetId)
-            .firstOrNull
-            ?.image ??
-        '';
-    final fallback = AppText(fallbackEmoji, style: AppStyle.text24);
+    final image = AppDI.injector.get<HomeCubit>().state.skillsets.where((s) => s.id == skillsetId).firstOrNull?.image ?? '';
+    final fallback = AppText(fallbackEmoji, style: AppStyle.text24.copyWith(fontSize: (size * 0.6).sp));
     if (image.isEmpty) return fallback;
     return ClipRRect(
       borderRadius: BorderRadius.circular(8.r),
@@ -33,8 +29,7 @@ class HabitDomainIcon extends StatelessWidget {
         height: size.w,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => fallback,
-        loadingBuilder: (context, child, progress) =>
-            progress == null ? child : SizedBox(width: size.w, height: size.w, child: fallback),
+        loadingBuilder: (context, child, progress) => progress == null ? child : SizedBox(width: size.w, height: size.w, child: fallback),
       ),
     );
   }

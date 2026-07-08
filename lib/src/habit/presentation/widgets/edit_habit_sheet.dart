@@ -26,6 +26,10 @@ class EditHabitSheet extends StatefulWidget {
   State<EditHabitSheet> createState() => _EditHabitSheetState();
 }
 
+// Figma 10767:45181 active-row tint — a border shade between backgroundBrand
+// and backgroundBrandSoft that doesn't have its own app-wide token yet.
+const Color _kEditActiveRowBorder = Color(0xFFE0DEFD);
+
 class _EditHabitSheetState extends State<EditHabitSheet> {
   bool _removeMode = false;
 
@@ -43,41 +47,48 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
     await context.read<HabitCubit>().remove(userHabit.id);
   }
 
-  Widget _buildSection(BuildContext context, String label, List<UserHabitEntity> items) {
+  Widget _buildSection(BuildContext context, String label, List<UserHabitEntity> items, {required bool isActive}) {
     if (items.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            AppText(label, style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w600)),
+            AppText(
+              label,
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary, fontWeight: FontWeight.w700),
+            ),
             6.horizontalSpace,
-            AppText('${items.length}', style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary)),
+            AppText(
+              '${items.length}',
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textQuaternary, fontWeight: FontWeight.w600),
+            ),
           ],
         ),
         12.verticalSpace,
-        ...items.map((userHabit) => _buildRow(context, userHabit)),
+        ...items.map((userHabit) => _buildRow(context, userHabit, isActive: isActive)),
         8.verticalSpace,
       ],
     );
   }
 
-  Widget _buildRow(BuildContext context, UserHabitEntity userHabit) {
+  Widget _buildRow(BuildContext context, UserHabitEntity userHabit, {required bool isActive}) {
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundBrandSoft,
-        borderRadius: BorderRadius.circular(16.r),
+        color: isActive ? AppCustomColor.backgroundBrandSoft : AppCustomColor.backgroundGray,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: isActive ? _kEditActiveRowBorder : AppCustomColor.borderDefault),
       ),
       child: Row(
         children: [
-          AppText(userHabit.displayIcon, style: AppStyle.text24),
+          HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon, size: 48),
           12.horizontalSpace,
           Expanded(
             child: AppText(
               userHabit.displayTitle,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary),
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
             ),
           ),
           8.horizontalSpace,
@@ -126,7 +137,7 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
                     Expanded(
                       child: AppText(
                         context.l10n.habit.editSheetTitle,
-                        style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+                        style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
                       ),
                     ),
                     Semantics(
@@ -140,6 +151,16 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
                         ),
                       ),
                     ),
+                    Semantics(
+                      button: true,
+                      label: context.l10n.common.close,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
                   ],
                 ),
                 16.verticalSpace,
@@ -148,8 +169,8 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSection(context, context.l10n.habit.editActiveLabel, active),
-                        _buildSection(context, context.l10n.habit.editInactiveLabel, inactive),
+                        _buildSection(context, context.l10n.habit.editActiveLabel, active, isActive: true),
+                        _buildSection(context, context.l10n.habit.editInactiveLabel, inactive, isActive: false),
                       ],
                     ),
                   ),

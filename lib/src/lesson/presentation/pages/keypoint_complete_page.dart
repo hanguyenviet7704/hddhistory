@@ -91,23 +91,23 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 
   /// Post-lesson habit suggestion (PRD §9.2 Starter/Reflection — one screen,
-  /// shown after every lesson). Best-effort: pops back regardless of choice so
-  /// it never blocks the roadmap/badge navigation below.
-  /// - Per-lesson curated suggestions (BTV-authored, keyed by lessonId).
-  /// - FR2.8: skipped if the user already adopted a habit from this lesson.
-  /// - Adopted habits carry sourceLessonId/sourceCourseId (§9.5 grouping).
+  /// shown after every keypoint). Best-effort: pops back regardless of choice
+  /// so it never blocks the roadmap/badge navigation below.
+  /// - Per-keypoint curated suggestions (BTV-authored, keyed by keypointId).
+  /// - FR2.8: skipped if the user already adopted a habit from this keypoint.
+  /// - Adopted habits carry sourceKeypointId/sourceCourseId (§9.5 grouping).
   Future<void> _maybeShowHabitPrompt(CourseLessonState lessonState) async {
     final habitCubit = AppDI.injector.get<HabitCubit>();
     await habitCubit.ensureLoaded();
     if (!mounted) return;
 
-    final lessonId = lessonState.selectedLesson.id;
-    // FR2.8 — each lesson suggests a habit only once.
-    if (lessonId.isNotEmpty && habitCubit.state.userHabits.any((h) => h.sourceLessonId == lessonId)) {
+    final keypointId = lessonState.currentKeypointId;
+    // FR2.8 — each keypoint suggests a habit only once.
+    if (keypointId.isNotEmpty && habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId)) {
       return;
     }
 
-    final suggestions = await habitCubit.loadLibrary(lessonId: lessonId);
+    final suggestions = await habitCubit.loadLibrary(keypointId: keypointId);
     if (!mounted || suggestions.isEmpty) return;
 
     final courseId = resolveLessonFlowCourseId(
@@ -122,7 +122,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
           value: AppDI.injector.get<HabitCubit>(),
           child: AdoptHabitPage(
             habits: suggestions,
-            sourceLessonId: lessonId,
+            sourceKeypointId: keypointId,
             sourceCourseId: courseId,
           ),
         ),
@@ -191,33 +191,33 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         BlocListener<FeedbackCubit, FeedbackState>(
           listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
           listener: (context, state) {
-        if (_hasShownFeedbackPopup) return;
-        if (state.userFeedback.userHasKeypointFeedbackComplete) return;
+            if (_hasShownFeedbackPopup) return;
+            if (state.userFeedback.userHasKeypointFeedbackComplete) return;
 
-        final keypointTracking = KeypointTrackingData.fromContext();
-        String courseId = '';
-        String lessonId = '';
-        String keypointId = '';
-        if (keypointTracking != null) {
-          courseId = keypointTracking.course.id;
-          lessonId = keypointTracking.lesson.id;
-          keypointId = keypointTracking.keypoint.id;
-        } else {
-          final lessonState = AppDI.injector.get<CourseLessonCubit>().state;
-          courseId = lessonState.selectedLesson.courseId;
-          lessonId = lessonState.selectedLesson.id;
-          keypointId = lessonState.currentKeypointId;
-        }
+            final keypointTracking = KeypointTrackingData.fromContext();
+            String courseId = '';
+            String lessonId = '';
+            String keypointId = '';
+            if (keypointTracking != null) {
+              courseId = keypointTracking.course.id;
+              lessonId = keypointTracking.lesson.id;
+              keypointId = keypointTracking.keypoint.id;
+            } else {
+              final lessonState = AppDI.injector.get<CourseLessonCubit>().state;
+              courseId = lessonState.selectedLesson.courseId;
+              lessonId = lessonState.selectedLesson.id;
+              keypointId = lessonState.currentKeypointId;
+            }
 
-        if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
-        _hasShownFeedbackPopup = true;
-        FeedbackCompleteLessonPopup.show(
-          context,
-          entry: FeedbackEntry.keypoint,
-          courseId: courseId,
-          lessonId: lessonId,
-          keypointId: keypointId,
-        ).whenComplete(_ensureKeypointCompleteRouteName);
+            if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
+            _hasShownFeedbackPopup = true;
+            FeedbackCompleteLessonPopup.show(
+              context,
+              entry: FeedbackEntry.keypoint,
+              courseId: courseId,
+              lessonId: lessonId,
+              keypointId: keypointId,
+            ).whenComplete(_ensureKeypointCompleteRouteName);
           },
         ),
       ],

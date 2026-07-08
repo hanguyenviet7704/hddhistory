@@ -1,18 +1,18 @@
 part of '../../habit.dart';
 
-/// "Start first habit" / adopt flow (Figma 10788:53255, design.md 5.2): pick
-/// a habit from the library list, choose a daily reminder time, then adopt.
-/// Pops `true` when the habit was adopted so the caller can show
-/// [HabitAddedPopup]; pops `false`/null on "Remind me later" or back.
+/// "Start first habit" / adopt flow (Figma 10788:53255): pick a habit from
+/// the suggested list, then adopt (reminder time defaults silently — this
+/// screen has no time picker). Pops `true` when adopted so the caller can
+/// show [HabitAddedPopup]; pops `false`/null on "Skip" or back.
 class AdoptHabitPage extends StatefulWidget {
   final List<HabitEntity> habits;
-  final String? sourceLessonId;
+  final String? sourceKeypointId;
   final String? sourceCourseId;
 
   const AdoptHabitPage({
     super.key,
     required this.habits,
-    this.sourceLessonId,
+    this.sourceKeypointId,
     this.sourceCourseId,
   });
 
@@ -23,14 +23,23 @@ class AdoptHabitPage extends StatefulWidget {
 class _AdoptHabitPageState extends State<AdoptHabitPage> {
   static const int _defaultPackLength = 3;
   late HabitEntity _selectedHabit = widget.habits.first;
+  // Figma 10788:53255 has no reminder-time picker on this screen — silently
+  // default to the habit's suggested time (or 08:00) instead of asking.
   String _selectedReminderTime = '08:00';
   bool _isSubmitting = false;
 
-  static const _reminderOptions = [
-    ('08:00', 'adoptReminderMorning'),
-    ('13:00', 'adoptReminderAfternoon'),
-    ('20:00', 'adoptReminderEvening'),
-  ];
+  /// The course/lesson this adopt flow was suggested from, shown as the
+  /// "PROBLEM" headline (Figma 10788:53255). Falls back to the first
+  /// suggested habit's own title when no course can be resolved.
+  String get _headline {
+    final courseId = widget.sourceCourseId;
+    if (courseId != null && courseId.isNotEmpty) {
+      final course = AppDI.injector.get<ProgressCubit>().state.myCourses.where((c) => c.id == courseId).firstOrNull;
+      final title = course?.title.text ?? '';
+      if (title.isNotEmpty) return title;
+    }
+    return widget.habits.first.title.text;
+  }
 
   @override
   void initState() {
@@ -53,7 +62,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
       habitId: _selectedHabit.id,
       reminderTime: _selectedReminderTime,
       packLength: _defaultPackLength,
-      sourceLessonId: widget.sourceLessonId,
+      sourceKeypointId: widget.sourceKeypointId,
       sourceCourseId: widget.sourceCourseId,
     );
 
@@ -87,11 +96,11 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
           margin: EdgeInsets.only(bottom: 10.h),
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: selected ? AppCustomColor.backgroundBrandSoft : AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
-              width: selected ? 1.5 : 1,
+              color: selected ? AppCustomColor.streakActive : AppCustomColor.borderSecondary,
+              width: 2,
             ),
           ),
           child: Row(
@@ -101,19 +110,19 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
               Expanded(
                 child: AppText(
                   habit.title.text,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary),
+                  style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700),
                 ),
               ),
               8.horizontalSpace,
               if (selected)
                 Container(
-                  width: 22.w,
-                  height: 22.w,
+                  width: 20.w,
+                  height: 20.w,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppCustomColor.brandPrimary,
+                    color: AppCustomColor.streakActive,
                   ),
-                  child: Icon(Icons.check, size: 14.w, color: AppCustomColor.textWhite),
+                  child: Icon(Icons.check, size: 13.w, color: AppCustomColor.textWhite),
                 ),
             ],
           ),
@@ -125,7 +134,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundBrandSoft,
+      backgroundColor: AppCustomColor.brandPrimary50,
       body: SafeBody(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -135,21 +144,28 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
               24.verticalSpace,
               Center(
                 child: AppText(
-                  context.l10n.habit.adoptHeaderLabel,
+                  context.l10n.habit.adoptProblemLabel,
                   style: AppStyle.text12.copyWith(
-                    color: AppCustomColor.brandPrimary,
+                    color: AppCustomColor.streakActive,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                   ),
                 ),
               ),
-              20.verticalSpace,
+              4.verticalSpace,
+              AppText(
+                _headline,
+                textAlign: TextAlign.center,
+                style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
+              ),
+              16.verticalSpace,
               Expanded(
                 child: Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: AppCustomColor.backgroundWhite.withValues(alpha: 0.6),
+                    color: AppCustomColor.backgroundWhite,
                     borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -157,53 +173,10 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
                       children: [
                         AppText(
                           context.l10n.habit.adoptChooseHabitLabel,
-                          style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary),
+                          style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
                         ),
                         12.verticalSpace,
                         ...widget.habits.map(_buildHabitOption),
-                        16.verticalSpace,
-                        AppText(
-                          context.l10n.habit.adoptReminderLabel,
-                          style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
-                        ),
-                        12.verticalSpace,
-                        Wrap(
-                          spacing: 8.w,
-                          children: _reminderOptions.map((option) {
-                            final (time, labelKey) = option;
-                            final selected = _selectedReminderTime == time;
-                            final label = switch (labelKey) {
-                              'adoptReminderMorning' => context.l10n.habit.adoptReminderMorning,
-                              'adoptReminderAfternoon' => context.l10n.habit.adoptReminderAfternoon,
-                              _ => context.l10n.habit.adoptReminderEvening,
-                            };
-                            return Semantics(
-                              button: true,
-                              selected: selected,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(1000.r),
-                                onTap: () => setState(() => _selectedReminderTime = time),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                  decoration: BoxDecoration(
-                                    color: selected ? AppCustomColor.brandPrimary : AppCustomColor.backgroundWhite,
-                                    borderRadius: BorderRadius.circular(1000.r),
-                                    border: Border.all(
-                                      color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
-                                    ),
-                                  ),
-                                  child: AppText(
-                                    label,
-                                    style: AppStyle.text14.copyWith(
-                                      color: selected ? AppCustomColor.textWhite : AppCustomColor.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
                       ],
                     ),
                   ),
@@ -212,12 +185,16 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
               16.verticalSpace,
               DButton(
                 text: context.l10n.habit.adoptAddButton,
+                backgroundColor: AppCustomColor.brandPrimary,
+                size: Size(double.infinity, 54.h),
+                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
                 onPressed: _isSubmitting ? null : _start,
               ),
               4.verticalSpace,
               DButton(
                 text: context.l10n.habit.adoptRemindLaterButton,
                 buttonType: DButtonType.text,
+                style: AppStyle.textBold14.copyWith(color: AppCustomColor.streakActive),
                 onPressed: () => Navigator.of(context).pop(false),
               ),
               12.verticalSpace,

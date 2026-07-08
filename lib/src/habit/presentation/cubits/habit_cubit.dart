@@ -37,8 +37,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   void markWeeklyRecapShown() => emit(state.copyWith(weeklyRecapShownOn: DateTime.now()));
 
   /// Mark a course's Re-anchor as shown so it appears at most once (§9.1).
-  void markReanchorShown(String courseId) =>
-      emit(state.copyWith(reanchorShownCourseIds: {...state.reanchorShownCourseIds, courseId}));
+  void markReanchorShown(String courseId) => emit(state.copyWith(reanchorShownCourseIds: {...state.reanchorShownCourseIds, courseId}));
 
   Future<void> load({bool showLoading = true}) async {
     await runUseCaseList<UserHabitEntity>(
@@ -72,10 +71,10 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     return future;
   }
 
-  /// Published habit library. Pass [lessonId] for the per-lesson reflection
-  /// suggestions (§9.2); omit for the whole library.
-  Future<List<HabitEntity>> loadLibrary({String? lessonId}) async {
-    final result = await _getHabitsUseCase(lessonId: lessonId).run();
+  /// Published habit library. Pass [keypointId] for the per-keypoint
+  /// reflection suggestions (§9.2); omit for the whole library.
+  Future<List<HabitEntity>> loadLibrary({String? keypointId}) async {
+    final result = await _getHabitsUseCase(keypointId: keypointId).run();
     return result.fold((_) => const [], (habits) => habits);
   }
 
@@ -100,14 +99,14 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     required String habitId,
     String? reminderTime,
     required int packLength,
-    String? sourceLessonId,
+    String? sourceKeypointId,
     String? sourceCourseId,
   }) async {
     final result = await _adoptUseCase(
       habitId: habitId,
       reminderTime: reminderTime,
       packLength: packLength,
-      sourceLessonId: sourceLessonId,
+      sourceKeypointId: sourceKeypointId,
       sourceCourseId: sourceCourseId,
     ).run();
     return result.fold(

@@ -24,12 +24,12 @@ class HabitTaskRow extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12.h),
         child: Row(
           children: [
-            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon),
+            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon, size: 48),
             12.horizontalSpace,
             Expanded(
               child: AppText(
                 userHabit.displayTitle,
-                style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary),
+                style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
               ),
             ),
             12.horizontalSpace,

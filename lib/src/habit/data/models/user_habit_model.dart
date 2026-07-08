@@ -17,7 +17,7 @@ abstract class UserHabitModel with _$UserHabitModel {
     @Default(false) bool todayDone,
     DateTime? weekStartDate,
     @Default([]) List<bool> weekGrid,
-    String? sourceLessonId,
+    String? sourceKeypointId,
     String? sourceCourseId,
   }) = _UserHabitModel;
 
@@ -40,7 +40,7 @@ extension UserHabitModelX on UserHabitModel {
     todayDone: todayDone,
     weekStartDate: weekStartDate,
     weekGrid: weekGrid,
-    sourceLessonId: sourceLessonId,
+    sourceKeypointId: sourceKeypointId,
     sourceCourseId: sourceCourseId,
   );
 }

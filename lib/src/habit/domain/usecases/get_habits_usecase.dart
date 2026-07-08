@@ -6,6 +6,5 @@ class GetHabitsUseCase {
 
   GetHabitsUseCase(this._repository);
 
-  TaskEither<AppException, List<HabitEntity>> call({String? skillsetId, String? lessonId}) =>
-      _repository.getHabits(skillsetId: skillsetId, lessonId: lessonId);
+  TaskEither<AppException, List<HabitEntity>> call({String? skillsetId, String? keypointId}) => _repository.getHabits(skillsetId: skillsetId, keypointId: keypointId);
 }

@@ -16,8 +16,7 @@ String _habitWeekRangeLabel(List<UserHabitEntity> activeHabits) {
 /// Tracker grouping key (§9.5 — "1 khóa = 1 cụm habit quanh 1 vấn đề"): group
 /// by the course the habit was adopted from, falling back to its skillset for
 /// legacy habits with no sourceCourseId.
-String _habitGroupKey(UserHabitEntity h) =>
-    (h.sourceCourseId?.isNotEmpty ?? false) ? h.sourceCourseId! : (h.habit?.skillsetId ?? '');
+String _habitGroupKey(UserHabitEntity h) => (h.sourceCourseId?.isNotEmpty ?? false) ? h.sourceCourseId! : (h.habit?.skillsetId ?? '');
 
 /// Human title for a group: the course's title ("the problem"), else the
 /// skillset title.
@@ -61,7 +60,7 @@ class _HabitPageState extends State<HabitPage> {
   }
 
   /// Tap the habit row → Habit detail (PRD §9.8).
-  Future<void> _openDetail(UserHabitEntity userHabit) => HabitDetailPage.push(context, userHabit: userHabit);
+  Future<void> _openDetail(UserHabitEntity userHabit) => HabitDetailPage.show(context, userHabit: userHabit);
 
   /// Empty state "Go to course" → Explore tab (PRD §9.5): habits are created
   /// from lessons, so a user with none is sent to browse courses.
@@ -122,21 +121,23 @@ class _HabitHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Figma "Empty" (11418:15157): the green scene carries no title/toggle at
+    // all when there are no active habits — just the decorative backdrop.
+    if (state.activeHabits.isEmpty) {
+      return SizedBox(width: double.infinity, height: 140.h, child: const _HabitHeaderScene());
+    }
+
     final isTaskView = state.toggle == HabitTabToggle.task;
     final allDone = state.allDoneToday;
 
     // Per Figma: Task view leads with "Today"/tasks-left, Habit view with the
     // done/total counter.
-    final title = isTaskView
-        ? context.l10n.habit.headerTodayTitle
-        : context.l10n.habit.headerCompletedTitle(done: state.doneTodayCount, total: state.activeCount);
+    final title = isTaskView ? context.l10n.habit.headerTodayTitle : context.l10n.habit.headerCompletedTitle(done: state.doneTodayCount, total: state.activeCount);
     final subtitle = isTaskView
         ? context.l10n.habit.headerTasksToComplete(count: (state.activeCount - state.doneTodayCount).clamp(0, 999))
-        : state.userHabits.isEmpty
-            ? context.l10n.habit.headerEmptySubtitle
-            : allDone
-                ? context.l10n.habit.headerAllDoneSubtitle
-                : context.l10n.habit.headerInProgressSubtitle;
+        : allDone
+        ? context.l10n.habit.headerAllDoneSubtitle
+        : context.l10n.habit.headerInProgressSubtitle;
 
     return SizedBox(
       width: double.infinity,
@@ -426,11 +427,11 @@ class _HabitBody extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit_outlined, size: 16.w, color: AppCustomColor.textTertiary),
+                      Icon(Icons.edit_outlined, size: 16.w, color: AppCustomColor.textQuaternary),
                       6.horizontalSpace,
                       AppText(
                         context.l10n.habit.editHabitLink,
-                        style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary),
+                        style: AppStyle.text14.copyWith(color: AppCustomColor.textQuaternary, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -535,7 +536,7 @@ class _HabitWeeklyRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon),
+            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon, size: 48),
             12.horizontalSpace,
             Expanded(
               child: Column(

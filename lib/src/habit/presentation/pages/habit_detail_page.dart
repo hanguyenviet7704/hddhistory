@@ -1,20 +1,27 @@
 part of '../../habit.dart';
 
-/// Habit detail (Figma `habitDetail`, PRD §9.8): status, stats (completion
-/// rate | current loop), a month-by-month repetition heatmap (swipe across
-/// months, 3 cell states), and the habit diary. Pushed from a tracker row tap.
+// Figma 11400:27785 / 11400:27777 stat icons — pulled from the design file.
+const String _kHabitCompletionRateBase = 'assets/svg/common/habit_completion_rate_base.svg';
+const String _kHabitCompletionRateOverlay = 'assets/svg/common/habit_completion_rate_overlay.svg';
+const String _kHabitCurrentLoop = 'assets/svg/common/habit_current_loop.svg';
+
+/// Habit detail (Figma `11395:27559` "Habit overview"): status, stats
+/// (completion rate | current loop), a month-by-month repetition heatmap
+/// (swipe across months, 3 cell states), and the habit diary. Opened as a
+/// near-full-height modal sheet (not a pushed page) from a tracker row tap.
 class HabitDetailPage extends StatefulWidget {
   final UserHabitEntity userHabit;
 
   const HabitDetailPage({super.key, required this.userHabit});
 
-  static Future<void> push(BuildContext context, {required UserHabitEntity userHabit}) {
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: AppDI.injector.get<HabitCubit>(),
-          child: HabitDetailPage(userHabit: userHabit),
-        ),
+  static Future<void> show(BuildContext context, {required UserHabitEntity userHabit}) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => BlocProvider.value(
+        value: AppDI.injector.get<HabitCubit>(),
+        child: HabitDetailPage(userHabit: userHabit),
       ),
     );
   }
@@ -56,10 +63,16 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
     final habit = widget.userHabit;
     final diary = (_checkins ?? []).where((c) => (c.note ?? '').trim().isNotEmpty).toList();
 
-    return Scaffold(
-      backgroundColor: AppCustomColor.backgroundBrandSoft,
-      body: SafeBody(
+    return SafeArea(
+      child: Container(
+        constraints: BoxConstraints(maxHeight: 0.91.sh),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.backgroundGray,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Align(
@@ -68,19 +81,21 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
                 button: true,
                 label: context.l10n.common.close,
                 child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
             ),
-            Expanded(
+            8.verticalSpace,
+            Flexible(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 24.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', fallbackEmoji: habit.displayIcon, size: 44),
-                    12.verticalSpace,
+                    HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', fallbackEmoji: habit.displayIcon, size: 48),
+                    6.verticalSpace,
                     AppText(
                       habit.displayTitle,
                       style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
@@ -97,7 +112,7 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
                       },
                       loading: _checkins == null,
                     ),
-                    20.verticalSpace,
+                    8.verticalSpace,
                     _DiarySection(entries: diary),
                   ],
                 ),
@@ -124,9 +139,9 @@ class _StatusPill extends StatelessWidget {
       ),
       child: AppText(
         active ? context.l10n.habit.editActiveLabel : context.l10n.habit.editInactiveLabel,
-        style: AppStyle.text12.copyWith(
-          color: active ? AppCustomColor.brandPrimary : AppCustomColor.textTertiary,
-          fontWeight: FontWeight.w600,
+        style: AppStyle.text10.copyWith(
+          color: AppCustomColor.textTertiary,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -152,7 +167,16 @@ class _StatsCard extends StatelessWidget {
             Expanded(
               child: _StatCell(
                 label: context.l10n.habit.detailCompletionRate,
-                icon: '🏆',
+                icon: SizedBox(
+                  width: 24.w,
+                  height: 24.w,
+                  child: Stack(
+                    children: [
+                      SvgPicture.asset(_kHabitCompletionRateBase, width: 24.w, height: 24.w),
+                      SvgPicture.asset(_kHabitCompletionRateOverlay, width: 24.w, height: 24.w),
+                    ],
+                  ),
+                ),
                 value: '$completionRate%',
               ),
             ),
@@ -160,7 +184,7 @@ class _StatsCard extends StatelessWidget {
             Expanded(
               child: _StatCell(
                 label: context.l10n.habit.detailCurrentLoop,
-                icon: '🔁',
+                icon: SvgPicture.asset(_kHabitCurrentLoop, width: 24.w, height: 24.w),
                 value: context.l10n.habit.detailCurrentLoopValue(days: currentLoopDays),
               ),
             ),
@@ -173,7 +197,7 @@ class _StatsCard extends StatelessWidget {
 
 class _StatCell extends StatelessWidget {
   final String label;
-  final String icon;
+  final Widget icon;
   final String value;
   const _StatCell({required this.label, required this.icon, required this.value});
 
@@ -187,9 +211,9 @@ class _StatCell extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppText(icon, style: AppStyle.text16),
+            icon,
             6.horizontalSpace,
-            AppText(value, style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary)),
+            AppText(value, style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary)),
           ],
         ),
       ],
@@ -240,7 +264,10 @@ class _RepetitionsSection extends StatelessWidget {
           ),
           16.verticalSpace,
           if (loading)
-            SizedBox(height: 120.h, child: const Center(child: CircularProgressIndicator()))
+            SizedBox(
+              height: 120.h,
+              child: const Center(child: CircularProgressIndicator()),
+            )
           else
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -290,20 +317,37 @@ class _MonthHeatmap extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppText(month.parseString('MMMM'), style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700)),
+        AppText(
+          month.parseString('MMMM'),
+          style: AppStyle.text12.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700),
+        ),
         12.verticalSpace,
         Row(
           children: weekdays
-              .map((d) => SizedBox(
-                    width: 26.w,
-                    child: Center(child: AppText(d, style: AppStyle.text10.copyWith(color: AppCustomColor.textTertiary))),
-                  ))
+              .map(
+                (d) => SizedBox(
+                  width: 26.w,
+                  child: Center(
+                    child: AppText(d, style: AppStyle.text10.copyWith(color: AppCustomColor.textTertiary)),
+                  ),
+                ),
+              )
               .toList(),
         ),
         8.verticalSpace,
         SizedBox(
           width: 26.w * 7,
-          child: Wrap(children: cells.map((c) => SizedBox(width: 26.w, height: 26.w, child: Padding(padding: EdgeInsets.all(2.w), child: c))).toList()),
+          child: Wrap(
+            children: cells
+                .map(
+                  (c) => SizedBox(
+                    width: 26.w,
+                    height: 26.w,
+                    child: Padding(padding: EdgeInsets.all(2.w), child: c),
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ],
     );

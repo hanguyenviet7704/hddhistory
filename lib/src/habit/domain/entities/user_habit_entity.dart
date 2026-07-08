@@ -29,8 +29,8 @@ abstract class UserHabitEntity with _$UserHabitEntity {
     DateTime? weekStartDate,
     @Default([]) List<bool> weekGrid,
     // Where the habit was adopted from (§9.5 grouping by course, §9.2 FR2.8
-    // "each lesson suggests once" gating).
-    String? sourceLessonId,
+    // "each keypoint suggests once" gating).
+    String? sourceKeypointId,
     String? sourceCourseId,
   }) = _UserHabitEntity;
 

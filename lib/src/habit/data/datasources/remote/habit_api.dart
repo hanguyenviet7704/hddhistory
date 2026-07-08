@@ -9,7 +9,7 @@ abstract class HabitApi {
   @GET(AppEndpoint.habits)
   Future<BaseResponse<List<HabitModel>>> getHabits(
     @Query('skillsetId') String? skillsetId,
-    @Query('lessonId') String? lessonId,
+    @Query('keypointId') String? keypointId,
   );
 
   @GET(AppEndpoint.userHabits)
