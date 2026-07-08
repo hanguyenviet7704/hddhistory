@@ -35,6 +35,7 @@ pipeline {
                             git pull origin develop
                             docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID} .
                             docker push registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID}
+                            docker rmi registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID}
                             exit
                         EOF"""
                     }
@@ -49,16 +50,13 @@ pipeline {
             steps {
                 echo "Deploying to develop environment"
                 sshagent(['gitlab-ssh-key']) {
-                    sh """ssh -o StrictHostKeyChecking=no ansible@192.168.10.35 << EOF
-                        docker pull registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID}
-                        exit
-                    EOF"""
-
                     sh """ssh -o StrictHostKeyChecking=no ansible@192.168.10.137 << EOF
-                        docker service update --image registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID} meup_admin
-                        exit
-
-                    EOF"""
+                            kubectl config use-context k8s-local-dev
+                            kubectl set image deployment/admin admin=registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID} -n meup-dev
+                            kubectl config use-context k8s-local-dev
+                            kubectl rollout status deployment/admin -n meup-dev
+                            exit
+                        EOF"""
                 }
             }
         }
@@ -78,6 +76,7 @@ pipeline {
                             git checkout tags/${env.GIT_TAG_NAME}
                             docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} .
                             docker push registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
+                            docker rmi registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
                             exit
                         EOF"""
                     }
