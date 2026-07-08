@@ -1,11 +1,6 @@
 // src/pages/reanchor-reasons/ReanchorReasonList.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Box,
-  Button,
-  Chip,
-  IconButton,
-  MenuItem,
   Paper,
   Skeleton,
   Table,
@@ -14,12 +9,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
-  Typography,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { reanchorReasonService } from "../../services/reanchorReasonService";
 import { courseService } from "../../services/courseService";
 import {
@@ -35,12 +26,14 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import ReanchorReasonModal from "../../components/reanchor-reasons/ReanchorReasonModal";
 import ReanchorReasonConfirm from "../../components/reanchor-reasons/ReanchorReasonConfirm";
 
-const statusChipProps: Record<
-  ReanchorReasonStatus,
-  { label: string; color: "default" | "success" }
-> = {
-  [ReanchorReasonStatus.DRAFT]: { label: "Draft", color: "default" },
-  [ReanchorReasonStatus.PUBLISHED]: { label: "Published", color: "success" },
+const statusLabels: Record<ReanchorReasonStatus, string> = {
+  [ReanchorReasonStatus.DRAFT]: "Draft",
+  [ReanchorReasonStatus.PUBLISHED]: "Published",
+};
+
+const statusStyles: Record<ReanchorReasonStatus, string> = {
+  [ReanchorReasonStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
+  [ReanchorReasonStatus.PUBLISHED]: "bg-green-100 text-green-700",
 };
 
 const ReanchorReasonList: React.FC = () => {
@@ -183,167 +176,211 @@ const ReanchorReasonList: React.FC = () => {
   };
 
   return (
-    <Box className="p-6">
-      <Box className="mb-4 flex items-center justify-between gap-3">
-        <Typography variant="h5">Re-anchor reasons</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreateModal}
-        >
-          Create re-anchor reason
-        </Button>
-      </Box>
-
-      <Box className="mb-4 flex flex-wrap items-center gap-3">
-        <TextField
-          size="small"
-          label="Search reason"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-64"
-        />
-        <TextField
-          select
-          size="small"
-          label="Course"
-          value={courseFilter}
-          onChange={(e) => setCourseFilter(e.target.value)}
-          className="w-56"
-        >
-          <MenuItem value="">All courses</MenuItem>
-          {courses.map((course) => (
-            <MenuItem key={course._id} value={course._id}>
-              {getTranslationValue(course.title, lang)}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label="Status"
-          value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value as ReanchorReasonStatus | "")
-          }
-          className="w-40"
-        >
-          <MenuItem value="">All statuses</MenuItem>
-          <MenuItem value={ReanchorReasonStatus.DRAFT}>Draft</MenuItem>
-          <MenuItem value={ReanchorReasonStatus.PUBLISHED}>
-            Published
-          </MenuItem>
-        </TextField>
-      </Box>
-
-      {loading ? (
-        <TableContainer component={Paper} className="overflow-x-auto">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Course</TableCell>
-                <TableCell>Reason</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Order</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: 5 }).map((__, j) => (
-                    <TableCell key={j}>
-                      <Skeleton variant="text" />
-                    </TableCell>
-                  ))}
-                </TableRow>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">⚓ Re-anchor Reasons</h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search reason..."
+                className="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <select
+              value={courseFilter}
+              onChange={(e) => setCourseFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">All courses</option>
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {getTranslationValue(course.title, lang)}
+                </option>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : error ? (
-        <Paper className="p-6 text-center">
-          <Typography color="error" className="mb-2">
-            {error}
-          </Typography>
-          <Button variant="outlined" onClick={() => fetchReasons()}>
-            Retry
-          </Button>
-        </Paper>
-      ) : reasons.length === 0 ? (
-        <Paper className="p-6 text-center">
-          <Typography className="mb-2">
-            No re-anchor reasons yet — create the first one to power the
-            mobile app's "why did you pause?" prompt.
-          </Typography>
-          <Button variant="contained" onClick={openCreateModal}>
-            Create the first reason
-          </Button>
-        </Paper>
-      ) : filteredReasons.length === 0 ? (
-        <Paper className="p-6 text-center">
-          <Typography className="mb-2">
-            No re-anchor reasons match your filters.
-          </Typography>
-          <Button
-            variant="outlined"
-            disabled={!hasActiveFilters}
-            onClick={resetFilters}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as ReanchorReasonStatus | "")
+              }
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">All statuses</option>
+              <option value={ReanchorReasonStatus.DRAFT}>Draft</option>
+              <option value={ReanchorReasonStatus.PUBLISHED}>
+                Published
+              </option>
+            </select>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Create re-anchor reason</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto">
+        {loading ? (
+          <TableContainer
+            component={Paper}
+            elevation={3}
+            sx={{ borderRadius: 2 }}
+            className="overflow-x-auto"
           >
-            Reset filters
-          </Button>
-        </Paper>
-      ) : (
-        <TableContainer component={Paper} className="overflow-x-auto">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Course</TableCell>
-                <TableCell>Reason</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Order</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredReasons.map((item) => (
-                <TableRow key={item._id} hover>
-                  <TableCell>
-                    {courseNameById.get(item.courseId) || "Unknown course"}
-                  </TableCell>
-                  <TableCell>
-                    {getTranslationValue(item.reason, lang) || "—"}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      size="small"
-                      label={statusChipProps[item.status].label}
-                      color={statusChipProps[item.status].color}
-                    />
-                  </TableCell>
-                  <TableCell>{item.order}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      aria-label="Edit re-anchor reason"
-                      size="small"
-                      onClick={() => openEditModal(item)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      aria-label="Delete re-anchor reason"
-                      size="small"
-                      onClick={() => openDeleteConfirm(item)}
-                    >
-                      <DeleteIcon fontSize="small" color="error" />
-                    </IconButton>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Course</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Reason</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Order</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="right">
+                    Actions
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              </TableHead>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 5 }).map((__, j) => (
+                      <TableCell key={j}>
+                        <Skeleton variant="text" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : error ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-red-600 mb-3">{error}</p>
+            <button
+              onClick={() => fetchReasons()}
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+            >
+              Retry
+            </button>
+          </div>
+        ) : reasons.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-gray-600 mb-3">
+              No re-anchor reasons yet — create the first one to power the
+              mobile app's "why did you pause?" prompt.
+            </p>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Create the first reason</span>
+            </button>
+          </div>
+        ) : filteredReasons.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-gray-600 mb-3">
+              No re-anchor reasons match your filters.
+            </p>
+            <button
+              disabled={!hasActiveFilters}
+              onClick={resetFilters}
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Reset filters
+            </button>
+          </div>
+        ) : (
+          <TableContainer
+            component={Paper}
+            elevation={3}
+            sx={{ borderRadius: 2 }}
+            className="overflow-x-auto"
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Course</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Reason</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Order</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="right">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredReasons.map((item, index) => (
+                  <TableRow
+                    key={item._id}
+                    sx={{
+                      backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
+                      "&:hover": { backgroundColor: "action.hover" },
+                    }}
+                  >
+                    <TableCell>
+                      {courseNameById.get(item.courseId) || "Unknown course"}
+                    </TableCell>
+                    <TableCell>
+                      {getTranslationValue(item.reason, lang) || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
+                          statusStyles[item.status]
+                        }`}
+                      >
+                        {statusLabels[item.status]}
+                      </span>
+                    </TableCell>
+                    <TableCell>{item.order}</TableCell>
+                    <TableCell align="right">
+                      <button
+                        aria-label="Edit re-anchor reason"
+                        onClick={() => openEditModal(item)}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <PencilIcon className="h-4 w-4 text-blue-600" />
+                      </button>
+                      <button
+                        aria-label="Delete re-anchor reason"
+                        onClick={() => openDeleteConfirm(item)}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <TrashIcon className="h-4 w-4 text-red-600" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </div>
 
       <ReanchorReasonModal
         isOpen={modalOpen}
@@ -362,7 +399,7 @@ const ReanchorReasonList: React.FC = () => {
         }}
         onConfirm={handleDelete}
       />
-    </Box>
+    </div>
   );
 };
 

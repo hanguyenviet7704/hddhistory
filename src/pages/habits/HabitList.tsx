@@ -1,11 +1,6 @@
 // src/pages/habits/HabitList.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Box,
-  Button,
-  Chip,
-  IconButton,
-  MenuItem,
   Paper,
   Skeleton,
   Table,
@@ -14,12 +9,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
-  Typography,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { habitService } from "../../services/habitService";
 import { skillsetService } from "../../services/skillsetService";
 import { courseService } from "../../services/courseService";
@@ -34,12 +25,14 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import HabitModal from "../../components/habits/HabitModal";
 import HabitConfirm from "../../components/habits/HabitConfirm";
 
-const statusChipProps: Record<
-  HabitStatus,
-  { label: string; color: "default" | "success" }
-> = {
-  [HabitStatus.DRAFT]: { label: "Draft", color: "default" },
-  [HabitStatus.PUBLISHED]: { label: "Published", color: "success" },
+const statusPillClasses: Record<HabitStatus, string> = {
+  [HabitStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
+  [HabitStatus.PUBLISHED]: "bg-green-100 text-green-700",
+};
+
+const statusLabels: Record<HabitStatus, string> = {
+  [HabitStatus.DRAFT]: "Draft",
+  [HabitStatus.PUBLISHED]: "Published",
 };
 
 const HabitList: React.FC = () => {
@@ -193,171 +186,216 @@ const HabitList: React.FC = () => {
   };
 
   return (
-    <Box className="p-6">
-      <Box className="mb-4 flex items-center justify-between gap-3">
-        <Typography variant="h5">Habits</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreateModal}
-        >
-          Create habit
-        </Button>
-      </Box>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">🔁 Habits</h1>
+          </div>
 
-      <Box className="mb-4 flex flex-wrap items-center gap-3">
-        <TextField
-          size="small"
-          label="Search title"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-64"
-        />
-        <TextField
-          select
-          size="small"
-          label="Skillset"
-          value={skillsetFilter}
-          onChange={(e) => setSkillsetFilter(e.target.value)}
-          className="w-56"
-        >
-          <MenuItem value="">All skillsets</MenuItem>
-          {skillsets.map((skillset) => (
-            <MenuItem key={skillset._id} value={skillset._id}>
-              {getTranslationValue(skillset.title, lang)}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label="Status"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as HabitStatus | "")}
-          className="w-40"
-        >
-          <MenuItem value="">All statuses</MenuItem>
-          <MenuItem value={HabitStatus.DRAFT}>Draft</MenuItem>
-          <MenuItem value={HabitStatus.PUBLISHED}>Published</MenuItem>
-        </TextField>
-      </Box>
-
-      {loading ? (
-        <TableContainer component={Paper} className="overflow-x-auto">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Icon</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Skillset</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Order</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: 6 }).map((__, j) => (
-                    <TableCell key={j}>
-                      <Skeleton variant="text" />
-                    </TableCell>
-                  ))}
-                </TableRow>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search habit title..."
+                className="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <select
+              value={skillsetFilter}
+              onChange={(e) => setSkillsetFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">All skillsets</option>
+              {skillsets.map((skillset) => (
+                <option key={skillset._id} value={skillset._id}>
+                  {getTranslationValue(skillset.title, lang)}
+                </option>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : error ? (
-        <Paper className="p-6 text-center">
-          <Typography color="error" className="mb-2">
-            {error}
-          </Typography>
-          <Button variant="outlined" onClick={() => fetchHabits()}>
-            Retry
-          </Button>
-        </Paper>
-      ) : habits.length === 0 ? (
-        <Paper className="p-6 text-center">
-          <Typography className="mb-2">
-            No habits yet — create the first one to power the mobile app's
-            Habit feature.
-          </Typography>
-          <Button variant="contained" onClick={openCreateModal}>
-            Create the first habit
-          </Button>
-        </Paper>
-      ) : filteredHabits.length === 0 ? (
-        <Paper className="p-6 text-center">
-          <Typography className="mb-2">
-            No habits match your filters.
-          </Typography>
-          <Button
-            variant="outlined"
-            disabled={!hasActiveFilters}
-            onClick={resetFilters}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as HabitStatus | "")
+              }
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">All statuses</option>
+              <option value={HabitStatus.DRAFT}>Draft</option>
+              <option value={HabitStatus.PUBLISHED}>Published</option>
+            </select>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Create habit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto">
+        {loading ? (
+          <TableContainer
+            component={Paper}
+            elevation={3}
+            sx={{ borderRadius: 2 }}
+            className="overflow-x-auto"
           >
-            Reset filters
-          </Button>
-        </Paper>
-      ) : (
-        <TableContainer component={Paper} className="overflow-x-auto">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Icon</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Skillset</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Order</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredHabits.map((habit) => (
-                <TableRow key={habit._id} hover>
-                  <TableCell>
-                    <Typography fontSize={22} component="span">
-                      {habit.icon}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {getTranslationValue(habit.title, lang) || "—"}
-                  </TableCell>
-                  <TableCell>
-                    {skillsetNameById.get(habit.skillsetId) ||
-                      "Unknown skillset"}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      size="small"
-                      label={statusChipProps[habit.status].label}
-                      color={statusChipProps[habit.status].color}
-                    />
-                  </TableCell>
-                  <TableCell>{habit.order}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      aria-label="Edit habit"
-                      size="small"
-                      onClick={() => openEditModal(habit)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      aria-label="Delete habit"
-                      size="small"
-                      onClick={() => openDeleteConfirm(habit)}
-                    >
-                      <DeleteIcon fontSize="small" color="error" />
-                    </IconButton>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Icon</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Order</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="right">
+                    Actions
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              </TableHead>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 6 }).map((__, j) => (
+                      <TableCell key={j}>
+                        <Skeleton variant="text" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : error ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => fetchHabits()}
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+            >
+              Retry
+            </button>
+          </div>
+        ) : habits.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-gray-600 mb-4">
+              No habits yet — create the first one to power the mobile app's
+              Habit feature.
+            </p>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg mx-auto"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Create the first habit</span>
+            </button>
+          </div>
+        ) : filteredHabits.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-gray-600 mb-4">
+              No habits match your filters.
+            </p>
+            <button
+              onClick={resetFilters}
+              disabled={!hasActiveFilters}
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            >
+              Reset filters
+            </button>
+          </div>
+        ) : (
+          <TableContainer
+            component={Paper}
+            elevation={3}
+            sx={{ borderRadius: 2 }}
+            className="overflow-x-auto"
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Icon</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Order</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="right">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredHabits.map((habit, index) => (
+                  <TableRow
+                    key={habit._id}
+                    hover
+                    sx={{
+                      backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
+                    }}
+                  >
+                    <TableCell>
+                      <span style={{ fontSize: 22 }}>{habit.icon}</span>
+                    </TableCell>
+                    <TableCell>
+                      {getTranslationValue(habit.title, lang) || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {skillsetNameById.get(habit.skillsetId) ||
+                        "Unknown skillset"}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
+                          statusPillClasses[habit.status]
+                        }`}
+                      >
+                        {statusLabels[habit.status]}
+                      </span>
+                    </TableCell>
+                    <TableCell>{habit.order}</TableCell>
+                    <TableCell align="right">
+                      <button
+                        aria-label="Edit habit"
+                        onClick={() => openEditModal(habit)}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <PencilIcon className="h-5 w-5 text-blue-600" />
+                      </button>
+                      <button
+                        aria-label="Delete habit"
+                        onClick={() => openDeleteConfirm(habit)}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <TrashIcon className="h-5 w-5 text-red-600" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </div>
 
       <HabitModal
         isOpen={modalOpen}
@@ -377,7 +415,7 @@ const HabitList: React.FC = () => {
         }}
         onConfirm={handleDelete}
       />
-    </Box>
+    </div>
   );
 };
 
