@@ -264,7 +264,6 @@ const HabitList: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Icon</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -277,7 +276,7 @@ const HabitList: React.FC = () => {
               <TableBody>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((__, j) => (
+                    {Array.from({ length: 5 }).map((__, j) => (
                       <TableCell key={j}>
                         <Skeleton variant="text" />
                       </TableCell>
@@ -334,7 +333,6 @@ const HabitList: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Icon</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -353,9 +351,6 @@ const HabitList: React.FC = () => {
                       backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
                     }}
                   >
-                    <TableCell>
-                      <span style={{ fontSize: 22 }}>{habit.icon}</span>
-                    </TableCell>
                     <TableCell>
                       {getTranslationValue(habit.title, lang) || "—"}
                     </TableCell>
