@@ -4,7 +4,6 @@ import { HabitStatus } from "../enum/habit.enum";
 export interface IHabit {
   _id: string;
   title: ITranslation;
-  icon: string;
   skillsetId: string;
   status: HabitStatus;
   defaultReminderTime?: string;
@@ -19,7 +18,6 @@ export interface IHabit {
 
 export interface HabitPayload {
   title: ITranslation;
-  icon: string;
   skillsetId: string;
   status?: HabitStatus;
   defaultReminderTime?: string;

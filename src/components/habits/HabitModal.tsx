@@ -50,7 +50,6 @@ interface Props {
 
 interface FormErrors {
   title?: string;
-  icon?: string;
   skillsetId?: string;
   order?: string;
 }
@@ -76,7 +75,6 @@ export default function HabitModal({
   const lang = useSelector((state: RootState) => state.lang.code);
 
   const [title, setTitle] = useState<ITranslation>({});
-  const [icon, setIcon] = useState("");
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
   const [defaultReminderTime, setDefaultReminderTime] = useState("");
@@ -125,7 +123,6 @@ export default function HabitModal({
 
     if (initial) {
       setTitle(initial.title ?? {});
-      setIcon(initial.icon ?? "");
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
       setDefaultReminderTime(initial.defaultReminderTime ?? "");
@@ -137,7 +134,6 @@ export default function HabitModal({
       setSelectedKeypointIds(initial.keypointIds ?? []);
     } else {
       setTitle({});
-      setIcon("");
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
       setDefaultReminderTime("");
@@ -310,9 +306,6 @@ export default function HabitModal({
     if (!cleanTranslation(title)) {
       nextErrors.title = "Title is required in at least one language";
     }
-    if (!icon.trim()) {
-      nextErrors.icon = "Icon is required";
-    }
     if (!skillsetId) {
       nextErrors.skillsetId = "Skillset is required";
     }
@@ -335,7 +328,6 @@ export default function HabitModal({
 
     const payload: HabitPayload = {
       title: cleanedTitle,
-      icon: icon.trim(),
       skillsetId,
       status,
       keypointIds: selectedKeypointIds,
@@ -350,7 +342,7 @@ export default function HabitModal({
     } catch (err: any) {
       setSubmitError(
         err?.response?.data?.message ??
-          `Failed to ${isEdit ? "update" : "create"} habit`
+        `Failed to ${isEdit ? "update" : "create"} habit`
       );
     } finally {
       setSubmitting(false);
@@ -377,21 +369,6 @@ export default function HabitModal({
                 errors.title ??
                 "Switch the language in the top bar to add other locales"
               }
-              fullWidth
-              size="small"
-              required
-            />
-
-            <TextField
-              label="Icon"
-              value={icon}
-              onChange={(e) => {
-                setIcon(e.target.value);
-                if (errors.icon) setErrors((prev) => ({ ...prev, icon: undefined }));
-              }}
-              error={!!errors.icon}
-              helperText={errors.icon ?? "Single emoji, e.g. \u{1F375}"}
-              placeholder="\u{1F375}"
               fullWidth
               size="small"
               required

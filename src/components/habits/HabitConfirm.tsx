@@ -31,7 +31,7 @@ export default function HabitConfirm({
   if (!habit) return null;
 
   const label =
-    getTranslationValue(habit.title, LangCode.EN) || habit.icon || "this habit";
+    getTranslationValue(habit.title, LangCode.EN) || "this habit";
 
   const handleDelete = async () => {
     setDeleting(true);
