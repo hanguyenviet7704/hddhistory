@@ -212,6 +212,9 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
           listener: (context, state) {
             if (_hasShownFeedbackPopup) return;
             if (state.userFeedback.userHasKeypointFeedbackComplete) return;
+            // Product decision: the "how was your lesson?" popup is offered
+            // once, on the user's first lesson, then off for good.
+            if (state.hasShownFirstCompleteLessonFeedback) return;
 
             final keypointTracking = KeypointTrackingData.fromContext();
             String courseId = '';
@@ -230,6 +233,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
 
             if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
             _hasShownFeedbackPopup = true;
+            context.read<FeedbackCubit>().markFirstCompleteLessonFeedbackShown();
             FeedbackCompleteLessonPopup.show(
               context,
               entry: FeedbackEntry.keypoint,

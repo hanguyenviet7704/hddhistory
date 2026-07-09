@@ -1,7 +1,7 @@
 part of '../../feedback.dart';
 
 @lazySingleton
-class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<FeedbackState> {
+class FeedbackCubit extends HydratedCubit<FeedbackState> with CubitUseCaseHandlerMixin<FeedbackState> {
   final GetUserFeedbacksUseCase _getUserFeedbacksUseCase;
   final UpdateUserFeedbackUseCase _updateUserFeedbackUseCase;
 
@@ -9,6 +9,20 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
     this._getUserFeedbacksUseCase,
     this._updateUserFeedbackUseCase,
   ) : super(FeedbackState.initial());
+
+  @override
+  FeedbackState fromJson(Map<String, dynamic> json) => FeedbackState.fromJson(json);
+
+  @override
+  Map<String, dynamic> toJson(FeedbackState state) => state.toJson();
+
+  /// Marks the "how was your lesson?" popup as used up — call this right
+  /// after presenting it (submit or skip, doesn't matter) so it never shows
+  /// again past the user's first lesson.
+  void markFirstCompleteLessonFeedbackShown() {
+    if (state.hasShownFirstCompleteLessonFeedback) return;
+    emit(state.copyWith(hasShownFirstCompleteLessonFeedback: true));
+  }
 
   void loadUserFeedbacks() async {
     await runUseCase<UserFeedbackEntity>(

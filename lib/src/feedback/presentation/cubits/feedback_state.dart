@@ -19,6 +19,11 @@ abstract class FeedbackState with _$FeedbackState {
     @Default([]) List<IncompleteFeedbackReason> draftReasons,
     @Default('') String draftComment,
     String? errorMessage,
+    // Persisted (HydratedCubit): the "how was your lesson?" rating popup is
+    // only ever offered once, on the user's first lesson — off for good
+    // after that, regardless of whether they submitted or skipped it. The
+    // "quit mid-lesson" feedback prompt is untouched by this flag.
+    @Default(false) bool hasShownFirstCompleteLessonFeedback,
   }) = _FeedbackState;
 
   factory FeedbackState.initial() => FeedbackState();
