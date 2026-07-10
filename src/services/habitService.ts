@@ -26,4 +26,18 @@ export const habitService = {
   async remove(id: string) {
     return axiosClient.delete(`/habits/${id}`);
   },
+
+  // Portable rows keyed by course.title.en + S/KP — see utils/habitContentXlsx.
+  async exportData() {
+    const res = await axiosClient.get("/habits/export");
+    return res.data?.data ?? [];
+  },
+
+  async importData(rows: unknown[]) {
+    const res = await axiosClient.post("/habits/import", {
+      mode: "replace",
+      rows,
+    });
+    return res.data?.data;
+  },
 };
