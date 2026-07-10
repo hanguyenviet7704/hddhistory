@@ -26,4 +26,18 @@ export const reanchorReasonService = {
   async remove(id: string) {
     return axiosClient.delete(`/reanchor-reasons/${id}`);
   },
+
+  // Portable rows keyed by course.title.en — see utils/habitContentXlsx.
+  async exportData() {
+    const res = await axiosClient.get("/reanchor-reasons/export");
+    return res.data?.data ?? [];
+  },
+
+  async importData(rows: unknown[]) {
+    const res = await axiosClient.post("/reanchor-reasons/import", {
+      mode: "replace",
+      rows,
+    });
+    return res.data?.data;
+  },
 };

@@ -24,6 +24,11 @@ import { RootState } from "../../store";
 import { useNotification } from "../../utils/hooks/useNotification";
 import HabitModal from "../../components/habits/HabitModal";
 import HabitConfirm from "../../components/habits/HabitConfirm";
+import ExportImportButtons from "../../components/common/ExportImportButtons";
+import {
+  downloadHabitXlsx,
+  parseHabitXlsx,
+} from "../../utils/habitContentXlsx";
 
 const statusPillClasses: Record<HabitStatus, string> = {
   [HabitStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
@@ -242,6 +247,16 @@ const HabitList: React.FC = () => {
               <option value={HabitStatus.DRAFT}>Draft</option>
               <option value={HabitStatus.PUBLISHED}>Published</option>
             </select>
+            <ExportImportButtons
+              label="habits"
+              onExport={async () => {
+                const rows = await habitService.exportData();
+                downloadHabitXlsx(rows);
+              }}
+              onParse={parseHabitXlsx}
+              onImport={(rows) => habitService.importData(rows)}
+              onImported={() => fetchHabits()}
+            />
             <button
               onClick={openCreateModal}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"

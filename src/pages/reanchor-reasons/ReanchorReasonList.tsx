@@ -25,6 +25,11 @@ import { RootState } from "../../store";
 import { useNotification } from "../../utils/hooks/useNotification";
 import ReanchorReasonModal from "../../components/reanchor-reasons/ReanchorReasonModal";
 import ReanchorReasonConfirm from "../../components/reanchor-reasons/ReanchorReasonConfirm";
+import ExportImportButtons from "../../components/common/ExportImportButtons";
+import {
+  downloadReanchorXlsx,
+  parseReanchorXlsx,
+} from "../../utils/habitContentXlsx";
 
 const statusLabels: Record<ReanchorReasonStatus, string> = {
   [ReanchorReasonStatus.DRAFT]: "Draft",
@@ -233,6 +238,16 @@ const ReanchorReasonList: React.FC = () => {
                 Published
               </option>
             </select>
+            <ExportImportButtons
+              label="re-anchor reasons"
+              onExport={async () => {
+                const rows = await reanchorReasonService.exportData();
+                downloadReanchorXlsx(rows);
+              }}
+              onParse={parseReanchorXlsx}
+              onImport={(rows) => reanchorReasonService.importData(rows)}
+              onImported={() => fetchReasons()}
+            />
             <button
               onClick={openCreateModal}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
