@@ -52,7 +52,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
 
       await _handleLearningStreakGate();
       if (!mounted) return;
-      _navigateAfterCompletion(lessonState);
+      await _navigateAfterCompletion(lessonState);
     } finally {
       if (mounted) {
         setState(() => _isHandlingPrimaryCta = false);
@@ -90,7 +90,76 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
   }
 
-  void _navigateAfterCompletion(CourseLessonState lessonState) {
+  /// Post-lesson habit suggestion (PRD §9.2 Starter/Reflection — one screen,
+  /// shown after every keypoint).
+  /// - Per-keypoint curated suggestions (BTV-authored, keyed by keypointId).
+  /// - FR2.8: skipped if the user already adopted a habit from this keypoint.
+  /// - Adopted habits carry sourceKeypointId/sourceCourseId (§9.5 grouping).
+  ///
+  /// Returns `true` if it already navigated the user away (they tapped "Go to
+  /// Habit" on the success popup) — [_navigateAfterCompletion] then skips its
+  /// own roadmap/badge routing so we don't immediately navigate away again.
+  Future<bool> _maybeShowHabitPrompt(CourseLessonState lessonState) async {
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    await habitCubit.ensureLoaded();
+    if (!mounted) return false;
+
+    final keypointId = lessonState.currentKeypointId;
+    // FR2.8 — each keypoint suggests a habit only once.
+    if (keypointId.isNotEmpty && habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId)) {
+      return false;
+    }
+
+    final suggestions = await habitCubit.loadLibrary(keypointId: keypointId);
+    if (!mounted || suggestions.isEmpty) return false;
+
+    final courseId = resolveLessonFlowCourseId(
+      lessonCourseId: lessonState.selectedLesson.courseId,
+      roadmapCourseId: context.read<CourseRoadmapCubit>().state.roadmap.courseId,
+      homeCourseId: context.read<HomeCubit>().state.currentCourse.id,
+    );
+
+    final added = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: AppDI.injector.get<HabitCubit>(),
+          child: AdoptHabitPage(
+            habits: suggestions,
+            sourceKeypointId: keypointId,
+            sourceCourseId: courseId,
+          ),
+        ),
+      ),
+    );
+    if (added != true || !mounted) return false;
+
+    final goToHabit = await HabitAddedPopup.show(context);
+    if (goToHabit != true || !mounted) return false;
+
+    HabitRoute().go(context);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+    });
+    return true;
+  }
+
+  /// Whether the course-level badge just became fully unlocked (last
+  /// keypoint of its last lesson). Mirrors
+  /// `_BadgeProgressPageState._isProgressComplete`. This page always renders
+  /// the in-progress badge state itself (see [build]), so on Continue we only
+  /// need to special-case the moment the badge finishes: that's the one case
+  /// still routed through [BadgeProgressRoute], so the "complete" celebration
+  /// (lit badge + congrats Lottie) keeps playing. Every other completion goes
+  /// straight to the roadmap.
+  bool _isCourseLevelBadgeComplete() {
+    final progress = context.read<CourseRoadmapCubit>().state.currentLevelProgress;
+    return progress.isCompleted || progress.progress >= 1;
+  }
+
+  Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
+    final navigatedToHabit = await _maybeShowHabitPrompt(lessonState);
+    if (navigatedToHabit || !mounted) return;
+
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final homeState = context.read<HomeCubit>().state;
     final courseId = resolveLessonFlowCourseId(
@@ -100,16 +169,17 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     );
     syncHomeSelectionForLessonFlowCourse(courseId);
 
-    if (lessonState.wasLessonCompletedBefore) {
-      CourseRoadmapRoute().go(context);
+    if (_isCourseLevelBadgeComplete()) {
+      BadgeProgressRoute().go(context);
       Future.delayed(const Duration(milliseconds: 100), () {
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
       });
       return;
     }
-    BadgeProgressRoute().go(context);
+
+    CourseRoadmapRoute().go(context);
     Future.delayed(const Duration(milliseconds: 100), () {
-      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
     });
   }
 
@@ -117,11 +187,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   Widget build(BuildContext context) {
     final lessonState = context.select((CourseLessonCubit cubit) => cubit.state);
     final currentTitle = lessonState.currentTitle;
-    final currentLessonForNext = lessonState.currentLessonForNext;
-    final nextLesson = context.select(
-      (CourseRoadmapCubit cubit) => cubit.state.roadmap.nextLessonAfter(currentLessonForNext),
-    );
-    final nextTitle = nextLesson.displayTitleForNextLesson;
 
     return MultiBlocListener(
       listeners: [
@@ -145,62 +210,61 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         BlocListener<FeedbackCubit, FeedbackState>(
           listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
           listener: (context, state) {
-        if (_hasShownFeedbackPopup) return;
-        if (state.userFeedback.userHasKeypointFeedbackComplete) return;
+            if (_hasShownFeedbackPopup) return;
+            if (state.userFeedback.userHasKeypointFeedbackComplete) return;
+            // Product decision: the "how was your lesson?" popup is offered
+            // once, on the user's first lesson, then off for good.
+            if (state.hasShownFirstCompleteLessonFeedback) return;
 
-        final keypointTracking = KeypointTrackingData.fromContext();
-        String courseId = '';
-        String lessonId = '';
-        String keypointId = '';
-        if (keypointTracking != null) {
-          courseId = keypointTracking.course.id;
-          lessonId = keypointTracking.lesson.id;
-          keypointId = keypointTracking.keypoint.id;
-        } else {
-          final lessonState = AppDI.injector.get<CourseLessonCubit>().state;
-          courseId = lessonState.selectedLesson.courseId;
-          lessonId = lessonState.selectedLesson.id;
-          keypointId = lessonState.currentKeypointId;
-        }
+            final keypointTracking = KeypointTrackingData.fromContext();
+            String courseId = '';
+            String lessonId = '';
+            String keypointId = '';
+            if (keypointTracking != null) {
+              courseId = keypointTracking.course.id;
+              lessonId = keypointTracking.lesson.id;
+              keypointId = keypointTracking.keypoint.id;
+            } else {
+              final lessonState = AppDI.injector.get<CourseLessonCubit>().state;
+              courseId = lessonState.selectedLesson.courseId;
+              lessonId = lessonState.selectedLesson.id;
+              keypointId = lessonState.currentKeypointId;
+            }
 
-        if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
-        _hasShownFeedbackPopup = true;
-        FeedbackCompleteLessonPopup.show(
-          context,
-          entry: FeedbackEntry.keypoint,
-          courseId: courseId,
-          lessonId: lessonId,
-          keypointId: keypointId,
-        ).whenComplete(_ensureKeypointCompleteRouteName);
+            if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
+            _hasShownFeedbackPopup = true;
+            context.read<FeedbackCubit>().markFirstCompleteLessonFeedbackShown();
+            FeedbackCompleteLessonPopup.show(
+              context,
+              entry: FeedbackEntry.keypoint,
+              courseId: courseId,
+              lessonId: lessonId,
+              keypointId: keypointId,
+            ).whenComplete(_ensureKeypointCompleteRouteName);
           },
         ),
       ],
       child: Scaffold(
+        key: const Key('keypoint-complete-page'),
         backgroundColor: AppCustomColor.backgroundWhite,
         body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: CompletionHeaderCard(title: currentTitle),
-                        ),
-                      ),
-                      if (nextLesson.id.isNotEmpty && nextTitle.isNotEmpty) NextLessonCard(title: nextTitle),
-                    ],
-                  ),
-                ),
-              ),
-              LessonCompletionPrimaryButton(
-                label: context.l10n.exercise.exerciseCompleteKeypointSkipButton,
-                onPressed: () => _handlePrimaryCta(lessonState),
-                margin: EdgeInsets.only(bottom: 16.h, top: 16.h),
-              ),
-            ],
+          // Reuses the badge-progress design (Figma 10326:35300) so completing
+          // a keypoint always shows the course-level badge's current state —
+          // grayed badge + progress bar + "N lessons left to unlock" — instead
+          // of the old plain checkmark screen. The "complete" step (lit badge
+          // + congrats Lottie) is intentionally never shown here: it's only
+          // reachable via [BadgeProgressRoute], triggered from
+          // [_navigateAfterCompletion] the moment the badge finishes.
+          child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, CourseLevelProgressEntity>(
+            selector: (state) => state.currentLevelProgress,
+            builder: (context, progress) {
+              return _BadgeProgressContent(
+                progress: progress,
+                step: BadgeProgressStep.inProgress,
+                currentTitle: currentTitle,
+                onPrimaryCta: () => _handlePrimaryCta(lessonState),
+              );
+            },
           ),
         ),
       ),

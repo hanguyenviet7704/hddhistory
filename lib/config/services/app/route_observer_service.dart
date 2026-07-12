@@ -157,3 +157,11 @@ class SettingRouterObserver extends BaseRouterObserver {
     PageCubit pageCubit,
   ) : super('SettingRouterObserver', pageCubit);
 }
+
+@LazySingleton(as: NavigatorObserver)
+@Named(DIKey.habitRouterObserver)
+class HabitRouterObserver extends BaseRouterObserver {
+  HabitRouterObserver(
+    PageCubit pageCubit,
+  ) : super('HabitRouterObserver', pageCubit);
+}

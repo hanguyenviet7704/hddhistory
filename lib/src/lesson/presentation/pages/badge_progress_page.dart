@@ -96,6 +96,8 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentTitle = context.select((CourseLessonCubit cubit) => cubit.state.currentTitle);
+
     return BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
       listenWhen: (previous, current) =>
           previous.currentLevelProgress.progress != current.currentLevelProgress.progress || previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
@@ -137,6 +139,8 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
                       return _BadgeProgressContent(
                         progress: progress,
                         step: _step,
+                        currentTitle: currentTitle,
+                        onPrimaryCta: _handleAdvance,
                       );
                     },
                   ),
@@ -153,79 +157,243 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
 class _BadgeProgressContent extends StatelessWidget {
   final CourseLevelProgressEntity progress;
   final BadgeProgressStep step;
+  final String currentTitle;
+  final VoidCallback onPrimaryCta;
 
   const _BadgeProgressContent({
     required this.progress,
     required this.step,
+    required this.currentTitle,
+    required this.onPrimaryCta,
   });
 
+  bool get _isInProgress => step == BadgeProgressStep.inProgress;
+
   String get _badgeUrl {
-    if (step == BadgeProgressStep.inProgress) {
+    if (_isInProgress) {
       return progress.darkBadge.trim();
     }
     return progress.lightBadge.trim();
   }
 
+  int get _lessonsLeft => (progress.totalKeypoints - progress.completedKeypoints).clamp(0, progress.totalKeypoints);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+          child: _LessonCompleteBanner(
+            subtitle: _isInProgress ? currentTitle : progress.title,
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _BadgeProgressBadge(url: _badgeUrl),
+                24.verticalSpace,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      context.l10n.exercise.exerciseBadgeCompleteLabel.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: AppStyle.text12.copyWith(
+                        color: AppCustomColor.textTertiary,
+                        fontWeight: FontWeight.w600,
+                        height: 1.75,
+                      ),
+                    ),
+                    4.verticalSpace,
+                    AppText(
+                      progress.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: AppStyle.text20.copyWith(
+                        color: AppCustomColor.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_isInProgress) ...[
+                  12.verticalSpace,
+                  _BadgeProgressBar(progress: progress.progress),
+                  4.verticalSpace,
+                  AppText(
+                    context.l10n.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
+                    textAlign: TextAlign.center,
+                    style: AppStyle.text10.copyWith(
+                      color: AppCustomColor.brandPrimary,
+                      fontWeight: FontWeight.w700,
+                      height: 1.75,
+                    ),
+                  ),
+                ] else ...[
+                  12.verticalSpace,
+                  AppText(
+                    context.l10n.exercise.exerciseBadgeCompleteMessage,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: AppStyle.text16.copyWith(
+                      color: AppCustomColor.textTertiary,
+                      fontWeight: FontWeight.w600,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        if (_isInProgress && _lessonsLeft > 0) ...[
+          _LessonsLeftTooltip(count: _lessonsLeft),
+          16.verticalSpace,
+        ],
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          child: DButton(
+            text: _isInProgress ? context.l10n.exercise.exerciseCompleteKeypointSkipButton : context.l10n.exercise.exerciseCompleteLessonButton,
+            size: Size(double.infinity, 54.h),
+            style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+            onPressed: onPrimaryCta,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The "LESSON COMPLETE!" bordered banner shown at the top of both badge
+/// progress steps (Figma 10326:49600 / 10326:49618). Subtitle is the just-
+/// finished keypoint's title while progress is ongoing, or the badge's own
+/// title once it's fully unlocked (there's no longer a "current" keypoint).
+///
+/// Per the Figma annotation ("Success Toast: Slide in, stay visible for 3s")
+/// this isn't static — it slides down into view, holds for 3s, then slides
+/// back out and collapses so the badge content below re-centers.
+class _LessonCompleteBanner extends StatefulWidget {
+  final String subtitle;
+
+  const _LessonCompleteBanner({required this.subtitle});
+
+  @override
+  State<_LessonCompleteBanner> createState() => _LessonCompleteBannerState();
+}
+
+class _LessonCompleteBannerState extends State<_LessonCompleteBanner> {
+  static const _visibleDuration = Duration(seconds: 3);
+  static const _transitionDuration = Duration(milliseconds: 300);
+
+  bool _visible = false;
+  Timer? _hideTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _visible = true);
+    });
+    _hideTimer = Timer(_visibleDuration + _transitionDuration, () {
+      if (!mounted) return;
+      setState(() => _visible = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: _transitionDuration,
+      curve: Curves.easeOut,
+      alignment: Alignment.topCenter,
+      child: AnimatedSlide(
+        duration: _transitionDuration,
+        curve: Curves.easeOut,
+        offset: _visible ? Offset.zero : const Offset(0, -1),
+        child: AnimatedOpacity(
+          duration: _transitionDuration,
+          opacity: _visible ? 1 : 0,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundWhite,
+              border: Border.all(color: AppCustomColor.borderSecondary, width: 2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  context.l10n.exercise.exerciseLessonCompleteTitle.toUpperCase(),
+                  style: AppStyle.text12.copyWith(color: AppCustomColor.streakActive, fontWeight: FontWeight.w700),
+                ),
+                4.verticalSpace,
+                AppText(
+                  widget.subtitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Always-visible speech-bubble tooltip above the CTA (Figma 10326:49607,
+/// annotated "Tooltip: always visible") — nudges the user with how many more
+/// lessons unlock the badge. Hidden once there's nothing left to nudge about.
+class _LessonsLeftTooltip extends StatelessWidget {
+  final int count;
+
+  const _LessonsLeftTooltip({required this.count});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
         children: [
-          _BadgeProgressBadge(url: _badgeUrl),
-          24.verticalSpace,
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppText(
-                context.l10n.exercise.exerciseBadgeCompleteLabel.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: AppStyle.text12.copyWith(
-                  color: AppCustomColor.textTertiary,
-                  fontWeight: FontWeight.w600,
-                  height: 1.75,
-                ),
-              ),
-              4.verticalSpace,
-              AppText(
-                progress.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: AppStyle.text20.copyWith(
-                  color: AppCustomColor.textPrimary,
-                  fontWeight: FontWeight.w700,
-                  height: 1.5,
-                ),
-              ),
-            ],
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: AppCustomColor.brandPrimary700,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: AppText(
+              context.l10n.exercise.exerciseLessonsLeftToUnlock(count: count),
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textWhite, fontWeight: FontWeight.w700),
+            ),
           ),
-          if (step == BadgeProgressStep.inProgress) ...[
-            12.verticalSpace,
-            _BadgeProgressBar(progress: progress.progress),
-            4.verticalSpace,
-            AppText(
-              context.l10n.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
-              textAlign: TextAlign.center,
-              style: AppStyle.text10.copyWith(
-                color: AppCustomColor.brandPrimary,
-                fontWeight: FontWeight.w700,
-                height: 1.75,
+          Positioned(
+            bottom: -6.w,
+            child: Transform.rotate(
+              angle: math.pi / 4,
+              child: Container(
+                width: 12.w,
+                height: 12.w,
+                color: AppCustomColor.brandPrimary700,
               ),
             ),
-          ] else ...[
-            12.verticalSpace,
-            AppText(
-              context.l10n.exercise.exerciseBadgeCompleteMessage,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: AppStyle.text16.copyWith(
-                color: AppCustomColor.textTertiary,
-                fontWeight: FontWeight.w600,
-                height: 1.5,
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );

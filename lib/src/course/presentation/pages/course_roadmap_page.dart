@@ -47,6 +47,15 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     CourseRoute(selectedTabIndex: skillsetIndex).go(context);
   }
 
+  /// "Go to Habit" entry point (design.md 5.7) — jumps straight to the Habit
+  /// tab from the roadmap header.
+  void _goToHabit(BuildContext context) {
+    HabitRoute().go(context);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+    });
+  }
+
   void _trackRoadmapQuickLearningClick() {
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final courseId = roadmapState.roadmap.courseId;
@@ -109,8 +118,23 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         final courseId = context.read<CourseRoadmapCubit>().state.roadmap.courseId;
         _loadProgressForRoadmap(courseId);
         _checkWarmUpForRoadmap(courseId);
+        unawaited(_maybeShowReanchor(courseId));
       }
     });
+  }
+
+  /// Re-anchor prompt (PRD §9.1) — shown once per course when entering its
+  /// roadmap, before the user starts learning. Guarded by BTV-authored reasons
+  /// existing for the course, so it's a no-op until content is configured.
+  Future<void> _maybeShowReanchor(String courseId) async {
+    if (courseId.isEmpty) return;
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    if (habitCubit.state.reanchorShownCourseIds.contains(courseId)) return;
+    final reasons = await habitCubit.getReanchorReasons(courseId);
+    if (!mounted || reasons.isEmpty) return;
+    if (context.read<PageCubit>().state.currentRouteName != RouteNamed.courseRoadmap) return;
+    habitCubit.markReanchorShown(courseId);
+    await ReanchorPage.push(context, reasons: reasons);
   }
 
   void _tryShowRoleplayIncompleteFeedback(FeedbackState state) {
@@ -269,6 +293,25 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                                 ),
                               );
                             },
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Semantics(
+                              button: true,
+                              label: context.l10n.habit.navLabel,
+                              child: IconButton(
+                                key: const Key('roadmap-go-to-habit'),
+                                padding: EdgeInsets.only(right: 12.w),
+                                constraints: const BoxConstraints(),
+                                icon: SvgPicture.asset(
+                                  AppAsset.svg.common.navGrowth,
+                                  width: 22.w,
+                                  height: 22.w,
+                                  colorFilter: ColorFilter.mode(AppCustomColor.textPrimary, BlendMode.srcIn),
+                                ),
+                                onPressed: () => _goToHabit(context),
+                              ),
+                            ),
                           ),
                         ],
                       ),

@@ -12,6 +12,7 @@ enum PaywallEntryPoint {
   manageSubscription,
   autoOpen,
   courseRoadmap,
+  habit,
   other,
 }
 
