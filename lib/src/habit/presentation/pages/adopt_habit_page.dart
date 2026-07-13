@@ -28,14 +28,20 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
   String _selectedReminderTime = '08:00';
   bool _isSubmitting = false;
 
-  /// The course/lesson this adopt flow was suggested from, shown as the
-  /// "PROBLEM" headline (Figma 10788:53255). Falls back to the first
-  /// suggested habit's own title when no course can be resolved.
+  /// The "PROBLEM" headline (Figma 10788:53255) = the re-anchor reason the user
+  /// picked for this course ("their why", §9.5) — the same "vấn đề" shown on the
+  /// tracker cluster. Falls back to the course title, then the first suggested
+  /// habit's own title, only when no reason was picked.
   String get _headline {
     final courseId = widget.sourceCourseId;
     if (courseId != null && courseId.isNotEmpty) {
-      final course = AppDI.injector.get<ProgressCubit>().state.myCourses.where((c) => c.id == courseId).firstOrNull;
-      final title = course?.title.text ?? '';
+      final reason = AppDI.injector.get<HabitCubit>().state.reanchorReasonByCourse[courseId]?.reason.text ?? '';
+      if (reason.isNotEmpty) return reason;
+      // FULL catalog (HomeCubit.skillsets), not ProgressCubit.myCourses — this
+      // page is reached right after finishing a keypoint, so myCourses (only
+      // courses with SAVED progress) can still be stale for this exact course.
+      // Mirrors the same fix in habit_page.dart's _habitGroupTitle.
+      final title = AppDI.injector.get<HomeCubit>().state.skillsets.resolveCourseByCourseId(courseId).title.text;
       if (title.isNotEmpty) return title;
     }
     return widget.habits.first.title.text;
@@ -45,6 +51,18 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
   void initState() {
     super.initState();
     _applyHabitDefaults(_selectedHabit);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureNavHidden());
+  }
+
+  /// This full-screen adopt page pushes the paywall (via SlotFullUpgradeSheet);
+  /// when the paywall pops, the route observer resets currentRouteName to a
+  /// PRIMARY name, which un-hides the shell's floating nav over this page (and
+  /// clips its "Add habit" CTA). Keep the nav hidden by asserting this flow's
+  /// non-primary route name on mount and reclaiming it whenever a primary name
+  /// lands while this page is the current route. Mirrors keypoint_complete_page.
+  void _ensureNavHidden() {
+    if (!mounted) return;
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
   }
 
   void _applyHabitDefaults(HabitEntity habit) {
@@ -105,7 +123,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
           ),
           child: Row(
             children: [
-              AppText(habit.icon, style: AppStyle.text24),
+              HabitDomainIcon(skillsetId: habit.skillsetId, size: 32),
               12.horizontalSpace,
               Expanded(
                 child: AppText(
@@ -133,72 +151,83 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppCustomColor.brandPrimary50,
-      body: SafeBody(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              24.verticalSpace,
-              Center(
-                child: AppText(
-                  context.l10n.habit.adoptProblemLabel,
-                  style: AppStyle.text12.copyWith(
-                    color: AppCustomColor.streakActive,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ),
-              4.verticalSpace,
-              AppText(
-                _headline,
-                textAlign: TextAlign.center,
-                style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
-              ),
-              16.verticalSpace,
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: AppCustomColor.backgroundWhite,
-                    borderRadius: BorderRadius.circular(20.r),
-                    boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          context.l10n.habit.adoptChooseHabitLabel,
-                          style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                        ),
-                        12.verticalSpace,
-                        ...widget.habits.map(_buildHabitOption),
-                      ],
+    return BlocListener<PageCubit, PageState>(
+      bloc: AppDI.injector.get<PageCubit>(),
+      listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.isPrimaryRoute,
+      listener: (context, _) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+          _ensureNavHidden();
+        });
+      },
+      child: Scaffold(
+        backgroundColor: AppCustomColor.brandPrimary50,
+        body: SafePage(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                24.verticalSpace,
+                Center(
+                  child: AppText(
+                    context.l10n.habit.adoptProblemLabel,
+                    style: AppStyle.text12.copyWith(
+                      color: AppCustomColor.streakActive,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ),
-              ),
-              16.verticalSpace,
-              DButton(
-                text: context.l10n.habit.adoptAddButton,
-                backgroundColor: AppCustomColor.brandPrimary,
-                size: Size(double.infinity, 54.h),
-                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                onPressed: _isSubmitting ? null : _start,
-              ),
-              4.verticalSpace,
-              DButton(
-                text: context.l10n.habit.adoptRemindLaterButton,
-                buttonType: DButtonType.text,
-                style: AppStyle.textBold14.copyWith(color: AppCustomColor.streakActive),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              12.verticalSpace,
-            ],
+                4.verticalSpace,
+                AppText(
+                  _headline,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
+                ),
+                16.verticalSpace,
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.backgroundWhite,
+                      borderRadius: BorderRadius.circular(20.r),
+                      boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            context.l10n.habit.adoptChooseHabitLabel,
+                            style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+                          ),
+                          12.verticalSpace,
+                          ...widget.habits.map(_buildHabitOption),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                16.verticalSpace,
+                DButton(
+                  text: context.l10n.habit.adoptAddButton,
+                  backgroundColor: AppCustomColor.brandPrimary,
+                  size: Size(double.infinity, 54.h),
+                  style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                  onPressed: _isSubmitting ? null : _start,
+                ),
+                4.verticalSpace,
+                DButton(
+                  text: context.l10n.habit.adoptRemindLaterButton,
+                  buttonType: DButtonType.text,
+                  style: AppStyle.textBold14.copyWith(color: AppCustomColor.streakActive),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                12.verticalSpace,
+              ],
+            ),
           ),
         ),
       ),

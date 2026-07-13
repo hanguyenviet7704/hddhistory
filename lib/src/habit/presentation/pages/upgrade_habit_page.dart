@@ -58,7 +58,7 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundBrandSoft,
-      body: SafeBody(
+      body: SafePage(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
@@ -69,7 +69,7 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
               _UpgradeCard(
                 label: context.l10n.habit.upgradeCurrentLabel,
                 title: widget.currentHabit.displayTitle,
-                icon: widget.currentHabit.displayIcon,
+                skillsetId: widget.currentHabit.habit?.skillsetId ?? '',
                 highlighted: false,
               ),
               16.verticalSpace,
@@ -77,12 +77,15 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
               _UpgradeCard(
                 label: context.l10n.habit.upgradeNewLabel,
                 title: widget.newHabit.title.text,
-                icon: widget.newHabit.icon,
+                skillsetId: widget.newHabit.skillsetId,
                 highlighted: true,
               ),
               const Spacer(),
               DButton(
                 text: context.l10n.habit.upgradeButton,
+                backgroundColor: AppCustomColor.brandPrimary,
+                size: Size(double.infinity, 54.h),
+                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
                 onPressed: _isSubmitting ? null : _upgrade,
               ),
               4.verticalSpace,
@@ -103,13 +106,13 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
 class _UpgradeCard extends StatelessWidget {
   final String label;
   final String title;
-  final String icon;
+  final String skillsetId;
   final bool highlighted;
 
   const _UpgradeCard({
     required this.label,
     required this.title,
-    required this.icon,
+    required this.skillsetId,
     required this.highlighted,
   });
 
@@ -121,9 +124,7 @@ class _UpgradeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: highlighted ? AppCustomColor.backgroundWhite : AppCustomColor.brandPrimary50,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: highlighted
-            ? [BoxShadow(color: AppCustomColor.brandPrimary.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))]
-            : null,
+        boxShadow: highlighted ? [BoxShadow(color: AppCustomColor.brandPrimary.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))] : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -134,15 +135,13 @@ class _UpgradeCard extends StatelessWidget {
           ),
           if (highlighted) ...[
             16.verticalSpace,
-            AppText(icon, style: AppStyle.text40),
+            HabitDomainIcon(skillsetId: skillsetId, size: 48),
           ],
           highlighted ? 16.verticalSpace : 8.verticalSpace,
           AppText(
             title,
             textAlign: TextAlign.center,
-            style: highlighted
-                ? AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary)
-                : AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+            style: highlighted ? AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary) : AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
           ),
         ],
       ),

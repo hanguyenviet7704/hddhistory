@@ -7,12 +7,17 @@ abstract class IHabitRepository {
 
   TaskEither<AppException, UserHabitSummaryEntity> getUserHabitsSummary();
 
+  /// Admin-configured free-tier cap on simultaneously-active habits.
+  TaskEither<AppException, int> getFreeActiveSlots();
+
   TaskEither<AppException, UserHabitEntity> adoptHabit({
     required String habitId,
     String? reminderTime,
     int? packLength,
     String? sourceKeypointId,
     String? sourceCourseId,
+    String? reanchorReasonId,
+    BaseMultiLanguage? reanchorReason,
   });
 
   TaskEither<AppException, UserHabitEntity> updateUserHabit(

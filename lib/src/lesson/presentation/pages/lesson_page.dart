@@ -45,7 +45,11 @@ class _LessonPageState extends State<LessonPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      _showLessonNavigationPopupIfNeeded();
+      // Assert this page's (non-primary) route name so the shell's floating nav
+      // pill stays hidden over the lesson. Otherwise the first-time navigation
+      // popup (and any other overlay) shown below writes the UNDERLYING primary
+      // route name (courseRoadmap) on dismissal, un-hiding the nav over the CTA.
+      _ensureLessonRouteName();
       await _syncAudioKeypoint(context.read<CourseLessonCubit>().state.resolvedCurrentKeypoint);
     });
   }
@@ -56,12 +60,38 @@ class _LessonPageState extends State<LessonPage> {
     super.dispose();
   }
 
+  /// Keeps the floating nav pill hidden while the lesson is shown. The pill is
+  /// gated on [PageStateX.isPrimaryRoute]; overlays dismissed above this page
+  /// make the route observer write the underlying (primary) route name, so we
+  /// re-assert this page's name whenever it's flipped back — but only while the
+  /// lesson is still the current route (mirrors keypoint_complete_page).
+  void _ensureLessonRouteName() {
+    if (!mounted) return;
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.lesson);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentKeypoint = context.select((CourseLessonCubit cubit) => cubit.state.resolvedCurrentKeypoint);
 
     return MultiBlocListener(
       listeners: [
+        // Any overlay dismissed above this page (nav guide, report sheet, exit
+        // flow…) makes the route observer write the UNDERLYING route's name — a
+        // primary one (courseRoadmap) — which un-hides the floating nav over the
+        // lesson's CTA. As long as the lesson is still the current route, take
+        // the name back (mirrors keypoint_complete_page).
+        BlocListener<PageCubit, PageState>(
+          bloc: AppDI.injector.get<PageCubit>(),
+          listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.isPrimaryRoute,
+          listener: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+              _ensureLessonRouteName();
+            });
+          },
+        ),
         BlocListener<CourseLessonCubit, CourseLessonState>(
           listenWhen: (previous, current) => previous.resolvedCurrentKeypoint != current.resolvedCurrentKeypoint,
           listener: (context, state) async {
@@ -285,15 +315,6 @@ class _LessonPageState extends State<LessonPage> {
     final lessonState = context.read<LessonCubit>().state;
     if (lessonState.currentLearningItem.type != LearningItemType.exercise) return;
     context.read<LessonCubit>().markPendingAdvance();
-  }
-
-  void _showLessonNavigationPopupIfNeeded() {
-    final userCubit = context.read<UserCubit>();
-    _controller.showLessonNavigationPopupIfNeeded(
-      isFirstTime: userCubit.state.isFirstTimeLessonNavigationGuide,
-      onMarkSeen: () => userCubit.setIsFirstTimeLessonNavigationGuide(false),
-      onShowPopup: () => LessonNavigationPopup.show(context),
-    );
   }
 
   Widget _buildActiveBody(BuildContext context, LessonState state) {

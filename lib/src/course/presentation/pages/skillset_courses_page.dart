@@ -1,6 +1,6 @@
 part of '../../course.dart';
 
-class SkillsetCoursesPage extends StatelessWidget {
+class SkillsetCoursesPage extends StatefulWidget {
   const SkillsetCoursesPage({
     super.key,
     required this.skillsetId,
@@ -9,73 +9,114 @@ class SkillsetCoursesPage extends StatelessWidget {
   final String skillsetId;
 
   @override
+  State<SkillsetCoursesPage> createState() => _SkillsetCoursesPageState();
+}
+
+class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
+  /// This is a non-primary detail route, so the shell's floating nav must stay
+  /// hidden while it's shown. The nav is gated on [PageStateX.isPrimaryRoute];
+  /// entering via Explore's `.push` (or a back-navigation that pops an overlay /
+  /// returns from the roadmap) can leave/reset currentRouteName on a PRIMARY
+  /// name, un-hiding the nav over this page — so assert our own name on mount
+  /// and reclaim it whenever a primary name lands while we're on screen.
+  ///
+  /// Only claim while this page is actually FOREGROUND: this page lingers on its
+  /// branch navigator after the user opens a course (a branch switch, not a
+  /// pop), so it stays `isCurrent` even while backgrounded. go_router wraps the
+  /// inactive branch in `TickerMode(enabled: false)`, so a false there means
+  /// we're backgrounded and must NOT steal the visible branch's route name.
+  void _ensureRouteName() {
+    if (!mounted) return;
+    if (!TickerMode.valuesOf(context).enabled) return;
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.skillsetCourses);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureRouteName());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
-      builder: (context, homeState) {
-        final skillset = homeState.skillsets.firstWhere(
-          (s) => s.id == skillsetId,
-          orElse: () => const SkillsetEntity(),
-        );
+    return BlocListener<PageCubit, PageState>(
+      bloc: AppDI.injector.get<PageCubit>(),
+      listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.isPrimaryRoute,
+      listener: (context, _) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _ensureRouteName());
+      },
+      child: BlocBuilder<HomeCubit, HomeState>(
+        buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
+        builder: (context, homeState) {
+          final skillset = homeState.skillsets.firstWhere(
+            (s) => s.id == widget.skillsetId,
+            orElse: () => const SkillsetEntity(),
+          );
 
-        // Progress (numberOfLessonPassed) lives in ProgressCubit.myCourses, not
-        // in the skillset list — merge it in by course id.
-        final progressById =
-            progressLookup(context.watch<ProgressCubit>().state);
-        final sorted = sortCoursesForExplore(skillset.courses, progressById);
+          // Progress (numberOfLessonPassed) lives in ProgressCubit.myCourses, not
+          // in the skillset list — merge it in by course id.
+          final progressById = progressLookup(context.watch<ProgressCubit>().state);
+          final sorted = sortCoursesForExplore(skillset.courses, progressById);
 
-        return Scaffold(
-          key: const Key('skillset-courses-page'),
-          backgroundColor: AppCustomColor.backgroundWhite,
-          appBar: AppBar(
+          return Scaffold(
+            key: const Key('skillset-courses-page'),
             backgroundColor: AppCustomColor.backgroundWhite,
-            elevation: 0,
-            centerTitle: true,
-            leading: Semantics(
-              button: true,
-              label: MaterialLocalizations.of(context).backButtonTooltip,
-              child: IconButton(
-                onPressed: () => context.back(),
-                constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
-                icon: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: AppCustomColor.textPrimary,
-                  size: 20.w,
+            appBar: AppBar(
+              backgroundColor: AppCustomColor.backgroundWhite,
+              elevation: 0,
+              centerTitle: true,
+              leading: Semantics(
+                button: true,
+                label: MaterialLocalizations.of(context).backButtonTooltip,
+                child: IconButton(
+                  onPressed: () => context.back(),
+                  constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: AppCustomColor.textPrimary,
+                    size: 20.w,
+                  ),
                 ),
               ),
+              title: AppText(
+                skillset.title.text,
+                style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+              ),
             ),
-            title: AppText(
-              skillset.title.text,
-              style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
-            ),
-          ),
-          body: sorted.isEmpty
-              ? const CourseEmptyState()
-              : GridView.builder(
-                  key: const Key('skillset-courses-grid'),
-                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: _kCourseGridColGap,
-                    mainAxisSpacing: _kCourseGridRowGap,
-                    // Exact card height (no slack) so the row gap is exactly 24.
-                    mainAxisExtent: _kCourseCardExtent,
+            body: sorted.isEmpty
+                ? const CourseEmptyState()
+                : GridView.builder(
+                    key: const Key('skillset-courses-grid'),
+                    // Generous bottom slack: with the exact (no-slack) cell
+                    // extent, Android font metrics can run a few px taller than
+                    // the reserved title box, and 24 left the last row's title
+                    // clipped at max scroll. 48 + the safe-area inset keeps the
+                    // final row fully scrollable clear of the system nav bar.
+                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 48.h + MediaQuery.paddingOf(context).bottom),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: _kCourseGridColGap,
+                      mainAxisSpacing: _kCourseGridRowGap,
+                      // Exact card height (no slack) so the row gap is exactly 24.
+                      mainAxisExtent: _kCourseCardExtent,
+                    ),
+                    itemCount: sorted.length,
+                    itemBuilder: (context, index) {
+                      final course = sorted[index];
+                      final progressInfo = _progressInfoFor(course, progressById);
+                      return _CourseGridCard(
+                        key: ValueKey(course.id),
+                        course: course,
+                        completedLessons: progressInfo.completedLessons,
+                        totalLessons: progressInfo.totalLessons,
+                        onTap: () => _handleCourseTap(context, skillset, course),
+                      );
+                    },
                   ),
-                  itemCount: sorted.length,
-                  itemBuilder: (context, index) {
-                    final course = sorted[index];
-                    final progressInfo = _progressInfoFor(course, progressById);
-                    return _CourseGridCard(
-                      key: ValueKey(course.id),
-                      course: course,
-                      completedLessons: progressInfo.completedLessons,
-                      totalLessons: progressInfo.totalLessons,
-                      onTap: () => _handleCourseTap(context, skillset, course),
-                    );
-                  },
-                ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -116,4 +157,3 @@ class SkillsetCoursesPage extends StatelessWidget {
     context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 }
-

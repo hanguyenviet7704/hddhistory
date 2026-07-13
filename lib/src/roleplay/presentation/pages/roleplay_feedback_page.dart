@@ -68,7 +68,8 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
 
       AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
       CourseRoadmapRoute().go(context);
-      AppDI.injector.get<PageCubit>().setCurrentIndex(1);
+      // Not just setCurrentIndex(1) — see course_card.dart's identical fix.
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
     } finally {
       if (mounted) {
         setState(() => _isHandlingPrimaryCta = false);
@@ -184,6 +185,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
                   onPressed: _handlePrimaryCta,
                   label: context.l10n.roleplay.rolePlayResultStartLearningButton,
                   helperText: context.l10n.roleplay.rolePlayHelperTextStartLearnButton,
+                  isLoading: _isHandlingPrimaryCta,
                 ),
               ],
             ),

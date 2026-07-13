@@ -123,6 +123,7 @@ mixin AppEndpoint {
   static const String habits = '/api/v1/habits';
   static const String userHabits = '/api/v1/user-habits';
   static const String userHabitsSummary = '/api/v1/user-habits/summary';
+  static const String habitConfig = '/api/v1/habit-config';
   static const String userHabitsById = '/api/v1/user-habits/{id}';
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
   static const String userHabitsCheckins = '/api/v1/user-habits/{id}/checkins';

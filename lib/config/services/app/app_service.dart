@@ -61,7 +61,7 @@ class AppService {
         await _configUIResponsible();
         _configLoading();
         _configErrorHandle();
-        _configHelper();
+        await _configHelper();
         await _configService();
         initApp();
       },
@@ -111,8 +111,16 @@ class AppService {
     // AdMobService.init();
   }
 
-  void _configHelper() {
+  Future<void> _configHelper() async {
     // await CameraService.initCameras();
+
+    // Loads intl's bundled month/weekday-name data for every language the app
+    // supports. Without this, DateFormat tokens like MMM/MMMM/EEEE fall back
+    // to English regardless of the user's chosen in-app language — bundled
+    // data, so this is instant and needs no network.
+    for (final languageCode in ['en', 'vi', 'zh', 'ja', 'ko']) {
+      await initializeDateFormatting(languageCode);
+    }
   }
 
   Future<void> _configUIResponsible() async {
@@ -123,8 +131,13 @@ class AppService {
       SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.transparent,
         statusBarColor: Colors.transparent,
+        // DARK status-bar icons (clock/battery/wifi) for the app's light
+        // backgrounds. On iOS this needs statusBarBrightness = light ("light
+        // background" → dark content); Brightness.dark there wrongly rendered
+        // WHITE icons, mismatching Android (statusBarIconBrightness.dark) and
+        // the design (dark clock/battery on the periwinkle Home header).
         statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
       ),
     );
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: []);

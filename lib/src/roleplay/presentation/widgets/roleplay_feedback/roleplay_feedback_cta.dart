@@ -4,8 +4,9 @@ class RoleplayFeedbackBottomCTA extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
   final String helperText;
+  final bool isLoading;
 
-  const RoleplayFeedbackBottomCTA({super.key, required this.onPressed, required this.label, required this.helperText});
+  const RoleplayFeedbackBottomCTA({super.key, required this.onPressed, required this.label, required this.helperText, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class RoleplayFeedbackBottomCTA extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(
-            onTap: onPressed,
+            onTap: isLoading ? null : onPressed,
             child: Container(
               height: 54.h,
               width: double.infinity,
@@ -25,13 +26,15 @@ class RoleplayFeedbackBottomCTA extends StatelessWidget {
                 borderRadius: BorderRadius.circular(1000.r),
               ),
               alignment: Alignment.center,
-              child: AppText(
-                label,
-                style: AppStyle.text16.copyWith(
-                  color: AppCustomColor.textWhite,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: isLoading
+                  ? SizedBox(width: 20.w, height: 20.w, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : AppText(
+                      label,
+                      style: AppStyle.text16.copyWith(
+                        color: AppCustomColor.textWhite,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
           12.verticalSpace,

@@ -67,13 +67,13 @@ class HabitAddedPopup extends StatelessWidget {
                       AppText(
                         title,
                         textAlign: TextAlign.center,
-                        style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
+                        style: AppStyle.text22.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
                       ),
                       4.verticalSpace,
                       AppText(
                         subtitle,
                         textAlign: TextAlign.center,
-                        style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+                        style: AppStyle.text13.copyWith(color: AppCustomColor.textSecondary),
                       ),
                       24.verticalSpace,
                       Row(
@@ -81,7 +81,7 @@ class HabitAddedPopup extends StatelessWidget {
                           Expanded(
                             child: DButton(
                               text: context.l10n.habit.adoptGoToHabitButton,
-                              backgroundColor: AppCustomColor.backgroundBrandSoft,
+                              backgroundColor: AppCustomColor.brandPrimary50,
                               size: Size(double.infinity, 54.h),
                               style: AppStyle.textBold16.copyWith(color: AppCustomColor.streakActive),
                               onPressed: () => Navigator.of(context).pop(true),

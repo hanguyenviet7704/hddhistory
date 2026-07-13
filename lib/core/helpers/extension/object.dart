@@ -1,8 +1,13 @@
 part of '../helpers.dart';
 
 extension DateTimeDataHelper on DateTime {
+  /// Formats with the user's CURRENT in-app language (e.g. month/weekday
+  /// tokens like `MMM`/`MMMM`/`EEEE` render in Vietnamese when the app is set
+  /// to Vietnamese) instead of always falling back to English. Purely numeric
+  /// formats (`dd/MM/yyyy`) are unaffected either way.
   String parseString(String format) {
-    return DateFormat(format).format(this);
+    final localeCode = AppDI.injector.get<LocaleCubit>().state.languageCode;
+    return DateFormat(format, localeCode).format(this);
   }
 
   String get localeDate {

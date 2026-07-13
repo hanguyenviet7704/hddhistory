@@ -149,7 +149,8 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     }
 
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(HomeWidgetDeeplinkTarget.sourceValue);
-    AppDI.injector.get<PageCubit>().setCurrentIndex(1);
+    // Not just setCurrentIndex(1) — see course_card.dart's identical fix.
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
     CourseRoadmapRoute().go(navContext);
     _trackHomeWidgetRoute(target, TrackingKey.homeWidgetDeeplinkSuccess, resolvedRoute: RoutePath.courseRoadmap);
     return true;

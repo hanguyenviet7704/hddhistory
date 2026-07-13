@@ -21,10 +21,10 @@ class HabitTaskRow extends StatelessWidget {
     return InkWell(
       onTap: onOpenDetail,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
+        padding: EdgeInsets.symmetric(vertical: 16.h),
         child: Row(
           children: [
-            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon, size: 48),
+            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', size: 48),
             12.horizontalSpace,
             Expanded(
               child: AppText(
@@ -32,7 +32,7 @@ class HabitTaskRow extends StatelessWidget {
                 style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
               ),
             ),
-            12.horizontalSpace,
+            16.horizontalSpace,
             Semantics(
               button: true,
               label: userHabit.displayTitle,
@@ -49,7 +49,7 @@ class HabitTaskRow extends StatelessWidget {
                     color: done ? AppCustomColor.streakActive : Colors.transparent,
                     border: done ? null : Border.all(color: AppCustomColor.neutral300, width: 2),
                   ),
-                  child: done ? Icon(Icons.check, size: 12.w, color: AppCustomColor.textWhite) : null,
+                  child: done ? Icon(Icons.check_rounded, size: 14.w, color: AppCustomColor.textWhite) : null,
                 ),
               ),
             ),

@@ -25,6 +25,7 @@ class DButton extends StatelessWidget {
   final MaterialTapTargetSize? tapTargetSize;
   final VisualDensity? visualDensity;
   final Alignment? alignment;
+  final bool isLoading;
 
   const DButton({
     super.key,
@@ -46,12 +47,27 @@ class DButton extends StatelessWidget {
     this.visualDensity,
     this.alignment,
     this.customChild,
+    this.isLoading = false,
   }) : assert(borderSide == null || buttonType == DButtonType.outline, 'borderSideColor can only be used with DButtonType.secondary');
+
+  // isLoading always wins over a passed-in onPressed/child: the caller may
+  // race a rebuild between "still loading" and "handler cleared" — forcing
+  // both here means there's no frame where the button is both spinning and
+  // tappable, or tappable while a request is genuinely still in flight.
+  Function()? get _effectiveOnPressed => isLoading ? null : onPressed;
+
+  Widget get _effectiveChild {
+    if (isLoading) {
+      final Color spinnerColor = textColor ?? AppColorLight.surface;
+      return SizedBox(width: 20.w, height: 20.w, child: CircularProgressIndicator(strokeWidth: 2, color: spinnerColor));
+    }
+    return customChild ?? AppText(text, style: style ?? AppStyle.textBold22.copyWith(color: textColor ?? AppColorLight.surface));
+  }
 
   Widget get btnWidget {
     Map<DButtonType, Widget> buttonTypeMap = {
       DButtonType.fill: FilledButton(
-        onPressed: onPressed,
+        onPressed: _effectiveOnPressed,
         style: FilledButton.styleFrom(
           iconAlignment: IconAlignment.start,
           tapTargetSize: tapTargetSize,
@@ -64,10 +80,10 @@ class DButton extends StatelessWidget {
           shape: shape,
           minimumSize: size ?? Size.fromHeight(50.h),
         ),
-        child: customChild ?? AppText(text, style: style ?? AppStyle.textBold22.copyWith(color: textColor ?? AppColorLight.surface)),
+        child: _effectiveChild,
       ),
       DButtonType.outline: OutlinedButton(
-        onPressed: onPressed,
+        onPressed: _effectiveOnPressed,
         style: OutlinedButton.styleFrom(
           tapTargetSize: tapTargetSize,
           visualDensity: visualDensity,
@@ -80,10 +96,10 @@ class DButton extends StatelessWidget {
           side: borderSide,
           minimumSize: size ?? Size.fromHeight(50.h),
         ),
-        child: customChild ?? AppText(text, style: style ?? AppStyle.textBold22.copyWith(color: textColor ?? AppColorLight.surface)),
+        child: _effectiveChild,
       ),
       DButtonType.text: TextButton(
-        onPressed: onPressed,
+        onPressed: _effectiveOnPressed,
         style: TextButton.styleFrom(
           tapTargetSize: tapTargetSize,
           visualDensity: visualDensity,
@@ -95,7 +111,7 @@ class DButton extends StatelessWidget {
           shape: shape,
           minimumSize: size ?? Size.fromHeight(50.h),
         ),
-        child: customChild ?? AppText(text, style: style ?? AppStyle.textBold22.copyWith(color: textColor ?? AppColorLight.surface)),
+        child: _effectiveChild,
       ),
     };
 

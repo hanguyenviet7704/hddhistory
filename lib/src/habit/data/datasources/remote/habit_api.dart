@@ -33,6 +33,9 @@ abstract class HabitApi {
   @GET(AppEndpoint.userHabitsCheckins)
   Future<BaseResponse<List<HabitCheckinModel>>> getCheckins(@Path('id') String id);
 
+  @GET(AppEndpoint.habitConfig)
+  Future<BaseResponse<dynamic>> getHabitConfig();
+
   @GET(AppEndpoint.reanchorReasons)
   Future<BaseResponse<List<ReanchorReasonModel>>> getReanchorReasons(@Query('courseId') String courseId);
 }

@@ -4,12 +4,14 @@ class RoleplayCompleteBottomCTA extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final double bottomPadding;
+  final bool isLoading;
 
   const RoleplayCompleteBottomCTA({
     super.key,
     required this.label,
     required this.onPressed,
     required this.bottomPadding,
+    this.isLoading = false,
   });
 
   @override
@@ -17,7 +19,7 @@ class RoleplayCompleteBottomCTA extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + bottomPadding),
       child: GestureDetector(
-        onTap: onPressed,
+        onTap: isLoading ? null : onPressed,
         child: Container(
           height: 54.h,
           width: double.infinity,
@@ -26,16 +28,18 @@ class RoleplayCompleteBottomCTA extends StatelessWidget {
             borderRadius: BorderRadius.circular(1000.r),
           ),
           alignment: Alignment.center,
-          child: AppText(
-            label,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: AppStyle.text16.copyWith(
-              color: AppCustomColor.textWhite,
-              fontWeight: FontWeight.w600,
-              height: 1.5,
-            ),
-          ),
+          child: isLoading
+              ? SizedBox(width: 20.w, height: 20.w, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : AppText(
+                  label,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text16.copyWith(
+                    color: AppCustomColor.textWhite,
+                    fontWeight: FontWeight.w600,
+                    height: 1.5,
+                  ),
+                ),
         ),
       ),
     );

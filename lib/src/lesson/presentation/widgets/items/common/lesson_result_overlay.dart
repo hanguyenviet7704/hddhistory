@@ -125,22 +125,24 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        if (explanationVisible)
-          Positioned.fill(
-            child: IgnorePointer(
-              ignoring: !explanationVisible,
-              child: AnimatedOpacity(
-                duration: _scrimAnimationDuration,
-                curve: Curves.easeOut,
-                opacity: explanationVisible ? 1 : 0,
-                child: GestureDetector(
-                  onTap: widget.onBackdropTap,
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(color: AppCustomColor.scrimOverlay),
-                ),
-              ),
+        // Always-present modal barrier while a result is shown — this overlay
+        // lives in the ROOT overlay, above the lesson content, so without a
+        // full-screen hit-testable barrier here, scrolling/tapping the reading
+        // content behind the summary card still works right through it. Only
+        // the darkened scrim's VISIBILITY is conditional on the explanation
+        // panel being expanded; the touch-blocking itself never was.
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: explanationVisible ? widget.onBackdropTap : null,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedOpacity(
+              duration: _scrimAnimationDuration,
+              curve: Curves.easeOut,
+              opacity: explanationVisible ? 1 : 0,
+              child: Container(color: AppCustomColor.scrimOverlay),
             ),
           ),
+        ),
         animatedPanel,
       ],
     );

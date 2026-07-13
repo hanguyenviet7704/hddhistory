@@ -12,11 +12,15 @@ class AdoptHabitUseCase {
     int? packLength,
     String? sourceKeypointId,
     String? sourceCourseId,
+    String? reanchorReasonId,
+    BaseMultiLanguage? reanchorReason,
   }) => _repository.adoptHabit(
     habitId: habitId,
     reminderTime: reminderTime,
     packLength: packLength,
     sourceKeypointId: sourceKeypointId,
     sourceCourseId: sourceCourseId,
+    reanchorReasonId: reanchorReasonId,
+    reanchorReason: reanchorReason,
   );
 }

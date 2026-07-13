@@ -14,7 +14,6 @@ abstract class HabitEntity with _$HabitEntity {
   const factory HabitEntity({
     @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
-    @Default('') String icon,
     @Default('') String skillsetId,
     @Default(HabitLibraryStatusEntity.unknown) HabitLibraryStatusEntity status,
     String? defaultReminderTime,

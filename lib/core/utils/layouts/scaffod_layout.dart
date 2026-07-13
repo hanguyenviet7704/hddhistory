@@ -49,39 +49,70 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
     if (_tabToBranch[_visualIndex] != activeBranch) {
       _visualIndex = _branchToVisual[activeBranch] ?? _visualIndex;
     }
-    return BlocListener<PageCubit, PageState>(
-      listenWhen: (prev, curr) => prev.currentIndex != curr.currentIndex,
-      listener: (context, state) {
-        final visual = _branchToVisual[state.currentIndex] ?? 0;
-        if (visual != _visualIndex) {
-          setState(() => _visualIndex = visual);
-        }
-      },
-      child: Stack(
-        children: [
-          // Full-screen content — each page handles its own safe-area bottom
-          // padding (or ignores it if it has a floating CTA of its own).
-          Positioned.fill(child: widget.navigationShell),
-          // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
-          BlocSelector<PageCubit, PageState, bool>(
-            selector: (state) => state.isPrimaryRoute,
-            builder: (context, isPrimary) {
-              if (!isPrimary) return const SizedBox.shrink();
-              return Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _FloatingNavBar(
-                  selectedIndex: _visualIndex,
-                  onTap: _onTabTap,
-                ),
-              );
-            },
-          ),
-        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Primary tabs (Home/Course/Explore/Habit/Profile) all sit on light
+      // backgrounds → DARK status-bar icons (clock/battery/wifi). Set it on the
+      // shell so it sticks even when arriving from a screen that left a
+      // light-icon AnnotatedRegion active (splash/onboard); full-screen
+      // sub-routes (lesson/roleplay/video) override with their own region.
+      value: SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
+      child: BlocListener<PageCubit, PageState>(
+        listenWhen: (prev, curr) => prev.currentIndex != curr.currentIndex,
+        listener: (context, state) {
+          final visual = _branchToVisual[state.currentIndex] ?? 0;
+          if (visual != _visualIndex) {
+            setState(() => _visualIndex = visual);
+          }
+        },
+        child: Stack(
+          children: [
+            // Full-screen content — each page handles its own safe-area bottom
+            // padding (or ignores it if it has a floating CTA of its own).
+            Positioned.fill(child: widget.navigationShell),
+            // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
+            BlocSelector<PageCubit, PageState, bool>(
+              selector: (state) => state.isPrimaryRoute,
+              builder: (context, isPrimary) {
+                if (!isPrimary) return const SizedBox.shrink();
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: _FloatingNavBar(
+                    selectedIndex: _visualIndex,
+                    onTap: _onTabTap,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+/// [_FloatingNavBar]'s own content height (top padding + row height) — the
+/// part that's fixed regardless of device. Combine with the device's bottom
+/// safe-area inset (via [floatingNavBarHeight]) to get the bar's true total
+/// height: that inset varies a lot — 3-button nav devices reserve far more
+/// space than gesture-nav ones — so anything floating above the nav bar must
+/// clear the actual total, not a single guessed constant.
+const double _kFloatingNavBarContentHeight = 8 + 56;
+
+/// Total rendered height of the shell's floating pill nav bar on this device:
+/// its fixed content height plus the bottom safe-area inset the bar pads
+/// itself with. Other floating elements (reminder cards, CTAs) must clear
+/// this — a flat guess clips on devices with a taller inset (3-button nav)
+/// even though it looks fine on gesture-nav ones. Must stay in sync with
+/// [_FloatingNavBar]'s own padding.
+double floatingNavBarHeight(BuildContext context) {
+  // viewPaddingOf, not paddingOf: the latter is the current SafeArea/keyboard-
+  // adjusted padding and can under-report the true system-bar inset depending
+  // on ancestor widgets; viewPaddingOf is the raw, stable device safe-area
+  // inset used everywhere else in the app for this exact "clear the system
+  // bottom bar" need (see e.g. video_lesson_notes_sheet_list.dart).
+  return MediaQuery.viewPaddingOf(context).bottom + _kFloatingNavBarContentHeight.h;
 }
 
 /// Gradient-shroud wrapper + blurred pill container.
@@ -93,7 +124,10 @@ class _FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).padding.bottom;
+    // Must match floatingNavBarHeight's source exactly (viewPaddingOf, not
+    // paddingOf) or the two silently drift apart on devices where they'd
+    // otherwise disagree.
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     // Solid white bar filling the full width to the bottom of the screen, with
     // a lightly-rounded top edge + a thin top shadow as the only "border".
     // No gradient shroud (no gray band).
@@ -178,6 +212,13 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isActive = index == selectedIndex;
     final label = _label(context);
+    // Active = Text/Brand navy; inactive = Icon/Disable (#AAB8CD) per Figma.
+    final tint = isActive ? _navColor : AppCustomColor.textQuaternary;
+    // The Habit (growth) sprout is two-tone — coloured leaves + a WHITE inner
+    // highlight. A srcIn colorFilter would repaint that white too, flattening
+    // it into a blob, so tint it via currentColor (leaves) and let the white
+    // stay white (Figma nav bar 11634:15439). Other icons are single-tone.
+    final isTwoToneSprout = index == 3;
 
     return Expanded(
       child: Semantics(
@@ -194,12 +235,8 @@ class _NavItem extends StatelessWidget {
                 _iconPaths[index],
                 width: 24.w,
                 height: 24.w,
-                colorFilter: ColorFilter.mode(
-                  // Active = Text/Brand navy; inactive = Icon/Disable (#AAB8CD)
-                  // per Figma nav bar (node 10894-21520).
-                  isActive ? _navColor : AppCustomColor.textQuaternary,
-                  BlendMode.srcIn,
-                ),
+                theme: isTwoToneSprout ? SvgTheme(currentColor: tint) : const SvgTheme(),
+                colorFilter: isTwoToneSprout ? null : ColorFilter.mode(tint, BlendMode.srcIn),
               ),
               if (isActive) ...[
                 SizedBox(height: 2.h),

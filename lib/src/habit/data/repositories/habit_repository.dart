@@ -35,12 +35,26 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
   }
 
   @override
+  TaskEither<AppException, int> getFreeActiveSlots() {
+    return callApiWithTransform<dynamic, int>(
+      apiCall: () => _api.getHabitConfig(),
+      transform: (data) {
+        final slots = (data is Map) ? data['freeActiveSlots'] : null;
+        return (slots is int && slots >= 1) ? slots : kFreeActiveHabitSlots;
+      },
+      defaultValue: kFreeActiveHabitSlots,
+    );
+  }
+
+  @override
   TaskEither<AppException, UserHabitEntity> adoptHabit({
     required String habitId,
     String? reminderTime,
     int? packLength,
     String? sourceKeypointId,
     String? sourceCourseId,
+    String? reanchorReasonId,
+    BaseMultiLanguage? reanchorReason,
   }) {
     return callApiWithTransform<UserHabitModel, UserHabitEntity>(
       apiCall: () => _api.adoptHabit({
@@ -49,9 +63,17 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
         if (packLength != null) 'packLength': packLength,
         if (sourceKeypointId != null) 'sourceKeypointId': sourceKeypointId,
         if (sourceCourseId != null) 'sourceCourseId': sourceCourseId,
+        if (reanchorReasonId != null) 'reanchorReasonId': reanchorReasonId,
+        if (reanchorReason != null) 'reanchorReason': reanchorReason.toJson(),
       }),
       transform: (model) => model.toEntity(),
       defaultValue: const UserHabitEntity(),
+      // Slot-full (409) is an expected, handled outcome — the caller shows the
+      // SlotFullUpgradeSheet and other failures show their own snackbar — so
+      // suppress the base handler's auto error toast (it was surfacing the
+      // server's "You've filled all your active habit slots" as a red banner
+      // on top of the sheet).
+      enableErrorMessages: false,
     );
   }
 
@@ -70,6 +92,9 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       }),
       transform: (model) => model.toEntity(),
       defaultValue: const UserHabitEntity(),
+      // Activating a paused habit can also hit slot-full (409) — same handled
+      // outcome as adopt — so don't show the base auto error toast.
+      enableErrorMessages: false,
     );
   }
 

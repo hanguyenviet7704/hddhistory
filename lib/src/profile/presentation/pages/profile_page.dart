@@ -139,8 +139,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             // Clear the floating nav bar so the last row isn't covered.
                             // Larger than other pages: this page's content is short
                             // and may not scroll, so the padding must keep the static
-                            // card clear of the nav overlay on its own.
-                            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 120.h),
+                            // card clear of the nav overlay on its own. Derived from
+                            // the nav bar's ACTUAL height (varies with the device's
+                            // safe-area inset) instead of a flat guess, or it falls
+                            // short on devices with a taller inset.
+                            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, floatingNavBarHeight(context) + 20.h),
                             physics: const BouncingScrollPhysics(),
                             children: [
                               UserAchievementList(),

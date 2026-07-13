@@ -49,7 +49,7 @@ class DailyWarmUpResultSummary extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 35.h + MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 35.h + MediaQuery.viewPaddingOf(context).bottom),
       color: _backgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
