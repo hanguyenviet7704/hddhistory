@@ -57,6 +57,24 @@ class _FakeCourseRepository implements ICourseRepository {
 
   @override
   TaskEither<AppException, RoadmapEntity> getRoadmap(String id) => TaskEither.right(const RoadmapEntity());
+
+  @override
+  TaskEither<AppException, List<String>> getSearchHistory() => TaskEither.right(const []);
+
+  @override
+  TaskEither<AppException, Unit> saveSearchQuery(String query) => TaskEither.right(unit);
+
+  @override
+  TaskEither<AppException, Unit> clearSearchHistory() => TaskEither.right(unit);
+
+  @override
+  TaskEither<AppException, List<CourseEntity>> getRecentCourses() => TaskEither.right(const []);
+
+  @override
+  TaskEither<AppException, Unit> recordCourseView(String courseId) => TaskEither.right(unit);
+
+  @override
+  TaskEither<AppException, Unit> clearRecentCourses() => TaskEither.right(unit);
 }
 
 class _SeededOnboardV2Cubit extends OnboardV2Cubit {

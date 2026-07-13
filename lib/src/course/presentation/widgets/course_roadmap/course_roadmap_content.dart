@@ -134,6 +134,12 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
         child: RefreshIndicator(
           onRefresh: _refreshRoadmapAndProgress,
           child: BlocBuilder<CourseRoadmapCubit, CourseRoadmapState>(
+            // This builder only reads roadmap + status (see body below) — the
+            // inner ProgressCubit BlocBuilder just below already has its own
+            // correctly-scoped buildWhen. CourseRoadmapCubit is high-frequency,
+            // so without this the whole branch (including the ListView.separated)
+            // re-evaluates on every emission.
+            buildWhen: (previous, current) => previous.roadmap != current.roadmap || previous.status != current.status,
             builder: (context, roadmapState) {
               final roadmap = roadmapState.roadmap;
               if (roadmap.levels.isEmpty) {

@@ -19,9 +19,7 @@ class CompositeTrackingService extends BaseTrackingService {
     if (!isEnabled) return;
 
     // Initialize all services
-    for (final service in _services) {
-      await service.initialize();
-    }
+    await Future.wait(_services.map((service) => service.initialize()));
 
     super.initialize();
   }

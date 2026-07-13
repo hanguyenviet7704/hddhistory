@@ -144,6 +144,13 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
 
                                 // ── Continue learning ────────────────────
                                 BlocBuilder<ProgressCubit, ProgressState>(
+                                  // Only myCoursesPageData drives this section — ProgressCubit
+                                  // also emits on keypoint/exercise/lesson progress updates
+                                  // (frequent mid-lesson), which would otherwise rebuild this
+                                  // Home section even while Home is just an offstage kept-alive
+                                  // branch. Mirrors course_roadmap_content.dart's buildWhen for
+                                  // the same cubit.
+                                  buildWhen: (previous, current) => previous.myCoursesPageData != current.myCoursesPageData,
                                   builder: (context, state) {
                                     // Only surface courses with something left to
                                     // continue — a 100%-complete course drops out
@@ -190,6 +197,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                 // pending carries a dead gap for nothing.
                                 BlocBuilder<HabitCubit, HabitState>(
                                   bloc: AppDI.injector.get<HabitCubit>(),
+                                  buildWhen: (previous, current) => previous.showHomeReminder != current.showHomeReminder,
                                   builder: (context, state) {
                                     // The card's decorative illustration
                                     // (80.h, HomeHabitReminderCard) bleeds

@@ -191,12 +191,19 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                         ),
                       ],
                       if (user.iapSubscriptions.isEmpty) ...[
-                        SettingOptionTile(
-                          iconAsset: AppAsset.svg.app.icSet,
-                          title: context.l10n.setting.settingRowRestorePurchase,
-                          onTap: () {
-                            AppService.instance.appTrackingService.trackSettingRestorePurchClick();
-                            context.read<IapCubit>().restorePurchases();
+                        BlocBuilder<IapCubit, IapState>(
+                          buildWhen: (previous, current) => previous.status != current.status,
+                          builder: (context, iapState) {
+                            final bool isRestoring = iapState.status == MonetizationStatus.restoring;
+                            return SettingOptionTile(
+                              iconAsset: AppAsset.svg.app.icSet,
+                              title: context.l10n.setting.settingRowRestorePurchase,
+                              isLoading: isRestoring,
+                              onTap: () {
+                                AppService.instance.appTrackingService.trackSettingRestorePurchClick();
+                                context.read<IapCubit>().restorePurchases();
+                              },
+                            );
                           },
                         ),
                       ],
@@ -220,16 +227,23 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                         },
                       ),
                       if (!user.anonymous)
-                        SettingOptionTile(
-                          iconAsset: AppAsset.svg.app.icLogOut,
-                          title: context.l10n.setting.settingLogOut,
-                          titleColor: AppCustomColor.errorRed,
-                          iconColor: AppCustomColor.errorRed,
-                          iconBackgroundColor: AppCustomColor.errorRed.op(.08),
-                          showChevron: false,
-                          onTap: () {
-                            AppService.instance.appTrackingService.trackSettingLogoutClick();
-                            context.read<AuthBloc>().add(const AuthEvent.logout());
+                        BlocBuilder<AuthBloc, AuthState>(
+                          buildWhen: (previous, current) => previous.status != current.status,
+                          builder: (context, authState) {
+                            final bool isLoggingOut = authState.status == AuthStatus.loading;
+                            return SettingOptionTile(
+                              iconAsset: AppAsset.svg.app.icLogOut,
+                              title: context.l10n.setting.settingLogOut,
+                              titleColor: AppCustomColor.errorRed,
+                              iconColor: AppCustomColor.errorRed,
+                              iconBackgroundColor: AppCustomColor.errorRed.op(.08),
+                              showChevron: false,
+                              isLoading: isLoggingOut,
+                              onTap: () {
+                                AppService.instance.appTrackingService.trackSettingLogoutClick();
+                                context.read<AuthBloc>().add(const AuthEvent.logout());
+                              },
+                            );
                           },
                         ),
                     ],

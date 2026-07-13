@@ -2,10 +2,12 @@ part of '../../../auth.dart';
 
 class GuestLoginButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final bool isLoading;
 
   const GuestLoginButton({
     super.key,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   @override
@@ -17,6 +19,7 @@ class GuestLoginButton extends StatelessWidget {
       textColor: const Color(0xFF110751),
       onPressed: onPressed,
       showArrow: true,
+      isLoading: isLoading,
     );
   }
 }

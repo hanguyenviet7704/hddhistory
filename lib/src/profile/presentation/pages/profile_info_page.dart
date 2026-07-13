@@ -71,8 +71,17 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
     }
     ProfileDeleteDialog.show(
       context,
-      onConfirm: () {
-        context.read<AuthBloc>().add(AuthEvent.deleteAccountPermanently(user.id));
+      onConfirm: () async {
+        final authBloc = context.read<AuthBloc>();
+        authBloc.add(AuthEvent.deleteAccountPermanently(user.id));
+        // `add()` can't be awaited — wait for the handler's own emitted
+        // outcome instead of popping immediately (the previous behavior),
+        // so a failure doesn't silently look like a successful deletion.
+        final result = await authBloc.stream.firstWhere(
+          (s) => s.status == AuthStatus.success || s.status == AuthStatus.failure,
+        );
+        if (result.status != AuthStatus.success) return;
+        if (!mounted) return;
         context.back();
       },
     );
@@ -106,6 +115,22 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                     type: MessageType.error,
                     message: state.errorMessage ?? 'Something went wrong',
                   );
+                }
+              },
+            ),
+            // Same blocking-overlay convention as above, for the delete-account
+            // request dispatched from _handleDeleteAccount — the confirm
+            // dialog already shows its own button spinner while awaiting the
+            // outcome, but EasyLoading additionally blocks stray taps on the
+            // page underneath for the whole round trip (the error toast on
+            // failure is already shown by AuthBloc._onDeletePermanentUser).
+            BlocListener<AuthBloc, AuthState>(
+              listenWhen: (previous, current) => previous.status != current.status,
+              listener: (context, state) {
+                if (state.status == AuthStatus.loading) {
+                  EasyLoading.show();
+                } else {
+                  EasyLoading.dismiss();
                 }
               },
             ),

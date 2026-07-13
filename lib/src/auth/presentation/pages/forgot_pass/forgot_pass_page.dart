@@ -11,6 +11,12 @@ class _ForgotPassPageState extends State<ForgotPassPage> {
   TextEditingController phoneController = TextEditingController();
 
   @override
+  void dispose() {
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SubLayout(
       title: 'forgotPassword',

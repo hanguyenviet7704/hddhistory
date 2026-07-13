@@ -47,6 +47,10 @@ class _FakeHomeRepository implements IHomeRepository {
       TaskEither.right(const BasePageBreak<SkillsetEntity>());
   @override
   TaskEither<AppException, SkillsetEntity> getSkillset(String id) => TaskEither.right(const SkillsetEntity());
+  @override
+  TaskEither<AppException, QuoteEntity> getRandomQuote() => TaskEither.right(const QuoteEntity());
+  @override
+  TaskEither<AppException, List<SuggestedCourseEntity>> getSuggestCourses(int limit) => TaskEither.right(const []);
 }
 
 class _FakeCourseRepository implements ICourseRepository {
@@ -56,6 +60,18 @@ class _FakeCourseRepository implements ICourseRepository {
   TaskEither<AppException, CourseEntity> getCourse(String id) => TaskEither.right(const CourseEntity());
   @override
   TaskEither<AppException, RoadmapEntity> getRoadmap(String id) => TaskEither.right(const RoadmapEntity());
+  @override
+  TaskEither<AppException, List<String>> getSearchHistory() => TaskEither.right(const []);
+  @override
+  TaskEither<AppException, Unit> saveSearchQuery(String query) => TaskEither.right(unit);
+  @override
+  TaskEither<AppException, Unit> clearSearchHistory() => TaskEither.right(unit);
+  @override
+  TaskEither<AppException, List<CourseEntity>> getRecentCourses() => TaskEither.right(const []);
+  @override
+  TaskEither<AppException, Unit> recordCourseView(String courseId) => TaskEither.right(unit);
+  @override
+  TaskEither<AppException, Unit> clearRecentCourses() => TaskEither.right(unit);
 }
 
 class _FakeCourseLessonRepository implements ICourseLessonRepository {
@@ -165,7 +181,12 @@ void main() {
 }
 
 _Harness _buildHarness(_FakeProgressRepository progressRepository) {
-  final homeCubit = HomeCubit(GetAllSkillsetsUseCase(_FakeHomeRepository()), GetSkillsetUseCase(_FakeHomeRepository()));
+  final homeCubit = HomeCubit(
+    GetAllSkillsetsUseCase(_FakeHomeRepository()),
+    GetSkillsetUseCase(_FakeHomeRepository()),
+    GetRandomQuoteUseCase(_FakeHomeRepository()),
+    GetSuggestCoursesUseCase(_FakeHomeRepository()),
+  );
   final lessonCubit = CourseLessonCubit(GetCourseLessonUseCase(_FakeCourseLessonRepository()), _FakeRemoteConfigService());
   final roadmapCubit = CourseRoadmapCubit(GetRoadmapUseCase(_FakeCourseRepository()));
   final roleplayCubit = RoleplayCubit(GetRoleplayLearningItemUseCase(_FakeRoleplayRepository()), SendFeedbackRoleplayUseCase(_FakeRoleplayRepository()));

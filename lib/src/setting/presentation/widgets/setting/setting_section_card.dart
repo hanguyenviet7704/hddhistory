@@ -99,15 +99,21 @@ class SettingOptionTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                iconAsset,
-                width: 24.w,
-                height: 24.w,
-                colorFilter: ColorFilter.mode(
-                  iconColor ?? AppCustomColor.iconPrimary,
-                  BlendMode.srcIn,
-                ),
-              ),
+              iconBackgroundColor != null
+                  ? _SettingIcon(
+                      asset: iconAsset,
+                      backgroundColor: iconBackgroundColor!,
+                      color: iconColor ?? AppCustomColor.iconPrimary,
+                    )
+                  : SvgPicture.asset(
+                      iconAsset,
+                      width: 24.w,
+                      height: 24.w,
+                      colorFilter: ColorFilter.mode(
+                        iconColor ?? AppCustomColor.iconPrimary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(

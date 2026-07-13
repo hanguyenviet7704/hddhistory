@@ -85,8 +85,10 @@ class AppService {
     // Initialize device info first for iOS version detection
 
     // Initialize Firebase first
-    await HydrateBlocService.instance.initialize();
-    await Firebase.initializeApp(options: F.firebaseOptions);
+    await Future.wait([
+      HydrateBlocService.instance.initialize(),
+      Firebase.initializeApp(options: F.firebaseOptions),
+    ]);
     NotificationService.initialize(
       NotificationCoreConfig(
         onTokenChanged: (state) {

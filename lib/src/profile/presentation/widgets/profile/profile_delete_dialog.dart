@@ -3,7 +3,7 @@ part of '../../../profile.dart';
 class ProfileDeleteDialog {
   static Future<void> show(
     BuildContext context, {
-    required VoidCallback onConfirm,
+    required Future<void> Function() onConfirm,
   }) {
     AppService.instance.appTrackingService.trackProfileDeleteScrView();
     return showGeneralDialog<String>(
@@ -31,10 +31,34 @@ class ProfileDeleteDialog {
   }
 }
 
-class _DialogBody extends StatelessWidget {
+class _DialogBody extends StatefulWidget {
   const _DialogBody({required this.onConfirm});
 
-  final VoidCallback onConfirm;
+  final Future<void> Function() onConfirm;
+
+  @override
+  State<_DialogBody> createState() => _DialogBodyState();
+}
+
+class _DialogBodyState extends State<_DialogBody> {
+  bool _isSubmitting = false;
+
+  // Await the caller's confirm work (dispatch + wait for the real
+  // success/failure outcome) before dismissing — previously this popped the
+  // dialog (and the page behind it) immediately on tap, so a failed deletion
+  // showed nothing and looked like it had silently succeeded.
+  Future<void> _handleConfirm() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+    try {
+      await widget.onConfirm();
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        Navigator.of(context).pop('yes');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,17 +102,15 @@ class _DialogBody extends StatelessWidget {
                 textColor: AppCustomColor.errorRed,
                 borderColor: AppCustomColor.borderDefault,
                 backgroundColor: AppCustomColor.backgroundWhite,
-                onTap: () {
-                  Navigator.of(context).pop('yes');
-                  onConfirm();
-                },
+                isLoading: _isSubmitting,
+                onTap: _handleConfirm,
               ),
               16.verticalSpace,
               _DialogButton(
                 text: context.l10n.setting.settingProfileDestructiveNoButton,
                 textColor: AppCustomColor.textWhite,
                 backgroundColor: AppCustomColor.brandPrimary,
-                onTap: () => Navigator.of(context).pop('no'),
+                onTap: _isSubmitting ? null : () => Navigator.of(context).pop('no'),
               ),
             ],
           ),
@@ -105,19 +127,21 @@ class _DialogButton extends StatelessWidget {
     required this.textColor,
     this.backgroundColor,
     this.borderColor,
+    this.isLoading = false,
   });
 
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Color textColor;
   final Color? backgroundColor;
   final Color? borderColor;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(1000.r),
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       child: Container(
         height: 54.h,
         alignment: Alignment.center,
@@ -129,14 +153,16 @@ class _DialogButton extends StatelessWidget {
             width: borderColor == null ? 0 : 2,
           ),
         ),
-        child: AppText(
-          text,
-          style: AppStyle.text16.copyWith(
-            color: textColor,
-            height: 1.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: isLoading
+            ? SizedBox(width: 20.w, height: 20.w, child: CircularProgressIndicator(strokeWidth: 2, color: textColor))
+            : AppText(
+                text,
+                style: AppStyle.text16.copyWith(
+                  color: textColor,
+                  height: 1.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }

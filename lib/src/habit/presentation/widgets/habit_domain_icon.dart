@@ -57,13 +57,13 @@ class HabitDomainIcon extends StatelessWidget {
               fit: BoxFit.cover,
               placeholderBuilder: (_) => loadingPlaceholder,
             )
-          : Image.network(
-              url,
+          : CachedNetworkImage(
+              imageUrl: url,
               width: size.w,
               height: size.w,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => fallback,
-              loadingBuilder: (context, child, progress) => progress == null ? child : loadingPlaceholder,
+              placeholder: (_, _) => loadingPlaceholder,
+              errorWidget: (_, _, _) => fallback,
             ),
     );
   }

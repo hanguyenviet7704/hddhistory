@@ -19,6 +19,8 @@ AuthEvent buildGuestRegisterAuthEvent({
   );
 }
 
+enum _AuthMethod { guest, google, apple }
+
 class RegisterPage extends StatefulWidget {
   final bool forceChooseCourseAfterLogin;
   final bool showPaywallAfterAuth;
@@ -39,11 +41,13 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   Future<bool>? _bootstrapFuture;
   final ValueNotifier<bool> _isBootstrapInProgress = ValueNotifier(false);
-  // Set for the entire span from a button tap to navigation-away (covers
-  // both the mount-time bootstrap wait and the post-tap auth/navigation
-  // work), so the button column shows real busy state instead of a silent
-  // dead zone.
-  final ValueNotifier<bool> _isContinuing = ValueNotifier(false);
+  // Which button (if any) is mid-flight, from tap to navigation-away — drives
+  // that specific button's spinner instead of a silent dead zone. Guest is
+  // cleared locally once `continueWithCurrentGuestSession` resolves (it's a
+  // plain awaitable method); Google/Apple dispatch a bloc EVENT (fire and
+  // forget from the caller's side), so those are cleared by the
+  // AuthBloc listener below reacting to `state.status` leaving `.loading`.
+  final ValueNotifier<_AuthMethod?> _activeAuthMethod = ValueNotifier(null);
 
   bool get _showPaywallAfterAuth => widget.showPaywallAfterAuth && !widget.forceChooseCourseAfterLogin;
 
@@ -91,6 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _isBootstrapInProgress.dispose();
+    _activeAuthMethod.dispose();
     super.dispose();
   }
 
@@ -99,33 +104,31 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _handleGuestLogin() async {
-    final authBloc = context.read<AuthBloc>();
-    await _ensureGuestBootstrapStarted();
-    if (!mounted) return;
-
-    switch (resolveRegisterGuestContinueAction(
-      hasBootstrappedGuestSession: authBloc.hasActiveAnonymousSession,
-    )) {
-      case RegisterGuestContinueAction.continueCurrentSession:
-        await authBloc.continueWithCurrentGuestSession(
-          forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
-          showPaywallAfterAuth: _showPaywallAfterAuth,
-        );
-        return;
-      case RegisterGuestContinueAction.loginAnonymousAndNavigate:
-        authBloc.add(
-          buildGuestRegisterAuthEvent(
-            forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
-            showPaywallAfterAuth: _showPaywallAfterAuth,
-          ),
-        );
-        return;
+    if (_activeAuthMethod.value != null) return;
+    _activeAuthMethod.value = _AuthMethod.guest;
+    try {
+      final authBloc = context.read<AuthBloc>();
+      await _ensureGuestBootstrapStarted();
+      if (!mounted) return;
+      // continueWithCurrentGuestSession already resolves internally whether
+      // this is a same-session continue or a fresh anonymous login + navigate
+      // (see resolveRegisterGuestContinueAction inside it) — no need to
+      // duplicate that branching here, and being directly awaitable (unlike
+      // dispatching a bloc event) lets this method's own try/finally track
+      // the busy state for the whole span.
+      await authBloc.continueWithCurrentGuestSession(
+        forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+        showPaywallAfterAuth: _showPaywallAfterAuth,
+      );
+    } finally {
+      if (mounted) _activeAuthMethod.value = null;
     }
   }
 
   void _onLoginGoogle() {
     unawaited(
       _dispatchAuthChoice(
+        _AuthMethod.google,
         AuthEvent.loginSSOGoogle(
           forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
           showPaywallAfterAuth: _showPaywallAfterAuth,
@@ -137,6 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void _onLoginApple() {
     unawaited(
       _dispatchAuthChoice(
+        _AuthMethod.apple,
         AuthEvent.loginSSOApple(
           forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
           showPaywallAfterAuth: _showPaywallAfterAuth,
@@ -145,66 +149,90 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Future<void> _dispatchAuthChoice(AuthEvent event) async {
+  Future<void> _dispatchAuthChoice(_AuthMethod method, AuthEvent event) async {
+    if (_activeAuthMethod.value != null) return;
+    _activeAuthMethod.value = method;
     await _ensureGuestBootstrapStarted();
     if (!mounted) return;
+    // `add()` can't be awaited — `_activeAuthMethod` is cleared by the
+    // BlocListener below once AuthState.status leaves `.loading` (success
+    // navigates away; failure stays on this page and must un-freeze it).
     context.read<AuthBloc>().add(event);
   }
 
   @override
-  Widget build(BuildContext context) => AuthLayout(
-    body: Container(
-      color: const Color(0xFFEBEAFD),
-      child: SafeArea(
-        child: Column(
-          children: [
-            if (kDebugMode) const _RegisterTopLoginHint(),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  children: [
-                    Image.asset(AppAsset.images.common.logoBanner.path, height: 60.h),
-                    66.verticalSpace,
-                    AppText(
-                      context.l10n.auth.authHeadLine,
-                      maxLines: 5,
-                      margin: EdgeInsets.symmetric(horizontal: 20.w),
-                      style: AppStyle.textBold20.copyWith(
-                        color: const Color(0xFF110751),
-                        fontWeight: FontWeight.w600,
-                        height: 1.5,
+  Widget build(BuildContext context) => BlocListener<AuthBloc, AuthState>(
+    // Google/Apple dispatch a bloc event (fire-and-forget from this page's
+    // side, so there's no Future to await), unlike the guest button's direct
+    // `continueWithCurrentGuestSession` call, which clears `_activeAuthMethod`
+    // itself in a `finally`. This is what un-freezes the SSO buttons once the
+    // attempt resolves: success navigates away (this page is gone by then
+    // anyway), failure leaves the user here and must restore tappability.
+    listenWhen: (previous, current) => previous.status != current.status && current.status != AuthStatus.loading,
+    listener: (context, state) {
+      if (_activeAuthMethod.value != null) _activeAuthMethod.value = null;
+    },
+    child: AuthLayout(
+      body: Container(
+        color: const Color(0xFFEBEAFD),
+        child: SafeArea(
+          child: Column(
+            children: [
+              if (kDebugMode) const _RegisterTopLoginHint(),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      Image.asset(AppAsset.images.common.logoBanner.path, height: 60.h),
+                      66.verticalSpace,
+                      AppText(
+                        context.l10n.auth.authHeadLine,
+                        maxLines: 5,
+                        margin: EdgeInsets.symmetric(horizontal: 20.w),
+                        style: AppStyle.textBold20.copyWith(
+                          color: const Color(0xFF110751),
+                          fontWeight: FontWeight.w600,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    126.verticalSpace,
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isBootstrapInProgress,
-                      builder: (context, isBootstrapInProgress, child) => IgnorePointer(
-                        ignoring: isBootstrapInProgress,
-                        child: child,
+                      126.verticalSpace,
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isBootstrapInProgress,
+                        builder: (context, isBootstrapInProgress, _) => ValueListenableBuilder<_AuthMethod?>(
+                          valueListenable: _activeAuthMethod,
+                          builder: (context, activeMethod, _) => IgnorePointer(
+                            // Silent during the mount-time bootstrap (no button
+                            // has been tapped yet, so there's nothing to show a
+                            // spinner on); once a button IS tapped, the button
+                            // itself renders the spinner (see isLoading below)
+                            // instead of this IgnorePointer masking a static look.
+                            ignoring: isBootstrapInProgress || activeMethod != null,
+                            child: Column(
+                              children: [
+                                if (Platform.isIOS) ...[
+                                  AppleLoginButton(onPressed: _onLoginApple, isLoading: activeMethod == _AuthMethod.apple),
+                                  16.verticalSpace,
+                                ],
+                                GoogleLoginButton(onPressed: _onLoginGoogle, isLoading: activeMethod == _AuthMethod.google),
+                                16.verticalSpace,
+                                GuestLoginButton(onPressed: _onLoginGuest, isLoading: activeMethod == _AuthMethod.guest),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          if (Platform.isIOS) ...[
-                            AppleLoginButton(onPressed: _onLoginApple),
-                            16.verticalSpace,
-                          ],
-                          GoogleLoginButton(onPressed: _onLoginGoogle),
-                          16.verticalSpace,
-                          GuestLoginButton(onPressed: _onLoginGuest),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h, left: 30.w, right: 30.w),
-              child: const _RegisterLegalLinks(),
-            ),
-          ],
+              Padding(
+                padding: EdgeInsets.only(bottom: 20.h, left: 30.w, right: 30.w),
+                child: const _RegisterLegalLinks(),
+              ),
+            ],
+          ),
         ),
       ),
     ),

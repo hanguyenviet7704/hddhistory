@@ -10,6 +10,14 @@ class SetupPassPage extends StatefulWidget {
 class _SetupPassPageState extends State<SetupPassPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SubLayout(

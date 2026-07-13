@@ -7,6 +7,7 @@ class SocialLoginButton extends StatelessWidget {
   final Color textColor;
   final VoidCallback onPressed;
   final bool showArrow;
+  final bool isLoading;
 
   const SocialLoginButton({
     super.key,
@@ -16,6 +17,7 @@ class SocialLoginButton extends StatelessWidget {
     required this.textColor,
     required this.onPressed,
     this.showArrow = false,
+    this.isLoading = false,
   });
 
   @override
@@ -28,35 +30,37 @@ class SocialLoginButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(1000.r),
       ),
       child: TextButton(
-        onPressed: onPressed,
+        onPressed: isLoading ? null : onPressed,
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 10.w),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(1000.r),
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            icon,
-            SizedBox(width: 8.w),
-            AppText(
-              text,
-              style: AppStyle.text16.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w600,
+        child: isLoading
+            ? SizedBox(width: 20.w, height: 20.w, child: CircularProgressIndicator(strokeWidth: 2, color: textColor))
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  icon,
+                  SizedBox(width: 8.w),
+                  AppText(
+                    text,
+                    style: AppStyle.text16.copyWith(
+                      color: textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (showArrow) ...[
+                    SizedBox(width: 8.w),
+                    Icon(
+                      Icons.arrow_forward,
+                      color: textColor,
+                      size: 24.sp,
+                    ),
+                  ],
+                ],
               ),
-            ),
-            if (showArrow) ...[
-              SizedBox(width: 8.w),
-              Icon(
-                Icons.arrow_forward,
-                color: textColor,
-                size: 24.sp,
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }

@@ -72,6 +72,36 @@ class _FakeCourseRepository implements ICourseRepository {
   TaskEither<AppException, RoadmapEntity> getRoadmap(String id) {
     throw UnimplementedError();
   }
+
+  @override
+  TaskEither<AppException, List<String>> getSearchHistory() {
+    throw UnimplementedError();
+  }
+
+  @override
+  TaskEither<AppException, Unit> saveSearchQuery(String query) {
+    throw UnimplementedError();
+  }
+
+  @override
+  TaskEither<AppException, Unit> clearSearchHistory() {
+    throw UnimplementedError();
+  }
+
+  @override
+  TaskEither<AppException, List<CourseEntity>> getRecentCourses() {
+    throw UnimplementedError();
+  }
+
+  @override
+  TaskEither<AppException, Unit> recordCourseView(String courseId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  TaskEither<AppException, Unit> clearRecentCourses() {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

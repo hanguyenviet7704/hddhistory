@@ -341,6 +341,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     return true;
   }
 
+  // Not itself a registered event handler (no local `Emitter` param), so it
+  // can't call `emit` directly here (see `_onLogout`/SSO handlers for that
+  // pattern) — callers track their own busy state instead: RegisterPage
+  // awaits this method directly and tracks the span in a local
+  // try/finally, since (unlike dispatching a bloc event) this is a plain
+  // awaitable method.
   Future<void> continueWithCurrentGuestSession({
     bool forceChooseCourseAfterLogin = false,
     bool showPaywallAfterAuth = false,
@@ -484,30 +490,49 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
-    runUseCase(
+    // Guards a fast double-tap on the Google button from dispatching two
+    // concurrent sign-in attempts (default EventTransformer runs events
+    // concurrently, not sequentially). Also lets RegisterPage read
+    // `state.status == AuthStatus.loading` to drive the button's spinner,
+    // since `add()` itself can't be awaited by the caller.
+    if (state.status == AuthStatus.loading) return null;
+
+    return runUseCase(
       usecase: () => _loginSSOGoogleUsecase(unit),
+      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
       onSuccess: (data) {
+        emit(state.copyWith(status: AuthStatus.success));
         _onAuthSuccess(data);
         _navigateAfterAuth(
           forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
           showPaywallAfterAuth: event.showPaywallAfterAuth,
         );
       },
-      onFailure: (error) {},
+      onFailure: (error) {
+        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
+        DMessage.showMessage(message: error, type: MessageType.error);
+      },
     );
   }
 
   FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {
-    runUseCase(
+    if (state.status == AuthStatus.loading) return null;
+
+    return runUseCase(
       usecase: () => _loginSSOAppleUsecase(unit),
+      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
       onSuccess: (data) {
+        emit(state.copyWith(status: AuthStatus.success));
         _onAuthSuccess(data);
         _navigateAfterAuth(
           forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
           showPaywallAfterAuth: event.showPaywallAfterAuth,
         );
       },
-      onFailure: (error) {},
+      onFailure: (error) {
+        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
+        DMessage.showMessage(message: error, type: MessageType.error);
+      },
     );
   }
 
