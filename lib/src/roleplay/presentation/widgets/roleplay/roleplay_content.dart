@@ -29,7 +29,9 @@ class RoleplayContent extends StatelessWidget {
                     ),
                     BlocBuilder<RoleplayCubit, RoleplayState>(
                       buildWhen: (previous, current) =>
-                          previous.isCurrentSectionRevealed != current.isCurrentSectionRevealed || previous.currentLesson.progess != current.currentLesson.progess,
+                          previous.isCurrentSectionRevealed != current.isCurrentSectionRevealed ||
+                          previous.currentLesson.progess != current.currentLesson.progess ||
+                          previous.isSendingFeedback != current.isSendingFeedback,
                       builder: (context, state) {
                         final isCompleted = state.isCurrentSectionRevealed;
                         final bool isLessonCompleted = state.currentLesson.progess == ProcessEnum.done;
@@ -42,6 +44,7 @@ class RoleplayContent extends StatelessWidget {
                               ? RoleplayCompleteBottomCTA(
                                   key: const ValueKey('roleplay-complete-cta'),
                                   label: label,
+                                  isLoading: state.isSendingFeedback,
                                   onPressed: () {
                                     final trackingData = RoleplayTrackingData.fromContext();
                                     if (trackingData != null) {

@@ -24,6 +24,11 @@ class HomeHabitReminderCard extends StatelessWidget {
       bloc: cubit,
       builder: (context, state) {
         if (!state.showHomeReminder) return const SizedBox.shrink();
+        // Figma 11634:15399: a flat brand-tinted (border/brand) card with the
+        // bullseye/plant illustration bottom-aligned and overflowing the card's
+        // top edge, a two-line 12px title ("N habits" in brand + "waiting..." /
+        // "Keep the loop going!"), and a chevron tucked to the right.
+        final count = state.uncheckedTodayCount;
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Material(
@@ -31,42 +36,61 @@ class HomeHabitReminderCard extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(16.r),
               onTap: () => _goToHabit(context, cubit),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                decoration: BoxDecoration(
-                  color: AppCustomColor.backgroundWhite,
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppCustomColor.brandPrimary.withValues(alpha: 0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    constraints: BoxConstraints(minHeight: 60.h),
+                    // Left padding clears the 80px illustration parked at the
+                    // bottom-left; the plant overflows above the card top.
+                    padding: EdgeInsets.fromLTRB(100.w, 10.h, 12.w, 10.h),
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.borderBrand,
+                      borderRadius: BorderRadius.circular(16.r),
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    AppText('🪴', style: AppStyle.text32),
-                    12.horizontalSpace,
-                    Expanded(
-                      child: AppText(
-                        context.l10n.habit.homeReminderTitle(count: state.uncheckedTodayCount),
-                        style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    8.horizontalSpace,
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Row(
                       children: [
-                        AppText(
-                          context.l10n.habit.homeReminderCta,
-                          style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: context.l10n.habit.homeReminderHabitCount(count: count),
+                                      style: AppStyle.textBold12.copyWith(color: AppCustomColor.streakActive, height: 1.75),
+                                    ),
+                                    TextSpan(
+                                      text: ' ${context.l10n.habit.homeReminderWaiting}',
+                                      style: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary, height: 1.75),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              AppText(
+                                context.l10n.habit.homeReminderSubtitle,
+                                style: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary, height: 1.75),
+                              ),
+                            ],
+                          ),
                         ),
-                        Icon(Icons.chevron_right_rounded, size: 20.w, color: AppCustomColor.brandPrimary),
+                        8.horizontalSpace,
+                        Icon(Icons.chevron_right_rounded, size: 24.w, color: AppCustomColor.streakActive),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    left: 10.w,
+                    bottom: 0,
+                    child: SvgPicture.asset(
+                      'assets/svg/common/habit_reminder_bullseye.svg',
+                      width: 80.w,
+                      height: 80.w,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -121,7 +121,8 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
     CourseRoadmapRoute().go(context);
-    AppDI.injector.get<PageCubit>().setCurrentIndex(1);
+    // Not just setCurrentIndex(1) — see course_card.dart's identical fix.
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 
   @override

@@ -61,6 +61,8 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
     context.read<IapCubit>().restorePurchases();
   }
 
+  bool get _isRestoring => widget.state.status == MonetizationStatus.restoring;
+
   void _handlePlanTap(IapProductEntity product) {
     if (product.id == widget.state.selectedProductId) return;
     AppService.instance.appTrackingService.trackPremiumAllpackPick(product.productId);
@@ -137,15 +139,33 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
           PaywallFeedbackList(onFirstScroll: _handleInfoSwipe),
           30.verticalSpace,
           GestureDetector(
-            onTap: _handleRestore,
-            child: AppText(
-              l10n.monetization.restore,
-              textAlign: TextAlign.center,
-              style: AppStyle.text14.copyWith(
-                color: AppCustomColor.textBrand.withValues(alpha: 0.45),
-                fontWeight: FontWeight.w500,
-                height: 1.75,
-              ),
+            onTap: _isRestoring ? null : _handleRestore,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isRestoring) ...[
+                  SizedBox(
+                    width: 14.w,
+                    height: 14.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppCustomColor.textBrand.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ),
+                  8.horizontalSpace,
+                ],
+                AppText(
+                  l10n.monetization.restore,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.textBrand.withValues(alpha: 0.45),
+                    fontWeight: FontWeight.w500,
+                    height: 1.75,
+                  ),
+                ),
+              ],
             ),
           ),
           14.verticalSpace,

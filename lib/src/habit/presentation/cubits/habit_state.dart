@@ -14,17 +14,30 @@ abstract class HabitState with _$HabitState {
     @Default(HabitPageStatus.initial) HabitPageStatus status,
     @Default([]) List<UserHabitEntity> userHabits,
     @Default(UserHabitSummaryEntity()) UserHabitSummaryEntity summary,
+    // Free-tier active-habit cap, admin-configurable server-side; the const
+    // is only the pre-fetch default.
+    @Default(kFreeActiveHabitSlots) int freeActiveSlots,
     @Default(HabitTabToggle.task) HabitTabToggle toggle,
     String? errorMessage,
     // Day the user tapped/dismissed the Home check-in reminder card (§9.4);
     // the card stays hidden for the rest of that local day.
     DateTime? homeReminderDismissedOn,
     // Day the Sunday Weekly recap was auto-shown (§9.9); prevents re-opening it
-    // repeatedly on the same Sunday.
+    // repeatedly on the same Sunday. Legacy device-clock fallback — used only
+    // when the server hasn't provided its week start (older API).
     DateTime? weeklyRecapShownOn,
+    // Server week-start (weekStartDate) the recap was last shown for. Preferred
+    // dedup key: shows the recap at most once per server-week, independent of
+    // the device clock.
+    DateTime? weeklyRecapShownWeekStart,
     // Courses whose Re-anchor prompt (§9.1) has already been shown this session,
     // so it appears at most once per course.
     @Default(<String>{}) Set<String> reanchorShownCourseIds,
+    // The re-anchor reason the user picked per course (keyed by courseId),
+    // remembered from the Re-anchor screen so it can be attached when a habit
+    // is later adopted from that course's keypoint — it becomes the tracker
+    // cluster title (§9.5).
+    @Default(<String, ReanchorReasonEntity>{}) Map<String, ReanchorReasonEntity> reanchorReasonByCourse,
   }) = _HabitState;
 
   factory HabitState.initial() => const HabitState();
@@ -56,13 +69,31 @@ extension HabitStateX on HabitState {
     return dismissedOn == null || !DateUtils.isSameDay(dismissedOn, DateTime.now());
   }
 
-  /// Weekly recap auto-open (§9.9 FR9.1): on a Sunday (local), when the user
-  /// has at least one active habit and the recap hasn't already been shown
-  /// today.
+  /// Weekly recap auto-open (§9.9 FR9.1): the recap day, with at least one
+  /// active habit, and not already shown for this week.
+  ///
+  /// The "is it recap day?" decision is driven by the SERVER ([summary.isRecapDay]
+  /// + [summary.weekStartDate]) so it doesn't trust the device clock. When the
+  /// server hasn't supplied a week start (older API not yet deployed), it falls
+  /// back to the previous local-Sunday behaviour so nothing regresses. Requires
+  /// [HabitCubit.loadSummary] to have run first (see home_page `_maybeOpenWeeklyRecap`).
   bool get shouldShowWeeklyRecap {
+    if (activeHabits.isEmpty) return false;
+
+    // QA override (debug + non-prod only): open the recap on any day so it can
+    // be verified without waiting for the server's recap day. See HabitQaFlags.
+    if (HabitQaFlags.forceWeeklyRecap) return true;
+
+    final serverWeekStart = summary.weekStartDate;
+    if (serverWeekStart != null) {
+      if (!summary.isRecapDay) return false;
+      final shownWeek = weeklyRecapShownWeekStart;
+      return shownWeek == null || !DateUtils.isSameDay(shownWeek, serverWeekStart);
+    }
+
+    // Fallback: legacy device-clock behaviour (server week start unavailable).
     final now = DateTime.now();
     if (now.weekday != DateTime.sunday) return false;
-    if (activeHabits.isEmpty) return false;
     final shownOn = weeklyRecapShownOn;
     return shownOn == null || !DateUtils.isSameDay(shownOn, now);
   }

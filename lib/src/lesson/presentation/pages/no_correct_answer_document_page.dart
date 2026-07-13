@@ -14,6 +14,12 @@ class NoCorrectAnswerDocumentPage extends StatefulWidget {
 
 class _NoCorrectAnswerDocumentPageState extends State<NoCorrectAnswerDocumentPage> {
   NoCorrectAnswerDocumentGroupResolved? _resolvedGroup;
+  // Guards against a second pop: a fast double-tap on Continue (or tapping
+  // while the route is still transitioning in) otherwise calls context.pop()
+  // on a non-idle route, throwing the NavigatorState.pop assertion and leaving
+  // the course-branch stack corrupted — which downstream stops
+  // PageCubit.currentRouteName from settling and hides the shell's bottom nav.
+  bool _isPopping = false;
 
   @override
   void initState() {
@@ -28,9 +34,15 @@ class _NoCorrectAnswerDocumentPageState extends State<NoCorrectAnswerDocumentPag
     if (_resolvedGroup == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        context.pop(false);
+        _dismiss(false);
       });
     }
+  }
+
+  void _dismiss(bool result) {
+    if (_isPopping || !mounted) return;
+    _isPopping = true;
+    context.pop(result);
   }
 
   @override
@@ -43,7 +55,7 @@ class _NoCorrectAnswerDocumentPageState extends State<NoCorrectAnswerDocumentPag
           ? const SizedBox.shrink()
           : _NoCorrectAnswerDocumentPopup(
               documents: resolvedGroup.documents,
-              onContinue: () => context.pop(true),
+              onContinue: () => _dismiss(true),
             ),
     );
   }

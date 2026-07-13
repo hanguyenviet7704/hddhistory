@@ -1,17 +1,26 @@
 part of '../../habit.dart';
 
-/// Re-anchor screen (Figma `reAnchor`, PRD §9.1): before a course's first
-/// lesson, the user picks one BTV-authored reason "why this matters to them"
-/// (single-choice) to build motivation, then "Start Learning" proceeds into
-/// the lesson. Pops `true` when the user starts; `null` if they back out.
+/// Re-anchor screen (Figma 11233:40564): before a course's first lesson, the
+/// user picks one BTV-authored reason "why this matters to them" (single
+/// choice) to build motivation, then "Start learning" proceeds into the lesson.
+/// Picking is mandatory (back-out is blocked, first reason pre-selected), so it
+/// always pops the chosen [ReanchorReasonEntity] — never null in the flow.
 class ReanchorPage extends StatefulWidget {
   final List<ReanchorReasonEntity> reasons;
 
   const ReanchorPage({super.key, required this.reasons});
 
-  static Future<bool?> push(BuildContext context, {required List<ReanchorReasonEntity> reasons}) {
-    return Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => ReanchorPage(reasons: reasons)),
+  static Future<ReanchorReasonEntity?> push(BuildContext context, {required List<ReanchorReasonEntity> reasons}) {
+    // No slide transition: this is a "before you start" gate, not a secondary
+    // page — it should cover the roadmap the instant it's pushed, not animate
+    // in from the right (which reads as "roadmap first, then a new screen").
+    return Navigator.of(context).push<ReanchorReasonEntity>(
+      PageRouteBuilder<ReanchorReasonEntity>(
+        opaque: true,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, _, _) => ReanchorPage(reasons: reasons),
+      ),
     );
   }
 
@@ -23,71 +32,118 @@ class _ReanchorPageState extends State<ReanchorPage> {
   String? _selectedId;
 
   @override
+  void initState() {
+    super.initState();
+    // Figma shows the first reason pre-selected so the CTA is immediately live.
+    if (widget.reasons.isNotEmpty) _selectedId = widget.reasons.first.id;
+  }
+
+  /// One selectable reason (Figma 11233:40564): a white outlined row — the
+  /// selected one gets a brand border, no fill and no check mark.
+  Widget _buildReasonOption(ReanchorReasonEntity r) {
+    final selected = _selectedId == r.id;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: r.reason.text,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: () => setState(() => _selectedId = r.id),
+        child: Container(
+          width: double.infinity,
+          margin: EdgeInsets.only(bottom: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundWhite,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
+              width: 2,
+            ),
+          ),
+          child: AppText(
+            r.reason.text,
+            style: AppStyle.text14.copyWith(
+              color: AppCustomColor.textSecondary,
+              fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
+              height: 1.75,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppCustomColor.backgroundBrandSoft,
-      body: SafeBody(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Spacer(),
-              AppText(
-                context.l10n.habit.adoptHeaderLabel,
-                style: AppStyle.text12.copyWith(
-                  color: AppCustomColor.brandPrimary,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2,
+    // Re-anchor is a mandatory step in the flow — picking a reason is required.
+    // Block the iOS swipe-back / Android back so the only way forward is the
+    // "Start learning" CTA, which always pops the (pre-)selected reason. This
+    // guarantees a reason is captured and the adopt "PROBLEM" headline is
+    // always the user's re-anchor pick, never the raw course title.
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: AppCustomColor.brandPrimary50,
+        body: SafePage(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Spacer(flex: 2),
+                AppText(
+                  context.l10n.habit.adoptHeaderLabel,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text12.copyWith(
+                    color: AppCustomColor.streakActive,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
                 ),
-              ),
-              12.verticalSpace,
-              AppText(
-                context.l10n.habit.reanchorTitle,
-                textAlign: TextAlign.center,
-                style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
-              ),
-              32.verticalSpace,
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 10.w,
-                runSpacing: 10.h,
-                children: widget.reasons.map((r) {
-                  final selected = _selectedId == r.id;
-                  return Semantics(
-                    button: true,
-                    selected: selected,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(1000.r),
-                      onTap: () => setState(() => _selectedId = r.id),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: selected ? AppCustomColor.brandPrimary : AppCustomColor.backgroundWhite,
-                          borderRadius: BorderRadius.circular(1000.r),
-                          border: Border.all(
-                            color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
-                          ),
-                        ),
-                        child: AppText(
-                          r.reason.text,
-                          style: AppStyle.text14.copyWith(
-                            color: selected ? AppCustomColor.textWhite : AppCustomColor.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                8.verticalSpace,
+                AppText(
+                  context.l10n.habit.reanchorTitle,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text24.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
+                ),
+                const Spacer(flex: 3),
+                // Card floats near the bottom (Figma), wrapping its content.
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.backgroundWhite,
+                    borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        context.l10n.habit.reanchorPickLabel,
+                        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary, fontWeight: FontWeight.w500),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const Spacer(),
-              DButton(
-                text: context.l10n.habit.reanchorStartButton,
-                onPressed: _selectedId == null ? null : () => Navigator.of(context).pop(true),
-              ),
-              20.verticalSpace,
-            ],
+                      12.verticalSpace,
+                      ...widget.reasons.map(_buildReasonOption),
+                    ],
+                  ),
+                ),
+                16.verticalSpace,
+                DButton(
+                  text: context.l10n.habit.reanchorStartButton,
+                  backgroundColor: AppCustomColor.brandPrimary,
+                  size: Size(double.infinity, 54.h),
+                  style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                  onPressed: _selectedId == null
+                      ? null
+                      : () => Navigator.of(context).pop(
+                          widget.reasons.where((r) => r.id == _selectedId).firstOrNull,
+                        ),
+                ),
+                20.verticalSpace,
+              ],
+            ),
           ),
         ),
       ),

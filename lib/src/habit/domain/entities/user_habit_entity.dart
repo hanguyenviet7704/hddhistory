@@ -32,6 +32,9 @@ abstract class UserHabitEntity with _$UserHabitEntity {
     // "each keypoint suggests once" gating).
     String? sourceKeypointId,
     String? sourceCourseId,
+    // The re-anchor reason the user picked for this habit's course (§9.5) — a
+    // snapshot from adopt time, used as the tracker cluster title.
+    @Default(BaseMultiLanguage()) BaseMultiLanguage reanchorReason,
   }) = _UserHabitEntity;
 
   factory UserHabitEntity.fromJson(Map<String, dynamic> json) => _$UserHabitEntityFromJson(json);
@@ -41,5 +44,4 @@ extension UserHabitEntityX on UserHabitEntity {
   bool get isActive => state == UserHabitStateEntity.active;
   bool get isDraft => state == UserHabitStateEntity.draft;
   String get displayTitle => habit?.title.text ?? '';
-  String get displayIcon => habit?.icon ?? '';
 }

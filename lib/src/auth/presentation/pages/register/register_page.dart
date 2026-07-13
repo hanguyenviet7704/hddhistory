@@ -39,6 +39,11 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   Future<bool>? _bootstrapFuture;
   final ValueNotifier<bool> _isBootstrapInProgress = ValueNotifier(false);
+  // Set for the entire span from a button tap to navigation-away (covers
+  // both the mount-time bootstrap wait and the post-tap auth/navigation
+  // work), so the button column shows real busy state instead of a silent
+  // dead zone.
+  final ValueNotifier<bool> _isContinuing = ValueNotifier(false);
 
   bool get _showPaywallAfterAuth => widget.showPaywallAfterAuth && !widget.forceChooseCourseAfterLogin;
 

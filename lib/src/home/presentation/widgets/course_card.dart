@@ -29,7 +29,12 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
             ..selectSkillset(course.skillset)
             ..selectCourse(course);
           CourseRoadmapRoute().go(context);
-          context.read<PageCubit>().setCurrentIndex(1);
+          // Not just setCurrentIndex(1): .go() to the roadmap branch root
+          // doesn't re-fire the route observer, so currentRouteName would
+          // stay on 'home' — silently skipping the re-anchor prompt (§9.1)
+          // for the app's most common course-entry point (mirrors the fix in
+          // all_course_tab.dart's _handleCourseTap).
+          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
         },
         child: Container(
           width: 335.w,
@@ -172,7 +177,12 @@ class CourseCardWidget extends StatelessWidget {
             ..selectSkillset(course.skillset)
             ..selectCourse(course);
           CourseRoadmapRoute().go(context);
-          context.read<PageCubit>().setCurrentIndex(1);
+          // Not just setCurrentIndex(1): .go() to the roadmap branch root
+          // doesn't re-fire the route observer, so currentRouteName would
+          // stay on 'home' — silently skipping the re-anchor prompt (§9.1)
+          // for the app's most common course-entry point (mirrors the fix in
+          // all_course_tab.dart's _handleCourseTap).
+          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
         },
         child: Container(
         width: 220.w,

@@ -8,6 +8,11 @@ class CourseLevelContent extends StatelessWidget {
   final bool isSubmittingAdditionalContentRequest;
   final Future<bool> Function()? onNoAdditionalContentRequest;
   final VoidCallback? onYesAdditionalContentRequest;
+  // The in-progress lesson to auto-scroll to (null when nothing is in progress)
+  // and the key to stamp on the "PHẦN" node that holds it. Only the level that
+  // actually contains [currentLesson] stamps the key; others are unaffected.
+  final LessonEntity? currentLesson;
+  final GlobalKey? currentLessonKey;
   const CourseLevelContent({
     super.key,
     required this.roadmapLevel,
@@ -17,6 +22,8 @@ class CourseLevelContent extends StatelessWidget {
     this.isSubmittingAdditionalContentRequest = false,
     this.onNoAdditionalContentRequest,
     this.onYesAdditionalContentRequest,
+    this.currentLesson,
+    this.currentLessonKey,
   });
 
   List<bool> get _sequentialUnlockFlags {
@@ -31,8 +38,15 @@ class CourseLevelContent extends StatelessWidget {
         CourseRoadmapHeaderCard(roadmapLevel: roadmapLevel),
         16.verticalSpace,
         ...roadmapLevel.nodes.asMap().entries.map((entry) {
+          final node = entry.value;
+          // Stamp the auto-scroll anchor on the node that holds the in-progress
+          // lesson (a lesson lives in exactly one node, so the GlobalKey stays
+          // unique across the whole roadmap).
+          final isCurrentNode =
+              currentLesson != null && currentLessonKey != null && node.lessonsList.any((lesson) => lesson.isSameLesson(currentLesson!));
           return RoadmapNodeItem(
-            node: entry.value,
+            key: isCurrentNode ? currentLessonKey : null,
+            node: node,
             enableSequentialUnlock: _sequentialUnlockFlags.elementAt(entry.key),
             lockedLessonKeys: lockedLessonKeys,
           );

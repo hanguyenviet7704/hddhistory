@@ -22,6 +22,7 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   }
 
   void endRoleplay() {
+    if (state.isSendingFeedback) return;
     if (state.feedback.feedbackText.isEmpty) {
       _sendFeedback();
     }
@@ -280,12 +281,12 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
 
     await runUseCase<RoleplayFeedbackEntity>(
       usecase: () => _sendFeedbackRoleplayUseCase(body),
-      buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading),
+      buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading, isSendingFeedback: true),
       onFailure: (error) {
-        emit(state.copyWith(status: RoleplayStatus.failure, errorMessage: error));
+        emit(state.copyWith(status: RoleplayStatus.failure, errorMessage: error, isSendingFeedback: false));
       },
       onSuccess: (feedback) {
-        emit(state.copyWith(status: RoleplayStatus.success, feedback: feedback));
+        emit(state.copyWith(status: RoleplayStatus.success, feedback: feedback, isSendingFeedback: false));
       },
     );
   }

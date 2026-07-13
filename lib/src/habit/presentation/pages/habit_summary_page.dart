@@ -1,10 +1,9 @@
 part of '../../habit.dart';
 
-/// Post-lesson "Weekly review" (Figma 11035:27501, design.md 5.4): check-in
-/// arc gauge, streak/check-in stats, per-category week grids, and the
-/// recommit ("How far this time?") prompt. Pops when dismissed either way;
-/// the caller (KeypointCompletePage) continues its own navigation afterwards
-/// regardless of the choice made here.
+/// Post-lesson "Weekly recap" (Figma "Weekly recap"): check-in arc gauge,
+/// total-lessons/check-ins stats, a best-habit card, and per-category week
+/// grids. Dismissed with Continue; the caller (KeypointCompletePage) continues
+/// its own navigation afterwards.
 class HabitSummaryPage extends StatefulWidget {
   const HabitSummaryPage({super.key});
 
@@ -13,26 +12,11 @@ class HabitSummaryPage extends StatefulWidget {
 }
 
 class _HabitSummaryPageState extends State<HabitSummaryPage> {
-  static const List<int> _packOptions = [3, 7, 14];
-  int _selectedPackLength = 7;
-  bool _isSubmitting = false;
-
-  Future<void> _startPack(HabitState state) async {
-    if (_isSubmitting) return;
-    setState(() => _isSubmitting = true);
-    final cubit = context.read<HabitCubit>();
-    for (final userHabit in state.activeHabits) {
-      await cubit.setPackLength(userHabit.id, _selectedPackLength);
-    }
-    if (!mounted) return;
-    Navigator.of(context).pop();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
-      body: SafeBody(
+      body: SafePage(
         child: BlocBuilder<HabitCubit, HabitState>(
           builder: (context, state) {
             final summary = state.summary;
@@ -40,39 +24,30 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
             for (final userHabit in state.activeHabits) {
               byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
             }
+            final categoryGroups = byGroup.values.toList();
 
             return Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 8.h, 8.w, 0),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          AppText(
-                            context.l10n.habit.summaryWeeklyReviewTitle,
-                            style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
-                          ),
-                          2.verticalSpace,
-                          AppText(
-                            _habitWeekRangeLabel(state.activeHabits),
-                            style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                          ),
-                        ],
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Semantics(
-                          button: true,
-                          label: context.l10n.common.close,
-                          child: IconButton(
-                            icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
+                // Figma: a fixed 60-tall header, title + date range centered
+                // both ways (not just horizontally).
+                SizedBox(
+                  height: 60.h,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppText(
+                          context.l10n.habit.summaryWeeklyReviewTitle,
+                          style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
                         ),
-                      ),
-                    ],
+                        AppText(
+                          _habitWeekRangeLabel(state.activeHabits),
+                          // Figma text/tertiary is #5F6F86 (streakTextMuted here),
+                          // not the app's lighter textTertiary token.
+                          style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Expanded(
@@ -81,148 +56,108 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Figma: the seedling glyph nestles INSIDE the arc's
+                        // bottom gap (the gauge frame is clipped and the icon
+                        // column overlaps it), not stacked below the gauge's
+                        // square box — hence the Stack.
                         Center(
-                          child: CircularPercentIndicator(
-                            radius: 80.w,
-                            lineWidth: 14.w,
-                            percent: (summary.checkInRate / 100).clamp(0, 1),
-                            arcType: ArcType.FULL,
-                            arcBackgroundColor: AppCustomColor.brandPrimary50,
-                            backgroundColor: Colors.transparent,
-                            progressColor: AppCustomColor.brandPrimary,
-                            circularStrokeCap: CircularStrokeCap.round,
-                            animateFromLastPercent: true,
-                            animation: true,
-                            animationDuration: 500,
-                            center: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                AppText(
-                                  '${summary.checkInRate}%',
-                                  style: AppStyle.textBold28.copyWith(color: AppCustomColor.brandPrimary),
-                                ),
-                                2.verticalSpace,
-                                AppText(
-                                  context.l10n.habit.summaryCheckInRateLabel,
-                                  style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        8.verticalSpace,
-                        Center(
-                          child: AppText(
-                            context.l10n.habit.summaryWorkingOnHabits(count: summary.activeCount),
-                            style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
-                          ),
-                        ),
-                        20.verticalSpace,
-                        Container(
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          decoration: BoxDecoration(
-                            color: AppCustomColor.backgroundWhite,
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
-                          child: IntrinsicHeight(
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: _SummaryStatCell(
-                                    label: context.l10n.habit.summaryBestStreakLabel,
-                                    icon: '🔥',
-                                    value: context.l10n.habit.summaryBestStreakValue(days: summary.bestStreak),
-                                  ),
-                                ),
-                                VerticalDivider(width: 1, color: AppCustomColor.borderDefault),
-                                Expanded(
-                                  child: _SummaryStatCell(
-                                    label: context.l10n.habit.summaryTotalCheckInsLabel,
-                                    icon: '📅',
-                                    value: '${summary.totalCheckIns}',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        20.verticalSpace,
-                        ...byGroup.entries.map(
-                          (entry) => _HabitCategoryCard(
-                            title: _habitGroupTitle(entry.value.first),
-                            userHabits: entry.value,
-                            isTaskView: false,
-                            onCheckIn: (_) {},
-                            onOpenDetail: (_) {},
-                          ),
-                        ),
-                        if (state.activeHabits.isNotEmpty) ...[
-                          12.verticalSpace,
-                          AppText(
-                            context.l10n.habit.summaryCommitmentQuestion,
-                            style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
-                          ),
-                          12.verticalSpace,
-                          Row(
-                            children: _packOptions.map((days) {
-                              final selected = _selectedPackLength == days;
-                              return Padding(
-                                padding: EdgeInsets.only(right: 8.w),
-                                child: Semantics(
-                                  button: true,
-                                  selected: selected,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(1000.r),
-                                    onTap: () => setState(() => _selectedPackLength = days),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                                      decoration: BoxDecoration(
-                                        color: selected ? AppCustomColor.brandPrimary : AppCustomColor.backgroundWhite,
-                                        borderRadius: BorderRadius.circular(1000.r),
-                                        border: Border.all(
-                                          color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
-                                        ),
-                                      ),
-                                      child: AppText(
-                                        '$days',
-                                        style: AppStyle.text14.copyWith(
-                                          color: selected ? AppCustomColor.textWhite : AppCustomColor.textPrimary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                          child: Stack(
+                            alignment: Alignment.bottomCenter,
+                            children: [
+                              CircularPercentIndicator(
+                                radius: 93.w,
+                                lineWidth: 14.w,
+                                percent: (summary.checkInRate / 100).clamp(0, 1),
+                                arcType: ArcType.FULL,
+                                arcBackgroundColor: AppCustomColor.brandPrimary50,
+                                backgroundColor: Colors.transparent,
+                                progressColor: AppCustomColor.brandPrimary,
+                                circularStrokeCap: CircularStrokeCap.round,
+                                animateFromLastPercent: true,
+                                animation: true,
+                                animationDuration: 500,
+                                center: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AppText(
+                                      '${summary.checkInRate}%',
+                                      // Figma: Mulish ExtraBold 36, line-height 1.25.
+                                      style: AppStyle.textBold36.copyWith(
+                                        color: AppCustomColor.brandPrimary,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1.25,
                                       ),
                                     ),
-                                  ),
+                                    2.verticalSpace,
+                                    AppText(
+                                      context.l10n.habit.summaryCheckInRateLabel,
+                                      style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                              SvgPicture.asset('assets/svg/common/habit_summary_plant.svg', width: 24.w, height: 24.w),
+                            ],
+                          ),
+                        ),
+                        4.verticalSpace,
+                        Center(child: _buildWorkingOnText(context, summary.activeCount)),
+                        20.verticalSpace,
+                        Container(
+                          padding: EdgeInsets.all(16.w),
+                          decoration: BoxDecoration(
+                            color: AppCustomColor.backgroundWhite,
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+                          ),
+                          // Figma: no divider between the two stat blocks.
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _SummaryStatCell(
+                                  label: context.l10n.habit.summaryTotalLessonsLabel,
+                                  icon: Image.asset('assets/images/common/habit_summary_book.png', width: 24.w, height: 24.w),
+                                  value: '${summary.totalLessons}',
+                                ),
+                              ),
+                              Expanded(
+                                child: _SummaryStatCell(
+                                  label: context.l10n.habit.summaryTotalCheckInsLabel,
+                                  icon: Image.asset('assets/images/common/habit_summary_calendar.png', width: 24.w, height: 24.w),
+                                  value: '${summary.totalCheckIns}',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        16.verticalSpace,
+                        if (summary.bestHabit != null) ...[
+                          _SummaryBestHabitCard(bestHabit: summary.bestHabit!),
+                          20.verticalSpace,
+                        ],
+                        for (int i = 0; i < categoryGroups.length; i++) ...[
+                          if (i > 0) 24.verticalSpace,
+                          _SummaryCategoryCard(
+                            title: _habitGroupTitle(categoryGroups[i].first, state),
+                            userHabits: categoryGroups[i],
                           ),
                         ],
                       ],
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (state.activeHabits.isNotEmpty) ...[
-                        DButton(
-                          text: context.l10n.habit.summaryCommitmentStartButton(days: _selectedPackLength),
-                          onPressed: _isSubmitting ? null : () => _startPack(state),
-                        ),
-                        4.verticalSpace,
-                        DButton(
-                          text: context.l10n.habit.summaryCommitmentMaybeLater,
-                          buttonType: DButtonType.text,
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ] else
-                        DButton(
-                          text: context.l10n.common.kContinue,
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                    ],
+                // Figma "BottomCTA": a flat white strip, distinct from the
+                // gray page background — not just padding on the gray.
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(20.w),
+                  color: AppCustomColor.backgroundWhite,
+                  child: DButton(
+                    text: context.l10n.common.kContinue,
+                    backgroundColor: AppCustomColor.brandPrimary,
+                    size: Size(double.infinity, 54.h),
+                    style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
               ],
@@ -234,9 +169,171 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
   }
 }
 
+/// "Jun 24–30" week label for the Weekly recap header, using the server week
+/// start when present so the grids and the label agree on "this week".
+String _habitWeekRangeLabel(List<UserHabitEntity> activeHabits) {
+  final serverStart = activeHabits.map((h) => h.weekStartDate).whereType<DateTime>().firstOrNull;
+  final now = DateTime.now();
+  final start = serverStart ?? now.subtract(Duration(days: now.weekday - 1));
+  final end = start.add(const Duration(days: 6));
+  final startLabel = start.parseString('MMM d');
+  final endLabel = start.month == end.month ? '${end.day}' : end.parseString('MMM d');
+  // Figma: spaced en dash ("Jun 24 – 30").
+  return '$startLabel – $endLabel';
+}
+
+/// "You're working on N habit(s)" (Figma): two-tone — the count phrase at the
+/// end of the sentence in brand purple, everything before it in text/primary.
+/// Both locale templates put the count at the end, so splitting there always
+/// isolates exactly the phrase Figma highlights.
+Widget _buildWorkingOnText(BuildContext context, int count) {
+  final full = context.l10n.habit.summaryWorkingOnHabits(count: count);
+  final base = AppStyle.textBold20;
+  final markerIndex = full.indexOf('$count');
+  if (markerIndex < 0) {
+    return AppText(
+      full,
+      textAlign: TextAlign.center,
+      style: base.copyWith(color: AppCustomColor.textPrimary),
+    );
+  }
+  return Text.rich(
+    TextSpan(
+      children: [
+        TextSpan(
+          text: full.substring(0, markerIndex),
+          style: base.copyWith(color: AppCustomColor.textPrimary),
+        ),
+        TextSpan(
+          text: full.substring(markerIndex),
+          style: base.copyWith(color: AppCustomColor.streakActive),
+        ),
+      ],
+    ),
+    textAlign: TextAlign.center,
+  );
+}
+
+/// Weekly recap "Best habit" card (Figma): 🏆 label + loop length, then the
+/// habit's title.
+class _SummaryBestHabitCard extends StatelessWidget {
+  final HabitBestHabitEntity bestHabit;
+
+  const _SummaryBestHabitCard({required this.bestHabit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset('assets/images/common/habit_summary_trophy.png', width: 24.w, height: 24.w),
+              8.horizontalSpace,
+              Expanded(
+                child: AppText(
+                  context.l10n.habit.summaryBestHabitLabel,
+                  style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700),
+                ),
+              ),
+              AppText(
+                context.l10n.habit.summaryBestHabitLoop(days: bestHabit.loop),
+                style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+              ),
+            ],
+          ),
+          6.verticalSpace,
+          // Indented to align under the label, past the icon + gap above.
+          Padding(
+            padding: EdgeInsets.only(left: 32.w),
+            child: AppText(
+              bestHabit.title.text,
+              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One category card in the Weekly recap (Figma "Weekly recap"): the category
+/// ("problem") title, then each habit's title with its 7-day week grid.
+class _SummaryCategoryCard extends StatelessWidget {
+  final String title;
+  final List<UserHabitEntity> userHabits;
+
+  const _SummaryCategoryCard({required this.title, required this.userHabits});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(bottom: 8.h),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
+            ),
+            child: AppText(
+              title,
+              style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
+            ),
+          ),
+          // Figma: rows just stack with padding — no divider between them.
+          for (int i = 0; i < userHabits.length; i++)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Figma item icon is the same 48px domain badge as the
+                  // Today's-task rows, not a smaller 32 variant.
+                  HabitDomainIcon(skillsetId: userHabits[i].habit?.skillsetId ?? '', size: 48),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          userHabits[i].displayTitle,
+                          style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
+                        ),
+                        8.verticalSpace,
+                        HabitWeekGrid(weekGrid: userHabits[i].weekGrid),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SummaryStatCell extends StatelessWidget {
   final String label;
-  final String icon;
+  final Widget icon;
   final String value;
 
   const _SummaryStatCell({required this.label, required this.icon, required this.value});
@@ -244,15 +341,16 @@ class _SummaryStatCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppText(label, style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary)),
+        AppText(label, style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted)),
         6.verticalSpace,
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppText(icon, style: AppStyle.text16),
-            6.horizontalSpace,
+            SizedBox(width: 24.w, height: 24.w, child: icon),
+            8.horizontalSpace,
             AppText(value, style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary)),
           ],
         ),

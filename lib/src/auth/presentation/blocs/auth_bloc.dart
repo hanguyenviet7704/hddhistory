@@ -180,12 +180,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     bool forceChooseCourseAfterLogin = false,
     bool showPaywallAfterAuth = false,
     bool resetToFirstCourseCategory = false,
+    bool isSameSessionContinue = false,
   }) async {
     // Clear the previous account's roadmap/progress before loading the new
     // one. CourseRoadmapCubit is a HydratedCubit, so without this an account
     // switch (e.g. guest → login) would keep stale roadmap/lesson progress
-    // (wrong "x/y lessons" and completion %).
-    _resetAppCubits();
+    // (wrong "x/y lessons" and completion %). Skipped when continuing the
+    // SAME anonymous session that was just bootstrapped moments ago (e.g.
+    // register_page's mount-time bootstrap): no account switch happened, so
+    // there's nothing stale to clear and the in-memory roadmap/myCourses data
+    // from that bootstrap is still valid — resetting + re-fetching here would
+    // just be thrown-away network work.
+    if (!isSameSessionContinue) {
+      _resetAppCubits();
+    }
 
     final hasPendingFirstTimePaywallAfterAuth = _userCubit.state.hasPendingFirstTimePaywallAfterAuth;
     if (shouldConsumeFirstTimePaywallIntentAfterAuth(
@@ -195,9 +203,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       _userCubit.consumeFirstTimePaywallAfterAuthIntent();
     }
 
+    final bool hasCourseData;
+    if (forceChooseCourseAfterLogin) {
+      hasCourseData = false;
+    } else if (isSameSessionContinue) {
+      // Data already in memory from the bootstrap that just ran seconds ago —
+      // read it directly instead of re-awaiting the roadmap/myCourses fetch.
+      hasCourseData = _progressCubit.state.myCourses.isNotEmpty;
+    } else {
+      hasCourseData = await _userHaveCourseData();
+    }
+
     final destination = resolveAuthSuccessRouteDestination(
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
-      hasCourseData: forceChooseCourseAfterLogin ? false : await _userHaveCourseData(),
+      hasCourseData: hasCourseData,
     );
     final selectedTabIndex = resolveAuthSuccessSelectedCourseTabIndex(
       destination: destination,
@@ -326,8 +345,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     bool forceChooseCourseAfterLogin = false,
     bool showPaywallAfterAuth = false,
   }) async {
+    // Captured before any fresh login below: true here means no login POST
+    // is about to happen in this call — an earlier bootstrap (e.g.
+    // register_page's mount-time bootstrap) already authenticated this
+    // anonymous session, so this is a same-session continue, not an account
+    // switch.
+    final isSameSessionContinue = hasActiveAnonymousSession;
     final action = resolveRegisterGuestContinueAction(
-      hasBootstrappedGuestSession: hasActiveAnonymousSession,
+      hasBootstrappedGuestSession: isSameSessionContinue,
     );
 
     if (action == RegisterGuestContinueAction.loginAnonymousAndNavigate) {
@@ -342,6 +367,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
       showPaywallAfterAuth: showPaywallAfterAuth,
       resetToFirstCourseCategory: true,
+      isSameSessionContinue: isSameSessionContinue,
     );
   }
 
@@ -500,24 +526,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   FutureOr<void> _onLogout(_Logout event, Emitter<AuthState> emit) async {
-    runUseCase(
+    // Guards against a fast double-tap on "Log Out" dispatching two logout
+    // events that would run concurrently (the default EventTransformer
+    // processes events concurrently, not sequentially).
+    if (state.status == AuthStatus.loading) return;
+
+    await runUseCase(
       usecase: () => _logoutUsecase(unit),
+      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
       onSuccess: (data) {
+        emit(state.copyWith(status: AuthStatus.success));
         _onResetAuth();
         unawaited(bootstrapGuestSessionForRegister());
       },
-      onFailure: (error) {},
+      onFailure: (error) {
+        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
+        DMessage.showMessage(message: error, type: MessageType.error);
+      },
     );
   }
 
   Future<void> _onDeletePermanentUser(_DeleteAccountPermanently event, Emitter<AuthState> emit) async {
-    runUseCase(
+    // Same concurrency guard as _onLogout — prevents a double-tap/duplicate
+    // dispatch from firing the delete-account use case twice in parallel.
+    if (state.status == AuthStatus.loading) return;
+
+    await runUseCase(
       usecase: () => _deletePermanentUserUsecase(event.userId),
+      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
       onSuccess: (data) {
+        emit(state.copyWith(status: AuthStatus.success));
         _onResetAuth();
         unawaited(bootstrapGuestSessionForRegister());
       },
-      onFailure: (error) {},
+      onFailure: (error) {
+        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
+        DMessage.showMessage(message: error, type: MessageType.error);
+      },
     );
   }
 

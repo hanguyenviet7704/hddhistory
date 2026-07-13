@@ -32,7 +32,7 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundBrandSoft,
-      body: SafeBody(
+      body: SafePage(
         child: BlocBuilder<HabitCubit, HabitState>(
           builder: (context, state) {
             final pending = _pending(state);
@@ -95,7 +95,7 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppText(userHabit.displayIcon, style: AppStyle.text40),
+                        HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', size: 56),
                         20.verticalSpace,
                         AppText(
                           userHabit.displayTitle,
@@ -136,6 +136,7 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
                       12.horizontalSpace,
                       Expanded(
                         child: DButton(
+                          backgroundColor: AppCustomColor.brandPrimary,
                           onPressed: _isSubmitting ? null : () => _answer(userHabit, true),
                           customChild: Row(
                             mainAxisAlignment: MainAxisAlignment.center,

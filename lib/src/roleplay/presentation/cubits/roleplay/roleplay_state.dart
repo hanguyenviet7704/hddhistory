@@ -10,6 +10,7 @@ abstract class RoleplayState with _$RoleplayState {
     @Default(LearningItemEntity()) LearningItemEntity currentLearningItem,
     @Default(RoleplayFeedbackEntity()) RoleplayFeedbackEntity feedback,
     @Default(false) bool isCurrentSectionRevealed,
+    @Default(false) bool isSendingFeedback,
     String? errorMessage,
   }) = _RoleplayState;
 

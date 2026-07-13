@@ -8,15 +8,21 @@ class KeypointCompletePage extends StatefulWidget {
 }
 
 class _KeypointCompletePageState extends State<KeypointCompletePage> {
-  bool _hasShownFeedbackPopup = false;
   bool _isHandlingPrimaryCta = false;
+  // Set once we intentionally navigate the user off this page to ANOTHER shell
+  // branch (e.g. "Go to Habit"). This page stays alive & `isCurrent` in its own
+  // background course-branch navigator, so without this flag the reclaim below
+  // would keep stealing currentRouteName back to `keypointComplete` and hide
+  // the floating nav on the branch we just moved to.
+  bool _navigatedAway = false;
 
   /// Keeps the floating nav pill hidden while this completion screen is shown.
   /// The pill is gated on [PageStateX.isPrimaryRoute]; pushing/popping the
   /// feedback popup (a named route) can reset the current route name back to a
-  /// primary one, so we re-assert it whenever the page regains focus.
+  /// primary one, so we re-assert it whenever the page regains focus — but only
+  /// while we're still on this page (not after navigating to another branch).
   void _ensureKeypointCompleteRouteName() {
-    if (!mounted) return;
+    if (!mounted || _navigatedAway) return;
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
   }
 
@@ -33,7 +39,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
       if (context.read<LessonCubit>().state.completionOrigin == LessonCompletionOrigin.audio) {
         AppService.instance.appTrackingService.trackKeypointAudioCompleteView(trackingData);
       }
-      context.read<FeedbackCubit>().loadUserFeedbacks();
     });
   }
 
@@ -136,9 +141,21 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     final goToHabit = await HabitAddedPopup.show(context);
     if (goToHabit != true || !mounted) return false;
 
-    HabitRoute().go(context);
-    Future.delayed(const Duration(milliseconds: 100), () {
-      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+    // Leaving to the Habit branch — stop reclaiming this page's route name.
+    _navigatedAway = true;
+    // First reset THIS (course) branch back to its roadmap, otherwise this
+    // completion page lingers on top of the course branch's stack and the user
+    // sees it again (stale, 0%) when they tap back to the Course tab. Switching
+    // to the Habit branch alone never cleans the course branch. Two branch-level
+    // go()s coalesce within one frame, so defer the Habit switch to the next
+    // frame; use the global context since this page may be disposed by then.
+    CourseRoadmapRoute().go(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = AppConfig.instance.context;
+      if (ctx != null) HabitRoute().go(ctx);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+      });
     });
     return true;
   }
@@ -169,6 +186,8 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     );
     syncHomeSelectionForLessonFlowCourse(courseId);
 
+    // Leaving this page — stop reclaiming its route name (see [_navigatedAway]).
+    _navigatedAway = true;
     if (_isCourseLevelBadgeComplete()) {
       BadgeProgressRoute().go(context);
       Future.delayed(const Duration(milliseconds: 100), () {
@@ -205,42 +224,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
               if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
               _ensureKeypointCompleteRouteName();
             });
-          },
-        ),
-        BlocListener<FeedbackCubit, FeedbackState>(
-          listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
-          listener: (context, state) {
-            if (_hasShownFeedbackPopup) return;
-            if (state.userFeedback.userHasKeypointFeedbackComplete) return;
-            // Product decision: the "how was your lesson?" popup is offered
-            // once, on the user's first lesson, then off for good.
-            if (state.hasShownFirstCompleteLessonFeedback) return;
-
-            final keypointTracking = KeypointTrackingData.fromContext();
-            String courseId = '';
-            String lessonId = '';
-            String keypointId = '';
-            if (keypointTracking != null) {
-              courseId = keypointTracking.course.id;
-              lessonId = keypointTracking.lesson.id;
-              keypointId = keypointTracking.keypoint.id;
-            } else {
-              final lessonState = AppDI.injector.get<CourseLessonCubit>().state;
-              courseId = lessonState.selectedLesson.courseId;
-              lessonId = lessonState.selectedLesson.id;
-              keypointId = lessonState.currentKeypointId;
-            }
-
-            if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
-            _hasShownFeedbackPopup = true;
-            context.read<FeedbackCubit>().markFirstCompleteLessonFeedbackShown();
-            FeedbackCompleteLessonPopup.show(
-              context,
-              entry: FeedbackEntry.keypoint,
-              courseId: courseId,
-              lessonId: lessonId,
-              keypointId: keypointId,
-            ).whenComplete(_ensureKeypointCompleteRouteName);
           },
         ),
       ],

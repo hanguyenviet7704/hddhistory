@@ -11,6 +11,27 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   bool _hasLoadedThisSession = false;
   Future<void>? _ensureInFlight;
 
+  /// The course id an EXPLICIT course-switch call to [loadRoadmap] (a
+  /// `courseId` argument different from the one currently on screen — e.g.
+  /// HomeCubit.selectCourseIndex when the user picks another course) is
+  /// currently fetching. Null when nothing is in flight, or when the in-flight
+  /// fetch is just a same-course refresh (pull-to-refresh, or
+  /// [ensureRoadmapLoaded]'s silent cold-start self-heal).
+  ///
+  /// [loadRoadmap] does NOT clear `state.roadmap` when a fetch starts (see its
+  /// doc), so `state.roadmap` stays on the previous course for the whole
+  /// round-trip of a switch. CourseRoadmapPage reads this flag to show a
+  /// "switching courses" overlay over that stale roadmap instead of leaving
+  /// the switch silent — without also flagging an ordinary same-course
+  /// refresh, which already has its own feedback (the pull-to-refresh
+  /// spinner) or is meant to be invisible (the self-heal).
+  ///
+  /// Purely transient, like [_hasLoadedThisSession] — deliberately NOT part of
+  /// the persisted/hydrated state: there is nothing meaningful to resume
+  /// mid-fetch after a process restart, so it always starts null.
+  String? _switchingToCourseId;
+  bool get isSwitchingCourse => _switchingToCourseId != null;
+
   CourseRoadmapCubit(
     this._getRoadmapUseCase,
   ) : super(CourseRoadmapState.initial());
@@ -24,6 +45,7 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   void reset() {
     _hasLoadedThisSession = false;
     _ensureInFlight = null;
+    _switchingToCourseId = null;
     emit(CourseRoadmapState.initial());
   }
 
@@ -67,6 +89,14 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   }
 
   Future<void> loadRoadmap({String courseId = ''}) async {
+    // A genuine course switch is a non-empty explicit `courseId` argument that
+    // differs from the course currently on screen — as opposed to a
+    // same-course reload (bare `loadRoadmap()` calls from pull-to-refresh and
+    // [ensureRoadmapLoaded]). Recorded BEFORE the `courseId` param gets
+    // defaulted below so it only reflects an explicit switch request.
+    final bool isCourseSwitch = courseId.isNotEmpty && courseId != state.roadmap.courseId;
+    if (isCourseSwitch) _switchingToCourseId = courseId;
+
     if (courseId.isEmpty) {
       courseId = state.roadmap.courseId;
     }
@@ -76,10 +106,30 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
     // the course surfaces in the search screen's "Recent" list.
     AppDI.injector.get<CourseCubit>().recordCourseView(courseId);
 
+    // Warm the Re-anchor reasons in PARALLEL with the roadmap fetch. The
+    // prompt (§9.1) is decided from within the roadmap page and only after the
+    // roadmap lands, so fetching reasons then leaves the loaded roadmap on
+    // screen for a round-trip before the prompt appears. Prefetching here (the
+    // earliest point the courseId is known) means getReanchorReasons is cached
+    // by the time the roadmap lands, so the prompt opens immediately. Skipped
+    // once the course's prompt has already been shown this session.
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    if (!habitCubit.state.reanchorShownCourseIds.contains(courseId)) {
+      unawaited(habitCubit.getReanchorReasons(courseId));
+    }
+
     await runUseCase<RoadmapEntity>(
       usecase: () => _getRoadmapUseCase(courseId),
+      // Deliberately does NOT touch `roadmap` — a course switch keeps the
+      // PREVIOUS course's roadmap in state for the whole round-trip (the page
+      // dims it and overlays a spinner via [isSwitchingCourse] instead of
+      // blanking it, so switching between two already-familiar courses
+      // doesn't flash blank-then-repopulate). A same-course reload
+      // (pull-to-refresh, [ensureRoadmapLoaded]'s self-heal) also just keeps
+      // the existing data visible, as before.
       buildLoadingState: () => state.copyWith(status: CourseRoadmapStatus.loading),
       onFailure: (error) {
+        if (_switchingToCourseId == courseId) _switchingToCourseId = null;
         emit(
           state.copyWith(
             status: CourseRoadmapStatus.failure,
@@ -88,19 +138,36 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
         );
       },
       onSuccess: (roadmap) {
+        if (_switchingToCourseId == courseId) _switchingToCourseId = null;
         _hasLoadedThisSession = true;
         final selection = roadmap.autoSelectedLesson(fallbackLevel: state.currentCourseLevel);
         final selectedLesson = selection.key;
         final selectedLevel = selection.value;
         _cachedLessonAction = selectedLesson.id.isEmpty ? null : selectedLesson;
+        // currentLevelProgress is only ever written by
+        // AchievenmentProgressCubit.loadCourseLevelProgress — which, on this
+        // flow, runs only AFTER a keypoint completes — and it's hydrated
+        // across restarts. So when the roadmap points at a different course
+        // (course switch, cold start), it still holds the PREVIOUS course's
+        // badge/title/progress, and the badge screens
+        // (keypoint_complete/badge_progress) render that other course first,
+        // then visibly swap once the post-completion fan-out lands. Clear the
+        // mismatched entity so they can never show another course's badge,
+        // and fetch this course's level progress NOW so the completion screen
+        // has the right data the moment it appears.
+        final bool levelProgressIsForThisCourse = state.currentLevelProgress.courseId == roadmap.courseId;
         emit(
           state.copyWith(
             status: CourseRoadmapStatus.success,
             roadmap: roadmap,
             currentLesson: selectedLesson,
             currentCourseLevel: selectedLevel,
+            currentLevelProgress: levelProgressIsForThisCourse ? state.currentLevelProgress : const CourseLevelProgressEntity(),
           ),
         );
+        if (!levelProgressIsForThisCourse) {
+          AppDI.injector.get<AchievenmentProgressCubit>().loadCourseLevelProgress(roadmap.courseId);
+        }
       },
     );
   }

@@ -63,63 +63,66 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
     final habit = widget.userHabit;
     final diary = (_checkins ?? []).where((c) => (c.note ?? '').trim().isNotEmpty).toList();
 
-    return SafeArea(
-      child: Container(
-        constraints: BoxConstraints(maxHeight: 0.91.sh),
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-        decoration: BoxDecoration(
-          color: AppCustomColor.backgroundGray,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: Semantics(
-                button: true,
-                label: context.l10n.common.close,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
+    // Bake the bottom safe-area inset into the container's own padding
+    // instead of wrapping in SafeArea — that keeps the gray sheet flush to
+    // the bottom edge (no transparent gap showing under it) while content
+    // still clears the home indicator / Android nav bar.
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    return Container(
+      constraints: BoxConstraints(maxHeight: 0.91.sh),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h + bottomInset),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundGray,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Semantics(
+              button: true,
+              label: context.l10n.common.close,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
+                onPressed: () => Navigator.of(context).pop(),
               ),
             ),
-            8.verticalSpace,
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', fallbackEmoji: habit.displayIcon, size: 48),
-                    6.verticalSpace,
-                    AppText(
-                      habit.displayTitle,
-                      style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
-                    ),
-                    12.verticalSpace,
-                    _StatusPill(active: habit.isActive),
-                    20.verticalSpace,
-                    _StatsCard(completionRate: _completionRate, currentLoopDays: habit.currentStreak),
-                    20.verticalSpace,
-                    _RepetitionsSection(
-                      startedAt: _startedAt,
-                      doneDates: {
-                        for (final c in (_checkins ?? []).where((c) => c.done)) DateUtils.dateOnly(c.date),
-                      },
-                      loading: _checkins == null,
-                    ),
-                    8.verticalSpace,
-                    _DiarySection(entries: diary),
-                  ],
-                ),
+          ),
+          8.verticalSpace,
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', size: 48),
+                  6.verticalSpace,
+                  AppText(
+                    habit.displayTitle,
+                    style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
+                  ),
+                  12.verticalSpace,
+                  _StatusPill(active: habit.isActive),
+                  20.verticalSpace,
+                  _StatsCard(completionRate: _completionRate, currentLoopDays: habit.currentStreak),
+                  20.verticalSpace,
+                  _RepetitionsSection(
+                    startedAt: _startedAt,
+                    doneDates: {
+                      for (final c in (_checkins ?? []).where((c) => c.done)) DateUtils.dateOnly(c.date),
+                    },
+                    loading: _checkins == null,
+                  ),
+                  8.verticalSpace,
+                  _DiarySection(entries: diary),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

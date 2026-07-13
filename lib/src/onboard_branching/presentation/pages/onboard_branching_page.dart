@@ -194,6 +194,11 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
         if (!context.mounted) return;
         if (action == OnboardBranchingTryNowAction.goCourseRoadmap) {
           CourseRoadmapRoute().go(context);
+          // See onboard_v2_course_picker_page.dart's identical pairing: without
+          // this, PageCubit.currentRouteName never becomes courseRoadmap for
+          // this onboarding path, silently breaking the re-anchor prompt and
+          // the floating bottom nav's visibility for the user's first course.
+          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
           return;
         }
         if (action == OnboardBranchingTryNowAction.goCoursePage) {

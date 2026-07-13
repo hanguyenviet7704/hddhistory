@@ -91,7 +91,7 @@ class DCachedImage extends StatelessWidget {
         color: color,
         // placeholder: (context, url) => _buildPlaceHolder(context, url),
         // colorBlendMode: colorBlendMode,
-        errorWidget: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
+        errorWidget: (_, _, _) => _buildErrorPlaceholder(),
       );
     }
 
@@ -102,7 +102,7 @@ class DCachedImage extends StatelessWidget {
         width: width,
         height: height,
         color: color,
-        errorBuilder: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
+        errorBuilder: (_, _, _) => _buildErrorPlaceholder(),
       );
     }
 
@@ -113,7 +113,18 @@ class DCachedImage extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       color: color,
-      errorBuilder: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
+      errorBuilder: (_, _, _) => _buildErrorPlaceholder(),
+    );
+  }
+
+  /// Icon-less fallback for a failed (or briefly mid-load) image — a plain tonal
+  /// box (the ClipRRect ancestor rounds it), NOT the alarming exclamation icon
+  /// users disliked seeing flash on cards while thumbnails were still loading.
+  Widget _buildErrorPlaceholder() {
+    return Container(
+      width: width,
+      height: height,
+      color: AppCustomColor.backgroundGray,
     );
   }
 

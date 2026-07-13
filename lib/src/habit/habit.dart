@@ -36,8 +36,10 @@ part 'domain/usecases/remove_user_habit_usecase.dart';
 part 'domain/usecases/check_in_user_habit_usecase.dart';
 part 'domain/usecases/get_habit_checkins_usecase.dart';
 part 'domain/usecases/get_reanchor_reasons_usecase.dart';
+part 'domain/usecases/get_habit_config_usecase.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
+part 'presentation/cubits/habit_qa_flags.dart';
 part 'presentation/cubits/habit_state.dart';
 part 'presentation/cubits/habit_cubit.dart';
 part 'presentation/cubits/habit_reminder_scheduler.dart';
@@ -61,6 +63,7 @@ part 'presentation/widgets/habit_week_grid.dart';
 part 'presentation/widgets/habit_task_row.dart';
 part 'presentation/widgets/habit_empty_state.dart';
 part 'presentation/widgets/habit_domain_icon.dart';
+part 'presentation/widgets/habit_switch.dart';
 part 'presentation/widgets/home_habit_reminder_card.dart';
 
 //* Parts for generated files

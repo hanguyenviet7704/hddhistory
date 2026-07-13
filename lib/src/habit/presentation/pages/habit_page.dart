@@ -1,18 +1,5 @@
 part of '../../habit.dart';
 
-/// "Jun 1–7" style label for the current week (Figma Habit view + Weekly
-/// review). Uses the server-provided week start when available so the grids
-/// and the label always agree on what "this week" means.
-String _habitWeekRangeLabel(List<UserHabitEntity> activeHabits) {
-  final serverStart = activeHabits.map((h) => h.weekStartDate).whereType<DateTime>().firstOrNull;
-  final now = DateTime.now();
-  final start = serverStart ?? now.subtract(Duration(days: now.weekday - 1));
-  final end = start.add(const Duration(days: 6));
-  final startLabel = start.parseString('MMM d');
-  final endLabel = start.month == end.month ? '${end.day}' : end.parseString('MMM d');
-  return '$startLabel–$endLabel';
-}
-
 /// Tracker grouping key (§9.5 — "1 khóa = 1 cụm habit quanh 1 vấn đề"): group
 /// by the course the habit was adopted from, falling back to its skillset for
 /// legacy habits with no sourceCourseId.
@@ -20,15 +7,29 @@ String _habitGroupKey(UserHabitEntity h) => (h.sourceCourseId?.isNotEmpty ?? fal
 
 /// Human title for a group: the course's title ("the problem"), else the
 /// skillset title.
-String _habitGroupTitle(UserHabitEntity h) {
+String _habitGroupTitle(UserHabitEntity h, HabitState state) {
+  // §9.5: label the cluster with the re-anchor reason the user picked for this
+  // course ("their why"). Prefer the value persisted on the habit at adopt
+  // time; else the reason picked this session (remembered in state, so it
+  // shows immediately after picking even for habits adopted earlier); else
+  // fall back to the course title, then the skillset.
+  final reason = h.reanchorReason.text;
+  if (reason.isNotEmpty) return reason;
+  final skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
   final courseId = h.sourceCourseId;
   if (courseId != null && courseId.isNotEmpty) {
-    final course = AppDI.injector.get<ProgressCubit>().state.myCourses.where((c) => c.id == courseId).firstOrNull;
-    final title = course?.title.text ?? '';
+    final picked = state.reanchorReasonByCourse[courseId]?.reason.text ?? '';
+    if (picked.isNotEmpty) return picked;
+    // Look up the course from the FULL catalog (HomeCubit.skillsets), not
+    // ProgressCubit.myCourses — myCourses only carries courses with SAVED
+    // progress, so it can still be stale/missing this exact course right
+    // after adopting a habit from its very first keypoint, wrongly falling
+    // all the way through to the bare skillset name below.
+    final title = skillsets.resolveCourseByCourseId(courseId).title.text;
     if (title.isNotEmpty) return title;
   }
   final skillsetId = h.habit?.skillsetId ?? '';
-  final skillset = AppDI.injector.get<HomeCubit>().state.skillsets.where((s) => s.id == skillsetId).firstOrNull;
+  final skillset = skillsets.where((s) => s.id == skillsetId).firstOrNull;
   return skillset?.title.text ?? '';
 }
 
@@ -80,32 +81,37 @@ class _HabitPageState extends State<HabitPage> {
       },
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundGray,
-        body: SafeBody(
-          child: BlocBuilder<HabitCubit, HabitState>(
-            builder: (context, state) {
-              return RefreshIndicator(
-                onRefresh: () => context.read<HabitCubit>().load(showLoading: false),
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(child: _HabitHeader(state: state)),
-                    _HabitBody(
-                      state: state,
-                      onCheckIn: _openCheckIn,
-                      onOpenDetail: _openDetail,
-                      onEdit: () => EditHabitSheet.show(context),
-                      onGoToCourse: _goToCourse,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+        // No top SafeArea: the green header scene paints edge-to-edge behind
+        // the status bar (Figma "Today's task" — the status-bar strip is green,
+        // not white). The scene reserves the top inset itself.
+        body: BlocBuilder<HabitCubit, HabitState>(
+          builder: (context, state) {
+            return RefreshIndicator(
+              onRefresh: () => context.read<HabitCubit>().load(showLoading: false),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(child: _HabitHeader(state: state)),
+                  _HabitBody(
+                    state: state,
+                    onCheckIn: _openCheckIn,
+                    onOpenDetail: _openDetail,
+                    onEdit: () => EditHabitSheet.show(context),
+                    onGoToCourse: _goToCourse,
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
+
+// Green header scene (Figma node 10767:26104): the gradient's top colour, also
+// used to fill the status-bar strip above the scene so they read as one piece.
+const Color _kHabitHeaderTopGreen = Color(0xFFC7E0D2);
 
 // Header illustration assets (Figma node 10767:26104 — green "nature" scene).
 const String _kHabitCloudSmall = 'assets/svg/common/habit_header_cloud_small.svg';
@@ -121,63 +127,65 @@ class _HabitHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Figma "Empty" (11418:15157): the green scene carries no title/toggle at
-    // all when there are no active habits — just the decorative backdrop.
-    if (state.activeHabits.isEmpty) {
-      return SizedBox(width: double.infinity, height: 140.h, child: const _HabitHeaderScene());
+    // The status-bar strip is part of the green scene (Figma): fill the top
+    // inset with the scene's top gradient colour so it reads as one continuous
+    // header instead of a white band above the green.
+    final topInset = MediaQuery.paddingOf(context).top;
+    final statusBarCover = Container(width: double.infinity, height: topInset, color: _kHabitHeaderTopGreen);
+
+    // Figma "Empty" (11418:15157): the green scene carries no title at all —
+    // just the decorative backdrop — only when the user has never adopted a
+    // habit. If they merely paused everything, "Today" keeps showing (with a
+    // 0-tasks-left subtitle) instead of silently dropping the title.
+    if (state.userHabits.isEmpty) {
+      return Column(
+        children: [
+          statusBarCover,
+          SizedBox(width: double.infinity, height: 140.h, child: const _HabitHeaderScene()),
+        ],
+      );
     }
 
-    final isTaskView = state.toggle == HabitTabToggle.task;
-    final allDone = state.allDoneToday;
+    // Figma "Today's task" (10767:45771): the tracker header leads with "Today"
+    // and the tasks-left count. There is no Task/Habit toggle — per-habit stats
+    // live in the Habit detail screen.
+    final title = context.l10n.habit.headerTodayTitle;
+    final subtitle = context.l10n.habit.headerTasksToComplete(count: (state.activeCount - state.doneTodayCount).clamp(0, 999));
 
-    // Per Figma: Task view leads with "Today"/tasks-left, Habit view with the
-    // done/total counter.
-    final title = isTaskView ? context.l10n.habit.headerTodayTitle : context.l10n.habit.headerCompletedTitle(done: state.doneTodayCount, total: state.activeCount);
-    final subtitle = isTaskView
-        ? context.l10n.habit.headerTasksToComplete(count: (state.activeCount - state.doneTodayCount).clamp(0, 999))
-        : allDone
-        ? context.l10n.habit.headerAllDoneSubtitle
-        : context.l10n.habit.headerInProgressSubtitle;
-
-    return SizedBox(
-      width: double.infinity,
-      height: 140.h,
-      child: Stack(
-        children: [
-          const Positioned.fill(child: _HabitHeaderScene()),
-          Positioned(
-            left: 20.w,
-            right: 20.w,
-            bottom: 16.h,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppText(title, style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary)),
-                      4.verticalSpace,
-                      AppText(subtitle, style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted)),
-                    ],
-                  ),
+    return Column(
+      children: [
+        statusBarCover,
+        SizedBox(
+          width: double.infinity,
+          height: 140.h,
+          child: Stack(
+            children: [
+              const Positioned.fill(child: _HabitHeaderScene()),
+              Positioned(
+                left: 20.w,
+                right: 20.w,
+                bottom: 16.h,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(title, style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary)),
+                    4.verticalSpace,
+                    AppText(subtitle, style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted)),
+                  ],
                 ),
-                // The Habit view places the toggle inside the sheet next to the
-                // week range (see _HabitBody) — Task view keeps it up here.
-                if (isTaskView) _ToggleTabs(toggle: state.toggle),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 /// The green "nature" header backdrop from Figma (node 10767:26104): a
 /// #c7e0d2 → #e5edc3 gradient with clouds + leafy hills, fading into the
-/// gray body at the bottom so the title/toggle stay legible.
+/// gray body at the bottom so the title stays legible.
 class _HabitHeaderScene extends StatelessWidget {
   const _HabitHeaderScene();
 
@@ -188,7 +196,7 @@ class _HabitHeaderScene extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFC7E0D2), Color(0xFFE5EDC3)],
+          colors: [_kHabitHeaderTopGreen, Color(0xFFE5EDC3)],
         ),
       ),
       child: Stack(
@@ -253,84 +261,6 @@ class _HabitHeaderScene extends StatelessWidget {
   }
 }
 
-class _ToggleTabs extends StatelessWidget {
-  final HabitTabToggle toggle;
-
-  const _ToggleTabs({required this.toggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(4.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundGray,
-        borderRadius: BorderRadius.circular(1000.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ToggleTabButton(
-            label: context.l10n.habit.taskToggleLabel,
-            selected: toggle == HabitTabToggle.task,
-            onTap: () => context.read<HabitCubit>().setToggle(HabitTabToggle.task),
-          ),
-          _ToggleTabButton(
-            label: context.l10n.habit.habitToggleLabel,
-            selected: toggle == HabitTabToggle.habit,
-            onTap: () => context.read<HabitCubit>().setToggle(HabitTabToggle.habit),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ToggleTabButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _ToggleTabButton({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    // Figma: selected segment is a white pill with dark bold text on a soft
-    // lavender track (not a filled-brand pill).
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(1000.r),
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
-          decoration: BoxDecoration(
-            color: selected ? AppCustomColor.backgroundWhite : Colors.transparent,
-            borderRadius: BorderRadius.circular(1000.r),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: AppCustomColor.textPrimary.withValues(alpha: 0.08),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: AppText(
-            label,
-            style: AppStyle.text14.copyWith(
-              color: selected ? AppCustomColor.textPrimary : AppCustomColor.textTertiary,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _HabitBody extends StatelessWidget {
   final HabitState state;
   final ValueChanged<UserHabitEntity> onCheckIn;
@@ -362,6 +292,8 @@ class _HabitBody extends StatelessWidget {
               12.verticalSpace,
               DButton(
                 text: context.l10n.habit.loadErrorRetryButton,
+                backgroundColor: AppCustomColor.brandPrimary,
+                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
                 onPressed: () => context.read<HabitCubit>().load(),
               ),
             ],
@@ -370,7 +302,13 @@ class _HabitBody extends StatelessWidget {
       );
     }
 
-    if (state.activeHabits.isEmpty) {
+    // Genuinely empty (never adopted a habit) vs merely "everything paused" —
+    // pausing all habits must not fall back to the "start your first habit"
+    // empty state, or the user can never reach Edit Habit to resume one. The
+    // category cards below still list only ACTIVE habits (today's checklist
+    // has nothing to show when everything is paused) — Edit Habit remains
+    // reachable either way to resume one.
+    if (state.userHabits.isEmpty) {
       return SliverFillRemaining(child: HabitEmptyState(onGoToCourse: onGoToCourse));
     }
 
@@ -378,10 +316,10 @@ class _HabitBody extends StatelessWidget {
     for (final userHabit in state.activeHabits) {
       byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
     }
-    final isTaskView = state.toggle == HabitTabToggle.task;
 
-    // Figma: content lives on the soft-gray body (flush under the green
-    // header), holding one white card per category.
+    // Figma "Today's task": content lives on the soft-gray body (flush under the
+    // green header), holding one white card per category (the "problem" a
+    // cluster of habits addresses).
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Container(
@@ -392,25 +330,10 @@ class _HabitBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             8.verticalSpace,
-            if (!isTaskView) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: AppText(
-                      _habitWeekRangeLabel(state.activeHabits),
-                      style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
-                    ),
-                  ),
-                  _ToggleTabs(toggle: state.toggle),
-                ],
-              ),
-              16.verticalSpace,
-            ],
             ...byGroup.entries.map(
               (entry) => _HabitCategoryCard(
-                title: _habitGroupTitle(entry.value.first),
+                title: _habitGroupTitle(entry.value.first, state),
                 userHabits: entry.value,
-                isTaskView: isTaskView,
                 onCheckIn: onCheckIn,
                 onOpenDetail: onOpenDetail,
               ),
@@ -427,8 +350,8 @@ class _HabitBody extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit_outlined, size: 16.w, color: AppCustomColor.textQuaternary),
-                      6.horizontalSpace,
+                      Icon(Icons.edit_outlined, size: 20.w, color: AppCustomColor.textQuaternary),
+                      8.horizontalSpace,
                       AppText(
                         context.l10n.habit.editHabitLink,
                         style: AppStyle.text14.copyWith(color: AppCustomColor.textQuaternary, fontWeight: FontWeight.w700),
@@ -445,19 +368,17 @@ class _HabitBody extends StatelessWidget {
   }
 }
 
-/// One white category card (Figma): category title + its habits, rendered as
-/// checklist rows (Task view) or week-grid rows (Habit view).
+/// One white category card (Figma "Today's task"): a muted category title with
+/// a divider, then its habits as checklist rows.
 class _HabitCategoryCard extends StatelessWidget {
   final String title;
   final List<UserHabitEntity> userHabits;
-  final bool isTaskView;
   final ValueChanged<UserHabitEntity> onCheckIn;
   final ValueChanged<UserHabitEntity> onOpenDetail;
 
   const _HabitCategoryCard({
     required this.title,
     required this.userHabits,
-    required this.isTaskView,
     required this.onCheckIn,
     required this.onOpenDetail,
   });
@@ -484,72 +405,20 @@ class _HabitCategoryCard extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
             ),
-            child: Row(
-              children: [
-                Flexible(
-                  child: AppText(
-                    title,
-                    style: isTaskView
-                        ? AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600)
-                        : AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
-                  ),
-                ),
-                if (!isTaskView) ...[
-                  8.horizontalSpace,
-                  AppText('${userHabits.length}', style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted)),
-                ],
-              ],
+            child: AppText(
+              title,
+              style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
             ),
           ),
-          for (int index = 0; index < userHabits.length; index++) ...[
-            if (index > 0) Divider(height: 1, color: AppCustomColor.borderDefault),
-            if (isTaskView)
-              HabitTaskRow(
-                userHabit: userHabits[index],
-                onCheckInTap: () => onCheckIn(userHabits[index]),
-                onOpenDetail: () => onOpenDetail(userHabits[index]),
-              )
-            else
-              _HabitWeeklyRow(
-                userHabit: userHabits[index],
-                onOpenDetail: () => onOpenDetail(userHabits[index]),
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _HabitWeeklyRow extends StatelessWidget {
-  final UserHabitEntity userHabit;
-  final VoidCallback onOpenDetail;
-
-  const _HabitWeeklyRow({required this.userHabit, required this.onOpenDetail});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onOpenDetail,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', fallbackEmoji: userHabit.displayIcon, size: 48),
-            12.horizontalSpace,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(userHabit.displayTitle, style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary)),
-                  8.verticalSpace,
-                  HabitWeekGrid(weekGrid: userHabit.weekGrid),
-                ],
-              ),
+          // Figma "Today's task": task rows stack with no divider between them
+          // — only the category header keeps its bottom border.
+          for (final userHabit in userHabits)
+            HabitTaskRow(
+              userHabit: userHabit,
+              onCheckInTap: () => onCheckIn(userHabit),
+              onOpenDetail: () => onOpenDetail(userHabit),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

@@ -137,6 +137,14 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
       switch (intent) {
         case CourseHandoffRouteIntent.courseRoadmap:
           CourseRoadmapRoute().go(context);
+          // Every OTHER roadmap entry point pairs .go() with this (see
+          // all_course_tab.dart) — .go() to the roadmap branch root doesn't
+          // re-fire the route observer, so without it PageCubit.currentRouteName
+          // stays on whatever it was before onboarding. That silently breaks
+          // two things gated on it: the re-anchor prompt (§9.1) never fires for
+          // a brand-new user's very first course, and the floating bottom nav
+          // (gated on isPrimaryRoute) can stay hidden with no way back out.
+          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
           destination = 'course_roadmap';
           break;
         case CourseHandoffRouteIntent.course:

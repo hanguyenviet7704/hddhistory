@@ -48,9 +48,14 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.profile);
         break;
       case 3:
+        // Open Explore scrolled to the section holding the user's current
+        // (blue-border) course instead of resetting to the top — so entering
+        // the tab lands on "the course you're studying", not a jumpy default.
+        // Falls back to the top when nothing is selected (index -1).
+        final selectedSkillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
         AppDI.injector.get<CourseCubit>()
           ..setAllCourseSource('nav_explore')
-          ..resetExploreToAll();
+          ..jumpToSkillset(selectedSkillsetIndex);
         setCurrentRouteName(RouteNamed.course);
         break;
       case 4:

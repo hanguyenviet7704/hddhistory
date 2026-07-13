@@ -137,6 +137,7 @@ class BadgeProgressRoute extends BaseTransitionRouteData with $BadgeProgressRout
     providers: [
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
     ],
     child: const BadgeProgressPage(),
   );

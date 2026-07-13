@@ -97,10 +97,15 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
+        // Figma 11634:15343 — light periwinkle (#B0ACF5) across the top ~60%,
+        // then deepening to #8579F3 toward the bottom. (The app previously did
+        // the reverse — fading to a washed-out pale lavender — which made the
+        // header look flat and the quote card read as near-white.)
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFBEBCF6), Color(0xFFDFDDF8)],
+          colors: [Color(0xFFB0ACF5), Color(0xFFB0ACF5), Color(0xFF8579F3)],
+          stops: [0.0, 0.5, 1.0],
         ),
       ),
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
@@ -191,13 +196,25 @@ class _HomeInlineQuoteCard extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 44),
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
             decoration: BoxDecoration(
-              color: const Color(0xFFB7B4F2),
+              // Figma 11634:15357 — a frosted, translucent-WHITE card (radial
+              // white 0.9 → 0.5) sitting over the lavender header, not the old
+              // solid purple fill. Lets the header gradient glow through.
+              gradient: RadialGradient(
+                center: const Alignment(-0.8, -0.9),
+                radius: 1.5,
+                // Design card samples: #F2F1FC (top-left highlight) → #E7E5FC
+                // over the periwinkle bg ≈ white 0.9 → 0.68.
+                colors: [
+                  Colors.white.withValues(alpha: 0.9),
+                  Colors.white.withValues(alpha: 0.68),
+                ],
+              ),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x14000000),
                   offset: Offset(0, 1),
-                  blurRadius: 1.5,
+                  blurRadius: 3,
                 ),
               ],
             ),

@@ -259,6 +259,7 @@ class _BadgeProgressContent extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
           child: DButton(
             text: _isInProgress ? context.l10n.exercise.exerciseCompleteKeypointSkipButton : context.l10n.exercise.exerciseCompleteLessonButton,
+            backgroundColor: AppCustomColor.brandPrimary,
             size: Size(double.infinity, 54.h),
             style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
             onPressed: onPrimaryCta,

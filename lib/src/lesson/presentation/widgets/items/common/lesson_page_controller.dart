@@ -22,23 +22,11 @@ class LessonPageController {
   int _lastRenderedItemCount = 0;
   bool _didNotifyScroll = false;
   String _lastScrollKey = '';
-  bool _didShowNavigationPopup = false;
   int _latestAutoScrollRequestId = 0;
 
   void handleEmptyItems() {
     _lastRenderedItemCount = 0;
     _scheduleBottomButtonVisibilityUpdate();
-  }
-
-  void showLessonNavigationPopupIfNeeded({
-    required bool isFirstTime,
-    required VoidCallback onMarkSeen,
-    required VoidCallback onShowPopup,
-  }) {
-    if (_didShowNavigationPopup || !isFirstTime) return;
-    _didShowNavigationPopup = true;
-    onMarkSeen();
-    onShowPopup();
   }
 
   bool shouldTrackScroll(String scrollKey) {

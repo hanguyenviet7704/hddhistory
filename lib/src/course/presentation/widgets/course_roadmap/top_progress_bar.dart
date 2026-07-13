@@ -7,6 +7,12 @@ class TopProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Re-render on app-locale changes: the skillset title below resolves
+    // BaseMultiLanguage.text against the CURRENT locale at build time, and the
+    // BlocBuilder's buildWhen can't observe locale switches (HomeState doesn't
+    // change), so without this the dropdown kept showing the previous
+    // language's text until an unrelated rebuild.
+    context.watch<LocaleCubit>();
     return Padding(
       padding: EdgeInsets.only(top: 8.h),
       child: Center(
@@ -38,7 +44,11 @@ class TopProgressBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 BlocBuilder<HomeCubit, HomeState>(
-                  buildWhen: (previous, current) => previous.currentSkillset.title.text != current.currentSkillset.title.text,
+                  // Compare the full multilang object, NOT `.text`: `.text`
+                  // resolves both sides under the locale at comparison time,
+                  // so a locale switch (or a refetch returning the same
+                  // titles) always compared equal and suppressed the rebuild.
+                  buildWhen: (previous, current) => previous.currentSkillset.title != current.currentSkillset.title,
                   builder: (context, homeState) {
                     return AppText(
                       homeState.currentSkillset.title.text,

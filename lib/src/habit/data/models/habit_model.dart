@@ -5,7 +5,6 @@ abstract class HabitModel with _$HabitModel {
   const factory HabitModel({
     @JsonKey(name: '_id') @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
-    @Default('') String icon,
     @Default('') String skillsetId,
     @Default(HabitLibraryStatusEntity.unknown) HabitLibraryStatusEntity status,
     String? defaultReminderTime,
@@ -19,7 +18,6 @@ extension HabitModelX on HabitModel {
   HabitEntity toEntity() => HabitEntity(
     id: id,
     title: title,
-    icon: icon,
     skillsetId: skillsetId,
     status: status,
     defaultReminderTime: defaultReminderTime,

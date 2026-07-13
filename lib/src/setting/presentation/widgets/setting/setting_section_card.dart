@@ -73,6 +73,7 @@ class SettingOptionTile extends StatelessWidget {
     this.trailingTextColor,
     this.iconBackgroundColor,
     this.showChevron = true,
+    this.isLoading = false,
   });
 
   final String iconAsset;
@@ -84,6 +85,7 @@ class SettingOptionTile extends StatelessWidget {
   final Color? trailingTextColor;
   final Color? iconBackgroundColor;
   final bool showChevron;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +93,7 @@ class SettingOptionTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: isLoading ? null : onTap,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
           child: Row(
@@ -115,22 +117,34 @@ class SettingOptionTile extends StatelessWidget {
                   ),
                 ),
               ),
-              if (trailing != null && trailing.isNotEmpty) ...[
+              // isLoading replaces the trailing text/chevron with a spinner
+              // instead of adding a 4th indicator — this row has no other
+              // affordance-sized slot to put one in without reflowing layout.
+              if (isLoading) ...[
                 SizedBox(width: 12.w),
-                Text(
-                  trailing,
-                  style: AppStyle.textBold14.copyWith(
-                    color: trailingTextColor ?? AppCustomColor.textTertiary,
+                SizedBox(
+                  width: 20.w,
+                  height: 20.w,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppCustomColor.brandPrimary),
+                ),
+              ] else ...[
+                if (trailing != null && trailing.isNotEmpty) ...[
+                  SizedBox(width: 12.w),
+                  Text(
+                    trailing,
+                    style: AppStyle.textBold14.copyWith(
+                      color: trailingTextColor ?? AppCustomColor.textTertiary,
+                    ),
                   ),
-                ),
-              ],
-              if (showChevron) ...[
-                SizedBox(width: 8.w),
-                Icon(
-                  Icons.chevron_right,
-                  size: 20.w,
-                  color: AppCustomColor.iconPrimary,
-                ),
+                ],
+                if (showChevron) ...[
+                  SizedBox(width: 8.w),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20.w,
+                    color: AppCustomColor.iconPrimary,
+                  ),
+                ],
               ],
             ],
           ),

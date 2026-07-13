@@ -13,6 +13,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final CheckInUserHabitUseCase _checkInUseCase;
   final GetHabitCheckinsUseCase _getCheckinsUseCase;
   final GetReanchorReasonsUseCase _getReanchorReasonsUseCase;
+  final GetHabitConfigUseCase _getHabitConfigUseCase;
 
   HabitCubit(
     this._getHabitsUseCase,
@@ -24,6 +25,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._checkInUseCase,
     this._getCheckinsUseCase,
     this._getReanchorReasonsUseCase,
+    this._getHabitConfigUseCase,
   ) : super(HabitState.initial());
 
   Future<void>? _ensureInFlight;
@@ -33,20 +35,50 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   /// Hide the Home check-in reminder card for the rest of today (§9.4 FR4.4).
   void dismissHomeReminderToday() => emit(state.copyWith(homeReminderDismissedOn: DateTime.now()));
 
-  /// Mark the Sunday Weekly recap as shown today so it doesn't re-open (§9.9).
-  void markWeeklyRecapShown() => emit(state.copyWith(weeklyRecapShownOn: DateTime.now()));
+  /// Mark the Weekly recap as shown for this week so it doesn't re-open (§9.9).
+  /// Records both the server week start (preferred dedup key) and the device
+  /// day (legacy fallback for when the server didn't supply a week start).
+  void markWeeklyRecapShown() => emit(
+    state.copyWith(
+      weeklyRecapShownOn: DateTime.now(),
+      weeklyRecapShownWeekStart: state.summary.weekStartDate,
+    ),
+  );
 
   /// Mark a course's Re-anchor as shown so it appears at most once (§9.1).
   void markReanchorShown(String courseId) => emit(state.copyWith(reanchorShownCourseIds: {...state.reanchorShownCourseIds, courseId}));
 
+  /// Remember the re-anchor reason the user picked for a course (§9.5), so it
+  /// can be attached when a habit is later adopted from that course's keypoint
+  /// and shown as the tracker cluster title.
+  void setReanchorReason(String courseId, ReanchorReasonEntity reason) {
+    if (courseId.isEmpty) return;
+    emit(state.copyWith(reanchorReasonByCourse: {...state.reanchorReasonByCourse, courseId: reason}));
+  }
+
   Future<void> load({bool showLoading = true}) async {
-    await runUseCaseList<UserHabitEntity>(
-      usecase: () => _getUserHabitsUseCase(),
-      buildLoadingState: showLoading ? () => state.copyWith(status: HabitPageStatus.loading) : null,
-      onFailure: (error) => emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: error)),
-      onSuccess: (userHabits) => emit(state.copyWith(status: HabitPageStatus.success, userHabits: userHabits, errorMessage: null)),
+    if (showLoading) emit(state.copyWith(status: HabitPageStatus.loading));
+    final result = await _getUserHabitsUseCase().run();
+    result.fold(
+      (exception) => emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: exception.toString())),
+      // A cluster's title reflects ONLY the re-anchor reason the user actually
+      // picked — either stored on the habit at adopt time (h.reanchorReason)
+      // or captured this session (reanchorReasonByCourse). We never backfill a
+      // course's library reason, so a "why" the user didn't choose can't appear.
+      (userHabits) => emit(state.copyWith(status: HabitPageStatus.success, userHabits: userHabits, errorMessage: null)),
     );
     unawaited(loadSummary());
+    unawaited(loadFreeSlots());
+  }
+
+  /// Refresh the admin-configured free slot cap; on failure keep the current
+  /// (default) value — the server still enforces the real limit.
+  Future<void> loadFreeSlots() async {
+    final result = await _getHabitConfigUseCase().run();
+    result.fold(
+      (_) {},
+      (slots) => emit(state.copyWith(freeActiveSlots: slots)),
+    );
   }
 
   Future<void> loadSummary() async {
@@ -102,12 +134,17 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     String? sourceKeypointId,
     String? sourceCourseId,
   }) async {
+    // Attach the re-anchor reason the user picked for this course (if any), so
+    // the tracker can label the habit's cluster with it (§9.5).
+    final picked = (sourceCourseId != null && sourceCourseId.isNotEmpty) ? state.reanchorReasonByCourse[sourceCourseId] : null;
     final result = await _adoptUseCase(
       habitId: habitId,
       reminderTime: reminderTime,
       packLength: packLength,
       sourceKeypointId: sourceKeypointId,
       sourceCourseId: sourceCourseId,
+      reanchorReasonId: picked?.id,
+      reanchorReason: picked?.reason,
     ).run();
     return result.fold(
       (exception) => _isSlotFullError(exception) ? AdoptHabitResult.slotFull : AdoptHabitResult.failure,
@@ -189,11 +226,21 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     return result.fold((_) => const [], (checkins) => checkins);
   }
 
+  // Memoised per course so a prefetch (kicked off in parallel with the roadmap
+  // fetch — see CourseRoadmapCubit.loadRoadmap) is reused instantly by
+  // _maybeShowReanchor, letting the prompt open the moment the roadmap lands
+  // instead of after a second round-trip.
+  final Map<String, List<ReanchorReasonEntity>> _reanchorReasonsCache = {};
+
   /// BTV-authored re-anchor reasons for a course (§9.1). Empty when none
   /// configured — the caller then skips the Re-anchor screen entirely.
   Future<List<ReanchorReasonEntity>> getReanchorReasons(String courseId) async {
+    final cached = _reanchorReasonsCache[courseId];
+    if (cached != null) return cached;
     final result = await _getReanchorReasonsUseCase(courseId).run();
-    return result.fold((_) => const [], (reasons) => reasons);
+    final reasons = result.fold((_) => const <ReanchorReasonEntity>[], (reasons) => reasons);
+    _reanchorReasonsCache[courseId] = reasons;
+    return reasons;
   }
 
   void _replaceUserHabit(UserHabitEntity updated) {
