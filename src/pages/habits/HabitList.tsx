@@ -1,6 +1,14 @@
 // src/pages/habits/HabitList.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Button,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Paper,
   Skeleton,
   Table,
@@ -57,6 +65,11 @@ const HabitList: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState<IHabit | null>(null);
+
+  // Bulk selection (select-all-visible + bulk delete / publish / unpublish).
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const skillsetNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -143,6 +156,74 @@ const HabitList: React.FC = () => {
   }, [habits, search, statusFilter]);
 
   const hasActiveFilters = !!search.trim() || !!statusFilter || !!skillsetFilter;
+
+  const filteredHabitIds = useMemo(
+    () => filteredHabits.map((habit) => habit._id),
+    [filteredHabits]
+  );
+  const selectedCount = selectedIds.length;
+  const allVisibleSelected =
+    filteredHabitIds.length > 0 &&
+    filteredHabitIds.every((id) => selectedIds.includes(id));
+  const someVisibleSelected = selectedCount > 0 && !allVisibleSelected;
+
+  // Clear selection whenever the visible set changes via search/filters, so a
+  // bulk action can never act on a row that is no longer shown.
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [search, statusFilter, skillsetFilter]);
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllVisible = () => {
+    setSelectedIds((prev) =>
+      allVisibleSelected
+        ? prev.filter((id) => !filteredHabitIds.includes(id))
+        : Array.from(new Set([...prev, ...filteredHabitIds]))
+    );
+  };
+
+  // Run a per-id action over the current selection. Uses allSettled so one
+  // failing row doesn't abort the batch; reports succeeded/total on partial
+  // failure. Clears the selection and refetches when done.
+  const runBulk = async (
+    action: (id: string) => Promise<unknown>,
+    verb: string
+  ) => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const results = await Promise.allSettled(ids.map((id) => action(id)));
+      const ok = results.filter((r) => r.status === "fulfilled").length;
+      const failed = ids.length - ok;
+      if (failed === 0) {
+        showSuccess(`${verb} ${ok} habit${ok === 1 ? "" : "s"} successfully`);
+      } else {
+        showError(`${verb} ${ok}/${ids.length} habits — ${failed} failed`);
+      }
+      setSelectedIds([]);
+      await fetchHabits();
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setConfirmBulkDelete(false);
+    await runBulk((id) => habitService.remove(id), "Deleted");
+  };
+
+  const handleBulkStatus = async (status: HabitStatus) => {
+    await runBulk(
+      (id) => habitService.update(id, { status }),
+      status === HabitStatus.PUBLISHED ? "Published" : "Unpublished"
+    );
+  };
 
   const resetFilters = () => {
     setSearch("");
@@ -269,6 +350,40 @@ const HabitList: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto">
+        {selectedCount > 0 && (
+          <div className="mb-4 flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-sm font-medium text-gray-700">
+              {selectedCount} selected
+            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleBulkStatus(HabitStatus.PUBLISHED)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Publish selected
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkStatus(HabitStatus.DRAFT)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Unpublish selected
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmBulkDelete(true)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <TrashIcon className="h-4 w-4" />
+                Delete selected
+              </button>
+            </div>
+          </div>
+        )}
         {loading ? (
           <TableContainer
             component={Paper}
@@ -348,6 +463,14 @@ const HabitList: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={allVisibleSelected}
+                      indeterminate={someVisibleSelected}
+                      onChange={toggleAllVisible}
+                      inputProps={{ "aria-label": "Select all visible habits" }}
+                    />
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -362,10 +485,18 @@ const HabitList: React.FC = () => {
                   <TableRow
                     key={habit._id}
                     hover
+                    selected={selectedIds.includes(habit._id)}
                     sx={{
                       backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
                     }}
                   >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedIds.includes(habit._id)}
+                        onChange={() => toggleOne(habit._id)}
+                        inputProps={{ "aria-label": "Select habit" }}
+                      />
+                    </TableCell>
                     <TableCell>
                       {getTranslationValue(habit.title, lang) || "—"}
                     </TableCell>
@@ -425,6 +556,39 @@ const HabitList: React.FC = () => {
         }}
         onConfirm={handleDelete}
       />
+
+      <Dialog
+        open={confirmBulkDelete}
+        onClose={() => !bulkBusy && setConfirmBulkDelete(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete {selectedCount} habits</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {selectedCount} selected habit
+            {selectedCount === 1 ? "" : "s"}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setConfirmBulkDelete(false)} disabled={bulkBusy}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDelete}
+            color="error"
+            variant="contained"
+            disabled={bulkBusy}
+            startIcon={
+              bulkBusy ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
+            }
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

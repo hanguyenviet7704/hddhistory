@@ -1,6 +1,14 @@
 // src/pages/reanchor-reasons/ReanchorReasonList.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Button,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Paper,
   Skeleton,
   Table,
@@ -59,6 +67,11 @@ const ReanchorReasonList: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState<IReanchorReason | null>(null);
+
+  // Bulk selection (select-all-visible + bulk delete / publish / unpublish).
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const courseNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -131,6 +144,74 @@ const ReanchorReasonList: React.FC = () => {
 
   const hasActiveFilters =
     !!search.trim() || !!statusFilter || !!courseFilter;
+
+  const filteredReasonIds = useMemo(
+    () => filteredReasons.map((item) => item._id),
+    [filteredReasons]
+  );
+  const selectedCount = selectedIds.length;
+  const allVisibleSelected =
+    filteredReasonIds.length > 0 &&
+    filteredReasonIds.every((id) => selectedIds.includes(id));
+  const someVisibleSelected = selectedCount > 0 && !allVisibleSelected;
+
+  // Clear selection whenever the visible set changes via search/filters, so a
+  // bulk action can never act on a row that is no longer shown.
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [search, statusFilter, courseFilter]);
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllVisible = () => {
+    setSelectedIds((prev) =>
+      allVisibleSelected
+        ? prev.filter((id) => !filteredReasonIds.includes(id))
+        : Array.from(new Set([...prev, ...filteredReasonIds]))
+    );
+  };
+
+  // Run a per-id action over the current selection. Uses allSettled so one
+  // failing row doesn't abort the batch; reports succeeded/total on partial
+  // failure. Clears the selection and refetches when done.
+  const runBulk = async (
+    action: (id: string) => Promise<unknown>,
+    verb: string
+  ) => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const results = await Promise.allSettled(ids.map((id) => action(id)));
+      const ok = results.filter((r) => r.status === "fulfilled").length;
+      const failed = ids.length - ok;
+      if (failed === 0) {
+        showSuccess(`${verb} ${ok} reason${ok === 1 ? "" : "s"} successfully`);
+      } else {
+        showError(`${verb} ${ok}/${ids.length} reasons — ${failed} failed`);
+      }
+      setSelectedIds([]);
+      await fetchReasons();
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setConfirmBulkDelete(false);
+    await runBulk((id) => reanchorReasonService.remove(id), "Deleted");
+  };
+
+  const handleBulkStatus = async (status: ReanchorReasonStatus) => {
+    await runBulk(
+      (id) => reanchorReasonService.update(id, { status }),
+      status === ReanchorReasonStatus.PUBLISHED ? "Published" : "Unpublished"
+    );
+  };
 
   const resetFilters = () => {
     setSearch("");
@@ -260,6 +341,40 @@ const ReanchorReasonList: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto">
+        {selectedCount > 0 && (
+          <div className="mb-4 flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-sm font-medium text-gray-700">
+              {selectedCount} selected
+            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleBulkStatus(ReanchorReasonStatus.PUBLISHED)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Publish selected
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkStatus(ReanchorReasonStatus.DRAFT)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Unpublish selected
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmBulkDelete(true)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <TrashIcon className="h-4 w-4" />
+                Delete selected
+              </button>
+            </div>
+          </div>
+        )}
         {loading ? (
           <TableContainer
             component={Paper}
@@ -339,6 +454,16 @@ const ReanchorReasonList: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={allVisibleSelected}
+                      indeterminate={someVisibleSelected}
+                      onChange={toggleAllVisible}
+                      inputProps={{
+                        "aria-label": "Select all visible reasons",
+                      }}
+                    />
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Course</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Reason</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -352,11 +477,19 @@ const ReanchorReasonList: React.FC = () => {
                 {filteredReasons.map((item, index) => (
                   <TableRow
                     key={item._id}
+                    selected={selectedIds.includes(item._id)}
                     sx={{
                       backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
                       "&:hover": { backgroundColor: "action.hover" },
                     }}
                   >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedIds.includes(item._id)}
+                        onChange={() => toggleOne(item._id)}
+                        inputProps={{ "aria-label": "Select reason" }}
+                      />
+                    </TableCell>
                     <TableCell>
                       {courseNameById.get(item.courseId) || "Unknown course"}
                     </TableCell>
@@ -414,6 +547,39 @@ const ReanchorReasonList: React.FC = () => {
         }}
         onConfirm={handleDelete}
       />
+
+      <Dialog
+        open={confirmBulkDelete}
+        onClose={() => !bulkBusy && setConfirmBulkDelete(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete {selectedCount} reasons</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {selectedCount} selected reason
+            {selectedCount === 1 ? "" : "s"}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setConfirmBulkDelete(false)} disabled={bulkBusy}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDelete}
+            color="error"
+            variant="contained"
+            disabled={bulkBusy}
+            startIcon={
+              bulkBusy ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
+            }
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
