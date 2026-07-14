@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { Volume2Icon } from "lucide-react";
 import {
   IKeypoint,
-  IKeypointAudio,
   KeypointPayload,
 } from "../../types/interface/keypoint.interface";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
+import { voiceoverService } from "../../services/voiceoverService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { ITranslation } from "../../utils/translate";
@@ -31,15 +32,11 @@ interface BuildKeypointPayloadParams {
   estimateCompleTime: ITranslation;
   estimateCompleTimeInput: string;
   estimateCompleTimeUnit: EstimateCompleteTimeUnit;
-  audio: IKeypointAudio;
   image: string;
   tag: string[];
   lang: LangCode;
   keypoint: IKeypoint | null;
 }
-
-const hasKeypointAudioContent = (audio?: IKeypointAudio) =>
-  Boolean(cleanTranslation(audio?.url) || cleanTranslation(audio?.text));
 
 export const buildKeypointPayload = ({
   title,
@@ -47,21 +44,13 @@ export const buildKeypointPayload = ({
   estimateCompleTime,
   estimateCompleTimeInput,
   estimateCompleTimeUnit,
-  audio,
   image,
   tag,
   lang,
-  keypoint,
 }: BuildKeypointPayloadParams): KeypointPayload => {
   const cleanedTitle = cleanTranslation(title);
   const cleanedDescription = cleanTranslation(
     updateTranslationValue(description, lang, description[lang] || "")
-  );
-  const cleanedAudioUrl = cleanTranslation(
-    updateTranslationValue(audio.url, lang, (audio.url?.[lang] || "").trim())
-  );
-  const cleanedAudioText = cleanTranslation(
-    updateTranslationValue(audio.text, lang, audio.text?.[lang] || "")
   );
   const {
     label: estimateCompleTimeLabel,
@@ -74,25 +63,16 @@ export const buildKeypointPayload = ({
   const cleanedEstimateCompleTime = cleanTranslation(
     updateTranslationValue(estimateCompleTime, lang, estimateCompleTimeLabel)
   );
-  const shouldClearAudio =
-    Boolean(keypoint?._id) &&
-    hasKeypointAudioContent(keypoint?.audio) &&
-    !cleanedAudioUrl &&
-    !cleanedAudioText;
 
+  // Audio is intentionally NOT part of the keypoint payload anymore — it is
+  // produced only by the TTS voiceover flow (keypoint.audio.url), so saving a
+  // keypoint here never touches or wipes generated audio.
   return {
     title: cleanedTitle || {},
     ...(cleanedDescription && { description: cleanedDescription }),
     ...(cleanedEstimateCompleTime && {
       estimateCompleTime: cleanedEstimateCompleTime,
     }),
-    ...((cleanedAudioUrl || cleanedAudioText) && {
-      audio: {
-        ...(cleanedAudioUrl && { url: cleanedAudioUrl }),
-        ...(cleanedAudioText && { text: cleanedAudioText }),
-      },
-    }),
-    ...(shouldClearAudio && { audio: {} }),
     ...(Number.isFinite(estimateCompleTimeNumber) && {
       estimateCompleTimeNumber,
     }),
@@ -113,7 +93,7 @@ const KeypointModal: React.FC<Props> = ({
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
   const [estimateCompleTime, setEstimateCompleTime] = useState<ITranslation>({});
-  const [audio, setAudio] = useState<IKeypointAudio>({});
+  const [generatingVoiceover, setGeneratingVoiceover] = useState(false);
   const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
   const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
     useState<EstimateCompleteTimeUnit>("minute");
@@ -134,7 +114,6 @@ const KeypointModal: React.FC<Props> = ({
       setTitle(keypoint.title ?? {});
       setDescription(keypoint.description ?? {});
       setEstimateCompleTime(keypoint.estimateCompleTime ?? {});
-      setAudio(keypoint.audio ?? {});
       setImage(keypoint.image ?? "");
       setTag(keypoint.tag || []);
 
@@ -149,13 +128,44 @@ const KeypointModal: React.FC<Props> = ({
       setTitle({});
       setDescription({});
       setEstimateCompleTime({});
-      setAudio({});
       setEstimateCompleTimeInput("");
       setEstimateCompleTimeUnit("minute");
       setImage("");
       setTag([]);
     }
   }, [keypoint, lang]);
+
+  const handleGenerateVoiceover = async () => {
+    if (!keypoint?._id) return;
+    try {
+      setGeneratingVoiceover(true);
+      const res = await voiceoverService.generateForKeypoint(keypoint._id);
+      const r = res?.data ?? res;
+      const gen = r?.generated?.length ?? 0;
+      const skip = r?.skipped?.length ?? 0;
+      const fail = r?.failed?.length ?? 0;
+      const empty = r?.empty?.length ?? 0;
+      if (gen === 0 && skip === 0) {
+        showError(
+          empty > 0
+            ? "No theory content to voice for this keypoint"
+            : "Voiceover generated nothing"
+        );
+      } else {
+        showSuccess(
+          `Voiceover: ${gen} generated, ${skip} unchanged` +
+            (fail ? `, ${fail} failed` : "")
+        );
+      }
+    } catch (err) {
+      console.error("Generate voiceover failed:", err);
+      showError(
+        (err as any)?.response?.data?.message || "Failed to generate voiceover"
+      );
+    } finally {
+      setGeneratingVoiceover(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,7 +181,6 @@ const KeypointModal: React.FC<Props> = ({
       estimateCompleTime,
       estimateCompleTimeInput,
       estimateCompleTimeUnit,
-      audio,
       image,
       tag,
       lang,
@@ -280,45 +289,30 @@ const KeypointModal: React.FC<Props> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Audio</label>
-            <CloudflareFileUpload
-              initialUrl={audio.url?.[lang] || ""}
-              onUrlChange={(newUrl) =>
-                setAudio((prev) => ({
-                  ...prev,
-                  url: updateTranslationValue(prev.url, lang, newUrl),
-                }))
-              }
-              label=""
-              accept="audio/*"
-              uploadPayload={{
-                prefix: "",
-                folder: "keypoints/audio",
-              }}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Audio text</label>
-            <textarea
-              className="w-full border rounded-lg px-3 py-2"
-              placeholder="Enter transcript or audio text"
-              value={audio.text?.[lang] || ""}
-              onChange={(e) =>
-                setAudio((prev) => ({
-                  ...prev,
-                  text: updateTranslationValue(
-                    prev.text,
-                    lang,
-                    e.target.value
-                  ),
-                }))
-              }
-              rows={8}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Có thể nhập transcript dài trực tiếp trong modal này.
-            </p>
+            <label className="block text-sm font-medium mb-1">
+              Listening audio (voiceover)
+            </label>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <p className="text-xs text-gray-600 mb-2">
+                Audio nghe được sinh tự động bằng TTS từ nội dung Theory của
+                keypoint này (không nhập tay nữa). Lưu keypoint trước, rồi bấm
+                để sinh/cập nhật giọng đọc cho mọi ngôn ngữ.
+              </p>
+              <button
+                type="button"
+                onClick={handleGenerateVoiceover}
+                disabled={!keypoint?._id || generatingVoiceover}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Volume2Icon className="h-4 w-4" />
+                {generatingVoiceover ? "Generating…" : "Generate voiceover"}
+              </button>
+              {!keypoint?._id && (
+                <p className="mt-2 text-xs text-gray-400">
+                  Tạo/lưu keypoint trước để bật nút này.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Actions */}
