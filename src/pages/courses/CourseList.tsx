@@ -7,7 +7,7 @@ import {
   SpeakerWaveIcon,
 } from "@heroicons/react/24/outline";
 import { courseService } from "../../services/courseService";
-import { voiceoverService } from "../../services/voiceoverService";
+import VoiceoverStatusModal from "../../components/courses/VoiceoverStatusModal";
 import { ICourse, CoursePayload } from "../../types/interface/course.interface";
 import { CourseStatus } from "../../types/enum/course.enum";
 import CourseModal from "../../components/courses/CourseModal";
@@ -34,33 +34,9 @@ export default function CourseList() {
   const debounceRef = useRef<number | undefined>(undefined);
   const observer = useRef<IntersectionObserver | null>(null);
   const lang = useSelector((state: RootState) => state.lang.code);
-  const [voiceoverBusyId, setVoiceoverBusyId] = useState<string | null>(null);
-
-  // Bulk-generate TTS voiceover for every keypoint of a course (from theory
-  // content). Idempotent + resumable, so re-running after a timeout continues.
-  const handleGenerateVoiceover = async (course: ICourse) => {
-    if (voiceoverBusyId) return;
-    setVoiceoverBusyId(course._id);
-    try {
-      const res = await voiceoverService.generateForCourse(course._id);
-      const r = res?.data ?? res;
-      showSuccess(
-        `Voiceover: ${r?.generated ?? 0} generated, ${
-          r?.skipped ?? 0
-        } unchanged` +
-          (r?.failed ? `, ${r.failed} failed` : "") +
-          ` across ${r?.keypoints ?? 0} keypoints`
-      );
-    } catch (err) {
-      console.error("Generate voiceover failed", err);
-      showError(
-        (err as any)?.response?.data?.message ||
-          "Failed to generate voiceover for this course"
-      );
-    } finally {
-      setVoiceoverBusyId(null);
-    }
-  };
+  // The voiceover status/coverage modal (per course) — see which keypoints ×
+  // languages are done / stale / missing / failed, and generate from there.
+  const [voiceoverCourse, setVoiceoverCourse] = useState<ICourse | null>(null);
 
   // modal / confirm state
   const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
@@ -341,18 +317,11 @@ export default function CourseList() {
                         {/* hover buttons */}
                         <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <button
-                            onClick={() => handleGenerateVoiceover(course)}
-                            disabled={voiceoverBusyId === course._id}
-                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                            title="Generate voiceover (TTS from theory)"
+                            onClick={() => setVoiceoverCourse(course)}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                            title="Voiceover status & generate (TTS from theory)"
                           >
-                            <SpeakerWaveIcon
-                              className={`h-5 w-5 text-indigo-600 ${
-                                voiceoverBusyId === course._id
-                                  ? "animate-pulse"
-                                  : ""
-                              }`}
-                            />
+                            <SpeakerWaveIcon className="h-5 w-5 text-indigo-600" />
                           </button>
                           <button
                             onClick={() => openEdit(course)}
@@ -487,6 +456,17 @@ export default function CourseList() {
           if (!selectedCourse) return Promise.resolve();
           return handleConfirmDelete(selectedCourse._id);
         }}
+      />
+
+      <VoiceoverStatusModal
+        open={Boolean(voiceoverCourse)}
+        courseId={voiceoverCourse?._id ?? ""}
+        courseTitle={
+          voiceoverCourse
+            ? getTranslationValue(voiceoverCourse.title, lang)
+            : ""
+        }
+        onClose={() => setVoiceoverCourse(null)}
       />
     </div>
   );

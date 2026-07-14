@@ -13,4 +13,32 @@ export const voiceoverService = {
     const res = await axiosClient.post(`/voiceover/course/${courseId}`);
     return res.data;
   },
+
+  // Read-only coverage report: which keypoints × languages are done / stale /
+  // missing / failed.
+  async getCourseStatus(courseId: string) {
+    const res = await axiosClient.get(`/voiceover/course/${courseId}/status`);
+    return res.data;
+  },
 };
+
+export type VoiceoverCellStatus =
+  | "done"
+  | "stale"
+  | "missing"
+  | "failed"
+  | "none";
+
+export interface KeypointVoiceoverStatus {
+  keypointId: string;
+  title: Record<string, string>;
+  statuses: Record<string, VoiceoverCellStatus>;
+  errors?: Record<string, string>;
+}
+
+export interface CourseVoiceoverStatus {
+  courseId: string;
+  langs: string[];
+  summary: Record<VoiceoverCellStatus, number>;
+  keypoints: KeypointVoiceoverStatus[];
+}
