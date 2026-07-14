@@ -72,17 +72,14 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
     ProfileDeleteDialog.show(
       context,
       onConfirm: () async {
-        final authBloc = context.read<AuthBloc>();
-        authBloc.add(AuthEvent.deleteAccountPermanently(user.id));
-        // `add()` can't be awaited — wait for the handler's own emitted
-        // outcome instead of popping immediately (the previous behavior),
-        // so a failure doesn't silently look like a successful deletion.
-        final result = await authBloc.stream.firstWhere(
-          (s) => s.status == AuthStatus.success || s.status == AuthStatus.failure,
-        );
-        if (result.status != AuthStatus.success) return;
-        if (!mounted) return;
-        context.back();
+        // Awaitable delete that returns the real outcome. The previous
+        // `add()` + `stream.firstWhere(success|failure)` could HANG forever
+        // (the handler early-returns without emitting when the bloc is
+        // already loading) or match an unrelated auth op. On success the bloc
+        // navigates to Register via _onResetAuth, so we must NOT pop/navigate
+        // here (the old context.back() double-navigated); the dialog's own
+        // mounted-guarded pop is a no-op once the route is replaced.
+        await context.read<AuthBloc>().deleteAccountPermanently(user.id);
       },
     );
   }

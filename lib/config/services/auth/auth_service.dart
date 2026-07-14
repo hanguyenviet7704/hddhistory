@@ -97,11 +97,15 @@ class AuthService implements IAuthService {
   @override
   Future<void> signOut() async {
     try {
-      _firebaseAuth.signOut();
+      // Await each sign-out so logout doesn't complete (and re-bootstrap a new
+      // guest) while Firebase/Google credentials are still being torn down in
+      // the background — a race that could leave a stale Google session
+      // attached to the next SSO attempt.
+      await _firebaseAuth.signOut();
 
       // Sign out from Google if currently signed in
-      _googleSignIn.signOut();
-      _googleSignIn.disconnect();
+      await _googleSignIn.signOut();
+      await _googleSignIn.disconnect();
     } catch (e) {
       throw AppException.generic('Failed to sign out: ${e.toString()}');
     }

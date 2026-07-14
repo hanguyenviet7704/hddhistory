@@ -239,9 +239,14 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                               iconBackgroundColor: AppCustomColor.errorRed.op(.08),
                               showChevron: false,
                               isLoading: isLoggingOut,
-                              onTap: () {
+                              onTap: () async {
+                                // Confirm first — logout instantly dropped the
+                                // session on a single tap before, with no undo.
+                                final authBloc = context.read<AuthBloc>();
+                                final confirmed = await _confirmLogout(context);
+                                if (!confirmed) return;
                                 AppService.instance.appTrackingService.trackSettingLogoutClick();
-                                context.read<AuthBloc>().add(const AuthEvent.logout());
+                                authBloc.add(const AuthEvent.logout());
                               },
                             );
                           },
@@ -256,6 +261,57 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
       ),
     );
   }
+}
+
+/// Confirm-before-logout sheet. Reuses existing l10n (`settingLogOut`,
+/// `common.cancel`) so it adds no new localization keys. Returns true only
+/// when the user explicitly confirms.
+Future<bool> _confirmLogout(BuildContext context) async {
+  final result = await showModalBottomSheet<bool>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (sheetContext) => SafeArea(
+      child: Container(
+        margin: EdgeInsets.all(16.w),
+        padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 20.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.backgroundWhite,
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppText(
+              sheetContext.l10n.setting.settingLogOut,
+              textAlign: TextAlign.center,
+              style: AppStyle.text20.copyWith(
+                color: AppCustomColor.textPrimary,
+                height: 1.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            24.verticalSpace,
+            DButton(
+              text: sheetContext.l10n.setting.settingLogOut,
+              size: Size(double.infinity, 54.h),
+              backgroundColor: AppCustomColor.errorRed,
+              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+              onPressed: () => Navigator.of(sheetContext).pop(true),
+            ),
+            12.verticalSpace,
+            DButton(
+              text: sheetContext.l10n.common.cancel,
+              buttonType: DButtonType.text,
+              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textSecondary),
+              onPressed: () => Navigator.of(sheetContext).pop(false),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  return result ?? false;
 }
 
 class SettingHeader extends StatelessWidget {
