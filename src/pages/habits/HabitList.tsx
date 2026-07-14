@@ -22,10 +22,12 @@ import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { habitService } from "../../services/habitService";
 import { skillsetService } from "../../services/skillsetService";
 import { courseService } from "../../services/courseService";
+import { keypointService } from "../../services/keypointService";
 import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { ICourse } from "../../types/interface/course.interface";
+import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { getTranslationValue } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -55,6 +57,7 @@ const HabitList: React.FC = () => {
   const [habits, setHabits] = useState<IHabit[]>([]);
   const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
   const [courses, setCourses] = useState<ICourse[]>([]);
+  const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,6 +82,16 @@ const HabitList: React.FC = () => {
     return map;
   }, [skillsets, lang]);
 
+  // keypointId -> title, so the list can group habits under the keypoint that
+  // suggests them (a habit carries only keypointIds, not the keypoint titles).
+  const keypointNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    keypoints.forEach((keypoint) => {
+      map.set(keypoint._id, getTranslationValue(keypoint.title, lang));
+    });
+    return map;
+  }, [keypoints, lang]);
+
   const fetchSkillsets = async () => {
     try {
       const response = await skillsetService.getList({
@@ -102,6 +115,20 @@ const HabitList: React.FC = () => {
       setCourses(response.data?.items ?? []);
     } catch (err) {
       console.error("Failed to load courses", err);
+    }
+  };
+
+  // Fetched once to resolve keypoint titles for the grouped list view.
+  // KeypointListQuery has no `isAll`, so pull a large page to cover all.
+  const fetchKeypoints = async () => {
+    try {
+      const response = await keypointService.getList({
+        page: 1,
+        take: 10000,
+      });
+      setKeypoints(response.data?.items ?? []);
+    } catch (err) {
+      console.error("Failed to load keypoints", err);
     }
   };
 
@@ -131,6 +158,7 @@ const HabitList: React.FC = () => {
   useEffect(() => {
     fetchSkillsets();
     fetchCourses();
+    fetchKeypoints();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -156,6 +184,37 @@ const HabitList: React.FC = () => {
   }, [habits, search, statusFilter]);
 
   const hasActiveFilters = !!search.trim() || !!statusFilter || !!skillsetFilter;
+
+  // Group the filtered habits by keypoint so a keypoint's habits sit together
+  // instead of scattered. A habit attached to several keypoints appears under
+  // each; a habit with none falls into a trailing "No keypoint" group. Groups
+  // are ordered by keypoint title, with the "No keypoint" group last.
+  const NO_KEYPOINT = "__none__";
+  const habitGroups = useMemo(() => {
+    const groups = new Map<string, IHabit[]>();
+    for (const habit of filteredHabits) {
+      const kpIds = habit.keypointIds?.length ? habit.keypointIds : [NO_KEYPOINT];
+      for (const kpId of kpIds) {
+        const arr = groups.get(kpId) ?? [];
+        arr.push(habit);
+        groups.set(kpId, arr);
+      }
+    }
+    return Array.from(groups.entries())
+      .map(([keypointId, items]) => ({
+        keypointId,
+        label:
+          keypointId === NO_KEYPOINT
+            ? "No keypoint"
+            : keypointNameById.get(keypointId) || "Unknown keypoint",
+        items,
+      }))
+      .sort((a, b) => {
+        if (a.keypointId === NO_KEYPOINT) return 1;
+        if (b.keypointId === NO_KEYPOINT) return -1;
+        return a.label.localeCompare(b.label);
+      });
+  }, [filteredHabits, keypointNameById]);
 
   const filteredHabitIds = useMemo(
     () => filteredHabits.map((habit) => habit._id),
@@ -481,56 +540,72 @@ const HabitList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredHabits.map((habit, index) => (
-                  <TableRow
-                    key={habit._id}
-                    hover
-                    selected={selectedIds.includes(habit._id)}
-                    sx={{
-                      backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
-                    }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedIds.includes(habit._id)}
-                        onChange={() => toggleOne(habit._id)}
-                        inputProps={{ "aria-label": "Select habit" }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {getTranslationValue(habit.title, lang) || "—"}
-                    </TableCell>
-                    <TableCell>
-                      {skillsetNameById.get(habit.skillsetId) ||
-                        "Unknown skillset"}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
-                          statusPillClasses[habit.status]
-                        }`}
+                {habitGroups.map((group) => (
+                  <React.Fragment key={group.keypointId}>
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        sx={{
+                          backgroundColor: "grey.100",
+                          fontWeight: 700,
+                          color: "text.secondary",
+                        }}
                       >
-                        {statusLabels[habit.status]}
-                      </span>
-                    </TableCell>
-                    <TableCell>{habit.order}</TableCell>
-                    <TableCell align="right">
-                      <button
-                        aria-label="Edit habit"
-                        onClick={() => openEditModal(habit)}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                        {group.label}{" "}
+                        <span style={{ fontWeight: 500, opacity: 0.7 }}>
+                          ({group.items.length})
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                    {group.items.map((habit) => (
+                      <TableRow
+                        key={`${group.keypointId}-${habit._id}`}
+                        hover
+                        selected={selectedIds.includes(habit._id)}
                       >
-                        <PencilIcon className="h-5 w-5 text-blue-600" />
-                      </button>
-                      <button
-                        aria-label="Delete habit"
-                        onClick={() => openDeleteConfirm(habit)}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                      >
-                        <TrashIcon className="h-5 w-5 text-red-600" />
-                      </button>
-                    </TableCell>
-                  </TableRow>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            checked={selectedIds.includes(habit._id)}
+                            onChange={() => toggleOne(habit._id)}
+                            inputProps={{ "aria-label": "Select habit" }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {getTranslationValue(habit.title, lang) || "—"}
+                        </TableCell>
+                        <TableCell>
+                          {skillsetNameById.get(habit.skillsetId) ||
+                            "Unknown skillset"}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
+                              statusPillClasses[habit.status]
+                            }`}
+                          >
+                            {statusLabels[habit.status]}
+                          </span>
+                        </TableCell>
+                        <TableCell>{habit.order}</TableCell>
+                        <TableCell align="right">
+                          <button
+                            aria-label="Edit habit"
+                            onClick={() => openEditModal(habit)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <PencilIcon className="h-5 w-5 text-blue-600" />
+                          </button>
+                          <button
+                            aria-label="Delete habit"
+                            onClick={() => openDeleteConfirm(habit)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <TrashIcon className="h-5 w-5 text-red-600" />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>

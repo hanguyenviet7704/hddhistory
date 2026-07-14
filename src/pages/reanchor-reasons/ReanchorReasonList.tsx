@@ -145,6 +145,24 @@ const ReanchorReasonList: React.FC = () => {
   const hasActiveFilters =
     !!search.trim() || !!statusFilter || !!courseFilter;
 
+  // Group the filtered reasons by course so a course's reasons sit together
+  // instead of scattered. Groups are ordered by course title.
+  const reasonGroups = useMemo(() => {
+    const groups = new Map<string, IReanchorReason[]>();
+    for (const item of filteredReasons) {
+      const arr = groups.get(item.courseId) ?? [];
+      arr.push(item);
+      groups.set(item.courseId, arr);
+    }
+    return Array.from(groups.entries())
+      .map(([courseId, items]) => ({
+        courseId,
+        label: courseNameById.get(courseId) || "Unknown course",
+        items,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [filteredReasons, courseNameById]);
+
   const filteredReasonIds = useMemo(
     () => filteredReasons.map((item) => item._id),
     [filteredReasons]
@@ -474,55 +492,74 @@ const ReanchorReasonList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredReasons.map((item, index) => (
-                  <TableRow
-                    key={item._id}
-                    selected={selectedIds.includes(item._id)}
-                    sx={{
-                      backgroundColor: index % 2 !== 0 ? "grey.50" : "inherit",
-                      "&:hover": { backgroundColor: "action.hover" },
-                    }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedIds.includes(item._id)}
-                        onChange={() => toggleOne(item._id)}
-                        inputProps={{ "aria-label": "Select reason" }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {courseNameById.get(item.courseId) || "Unknown course"}
-                    </TableCell>
-                    <TableCell>
-                      {getTranslationValue(item.reason, lang) || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
-                          statusStyles[item.status]
-                        }`}
+                {reasonGroups.map((group) => (
+                  <React.Fragment key={group.courseId}>
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        sx={{
+                          backgroundColor: "grey.100",
+                          fontWeight: 700,
+                          color: "text.secondary",
+                        }}
                       >
-                        {statusLabels[item.status]}
-                      </span>
-                    </TableCell>
-                    <TableCell>{item.order}</TableCell>
-                    <TableCell align="right">
-                      <button
-                        aria-label="Edit re-anchor reason"
-                        onClick={() => openEditModal(item)}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                        {group.label}{" "}
+                        <span style={{ fontWeight: 500, opacity: 0.7 }}>
+                          ({group.items.length})
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                    {group.items.map((item) => (
+                      <TableRow
+                        key={item._id}
+                        selected={selectedIds.includes(item._id)}
+                        sx={{
+                          "&:hover": { backgroundColor: "action.hover" },
+                        }}
                       >
-                        <PencilIcon className="h-4 w-4 text-blue-600" />
-                      </button>
-                      <button
-                        aria-label="Delete re-anchor reason"
-                        onClick={() => openDeleteConfirm(item)}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                      >
-                        <TrashIcon className="h-4 w-4 text-red-600" />
-                      </button>
-                    </TableCell>
-                  </TableRow>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            checked={selectedIds.includes(item._id)}
+                            onChange={() => toggleOne(item._id)}
+                            inputProps={{ "aria-label": "Select reason" }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {courseNameById.get(item.courseId) ||
+                            "Unknown course"}
+                        </TableCell>
+                        <TableCell>
+                          {getTranslationValue(item.reason, lang) || "—"}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
+                              statusStyles[item.status]
+                            }`}
+                          >
+                            {statusLabels[item.status]}
+                          </span>
+                        </TableCell>
+                        <TableCell>{item.order}</TableCell>
+                        <TableCell align="right">
+                          <button
+                            aria-label="Edit re-anchor reason"
+                            onClick={() => openEditModal(item)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <PencilIcon className="h-4 w-4 text-blue-600" />
+                          </button>
+                          <button
+                            aria-label="Delete re-anchor reason"
+                            onClick={() => openDeleteConfirm(item)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <TrashIcon className="h-4 w-4 text-red-600" />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>
