@@ -35,6 +35,8 @@ import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { ICourse } from "../../types/interface/course.interface";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
+import { ILesson } from "../../types/interface/lesson.interface";
+import { LessonType } from "../../types/enum/lesson.enum";
 import { getTranslationValue } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -195,9 +197,12 @@ const HabitList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skillsetFilter]);
 
-  // Resolve the selected course to the set of keypoint ids it owns (via its
-  // lessons), so habits can be filtered by course. Cleared when no course is
-  // picked. Guarded against a stale response when the filter changes fast.
+  // Resolve the selected course to the set of keypoint ids it owns, so habits
+  // (which store keypointIds, not courseId) can be filtered by course. The
+  // lesson LIST response does NOT embed keypoints — only the full lesson
+  // detail does — so we list the course's lessons then fetch each by id and
+  // collect their keypoint ids. Cleared when no course is picked; guarded
+  // against a stale response when the filter changes fast.
   useEffect(() => {
     if (!courseFilter) {
       setCourseKeypointIds(null);
@@ -206,14 +211,24 @@ const HabitList: React.FC = () => {
     let active = true;
     (async () => {
       try {
-        const res = await lessonService.getList({
+        const listRes = await lessonService.getList({
           courseId: courseFilter,
-          take: 1000,
+          type: LessonType.LESSON,
+          page: 1,
+          take: 500,
         });
-        const lessons = (res.data?.items ?? []) as { keypoints?: IKeypoint[] }[];
+        const lessonList = (listRes.data?.items ?? []) as { _id: string }[];
+        const details = await Promise.all(
+          lessonList.map((l) =>
+            lessonService
+              .getById(l._id)
+              .then((r: any) => (r?.data?.data ?? r?.data) as ILesson | undefined)
+              .catch(() => undefined)
+          )
+        );
         const ids = new Set<string>();
-        for (const lesson of lessons) {
-          for (const kp of lesson.keypoints ?? []) {
+        for (const lesson of details) {
+          for (const kp of lesson?.keypoints ?? []) {
             if (kp?._id) ids.add(kp._id);
           }
         }
