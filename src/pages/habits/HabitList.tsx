@@ -18,7 +18,13 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "lucide-react";
 import { habitService } from "../../services/habitService";
 import { skillsetService } from "../../services/skillsetService";
 import { courseService } from "../../services/courseService";
@@ -73,6 +79,19 @@ const HabitList: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Collapsed-by-default accordion groups; a keypoint id is in the set when the
+  // user has expanded it. An active search force-expands everything so matches
+  // are never hidden behind a collapsed header.
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (id: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const skillsetNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -540,9 +559,16 @@ const HabitList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {habitGroups.map((group) => (
+                {habitGroups.map((group) => {
+                  const open =
+                    !!search.trim() || expandedGroups.has(group.keypointId);
+                  return (
                   <React.Fragment key={group.keypointId}>
-                    <TableRow>
+                    <TableRow
+                      hover
+                      onClick={() => toggleGroup(group.keypointId)}
+                      sx={{ cursor: "pointer" }}
+                    >
                       <TableCell
                         colSpan={6}
                         sx={{
@@ -551,13 +577,27 @@ const HabitList: React.FC = () => {
                           color: "text.secondary",
                         }}
                       >
-                        {group.label}{" "}
-                        <span style={{ fontWeight: 500, opacity: 0.7 }}>
-                          ({group.items.length})
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          {open ? (
+                            <ChevronDownIcon size={18} />
+                          ) : (
+                            <ChevronRightIcon size={18} />
+                          )}
+                          {group.label}{" "}
+                          <span style={{ fontWeight: 500, opacity: 0.7 }}>
+                            ({group.items.length})
+                          </span>
                         </span>
                       </TableCell>
                     </TableRow>
-                    {group.items.map((habit) => (
+                    {open &&
+                      group.items.map((habit) => (
                       <TableRow
                         key={`${group.keypointId}-${habit._id}`}
                         hover
@@ -606,7 +646,8 @@ const HabitList: React.FC = () => {
                       </TableRow>
                     ))}
                   </React.Fragment>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>

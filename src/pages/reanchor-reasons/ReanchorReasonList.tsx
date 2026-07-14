@@ -18,7 +18,13 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "lucide-react";
 import { reanchorReasonService } from "../../services/reanchorReasonService";
 import { courseService } from "../../services/courseService";
 import {
@@ -72,6 +78,19 @@ const ReanchorReasonList: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Collapsed-by-default accordion groups; a course id is in the set when the
+  // user has expanded it. An active search force-expands everything so matches
+  // are never hidden behind a collapsed header.
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (id: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const courseNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -492,9 +511,16 @@ const ReanchorReasonList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {reasonGroups.map((group) => (
+                {reasonGroups.map((group) => {
+                  const open =
+                    !!search.trim() || expandedGroups.has(group.courseId);
+                  return (
                   <React.Fragment key={group.courseId}>
-                    <TableRow>
+                    <TableRow
+                      hover
+                      onClick={() => toggleGroup(group.courseId)}
+                      sx={{ cursor: "pointer" }}
+                    >
                       <TableCell
                         colSpan={6}
                         sx={{
@@ -503,13 +529,27 @@ const ReanchorReasonList: React.FC = () => {
                           color: "text.secondary",
                         }}
                       >
-                        {group.label}{" "}
-                        <span style={{ fontWeight: 500, opacity: 0.7 }}>
-                          ({group.items.length})
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          {open ? (
+                            <ChevronDownIcon size={18} />
+                          ) : (
+                            <ChevronRightIcon size={18} />
+                          )}
+                          {group.label}{" "}
+                          <span style={{ fontWeight: 500, opacity: 0.7 }}>
+                            ({group.items.length})
+                          </span>
                         </span>
                       </TableCell>
                     </TableRow>
-                    {group.items.map((item) => (
+                    {open &&
+                      group.items.map((item) => (
                       <TableRow
                         key={item._id}
                         selected={selectedIds.includes(item._id)}
@@ -560,7 +600,8 @@ const ReanchorReasonList: React.FC = () => {
                       </TableRow>
                     ))}
                   </React.Fragment>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
