@@ -29,6 +29,7 @@ import { habitService } from "../../services/habitService";
 import { skillsetService } from "../../services/skillsetService";
 import { courseService } from "../../services/courseService";
 import { keypointService } from "../../services/keypointService";
+import { lessonService } from "../../services/lessonService";
 import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
@@ -70,6 +71,14 @@ const HabitList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<HabitStatus | "">("");
   const [skillsetFilter, setSkillsetFilter] = useState("");
+  // Course filter for habits: habits store keypointIds, not courseId, so a
+  // course is resolved to the set of its keypoint ids (via its lessons) and
+  // habits are kept when any of their keypoints is in that set. null = no
+  // course filter; empty set = course selected but it has no keypoints.
+  const [courseFilter, setCourseFilter] = useState("");
+  const [courseKeypointIds, setCourseKeypointIds] = useState<Set<string> | null>(
+    null
+  );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -186,9 +195,49 @@ const HabitList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skillsetFilter]);
 
+  // Resolve the selected course to the set of keypoint ids it owns (via its
+  // lessons), so habits can be filtered by course. Cleared when no course is
+  // picked. Guarded against a stale response when the filter changes fast.
+  useEffect(() => {
+    if (!courseFilter) {
+      setCourseKeypointIds(null);
+      return;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const res = await lessonService.getList({
+          courseId: courseFilter,
+          take: 1000,
+        });
+        const lessons = (res.data?.items ?? []) as { keypoints?: IKeypoint[] }[];
+        const ids = new Set<string>();
+        for (const lesson of lessons) {
+          for (const kp of lesson.keypoints ?? []) {
+            if (kp?._id) ids.add(kp._id);
+          }
+        }
+        if (active) setCourseKeypointIds(ids);
+      } catch (err) {
+        console.error("Failed to resolve course keypoints", err);
+        if (active) setCourseKeypointIds(new Set());
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [courseFilter]);
+
   const filteredHabits = useMemo(() => {
     return habits.filter((habit) => {
       if (statusFilter && habit.status !== statusFilter) return false;
+      // Course filter: keep habits attached to any keypoint of the course.
+      if (courseKeypointIds) {
+        const inCourse = (habit.keypointIds ?? []).some((id) =>
+          courseKeypointIds.has(id)
+        );
+        if (!inCourse) return false;
+      }
       if (search.trim()) {
         const term = search.trim().toLowerCase();
         // Search across every locale so a habit is findable regardless of the
@@ -200,9 +249,10 @@ const HabitList: React.FC = () => {
       }
       return true;
     });
-  }, [habits, search, statusFilter]);
+  }, [habits, search, statusFilter, courseKeypointIds]);
 
-  const hasActiveFilters = !!search.trim() || !!statusFilter || !!skillsetFilter;
+  const hasActiveFilters =
+    !!search.trim() || !!statusFilter || !!skillsetFilter || !!courseFilter;
 
   // Group the filtered habits by keypoint so a keypoint's habits sit together
   // instead of scattered. A habit attached to several keypoints appears under
@@ -249,7 +299,7 @@ const HabitList: React.FC = () => {
   // bulk action can never act on a row that is no longer shown.
   useEffect(() => {
     setSelectedIds([]);
-  }, [search, statusFilter, skillsetFilter]);
+  }, [search, statusFilter, skillsetFilter, courseKeypointIds]);
 
   const toggleOne = (id: string) => {
     setSelectedIds((prev) =>
@@ -307,6 +357,7 @@ const HabitList: React.FC = () => {
     setSearch("");
     setStatusFilter("");
     setSkillsetFilter("");
+    setCourseFilter("");
   };
 
   const openCreateModal = () => {
@@ -392,6 +443,18 @@ const HabitList: React.FC = () => {
               {skillsets.map((skillset) => (
                 <option key={skillset._id} value={skillset._id}>
                   {getTranslationValue(skillset.title, lang)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={courseFilter}
+              onChange={(e) => setCourseFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">All courses</option>
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {getTranslationValue(course.title, lang)}
                 </option>
               ))}
             </select>
