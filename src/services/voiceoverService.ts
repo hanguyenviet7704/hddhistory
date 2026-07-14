@@ -36,9 +36,21 @@ export interface KeypointVoiceoverStatus {
   errors?: Record<string, string>;
 }
 
+export interface VoiceoverJob {
+  status: "running" | "done" | "failed";
+  total: number;
+  processed: number;
+  generated: number;
+  skipped: number;
+  failed: number;
+  currentKeypointId?: string;
+  lastError?: string;
+}
+
 export interface CourseVoiceoverStatus {
   courseId: string;
   langs: string[];
   summary: Record<VoiceoverCellStatus, number>;
   keypoints: KeypointVoiceoverStatus[];
+  job?: VoiceoverJob | null;
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshCwIcon, Volume2Icon, XIcon } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -58,7 +58,8 @@ const VoiceoverStatusModal: React.FC<Props> = ({
 
   const [status, setStatus] = useState<CourseVoiceoverStatus | null>(null);
   const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const wasRunningRef = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,23 +80,49 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     else setStatus(null);
   }, [open, load]);
 
+  const job = status?.job ?? null;
+  const running = job?.status === "running";
+
+  // Auto-poll while a background job is running: each status update reschedules
+  // the next poll; polling stops when the job finishes.
+  useEffect(() => {
+    if (!open || !running) return;
+    const t = setTimeout(() => load(), 3000);
+    return () => clearTimeout(t);
+  }, [open, running, job, load]);
+
+  // Announce completion once, when the job transitions running → done/failed.
+  useEffect(() => {
+    if (running) {
+      wasRunningRef.current = true;
+      return;
+    }
+    if (wasRunningRef.current && job) {
+      wasRunningRef.current = false;
+      if (job.status === "failed") {
+        showError(`Voiceover job failed: ${job.lastError ?? "error"}`);
+      } else {
+        showSuccess(
+          `Voiceover done: ${job.generated} generated, ${job.skipped} unchanged` +
+            (job.failed ? `, ${job.failed} failed` : "")
+        );
+      }
+    }
+  }, [running, job, showSuccess, showError]);
+
   const handleGenerate = async () => {
-    if (generating) return;
-    setGenerating(true);
+    if (running || starting) return;
+    setStarting(true);
     try {
-      const res = await voiceoverService.generateForCourse(courseId);
-      const r = res?.data ?? res;
-      showSuccess(
-        `Voiceover: ${r?.generated ?? 0} generated, ${r?.skipped ?? 0} unchanged` +
-          (r?.failed ? `, ${r.failed} failed` : "")
-      );
-      await load();
+      await voiceoverService.generateForCourse(courseId);
+      showSuccess("Đã bắt đầu sinh voiceover ở nền…");
+      await load(); // picks up the running job → auto-poll kicks in
     } catch (err) {
       showError(
-        (err as any)?.response?.data?.message || "Failed to generate voiceover"
+        (err as any)?.response?.data?.message || "Failed to start voiceover"
       );
     } finally {
-      setGenerating(false);
+      setStarting(false);
     }
   };
 
@@ -129,11 +156,15 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             </button>
             <button
               onClick={handleGenerate}
-              disabled={generating || loading}
+              disabled={running || starting}
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
             >
               <Volume2Icon className="h-4 w-4" />
-              {generating ? "Generating…" : "Generate voiceover"}
+              {running
+                ? "Generating…"
+                : starting
+                ? "Starting…"
+                : "Generate voiceover"}
             </button>
             <button
               onClick={onClose}
@@ -152,6 +183,29 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             <p className="text-sm text-gray-500 text-center py-10">Không có dữ liệu.</p>
           ) : (
             <>
+              {/* Running job progress */}
+              {job && job.status === "running" && (
+                <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                  <div className="flex items-center justify-between text-sm text-indigo-800">
+                    <span className="font-medium">
+                      Đang sinh voiceover ở nền… {job.processed}/{job.total}{" "}
+                      keypoint
+                    </span>
+                    <span className="text-xs text-indigo-500">tự cập nhật</span>
+                  </div>
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-indigo-100">
+                    <div
+                      className="h-full rounded-full bg-indigo-500 transition-all"
+                      style={{
+                        width: `${
+                          job.total ? (job.processed / job.total) * 100 : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Summary cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {SUMMARY.map((s) => (
