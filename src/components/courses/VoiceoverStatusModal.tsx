@@ -126,6 +126,28 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     }
   };
 
+  // Re-run voiceover for just one keypoint (synchronous per-keypoint endpoint,
+  // regenerates all its languages). Used from the failed/stale/missing cells.
+  const [retrying, setRetrying] = useState<Set<string>>(new Set());
+  const handleRetryKeypoint = async (keypointId: string) => {
+    if (retrying.has(keypointId) || running) return;
+    setRetrying((prev) => new Set(prev).add(keypointId));
+    try {
+      await voiceoverService.generateForKeypoint(keypointId);
+      await load();
+    } catch (err) {
+      showError(
+        (err as any)?.response?.data?.message || "Failed to regenerate keypoint"
+      );
+    } finally {
+      setRetrying((prev) => {
+        const n = new Set(prev);
+        n.delete(keypointId);
+        return n;
+      });
+    }
+  };
+
   if (!open) return null;
 
   const langs = status?.langs ?? [];
@@ -230,18 +252,39 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                   <h3 className="text-sm font-semibold text-red-800 mb-2">
                     Keypoint bị lỗi ({attention.length})
                   </h3>
-                  <ul className="space-y-1 text-sm text-red-700">
+                  <ul className="space-y-2 text-sm text-red-700">
                     {attention.map((k) => (
-                      <li key={k.keypointId}>
-                        <span className="font-medium">
-                          {getTranslationValue(k.title, lang) || k.keypointId}
-                        </span>
-                        {k.errors &&
-                          Object.entries(k.errors).map(([lg, msg]) => (
-                            <span key={lg} className="block pl-3 text-xs text-red-600">
-                              [{lg}] {msg}
-                            </span>
-                          ))}
+                      <li
+                        key={k.keypointId}
+                        className="flex items-start justify-between gap-3"
+                      >
+                        <div>
+                          <span className="font-medium">
+                            {getTranslationValue(k.title, lang) || k.keypointId}
+                          </span>
+                          {k.errors &&
+                            Object.entries(k.errors).map(([lg, msg]) => (
+                              <span
+                                key={lg}
+                                className="block pl-3 text-xs text-red-600"
+                              >
+                                [{lg}] {msg}
+                              </span>
+                            ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRetryKeypoint(k.keypointId)}
+                          disabled={retrying.has(k.keypointId) || running}
+                          className="shrink-0 inline-flex items-center gap-1 rounded-md border border-red-300 bg-white px-2.5 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                        >
+                          <RefreshCwIcon
+                            className={`h-3.5 w-3.5 ${
+                              retrying.has(k.keypointId) ? "animate-spin" : ""
+                            }`}
+                          />
+                          {retrying.has(k.keypointId) ? "Đang chạy…" : "Chạy lại"}
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -268,15 +311,35 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                           {getTranslationValue(k.title, lang) || k.keypointId}
                         </td>
                         {langs.map((lg) => {
-                          const st = (k.statuses?.[lg] ?? "none") as VoiceoverCellStatus;
+                          const st = (k.statuses?.[lg] ??
+                            "none") as VoiceoverCellStatus;
+                          const actionable =
+                            st === "failed" || st === "stale" || st === "missing";
+                          const busy = retrying.has(k.keypointId);
                           return (
                             <td key={lg} className="py-2 px-2 text-center">
-                              <span
-                                title={k.errors?.[lg] || st}
-                                className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${CELL_CLASS[st]}`}
-                              >
-                                {CELL_LABEL[st]}
-                              </span>
+                              {actionable ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRetryKeypoint(k.keypointId)
+                                  }
+                                  disabled={busy || running}
+                                  title={`${
+                                    k.errors?.[lg] || st
+                                  } — bấm để chạy lại bài này`}
+                                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${CELL_CLASS[st]} transition hover:ring-2 hover:ring-indigo-300 disabled:opacity-50`}
+                                >
+                                  {busy ? "…" : CELL_LABEL[st]}
+                                </button>
+                              ) : (
+                                <span
+                                  title={st}
+                                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${CELL_CLASS[st]}`}
+                                >
+                                  {CELL_LABEL[st]}
+                                </span>
+                              )}
                             </td>
                           );
                         })}
@@ -296,7 +359,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                 </table>
                 <p className="mt-3 text-xs text-gray-400">
                   ✓ done · ↻ stale (theory đổi) · — missing · ✕ failed · · no
-                  theory
+                  theory — bấm vào ô ✕ / ↻ / — để chạy lại riêng bài đó.
                 </p>
               </div>
             </>
