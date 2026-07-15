@@ -208,6 +208,10 @@ class _LessonPageState extends State<LessonPage> {
     if (_selectedMode.isAudio) {
       _trackAudioShellViewIfNeeded();
       await _lessonAudioCubit.enterAudioMode();
+    } else {
+      // Read mode: warm the audio in the background so switching to "Nghe"
+      // later finds it ready instead of waiting on the ~5s load spinner.
+      unawaited(_lessonAudioCubit.preload());
     }
   }
 
