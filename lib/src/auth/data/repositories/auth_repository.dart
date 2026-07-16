@@ -47,7 +47,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, AuthEntity> loginSSOGoogle() {
+  TaskEither<AppException, AuthEntity> loginSSOGoogle({String? anonymousUserId}) {
     return TaskEither.tryCatch(
       () async {
         final userCredential = await _authService.signInWithGoogle();
@@ -70,6 +70,9 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
             "deviceName": deviceName,
           },
           "provider": "google.com",
+          // Pass the current guest's id so the backend upgrades THAT guest in
+          // place (preserving its progress) instead of possibly orphaning it.
+          if (anonymousUserId != null && anonymousUserId.isNotEmpty) "anonymousUserId": anonymousUserId,
         });
 
         return result.data?.toEntity() ?? AuthEntity();
@@ -84,7 +87,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, AuthEntity> loginSSOApple() {
+  TaskEither<AppException, AuthEntity> loginSSOApple({String? anonymousUserId}) {
     return TaskEither.tryCatch(
       () async {
         final userCredential = await _authService.signInWithApple();
@@ -108,6 +111,9 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
             "deviceName": deviceName,
           },
           "provider": "apple.com",
+          // Pass the current guest's id so the backend upgrades THAT guest in
+          // place (preserving its progress) instead of possibly orphaning it.
+          if (anonymousUserId != null && anonymousUserId.isNotEmpty) "anonymousUserId": anonymousUserId,
         });
 
         return result.data?.toEntity() ?? AuthEntity();

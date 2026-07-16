@@ -1,0 +1,21 @@
+appTitle: MeUp
+back: 뒤로
+cancel: 취소
+canvasTryAgain: 다시 시도
+close: 닫기
+continue: 계속
+emptyList: 목록이 비어 있습니다
+errorNoInternetConnection: 인터넷 연결 없음
+errorOopsItLooksLikeYouAreOffline: 이런! 오프라인 상태인 것 같아요
+errorOopsSomethingWentWrongWhileLoading: 이런! 불러오는 중 문제가 발생했어요…
+errorServerError: 서버 오류
+errorSomethingHappened: 문제가 발생했어요!
+errorTakingAPauseIsAlsoPart: 잠시 쉬는 것도 창작 과정의 일부예요…
+fakedoorComingSoon: 곧 출시
+fakedoorFeaturesNameIsAlmostReady: ${featuresName}이(가) 거의 준비되었어요!
+fakedoorIDoNotWantNotifications: 알림을 받지 않을게요
+fakedoorNotifyMe: 알림 받기
+next: 다음
+'no': 아니요
+skip: 건너뛰기
+'yes': 예

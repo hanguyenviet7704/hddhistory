@@ -100,10 +100,10 @@ class _LessonAudioImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return Image.network(
-        imageUrl,
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => const _LessonAudioThumbnailPlaceholder(),
+        errorWidget: (_, _, _) => const _LessonAudioThumbnailPlaceholder(),
       );
     }
 

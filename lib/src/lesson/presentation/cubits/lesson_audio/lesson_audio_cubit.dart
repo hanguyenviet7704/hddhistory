@@ -4,6 +4,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   LessonAudioCubit() : super(LessonAudioState.initial());
 
   just_audio.AudioPlayer? _audioPlayer;
+  // When the user asks to listen while the source is still (pre)loading, play
+  // as soon as it becomes ready instead of dropping the intent.
+  bool _playWhenReady = false;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<just_audio.PlayerState>? _playerStateSubscription;
@@ -17,6 +20,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return;
     }
 
+    _playWhenReady = false;
     await _disposePlayer();
 
     emit(
@@ -30,6 +34,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     );
   }
 
+  /// Warm the player in the background (no autoplay) so entering "Nghe" finds
+  /// it already prepared instead of showing the ~5s load spinner. Safe no-op
+  /// when there's no source or a session already started. Triggered from the
+  /// lesson page while the user is still reading — kept out of [configure] so
+  /// simply showing a keypoint (read mode) stays free of audio I/O.
+  Future<void> preload() async {
+    if (!state.hasUsableSource || state.hasStartedSession) return;
+    await _initializePlayer();
+  }
+
   Future<void> enterAudioMode({bool autoplay = true}) async {
     if (!state.hasUsableSource) {
       emit(
@@ -41,12 +55,20 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return;
     }
 
+    if (autoplay) _playWhenReady = true;
+
+    // Already prepared (e.g. background preload finished): just play.
+    if (state.isReady) {
+      if (autoplay) await play();
+      return;
+    }
+
+    // Not started yet → start loading now. If a preload is already in flight
+    // (loading), _initializePlayer's completion will honor _playWhenReady, so
+    // we don't kick off a second load here.
     if (!state.hasStartedSession) {
       await _initializePlayer();
     }
-
-    if (!state.isReady || !autoplay) return;
-    await play();
   }
 
   Future<void> retry() async {
@@ -145,6 +167,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   Future<void> resetSession() async {
     final status = state.hasUsableSource ? LessonAudioLoadStatus.initial : LessonAudioLoadStatus.unavailable;
+    _playWhenReady = false;
     await _disposePlayer();
     emit(
       state.copyWith(
@@ -170,6 +193,14 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         errorMessage: null,
       ),
     );
+
+    // Capture what we're loading; if the keypoint/source changes mid-load
+    // (e.g. background preload racing a keypoint switch) we must not emit a
+    // stale ready/failure over the new state.
+    final loadKeypointId = state.keypointId;
+    final loadUrl = state.sourceUrl;
+    bool isStale() =>
+        isClosed || state.keypointId != loadKeypointId || state.sourceUrl != loadUrl;
 
     try {
       final player = _audioPlayer ??= just_audio.AudioPlayer();
@@ -208,16 +239,25 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         );
       });
 
-      final duration = await player.setUrl(state.sourceUrl);
+      final duration = await player.setUrl(loadUrl);
+      if (isStale()) return;
       if (duration != null && duration.inSeconds > 0) {
         emit(state.copyWith(durationSeconds: duration.inSeconds));
       }
       if (state.speed != 1.0) {
         await player.setSpeed(state.speed);
       }
+      if (isStale()) return;
 
       emit(state.copyWith(status: LessonAudioLoadStatus.ready));
+
+      // Honor a play intent registered while (pre)loading.
+      if (_playWhenReady) {
+        _playWhenReady = false;
+        await play();
+      }
     } catch (error, stackTrace) {
+      if (isStale()) return;
       _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.initialize');
     }
   }

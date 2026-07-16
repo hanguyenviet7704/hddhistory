@@ -121,6 +121,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   static Completer<bool>? _refreshCompleter;
   Completer<bool>? _anonymousAuthCompleter;
   AppException? _lastAnonymousAuthFailure;
+  // Re-entrancy guard for the awaitable deleteAccountPermanently() (this Bloc
+  // can't emit a loading state outside an event handler).
+  bool _isDeletingAccount = false;
 
   AuthBloc(
     this._loginUsecase,
@@ -249,9 +252,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   void _resetAppCubits() {
     _courseRoadmapCubit.reset();
     _progressCubit.reset();
+    // Habit is a lazySingleton holding the previous user's habits/summary/
+    // re-anchor picks; without this an account switch (guest → login, or
+    // logout → next login) leaves the prior user's habits visible until a
+    // refetch. IapCubit is intentionally NOT reset here: its state is only
+    // app-level product/paywall config — premium lives on the user via
+    // ProfileCubit, which is already reset on the same transitions.
+    if (AppDI.injector.isRegistered<HabitCubit>()) {
+      AppDI.injector.get<HabitCubit>().reset();
+    }
   }
 
   bool get hasActiveAnonymousSession => _userCubit.state.user.anonymous && AppGlobalValue.accessToken.isNotEmpty;
+
+  /// The current guest's userId to hand to a provider (Google/Apple) login so
+  /// the backend upgrades THAT guest in place (preserving its progress).
+  /// Null when the current user isn't an anonymous guest.
+  String? get _anonymousUserIdForUpgrade {
+    final user = _userCubit.state.user;
+    return (user.anonymous && user.id.isNotEmpty) ? user.id : null;
+  }
 
   Future<bool> bootstrapGuestSessionForRegister() async {
     try {
@@ -341,6 +361,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     return true;
   }
 
+  // Not itself a registered event handler (no local `Emitter` param), so it
+  // can't call `emit` directly here (see `_onLogout`/SSO handlers for that
+  // pattern) — callers track their own busy state instead: RegisterPage
+  // awaits this method directly and tracks the span in a local
+  // try/finally, since (unlike dispatching a bloc event) this is a plain
+  // awaitable method.
   Future<void> continueWithCurrentGuestSession({
     bool forceChooseCourseAfterLogin = false,
     bool showPaywallAfterAuth = false,
@@ -484,30 +510,49 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
-    runUseCase(
-      usecase: () => _loginSSOGoogleUsecase(unit),
+    // Guards a fast double-tap on the Google button from dispatching two
+    // concurrent sign-in attempts (default EventTransformer runs events
+    // concurrently, not sequentially). Also lets RegisterPage read
+    // `state.status == AuthStatus.loading` to drive the button's spinner,
+    // since `add()` itself can't be awaited by the caller.
+    if (state.status == AuthStatus.loading) return null;
+
+    return runUseCase(
+      usecase: () => _loginSSOGoogleUsecase(_anonymousUserIdForUpgrade),
+      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
       onSuccess: (data) {
+        emit(state.copyWith(status: AuthStatus.success));
         _onAuthSuccess(data);
         _navigateAfterAuth(
           forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
           showPaywallAfterAuth: event.showPaywallAfterAuth,
         );
       },
-      onFailure: (error) {},
+      onFailure: (error) {
+        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
+        DMessage.showMessage(message: error, type: MessageType.error);
+      },
     );
   }
 
   FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {
-    runUseCase(
-      usecase: () => _loginSSOAppleUsecase(unit),
+    if (state.status == AuthStatus.loading) return null;
+
+    return runUseCase(
+      usecase: () => _loginSSOAppleUsecase(_anonymousUserIdForUpgrade),
+      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
       onSuccess: (data) {
+        emit(state.copyWith(status: AuthStatus.success));
         _onAuthSuccess(data);
         _navigateAfterAuth(
           forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
           showPaywallAfterAuth: event.showPaywallAfterAuth,
         );
       },
-      onFailure: (error) {},
+      onFailure: (error) {
+        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
+        DMessage.showMessage(message: error, type: MessageType.error);
+      },
     );
   }
 
@@ -550,20 +595,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     // Same concurrency guard as _onLogout — prevents a double-tap/duplicate
     // dispatch from firing the delete-account use case twice in parallel.
     if (state.status == AuthStatus.loading) return;
+    await deleteAccountPermanently(event.userId);
+  }
 
-    await runUseCase(
-      usecase: () => _deletePermanentUserUsecase(event.userId),
-      buildLoadingState: () => state.copyWith(status: AuthStatus.loading),
-      onSuccess: (data) {
-        emit(state.copyWith(status: AuthStatus.success));
-        _onResetAuth();
-        unawaited(bootstrapGuestSessionForRegister());
-      },
-      onFailure: (error) {
-        emit(state.copyWith(status: AuthStatus.failure, errorMessage: error));
-        DMessage.showMessage(message: error, type: MessageType.error);
-      },
-    );
+  /// Awaitable account deletion for callers that need the real outcome (e.g.
+  /// the profile page's confirm dialog). The old flow dispatched the event
+  /// then awaited `authBloc.stream.firstWhere(success|failure)`, which HANGS
+  /// forever if the `AuthStatus.loading` guard above early-returns (no state
+  /// is emitted), and could also match an unrelated concurrent auth op's
+  /// state. This returns the outcome directly instead. On success it resets
+  /// the session and re-bootstraps a guest (same as logout); navigation is
+  /// handled by `_onResetAuth`, so callers must NOT also pop/navigate.
+  Future<bool> deleteAccountPermanently(String userId) async {
+    // AuthBloc extends Bloc (not Cubit), so this non-handler method can't emit
+    // AuthState — it guards re-entrancy with a plain flag instead of
+    // `status == loading`, and returns the outcome directly.
+    if (_isDeletingAccount) return false;
+    _isDeletingAccount = true;
+    try {
+      final result = await _deletePermanentUserUsecase(userId).run();
+      return result.match(
+        (failure) {
+          DMessage.showMessage(message: failure.displayMessage, type: MessageType.error);
+          return false;
+        },
+        (_) {
+          _onResetAuth();
+          unawaited(bootstrapGuestSessionForRegister());
+          return true;
+        },
+      );
+    } finally {
+      _isDeletingAccount = false;
+    }
   }
 
   Future<bool> refreshAccessToken() async {

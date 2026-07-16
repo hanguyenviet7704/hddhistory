@@ -1,0 +1,23 @@
+bestStreakLabel: Chuỗi dài nhất
+commitButton: Tôi cam kết
+daysShort(param=count):
+  one: ${count} ngày
+  other: ${count} ngày
+minutesShort(param=count):
+  one: ${count} phút
+  other: ${count} phút
+popupSubtitle: Hoàn thành ít nhất một bài học để duy trì chuỗi. Bỏ lỡ một ngày, chuỗi
+  sẽ thiết lập lại.
+startedTitle: Bạn đã bắt đầu chuỗi!
+streakDays(param=count):
+  one: Streak ${count} ngày
+  other: Streak ${count} ngày
+successSubtitle: Giữ nhịp học mỗi ngày để duy trì chuỗi.
+thisWeekLabel: Tuần này
+weekFri: T6
+weekMon: T2
+weekSat: T7
+weekSun: CN
+weekThu: T5
+weekTue: T3
+weekWed: T4

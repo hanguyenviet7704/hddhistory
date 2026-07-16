@@ -13,11 +13,79 @@ class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitU
 
   int _requestSerial = 0;
 
+  // Home's own initState prefetches the streak (triggerSource: homeChip) a
+  // few seconds before the streak popup page opens and calls this again with
+  // identical params — without a guard that's a duplicate network round trip
+  // for data that just landed. Scoped to ONLY the homeChip trigger: the other
+  // callers (completionCta, from keypoint_complete_page/roleplay_feedback_page
+  // /learning_streak_completion_gate) must always see the freshly-updated
+  // streak right after a completion action, so they're never deduped here.
+  DateTime? _lastHomeChipSuccessAt;
+  String? _lastHomeChipUserId;
+  Future<LearningStreakRequestResult>? _homeChipInFlight;
+  static const _homeChipFreshnessWindow = Duration(seconds: 30);
+
   void reset() => emit(LearningStreakState.initial());
   void setLastStreakCountedDate(DateTime? utcDate) => emit(state.copyWith(lastStreakCountedDate: utcDate?.toUtc()));
   bool isSameStreakCountedUtcDay(DateTime utcDate) => state.isSameStreakCountedUtcDay(utcDate.toUtc());
 
   Future<LearningStreakRequestResult> loadUserLearningStreak({
+    required LearningStreakTriggerSource triggerSource,
+    required String requestedUserId,
+    Duration timeout = const Duration(seconds: 2),
+    bool emitLoading = true,
+    bool allowSafeDefaultOnFailure = false,
+  }) {
+    if (triggerSource != LearningStreakTriggerSource.homeChip) {
+      return _doLoadUserLearningStreak(
+        triggerSource: triggerSource,
+        requestedUserId: requestedUserId,
+        timeout: timeout,
+        emitLoading: emitLoading,
+        allowSafeDefaultOnFailure: allowSafeDefaultOnFailure,
+      );
+    }
+
+    final inFlight = _homeChipInFlight;
+    if (inFlight != null) return inFlight;
+
+    final normalizedUserId = _normalizeUserId(requestedUserId);
+    final lastSuccessAt = _lastHomeChipSuccessAt;
+    if (lastSuccessAt != null &&
+        _lastHomeChipUserId == normalizedUserId &&
+        state.status == LearningStreakStatus.success &&
+        state.requestedUserId == normalizedUserId &&
+        DateTime.now().difference(lastSuccessAt) < _homeChipFreshnessWindow) {
+      return Future.value(
+        LearningStreakRequestResult(
+          requestId: state.requestId,
+          requestedUserId: normalizedUserId,
+          triggerSource: triggerSource,
+          outcome: LearningStreakRequestOutcome.success,
+          dataOrigin: state.dataOrigin,
+          streak: state.selectedItem,
+        ),
+      );
+    }
+
+    final future = _doLoadUserLearningStreak(
+      triggerSource: triggerSource,
+      requestedUserId: requestedUserId,
+      timeout: timeout,
+      emitLoading: emitLoading,
+      allowSafeDefaultOnFailure: allowSafeDefaultOnFailure,
+    ).then((result) {
+      if (result.isSuccess) {
+        _lastHomeChipSuccessAt = DateTime.now();
+        _lastHomeChipUserId = normalizedUserId;
+      }
+      return result;
+    }).whenComplete(() => _homeChipInFlight = null);
+    _homeChipInFlight = future;
+    return future;
+  }
+
+  Future<LearningStreakRequestResult> _doLoadUserLearningStreak({
     required LearningStreakTriggerSource triggerSource,
     required String requestedUserId,
     Duration timeout = const Duration(seconds: 2),

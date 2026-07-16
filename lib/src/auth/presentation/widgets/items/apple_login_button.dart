@@ -2,10 +2,12 @@ part of '../../../auth.dart';
 
 class AppleLoginButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final bool isLoading;
 
   const AppleLoginButton({
     super.key,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   @override
@@ -20,6 +22,7 @@ class AppleLoginButton extends StatelessWidget {
       backgroundColor: const Color(0xFF121C18),
       textColor: Colors.white,
       onPressed: onPressed,
+      isLoading: isLoading,
     );
   }
 }

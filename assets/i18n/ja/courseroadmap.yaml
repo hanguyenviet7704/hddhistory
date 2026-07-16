@@ -1,0 +1,19 @@
+additionalContentRequestCompleteLevel: レベル ${level} を完了
+additionalContentRequestLaterCta: 後で
+additionalContentRequestNoChoice: いいえ、十分です！
+additionalContentRequestPopupPlaceholder: 気になることを入力してください…
+additionalContentRequestPopupTitle: いいですね！ほかに何を学びたいですか？
+additionalContentRequestQuestion: もっとコンテンツをリクエストしますか？
+additionalContentRequestSendCta: リクエストを送信
+additionalContentRequestSubmitFailure: リクエストを送信できませんでした。もう一度お試しください。
+additionalContentRequestYesChoice: はい、もっと欲しい！
+continueLearningButton: 学習を続ける
+courseRoadmapInProgressStatusTag: 進行中
+inProgressStatusTag: 進行中
+keypointLabel: キーポイント
+lessonsProgress: ${completed}/${total} レッスン
+noRoadmapAvailable: ロードマップがありません
+startLearningButton: 学習を始める
+startLessonButton: レッスンを始める
+
+lockedSemanticLabel: ロック中

@@ -1,0 +1,22 @@
+bestStreakLabel: 最佳连续打卡
+commitButton: 我会坚持
+daysShort(param=count):
+  one: ${count} 天
+  other: ${count} 天
+minutesShort(param=count):
+  one: ${count} 分钟
+  other: ${count} 分钟
+popupSubtitle: 每天至少完成一节课时即可保持连续打卡。一旦中断一天，连续打卡就会清零。
+startedTitle: 你已开始连续打卡！
+streakDays(param=count):
+  one: 连续 ${count} 天
+  other: 连续 ${count} 天
+successSubtitle: 每天练习，保持你的连续打卡。
+thisWeekLabel: 本周
+weekFri: 周五
+weekMon: 周一
+weekSat: 周六
+weekSun: 周日
+weekThu: 周四
+weekTue: 周二
+weekWed: 周三

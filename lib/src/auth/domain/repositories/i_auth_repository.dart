@@ -3,8 +3,8 @@ part of '../../auth.dart';
 abstract interface class IAuthRepository {
   TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body);
   TaskEither<AppException, AuthEntity> loginAnonymous(Map<String, dynamic> body);
-  TaskEither<AppException, AuthEntity> loginSSOGoogle();
-  TaskEither<AppException, AuthEntity> loginSSOApple();
+  TaskEither<AppException, AuthEntity> loginSSOGoogle({String? anonymousUserId});
+  TaskEither<AppException, AuthEntity> loginSSOApple({String? anonymousUserId});
   TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body);
   TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body);
   TaskEither<AppException, Unit> logout();

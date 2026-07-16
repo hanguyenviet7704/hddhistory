@@ -131,8 +131,16 @@ Future<void> showLessonAudioSpeedSheet(
                                           borderRadius: BorderRadius.circular(10.r),
                                         ),
                                         alignment: Alignment.center,
+                                        padding: EdgeInsets.symmetric(horizontal: 4.w),
                                         child: AppText(
                                           label,
+                                          maxLines: 1,
+                                          textAlign: TextAlign.center,
+                                          // "Bình thường" is wider than the "x"
+                                          // labels; shrink to fit the equal-width
+                                          // pill on one line instead of wrapping
+                                          // (which overflowed the fixed height).
+                                          enableFitScaleDown: true,
                                           style: (isSelected ? AppStyle.textBold14 : AppStyle.text14).copyWith(
                                             color: isSelected ? Colors.white : const Color(0xFF364152),
                                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,

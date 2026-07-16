@@ -1,0 +1,38 @@
+audioErrorDescription: Something went wrong loading this audio. You can switch to
+  Read or try again.
+audioErrorTitle: Audio unavailable
+audioListenLabel: Listen
+audioReadLabel: Read
+audioRetry: Try again
+audioSpeedNormal: Normal
+audioSpeedSuffix: speed
+audioSpeedTitle: Speed
+charCounter: ${currentChars}/${maxChars} chars
+checkButton: Check
+closePopupDescription: Your lesson will not be saved if you quit now.
+closePopupKeepLearning: Keep learning
+closePopupQuit: Quit
+closePopupTitle: Hold it right here!
+emptyPopupCta: I got it
+emptyPopupDescription: The courses are being updated, \nstay tuned!
+emptyPopupTitle: Almost ready
+lessonLessonKeypointInstruction: How it works
+lessonLessonKeypointTitle: Keypoints
+navigationPopupContinueBold: Click Continue
+navigationPopupContinueRest: to move forward
+navigationPopupScrollBold: Scroll down
+navigationPopupScrollRest: to go back
+navigationPopupTapToContinue: Tap to continue
+navigationPopupTitle: How to navigate
+typeYourAnswerHint: Type your answer...
+liveActivityInLesson: IN LESSON
+liveActivityContinueLearning: CONTINUE LEARNING
+liveActivityResumeLesson: Resume lesson
+liveActivityNextLesson: Next lesson
+liveActivityNudge(param=count): ~${count} min to finish the next lesson
+liveActivityNudgeDone: Tap to start the next lesson
+liveActivityCourseComplete: Course complete
+liveActivityNudgeNotifTitle: Your lesson is unfinished
+liveActivityNudgeNotifBody(param=count): Finish the last ${count} min now, before it fades.
+liveActivityDoneNotifTitle: Keep it fresh tomorrow
+liveActivityDoneNotifBody(param=course): You finished ${course}. Come back tomorrow so it sticks.

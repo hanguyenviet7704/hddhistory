@@ -1,0 +1,33 @@
+addNoteButton: Add Note
+backButton: Back
+checkQuestionButton: Check
+continueWatchingButton: Continue watching
+correctAnswerTitle: Correct
+deleteNoteButton: Delete note
+deleteNoteMessage: This note will be removed from this lesson.
+deleteNoteTitle: Delete this note?
+editNoteButton: Edit note
+explanationTitle: Explanation
+incorrectAnswerTitle: Incorrect
+keepEditingButton: Keep note
+lessonCompleteSubtitle: Keep the momentum going.
+lessonCompleteTitle: Lesson Complete!
+loadMoreNotesButton: Load more notes
+markAsCompleteButton: Mark as Complete
+noteEditorHint: Write your note here...
+notesEmptyMessage: Click "Add Note" to create your first note
+notesTitle: Notes
+retryLoadButton: Retry
+retryNotesLoadButton: Retry loading notes
+saveNoteButton: Save note
+selectAllThatApplyLabel: Select all that apply
+startWatchingButton: Start watching
+summaryKeyPointsTitle: Key Points
+summaryOverviewTitle: Overview
+summaryTitle: Summary
+unavailableMessage: This video lesson is unavailable right now.
+unsupportedQuestionMessage: This question type is not available in the video lesson
+  flow yet.
+unsupportedQuestionTitle: Continue
+videoDurationFallback: 5 min
+videoTypeLabel: VIDEO

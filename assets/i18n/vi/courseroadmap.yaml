@@ -1,0 +1,18 @@
+additionalContentRequestCompleteLevel: Hoàn thành cấp độ ${level}
+additionalContentRequestLaterCta: Để sau
+additionalContentRequestNoChoice: Không, đủ rồi!
+additionalContentRequestPopupPlaceholder: Nhập điều bạn tò mò...
+additionalContentRequestPopupTitle: Tuyệt vời! Bạn muốn thêm nội dung gì?
+additionalContentRequestQuestion: Bạn có muốn yêu cầu thêm nội dung không?
+additionalContentRequestSendCta: Gửi yêu cầu
+additionalContentRequestSubmitFailure: Chưa gửi được yêu cầu. Vui lòng thử lại.
+additionalContentRequestYesChoice: Có, thêm nữa!
+continueLearningButton: Tiếp tục học
+courseRoadmapInProgressStatusTag: Đang học
+inProgressStatusTag: Đang học
+keypointLabel: Ý chính
+lessonsProgress: ${completed}/${total} bài học
+noRoadmapAvailable: Chưa có lộ trình
+startLearningButton: Bắt đầu học
+startLessonButton: Bắt đầu bài học
+lockedSemanticLabel: Khóa

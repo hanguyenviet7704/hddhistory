@@ -75,33 +75,77 @@ class OutputPracticeTimelineList extends StatelessWidget {
       OutputPracticeConversationTransitionStatus.idle => chipStack,
     };
 
+    // Fixed (non-message) slots that bookend the message list. Kept out of
+    // `items` so ListView.builder can lazily build message bubbles instead of
+    // eagerly building the whole (unbounded) conversation history up front.
+    final leadingSlots = <Widget>[
+      if (historyErrorText != null)
+        Padding(
+          padding: EdgeInsets.only(bottom: 16.h),
+          child: _OutputPracticeRetryBanner(
+            text: historyErrorText!,
+            actionLabel: historyRetryLabel,
+            onTap: onRetryHistory,
+          ),
+        ),
+      if (roomErrorText != null)
+        Padding(
+          padding: EdgeInsets.only(bottom: 16.h),
+          child: _OutputPracticeRetryBanner(
+            text: roomErrorText!,
+            actionLabel: roomRetryLabel,
+            onTap: onRetryRoom,
+          ),
+        ),
+    ];
+    final trailingSlots = <Widget>[
+      if (showThinking)
+        Padding(
+          padding: EdgeInsets.only(bottom: 16.h),
+          child: OutputPracticeThinkingRow(
+            name: assistantName,
+            avatarUrl: assistantAvatarUrl,
+            label: thinkingLabel,
+          ),
+        ),
+      AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) {
+          final offsetAnimation = Tween<Offset>(
+            begin: const Offset(0, 0.08),
+            end: Offset.zero,
+          ).animate(animation);
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            ),
+          );
+        },
+        child: bottomSlot,
+      ),
+    ];
+
     return Stack(
       children: [
         AnimatedOpacity(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           opacity: conversationTransitionStatus == OutputPracticeConversationTransitionStatus.startingNewConversation ? 0.74 : 1,
-          child: ListView(
+          child: ListView.builder(
             controller: controller,
             padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
-            children: [
-              if (historyErrorText != null) ...[
-                _OutputPracticeRetryBanner(
-                  text: historyErrorText!,
-                  actionLabel: historyRetryLabel,
-                  onTap: onRetryHistory,
-                ),
-                16.verticalSpace,
-              ],
-              if (roomErrorText != null) ...[
-                _OutputPracticeRetryBanner(
-                  text: roomErrorText!,
-                  actionLabel: roomRetryLabel,
-                  onTap: onRetryRoom,
-                ),
-                16.verticalSpace,
-              ],
-              ...items.map((item) {
+            itemCount: leadingSlots.length + items.length + trailingSlots.length,
+            itemBuilder: (context, index) {
+              if (index < leadingSlots.length) {
+                return leadingSlots[index];
+              }
+              final itemIndex = index - leadingSlots.length;
+              if (itemIndex < items.length) {
+                final item = items[itemIndex];
                 final child = item.isAssistant
                     ? OutputPracticeAssistantBubble(
                         name: assistantName,
@@ -118,35 +162,9 @@ class OutputPracticeTimelineList extends StatelessWidget {
                   padding: EdgeInsets.only(bottom: 16.h),
                   child: child,
                 );
-              }),
-              if (showThinking) ...[
-                OutputPracticeThinkingRow(
-                  name: assistantName,
-                  avatarUrl: assistantAvatarUrl,
-                  label: thinkingLabel,
-                ),
-                16.verticalSpace,
-              ],
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) {
-                  final offsetAnimation = Tween<Offset>(
-                    begin: const Offset(0, 0.08),
-                    end: Offset.zero,
-                  ).animate(animation);
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: offsetAnimation,
-                      child: child,
-                    ),
-                  );
-                },
-                child: bottomSlot,
-              ),
-            ],
+              }
+              return trailingSlots[itemIndex - items.length];
+            },
           ),
         ),
         if (showJumpToLatest)

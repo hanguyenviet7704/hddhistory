@@ -1,0 +1,49 @@
+continueLearning: 学習を続ける
+coursesCount(param=count):
+  zero: コースなし
+  one: ${count} コース
+  other: ${count} コース
+homeAllCourseButton: すべてのコース
+homeCourseButton: コース
+homeExploreButton: 探索
+homeGrowthButton: 成長
+homeGreetingPrefix: こんにちは
+homeGreetingQuestion: 今日は何を学びますか？
+homeGreetingTitle: ${username}さん、今日は何を学びますか？
+homeHomeButton: ホーム
+homeRecommendCourse: 新しいスキルを始める
+homeRecommended: おすすめ
+homeRecommendedNewCourse: 新しいコース
+homeSeeAllLearningListButton: すべて見る
+homeSettingButton: プロフィール
+homeWidgetInProgressEmptyTitle: コースを選んで学習を続けよう
+homeWidgetProgressText: ${completed}/${total} レッスン
+homeWidgetStreakActiveSubtitle: その調子！
+homeWidgetStreakEmptySubtitle: 今日から連続記録を始めよう
+homeWidgetSuggestExhaustedSubtitle: 近日追加予定！
+homeWidgetSuggestExhaustedTitle: すべてのコースを完了しました！
+homeWidgetSuggestLabel: 今日のおすすめ
+inAppSurveyCloseSemantics: アンケートを閉じる
+inAppSurveyEntrySemantics: ご意見はありますか？ぜひお聞かせください。
+inAppSurveyEntrySubtitle: ぜひお聞かせください。
+inAppSurveyEntryTitle: ご意見はありますか？
+inAppSurveyFeedbackHint: MeUpがこうだったら...
+inAppSurveyFeedbackSemantics: アンケートフィードバック
+inAppSurveyPageTitle: アプリ内アンケート
+inAppSurveyPlaceholderDescription: 注入されたCubitを通じてドメインロジックを接続するか、純粋なUI画面にしたい場合は削除してください。
+inAppSurveyPlaceholderTitle: 空のキャンバスの準備完了！
+inAppSurveyRatingAmazing: 最高
+inAppSurveyRatingAwful: ひどい
+inAppSurveyRatingSemantics: アンケート評価 ${rating}
+inAppSurveySendFeedback: フィードバックを送信
+inAppSurveySendWithoutFeedback: フィードバックなしで送信
+
+homeQuoteLabel: 今日の名言
+homeRecommendedSeeAll: すべて見る
+homeMindQuestion: 今、何を考えていますか？
+homeJumpBackIn: 学習を再開
+homeStreakEmptyPrompt: レッスンを終えてストリークを始めよう
+homeExploreTopics: 60以上のトピックを探す
+homeExploreTopicsSub: 次のコースを見つけよう
+homeTodayHabit: 今日の習慣
+homeTodayHabitSub: 習慣を続けよう

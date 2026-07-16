@@ -71,9 +71,15 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
     }
     ProfileDeleteDialog.show(
       context,
-      onConfirm: () {
-        context.read<AuthBloc>().add(AuthEvent.deleteAccountPermanently(user.id));
-        context.back();
+      onConfirm: () async {
+        // Awaitable delete that returns the real outcome. The previous
+        // `add()` + `stream.firstWhere(success|failure)` could HANG forever
+        // (the handler early-returns without emitting when the bloc is
+        // already loading) or match an unrelated auth op. On success the bloc
+        // navigates to Register via _onResetAuth, so we must NOT pop/navigate
+        // here (the old context.back() double-navigated); the dialog's own
+        // mounted-guarded pop is a no-op once the route is replaced.
+        await context.read<AuthBloc>().deleteAccountPermanently(user.id);
       },
     );
   }
@@ -106,6 +112,22 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                     type: MessageType.error,
                     message: state.errorMessage ?? 'Something went wrong',
                   );
+                }
+              },
+            ),
+            // Same blocking-overlay convention as above, for the delete-account
+            // request dispatched from _handleDeleteAccount — the confirm
+            // dialog already shows its own button spinner while awaiting the
+            // outcome, but EasyLoading additionally blocks stray taps on the
+            // page underneath for the whole round trip (the error toast on
+            // failure is already shown by AuthBloc._onDeletePermanentUser).
+            BlocListener<AuthBloc, AuthState>(
+              listenWhen: (previous, current) => previous.status != current.status,
+              listener: (context, state) {
+                if (state.status == AuthStatus.loading) {
+                  EasyLoading.show();
+                } else {
+                  EasyLoading.dismiss();
                 }
               },
             ),

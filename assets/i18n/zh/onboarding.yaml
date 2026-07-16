@@ -1,0 +1,189 @@
+onboardingAfterOnboardEncourageMessage: 我们72%的用户给出了相同的回答
+onboardingAfterOnboardEncourageSubText: 今天就开始，通过你的声音成为更好的自己
+onboardingAfterOnboardEncourageTitle: 你并不孤单！
+onboardingBeSkilledExpectTimeOption1: ${number} 个月
+onboardingBeSkilledExpectTimeOption2: ${number} 个月
+onboardingBeSkilledExpectTimeQuestion: 你想用多长时间掌握这项技能？
+onboardingBranchingBadgeFallbackOne: 沟通
+onboardingBranchingBadgeFallbackTwo: 成长
+onboardingBranchingChooseMyselfButton: 我想自己选择
+onboardingBranchingCreatePathButton: 创建我的路径
+onboardingBranchingDidYouKnowTitle: 你知道吗？
+onboardingBranchingLoadingSubtitle: 我们会为你推荐最适合的课程
+onboardingBranchingRecommendationDefaultSubtitle: 有类似挑战的用户通过这门课程获得提升
+onboardingBranchingRecommendationDefaultTitle: 为你推荐的课程
+onboardingBranchingRecommendationLabel: 最适合你的课程
+onboardingBranchingRecommendationUsersSuffix: 用户
+onboardingBranchingWelcomeSubtitle: 让 Meup 为你设计个性化学习路径
+onboardingBranchingWelcomeTitle: 很高兴认识你，${userName}！
+onboardingChooseSkillsetSubtitle: 请选择符合你需求的所有选项
+onboardingChooseSkillsetTitle: 你最想提升哪项技能？
+onboardingDailyGoalSubtitle: 你可以之后再改
+onboardingEarlyCareerAdultOption: 25-34 岁
+onboardingEvaluateBackground: 个人背景
+onboardingEvaluateDificulty: 困难
+onboardingEvaluateLearningGoal: 学习目标
+onboardingEvaluateStudyHabits: 学习习惯
+onboardingFeedbackHeadlineHighlight: 100,000 名学员
+onboardingFeedbackHeadlinePrefix: 成为我们的
+onboardingFeedbackHeadlineSuffix: 之一
+onboardingFemaleOption: 女性
+onboardingFirstAppKeypointIntro: 快速学习
+onboardingFirstScreenContext: 提升技能有助于你保持自信，抓住新机会。
+onboardingHowToLearnCardSubtitle: 通过真实的角色扮演学习，并用情景分支进行练习
+onboardingHowToLearnCardTitle: 在实践中学习
+onboardingHowToLearnNote: MeUp 这样帮助你
+onboardingHowToLearnTitle: 在一个应用中学习你所需的全部技能
+onboardingIntroduceBusyAllDay: 我忙碌了一整天，却感觉什么都没做
+onboardingIntroduceLearnFades: 我学到的东西到下周就忘了
+onboardingIntroduceMyFeelings: 我的感受很嘈杂 — 我无法读懂它们
+onboardingIntroduceMyThoughts: 我的思绪不停打转，却从未落定
+onboardingIntroduceNothingNew: 没有什么让我感到新鲜 — 我怀念那种火花
+onboardingIntroduceTalkToMany: 我与很多人交谈，却与少数人产生共鸣
+onboardingLearningGoalQuestion: 提升技能时你的目标是什么？
+onboardingLoadingPersonalizationText: 我们正在为你创建个性化学习路径……
+onboardingMaleOption: 男性
+onboardingMascotDialogFirstScreen: 世界每天都在变化<br>你的技能也应如此</br>
+onboardingMascotDialogLearningMethod: 你将使用我们独家的 MeUp 学习法进行练习
+onboardingMascotDialogSecondScreen: 传统的学习方法已不再有效。
+onboardingMascotGreetingMessage: 先来简单介绍一下你自己吧！
+onboardingMascotGreetingTitle: 欢迎！
+onboardingMidCareerAdultOption: 35-44 岁
+onboardingMotivationOneTitle: 做得好，${userName}！
+onboardingMotivationThreeTitle: 太棒了！
+onboardingMotivationTwoTitle: 你知道吗，${userName}！
+onboardingMotivationWelcomeTitle: 欢迎你，${userName}！
+onboardingNotificationRequestBody: 开启通知，以便在开始学习时收到课程提醒、连续学习提醒和重要更新。
+onboardingNotificationRequestPrimaryCta: 开启通知
+onboardingNotificationRequestSecondaryCta: 稍后再说
+onboardingNotificationRequestTitle: 不要错过下一步
+onboardingOlderAdult: 45 岁及以上
+onboardingOtherGenderOption: 其他
+onboardingSecondAppKeypointIntro: 养成习惯
+onboardingSecondScreenContext: 如果不加以适当练习，80% 的知识都会被遗忘。
+onboardingSkipGreetingButton: 继续
+onboardingSkipIntroButton: 跳过
+onboardingStartJourneyButton: 开启你的旅程！
+onboardingStartNowButton: 立即开始
+onboardingStruggleNote: 稍微回想一下吧！
+onboardingStruggleOption1: 难以坚持自律
+onboardingStruggleOption2: 看不到明显进步
+onboardingStruggleOption3: 信息太多
+onboardingStruggleOption4: 没有反馈或指导
+onboardingStruggleOption5: 难以应用到现实生活中
+onboardingStruggleOption6: 学习方法不适合我
+onboardingStruggleOption7: 没有个性化的学习路径
+onboardingStruggleQuestion: 你在学习一项新技能时遇到过哪些困难？
+onboardingStruggleQuestionSubtitle: 帮我多了解你一点，好为你推荐最合适的学习方式！
+onboardingTeenAgeOption: 17 岁及以下
+onboardingThirdAppKeypointIntro: 查看进度
+onboardingTimeSpentOption: ${number} 分钟
+onboardingTimeSpentTitle: 我们每天应该一起学习多久？
+onboardingTimeStudyOption1: 早晨
+onboardingTimeStudyOption2: 短暂休息时
+onboardingTimeStudyOption3: 睡前
+onboardingTimeStudyOption4: 任何空闲时间
+onboardingTimeStudyQuestion: 你最「高效」的学习时段是什么时候？
+onboardingTimeStudySubtitle: 选择一个时间段来培养习惯
+onboardingTopicOption1: 沟通
+onboardingTopicOption1Specific: 公众演讲、积极倾听、冲突管理、演示技巧
+onboardingTopicOption2: 个人生产力
+onboardingTopicOption2Specific: 时间管理、组织能力、记忆力
+onboardingTopicOption3: 认知能力
+onboardingTopicOption3Specific: 分析性思维、批判性思维、问题解决
+onboardingTopicOption4: 情绪与压力管理
+onboardingTopicOption4Specific: 动力
+onboardingTopicOption5: 技术技能
+onboardingTopicOption5Specific: 人工智能（AI）
+onboardingTopicOption6: 个人品牌建设
+onboardingTopicOption6Specific: 个人品牌、人脉拓展
+onboardingUserAgeQuestion: 你属于哪个年龄段？
+onboardingUserGenderQuestion: 哪种描述最符合你？
+onboardingUserNamePlaceholder: 请输入你的名字
+onboardingUserNameQuestion: 我该怎么称呼你？
+onboardingV2AgeEmpty: 暂无年龄选项
+onboardingV2AgeLoadError: 无法加载年龄选项
+onboardingV2ContinueCta: 继续
+onboardingV2GenericError: 出现问题。请重试。
+onboardingV2MaybeLaterCta: 稍后再说
+onboardingV2NotificationCardBody: 你的 2 分钟课程已准备好
+onboardingV2NotificationCardTimestamp: 现在
+onboardingV2NotificationCardTitle: 专注时间到了
+onboardingV2NotifyCta: 通知我
+onboardingV2P1GetStartedCta: 开始
+onboardingV2P1SubtitleLine1: 小小课程。巨大成长。
+onboardingV2P1SubtitleLine2: 每天 5 分钟升级你的思维。
+onboardingV2P1TitleBrand: Meup
+onboardingV2P1TitlePrefix: 欢迎来到
+onboardingV2P2HeadingHighlight: 怎么称呼你？
+onboardingV2P2HeadingPrefix: 首先，我们应该
+onboardingV2P2InputHint: 你的名字
+onboardingV2P2Subtitle: 让这段旅程更像属于你自己
+onboardingV2P3HeadingHighlight: 你多大了？
+onboardingV2P3HeadingPrefix: 你好，${name}，
+onboardingV2P3Subtitle: 我们会根据你的人生阶段调整课程
+onboardingV2P4HeadingHighlight: 更像你？
+onboardingV2P4HeadingPrefix: 哪一个
+onboardingV2P4Subtitle: 选择所有符合你的选项
+onboardingV2P5HeadingHighlight: 脑科学。
+onboardingV2P5HeadingPrefix: 基于
+onboardingV2P5HeadingSuffix: 为真实生活而设。
+onboardingV2P5PathHeadingHighlight: 最适合你？
+onboardingV2P5PathHeadingPrefix: 哪些路径
+onboardingV2P5PathSubtitle(param=count):
+  zero: 选择 0/2 个你最想成长的方向
+  one: 选择 1/2 个你最想成长的方向
+  other: 选择 ${count}/2 个你最想成长的方向
+onboardingV2P5SubtitlePluralFirst: ✨ 已解锁 ${count} 条路径 - 你的起点
+onboardingV2P5SubtitleRemainingSecond: 还有 ${count} 条路径可随时探索
+onboardingV2P5SubtitleSingularFirst: ✨ 已解锁 1 条路径 - 你的起点
+onboardingV2P5SubtitleZeroFirst: ✨ 你的起点已准备好
+onboardingV2P5SubtitleZeroSecond: 更多路径随时等待你探索
+onboardingV2P6HeadingHighlight: 动力
+onboardingV2P6HeadingPrefix: 保持
+onboardingV2P6Subtitle: 只发送有帮助的提醒，不打扰
+onboardingV2P7CourseTitleFallback: 推荐课程
+onboardingV2P7FallbackCopy: 浏览所有课程，选择今天最适合你的一个。
+onboardingV2P7FallbackTitle: 你的课程地图已准备好
+onboardingV2P7Label: 最适合你的课程
+onboardingV2P7PrimaryCta: 现在开始！
+onboardingV2P7SecondaryCta: 我想自己探索
+onboardingV2P7SocialProof: '93.8 % 用户
+
+  通过这门课程改善了类似挑战'
+onboardingV2P8CatalogCta: 浏览课程
+onboardingV2P8CourseTitleFallback: 推荐课程
+onboardingV2P8Eyebrow: 根据你的回答精选
+onboardingV2P8FallbackCopy: 请重试，或浏览完整课程目录。
+onboardingV2P8FallbackTitle: 暂时无法加载匹配课程
+onboardingV2P8Label: 最佳匹配
+onboardingV2P8SelectCta: 选择
+onboardingV2P8Title: 选择你的课程
+onboardingV2PathConnectBetter: 更好地连接
+onboardingV2PathExploreBetter: 更好地探索
+onboardingV2PathFeelBetter: 感觉更好
+onboardingV2PathLearnBetter: 学得更好
+onboardingV2PathThinkBetter: 想得更清楚
+onboardingV2PathWorkBetter: 工作更高效
+onboardingV2RetryCta: 重试
+onboardingV2SkillsetEmpty: 暂无技能选项
+onboardingV2SkillsetLoadError: 无法加载技能
+onboardingV2SymptomAmazedByHumanBody: 人体让我感到惊奇
+onboardingV2SymptomAnxietyAroundHardConversations: 艰难对话让我焦虑
+onboardingV2SymptomCuriousAboutBody: 我对自己的身体很好奇
+onboardingV2SymptomDifficultyBuildingHabits: 建立习惯比我希望的更难
+onboardingV2SymptomEndlessScrollingFeelsEmpty: 不停刷屏让我感到空虚
+onboardingV2SymptomForgettingAfterStudying: 学完后我很快就忘记
+onboardingV2SymptomLearningDoesNotStick: 学到的东西留不住
+onboardingV2SymptomLifeFeelsOverwhelming: 生活让我感到不堪重负
+onboardingV2SymptomLosingTrainOfThought: 我容易失去思路
+onboardingV2SymptomLoveLearningFromGreatMinds: 我喜欢向伟大思想学习
+onboardingV2SymptomMotivationDisappears: 我的动力会消失
+onboardingV2SymptomOverthinking: 我想太多
+onboardingV2SymptomRegretSayingThingsInEmotion: 我会后悔情绪化表达
+onboardingV2SymptomRushedDecisions: 我会仓促做决定
+onboardingV2SymptomStrugglingToBreakBadHabits: 我想改掉坏习惯却做不到
+onboardingV2SymptomTimeSlipsAway: 时间总从我身边溜走
+onboardingV2SymptomTryingToDoTooMuch: 我试图做太多事
+onboardingV2SymptomWantToListenMoreDeeply: 我想更深入地倾听
+onboardingYoungAdultOption: 18-24 岁

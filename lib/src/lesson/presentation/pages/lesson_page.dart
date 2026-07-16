@@ -125,12 +125,24 @@ class _LessonPageState extends State<LessonPage> {
         ),
       ],
       child: BlocBuilder<LessonCubit, LessonState>(
+        // This builder only renders: the timeline/active body (depends on
+        // pageData + currentLearningItemIndex + currentLessonIndex), the
+        // auto-scroll trigger (suppressNextAutoScroll), and the loading
+        // overlay (status/errorMessage). Every other field is either pure
+        // cubit-internal bookkeeping (hasPendingAdvance, subQuestions) or
+        // already consumed by its own narrower BlocSelector elsewhere
+        // (isBottomButtonVisible in lesson_layout.dart, isShowResultOverlay
+        // in speaking_bottom_action.dart) or by a different page
+        // (completionOrigin in keypoint_complete_page.dart) — those must NOT
+        // trigger a rebuild here to avoid rebuilding the whole lesson
+        // subtree on every keypoint advance/answer check/audio tick.
         buildWhen: (previous, current) {
-          if (previous.isBottomButtonVisible != current.isBottomButtonVisible) {
-            final normalizedPrevious = previous.copyWith(isBottomButtonVisible: current.isBottomButtonVisible);
-            return normalizedPrevious != current;
-          }
-          return true;
+          return previous.status != current.status ||
+              previous.errorMessage != current.errorMessage ||
+              previous.pageData != current.pageData ||
+              previous.currentLearningItemIndex != current.currentLearningItemIndex ||
+              previous.currentLessonIndex != current.currentLessonIndex ||
+              previous.suppressNextAutoScroll != current.suppressNextAutoScroll;
         },
         builder: (context, state) {
           final activeBody = _buildActiveBody(context, state);
@@ -196,6 +208,10 @@ class _LessonPageState extends State<LessonPage> {
     if (_selectedMode.isAudio) {
       _trackAudioShellViewIfNeeded();
       await _lessonAudioCubit.enterAudioMode();
+    } else {
+      // Read mode: warm the audio in the background so switching to "Nghe"
+      // later finds it ready instead of waiting on the ~5s load spinner.
+      unawaited(_lessonAudioCubit.preload());
     }
   }
 

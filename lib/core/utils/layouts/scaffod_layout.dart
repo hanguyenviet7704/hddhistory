@@ -12,16 +12,20 @@ class ScaffoldLayout extends StatefulWidget {
 }
 
 class _ScaffoldLayoutState extends State<ScaffoldLayout> {
-  // Maps visual tab index (0-4) to shell branch index (0-4).
+  // Maps visual tab index (0-3) to shell branch index.
   // Tab 0 Home   → branch 0
-  // Tab 1 Course → branch 1 (course roadmap)
-  // Tab 2 Explore→ branch 3 (CoursePage course grid)
-  // Tab 3 Habit  → branch 4
-  // Tab 4 Profile→ branch 2
-  static const _tabToBranch = [0, 1, 3, 4, 2];
+  // Tab 1 Explore→ branch 3 (CoursePage course grid)
+  // Tab 2 Habit  → branch 4
+  // Tab 3 Profile→ branch 2
+  // The course-roadmap branch (1) is no longer a bottom tab — it's reached by
+  // tapping a course (Home "Jump back in"/Recommended, Explore) or via
+  // Profile › Library › My Course.
+  static const _tabToBranch = [0, 3, 4, 2];
 
-  // Default visual index for each branch when navigating from outside.
-  static const _branchToVisual = {0: 0, 1: 1, 2: 4, 3: 2, 4: 3};
+  // Default visual index for each branch when navigating from outside. Branch 1
+  // (course roadmap) has no tab of its own → fall back to Home's tab so the bar
+  // stays in a valid state while the roadmap is on screen.
+  static const _branchToVisual = {0: 0, 1: 0, 2: 3, 3: 1, 4: 2};
 
   int _visualIndex = 0;
 
@@ -50,7 +54,7 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
       _visualIndex = _branchToVisual[activeBranch] ?? _visualIndex;
     }
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      // Primary tabs (Home/Course/Explore/Habit/Profile) all sit on light
+      // Primary tabs (Home/Explore/Habit/Profile) all sit on light
       // backgrounds → DARK status-bar icons (clock/battery/wifi). Set it on the
       // shell so it sticks even when arriving from a screen that left a
       // light-icon AnnotatedRegion active (splash/onboard); full-screen
@@ -154,7 +158,7 @@ class _FloatingNavBar extends StatelessWidget {
           height: 56.h,
           child: Row(
             children: List.generate(
-              5,
+              4,
               (i) => _NavItem(
                 index: i,
                 selectedIndex: selectedIndex,
@@ -182,7 +186,6 @@ class _NavItem extends StatelessWidget {
 
   static final _iconPaths = [
     AppAsset.svg.common.navHome,
-    AppAsset.svg.common.navCourse,
     AppAsset.svg.common.navExplore,
     AppAsset.svg.common.navGrowth,
     AppAsset.svg.common.navProfile,
@@ -196,12 +199,10 @@ class _NavItem extends StatelessWidget {
       case 0:
         return l10n.homeHomeButton;
       case 1:
-        return l10n.homeCourseButton;
-      case 2:
         return l10n.homeExploreButton;
-      case 3:
+      case 2:
         return context.l10n.habit.navLabel;
-      case 4:
+      case 3:
         return l10n.homeSettingButton;
       default:
         return '';
@@ -218,7 +219,7 @@ class _NavItem extends StatelessWidget {
     // highlight. A srcIn colorFilter would repaint that white too, flattening
     // it into a blob, so tint it via currentColor (leaves) and let the white
     // stay white (Figma nav bar 11634:15439). Other icons are single-tone.
-    final isTwoToneSprout = index == 3;
+    final isTwoToneSprout = index == 2;
 
     return Expanded(
       child: Semantics(

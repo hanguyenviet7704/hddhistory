@@ -30,6 +30,17 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
 
   Future<void>? _ensureInFlight;
 
+  /// Wipe all per-user habit state on an account switch / logout. HabitCubit is
+  /// a lazySingleton, so without this the next account (guest → login, or
+  /// logout → next login) would keep the previous user's habits, summary, and
+  /// re-anchor picks until a refetch overwrote them. Called from
+  /// AuthBloc._resetAppCubits alongside the roadmap/progress resets. Clearing
+  /// `_ensureInFlight` lets the next `ensureLoaded()` actually refetch.
+  void reset() {
+    _ensureInFlight = null;
+    emit(HabitState.initial());
+  }
+
   void setToggle(HabitTabToggle toggle) => emit(state.copyWith(toggle: toggle));
 
   /// Hide the Home check-in reminder card for the rest of today (§9.4 FR4.4).

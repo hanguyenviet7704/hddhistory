@@ -1,0 +1,31 @@
+allcourseAllCourses: Tất cả khóa học
+comingSoonLabel: Sắp ra mắt
+newCourseLabel: Khoá mới
+comingSoonDescription: Khoá học này sẽ sớm ra mắt. Hãy đón chờ nhé!
+comingSoonGotIt: Đã hiểu
+viewMore: Xem thêm
+changeCourseTitle: Đổi khoá học
+changeCourseTabAll: Tất cả
+allcourseExploreSkillsets: Khóa học
+allcourseMyCourse: Khóa học của tôi
+emptyState: Bắt đầu một khoá học để thêm vào
+errorOccurred: Đã xảy ra lỗi
+lessonLabel: BÀI HỌC
+lessonsCount(param=count):
+  zero: Đang cập nhật
+  other: ${count} bài học
+lessonsProgress: ${completed}/${total} bài học
+noKeypointsAvailable: Không có điểm chính
+noLessonData: Không có dữ liệu bài học
+progressCompleted: Đã hoàn thành
+progressNotStarted: Chưa bắt đầu
+progressPercent: Hoàn thành ${percent}%
+searchClearAll: Xoá tất cả
+searchClearSemanticLabel: Xoá tìm kiếm
+searchNoResults: Không tìm thấy kết quả cho "${query}"
+searchNoResultsHint: Thử từ khoá hoặc tiêu đề khác
+searchPlaceholder: Nhập tiêu đề, từ khoá,...
+searchPlaceholderActive: Đang tìm...
+searchRecent: Gần đây
+searchSemanticLabel: Tìm kiếm khoá học
+searchTypeToSearch: Nhập từ khoá để tìm kiếm
