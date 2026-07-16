@@ -1,5 +1,10 @@
 part of '../../home.dart';
 
+/// Motivation card background — a soft lavender sitting between
+/// brandPrimary50 (#EBEAFD, too pale) and brandPrimary100 (#D6CAFD, a touch
+/// strong), tuned to the design's quote card.
+const Color _kQuoteBackground = Color(0xFFDED7FD);
+
 /// Design asset `quote-icon.svg` (double-quote glyph, brand lavender), inlined
 /// so it needs no asset-bundle rebuild.
 const String _kQuoteIconSvg =
@@ -25,7 +30,7 @@ class HomeQuoteCard extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(22.w, 22.h, 22.w, 20.h),
               decoration: BoxDecoration(
-                color: AppCustomColor.brandPrimary50,
+                color: _kQuoteBackground,
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Column(
