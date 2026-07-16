@@ -40,6 +40,7 @@ import DriveUploadPage from "../pages/drive-upload/DriveUploadPage";
 import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
 import ReportList from "../pages/reports/ReportList";
 import ImageCompressionPage from "../pages/image-compression/ImageCompressionPage";
+import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
 
 export default function AppRouter() {
   return (
@@ -123,6 +124,7 @@ export default function AppRouter() {
               <Route path="statistics" element={<StatisticsPage />} />
 
               <Route path="payment" element={<PaymentDashboard />} />
+              <Route path="voiceover" element={<VoiceoverBatch />} />
               <Route
                 path="course-import-jobs/:jobId"
                 element={<CourseImportJobDetail />}

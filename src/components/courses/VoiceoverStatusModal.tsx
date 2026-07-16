@@ -15,6 +15,9 @@ interface Props {
   onClose: () => void;
   courseId: string;
   courseTitle: string;
+  // Optional language code to highlight in the per-keypoint × language grid
+  // (e.g. set from a language filter on a caller list page). Purely visual.
+  highlightLang?: string;
 }
 
 // Summary cards (mirrors Artlexis DubQueueStatus): count per state, colour-coded.
@@ -52,6 +55,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
   onClose,
   courseId,
   courseTitle,
+  highlightLang,
 }) => {
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showSuccess, showError } = useNotification();
@@ -298,7 +302,14 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                     <tr className="text-left text-gray-500">
                       <th className="py-2 pr-4 font-medium">Keypoint</th>
                       {langs.map((lg) => (
-                        <th key={lg} className="py-2 px-2 font-medium text-center uppercase">
+                        <th
+                          key={lg}
+                          className={`py-2 px-2 font-medium text-center uppercase ${
+                            lg === highlightLang
+                              ? "bg-indigo-50 text-indigo-700 rounded-t"
+                              : ""
+                          }`}
+                        >
                           {lg}
                         </th>
                       ))}
@@ -317,7 +328,12 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                             st === "failed" || st === "stale" || st === "missing";
                           const busy = retrying.has(k.keypointId);
                           return (
-                            <td key={lg} className="py-2 px-2 text-center">
+                            <td
+                              key={lg}
+                              className={`py-2 px-2 text-center ${
+                                lg === highlightLang ? "bg-indigo-50/60" : ""
+                              }`}
+                            >
                               {actionable ? (
                                 <button
                                   type="button"

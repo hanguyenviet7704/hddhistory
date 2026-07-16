@@ -20,6 +20,22 @@ export const voiceoverService = {
     const res = await axiosClient.get(`/voiceover/course/${courseId}/status`);
     return res.data;
   },
+
+  // Global coverage report across every course, plus the running/last
+  // global batch job (if any). Backs the /voiceover batch management page.
+  async getGlobalStatus() {
+    const res = await axiosClient.get("/voiceover/status");
+    return res.data;
+  },
+
+  // Kick off a background job over every course. force=false only (re)dubs
+  // missing/stale/failed cells; force=true regenerates everything.
+  async generateAll(force: boolean) {
+    const res = await axiosClient.post(
+      `/voiceover/generate-all?force=${force}`
+    );
+    return res.data;
+  },
 };
 
 export type VoiceoverCellStatus =
@@ -53,4 +69,35 @@ export interface CourseVoiceoverStatus {
   summary: Record<VoiceoverCellStatus, number>;
   keypoints: KeypointVoiceoverStatus[];
   job?: VoiceoverJob | null;
+}
+
+// --- Global (all-courses) batch status -------------------------------------
+
+export interface GlobalVoiceoverJob {
+  status: "running" | "done" | "failed";
+  mode: "needed" | "force";
+  totalCourses: number;
+  processedCourses: number;
+  currentCourseId: string | null;
+  totalKeypoints: number;
+  processed: number;
+  generated: number;
+  skipped: number;
+  failed: number;
+  lastError: string | null;
+  startedAt: string;
+}
+
+export interface CourseVoiceoverSummary {
+  courseId: string;
+  title: Record<string, string> | string;
+  keypointCount: number;
+  summary: Record<VoiceoverCellStatus, number>;
+}
+
+export interface GlobalVoiceoverStatus {
+  langs: string[];
+  summary: Record<VoiceoverCellStatus, number> & { total: number };
+  courses: CourseVoiceoverSummary[];
+  job: GlobalVoiceoverJob | null;
 }
