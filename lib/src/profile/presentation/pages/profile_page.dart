@@ -744,7 +744,8 @@ class _AchievementsSummaryCard extends StatelessWidget {
 
   final List<AchievenmentResponseEntity> achievenments;
 
-  int get _totalBadges => achievenments.fold(0, (sum, a) => sum + a.completedCourse);
+  int get _earnedBadges => achievenments.fold(0, (sum, a) => sum + a.completedCourse);
+  int get _totalBadges => achievenments.fold(0, (sum, a) => sum + a.totalCourse);
 
   @override
   Widget build(BuildContext context) {
@@ -773,7 +774,9 @@ class _AchievementsSummaryCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AppText(
-                      '$_totalBadges',
+                      // Design shows earned / total (e.g. "3/12"), not just the
+                      // earned count.
+                      '$_earnedBadges/$_totalBadges',
                       textAlign: TextAlign.center,
                       style: _poppins(30, FontWeight.w700),
                     ),
