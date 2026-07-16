@@ -23,9 +23,9 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
   static const _tabToBranch = [0, 3, 4, 2];
 
   // Default visual index for each branch when navigating from outside. Branch 1
-  // (course roadmap) has no tab of its own → fall back to Home's tab so the bar
-  // stays in a valid state while the roadmap is on screen.
-  static const _branchToVisual = {0: 0, 1: 0, 2: 3, 3: 1, 4: 2};
+  // (course roadmap) has no tab of its own → light the Explore tab, since
+  // courses are browsed/opened from Explore (and Home's "Jump back in").
+  static const _branchToVisual = {0: 0, 1: 1, 2: 3, 3: 1, 4: 2};
 
   int _visualIndex = 0;
 
