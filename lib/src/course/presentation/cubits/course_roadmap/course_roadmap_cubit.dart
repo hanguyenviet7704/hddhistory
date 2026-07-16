@@ -106,13 +106,14 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
     // the course surfaces in the search screen's "Recent" list.
     AppDI.injector.get<CourseCubit>().recordCourseView(courseId);
 
-    // Warm the Re-anchor reasons in PARALLEL with the roadmap fetch. The
-    // prompt (§9.1) is decided from within the roadmap page and only after the
-    // roadmap lands, so fetching reasons then leaves the loaded roadmap on
-    // screen for a round-trip before the prompt appears. Prefetching here (the
-    // earliest point the courseId is known) means getReanchorReasons is cached
-    // by the time the roadmap lands, so the prompt opens immediately. Skipped
-    // once the course's prompt has already been shown this session.
+    // Warm the Re-anchor reasons cache here (the earliest point the courseId
+    // is known), NOT to decide anything now — the prompt (§9.1) only appears
+    // later, right before the user actually starts a lesson (after picking
+    // Read/Listen — see RoadmapDetailPopup._startLearning), so it's asked once
+    // they've committed to studying, not the instant the roadmap loads. By
+    // prefetching here, HabitCubit.getReanchorReasons's memoized cache is
+    // likely already warm by the time that check runs. Skipped once the
+    // course's prompt has already been shown this session.
     final habitCubit = AppDI.injector.get<HabitCubit>();
     if (!habitCubit.state.reanchorShownCourseIds.contains(courseId)) {
       unawaited(habitCubit.getReanchorReasons(courseId));

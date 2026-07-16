@@ -110,6 +110,7 @@ class NotificationRequest {
     this.summary,
     this.imageUrl,
     this.payload = const <String, String>{},
+    this.progress,
   });
 
   final int? id;
@@ -118,6 +119,12 @@ class NotificationRequest {
   final String? summary;
   final String? imageUrl;
   final Map<String, String> payload;
+
+  /// 0–100 for a determinate progress-bar notification (e.g. the Live Activity
+  /// return-nudge). Renders as a progress bar on Android; iOS notifications
+  /// have no native progress bar, so the plugin ignores it there (the banner
+  /// still shows title/body). Null = a normal, non-progress notification.
+  final double? progress;
 }
 
 @immutable

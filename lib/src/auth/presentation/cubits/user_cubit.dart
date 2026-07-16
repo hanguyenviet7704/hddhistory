@@ -22,6 +22,12 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     }
   }
 
+  /// Records the order the user tapped categories (Path — Feel/Think/Work/
+  /// Connect/Learn/Explore Better) during onboarding, so the Explore tab can
+  /// show them in that same order instead of the backend's default sort.
+  /// Called once, right when onboarding hands off to Home.
+  void setOnboardingPathOrder(List<OnboardingPath> order) => emit(state.copyWith(onboardingPathOrder: order));
+
   void setIsAppEventConfigured(bool isAppEventConfigured) => emit(state.copyWith(isAppEventConfigured: isAppEventConfigured));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
   void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
@@ -104,6 +110,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     bool isUserPassOnboarding = state.isUserPassOnboarding;
     bool hasCompletedFirstTimeNotificationGate = state.hasCompletedFirstTimeNotificationGate;
     bool hasCompletedCourseEntryNotificationGate = state.hasCompletedCourseEntryNotificationGate;
+    List<OnboardingPath> onboardingPathOrder = state.onboardingPathOrder;
     emit(UserState.initial());
     AppDI.injector.get<ProfileCubit>().reset();
     emit(
@@ -111,6 +118,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
         isUserPassOnboarding: isUserPassOnboarding,
         hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate,
         hasCompletedCourseEntryNotificationGate: hasCompletedCourseEntryNotificationGate,
+        onboardingPathOrder: onboardingPathOrder,
       ),
     );
     if (previousUserId.isNotEmpty) {

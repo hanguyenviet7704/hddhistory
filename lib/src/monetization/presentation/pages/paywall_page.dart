@@ -1,7 +1,7 @@
 part of '../../monetization.dart';
 
 @visibleForTesting
-const paywallCloseButtonDelay = Duration(seconds: 5);
+const paywallCloseButtonDelay = Duration(seconds: 2);
 
 @visibleForTesting
 bool shouldHandlePaywallSuccess({

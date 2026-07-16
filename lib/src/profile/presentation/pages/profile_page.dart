@@ -76,19 +76,16 @@ void _openAchievements(BuildContext context) {
   );
 }
 
-/// Opens Change Course standalone. [ChangeCoursePage] normally lives nested
-/// under the Course tab's shell branch (see routes_shell_course_data.dart);
-/// pushing its go_router path from the Profile tab would switch the visible
-/// bottom-nav branch to Course as a side effect. Pushing it directly on the
-/// root navigator instead keeps the user on the Profile tab underneath and
-/// pops straight back to it.
+/// Opens the "My course" library ([MyCoursesPage]) standalone. It normally
+/// lives nested under the Course tab's shell branch; pushing its go_router path
+/// from the Profile tab would switch the visible bottom-nav branch to Course as
+/// a side effect. Pushing it directly on the root navigator instead keeps the
+/// user on the Profile tab underneath and pops straight back to it.
 ///
-/// Provides HomeCubit + CourseRoadmapCubit (same as ChangeCourseRoute's own
-/// wiring in routes_shell_course_data.dart) PLUS ProgressCubit: each course
-/// row (CourseListTile → _CourseProgressChip) reads ProgressCubit for its
-/// progress chip, which ChangeCourseRoute's own provider list is missing —
-/// harmless there only because nothing pushes that route today.
-void _openChangeCourse(BuildContext context) {
+/// Provides HomeCubit + CourseRoadmapCubit + ProgressCubit — the page reads
+/// skillsets/progress for its grouped enrolled-course sections and their
+/// completion %.
+void _openMyCourses(BuildContext context) {
   Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute(
       builder: (_) => MultiBlocProvider(
@@ -97,7 +94,7 @@ void _openChangeCourse(BuildContext context) {
           BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
           BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
         ],
-        child: const ChangeCoursePage(),
+        child: const MyCoursesPage(),
       ),
     ),
   );
@@ -984,7 +981,7 @@ class _LibrarySection extends StatelessWidget {
             child: GestureDetector(
               key: const Key('profile-library-my-course-row'),
               behavior: HitTestBehavior.opaque,
-              onTap: () => _openChangeCourse(context),
+              onTap: () => _openMyCourses(context),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Row(

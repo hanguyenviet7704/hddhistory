@@ -174,6 +174,15 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 
   Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
+    // Tapping Continue here ends the keypoint session — whichever branch we
+    // route to next (Habit, badge, roadmap), the lesson is no longer open, so
+    // the Live Activity must end. Done at the start (before the habit-prompt
+    // detour) so it ends on every path, not just the roadmap one. The stateful
+    // shell keeps CourseRoadmapPage alive, so its initState can't be relied on
+    // to fire on return — hence ending here at the actual session teardown.
+    unawaited(AppDI.injector.get<LiveActivityService>().end());
+    unawaited(cancelLiveActivityReturnNudge());
+
     final navigatedToHabit = await _maybeShowHabitPrompt(lessonState);
     if (navigatedToHabit || !mounted) return;
 

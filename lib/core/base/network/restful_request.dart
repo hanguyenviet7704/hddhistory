@@ -21,9 +21,18 @@ mixin RestfulRequestHandlerMixin {
     AppService.instance.appTrackingService.trackError(e, errorType: 'RestfulRequestHandlerMixin', stackTrace: stackTrace);
     if (e is DioException) {
       if (e.response?.statusCode == 401) return;
+      // Server error bodies aren't always JSON — a 5xx can return an HTML/plain
+      // "Service Unavailable" page, so `response.data` may be a String. Indexing
+      // a String with `['message']` throws ("String is not a subtype of int"),
+      // and because this runs inside TaskEither's onError mapper that throw
+      // escapes the error path entirely — callers (e.g. the course roadmap)
+      // then never receive their failure and hang on the loading spinner.
+      // Only read `['message']` when the body is actually a Map.
+      final data = e.response?.data;
+      final serverMessage = data is Map ? data['message']?.toString() : null;
       DMessage.showMessage(
         type: MessageType.error,
-        message: e.response?.data['message'] ?? e.toString(),
+        message: serverMessage ?? e.toString(),
       );
       return;
     }

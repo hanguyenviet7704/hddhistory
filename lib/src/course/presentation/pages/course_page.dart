@@ -112,15 +112,10 @@ class _CourseFilterTabBar extends StatelessWidget {
               prev.exploreMode != curr.exploreMode ||
               prev.activeSkillsetIndex != curr.activeSkillsetIndex,
           builder: (context, courseState) {
-            // selectedIndex mapping:
-            //  0 → My courses (exploreMode == myCourses)
-            //  1+ → skillset[i-1] (when scrolled/jumped to that skillset)
-            //  -1 → no chip highlighted ("all" / out-menu, before any scroll)
-            final selectedIndex = courseState.exploreMode == CourseExploreMode.myCourses
-                ? 0
-                : courseState.activeSkillsetIndex >= 0
-                    ? courseState.activeSkillsetIndex + 1
-                    : -1;
+            // "My courses" chip removed (that view now lives only on Profile) —
+            // chips are just the skillsets, mapped 0-based to the scrollspy's
+            // active skillset. -1 → no chip highlighted (top / out-menu).
+            final selectedIndex = courseState.activeSkillsetIndex >= 0 ? courseState.activeSkillsetIndex : -1;
 
             return Semantics(
               label: context.l10n.allcourse.allcourseExploreSkillsets,
@@ -128,15 +123,7 @@ class _CourseFilterTabBar extends StatelessWidget {
                 key: const Key('course-filter-tab-bar'),
                 skillsets: homeState.skillsets,
                 selectedIndex: selectedIndex,
-                myCoursesLabel: context.l10n.allcourse.allcourseMyCourse,
-                onChipTap: (i) {
-                  final cubit = context.read<CourseCubit>();
-                  if (i == 0) {
-                    cubit.showMyCourses();
-                  } else {
-                    cubit.jumpToSkillset(i - 1);
-                  }
-                },
+                onChipTap: (i) => context.read<CourseCubit>().jumpToSkillset(i),
               ),
             );
           },
@@ -156,13 +143,11 @@ class _ExploreChipBar extends StatefulWidget {
     super.key,
     required this.skillsets,
     required this.selectedIndex,
-    required this.myCoursesLabel,
     required this.onChipTap,
   });
 
   final List<SkillsetEntity> skillsets;
   final int selectedIndex;
-  final String myCoursesLabel;
   final ValueChanged<int> onChipTap;
 
   @override
@@ -173,7 +158,7 @@ class _ExploreChipBarState extends State<_ExploreChipBar> {
   final ScrollController _scrollController = ScrollController();
   List<GlobalKey> _chipKeys = const [];
 
-  int get _chipCount => 1 + widget.skillsets.length; // My courses + skillsets
+  int get _chipCount => widget.skillsets.length; // skillsets only (My courses moved to Profile)
 
   @override
   void initState() {
@@ -229,16 +214,7 @@ class _ExploreChipBarState extends State<_ExploreChipBar> {
         itemCount: _chipCount,
         separatorBuilder: (context, index) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return _ExploreChip(
-              chipKey: _chipKeys[index],
-              label: widget.myCoursesLabel,
-              icon: null,
-              isSelected: widget.selectedIndex == 0,
-              onTap: () => widget.onChipTap(0),
-            );
-          }
-          final skillset = widget.skillsets[index - 1];
+          final skillset = widget.skillsets[index];
           return _ExploreChip(
             chipKey: _chipKeys[index],
             label: skillset.title.text,

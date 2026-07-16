@@ -88,6 +88,7 @@ part 'presentation/cubits/lesson_audio/lesson_audio_cubit.dart';
 part 'presentation/cubits/lesson_audio/lesson_audio_state.dart';
 part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
+part 'presentation/cubits/lesson/live_activity_return_nudge.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_state.dart';
 part 'presentation/cubits/speaking/speaking_cubit.dart';

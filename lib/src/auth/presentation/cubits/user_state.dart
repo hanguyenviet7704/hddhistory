@@ -15,6 +15,7 @@ abstract class UserState with _$UserState {
     @Default(true) bool isFirstTimeUserAccessLessonList,
     @Default(true) bool isFirstTimeUserChooseCourse,
     @Default(true) bool isFirstTimeLessonNavigationGuide,
+    @Default([]) List<OnboardingPath> onboardingPathOrder,
   }) = _UserState;
 
   factory UserState.initial() => UserState();

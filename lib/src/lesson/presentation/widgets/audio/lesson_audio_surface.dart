@@ -10,6 +10,12 @@ class LessonAudioSurface extends StatelessWidget {
         return LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
+              // Static surface — the ConstrainedBox below only exists so short
+              // content still centers instead of pinning to the top; it isn't
+              // meant to be swipeable. NeverScrollableScrollPhysics keeps that
+              // overflow-safety net (no error on very small screens) without
+              // letting the user drag it around.
+              physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 36.h),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),

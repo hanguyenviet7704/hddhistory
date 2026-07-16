@@ -144,6 +144,13 @@ class FakeHomeWidgetBridge implements HomeWidgetBridge {
   }
 
   @override
+  Future<String?> saveImageAndGetPath({required String key, required String imageUrl}) async {
+    savedImageKeys.add(key);
+    if (failImageKeys.contains(key)) return null;
+    return '/fake/$key.png';
+  }
+
+  @override
   Future<void> prepareStaticAssets() async {}
 
   @override

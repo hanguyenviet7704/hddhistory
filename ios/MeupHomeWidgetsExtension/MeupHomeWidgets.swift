@@ -7,6 +7,9 @@ struct MeupHomeWidgets: WidgetBundle {
     MeupInProgressWidget()
     MeupStreakWidget()
     MeupSuggestCourseWidget()
+    if #available(iOS 16.2, *) {
+      MeupLessonLiveActivity()
+    }
   }
 }
 

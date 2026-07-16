@@ -61,7 +61,11 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
   @override
   Widget build(BuildContext context) {
     final habit = widget.userHabit;
-    final diary = (_checkins ?? []).where((c) => (c.note ?? '').trim().isNotEmpty).toList();
+    // Every check-in is a diary entry (§9.8): those with a note show it, those
+    // without show a muted "Checked in" line so a note-less check-in isn't
+    // invisible. Filter on `done` so a (legacy/future) un-done record can't
+    // masquerade as a check-in.
+    final diary = (_checkins ?? []).where((c) => c.done).toList();
 
     // Bake the bottom safe-area inset into the container's own padding
     // instead of wrapping in SafeArea — that keeps the gray sheet flush to
@@ -408,24 +412,35 @@ class _DiarySection extends StatelessWidget {
           else
             for (int i = 0; i < entries.length; i++) ...[
               if (i > 0) Divider(height: 20.h, color: AppCustomColor.borderDefault),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 52.w,
-                    child: AppText(
-                      entries[i].date.parseString('d/M/yy'),
-                      style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                    ),
-                  ),
-                  12.horizontalSpace,
-                  Expanded(
-                    child: AppText(
-                      entries[i].note ?? '',
-                      style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary),
-                    ),
-                  ),
-                ],
+              Builder(
+                builder: (context) {
+                  // A check-in with no note still logs as a diary entry, shown
+                  // as a muted "Checked in" so it reads as a system label, not
+                  // user-written content.
+                  final note = entries[i].note?.trim() ?? '';
+                  final hasNote = note.isNotEmpty;
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 52.w,
+                        child: AppText(
+                          entries[i].date.parseString('d/M/yy'),
+                          style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+                        ),
+                      ),
+                      12.horizontalSpace,
+                      Expanded(
+                        child: AppText(
+                          hasNote ? note : context.l10n.habit.detailDiaryCheckedIn,
+                          style: AppStyle.text14.copyWith(
+                            color: hasNote ? AppCustomColor.textPrimary : AppCustomColor.textTertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
         ],

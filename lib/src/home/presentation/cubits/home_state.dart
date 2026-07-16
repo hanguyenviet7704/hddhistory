@@ -36,7 +36,15 @@ bool shouldSelfHealHomeData(HomeState state) => state.skillsets.isEmpty && state
 bool shouldEnsureSuggestedCoursesReload(HomeState state) => state.suggestedCourses.isEmpty;
 
 extension HomeStateExtension on HomeState {
-  List<SkillsetEntity> get skillsets => pageData.items;
+  /// Ordered to match the sequence the user tapped Path categories (Feel/
+  /// Think/Work/Connect/Learn/Explore Better) during onboarding — see
+  /// [UserCubit.setOnboardingPathOrder] — instead of the backend's default
+  /// sort. Skillsets outside that selection (or before it's set) keep their
+  /// original relative order, appended after the ranked ones.
+  List<SkillsetEntity> get skillsets => _orderSkillsetsByOnboardingPaths(
+        pageData.items,
+        AppDI.injector.get<UserCubit>().state.onboardingPathOrder,
+      );
   SkillsetEntity get currentSkillset {
     if (selectedSkillsetIndex == -1) return SkillsetEntity();
     return skillsets.elementAtOrDefault(selectedSkillsetIndex, defaultValue: SkillsetEntity());
@@ -44,4 +52,34 @@ extension HomeStateExtension on HomeState {
   CourseEntity get currentCourse => currentSkillset.courses.elementAtOrDefault(selectedCourseIndex, defaultValue: CourseEntity());
   String get courseName => currentCourse.title.text.isNotEmpty ? currentCourse.title.text : 'Course Roadmap';
   bool isSelectedCourse(String id) => currentCourse.id == id;
+}
+
+/// [OnboardingPath] (onboarding's Path-selection categories) and
+/// [SkillsetOnboardingIntroduce] (a skillset's onboarding tag) are the same
+/// six categories under two different enums — one per side of onboarding vs.
+/// content. This is the correspondence between them.
+SkillsetOnboardingIntroduce _skillsetIntroduceForPath(OnboardingPath path) => switch (path) {
+  OnboardingPath.feelBetter => SkillsetOnboardingIntroduce.myFeelingsFeelLoud,
+  OnboardingPath.thinkBetter => SkillsetOnboardingIntroduce.myThoughtsCircle,
+  OnboardingPath.workBetter => SkillsetOnboardingIntroduce.imBusyAllDay,
+  OnboardingPath.connectBetter => SkillsetOnboardingIntroduce.iTalkToMany,
+  OnboardingPath.learnBetter => SkillsetOnboardingIntroduce.whatILearnFades,
+  OnboardingPath.exploreBetter => SkillsetOnboardingIntroduce.nothingFeelsNew,
+};
+
+List<SkillsetEntity> _orderSkillsetsByOnboardingPaths(List<SkillsetEntity> skillsets, List<OnboardingPath> pathOrder) {
+  if (pathOrder.isEmpty || skillsets.isEmpty) return skillsets;
+  final introduceOrder = pathOrder.map(_skillsetIntroduceForPath).toList();
+  final buckets = List<List<SkillsetEntity>>.generate(introduceOrder.length, (_) => []);
+  final unranked = <SkillsetEntity>[];
+  for (final skillset in skillsets) {
+    final introduce = skillset.onboardingIntroduce;
+    final rank = introduce == null ? -1 : introduceOrder.indexOf(introduce);
+    if (rank >= 0) {
+      buckets[rank].add(skillset);
+    } else {
+      unranked.add(skillset);
+    }
+  }
+  return [...buckets.expand((bucket) => bucket), ...unranked];
 }

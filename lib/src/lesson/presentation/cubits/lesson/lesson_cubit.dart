@@ -65,6 +65,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     setCurrentLearningItem(state.currentLearningItem);
     preloadNextLearningItem();
+    unawaited(_updateLiveActivity());
   }
 
   void completeCurrentKeypoint({
@@ -81,6 +82,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     _updateUserProgressKeypoint();
     emit(state.copyWith(completionOrigin: origin));
+    unawaited(_updateLiveActivity(keypointJustCompleted: true));
     KeypointCompleteRoute().go(AppConfig.instance.context!);
     Future.delayed(const Duration(milliseconds: 100), () {
       AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
@@ -235,9 +237,175 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           onSuccess: (item) => setCurrentLearningItem(item),
         );
         preloadNextLearningItem();
+        if (isInit) unawaited(_startLiveActivity());
       },
     );
   }
+
+  /// Live Activity (Lock Screen + Dynamic Island) for the lesson just opened
+  /// — best-effort, iOS 16.1+ only (see LiveActivityService), so failures here
+  /// must never affect the actual lesson flow.
+  Future<void> _startLiveActivity({String? preferredCourseId}) async {
+    final context = _resolveLiveActivityCourseContext(preferredCourseId: preferredCourseId);
+    if (context.courseId.isEmpty) return;
+
+    String imagePath = '';
+    if (context.courseImageUrl.isNotEmpty) {
+      imagePath = await AppDI.injector.get<HomeWidgetBridge>().saveImageAndGetPath(
+            key: 'meup_live_activity_course_image',
+            imageUrl: context.courseImageUrl,
+          ) ??
+          '';
+    }
+
+    final copy = _liveActivityCopy(context.minutes, isDone: context.courseProgress >= 1);
+    await AppDI.injector.get<LiveActivityService>().start(
+          courseId: context.courseId,
+          courseName: context.courseName,
+          courseImagePath: imagePath,
+          progress: context.courseProgress,
+          isDone: context.courseProgress >= 1,
+          inLessonLabel: copy.inLessonLabel,
+          continueLearningLabel: copy.continueLearningLabel,
+          resumeLabel: copy.resumeLabel,
+          primaryNudge: copy.primaryNudge,
+          footerNudge: copy.footerNudge,
+        );
+    await scheduleLiveActivityReturnNudge(courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
+  }
+
+  /// Keeps a "resume this course" Live Activity alive while the user sits on the
+  /// course roadmap (called by CourseRoadmapPage), so leaving the app from the
+  /// roadmap — not only mid-lesson — still surfaces the card. Behaviour:
+  /// - course finished → ends any card (nothing to resume, mirrors hiding the
+  ///   roadmap's "Continue" CTA);
+  /// - same course already showing → cheap update (fresh %), no flicker;
+  /// - otherwise → starts a fresh card for [courseId].
+  Future<void> ensureLiveActivityForRoadmap(String courseId) async {
+    if (courseId.isEmpty) return;
+    final context = _resolveLiveActivityCourseContext(preferredCourseId: courseId);
+    if (context.courseId.isEmpty) return;
+
+    final service = AppDI.injector.get<LiveActivityService>();
+    if (context.courseProgress >= 1) {
+      unawaited(service.end());
+      unawaited(cancelLiveActivityReturnNudge());
+      return;
+    }
+
+    if (service.activeCourseId == context.courseId) {
+      final copy = _liveActivityCopy(context.minutes, isDone: false);
+      await service.update(
+            progress: context.courseProgress,
+            isDone: false,
+            resumeLabel: copy.resumeLabel,
+            primaryNudge: copy.primaryNudge,
+            footerNudge: copy.footerNudge,
+          );
+      await scheduleLiveActivityReturnNudge(courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
+      return;
+    }
+
+    await _startLiveActivity(preferredCourseId: courseId);
+  }
+
+  /// Reflects the latest course-level progress on the Live Activity — call on
+  /// every learning-item transition, not on finer-grained state changes, so
+  /// native updates stay infrequent. Uses the API-backed course progress
+  /// (CourseRoadmapCubit.currentLevelProgress), NOT LessonState.progress —
+  /// the latter is purely client-computed from the current lesson's local
+  /// question/document index and doesn't reflect real course completion.
+  Future<void> _updateLiveActivity({bool keypointJustCompleted = false}) async {
+    final context = _resolveLiveActivityCourseContext();
+    if (context.courseId.isEmpty) return;
+
+    final progress = keypointJustCompleted ? context.optimisticProgressAfterKeypoint : context.courseProgress;
+    final isDone = progress >= 1;
+    final copy = _liveActivityCopy(context.minutes, isDone: isDone);
+    await AppDI.injector.get<LiveActivityService>().update(
+          progress: progress,
+          isDone: isDone,
+          resumeLabel: copy.resumeLabel,
+          primaryNudge: copy.primaryNudge,
+          footerNudge: copy.footerNudge,
+        );
+    await scheduleLiveActivityReturnNudge(courseName: context.courseName, isDone: isDone, minutes: context.minutes, progress: progress);
+  }
+
+  /// All Live Activity display copy, localized via slang for the current
+  /// app locale (5 locales) — the native widget renders these verbatim and
+  /// holds no English-only strings of its own.
+  ({String inLessonLabel, String continueLearningLabel, String resumeLabel, String primaryNudge, String footerNudge}) _liveActivityCopy(int minutes, {required bool isDone}) {
+    final lesson = l10n.lesson;
+    final nudge = isDone ? lesson.liveActivityNudgeDone : lesson.liveActivityNudge(count: minutes);
+    return (
+      inLessonLabel: lesson.liveActivityInLesson,
+      continueLearningLabel: lesson.liveActivityContinueLearning,
+      resumeLabel: isDone ? lesson.liveActivityNextLesson : lesson.liveActivityResumeLesson,
+      primaryNudge: nudge,
+      footerNudge: isDone ? lesson.liveActivityCourseComplete : nudge,
+    );
+  }
+
+  ({String courseId, String courseName, String courseImageUrl, int minutes, double courseProgress, double optimisticProgressAfterKeypoint}) _resolveLiveActivityCourseContext({String? preferredCourseId}) {
+    final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
+    final roadmapState = AppDI.injector.get<CourseRoadmapCubit>().state;
+    final homeState = AppDI.injector.get<HomeCubit>().state;
+    // The roadmap passes its own courseId explicitly (its selectedLesson may be
+    // stale/empty), otherwise fall back to the in-flight lesson flow's course.
+    final courseId = (preferredCourseId != null && preferredCourseId.isNotEmpty)
+        ? preferredCourseId
+        : resolveLessonFlowCourseId(
+            lessonCourseId: courseLessonState.selectedLesson.courseId,
+            roadmapCourseId: roadmapState.roadmap.courseId,
+            homeCourseId: homeState.currentCourse.id,
+          );
+    if (courseId.isEmpty) {
+      return (courseId: '', courseName: '', courseImageUrl: '', minutes: _kDefaultLessonMinutes, courseProgress: 0, optimisticProgressAfterKeypoint: 0);
+    }
+    // Title/image come from the skillset list. Per-user lesson progress does
+    // NOT — that endpoint always returns numberOfLessonPassed == 0 (see
+    // all_course_tab.resolveCourseProgress). The real completion lives in
+    // ProgressCubit.myCourses, the SAME source the Explore / Home course cards
+    // read, so the Live Activity ring shows the exact % the user sees on the
+    // card (e.g. "Hoàn thành 17%") instead of 0%.
+    final displayCourse = homeState.skillsets.resolveCourseByCourseId(courseId, fallback: homeState.currentCourse);
+    final progressCourse = _progressCubit.state.myCourses.firstWhere(
+      (c) => c.id == courseId,
+      orElse: () => displayCourse,
+    );
+    final passed = progressCourse.numberOfLessonPassed;
+    final total = progressCourse.numberOfLesson > 0 ? progressCourse.numberOfLesson : displayCourse.numberOfLesson;
+    final courseProgress = total > 0 ? (passed / total).clamp(0.0, 1.0) : 0.0;
+    // "~N min to finish the next lesson" — the lesson's own API-authored
+    // estimate (estimateCompleTimeNumber, minutes), NOT scaled by course
+    // progress: it's the time for the lesson you'd resume into, per the design
+    // copy, not a countdown of the whole course. Falls back to the design's
+    // default of 3 min when a lesson has no BTV-authored estimate.
+    final estimate = courseLessonState.selectedLesson.estimateCompleTimeNumber;
+    // Optimistic post-completion progress: the keypoint update is
+    // fire-and-forget, so myCourses still holds the pre-completion count at the
+    // moment completeCurrentKeypoint fires. A keypoint completes a *lesson* only
+    // when it's the last keypoint of that lesson (isAllOtherKeypointsCompleted)
+    // — the same rule ProgressCubit uses to bump numberOfLessonPassed — so bump
+    // by one lesson only then. This lets the ring (and the "done" state on the
+    // course's final lesson) advance immediately instead of lagging a network
+    // round-trip behind.
+    final lessonWillComplete = courseLessonState.isAllOtherKeypointsCompleted;
+    final optimisticPassed = passed + (lessonWillComplete ? 1 : 0);
+    final optimistic = total > 0 ? (optimisticPassed / total).clamp(0.0, 1.0) : courseProgress;
+    return (
+      courseId: courseId,
+      courseName: displayCourse.title.text,
+      courseProgress: courseProgress,
+      optimisticProgressAfterKeypoint: optimistic,
+      courseImageUrl: displayCourse.image,
+      minutes: estimate > 0 ? estimate : _kDefaultLessonMinutes,
+    );
+  }
+
+  // Design's default of 3 min when a lesson has no BTV-authored estimate.
+  static const int _kDefaultLessonMinutes = 3;
 
   void preloadNextLearningItem() {
     if (state.pageData.items.length <= state.currentLearningItemIndex + 1) return;

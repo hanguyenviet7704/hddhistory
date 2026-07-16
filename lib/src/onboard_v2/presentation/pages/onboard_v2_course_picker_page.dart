@@ -133,7 +133,10 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   void _dispatchRoute(CourseHandoffRouteIntent intent, {String? selectedCourseId}) {
     try {
       var destination = 'course';
-      context.read<OnboardV2Cubit>().markUserOnboardedInBackground();
+      final onboardCubit = context.read<OnboardV2Cubit>();
+      final userCubit = context.read<UserCubit>();
+      onboardCubit.markUserOnboardedInBackground();
+      userCubit.setOnboardingPathOrder(onboardCubit.state.selectedPaths);
       switch (intent) {
         case CourseHandoffRouteIntent.courseRoadmap:
           CourseRoadmapRoute().go(context);
@@ -151,7 +154,7 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
           CourseRoute(selectedTabIndex: 0).go(context);
           break;
       }
-      context.read<UserCubit>().setIsUserPassOnboarding(false);
+      userCubit.setIsUserPassOnboarding(false);
       final parameters = <String, dynamic>{
         'destination': destination,
       };
