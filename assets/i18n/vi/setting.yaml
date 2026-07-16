@@ -1,0 +1,81 @@
+achievementsCompleteCourseAtLevel: Hoàn thành khóa học ở ${level}
+achievementsCompletedCount: Đã hoàn thành ${completed}/${total}
+achievementsGoToCourse: Đi đến khóa học
+achievementsLevelLabel: CẤP ${level}
+achievementsTitle: Thành tích
+notificationActionsTitle: Hành động
+notificationAppPreferenceLabel: Thông báo trong ứng dụng
+notificationCapabilityDisabledDescription: Thông báo đang ở trạng thái ngủ cho flavor
+  này. Bật các cờ capability trước khi dùng push hoặc nhắc nhở cục bộ.
+notificationCapabilityEnabledDescription: Thông báo có sẵn cho flavor này và vẫn tắt
+  cho đến khi bạn chủ động bật ở bên dưới.
+notificationCapabilityTitle: Khả năng
+notificationDiagnosticsTitle: Chẩn đoán
+notificationEffectiveStatusLabel: Trạng thái hiệu lực
+notificationErrorTitle: Lỗi gần nhất
+notificationLastSyncedLabel: Lần đồng bộ token gần nhất
+notificationLocalAdapterLabel: Bộ điều hợp cục bộ đã khởi tạo
+notificationLocalDisableCta: Tắt nhắc nhở cục bộ
+notificationLocalEnableCta: Bật nhắc nhở cục bộ
+notificationLocalStatusLabel: Nhắc nhở cục bộ
+notificationNoDiagnostics: Chưa có lần đồng bộ token nào.
+notificationOpenSystemSettingsCta: Mở cài đặt hệ thống
+notificationPermissionAuthorized: Đã cấp quyền
+notificationPermissionDenied: Bị từ chối
+notificationPermissionNotApplicable: Không áp dụng
+notificationPermissionNotDetermined: Chưa yêu cầu
+notificationPermissionProvisional: Tạm thời
+notificationPermissionStatusLabel: Quyền
+notificationRemoteDisableCta: Tắt push từ xa
+notificationRemoteEnableCta: Bật push từ xa
+notificationRemoteStatusLabel: Push từ xa
+notificationRequestPermissionCta: Yêu cầu quyền
+notificationStatusDisabled: Đã tắt
+notificationStatusEnabled: Đã bật
+notificationStatusTitle: Trạng thái chạy
+notificationTestReminderBody: Mở ứng dụng để tiếp tục bài học của bạn.
+notificationTestReminderCta: Lên lịch nhắc nhở thử
+notificationTestReminderTitle: Nhắc học thử
+notificationTokenStatusLabel: Token thiết bị
+notificationTokenUnavailable: Chưa có token
+settingAboutSectionTerm: Điều khoản & Điều kiện
+settingEditProfileButton: Sửa
+settingLanguageRowEnglish: Tiếng Anh
+settingLanguageRowVietnamese: Việt Nam
+settingLogOut: Đăng xuất
+settingNotiRowActive: Hoạt động
+settingNotiRowRemind: Nhắc tôi vào lúc
+settingNotiRowRepeat: Lặp lại
+settingPremiumBadge: Premium
+settingPremiumPerk1: Năng lượng mỗi ngày không giới hạn
+settingPremiumPerk2: Mở khóa mọi bài học và lộ trình
+settingPremiumPerk3: Phản hồi dẫn hướng để cải thiện nhanh hơn
+settingPremiumRestoreCta: Khôi phục giao dịch
+settingPremiumSubtitle: Truy cập đầy đủ tính năng
+settingPremiumTitle: Premium
+settingPremiumUpgradeCta: Nâng cấp
+settingProfileAchievementsEmptyMessage: Hoàn thành bài học để bắt đầu nhận huy hiệu.
+settingProfileAchievementsEmptyTitle: Chưa có huy hiệu nào
+settingProfileAchievementsSectionProgress: ${completed}/${total}
+settingProfileAchievementsSeeAll: Xem tất cả
+settingProfileBadgesEarnedLabel: huy hiệu đã đạt được
+settingProfileDesstructiveButton: Xóa tài khoản
+settingProfileDestructiveNoButton: Giữ lại tài khoản
+settingProfileDestructiveWarnMessage: Hãy đảm bảo rằng bạn thực sự chắc chắn.
+settingProfileDestructiveWarnTitle: Tất cả dữ liệu của bạn sẽ bị xóa
+settingProfileDestructiveYesButton: Tôi chắc chắn muốn xóa
+settingProfileDoneEditButton: Xong
+settingProfileEmailLabel: Email
+settingProfileFullnameLabel: Họ tên
+settingProfileLabel: Hồ sơ
+settingProfileLearningProgressSection: Tiến độ học tập
+settingProfileLibrarySection: Thư viện
+settingProfileProgressSection: Tiến độ
+settingRowLanguage: Ngôn ngữ
+settingRowNoti: Thông báo
+settingRowRestorePurchase: Khôi phục giao dịch
+settingRowUpgradePremium: Quản lý gói đăng ký
+settingSectionHeaderAbout: Giới thiệu
+settingSectionHeaderGeneral: Chung
+settingTitle: Cài đặt
+settingGuestName: Khách

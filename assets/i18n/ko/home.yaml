@@ -1,0 +1,49 @@
+continueLearning: 학습 계속하기
+coursesCount(param=count):
+  zero: 코스 없음
+  one: ${count}개 코스
+  other: ${count}개 코스
+homeAllCourseButton: 모든 코스
+homeCourseButton: 코스
+homeExploreButton: 탐색
+homeGrowthButton: 성장
+homeGreetingPrefix: 안녕하세요
+homeGreetingQuestion: 오늘은 무엇을 배우고 싶으세요?
+homeGreetingTitle: ${username}님, 오늘은 무엇을 배우고 싶으세요?
+homeHomeButton: 홈
+homeRecommendCourse: 새로운 스킬 시작하기
+homeRecommended: 추천
+homeRecommendedNewCourse: 새 코스
+homeSeeAllLearningListButton: 모두 보기
+homeSettingButton: 프로필
+homeWidgetInProgressEmptyTitle: 코스를 골라 학습을 이어가세요
+homeWidgetProgressText: ${completed}/${total} 레슨
+homeWidgetStreakActiveSubtitle: 잘하고 있어요!
+homeWidgetStreakEmptySubtitle: 오늘 연속 학습을 시작하세요
+homeWidgetSuggestExhaustedSubtitle: 곧 더 추가돼요!
+homeWidgetSuggestExhaustedTitle: 모든 코스를 완료했어요!
+homeWidgetSuggestLabel: 오늘의 추천
+inAppSurveyCloseSemantics: 설문 닫기
+inAppSurveyEntrySemantics: 아이디어가 있으신가요? 귀 기울이고 있어요.
+inAppSurveyEntrySubtitle: 귀 기울이고 있어요.
+inAppSurveyEntryTitle: 아이디어가 있으신가요?
+inAppSurveyFeedbackHint: MeUp가 이랬으면...
+inAppSurveyFeedbackSemantics: 설문 피드백
+inAppSurveyPageTitle: 앱 내 설문
+inAppSurveyPlaceholderDescription: 주입된 Cubit을 통해 도메인 로직을 연결하거나, 순수 UI 화면을 원한다면 제거하세요.
+inAppSurveyPlaceholderTitle: 빈 캔버스 준비 완료!
+inAppSurveyRatingAmazing: 최고예요
+inAppSurveyRatingAwful: 별로예요
+inAppSurveyRatingSemantics: 설문 평가 ${rating}
+inAppSurveySendFeedback: 피드백 보내기
+inAppSurveySendWithoutFeedback: 피드백 없이 보내기
+
+homeQuoteLabel: 오늘의 명언
+homeRecommendedSeeAll: 전체 보기
+homeMindQuestion: 무슨 생각을 하고 있나요?
+homeJumpBackIn: 다시 시작하기
+homeStreakEmptyPrompt: 레슨을 완료하고 연속 학습을 시작하세요
+homeExploreTopics: 60개 이상의 주제 둘러보기
+homeExploreTopicsSub: 다음 코스를 찾아보세요
+homeTodayHabit: 오늘의 습관
+homeTodayHabitSub: 루틴을 계속 이어가세요
