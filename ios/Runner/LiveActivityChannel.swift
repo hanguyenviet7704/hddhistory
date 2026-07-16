@@ -50,10 +50,14 @@ final class LiveActivityChannel {
       return
     }
 
-    // A lesson start while another is already live (shouldn't normally happen —
-    // only one lesson can be open at once — but cheap to guard) replaces it
-    // rather than stacking two Activities.
-    endCurrentActivity(dismissImmediately: true)
+    // Only one lesson can be open at a time, so at most one of our Live
+    // Activities should ever exist. End EVERY existing one before requesting a
+    // new card — not just the id we tracked in memory. That in-memory id is
+    // lost when the app is relaunched (or force-quit), so the previous
+    // session's Activity stays alive on the Lock Screen and a fresh start
+    // would stack a second card next to it. Ending them all here collapses any
+    // such orphan back to a single card.
+    endAllActivities(dismissImmediately: true)
 
     let attributes = MeupLessonActivityAttributes(
       courseId: courseId,
@@ -97,17 +101,24 @@ final class LiveActivityChannel {
 
   @available(iOS 16.2, *)
   private func end(result: @escaping FlutterResult) {
-    endCurrentActivity(dismissImmediately: false)
+    endAllActivities(dismissImmediately: false)
     result(nil)
   }
 
+  /// Ends every live lesson Activity, not just `currentActivityId`. Because the
+  /// tracked id doesn't survive an app relaunch, an orphaned card from a prior
+  /// session would otherwise never be torn down — so both start and end sweep
+  /// the full `activities` list to keep the invariant of at most one card.
   @available(iOS 16.2, *)
-  private func endCurrentActivity(dismissImmediately: Bool) {
-    guard let activity = Activity<MeupLessonActivityAttributes>.activities.first(where: { $0.id == currentActivityId }) else { return }
+  private func endAllActivities(dismissImmediately: Bool) {
     currentActivityId = nil
+    let activities = Activity<MeupLessonActivityAttributes>.activities
+    guard !activities.isEmpty else { return }
     let policy: ActivityUIDismissalPolicy = dismissImmediately ? .immediate : .after(.now + 4)
     Task {
-      await activity.end(activity.content, dismissalPolicy: policy)
+      for activity in activities {
+        await activity.end(activity.content, dismissalPolicy: policy)
+      }
     }
   }
 
