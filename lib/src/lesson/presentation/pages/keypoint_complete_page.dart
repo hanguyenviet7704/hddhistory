@@ -1,5 +1,12 @@
 part of '../../lesson.dart';
 
+/// Outcome of the post-keypoint habit-adoption prompt so the caller can route
+/// differently: [skipped] ("Skip, keep learning") returns the user to the
+/// roadmap instead of the badge/achievement celebration; [navigatedAway] means
+/// the prompt already switched branches (Add habit → Habit tab); [other] covers
+/// "no prompt shown" / "added but stayed", which keep the normal badge routing.
+enum _HabitPromptOutcome { navigatedAway, skipped, other }
+
 class KeypointCompletePage extends StatefulWidget {
   const KeypointCompletePage({super.key});
 
@@ -101,22 +108,22 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   /// - FR2.8: skipped if the user already adopted a habit from this keypoint.
   /// - Adopted habits carry sourceKeypointId/sourceCourseId (§9.5 grouping).
   ///
-  /// Returns `true` if it already navigated the user away (they tapped "Go to
-  /// Habit" on the success popup) — [_navigateAfterCompletion] then skips its
-  /// own roadmap/badge routing so we don't immediately navigate away again.
-  Future<bool> _maybeShowHabitPrompt(CourseLessonState lessonState) async {
+  /// Shows the post-keypoint habit-adoption prompt and reports how it ended
+  /// (see [_HabitPromptOutcome]) so [_navigateAfterCompletion] can route
+  /// accordingly.
+  Future<_HabitPromptOutcome> _maybeShowHabitPrompt(CourseLessonState lessonState) async {
     final habitCubit = AppDI.injector.get<HabitCubit>();
     await habitCubit.ensureLoaded();
-    if (!mounted) return false;
+    if (!mounted) return _HabitPromptOutcome.other;
 
     final keypointId = lessonState.currentKeypointId;
     // FR2.8 — each keypoint suggests a habit only once.
     if (keypointId.isNotEmpty && habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId)) {
-      return false;
+      return _HabitPromptOutcome.other;
     }
 
     final suggestions = await habitCubit.loadLibrary(keypointId: keypointId);
-    if (!mounted || suggestions.isEmpty) return false;
+    if (!mounted || suggestions.isEmpty) return _HabitPromptOutcome.other;
 
     final courseId = resolveLessonFlowCourseId(
       lessonCourseId: lessonState.selectedLesson.courseId,
@@ -136,10 +143,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         ),
       ),
     );
-    if (added != true || !mounted) return false;
+    if (!mounted) return _HabitPromptOutcome.other;
+    // "Skip, keep learning" → keep the user learning (return to the roadmap),
+    // never detour to the badge/achievement celebration.
+    if (added != true) return _HabitPromptOutcome.skipped;
 
     final goToHabit = await HabitAddedPopup.show(context);
-    if (goToHabit != true || !mounted) return false;
+    if (goToHabit != true || !mounted) return _HabitPromptOutcome.other;
 
     // Leaving to the Habit branch — stop reclaiming this page's route name.
     _navigatedAway = true;
@@ -157,7 +167,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
       });
     });
-    return true;
+    return _HabitPromptOutcome.navigatedAway;
   }
 
   /// Whether the course-level badge just became fully unlocked (last
@@ -183,8 +193,8 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     unawaited(AppDI.injector.get<LiveActivityService>().end());
     unawaited(cancelLiveActivityReturnNudge());
 
-    final navigatedToHabit = await _maybeShowHabitPrompt(lessonState);
-    if (navigatedToHabit || !mounted) return;
+    final habitOutcome = await _maybeShowHabitPrompt(lessonState);
+    if (habitOutcome == _HabitPromptOutcome.navigatedAway || !mounted) return;
 
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final homeState = context.read<HomeCubit>().state;
@@ -197,7 +207,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
 
     // Leaving this page — stop reclaiming its route name (see [_navigatedAway]).
     _navigatedAway = true;
-    if (_isCourseLevelBadgeComplete()) {
+    // "Skip, keep learning" always returns to the roadmap — bypass the badge
+    // celebration detour (user feedback: redundant/ugly after skipping). Other
+    // outcomes keep the normal "badge just completed" celebration.
+    if (habitOutcome != _HabitPromptOutcome.skipped && _isCourseLevelBadgeComplete()) {
       BadgeProgressRoute().go(context);
       Future.delayed(const Duration(milliseconds: 100), () {
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
