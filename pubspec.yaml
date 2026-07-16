@@ -17,8 +17,8 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-#version: 1.3.1+52 # ios
-version: 1.3.1+52 # android (Play prod = 32/1.2.1 → needs >32)
+#version: 1.4.0+53 # ios
+version: 1.4.0+53 # android (Play prod = 32/1.2.1 → needs >32)
 
 environment:
   sdk: ">=3.12.0 <4.0.0"

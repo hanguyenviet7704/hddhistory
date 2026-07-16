@@ -233,6 +233,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                 progress: progress,
                 step: BadgeProgressStep.inProgress,
                 currentTitle: currentTitle,
+                // Continue kicks off async work (streak gate + habit-suggestion
+                // fetch) before navigating — show a spinner so the button isn't
+                // a dead tap for that beat.
+                isLoading: _isHandlingPrimaryCta,
                 onPrimaryCta: () => _handlePrimaryCta(lessonState),
               );
             },

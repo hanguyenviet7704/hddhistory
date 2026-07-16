@@ -191,8 +191,8 @@ struct MeupLessonLockScreenView: View {
         Spacer()
       }
     }
-    .padding(.horizontal, 24)
-    .padding(.vertical, 16)
+    .padding(.horizontal, 30)
+    .padding(.vertical, 22)
   }
 }
 
