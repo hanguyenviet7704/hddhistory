@@ -1,0 +1,113 @@
+# Bottom nav
+navLabel: 习惯
+
+# Habit tab header
+headerTodayTitle: 今天
+headerTasksToComplete: 还有 ${count} 项待完成
+headerCompletedTitle: ${done}/${total} 个习惯
+headerAllDoneSubtitle: 🎉 今天全部完成
+headerInProgressSubtitle: 今天继续加油
+headerEmptySubtitle: 开始你的第一个习惯
+taskToggleLabel: 任务
+habitToggleLabel: 习惯
+editHabitLink: 编辑习惯
+noProgressLabel: 暂无进度
+streakDaysLabel: 连续 ${days} 天
+
+# Empty / error states
+emptyStateTitle: 还没有习惯
+emptyStateSubtitle: 从课程中养成一个习惯，开启每日打卡。
+startFirstHabitButton: 开始第一个习惯
+loadErrorTitle: 无法加载你的习惯
+loadErrorRetryButton: 重试
+
+# Adopt / Start first habit
+adoptHeaderLabel: 开始之前
+adoptChooseHabitLabel: 选择一个习惯开始
+adoptAddButton: 添加习惯
+adoptReminderLabel: 每日提醒
+adoptReminderMorning: 上午
+adoptReminderAfternoon: 下午
+adoptReminderEvening: 晚上
+adoptStartButton: 开始这个习惯 — 先试 ${days} 天
+adoptRemindLaterButton: 跳过，继续学习
+adoptAddedTitle: 已添加习惯！
+adoptAddedSubtitle: 我们会每天提醒你。你可以随时在“习惯”标签中查看。
+adoptGoToHabitButton: 前往习惯
+
+# Daily check-in
+checkInTitle: 每日打卡
+checkInQuestion: 你今天完成了吗？
+checkInNotYetButton: 还没有
+checkInDoneButton: 完成
+checkInChangeHabit: 更换
+
+# Post-lesson summary + commitment
+summaryWeeklyReviewTitle: 每周回顾
+summaryWorkingOnHabits: 你正在坚持 ${count} 个习惯
+summaryCheckInRateLabel: 习惯打卡率
+summaryBestStreakLabel: 最长连续
+summaryBestStreakValue: ${days} 天
+summaryTotalLessonsLabel: 课程总数
+summaryTotalCheckInsLabel: 打卡总次数
+summaryCommitmentQuestion: 这次坚持多久？
+summaryCommitmentStartButton: 开始 ${days} 天计划
+summaryCommitmentMaybeLater: 以后再说
+
+# Edit / pause / remove
+editSheetTitle: 习惯
+editActiveLabel: 进行中
+editInactiveLabel: 已暂停
+editRemoveLink: 删除
+editDoneButton: 完成
+
+# Upgrade habit (post-lesson, when already building a habit)
+upgradeCurrentLabel: 当前习惯
+upgradeNewLabel: 新习惯
+upgradeButton: 升级我的习惯
+upgradeKeepCurrentButton: 保持当前
+upgradedTitle: 习惯已升级！
+upgradedSubtitle: 你的习惯正在成长 — 继续保持。我们会每天提醒你。
+
+# Slot full -> upgrade
+slotFullTitle: 你已用满全部 ${limit} 个习惯名额
+slotFullSubtitle: 新习惯正在等待 — ${habitTitle}
+slotFullUpgradeButton: 解锁无限名额
+slotFullManageButton: 管理名额
+
+# Manage slots (Ready to set / swap for the new habit)
+manageSlotsTitle: 为新习惯腾出位置
+manageSlotsNewHabitWaiting: 新习惯正在等待 — ${habitTitle}
+manageSlotsHabitSection: 习惯
+manageSlotsNewSection: 新习惯
+manageSlotsConfirmButton: 确认更改
+
+# Check-in + diary (§9.7)
+checkInAddNote: 添加备注
+checkInNotePlaceholder: 在这里写下你的备注……
+checkInSubmit: 打卡
+
+# Habit detail (§9.8)
+detailCompletionRate: 完成率
+detailCurrentLoop: 当前连续
+detailCurrentLoopValue: ${days} 天
+detailTotalRepetitions: 总重复次数
+detailSince: 自 ${date}
+detailDiaryTitle: 习惯日记
+detailDiaryEmpty: 还没有日记
+detailDiaryCheckedIn: 已打卡
+
+# Home reminder card (§9.4)
+homeReminderHabitCount: ${count} 个习惯
+homeReminderWaiting: 在等你
+homeReminderSubtitle: 保持连续打卡的节奏！
+
+# Tracker empty state (§9.5)
+emptyGoToCourseButton: 去看课程
+
+# Re-anchor (§9.1)
+reanchorTitle: 这对你为什么重要？
+reanchorStartButton: 开始学习
+summaryBestHabitLabel: 最佳习惯
+summaryBestHabitLoop: ${days} 天连续
+reanchorPickLabel: 选择最适合你的一项

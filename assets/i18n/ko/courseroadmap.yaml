@@ -1,0 +1,19 @@
+additionalContentRequestCompleteLevel: 레벨 ${level} 완료
+additionalContentRequestLaterCta: 나중에
+additionalContentRequestNoChoice: 아니요, 충분해요!
+additionalContentRequestPopupPlaceholder: 궁금한 점을 입력하세요…
+additionalContentRequestPopupTitle: 좋아요! 또 무엇을 배우고 싶나요?
+additionalContentRequestQuestion: 더 많은 콘텐츠를 요청할까요?
+additionalContentRequestSendCta: 요청 보내기
+additionalContentRequestSubmitFailure: 요청을 보내지 못했어요. 다시 시도해 주세요.
+additionalContentRequestYesChoice: 네, 더 원해요!
+continueLearningButton: 학습 계속하기
+courseRoadmapInProgressStatusTag: 진행 중
+inProgressStatusTag: 진행 중
+keypointLabel: 핵심 포인트
+lessonsProgress: ${completed}/${total} 레슨
+noRoadmapAvailable: 로드맵이 없습니다
+startLearningButton: 학습 시작하기
+startLessonButton: 레슨 시작하기
+
+lockedSemanticLabel: 잠김

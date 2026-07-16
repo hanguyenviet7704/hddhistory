@@ -1,0 +1,98 @@
+benefit1Desc: phù hợp với lịch của bạn
+benefit1Title: Bài học ngắn gọn
+benefit2Desc: và xây dựng kỹ năng hữu ích
+benefit2Title: Luyện tập tình huống thực tế
+benefit3Desc: và tiến bộ từng bước
+benefit3Title: Theo dõi tiến độ
+emptyProductsDesc: Vui lòng thử lại sau ít phút.
+emptyProductsTitle: Chưa có gói khả dụng
+keyFeaturesTitle: Tính năng chính
+loadingPlans: Đang tải gói…
+manageAutoRenew: Tự động gia hạn
+manageAutoRenewOff: Tắt
+manageAutoRenewOn: Bật
+manageBillingPeriod: Chu kỳ thanh toán
+manageChangeCta: Thay đổi
+manageCurrentPlan: Gói hiện tại
+manageDefaultPlan: Gói Premium
+manageEmptyDescription: Nâng cấp để mở khóa năng lượng không giới hạn và toàn bộ bài
+  học.
+manageEmptyTitle: Bạn chưa có gói nào
+manageNextBillingDate: Ngày thanh toán tiếp theo
+manageNextBillingOn: Thanh toán tiếp theo vào \n${date}
+manageNextBillingUnknown: Thanh toán tiếp theo vào --
+manageNoActiveSubscription: Chưa có gói hoạt động
+manageNoNextBilling: Không có kỳ thanh toán tiếp theo
+managePlanLifetime: Trọn đời
+managePlanMonthly: Gói tháng
+managePlanWeekly: Gói tuần
+managePlanYearly: Gói năm
+manageStatusActive: Đang hoạt động
+manageStatusCanceled: Đã hủy
+manageStatusExpired: Hết hạn
+manageStatusGrace: Đang ân hạn
+manageStatusOnHold: Tạm khóa
+manageSubtitle: Xem chi tiết gói và thay đổi bất cứ lúc nào.
+manageTitle: Quản lý gói
+manageUpgradeCta: Nâng cấp
+mostPopularBadge: Ưu đãi
+originalPrice: Giá gốc
+payNowCta: Thanh toán ngay
+paymentFailToast: Thanh toán thất bại. Vui lòng thử lại.
+paymentPendingToast: Đang xử lý thanh toán. Vui lòng chờ.
+paymentSuccessToast: Thanh toán thành công
+paywallBannerSubtitle: Học từ role-play thực tế và luyện tập với kịch bản rẽ nhánh
+paywallBannerTitle: Học bằng thực hành
+paywallCtaUpgrade: Nâng cấp Premium
+paywallHeroEyebrow: Đừng chỉ lướt mãi.
+paywallHeroSubtitle: Xem MeUp giúp bạn thế nào
+paywallHeroTitle: 'Học một điều mới
+
+  mỗi ngày'
+paywallHighlightSubtitle: Mở khoá toàn bộ. Huỷ bất cứ lúc nào
+paywallPlanAnnual: Hằng năm
+paywallPlanLifetime: Trọn đời
+paywallPlanMonthly: Hằng tháng
+paywallPlanQuarterly: Hằng quý
+paywallPlanWeekly: Hằng tuần
+paywallPrimaryCta: Bắt đầu học ngay!
+paywallSubscriptionCaption: Đăng ký với ${price}. Huỷ bất cứ lúc nào
+paywallSubtitle: Mở khoá năng lượng không giới hạn và mọi bài học.
+paywallTitle: Nâng cấp Premium
+premiumBadge: Premium
+pricePerDay: mỗi ngày
+pricePerLifetime: trọn đời
+pricePerMonth: mỗi tháng
+pricePerQuarter: mỗi quý
+pricePerWeek: mỗi tuần
+pricePerYear: mỗi năm
+restore: Khôi phục mua hàng
+restoreNotFoundToast: Không tìm thấy giao dịch để khôi phục.
+restoreProcessingToast: Đang khôi phục mua hàng
+restoreSuccessToast: Đã khôi phục mua hàng.
+retry: Thử lại
+review1Body: Trước nghĩ kỹ năng mềm không cần học, trải qua role-play trong app giúp
+  tôi thấy rõ điểm yếu và cách sửa. Nhờ đó tôi cải thiện rất nhiều trong cuộc sống
+  👍
+review1Title: Ứng dụng nhiều vào đời sống
+review2Body: Tình cờ xem được quảng cáo của Meup mới nhận ra trước kia chỉ cắm đầu
+  làm, không chịu trau dồi kỹ năng nên đã bỏ lỡ nhiều cơ hội. Giờ tôi luyện tập với
+  app mỗi ngày - nếu cải thiện sẽ quay lại review tiếp!
+review2Title: Người trẻ nên học app này
+review3Body: Nội dung Meup rất sát thực tế, giúp tôi nhận ra thói quen phản ứng cảm
+  tính và học cách bình tĩnh hơn. Team còn khen tôi thay đổi tích cực 😀
+review3Title: Nội dung quá thực tế!
+reviewsTitle: Đánh giá & nhận xét
+saleBadge: Giảm ${percent}%
+saleCountdownEndsIn: Kết thúc sau
+saleCountdownLabel: Ưu đãi giới hạn thời gian
+seeAllPlans: Xem tất cả gói
+seeLessPlans: Thu gọn
+selectPlan: Chọn gói
+subscriptionActiveToast: Gói đăng ký của bạn đã được kích hoạt!
+subscriptionTitle: Gói đăng ký
+successCta: Khám phá ngay
+successDescription: Bạn đã là hội viên premium. Thoải mái trải nghiệm.
+successTitle: Thanh toán thành công
+verificationFailToast: Xác thực thất bại. Vui lòng liên hệ hỗ trợ nếu bạn đã bị trừ
+  tiền.

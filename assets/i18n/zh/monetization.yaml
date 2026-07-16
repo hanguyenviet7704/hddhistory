@@ -1,0 +1,91 @@
+benefit1Desc: 轻松适配你的日程
+benefit1Title: 碎片化课程
+benefit2Desc: 并建立实用技能
+benefit2Title: 练习真实情境
+benefit3Desc: 一步步持续成长
+benefit3Title: 追踪你的进度
+emptyProductsDesc: 请稍后再试。
+emptyProductsTitle: 暂无可用方案
+keyFeaturesTitle: 核心功能
+loadingPlans: 正在加载方案…
+manageAutoRenew: 自动续订
+manageAutoRenewOff: 关闭
+manageAutoRenewOn: 开启
+manageBillingPeriod: 计费周期
+manageChangeCta: 更改
+manageCurrentPlan: 当前套餐
+manageDefaultPlan: 高级版套餐
+manageEmptyDescription: 升级即可解锁无限能量和全部课程。
+manageEmptyTitle: 还没有订阅
+manageNextBillingDate: 下次扣费日期
+manageNextBillingOn: 下次扣费日期 \n${date}
+manageNextBillingUnknown: 下次扣费日期 --
+manageNoActiveSubscription: 尚未激活订阅
+manageNoNextBilling: 无后续扣费
+managePlanLifetime: 终身套餐
+managePlanMonthly: 月度套餐
+managePlanWeekly: 周套餐
+managePlanYearly: 年度套餐
+manageStatusActive: 有效
+manageStatusCanceled: 已取消
+manageStatusExpired: 已过期
+manageStatusGrace: 宽限期
+manageStatusOnHold: 已暂停
+manageSubtitle: 查看套餐详情并随时更改。
+manageTitle: 订阅管理
+manageUpgradeCta: 升级
+mostPopularBadge: 最划算
+originalPrice: 原价
+payNowCta: 立即支付
+paymentFailToast: 支付失败，请重试。
+paymentPendingToast: 正在处理支付，请稍候。
+paymentSuccessToast: 支付成功
+paywallBannerSubtitle: 从真实角色扮演学习并用情景分支练习
+paywallBannerTitle: 通过实战学习
+paywallCtaUpgrade: 升级高级版
+paywallHeroEyebrow: 别再只是滑过。
+paywallHeroSubtitle: 看看 MeUp 如何帮助你
+paywallHeroTitle: '每天都学到
+
+  新东西'
+paywallHighlightSubtitle: 解锁全部内容，随时可取消
+paywallPlanAnnual: 年度
+paywallPlanLifetime: 终身
+paywallPlanMonthly: 月度
+paywallPlanQuarterly: 季度
+paywallPlanWeekly: 每周
+paywallPrimaryCta: 今天就开始学习！
+paywallSubscriptionCaption: 订阅 ${price}，随时可取消
+paywallSubtitle: 解锁无限能量和全部课程。
+paywallTitle: 升级高级版
+premiumBadge: 高级版
+pricePerDay: 每天
+pricePerLifetime: 终身
+pricePerMonth: 每月
+pricePerQuarter: 每季度
+pricePerWeek: 每周
+pricePerYear: 每年
+restore: 恢复购买
+restoreNotFoundToast: 没有可恢复的购买。
+restoreProcessingToast: 正在恢复购买
+restoreSuccessToast: 购买已恢复。
+retry: 重试
+review1Body: 以前觉得软技能不用学，App 里的角色扮演让我看清弱点和改进方法，所以在生活中进步很多 👍
+review1Title: 在日常生活中很实用
+review2Body: 偶然看到 Meup 广告才发现过去只埋头做事、不提升技能，错过了很多机会。现在我每天用 App 练习——提升后会再来更新评价！
+review2Title: 年轻人都该学这个应用
+review3Body: Meup 的内容很贴近真实场景，帮我发现自己情绪化的反应习惯并学会更冷静。团队还夸我变化积极 😀
+review3Title: 内容太贴近现实了！
+reviewsTitle: 评分与评价
+saleBadge: 优惠${percent}%
+saleCountdownEndsIn: 距结束
+saleCountdownLabel: 限时优惠
+seeAllPlans: 查看全部方案
+seeLessPlans: 收起
+selectPlan: 选择方案
+subscriptionActiveToast: 您的订阅已激活！
+subscriptionTitle: 订阅
+successCta: 立即体验
+successDescription: 您已成为高级会员，尽情使用。
+successTitle: 支付成功
+verificationFailToast: 验证失败。如果已扣款，请联系客服。

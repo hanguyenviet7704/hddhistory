@@ -1,0 +1,113 @@
+# Bottom nav
+navLabel: 습관
+
+# Habit tab header
+headerTodayTitle: 오늘
+headerTasksToComplete: ${count}개 남음
+headerCompletedTitle: ${done}/${total}개 습관
+headerAllDoneSubtitle: 🎉 오늘 모두 완료
+headerInProgressSubtitle: 오늘도 계속해요
+headerEmptySubtitle: 첫 습관을 시작하세요
+taskToggleLabel: 할 일
+habitToggleLabel: 습관
+editHabitLink: 습관 편집
+noProgressLabel: 진행 없음
+streakDaysLabel: ${days}일 연속
+
+# Empty / error states
+emptyStateTitle: 아직 습관이 없어요
+emptyStateSubtitle: 코스에서 습관을 들여 매일 연속 기록을 만들어 보세요.
+startFirstHabitButton: 첫 습관 시작하기
+loadErrorTitle: 습관을 불러오지 못했어요
+loadErrorRetryButton: 다시 시도
+
+# Adopt / Start first habit
+adoptHeaderLabel: 시작하기 전에
+adoptChooseHabitLabel: 시작할 습관을 선택하세요
+adoptAddButton: 습관 추가
+adoptReminderLabel: 매일 알림
+adoptReminderMorning: 오전
+adoptReminderAfternoon: 오후
+adoptReminderEvening: 저녁
+adoptStartButton: 이 습관 시작하기 — 우선 ${days}일간
+adoptRemindLaterButton: 건너뛰고 계속 학습하기
+adoptAddedTitle: 습관을 추가했어요!
+adoptAddedSubtitle: 매일 알려드릴게요. '습관' 탭에서 언제든 볼 수 있어요.
+adoptGoToHabitButton: 습관으로 이동
+
+# Daily check-in
+checkInTitle: 매일 체크인
+checkInQuestion: 오늘 하셨나요?
+checkInNotYetButton: 아직요
+checkInDoneButton: 완료
+checkInChangeHabit: 변경
+
+# Post-lesson summary + commitment
+summaryWeeklyReviewTitle: 주간 리뷰
+summaryWorkingOnHabits: ${count}개 습관을 실천하고 있어요
+summaryCheckInRateLabel: 습관 체크인율
+summaryBestStreakLabel: 최고 연속 기록
+summaryBestStreakValue: ${days}일
+summaryTotalLessonsLabel: 총 레슨 수
+summaryTotalCheckInsLabel: 총 체크인 수
+summaryCommitmentQuestion: 이번엔 얼마나?
+summaryCommitmentStartButton: ${days}일 팩 시작
+summaryCommitmentMaybeLater: 나중에
+
+# Edit / pause / remove
+editSheetTitle: 습관
+editActiveLabel: 진행 중
+editInactiveLabel: 일시중지
+editRemoveLink: 삭제
+editDoneButton: 완료
+
+# Upgrade habit (post-lesson, when already building a habit)
+upgradeCurrentLabel: 현재 습관
+upgradeNewLabel: 새 습관
+upgradeButton: 습관 업그레이드
+upgradeKeepCurrentButton: 현재 유지
+upgradedTitle: 습관을 업그레이드했어요!
+upgradedSubtitle: 습관이 자라고 있어요 — 계속 이어가요. 매일 알려드릴게요.
+
+# Slot full -> upgrade
+slotFullTitle: ${limit}개 습관 슬롯을 모두 사용했어요
+slotFullSubtitle: 새 습관이 기다리고 있어요 — ${habitTitle}
+slotFullUpgradeButton: 무제한 슬롯 잠금 해제
+slotFullManageButton: 슬롯 관리
+
+# Manage slots (Ready to set / swap for the new habit)
+manageSlotsTitle: 새 습관으로 교체하기
+manageSlotsNewHabitWaiting: 새 습관이 기다리고 있어요 — ${habitTitle}
+manageSlotsHabitSection: 습관
+manageSlotsNewSection: 새 습관
+manageSlotsConfirmButton: 변경 확인
+
+# Check-in + diary (§9.7)
+checkInAddNote: 메모 추가
+checkInNotePlaceholder: 여기에 메모를 적어보세요…
+checkInSubmit: 체크인
+
+# Habit detail (§9.8)
+detailCompletionRate: 완료율
+detailCurrentLoop: 현재 연속
+detailCurrentLoopValue: ${days}일
+detailTotalRepetitions: 총 반복 횟수
+detailSince: ${date}부터
+detailDiaryTitle: 습관 일기
+detailDiaryEmpty: 아직 일기가 없어요
+detailDiaryCheckedIn: 체크인 완료
+
+# Home reminder card (§9.4)
+homeReminderHabitCount: ${count}개 습관
+homeReminderWaiting: 기다리고 있어요
+homeReminderSubtitle: 계속 이어가요!
+
+# Tracker empty state (§9.5)
+emptyGoToCourseButton: 코스로 이동
+
+# Re-anchor (§9.1)
+reanchorTitle: 이것이 당신에게 왜 중요한가요?
+reanchorStartButton: 학습 시작
+summaryBestHabitLabel: 최고의 습관
+summaryBestHabitLoop: ${days}일 연속
+reanchorPickLabel: 가장 잘 맞는 것을 선택하세요

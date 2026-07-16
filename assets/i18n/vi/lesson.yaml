@@ -1,0 +1,38 @@
+audioErrorDescription: Đã xảy ra lỗi khi tải âm thanh. Bạn có thể chuyển sang Đọc
+  hoặc thử lại.
+audioErrorTitle: Không thể phát âm thanh
+audioListenLabel: Nghe
+audioReadLabel: Đọc
+audioRetry: Thử lại
+audioSpeedNormal: Bình thường
+audioSpeedSuffix: tốc độ
+audioSpeedTitle: Tốc độ
+charCounter: ${currentChars}/${maxChars} ký tự
+checkButton: Kiểm tra
+closePopupDescription: Bài học của bạn sẽ không được lưu nếu bạn thoát bây giờ.
+closePopupKeepLearning: Tiếp tục học
+closePopupQuit: Thoát
+closePopupTitle: Khoan đã!
+emptyPopupCta: Tôi đã hiểu
+emptyPopupDescription: Khóa học đang được cập nhật, \nhãy đón chờ!
+emptyPopupTitle: Sắp ra mắt
+lessonLessonKeypointInstruction: Cách bạn học
+lessonLessonKeypointTitle: Nội dung trọng tâm
+navigationPopupContinueBold: Nhấn Tiếp tục
+navigationPopupContinueRest: để đi tiếp
+navigationPopupScrollBold: Cuộn xuống
+navigationPopupScrollRest: để quay lại
+navigationPopupTapToContinue: Chạm để tiếp tục
+navigationPopupTitle: Cách điều hướng
+typeYourAnswerHint: Nhập câu trả lời của bạn...
+liveActivityInLesson: ĐANG HỌC
+liveActivityContinueLearning: HỌC TIẾP
+liveActivityResumeLesson: Tiếp tục học
+liveActivityNextLesson: Bài tiếp theo
+liveActivityNudge(param=count): ~${count} phút để hoàn thành bài tiếp theo
+liveActivityNudgeDone: Chạm để bắt đầu bài tiếp theo
+liveActivityCourseComplete: Hoàn thành khóa học
+liveActivityNudgeNotifTitle: Bài học của bạn còn dang dở
+liveActivityNudgeNotifBody(param=count): Hoàn thành ${count} phút cuối ngay, trước khi quên.
+liveActivityDoneNotifTitle: Giữ kiến thức tươi mới ngày mai
+liveActivityDoneNotifBody(param=course): Bạn đã hoàn thành ${course}. Quay lại ngày mai để ghi nhớ lâu.

@@ -1,0 +1,19 @@
+additionalContentRequestCompleteLevel: 完成第 ${level} 级
+additionalContentRequestLaterCta: 稍后
+additionalContentRequestNoChoice: 不用，够了！
+additionalContentRequestPopupPlaceholder: 输入你想了解的内容...
+additionalContentRequestPopupTitle: 太棒了！你还想学习什么？
+additionalContentRequestQuestion: 你想请求更多内容吗？
+additionalContentRequestSendCta: 发送请求
+additionalContentRequestSubmitFailure: 暂时无法发送请求。请重试。
+additionalContentRequestYesChoice: 想要更多！
+continueLearningButton: 继续学习
+courseRoadmapInProgressStatusTag: 进行中
+inProgressStatusTag: 进行中
+keypointLabel: 要点
+lessonsProgress: ${completed}/${total} 节课
+noRoadmapAvailable: 暂无课程路线
+startLearningButton: 开始学习
+startLessonButton: 开始课程
+
+lockedSemanticLabel: 已锁定

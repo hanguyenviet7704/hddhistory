@@ -1,0 +1,210 @@
+onboardingAfterOnboardEncourageMessage: 72% người dùng của chúng tôi có cùng câu trả
+  lời
+onboardingAfterOnboardEncourageSubText: Hãy bắt đầu ngay hôm nay và trở thành phiên
+  bản tốt hơn của chính mình
+onboardingAfterOnboardEncourageTitle: Bạn không đơn độc!
+onboardingBeSkilledExpectTimeOption1: ${number} tháng
+onboardingBeSkilledExpectTimeOption2: ${number} tháng
+onboardingBeSkilledExpectTimeQuestion: Bạn muốn trở nên thành thạo giao tiếp trong
+  bao lâu?
+onboardingBranchingBadgeFallbackOne: Giao tiếp
+onboardingBranchingBadgeFallbackTwo: Phát triển
+onboardingBranchingChooseMyselfButton: Tôi muốn tự chọn
+onboardingBranchingCreatePathButton: Tạo lộ trình của tôi
+onboardingBranchingDidYouKnowTitle: Bạn có biết?
+onboardingBranchingLoadingSubtitle: Chúng tôi sẽ gợi ý cho bạn khóa học phù hợp nhất
+onboardingBranchingRecommendationDefaultSubtitle: Những người có thử thách tương tự
+  đã cải thiện nhờ khóa học này
+onboardingBranchingRecommendationDefaultTitle: Một khóa học được đề xuất cho bạn
+onboardingBranchingRecommendationLabel: Khóa học phù hợp nhất với bạn
+onboardingBranchingRecommendationUsersSuffix: người dùng
+onboardingBranchingWelcomeSubtitle: Để Meup thiết kế lộ trình học tập cá nhân hóa
+  cho bạn
+onboardingBranchingWelcomeTitle: Rất vui được gặp bạn, ${userName}!
+onboardingChooseSkillsetSubtitle: Chọn tất cả theo nhu cầu của bạn
+onboardingChooseSkillsetTitle: Bạn muốn nâng cấp kỹ năng nào nhất?
+onboardingDailyGoalSubtitle: Bạn có thể thay đổi sau
+onboardingEarlyCareerAdultOption: 25–34
+onboardingEvaluateBackground: Nền tảng cá nhân
+onboardingEvaluateDificulty: Khó khăn
+onboardingEvaluateLearningGoal: Mục tiêu học tập
+onboardingEvaluateStudyHabits: Thói quen học tập
+onboardingFeedbackHeadlineHighlight: 20.000 học viên
+onboardingFeedbackHeadlinePrefix: Trở thành một trong
+onboardingFeedbackHeadlineSuffix: của chúng mình
+onboardingFemaleOption: Nữ
+onboardingFirstAppKeypointIntro: Học nhanh hơn
+onboardingFirstScreenContext: Nâng cao kỹ năng giúp bạn tự tin nắm bắt cơ hội mới.
+onboardingHowToLearnCardSubtitle: Học từ các tình huống RolePlay thực tế và luyện
+  tập với nhánh kịch bản
+onboardingHowToLearnCardTitle: Học thông qua thực hành
+onboardingHowToLearnNote: Và đây là cách mà MeUp giúp bạn
+onboardingHowToLearnTitle: Học tất cả kỹ năng bạn cần chỉ trong một ứng dụng
+onboardingIntroduceBusyAllDay: Tôi bận rộn cả ngày, nhưng lại cảm thấy chẳng làm được
+  gì
+onboardingIntroduceLearnFades: Những gì tôi học được sẽ phai mờ vào tuần sau
+onboardingIntroduceMyFeelings: Cảm xúc của tôi rất ồn ào — tôi không thể đọc được
+  chúng
+onboardingIntroduceMyThoughts: Suy nghĩ của tôi cứ xoay vòng mà không đi đến đâu
+onboardingIntroduceNothingNew: Không có gì mới mẻ — tôi nhớ cảm giác hứng khởi đó
+onboardingIntroduceTalkToMany: Tôi nói chuyện với nhiều người, nhưng kết nối được
+  với rất ít
+onboardingLearningGoalQuestion: Mục tiêu của bạn khi nâng cao kỹ năng là gì?
+onboardingLoadingPersonalizationText: Chúng tôi đang tạo lộ trình học tập cá nhân
+  hóa cho bạn...
+onboardingMaleOption: Nam
+onboardingMascotDialogFirstScreen: Thế giới thay đổi từng ngày<br>Kỹ năng của bạn
+  cũng vậy</br>
+onboardingMascotDialogLearningMethod: Luyện tập với phương pháp học độc quyền của
+  MeUp
+onboardingMascotDialogSecondScreen: Cách học truyền thống không còn hiệu quả
+onboardingMascotGreetingMessage: Cho mình biết một chút về bạn nhé!
+onboardingMascotGreetingTitle: Chào bạn!
+onboardingMidCareerAdultOption: 35–44
+onboardingMotivationOneTitle: Giỏi lắm, ${userName}!
+onboardingMotivationThreeTitle: Tuyệt vời!
+onboardingMotivationTwoTitle: Biết gì không, ${userName}!
+onboardingMotivationWelcomeTitle: Chào mừng, ${userName}!
+onboardingNotificationRequestBody: Bật thông báo để nhận lời nhắc học, nhắc streak
+  và các cập nhật quan trọng trong lúc bạn bắt đầu.
+onboardingNotificationRequestPrimaryCta: Bật thông báo
+onboardingNotificationRequestSecondaryCta: Để sau
+onboardingNotificationRequestTitle: Đừng bỏ lỡ bước tiếp theo
+onboardingOlderAdult: 45 tuổi trở lên
+onboardingOtherGenderOption: Khác
+onboardingSecondAppKeypointIntro: Xây dựng thói quen
+onboardingSecondScreenContext: 80% kiến thức bị quên nếu không luyện tập đúng cách.
+onboardingSkipGreetingButton: Tiếp tục
+onboardingSkipIntroButton: Bỏ qua
+onboardingStartJourneyButton: Bắt đầu hành trình của bạn!
+onboardingStartNowButton: Bắt đầu ngay
+onboardingStruggleNote: Nhớ lại chút nhé!
+onboardingStruggleOption1: Khó duy trì kỷ luật
+onboardingStruggleOption2: Không thấy tiến bộ rõ ràng
+onboardingStruggleOption3: Quá nhiều thông tin
+onboardingStruggleOption4: Không có nhận xét hay hướng dẫn
+onboardingStruggleOption5: Khó áp dụng vào thực tế
+onboardingStruggleOption6: Phương pháp học không phù hợp với tôi
+onboardingStruggleOption7: Không có lộ trình học cá nhân hóa
+onboardingStruggleQuestion: Bạn đã gặp những khó khăn gì trong khi học một kỹ năng
+  mới nhỉ?
+onboardingStruggleQuestionSubtitle: Giúp mình hiểu hơn về bạn để đưa ra phương pháp
+  học phù hợp nhất nhé!
+onboardingTeenAgeOption: 17 tuổi hoặc nhỏ hơn
+onboardingThirdAppKeypointIntro: Tiến bộ rõ rệt
+onboardingTimeSpentOption: ${number} phút
+onboardingTimeSpentTitle: Chúng ta nên nên học cùng nhau bao lâu mỗi ngày?
+onboardingTimeStudyOption1: Buổi sáng
+onboardingTimeStudyOption2: Giờ giải lao
+onboardingTimeStudyOption3: Trước khi ngủ
+onboardingTimeStudyOption4: Lúc rảnh
+onboardingTimeStudyQuestion: Khung giờ học "năng suất" nhất của bạn?
+onboardingTimeStudySubtitle: Lựa chọn một mốc thời gian để xây dựng thói quen
+onboardingTopicOption1: Giao tiếp
+onboardingTopicOption1Specific: Nói trước đám đông, Nghe chủ động, Quản lý xung đột,
+  Kỹ năng thuyết trình
+onboardingTopicOption2: Hiệu suất cá nhân
+onboardingTopicOption2Specific: Quản lý thời gian, Kỹ năng tổ chức, Ghi nhớ
+onboardingTopicOption3: Kỹ năng tư duy
+onboardingTopicOption3Specific: Tư duy phân tích, Tư duy phản biện, Giải quyết vấn
+  đề
+onboardingTopicOption4: Quản lý cảm xúc và căng thẳng
+onboardingTopicOption4Specific: Động lực
+onboardingTopicOption5: Kỹ năng công nghệ
+onboardingTopicOption5Specific: Trí tuệ nhân tạo (AI)
+onboardingTopicOption6: Xây dựng thương hiệu cá nhân
+onboardingTopicOption6Specific: Thương hiệu cá nhân, Kỹ năng kết nối (Networking)
+onboardingUserAgeQuestion: Bạn thuộc độ tuổi nào?
+onboardingUserGenderQuestion: Đâu là mô tả phù hợp nhất với bạn?
+onboardingUserNamePlaceholder: Điền tên của bạn
+onboardingUserNameQuestion: Mình có thể gọi bạn là gì nhỉ?
+onboardingV2AgeEmpty: Chưa có lựa chọn độ tuổi
+onboardingV2AgeLoadError: Không thể tải độ tuổi
+onboardingV2ContinueCta: Tiếp tục
+onboardingV2GenericError: Có lỗi xảy ra. Vui lòng thử lại.
+onboardingV2MaybeLaterCta: Để sau
+onboardingV2NotificationCardBody: Bài học 2 phút của bạn đã sẵn sàng
+onboardingV2NotificationCardTimestamp: Bây giờ
+onboardingV2NotificationCardTitle: Đến giờ tập trung
+onboardingV2NotifyCta: Bật thông báo
+onboardingV2P1GetStartedCta: Bắt đầu
+onboardingV2P1SubtitleLine1: Bài học nhỏ. Tiến bộ lớn.
+onboardingV2P1SubtitleLine2: Nâng cấp tư duy với 5 phút mỗi ngày.
+onboardingV2P1TitleBrand: Meup
+onboardingV2P1TitlePrefix: Chào mừng đến với
+onboardingV2P2HeadingHighlight: gọi bạn là gì?
+onboardingV2P2HeadingPrefix: Đầu tiên, mình nên
+onboardingV2P2InputHint: Tên của bạn
+onboardingV2P2Subtitle: Để hành trình này thật sự là của bạn
+onboardingV2P3HeadingHighlight: Bạn bao nhiêu tuổi?
+onboardingV2P3HeadingPrefix: Chào ${name},
+onboardingV2P3Subtitle: Chúng tôi sẽ điều chỉnh bài học theo giai đoạn của bạn
+onboardingV2P4HeadingHighlight: giống bạn nhất?
+onboardingV2P4HeadingPrefix: Điều nào
+onboardingV2P4Subtitle: Chọn tất cả những điều bạn thấy đúng
+onboardingV2P5HeadingHighlight: khoa học não bộ.
+onboardingV2P5HeadingPrefix: Dựa trên
+onboardingV2P5HeadingSuffix: Dành cho đời sống thật.
+onboardingV2P5PathHeadingHighlight: hợp với bạn?
+onboardingV2P5PathHeadingPrefix: Lộ trình nào
+onboardingV2P5PathSubtitle(param=count):
+  zero: Chọn 0/2 điều bạn muốn phát triển nhất
+  one: Chọn 1/2 điều bạn muốn phát triển nhất
+  other: Chọn ${count}/2 điều bạn muốn phát triển nhất
+onboardingV2P5SubtitlePluralFirst: ✨ ${count} lộ trình đã mở - điểm bắt đầu của bạn
+onboardingV2P5SubtitleRemainingSecond: Còn ${count} lộ trình để khám phá bất cứ lúc
+  nào
+onboardingV2P5SubtitleSingularFirst: ✨ 1 lộ trình đã mở - điểm bắt đầu của bạn
+onboardingV2P5SubtitleZeroFirst: ✨ Điểm bắt đầu của bạn đã sẵn sàng
+onboardingV2P5SubtitleZeroSecond: Nhiều lộ trình khác đang chờ bạn khám phá
+onboardingV2P6HeadingHighlight: nhịp học
+onboardingV2P6HeadingPrefix: Giữ
+onboardingV2P6Subtitle: Chỉ nhắc hữu ích, không làm phiền
+onboardingV2P7CourseTitleFallback: Khóa học được đề xuất
+onboardingV2P7FallbackCopy: Khám phá tất cả khóa học và chọn điều phù hợp với hôm
+  nay.
+onboardingV2P7FallbackTitle: Lộ trình khóa học đã sẵn sàng
+onboardingV2P7Label: Khóa học phù hợp nhất
+onboardingV2P7PrimaryCta: Vào học ngay!
+onboardingV2P7SecondaryCta: Tôi sẽ tự khám phá
+onboardingV2P7SocialProof: '93.8 % người dùng
+
+  có thử thách tương tự đã cải thiện với khóa học này'
+onboardingV2P8CatalogCta: Xem khóa học
+onboardingV2P8CourseTitleFallback: Khóa học được đề xuất
+onboardingV2P8Eyebrow: Được chọn từ câu trả lời của bạn
+onboardingV2P8FallbackCopy: Thử lại hoặc xem toàn bộ danh mục khóa học.
+onboardingV2P8FallbackTitle: Chưa tải được khóa học phù hợp
+onboardingV2P8Label: Phù hợp nhất
+onboardingV2P8SelectCta: Chọn
+onboardingV2P8Title: Chọn khóa học của bạn
+onboardingV2PathConnectBetter: Kết nối tốt hơn
+onboardingV2PathExploreBetter: Khám phá tốt hơn
+onboardingV2PathFeelBetter: Cảm xúc tốt hơn
+onboardingV2PathLearnBetter: Học tốt hơn
+onboardingV2PathThinkBetter: Suy nghĩ tốt hơn
+onboardingV2PathWorkBetter: Làm việc tốt hơn
+onboardingV2RetryCta: Thử lại
+onboardingV2SkillsetEmpty: Chưa có kỹ năng nào
+onboardingV2SkillsetLoadError: Không thể tải kỹ năng
+onboardingV2SymptomAmazedByHumanBody: Cơ thể con người khiến tôi kinh ngạc
+onboardingV2SymptomAnxietyAroundHardConversations: Cuộc trò chuyện khó làm tôi lo
+  lắng
+onboardingV2SymptomCuriousAboutBody: Tôi tò mò về cơ thể mình
+onboardingV2SymptomDifficultyBuildingHabits: Xây dựng thói quen khó hơn tôi muốn
+onboardingV2SymptomEndlessScrollingFeelsEmpty: Lướt mãi vẫn thấy trống rỗng
+onboardingV2SymptomForgettingAfterStudying: Tôi quên nhanh sau khi học
+onboardingV2SymptomLearningDoesNotStick: Kiến thức không đọng lại
+onboardingV2SymptomLifeFeelsOverwhelming: Cuộc sống khiến tôi quá tải
+onboardingV2SymptomLosingTrainOfThought: Tôi hay mất mạch suy nghĩ
+onboardingV2SymptomLoveLearningFromGreatMinds: Tôi thích học từ những bộ óc lớn
+onboardingV2SymptomMotivationDisappears: Động lực của tôi biến mất
+onboardingV2SymptomOverthinking: Tôi suy nghĩ quá nhiều
+onboardingV2SymptomRegretSayingThingsInEmotion: Tôi hối hận khi nói trong cảm xúc
+onboardingV2SymptomRushedDecisions: Tôi ra quyết định vội vàng
+onboardingV2SymptomStrugglingToBreakBadHabits: Tôi muốn bỏ thói quen xấu nhưng chưa
+  được
+onboardingV2SymptomTimeSlipsAway: Thời gian trôi khỏi tay tôi
+onboardingV2SymptomTryingToDoTooMuch: Tôi cố làm quá nhiều thứ
+onboardingV2SymptomWantToListenMoreDeeply: Tôi muốn lắng nghe sâu hơn
+onboardingYoungAdultOption: 18–24

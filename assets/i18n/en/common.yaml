@@ -1,0 +1,21 @@
+appTitle: MeUp
+back: Back
+cancel: Cancel
+canvasTryAgain: Try Again
+close: Close
+continue: Continue
+emptyList: Empty List
+errorNoInternetConnection: No Internet Connection
+errorOopsItLooksLikeYouAreOffline: Oops! It looks like you are offline
+errorOopsSomethingWentWrongWhileLoading: Oops! Something went wrong while loading...
+errorServerError: Server Error
+errorSomethingHappened: Something happened!
+errorTakingAPauseIsAlsoPart: Taking a pause is also part of the creative process...
+fakedoorComingSoon: Coming Soon
+fakedoorFeaturesNameIsAlmostReady: ${featuresName} is almost ready!
+fakedoorIDoNotWantNotifications: I do not want notifications
+fakedoorNotifyMe: Notify Me
+next: Next
+'no': 'No'
+skip: Skip
+'yes': 'Yes'

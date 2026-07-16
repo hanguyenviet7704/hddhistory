@@ -1,0 +1,33 @@
+allcourseAllCourses: 모든 코스
+allcourseExploreSkillsets: 코스
+allcourseMyCourse: 내 코스
+emptyState: 코스를 시작하면 내 코스에 추가됩니다
+errorOccurred: 오류가 발생했습니다
+lessonLabel: 레슨
+lessonsCount(param=count):
+  zero: 업데이트 중
+  one: ${count} 레슨
+  other: ${count} 레슨
+lessonsProgress: ${completed}/${total} 레슨
+noKeypointsAvailable: 핵심 포인트가 없습니다
+noLessonData: 레슨 데이터가 없습니다
+progressCompleted: 완료
+progressNotStarted: 시작 안 함
+progressPercent: ${percent}% 완료
+searchClearAll: 모두 지우기
+searchClearSemanticLabel: 검색 지우기
+searchNoResults: ${query}에 대한 결과가 없습니다
+searchNoResultsHint: 다른 제목이나 키워드를 시도해 보세요
+searchPlaceholder: 제목, 키워드 입력...
+searchPlaceholderActive: 검색 중...
+searchRecent: 최근
+searchSemanticLabel: 코스 검색
+searchTypeToSearch: 검색어를 입력하세요
+
+comingSoonLabel: 출시 예정
+newCourseLabel: 새 코스
+comingSoonDescription: 이 코스는 곧 제공됩니다. 기대해 주세요!
+comingSoonGotIt: 확인
+viewMore: 더 보기
+changeCourseTitle: 코스 변경
+changeCourseTabAll: 전체

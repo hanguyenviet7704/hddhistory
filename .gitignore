@@ -59,7 +59,9 @@ logs/
 
 # Localization files
 assets/arb/
-assets/i18n/
+# assets/i18n/ is now tracked in git — YAML is the source of truth (Google
+# Sheets workflow retired), so the repo builds cleanly from a fresh clone
+# (slang regenerates the gitignored l10n.g.dart from these YAML sources).
 
 # FVM Version Cache
 .fvm/

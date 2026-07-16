@@ -1,0 +1,113 @@
+# Bottom nav
+navLabel: 習慣
+
+# Habit tab header
+headerTodayTitle: 今日
+headerTasksToComplete: 残り ${count} 件
+headerCompletedTitle: ${done}/${total} 個の習慣
+headerAllDoneSubtitle: 🎉 今日はすべて完了
+headerInProgressSubtitle: 今日も続けよう
+headerEmptySubtitle: 最初の習慣を始めよう
+taskToggleLabel: タスク
+habitToggleLabel: 習慣
+editHabitLink: 習慣を編集
+noProgressLabel: 進捗なし
+streakDaysLabel: ${days} 日連続
+
+# Empty / error states
+emptyStateTitle: まだ習慣がありません
+emptyStateSubtitle: コースから習慣を取り入れて、毎日の連続記録を作りましょう。
+startFirstHabitButton: 最初の習慣を始める
+loadErrorTitle: 習慣を読み込めませんでした
+loadErrorRetryButton: 再試行
+
+# Adopt / Start first habit
+adoptHeaderLabel: はじめる前に
+adoptChooseHabitLabel: 始める習慣を選ぶ
+adoptAddButton: 習慣を追加
+adoptReminderLabel: 毎日のリマインダー
+adoptReminderMorning: 朝
+adoptReminderAfternoon: 昼
+adoptReminderEvening: 夜
+adoptStartButton: この習慣を始める — まずは ${days} 日間
+adoptRemindLaterButton: スキップして学習を続ける
+adoptAddedTitle: 習慣を追加しました！
+adoptAddedSubtitle: 毎日リマインドします。「習慣」タブでいつでも確認できます。
+adoptGoToHabitButton: 習慣へ移動
+
+# Daily check-in
+checkInTitle: 毎日のチェックイン
+checkInQuestion: 今日はやりましたか？
+checkInNotYetButton: まだ
+checkInDoneButton: 完了
+checkInChangeHabit: 変更
+
+# Post-lesson summary + commitment
+summaryWeeklyReviewTitle: 週間レビュー
+summaryWorkingOnHabits: ${count} 個の習慣に取り組んでいます
+summaryCheckInRateLabel: 習慣チェックイン率
+summaryBestStreakLabel: 最長連続記録
+summaryBestStreakValue: ${days} 日
+summaryTotalLessonsLabel: レッスン合計
+summaryTotalCheckInsLabel: チェックイン合計
+summaryCommitmentQuestion: 今回はどこまで？
+summaryCommitmentStartButton: ${days} 日パックを始める
+summaryCommitmentMaybeLater: あとで
+
+# Edit / pause / remove
+editSheetTitle: 習慣
+editActiveLabel: 実行中
+editInactiveLabel: 停止中
+editRemoveLink: 削除
+editDoneButton: 完了
+
+# Upgrade habit (post-lesson, when already building a habit)
+upgradeCurrentLabel: 現在の習慣
+upgradeNewLabel: 新しい習慣
+upgradeButton: 習慣をアップグレード
+upgradeKeepCurrentButton: このままにする
+upgradedTitle: 習慣をアップグレードしました！
+upgradedSubtitle: 習慣が育っています — この調子で。毎日リマインドします。
+
+# Slot full -> upgrade
+slotFullTitle: ${limit} 個の習慣枠をすべて使い切りました
+slotFullSubtitle: 新しい習慣が待っています — ${habitTitle}
+slotFullUpgradeButton: 無制限の枠を解放
+slotFullManageButton: 枠を管理
+
+# Manage slots (Ready to set / swap for the new habit)
+manageSlotsTitle: 新しい習慣と入れ替える
+manageSlotsNewHabitWaiting: 新しい習慣が待っています — ${habitTitle}
+manageSlotsHabitSection: 習慣
+manageSlotsNewSection: 新しい習慣
+manageSlotsConfirmButton: 変更を確定
+
+# Check-in + diary (§9.7)
+checkInAddNote: メモを追加
+checkInNotePlaceholder: ここにメモを書いてください…
+checkInSubmit: チェックイン
+
+# Habit detail (§9.8)
+detailCompletionRate: 達成率
+detailCurrentLoop: 現在の連続
+detailCurrentLoopValue: ${days} 日
+detailTotalRepetitions: 累計回数
+detailSince: ${date} から
+detailDiaryTitle: 習慣ダイアリー
+detailDiaryEmpty: まだメモがありません
+detailDiaryCheckedIn: チェックイン済み
+
+# Home reminder card (§9.4)
+homeReminderHabitCount: ${count}個の習慣
+homeReminderWaiting: 待っています
+homeReminderSubtitle: この調子で続けましょう！
+
+# Tracker empty state (§9.5)
+emptyGoToCourseButton: コースへ
+
+# Re-anchor (§9.1)
+reanchorTitle: これはあなたにとってなぜ大切ですか？
+reanchorStartButton: 学習を始める
+summaryBestHabitLabel: ベストな習慣
+summaryBestHabitLoop: ${days}日連続
+reanchorPickLabel: 自分に一番合うものを選んでください
