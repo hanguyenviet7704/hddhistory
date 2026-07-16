@@ -32,7 +32,7 @@ class HabitTaskRow extends StatelessWidget {
                 style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
               ),
             ),
-            16.horizontalSpace,
+            4.horizontalSpace,
             Semantics(
               button: true,
               label: userHabit.displayTitle,
@@ -40,16 +40,22 @@ class HabitTaskRow extends StatelessWidget {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: onCheckInTap,
-                child: Container(
-                  width: 20.w,
-                  height: 20.w,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: done ? AppCustomColor.streakActive : Colors.transparent,
-                    border: done ? null : Border.all(color: AppCustomColor.neutral300, width: 2),
+                // The check is a small 20px dot, but tapping it is the primary
+                // action — pad the hit area out to ~44px (Apple HIG min touch
+                // target) so it's easy to hit without enlarging the visual dot.
+                child: Padding(
+                  padding: EdgeInsets.all(12.w),
+                  child: Container(
+                    width: 20.w,
+                    height: 20.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: done ? AppCustomColor.streakActive : Colors.transparent,
+                      border: done ? null : Border.all(color: AppCustomColor.neutral300, width: 2),
+                    ),
+                    child: done ? Icon(Icons.check_rounded, size: 14.w, color: AppCustomColor.textWhite) : null,
                   ),
-                  child: done ? Icon(Icons.check_rounded, size: 14.w, color: AppCustomColor.textWhite) : null,
                 ),
               ),
             ),
