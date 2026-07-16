@@ -911,16 +911,19 @@ class _CategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
-    final introduce = skillsets.where((s) => s.id == skillsetId).firstOrNull?.onboardingIntroduce;
+    final imageUrl = skillsets.where((s) => s.id == skillsetId).firstOrNull?.image ?? '';
 
     return Container(
       width: 44.r,
       height: 44.r,
       decoration: BoxDecoration(color: tint, borderRadius: BorderRadius.circular(12.r)),
       alignment: Alignment.center,
-      child: introduce != null
-          ? Image.asset(introduce.image, width: 28.w, height: 28.w, fit: BoxFit.contain)
-          : Icon(Icons.auto_stories_rounded, size: 24.w, color: AppCustomColor.brandPrimary),
+      child: CacheNetworkGraphic(
+        url: imageUrl,
+        width: 28.w,
+        height: 28.w,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }
