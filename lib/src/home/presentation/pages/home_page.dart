@@ -623,7 +623,10 @@ class _QuickTile extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: 150.h,
+          // Tall enough for a 2-line title + 2-line subtitle so longer
+          // localized titles ("Khám phá 60+ chủ đề") wrap instead of being
+          // clipped; both tiles share this height so they stay visually equal.
+          height: 172.h,
           padding: EdgeInsets.all(18.w),
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
@@ -647,8 +650,8 @@ class _QuickTile extends StatelessWidget {
               14.verticalSpace,
               AppText(
                 title,
-                maxLines: 1,
-                style: _poppins(15, FontWeight.w600),
+                maxLines: 2,
+                style: _poppins(15, FontWeight.w600, height: 1.2),
               ),
               2.verticalSpace,
               AppText(
