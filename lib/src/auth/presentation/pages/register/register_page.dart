@@ -178,7 +178,6 @@ class _RegisterPageState extends State<RegisterPage> {
         child: SafeArea(
           child: Column(
             children: [
-              if (kDebugMode) const _RegisterTopLoginHint(),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -235,33 +234,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
-    ),
-  );
-}
-
-class _RegisterTopLoginHint extends StatelessWidget {
-  const _RegisterTopLoginHint();
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        AppText(
-          context.l10n.auth.authAlreadyMember,
-          style: AppStyle.text14.copyWith(color: const Color(0xFF110751)),
-        ),
-        4.horizontalSpace,
-        AppText(
-          context.l10n.auth.authLogIn,
-          style: AppStyle.text14.copyWith(
-            color: const Color(0xFF110751),
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.underline,
-          ),
-        ),
-      ],
     ),
   );
 }
