@@ -9,12 +9,16 @@ type Lang = (typeof LANGS)[number];
 type MultiLang = Partial<Record<Lang, string>>;
 
 export interface ReanchorRow {
+  // Existing doc _id, round-tripped through the sheet so import can update the
+  // exact same record (preserving its id). Blank/absent for brand-new rows.
+  id?: string;
   course: string;
   index: number;
   reason: MultiLang;
 }
 
 export interface HabitRow {
+  id?: string;
   course: string;
   section: number;
   keypoint: number;
@@ -69,11 +73,12 @@ export function downloadReanchorXlsx(rows: ReanchorRow[]) {
   const sorted = [...rows].sort(
     (a, b) => a.course.localeCompare(b.course) || a.index - b.index,
   );
-  const header = ["Course Title", "#", "VI", "EN", "ZH", "JA", "KO"];
+  const header = ["ID", "Course Title", "#", "VI", "EN", "ZH", "JA", "KO"];
   const aoa: (string | number)[][] = [header];
   let prevCourse = "";
   for (const r of sorted) {
     aoa.push([
+      r.id ?? "", // stable identity — do NOT edit this column
       r.course === prevCourse ? "" : r.course, // merged-cell style: blank on repeat
       r.index,
       r.reason.vi ?? "",
@@ -92,6 +97,7 @@ export function downloadReanchorXlsx(rows: ReanchorRow[]) {
 
 export async function parseReanchorXlsx(file: File): Promise<ReanchorRow[]> {
   const { colOf, rows } = readSheet(await file.arrayBuffer());
+  const cId = colOf("id");
   const cCourse = colOf("course title");
   const cIndex = colOf("#");
   const langCol: Record<Lang, number> = {
@@ -116,7 +122,8 @@ export async function parseReanchorXlsx(file: File): Promise<ReanchorRow[]> {
       ko: str(raw[langCol.ko]),
     });
     if (!Object.keys(reason).length) continue;
-    out.push({ course, index: idx, reason });
+    const id = cId >= 0 ? str(raw[cId]) : "";
+    out.push({ ...(id ? { id } : {}), course, index: idx, reason });
   }
   return out;
 }
@@ -132,6 +139,7 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
       a.habitIndex - b.habitIndex,
   );
   const header = [
+    "ID",
     "Course Title",
     "Keypoint #",
     "Keypoint title (VI)",
@@ -148,6 +156,7 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
   for (const r of sorted) {
     const kp = `S${r.section}-KP${r.keypoint}`;
     aoa.push([
+      r.id ?? "", // stable identity — do NOT edit this column
       r.course === prevCourse ? "" : r.course,
       kp === prevKp && r.course === prevCourse ? "" : kp,
       r.keypointTitleVi ?? "",
@@ -169,6 +178,7 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
 
 export async function parseHabitXlsx(file: File): Promise<HabitRow[]> {
   const { colOf, rows } = readSheet(await file.arrayBuffer());
+  const cId = colOf("id");
   const cCourse = colOf("course title");
   const cKp = colOf("keypoint #");
   const cHabit = colOf("habit #");
@@ -198,7 +208,9 @@ export async function parseHabitXlsx(file: File): Promise<HabitRow[]> {
       ko: str(raw[langCol.ko]),
     });
     if (!Object.keys(title).length) continue;
+    const id = cId >= 0 ? str(raw[cId]) : "";
     out.push({
+      ...(id ? { id } : {}),
       course,
       section: parseInt(m[1], 10),
       keypoint: parseInt(m[2], 10),

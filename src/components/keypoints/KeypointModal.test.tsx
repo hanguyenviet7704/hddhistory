@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { LangCode } from "../../types/enum/common.enum";
 import { store } from "../../store";
@@ -7,35 +7,27 @@ import KeypointModal, { buildKeypointPayload } from "./KeypointModal";
 
 jest.mock("../files/CloudflareFileUpload", () => ({
   __esModule: true,
-  default: ({
-    onUrlChange,
-    accept,
-  }: {
-    onUrlChange: (value: string) => void;
-    accept?: string;
-  }) => (
-    <button
-      type="button"
-      data-testid={accept === "audio/*" ? "clear-audio-upload" : "clear-upload"}
-      onClick={() => onUrlChange("")}
-    >
-      clear upload
-    </button>
-  ),
+  default: () => <div data-testid="file-upload" />,
+}));
+
+jest.mock("../../services/voiceoverService", () => ({
+  voiceoverService: {
+    generateForKeypoint: jest.fn().mockResolvedValue({ data: {} }),
+    generateForCourse: jest.fn().mockResolvedValue({ data: {} }),
+  },
 }));
 
 describe("buildKeypointPayload", () => {
-  it("sends an explicit empty audio object when editing and audio was cleared", () => {
+  // Audio is now owned entirely by the TTS voiceover flow, so saving a
+  // keypoint must never emit an `audio` field (which would otherwise wipe or
+  // overwrite generated audio).
+  it("never includes audio, even when the keypoint already had audio", () => {
     const payload = buildKeypointPayload({
       title: { en: "Keypoint title" },
       description: { en: "Description" },
       estimateCompleTime: {},
       estimateCompleTimeInput: "",
       estimateCompleTimeUnit: "minute",
-      audio: {
-        url: { en: "" },
-        text: { en: "" },
-      },
       image: "https://example.com/image.png",
       tag: [],
       lang: LangCode.EN,
@@ -51,94 +43,45 @@ describe("buildKeypointPayload", () => {
       },
     });
 
-    expect(payload.audio).toEqual({});
-  });
-
-  it("keeps audio omitted when creating a keypoint without audio", () => {
-    const payload = buildKeypointPayload({
-      title: { en: "New keypoint" },
-      description: {},
-      estimateCompleTime: {},
-      estimateCompleTimeInput: "",
-      estimateCompleTimeUnit: "minute",
-      audio: {},
-      image: "https://example.com/image.png",
-      tag: [],
-      lang: LangCode.EN,
-      keypoint: null,
-    });
-
-    expect(payload.audio).toBeUndefined();
-  });
-
-  it("keeps remaining audio content instead of clearing the whole field", () => {
-    const payload = buildKeypointPayload({
-      title: { en: "Keypoint title" },
-      description: { en: "Description" },
-      estimateCompleTime: {},
-      estimateCompleTimeInput: "",
-      estimateCompleTimeUnit: "minute",
-      audio: {
-        url: { en: "" },
-        text: { en: "Transcript kept" },
-      },
-      image: "https://example.com/image.png",
-      tag: [],
-      lang: LangCode.EN,
-      keypoint: {
-        _id: "keypoint-1",
-        title: { en: "Keypoint title" },
-        description: { en: "Description" },
-        image: "https://example.com/image.png",
-        audio: {
-          url: { en: "https://example.com/audio.mp3" },
-          text: { en: "Transcript" },
-        },
-      },
-    });
-
-    expect(payload.audio).toEqual({
-      text: { en: "Transcript kept" },
-    });
+    expect((payload as Record<string, unknown>).audio).toBeUndefined();
+    expect(payload.title).toEqual({ en: "Keypoint title" });
   });
 });
 
 describe("KeypointModal", () => {
-  it("submits an explicit empty audio object after clearing existing audio", async () => {
-    const onSave = jest.fn().mockResolvedValue(undefined);
-
+  it("disables Generate voiceover when creating a new keypoint", () => {
     render(
       <Provider store={store}>
         <KeypointModal
           open
           onClose={jest.fn()}
-          onSave={onSave}
+          onSave={jest.fn()}
+          keypoint={null}
+        />
+      </Provider>
+    );
+
+    const btn = screen.getByRole("button", { name: /generate voiceover/i });
+    expect(btn).toBeDisabled();
+  });
+
+  it("enables Generate voiceover when editing an existing keypoint", () => {
+    render(
+      <Provider store={store}>
+        <KeypointModal
+          open
+          onClose={jest.fn()}
+          onSave={jest.fn()}
           keypoint={{
             _id: "keypoint-1",
             title: { en: "Keypoint title" },
-            description: { en: "Description" },
             image: "https://example.com/image.png",
-            audio: {
-              url: { en: "https://example.com/audio.mp3" },
-              text: { en: "Transcript" },
-            },
           }}
         />
       </Provider>
     );
 
-    fireEvent.click(screen.getByTestId("clear-audio-upload"));
-    fireEvent.change(screen.getByPlaceholderText("Enter transcript or audio text"), {
-      target: { value: "" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    await waitFor(() => {
-      expect(onSave).toHaveBeenCalledWith(
-        expect.objectContaining({
-          audio: {},
-        })
-      );
-    });
+    const btn = screen.getByRole("button", { name: /generate voiceover/i });
+    expect(btn).toBeEnabled();
   });
 });

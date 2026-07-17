@@ -1,7 +1,13 @@
 // src/pages/courses/CourseList.tsx
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  PencilIcon,
+  TrashIcon,
+  PlusIcon,
+  SpeakerWaveIcon,
+} from "@heroicons/react/24/outline";
 import { courseService } from "../../services/courseService";
+import VoiceoverStatusModal from "../../components/courses/VoiceoverStatusModal";
 import { ICourse, CoursePayload } from "../../types/interface/course.interface";
 import { CourseStatus } from "../../types/enum/course.enum";
 import CourseModal from "../../components/courses/CourseModal";
@@ -28,6 +34,9 @@ export default function CourseList() {
   const debounceRef = useRef<number | undefined>(undefined);
   const observer = useRef<IntersectionObserver | null>(null);
   const lang = useSelector((state: RootState) => state.lang.code);
+  // The voiceover status/coverage modal (per course) — see which keypoints ×
+  // languages are done / stale / missing / failed, and generate from there.
+  const [voiceoverCourse, setVoiceoverCourse] = useState<ICourse | null>(null);
 
   // modal / confirm state
   const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
@@ -308,6 +317,13 @@ export default function CourseList() {
                         {/* hover buttons */}
                         <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <button
+                            onClick={() => setVoiceoverCourse(course)}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                            title="Voiceover status & generate (TTS from theory)"
+                          >
+                            <SpeakerWaveIcon className="h-5 w-5 text-indigo-600" />
+                          </button>
+                          <button
                             onClick={() => openEdit(course)}
                             className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
                             title="Edit"
@@ -440,6 +456,17 @@ export default function CourseList() {
           if (!selectedCourse) return Promise.resolve();
           return handleConfirmDelete(selectedCourse._id);
         }}
+      />
+
+      <VoiceoverStatusModal
+        open={Boolean(voiceoverCourse)}
+        courseId={voiceoverCourse?._id ?? ""}
+        courseTitle={
+          voiceoverCourse
+            ? getTranslationValue(voiceoverCourse.title, lang)
+            : ""
+        }
+        onClose={() => setVoiceoverCourse(null)}
       />
     </div>
   );
