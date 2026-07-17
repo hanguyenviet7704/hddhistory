@@ -26,6 +26,7 @@ part 'presentation/cubits/deeplink/deeplink_cubit.dart';
 part 'presentation/cubits/deeplink/deeplink_state.dart';
 part 'presentation/cubits/page/page_cubit.dart';
 part 'presentation/cubits/page/page_state.dart';
+part 'presentation/cubits/setting/haptic_setting_cubit.dart';
 part 'presentation/cubits/setting/locale_cubit.dart';
 part 'presentation/cubits/setting/theme_cubit.dart';
 part 'presentation/cubits/setting/theme_mode_cubit.dart';

@@ -330,6 +330,7 @@ class _LessonPageState extends State<LessonPage> {
     debugPrint('Answer is correct: $isCorrect');
     final lessonState = context.read<LessonCubit>().state;
     if (lessonState.currentLearningItem.type != LearningItemType.exercise) return;
+    isCorrect ? AppHaptic.success() : AppHaptic.error();
     context.read<LessonCubit>().markPendingAdvance();
   }
 

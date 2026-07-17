@@ -29,6 +29,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   @override
   void initState() {
     super.initState();
+    AppHaptic.celebrate();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Assert this page's (non-primary) route name so the shell's floating
       // nav pill stays hidden — otherwise it overlaps the primary CTA below.

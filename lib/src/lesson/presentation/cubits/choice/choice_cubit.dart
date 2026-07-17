@@ -10,6 +10,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
 
   void selectAnswer(int index) {
     if (state.hasChecked) return;
+    AppHaptic.select();
 
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType == LearningItemType.roleplay) {

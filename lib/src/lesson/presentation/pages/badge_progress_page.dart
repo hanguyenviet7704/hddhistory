@@ -57,6 +57,7 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
 
   void _switchToComplete() {
     if (!mounted) return;
+    AppHaptic.celebrate();
     setState(() => _step = BadgeProgressStep.complete);
     _scheduleAutoAdvance();
   }

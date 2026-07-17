@@ -160,6 +160,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     return result.fold(
       (exception) => _isSlotFullError(exception) ? AdoptHabitResult.slotFull : AdoptHabitResult.failure,
       (userHabit) {
+        AppHaptic.success();
         emit(state.copyWith(userHabits: [...state.userHabits, userHabit]));
         unawaited(loadSummary());
         unawaited(scheduleHabitReminder(userHabit));
@@ -223,6 +224,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     return result.fold(
       (_) => false,
       (updated) {
+        if (done) AppHaptic.success();
         _replaceUserHabit(updated);
         unawaited(loadSummary());
         return true;

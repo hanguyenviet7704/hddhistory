@@ -6,6 +6,11 @@ abstract class AchievenmentResponseEntity with _$AchievenmentResponseEntity {
     @Default('') String skillsetId,
     @Default(BaseMultiLanguage()) BaseMultiLanguage skillsetTitle,
     @Default([]) List<CourseLevelProgressEntity> courses,
+    // Skillset-wide keypoint totals (all levels of all courses) — drives the
+    // fractional learning-progress bar so partial progress shows a real %
+    // instead of 0 until a whole course is 100% finished.
+    @Default(0) int totalKeypoints,
+    @Default(0) int completedKeypoints,
   }) = _AchievenmentResponseEntity;
 
   factory AchievenmentResponseEntity.fromJson(Map<String, dynamic> json) => _$AchievenmentResponseEntityFromJson(json);

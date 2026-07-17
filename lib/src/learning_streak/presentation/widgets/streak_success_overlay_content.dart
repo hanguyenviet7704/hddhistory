@@ -11,6 +11,7 @@ class LearningStreakSuccessOverlay {
   }) async {
     final variant = streak.currentStreak <= 1 ? LearningStreakSuccessVariant.p1 : LearningStreakSuccessVariant.p2;
     var hasHandledCommit = false;
+    AppHaptic.celebrate();
     AppService.instance.appTrackingService.trackCompletionStreakSuccessView(
       variant: variant.name,
       currentStreak: streak.currentStreak,

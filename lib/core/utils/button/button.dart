@@ -54,7 +54,16 @@ class DButton extends StatelessWidget {
   // race a rebuild between "still loading" and "handler cleared" — forcing
   // both here means there's no frame where the button is both spinning and
   // tappable, or tappable while a request is genuinely still in flight.
-  Function()? get _effectiveOnPressed => isLoading ? null : onPressed;
+  Function()? get _effectiveOnPressed {
+    final handler = isLoading ? null : onPressed;
+    if (handler == null) return null;
+    // App-wide tap haptic — every primary CTA gives a light tick on press
+    // (Duolingo-style responsiveness), no visual change.
+    return () {
+      AppHaptic.select();
+      handler();
+    };
+  }
 
   Widget get _effectiveChild {
     if (isLoading) {

@@ -158,6 +158,7 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
   void selectChoiceAnswer(int index) {
     final question = state.currentQuestion;
     if (question == null || state.latestResult != null) return;
+    AppHaptic.select();
 
     if (question.typedPayload is QuestionMultipleChoicePayloadEntity) {
       final selected = Set<int>.from(state.selectedAnswersIndices);
@@ -194,6 +195,7 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
 
   void toggleWordIndex(int index) {
     if (state.latestResult != null) return;
+    AppHaptic.select();
     final selected = Set<int>.from(state.selectedWordIndices);
     if (selected.contains(index)) {
       selected.remove(index);
@@ -217,6 +219,7 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
       placedOptionIds: state.placedOptionIds,
       selectedWordIndices: state.selectedWordIndices,
     );
+    result.isCorrect ? AppHaptic.success() : AppHaptic.error();
     emit(
       state.copyWith(
         status: DailyWarmUpStatus.result,

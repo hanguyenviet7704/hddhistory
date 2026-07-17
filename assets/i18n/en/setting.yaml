@@ -41,6 +41,7 @@ notificationTokenStatusLabel: Device token
 notificationTokenUnavailable: No token available
 settingAboutSectionTerm: Terms & Conditions
 settingEditProfileButton: Edit
+settingHapticLabel: Haptic feedback
 settingLanguageRowEnglish: English
 settingLanguageRowVietnamese: Vietnamese
 settingLogOut: Log out

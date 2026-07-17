@@ -22,7 +22,12 @@ class HabitSwitch extends StatelessWidget {
       enabled: onChanged != null && !isLoading,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: (onChanged == null || isLoading) ? null : () => onChanged!(!value),
+        onTap: (onChanged == null || isLoading)
+            ? null
+            : () {
+                AppHaptic.select();
+                onChanged!(!value);
+              },
         // Keep the whole hit target comfortably tappable (44pt guideline)
         // while the visible track stays at the design's 40×24.
         child: Padding(

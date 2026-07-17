@@ -37,6 +37,7 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
   }
 
   void _onTabTap(int visualIndex) {
+    AppHaptic.select();
     final branchIndex = _tabToBranch[visualIndex];
     setState(() => _visualIndex = visualIndex);
     context.read<PageCubit>().handleShellRouteNavigation(branchIndex, widget.navigationShell);

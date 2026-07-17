@@ -10,8 +10,8 @@ popupSubtitle: Hoàn thành ít nhất một bài học để duy trì chuỗi. 
   sẽ thiết lập lại.
 startedTitle: Bạn đã bắt đầu chuỗi!
 streakDays(param=count):
-  one: Streak ${count} ngày
-  other: Streak ${count} ngày
+  one: Chuỗi ${count} ngày
+  other: Chuỗi ${count} ngày
 successSubtitle: Giữ nhịp học mỗi ngày để duy trì chuỗi.
 thisWeekLabel: Tuần này
 weekFri: T6
