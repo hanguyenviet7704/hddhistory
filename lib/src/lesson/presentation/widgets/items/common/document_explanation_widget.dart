@@ -96,6 +96,9 @@ class _DocumentExplanationWidgetState extends State<DocumentExplanationWidget> {
   }
 
   void _toggleOption(String optionKey) {
+    // Tapping a theory/reading option to reveal (or hide) its explanation — a
+    // light tap so the reading content feels interactive, not just scrollable.
+    AppHaptic.select();
     final nextSelectedOptionKey = _resolvedSelectedOptionKey == optionKey ? null : optionKey;
 
     if (_isControlled) {

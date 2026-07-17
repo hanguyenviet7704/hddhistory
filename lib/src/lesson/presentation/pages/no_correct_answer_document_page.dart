@@ -42,6 +42,10 @@ class _NoCorrectAnswerDocumentPageState extends State<NoCorrectAnswerDocumentPag
   void _dismiss(bool result) {
     if (_isPopping || !mounted) return;
     _isPopping = true;
+    // Finishing a reading document (real Continue tap) is a completion beat, not
+    // just a page turn — a firm confirmation. The silent auto-dismiss (missing
+    // group, result == false) stays haptic-free.
+    if (result) AppHaptic.success();
     context.pop(result);
   }
 

@@ -40,7 +40,10 @@ class _LegalLink extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => url.launchURL(),
+      onTap: () {
+        AppHaptic.select();
+        url.launchURL();
+      },
       child: AppText(
         label,
         style: AppStyle.text12.copyWith(

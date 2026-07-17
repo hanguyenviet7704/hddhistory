@@ -108,7 +108,10 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
               minimumSize: Size.zero,
               visualDensity: VisualDensity.compact,
             ),
-            onPressed: widget.onMaybeLater,
+            onPressed: () {
+              AppHaptic.select();
+              widget.onMaybeLater();
+            },
             child: AppText(
               context.l10n.dailyWarmUp.maybeLater,
               style: AppStyle.text16.copyWith(

@@ -37,7 +37,10 @@ class InAppSurveyModalShell extends StatelessWidget {
                     label: context.l10n.home.inAppSurveyCloseSemantics,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12.r),
-                      onTap: onClose,
+                      onTap: () {
+                        AppHaptic.select();
+                        onClose();
+                      },
                       child: Icon(
                         Icons.close_rounded,
                         size: 24.w,

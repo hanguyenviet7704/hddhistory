@@ -14,7 +14,10 @@ class LessonExplainButton extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!hasExplanation) return const SizedBox.shrink();
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       child: Container(
         constraints: BoxConstraints(minHeight: 40.h),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),

@@ -30,7 +30,10 @@ class ChangeLanguageOptionTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(14.r),
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,

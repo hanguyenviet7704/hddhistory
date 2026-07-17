@@ -19,7 +19,12 @@ class GotIdeasBanner extends StatelessWidget {
       button: true,
       label: context.l10n.home.inAppSurveyEntrySemantics,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: onTap == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onTap!();
+              },
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20.w),
           child: CustomPaint(

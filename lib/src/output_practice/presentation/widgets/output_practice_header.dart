@@ -23,7 +23,10 @@ class OutputPracticeHeader extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: onClose,
+              onTap: () {
+                AppHaptic.select();
+                onClose();
+              },
               child: SizedBox.square(
                 dimension: 24.w,
                 child: Icon(

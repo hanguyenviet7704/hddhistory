@@ -151,7 +151,10 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                     // Debug-only manual QA hook. Remove after home widget state checks.
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: _debugApplyNextHomeWidgetScenario,
+                      onTap: () {
+                        AppHaptic.select();
+                        _debugApplyNextHomeWidgetScenario();
+                      },
                       child: greetingWidget,
                     );
                   },

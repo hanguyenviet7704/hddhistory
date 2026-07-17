@@ -113,7 +113,10 @@ class _LanguageSheetBackButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         splashRadius: 20.w,
         icon: Icon(Icons.arrow_back_ios_new, color: AppCustomColor.textTertiary, size: 18.w),
-        onPressed: onPressed,
+        onPressed: () {
+          AppHaptic.select();
+          onPressed();
+        },
       ),
     );
   }

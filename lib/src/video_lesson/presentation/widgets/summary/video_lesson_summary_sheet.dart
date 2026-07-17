@@ -33,7 +33,10 @@ class VideoLessonSummarySheet extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: onClose,
+              onPressed: () {
+                AppHaptic.select();
+                onClose();
+              },
               icon: Icon(
                 Icons.close_rounded,
                 size: 24.r,

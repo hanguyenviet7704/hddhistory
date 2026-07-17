@@ -141,7 +141,12 @@ class _DialogButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(1000.r),
-      onTap: isLoading ? null : onTap,
+      onTap: isLoading || onTap == null
+          ? null
+          : () {
+              AppHaptic.select();
+              onTap!();
+            },
       child: Container(
         height: 54.h,
         alignment: Alignment.center,

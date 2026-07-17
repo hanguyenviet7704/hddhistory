@@ -20,7 +20,10 @@ class FeedbackReasonChip extends StatelessWidget {
     final textWeight = isSelected ? FontWeight.w600 : FontWeight.w400;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
         decoration: BoxDecoration(

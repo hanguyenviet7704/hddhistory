@@ -17,7 +17,12 @@ class RoleplayFeedbackBottomCTA extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(
-            onTap: isLoading ? null : onPressed,
+            onTap: isLoading
+                ? null
+                : () {
+                    AppHaptic.select();
+                    onPressed();
+                  },
             child: Container(
               height: 54.h,
               width: double.infinity,

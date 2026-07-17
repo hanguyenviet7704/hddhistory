@@ -31,7 +31,12 @@ class RoadmapLessonCard extends StatelessWidget {
           button: true,
           label: lesson.title.text,
           child: GestureDetector(
-            onTap: onTap,
+            onTap: onTap == null
+                ? null
+                : () {
+                    AppHaptic.select();
+                    onTap!();
+                  },
             child: Container(
               padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(

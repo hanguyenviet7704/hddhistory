@@ -291,7 +291,10 @@ class _LessonPageState extends State<LessonPage> {
 
   Widget _buildFlagButton(BuildContext context, KeypointEntity keypoint) {
     return GestureDetector(
-      onTap: () => _openReportIssueSheet(context, keypoint),
+      onTap: () {
+        AppHaptic.select();
+        _openReportIssueSheet(context, keypoint);
+      },
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 36.w,

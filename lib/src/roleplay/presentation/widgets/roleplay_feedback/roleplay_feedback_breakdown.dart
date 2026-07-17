@@ -37,7 +37,10 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
         ),
         if (kDebugMode)
           GestureDetector(
-            onTap: () => LessonExplainPopup.show(context, showPoint: true),
+            onTap: () {
+              AppHaptic.select();
+              LessonExplainPopup.show(context, showPoint: true);
+            },
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

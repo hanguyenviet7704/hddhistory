@@ -19,7 +19,12 @@ class PaywallPlanOption extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         InkWell(
-          onTap: onTap,
+          onTap: onTap == null
+              ? null
+              : () {
+                  AppHaptic.select();
+                  onTap!();
+                },
           borderRadius: BorderRadius.circular(16.r),
           child: Container(
             constraints: BoxConstraints(minHeight: 84.h),

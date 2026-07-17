@@ -271,7 +271,12 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
                 final isEnabled = canSubmit || isStillRecording;
 
                 return GestureDetector(
-                  onTap: isEnabled ? () => unawaited(_handleSubmit()) : null,
+                  onTap: isEnabled
+                      ? () {
+                          AppHaptic.select();
+                          unawaited(_handleSubmit());
+                        }
+                      : null,
                   child: Container(
                     width: 48.w,
                     height: 48.w,

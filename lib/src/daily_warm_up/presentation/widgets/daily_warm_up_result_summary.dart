@@ -80,7 +80,10 @@ class DailyWarmUpResultSummary extends StatelessWidget {
                   child: GestureDetector(
                     key: const ValueKey('daily-warm-up-result-explain-action'),
                     behavior: HitTestBehavior.opaque,
-                    onTap: onExplain,
+                    onTap: () {
+                      AppHaptic.select();
+                      onExplain!();
+                    },
                     child: SizedBox(
                       height: 24.h,
                       child: Opacity(
@@ -123,7 +126,10 @@ class DailyWarmUpResultSummary extends StatelessWidget {
             width: double.infinity,
             height: 54.h,
             child: ElevatedButton(
-              onPressed: onContinue,
+              onPressed: () {
+                AppHaptic.select();
+                onContinue();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accentColor,
                 foregroundColor: Colors.white,

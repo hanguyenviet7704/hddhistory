@@ -12,7 +12,12 @@ class CourseHeader extends StatelessWidget {
             prev.searchQuery != curr.searchQuery || prev.isSearchActive != curr.isSearchActive,
         builder: (context, state) {
           return GestureDetector(
-            onTap: state.isSearchActive ? null : () => context.read<CourseCubit>().activateSearch(),
+            onTap: state.isSearchActive
+                ? null
+                : () {
+                    AppHaptic.select();
+                    context.read<CourseCubit>().activateSearch();
+                  },
             child: Container(
               height: 56.h,
               padding: EdgeInsets.only(
@@ -85,6 +90,7 @@ class CourseHeader extends StatelessWidget {
                         // Spec: "X" clears the entered text (staying in search
                         // → shows Recent); tapping it again when empty exits.
                         onTap: () {
+                          AppHaptic.select();
                           final cubit = context.read<CourseCubit>();
                           if (state.searchQuery.isEmpty) {
                             cubit.deactivateSearch();

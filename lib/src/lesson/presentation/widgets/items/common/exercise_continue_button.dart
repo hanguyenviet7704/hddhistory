@@ -38,7 +38,16 @@ class ExerciseContinueButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isEnabled ? onPressed : null,
+          // Shared Continue button across every exercise body + theory/reading.
+          // A light tap on advance so turning a reading page or moving to the
+          // next question always "feels" pressed (custom InkWell — no DButton
+          // haptic to inherit).
+          onTap: isEnabled && onPressed != null
+              ? () {
+                  AppHaptic.select();
+                  onPressed!();
+                }
+              : null,
           borderRadius: BorderRadius.circular(1000.r),
           child: Center(
             child: AppText(

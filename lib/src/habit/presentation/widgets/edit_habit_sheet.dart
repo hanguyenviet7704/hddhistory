@@ -147,7 +147,10 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        AppHaptic.select();
+                        Navigator.of(context).pop();
+                      },
                     ),
                   ),
                 ],

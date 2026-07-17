@@ -66,7 +66,10 @@ class _LessonShellIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 36.w,

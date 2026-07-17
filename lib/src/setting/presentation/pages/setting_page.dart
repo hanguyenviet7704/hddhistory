@@ -334,7 +334,10 @@ class SettingHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         InkWell(
-          onTap: () => context.back(),
+          onTap: () {
+            AppHaptic.select();
+            context.back();
+          },
           child: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: AppCustomColor.textTertiary,

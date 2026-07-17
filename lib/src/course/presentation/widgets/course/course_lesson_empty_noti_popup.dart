@@ -65,7 +65,10 @@ class CourseLessonEmptyNotiPopup extends StatelessWidget {
                   ),
                   24.verticalSpace,
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () {
+                      AppHaptic.select();
+                      Navigator.of(context).pop();
+                    },
                     child: Container(
                       height: 54.h,
                       width: double.infinity,

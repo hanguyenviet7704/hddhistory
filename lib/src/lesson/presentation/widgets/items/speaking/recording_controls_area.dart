@@ -19,7 +19,12 @@ class RecordingControlsArea extends StatelessWidget {
     final isEnabled = isRecording || isPaused;
 
     return GestureDetector(
-      onTap: isEnabled ? onTap : null,
+      onTap: isEnabled && onTap != null
+          ? () {
+              AppHaptic.select();
+              onTap!();
+            }
+          : null,
       child: Container(
         width: 80.w,
         height: 80.w,

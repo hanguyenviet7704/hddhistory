@@ -146,7 +146,10 @@ mixin DDialog {
                 IconButton(
                   style: IconButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero),
                   icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.of(context, rootNavigator: false).pop(),
+                  onPressed: () {
+                    AppHaptic.select();
+                    Navigator.of(context, rootNavigator: false).pop();
+                  },
                 ),
             ],
           ),
@@ -227,7 +230,10 @@ mixin DDialog {
                 IconButton(
                   style: IconButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero),
                   icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.of(context, rootNavigator: false).pop(),
+                  onPressed: () {
+                    AppHaptic.select();
+                    Navigator.of(context, rootNavigator: false).pop();
+                  },
                 ),
             ],
           ),
@@ -314,7 +320,10 @@ mixin DDialog {
                 IconButton(
                   style: IconButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero),
                   icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.of(context, rootNavigator: false).pop(),
+                  onPressed: () {
+                    AppHaptic.select();
+                    Navigator.of(context, rootNavigator: false).pop();
+                  },
                 ),
             ],
           ),

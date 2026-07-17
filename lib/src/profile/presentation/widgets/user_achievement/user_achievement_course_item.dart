@@ -41,7 +41,10 @@ class UserAchievementCourseItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _onTap(context),
+      onTap: () {
+        AppHaptic.select();
+        _onTap(context);
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

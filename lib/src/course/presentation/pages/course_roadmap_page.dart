@@ -306,7 +306,10 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                                       size: 20.w,
                                       color: AppCustomColor.textPrimary,
                                     ),
-                                    onPressed: () => _backFromRoadmap(context, source),
+                                    onPressed: () {
+                                      AppHaptic.select();
+                                      _backFromRoadmap(context, source);
+                                    },
                                   ),
                                 ),
                               );

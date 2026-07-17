@@ -56,6 +56,7 @@ class ReviewTimePage extends StatelessWidget {
             // Bottom CTA Button
             GestureDetector(
               onTap: () {
+                AppHaptic.select();
                 final lessonCubit = context.read<LessonCubit>();
                 lessonCubit.reviewDone();
               },

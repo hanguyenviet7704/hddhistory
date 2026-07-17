@@ -71,7 +71,10 @@ class _CurrentPlanRow extends StatelessWidget {
         if (kDebugMode)
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: onAction,
+            onTap: () {
+              AppHaptic.select();
+              onAction();
+            },
             child: AppText(
               actionLabel,
               style: AppStyle.text16.copyWith(

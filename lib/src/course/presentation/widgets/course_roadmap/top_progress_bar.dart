@@ -18,6 +18,7 @@ class TopProgressBar extends StatelessWidget {
       child: Center(
         child: GestureDetector(
           onTap: () {
+            AppHaptic.select();
             // CourseCubit/PageCubit aren't provided above the roadmap tree, so
             // resolve them from DI (both are singletons).
             // Jump straight to the current skillset's chip/section in Explore.

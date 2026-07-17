@@ -160,7 +160,14 @@ class AppButton extends StatelessWidget {
               splashColor: isTransparent ? Colors.transparent : null,
               highlightColor: isTransparent ? Colors.transparent : null,
               padding: padding ?? EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
-              onPressed: !disabled ? onPressed : null,
+              // App-wide tap haptic (mirrors DButton) — every AppButton press
+              // gets the same light impact without each call site adding it.
+              onPressed: !disabled && onPressed != null
+                  ? () {
+                      AppHaptic.select();
+                      onPressed!();
+                    }
+                  : null,
               child:
                   icon == null
                       ? (child ?? const SizedBox.shrink())

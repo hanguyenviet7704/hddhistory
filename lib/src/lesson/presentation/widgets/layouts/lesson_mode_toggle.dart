@@ -35,7 +35,12 @@ class LessonModeToggle extends StatelessWidget {
               label: context.l10n.lesson.audioReadLabel,
               iconAsset: AppAsset.svg.app.icMenu,
               isSelected: selectedMode.isRead,
-              onTap: onModeSelected == null ? null : () => onModeSelected!(LessonEntryMode.read),
+              onTap: onModeSelected == null
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onModeSelected!(LessonEntryMode.read);
+                    },
             ),
             SizedBox(width: 4.w),
             _LessonModeToggleTab(
@@ -43,7 +48,12 @@ class LessonModeToggle extends StatelessWidget {
               label: context.l10n.lesson.audioListenLabel,
               iconAsset: AppAsset.svg.app.icMusicNote,
               isSelected: selectedMode.isAudio,
-              onTap: onModeSelected == null ? null : () => onModeSelected!(LessonEntryMode.audio),
+              onTap: onModeSelected == null
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onModeSelected!(LessonEntryMode.audio);
+                    },
             ),
           ],
         ),

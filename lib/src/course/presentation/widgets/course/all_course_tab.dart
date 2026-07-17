@@ -464,7 +464,10 @@ class _ViewMoreGridCard extends StatelessWidget {
       button: true,
       label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
       child: GestureDetector(
-        onTap: () => SkillsetCoursesRoute(skillsetId: skillset.id).push(context),
+        onTap: () {
+          AppHaptic.select();
+          SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
+        },
         // Align the card to the top of the cell and size it to the same height
         // as a course thumbnail (160.w), so it sits as a square card in the
         // thumbnail row instead of stretching down the whole cell. Matches the
@@ -544,7 +547,10 @@ class _CourseGridCard extends StatelessWidget {
       label: course.title.text,
       button: true,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

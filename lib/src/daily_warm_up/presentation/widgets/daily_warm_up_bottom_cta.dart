@@ -27,7 +27,12 @@ class DailyWarmUpBottomCta extends StatelessWidget {
       width: width ?? double.infinity,
       height: 54.h,
       child: ElevatedButton(
-        onPressed: enabled && !isLoading ? onPressed : null,
+        onPressed: enabled && !isLoading
+            ? () {
+                AppHaptic.select();
+                onPressed();
+              }
+            : null,
         style: ElevatedButton.styleFrom(
           fixedSize: width == null ? null : Size(width!, 54.h),
           minimumSize: width == null ? null : Size.zero,

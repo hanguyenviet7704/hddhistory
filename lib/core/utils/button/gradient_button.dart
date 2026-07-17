@@ -42,6 +42,18 @@ class GradientButton extends DButton {
     return BorderRadius.circular(25.sp);
   }
 
+  /// The gradient variants below wire the raw [onPressed] into their own
+  /// FilledButton/OutlinedButton/TextButton, bypassing DButton's built-in tap
+  /// haptic — so re-add it here.
+  VoidCallback? get _hapticOnPressed {
+    final cb = onPressed;
+    if (cb == null) return null;
+    return () {
+      AppHaptic.select();
+      cb();
+    };
+  }
+
   // Build Filled Button with gradient background
   Widget get _buildGradientFilledButton {
     return Container(
@@ -50,7 +62,7 @@ class GradientButton extends DButton {
         borderRadius: borderRadius,
       ),
       child: FilledButton(
-        onPressed: onPressed,
+        onPressed: _hapticOnPressed,
         style: FilledButton.styleFrom(
           tapTargetSize: tapTargetSize,
           visualDensity: visualDensity,
@@ -92,7 +104,7 @@ class GradientButton extends DButton {
           minimumSize: size ?? Size.fromHeight(50.h),
           backgroundColor: Colors.transparent, // Transparent to use gradient
         ),
-        onPressed: onPressed,
+        onPressed: _hapticOnPressed,
         child: customChild ?? AppText(text, style: style ?? AppStyle.textBold16),
       ),
     );
@@ -101,7 +113,7 @@ class GradientButton extends DButton {
   // Build Text Button with gradient applied to the text only
   Widget get _buildGradientTextButton {
     return TextButton(
-      onPressed: onPressed,
+      onPressed: _hapticOnPressed,
       style: TextButton.styleFrom(
         tapTargetSize: tapTargetSize,
         visualDensity: visualDensity,

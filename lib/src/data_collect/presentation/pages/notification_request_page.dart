@@ -158,7 +158,12 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
               10.verticalSpace,
               TextButton(
                 key: const Key('notification_request_secondary_cta'),
-                onPressed: isLoading ? null : _handleSecondaryAction,
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        AppHaptic.select();
+                        _handleSecondaryAction();
+                      },
                 child: AppText(
                   onboardingL10n.onboardingV2MaybeLaterCta,
                   style: AppStyle.text14.copyWith(
@@ -226,7 +231,12 @@ class _NotificationGateButton extends StatelessWidget {
       width: double.infinity,
       height: 54.h,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: onPressed == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onPressed!();
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppCustomColor.brandPrimary,
           disabledBackgroundColor: AppCustomColor.buttonDisable,

@@ -46,7 +46,10 @@ class OutputPracticeActionChipStack extends StatelessWidget {
             return Padding(
               padding: EdgeInsets.only(bottom: 8.h),
               child: GestureDetector(
-                onTap: () => onChipTap(chip),
+                onTap: () {
+                  AppHaptic.select();
+                  onChipTap(chip);
+                },
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(

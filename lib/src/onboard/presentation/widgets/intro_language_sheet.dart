@@ -79,6 +79,7 @@ class _LanguageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        AppHaptic.select();
         AppService.instance.appTrackingService.trackObdLanguageClick(locale.languageAISupport);
         onTap();
       },

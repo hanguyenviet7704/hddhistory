@@ -144,7 +144,10 @@ class _RecentSection extends StatelessWidget {
                 label: context.l10n.allcourse.searchClearAll,
                 child: TextButton(
                   key: const Key('recent-courses-clear-all-button'),
-                  onPressed: onClearAll,
+                  onPressed: () {
+                    AppHaptic.select();
+                    onClearAll();
+                  },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     minimumSize: Size(48.w, 36.h),
@@ -248,7 +251,12 @@ class _SearchCourseCard extends StatelessWidget {
       button: true,
       label: course.title.text,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: onTap == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onTap!();
+              },
         child: Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(

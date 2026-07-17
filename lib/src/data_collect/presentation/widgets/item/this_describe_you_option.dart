@@ -41,7 +41,10 @@ class ThisDescribeYouOption extends StatelessWidget {
             children: [
               // Yes Option
               GestureDetector(
-                onTap: () => onYesChanged(!isSelectedYes),
+                onTap: () {
+                  AppHaptic.select();
+                  onYesChanged(!isSelectedYes);
+                },
                 child: Container(
                   width: 40.w,
                   height: 40.w,
@@ -70,7 +73,10 @@ class ThisDescribeYouOption extends StatelessWidget {
 
               // No Option
               GestureDetector(
-                onTap: () => onNoChanged(!isSelectedNo),
+                onTap: () {
+                  AppHaptic.select();
+                  onNoChanged(!isSelectedNo);
+                },
                 child: Container(
                   width: 40.w,
                   height: 40.w,

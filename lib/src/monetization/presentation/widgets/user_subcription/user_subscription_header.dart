@@ -22,7 +22,10 @@ class UserSubscriptionHeader extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: onBack,
+              onTap: () {
+                AppHaptic.select();
+                onBack();
+              },
               child: Padding(
                 padding: EdgeInsets.only(right: 8.w),
                 child: Icon(

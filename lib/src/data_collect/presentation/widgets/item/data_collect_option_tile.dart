@@ -33,7 +33,10 @@ class DataCollectOptionTile extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       child: Container(
         constraints: BoxConstraints(minHeight: 54.h),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),

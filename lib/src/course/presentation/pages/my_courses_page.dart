@@ -71,7 +71,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           button: true,
           label: MaterialLocalizations.of(context).backButtonTooltip,
           child: IconButton(
-            onPressed: () => context.back(),
+            onPressed: () {
+              AppHaptic.select();
+              context.back();
+            },
             constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
             icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppCustomColor.textPrimary, size: 20.w),
           ),
@@ -204,7 +207,10 @@ class _MyCourseChipBar extends StatelessWidget {
             selected: selected,
             label: skillset.title.text,
             child: GestureDetector(
-              onTap: () => onTap(index),
+              onTap: () {
+                AppHaptic.select();
+                onTap(index);
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 decoration: BoxDecoration(
@@ -354,7 +360,10 @@ class _MyCourseRow extends StatelessWidget {
       selected: isSelected,
       label: course.title.text,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
@@ -430,7 +439,10 @@ class _ExploreMoreCoursesButton extends StatelessWidget {
       button: true,
       label: label,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Container(
           width: double.infinity,
           height: 54.h,

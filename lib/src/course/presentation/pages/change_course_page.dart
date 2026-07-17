@@ -22,7 +22,10 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
           button: true,
           label: MaterialLocalizations.of(context).backButtonTooltip,
           child: IconButton(
-            onPressed: () => context.back(),
+            onPressed: () {
+              AppHaptic.select();
+              context.back();
+            },
             constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
             icon: Icon(
               Icons.arrow_back_ios_new_rounded,

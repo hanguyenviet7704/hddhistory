@@ -94,7 +94,10 @@ class _VideoLessonToolbarIcon extends StatelessWidget {
       color: selected ? AppCustomColor.backgroundBrandSoft : AppCustomColor.backgroundGray,
       borderRadius: BorderRadius.circular(10.r),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         borderRadius: BorderRadius.circular(10.r),
         child: SizedBox(
           width: 36.r,
@@ -126,7 +129,10 @@ class _VideoLessonToolbarChip extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         borderRadius: BorderRadius.circular(10.r),
         child: Ink(
           width: 44.w,

@@ -172,7 +172,10 @@ class OutputPracticeTimelineList extends StatelessWidget {
             right: 20.w,
             bottom: 16.h,
             child: GestureDetector(
-              onTap: onJumpToLatest,
+              onTap: () {
+                AppHaptic.select();
+                onJumpToLatest();
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
@@ -295,7 +298,10 @@ class _OutputPracticeRetryBanner extends StatelessWidget {
           ),
           8.verticalSpace,
           GestureDetector(
-            onTap: onTap,
+            onTap: () {
+              AppHaptic.select();
+              onTap();
+            },
             child: AppText(
               actionLabel,
               style: AppStyle.text14.copyWith(

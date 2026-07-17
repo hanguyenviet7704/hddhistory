@@ -245,7 +245,10 @@ class _ProfileIdentityHeader extends StatelessWidget {
                   child: GestureDetector(
                     key: const Key('profile-avatar-login-button'),
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => const RegisterRoute().push(context),
+                    onTap: () {
+                      AppHaptic.select();
+                      const RegisterRoute().push(context);
+                    },
                     child: _ProfileAvatar(user: user),
                   ),
                 )
@@ -283,6 +286,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                 child: GestureDetector(
                   key: const Key('profile-settings-button'),
                   onTap: () {
+                    AppHaptic.select();
                     AppService.instance.appTrackingService.trackSettingDetailClick();
                     SettingRoute().go(context);
                   },
@@ -396,6 +400,7 @@ class _PremiumBanner extends StatelessWidget {
               key: const Key('profile-premium-banner'),
               behavior: HitTestBehavior.opaque,
               onTap: () {
+                AppHaptic.select();
                 AppService.instance.appTrackingService.trackSettingPremiumClick();
                 AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.profile);
                 const PaywallRoute().push(context);
@@ -476,7 +481,10 @@ class _StreakCard extends StatelessWidget {
           child: GestureDetector(
             key: const Key('profile-streak-card'),
             behavior: HitTestBehavior.opaque,
-            onTap: () => const HomeLearningStreakRoute().push(context),
+            onTap: () {
+              AppHaptic.select();
+              const HomeLearningStreakRoute().push(context);
+            },
             child: Container(
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
@@ -663,7 +671,10 @@ class _SectionHeaderRow extends StatelessWidget {
           label: trailingLabel,
           child: GestureDetector(
             key: const Key('profile-achievements-see-all-button'),
-            onTap: onTrailingTap,
+            onTap: () {
+              AppHaptic.select();
+              onTrailingTap();
+            },
             child: AppText(
               trailingLabel,
               style: AppStyle.textBold14.copyWith(color: AppCustomColor.brandPrimary),
@@ -715,7 +726,10 @@ class _InlineSectionError extends StatelessWidget {
           ),
           12.verticalSpace,
           OutlinedButton(
-            onPressed: onRetry,
+            onPressed: () {
+              AppHaptic.select();
+              onRetry();
+            },
             child: AppText(
               context.l10n.monetization.retry,
               style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary),
@@ -747,7 +761,10 @@ class _AchievementsSummaryCard extends StatelessWidget {
       child: GestureDetector(
         key: const Key('profile-achievements-summary-card'),
         behavior: HitTestBehavior.opaque,
-        onTap: () => _openAchievements(context),
+        onTap: () {
+          AppHaptic.select();
+          _openAchievements(context);
+        },
         child: Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
@@ -996,7 +1013,10 @@ class _LibrarySection extends StatelessWidget {
             child: GestureDetector(
               key: const Key('profile-library-my-course-row'),
               behavior: HitTestBehavior.opaque,
-              onTap: () => _openMyCourses(context),
+              onTap: () {
+                AppHaptic.select();
+                _openMyCourses(context);
+              },
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Row(

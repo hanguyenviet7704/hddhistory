@@ -313,7 +313,10 @@ class _HomeWeeklyStreakCard extends StatelessWidget {
         button: true,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => const HomeLearningStreakRoute().push(context),
+          onTap: () {
+            AppHaptic.select();
+            const HomeLearningStreakRoute().push(context);
+          },
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
@@ -454,6 +457,7 @@ class _JumpBackInCard extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
+          AppHaptic.select();
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
             ..selectSkillset(course.skillset)
@@ -627,7 +631,10 @@ class _QuickTile extends StatelessWidget {
       label: title,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Container(
           // Tall enough for a 2-line title + 2-line subtitle so longer
           // localized titles ("Khám phá 60+ chủ đề") wrap instead of being
@@ -709,7 +716,12 @@ class _RecommendedSection extends StatelessWidget {
                     button: true,
                     label: context.l10n.home.homeRecommendedSeeAll,
                     child: GestureDetector(
-                      onTap: onSeeAll,
+                      onTap: onSeeAll == null
+                          ? null
+                          : () {
+                              AppHaptic.select();
+                              onSeeAll!();
+                            },
                       child: AppText(
                         context.l10n.home.homeRecommendedSeeAll,
                         style: AppStyle.textBold12.copyWith(
@@ -757,6 +769,7 @@ class _RecommendedCard extends StatelessWidget {
       label: course.title.text,
       child: GestureDetector(
         onTap: () {
+          AppHaptic.select();
           final didSelect = context.read<HomeCubit>().trySelectCourseFromCourseId(course.id);
           if (didSelect) {
             context.read<CourseRoadmapCubit>().setRoadmapSource('home_recommended');

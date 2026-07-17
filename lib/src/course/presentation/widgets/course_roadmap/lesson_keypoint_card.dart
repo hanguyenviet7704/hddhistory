@@ -35,7 +35,12 @@ class LessonKeypointCard extends StatelessWidget {
           button: true,
           label: _keypoint.title.text,
           child: GestureDetector(
-            onTap: onTap,
+            onTap: onTap == null
+                ? null
+                : () {
+                    AppHaptic.select();
+                    onTap!();
+                  },
             child: Container(
               padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(

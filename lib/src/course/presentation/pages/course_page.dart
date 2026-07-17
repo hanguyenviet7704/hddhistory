@@ -282,7 +282,10 @@ class _ExploreChip extends StatelessWidget {
       button: true,
       selected: isSelected,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,

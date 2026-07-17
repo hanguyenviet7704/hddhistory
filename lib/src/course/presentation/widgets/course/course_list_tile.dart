@@ -24,7 +24,12 @@ class CourseListTile extends StatelessWidget {
       button: onTap != null,
       selected: isSelected,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: onTap == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onTap!();
+              },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: showBorder

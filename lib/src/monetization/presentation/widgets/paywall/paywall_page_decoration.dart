@@ -57,6 +57,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   }
 
   void _handleRestore() {
+    AppHaptic.select();
     AppService.instance.appTrackingService.trackPremiumRestoreClick();
     context.read<IapCubit>().restorePurchases();
   }

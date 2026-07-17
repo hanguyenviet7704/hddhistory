@@ -35,6 +35,7 @@ class _CollapsedExerciseBody extends StatelessWidget {
               t.roleplay.rolePlayExerciseTapToAnswer,
               maxLines: 2,
               onTap: () {
+                AppHaptic.select();
                 final trackingData = RoleplayTrackingData.fromContext();
                 if (trackingData != null) {
                   AppService.instance.appTrackingService.trackRoleplayQuizClick(trackingData);

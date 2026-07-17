@@ -13,7 +13,10 @@ class CloseOverlayButton extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        onPressed: onPressed,
+        onPressed: () {
+          AppHaptic.select();
+          onPressed();
+        },
         icon: Icon(
           Icons.close_rounded,
           color: AppColorLight.surface,

@@ -144,7 +144,10 @@ class _VideoLessonPressableScaleState extends State<_VideoLessonPressableScale> 
 
     return GestureDetector(
       behavior: widget.behavior,
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       onTapDown: (_) => _setPressed(true),
       onTapUp: (_) => _setPressed(false),
       onTapCancel: () => _setPressed(false),

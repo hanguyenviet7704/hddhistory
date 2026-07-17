@@ -19,14 +19,20 @@ extension _VideoLessonPageInteractionActions on _VideoLessonPageState {
             ),
             actions: [
               TextButton(
-                onPressed: () => dialogContext.pop(false),
+                onPressed: () {
+                  AppHaptic.select();
+                  dialogContext.pop(false);
+                },
                 child: AppText(
                   context.l10n.videoLesson.keepEditingButton,
                   style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
                 ),
               ),
               TextButton(
-                onPressed: () => dialogContext.pop(true),
+                onPressed: () {
+                  AppHaptic.select();
+                  dialogContext.pop(true);
+                },
                 child: AppText(
                   context.l10n.videoLesson.deleteNoteButton,
                   style: AppStyle.text14.copyWith(color: AppCustomColor.errorRed),

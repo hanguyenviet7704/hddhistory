@@ -20,7 +20,10 @@ class _VideoLessonNotesSheetHeader extends StatelessWidget {
         child: Row(
           children: [
             IconButton(
-              onPressed: onBack,
+              onPressed: () {
+                AppHaptic.select();
+                onBack();
+              },
               icon: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 20.r,
@@ -29,7 +32,10 @@ class _VideoLessonNotesSheetHeader extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-              onPressed: onClose,
+              onPressed: () {
+                AppHaptic.select();
+                onClose();
+              },
               icon: Icon(
                 Icons.close_rounded,
                 size: 24.r,
@@ -73,7 +79,10 @@ class _VideoLessonNotesSheetHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: onClose,
+            onPressed: () {
+              AppHaptic.select();
+              onClose();
+            },
             icon: Icon(
               Icons.close_rounded,
               size: 24.r,

@@ -79,6 +79,7 @@ class ClosePopupLesson extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
+                    AppHaptic.select();
                     final trackingData = KeypointTrackingData.fromContext();
                     if (trackingData != null) {
                       AppService.instance.appTrackingService.trackKeypointExitPopupClick(
@@ -115,6 +116,7 @@ class ClosePopupLesson extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
+                    AppHaptic.select();
                     final trackingData = KeypointTrackingData.fromContext();
                     if (trackingData != null) {
                       AppService.instance.appTrackingService.trackKeypointExitPopupClick(

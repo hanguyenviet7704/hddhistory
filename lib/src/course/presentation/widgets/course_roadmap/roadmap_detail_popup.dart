@@ -314,7 +314,10 @@ class _RoadmapDetailActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: Container(
         height: 54.h,

@@ -19,7 +19,10 @@ class HabitTaskRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final done = userHabit.todayDone;
     return InkWell(
-      onTap: onOpenDetail,
+      onTap: () {
+        AppHaptic.select();
+        onOpenDetail();
+      },
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         child: Row(
@@ -38,7 +41,10 @@ class HabitTaskRow extends StatelessWidget {
               value: done ? 'Done' : 'Not done',
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: onCheckInTap,
+                onTap: () {
+                  AppHaptic.select();
+                  onCheckInTap();
+                },
                 // The check is a small 20px dot but is the row's primary action,
                 // so make the whole trailing zone tappable (~56x52) — the dot
                 // stays flush right, the empty space to its left also checks in.

@@ -70,7 +70,10 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
                 button: true,
                 label: MaterialLocalizations.of(context).backButtonTooltip,
                 child: IconButton(
-                  onPressed: () => _backToExplore(context),
+                  onPressed: () {
+                    AppHaptic.select();
+                    _backToExplore(context);
+                  },
                   constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
                   icon: Icon(
                     Icons.arrow_back_ios_new_rounded,

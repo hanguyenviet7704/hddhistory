@@ -64,7 +64,10 @@ class DCachedImage extends StatelessWidget {
 
     if (onTap != null || enablePhotoView) {
       child = InkWell(
-        onTap: () => _onTap(context),
+        onTap: () {
+          AppHaptic.select();
+          _onTap(context);
+        },
         child: child,
       );
     }

@@ -34,6 +34,7 @@ class ProgressBar extends StatelessWidget {
             10.horizontalSpace,
             InkWell(
               onTap: () {
+                AppHaptic.select();
                 final step = context.read<DataCollectCubit>().state.currentStep;
                 final trackingService = AppService.instance.appTrackingService;
                 switch (step) {

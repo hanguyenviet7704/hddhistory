@@ -29,6 +29,7 @@ class KeypointsSectionHeader extends StatelessWidget {
         // "How it works" button (UI only, action to be added later)
         GestureDetector(
           onTap: () {
+            AppHaptic.select();
             final trackingData = _buildTrackingData(context);
             LessonExplainPopup.show(context, trackingData: trackingData);
           },

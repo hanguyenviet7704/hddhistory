@@ -81,7 +81,10 @@ class ExerciseResultSummary extends StatelessWidget {
                 Opacity(
                   opacity: 0.5,
                   child: GestureDetector(
-                    onTap: onExplain,
+                    onTap: () {
+                      AppHaptic.select();
+                      onExplain?.call();
+                    },
                     child: Row(
                       children: [
                         showExplanation
@@ -110,7 +113,10 @@ class ExerciseResultSummary extends StatelessWidget {
             width: double.infinity,
             height: 54.h,
             child: ElevatedButton(
-              onPressed: onContinue,
+              onPressed: () {
+                AppHaptic.select();
+                onContinue();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _resolvedAccentColor,
                 foregroundColor: Colors.white,

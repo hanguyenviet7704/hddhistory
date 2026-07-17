@@ -13,7 +13,10 @@ class LessonProgressBar extends StatelessWidget {
         children: [
           20.horizontalSpace,
           InkWell(
-            onTap: () => LessonExitFlow.open(context),
+            onTap: () {
+              AppHaptic.select();
+              LessonExitFlow.open(context);
+            },
             child: Icon(
               Icons.close_rounded,
               color: const Color(0xFF0D121C), // Brand/Brand/Primary/300

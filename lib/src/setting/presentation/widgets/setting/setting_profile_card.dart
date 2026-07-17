@@ -7,6 +7,7 @@ class SettingProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        AppHaptic.select();
         AppService.instance.appTrackingService.trackSettingProfileClick();
         final user = context.read<ProfileCubit>().state.user;
         bool isAnonymous = user.anonymous;
@@ -53,6 +54,7 @@ class SettingProfileCard extends StatelessWidget {
               16.horizontalSpace,
               GestureDetector(
                 onTap: () {
+                  AppHaptic.select();
                   AppService.instance.appTrackingService.trackSettingDetailClick();
                   SettingRoute().go(context);
                 },

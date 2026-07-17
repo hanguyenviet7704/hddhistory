@@ -19,7 +19,10 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
     final icon = iconPath?.trim();
     final borderRadius = BorderRadius.circular(16.r);
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       borderRadius: borderRadius,
       child: Container(
         width: double.infinity,
