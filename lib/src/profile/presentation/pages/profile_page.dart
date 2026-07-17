@@ -867,23 +867,28 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fractional progress = completed keypoints / total keypoints aggregated
-    // across the skillset's courses. The top-level
-    // achievement.totalKeypoints/completedKeypoints are NOT populated by the
-    // API (they stay at their 0 defaults) — reading them made every bar sit at
-    // 0%. Sum the per-course counts instead; a completed course contributes all
-    // of its keypoints. If the API omits keypoint counts entirely (some dev
-    // data), fall back to the completed-course ratio so the bar still moves.
-    final int totalKeypoints = achievement.courses.fold<int>(0, (sum, c) => sum + c.totalKeypoints);
+    // Progress over the skillset's WHOLE course set: each course counts as one
+    // unit in [0,1] — a completed course = 1.0, an in-progress course = its
+    // keypoint fraction, an untouched course = 0 — divided by the skillset's
+    // total course count.
+    //
+    // The old code did completedKeypoints/totalKeypoints summed only over the
+    // courses the API returns keypoint counts for (i.e. the STARTED ones), so a
+    // single finished course with the rest untouched read as ~100%. Dividing by
+    // achievement.totalCourse (the full count, populated for all skillsets) is
+    // what keeps one finished course out of six at ~1/6, matching the "N/M
+    // badges" summary card.
+    final int totalCourses = achievement.totalCourse;
     final double fraction;
-    if (totalKeypoints > 0) {
-      final int completedKeypoints = achievement.courses.fold<int>(
-        0,
-        (sum, c) => sum + (c.isCompleted ? c.totalKeypoints : c.completedKeypoints),
-      );
-      fraction = completedKeypoints / totalKeypoints;
+    if (totalCourses > 0) {
+      final double completedUnits = achievement.courses.fold<double>(0, (sum, c) {
+        if (c.isCompleted) return sum + 1.0;
+        if (c.totalKeypoints > 0) return sum + (c.completedKeypoints / c.totalKeypoints).clamp(0.0, 1.0);
+        return sum;
+      });
+      fraction = (completedUnits / totalCourses).clamp(0.0, 1.0);
     } else {
-      fraction = achievement.totalCourse == 0 ? 0.0 : achievement.completedCourse / achievement.totalCourse;
+      fraction = 0.0;
     }
     final int percent = (fraction.clamp(0.0, 1.0) * 100).round();
     final String name = achievement.skillsetTitle.text;

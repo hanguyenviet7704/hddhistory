@@ -29,16 +29,29 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
 
   int _visualIndex = 0;
 
+  // Visual tab 1 (Khám phá) is shared by TWO shell branches: the course-roadmap
+  // (branch 1) and the course-list grid (branch 3). Remember whichever the user
+  // was last in so tapping that tab RETURNS them there — e.g. resume the roadmap
+  // after a detour to another tab, instead of always snapping back to the grid.
+  // Browsing is never stranded: the roadmap's own "back to Explore" button and
+  // Home's course entries still switch to the grid (which updates this too).
+  int _courseSlotBranch = 3;
+
+  // Branch the given visual tab should open. All tabs are fixed except the
+  // shared Khám phá slot, which follows the last-used course branch above.
+  int _branchForVisual(int visualIndex) => visualIndex == 1 ? _courseSlotBranch : _tabToBranch[visualIndex];
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final branchIndex = context.read<PageCubit>().state.currentIndex;
+    if (branchIndex == 1 || branchIndex == 3) _courseSlotBranch = branchIndex;
     _visualIndex = _branchToVisual[branchIndex] ?? 0;
   }
 
   void _onTabTap(int visualIndex) {
     AppHaptic.select();
-    final branchIndex = _tabToBranch[visualIndex];
+    final branchIndex = _branchForVisual(visualIndex);
     setState(() => _visualIndex = visualIndex);
     context.read<PageCubit>().handleShellRouteNavigation(branchIndex, widget.navigationShell);
   }
@@ -51,7 +64,12 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
     // which would otherwise leave the wrong tab lit (e.g. "Home" highlighted
     // while the Explore grid is on screen).
     final activeBranch = widget.navigationShell.currentIndex;
-    if (_tabToBranch[_visualIndex] != activeBranch) {
+    // Remember which of the shared course-slot branches (roadmap=1 / grid=3) is
+    // live, so the Khám phá tab can return to it after a detour to another tab.
+    if (activeBranch == 1 || activeBranch == 3) {
+      _courseSlotBranch = activeBranch;
+    }
+    if (_branchForVisual(_visualIndex) != activeBranch) {
       _visualIndex = _branchToVisual[activeBranch] ?? _visualIndex;
     }
     return AnnotatedRegion<SystemUiOverlayStyle>(
