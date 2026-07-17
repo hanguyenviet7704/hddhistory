@@ -584,6 +584,9 @@ class _StatCard extends StatelessWidget {
                 AppText(
                   value,
                   maxLines: 1,
+                  // Shrink-to-fit so a longer value (e.g. "141 phút") isn't
+                  // clipped to "141 ph…" in this narrow half-width card.
+                  enableFitScaleDown: true,
                   style: _poppins(19, FontWeight.w700),
                 ),
                 AppText(
@@ -838,15 +841,30 @@ class _LearningProgressSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
-          child: Column(
-            children: [
-              for (int i = 0; i < visible.length; i++)
-                _CategoryRow(
-                  achievement: visible[i],
-                  tint: _profileCategoryTints[i % _profileCategoryTints.length],
-                  showDivider: i < visible.length - 1,
-                ),
-            ],
+          // The progress denominator is the skillset's whole catalog size, which
+          // lives in HomeCubit — rebuild when it arrives so the bars aren't stuck
+          // on the (much smaller) achievement fallback if skillsets load late.
+          child: BlocBuilder<HomeCubit, HomeState>(
+            bloc: AppDI.injector.get<HomeCubit>(),
+            buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
+            builder: (context, homeState) {
+              return Column(
+                children: [
+                  for (int i = 0; i < visible.length; i++)
+                    _CategoryRow(
+                      achievement: visible[i],
+                      catalogCount: homeState.skillsets
+                              .where((s) => s.id == visible[i].skillsetId)
+                              .firstOrNull
+                              ?.courses
+                              .length ??
+                          0,
+                      tint: _profileCategoryTints[i % _profileCategoryTints.length],
+                      showDivider: i < visible.length - 1,
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -857,36 +875,41 @@ class _LearningProgressSection extends StatelessWidget {
 class _CategoryRow extends StatelessWidget {
   const _CategoryRow({
     required this.achievement,
+    required this.catalogCount,
     required this.tint,
     required this.showDivider,
   });
 
   final AchievenmentResponseEntity achievement;
+
+  /// Total number of courses in this skillset's Explore catalog (from HomeCubit).
+  /// This is the progress denominator — see [build].
+  final int catalogCount;
   final Color tint;
   final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
-    // Progress over the skillset's WHOLE course set: each course counts as one
-    // unit in [0,1] — a completed course = 1.0, an in-progress course = its
-    // keypoint fraction, an untouched course = 0 — divided by the skillset's
-    // total course count.
+    // Progress is measured over the skillset's WHOLE catalog (every course shown
+    // in Explore), each course counting as one unit in [0,1]: a completed course
+    // = 1.0, an in-progress course = its keypoint fraction, an untouched course
+    // = 0.
     //
-    // The old code did completedKeypoints/totalKeypoints summed only over the
-    // courses the API returns keypoint counts for (i.e. the STARTED ones), so a
-    // single finished course with the rest untouched read as ~100%. Dividing by
-    // achievement.totalCourse (the full count, populated for all skillsets) is
-    // what keeps one finished course out of six at ~1/6, matching the "N/M
-    // badges" summary card.
-    final int totalCourses = achievement.totalCourse;
+    // The achievement API only returns rows for the courses the user has STARTED
+    // (achievement.totalCourse counts just those), so dividing by it made a user
+    // who finished the 2 courses they touched read as 100% even though the
+    // skillset has 9 courses. The denominator must be the catalog size from
+    // HomeCubit; fall back to achievement.totalCourse only if the skillset isn't
+    // loaded yet, so the bar never divides by zero or disappears.
+    final int denominator = catalogCount > 0 ? catalogCount : achievement.totalCourse;
     final double fraction;
-    if (totalCourses > 0) {
+    if (denominator > 0) {
       final double completedUnits = achievement.courses.fold<double>(0, (sum, c) {
         if (c.isCompleted) return sum + 1.0;
         if (c.totalKeypoints > 0) return sum + (c.completedKeypoints / c.totalKeypoints).clamp(0.0, 1.0);
         return sum;
       });
-      fraction = (completedUnits / totalCourses).clamp(0.0, 1.0);
+      fraction = (completedUnits / denominator).clamp(0.0, 1.0);
     } else {
       fraction = 0.0;
     }
