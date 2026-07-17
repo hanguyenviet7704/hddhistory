@@ -28,31 +28,57 @@ class StreakWeekBar extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (index) {
         final isActive = normalizedWeekStudy[index];
-        // Today, not yet studied → highlighted ring (brand border, no fill).
-        final isTodayPending = index == todayIndex && !isActive;
-        final isHighlighted = isActive || isTodayPending;
+        final isToday = index == todayIndex;
+        // Today is always highlighted (brand colour + ring), so is any past
+        // studied day.
+        final isHighlighted = isActive || isToday;
+
+        // Inner marker: studied → filled brand circle + check; otherwise an
+        // empty circle whose border is brand for today (the design's ring) and
+        // grey for other unstudied days.
+        final Widget circle = Container(
+          width: 28.r,
+          height: 28.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isActive ? AppCustomColor.streakActive : AppCustomColor.backgroundWhite,
+            border: Border.all(
+              color: isHighlighted ? AppCustomColor.streakActive : AppCustomColor.borderDefault,
+              width: 2,
+            ),
+          ),
+          child: isActive
+              ? Icon(
+                  Icons.check,
+                  color: AppCustomColor.textWhite,
+                  size: 16.sp,
+                )
+              : null,
+        );
+
         return Expanded(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 24.r,
-                height: 24.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isActive ? AppCustomColor.streakActive : AppCustomColor.backgroundWhite,
-                  border: Border.all(
-                    color: isHighlighted ? AppCustomColor.streakActive : AppCustomColor.borderDefault,
-                    width: 2,
-                  ),
+              // Fixed-height slot so today's outer ring never shifts the labels
+              // out of line with the other days.
+              SizedBox(
+                height: 36.r,
+                child: Center(
+                  // Today ALWAYS wears an outer ring so the current day stays
+                  // marked even once it's studied. A not-yet-studied today is
+                  // already an empty brand ring, so it needs no second ring.
+                  child: isToday && isActive
+                      ? Container(
+                          padding: EdgeInsets.all(2.r),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppCustomColor.streakActive, width: 1.5),
+                          ),
+                          child: circle,
+                        )
+                      : circle,
                 ),
-                child: isActive
-                    ? Icon(
-                        Icons.check,
-                        color: AppCustomColor.textWhite,
-                        size: 14.sp,
-                      )
-                    : null,
               ),
               SizedBox(height: 4.r),
               AppText(

@@ -15,6 +15,25 @@ part of '../../course.dart';
 class MyCoursesPage extends StatefulWidget {
   const MyCoursesPage({super.key});
 
+  /// Root-pushes this page over the current tab with the cubits it reads.
+  /// Shared by Profile's Library row (`_openMyCourses`) and the course
+  /// roadmap's back button (when the user drilled in from here) so both open
+  /// it identically.
+  static Future<void> open(BuildContext context) {
+    return Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+          ],
+          child: const MyCoursesPage(),
+        ),
+      ),
+    );
+  }
+
   @override
   State<MyCoursesPage> createState() => _MyCoursesPageState();
 }

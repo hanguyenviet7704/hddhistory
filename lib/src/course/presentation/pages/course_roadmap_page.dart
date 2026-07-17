@@ -36,7 +36,20 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         return;
       }
     }
-    // Grid / My courses / search live on the Explore tab — return to it at the
+    // Opened from Profile → "My course" (a root-pushed page, not a branch).
+    // Return there: switch to the Profile tab, then re-open the page over it.
+    if (source == 'my_courses') {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(2); // Setting/Profile branch
+      ProfileRoute().go(context);
+      page.setCurrentRouteName(RouteNamed.profile);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = AppConfig.instance.context;
+        if (ctx != null) MyCoursesPage.open(ctx);
+      });
+      return;
+    }
+    // Grid / search live on the Explore tab — return to it at the
     // current skillset (mirrors the header dropdown's navigation).
     final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
     AppDI.injector.get<CourseCubit>()

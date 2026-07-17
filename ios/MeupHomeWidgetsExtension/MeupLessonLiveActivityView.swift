@@ -143,7 +143,7 @@ struct MeupLessonLockScreenView: View {
   let state: MeupLessonActivityAttributes.ContentState
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
+    VStack(alignment: .leading, spacing: 12) {
       HStack(spacing: 9) {
         meupLessonLogo(size: 26)
         Text("MeUp").font(.system(size: 13, weight: .semibold)).foregroundStyle(LiveActivityColor.title)
@@ -192,7 +192,7 @@ struct MeupLessonLockScreenView: View {
       }
     }
     .padding(.horizontal, 30)
-    .padding(.vertical, 22)
+    .padding(.vertical, 28)
   }
 }
 
