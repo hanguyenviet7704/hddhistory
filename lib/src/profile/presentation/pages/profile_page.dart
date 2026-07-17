@@ -850,10 +850,24 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fractional progress = completed keypoints / total keypoints across the
-    // skillset's courses (partial progress shows a real %), not the old
-    // fully-completed-courses ratio that read 0% until a whole course was done.
-    final double fraction = achievement.totalKeypoints == 0 ? 0.0 : achievement.completedKeypoints / achievement.totalKeypoints;
+    // Fractional progress = completed keypoints / total keypoints aggregated
+    // across the skillset's courses. The top-level
+    // achievement.totalKeypoints/completedKeypoints are NOT populated by the
+    // API (they stay at their 0 defaults) — reading them made every bar sit at
+    // 0%. Sum the per-course counts instead; a completed course contributes all
+    // of its keypoints. If the API omits keypoint counts entirely (some dev
+    // data), fall back to the completed-course ratio so the bar still moves.
+    final int totalKeypoints = achievement.courses.fold<int>(0, (sum, c) => sum + c.totalKeypoints);
+    final double fraction;
+    if (totalKeypoints > 0) {
+      final int completedKeypoints = achievement.courses.fold<int>(
+        0,
+        (sum, c) => sum + (c.isCompleted ? c.totalKeypoints : c.completedKeypoints),
+      );
+      fraction = completedKeypoints / totalKeypoints;
+    } else {
+      fraction = achievement.totalCourse == 0 ? 0.0 : achievement.completedCourse / achievement.totalCourse;
+    }
     final int percent = (fraction.clamp(0.0, 1.0) * 100).round();
     final String name = achievement.skillsetTitle.text;
 
