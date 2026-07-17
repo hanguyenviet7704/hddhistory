@@ -656,14 +656,23 @@ class _GridCourseBadge extends StatelessWidget {
       // ring, same as Home.
       final pct = (completed / total * 100).round();
       return _WhiteGridBadge(
+        // Keep the 20px slot so the badge height matches the other states, but
+        // render a smaller ring inside it — the full-slot ring read as too big
+        // next to the label.
         icon: SizedBox(
           width: 20.w,
           height: 20.w,
-          child: CircularProgressIndicator(
-            value: completed / total,
-            strokeWidth: 2,
-            backgroundColor: AppCustomColor.borderSecondary,
-            valueColor: AlwaysStoppedAnimation(AppCustomColor.brandPrimary),
+          child: Center(
+            child: SizedBox(
+              width: 15.w,
+              height: 15.w,
+              child: CircularProgressIndicator(
+                value: completed / total,
+                strokeWidth: 2,
+                backgroundColor: AppCustomColor.borderSecondary,
+                valueColor: AlwaysStoppedAnimation(AppCustomColor.brandPrimary),
+              ),
+            ),
           ),
         ),
         label: context.l10n.allcourse.progressPercent(percent: pct),
