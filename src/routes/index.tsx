@@ -41,6 +41,7 @@ import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
 import ReportList from "../pages/reports/ReportList";
 import ImageCompressionPage from "../pages/image-compression/ImageCompressionPage";
 import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
+import StudyThemeList from "../pages/study-themes/StudyThemeList";
 
 export default function AppRouter() {
   return (
@@ -66,6 +67,8 @@ export default function AppRouter() {
                 path="reanchor-reasons"
                 element={<ReanchorReasonList />}
               />
+
+              <Route path="study-themes" element={<StudyThemeList />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />

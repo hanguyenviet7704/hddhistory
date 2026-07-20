@@ -19,6 +19,7 @@ import {
   FireIcon,
   ArrowPathIcon,
   SpeakerWaveIcon,
+  SwatchIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -35,6 +36,7 @@ const menuItems = [
     icon: ArrowPathIcon,
     path: "/reanchor-reasons",
   },
+  { name: "Study Themes", icon: SwatchIcon, path: "/study-themes" },
   { name: "Course", icon: BookOpenIcon, path: "/course" },
   { name: "Roleplay", icon: ArrowRightOnRectangleIcon, path: "/roleplay" },
   { name: "Lesson", icon: ClipboardDocumentListIcon, path: "/lesson" },
