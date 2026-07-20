@@ -47,8 +47,22 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
   }
 
   /// Apply a user-picked image as the background (transient — never persisted).
-  void selectUploadedImage(File file) {
-    emit(state.copyWith(preset: PresetCatalog.uploadPreset, applying: false, uploadedFile: file));
+  /// Unlike curated presets we don't know the photo's brightness up front, so
+  /// detect it and pick light-vs-dark ink + a matching gentle overlay, so the
+  /// app's text stays readable whether the user picks a bright or a dark photo.
+  Future<void> selectUploadedImage(File file) async {
+    emit(state.copyWith(applying: true, uploadedFile: file));
+    final dark = await _uploadedImageIsDark(file);
+    emit(state.copyWith(
+      preset: PresetCatalog.uploadPreset.copyWith(
+        isDark: dark,
+        // dark photo → light ink, so a light-lifting scrim isn't needed (gentle
+        // darkening keeps ink crisp); bright photo → dark ink, gentle light veil.
+        overlay: dark ? const Color(0x33000000) : const Color(0x26FFFFFF),
+      ),
+      applying: false,
+      uploadedFile: file,
+    ));
   }
 
   /// Back to the stock light background — always available offline.
@@ -84,5 +98,31 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
       if (p.id == id) return p;
     }
     return null;
+  }
+}
+
+/// Whether a user-uploaded photo reads dark overall — decodes a tiny 24×24
+/// thumbnail and averages perceived luminance so [StudyThemeCubit.selectUploadedImage]
+/// can choose light vs dark ink. Safe default (dark → light ink) on any error.
+Future<bool> _uploadedImageIsDark(File file) async {
+  try {
+    final bytes = await file.readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: 24, targetHeight: 24);
+    final frame = await codec.getNextFrame();
+    final data = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    frame.image.dispose();
+    if (data == null) return true;
+    final px = data.buffer.asUint8List();
+    double sum = 0;
+    var n = 0;
+    for (var i = 0; i + 3 < px.length; i += 4) {
+      if (px[i + 3] == 0) continue; // skip fully-transparent pixels
+      sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+      n++;
+    }
+    if (n == 0) return true;
+    return (sum / n) < 140; // mean luminance < 140/255 → treat the photo as dark
+  } catch (_) {
+    return true;
   }
 }

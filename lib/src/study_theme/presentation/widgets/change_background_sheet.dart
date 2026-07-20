@@ -118,7 +118,7 @@ class ChangeBackgroundSheet extends StatelessWidget {
     // part of the later upload pass. Image-only (design item 6).
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked == null) return;
-    cubit.selectUploadedImage(File(picked.path));
+    await cubit.selectUploadedImage(File(picked.path));
     if (context.mounted) Navigator.of(context).pop();
   }
 }
