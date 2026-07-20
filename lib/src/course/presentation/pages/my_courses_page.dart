@@ -62,7 +62,8 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: const Key('my-courses-page'),
-      backgroundColor: AppCustomColor.backgroundWhite,
+      // Transparent only when a custom study background is active.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
       appBar: AppBar(
         backgroundColor: AppCustomColor.backgroundWhite,
         elevation: 0,
@@ -84,63 +85,63 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
       ),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.status != curr.status,
-        builder: (context, homeState) {
-          final progressState = context.watch<ProgressCubit>().state;
-          final progressById = progressLookup(progressState);
+      body: ThemedBackground(
+        child: BlocBuilder<HomeCubit, HomeState>(
+          buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.status != curr.status,
+          builder: (context, homeState) {
+            final progressState = context.watch<ProgressCubit>().state;
+            final progressById = progressLookup(progressState);
 
-          // Only skillsets the user is enrolled in (≥1 course in their progress).
-          final sections = homeState.skillsets
-              .where((s) => s.courses.any((c) => progressById.containsKey(c.id)))
-              .toList();
+            // Only skillsets the user is enrolled in (≥1 course in their progress).
+            final sections = homeState.skillsets.where((s) => s.courses.any((c) => progressById.containsKey(c.id))).toList();
 
-          if (homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) {
-            return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
-          }
+            if (homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) {
+              return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
+            }
 
-          if (sections.isEmpty) {
-            return _MyCoursesEmpty(onExplore: () => _exploreMore(context));
-          }
+            if (sections.isEmpty) {
+              return _MyCoursesEmpty(onExplore: () => _exploreMore(context));
+            }
 
-          final selected = _selectedChip.clamp(0, sections.length - 1);
+            final selected = _selectedChip.clamp(0, sections.length - 1);
 
-          return Column(
-            children: [
-              8.verticalSpace,
-              _MyCourseChipBar(
-                skillsets: sections,
-                selectedIndex: selected,
-                onTap: (i) => _onChipTap(i, sections),
-              ),
-              14.verticalSpace,
-              Expanded(
-                child: ListView(
-                  controller: _scrollController,
-                  padding: EdgeInsets.fromLTRB(24.w, 4.h, 24.w, 16.h),
-                  children: [
-                    for (var i = 0; i < sections.length; i++)
-                      KeyedSubtree(
-                        key: _sectionKey(sections[i].id),
-                        child: _MyCourseSection(
-                          skillset: sections[i],
-                          progressState: progressState,
-                          onTapCourse: (skillset, course) => _openCourseRoadmap(context, skillset, course),
-                          showBottomSpacing: i < sections.length - 1,
-                        ),
-                      ),
-                  ],
+            return Column(
+              children: [
+                8.verticalSpace,
+                _MyCourseChipBar(
+                  skillsets: sections,
+                  selectedIndex: selected,
+                  onTap: (i) => _onChipTap(i, sections),
                 ),
-              ),
-              // Pinned bottom CTA (design: sticky bottom).
-              Container(
-                color: AppCustomColor.backgroundWhite,
-                padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 20.h + MediaQuery.paddingOf(context).bottom),
-                child: _ExploreMoreCoursesButton(onTap: () => _exploreMore(context)),
-              ),
-            ],
-          );
-        },
+                14.verticalSpace,
+                Expanded(
+                  child: ListView(
+                    controller: _scrollController,
+                    padding: EdgeInsets.fromLTRB(24.w, 4.h, 24.w, 16.h),
+                    children: [
+                      for (var i = 0; i < sections.length; i++)
+                        KeyedSubtree(
+                          key: _sectionKey(sections[i].id),
+                          child: _MyCourseSection(
+                            skillset: sections[i],
+                            progressState: progressState,
+                            onTapCourse: (skillset, course) => _openCourseRoadmap(context, skillset, course),
+                            showBottomSpacing: i < sections.length - 1,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Pinned bottom CTA (design: sticky bottom).
+                Container(
+                  color: AppCustomColor.backgroundWhite,
+                  padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 20.h + MediaQuery.paddingOf(context).bottom),
+                  child: _ExploreMoreCoursesButton(onTap: () => _exploreMore(context)),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -270,9 +271,11 @@ class _MyCourseSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Bare section header sitting directly on the (possibly custom)
+        // background — the enrolled-course rows below stay opaque cards.
         AppText(
           skillset.title.text,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         for (var i = 0; i < enrolled.length; i++) ...[

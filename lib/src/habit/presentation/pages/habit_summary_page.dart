@@ -15,154 +15,154 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
-      body: SafePage(
-        child: BlocBuilder<HabitCubit, HabitState>(
-          builder: (context, state) {
-            final summary = state.summary;
-            final byGroup = <String, List<UserHabitEntity>>{};
-            for (final userHabit in state.activeHabits) {
-              byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
-            }
-            final categoryGroups = byGroup.values.toList();
+      // Transparent only when a custom study background is active.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
+      body: ThemedBackground(
+        child: SafePage(
+          child: BlocBuilder<HabitCubit, HabitState>(
+            builder: (context, state) {
+              final summary = state.summary;
+              final byGroup = <String, List<UserHabitEntity>>{};
+              for (final userHabit in state.activeHabits) {
+                byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
+              }
+              final categoryGroups = byGroup.values.toList();
 
-            return Column(
-              children: [
-                // Figma: a fixed 60-tall header, title + date range centered
-                // both ways (not just horizontally).
-                SizedBox(
-                  height: 60.h,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppText(
-                          context.l10n.habit.summaryWeeklyReviewTitle,
-                          style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
-                        ),
-                        AppText(
-                          _habitWeekRangeLabel(state.activeHabits),
-                          // Figma text/tertiary is #5F6F86 (streakTextMuted here),
-                          // not the app's lighter textTertiary token.
-                          style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
-                        ),
-                      ],
+              return Column(
+                children: [
+                  // Figma: a fixed 60-tall header, title + date range centered
+                  // both ways (not just horizontally).
+                  SizedBox(
+                    height: 60.h,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppText(
+                            context.l10n.habit.summaryWeeklyReviewTitle,
+                            style: AppStyle.textBold16.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+                          ),
+                          AppText(
+                            _habitWeekRangeLabel(state.activeHabits),
+                            // Figma text/tertiary is #5F6F86 (streakTextMuted here),
+                            // not the app's lighter textTertiary token.
+                            style: AppStyle.text12.copyWith(color: studyThemeOnBg(context, AppCustomColor.streakTextMuted)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Figma: the seedling glyph nestles INSIDE the arc's
-                        // bottom gap (the gauge frame is clipped and the icon
-                        // column overlaps it), not stacked below the gauge's
-                        // square box — hence the Stack.
-                        Center(
-                          child: Stack(
-                            alignment: Alignment.bottomCenter,
-                            children: [
-                              CircularPercentIndicator(
-                                radius: 93.w,
-                                lineWidth: 14.w,
-                                percent: (summary.checkInRate / 100).clamp(0, 1),
-                                arcType: ArcType.FULL,
-                                arcBackgroundColor: AppCustomColor.brandPrimary50,
-                                backgroundColor: Colors.transparent,
-                                progressColor: AppCustomColor.brandPrimary,
-                                circularStrokeCap: CircularStrokeCap.round,
-                                animateFromLastPercent: true,
-                                animation: true,
-                                animationDuration: 500,
-                                center: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    AppText(
-                                      '${summary.checkInRate}%',
-                                      // Figma: Mulish ExtraBold 36, line-height 1.25.
-                                      style: AppStyle.textBold36.copyWith(
-                                        color: AppCustomColor.brandPrimary,
-                                        fontWeight: FontWeight.w800,
-                                        height: 1.25,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Figma: the seedling glyph nestles INSIDE the arc's
+                          // bottom gap (the gauge frame is clipped and the icon
+                          // column overlaps it), not stacked below the gauge's
+                          // square box — hence the Stack.
+                          Center(
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
+                              children: [
+                                CircularPercentIndicator(
+                                  radius: 93.w,
+                                  lineWidth: 14.w,
+                                  percent: (summary.checkInRate / 100).clamp(0, 1),
+                                  arcType: ArcType.FULL,
+                                  arcBackgroundColor: AppCustomColor.brandPrimary50,
+                                  backgroundColor: Colors.transparent,
+                                  progressColor: AppCustomColor.brandPrimary,
+                                  circularStrokeCap: CircularStrokeCap.round,
+                                  animateFromLastPercent: true,
+                                  animation: true,
+                                  animationDuration: 500,
+                                  center: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AppText(
+                                        '${summary.checkInRate}%',
+                                        // Figma: Mulish ExtraBold 36, line-height 1.25.
+                                        style: AppStyle.textBold36.copyWith(
+                                          color: AppCustomColor.brandPrimary,
+                                          fontWeight: FontWeight.w800,
+                                          height: 1.25,
+                                        ),
                                       ),
-                                    ),
-                                    2.verticalSpace,
-                                    AppText(
-                                      context.l10n.habit.summaryCheckInRateLabel,
-                                      style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
-                                    ),
-                                  ],
+                                      2.verticalSpace,
+                                      AppText(
+                                        context.l10n.habit.summaryCheckInRateLabel,
+                                        style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              SvgPicture.asset('assets/svg/common/habit_summary_plant.svg', width: 24.w, height: 24.w),
-                            ],
+                                SvgPicture.asset('assets/svg/common/habit_summary_plant.svg', width: 24.w, height: 24.w),
+                              ],
+                            ),
                           ),
-                        ),
-                        4.verticalSpace,
-                        Center(child: _buildWorkingOnText(context, summary.activeCount)),
-                        20.verticalSpace,
-                        Container(
-                          padding: EdgeInsets.all(16.w),
-                          decoration: BoxDecoration(
-                            color: AppCustomColor.backgroundWhite,
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
-                          ),
-                          // Figma: no divider between the two stat blocks.
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _SummaryStatCell(
-                                  label: context.l10n.habit.summaryTotalLessonsLabel,
-                                  icon: Image.asset('assets/images/common/habit_summary_book.png', width: 24.w, height: 24.w),
-                                  value: '${summary.totalLessons}',
-                                ),
-                              ),
-                              Expanded(
-                                child: _SummaryStatCell(
-                                  label: context.l10n.habit.summaryTotalCheckInsLabel,
-                                  icon: Image.asset('assets/images/common/habit_summary_calendar.png', width: 24.w, height: 24.w),
-                                  value: '${summary.totalCheckIns}',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        16.verticalSpace,
-                        if (summary.bestHabit != null) ...[
-                          _SummaryBestHabitCard(bestHabit: summary.bestHabit!),
+                          4.verticalSpace,
+                          Center(child: _buildWorkingOnText(context, summary.activeCount)),
                           20.verticalSpace,
-                        ],
-                        for (int i = 0; i < categoryGroups.length; i++) ...[
-                          if (i > 0) 24.verticalSpace,
-                          _SummaryCategoryCard(
-                            title: _habitGroupTitle(categoryGroups[i].first, state),
-                            userHabits: categoryGroups[i],
+                          ThemedGlassCard(
+                            padding: EdgeInsets.all(16.w),
+                            radius: 12,
+                            shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+                            // Figma: no divider between the two stat blocks.
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _SummaryStatCell(
+                                    label: context.l10n.habit.summaryTotalLessonsLabel,
+                                    icon: Image.asset('assets/images/common/habit_summary_book.png', width: 24.w, height: 24.w),
+                                    value: '${summary.totalLessons}',
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _SummaryStatCell(
+                                    label: context.l10n.habit.summaryTotalCheckInsLabel,
+                                    icon: Image.asset('assets/images/common/habit_summary_calendar.png', width: 24.w, height: 24.w),
+                                    value: '${summary.totalCheckIns}',
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                          16.verticalSpace,
+                          if (summary.bestHabit != null) ...[
+                            _SummaryBestHabitCard(bestHabit: summary.bestHabit!),
+                            20.verticalSpace,
+                          ],
+                          for (int i = 0; i < categoryGroups.length; i++) ...[
+                            if (i > 0) 24.verticalSpace,
+                            _SummaryCategoryCard(
+                              title: _habitGroupTitle(categoryGroups[i].first, state),
+                              userHabits: categoryGroups[i],
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                // Figma "BottomCTA": a flat white strip, distinct from the
-                // gray page background — not just padding on the gray.
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(20.w),
-                  color: AppCustomColor.backgroundWhite,
-                  child: DButton(
-                    text: context.l10n.common.kContinue,
-                    backgroundColor: AppCustomColor.brandPrimary,
-                    size: Size(double.infinity, 54.h),
-                    style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                    onPressed: () => Navigator.of(context).pop(),
+                  // Figma "BottomCTA": a flat white strip, distinct from the
+                  // gray page background — not just padding on the gray.
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(20.w),
+                    color: AppCustomColor.backgroundWhite,
+                    child: DButton(
+                      text: context.l10n.common.kContinue,
+                      backgroundColor: AppCustomColor.brandPrimary,
+                      size: Size(double.infinity, 54.h),
+                      style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -189,12 +189,15 @@ String _habitWeekRangeLabel(List<UserHabitEntity> activeHabits) {
 Widget _buildWorkingOnText(BuildContext context, int count) {
   final full = context.l10n.habit.summaryWorkingOnHabits(count: count);
   final base = AppStyle.textBold20;
+  // Bare on the background (no card behind it) — the neutral portion swaps to
+  // light ink over a dark custom bg; the brand-purple count phrase stays as-is.
+  final baseColor = studyThemeOnBg(context, AppCustomColor.textPrimary);
   final markerIndex = full.indexOf('$count');
   if (markerIndex < 0) {
     return AppText(
       full,
       textAlign: TextAlign.center,
-      style: base.copyWith(color: AppCustomColor.textPrimary),
+      style: base.copyWith(color: baseColor),
     );
   }
   return Text.rich(
@@ -202,7 +205,7 @@ Widget _buildWorkingOnText(BuildContext context, int count) {
       children: [
         TextSpan(
           text: full.substring(0, markerIndex),
-          style: base.copyWith(color: AppCustomColor.textPrimary),
+          style: base.copyWith(color: baseColor),
         ),
         TextSpan(
           text: full.substring(markerIndex),
@@ -223,44 +226,43 @@ class _SummaryBestHabitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset('assets/images/common/habit_summary_trophy.png', width: 24.w, height: 24.w),
-              8.horizontalSpace,
-              Expanded(
-                child: AppText(
-                  context.l10n.habit.summaryBestHabitLabel,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700),
+      child: ThemedGlassCard(
+        padding: EdgeInsets.all(16.w),
+        radius: 12,
+        shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset('assets/images/common/habit_summary_trophy.png', width: 24.w, height: 24.w),
+                8.horizontalSpace,
+                Expanded(
+                  child: AppText(
+                    context.l10n.habit.summaryBestHabitLabel,
+                    style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700),
+                  ),
                 ),
-              ),
-              AppText(
-                context.l10n.habit.summaryBestHabitLoop(days: bestHabit.loop),
-                style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
-              ),
-            ],
-          ),
-          6.verticalSpace,
-          // Indented to align under the label, past the icon + gap above.
-          Padding(
-            padding: EdgeInsets.only(left: 32.w),
-            child: AppText(
-              bestHabit.title.text,
-              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+                AppText(
+                  context.l10n.habit.summaryBestHabitLoop(days: bestHabit.loop),
+                  style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                ),
+              ],
             ),
-          ),
-        ],
+            6.verticalSpace,
+            // Indented to align under the label, past the icon + gap above.
+            Padding(
+              padding: EdgeInsets.only(left: 32.w),
+              child: AppText(
+                bestHabit.title.text,
+                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -276,56 +278,55 @@ class _SummaryCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.only(bottom: 8.h),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
-            ),
-            child: AppText(
-              title,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
-            ),
-          ),
-          // Figma: rows just stack with padding — no divider between them.
-          for (int i = 0; i < userHabits.length; i++)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Figma item icon is the same 48px domain badge as the
-                  // Today's-task rows, not a smaller 32 variant.
-                  HabitDomainIcon(skillsetId: userHabits[i].habit?.skillsetId ?? '', size: 48),
-                  12.horizontalSpace,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          userHabits[i].displayTitle,
-                          style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
-                        ),
-                        8.verticalSpace,
-                        HabitWeekGrid(weekGrid: userHabits[i].weekGrid),
-                      ],
-                    ),
-                  ),
-                ],
+      child: ThemedGlassCard(
+        padding: EdgeInsets.all(16.w),
+        radius: 12,
+        shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(bottom: 8.h),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
+              ),
+              child: AppText(
+                title,
+                style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
               ),
             ),
-        ],
+            // Figma: rows just stack with padding — no divider between them.
+            for (int i = 0; i < userHabits.length; i++)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Figma item icon is the same 48px domain badge as the
+                    // Today's-task rows, not a smaller 32 variant.
+                    HabitDomainIcon(skillsetId: userHabits[i].habit?.skillsetId ?? '', size: 48),
+                    12.horizontalSpace,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            userHabits[i].displayTitle,
+                            style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
+                          ),
+                          8.verticalSpace,
+                          HabitWeekGrid(weekGrid: userHabits[i].weekGrid),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

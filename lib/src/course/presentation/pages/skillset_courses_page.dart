@@ -61,7 +61,8 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
 
           return Scaffold(
             key: const Key('skillset-courses-page'),
-            backgroundColor: AppCustomColor.backgroundWhite,
+            // Transparent only when a custom study background is active.
+            backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
             appBar: AppBar(
               backgroundColor: AppCustomColor.backgroundWhite,
               elevation: 0,
@@ -87,36 +88,38 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
                 style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
               ),
             ),
-            body: sorted.isEmpty
-                ? const CourseEmptyState()
-                : GridView.builder(
-                    key: const Key('skillset-courses-grid'),
-                    // Generous bottom slack: with the exact (no-slack) cell
-                    // extent, Android font metrics can run a few px taller than
-                    // the reserved title box, and 24 left the last row's title
-                    // clipped at max scroll. 48 + the safe-area inset keeps the
-                    // final row fully scrollable clear of the system nav bar.
-                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 48.h + MediaQuery.paddingOf(context).bottom),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: _kCourseGridColGap,
-                      mainAxisSpacing: _kCourseGridRowGap,
-                      // Exact card height (no slack) so the row gap is exactly 24.
-                      mainAxisExtent: _kCourseCardExtent,
+            body: ThemedBackground(
+              child: sorted.isEmpty
+                  ? const CourseEmptyState()
+                  : GridView.builder(
+                      key: const Key('skillset-courses-grid'),
+                      // Generous bottom slack: with the exact (no-slack) cell
+                      // extent, Android font metrics can run a few px taller than
+                      // the reserved title box, and 24 left the last row's title
+                      // clipped at max scroll. 48 + the safe-area inset keeps the
+                      // final row fully scrollable clear of the system nav bar.
+                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 48.h + MediaQuery.paddingOf(context).bottom),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: _kCourseGridColGap,
+                        mainAxisSpacing: _kCourseGridRowGap,
+                        // Exact card height (no slack) so the row gap is exactly 24.
+                        mainAxisExtent: _kCourseCardExtent,
+                      ),
+                      itemCount: sorted.length,
+                      itemBuilder: (context, index) {
+                        final course = sorted[index];
+                        final progressInfo = _progressInfoFor(course, progressById);
+                        return _CourseGridCard(
+                          key: ValueKey(course.id),
+                          course: course,
+                          completedLessons: progressInfo.completedLessons,
+                          totalLessons: progressInfo.totalLessons,
+                          onTap: () => _handleCourseTap(context, skillset, course),
+                        );
+                      },
                     ),
-                    itemCount: sorted.length,
-                    itemBuilder: (context, index) {
-                      final course = sorted[index];
-                      final progressInfo = _progressInfoFor(course, progressById);
-                      return _CourseGridCard(
-                        key: ValueKey(course.id),
-                        course: course,
-                        completedLessons: progressInfo.completedLessons,
-                        totalLessons: progressInfo.totalLessons,
-                        onTap: () => _handleCourseTap(context, skillset, course),
-                      );
-                    },
-                  ),
+            ),
           );
         },
       ),

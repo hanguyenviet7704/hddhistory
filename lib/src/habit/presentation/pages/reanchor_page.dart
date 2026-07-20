@@ -87,65 +87,65 @@ class _ReanchorPageState extends State<ReanchorPage> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: AppCustomColor.brandPrimary50,
-        body: SafePage(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Spacer(flex: 2),
-                AppText(
-                  context.l10n.habit.adoptHeaderLabel,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text12.copyWith(
-                    color: AppCustomColor.streakActive,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.brandPrimary50),
+        body: ThemedBackground(
+          child: SafePage(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Spacer(flex: 2),
+                  AppText(
+                    context.l10n.habit.adoptHeaderLabel,
+                    textAlign: TextAlign.center,
+                    style: AppStyle.text12.copyWith(
+                      color: AppCustomColor.streakActive,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
                   ),
-                ),
-                8.verticalSpace,
-                AppText(
-                  context.l10n.habit.reanchorTitle,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text24.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
-                ),
-                const Spacer(flex: 3),
-                // Card floats near the bottom (Figma), wrapping its content.
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: AppCustomColor.backgroundWhite,
-                    borderRadius: BorderRadius.circular(20.r),
-                    boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
+                  8.verticalSpace,
+                  AppText(
+                    context.l10n.habit.reanchorTitle,
+                    textAlign: TextAlign.center,
+                    style: AppStyle.text24.copyWith(fontWeight: FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        context.l10n.habit.reanchorPickLabel,
-                        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary, fontWeight: FontWeight.w500),
-                      ),
-                      12.verticalSpace,
-                      ...widget.reasons.map(_buildReasonOption),
-                    ],
-                  ),
-                ),
-                16.verticalSpace,
-                DButton(
-                  text: context.l10n.habit.reanchorStartButton,
-                  backgroundColor: AppCustomColor.brandPrimary,
-                  size: Size(double.infinity, 54.h),
-                  style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                  onPressed: _selectedId == null
-                      ? null
-                      : () => Navigator.of(context).pop(
-                          widget.reasons.where((r) => r.id == _selectedId).firstOrNull,
+                  const Spacer(flex: 3),
+                  // Card floats near the bottom (Figma), wrapping its content.
+                  ThemedGlassCard(
+                    padding: EdgeInsets.all(16.w),
+                    radius: 20,
+                    shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          context.l10n.habit.reanchorPickLabel,
+                          style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary, fontWeight: FontWeight.w500),
                         ),
-                ),
-                20.verticalSpace,
-              ],
+                        12.verticalSpace,
+                        ...widget.reasons.map(_buildReasonOption),
+                      ],
+                    ),
+                  ),
+                  16.verticalSpace,
+                  DButton(
+                    text: context.l10n.habit.reanchorStartButton,
+                    backgroundColor: AppCustomColor.brandPrimary,
+                    size: Size(double.infinity, 54.h),
+                    style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                    onPressed: _selectedId == null
+                        ? null
+                        : () => Navigator.of(context).pop(
+                            widget.reasons.where((r) => r.id == _selectedId).firstOrNull,
+                          ),
+                  ),
+                  20.verticalSpace,
+                ],
+              ),
             ),
           ),
         ),
