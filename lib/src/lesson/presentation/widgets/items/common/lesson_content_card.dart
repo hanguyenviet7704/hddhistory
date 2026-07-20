@@ -16,21 +16,26 @@ class LessonContentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveMinHeight = minHeight ?? LessonCardMinHeightScope.maybeOf(context);
 
-    return Container(
+    // ThemedGlassCard renders an identical opaque white card on the Default
+    // preset (same colour/radius/shadow as before) and a frosted-glass panel
+    // over a custom study background (design item 12) — width/min-height are
+    // applied here since ThemedGlassCard itself doesn't take size constraints.
+    return SizedBox(
       width: double.infinity,
-      constraints: effectiveMinHeight == null ? null : BoxConstraints(minHeight: effectiveMinHeight),
-      padding: padding ?? EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppCustomColor.borderDefault,
-            blurRadius: 4.r,
-          ),
-        ],
+      child: ConstrainedBox(
+        constraints: effectiveMinHeight == null ? const BoxConstraints() : BoxConstraints(minHeight: effectiveMinHeight),
+        child: ThemedGlassCard(
+          padding: padding ?? EdgeInsets.all(16.w),
+          radius: 20,
+          shadow: [
+            BoxShadow(
+              color: AppCustomColor.borderDefault,
+              blurRadius: 4.r,
+            ),
+          ],
+          child: child,
+        ),
       ),
-      child: child,
     );
   }
 }

@@ -116,7 +116,15 @@ class ChangeBackgroundSheet extends StatelessWidget {
   Future<void> _pickImage(BuildContext context, StudyThemeCubit cubit) async {
     // Basic gallery pick so the bar is functional now; crop / size limits are
     // part of the later upload pass. Image-only (design item 6).
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Downscale/compress on pick so a huge gallery photo doesn't blow memory as
+    // a full-screen background (crop UI needs the image_cropper package — a
+    // later addition). Image-only (design item 6).
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 2000,
+      maxHeight: 2000,
+      imageQuality: 88,
+    );
     if (picked == null) return;
     await cubit.selectUploadedImage(File(picked.path));
     if (context.mounted) Navigator.of(context).pop();

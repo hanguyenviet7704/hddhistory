@@ -60,50 +60,54 @@ class _LessonShellLayoutState extends State<LessonShellLayout> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppCustomColor.brandPrimary50,
-      body: SafePage(
-        child: Unfocused(
-          child: Column(
-            children: [
-              8.verticalSpace,
-              LessonShellHeader(
-                selectedMode: widget.selectedMode,
-                onModeSelected: widget.onModeSelected,
-                onClose: widget.onClose,
-                showModeToggle: widget.showModeToggle,
-                canSwitchModes: !widget.isLoading,
-                trailing: widget.trailing,
-              ),
-              12.verticalSpace,
-              Expanded(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: widget.showModeToggle
-                          ? TabBarView(
-                              controller: _tabController,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: [
-                                _LessonShellTabPage(child: widget.readBody),
-                                _LessonShellTabPage(child: widget.audioBody),
-                              ],
-                            )
-                          : _LessonShellTabPage(child: widget.readBody),
-                    ),
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        ignoring: !widget.isLoading,
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          child: widget.isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+      // Transparent only when a custom study background is active (so it
+      // shows through); otherwise the stock brand-tinted background is kept.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.brandPrimary50),
+      body: ThemedBackground(
+        child: SafePage(
+          child: Unfocused(
+            child: Column(
+              children: [
+                8.verticalSpace,
+                LessonShellHeader(
+                  selectedMode: widget.selectedMode,
+                  onModeSelected: widget.onModeSelected,
+                  onClose: widget.onClose,
+                  showModeToggle: widget.showModeToggle,
+                  canSwitchModes: !widget.isLoading,
+                  trailing: widget.trailing,
+                ),
+                12.verticalSpace,
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: widget.showModeToggle
+                            ? TabBarView(
+                                controller: _tabController,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: [
+                                  _LessonShellTabPage(child: widget.readBody),
+                                  _LessonShellTabPage(child: widget.audioBody),
+                                ],
+                              )
+                            : _LessonShellTabPage(child: widget.readBody),
+                      ),
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          ignoring: !widget.isLoading,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: widget.isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              if (widget.bottom != null && widget.selectedMode.isRead) LessonStickyBottomAction(child: widget.bottom!),
-            ],
+                if (widget.bottom != null && widget.selectedMode.isRead) LessonStickyBottomAction(child: widget.bottom!),
+              ],
+            ),
           ),
         ),
       ),

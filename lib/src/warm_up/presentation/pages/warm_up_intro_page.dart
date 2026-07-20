@@ -50,54 +50,77 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final reduceMotion = (MediaQuery.maybeDisableAnimationsOf(context) ?? false) || MediaQuery.accessibleNavigationOf(context);
+    // Only true once the user has picked a custom study background — gates the
+    // headline card below so the stock (bare text on flat violet) look stays
+    // byte-for-byte unchanged on the Default preset.
+    final isCustomBg = context.watch<StudyThemeCubit>().state.preset.isCustom;
 
     return BlocSelector<WarmUpCubit, WarmUpState, bool>(
       selector: (state) => state.hasWarmUpAvailable,
       builder: (context, hasWarmUpAvailable) {
+        final headline = Column(
+          children: [
+            AppText(
+              context.l10n.warmUp.introTitle,
+              textAlign: TextAlign.center,
+              style: AppStyle.text32.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w700),
+            ),
+            12.verticalSpace,
+            AppText(
+              context.l10n.warmUp.introSubtitle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w500),
+            ),
+          ],
+        );
+
         return Scaffold(
           key: const Key('warm-up-intro-page'),
-          backgroundColor: const Color(0xFFC7C5FA),
-          body: SafeArea(
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(20.w, 58.h, 20.w, 24.h),
-              children: [
-                AppText(
-                  context.l10n.warmUp.introTitle,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text32.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w700),
-                ),
-                12.verticalSpace,
-                AppText(
-                  context.l10n.warmUp.introSubtitle,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w500),
-                ),
-                40.verticalSpace,
-                SizedBox(
-                  height: 290.h,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Image.asset(AppAsset.images.app.dailyWarmUpDecor.path, width: 275.w, fit: BoxFit.contain),
-                      Positioned(
-                        top: 85.h,
-                        left: 110.w,
-                        child: AnimatedBuilder(
-                          animation: _float,
-                          builder: (context, child) {
-                            return Transform.translate(
-                              offset: Offset(0, reduceMotion ? 0 : _float.value),
-                              child: child,
-                            );
-                          },
-                          child: Image.asset(AppAsset.images.app.dailyWarmUpDecorOption.path, width: 145.w, fit: BoxFit.contain),
+          // Transparent only when a custom study background is active.
+          backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFC7C5FA)),
+          body: ThemedBackground(
+            child: SafeArea(
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(20.w, 58.h, 20.w, 24.h),
+                children: [
+                  // "Pick up where you left off" card (design item 10) — only
+                  // rendered as a frosted panel over a custom background, so
+                  // the fixed dark-violet copy stays legible against an
+                  // arbitrary photo/colour without changing the Default look.
+                  isCustomBg
+                      ? ThemedGlassCard(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                          radius: 24,
+                          child: headline,
+                        )
+                      : headline,
+                  40.verticalSpace,
+                  SizedBox(
+                    height: 290.h,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset(AppAsset.images.app.dailyWarmUpDecor.path, width: 275.w, fit: BoxFit.contain),
+                        Positioned(
+                          top: 85.h,
+                          left: 110.w,
+                          child: AnimatedBuilder(
+                            animation: _float,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(0, reduceMotion ? 0 : _float.value),
+                                child: child,
+                              );
+                            },
+                            child: Image.asset(AppAsset.images.app.dailyWarmUpDecorOption.path, width: 145.w, fit: BoxFit.contain),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           // SafeArea: Scaffold does NOT inset bottomNavigationBar, and Android
@@ -131,7 +154,9 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
                   },
                   child: AppText(
                     context.l10n.warmUp.skipToLesson,
-                    style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w600),
+                    // Bare on the background (no card behind it) — swap to
+                    // light ink over a dark custom bg.
+                    style: AppStyle.text16.copyWith(color: studyThemeOnBg(context, const Color(0xFF362F82)), fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

@@ -303,7 +303,9 @@ class _LessonPageState extends State<LessonPage> {
           child: Icon(
             Icons.flag_outlined,
             size: 20.sp,
-            color: AppCustomColor.textQuaternary,
+            // Bare on the background (sits directly on the Scaffold, in the
+            // shell header) — swap to light ink over a dark custom bg.
+            color: studyThemeOnBg(context, AppCustomColor.textQuaternary),
           ),
         ),
       ),

@@ -79,8 +79,11 @@ class _LessonShellIconButton extends StatelessWidget {
             assetPath,
             width: 20.w,
             height: 20.w,
-            colorFilter: const ColorFilter.mode(
-              AppCustomColor.textQuaternary,
+            // Bare on the background (the close button sits directly on the
+            // Scaffold, above any content card) — swap to light ink over a
+            // dark custom bg.
+            colorFilter: ColorFilter.mode(
+              studyThemeOnBg(context, AppCustomColor.textQuaternary),
               BlendMode.srcIn,
             ),
           ),
