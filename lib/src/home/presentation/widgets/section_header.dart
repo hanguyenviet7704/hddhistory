@@ -25,7 +25,12 @@ class SectionHeaderWidget extends StatelessWidget {
           // Action button
           if (actionText != null)
             GestureDetector(
-              onTap: onActionTap,
+              onTap: onActionTap == null
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onActionTap!();
+                    },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

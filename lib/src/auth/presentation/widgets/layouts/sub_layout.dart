@@ -78,6 +78,7 @@ class SubLayout extends StatelessWidget {
               leading: canBack
                   ? InkWell(
                       onTap: () {
+                        AppHaptic.select();
                         DNavigator.back();
                         onBackSuccess?.call();
                       },

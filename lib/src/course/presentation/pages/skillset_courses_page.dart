@@ -70,7 +70,10 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
                 button: true,
                 label: MaterialLocalizations.of(context).backButtonTooltip,
                 child: IconButton(
-                  onPressed: () => context.back(),
+                  onPressed: () {
+                    AppHaptic.select();
+                    _backToExplore(context);
+                  },
                   constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
                   icon: Icon(
                     Icons.arrow_back_ios_new_rounded,
@@ -133,6 +136,23 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
       completedLessons: p.passed,
       totalLessons: p.total,
     );
+  }
+
+  /// This "View more" grid is a drill-down FROM the Explore tab, so back always
+  /// returns to Explore (branch 3) at the current skillset — NOT `context.back()`.
+  ///
+  /// `SkillsetCoursesRoute` is a CHILD of `CourseRoadmapRoute` (Course branch),
+  /// and the roadmap's own back button reaches this page via a sibling `.go()`.
+  /// A plain pop would therefore land back on the roadmap, and the roadmap's
+  /// back would re-open this grid — an infinite ping-pong. Jumping straight to
+  /// the Explore branch (mirrors CourseRoadmapPage._backFromRoadmap) breaks it.
+  void _backToExplore(BuildContext context) {
+    final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
+    AppDI.injector.get<CourseCubit>()
+      ..setAllCourseSource('skillset_courses_back')
+      ..jumpToSkillset(skillsetIndex);
+    context.read<PageCubit>().setCurrentIndex(3);
+    CourseRoute(selectedTabIndex: skillsetIndex).go(context);
   }
 
   void _handleCourseTap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {

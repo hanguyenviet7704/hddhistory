@@ -107,7 +107,10 @@ class _FeedbackContinueButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onPressed,
+      onTap: () {
+        AppHaptic.select();
+        onPressed();
+      },
 
       child: Container(
         margin: EdgeInsets.only(bottom: 24.h),

@@ -464,7 +464,10 @@ class _ViewMoreGridCard extends StatelessWidget {
       button: true,
       label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
       child: GestureDetector(
-        onTap: () => SkillsetCoursesRoute(skillsetId: skillset.id).push(context),
+        onTap: () {
+          AppHaptic.select();
+          SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
+        },
         // Align the card to the top of the cell and size it to the same height
         // as a course thumbnail (160.w), so it sits as a square card in the
         // thumbnail row instead of stretching down the whole cell. Matches the
@@ -544,7 +547,10 @@ class _CourseGridCard extends StatelessWidget {
       label: course.title.text,
       button: true,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -656,14 +662,23 @@ class _GridCourseBadge extends StatelessWidget {
       // ring, same as Home.
       final pct = (completed / total * 100).round();
       return _WhiteGridBadge(
+        // Keep the 20px slot so the badge height matches the other states, but
+        // render a smaller ring inside it — the full-slot ring read as too big
+        // next to the label.
         icon: SizedBox(
           width: 20.w,
           height: 20.w,
-          child: CircularProgressIndicator(
-            value: completed / total,
-            strokeWidth: 2,
-            backgroundColor: AppCustomColor.borderSecondary,
-            valueColor: AlwaysStoppedAnimation(AppCustomColor.brandPrimary),
+          child: Center(
+            child: SizedBox(
+              width: 15.w,
+              height: 15.w,
+              child: CircularProgressIndicator(
+                value: completed / total,
+                strokeWidth: 2,
+                backgroundColor: AppCustomColor.borderSecondary,
+                valueColor: AlwaysStoppedAnimation(AppCustomColor.brandPrimary),
+              ),
+            ),
           ),
         ),
         label: context.l10n.allcourse.progressPercent(percent: pct),

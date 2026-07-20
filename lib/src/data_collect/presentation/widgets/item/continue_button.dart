@@ -112,7 +112,10 @@ class ContinueButton extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => _onPressed(context),
+              onTap: () {
+                AppHaptic.select();
+                _onPressed(context);
+              },
               borderRadius: BorderRadius.circular(1000.r),
               child: Center(
                 child: AppText(

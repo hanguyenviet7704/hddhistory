@@ -22,12 +22,27 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
   void initState() {
     super.initState();
     _scheduleAutoAdvance();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureBadgeProgressRouteName());
   }
 
   @override
   void dispose() {
     _autoAdvanceTimer?.cancel();
     super.dispose();
+  }
+
+  /// Keeps the shell's floating nav pill hidden while this full-screen
+  /// completion/badge screen is shown — otherwise it overlaps the Continue CTA
+  /// at the bottom (same defense as [KeypointCompletePage]). The pill is gated
+  /// on [PageStateX.isPrimaryRoute]; this page lives inside the course-roadmap
+  /// shell branch, so on entry the current route name is a primary one
+  /// (roadmap) and the pill shows. We assert this page's own (non-primary)
+  /// route name to hide it, but stop once we've intentionally exited to the
+  /// roadmap ([_hasExited]) so we don't fight the nav back on the page we moved
+  /// to.
+  void _ensureBadgeProgressRouteName() {
+    if (!mounted || _hasExited) return;
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
   }
 
   void _scheduleAutoAdvance() {
@@ -57,6 +72,7 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
 
   void _switchToComplete() {
     if (!mounted) return;
+    AppHaptic.celebrate();
     setState(() => _step = BadgeProgressStep.complete);
     _scheduleAutoAdvance();
   }
@@ -98,15 +114,35 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
   Widget build(BuildContext context) {
     final currentTitle = context.select((CourseLessonCubit cubit) => cubit.state.currentTitle);
 
-    return BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
-      listenWhen: (previous, current) =>
-          previous.currentLevelProgress.progress != current.currentLevelProgress.progress || previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
-      listener: (context, state) {
-        if (_step != BadgeProgressStep.inProgress) return;
-        if (_isProgressComplete(state.currentLevelProgress)) {
-          _switchToComplete();
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
+          listenWhen: (previous, current) =>
+              previous.currentLevelProgress.progress != current.currentLevelProgress.progress || previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
+          listener: (context, state) {
+            if (_step != BadgeProgressStep.inProgress) return;
+            if (_isProgressComplete(state.currentLevelProgress)) {
+              _switchToComplete();
+            }
+          },
+        ),
+        // Any overlay/navigation above this page (Lottie route, dialogs, the
+        // route observer settling on the underlying roadmap) can write a
+        // primary route name back and un-hide the floating nav over the CTA.
+        // As long as we're still the current route and haven't exited, take
+        // the (non-primary) name back — mirrors KeypointCompletePage.
+        BlocListener<PageCubit, PageState>(
+          bloc: AppDI.injector.get<PageCubit>(),
+          listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.isPrimaryRoute,
+          listener: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || _hasExited) return;
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+              _ensureBadgeProgressRouteName();
+            });
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,
         body: SafeArea(
@@ -159,12 +195,18 @@ class _BadgeProgressContent extends StatelessWidget {
   final BadgeProgressStep step;
   final String currentTitle;
   final VoidCallback onPrimaryCta;
+  // Drives the primary CTA's spinner while the tap is still resolving async
+  // work (e.g. keypoint-complete's streak gate + habit-suggestion fetch before
+  // it navigates). Defaults off, so the badge page — whose advance is
+  // synchronous — is unaffected.
+  final bool isLoading;
 
   const _BadgeProgressContent({
     required this.progress,
     required this.step,
     required this.currentTitle,
     required this.onPrimaryCta,
+    this.isLoading = false,
   });
 
   bool get _isInProgress => step == BadgeProgressStep.inProgress;
@@ -262,6 +304,7 @@ class _BadgeProgressContent extends StatelessWidget {
             backgroundColor: AppCustomColor.brandPrimary,
             size: Size(double.infinity, 54.h),
             style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+            isLoading: isLoading,
             onPressed: onPrimaryCta,
           ),
         ),

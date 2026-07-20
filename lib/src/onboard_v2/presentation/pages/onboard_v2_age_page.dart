@@ -82,7 +82,13 @@ class _InlineError extends StatelessWidget {
             overflow: TextOverflow.visible,
             style: AppStyle.text14.copyWith(color: AppCustomColor.errorRed),
           ),
-          TextButton(onPressed: onRetry, child: Text(context.l10n.onboarding.onboardingV2RetryCta)),
+          TextButton(
+            onPressed: () {
+              AppHaptic.select();
+              onRetry();
+            },
+            child: Text(context.l10n.onboarding.onboardingV2RetryCta),
+          ),
         ],
       ),
     );

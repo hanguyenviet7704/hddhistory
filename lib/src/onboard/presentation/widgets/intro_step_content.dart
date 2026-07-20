@@ -83,6 +83,7 @@ class _SourceRow extends StatelessWidget {
         Flexible(
           child: GestureDetector(
             onTap: () async {
+              AppHaptic.select();
               if (intro.source.isEmpty) return;
               final uri = Uri.tryParse(intro.source);
               if (uri == null) return;

@@ -30,7 +30,12 @@ class OnboardV2ProgressHeader extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: IconButton(
                 key: const Key('onboard_v2_back_button'),
-                onPressed: onBack,
+                onPressed: onBack == null
+                    ? null
+                    : () {
+                        AppHaptic.select();
+                        onBack!();
+                      },
                 icon: Icon(Icons.arrow_back, size: 24.w, color: AppCustomColor.textTertiary),
               ),
             ),

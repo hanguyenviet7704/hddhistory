@@ -57,7 +57,10 @@ Future<void> showLessonAudioSpeedSheet(
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => context.back(),
+                              onTap: () {
+                                AppHaptic.select();
+                                context.back();
+                              },
                               behavior: HitTestBehavior.opaque,
                               child: SizedBox(
                                 width: 24.w,
@@ -122,7 +125,10 @@ Future<void> showLessonAudioSpeedSheet(
                                   child: Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 6.w),
                                     child: GestureDetector(
-                                      onTap: () => updateSpeed(setState, speed),
+                                      onTap: () {
+                                        AppHaptic.select();
+                                        updateSpeed(setState, speed);
+                                      },
                                       behavior: HitTestBehavior.opaque,
                                       child: Container(
                                         height: 40.h,
@@ -179,7 +185,10 @@ class _LessonAudioSpeedAdjustButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: Container(
         width: 48.r,

@@ -60,7 +60,10 @@ class PaywallSuccessPurchasePopup extends StatelessWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => Navigator.of(context).maybePop(),
+                      onTap: () {
+                        AppHaptic.success();
+                        Navigator.of(context).maybePop();
+                      },
                       borderRadius: BorderRadius.circular(1000.r),
                       child: Center(
                         child: AppText(

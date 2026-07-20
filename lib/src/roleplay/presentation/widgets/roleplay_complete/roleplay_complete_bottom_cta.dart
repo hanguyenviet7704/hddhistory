@@ -19,7 +19,12 @@ class RoleplayCompleteBottomCTA extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + bottomPadding),
       child: GestureDetector(
-        onTap: isLoading ? null : onPressed,
+        onTap: isLoading
+            ? null
+            : () {
+                AppHaptic.celebrate();
+                onPressed();
+              },
         child: Container(
           height: 54.h,
           width: double.infinity,

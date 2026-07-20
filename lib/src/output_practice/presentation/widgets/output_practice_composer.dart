@@ -75,7 +75,12 @@ class OutputPracticeComposer extends StatelessWidget {
               ),
               12.horizontalSpace,
               GestureDetector(
-                onTap: enabled ? onSend : null,
+                onTap: enabled
+                    ? () {
+                        AppHaptic.select();
+                        onSend();
+                      }
+                    : null,
                 child: Container(
                   width: 32.w,
                   height: 32.w,

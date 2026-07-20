@@ -169,6 +169,7 @@ class RoleplayAudioButton extends StatelessWidget {
 
     return InkWell(
       onTap: () {
+        AppHaptic.select();
         final trackingData = RoleplayTrackingData.fromContext();
         if (trackingData != null) {
           final action = controller?.isPlaying == true ? 'stop' : 'play';

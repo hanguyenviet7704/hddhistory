@@ -26,7 +26,10 @@ class LessonListHeader extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {
+                AppHaptic.select();
+                Navigator.of(context).pop();
+              },
               child: Container(
                 width: 36.w,
                 height: 36.h,

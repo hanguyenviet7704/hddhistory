@@ -69,7 +69,10 @@ class DDialogContent extends StatelessWidget {
                   IconButton(
                     style: IconButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero),
                     icon: const Icon(Icons.close_rounded),
-                    onPressed: () => context.back(),
+                    onPressed: () {
+                      AppHaptic.select();
+                      context.back();
+                    },
                   ),
               ],
             ),

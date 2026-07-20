@@ -32,7 +32,10 @@ class ProfileHeader extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 splashRadius: 20.w,
                 icon: Icon(Icons.arrow_back_ios_new, color: AppCustomColor.textTertiary, size: 18.w),
-                onPressed: onBack,
+                onPressed: () {
+                  AppHaptic.select();
+                  onBack();
+                },
               ),
             ),
           ),
@@ -52,7 +55,10 @@ class ProfileHeader extends StatelessWidget {
                 minimumSize: Size(48.w, 32.h),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              onPressed: onActionTap,
+              onPressed: () {
+                AppHaptic.select();
+                onActionTap();
+              },
               child: Text(
                 isEditing ? context.l10n.setting.settingProfileDoneEditButton : context.l10n.setting.settingEditProfileButton,
                 style: AppStyle.text16.copyWith(

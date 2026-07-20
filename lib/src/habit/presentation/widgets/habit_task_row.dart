@@ -19,7 +19,10 @@ class HabitTaskRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final done = userHabit.todayDone;
     return InkWell(
-      onTap: onOpenDetail,
+      onTap: () {
+        AppHaptic.select();
+        onOpenDetail();
+      },
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         child: Row(
@@ -32,24 +35,36 @@ class HabitTaskRow extends StatelessWidget {
                 style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600),
               ),
             ),
-            16.horizontalSpace,
             Semantics(
               button: true,
               label: userHabit.displayTitle,
               value: done ? 'Done' : 'Not done',
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: onCheckInTap,
-                child: Container(
-                  width: 20.w,
-                  height: 20.w,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: done ? AppCustomColor.streakActive : Colors.transparent,
-                    border: done ? null : Border.all(color: AppCustomColor.neutral300, width: 2),
+                onTap: () {
+                  AppHaptic.select();
+                  onCheckInTap();
+                },
+                // The check is a small 20px dot but is the row's primary action,
+                // so make the whole trailing zone tappable (~56x52) — the dot
+                // stays flush right, the empty space to its left also checks in.
+                child: SizedBox(
+                  width: 56.w,
+                  height: 52.h,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      width: 20.w,
+                      height: 20.w,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: done ? AppCustomColor.streakActive : Colors.transparent,
+                        border: done ? null : Border.all(color: AppCustomColor.neutral300, width: 2),
+                      ),
+                      child: done ? Icon(Icons.check_rounded, size: 14.w, color: AppCustomColor.textWhite) : null,
+                    ),
                   ),
-                  child: done ? Icon(Icons.check_rounded, size: 14.w, color: AppCustomColor.textWhite) : null,
                 ),
               ),
             ),

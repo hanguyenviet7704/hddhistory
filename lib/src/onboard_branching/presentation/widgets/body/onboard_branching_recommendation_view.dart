@@ -145,7 +145,12 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
           SizedBox(
             height: 44.h,
             child: TextButton(
-              onPressed: isLoadingTryNow ? null : onChooseMyself,
+              onPressed: isLoadingTryNow
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onChooseMyself();
+                    },
               child: AppText(
                 context.l10n.onboarding.onboardingBranchingChooseMyselfButton,
                 style: AppStyle.text16.copyWith(

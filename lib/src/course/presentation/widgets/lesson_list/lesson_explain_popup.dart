@@ -134,6 +134,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 // Done button
                 GestureDetector(
                   onTap: () {
+                    AppHaptic.select();
                     Navigator.of(context).pop(true);
                   },
                   child: Container(

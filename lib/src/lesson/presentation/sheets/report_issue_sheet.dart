@@ -317,7 +317,10 @@ class _ReasonItem extends StatelessWidget {
     return Column(
       children: [
         InkWell(
-          onTap: onTap,
+          onTap: () {
+            AppHaptic.select();
+            onTap();
+          },
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 13.h),
             child: Row(
@@ -417,7 +420,12 @@ class _SubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: enabled ? onTap : null,
+      onTap: enabled
+          ? () {
+              AppHaptic.select();
+              onTap();
+            }
+          : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: 54.h,

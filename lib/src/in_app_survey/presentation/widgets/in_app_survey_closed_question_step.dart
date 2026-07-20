@@ -64,7 +64,10 @@ class _ClosedQuestionOptionRow extends StatelessWidget {
       label: label,
       child: InkWell(
         borderRadius: BorderRadius.circular(16.r),
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Container(
           constraints: BoxConstraints(minHeight: 50.h),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),

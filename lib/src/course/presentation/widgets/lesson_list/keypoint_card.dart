@@ -13,7 +13,12 @@ class KeypointCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              AppHaptic.select();
+              onTap!();
+            },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

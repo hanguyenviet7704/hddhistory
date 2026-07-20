@@ -222,6 +222,7 @@ class _RoleplayIntroHeader extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
+            AppHaptic.select();
             final trackingData = RoleplayTrackingData.fromContext();
             if (trackingData != null) {
               AppService.instance.appTrackingService.trackRoleplayOverviewExitClick(trackingData);

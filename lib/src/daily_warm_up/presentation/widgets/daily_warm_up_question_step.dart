@@ -37,7 +37,10 @@ class DailyWarmUpQuestionStep extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: onClose,
+                    onPressed: () {
+                      AppHaptic.select();
+                      onClose();
+                    },
                     icon: const Icon(Icons.close_rounded, color: Color(0xFF0D121C)),
                   ),
                   Expanded(

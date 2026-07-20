@@ -24,6 +24,7 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
       label: course.title.text,
       child: GestureDetector(
         onTap: () {
+          AppHaptic.select();
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
             ..selectSkillset(course.skillset)
@@ -172,6 +173,7 @@ class CourseCardWidget extends StatelessWidget {
       label: course.title.text,
       child: GestureDetector(
         onTap: () {
+          AppHaptic.select();
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
             ..selectSkillset(course.skillset)

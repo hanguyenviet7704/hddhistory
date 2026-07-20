@@ -313,7 +313,10 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
   Future<void> _initialize() async {
     LogDev.data('[AwesomeLocalNotificationService] initialize');
     await _gateway.initialize(
-      null,
+      // Monochrome Meup mark (drawable/ic_stat_meup) as the notification small
+      // icon — without it awesome_notifications falls back to the full-colour
+      // launcher icon, which Android renders as an ugly grey placeholder square.
+      'resource://drawable/ic_stat_meup',
       <NotificationChannel>[
         NotificationChannel(
           channelGroupKey: _channelConfig.channelGroupKey,
@@ -351,16 +354,30 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
 
   NotificationContent _buildContent(NotificationRequest request) {
     final notificationId = _normalizeNotificationId(request.id ?? _generateNotificationId());
+    // A determinate progress value takes priority over a big-picture image —
+    // the two Android layouts are mutually exclusive, and the return-nudge
+    // (the only progress caller) has no image anyway. On iOS the plugin
+    // ignores the ProgressBar layout gracefully (no native progress bar), so
+    // the banner still renders title/body there.
+    final NotificationLayout layout;
+    if (request.progress != null) {
+      layout = NotificationLayout.ProgressBar;
+    } else if (request.imageUrl != null) {
+      layout = NotificationLayout.BigPicture;
+    } else {
+      layout = NotificationLayout.Default;
+    }
     return NotificationContent(
       id: notificationId,
       channelKey: _channelConfig.channelKey,
       title: request.title,
       body: request.body,
       summary: request.summary,
-      bigPicture: request.imageUrl,
+      bigPicture: request.progress == null ? request.imageUrl : null,
       payload: request.payload,
       actionType: ActionType.Default,
-      notificationLayout: request.imageUrl == null ? NotificationLayout.Default : NotificationLayout.BigPicture,
+      notificationLayout: layout,
+      progress: request.progress,
     );
   }
 

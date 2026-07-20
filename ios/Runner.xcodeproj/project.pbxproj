@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		055E28013C4E930C284BA8BB /* MeupLessonActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		388C167847DD2F41A1B26836 /* meup_widget_book.png in Resources */ = {isa = PBXBuildFile; fileRef = 041007801B538571C50CE0C5 /* meup_widget_book.png */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		4568ED5932B2377CAC01B9B6 /* MeupHomeWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */; };
 		466F1228F5604048CD346817 /* stgLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D94EF3CDD42772DA59FB263 /* stgLaunchScreen.storyboard */; };
+		5D0FFB05D2F9AE5E87D912D5 /* LiveActivityChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58B5CFF38FF3151E108ABD39 /* LiveActivityChannel.swift */; };
 		5D9544DCCFA3B32E19A0AB7F /* MeupHomeWidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0A3A47E7E1827A6EA1DD4A /* MeupHomeWidgetData.swift */; };
 		61C7A3B8E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png in Resources */ = {isa = PBXBuildFile; fileRef = 61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */; };
 		61C7A3BAE2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3B9E2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift */; };
@@ -21,6 +23,7 @@
 		71547B95C8A892F426A1F256 /* devLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E201F3499727BD5AEB61B996 /* devLaunchScreen.storyboard */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+		8B11A9C5E9EFD5D227EA00A7 /* MeupLessonLiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4235E902E4F0890CC54B0DE4 /* MeupLessonLiveActivityView.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -29,6 +32,7 @@
 		AEEA07C9BABA7DE78C2FEE5B /* MeupHomeWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D82833060DC59D5E91382E49 /* MeupHomeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BB54980A28C81DCDD518785B /* meup_widget_certificate.png in Resources */ = {isa = PBXBuildFile; fileRef = C47BAE305BCF314E6A7AB0AB /* meup_widget_certificate.png */; };
 		C4548071D19504AFBB7A497A /* meup_widget_flame_star.png in Resources */ = {isa = PBXBuildFile; fileRef = 9921B1C612770BEDAA3228F7 /* meup_widget_flame_star.png */; };
+		C9C3C4917D15CA7C1D5451F0 /* MeupLessonActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */; };
 		CB8DFF9A10077C29E188E62B /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 622C0B908731D738EA07A4F6 /* Pods_Runner.framework */; };
 		DC769DC87CD0CEA218DCA491 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E845031B019FBC1617FCDF9 /* GoogleService-Info.plist */; };
 		E09E72AE2E127612A807E1D7 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DB9B3571D46F8977E443514 /* Pods_RunnerTests.framework */; };
@@ -97,9 +101,11 @@
 		3D7A4DAD980FFE0046E39D80 /* Pods-Runner.debug-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-dev.xcconfig"; sourceTree = "<group>"; };
 		3D94EF3CDD42772DA59FB263 /* stgLaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; name = stgLaunchScreen.storyboard; path = Runner/stgLaunchScreen.storyboard; sourceTree = "<group>"; };
 		3E845031B019FBC1617FCDF9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "flavors/dev/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		4235E902E4F0890CC54B0DE4 /* MeupLessonLiveActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupLessonLiveActivityView.swift; sourceTree = "<group>"; };
 		43CA5FD8DAF925B4EEF8FFCB /* prodRelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = prodRelease.xcconfig; path = Flutter/prodRelease.xcconfig; sourceTree = "<group>"; };
 		46E3AE3722FAEAF5E121A0C5 /* Pods-Runner.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-prod.xcconfig"; sourceTree = "<group>"; };
 		480DA56195418F12D76CB0F7 /* Pods-Runner.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-dev.xcconfig"; sourceTree = "<group>"; };
+		58B5CFF38FF3151E108ABD39 /* LiveActivityChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityChannel.swift; sourceTree = "<group>"; };
 		61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = meup_widget_streak_medium_art.png; sourceTree = "<group>"; };
 		61C7A3B9E2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetComponents.swift; sourceTree = "<group>"; };
 		61C7A3BBE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupCourseHomeWidgetView.swift; sourceTree = "<group>"; };
@@ -108,6 +114,7 @@
 		63BC6E8C485E68E47E018C74 /* Pods-RunnerTests.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-prod.xcconfig"; sourceTree = "<group>"; };
 		652A8056007DE6552F517671 /* Pods-Runner.release-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-stg.xcconfig"; sourceTree = "<group>"; };
 		65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetViews.swift; sourceTree = "<group>"; };
+		6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupLessonActivityAttributes.swift; sourceTree = "<group>"; };
 		73E71D15EE042D27C5214372 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -245,6 +252,8 @@
 				61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */,
 				2521B090DFF46AD4FFD0A835 /* Info.plist */,
 				98883C5B76DB7F3C3051FD79 /* MeupHomeWidgetsExtension.entitlements */,
+				6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */,
+				4235E902E4F0890CC54B0DE4 /* MeupLessonLiveActivityView.swift */,
 			);
 			path = MeupHomeWidgetsExtension;
 			sourceTree = "<group>";
@@ -310,6 +319,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				58B5CFF38FF3151E108ABD39 /* LiveActivityChannel.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -652,6 +662,8 @@
 				61C7A3BCE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift in Sources */,
 				61C7A3BEE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift in Sources */,
 				FE4988C88A375C83B1A019C1 /* MeupHomeWidgets.swift in Sources */,
+				C9C3C4917D15CA7C1D5451F0 /* MeupLessonActivityAttributes.swift in Sources */,
+				8B11A9C5E9EFD5D227EA00A7 /* MeupLessonLiveActivityView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -670,6 +682,8 @@
 				A8758F662E3B231600533AF4 /* TikTokPlugin.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				055E28013C4E930C284BA8BB /* MeupLessonActivityAttributes.swift in Sources */,
+				5D0FFB05D2F9AE5E87D912D5 /* LiveActivityChannel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

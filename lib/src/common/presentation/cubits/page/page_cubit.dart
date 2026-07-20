@@ -41,7 +41,12 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.home);
         break;
       case 1:
-        AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
+        // Reached only when the shared Khám phá tab RETURNS to an already-open
+        // roadmap (ScaffoldLayout._courseSlotBranch). Deliberately does NOT
+        // reset the roadmap source: the branch is restored exactly as the user
+        // left it, so a roadmap opened from the grid keeps its 'course_selection'
+        // source (and its back-to-Explore button). Overwriting it with
+        // 'nav_course' here previously hid that button on tab return.
         setCurrentRouteName(RouteNamed.courseRoadmap);
         break;
       case 2:

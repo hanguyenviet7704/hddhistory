@@ -33,7 +33,10 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
     return FeedbackPopupShell(
       onTapOutside: () => context.back(),
       child: GestureDetector(
-        onTap: () => context.back(),
+        onTap: () {
+          AppHaptic.select();
+          context.back();
+        },
         child: FeedbackThankYouBody(
           titleLine1: context.l10n.feedback.thankYouTitleLine1,
           titleLine2: context.l10n.feedback.thankYouTitleLine2,

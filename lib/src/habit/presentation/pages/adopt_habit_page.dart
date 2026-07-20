@@ -73,6 +73,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
   }
 
   Future<void> _start() async {
+    AppHaptic.success();
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 

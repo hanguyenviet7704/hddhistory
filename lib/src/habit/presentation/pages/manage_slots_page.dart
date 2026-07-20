@@ -172,7 +172,10 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
                 label: context.l10n.common.back,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(8.r),
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: () {
+                    AppHaptic.select();
+                    Navigator.of(context).pop();
+                  },
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     child: Row(

@@ -23,7 +23,10 @@ class ModeToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       child: Container(
         padding: EdgeInsets.all(padding.w),
         alignment: Alignment.center,

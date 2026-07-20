@@ -9,6 +9,7 @@ class TapToSpeakButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        AppHaptic.select();
         unawaited(context.read<SpeakingCubit>().startRecordingSession());
       },
       child: Container(

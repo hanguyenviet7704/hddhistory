@@ -172,7 +172,10 @@ class _RoleplayAudioAnswerPlayerState extends State<RoleplayAudioAnswerPlayer> {
                 valueListenable: _isPlayingNotifier,
                 builder: (context, isPlaying, child) {
                   return InkWell(
-                    onTap: _togglePlay,
+                    onTap: () {
+                      AppHaptic.select();
+                      _togglePlay();
+                    },
                     borderRadius: BorderRadius.circular(999.r),
                     child: Container(
                       width: 40.w,

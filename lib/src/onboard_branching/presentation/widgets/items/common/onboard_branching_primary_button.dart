@@ -54,7 +54,12 @@ class OnboardBranchingPrimaryButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: canTap ? onPressed : null,
+            onTap: canTap
+                ? () {
+                    AppHaptic.select();
+                    onPressed();
+                  }
+                : null,
             borderRadius: borderRadius,
             child: Center(
               child: loading

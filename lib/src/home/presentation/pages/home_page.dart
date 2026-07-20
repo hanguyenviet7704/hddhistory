@@ -13,9 +13,10 @@ List<BoxShadow> get _homeCardShadow => [
 /// Flat gray-lavender page background behind the white cards (design #EFEEF9).
 const Color _homeBackground = Color(0xFFEFEEF9);
 
-/// Poppins is the design system's display/heading font (`--typo`); body text
-/// stays Mulish (AppStyle). Use for the design's Poppins headings/titles so the
-/// letterforms + weight match the mock (Mulish looked heavier at the same size).
+/// Heading/title helper. Uses the app's default font (Mulish, `AppFont.mulish`)
+/// so Home matches the rest of the app (e.g. the Habit screens) — the earlier
+/// Poppins display font was dropped for a single consistent typeface. Kept as a
+/// thin wrapper so the design's heading sizes/weights stay in one place.
 TextStyle _poppins(
   double size,
   FontWeight weight, {
@@ -24,7 +25,7 @@ TextStyle _poppins(
   double? letterSpacing,
 }) =>
     TextStyle(
-      fontFamily: 'Poppins',
+      fontFamily: AppFont.mulish,
       fontSize: size.sp,
       fontWeight: weight,
       color: color,
@@ -312,7 +313,10 @@ class _HomeWeeklyStreakCard extends StatelessWidget {
         button: true,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => const HomeLearningStreakRoute().push(context),
+          onTap: () {
+            AppHaptic.select();
+            const HomeLearningStreakRoute().push(context);
+          },
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
@@ -327,12 +331,14 @@ class _HomeWeeklyStreakCard extends StatelessWidget {
                 week: state.selectedItem.normalizedWeekStudy,
               ),
               builder: (context, data) {
-                final title = data.streak > 0 ? context.l10n.learningStreak.streakDays(count: data.streak) : context.l10n.home.homeStreakEmptyPrompt;
                 return Column(
                   children: [
+                    // Header is always the motivational prompt (design copy),
+                    // not an "N days streak" count — the streak itself is shown
+                    // by the day dots below.
                     AppText(
-                      title,
-                      maxLines: 1,
+                      context.l10n.home.homeStreakEmptyPrompt,
+                      maxLines: 2,
                       textAlign: TextAlign.center,
                       style: AppStyle.text12.copyWith(
                         fontSize: 13.sp,
@@ -396,7 +402,10 @@ class _JumpBackInSectionState extends State<_JumpBackInSection> {
         ),
         14.verticalSpace,
         SizedBox(
-          height: 202.h,
+          // PageView gives each card a tight height, so this box height IS the
+          // card height. Trimmed to hug the card's content (~178) — 202 left a
+          // chunk of empty white space below the "Continue" button.
+          height: 184.h,
           child: PageView.builder(
             controller: _pageController,
             padEnds: false,
@@ -448,6 +457,7 @@ class _JumpBackInCard extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
+          AppHaptic.select();
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
             ..selectSkillset(course.skillset)
@@ -621,9 +631,15 @@ class _QuickTile extends StatelessWidget {
       label: title,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Container(
-          height: 150.h,
+          // Tall enough for a 2-line title + 2-line subtitle so longer
+          // localized titles ("Khám phá 60+ chủ đề") wrap instead of being
+          // clipped; both tiles share this height so they stay visually equal.
+          height: 172.h,
           padding: EdgeInsets.all(18.w),
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
@@ -647,8 +663,8 @@ class _QuickTile extends StatelessWidget {
               14.verticalSpace,
               AppText(
                 title,
-                maxLines: 1,
-                style: _poppins(15, FontWeight.w600),
+                maxLines: 2,
+                style: _poppins(15, FontWeight.w600, height: 1.2),
               ),
               2.verticalSpace,
               AppText(
@@ -700,7 +716,12 @@ class _RecommendedSection extends StatelessWidget {
                     button: true,
                     label: context.l10n.home.homeRecommendedSeeAll,
                     child: GestureDetector(
-                      onTap: onSeeAll,
+                      onTap: onSeeAll == null
+                          ? null
+                          : () {
+                              AppHaptic.select();
+                              onSeeAll!();
+                            },
                       child: AppText(
                         context.l10n.home.homeRecommendedSeeAll,
                         style: AppStyle.textBold12.copyWith(
@@ -748,6 +769,7 @@ class _RecommendedCard extends StatelessWidget {
       label: course.title.text,
       child: GestureDetector(
         onTap: () {
+          AppHaptic.select();
           final didSelect = context.read<HomeCubit>().trySelectCourseFromCourseId(course.id);
           if (didSelect) {
             context.read<CourseRoadmapCubit>().setRoadmapSource('home_recommended');
@@ -781,6 +803,10 @@ class _RecommendedCard extends StatelessWidget {
                       child: CacheNetworkGraphic(
                         url: course.image,
                         fit: BoxFit.cover,
+                        // Clip the image itself to the tile's radius too, so the
+                        // corners round even if the parent Container's clip is
+                        // bypassed (some cached-image render paths ignore it).
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                     ),
                     if (course.isNewNow)

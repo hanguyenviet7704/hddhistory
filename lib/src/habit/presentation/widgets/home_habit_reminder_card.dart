@@ -35,7 +35,10 @@ class HomeHabitReminderCard extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(16.r),
-              onTap: () => _goToHabit(context, cubit),
+              onTap: () {
+                AppHaptic.select();
+                _goToHabit(context, cubit);
+              },
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [

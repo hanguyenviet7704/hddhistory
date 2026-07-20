@@ -133,7 +133,12 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
         // panel being expanded; the touch-blocking itself never was.
         Positioned.fill(
           child: GestureDetector(
-            onTap: explanationVisible ? widget.onBackdropTap : null,
+            onTap: explanationVisible && widget.onBackdropTap != null
+                ? () {
+                    AppHaptic.select();
+                    widget.onBackdropTap!();
+                  }
+                : null,
             behavior: HitTestBehavior.opaque,
             child: AnimatedOpacity(
               duration: _scrimAnimationDuration,

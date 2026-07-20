@@ -17,6 +17,7 @@ class StartJourneyButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            AppHaptic.select();
             AppService.instance.appTrackingService.trackObdCompleteClick();
             const NotificationRequestRoute(courseEntryMode: true).go(context);
           },

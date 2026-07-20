@@ -119,7 +119,12 @@ class _RatingBranchButton extends StatelessWidget {
           label: label.isEmpty ? context.l10n.home.inAppSurveyRatingSemantics(rating: index + 1) : label,
           child: InkWell(
             borderRadius: BorderRadius.circular(999.r),
-            onTap: isEnabled ? onTap : null,
+            onTap: isEnabled
+                ? () {
+                    AppHaptic.success();
+                    onTap();
+                  }
+                : null,
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: 58.h, minWidth: 44.w),
               child: Column(

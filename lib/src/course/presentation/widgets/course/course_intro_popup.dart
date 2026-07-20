@@ -76,7 +76,10 @@ class _CourseIntroPopupState extends State<CourseIntroPopup> {
       color: Colors.transparent,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => _handleTap(steps.length),
+        onTap: () {
+          AppHaptic.select();
+          _handleTap(steps.length);
+        },
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 2, sigmaY: 2),
           child: Center(

@@ -93,7 +93,12 @@ class SettingOptionTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: isLoading ? null : onTap,
+        onTap: isLoading || onTap == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onTap!.call();
+              },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
           child: Row(
@@ -181,7 +186,12 @@ class SettingSwitchTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onChanged == null ? null : () => onChanged!.call(!value),
+        onTap: onChanged == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onChanged!.call(!value);
+              },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
           child: Row(

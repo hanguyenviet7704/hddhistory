@@ -29,6 +29,7 @@ class RoleplayExerciseContentWidget extends StatelessWidget {
       child: shouldShowCompleted
           ? GestureDetector(
               onTap: () {
+                AppHaptic.select();
                 final trackingData = RoleplayTrackingData.fromContext();
                 if (trackingData != null) {
                   AppService.instance.appTrackingService.trackRoleplayQuizCollapsedClick(trackingData);

@@ -15,7 +15,12 @@ class LessonAudioSpeedPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: enabled ? onTap : null,
+      onTap: enabled
+          ? () {
+              AppHaptic.select();
+              onTap();
+            }
+          : null,
       behavior: HitTestBehavior.opaque,
       child: Opacity(
         opacity: enabled ? 1 : 0.5,

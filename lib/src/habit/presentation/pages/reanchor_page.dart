@@ -48,7 +48,10 @@ class _ReanchorPageState extends State<ReanchorPage> {
       label: r.reason.text,
       child: InkWell(
         borderRadius: BorderRadius.circular(12.r),
-        onTap: () => setState(() => _selectedId = r.id),
+        onTap: () {
+          AppHaptic.select();
+          setState(() => _selectedId = r.id);
+        },
         child: Container(
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 10.h),

@@ -189,6 +189,7 @@ class _DTextFieldState extends State<DTextField> {
           color: Colors.grey,
         ),
         onPressed: () {
+          AppHaptic.select();
           setState(() {
             isShowPassword = !isShowPassword;
           });

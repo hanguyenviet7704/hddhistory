@@ -116,7 +116,10 @@ class _TextInputAreaState extends State<TextInputArea> {
                 selector: (state) => state.currentChars,
                 builder: (context, currentChars) {
                   return GestureDetector(
-                    onTap: () => _onTap(currentChars),
+                    onTap: () {
+                      AppHaptic.select();
+                      _onTap(currentChars);
+                    },
                     child: Container(
                       width: 32.w,
                       height: 32.w,

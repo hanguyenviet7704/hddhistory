@@ -11,7 +11,10 @@ class IntroHeader extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Center(
         child: GestureDetector(
-          onTap: onLanguageTap,
+          onTap: () {
+            AppHaptic.select();
+            onLanguageTap();
+          },
           child: Container(
             height: 40.h,
             padding: EdgeInsets.symmetric(horizontal: 16.w),

@@ -125,7 +125,10 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
                     minimumSize: Size.zero,
                     visualDensity: VisualDensity.compact,
                   ),
-                  onPressed: () => _skipToLesson(context),
+                  onPressed: () {
+                    AppHaptic.select();
+                    _skipToLesson(context);
+                  },
                   child: AppText(
                     context.l10n.warmUp.skipToLesson,
                     style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w600),

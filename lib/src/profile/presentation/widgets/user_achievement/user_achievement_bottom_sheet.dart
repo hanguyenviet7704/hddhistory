@@ -182,7 +182,10 @@ class _UserAchievementSheetHeader extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: GestureDetector(
-          onTap: onClose,
+          onTap: () {
+            AppHaptic.select();
+            onClose();
+          },
           child: SvgPicture.asset(
             AppAsset.svg.app.icClose,
             width: 24.w,
@@ -259,7 +262,12 @@ class _UserAchievementGoToCourseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              AppHaptic.select();
+              onTap!();
+            },
       child: Container(
         width: double.infinity,
         height: 54.h,

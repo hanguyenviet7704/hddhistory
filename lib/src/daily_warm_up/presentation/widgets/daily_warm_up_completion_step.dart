@@ -67,7 +67,10 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
             onPressed: onStartLesson,
           ),
           TextButton(
-            onPressed: onExploreMore,
+            onPressed: () {
+              AppHaptic.select();
+              onExploreMore();
+            },
             child: AppText(
               context.l10n.dailyWarmUp.exploreMore,
               style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w600),

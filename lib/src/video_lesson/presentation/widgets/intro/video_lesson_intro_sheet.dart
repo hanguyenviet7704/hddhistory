@@ -82,7 +82,10 @@ class VideoLessonIntroSheet extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: onClose,
+                            onTap: () {
+                              AppHaptic.select();
+                              onClose();
+                            },
                             child: Padding(
                               padding: EdgeInsets.all(4.r),
                               child: SvgPicture.asset(

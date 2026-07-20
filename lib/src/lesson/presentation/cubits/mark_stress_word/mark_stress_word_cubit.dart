@@ -19,6 +19,7 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   /// Toggle word selection (add if not selected, remove if already selected)
   void selectWord(int index) {
     if (state.hasChecked) return;
+    AppHaptic.select();
 
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType == LearningItemType.roleplay) {

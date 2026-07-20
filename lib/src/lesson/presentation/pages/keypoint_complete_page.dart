@@ -29,6 +29,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   @override
   void initState() {
     super.initState();
+    AppHaptic.celebrate();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Assert this page's (non-primary) route name so the shell's floating
       // nav pill stays hidden — otherwise it overlaps the primary CTA below.
@@ -95,71 +96,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
   }
 
-  /// Post-lesson habit suggestion (PRD §9.2 Starter/Reflection — one screen,
-  /// shown after every keypoint).
-  /// - Per-keypoint curated suggestions (BTV-authored, keyed by keypointId).
-  /// - FR2.8: skipped if the user already adopted a habit from this keypoint.
-  /// - Adopted habits carry sourceKeypointId/sourceCourseId (§9.5 grouping).
-  ///
-  /// Returns `true` if it already navigated the user away (they tapped "Go to
-  /// Habit" on the success popup) — [_navigateAfterCompletion] then skips its
-  /// own roadmap/badge routing so we don't immediately navigate away again.
-  Future<bool> _maybeShowHabitPrompt(CourseLessonState lessonState) async {
-    final habitCubit = AppDI.injector.get<HabitCubit>();
-    await habitCubit.ensureLoaded();
-    if (!mounted) return false;
-
-    final keypointId = lessonState.currentKeypointId;
-    // FR2.8 — each keypoint suggests a habit only once.
-    if (keypointId.isNotEmpty && habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId)) {
-      return false;
-    }
-
-    final suggestions = await habitCubit.loadLibrary(keypointId: keypointId);
-    if (!mounted || suggestions.isEmpty) return false;
-
-    final courseId = resolveLessonFlowCourseId(
-      lessonCourseId: lessonState.selectedLesson.courseId,
-      roadmapCourseId: context.read<CourseRoadmapCubit>().state.roadmap.courseId,
-      homeCourseId: context.read<HomeCubit>().state.currentCourse.id,
-    );
-
-    final added = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: AppDI.injector.get<HabitCubit>(),
-          child: AdoptHabitPage(
-            habits: suggestions,
-            sourceKeypointId: keypointId,
-            sourceCourseId: courseId,
-          ),
-        ),
-      ),
-    );
-    if (added != true || !mounted) return false;
-
-    final goToHabit = await HabitAddedPopup.show(context);
-    if (goToHabit != true || !mounted) return false;
-
-    // Leaving to the Habit branch — stop reclaiming this page's route name.
-    _navigatedAway = true;
-    // First reset THIS (course) branch back to its roadmap, otherwise this
-    // completion page lingers on top of the course branch's stack and the user
-    // sees it again (stale, 0%) when they tap back to the Course tab. Switching
-    // to the Habit branch alone never cleans the course branch. Two branch-level
-    // go()s coalesce within one frame, so defer the Habit switch to the next
-    // frame; use the global context since this page may be disposed by then.
-    CourseRoadmapRoute().go(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ctx = AppConfig.instance.context;
-      if (ctx != null) HabitRoute().go(ctx);
-      Future.delayed(const Duration(milliseconds: 100), () {
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
-      });
-    });
-    return true;
-  }
-
   /// Whether the course-level badge just became fully unlocked (last
   /// keypoint of its last lesson). Mirrors
   /// `_BadgeProgressPageState._isProgressComplete`. This page always renders
@@ -174,8 +110,22 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 
   Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
-    final navigatedToHabit = await _maybeShowHabitPrompt(lessonState);
-    if (navigatedToHabit || !mounted) return;
+    // Tapping Continue here ends the keypoint session — whichever branch we
+    // route to next (Habit, badge, roadmap), the lesson is no longer open, so
+    // the Live Activity must end. Done first so it ends on every path.
+    unawaited(AppDI.injector.get<LiveActivityService>().end());
+    unawaited(cancelLiveActivityReturnNudge());
+
+    // Resolve the per-keypoint habit suggestion up front (while this page's
+    // context/cubits are valid) but DON'T show it yet — see below. FR2.8: each
+    // keypoint suggests a habit only once.
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    await habitCubit.ensureLoaded();
+    if (!mounted) return;
+    final keypointId = lessonState.currentKeypointId;
+    final canSuggest = keypointId.isEmpty || !habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId);
+    final suggestions = canSuggest ? await habitCubit.loadLibrary(keypointId: keypointId) : null;
+    if (!mounted) return;
 
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final homeState = context.read<HomeCubit>().state;
@@ -186,19 +136,58 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     );
     syncHomeSelectionForLessonFlowCourse(courseId);
 
-    // Leaving this page — stop reclaiming its route name (see [_navigatedAway]).
+    // Leave this badge-progress completion page for its FINAL destination
+    // FIRST, then show the habit prompt on top of that destination. Skipping
+    // the prompt then reveals the roadmap/celebration underneath, instead of
+    // flashing this page back for a frame during the prompt's pop animation.
+    // (Only the moment the course badge finishes still routes through the
+    // badge celebration; every other completion lands on the roadmap.)
     _navigatedAway = true;
     if (_isCourseLevelBadgeComplete()) {
       BadgeProgressRoute().go(context);
       Future.delayed(const Duration(milliseconds: 100), () {
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
       });
-      return;
+    } else {
+      CourseRoadmapRoute().go(context);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+      });
     }
 
-    CourseRoadmapRoute().go(context);
+    if (suggestions == null || suggestions.isEmpty) return;
+
+    // Habit prompt on the ROOT navigator so it overlays the shell and, on
+    // "Skip, keep learning", pops straight back to the destination we just
+    // navigated to (never this completion page).
+    final ctx = AppConfig.instance.context;
+    if (ctx == null) return;
+    // ctx is the app-global root context (AppConfig), not this disposed page's
+    // — always valid here, so the async-gap lint is a false positive.
+    // ignore: use_build_context_synchronously
+    final added = await Navigator.of(ctx, rootNavigator: true).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: AppDI.injector.get<HabitCubit>(),
+          child: AdoptHabitPage(
+            habits: suggestions,
+            sourceKeypointId: keypointId,
+            sourceCourseId: courseId,
+          ),
+        ),
+      ),
+    );
+    if (added != true) return; // Skip → stay on the destination above.
+
+    final popupCtx = AppConfig.instance.context;
+    if (popupCtx == null) return;
+    // ignore: use_build_context_synchronously
+    final goToHabit = await HabitAddedPopup.show(popupCtx);
+    if (goToHabit != true) return;
+    // ignore: use_build_context_synchronously
+    HabitRoute().go(popupCtx);
     Future.delayed(const Duration(milliseconds: 100), () {
-      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
     });
   }
 
@@ -245,6 +234,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                 progress: progress,
                 step: BadgeProgressStep.inProgress,
                 currentTitle: currentTitle,
+                // Continue kicks off async work (streak gate + habit-suggestion
+                // fetch) before navigating — show a spinner so the button isn't
+                // a dead tap for that beat.
+                isLoading: _isHandlingPrimaryCta,
                 onPrimaryCta: () => _handlePrimaryCta(lessonState),
               );
             },

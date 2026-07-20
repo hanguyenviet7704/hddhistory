@@ -61,6 +61,7 @@ class CuesPlacementWordWithDropZone extends StatelessWidget {
                 onTap: hasChecked
                     ? null
                     : () {
+                        AppHaptic.select();
                         onRemoveMark(wordIndex);
                       },
                 child: CuesPlacementPauseMark(

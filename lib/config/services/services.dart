@@ -111,6 +111,7 @@ part 'graphql/graphql_service.dart';
 part 'graphql/performance_interceptor.dart';
 part 'iap/i_iap_service.dart';
 part 'iap/iap_service.dart';
+part 'live_activity/live_activity_service.dart';
 part 'notification/adapters/awesome_local_notification_service.dart';
 part 'notification/adapters/firebase_push_transport_service.dart';
 part 'notification/bootstrap/notification_bootstrap_service.dart';

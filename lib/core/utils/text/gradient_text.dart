@@ -67,7 +67,10 @@ class AppGradientText extends StatelessWidget {
 
     if (onTap != null) {
       tmpText = GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap!.call();
+        },
         child: tmpText,
       );
     }

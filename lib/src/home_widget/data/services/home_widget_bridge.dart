@@ -7,6 +7,11 @@ abstract class HomeWidgetBridge {
 
   Future<void> saveImage({required String key, required String imageUrl});
 
+  /// Same download as [saveImage], but returns the saved file's local path —
+  /// for callers (e.g. Live Activity) that need the raw path once, rather
+  /// than a UserDefaults-key indirection meant for repeated timeline refreshes.
+  Future<String?> saveImageAndGetPath({required String key, required String imageUrl});
+
   Future<void> prepareStaticAssets();
 
   Future<void> updateWidget(HomeWidgetType type);
@@ -61,6 +66,25 @@ class HomeWidgetBridgeImpl implements HomeWidgetBridge {
     }
 
     await home_widget_plugin.HomeWidget.saveFile(
+      key,
+      Uint8List.fromList(bytes),
+      extension: 'png',
+      appGroupId: _appGroupId,
+    );
+  }
+
+  @override
+  Future<String?> saveImageAndGetPath({required String key, required String imageUrl}) async {
+    await home_widget_plugin.HomeWidget.setAppGroupId(_appGroupId);
+
+    final response = await _dio.get<List<int>>(
+      imageUrl,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final bytes = response.data;
+    if (bytes == null || bytes.isEmpty) return null;
+
+    return home_widget_plugin.HomeWidget.saveFile(
       key,
       Uint8List.fromList(bytes),
       extension: 'png',

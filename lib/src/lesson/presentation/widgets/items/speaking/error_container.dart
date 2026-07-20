@@ -36,7 +36,10 @@ class ErrorContainer extends StatelessWidget {
           if (permission != null && !permission.isPermanentlyDenied && !permission.isRestricted) ...[
             12.verticalSpace,
             GestureDetector(
-              onTap: () => unawaited(context.read<SpeakingCubit>().startRecordingSession()),
+              onTap: () {
+                AppHaptic.select();
+                unawaited(context.read<SpeakingCubit>().startRecordingSession());
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
@@ -55,7 +58,10 @@ class ErrorContainer extends StatelessWidget {
           if (state.microphonePermission?.isPermanentlyDenied == true) ...[
             12.verticalSpace,
             GestureDetector(
-              onTap: () => openAppSettings(),
+              onTap: () {
+                AppHaptic.select();
+                openAppSettings();
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(

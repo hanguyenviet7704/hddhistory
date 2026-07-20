@@ -13,29 +13,24 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
   // can scroll it into view. A "PHẦN" is a node WITHIN a level (a level can hold
   // several), so we scroll to the node, not the level.
   final GlobalKey _currentLessonKey = GlobalKey();
-  // Auto-scroll to the in-progress lesson every time the roadmap is ENTERED
-  // (Course-tab tap, opened from Home, first mount) — not once-per-course: this
-  // page is a kept-alive shell branch, so a once-per-course flag would never
-  // re-fire on re-entry. Set when entry is requested but the roadmap hasn't
-  // loaded yet (e.g. opened from Home for a new course); the load listener then
-  // performs it. Progress ticks / pull-to-refresh (no entry) never scroll.
-  bool _pendingAutoScroll = true;
-
-  /// Request an auto-scroll on entering the roadmap: do it now if the roadmap is
-  /// already loaded (tab re-entry), else defer to the load listener.
+  /// Request an auto-scroll on entering the roadmap via the nav tab (re-entry of
+  /// an already-loaded course): do it now if levels are present. A first load or
+  /// a course switch is handled by the load listener instead.
   void _requestAutoScrollToCurrentLesson(RoadmapEntity roadmap) {
-    _pendingAutoScroll = true;
     if (roadmap.levels.isNotEmpty) _performAutoScrollToCurrentLesson(roadmap);
   }
 
   /// Scroll so the in-progress lesson's "PHẦN" node sits near the top. No-op
-  /// while levels are loading, or for a not-started course (no in-progress
-  /// lesson → leave the list at the top, per design).
+  /// while levels are loading. For a not-started course (nothing completed yet)
+  /// it leaves the list at the TOP so the course header — and, for a Re-anchor
+  /// course, the motivation the prompt just set — stays visible instead of
+  /// jumping to Lesson 1. The list resets to offset 0 on a course switch via its
+  /// ValueKey(courseId), so "no scroll" here genuinely means "top", not "stuck
+  /// at the previous course's offset".
   void _performAutoScrollToCurrentLesson(RoadmapEntity roadmap) {
     if (roadmap.levels.isEmpty) return;
-    _pendingAutoScroll = false;
-    // Not-started course → no in-progress lesson → leave the list at the top.
-    if (roadmap.lastInProgressLesson == null) return;
+    final completedLessons = roadmap.levels.fold<int>(0, (sum, level) => sum + level.completedLessons);
+    if (completedLessons == 0 || roadmap.lastInProgressLesson == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final ctx = _currentLessonKey.currentContext;
@@ -122,13 +117,16 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
             listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.currentRouteName == RouteNamed.courseRoadmap,
             listener: (context, _) => _requestAutoScrollToCurrentLesson(context.read<CourseRoadmapCubit>().state.roadmap),
           ),
-          // Roadmap finished loading / switched course while an entry scroll is
-          // pending (e.g. opened from Home before levels arrived) → do it now.
+          // A course's roadmap finished its first load, or a different course was
+          // opened (from Explore, Home, search, …) → position the NEW course.
+          // Fires only on these "new course view" transitions (not on progress
+          // ticks or pull-to-refresh, which keep courseId and non-empty levels),
+          // so it always repositions — no entry-pending flag to get consumed by
+          // the previous course, which is what stopped Explore-opened courses
+          // from scrolling.
           BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
             listenWhen: (previous, current) => (previous.roadmap.levels.isEmpty && current.roadmap.levels.isNotEmpty) || previous.roadmap.courseId != current.roadmap.courseId,
-            listener: (context, state) {
-              if (_pendingAutoScroll) _performAutoScrollToCurrentLesson(state.roadmap);
-            },
+            listener: (context, state) => _performAutoScrollToCurrentLesson(state.roadmap),
           ),
         ],
         child: RefreshIndicator(
@@ -176,6 +174,12 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
                   return NotificationListener<ScrollNotification>(
                     onNotification: (notification) => _handleScrollNotification(notification, roadmap),
                     child: ListView.separated(
+                      // Reset scroll to the top on a course switch: keying the
+                      // list by courseId gives each course a fresh scrollable so
+                      // a newly-opened course can't inherit the previous one's
+                      // scroll offset. Same-course reloads (pull-to-refresh,
+                      // progress ticks) keep the key, so they don't jump.
+                      key: ValueKey(roadmap.courseId),
                       // Bottom padding so the last card scrolls clear of the
                       // floating "Start lesson" CTA (which sits above the nav
                       // bar). Derived from the nav bar's ACTUAL height (varies

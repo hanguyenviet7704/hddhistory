@@ -90,7 +90,12 @@ class _AdditionalContentOptionTile extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: enabled ? onTap : null,
+          onTap: enabled && onTap != null
+              ? () {
+                  AppHaptic.select();
+                  onTap!();
+                }
+              : null,
           borderRadius: BorderRadius.circular(8.r),
           child: Container(
             constraints: BoxConstraints(minHeight: 74.h),

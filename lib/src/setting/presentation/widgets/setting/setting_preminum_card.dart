@@ -79,7 +79,10 @@ class _UpgradeButton extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(100.r),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         borderRadius: BorderRadius.circular(100.r),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),

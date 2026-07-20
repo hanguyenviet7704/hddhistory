@@ -30,7 +30,12 @@ class FeedbackRatingRow extends StatelessWidget {
       final starIndex = index + 1;
       final color = starIndex <= rating ? activeColor : inactiveColor;
       return GestureDetector(
-        onTap: onRatingChanged == null ? null : () => onRatingChanged!(starIndex),
+        onTap: onRatingChanged == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onRatingChanged!(starIndex);
+              },
         child: Icon(
           Icons.star_rounded,
           color: color,

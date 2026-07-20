@@ -10,7 +10,10 @@ class MenuOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(16.r),
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
@@ -109,12 +112,12 @@ class AboutMenu extends StatelessWidget {
             children: [
               AboutMenuOption(
                 title: context.l10n.auth.privacyPolicy,
-                onTap: () => _launchURL('https://meup.training/privacy.html', context),
+                onTap: () => _launchURL(LegalUrl.privacyPolicy, context),
               ),
               4.verticalSpace,
               AboutMenuOption(
                 title: context.l10n.auth.termsOfUse,
-                onTap: () => _launchURL('https://meup.training/terms.html', context),
+                onTap: () => _launchURL(LegalUrl.termsAndConditions, context),
               ),
             ],
           ),
@@ -137,7 +140,10 @@ class AboutMenuOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(16.r),
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.w, horizontal: 20.w),

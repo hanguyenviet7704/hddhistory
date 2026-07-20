@@ -107,6 +107,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   }
 
   void _onNotificationToggle(bool value) {
+    AppHaptic.select();
     unawaited(_handleNotificationToggle(value));
   }
 
@@ -177,6 +178,16 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                             value: notificationState.isEffectivelyEnabled,
                             isLoading: notificationState.isLoading,
                             onChanged: notificationState.isCapabilityUnavailable || notificationState.isLoading ? null : _onNotificationToggle,
+                          );
+                        },
+                      ),
+                      BlocBuilder<HapticSettingCubit, bool>(
+                        builder: (context, hapticEnabled) {
+                          return SettingSwitchTile(
+                            iconAsset: AppAsset.svg.app.icAim,
+                            title: context.l10n.setting.settingHapticLabel,
+                            value: hapticEnabled,
+                            onChanged: (v) => context.read<HapticSettingCubit>().setEnabled(v),
                           );
                         },
                       ),
@@ -323,7 +334,10 @@ class SettingHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         InkWell(
-          onTap: () => context.back(),
+          onTap: () {
+            AppHaptic.select();
+            context.back();
+          },
           child: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: AppCustomColor.textTertiary,

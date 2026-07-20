@@ -11,7 +11,10 @@ class ProfileDeleteButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(999.r),
-        onTap: onTap,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
         child: Container(
           height: 54.h,
           alignment: Alignment.center,

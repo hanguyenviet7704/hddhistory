@@ -395,6 +395,7 @@ class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
                               ),
                               GestureDetector(
                                 onTap: () {
+                                  AppHaptic.select();
                                   _retryCountNotifier.value = 0;
                                   _errorNotifier.value = '';
                                   _initializePlayer();
@@ -437,7 +438,12 @@ class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
                 return Row(
                   children: [
                     GestureDetector(
-                      onTap: isLoading ? null : _togglePlay,
+                      onTap: isLoading
+                          ? null
+                          : () {
+                              AppHaptic.select();
+                              _togglePlay();
+                            },
                       child: Container(
                         width: 40.w,
                         height: 40.w,

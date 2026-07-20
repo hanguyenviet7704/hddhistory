@@ -22,25 +22,36 @@ class LessonAudioControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Reading/listening transport bar — a light tap on every control so
+    // play/pause and seeking feel physical.
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _LessonAudioControlIconButton(
           assetPath: AppAsset.svg.app.icBack10s,
           enabled: canSeekBackward,
-          onTap: onSeekBackward,
+          onTap: () {
+            AppHaptic.select();
+            onSeekBackward();
+          },
         ),
         SizedBox(width: 36.w),
         _LessonAudioPlayPauseButton(
           isPlaying: isPlaying,
           isLoading: isLoading,
-          onTap: onPlayPause,
+          onTap: () {
+            AppHaptic.select();
+            onPlayPause();
+          },
         ),
         SizedBox(width: 36.w),
         _LessonAudioControlIconButton(
           assetPath: AppAsset.svg.app.icNext10s,
           enabled: canSeekForward,
-          onTap: onSeekForward,
+          onTap: () {
+            AppHaptic.select();
+            onSeekForward();
+          },
         ),
       ],
     );

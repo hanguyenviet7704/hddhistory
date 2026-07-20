@@ -15,7 +15,10 @@ class StruggleOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onChanged(value),
+      onTap: () {
+        AppHaptic.select();
+        onChanged(value);
+      },
       child: Container(
         height: 54.h,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),

@@ -11,6 +11,7 @@ class AppProviders extends StatelessWidget {
         BlocProvider<ThemeCubit>.value(value: AppDI.injector.get<ThemeCubit>()),
         BlocProvider<LocaleCubit>.value(value: AppDI.injector.get<LocaleCubit>()),
         BlocProvider<ThemeModeCubit>.value(value: AppDI.injector.get<ThemeModeCubit>()),
+        BlocProvider<HapticSettingCubit>.value(value: AppDI.injector.get<HapticSettingCubit>()),
         BlocProvider<ConnectivityCubit>(create: (_) => AppDI.injector.get<ConnectivityCubit>()),
         BlocProvider<DeeplinkCubit>(create: (_) => AppDI.injector.get<DeeplinkCubit>()),
         BlocProvider<UserCubit>.value(value: AppDI.injector.get<UserCubit>()),

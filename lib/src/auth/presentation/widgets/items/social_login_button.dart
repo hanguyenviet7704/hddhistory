@@ -30,7 +30,12 @@ class SocialLoginButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(1000.r),
       ),
       child: TextButton(
-        onPressed: isLoading ? null : onPressed,
+        onPressed: isLoading
+            ? null
+            : () {
+                AppHaptic.select();
+                onPressed();
+              },
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 10.w),
           shape: RoundedRectangleBorder(

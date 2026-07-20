@@ -46,6 +46,7 @@ class _RoleplayBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
+        AppHaptic.select();
         final roleplayState = AppDI.injector.get<RoleplayCubit>().state;
         final trackingData = RoleplayTrackingData.fromContext();
         AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');

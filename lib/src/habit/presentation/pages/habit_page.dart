@@ -344,7 +344,10 @@ class _HabitBody extends StatelessWidget {
               label: context.l10n.habit.editHabitLink,
               child: InkWell(
                 borderRadius: BorderRadius.circular(8.r),
-                onTap: onEdit,
+                onTap: () {
+                  AppHaptic.select();
+                  onEdit();
+                },
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
                   child: Row(

@@ -102,7 +102,12 @@ class _AdditionalContentRequestActionButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: enabled ? onTap : null,
+            onTap: enabled
+                ? () {
+                    AppHaptic.select();
+                    onTap();
+                  }
+                : null,
             borderRadius: BorderRadius.circular(1000.r),
             child: Center(
               child: AppText(

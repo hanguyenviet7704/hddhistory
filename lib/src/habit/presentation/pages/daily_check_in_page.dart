@@ -156,7 +156,10 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
                   8.verticalSpace,
                   Center(
                     child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        AppHaptic.select();
+                        Navigator.of(context).pop();
+                      },
                       child: AppText(context.l10n.common.skip, style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary)),
                     ),
                   ),

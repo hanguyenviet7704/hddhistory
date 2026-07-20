@@ -87,7 +87,10 @@ class _FilterTabBarState extends State<FilterTabBar> {
             button: true,
             selected: isSelected,
             child: InkWell(
-              onTap: () => widget.onTabSelected(index),
+              onTap: () {
+                AppHaptic.select();
+                widget.onTabSelected(index);
+              },
               borderRadius: BorderRadius.circular(20.r),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),

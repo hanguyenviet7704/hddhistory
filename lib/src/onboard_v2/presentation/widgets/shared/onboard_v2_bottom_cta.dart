@@ -26,7 +26,12 @@ class OnboardV2BottomCta extends StatelessWidget {
           height: 54.h,
           child: ElevatedButton(
             key: const Key('onboard_v2_primary_cta'),
-            onPressed: isLoading ? null : onPressed,
+            onPressed: isLoading || onPressed == null
+                ? null
+                : () {
+                    AppHaptic.select();
+                    onPressed!();
+                  },
             style: ElevatedButton.styleFrom(
               elevation: 0,
               backgroundColor: AppCustomColor.brandPrimary,
@@ -52,7 +57,12 @@ class OnboardV2BottomCta extends StatelessWidget {
           10.verticalSpace,
           TextButton(
             key: const Key('onboard_v2_secondary_cta'),
-            onPressed: isLoading ? null : onSecondaryPressed,
+            onPressed: isLoading || onSecondaryPressed == null
+                ? null
+                : () {
+                    AppHaptic.select();
+                    onSecondaryPressed!();
+                  },
             child: AppText(
               secondaryLabel!,
               style: AppStyle.text14.copyWith(

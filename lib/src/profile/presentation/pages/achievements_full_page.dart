@@ -24,7 +24,10 @@ class AchievementsFullPage extends StatelessWidget {
           label: MaterialLocalizations.of(context).backButtonTooltip,
           child: IconButton(
             key: const Key('achievements-back-button'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              AppHaptic.select();
+              Navigator.of(context).pop();
+            },
             icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppCustomColor.textPrimary, size: 20.w),
           ),
         ),
@@ -56,7 +59,10 @@ class AchievementsFullPage extends StatelessWidget {
                     ),
                     16.verticalSpace,
                     OutlinedButton(
-                      onPressed: () => context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses(),
+                      onPressed: () {
+                        AppHaptic.select();
+                        context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
+                      },
                       child: AppText(
                         context.l10n.monetization.retry,
                         style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary),
@@ -217,7 +223,10 @@ class _AchievementBadgeGridItem extends StatelessWidget {
       child: GestureDetector(
         key: ValueKey('achievement-badge-${course.courseId}-${course.level.name}'),
         behavior: HitTestBehavior.opaque,
-        onTap: () => _onTap(context),
+        onTap: () {
+          AppHaptic.select();
+          _onTap(context);
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

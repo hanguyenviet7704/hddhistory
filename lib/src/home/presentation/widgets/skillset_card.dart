@@ -13,7 +13,12 @@ class SkillsetCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              AppHaptic.select();
+              onTap!();
+            },
       child: Container(
         decoration: BoxDecoration(
           color: AppCustomColor.backgroundGray,

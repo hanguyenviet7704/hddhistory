@@ -77,7 +77,12 @@ class OutputPracticeUserBubble extends StatelessWidget {
           if (showFailedHint) ...[
             6.verticalSpace,
             GestureDetector(
-              onTap: onRetry,
+              onTap: onRetry == null
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onRetry!();
+                    },
               child: AppText(
                 'Retry your message',
                 style: AppStyle.text12.copyWith(

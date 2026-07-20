@@ -52,15 +52,16 @@ const String _kStreakGraySvg =
 const String _kClockSvg =
     '''<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_6577_16697)"><path opacity="0.4" d="M16 28C18.3578 28 20.5375 27.2219 22.2906 25.9094L23.9406 27.5594C24.5266 28.1453 25.4781 28.1453 26.0641 27.5594C26.65 26.9734 26.65 26.0219 26.0641 25.4359L24.4141 23.7859C25.7266 22.0328 26.5047 19.8578 26.5047 17.4953C26.5 11.7016 21.7984 7 16 7C10.2016 7 5.5 11.7016 5.5 17.5C5.5 19.8578 6.27812 22.0375 7.59062 23.7906L5.94063 25.4406C5.35469 26.0266 5.35469 26.9781 5.94063 27.5641C6.52656 28.15 7.47812 28.15 8.06406 27.5641L9.71406 25.9141C11.4672 27.2266 13.6422 28.0047 16 28.0047V28ZM17.125 12.625V17.0359L19.0469 18.9578C19.4875 19.3984 19.4875 20.1109 19.0469 20.5469C18.6062 20.9828 17.8938 20.9875 17.4578 20.5469L15.2078 18.2969C14.9969 18.0859 14.8797 17.8 14.8797 17.5V12.625C14.8797 12.0016 15.3813 11.5 16.0047 11.5C16.6281 11.5 17.1297 12.0016 17.1297 12.625H17.125Z" fill="#AAB8CD"></path><path d="M4.69844 10.8625L11.5 5.19062C10.7031 4.45 9.63437 4 8.4625 4C5.99687 4 4 5.99687 4 8.4625C4 9.34375 4.25781 10.1641 4.69844 10.8578V10.8625ZM16 11.5C15.3766 11.5 14.875 12.0016 14.875 12.625V17.5C14.875 17.8 14.9922 18.0859 15.2031 18.2969L17.4531 20.5469C17.8938 20.9875 18.6062 20.9875 19.0422 20.5469C19.4781 20.1062 19.4828 19.3937 19.0422 18.9578L17.1203 17.0359V12.625C17.1203 12.0016 16.6187 11.5 15.9953 11.5H16ZM20.5 5.19062L27.3016 10.8625C27.7422 10.1687 28 9.34375 28 8.4625C28 5.99687 26.0031 4 23.5375 4C22.3656 4 21.2969 4.45 20.5 5.19062Z" fill="#AAB8CD"></path></g><defs><clipPath id="clip0_6577_16697"><rect width="24" height="24" fill="white" transform="translate(4 4)"></rect></clipPath></defs></svg>''';
 
-/// Poppins is the design system's display/heading font (`--typo`); body text
-/// stays Mulish (AppStyle). Use for the design's Poppins headings/titles.
+/// Heading/title helper. Uses the app's default font (Mulish, `AppFont.mulish`)
+/// so Profile matches the rest of the app (e.g. the Habit screens) — the earlier
+/// Poppins display font was dropped for a single consistent typeface.
 TextStyle _poppins(
   double size,
   FontWeight weight, {
   Color color = AppCustomColor.textPrimary,
   double? height,
 }) =>
-    TextStyle(fontFamily: 'Poppins', fontSize: size.sp, fontWeight: weight, color: color, height: height);
+    TextStyle(fontFamily: AppFont.mulish, fontSize: size.sp, fontWeight: weight, color: color, height: height);
 
 /// Opens the full-screen Achievements list. Pushed on the ROOT navigator (not
 /// a go_router route — see the class doc on [AchievementsFullPage]) so it
@@ -76,32 +77,16 @@ void _openAchievements(BuildContext context) {
   );
 }
 
-/// Opens Change Course standalone. [ChangeCoursePage] normally lives nested
-/// under the Course tab's shell branch (see routes_shell_course_data.dart);
-/// pushing its go_router path from the Profile tab would switch the visible
-/// bottom-nav branch to Course as a side effect. Pushing it directly on the
-/// root navigator instead keeps the user on the Profile tab underneath and
-/// pops straight back to it.
+/// Opens the "My course" library ([MyCoursesPage]) standalone. It normally
+/// lives nested under the Course tab's shell branch; pushing its go_router path
+/// from the Profile tab would switch the visible bottom-nav branch to Course as
+/// a side effect. Pushing it directly on the root navigator instead keeps the
+/// user on the Profile tab underneath and pops straight back to it.
 ///
-/// Provides HomeCubit + CourseRoadmapCubit (same as ChangeCourseRoute's own
-/// wiring in routes_shell_course_data.dart) PLUS ProgressCubit: each course
-/// row (CourseListTile → _CourseProgressChip) reads ProgressCubit for its
-/// progress chip, which ChangeCourseRoute's own provider list is missing —
-/// harmless there only because nothing pushes that route today.
-void _openChangeCourse(BuildContext context) {
-  Navigator.of(context, rootNavigator: true).push(
-    MaterialPageRoute(
-      builder: (_) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
-        ],
-        child: const ChangeCoursePage(),
-      ),
-    ),
-  );
-}
+/// Provides HomeCubit + CourseRoadmapCubit + ProgressCubit — the page reads
+/// skillsets/progress for its grouped enrolled-course sections and their
+/// completion %.
+void _openMyCourses(BuildContext context) => MyCoursesPage.open(context);
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -260,7 +245,10 @@ class _ProfileIdentityHeader extends StatelessWidget {
                   child: GestureDetector(
                     key: const Key('profile-avatar-login-button'),
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => const RegisterRoute().push(context),
+                    onTap: () {
+                      AppHaptic.select();
+                      const RegisterRoute().push(context);
+                    },
                     child: _ProfileAvatar(user: user),
                   ),
                 )
@@ -298,6 +286,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                 child: GestureDetector(
                   key: const Key('profile-settings-button'),
                   onTap: () {
+                    AppHaptic.select();
                     AppService.instance.appTrackingService.trackSettingDetailClick();
                     SettingRoute().go(context);
                   },
@@ -411,6 +400,7 @@ class _PremiumBanner extends StatelessWidget {
               key: const Key('profile-premium-banner'),
               behavior: HitTestBehavior.opaque,
               onTap: () {
+                AppHaptic.select();
                 AppService.instance.appTrackingService.trackSettingPremiumClick();
                 AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.profile);
                 const PaywallRoute().push(context);
@@ -491,7 +481,10 @@ class _StreakCard extends StatelessWidget {
           child: GestureDetector(
             key: const Key('profile-streak-card'),
             behavior: HitTestBehavior.opaque,
-            onTap: () => const HomeLearningStreakRoute().push(context),
+            onTap: () {
+              AppHaptic.select();
+              const HomeLearningStreakRoute().push(context);
+            },
             child: Container(
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
@@ -591,11 +584,18 @@ class _StatCard extends StatelessWidget {
                 AppText(
                   value,
                   maxLines: 1,
+                  // Shrink-to-fit so a longer value (e.g. "141 phút") isn't
+                  // clipped to "141 ph…" in this narrow half-width card.
+                  enableFitScaleDown: true,
                   style: _poppins(19, FontWeight.w700),
                 ),
                 AppText(
                   label,
                   maxLines: 1,
+                  // Shrink-to-fit so a longer label (e.g. "Chuỗi dài nhất")
+                  // isn't clipped to "Chuỗi dài nh…" in this narrow half-width
+                  // card, while keeping both stat cards a single line / equal height.
+                  enableFitScaleDown: true,
                   style: AppStyle.text12.copyWith(color: _profileMutedTextColor),
                 ),
               ],
@@ -674,7 +674,10 @@ class _SectionHeaderRow extends StatelessWidget {
           label: trailingLabel,
           child: GestureDetector(
             key: const Key('profile-achievements-see-all-button'),
-            onTap: onTrailingTap,
+            onTap: () {
+              AppHaptic.select();
+              onTrailingTap();
+            },
             child: AppText(
               trailingLabel,
               style: AppStyle.textBold14.copyWith(color: AppCustomColor.brandPrimary),
@@ -726,7 +729,10 @@ class _InlineSectionError extends StatelessWidget {
           ),
           12.verticalSpace,
           OutlinedButton(
-            onPressed: onRetry,
+            onPressed: () {
+              AppHaptic.select();
+              onRetry();
+            },
             child: AppText(
               context.l10n.monetization.retry,
               style: AppStyle.text14.copyWith(color: AppCustomColor.brandPrimary),
@@ -747,7 +753,8 @@ class _AchievementsSummaryCard extends StatelessWidget {
 
   final List<AchievenmentResponseEntity> achievenments;
 
-  int get _totalBadges => achievenments.fold(0, (sum, a) => sum + a.completedCourse);
+  int get _earnedBadges => achievenments.fold(0, (sum, a) => sum + a.completedCourse);
+  int get _totalBadges => achievenments.fold(0, (sum, a) => sum + a.totalCourse);
 
   @override
   Widget build(BuildContext context) {
@@ -757,7 +764,10 @@ class _AchievementsSummaryCard extends StatelessWidget {
       child: GestureDetector(
         key: const Key('profile-achievements-summary-card'),
         behavior: HitTestBehavior.opaque,
-        onTap: () => _openAchievements(context),
+        onTap: () {
+          AppHaptic.select();
+          _openAchievements(context);
+        },
         child: Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
@@ -776,7 +786,9 @@ class _AchievementsSummaryCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AppText(
-                      '$_totalBadges',
+                      // Design shows earned / total (e.g. "3/12"), not just the
+                      // earned count.
+                      '$_earnedBadges/$_totalBadges',
                       textAlign: TextAlign.center,
                       style: _poppins(30, FontWeight.w700),
                     ),
@@ -829,15 +841,30 @@ class _LearningProgressSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
-          child: Column(
-            children: [
-              for (int i = 0; i < visible.length; i++)
-                _CategoryRow(
-                  achievement: visible[i],
-                  tint: _profileCategoryTints[i % _profileCategoryTints.length],
-                  showDivider: i < visible.length - 1,
-                ),
-            ],
+          // The progress denominator is the skillset's whole catalog size, which
+          // lives in HomeCubit — rebuild when it arrives so the bars aren't stuck
+          // on the (much smaller) achievement fallback if skillsets load late.
+          child: BlocBuilder<HomeCubit, HomeState>(
+            bloc: AppDI.injector.get<HomeCubit>(),
+            buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
+            builder: (context, homeState) {
+              return Column(
+                children: [
+                  for (int i = 0; i < visible.length; i++)
+                    _CategoryRow(
+                      achievement: visible[i],
+                      catalogCount: homeState.skillsets
+                              .where((s) => s.id == visible[i].skillsetId)
+                              .firstOrNull
+                              ?.courses
+                              .length ??
+                          0,
+                      tint: _profileCategoryTints[i % _profileCategoryTints.length],
+                      showDivider: i < visible.length - 1,
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -848,17 +875,44 @@ class _LearningProgressSection extends StatelessWidget {
 class _CategoryRow extends StatelessWidget {
   const _CategoryRow({
     required this.achievement,
+    required this.catalogCount,
     required this.tint,
     required this.showDivider,
   });
 
   final AchievenmentResponseEntity achievement;
+
+  /// Total number of courses in this skillset's Explore catalog (from HomeCubit).
+  /// This is the progress denominator — see [build].
+  final int catalogCount;
   final Color tint;
   final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
-    final double fraction = achievement.totalCourse == 0 ? 0.0 : achievement.completedCourse / achievement.totalCourse;
+    // Progress is measured over the skillset's WHOLE catalog (every course shown
+    // in Explore), each course counting as one unit in [0,1]: a completed course
+    // = 1.0, an in-progress course = its keypoint fraction, an untouched course
+    // = 0.
+    //
+    // The achievement API only returns rows for the courses the user has STARTED
+    // (achievement.totalCourse counts just those), so dividing by it made a user
+    // who finished the 2 courses they touched read as 100% even though the
+    // skillset has 9 courses. The denominator must be the catalog size from
+    // HomeCubit; fall back to achievement.totalCourse only if the skillset isn't
+    // loaded yet, so the bar never divides by zero or disappears.
+    final int denominator = catalogCount > 0 ? catalogCount : achievement.totalCourse;
+    final double fraction;
+    if (denominator > 0) {
+      final double completedUnits = achievement.courses.fold<double>(0, (sum, c) {
+        if (c.isCompleted) return sum + 1.0;
+        if (c.totalKeypoints > 0) return sum + (c.completedKeypoints / c.totalKeypoints).clamp(0.0, 1.0);
+        return sum;
+      });
+      fraction = (completedUnits / denominator).clamp(0.0, 1.0);
+    } else {
+      fraction = 0.0;
+    }
     final int percent = (fraction.clamp(0.0, 1.0) * 100).round();
     final String name = achievement.skillsetTitle.text;
 
@@ -911,16 +965,19 @@ class _CategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
-    final introduce = skillsets.where((s) => s.id == skillsetId).firstOrNull?.onboardingIntroduce;
+    final imageUrl = skillsets.where((s) => s.id == skillsetId).firstOrNull?.image ?? '';
 
     return Container(
       width: 44.r,
       height: 44.r,
       decoration: BoxDecoration(color: tint, borderRadius: BorderRadius.circular(12.r)),
       alignment: Alignment.center,
-      child: introduce != null
-          ? Image.asset(introduce.image, width: 28.w, height: 28.w, fit: BoxFit.contain)
-          : Icon(Icons.auto_stories_rounded, size: 24.w, color: AppCustomColor.brandPrimary),
+      child: CacheNetworkGraphic(
+        url: imageUrl,
+        width: 28.w,
+        height: 28.w,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }
@@ -984,7 +1041,10 @@ class _LibrarySection extends StatelessWidget {
             child: GestureDetector(
               key: const Key('profile-library-my-course-row'),
               behavior: HitTestBehavior.opaque,
-              onTap: () => _openChangeCourse(context),
+              onTap: () {
+                AppHaptic.select();
+                _openMyCourses(context);
+              },
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Row(

@@ -17,7 +17,10 @@ class InAppSurveyEntryPill extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(999.r),
-          onTap: onTap,
+          onTap: () {
+            AppHaptic.select();
+            onTap();
+          },
           child: Container(
             width: min(315.w, MediaQuery.sizeOf(context).width - 40.w),
             padding: EdgeInsets.only(left: 8.w, right: 16.w, top: 6.h, bottom: 6.h),

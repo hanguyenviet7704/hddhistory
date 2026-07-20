@@ -51,6 +51,11 @@ class LessonExitFlow {
 
   static void _handleQuit(BuildContext context) {
     final learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    // Quitting mid-lesson ends the keypoint session → tear down the Live
+    // Activity + its return-nudge (the persistent card only makes sense while a
+    // lesson is actually open).
+    unawaited(AppDI.injector.get<LiveActivityService>().end());
+    unawaited(cancelLiveActivityReturnNudge());
     context.back();
 
     final entry = learningItem.type == LearningItemType.roleplay ? FeedbackEntry.roleplay : FeedbackEntry.keypoint;

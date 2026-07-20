@@ -19,7 +19,12 @@ class PaywallTopBar extends StatelessWidget {
         const PremiumPill(),
         showCloseButton
             ? InkWell(
-                onTap: onClose,
+                onTap: onClose == null
+                    ? null
+                    : () {
+                        AppHaptic.select();
+                        onClose!();
+                      },
                 child: SizedBox(
                   width: 36.w,
                   height: 36.w,

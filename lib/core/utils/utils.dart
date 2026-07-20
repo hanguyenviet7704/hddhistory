@@ -36,6 +36,7 @@ import '../helpers/helpers.dart';
 
 //* Export all animation files
 part 'animation/page_transition.dart';
+part 'haptic/app_haptic.dart';
 //* Export all button files
 part 'button/app_button.dart';
 part 'button/button.dart';

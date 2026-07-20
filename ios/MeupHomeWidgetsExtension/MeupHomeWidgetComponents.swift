@@ -193,7 +193,7 @@ extension Array {
 // course image can't exceed the widget extension's tight memory budget (which
 // jetsam-kills the process and forces the placeholder). Decodes only the
 // thumbnail, never the full bitmap.
-private func meupDownsampledImage(atPath path: String, maxPixel: CGFloat) -> UIImage? {
+func meupDownsampledImage(atPath path: String, maxPixel: CGFloat) -> UIImage? {
   let url = URL(fileURLWithPath: path)
   guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
   let options: [CFString: Any] = [

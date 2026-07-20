@@ -18,6 +18,14 @@ class CourseRoadmapFloatingButton extends StatelessWidget {
     // Return-refresher takes priority over the normal start/continue label
     // when a due warm-up with usable questions is available for this course.
     final hasWarmUpAvailable = context.select<WarmUpCubit, bool>((cubit) => cubit.state.hasWarmUpAvailable);
+    // Whole roadmap finished → there's nothing left to "continue", so hide the
+    // CTA entirely (the completion node + "request more content" prompt already
+    // tell the user they're done). A due return-refresher is the one exception:
+    // it repurposes the CTA into the warm-up entry, which is still actionable.
+    final isRoadmapCompleted = context.select<CourseRoadmapCubit, bool>(
+      (cubit) => cubit.state.roadmap.isAllCurrentRoadmapContentCompleted,
+    );
+    if (isRoadmapCompleted && !hasWarmUpAvailable) return const SizedBox.shrink();
     final labelText = label ?? (hasWarmUpAvailable ? context.l10n.warmUp.floatingCtaLabel : (hasProgress ? context.l10n.courseroadmap.continueLearningButton : context.l10n.courseroadmap.startLessonButton));
     return Semantics(
       button: true,

@@ -70,7 +70,7 @@ class RoadmapDetailPopup extends StatelessWidget {
     }
   }
 
-  void _startLearning(BuildContext context, LessonEntryMode mode) {
+  Future<void> _startLearning(BuildContext context, LessonEntryMode mode) async {
     if (lesson.id.isEmpty || keypoint.id.isEmpty) return;
     onStart?.call();
 
@@ -92,21 +92,79 @@ class RoadmapDetailPopup extends StatelessWidget {
       }
     }
 
-    context.read<LessonCubit>()
+    // Capture everything needed before closing the sheet below — `context`
+    // (this popup's own) is disposed the instant it pops.
+    final lessonCubit = context.read<LessonCubit>();
+    final courseLessonCubit = context.read<CourseLessonCubit>();
+    final roadmapCubit = context.read<CourseRoadmapCubit>();
+    final roadmapState = roadmapCubit.state;
+
+    // Close the Read/Listen picker immediately — Re-anchor (if it fires below)
+    // is a full-screen "before you start" gate, not a page stacked on top of
+    // this sheet.
+    context.back();
+
+    // Re-anchor (§9.1): asked right here — the moment the user has committed
+    // to a specific lesson AND mode — not at course/roadmap entry (too early:
+    // they haven't decided to study yet, may just be browsing). The sync
+    // guards below resolve instantly for the common case (course already in
+    // progress), so most lesson starts see no added delay; the reasons fetch
+    // itself is usually already warm (see CourseRoadmapCubit.loadRoadmap).
+    ReanchorReasonEntity? pickedReason;
+    final reasons = await _resolveReanchorReasons(roadmapState);
+    if (reasons != null) {
+      final rootContext = AppConfig.instance.context;
+      if (rootContext != null && rootContext.mounted) {
+        pickedReason = await ReanchorPage.push(rootContext, reasons: reasons);
+      }
+    }
+
+    final rootContext = AppConfig.instance.context;
+    if (rootContext == null || !rootContext.mounted) return;
+
+    lessonCubit
       ..reset()
       ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
-    context.read<CourseLessonCubit>()
+    courseLessonCubit
       ..setSelectedLesson(lesson)
       ..setCurrentKeypointId(keypoint.id)
       ..loadLesson(lesson.id);
 
-    LessonRoute(initialMode: mode.routeValue).go(context);
+    LessonRoute(initialMode: mode.routeValue).go(rootContext);
 
-    context.read<CourseRoadmapCubit>()
+    roadmapCubit
       ..setCurrentCourseLevel(courseLevel)
       ..setCurrentLesson(lesson);
 
-    context.back();
+    // Remember the picked reason so it can be attached when a habit is later
+    // adopted from this course (§9.5 tracker cluster title).
+    if (pickedReason != null) {
+      AppDI.injector.get<HabitCubit>().setReanchorReason(roadmapState.roadmap.courseId, pickedReason);
+    }
+  }
+
+  /// Resolves the Re-anchor reasons to show, or null if the prompt shouldn't
+  /// appear for this lesson start: already shown for this course, the course
+  /// has a completed lesson (Lesson 2+ skips it — PRD §9.1), or nothing is
+  /// BTV-configured. Marks the course as shown the instant it decides to
+  /// return reasons, so a second concurrent call (shouldn't normally happen —
+  /// there's only one picker open at a time — but cheap to guard) can't also
+  /// return non-null and double-show the prompt.
+  Future<List<ReanchorReasonEntity>?> _resolveReanchorReasons(CourseRoadmapState roadmapState) async {
+    // NOT lesson.courseId — roadmap-sourced lessons never carry it (only the
+    // top-level RoadmapEntity does), so it's reliably empty here.
+    final courseId = roadmapState.roadmap.courseId;
+    if (courseId.isEmpty || roadmapState.roadmap.levels.isEmpty) return null;
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+    if (habitCubit.state.reanchorShownCourseIds.contains(courseId)) return null;
+    final completedLessons = roadmapState.roadmap.levels.fold<int>(0, (sum, level) => sum + level.completedLessons);
+    if (completedLessons > 0) return null;
+
+    final reasons = await habitCubit.getReanchorReasons(courseId);
+    if (reasons.isEmpty) return null;
+    if (habitCubit.state.reanchorShownCourseIds.contains(courseId)) return null;
+    habitCubit.markReanchorShown(courseId);
+    return reasons;
   }
 
   @override
@@ -207,7 +265,7 @@ class RoadmapDetailPopup extends StatelessWidget {
                         iconAsset: AppAsset.svg.app.icMenu,
                         backgroundColor: AppCustomColor.brandPrimary50,
                         foregroundColor: const Color(0xFF4B44CA),
-                        onTap: () => _startLearning(context, LessonEntryMode.read),
+                        onTap: () => unawaited(_startLearning(context, LessonEntryMode.read)),
                       ),
                     ),
                     SizedBox(width: 8.w),
@@ -217,7 +275,7 @@ class RoadmapDetailPopup extends StatelessWidget {
                         iconAsset: AppAsset.svg.app.icMusicNote,
                         backgroundColor: const Color(0xFF554FF0),
                         foregroundColor: Colors.white,
-                        onTap: () => _startLearning(context, LessonEntryMode.audio),
+                        onTap: () => unawaited(_startLearning(context, LessonEntryMode.audio)),
                       ),
                     ),
                   ],
@@ -256,7 +314,10 @@ class _RoadmapDetailActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: Container(
         height: 54.h,

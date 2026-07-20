@@ -33,6 +33,7 @@ void showDataBottomSheet({
         ),
         InkWell(
           onTap: () {
+            AppHaptic.select();
             DNavigator.back();
             onTapClose?.call();
           },
