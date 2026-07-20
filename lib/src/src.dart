@@ -19,6 +19,7 @@ export 'profile/profile.dart';
 export 'progress/progress.dart';
 export 'roleplay/roleplay.dart';
 export 'setting/setting.dart';
+export 'study_theme/study_theme.dart';
 export 'feedback/feedback.dart';
 export 'video_lesson/video_lesson.dart';
 export 'warm_up/warm_up.dart';

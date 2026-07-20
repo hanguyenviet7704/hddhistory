@@ -91,7 +91,10 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
           children: [
             // Full-screen content — each page handles its own safe-area bottom
             // padding (or ignores it if it has a floating CTA of its own).
-            Positioned.fill(child: widget.navigationShell),
+            // Wrapped in ThemedBackground so the user's chosen study background
+            // (study_theme) paints behind every tab that opts in with a
+            // transparent Scaffold; seamless across tab switches (single host).
+            Positioned.fill(child: ThemedBackground(child: widget.navigationShell)),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(
               selector: (state) => state.isPrimaryRoute,

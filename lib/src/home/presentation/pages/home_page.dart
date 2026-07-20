@@ -10,9 +10,6 @@ List<BoxShadow> get _homeCardShadow => [
       ),
     ];
 
-/// Flat gray-lavender page background behind the white cards (design #EFEEF9).
-const Color _homeBackground = Color(0xFFEFEEF9);
-
 /// Heading/title helper. Uses the app's default font (Mulish, `AppFont.mulish`)
 /// so Home matches the rest of the app (e.g. the Habit screens) — the earlier
 /// Poppins display font was dropped for a single consistent typeface. Kept as a
@@ -127,7 +124,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         listener: (context, state) => _handleSurveyStateChanged(state),
         child: Scaffold(
           key: const Key('home-page'),
-          backgroundColor: _homeBackground,
+          // Transparent so the shell's ThemedBackground (study-theme) shows
+          // through. The default preset paints the same lavender the flat
+          // _homeBackground used, so the stock look is unchanged.
+          backgroundColor: Colors.transparent,
           body: SafeBody(
             child: Stack(
               children: [
@@ -271,25 +271,35 @@ class _HomeGreeting extends StatelessWidget {
         builder: (context, username) {
           final firstName = username.trim().split(' ').first;
           final greeting = firstName.isEmpty ? context.l10n.home.homeGreetingPrefix : '${context.l10n.home.homeGreetingPrefix}, $firstName';
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AppText(
-                greeting,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppStyle.text14.copyWith(
-                  fontSize: 15.sp,
-                  color: AppCustomColor.streakTextMuted,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      greeting,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppStyle.text14.copyWith(
+                        fontSize: 15.sp,
+                        color: AppCustomColor.streakTextMuted,
+                      ),
+                    ),
+                    2.verticalSpace,
+                    AppText(
+                      context.l10n.home.homeMindQuestion,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: _poppins(21, FontWeight.w700),
+                    ),
+                  ],
                 ),
               ),
-              2.verticalSpace,
-              AppText(
-                context.l10n.home.homeMindQuestion,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: _poppins(21, FontWeight.w700),
-              ),
+              12.horizontalSpace,
+              // Design item 2 — "Change background" affordance in the header.
+              const ChangeBackgroundButton(),
             ],
           );
         },
