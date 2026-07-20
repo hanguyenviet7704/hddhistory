@@ -27,6 +27,10 @@ class LessonContentCard extends StatelessWidget {
         child: ThemedGlassCard(
           padding: padding ?? EdgeInsets.all(16.w),
           radius: 20,
+          // This card fills most of the keypoint screen, so keep it more
+          // see-through than small cards — a near-solid white here hides the
+          // custom background almost entirely ("trắng quá").
+          opacity: 0.58,
           shadow: [
             BoxShadow(
               color: AppCustomColor.borderDefault,
