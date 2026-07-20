@@ -1,5 +1,8 @@
 library;
 
+//* Dart imports
+import 'dart:ui' show ImageFilter;
+
 //* Single project import
 import 'package:meup/meup.dart';
 
@@ -19,6 +22,7 @@ part 'presentation/cubits/study_theme_cubit.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/themed_background.dart';
+part 'presentation/widgets/themed_glass_card.dart';
 part 'presentation/widgets/change_background_button.dart';
 part 'presentation/widgets/change_background_sheet.dart';
 

@@ -283,7 +283,7 @@ class _HomeGreeting extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppStyle.text14.copyWith(
                         fontSize: 15.sp,
-                        color: AppCustomColor.streakTextMuted,
+                        color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                       ),
                     ),
                     2.verticalSpace,
@@ -291,7 +291,7 @@ class _HomeGreeting extends StatelessWidget {
                       context.l10n.home.homeMindQuestion,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: _poppins(21, FontWeight.w700),
+                      style: _poppins(21, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                     ),
                   ],
                 ),
@@ -407,7 +407,7 @@ class _JumpBackInSectionState extends State<_JumpBackInSection> {
         AppText(
           context.l10n.home.homeJumpBackIn,
           margin: EdgeInsets.symmetric(horizontal: 20.w),
-          style: _poppins(18, FontWeight.w700),
+          style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         SizedBox(
@@ -719,7 +719,7 @@ class _RecommendedSection extends StatelessWidget {
                 children: [
                   AppText(
                     context.l10n.home.homeRecommended,
-                    style: _poppins(18, FontWeight.w700),
+                    style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                   ),
                   Semantics(
                     button: true,

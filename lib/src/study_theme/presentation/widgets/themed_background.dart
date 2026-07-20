@@ -8,6 +8,19 @@ part of '../../study_theme.dart';
 Color studyThemeScaffoldColor(BuildContext context, Color fallback) =>
     context.watch<StudyThemeCubit>().state.preset.isCustom ? Colors.transparent : fallback;
 
+/// True when a DARK custom background is active — text/icons sitting directly on
+/// the background must switch to light ink to stay readable.
+bool studyThemeIsDarkBg(BuildContext context) {
+  final preset = context.watch<StudyThemeCubit>().state.preset;
+  return preset.isCustom && preset.isDark;
+}
+
+/// Ink colour for text/icons drawn directly ON the study background (NOT inside
+/// a card — cards stay opaque/glass and keep their own dark ink). Light on a
+/// dark custom background, otherwise [fallback].
+Color studyThemeOnBg(BuildContext context, Color fallback) =>
+    studyThemeIsDarkBg(context) ? const Color(0xFFF3F4FA) : fallback;
+
 /// Paints the user's selected study background (+ optional readability overlay)
 /// behind [child]. Mounted at the shell level (behind every tab) and by
 /// full-screen surfaces that cover the shell; all mounts read the same
