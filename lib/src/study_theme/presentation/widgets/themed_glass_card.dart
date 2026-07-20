@@ -38,13 +38,16 @@ class ThemedGlassCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: radii,
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
+            // Mostly-opaque frosted white so dark text stays crisp — at 0.6 the
+            // busy/dark background bled through and the card read as washed-out
+            // ("mờ"). Still translucent enough to feel like glass over the bg.
+            color: Colors.white.withValues(alpha: 0.85),
             borderRadius: radii,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.45)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
           ),
           child: child,
         ),
