@@ -75,9 +75,7 @@ class _StudyBackgroundLayer extends StatelessWidget {
           ),
         );
       case StudyThemeMode.image:
-        final ImageProvider? provider = state.uploadedFile != null
-            ? FileImage(state.uploadedFile!)
-            : (preset.imageAsset != null ? AssetImage(preset.imageAsset!) : null);
+        final ImageProvider? provider = _imageProvider(preset, state.uploadedFile);
         if (provider == null) return const ColoredBox(color: Color(0xFFEFEEF9));
         return Image(image: provider, fit: BoxFit.cover);
       case StudyThemeMode.video:
@@ -93,5 +91,17 @@ class _StudyBackgroundLayer extends StatelessWidget {
     if (gradient.isEmpty) return const [Color(0xFFEFEEF9), Color(0xFFE6EBDE)];
     if (gradient.length == 1) return [gradient.first, gradient.first];
     return gradient;
+  }
+
+  /// Resolution order: the user's just-picked upload (never persisted) →
+  /// the preset's DB-managed remote photo (cached network provider) → the
+  /// preset's bundled asset (offline fallback catalogue).
+  ImageProvider? _imageProvider(StudyThemePreset preset, File? uploadedFile) {
+    if (uploadedFile != null) return FileImage(uploadedFile);
+    final url = preset.imageUrl;
+    if (url != null && url.trim().isNotEmpty) return CachedNetworkImageProvider(url);
+    final asset = preset.imageAsset;
+    if (asset != null) return AssetImage(asset);
+    return null;
   }
 }

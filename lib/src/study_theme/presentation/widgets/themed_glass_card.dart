@@ -38,7 +38,7 @@ class ThemedGlassCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: radii,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(

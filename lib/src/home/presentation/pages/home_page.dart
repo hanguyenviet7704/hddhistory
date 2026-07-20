@@ -860,7 +860,7 @@ class _RecommendedCard extends StatelessWidget {
                   style: AppStyle.text12.copyWith(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
-                    color: AppCustomColor.textPrimary,
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                     height: 1.35,
                   ),
                 ),

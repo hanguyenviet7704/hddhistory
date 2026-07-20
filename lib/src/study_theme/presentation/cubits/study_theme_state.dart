@@ -19,7 +19,23 @@ abstract class StudyThemeState with _$StudyThemeState {
     /// Transient user-picked image file for the "upload" preset. Never
     /// persisted (design `_cbPersist` skips image/video).
     File? uploadedFile,
+
+    /// Background catalogue backing the picker sheet. Starts as the bundled
+    /// [PresetCatalog.presets] (see [StudyThemeState.initial]) so the sheet is
+    /// never empty; replaced by the server list once
+    /// [StudyThemeCubit.loadCatalog] succeeds, or left as-is if it fails/
+    /// returns empty (offline / pre-launch fallback).
+    @Default(<StudyThemePreset>[]) List<StudyThemePreset> catalog,
+
+    /// True once a [StudyThemeCubit.loadCatalog] attempt (success OR failure)
+    /// has completed at least once this session.
+    @Default(false) bool catalogLoaded,
+
+    /// True while a catalogue fetch is in flight. Never blocks the sheet — the
+    /// bundled/previous catalogue keeps rendering underneath.
+    @Default(false) bool catalogLoading,
   }) = _StudyThemeState;
 
-  factory StudyThemeState.initial() => const StudyThemeState(preset: PresetCatalog.defaultPreset);
+  factory StudyThemeState.initial() =>
+      const StudyThemeState(preset: PresetCatalog.defaultPreset, catalog: PresetCatalog.presets);
 }

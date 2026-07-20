@@ -140,10 +140,16 @@ abstract class PresetCatalog {
 
   /// Presets grouped by [StudyThemePreset.category], preserving first-seen
   /// order. Drives the sheet's grouped grid (design `cbGroups`).
-  static List<PresetGroup> get groups {
+  static List<PresetGroup> get groups => groupByCategory(presets);
+
+  /// Groups any preset list by [StudyThemePreset.category], preserving
+  /// first-seen order. Shared by [groups] (the bundled fallback) and the
+  /// picker sheet (grouping [StudyThemeState.catalog], which may be the
+  /// remote catalogue) so both render identically.
+  static List<PresetGroup> groupByCategory(List<StudyThemePreset> source) {
     final order = <String>[];
     final byCategory = <String, List<StudyThemePreset>>{};
-    for (final p in presets) {
+    for (final p in source) {
       final list = byCategory.putIfAbsent(p.category, () {
         order.add(p.category);
         return <StudyThemePreset>[];

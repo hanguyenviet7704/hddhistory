@@ -77,8 +77,25 @@ class ChangeBackgroundSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _UploadBar(onTap: () => _pickImage(context, cubit)),
+                        // Quiet sync affordance only — the bundled/previous
+                        // catalogue is already rendering below, so this never
+                        // blocks the picker (offline-first requirement).
+                        if (state.catalogLoading) ...[
+                          14.verticalSpace,
+                          Semantics(
+                            label: context.l10n.studyTheme.syncingBackgrounds,
+                            child: const ClipRRect(
+                              borderRadius: BorderRadius.all(Radius.circular(2)),
+                              child: LinearProgressIndicator(
+                                minHeight: 2,
+                                backgroundColor: Color(0xFFF0F1F6),
+                                color: Color(0xFF554FF0),
+                              ),
+                            ),
+                          ),
+                        ],
                         22.verticalSpace,
-                        for (final group in PresetCatalog.groups)
+                        for (final group in PresetCatalog.groupByCategory(state.catalog))
                           _PresetGroupView(
                             group: group,
                             currentId: state.preset.id,
@@ -205,11 +222,18 @@ class _PresetTile extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
           gradient: _gradient,
-          image: _image,
+          image: _assetImage,
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
+            // Network thumbnail (DB-managed preset) — rendered as a widget
+            // (not a DecorationImage) so it goes through the shared cached
+            // image loader (memory/disk cache + error fallback).
+            if (_networkThumbUrl != null)
+              Positioned.fill(
+                child: DCachedImage(url: _networkThumbUrl!, fit: BoxFit.cover),
+              ),
             if (selected) ...[
               Positioned.fill(
                 child: Container(
@@ -247,7 +271,17 @@ class _PresetTile extends StatelessWidget {
     return LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: colors);
   }
 
-  DecorationImage? get _image {
+  /// Remote thumbnail url, preferring a dedicated poster over the full image.
+  /// Null for bundled presets (which only ever set `*Asset` fields).
+  String? get _networkThumbUrl {
+    final url = preset.thumbUrl ?? preset.imageUrl;
+    return (url == null || url.trim().isEmpty) ? null : url;
+  }
+
+  /// Bundled-asset thumbnail. Only used when there's no network thumbnail —
+  /// a preset never mixes an asset and a remote url.
+  DecorationImage? get _assetImage {
+    if (_networkThumbUrl != null) return null;
     final asset = preset.thumbAsset ?? preset.imageAsset;
     if (asset == null) return null;
     return DecorationImage(image: AssetImage(asset), fit: BoxFit.cover);
@@ -271,7 +305,7 @@ class _DashedRoundedRectPainter extends CustomPainter {
       Rect.fromLTWH(1, 1, size.width - 2, size.height - 2),
       Radius.circular(radius),
     );
-    final path = Path()..addRRect(rrect);
+    final path = ui.Path()..addRRect(rrect);
     const dash = 6.0;
     const gap = 5.0;
     for (final metric in path.computeMetrics()) {

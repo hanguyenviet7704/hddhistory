@@ -54,14 +54,14 @@ class GotIdeasBanner extends StatelessWidget {
                           TextSpan(
                             text: context.l10n.home.inAppSurveyEntryTitle,
                             style: AppStyle.textBold14.copyWith(
-                              color: AppCustomColor.brandPrimary,
+                              color: studyThemeOnBg(context, AppCustomColor.brandPrimary),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           TextSpan(
                             text: ' ${context.l10n.home.inAppSurveyEntrySubtitle}',
                             style: AppStyle.text14.copyWith(
-                              color: const Color(0xFF8E96C4),
+                              color: studyThemeOnBg(context, const Color(0xFF8E96C4)),
                             ),
                           ),
                         ],
