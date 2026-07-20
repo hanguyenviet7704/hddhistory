@@ -11,11 +11,16 @@ export const studyThemeService = {
   // Admin table — paginated + filterable. Pass orderBy/order to sort like the
   // mobile app's picker (order asc); the list page always does this.
   async getList(params: Partial<StudyThemeListQuery>) {
-    const res = await axiosClient.get<StudyThemeListResponse>(
+    // The API wraps every response as { statusCode, message, data: <payload> }
+    // (see meup-api ResponseInterceptor), so the paginated list lives at
+    // res.data.data — NOT res.data. Returning res.data here made the page read
+    // res.items (undefined) and always render an empty table even when presets
+    // existed.
+    const res = await axiosClient.get<{ data: StudyThemeListResponse }>(
       "/study-themes/all",
       { params }
     );
-    return res.data;
+    return res.data.data;
   },
 
   async create(payload: StudyThemePayload) {
