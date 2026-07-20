@@ -400,7 +400,7 @@ class _CourseSection extends StatelessWidget {
       children: [
         AppText(
           skillset.title.text,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         12.verticalSpace,
         // Manual 2-column grid (not GridView.count): cells size to their own
@@ -601,7 +601,7 @@ class _CourseGridCard extends StatelessWidget {
               child: AppText(
                 course.title.text,
                 style: AppStyle.textBold14.copyWith(
-                  color: AppCustomColor.textPrimary,
+                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                   height: 1.4,
                 ),
                 maxLines: 2,

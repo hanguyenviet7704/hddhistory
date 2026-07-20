@@ -305,7 +305,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                                     icon: Icon(
                                       Icons.arrow_back_ios_new_rounded,
                                       size: 20.w,
-                                      color: AppCustomColor.textPrimary,
+                                      color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                                     ),
                                     onPressed: () {
                                       AppHaptic.select();

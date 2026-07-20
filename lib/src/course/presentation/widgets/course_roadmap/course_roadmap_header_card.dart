@@ -64,7 +64,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                     // Heading/H3/Bold — Mulish Bold 20 / 1.5 (Figma 10735:49368).
                     style: AppStyle.text20.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppCustomColor.textPrimary,
+                      color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
@@ -85,7 +85,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
               children: [
                 AppText(
                   roadmapLevel.level.name.toUpperCase(),
-                  style: AppStyle.textBold10.copyWith(color: AppCustomColor.textTertiary),
+                  style: AppStyle.textBold10.copyWith(color: studyThemeOnBg(context, AppCustomColor.textTertiary)),
                   maxLines: 1,
                 ),
                 Container(
@@ -123,7 +123,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                       )
                       .toUpperCase(),
                   style: AppStyle.textBold10.copyWith(
-                    color: AppCustomColor.textTertiary,
+                    color: studyThemeOnBg(context, AppCustomColor.textTertiary),
                   ),
                   maxLines: 1,
                 ),

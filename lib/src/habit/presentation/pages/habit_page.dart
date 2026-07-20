@@ -289,7 +289,7 @@ class _HabitBody extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AppText(context.l10n.habit.loadErrorTitle, style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary)),
+              AppText(context.l10n.habit.loadErrorTitle, style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.textTertiary))),
               12.verticalSpace,
               DButton(
                 text: context.l10n.habit.loadErrorRetryButton,

@@ -9,7 +9,7 @@ class CourseEmptyState extends StatelessWidget {
       child: AppText(
         context.l10n.allcourse.emptyState,
         style: AppStyle.text14.copyWith(
-          color: AppCustomColor.textTertiary,
+          color: studyThemeOnBg(context, AppCustomColor.textTertiary),
         ),
       ),
     );

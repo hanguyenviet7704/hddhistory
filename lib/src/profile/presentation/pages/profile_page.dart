@@ -199,7 +199,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       const _PremiumBanner(),
                       AppText(
                         context.l10n.setting.settingProfileProgressSection,
-                        style: _poppins(20, FontWeight.w700),
+                        style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                       ),
                       14.verticalSpace,
                       const _StreakCard(),
@@ -265,7 +265,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                       _resolveName(user, context),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: _poppins(20, FontWeight.w700),
+                      style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                     ),
                     4.verticalSpace,
                     AppText(
@@ -273,7 +273,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyle.text13.copyWith(
-                        color: _profileMutedTextColor,
+                        color: studyThemeOnBg(context, _profileMutedTextColor),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -299,8 +299,8 @@ class _ProfileIdentityHeader extends StatelessWidget {
                       AppAsset.svg.app.icSetting,
                       width: 24.w,
                       height: 24.w,
-                      colorFilter: const ColorFilter.mode(
-                        AppCustomColor.streakTextMuted,
+                      colorFilter: ColorFilter.mode(
+                        studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                         BlendMode.srcIn,
                       ),
                     ),
@@ -668,7 +668,7 @@ class _SectionHeaderRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: AppText(title, style: _poppins(20, FontWeight.w700)),
+          child: AppText(title, style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary))),
         ),
         Semantics(
           button: true,
@@ -831,7 +831,7 @@ class _LearningProgressSection extends StatelessWidget {
         30.verticalSpace,
         AppText(
           context.l10n.setting.settingProfileLearningProgressSection,
-          style: _poppins(20, FontWeight.w700),
+          style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         Container(
@@ -1025,7 +1025,7 @@ class _LibrarySection extends StatelessWidget {
       children: [
         AppText(
           context.l10n.setting.settingProfileLibrarySection,
-          style: _poppins(20, FontWeight.w700),
+          style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         Container(

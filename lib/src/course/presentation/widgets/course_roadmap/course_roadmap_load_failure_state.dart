@@ -22,7 +22,7 @@ class CourseRoadmapLoadFailureState extends StatelessWidget {
               context.l10n.common.errorOopsSomethingWentWrongWhileLoading,
               textAlign: TextAlign.center,
               style: AppStyle.text14.copyWith(
-                color: AppCustomColor.textTertiary,
+                color: studyThemeOnBg(context, AppCustomColor.textTertiary),
               ),
             ),
             12.verticalSpace,
