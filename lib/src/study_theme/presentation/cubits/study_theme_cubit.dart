@@ -56,9 +56,11 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
     emit(state.copyWith(
       preset: PresetCatalog.uploadPreset.copyWith(
         isDark: dark,
-        // dark photo → light ink, so a light-lifting scrim isn't needed (gentle
-        // darkening keeps ink crisp); bright photo → dark ink, gentle light veil.
-        overlay: dark ? const Color(0x33000000) : const Color(0x26FFFFFF),
+        // A user photo is usually MIXED brightness (bright + dark patches), so a
+        // gentle overlay isn't enough — apply a firm scrim in the detected
+        // direction so light ink survives the photo's bright spots (and dark ink
+        // its dark spots). ~45% either way.
+        overlay: dark ? const Color(0x73000000) : const Color(0x73FFFFFF),
       ),
       applying: false,
       uploadedFile: file,
