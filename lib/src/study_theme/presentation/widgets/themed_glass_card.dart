@@ -10,10 +10,10 @@ class ThemedGlassCard extends StatelessWidget {
   final double radius;
   final List<BoxShadow>? shadow;
 
-  /// Frosted-white opacity when a custom background is active. Small cards look
-  /// best fairly solid (~0.8, default); large screen-filling cards (e.g. the
-  /// keypoint content panel) should pass a lower value so the background isn't
-  /// almost entirely hidden ("trắng quá").
+  /// Frosted-white opacity when a custom background is active. Consistent
+  /// across all cards (~0.7) — paired with a strong blur so a busy photo
+  /// background reads as a smooth soft frost (not muddy) while dark text stays
+  /// legible on both light and dark backgrounds.
   final double opacity;
 
   const ThemedGlassCard({
@@ -22,7 +22,7 @@ class ThemedGlassCard extends StatelessWidget {
     this.padding,
     this.radius = 20,
     this.shadow,
-    this.opacity = 0.8,
+    this.opacity = 0.7,
   });
 
   @override
@@ -45,7 +45,7 @@ class ThemedGlassCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: radii,
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        filter: ui.ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
