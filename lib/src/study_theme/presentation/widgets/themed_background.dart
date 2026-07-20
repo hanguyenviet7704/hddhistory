@@ -1,5 +1,13 @@
 part of '../../study_theme.dart';
 
+/// Scaffold background colour that follows the study theme: transparent when a
+/// custom background is active (so the shell's [ThemedBackground] shows
+/// through), otherwise the screen's own [fallback]. Reactive — the caller
+/// rebuilds when the selected preset changes. Screens that want to participate
+/// pass their stock colour here instead of a literal.
+Color studyThemeScaffoldColor(BuildContext context, Color fallback) =>
+    context.watch<StudyThemeCubit>().state.preset.isCustom ? Colors.transparent : fallback;
+
 /// Paints the user's selected study background (+ optional readability overlay)
 /// behind [child]. Mounted at the shell level (behind every tab) and by
 /// full-screen surfaces that cover the shell; all mounts read the same
@@ -14,6 +22,9 @@ class ThemedBackground extends StatelessWidget {
     return BlocBuilder<StudyThemeCubit, StudyThemeState>(
       bloc: AppDI.injector.get<StudyThemeCubit>(),
       builder: (context, state) {
+        // Default preset paints nothing — every screen keeps its own stock
+        // background. Only a custom preset takes over (screens go transparent).
+        if (!state.preset.isCustom) return child;
         final overlay = state.preset.overlay;
         return Stack(
           children: [

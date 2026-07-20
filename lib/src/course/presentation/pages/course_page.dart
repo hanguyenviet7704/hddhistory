@@ -62,9 +62,8 @@ class _CoursePageState extends State<CoursePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: const Key('course-page'),
-      // Transparent so the shell's ThemedBackground (study-theme) shows through
-      // on the Explore/Learn tab, matching Home.
-      backgroundColor: Colors.transparent,
+      // Transparent only when a custom study background is active.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
       body: Stack(
         children: [
           SafeArea(

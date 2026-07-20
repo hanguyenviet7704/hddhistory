@@ -45,6 +45,12 @@ abstract class StudyThemePreset with _$StudyThemePreset {
 }
 
 extension StudyThemePresetX on StudyThemePreset {
+  /// A non-default preset — the user has picked a custom background. Screens
+  /// only go transparent (to reveal the study background) when this is true, so
+  /// the stock "Default" look of every screen is preserved otherwise (mirrors
+  /// the design's `cb-custom` toggle).
+  bool get isCustom => mode != StudyThemeMode.defaultMode;
+
   /// Only default/solid/gradient presets survive an app restart — image and
   /// video (and user uploads) are intentionally not persisted, mirroring the
   /// design's `_cbPersist` (`mode !== 'image' && mode !== 'video'`).

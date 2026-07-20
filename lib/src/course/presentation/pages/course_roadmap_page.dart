@@ -245,9 +245,8 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         ),
       ],
       child: Scaffold(
-        // Transparent so the study-theme background shows through on the course
-        // roadmap (reached from the Explore/Learn tab).
-        backgroundColor: Colors.transparent,
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
         body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, ({CourseRoadmapStatus status, bool hasLevels})>(
           selector: (state) => (
             status: state.status,

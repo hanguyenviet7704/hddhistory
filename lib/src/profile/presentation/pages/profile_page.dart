@@ -177,7 +177,8 @@ class _ProfilePageState extends State<ProfilePage> {
       },
       child: Scaffold(
         key: const Key('profile-page'),
-        backgroundColor: _profileBackground,
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, _profileBackground),
         body: SafeBody(
           child: Column(
             children: [

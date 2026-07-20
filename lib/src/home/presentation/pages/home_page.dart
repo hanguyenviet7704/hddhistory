@@ -124,10 +124,9 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         listener: (context, state) => _handleSurveyStateChanged(state),
         child: Scaffold(
           key: const Key('home-page'),
-          // Transparent so the shell's ThemedBackground (study-theme) shows
-          // through. The default preset paints the same lavender the flat
-          // _homeBackground used, so the stock look is unchanged.
-          backgroundColor: Colors.transparent,
+          // Transparent only when a custom study background is active (so it
+          // shows through); otherwise the stock flat lavender is preserved.
+          backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFEFEEF9)),
           body: SafeBody(
             child: Stack(
               children: [

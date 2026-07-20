@@ -80,7 +80,8 @@ class _HabitPageState extends State<HabitPage> {
         unawaited(context.read<HabitCubit>().ensureLoaded());
       },
       child: Scaffold(
-        backgroundColor: AppCustomColor.backgroundGray,
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
         // No top SafeArea: the green header scene paints edge-to-edge behind
         // the status bar (Figma "Today's task" — the status-bar strip is green,
         // not white). The scene reserves the top inset itself.
