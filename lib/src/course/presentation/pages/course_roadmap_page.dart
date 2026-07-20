@@ -245,7 +245,9 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         ),
       ],
       child: Scaffold(
-        backgroundColor: AppCustomColor.backgroundWhite,
+        // Transparent so the study-theme background shows through on the course
+        // roadmap (reached from the Explore/Learn tab).
+        backgroundColor: Colors.transparent,
         body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, ({CourseRoadmapStatus status, bool hasLevels})>(
           selector: (state) => (
             status: state.status,

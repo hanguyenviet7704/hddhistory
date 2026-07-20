@@ -56,6 +56,66 @@ abstract class PresetCatalog {
       gradient: [Color(0xFF20244A), Color(0xFF141733)],
       isDark: true,
     ),
+    StudyThemePreset(
+      id: 'rose',
+      mode: StudyThemeMode.color,
+      category: 'Solid & Gradient',
+      name: 'Rose',
+      gradient: [Color(0xFFFDE6F0), Color(0xFFF6C9DE)],
+    ),
+    StudyThemePreset(
+      id: 'sky',
+      mode: StudyThemeMode.color,
+      category: 'Solid & Gradient',
+      name: 'Sky',
+      gradient: [Color(0xFFE3F0FF), Color(0xFFC7DDFB)],
+    ),
+    StudyThemePreset(
+      id: 'sand',
+      mode: StudyThemeMode.color,
+      category: 'Solid & Gradient',
+      name: 'Sand',
+      gradient: [Color(0xFFFBF3E2), Color(0xFFEFE0C4)],
+    ),
+    StudyThemePreset(
+      id: 'plum',
+      mode: StudyThemeMode.color,
+      category: 'Solid & Gradient',
+      name: 'Plum',
+      gradient: [Color(0xFF3A2C57), Color(0xFF241735)],
+      isDark: true,
+    ),
+
+    // Nature — bundled sample photos (design assets/bg/*). A dark readability
+    // overlay is applied while the app content is still dark-on-light; the
+    // glass-card + light-text pass (Phase 2) refines contrast further.
+    StudyThemePreset(
+      id: 'ocean',
+      mode: StudyThemeMode.image,
+      category: 'Nature',
+      name: 'Ocean',
+      imageAsset: 'assets/bg/ocean-photo.jpg',
+      overlay: Color(0x59000000),
+      isDark: true,
+    ),
+    StudyThemePreset(
+      id: 'sunset',
+      mode: StudyThemeMode.image,
+      category: 'Nature',
+      name: 'Sunset',
+      imageAsset: 'assets/bg/ocean-sunset.jpg',
+      overlay: Color(0x59000000),
+      isDark: true,
+    ),
+    StudyThemePreset(
+      id: 'rain',
+      mode: StudyThemeMode.image,
+      category: 'Nature',
+      name: 'Rain',
+      imageAsset: 'assets/bg/rain-photo.jpg',
+      overlay: Color(0x59000000),
+      isDark: true,
+    ),
   ];
 
   /// Synthetic preset for a user-uploaded image. The picked file itself lives

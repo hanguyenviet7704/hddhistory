@@ -62,32 +62,44 @@ class _CoursePageState extends State<CoursePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: const Key('course-page'),
-      backgroundColor: AppCustomColor.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            16.verticalSpace,
-            const CourseHeader(),
-            12.verticalSpace,
-            BlocBuilder<CourseCubit, CourseState>(
-              buildWhen: (prev, curr) => prev.isSearchActive != curr.isSearchActive,
-              builder: (context, state) {
-                if (state.isSearchActive) {
-                  return const Expanded(child: CourseSearchView());
-                }
-                return Expanded(
-                  child: Column(
-                    children: [
-                      const _CourseFilterTabBar(),
-                      12.verticalSpace,
-                      const Expanded(child: AllCourseTab()),
-                    ],
-                  ),
-                );
-              },
+      // Transparent so the shell's ThemedBackground (study-theme) shows through
+      // on the Explore/Learn tab, matching Home.
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                16.verticalSpace,
+                const CourseHeader(),
+                12.verticalSpace,
+                BlocBuilder<CourseCubit, CourseState>(
+                  buildWhen: (prev, curr) => prev.isSearchActive != curr.isSearchActive,
+                  builder: (context, state) {
+                    if (state.isSearchActive) {
+                      return const Expanded(child: CourseSearchView());
+                    }
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          const _CourseFilterTabBar(),
+                          12.verticalSpace,
+                          const Expanded(child: AllCourseTab()),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Design item 2 — floating "Change background" button on Course/Learn.
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 6.h,
+            right: 18.w,
+            child: const ChangeBackgroundButton(size: 46),
+          ),
+        ],
       ),
     );
   }
