@@ -79,9 +79,13 @@ class _StudyBackgroundLayer extends StatelessWidget {
         if (provider == null) return const ColoredBox(color: Color(0xFFEFEEF9));
         return Image(image: provider, fit: BoxFit.cover);
       case StudyThemeMode.video:
-        // Live video is wired in a later phase; until then a solid fill keeps
-        // the app rendering if a video preset is somehow active.
-        return const ColoredBox(color: Color(0xFF141733));
+        // "Live" preset — a looping muted video (+ optional ambient audio).
+        // Keyed by preset id so switching presets tears down the old players.
+        return _LiveBackgroundLayer(
+          key: ValueKey('live-${preset.id}'),
+          preset: preset,
+          soundOn: state.soundOn,
+        );
     }
   }
 
@@ -103,5 +107,138 @@ class _StudyBackgroundLayer extends StatelessWidget {
     final asset = preset.imageAsset;
     if (asset != null) return AssetImage(asset);
     return null;
+  }
+}
+
+/// "Live" background — a looping, muted video with optional looping ambient
+/// audio ([StudyThemeMode.video], design item 5). videoUrl/audioUrl may be a
+/// bundled `assets/...` path or a remote (R2) url from the DB catalogue. All
+/// player calls are guarded so a bad/missing source degrades to a solid fill;
+/// playback pauses when the app backgrounds and everything is disposed when the
+/// preset changes (the parent keys this widget by preset id) or unmounts.
+class _LiveBackgroundLayer extends StatefulWidget {
+  final StudyThemePreset preset;
+  final bool soundOn;
+
+  const _LiveBackgroundLayer({super.key, required this.preset, required this.soundOn});
+
+  @override
+  State<_LiveBackgroundLayer> createState() => _LiveBackgroundLayerState();
+}
+
+class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> with WidgetsBindingObserver {
+  VideoPlayerController? _video;
+  ja.AudioPlayer? _audio;
+  bool _audioLoaded = false;
+  bool _ready = false;
+
+  static bool _isAssetPath(String? url) => (url ?? '').startsWith('assets/');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _start();
+  }
+
+  Future<void> _start() async {
+    final videoUrl = widget.preset.videoUrl;
+    if (videoUrl != null && videoUrl.trim().isNotEmpty) {
+      final controller = _isAssetPath(videoUrl)
+          ? VideoPlayerController.asset(videoUrl)
+          : VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+      _video = controller;
+      try {
+        await controller.initialize();
+        await controller.setLooping(true);
+        await controller.setVolume(0); // video is muted; ambient audio is separate
+        await controller.play();
+        if (mounted) setState(() => _ready = true);
+      } catch (_) {
+        if (mounted) setState(() => _ready = false);
+      }
+    }
+    await _syncAudio();
+  }
+
+  Future<void> _syncAudio() async {
+    final audioUrl = widget.preset.audioUrl;
+    final wantAudio = widget.soundOn && audioUrl != null && audioUrl.trim().isNotEmpty;
+    if (!wantAudio) {
+      await _audio?.pause();
+      return;
+    }
+    _audio ??= ja.AudioPlayer();
+    try {
+      if (!_audioLoaded) {
+        _isAssetPath(audioUrl) ? await _audio!.setAsset(audioUrl) : await _audio!.setUrl(audioUrl);
+        await _audio!.setLoopMode(ja.LoopMode.one);
+        await _audio!.setVolume(0.6);
+        _audioLoaded = true;
+      }
+      await _audio!.play();
+    } catch (_) {}
+  }
+
+  @override
+  void didUpdateWidget(covariant _LiveBackgroundLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.soundOn != widget.soundOn) _syncAudio();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _video?.play();
+      _syncAudio();
+    } else {
+      _video?.pause();
+      _audio?.pause();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _video?.dispose();
+    _audio?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final video = _video;
+    if (video != null && _ready && video.value.isInitialized) {
+      return FittedBox(
+        fit: BoxFit.cover,
+        clipBehavior: Clip.hardEdge,
+        child: SizedBox(
+          width: video.value.size.width,
+          height: video.value.size.height,
+          child: VideoPlayer(video),
+        ),
+      );
+    }
+    // Warming up (or no/failed video): dark fill + "Applying theme…" (item 5).
+    return ColoredBox(
+      color: const Color(0xFF141733),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+            ),
+            12.verticalSpace,
+            AppText(
+              context.l10n.studyTheme.applyingTheme,
+              style: AppStyle.text14.copyWith(color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
