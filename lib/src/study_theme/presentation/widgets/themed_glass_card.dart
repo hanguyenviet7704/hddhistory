@@ -27,38 +27,19 @@ class ThemedGlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final custom = context.watch<StudyThemeCubit>().state.preset.isCustom;
-    final radii = BorderRadius.circular(radius.r);
-
-    if (!custom) {
-      return Container(
-        padding: padding,
-        decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
-          borderRadius: radii,
-          boxShadow: shadow,
-        ),
-        child: child,
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: radii,
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            // Mostly-opaque frosted white so dark text stays crisp — at 0.6 the
-            // busy/dark background bled through and the card read as washed-out
-            // ("mờ"). Still translucent enough to feel like glass over the bg.
-            color: Colors.white.withValues(alpha: opacity),
-            borderRadius: radii,
-            border: Border.all(color: Colors.white.withValues(alpha: (opacity - 0.25).clamp(0.0, 1.0))),
-          ),
-          child: child,
-        ),
+    // Always a SOLID white card — matching the Home cards. A semi-transparent
+    // frosted look read as muddy/inconsistent over busy or dark photo
+    // backgrounds, so every themed card stays a clean opaque white card and the
+    // study background shows AROUND the cards (margins, gaps, bare text) rather
+    // than through them. Consistent on every screen and always readable.
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.circular(radius.r),
+        boxShadow: shadow,
       ),
+      child: child,
     );
   }
 }
