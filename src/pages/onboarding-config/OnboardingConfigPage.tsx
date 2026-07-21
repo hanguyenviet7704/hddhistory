@@ -17,6 +17,11 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   IconButton,
   Paper,
@@ -24,7 +29,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Add, Delete, ExpandMore } from "@mui/icons-material";
+import { Add, Delete, Download, ExpandMore, Upload } from "@mui/icons-material";
 import {
   DndContext,
   DragEndEvent,
@@ -44,6 +49,7 @@ import SortableItem from "../../components/common/SortableItem";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { onboardingConfigService } from "../../services/onboardingConfigService";
 import { useNotification } from "../../utils/hooks/useNotification";
+import { downloadJson, pickJsonFile } from "../../utils/jsonTransfer";
 import type {
   OnboardingAgeConfig,
   OnboardingBrainConfig,
@@ -270,6 +276,26 @@ const buildPayload = (draft: ConfigDraft): OnboardingConfigPayload => ({
   pick: draft.pick,
   theme: draft.theme,
 });
+
+// Minimal shape guard for an imported onboarding-config.json — the file only
+// needs to look like a config (at least one of the known top-level screen
+// keys) so a completely unrelated JSON file doesn't silently wipe the draft.
+const CONFIG_SCREEN_KEYS = [
+  "welcome",
+  "name",
+  "age",
+  "paths",
+  "brain",
+  "habit",
+  "notif",
+  "pick",
+  "theme",
+] as const;
+
+const isPlausibleConfig = (value: unknown): value is Partial<OnboardingConfig> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return CONFIG_SCREEN_KEYS.some((k) => k in (value as Record<string, unknown>));
+};
 
 // Generic add/update/remove/reorder for the 3 reorderable lists (welcome
 // deck, age options, path items) — they all share the "keyed, orderable
@@ -711,6 +737,10 @@ export default function OnboardingConfigPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [importPreview, setImportPreview] = useState<Partial<OnboardingConfig> | null>(
+    null
+  );
+
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -820,6 +850,41 @@ export default function OnboardingConfigPage() {
     }
   };
 
+  // Exports exactly what a Save would send (buildPayload already excludes
+  // _id/createdAt/updatedAt — they live outside ConfigDraft).
+  const handleExport = () => {
+    if (!draft) return;
+    downloadJson("onboarding-config.json", buildPayload(draft));
+    showSuccess("Onboarding config exported");
+  };
+
+  const handleImportClick = async () => {
+    try {
+      const parsed = await pickJsonFile();
+      if (!isPlausibleConfig(parsed)) {
+        showError("Import file must contain an onboarding config object.");
+        return;
+      }
+      setImportPreview(parsed);
+    } catch (err: any) {
+      // A cancelled file picker isn't a real error — nothing to surface.
+      if (err?.message !== "No file selected") {
+        showError(err?.message ?? "Could not read that file.");
+      }
+    }
+  };
+
+  // Loads the file into the draft only — nothing is sent to the server until
+  // the operator reviews it and presses "Save changes" (or discards it).
+  const handleConfirmImport = () => {
+    if (!importPreview) return;
+    setDraft(toDraft(importPreview as OnboardingConfig));
+    setImportPreview(null);
+    showSuccess(
+      'Onboarding config loaded into the draft — review it, then press "Save changes" to persist it.'
+    );
+  };
+
   return (
     <Box className="p-6">
       <Box
@@ -839,6 +904,22 @@ export default function OnboardingConfigPage() {
             </Typography>
           </Box>
           <Box className="flex items-center gap-2">
+            <Button
+              variant="outlined"
+              startIcon={<Download fontSize="small" />}
+              onClick={handleExport}
+              disabled={loading || saving || !draft}
+            >
+              Export
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Upload fontSize="small" />}
+              onClick={handleImportClick}
+              disabled={loading || saving}
+            >
+              Import
+            </Button>
             <Button
               variant="outlined"
               onClick={load}
@@ -1634,6 +1715,28 @@ export default function OnboardingConfigPage() {
           </Accordion>
         </>
       )}
+
+      <Dialog
+        open={!!importPreview}
+        onClose={() => setImportPreview(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Import onboarding config</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Load this file into the draft below? This overwrites all unsaved
+            edits. Nothing is sent to the server until you press "Save
+            changes".
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setImportPreview(null)}>Cancel</Button>
+          <Button variant="contained" onClick={handleConfirmImport}>
+            Load into draft
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

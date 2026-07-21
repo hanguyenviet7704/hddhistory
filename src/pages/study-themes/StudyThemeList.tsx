@@ -3,6 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   MenuItem,
   Pagination,
@@ -20,18 +26,49 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { FilmIcon, PaletteIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  FilmIcon,
+  PaletteIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+  UploadIcon,
+} from "lucide-react";
 import { studyThemeService } from "../../services/studyThemeService";
 import {
   IStudyTheme,
+  StudyThemeListResponse,
   StudyThemePayload,
 } from "../../types/interface/study-theme.interface";
 import { StudyThemeMode } from "../../types/enum/study-theme.enum";
 import { OrderType } from "../../types/enum/common.enum";
 import { useNotification } from "../../utils/hooks/useNotification";
+import {
+  downloadJson,
+  pickJsonFile,
+  stripServerFields,
+} from "../../utils/jsonTransfer";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import StudyThemeModal from "../../components/study-themes/StudyThemeModal";
 import StudyThemeConfirm from "../../components/study-themes/StudyThemeConfirm";
+
+// A row from an imported study-themes.json — validated minimally (must carry
+// a non-empty `key`, since that's the only field the API can upsert on).
+// Everything else is passed through best-effort; the backend rejects/ignores
+// whatever it doesn't recognize.
+type ImportableStudyTheme = Partial<Omit<IStudyTheme, "key">> & { key: string };
+
+const isImportableStudyTheme = (value: unknown): value is ImportableStudyTheme => {
+  if (!value || typeof value !== "object") return false;
+  const key = (value as Record<string, unknown>).key;
+  return typeof key === "string" && key.trim().length > 0;
+};
+
+interface ImportSummary {
+  items: ImportableStudyTheme[];
+  skipped: number;
+}
 
 const TAKE = 10;
 
@@ -136,6 +173,11 @@ export default function StudyThemeList() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState<IStudyTheme | null>(null);
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
+
+  const [exporting, setExporting] = useState(false);
+  const [importPreview, setImportPreview] = useState<ImportSummary | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -253,15 +295,143 @@ export default function StudyThemeList() {
     }
   };
 
+  // Pulls every preset across all pages (list view is paginated at TAKE=10) —
+  // used by both export and the import upsert (to know which keys already
+  // exist). `take: 1000` should cover the whole library in one call; the loop
+  // is only a safety net if that library ever grows past it.
+  const fetchAllThemes = async (): Promise<IStudyTheme[]> => {
+    const collected: IStudyTheme[] = [];
+    let page = 1;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const res: StudyThemeListResponse = await studyThemeService.getList({
+        page,
+        take: 1000,
+        orderBy: "order",
+        order: OrderType.ASC,
+      });
+      const pageItems = res.items ?? [];
+      collected.push(...pageItems);
+      const totalPages = res.totalPages ?? 1;
+      if (page >= totalPages || pageItems.length === 0) break;
+      page += 1;
+    }
+    return collected;
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const all = await fetchAllThemes();
+      const cleaned = all.map((item) =>
+        stripServerFields(item as unknown as Record<string, any>)
+      );
+      downloadJson("study-themes.json", cleaned);
+      showSuccess(
+        `Exported ${cleaned.length} study theme${cleaned.length === 1 ? "" : "s"}`
+      );
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Failed to export study themes");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImportClick = async () => {
+    try {
+      const parsed = await pickJsonFile();
+      if (!Array.isArray(parsed)) {
+        showError("Import file must contain an array of study theme presets.");
+        return;
+      }
+      const valid = parsed.filter(isImportableStudyTheme);
+      if (valid.length === 0) {
+        showError('No valid presets found — each entry needs a non-empty "key".');
+        return;
+      }
+      setImportPreview({ items: valid, skipped: parsed.length - valid.length });
+    } catch (err: any) {
+      // A cancelled file picker isn't a real error — nothing to surface.
+      if (err?.message !== "No file selected") {
+        showError(err?.message ?? "Could not read that file.");
+      }
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importPreview) return;
+    setImporting(true);
+    setImportProgress(0);
+    let created = 0;
+    let updated = 0;
+    let failed = 0;
+    try {
+      const existing = await fetchAllThemes();
+      const existingKeys = new Set(existing.map((t) => t.key));
+
+      for (const preset of importPreview.items) {
+        try {
+          const { key, ...rest } = stripServerFields(
+            preset as unknown as Record<string, any>
+          ) as ImportableStudyTheme;
+          if (existingKeys.has(key)) {
+            await studyThemeService.update(key, rest);
+            updated += 1;
+          } else {
+            await studyThemeService.create({ key, ...rest } as StudyThemePayload);
+            created += 1;
+          }
+        } catch {
+          failed += 1;
+        } finally {
+          setImportProgress((p) => p + 1);
+        }
+      }
+      showSuccess(
+        `Imported: ${created} created, ${updated} updated${failed ? `, ${failed} failed` : ""}`
+      );
+      setImportPreview(null);
+      await fetchThemes(1);
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Failed to import study themes");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const columns = ["Key", "Name", "Mode", "Category", "Preview", "Order", "Active", "Actions"];
 
   return (
     <Box className="p-6">
       <Box className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <Typography variant="h5">Study Themes</Typography>
-        <Button variant="contained" startIcon={<PlusIcon size={18} />} onClick={openCreate}>
-          Create theme
-        </Button>
+        <Box className="flex items-center gap-2">
+          <Button
+            variant="outlined"
+            startIcon={
+              exporting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <DownloadIcon size={18} />
+              )
+            }
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            Export
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<UploadIcon size={18} />}
+            onClick={handleImportClick}
+            disabled={importing}
+          >
+            Import
+          </Button>
+          <Button variant="contained" startIcon={<PlusIcon size={18} />} onClick={openCreate}>
+            Create theme
+          </Button>
+        </Box>
       </Box>
 
       <Paper variant="outlined" className="p-3 mb-4">
@@ -465,6 +635,49 @@ export default function StudyThemeList() {
         }}
         onConfirm={handleDelete}
       />
+
+      <Dialog
+        open={!!importPreview}
+        onClose={() => !importing && setImportPreview(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Import study themes</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Import {importPreview?.items.length ?? 0}{" "}
+            preset{importPreview && importPreview.items.length === 1 ? "" : "s"}?
+            Existing keys will be updated; new keys will be created. Nothing
+            is deleted.
+          </DialogContentText>
+          {!!importPreview?.skipped && (
+            <DialogContentText color="error" sx={{ mt: 1 }}>
+              {importPreview.skipped} row(s) skipped — missing a valid "key" field.
+            </DialogContentText>
+          )}
+          {importing && (
+            <Box className="flex items-center gap-2 mt-3">
+              <CircularProgress size={18} />
+              <Typography variant="body2">
+                Importing {importProgress}/{importPreview?.items.length ?? 0}...
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setImportPreview(null)} disabled={importing}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmImport}
+            variant="contained"
+            disabled={importing}
+            startIcon={importing ? <CircularProgress size={16} color="inherit" /> : undefined}
+          >
+            Import
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
