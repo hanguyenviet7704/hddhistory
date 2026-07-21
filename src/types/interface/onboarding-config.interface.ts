@@ -55,12 +55,25 @@ export interface OnboardingAgeConfig {
   iconUrl?: string;
 }
 
+// A symptom nested under a path item. `key` must equal one of the
+// `OnboardingSymptom` enum values consumed by the mobile app (18 total, 3 per
+// path) — see meup-api/plans/260721-onboard-v2-config-driven/contract.md.
+// The admin edits it as free text (no fixed dropdown) so content managers can
+// realign keys without a code change; validation only enforces non-empty +
+// unique, mirroring path item keys.
+export interface OnboardingPathSymptom {
+  key: string;
+  label: OnboardingMultilang;
+  order: number;
+}
+
 export interface OnboardingPathItem {
   key: string;
   label: OnboardingMultilang;
   iconKey: string;
   iconUrl: string;
   order: number;
+  symptoms: OnboardingPathSymptom[];
 }
 
 export interface OnboardingPathsConfig {

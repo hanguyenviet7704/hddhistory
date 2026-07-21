@@ -79,12 +79,19 @@ interface AgeOptionDraft {
   label: OnboardingMultilang;
 }
 
+interface SymptomDraft {
+  _localId: string;
+  key: string;
+  label: OnboardingMultilang;
+}
+
 interface PathItemDraft {
   _localId: string;
   key: string;
   label: OnboardingMultilang;
   iconKey: string;
   iconUrl: string;
+  symptoms: SymptomDraft[];
 }
 
 interface ConfigDraft {
@@ -157,6 +164,14 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
         label: ml(item.label),
         iconKey: item.iconKey || "",
         iconUrl: item.iconUrl || "",
+        symptoms: (item.symptoms || [])
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((symptom) => ({
+            _localId: nextLocalId(),
+            key: symptom.key || "",
+            label: ml(symptom.label),
+          })),
       })),
   },
   brain: {
@@ -231,6 +246,11 @@ const buildPayload = (draft: ConfigDraft): OnboardingConfigPayload => ({
       iconKey: item.iconKey,
       iconUrl: item.iconUrl,
       order: index,
+      symptoms: item.symptoms.map((symptom, symptomIndex) => ({
+        key: symptom.key.trim(),
+        label: symptom.label,
+        order: symptomIndex,
+      })),
     })),
   },
   brain: draft.brain,
@@ -462,19 +482,106 @@ function AgeOptionRow({
   );
 }
 
-function PathItemRow({
+function SymptomRow({
   item,
   index,
   error,
   onChange,
   onRemove,
 }: {
+  item: SymptomDraft;
+  index: number;
+  error?: string;
+  onChange: (updater: (item: SymptomDraft) => SymptomDraft) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <SortableItem id={item._localId}>
+      <Box sx={{ ...rowSx, bgcolor: "background.paper" }}>
+        <Box className="flex items-center justify-between mb-2">
+          <Typography variant="subtitle2" color="text.secondary">
+            Symptom {index + 1}
+          </Typography>
+          <IconButton
+            size="small"
+            color="error"
+            aria-label={`Delete symptom ${index + 1}`}
+            onClick={onRemove}
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Box>
+        <TextField
+          label="Key"
+          value={item.key}
+          onChange={(e) =>
+            onChange((prev) => ({ ...prev, key: e.target.value }))
+          }
+          error={Boolean(error)}
+          helperText={error || "Stable id, e.g. MOTIVATION_DISAPPEARS"}
+          size="small"
+          sx={{ minWidth: 260, mb: 1.5 }}
+        />
+        <MultilangField
+          label="Label"
+          value={item.label}
+          onChange={(label) => onChange((prev) => ({ ...prev, label }))}
+        />
+      </Box>
+    </SortableItem>
+  );
+}
+
+function PathItemRow({
+  item,
+  index,
+  error,
+  symptomErrors,
+  dndSensors,
+  onChange,
+  onRemove,
+}: {
   item: PathItemDraft;
   index: number;
   error?: string;
+  symptomErrors: Record<string, string>;
+  dndSensors: ReturnType<typeof useSensors>;
   onChange: (updater: (item: PathItemDraft) => PathItemDraft) => void;
   onRemove: () => void;
 }) {
+  // Symptom add/update/remove/reorder are scoped to this path item only —
+  // they thread through the path item's own `onChange`, mirroring how the
+  // page-level `makeListHelpers` reaches into ConfigDraft one level up.
+  const updateSymptoms = (
+    updater: (list: SymptomDraft[]) => SymptomDraft[]
+  ) =>
+    onChange((prev) => ({ ...prev, symptoms: updater(prev.symptoms) }));
+
+  const addSymptom = () =>
+    updateSymptoms((list) => [
+      ...list,
+      { _localId: nextLocalId(), key: "", label: {} },
+    ]);
+  const updateSymptomItem = (
+    localId: string,
+    updater: (item: SymptomDraft) => SymptomDraft
+  ) =>
+    updateSymptoms((list) =>
+      list.map((s) => (s._localId === localId ? updater(s) : s))
+    );
+  const removeSymptom = (localId: string) =>
+    updateSymptoms((list) => list.filter((s) => s._localId !== localId));
+  const reorderSymptoms = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    updateSymptoms((list) => {
+      const oldIndex = list.findIndex((s) => s._localId === active.id);
+      const newIndex = list.findIndex((s) => s._localId === over.id);
+      if (oldIndex === -1 || newIndex === -1) return list;
+      return arrayMove(list, oldIndex, newIndex);
+    });
+  };
+
   return (
     <SortableItem id={item._localId}>
       <Box sx={rowSx}>
@@ -521,7 +628,7 @@ function PathItemRow({
             onChange={(label) => onChange((prev) => ({ ...prev, label }))}
           />
         </Box>
-        <Box sx={{ maxWidth: 280 }}>
+        <Box sx={{ maxWidth: 280, mb: 1.5 }}>
           <CloudflareFileUpload
             initialUrl={item.iconUrl}
             onUrlChange={(iconUrl) =>
@@ -531,6 +638,53 @@ function PathItemRow({
             uploadPayload={{ prefix: "paths-icon", folder: "onboarding" }}
           />
         </Box>
+
+        <Divider sx={{ my: 1.5 }} />
+        <Box className="flex items-center justify-between mb-1.5">
+          <Typography variant="subtitle2">Symptoms</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Drag to reorder
+          </Typography>
+        </Box>
+
+        {item.symptoms.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            No symptoms yet.
+          </Typography>
+        ) : (
+          <DndContext
+            sensors={dndSensors}
+            collisionDetection={closestCenter}
+            onDragEnd={reorderSymptoms}
+          >
+            <SortableContext
+              items={item.symptoms.map((s) => s._localId)}
+              strategy={verticalListSortingStrategy}
+            >
+              {item.symptoms.map((symptom, symptomIndex) => (
+                <SymptomRow
+                  key={symptom._localId}
+                  item={symptom}
+                  index={symptomIndex}
+                  error={symptomErrors[symptom._localId]}
+                  onChange={(updater) =>
+                    updateSymptomItem(symptom._localId, updater)
+                  }
+                  onRemove={() => removeSymptom(symptom._localId)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        )}
+
+        <Button
+          onClick={addSymptom}
+          variant="outlined"
+          size="small"
+          startIcon={<Add />}
+        >
+          Add symptom
+        </Button>
       </Box>
     </SortableItem>
   );
@@ -591,10 +745,17 @@ export default function OnboardingConfigPage() {
   const deckErrors = useKeyErrors(draft?.welcome.deck || []);
   const ageOptionErrors = useKeyErrors(draft?.age.options || []);
   const pathItemErrors = useKeyErrors(draft?.paths.items || []);
+  // Symptom keys drive the mobile app's tracking lookup across all paths, so
+  // uniqueness is validated globally (flattened across every path item), not
+  // just within one path's own symptom list.
+  const symptomErrors = useKeyErrors(
+    draft?.paths.items.flatMap((item) => item.symptoms) || []
+  );
   const hasErrors =
     Object.keys(deckErrors).length > 0 ||
     Object.keys(ageOptionErrors).length > 0 ||
-    Object.keys(pathItemErrors).length > 0;
+    Object.keys(pathItemErrors).length > 0 ||
+    Object.keys(symptomErrors).length > 0;
 
   const updateWelcome = (
     updater: (w: ConfigDraft["welcome"]) => ConfigDraft["welcome"]
@@ -1058,6 +1219,8 @@ export default function OnboardingConfigPage() {
                           item={item}
                           index={index}
                           error={pathItemErrors[item._localId]}
+                          symptomErrors={symptomErrors}
+                          dndSensors={dndSensors}
                           onChange={(updater) =>
                             pathItemHelpers.updateItem(item._localId, updater)
                           }
@@ -1078,6 +1241,7 @@ export default function OnboardingConfigPage() {
                       label: {},
                       iconKey: "",
                       iconUrl: "",
+                      symptoms: [],
                     })
                   }
                   variant="outlined"
