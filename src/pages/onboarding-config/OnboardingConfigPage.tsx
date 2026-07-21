@@ -177,6 +177,7 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
   brain: {
     heading: ml(config?.brain?.heading),
     headingHighlight: ml(config?.brain?.headingHighlight),
+    headingSuffix: ml(config?.brain?.headingSuffix),
     unlockedPillTemplate: ml(config?.brain?.unlockedPillTemplate),
     moreTemplate: ml(config?.brain?.moreTemplate),
     imageUrl: config?.brain?.imageUrl || "",
@@ -199,6 +200,7 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
     iconUrl: config?.notif?.iconUrl || "",
   },
   pick: {
+    eyebrow: ml(config?.pick?.eyebrow),
     heading: ml(config?.pick?.heading),
     headingHighlight: ml(config?.pick?.headingHighlight),
     label: ml(config?.pick?.label),
@@ -1255,12 +1257,21 @@ export default function OnboardingConfigPage() {
             </AccordionDetails>
           </Accordion>
 
-          {/* Brain science */}
+          {/* Path map (screen 6) — data key stays `brain` */}
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Brain science
-              </Typography>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Path map (screen 6)
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block" }}
+                >
+                  Heading shown on the path-map screen after path selection.
+                </Typography>
+              </Box>
             </AccordionSummary>
             <AccordionDetails>
               <Box className="flex flex-col gap-3">
@@ -1276,6 +1287,14 @@ export default function OnboardingConfigPage() {
                     updateBrain((b) => ({ ...b, headingHighlight: v }))
                   }
                   helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
+                  label="Heading suffix"
+                  value={draft.brain.headingSuffix || {}}
+                  onChange={(v) =>
+                    updateBrain((b) => ({ ...b, headingSuffix: v }))
+                  }
+                  helperText="Plain-text closing part of the title, rendered after the highlight"
                 />
                 <MultilangField
                   label="Unlocked pill template"
@@ -1316,12 +1335,22 @@ export default function OnboardingConfigPage() {
             </AccordionDetails>
           </Accordion>
 
-          {/* Habit */}
+          {/* Symptoms (screen 7) — data key stays `habit` */}
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Habit
-              </Typography>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Symptoms (screen 7)
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block" }}
+                >
+                  Heading + subtitle for the "which speaks to you"
+                  symptom-selection screen.
+                </Typography>
+              </Box>
             </AccordionSummary>
             <AccordionDetails>
               <Box className="flex flex-col gap-3">
@@ -1473,6 +1502,12 @@ export default function OnboardingConfigPage() {
                   recommended by picked paths) — only the surrounding copy is
                   editable here.
                 </Alert>
+                <MultilangField
+                  label="Eyebrow"
+                  value={draft.pick.eyebrow || {}}
+                  onChange={(v) => updatePick((p) => ({ ...p, eyebrow: v }))}
+                  helperText="Small label rendered above the heading"
+                />
                 <MultilangField
                   label="Heading"
                   value={draft.pick.heading}

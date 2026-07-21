@@ -91,6 +91,11 @@ export interface OnboardingBrainConfig {
   // Gradient-highlighted trailing part of the title, rendered right after
   // `heading`, mirroring OnboardingNameConfig.headingHighlight.
   headingHighlight?: OnboardingMultilang;
+  // Plain-text part of the title rendered after `headingHighlight` — used by
+  // the shipped onboard_v2 path-map screen (screen 6) to close out the
+  // heading, e.g. heading "Your" + headingHighlight "brain" + headingSuffix
+  // "loves this.".
+  headingSuffix: OnboardingMultilang;
   unlockedPillTemplate: OnboardingMultilang;
   moreTemplate: OnboardingMultilang;
   // Optional hero image override — empty/absent means the app renders its
@@ -126,6 +131,9 @@ export interface OnboardingNotifConfig {
 }
 
 export interface OnboardingPickConfig {
+  // Small label rendered above `heading` on the pick-course screen, e.g.
+  // "STEP 3 OF 3" or "Almost there".
+  eyebrow: OnboardingMultilang;
   heading: OnboardingMultilang;
   // Gradient-highlighted trailing part of the title, rendered right after
   // `heading`, mirroring OnboardingNameConfig.headingHighlight.
