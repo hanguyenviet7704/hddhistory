@@ -131,6 +131,7 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
   },
   age: {
     headingTemplate: ml(config?.age?.headingTemplate),
+    headingHighlight: ml(config?.age?.headingHighlight),
     ctaLabel: ml(config?.age?.ctaLabel),
     options: (config?.age?.options || [])
       .slice()
@@ -140,9 +141,11 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
         key: item.key || "",
         label: ml(item.label),
       })),
+    iconUrl: config?.age?.iconUrl || "",
   },
   paths: {
     heading: ml(config?.paths?.heading),
+    headingHighlight: ml(config?.paths?.headingHighlight),
     helper: ml(config?.paths?.helper),
     maxSelect: config?.paths?.maxSelect ?? 2,
     items: (config?.paths?.items || [])
@@ -158,28 +161,35 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
   },
   brain: {
     heading: ml(config?.brain?.heading),
+    headingHighlight: ml(config?.brain?.headingHighlight),
     unlockedPillTemplate: ml(config?.brain?.unlockedPillTemplate),
     moreTemplate: ml(config?.brain?.moreTemplate),
     imageUrl: config?.brain?.imageUrl || "",
   },
   habit: {
     heading: ml(config?.habit?.heading),
+    headingHighlight: ml(config?.habit?.headingHighlight),
     subtitle: ml(config?.habit?.subtitle),
     ctaLabel: ml(config?.habit?.ctaLabel),
+    iconUrl: config?.habit?.iconUrl || "",
   },
   notif: {
     heading: ml(config?.notif?.heading),
+    headingHighlight: ml(config?.notif?.headingHighlight),
     subtitle: ml(config?.notif?.subtitle),
     cardTitle: ml(config?.notif?.cardTitle),
     cardBody: ml(config?.notif?.cardBody),
     cardTimestamp: ml(config?.notif?.cardTimestamp),
     ctaLabel: ml(config?.notif?.ctaLabel),
+    iconUrl: config?.notif?.iconUrl || "",
   },
   pick: {
     heading: ml(config?.pick?.heading),
+    headingHighlight: ml(config?.pick?.headingHighlight),
     label: ml(config?.pick?.label),
     primaryCta: ml(config?.pick?.primaryCta),
     secondaryCta: ml(config?.pick?.secondaryCta),
+    iconUrl: config?.pick?.iconUrl || "",
   },
 });
 
@@ -201,15 +211,18 @@ const buildPayload = (draft: ConfigDraft): OnboardingConfigPayload => ({
   name: draft.name,
   age: {
     headingTemplate: draft.age.headingTemplate,
+    headingHighlight: draft.age.headingHighlight,
     ctaLabel: draft.age.ctaLabel,
     options: draft.age.options.map((item, index) => ({
       key: item.key.trim(),
       label: item.label,
       order: index,
     })),
+    iconUrl: draft.age.iconUrl,
   },
   paths: {
     heading: draft.paths.heading,
+    headingHighlight: draft.paths.headingHighlight,
     helper: draft.paths.helper,
     maxSelect: draft.paths.maxSelect,
     items: draft.paths.items.map((item, index) => ({
@@ -884,10 +897,37 @@ export default function OnboardingConfigPage() {
                   helperText="Supports a {name} placeholder, e.g. Nice to meet you, {name}!"
                 />
                 <MultilangField
+                  label="Heading highlight"
+                  value={draft.age.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateAge((a) => ({ ...a, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
                   label="CTA label"
                   value={draft.age.ctaLabel}
                   onChange={(v) => updateAge((a) => ({ ...a, ctaLabel: v }))}
                 />
+
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ maxWidth: 280 }}>
+                  <CloudflareFileUpload
+                    initialUrl={draft.age.iconUrl}
+                    onUrlChange={(iconUrl) =>
+                      updateAge((a) => ({ ...a, iconUrl }))
+                    }
+                    label="Icon"
+                    uploadPayload={{ prefix: "age-icon", folder: "onboarding" }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    Leave empty for default.
+                  </Typography>
+                </Box>
 
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="subtitle2">
@@ -961,6 +1001,14 @@ export default function OnboardingConfigPage() {
                   label="Heading"
                   value={draft.paths.heading}
                   onChange={(v) => updatePaths((p) => ({ ...p, heading: v }))}
+                />
+                <MultilangField
+                  label="Heading highlight"
+                  value={draft.paths.headingHighlight || {}}
+                  onChange={(v) =>
+                    updatePaths((p) => ({ ...p, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
                 />
                 <MultilangField
                   label="Helper"
@@ -1058,6 +1106,14 @@ export default function OnboardingConfigPage() {
                   onChange={(v) => updateBrain((b) => ({ ...b, heading: v }))}
                 />
                 <MultilangField
+                  label="Heading highlight"
+                  value={draft.brain.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateBrain((b) => ({ ...b, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
                   label="Unlocked pill template"
                   value={draft.brain.unlockedPillTemplate}
                   onChange={(v) =>
@@ -1111,6 +1167,14 @@ export default function OnboardingConfigPage() {
                   onChange={(v) => updateHabit((h) => ({ ...h, heading: v }))}
                 />
                 <MultilangField
+                  label="Heading highlight"
+                  value={draft.habit.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateHabit((h) => ({ ...h, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
                   label="Subtitle"
                   value={draft.habit.subtitle}
                   onChange={(v) =>
@@ -1124,6 +1188,25 @@ export default function OnboardingConfigPage() {
                     updateHabit((h) => ({ ...h, ctaLabel: v }))
                   }
                 />
+
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ maxWidth: 280 }}>
+                  <CloudflareFileUpload
+                    initialUrl={draft.habit.iconUrl}
+                    onUrlChange={(iconUrl) =>
+                      updateHabit((h) => ({ ...h, iconUrl }))
+                    }
+                    label="Icon"
+                    uploadPayload={{ prefix: "habit-icon", folder: "onboarding" }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    Leave empty for default.
+                  </Typography>
+                </Box>
               </Box>
             </AccordionDetails>
           </Accordion>
@@ -1141,6 +1224,14 @@ export default function OnboardingConfigPage() {
                   label="Heading"
                   value={draft.notif.heading}
                   onChange={(v) => updateNotif((n) => ({ ...n, heading: v }))}
+                />
+                <MultilangField
+                  label="Heading highlight"
+                  value={draft.notif.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateNotif((n) => ({ ...n, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
                 />
                 <MultilangField
                   label="Subtitle"
@@ -1181,6 +1272,25 @@ export default function OnboardingConfigPage() {
                     updateNotif((n) => ({ ...n, ctaLabel: v }))
                   }
                 />
+
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ maxWidth: 280 }}>
+                  <CloudflareFileUpload
+                    initialUrl={draft.notif.iconUrl}
+                    onUrlChange={(iconUrl) =>
+                      updateNotif((n) => ({ ...n, iconUrl }))
+                    }
+                    label="Icon"
+                    uploadPayload={{ prefix: "notif-icon", folder: "onboarding" }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    Leave empty for default.
+                  </Typography>
+                </Box>
               </Box>
             </AccordionDetails>
           </Accordion>
@@ -1205,6 +1315,14 @@ export default function OnboardingConfigPage() {
                   onChange={(v) => updatePick((p) => ({ ...p, heading: v }))}
                 />
                 <MultilangField
+                  label="Heading highlight"
+                  value={draft.pick.headingHighlight || {}}
+                  onChange={(v) =>
+                    updatePick((p) => ({ ...p, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
                   label="Label"
                   value={draft.pick.label}
                   onChange={(v) => updatePick((p) => ({ ...p, label: v }))}
@@ -1223,6 +1341,25 @@ export default function OnboardingConfigPage() {
                     updatePick((p) => ({ ...p, secondaryCta: v }))
                   }
                 />
+
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ maxWidth: 280 }}>
+                  <CloudflareFileUpload
+                    initialUrl={draft.pick.iconUrl}
+                    onUrlChange={(iconUrl) =>
+                      updatePick((p) => ({ ...p, iconUrl }))
+                    }
+                    label="Icon"
+                    uploadPayload={{ prefix: "pick-icon", folder: "onboarding" }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    Leave empty for default.
+                  </Typography>
+                </Box>
               </Box>
             </AccordionDetails>
           </Accordion>

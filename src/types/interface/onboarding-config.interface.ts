@@ -45,8 +45,14 @@ export interface OnboardingAgeOption {
 
 export interface OnboardingAgeConfig {
   headingTemplate: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `headingTemplate`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
   ctaLabel: OnboardingMultilang;
   options: OnboardingAgeOption[];
+  // Optional icon override — empty/absent means the app renders its
+  // built-in default icon instead.
+  iconUrl?: string;
 }
 
 export interface OnboardingPathItem {
@@ -59,6 +65,9 @@ export interface OnboardingPathItem {
 
 export interface OnboardingPathsConfig {
   heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
   helper: OnboardingMultilang;
   maxSelect: number;
   items: OnboardingPathItem[];
@@ -66,6 +75,9 @@ export interface OnboardingPathsConfig {
 
 export interface OnboardingBrainConfig {
   heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
   unlockedPillTemplate: OnboardingMultilang;
   moreTemplate: OnboardingMultilang;
   // Optional hero image override — empty/absent means the app renders its
@@ -75,24 +87,42 @@ export interface OnboardingBrainConfig {
 
 export interface OnboardingHabitConfig {
   heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
   subtitle: OnboardingMultilang;
   ctaLabel: OnboardingMultilang;
+  // Optional icon override — empty/absent means the app renders its
+  // built-in default icon instead.
+  iconUrl?: string;
 }
 
 export interface OnboardingNotifConfig {
   heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
   subtitle: OnboardingMultilang;
   cardTitle: OnboardingMultilang;
   cardBody: OnboardingMultilang;
   cardTimestamp: OnboardingMultilang;
   ctaLabel: OnboardingMultilang;
+  // Optional icon override — empty/absent means the app renders its
+  // built-in default icon instead.
+  iconUrl?: string;
 }
 
 export interface OnboardingPickConfig {
   heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
   label: OnboardingMultilang;
   primaryCta: OnboardingMultilang;
   secondaryCta: OnboardingMultilang;
+  // Optional icon override — empty/absent means the app renders its
+  // built-in default icon instead.
+  iconUrl?: string;
 }
 
 // GET /onboarding-config → the singleton document. The API wraps every
