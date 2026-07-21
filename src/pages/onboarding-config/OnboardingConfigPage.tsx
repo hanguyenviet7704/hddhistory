@@ -55,6 +55,7 @@ import type {
   OnboardingNotifConfig,
   OnboardingPathsConfig,
   OnboardingPickConfig,
+  OnboardingThemeConfig,
   OnboardingWelcomeConfig,
 } from "../../types/interface/onboarding-config.interface";
 
@@ -103,6 +104,7 @@ interface ConfigDraft {
   habit: OnboardingHabitConfig;
   notif: OnboardingNotifConfig;
   pick: OnboardingPickConfig;
+  theme: OnboardingThemeConfig;
 }
 
 const ml = (value?: OnboardingMultilang): OnboardingMultilang => ({
@@ -208,6 +210,13 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
     secondaryCta: ml(config?.pick?.secondaryCta),
     iconUrl: config?.pick?.iconUrl || "",
   },
+  theme: {
+    titlePrefix: ml(config?.theme?.titlePrefix),
+    titleHighlight: ml(config?.theme?.titleHighlight),
+    subtitle: ml(config?.theme?.subtitle),
+    ctaLabel: ml(config?.theme?.ctaLabel),
+    helper: ml(config?.theme?.helper),
+  },
 });
 
 // Draft → save payload. `order` is derived from list position here, not
@@ -259,6 +268,7 @@ const buildPayload = (draft: ConfigDraft): OnboardingConfigPayload => ({
   habit: draft.habit,
   notif: draft.notif,
   pick: draft.pick,
+  theme: draft.theme,
 });
 
 // Generic add/update/remove/reorder for the 3 reorderable lists (welcome
@@ -783,6 +793,9 @@ export default function OnboardingConfigPage() {
   const updatePick = (
     updater: (p: OnboardingPickConfig) => OnboardingPickConfig
   ) => setDraft((prev) => (prev ? { ...prev, pick: updater(prev.pick) } : prev));
+  const updateTheme = (
+    updater: (t: OnboardingThemeConfig) => OnboardingThemeConfig
+  ) => setDraft((prev) => (prev ? { ...prev, theme: updater(prev.theme) } : prev));
 
   const handleSave = async () => {
     if (!draft) return;
@@ -1559,6 +1572,63 @@ export default function OnboardingConfigPage() {
                     Leave empty for default.
                   </Typography>
                 </Box>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Theme (screen 9) */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Theme (screen 9)
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block" }}
+                >
+                  The "Make it yours" theme-picker screen shown last, before
+                  entering the app.
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box className="flex flex-col gap-3">
+                <MultilangField
+                  label="Title prefix"
+                  value={draft.theme.titlePrefix}
+                  onChange={(v) =>
+                    updateTheme((t) => ({ ...t, titlePrefix: v }))
+                  }
+                />
+                <MultilangField
+                  label="Title highlight"
+                  value={draft.theme.titleHighlight}
+                  onChange={(v) =>
+                    updateTheme((t) => ({ ...t, titleHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
+                  label="Subtitle"
+                  value={draft.theme.subtitle}
+                  onChange={(v) =>
+                    updateTheme((t) => ({ ...t, subtitle: v }))
+                  }
+                />
+                <MultilangField
+                  label="CTA label"
+                  value={draft.theme.ctaLabel}
+                  onChange={(v) =>
+                    updateTheme((t) => ({ ...t, ctaLabel: v }))
+                  }
+                />
+                <MultilangField
+                  label="Helper"
+                  value={draft.theme.helper}
+                  onChange={(v) => updateTheme((t) => ({ ...t, helper: v }))}
+                />
               </Box>
             </AccordionDetails>
           </Accordion>

@@ -146,6 +146,16 @@ export interface OnboardingPickConfig {
   iconUrl?: string;
 }
 
+export interface OnboardingThemeConfig {
+  titlePrefix: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `titlePrefix`, mirroring OnboardingNameConfig.headingHighlight.
+  titleHighlight: OnboardingMultilang;
+  subtitle: OnboardingMultilang;
+  ctaLabel: OnboardingMultilang;
+  helper: OnboardingMultilang;
+}
+
 // GET /onboarding-config → the singleton document. The API wraps every
 // response as { statusCode, message, data }, so callers must read
 // res.data.data (see onboardingConfigService) — never res.data at the
@@ -160,6 +170,7 @@ export interface OnboardingConfig {
   habit: OnboardingHabitConfig;
   notif: OnboardingNotifConfig;
   pick: OnboardingPickConfig;
+  theme: OnboardingThemeConfig;
   createdAt?: string;
   updatedAt?: string;
 }
