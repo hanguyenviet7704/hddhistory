@@ -26,9 +26,15 @@ export interface OnboardingWelcomeConfig {
 
 export interface OnboardingNameConfig {
   heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, e.g. heading "What should" + headingHighlight "we call you?".
+  headingHighlight?: OnboardingMultilang;
   helper: OnboardingMultilang;
   inputHint: OnboardingMultilang;
   ctaLabel: OnboardingMultilang;
+  // Optional icon override — empty/absent means the app renders its
+  // built-in default icon instead.
+  iconUrl?: string;
 }
 
 export interface OnboardingAgeOption {

@@ -123,9 +123,11 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
   },
   name: {
     heading: ml(config?.name?.heading),
+    headingHighlight: ml(config?.name?.headingHighlight),
     helper: ml(config?.name?.helper),
     inputHint: ml(config?.name?.inputHint),
     ctaLabel: ml(config?.name?.ctaLabel),
+    iconUrl: config?.name?.iconUrl || "",
   },
   age: {
     headingTemplate: ml(config?.age?.headingTemplate),
@@ -380,13 +382,8 @@ function DeckItemRow({
           size="small"
           sx={{ minWidth: 200, mb: 1.5 }}
         />
-        <Box sx={{ mb: 1.5 }}>
-          <MultilangField
-            label="Label"
-            value={item.label}
-            onChange={(label) => onChange((prev) => ({ ...prev, label }))}
-          />
-        </Box>
+        {/* No label field: the deck cards show no text caption in-app — the
+            card artwork already carries its "… better" caption baked in. */}
         <Box sx={{ maxWidth: 280 }}>
           <CloudflareFileUpload
             initialUrl={item.imageUrl}
@@ -822,6 +819,14 @@ export default function OnboardingConfigPage() {
                   onChange={(v) => updateName((n) => ({ ...n, heading: v }))}
                 />
                 <MultilangField
+                  label="Heading highlight"
+                  value={draft.name.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateName((n) => ({ ...n, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title, e.g. we call you?"
+                />
+                <MultilangField
                   label="Helper"
                   value={draft.name.helper}
                   onChange={(v) => updateName((n) => ({ ...n, helper: v }))}
@@ -838,6 +843,25 @@ export default function OnboardingConfigPage() {
                   value={draft.name.ctaLabel}
                   onChange={(v) => updateName((n) => ({ ...n, ctaLabel: v }))}
                 />
+
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ maxWidth: 280 }}>
+                  <CloudflareFileUpload
+                    initialUrl={draft.name.iconUrl}
+                    onUrlChange={(iconUrl) =>
+                      updateName((n) => ({ ...n, iconUrl }))
+                    }
+                    label="Icon"
+                    uploadPayload={{ prefix: "name-icon", folder: "onboarding" }}
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    Leave empty for default.
+                  </Typography>
+                </Box>
               </Box>
             </AccordionDetails>
           </Accordion>
