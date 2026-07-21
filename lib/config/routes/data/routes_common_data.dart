@@ -32,21 +32,6 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   );
 }
 
-//* Intro Page
-@TypedGoRoute<OnboardIntroduceRoute>(path: RoutePath.onboardIntroduce, name: RouteNamed.onboardIntroduce)
-class OnboardIntroduceRoute extends GoRouteData with $OnboardIntroduceRoute {
-  const OnboardIntroduceRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<IntroCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
-    ],
-    child: const OnboardIntroducePage(),
-  );
-}
-
 //* Paywall Page
 @TypedGoRoute<PaywallRoute>(path: RoutePath.paywall, name: RouteNamed.paywall)
 class PaywallRoute extends BaseTransitionRouteData with $PaywallRoute {

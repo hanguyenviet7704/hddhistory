@@ -131,12 +131,6 @@ class AppInterceptor extends BaseInterceptor {
   }
 
   void _handleUnauthorized() {
-    final onboardingCubit = AppDI.injector.get<OnboardBranchingCubit>();
-    if (onboardingCubit.state.isOnboardingTransitionActive) {
-      onboardingCubit.handleUnauthorizedDuringTransition();
-      return;
-    }
-
     final context = AppConfig.instance.context;
     if (context == null) {
       return;

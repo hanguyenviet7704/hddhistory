@@ -58,7 +58,6 @@ class _SplashPageState extends State<SplashPage> {
     final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
     if (onboardingConfig.isEnabled) {
       AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-      AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
     }
 
     UserState userState = context.read<UserCubit>().state;
@@ -218,6 +217,8 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    // onboard_v2 — the shipped, design-matching onboarding UI. Its content
+    // (paths / symptoms / copy / age options) is API-driven via /onboardings.
     OnboardV2Route().go(context);
   }
 

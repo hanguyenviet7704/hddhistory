@@ -1,30 +1,5 @@
 part of '../routes.dart';
 
-//* Onboard Page
-@TypedGoRoute<OnboardRoute>(path: RoutePath.onboard, name: RouteNamed.onboard)
-class OnboardRoute extends GoRouteData with $OnboardRoute {
-  const OnboardRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<OnboardCubit>(),
-    child: const OnboardPage(),
-  );
-}
-
-@TypedGoRoute<OnboardBranchingRoute>(path: RoutePath.onboardBranching, name: RouteNamed.onboardBranching)
-class OnboardBranchingRoute extends GoRouteData with $OnboardBranchingRoute {
-  const OnboardBranchingRoute({this.userName = ''});
-
-  final String userName;
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<OnboardBranchingCubit>(),
-    child: OnboardBranchingPage(userName: userName),
-  );
-}
-
 @TypedGoRoute<OnboardV2Route>(path: RoutePath.onboardV2, name: RouteNamed.onboardV2)
 class OnboardV2Route extends GoRouteData with $OnboardV2Route {
   const OnboardV2Route();
