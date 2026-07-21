@@ -20,6 +20,7 @@ import {
   ArrowPathIcon,
   SpeakerWaveIcon,
   SwatchIcon,
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -50,6 +51,11 @@ const menuItems = [
     name: "Onboarding Branching",
     icon: SparklesIcon,
     path: "/onboarding-branching",
+  },
+  {
+    name: "Onboarding Config",
+    icon: AdjustmentsHorizontalIcon,
+    path: "/onboarding-config",
   },
   { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
