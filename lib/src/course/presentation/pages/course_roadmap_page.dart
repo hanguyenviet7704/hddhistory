@@ -13,8 +13,8 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   String _lastLoadedProgressCourseId = '';
 
   /// Roadmap-source values that mean the user opened this roadmap FROM Explore
-  /// (the course grid, "My courses", "View more", or search). Only these show a
-  /// back button. Other sources (Courses tab default, Home cards) show none.
+  /// (the course grid, "My courses", "View more", or search). These show a back
+  /// button that returns to that Explore screen.
   static const _kExploreSources = {
     'course_selection',
     'my_courses',
@@ -22,10 +22,31 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     'search',
   };
 
+  /// Roadmap-source values that mean the user opened this roadmap from a Home
+  /// course card (or straight out of onboarding). These also show a back
+  /// button, but it returns to the Home tab — there's no Explore screen behind
+  /// them (see [_backFromRoadmap]). The bare "Courses tab default" / roleplay
+  /// returns (source 'nav_course') are deliberately NOT included, so those keep
+  /// showing no back button.
+  static const _kHomeSources = {
+    'home_continue_learning',
+    'home_recommended',
+    'onboarding',
+  };
+
   /// Returns to wherever the user opened this roadmap from.
   /// CourseCubit/PageCubit aren't provided above the roadmap tree, so resolve
   /// them from DI (see [TopProgressBar]).
   void _backFromRoadmap(BuildContext context, String source) {
+    // Opened from a Home card or straight out of onboarding — there's no
+    // Explore screen behind it, so back returns to the Home tab.
+    if (_kHomeSources.contains(source)) {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(0); // Home branch
+      HomeRoute().go(context);
+      page.setCurrentRouteName(RouteNamed.home);
+      return;
+    }
     // "View more" opened the full one-skillset grid (SkillsetCoursesRoute, a
     // child of the roadmap route) — go back to that exact page.
     if (source == 'skillset_courses') {
@@ -279,10 +300,11 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                   Column(
                     children: [
                       // Header: centered skillset dropdown, plus a back arrow on
-                      // the left ONLY when the roadmap was opened from Explore
-                      // (grid / My courses / View more / search) — tapping it
-                      // returns to that Explore screen. Reached "naturally"
-                      // (Courses tab, Home cards) → no back button.
+                      // the left when the roadmap was opened from Explore
+                      // (grid / My courses / View more / search → back to that
+                      // Explore screen) or from a Home card / onboarding (→ back
+                      // to the Home tab). Reached "naturally" (Courses tab
+                      // default / roleplay return, source 'nav_course') → none.
                       Stack(
                         alignment: Alignment.center,
                         children: [
@@ -290,7 +312,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                           BlocSelector<CourseRoadmapCubit, CourseRoadmapState, String>(
                             selector: (state) => state.roadmapSource,
                             builder: (context, source) {
-                              if (!_kExploreSources.contains(source)) {
+                              if (!_kExploreSources.contains(source) && !_kHomeSources.contains(source)) {
                                 return const SizedBox.shrink();
                               }
                               return Align(
@@ -315,6 +337,21 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                                 ),
                               );
                             },
+                          ),
+                          // Change-theme affordance — the SAME circular button
+                          // + cb-theme glyph as Home, top-right of the roadmap
+                          // header. Moved here from the all-courses list (that
+                          // placement was redundant); its light circular chrome
+                          // stays readable over any custom background.
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 12.w),
+                              child: const ChangeBackgroundButton(
+                                key: Key('roadmap-change-theme'),
+                                size: 40,
+                              ),
+                            ),
                           ),
                         ],
                       ),

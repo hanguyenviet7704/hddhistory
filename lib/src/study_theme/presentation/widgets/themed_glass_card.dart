@@ -10,11 +10,21 @@ class ThemedGlassCard extends StatelessWidget {
   final double radius;
   final List<BoxShadow>? shadow;
 
-  /// Frosted-white opacity when a custom background is active. Consistent
-  /// across all cards (~0.7) — paired with a strong blur so a busy photo
-  /// background reads as a smooth soft frost (not muddy) while dark text stays
-  /// legible on both light and dark backgrounds.
+  /// Frosted-white opacity when a custom background is active. ~0.88 — a SUBTLE
+  /// reduction from solid white (matching the theory-keypoint design): the card
+  /// stays a clean light panel that just barely lets the background tint show,
+  /// rather than a heavily see-through glass. Paired with a light blur so the
+  /// hint of background that shows reads as a smooth frost, and dark card text
+  /// stays legible over any background.
   final double opacity;
+
+  /// Opt-in frosted-glass rendering (translucent white + backdrop blur) when a
+  /// custom study background is active. OFF by default: a blanket frosted look
+  /// read as muddy/inconsistent over busy or dark photos, so every other themed
+  /// card stays a clean opaque white card and the background shows AROUND them.
+  /// The theory keypoint content card opts in so the personalized background
+  /// shows THROUGH the card, matching the design.
+  final bool frosted;
 
   const ThemedGlassCard({
     super.key,
@@ -22,16 +32,39 @@ class ThemedGlassCard extends StatelessWidget {
     this.padding,
     this.radius = 20,
     this.shadow,
-    this.opacity = 0.7,
+    this.opacity = 0.82,
+    this.frosted = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Always a SOLID white card — matching the Home cards. A semi-transparent
-    // frosted look read as muddy/inconsistent over busy or dark photo
-    // backgrounds, so every themed card stays a clean opaque white card and the
-    // study background shows AROUND the cards (margins, gaps, bare text) rather
-    // than through them. Consistent on every screen and always readable.
+    final isCustomBg = context.watch<StudyThemeCubit>().state.preset.isCustom;
+
+    // Frosted-glass panel — only for opted-in cards ([frosted]) over a custom
+    // background. The custom background shows through a translucent white +
+    // strong backdrop blur, so even a busy photo reads as a smooth frost while
+    // the dark card text stays legible. The drop shadow sits on an outer layer
+    // because the blur's clip can't cast one itself.
+    if (isCustomBg) {
+      // Over a custom study background: a clean TRANSLUCENT white panel ("trắng
+      // trong") — the background shows softly through, dark text stays legible.
+      // Deliberately NO BackdropFilter blur: the blur haloed the card edges
+      // ("loá viền") and, for stacked cards inside a scroll view, rendered the
+      // scrolled-past cards solid white (the backdrop it samples gets clipped
+      // away). A flat translucent fill is consistent, artifact-free, and needs
+      // no drop shadow — a grey shadow reads as a glare rim over a photo.
+      return Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: AppCustomColor.backgroundWhite.withValues(alpha: opacity),
+          borderRadius: BorderRadius.circular(radius.r),
+        ),
+        child: child,
+      );
+    }
+
+    // Default preset: SOLID white card — matching the Home cards. Consistent on
+    // every screen and always readable; the study background shows around it.
     return Container(
       padding: padding,
       decoration: BoxDecoration(

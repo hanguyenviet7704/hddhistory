@@ -92,12 +92,6 @@ class _CoursePageState extends State<CoursePage> {
               ],
             ),
           ),
-          // Design item 2 — floating "Change background" button on Course/Learn.
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 6.h,
-            right: 18.w,
-            child: const ChangeBackgroundButton(size: 46),
-          ),
         ],
       ),
     );
