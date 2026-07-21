@@ -242,6 +242,20 @@ class _PresetTile extends StatelessWidget {
               Positioned.fill(
                 child: DCachedImage(url: _networkThumbUrl!, fit: BoxFit.cover),
               ),
+            // Live (video) presets get a centred play badge over the poster so
+            // they read as motion, not a static photo (design item 5).
+            if (preset.mode == StudyThemeMode.video)
+              Positioned.fill(
+                child: Center(
+                  child: Container(
+                    width: 30.w,
+                    height: 30.w,
+                    decoration: const BoxDecoration(color: Color(0x66000000), shape: BoxShape.circle),
+                    alignment: Alignment.center,
+                    child: Icon(Icons.play_arrow_rounded, size: 18.w, color: Colors.white),
+                  ),
+                ),
+              ),
             if (selected) ...[
               Positioned.fill(
                 child: Container(

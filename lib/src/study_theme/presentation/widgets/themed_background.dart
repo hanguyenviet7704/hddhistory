@@ -132,8 +132,6 @@ class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> with Widgets
   bool _audioLoaded = false;
   bool _ready = false;
 
-  static bool _isAssetPath(String? url) => (url ?? '').startsWith('assets/');
-
   @override
   void initState() {
     super.initState();
@@ -142,11 +140,15 @@ class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> with Widgets
   }
 
   Future<void> _start() async {
-    final videoUrl = widget.preset.videoUrl;
-    if (videoUrl != null && videoUrl.trim().isNotEmpty) {
-      final controller = _isAssetPath(videoUrl)
-          ? VideoPlayerController.asset(videoUrl)
-          : VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    // Prefer a bundled asset, then a remote (R2/DB) url — same resolution order
+    // as the image mode's _imageProvider.
+    final asset = widget.preset.videoAsset;
+    final url = widget.preset.videoUrl;
+    final hasAsset = asset != null && asset.trim().isNotEmpty;
+    final hasUrl = url != null && url.trim().isNotEmpty;
+    if (hasAsset || hasUrl) {
+      final controller =
+          hasAsset ? VideoPlayerController.asset(asset) : VideoPlayerController.networkUrl(Uri.parse(url!));
       _video = controller;
       try {
         await controller.initialize();
@@ -162,8 +164,11 @@ class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> with Widgets
   }
 
   Future<void> _syncAudio() async {
-    final audioUrl = widget.preset.audioUrl;
-    final wantAudio = widget.soundOn && audioUrl != null && audioUrl.trim().isNotEmpty;
+    final asset = widget.preset.audioAsset;
+    final url = widget.preset.audioUrl;
+    final hasAsset = asset != null && asset.trim().isNotEmpty;
+    final hasUrl = url != null && url.trim().isNotEmpty;
+    final wantAudio = widget.soundOn && (hasAsset || hasUrl);
     if (!wantAudio) {
       await _audio?.pause();
       return;
@@ -171,7 +176,7 @@ class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> with Widgets
     _audio ??= ja.AudioPlayer();
     try {
       if (!_audioLoaded) {
-        _isAssetPath(audioUrl) ? await _audio!.setAsset(audioUrl) : await _audio!.setUrl(audioUrl);
+        hasAsset ? await _audio!.setAsset(asset) : await _audio!.setUrl(url!);
         await _audio!.setLoopMode(ja.LoopMode.one);
         await _audio!.setVolume(0.6);
         _audioLoaded = true;

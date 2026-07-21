@@ -116,6 +116,23 @@ abstract class PresetCatalog {
       overlay: Color(0x59000000),
       isDark: true,
     ),
+
+    // Live — a looping muted video (+ optional ambient audio), design item 5.
+    // Ships a bundled sample clip so the mode is demoable offline; production
+    // Live presets instead carry an R2 videoUrl/audioUrl from the DB catalogue
+    // (the layer prefers *Asset, then falls back to *Url). Like image/upload it
+    // is NOT persisted across restarts (isPersistable = default/color only).
+    StudyThemePreset(
+      id: 'live-meadow',
+      mode: StudyThemeMode.video,
+      category: 'Live',
+      name: 'Meadow',
+      videoAsset: 'assets/bg/live-bee.mp4',
+      audioAsset: 'assets/bg/live-ambient.mp3',
+      thumbAsset: 'assets/bg/rain-photo.jpg', // poster (no frame-grab tool bundled)
+      overlay: Color(0x4D000000),
+      isDark: true,
+    ),
   ];
 
   /// Synthetic preset for a user-uploaded image. The picked file itself lives
