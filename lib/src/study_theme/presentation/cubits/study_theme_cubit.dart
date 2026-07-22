@@ -5,11 +5,11 @@ part of '../../study_theme.dart';
 /// (Keypoint, Warm-up) that cover the shell, so the choice stays consistent
 /// everywhere. Persisted with [HydratedCubit] (design `cb_bg3`).
 ///
-/// The picker's catalogue is DB-managed ([GetStudyThemesUseCase] →
-/// `/study-themes`) so backgrounds can be added/edited without a release, but
-/// the bundled [PresetCatalog] always ships in the app binary and is used
-/// whenever the endpoint is unreachable/not-yet-deployed or returns nothing —
-/// the feature must keep working fully offline.
+/// The picker's catalogue is DB-only ([GetStudyThemesUseCase] → `/study-themes`)
+/// so backgrounds can be added/edited without a release; there is NO bundled
+/// fallback list — the sheet shows a loading state until the fetch resolves.
+/// The APPLIED preset still persists in full (see [toJson]), so the user's
+/// current background survives a restart even before the catalogue reloads.
 @lazySingleton
 class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHandlerMixin<StudyThemeState> {
   final GetStudyThemesUseCase _getStudyThemesUseCase;
@@ -17,8 +17,8 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
   /// Best-effort snapshot of the last successfully loaded remote catalogue.
   /// [fromJson] runs synchronously during hydration (before [loadCatalog] can
   /// possibly resolve), so in practice it only helps a same-process hot
-  /// restart; a cold start always falls back to [PresetCatalog] here, which is
-  /// the correct offline-safe behaviour.
+  /// restart; a cold start begins with an EMPTY catalogue here and [loadCatalog]
+  /// fills it right after (the applied preset itself restores from its own JSON).
   static List<StudyThemePreset>? _remoteCatalogSnapshot;
 
   StudyThemeCubit(this._getStudyThemesUseCase) : super(StudyThemeState.initial()) {
@@ -26,18 +26,18 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
   }
 
   /// Fetches the DB-managed catalogue. Silent by design (see
-  /// [StudyThemeRepository]) — on failure or an empty list we simply keep
-  /// showing the bundled [PresetCatalog] the state already started with, so
-  /// the sheet is never empty and never shows a scary network error for a
-  /// background sync the user didn't ask for.
+  /// [StudyThemeRepository]); the sheet drives its own loading / empty-retry UI
+  /// off [StudyThemeState.catalogLoading]/[catalogLoaded]/[catalog] — there is
+  /// no bundled fallback, so a failed/empty fetch leaves the catalogue empty.
   Future<void> loadCatalog() => runUseCaseList<StudyThemePreset>(
         usecase: () => _getStudyThemesUseCase(unit),
         buildLoadingState: () => state.copyWith(catalogLoading: true),
         onFailure: (_) => emit(state.copyWith(catalogLoading: false, catalogLoaded: true)),
         onSuccess: (items) {
-          final catalog = items.isEmpty ? PresetCatalog.presets : items;
-          _remoteCatalogSnapshot = catalog;
-          emit(state.copyWith(catalog: catalog, catalogLoading: false, catalogLoaded: true));
+          // DB is the single source of truth — no bundled fallback. An empty
+          // result stays empty (the sheet shows its empty/retry state).
+          _remoteCatalogSnapshot = items;
+          emit(state.copyWith(catalog: items, catalogLoading: false, catalogLoaded: true));
         },
       );
 
@@ -102,7 +102,7 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
   @override
   StudyThemeState? fromJson(Map<String, dynamic> json) {
     try {
-      final catalog = _remoteCatalogSnapshot ?? PresetCatalog.presets;
+      final catalog = _remoteCatalogSnapshot ?? const <StudyThemePreset>[];
 
       // New format: the FULL preset is stored, so it restores WITHOUT needing
       // the (not-yet-loaded) remote catalogue — this is what lets a DB-only

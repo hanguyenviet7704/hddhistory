@@ -83,30 +83,39 @@ class ChangeBackgroundSheet extends StatelessWidget {
                           14.verticalSpace,
                         ],
                         _UploadBar(onTap: () => _pickImage(context, cubit)),
-                        // Quiet sync affordance only — the bundled/previous
-                        // catalogue is already rendering below, so this never
-                        // blocks the picker (offline-first requirement).
-                        if (state.catalogLoading) ...[
-                          14.verticalSpace,
-                          Semantics(
-                            label: context.l10n.studyTheme.syncingBackgrounds,
-                            child: const ClipRRect(
-                              borderRadius: BorderRadius.all(Radius.circular(2)),
-                              child: LinearProgressIndicator(
-                                minHeight: 2,
-                                backgroundColor: Color(0xFFF0F1F6),
-                                color: Color(0xFF554FF0),
+                        // Catalogue is DB-only (no bundled list): a loading
+                        // skeleton until the fetch resolves, an empty/retry state
+                        // if it came back empty/failed, else the grouped grid.
+                        if (state.catalog.isEmpty) ...[
+                          24.verticalSpace,
+                          if (!state.catalogLoaded || state.catalogLoading)
+                            const _ThemeCatalogSkeleton()
+                          else
+                            _ThemeCatalogEmpty(onRetry: () => cubit.loadCatalog()),
+                        ] else ...[
+                          // Refreshing over an already-loaded list — thin bar only.
+                          if (state.catalogLoading) ...[
+                            14.verticalSpace,
+                            Semantics(
+                              label: context.l10n.studyTheme.syncingBackgrounds,
+                              child: const ClipRRect(
+                                borderRadius: BorderRadius.all(Radius.circular(2)),
+                                child: LinearProgressIndicator(
+                                  minHeight: 2,
+                                  backgroundColor: Color(0xFFF0F1F6),
+                                  color: Color(0xFF554FF0),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
+                          22.verticalSpace,
+                          for (final group in PresetCatalog.groupByCategory(state.catalog))
+                            _PresetGroupView(
+                              group: group,
+                              currentId: state.preset.id,
+                              onPick: (preset) => _handlePick(context, cubit, preset, userIsPremium),
+                            ),
                         ],
-                        22.verticalSpace,
-                        for (final group in PresetCatalog.groupByCategory(state.catalog))
-                          _PresetGroupView(
-                            group: group,
-                            currentId: state.preset.id,
-                            onPick: (preset) => _handlePick(context, cubit, preset, userIsPremium),
-                          ),
                       ],
                     ),
                   );
@@ -247,6 +256,99 @@ class _UnlockPremiumBanner extends StatelessWidget {
             Icon(Icons.chevron_right_rounded, size: 22.w, color: Colors.white),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Loading placeholder for the DB-only catalogue: a title bar + a grid of grey
+/// tiles + a centred spinner, shown while the `/study-themes` fetch is in
+/// flight (no bundled list to fall back to).
+class _ThemeCatalogSkeleton extends StatelessWidget {
+  const _ThemeCatalogSkeleton();
+
+  static const _placeholder = Color(0xFFEDEEF3);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 120.w,
+          height: 14.h,
+          decoration: BoxDecoration(color: _placeholder, borderRadius: BorderRadius.circular(4.r)),
+        ),
+        16.verticalSpace,
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12.w,
+          crossAxisSpacing: 12.w,
+          childAspectRatio: 1 / 1.4,
+          children: List.generate(
+            6,
+            (_) => DecoratedBox(
+              decoration: BoxDecoration(color: _placeholder, borderRadius: BorderRadius.circular(16.r)),
+            ),
+          ),
+        ),
+        24.verticalSpace,
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppCustomColor.brandPrimary),
+              ),
+              10.verticalSpace,
+              AppText(
+                context.l10n.studyTheme.syncingBackgrounds,
+                style: AppStyle.text12.copyWith(color: const Color(0xFF8A8FA3)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Empty/failed catalogue state: nothing came back from `/study-themes`. Offers
+/// a tap-to-retry (there is no bundled fallback to show instead).
+class _ThemeCatalogEmpty extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _ThemeCatalogEmpty({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.cloud_off_rounded, size: 40.w, color: const Color(0xFFC7C9D4)),
+          12.verticalSpace,
+          Semantics(
+            button: true,
+            label: 'Retry',
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onRetry,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: AppCustomColor.brandPrimary50,
+                  borderRadius: BorderRadius.circular(99.r),
+                ),
+                child: Icon(Icons.refresh_rounded, size: 20.w, color: AppCustomColor.brandPrimary),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

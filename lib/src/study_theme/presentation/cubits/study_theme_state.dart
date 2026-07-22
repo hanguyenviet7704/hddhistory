@@ -20,11 +20,9 @@ abstract class StudyThemeState with _$StudyThemeState {
     /// persisted (design `_cbPersist` skips image/video).
     File? uploadedFile,
 
-    /// Background catalogue backing the picker sheet. Starts as the bundled
-    /// [PresetCatalog.presets] (see [StudyThemeState.initial]) so the sheet is
-    /// never empty; replaced by the server list once
-    /// [StudyThemeCubit.loadCatalog] succeeds, or left as-is if it fails/
-    /// returns empty (offline / pre-launch fallback).
+    /// Background catalogue backing the picker sheet — DB-only (fetched by
+    /// [StudyThemeCubit.loadCatalog] from `/study-themes`). Starts EMPTY (no
+    /// bundled fallback); the sheet shows a loading state until it arrives.
     @Default(<StudyThemePreset>[]) List<StudyThemePreset> catalog,
 
     /// True once a [StudyThemeCubit.loadCatalog] attempt (success OR failure)
@@ -37,5 +35,5 @@ abstract class StudyThemeState with _$StudyThemeState {
   }) = _StudyThemeState;
 
   factory StudyThemeState.initial() =>
-      const StudyThemeState(preset: PresetCatalog.defaultPreset, catalog: PresetCatalog.presets);
+      const StudyThemeState(preset: PresetCatalog.defaultPreset);
 }

@@ -25,9 +25,9 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
   @override
   void initState() {
     super.initState();
-    // The bundled catalogue (PresetCatalog.presets) already seeds
-    // StudyThemeState.initial(), so this only matters for the unlikely case
-    // where the catalogue was somehow cleared out from under us.
+    // The catalogue is DB-only (no bundled seed) — make sure it's fetched so
+    // the theme grid has something to show once the anonymous onboarding
+    // session can reach `/study-themes`.
     final studyThemeCubit = context.read<StudyThemeCubit>();
     if (studyThemeCubit.state.catalog.isEmpty) {
       unawaited(studyThemeCubit.loadCatalog());
