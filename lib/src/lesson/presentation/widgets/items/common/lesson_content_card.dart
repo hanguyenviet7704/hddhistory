@@ -6,11 +6,16 @@ class LessonContentCard extends StatelessWidget {
     required this.child,
     this.padding,
     this.minHeight,
+    this.frosted = false,
   });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double? minHeight;
+
+  /// Opt into the frosted-glass treatment over a custom study background (the
+  /// theory content card sets this). Other content cards stay solid white.
+  final bool frosted;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +32,7 @@ class LessonContentCard extends StatelessWidget {
         child: ThemedGlassCard(
           padding: padding ?? EdgeInsets.all(16.w),
           radius: 20,
+          frosted: frosted,
           // Uses the shared frosted-glass default (strong blur + ~0.7 white) so
           // every themed card looks consistent across the app.
           shadow: [

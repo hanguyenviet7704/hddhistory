@@ -164,6 +164,7 @@ class OnboardV2Tracking {
       OnboardV2PageStep.p6PathMap => TrackingKey.onboardV2P6View,
       OnboardV2PageStep.p7Symptoms => TrackingKey.onboardV2P7View,
       OnboardV2PageStep.p8CoursePicker => TrackingKey.onboardV2P8View,
+      OnboardV2PageStep.p9Theme => TrackingKey.onboardV2P9View,
     };
   }
 
@@ -177,6 +178,7 @@ class OnboardV2Tracking {
       OnboardV2PageStep.p6PathMap => 'p6_path_map',
       OnboardV2PageStep.p7Symptoms => 'p7_symptoms',
       OnboardV2PageStep.p8CoursePicker => 'p8_course_picker',
+      OnboardV2PageStep.p9Theme => 'p9_theme',
     };
   }
 

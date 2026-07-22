@@ -18,7 +18,9 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
       // Transparent only when a custom study background is active.
       backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       body: ThemedBackground(
-        child: SafePage(
+        // Top-only safe area: the bottom CTA strip fills the home-indicator inset
+        // itself (below) so the custom background never peeks under it.
+        child: SafeBody(
           child: BlocBuilder<HabitCubit, HabitState>(
             builder: (context, state) {
               final summary = state.summary;
@@ -85,7 +87,10 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                                         '${summary.checkInRate}%',
                                         // Figma: Mulish ExtraBold 36, line-height 1.25.
                                         style: AppStyle.textBold36.copyWith(
-                                          color: AppCustomColor.brandPrimary,
+                                          // Bare on the background — lift the brand
+                                          // purple to light lavender over a dark
+                                          // custom bg so it stays readable.
+                                          color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
                                           fontWeight: FontWeight.w800,
                                           height: 1.25,
                                         ),
@@ -93,7 +98,7 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                                       2.verticalSpace,
                                       AppText(
                                         context.l10n.habit.summaryCheckInRateLabel,
-                                        style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                                        style: AppStyle.text12.copyWith(color: studyThemeOnBg(context, AppCustomColor.streakTextMuted)),
                                       ),
                                     ],
                                   ),
@@ -106,6 +111,7 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                           Center(child: _buildWorkingOnText(context, summary.activeCount)),
                           20.verticalSpace,
                           ThemedGlassCard(
+                            solid: true,
                             padding: EdgeInsets.all(16.w),
                             radius: 12,
                             shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
@@ -149,7 +155,7 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                   // gray page background — not just padding on the gray.
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(20.w),
+                    padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 20.w + MediaQuery.paddingOf(context).bottom),
                     color: AppCustomColor.backgroundWhite,
                     child: DButton(
                       text: context.l10n.common.kContinue,
@@ -209,7 +215,7 @@ Widget _buildWorkingOnText(BuildContext context, int count) {
         ),
         TextSpan(
           text: full.substring(markerIndex),
-          style: base.copyWith(color: AppCustomColor.streakActive),
+          style: base.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.streakActive)),
         ),
       ],
     ),
@@ -229,6 +235,7 @@ class _SummaryBestHabitCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ThemedGlassCard(
+        solid: true,
         padding: EdgeInsets.all(16.w),
         radius: 12,
         shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
@@ -281,6 +288,7 @@ class _SummaryCategoryCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ThemedGlassCard(
+        solid: true,
         padding: EdgeInsets.all(16.w),
         radius: 12,
         shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],

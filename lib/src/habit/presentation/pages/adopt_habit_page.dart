@@ -177,7 +177,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
                     child: AppText(
                       context.l10n.habit.adoptProblemLabel,
                       style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.streakActive,
+                        color: studyThemeAccentOnBg(context, AppCustomColor.streakActive),
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
                       ),
@@ -222,7 +222,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
                   DButton(
                     text: context.l10n.habit.adoptRemindLaterButton,
                     buttonType: DButtonType.text,
-                    style: AppStyle.textBold14.copyWith(color: AppCustomColor.streakActive),
+                    style: AppStyle.textBold14.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.streakActive)),
                     onPressed: () => Navigator.of(context).pop(false),
                   ),
                   12.verticalSpace,

@@ -26,6 +26,11 @@ class ThemedGlassCard extends StatelessWidget {
   /// shows THROUGH the card, matching the design.
   final bool frosted;
 
+  /// Force a SOLID opaque white card even over a custom background (opt-in).
+  /// For screens that must stay fully opaque — e.g. the habit summary and the
+  /// habit list ("trắng đặc") — instead of the translucent default.
+  final bool solid;
+
   const ThemedGlassCard({
     super.key,
     required this.child,
@@ -34,6 +39,7 @@ class ThemedGlassCard extends StatelessWidget {
     this.shadow,
     this.opacity = 0.82,
     this.frosted = false,
+    this.solid = false,
   });
 
   @override
@@ -45,7 +51,7 @@ class ThemedGlassCard extends StatelessWidget {
     // strong backdrop blur, so even a busy photo reads as a smooth frost while
     // the dark card text stays legible. The drop shadow sits on an outer layer
     // because the blur's clip can't cast one itself.
-    if (isCustomBg) {
+    if (isCustomBg && !solid) {
       // Over a custom study background: a clean TRANSLUCENT white panel ("trắng
       // trong") — the background shows softly through, dark text stays legible.
       // Deliberately NO BackdropFilter blur: the blur haloed the card edges

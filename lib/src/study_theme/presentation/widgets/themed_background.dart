@@ -21,6 +21,15 @@ bool studyThemeIsDarkBg(BuildContext context) {
 Color studyThemeOnBg(BuildContext context, Color fallback) =>
     studyThemeIsDarkBg(context) ? const Color(0xFFF3F4FA) : fallback;
 
+/// Accent (brand-purple) ink for text/links drawn directly ON the study
+/// background — eyebrows, ghost/text buttons, etc. The stock deep purple
+/// (#4B44CA / #554FF0) sinks into a dark custom background, so lift it to a
+/// light lavender there; otherwise keep [fallback]. Use this (not
+/// [studyThemeOnBg]) for coloured accent text that must stay recognisably
+/// "brand" while remaining legible on any background.
+Color studyThemeAccentOnBg(BuildContext context, Color fallback) =>
+    studyThemeIsDarkBg(context) ? const Color(0xFFCFCBFF) : fallback;
+
 /// Paints the user's selected study background (+ optional readability overlay)
 /// behind [child]. Mounted at the shell level (behind every tab) and by
 /// full-screen surfaces that cover the shell; all mounts read the same

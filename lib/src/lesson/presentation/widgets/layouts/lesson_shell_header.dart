@@ -36,31 +36,9 @@ class LessonShellHeader extends StatelessWidget {
                 assetPath: AppAsset.svg.app.icClose,
               ),
             ),
-            // Design item 1 — "Change theme" affordance on the keypoint screen
-            // (there is no overflow menu here, so it sits as its own icon next
-            // to the close button). Opens the study-background picker.
-            Positioned(
-              left: 44.w,
-              child: GestureDetector(
-                key: const ValueKey('lesson-shell-change-theme-button'),
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  AppHaptic.select();
-                  ChangeBackgroundSheet.show(context);
-                },
-                child: SizedBox(
-                  width: 36.w,
-                  height: 36.w,
-                  child: Center(
-                    child: Icon(
-                      Icons.wallpaper_rounded,
-                      size: 20.w,
-                      color: studyThemeOnBg(context, AppCustomColor.textQuaternary),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // "Change theme" now lives inside the top-right overflow menu
+            // ([LessonHeaderMenu], passed in as [trailing]) alongside "Report a
+            // problem", so the header keeps only the close button on the left.
             if (showModeToggle)
               LessonModeToggle(
                 selectedMode: selectedMode,

@@ -101,6 +101,9 @@ mixin TrackingKey {
   static const String onboardV2CoursesLoaded = 'onboard_v2_courses_loaded';
   static const String onboardV2CoursesFailure = 'onboard_v2_courses_failure';
   static const String onboardV2CourseSelectClick = 'obd_course_click';
+  static const String onboardV2P9View = 'onboard_v2_p9_view';
+  static const String onboardV2ThemeSelect = 'onboard_v2_theme_select';
+  static const String onboardV2P9StartExploreClick = 'obd_theme_start_click';
   static const String onboardV2Complete = 'onboard_v2_complete';
 
   //* Home events

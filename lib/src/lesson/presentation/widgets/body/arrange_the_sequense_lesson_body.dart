@@ -106,15 +106,11 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                         context.l10n.exercise.exerciseSequenceInstruction,
                         margin: EdgeInsets.symmetric(vertical: 8.h),
                         maxLines: 10,
-                        style: AppStyle.text12
-                            .copyWith(
-                              color: const Color(0xFF7F8EA4),
-                              fontWeight: FontWeight.w500,
-                              height: 1.5,
-                            )
-                            .copyWith(
-                              color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
-                            ),
+                        style: AppStyle.text12.copyWith(
+                          color: AppCustomColor.textSecondary,
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                        ),
                       ),
                       ReorderableListView.builder(
                         shrinkWrap: true,

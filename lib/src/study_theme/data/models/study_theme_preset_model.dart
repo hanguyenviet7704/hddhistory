@@ -17,6 +17,7 @@ abstract class StudyThemePresetModel with _$StudyThemePresetModel {
     String? thumbUrl,
     String? overlay,
     @Default(false) bool isDark,
+    @Default(false) bool isPremium,
     @Default(0) int order,
   }) = _StudyThemePresetModel;
 
@@ -36,6 +37,7 @@ extension StudyThemePresetModelX on StudyThemePresetModel {
     thumbUrl: thumbUrl,
     overlay: _studyThemeColorFromHex(overlay),
     isDark: isDark,
+    isPremium: isPremium,
   );
 }
 
@@ -64,4 +66,14 @@ Color? _studyThemeColorFromHex(String? value) {
 
   final value32 = int.tryParse(hex, radix: 16);
   return value32 == null ? null : Color(value32);
+}
+
+/// Serialises a [Color] to `#RRGGBBAA` (alpha LAST) — the inverse of
+/// [_studyThemeColorFromHex]. Used to persist a user-upload background's
+/// readability overlay across app restarts. Returns null for a null colour.
+String? _studyThemeColorToHex(Color? color) {
+  if (color == null) return null;
+  int channel(double v) => (v * 255.0).round().clamp(0, 255);
+  String hex2(int v) => v.toRadixString(16).padLeft(2, '0');
+  return '#${hex2(channel(color.r))}${hex2(channel(color.g))}${hex2(channel(color.b))}${hex2(channel(color.a))}';
 }

@@ -143,7 +143,8 @@ class _OnboardV2FloatingNotificationCardState extends State<OnboardV2FloatingNot
 
   Widget _buildCard(BuildContext context, BoxShadow shadow) {
     final onboardingL10n = context.l10n.onboarding;
-    final title = '${onboardingL10n.onboardingV2NotificationCardTitle} \u{1F31F}';
+    final onboardData = context.select<OnboardV2Cubit, OnboardEntity>((cubit) => cubit.state.onboardData);
+    final title = '${onbCopy(onboardData, 'onboardingV2NotificationCardTitle', fallback: onboardingL10n.onboardingV2NotificationCardTitle)} \u{1F31F}';
     return Container(
       key: const Key('onboard_v2_notification_card'),
       width: 300.w,
@@ -163,8 +164,8 @@ class _OnboardV2FloatingNotificationCardState extends State<OnboardV2FloatingNot
             Expanded(
               child: _buildTextBlock(
                 title: title,
-                timestamp: onboardingL10n.onboardingV2NotificationCardTimestamp,
-                body: onboardingL10n.onboardingV2NotificationCardBody,
+                timestamp: onbCopy(onboardData, 'onboardingV2NotificationCardTimestamp', fallback: onboardingL10n.onboardingV2NotificationCardTimestamp),
+                body: onbCopy(onboardData, 'onboardingV2NotificationCardBody', fallback: onboardingL10n.onboardingV2NotificationCardBody),
               ),
             ),
           ],

@@ -79,6 +79,21 @@ mixin AppCustomColor {
   static const Color feedbackStarInactive = Color(0xFFE3E8EF);
   static const Color feedbackThankYouOverlay = Color(0xB3FFFFFF);
   static const Color feedbackThankYouTint = Color(0xB3E5DEFC);
+
+  // Onboarding (P3 redesign) — exact Figma hex values that don't already
+  // match an existing token. Where a design value coincided with an existing
+  // token (e.g. brand `#554FF0` == brandPrimary, border `#E3E8EF` ==
+  // borderSecondary) the onboarding feature reuses that token instead of
+  // duplicating it here.
+  static const Color onboardingSplashBackground = Color(0xFFF2F1FA);
+  // Warm peach behind the Welcome screen's card deck (design screen 2).
+  static const Color onboardingWelcomeBackground = Color(0xFFF8EBE3);
+  static const Color onboardingGradientStart = Color(0xFF5B4FE8);
+  static const Color onboardingGradientEnd = Color(0xFFC56B6B);
+  static const Color ctaDisabledBackground = Color(0xFFD7D5E8);
+  static const Color ctaDisabledText = Color(0xFF9A97B5);
+  static const Color textMuted = Color(0xFF9AA4B2);
+  static const Color inputFill = Color(0xFFF0F3F9);
 }
 
 mixin AppTheme {

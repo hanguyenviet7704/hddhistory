@@ -136,6 +136,21 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     }
   }
 
+  /// Seek to an absolute position — used by dragging/tapping the progress bar.
+  Future<void> seekTo(Duration position) async {
+    if (_audioPlayer == null || !state.isReady) return;
+
+    final target = position.inSeconds.clamp(0, state.durationSeconds);
+    try {
+      await _audioPlayer!.seek(Duration(seconds: target));
+      if (!isClosed) {
+        emit(state.copyWith(positionSeconds: target));
+      }
+    } catch (error, stackTrace) {
+      _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.seekTo');
+    }
+  }
+
   Future<void> setSpeed(double speed) async {
     if (!LessonAudioStateX.supportedSpeeds.contains(speed)) return;
     if (_audioPlayer != null) {

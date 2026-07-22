@@ -8,6 +8,13 @@ class OnboardV2AgePage extends StatelessWidget {
     final state = context.watch<OnboardV2Cubit>().state;
     final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
+    final onboardData = state.onboardData;
+    // Heading template carries a {name} placeholder — prefer the config value
+    // (admin-editable) and substitute the name locally; fall back to l10n.
+    final ageHeadingTemplate = onbCopy(onboardData, 'onboardingV2P3HeadingPrefix', fallback: '');
+    final ageHeadingPrefix = ageHeadingTemplate.isNotEmpty
+        ? ageHeadingTemplate.replaceAll('{name}', state.name)
+        : onboardingL10n.onboardingV2P3HeadingPrefix(name: state.name);
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
         activeSegments: 2,
@@ -26,11 +33,14 @@ class OnboardV2AgePage extends StatelessWidget {
         children: [
           24.verticalSpace,
           AppText(
-            onboardingL10n.onboardingV2P3HeadingPrefix(name: state.name),
+            ageHeadingPrefix,
             overflow: TextOverflow.visible,
             style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
           ),
-          OnboardV2GradientText(onboardingL10n.onboardingV2P3HeadingHighlight, style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4)),
+          OnboardV2GradientText(
+            onbCopy(onboardData, 'onboardingV2P3HeadingHighlight', fallback: onboardingL10n.onboardingV2P3HeadingHighlight),
+            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+          ),
           12.verticalSpace,
           AppText(onboardingL10n.onboardingV2P3Subtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),
           28.verticalSpace,

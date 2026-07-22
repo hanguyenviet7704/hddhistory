@@ -30,20 +30,19 @@ class _FakeDeviceInfoService implements IDeviceInfoService {
   Future<bool> isAndroid13OrHigher() async => false;
 }
 
-class _FakeOnboardRepository implements IOnboardRepository {
+class _FakeOnboardingRepository implements IOnboardingRepository {
   @override
-  TaskEither<AppException, OnboardEntity> getAllOnboards() {
+  TaskEither<AppException, OnboardingContentConfigEntity> getOnboardingConfig() {
     return TaskEither.right(
-      const OnboardEntity(
-        age: [
-          OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')),
-        ],
+      const OnboardingContentConfigEntity(
+        age: OnboardingAgeConfigEntity(
+          options: [
+            OnboardingAgeOptionEntity(key: '18_24', label: BaseMultiLanguage(en: '18-24')),
+          ],
+        ),
       ),
     );
   }
-
-  @override
-  TaskEither<AppException, UserEntity> getUserByDeviceId(String deviceId) => TaskEither.right(const UserEntity());
 }
 
 class _FakeProfileRepository implements IProfileRepository {
@@ -329,7 +328,7 @@ OnboardV2Cubit _buildCubit({
 }) {
   final effectiveCourseRepository = courseRepository ?? _FakeCourseRepository();
   return OnboardV2Cubit.withRandom(
-    GetAllOnboardsUseCase(_FakeOnboardRepository()),
+    GetOnboardingContentConfigUseCase(_FakeOnboardingRepository()),
     UpdateUserUseCase(profileRepository ?? _FakeProfileRepository()),
     GetAllCoursesUseCase(effectiveCourseRepository),
     GetCourseUseCase(effectiveCourseRepository),

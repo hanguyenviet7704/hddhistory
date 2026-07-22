@@ -139,7 +139,7 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
                   margin: EdgeInsets.symmetric(vertical: 8.h),
                   maxLines: 10,
                   style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4),
+                    color: AppCustomColor.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

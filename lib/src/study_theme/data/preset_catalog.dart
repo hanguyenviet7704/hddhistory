@@ -132,6 +132,7 @@ abstract class PresetCatalog {
       thumbAsset: 'assets/bg/rain-photo.jpg', // poster (no frame-grab tool bundled)
       overlay: Color(0x4D000000),
       isDark: true,
+      isPremium: true, // live/animated backgrounds are a premium tier
     ),
   ];
 

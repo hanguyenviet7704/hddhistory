@@ -68,6 +68,10 @@ abstract class StudyThemePreset with _$StudyThemePreset {
 
     /// Whether the background reads as dark (drives glass-card + icon tinting).
     @Default(false) bool isDark,
+
+    /// Premium-only preset: shown behind the paywall (locked) in the in-app
+    /// picker, and hidden entirely from the onboarding theme step.
+    @Default(false) bool isPremium,
   }) = _StudyThemePreset;
 }
 
@@ -78,10 +82,12 @@ extension StudyThemePresetX on StudyThemePreset {
   /// the design's `cb-custom` toggle).
   bool get isCustom => mode != StudyThemeMode.defaultMode;
 
-  /// Only default/solid/gradient presets survive an app restart — image and
-  /// video (and user uploads) are intentionally not persisted, mirroring the
-  /// design's `_cbPersist` (`mode !== 'image' && mode !== 'video'`).
-  bool get isPersistable => mode == StudyThemeMode.defaultMode || mode == StudyThemeMode.color;
+  /// True for CATALOGUE presets (default / colour / image / live) — they persist
+  /// across a restart as a tiny id pointer, re-resolved from the catalogue on
+  /// next launch. The user UPLOAD (id `upload`) is excluded here only because it
+  /// can't be pointed at by id; it still survives a restart via its own stored
+  /// file copy + overlay (see the cubit's `toJson`/`fromJson`).
+  bool get isPersistable => id != 'upload';
 
   /// A "live" preset animates (looping video) and optionally plays audio.
   bool get isLive => mode == StudyThemeMode.video;

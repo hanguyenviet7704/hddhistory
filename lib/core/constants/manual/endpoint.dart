@@ -49,6 +49,9 @@ mixin AppEndpoint {
   static const String onboardingsScenarios = '/api/v2/onboardings';
   static const String onboardingsById = '/api/v1/onboardings/{id}';
 
+  //* Onboarding Content Config API (P3 redesign — admin-editable 9-screen flow)
+  static const String onboardingContentConfig = '/api/v1/onboarding-config';
+
   //* Chats API
   static const String chatMessages = '/api/v1/chats/messages';
 

@@ -63,11 +63,12 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
   @override
   Widget build(BuildContext context) {
     final onboardingL10n = context.l10n.onboarding;
+    final onboardData = context.select<OnboardV2Cubit, OnboardEntity>((cubit) => cubit.state.onboardData);
     return PopScope(
       canPop: false,
       child: OnboardV2ScreenShell(
         cta: OnboardV2BottomCta(
-          label: onboardingL10n.onboardingV2NotifyCta,
+          label: onbCopy(onboardData, 'onboardingV2NotifyCta', fallback: onboardingL10n.onboardingV2NotifyCta),
           isLoading: _isHandling,
           onPressed: _handlePrimary,
           secondaryLabel: onboardingL10n.onboardingV2MaybeLaterCta,
@@ -84,13 +85,13 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
               spacing: 6.w,
               children: [
                 AppText(
-                  onboardingL10n.onboardingV2P6HeadingPrefix,
+                  onbCopy(onboardData, 'onboardingV2P6HeadingPrefix', fallback: onboardingL10n.onboardingV2P6HeadingPrefix),
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700, height: 1.4),
                 ),
                 OnboardV2GradientText(
-                  onboardingL10n.onboardingV2P6HeadingHighlight,
+                  onbCopy(onboardData, 'onboardingV2P6HeadingHighlight', fallback: onboardingL10n.onboardingV2P6HeadingHighlight),
                   textAlign: TextAlign.center,
                   style: AppStyle.text28.copyWith(fontWeight: FontWeight.w700, height: 1.4),
                 ),
@@ -98,7 +99,7 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
             ),
             SizedBox(height: 4.w),
             AppText(
-              onboardingL10n.onboardingV2P6Subtitle,
+              onbCopy(onboardData, 'onboardingV2P6Subtitle', fallback: onboardingL10n.onboardingV2P6Subtitle),
               textAlign: TextAlign.center,
               style: AppStyle.text16.copyWith(color: AppCustomColor.streakTextMuted, height: 1.5),
             ),

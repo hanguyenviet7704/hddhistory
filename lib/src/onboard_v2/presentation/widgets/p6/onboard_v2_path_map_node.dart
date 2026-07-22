@@ -75,7 +75,7 @@ class OnboardV2PathMapNode extends StatelessWidget {
                     color: active ? Colors.white : const Color(0xFFE4E2FD),
                     shape: BoxShape.circle,
                   ),
-                  child: DCachedImage(url: iconPath, width: iconSize, height: iconSize),
+                  child: CacheNetworkGraphic(url: iconPath, width: iconSize, height: iconSize, fit: BoxFit.cover),
                 ),
               ],
             ),

@@ -9,6 +9,10 @@ class OnboardV2PathSelectionPage extends StatelessWidget {
     final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
     final pathSelectionCount = state.selectedPaths.length.clamp(0, 2);
+    final selectablePaths = [
+      for (final resolvedPath in OnboardV2PathResolver.resolvePaths(state.onboardData))
+        if (OnboardV2PathResolver.matchPath(resolvedPath.key) case final path?) (path: path, entity: resolvedPath),
+    ];
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
         activeSegments: 1,
@@ -26,25 +30,33 @@ class OnboardV2PathSelectionPage extends StatelessWidget {
         children: [
           24.verticalSpace,
           AppText(
-            onboardingL10n.onboardingV2P5PathHeadingPrefix,
+            onbCopy(state.onboardData, 'onboardingV2P5PathHeadingPrefix', fallback: onboardingL10n.onboardingV2P5PathHeadingPrefix),
             style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
           ),
-          OnboardV2GradientText(onboardingL10n.onboardingV2P5PathHeadingHighlight, style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4)),
+          OnboardV2GradientText(
+            onbCopy(state.onboardData, 'onboardingV2P5PathHeadingHighlight', fallback: onboardingL10n.onboardingV2P5PathHeadingHighlight),
+            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+          ),
           12.verticalSpace,
           AppText(
-            onboardingL10n.onboardingV2P5PathSubtitle(count: pathSelectionCount),
+            onbCopy(state.onboardData, 'onboardingV2P5PathSubtitle', fallback: onboardingL10n.onboardingV2P5PathSubtitle(count: pathSelectionCount)),
             style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
           ),
           28.verticalSpace,
-          ...OnboardingPath.values.map((path) {
-            final selected = state.selectedPaths.contains(path);
+          ...selectablePaths.map((selectable) {
+            final selected = state.selectedPaths.contains(selectable.path);
+            final resolvedLabel = selectable.entity.title.text.trim();
             return Padding(
               padding: EdgeInsets.only(bottom: 12.h),
               child: OnboardV2SelectableOptionRow(
-                label: path.title,
-                iconPath: path.image,
+                label: resolvedLabel.isNotEmpty ? resolvedLabel : selectable.path.title,
+                iconPath: OnboardV2IconResolver.resolve(
+                  iconUrl: selectable.entity.iconUrl,
+                  iconKey: selectable.entity.iconKey,
+                  selected: selected,
+                ),
                 selected: selected,
-                onTap: () => cubit.togglePath(path),
+                onTap: () => cubit.togglePath(selectable.path),
               ),
             );
           }),

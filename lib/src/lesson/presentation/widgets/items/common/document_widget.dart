@@ -6,12 +6,17 @@ class DocumentWidget extends StatelessWidget {
   final void Function(int contentDocumentIndex, String? optionKey)? onExplanationSelectionChanged;
   final bool asCard;
 
+  /// When [asCard], render the wrapping card as frosted glass over a custom
+  /// study background (theory keypoint design). No effect when [asCard] is false.
+  final bool frosted;
+
   const DocumentWidget({
     super.key,
     required this.documents,
     this.selectedExplanationOptionKeys = const {},
     this.onExplanationSelectionChanged,
     this.asCard = true,
+    this.frosted = false,
   });
 
   double topSpacing(int index) {
@@ -49,6 +54,6 @@ class DocumentWidget extends StatelessWidget {
     );
 
     if (!asCard) return content;
-    return LessonContentCard(child: content);
+    return LessonContentCard(frosted: frosted, child: content);
   }
 }

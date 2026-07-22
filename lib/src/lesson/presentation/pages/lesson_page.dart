@@ -156,7 +156,11 @@ class _LessonPageState extends State<LessonPage> {
           );
           final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
 
-          final flagButton = _buildFlagButton(context, currentKeypoint);
+          // Top-right overflow menu (grid icon): Change theme + Report a
+          // problem, consolidated into one dropdown (keypoint design).
+          final headerMenu = LessonHeaderMenu(
+            onReportProblem: () => _openReportIssueSheet(context, currentKeypoint),
+          );
 
           if (!currentKeypoint.hasUsableAudio) {
             return LessonShellLayout(
@@ -167,7 +171,7 @@ class _LessonPageState extends State<LessonPage> {
               readBody: readSurface,
               audioBody: const SizedBox.shrink(),
               bottom: bottomButton,
-              trailing: flagButton,
+              trailing: headerMenu,
               isLoading: state.status == LessonStatus.loading,
             );
           }
@@ -187,7 +191,7 @@ class _LessonPageState extends State<LessonPage> {
             readBody: readSurface,
             audioBody: const LessonAudioSurface(),
             bottom: selectedMode.isRead ? bottomButton : null,
-            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : flagButton,
+            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : headerMenu,
             isLoading: state.status == LessonStatus.loading,
           );
         },
@@ -286,29 +290,6 @@ class _LessonPageState extends State<LessonPage> {
           onTap: _handleOpenAudioSpeedSheet,
         );
       },
-    );
-  }
-
-  Widget _buildFlagButton(BuildContext context, KeypointEntity keypoint) {
-    return GestureDetector(
-      onTap: () {
-        AppHaptic.select();
-        _openReportIssueSheet(context, keypoint);
-      },
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 36.w,
-        height: 36.w,
-        child: Center(
-          child: Icon(
-            Icons.flag_outlined,
-            size: 20.sp,
-            // Bare on the background (sits directly on the Scaffold, in the
-            // shell header) — swap to light ink over a dark custom bg.
-            color: studyThemeOnBg(context, AppCustomColor.textQuaternary),
-          ),
-        ),
-      ),
     );
   }
 

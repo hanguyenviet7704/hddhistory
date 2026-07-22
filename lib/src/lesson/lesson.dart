@@ -137,6 +137,7 @@ part 'presentation/widgets/audio/lesson_audio_speed_sheet.dart';
 part 'presentation/widgets/audio/lesson_audio_surface.dart';
 part 'presentation/widgets/layouts/lesson_mode_toggle.dart';
 part 'presentation/widgets/layouts/lesson_shell_header.dart';
+part 'presentation/widgets/layouts/lesson_header_menu.dart';
 part 'presentation/widgets/layouts/lesson_shell_layout.dart';
 part 'presentation/widgets/layouts/lesson_sticky_bottom_action.dart';
 part 'presentation/widgets/layouts/lesson_dual_mode_layout.dart';

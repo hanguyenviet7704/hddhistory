@@ -18,14 +18,13 @@ class LessonModeToggle extends StatelessWidget {
         height: 36.h,
         padding: EdgeInsets.all(2.r),
         decoration: BoxDecoration(
-          color: AppCustomColor.brandPrimary700.withValues(alpha: 0.1),
+          // A more opaque track (was brandPrimary700 @0.1, which over a dark
+          // custom study background went transparent + muddy) so the pill reads
+          // as a crisp defined control on any background.
+          color: AppCustomColor.brandPrimary50,
           borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: AppCustomColor.borderDefault,
-              blurRadius: 4.r,
-            ),
-          ],
+          // No drop shadow: a soft grey shadow reads as a fuzzy halo over dark
+          // custom backgrounds; the opaque track defines the edge instead.
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

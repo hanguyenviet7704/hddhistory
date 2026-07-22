@@ -168,6 +168,11 @@ onboardingV2P8FallbackTitle: We could not load matches
 onboardingV2P8Label: Best matched
 onboardingV2P8SelectCta: Select
 onboardingV2P8Title: Pick your course
+onboardingV2P9Cta: Start Explore
+onboardingV2P9Helper: You can change this later in the app
+onboardingV2P9Subtitle: Choose a look for your whole app
+onboardingV2P9TitleHighlight: yours
+onboardingV2P9TitlePrefix: Make it
 onboardingV2PathConnectBetter: Connect better
 onboardingV2PathExploreBetter: Explore better
 onboardingV2PathFeelBetter: Feel better

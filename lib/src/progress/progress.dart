@@ -34,6 +34,7 @@ part 'domain/repositories/i_content_request_repository.dart';
 part 'domain/repositories/i_progress_repository.dart';
 part 'domain/usecases/create_completed_level_additional_content_request_usecase.dart';
 part 'domain/usecases/get_all_achievenment_responses_usecase.dart';
+part 'domain/usecases/get_cached_achievenment_responses_usecase.dart';
 part 'domain/usecases/get_all_user_progresss_usecase.dart';
 part 'domain/usecases/get_course_level_progress_usecase.dart';
 part 'domain/usecases/get_user_progress_exercise_usecase.dart';

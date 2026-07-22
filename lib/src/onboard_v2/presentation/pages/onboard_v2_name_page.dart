@@ -69,13 +69,19 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
           ),
           18.verticalSpace,
           AppText(
-            onboardingL10n.onboardingV2P2HeadingPrefix,
+            onbCopy(state.onboardData, 'onboardingV2P2HeadingPrefix', fallback: onboardingL10n.onboardingV2P2HeadingPrefix),
             overflow: TextOverflow.visible,
             style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
           ),
-          OnboardV2GradientText(onboardingL10n.onboardingV2P2HeadingHighlight, style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4)),
+          OnboardV2GradientText(
+            onbCopy(state.onboardData, 'onboardingV2P2HeadingHighlight', fallback: onboardingL10n.onboardingV2P2HeadingHighlight),
+            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+          ),
           12.verticalSpace,
-          AppText(onboardingL10n.onboardingV2P2Subtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),
+          AppText(
+            onbCopy(state.onboardData, 'onboardingV2P2Subtitle', fallback: onboardingL10n.onboardingV2P2Subtitle),
+            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+          ),
           32.verticalSpace,
           SizedBox(
             height: 80.w,
@@ -91,7 +97,7 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
               style: AppStyle.text16.copyWith(color: AppCustomColor.textPrimary, height: 1.5),
               onSubmitted: (_) => _continueFromName(),
               decoration: InputDecoration(
-                hintText: onboardingL10n.onboardingV2P2InputHint,
+                hintText: onbCopy(state.onboardData, 'onboardingV2P2InputHint', fallback: onboardingL10n.onboardingV2P2InputHint),
                 hintStyle: AppStyle.text16.copyWith(color: AppCustomColor.textTertiary, height: 1.5),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.w),
                 filled: true,

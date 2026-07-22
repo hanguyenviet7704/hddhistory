@@ -28,6 +28,9 @@ class TheoryLessonBody extends LessonBodyWidget {
               if (currentDocument.document.isNotEmpty) ...[
                 DocumentWidget(
                   documents: currentDocument.document,
+                  // Theory content card is frosted glass over a custom study
+                  // background (design), unlike the solid exercise cards.
+                  frosted: true,
                   selectedExplanationOptionKeys: state.selectedExplanationOptionKeys,
                   onExplanationSelectionChanged: (contentDocumentIndex, optionKey) {
                     context.read<TheoryCubit>().selectExplanationOption(

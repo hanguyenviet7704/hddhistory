@@ -9,6 +9,7 @@ enum OnboardV2PageStep {
   p6PathMap,
   p7Symptoms,
   p8CoursePicker,
+  p9Theme,
 }
 
 enum OnboardV2AsyncStatus { initial, loading, success, failure }
@@ -38,6 +39,13 @@ abstract class OnboardV2State with _$OnboardV2State {
     String? p3ErrorMessage,
     String? courseErrorMessage,
     String? navigationErrorMessage,
+    // P8 -> P9 handoff (see [OnboardV2Cubit.goToThemeWithSelectedCourse] /
+    // [OnboardV2Cubit.goToThemeAsBrowse]): stashes which action P9's
+    // "Start Explore" CTA should perform once the user has picked their study
+    // theme. Exactly one of the two is meaningful for a given visit to P9 —
+    // a non-null [pendingHandoffCourse] always wins over the browse flag.
+    CourseEntity? pendingHandoffCourse,
+    @Default(false) bool pendingHandoffIsBrowse,
   }) = _OnboardV2State;
 
   factory OnboardV2State.initial() => const OnboardV2State();

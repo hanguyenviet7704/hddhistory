@@ -98,7 +98,10 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
                         margin: EdgeInsets.symmetric(vertical: 8.h),
                         maxLines: 10,
                         style: AppStyle.text12.copyWith(
-                          color: const Color(0xFF7F8EA4),
+                          // Was textTertiary (#7F8EA4) — too faint on the
+                          // translucent themed card over a busy photo. Darker
+                          // secondary stays a clear hint yet readable everywhere.
+                          color: AppCustomColor.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

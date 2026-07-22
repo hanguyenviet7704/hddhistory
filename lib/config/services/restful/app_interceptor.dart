@@ -16,6 +16,11 @@ class AppInterceptor extends BaseInterceptor {
   static const String _retryCountKey = 'retry_count';
   static const int _maxRetryAttempts = 1;
 
+  // Guards against a burst of concurrent 401s (e.g. the splash's parallel
+  // requests all failing on an expired session) each running logout + navigate
+  // + toast. Reset shortly after so a later genuine expiry is still handled.
+  bool _isHandlingSessionExpired = false;
+
   AuthBloc get _authBloc => AppDI.injector.get<AuthBloc>();
 
   String get _currentLanguage => _localeCubit.state.localeData.languageCode;
@@ -141,7 +146,20 @@ class AppInterceptor extends BaseInterceptor {
       return;
     }
 
-    AppService.instance.resetDI();
+    // A burst of concurrent 401s (the splash fires several authenticated
+    // requests at once) must trigger logout+navigate ONCE — otherwise we stack
+    // toasts and route pushes. Reset after the burst settles so a later genuine
+    // expiry is still handled.
+    if (_isHandlingSessionExpired) {
+      return;
+    }
+    _isHandlingSessionExpired = true;
+
+    // NOTE: do NOT reset the DI container here. resetDI() disposes and recreates
+    // every singleton (cubits included) while the UI is live and mid-navigation
+    // to the login screen — that left the login screen bound to disposed cubits,
+    // so its buttons stopped responding ("frozen login" after reinstall).
+    // Clearing the user + auth session is enough to log out.
     _userCubit.clearData();
     _authBloc.add(AuthEvent.clearSession());
     RegisterRoute().go(context);
@@ -149,6 +167,11 @@ class AppInterceptor extends BaseInterceptor {
     DMessage.showMessage(
       type: MessageType.error,
       message: context.l10n.auth.authSessionHasExpired,
+    );
+
+    Future.delayed(
+      const Duration(seconds: 2),
+      () => _isHandlingSessionExpired = false,
     );
   }
 

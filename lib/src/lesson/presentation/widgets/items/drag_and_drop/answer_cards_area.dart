@@ -26,14 +26,19 @@ class AnswerCardsArea extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
+          padding: EdgeInsets.all(12.w),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
-            color: isDraggingFromSlot ? const Color(0xFFE3E8EF).withValues(alpha: 0.1) : Colors.white,
+            // Light-grey tray (was white): the answer chips are white, so a
+            // white tray made them blend together ("dính nhau") and its empty
+            // right area read as a cut-off empty chip. A grey fill + padding
+            // makes each white chip stand out and keeps them off the edges.
+            color: isDraggingFromSlot ? const Color(0xFFE3E8EF) : const Color(0xFFF0F3F9),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Wrap(
-            spacing: 10.w,
-            runSpacing: 10.h,
+            spacing: 12.w,
+            runSpacing: 12.h,
             alignment: WrapAlignment.start,
             children: availableWords.map((word) {
               return Draggable<Map<String, dynamic>>(

@@ -8,6 +8,7 @@ class OnboardV2PathMapPage extends StatelessWidget {
     final state = context.watch<OnboardV2Cubit>().state;
     final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
+    final onboardData = state.onboardData;
     return OnboardV2ScreenShell(
       backgroundColor: AppCustomColor.backgroundBrandSoft,
       header: OnboardV2ProgressHeader(
@@ -27,27 +28,30 @@ class OnboardV2PathMapPage extends StatelessWidget {
             spacing: 6.w,
             children: [
               AppText(
-                onboardingL10n.onboardingV2P5HeadingPrefix,
+                onbCopy(onboardData, 'onboardingV2P5HeadingPrefix', fallback: onboardingL10n.onboardingV2P5HeadingPrefix),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w800, height: 1.4),
               ),
               OnboardV2GradientText(
-                onboardingL10n.onboardingV2P5HeadingHighlight,
+                onbCopy(onboardData, 'onboardingV2P5HeadingHighlight', fallback: onboardingL10n.onboardingV2P5HeadingHighlight),
                 textAlign: TextAlign.center,
                 style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
               ),
             ],
           ),
           AppText(
-            onboardingL10n.onboardingV2P5HeadingSuffix,
+            onbCopy(onboardData, 'onboardingV2P5HeadingSuffix', fallback: onboardingL10n.onboardingV2P5HeadingSuffix),
             textAlign: TextAlign.center,
             style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w800, height: 1.4),
           ),
           4.verticalSpace,
           OnboardV2PathMapSubtitle(count: state.selectedPaths.length),
           32.verticalSpace,
-          OnboardV2PathMap(activePaths: state.selectedPaths),
+          OnboardV2PathMap(
+            activePaths: state.selectedPaths,
+            resolvedPaths: OnboardV2PathResolver.resolvePaths(state.onboardData),
+          ),
         ],
       ),
     );

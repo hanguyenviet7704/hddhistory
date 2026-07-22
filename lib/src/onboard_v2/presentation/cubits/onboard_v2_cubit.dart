@@ -3,7 +3,7 @@ part of '../../onboard_v2.dart';
 @lazySingleton
 class OnboardV2Cubit extends Cubit<OnboardV2State> {
   OnboardV2Cubit(
-    this._getAllOnboardsUseCase,
+    this._getOnboardingConfigUseCase,
     this._updateUserUseCase,
     this._getAllCoursesUseCase,
     this._getCourseUseCase,
@@ -19,7 +19,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   @visibleForTesting
   OnboardV2Cubit.withRandom(
-    this._getAllOnboardsUseCase,
+    this._getOnboardingConfigUseCase,
     this._updateUserUseCase,
     this._getAllCoursesUseCase,
     this._getCourseUseCase,
@@ -36,7 +36,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
        _readUserStateOverride = readUserState,
        super(OnboardV2State.initial());
 
-  final GetAllOnboardsUseCase _getAllOnboardsUseCase;
+  final GetOnboardingContentConfigUseCase _getOnboardingConfigUseCase;
   final UpdateUserUseCase _updateUserUseCase;
   final GetAllCoursesUseCase _getAllCoursesUseCase;
   final GetCourseUseCase _getCourseUseCase;
@@ -84,7 +84,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final serial = _requestSerial;
     emit(state.copyWith(onboardStatus: OnboardV2AsyncStatus.loading, onboardErrorMessage: null));
 
-    final result = await _getAllOnboardsUseCase(unit).run();
+    final result = await _getOnboardingConfigUseCase(unit).run();
     if (serial != _requestSerial) return;
 
     result.fold(
@@ -94,10 +94,10 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
           onboardErrorMessage: failure.displayMessage,
         ),
       ),
-      (onboardData) => emit(
+      (config) => emit(
         state.copyWith(
           onboardStatus: OnboardV2AsyncStatus.success,
-          onboardData: onboardData,
+          onboardData: OnboardV2ConfigMapper.toOnboardEntity(config),
         ),
       ),
     );
@@ -300,7 +300,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     }
 
     final selectedPaths = OnboardV2SymptomSelectionMapper.dedupePaths(selected);
-    final availableSymptoms = OnboardV2SymptomSelectionMapper.availableSymptoms(selectedPaths);
+    final availableSymptoms = OnboardV2SymptomSelectionMapper.availableSymptoms(selectedPaths, onboardData: state.onboardData);
     final selectedSymptoms = OnboardV2SymptomSelectionMapper.retainAvailableSymptoms(
       selectedSymptoms: state.selectedSymptoms,
       availableSymptoms: availableSymptoms,
@@ -499,6 +499,34 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     emit(state.copyWith(currentCourseIndex: nextIndex));
   }
 
+  /// P8 -> P9 handoff: the user picked a specific recommended course. Stashes
+  /// it as the pending handoff action — consumed by P9's "Start Explore" (see
+  /// `onboard_v2_pick_theme_page.dart`, which now owns [resolveCourseForHandoff]
+  /// + the route dispatch) — and moves the flow onto the theme picker so every
+  /// path through onboarding ends with the user personalizing their study
+  /// background before landing in the app.
+  void goToThemeWithSelectedCourse(CourseEntity course) {
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p9Theme,
+        pendingHandoffCourse: course,
+        pendingHandoffIsBrowse: false,
+      ),
+    );
+  }
+
+  /// P8 -> P9 handoff: the user chose to browse the course catalog instead of
+  /// a recommended course. See [goToThemeWithSelectedCourse].
+  void goToThemeAsBrowse() {
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p9Theme,
+        pendingHandoffCourse: null,
+        pendingHandoffIsBrowse: true,
+      ),
+    );
+  }
+
   Future<CourseEntity?> resolveCourseForHandoff(CourseEntity course) async {
     final courseId = course.id.trim();
     if (courseId.isEmpty) return null;
@@ -540,7 +568,14 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     }
   }
 
-  void markUserOnboardedInBackground() {
+  /// Persist `isOnboarded = true` to the server for the current (anonymous)
+  /// user — AWAITED and retried. This flag is what `check-onboarding` uses to
+  /// recognise a returning device after a reinstall, so it MUST actually land;
+  /// the previous fire-and-forget single PATCH often didn't (app navigated away
+  /// before it completed), which is why users kept re-seeing onboarding.
+  /// Retries a few times, then returns regardless so a transient network
+  /// failure never traps the onboarding CTA.
+  Future<void> markUserOnboarded() async {
     final user = _readUserState.user;
     final userId = user.id.trim();
     if (userId.isEmpty) {
@@ -555,20 +590,24 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       'isOnboarded': true,
     };
 
-    unawaited(_markUserOnboarded(payload));
-  }
-
-  Future<void> _markUserOnboarded(Map<String, dynamic> payload) async {
-    try {
-      final result = await _updateUserUseCase(payload).run();
-      result.fold(
-        (failure) => LogDev.warning('[OnboardV2Cubit] onboarded update failed: ${failure.displayMessage}'),
-        (_) {},
-      );
-    } catch (error) {
-      LogDev.warning('[OnboardV2Cubit] onboarded update failed: $error');
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        final result = await _updateUserUseCase(Map<String, dynamic>.from(payload)).run();
+        if (result.isRight()) return;
+        LogDev.warning('[OnboardV2Cubit] onboarded update attempt $attempt failed');
+      } catch (error) {
+        LogDev.warning('[OnboardV2Cubit] onboarded update attempt $attempt error: $error');
+      }
+      if (attempt < 3) {
+        await Future<void>.delayed(Duration(milliseconds: 500 * attempt));
+      }
     }
   }
+
+  /// Fire-and-forget variant for non-blocking callers — now retried via
+  /// [markUserOnboarded]. Prefer awaiting [markUserOnboarded] at the point the
+  /// user actually finishes onboarding so the flag is guaranteed to land.
+  void markUserOnboardedInBackground() => unawaited(markUserOnboarded());
 
   void _emitCoursesFallback(String reason, {required String stage}) {
     OnboardV2Tracking.track(

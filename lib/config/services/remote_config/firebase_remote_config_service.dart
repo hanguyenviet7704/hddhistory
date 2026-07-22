@@ -3,6 +3,12 @@ part of '../services.dart';
 @LazySingleton(as: IRemoteConfigService)
 class FirebaseRemoteConfigService implements IRemoteConfigService {
   static const Duration _fetchTimeout = Duration(seconds: 10);
+  // Serve cached config instantly and only refetch after this interval, instead
+  // of forcing a live network fetch on EVERY launch (Duration.zero) — that was
+  // making the splash wait on a Remote Config round-trip each cold start.
+  // Config still refreshes in the background at least this often, and the
+  // force-update gate is additionally capped by a timeout in SplashPage.
+  static const Duration _minimumFetchInterval = Duration(minutes: 30);
 
   late final FirebaseRemoteConfig _remoteConfig;
   final IPackageInfoService _packageInfoService;
@@ -45,7 +51,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: _fetchTimeout,
-          minimumFetchInterval: Duration.zero,
+          minimumFetchInterval: _minimumFetchInterval,
         ),
       );
 

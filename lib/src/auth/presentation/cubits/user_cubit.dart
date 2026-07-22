@@ -77,7 +77,14 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     final nextUserId = auth.user.id;
     final isUserChanged = previousUserId != nextUserId;
 
-    emit(state.copyWith(auth: auth));
+    // Trust the server's onboarded flag: a returning, already-onboarded account
+    // must SKIP onboarding after a fresh login (e.g. after a reinstall wiped the
+    // local flag), instead of being sent through onboarding again. Never forces
+    // onboarding back on (only flips to "passed" when the server confirms it).
+    emit(state.copyWith(
+      auth: auth,
+      isUserPassOnboarding: auth.user.isOnboarded ? false : state.isUserPassOnboarding,
+    ));
     if (!state.isUserPassOnboarding && nextUserId.isNotEmpty) {
       unawaited(_markDailyWarmUpOnboardingCompletedDate());
     }

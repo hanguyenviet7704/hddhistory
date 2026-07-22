@@ -71,11 +71,17 @@ class ChangeBackgroundSheet extends StatelessWidget {
               child: BlocBuilder<StudyThemeCubit, StudyThemeState>(
                 bloc: cubit,
                 builder: (context, state) {
+                  final userIsPremium = AppDI.injector.get<ProfileCubit>().state.user.isPremium;
                   return SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(22.w, 6.h, 22.w, 30.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Premium upsell banner — hidden once the user is premium.
+                        if (!userIsPremium) ...[
+                          _UnlockPremiumBanner(onTap: () => const PaywallRoute().push(context)),
+                          14.verticalSpace,
+                        ],
                         _UploadBar(onTap: () => _pickImage(context, cubit)),
                         // Quiet sync affordance only — the bundled/previous
                         // catalogue is already rendering below, so this never
@@ -99,7 +105,7 @@ class ChangeBackgroundSheet extends StatelessWidget {
                           _PresetGroupView(
                             group: group,
                             currentId: state.preset.id,
-                            onPick: cubit.selectPreset,
+                            onPick: (preset) => _handlePick(context, cubit, preset, userIsPremium),
                           ),
                       ],
                     ),
@@ -128,6 +134,23 @@ class ChangeBackgroundSheet extends StatelessWidget {
     if (picked == null) return;
     await cubit.selectUploadedImage(File(picked.path));
     if (context.mounted) Navigator.of(context).pop();
+  }
+
+  /// Free presets apply immediately; a premium preset tapped by a non-premium
+  /// user opens the paywall instead of applying (design: "Unlock all themes").
+  static void _handlePick(
+    BuildContext context,
+    StudyThemeCubit cubit,
+    StudyThemePreset preset,
+    bool userIsPremium,
+  ) {
+    if (preset.isPremium && !userIsPremium) {
+      const PaywallRoute().push(context);
+      return;
+    }
+    cubit.selectPreset(preset);
+    // Applied — close the sheet (matches the upload flow, which also pops).
+    Navigator.of(context).pop();
   }
 }
 
@@ -160,6 +183,69 @@ class _UploadBar extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Premium upsell at the top of the sheet (design: "Unlock all themes").
+/// Tapping opens the paywall. Shown only to non-premium users.
+class _UnlockPremiumBanner extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _UnlockPremiumBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.r),
+          gradient: const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [Color(0xFF5B4FE8), Color(0xFF7A5CF0)],
+          ),
+          boxShadow: [
+            BoxShadow(color: const Color(0x335B4FE8), blurRadius: 16.r, offset: Offset(0, 6.h)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34.w,
+              height: 34.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              alignment: Alignment.center,
+              child: Icon(Icons.auto_awesome_rounded, size: 18.w, color: Colors.white),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppText(
+                    context.l10n.studyTheme.unlockAllThemes,
+                    style: AppStyle.textBold14.copyWith(color: Colors.white),
+                  ),
+                  2.verticalSpace,
+                  AppText(
+                    context.l10n.studyTheme.goPremiumForFullCollection,
+                    style: AppStyle.text12.copyWith(color: Colors.white.withValues(alpha: 0.85)),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, size: 22.w, color: Colors.white),
+          ],
         ),
       ),
     );
@@ -242,6 +328,31 @@ class _PresetTile extends StatelessWidget {
               Positioned.fill(
                 child: DCachedImage(url: _networkThumbUrl!, fit: BoxFit.cover),
               ),
+            // Diagonal corner ribbon (design): "PRO" (gold) for premium presets
+            // that open the paywall on tap, "FREE" (brand) otherwise. Clipped to
+            // the tile's rounded corner by the parent's antiAlias clip.
+            Positioned(
+              top: 9.w,
+              right: -21.w,
+              child: Transform.rotate(
+                angle: 0.7853981634, // 45°
+                child: Container(
+                  width: 72.w,
+                  padding: EdgeInsets.symmetric(vertical: 3.h),
+                  alignment: Alignment.center,
+                  color: preset.isPremium ? const Color(0xFFE0A32E) : const Color(0xFF554FF0),
+                  child: Text(
+                    preset.isPremium ? 'PRO' : 'FREE',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             // Live (video) presets get a centred play badge over the poster so
             // they read as motion, not a static photo (design item 5).
             if (preset.mode == StudyThemeMode.video)

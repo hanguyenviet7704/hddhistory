@@ -1,9 +1,19 @@
 part of '../../../onboard_v2.dart';
 
 class OnboardV2PathMap extends StatelessWidget {
-  const OnboardV2PathMap({super.key, required this.activePaths});
+  const OnboardV2PathMap({
+    super.key,
+    required this.activePaths,
+    this.resolvedPaths = const <OnboardPathEntity>[],
+  });
 
   final List<OnboardingPath> activePaths;
+
+  /// API-resolved (or offline-fallback) path content — see
+  /// [OnboardV2PathResolver]. Defaults to empty, which renders the legacy
+  /// enum's shortTitle/icon unchanged (used by widget tests that construct
+  /// this widget without onboard data).
+  final List<OnboardPathEntity> resolvedPaths;
 
   static const _nodeFrames = <OnboardingPath, ({double left, double top})>{
     OnboardingPath.learnBetter: (left: 117.5, top: 13.0),
@@ -17,6 +27,8 @@ class OnboardV2PathMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeSet = activePaths.toSet();
+    final resolvedByKey = {for (final resolvedPath in resolvedPaths) resolvedPath.key: resolvedPath};
+
     return Center(
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -34,18 +46,31 @@ class OnboardV2PathMap extends StatelessWidget {
                     top: entry.value.top.w,
                     width: 100.w,
                     height: 100.w,
-                    child: OnboardV2PathMapNode(
-                      key: ValueKey('onboard_v2_path_map_node_${entry.key.name}'),
-                      label: entry.key.shortTitle,
-                      iconPath: activeSet.contains(entry.key) ? entry.key.image : entry.key.imageDisable,
-                      active: activeSet.contains(entry.key),
-                    ),
+                    child: _buildNode(entry.key, activeSet.contains(entry.key), resolvedByKey[entry.key.trackingId]),
                   ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildNode(OnboardingPath path, bool active, OnboardPathEntity? resolvedPath) {
+    final resolvedShortTitle = resolvedPath?.shortTitle.trim();
+    final label = (resolvedShortTitle != null && resolvedShortTitle.isNotEmpty) ? resolvedShortTitle : path.shortTitle;
+    final iconKey = resolvedPath?.iconKey.trim();
+    final iconUrl = resolvedPath?.iconUrl ?? '';
+
+    return OnboardV2PathMapNode(
+      key: ValueKey('onboard_v2_path_map_node_${path.name}'),
+      label: label,
+      iconPath: OnboardV2IconResolver.resolve(
+        iconUrl: iconUrl,
+        iconKey: (iconKey != null && iconKey.isNotEmpty) ? iconKey : OnboardV2IconResolver.iconKeyForLegacyPath(path),
+        selected: active,
+      ),
+      active: active,
     );
   }
 }

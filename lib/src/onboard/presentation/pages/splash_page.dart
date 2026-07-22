@@ -80,8 +80,14 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _initScreen(_) async {
     try {
       if (!mounted) return;
-      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 700));
-      final shouldUpdate = await _shouldForceUpdate;
+      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 300));
+      // Never let a slow/offline Remote Config fetch stall app entry. Cap the
+      // force-update gate at 1.5s; on timeout treat it as "no forced update"
+      // (the fetch still finishes in the background and is caught next launch).
+      final shouldUpdate = await _shouldForceUpdate.timeout(
+        const Duration(milliseconds: 1500),
+        onTimeout: () => false,
+      );
       if (!mounted) return;
       if (shouldUpdate) {
         _showUpdateDialog();

@@ -1,7 +1,5 @@
 library;
 
-import 'dart:ui' as ui;
-
 //* Package imports
 import 'package:darq/darq.dart';
 import 'package:dio/dio.dart';
