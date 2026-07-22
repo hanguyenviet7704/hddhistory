@@ -20,7 +20,7 @@ class UserAchievementList extends StatelessWidget {
           // the margins double up. Sections sit directly on the white sheet
           // (Figma 10736:51182) — no outlined/shadowed card.
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Column(

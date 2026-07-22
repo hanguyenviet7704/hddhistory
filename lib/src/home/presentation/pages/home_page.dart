@@ -330,7 +330,7 @@ class _HomeWeeklyStreakCard extends StatelessWidget {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
             decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite,
+              color: studyThemeCardColor(context),
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: _homeCardShadow,
             ),
@@ -479,7 +479,7 @@ class _JumpBackInCard extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(14.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _homeCardShadow,
           ),
@@ -651,7 +651,7 @@ class _QuickTile extends StatelessWidget {
           height: 172.h,
           padding: EdgeInsets.all(18.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _homeCardShadow,
           ),

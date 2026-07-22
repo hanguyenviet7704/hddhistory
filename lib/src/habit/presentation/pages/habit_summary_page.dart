@@ -111,7 +111,6 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                           Center(child: _buildWorkingOnText(context, summary.activeCount)),
                           20.verticalSpace,
                           ThemedGlassCard(
-                            solid: true,
                             padding: EdgeInsets.all(16.w),
                             radius: 12,
                             shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
@@ -235,7 +234,6 @@ class _SummaryBestHabitCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ThemedGlassCard(
-        solid: true,
         padding: EdgeInsets.all(16.w),
         radius: 12,
         shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
@@ -288,7 +286,6 @@ class _SummaryCategoryCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ThemedGlassCard(
-        solid: true,
         padding: EdgeInsets.all(16.w),
         radius: 12,
         shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],

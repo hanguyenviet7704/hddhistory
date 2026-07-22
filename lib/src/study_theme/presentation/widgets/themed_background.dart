@@ -8,6 +8,16 @@ part of '../../study_theme.dart';
 Color studyThemeScaffoldColor(BuildContext context, Color fallback) =>
     context.watch<StudyThemeCubit>().state.preset.isCustom ? Colors.transparent : fallback;
 
+/// Card fill that follows the study theme: a TRANSLUCENT white panel ("trắng
+/// trong", ~0.82) over a custom background — the same look as the keypoint /
+/// [ThemedGlassCard] card so the personalized background shows softly through —
+/// otherwise a solid white card. For screens that build their own card
+/// Containers (e.g. Home) instead of using [ThemedGlassCard].
+Color studyThemeCardColor(BuildContext context, {double opacity = 0.82}) =>
+    context.watch<StudyThemeCubit>().state.preset.isCustom
+        ? AppCustomColor.backgroundWhite.withValues(alpha: opacity)
+        : AppCustomColor.backgroundWhite;
+
 /// True when a DARK custom background is active — text/icons sitting directly on
 /// the background must switch to light ink to stay readable.
 bool studyThemeIsDarkBg(BuildContext context) {

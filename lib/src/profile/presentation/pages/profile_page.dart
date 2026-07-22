@@ -490,7 +490,7 @@ class _StreakCard extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
               decoration: BoxDecoration(
-                color: AppCustomColor.backgroundWhite,
+                color: studyThemeCardColor(context),
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: _profileCardShadow,
               ),
@@ -569,7 +569,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
+        color: studyThemeCardColor(context),
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: _profileCardShadow,
       ),
@@ -714,7 +714,7 @@ class _InlineSectionError extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
+        color: studyThemeCardColor(context),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: _profileCardShadow,
       ),
@@ -773,7 +773,7 @@ class _AchievementsSummaryCard extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
@@ -838,7 +838,7 @@ class _LearningProgressSection extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
@@ -1032,7 +1032,7 @@ class _LibrarySection extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),

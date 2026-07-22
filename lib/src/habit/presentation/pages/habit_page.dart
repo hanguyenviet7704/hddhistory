@@ -401,7 +401,6 @@ class _HabitCategoryCard extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: ThemedGlassCard(
-        solid: true,
         padding: EdgeInsets.all(16.w),
         radius: 12,
         shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],

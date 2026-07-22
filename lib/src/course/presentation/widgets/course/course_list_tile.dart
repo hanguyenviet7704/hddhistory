@@ -36,7 +36,7 @@ class CourseListTile extends StatelessWidget {
               ? BoxDecoration(
                   color: isSelected
                       ? AppCustomColor.brandPrimary50
-                      : AppCustomColor.backgroundWhite,
+                      : studyThemeCardColor(context),
                   border: Border.all(
                     color: isSelected
                         ? AppCustomColor.brandPrimary
