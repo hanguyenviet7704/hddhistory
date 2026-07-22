@@ -64,8 +64,12 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
       key: const Key('my-courses-page'),
       // Transparent only when a custom study background is active.
       backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
+      // Let the custom study background (painted in the body) run edge-to-edge
+      // behind the transparent app bar; on the default theme the white scaffold
+      // shows through so the header still reads as a white bar.
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: AppCustomColor.backgroundWhite,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: Semantics(
@@ -77,12 +81,12 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
               context.back();
             },
             constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppCustomColor.textPrimary, size: 20.w),
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: studyThemeOnBg(context, AppCustomColor.textPrimary), size: 20.w),
           ),
         ),
         title: AppText(
           context.l10n.allcourse.allcourseMyCourse,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
       ),
       body: ThemedBackground(
@@ -95,7 +99,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
             // Only skillsets the user is enrolled in (≥1 course in their progress).
             final sections = homeState.skillsets.where((s) => s.courses.any((c) => progressById.containsKey(c.id))).toList();
 
-            if (homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) {
+            // Only block with a full spinner on a genuine cold load — don't
+            // replace an already-loaded list with a spinner when Home refreshes.
+            if ((homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) &&
+                homeState.skillsets.isEmpty) {
               return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
             }
 
@@ -107,7 +114,12 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
             return Column(
               children: [
-                8.verticalSpace,
+                // Clear the transparent app bar (extendBodyBehindAppBar) so the
+                // chips sit directly below the header while the study bg fills
+                // behind it. No extra gap — the chip row starts flush under the
+                // app bar (any higher would slide the left-most chip under the
+                // back button, which shares its horizontal lane).
+                SizedBox(height: MediaQuery.paddingOf(context).top + kToolbarHeight),
                 _MyCourseChipBar(
                   skillsets: sections,
                   selectedIndex: selected,
@@ -134,7 +146,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                 ),
                 // Pinned bottom CTA (design: sticky bottom).
                 Container(
-                  color: AppCustomColor.backgroundWhite,
+                  color: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
                   padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 20.h + MediaQuery.paddingOf(context).bottom),
                   child: _ExploreMoreCoursesButton(onTap: () => _exploreMore(context)),
                 ),

@@ -17,43 +17,33 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
   // Tab 1 Explore→ branch 3 (CoursePage course grid)
   // Tab 2 Habit  → branch 4
   // Tab 3 Profile→ branch 2
-  // The course-roadmap branch (1) is no longer a bottom tab — it's reached by
-  // tapping a course (Home "Jump back in"/Recommended, Explore) or via
-  // Profile › Library › My Course.
+  // The course-roadmap branch (1) is not a bottom tab and is NEVER the target
+  // of a tab tap — tapping Khám phá always opens the Explore browse grid
+  // (branch 3), even if a roadmap was left open on a previous visit to that
+  // tab. The roadmap is reached only by tapping a specific course (Home "Jump
+  // back in"/Recommended, Explore grid, My courses) — see its own "back to
+  // Explore"/"back to Home" handling in course_roadmap_page.dart.
   static const _tabToBranch = [0, 3, 4, 2];
 
-  // Default visual index for each branch when navigating from outside. Branch 1
-  // (course roadmap) has no tab of its own → light the Explore tab, since
-  // courses are browsed/opened from Explore (and Home's "Jump back in").
+  // Visual tab each branch lights up when the shell arrives there from
+  // outside a tab tap (e.g. entering the roadmap by tapping a course). The
+  // roadmap (branch 1) has no tab of its own, so — purely for highlighting —
+  // it shares the Khám phá slot (visual 1) with the course grid (branch 3).
   static const _branchToVisual = {0: 0, 1: 1, 2: 3, 3: 1, 4: 2};
 
   int _visualIndex = 0;
-
-  // Visual tab 1 (Khám phá) is shared by TWO shell branches: the course-roadmap
-  // (branch 1) and the course-list grid (branch 3). Remember whichever the user
-  // was last in so tapping that tab RETURNS them there — e.g. resume the roadmap
-  // after a detour to another tab, instead of always snapping back to the grid.
-  // Browsing is never stranded: the roadmap's own "back to Explore" button and
-  // Home's course entries still switch to the grid (which updates this too).
-  int _courseSlotBranch = 3;
-
-  // Branch the given visual tab should open. All tabs are fixed except the
-  // shared Khám phá slot, which follows the last-used course branch above.
-  int _branchForVisual(int visualIndex) => visualIndex == 1 ? _courseSlotBranch : _tabToBranch[visualIndex];
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final branchIndex = context.read<PageCubit>().state.currentIndex;
-    if (branchIndex == 1 || branchIndex == 3) _courseSlotBranch = branchIndex;
     _visualIndex = _branchToVisual[branchIndex] ?? 0;
   }
 
   void _onTabTap(int visualIndex) {
     AppHaptic.select();
-    final branchIndex = _branchForVisual(visualIndex);
     setState(() => _visualIndex = visualIndex);
-    context.read<PageCubit>().handleShellRouteNavigation(branchIndex, widget.navigationShell);
+    context.read<PageCubit>().handleShellRouteNavigation(_tabToBranch[visualIndex], widget.navigationShell);
   }
 
   @override
@@ -64,13 +54,9 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
     // which would otherwise leave the wrong tab lit (e.g. "Home" highlighted
     // while the Explore grid is on screen).
     final activeBranch = widget.navigationShell.currentIndex;
-    // Remember which of the shared course-slot branches (roadmap=1 / grid=3) is
-    // live, so the Khám phá tab can return to it after a detour to another tab.
-    if (activeBranch == 1 || activeBranch == 3) {
-      _courseSlotBranch = activeBranch;
-    }
-    if (_branchForVisual(_visualIndex) != activeBranch) {
-      _visualIndex = _branchToVisual[activeBranch] ?? _visualIndex;
+    final expectedVisual = _branchToVisual[activeBranch] ?? _visualIndex;
+    if (expectedVisual != _visualIndex) {
+      _visualIndex = expectedVisual;
     }
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // Primary tabs (Home/Explore/Habit/Profile) all sit on light

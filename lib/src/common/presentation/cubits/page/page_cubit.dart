@@ -25,11 +25,20 @@ class PageCubit extends Cubit<PageState> {
   }
 
   void handleShellRouteNavigation(int index, StatefulNavigationShell navigationShell) {
-    if (index == state.currentIndex && index == 0 && state.currentRouteName == RouteNamed.home) return;
-    if (index == state.currentIndex && index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
-    if (index == state.currentIndex && index == 2 && state.currentRouteName == RouteNamed.profile) return;
-    if (index == state.currentIndex && index == 3 && state.currentRouteName == RouteNamed.course) return;
-    if (index == state.currentIndex && index == 4 && state.currentRouteName == RouteNamed.habit) return;
+    // Ignore a tap on the tab that's already showing. Trust the SHELL's active
+    // branch (the source of truth), NOT PageCubit's mirrored state: entering a
+    // branch via a raw `.go()` (e.g. Home's "Thói quen hôm nay" tile →
+    // HabitRoute().go()) re-activates an already-built branch WITHOUT a didPush,
+    // so the branch's router observer never runs and currentIndex/
+    // currentRouteName stay stale on the PREVIOUS tab. The old guard compared
+    // the tapped index against that stale mirror and would then swallow the tap
+    // back to the previous tab (reported: enter Habit from Home, then the Home
+    // nav tab does nothing — stuck on Habit). The floating nav is only visible
+    // on primary (branch-root) routes, so index == active branch always means
+    // "tapped the current tab at its root" → a genuine no-op.
+    if (shouldIgnoreShellTabTap(tappedIndex: index, activeBranchIndex: navigationShell.currentIndex)) {
+      return;
+    }
 
     final tabType = _tabTypeForIndex(index);
     if (tabType != null) {
@@ -41,12 +50,13 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.home);
         break;
       case 1:
-        // Reached only when the shared Khám phá tab RETURNS to an already-open
-        // roadmap (ScaffoldLayout._courseSlotBranch). Deliberately does NOT
-        // reset the roadmap source: the branch is restored exactly as the user
-        // left it, so a roadmap opened from the grid keeps its 'course_selection'
-        // source (and its back-to-Explore button). Overwriting it with
-        // 'nav_course' here previously hid that button on tab return.
+        // Not reachable via a bottom-nav tab tap: ScaffoldLayout never maps a
+        // visual tab to branch 1 (the course roadmap) — tapping Khám phá
+        // always targets branch 3 (the Explore grid), so the roadmap is only
+        // entered by tapping a specific course. Kept for completeness/in case
+        // a future caller routes here directly; deliberately does NOT reset
+        // the roadmap source so an already-open roadmap keeps whatever source
+        // it was opened with (e.g. its back-to-Explore button).
         setCurrentRouteName(RouteNamed.courseRoadmap);
         break;
       case 2:
@@ -123,3 +133,17 @@ class PageCubit extends Cubit<PageState> {
     }
   }
 }
+
+/// Whether a bottom-nav tab tap should be ignored as a no-op.
+///
+/// Compares the tapped branch against the shell's ACTUAL active branch
+/// ([StatefulNavigationShell.currentIndex]) — never [PageCubit.state], whose
+/// currentIndex/currentRouteName can lag behind when a branch is entered via a
+/// raw `.go()` (re-activating an already-built branch fires no didPush, so the
+/// router observer never syncs the state). Only a tap on the branch already on
+/// screen is a no-op; any tap toward a different branch must proceed.
+@visibleForTesting
+bool shouldIgnoreShellTabTap({
+  required int tappedIndex,
+  required int activeBranchIndex,
+}) => tappedIndex == activeBranchIndex;
