@@ -18,6 +18,7 @@ export interface IStudyTheme {
   isDark: boolean;
   order: number;
   isActive: boolean;
+  isPremium: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,6 +38,7 @@ export interface StudyThemeListQuery {
   mode?: StudyThemeMode;
   category?: string;
   isActive?: boolean;
+  isPremium?: boolean;
 }
 
 export interface StudyThemeListResponse {

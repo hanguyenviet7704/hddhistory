@@ -295,6 +295,21 @@ export default function StudyThemeList() {
     }
   };
 
+  const handleTogglePremium = async (theme: IStudyTheme) => {
+    setTogglingKey(theme.key);
+    try {
+      await studyThemeService.update(theme.key, { isPremium: !theme.isPremium });
+      setItems((prev) =>
+        prev.map((i) => (i.key === theme.key ? { ...i, isPremium: !i.isPremium } : i))
+      );
+      showSuccess(`Theme ${theme.isPremium ? "made free" : "made premium"}`);
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Failed to update theme premium status");
+    } finally {
+      setTogglingKey(null);
+    }
+  };
+
   // Pulls every preset across all pages (list view is paginated at TAKE=10) —
   // used by both export and the import upsert (to know which keys already
   // exist). `take: 1000` should cover the whole library in one call; the loop
@@ -399,7 +414,17 @@ export default function StudyThemeList() {
     }
   };
 
-  const columns = ["Key", "Name", "Mode", "Category", "Preview", "Order", "Active", "Actions"];
+  const columns = [
+    "Key",
+    "Name",
+    "Mode",
+    "Category",
+    "Preview",
+    "Order",
+    "Active",
+    "Premium",
+    "Actions",
+  ];
 
   return (
     <Box className="p-6">
@@ -577,6 +602,22 @@ export default function StudyThemeList() {
                         />
                         <Typography variant="caption" color="text.secondary">
                           {item.isActive ? "Active" : "Inactive"}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box className="flex items-center gap-1">
+                        <Switch
+                          size="small"
+                          checked={item.isPremium}
+                          disabled={togglingKey === item.key}
+                          onChange={() => handleTogglePremium(item)}
+                          inputProps={{
+                            "aria-label": `${item.isPremium ? "Remove premium from" : "Make premium"} ${item.name}`,
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {item.isPremium ? "Premium" : "Free"}
                         </Typography>
                       </Box>
                     </TableCell>
