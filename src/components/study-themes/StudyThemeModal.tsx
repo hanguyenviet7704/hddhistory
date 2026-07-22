@@ -13,6 +13,7 @@ import {
   Divider,
   FormControlLabel,
   MenuItem,
+  Slider,
   Stack,
   Switch,
   TextField,
@@ -27,7 +28,23 @@ import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import GradientColorListEditor from "./GradientColorListEditor";
 
 const KEY_REGEX = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/i;
-const OVERLAY_REGEX = /^#([0-9a-f]{8})$/i;
+
+// The overlay is a black readability scrim. It's STORED as an 8-digit hex
+// (#RRGGBBAA, unchanged for the app/API), but EDITED as a simple darkness
+// percentage the admin drags on a slider — the alpha of black.
+const overlayHexToPercent = (hex?: string): number => {
+  const match = /^#(?:[0-9a-f]{6})([0-9a-f]{2})$/i.exec((hex ?? "").trim());
+  if (!match) return 0;
+  return Math.round((parseInt(match[1], 16) / 255) * 100);
+};
+const percentToOverlayHex = (pct: number): string | undefined => {
+  const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+  if (clamped <= 0) return undefined; // 0% = no overlay
+  const alpha = Math.round((clamped / 100) * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `#000000${alpha}`;
+};
 
 const modeOptions: { value: StudyThemeMode; label: string; hint: string }[] = [
   {
@@ -59,7 +76,6 @@ interface FormErrors {
   gradient?: string;
   imageUrl?: string;
   videoUrl?: string;
-  overlay?: string;
   order?: string;
 }
 
@@ -89,9 +105,10 @@ export default function StudyThemeModal({
   const [videoUrl, setVideoUrl] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
   const [thumbUrl, setThumbUrl] = useState("");
-  const [overlay, setOverlay] = useState("");
+  const [overlayPercent, setOverlayPercent] = useState(0);
   const [isDark, setIsDark] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
   const [orderValue, setOrderValue] = useState("0");
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -114,9 +131,10 @@ export default function StudyThemeModal({
       setVideoUrl(initial.videoUrl ?? "");
       setAudioUrl(initial.audioUrl ?? "");
       setThumbUrl(initial.thumbUrl ?? "");
-      setOverlay(initial.overlay ?? "");
+      setOverlayPercent(overlayHexToPercent(initial.overlay));
       setIsDark(!!initial.isDark);
       setIsActive(initial.isActive ?? true);
+      setIsPremium(initial.isPremium ?? false);
       setOrderValue(
         initial.order !== undefined && initial.order !== null
           ? String(initial.order)
@@ -132,9 +150,10 @@ export default function StudyThemeModal({
       setVideoUrl("");
       setAudioUrl("");
       setThumbUrl("");
-      setOverlay("");
+      setOverlayPercent(0);
       setIsDark(false);
       setIsActive(true);
+      setIsPremium(false);
       setOrderValue("0");
     }
   }, [initial, open]);
@@ -146,7 +165,6 @@ export default function StudyThemeModal({
   const validate = (): FormErrors => {
     const next: FormErrors = {};
     const trimmedKey = key.trim();
-    const trimmedOverlay = overlay.trim();
 
     if (!isEdit) {
       if (!trimmedKey) {
@@ -174,10 +192,6 @@ export default function StudyThemeModal({
 
     if (mode === StudyThemeMode.VIDEO && !videoUrl.trim()) {
       next.videoUrl = "Upload or provide a video for video mode";
-    }
-
-    if (trimmedOverlay && !OVERLAY_REGEX.test(trimmedOverlay)) {
-      next.overlay = "Use an 8-digit hex with alpha, e.g. #00000066";
     }
 
     if (orderValue.trim() !== "" && Number.isNaN(Number(orderValue))) {
@@ -208,9 +222,10 @@ export default function StudyThemeModal({
       videoUrl: mode === StudyThemeMode.VIDEO ? videoUrl.trim() : videoUrl.trim() || undefined,
       audioUrl: audioUrl.trim() || undefined,
       thumbUrl: thumbUrl.trim() || undefined,
-      overlay: overlay.trim() || undefined,
+      overlay: percentToOverlayHex(overlayPercent),
       isDark,
       isActive,
+      isPremium,
       order: trimmedOrder === "" ? 0 : Number(trimmedOrder),
     };
 
@@ -232,7 +247,7 @@ export default function StudyThemeModal({
     }
   };
 
-  const overlayIsValid = overlay.trim() === "" || OVERLAY_REGEX.test(overlay.trim());
+  const overlayPreviewColor = percentToOverlayHex(overlayPercent) ?? "transparent";
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -386,50 +401,65 @@ export default function StudyThemeModal({
               live preview when empty.
             </Typography>
 
-            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-              <TextField
-                label="Overlay"
-                value={overlay}
-                onChange={(e) => {
-                  setOverlay(e.target.value);
-                  clearFieldError("overlay");
-                }}
-                error={!!errors.overlay}
-                helperText={
-                  errors.overlay ??
-                  "Optional 8-digit hex with alpha for readability, e.g. #00000066"
-                }
-                size="small"
-                fullWidth
-                placeholder="#00000066"
-              />
-              <Box
-                aria-hidden
-                sx={{
-                  width: 40,
-                  height: 40,
-                  flexShrink: 0,
-                  mt: 0.5,
-                  borderRadius: 1,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  backgroundImage:
-                    "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)",
-                  backgroundSize: "8px 8px",
-                  backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                    }}
+                  >
+                    <Typography variant="body2">Overlay darkness</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {overlayPercent}%
+                    </Typography>
+                  </Box>
+                  <Slider
+                    aria-label="Overlay darkness"
+                    value={overlayPercent}
+                    onChange={(_, v) =>
+                      setOverlayPercent(Array.isArray(v) ? v[0] : v)
+                    }
+                    min={0}
+                    max={100}
+                    step={1}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(v) => `${v}%`}
+                  />
+                </Box>
+                {/* Swatch: black scrim at the chosen darkness, over a checkerboard. */}
                 <Box
+                  aria-hidden
                   sx={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundColor:
-                      overlayIsValid && overlay.trim() ? overlay.trim() : "transparent",
+                    width: 40,
+                    height: 40,
+                    flexShrink: 0,
+                    borderRadius: 1,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundImage:
+                      "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)",
+                    backgroundSize: "8px 8px",
+                    backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      inset: 0,
+                      backgroundColor: overlayPreviewColor,
+                    }}
+                  />
+                </Box>
               </Box>
+              <Typography variant="caption" color="text.secondary">
+                Darkens the background for readability (0% = none). A black scrim
+                at the chosen opacity.
+              </Typography>
             </Box>
 
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
@@ -451,7 +481,19 @@ export default function StudyThemeModal({
                 }
                 label="Active (visible in the app)"
               />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPremium}
+                    onChange={(e) => setIsPremium(e.target.checked)}
+                  />
+                }
+                label="Premium"
+              />
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
+              Locked behind the paywall in-app; hidden in onboarding.
+            </Typography>
 
             <TextField
               label="Order"
