@@ -21,6 +21,7 @@ import {
   SpeakerWaveIcon,
   SwatchIcon,
   AdjustmentsHorizontalIcon,
+  BugAntIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -62,6 +63,11 @@ const menuItems = [
   { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
   { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
   { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
+  {
+    name: "Reset Onboarding (QA)",
+    icon: BugAntIcon,
+    path: "/reset-onboarding",
+  },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {

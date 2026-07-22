@@ -1,4 +1,9 @@
-import { IUser, UserListQuery } from "../types/interface/user.interface";
+import {
+  IResetOnboardingResult,
+  IUser,
+  ResetOnboardingPayload,
+  UserListQuery,
+} from "../types/interface/user.interface";
 import axiosClient from "./axiosClient";
 
 export const userService = {
@@ -22,5 +27,17 @@ export const userService = {
 
   async remove(id: string) {
     return axiosClient.delete(`/users/${id}`);
+  },
+
+  // The API wraps every response as { statusCode, message, data: <payload> }
+  // (see meup-api ResponseInterceptor), so the reset user lives at
+  // res.data.data — not res.data. Matches onboardingConfigService /
+  // studyThemeService.
+  async resetOnboarding(payload: ResetOnboardingPayload) {
+    const res = await axiosClient.post<{ data: IResetOnboardingResult }>(
+      "/users/reset-onboarding",
+      payload
+    );
+    return res.data.data;
   },
 };
