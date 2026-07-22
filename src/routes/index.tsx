@@ -41,6 +41,8 @@ import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
 import ReportList from "../pages/reports/ReportList";
 import ImageCompressionPage from "../pages/image-compression/ImageCompressionPage";
 import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
+import StudyThemeList from "../pages/study-themes/StudyThemeList";
+import OnboardingConfigPage from "../pages/onboarding-config/OnboardingConfigPage";
 
 export default function AppRouter() {
   return (
@@ -66,6 +68,8 @@ export default function AppRouter() {
                 path="reanchor-reasons"
                 element={<ReanchorReasonList />}
               />
+
+              <Route path="study-themes" element={<StudyThemeList />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />
@@ -101,6 +105,10 @@ export default function AppRouter() {
               <Route
                 path="onboarding-branching"
                 element={<OnboardingManagemantScenarioBranching />}
+              />
+              <Route
+                path="onboarding-config"
+                element={<OnboardingConfigPage />}
               />
 
               <Route

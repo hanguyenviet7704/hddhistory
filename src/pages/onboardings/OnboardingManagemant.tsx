@@ -11,6 +11,7 @@ import {
   IconButton,
   Box,
   CircularProgress,
+  Divider,
 } from "@mui/material";
 import { Edit, Delete, Add, Save, Close } from "@mui/icons-material";
 import {
@@ -24,12 +25,15 @@ import {
   IOnboarding,
   OnboardingPayload,
   OnboardingIntroPayload,
+  OnboardingPath,
+  OnboardingSymptom,
+  OnboardingCopy,
 } from "../../types/interface/onboarding.interface";
 import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
@@ -46,6 +50,22 @@ import Underline from "@tiptap/extension-underline";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { Extension } from "@tiptap/core";
+import {
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import SortableItem from "../../components/common/SortableItem";
 
 type MotivationField =
   | "welcome"
@@ -63,6 +83,90 @@ type OnboardingArrayField =
   | "learningStruggles"
   | "comfortableLearningTime"
   | "dailyLearningGoal";
+
+// Learning Paths (onboarding v2) — editable drafts carry a client-only
+// `_localId` for drag reordering / React keys; `key` is the business
+// identifier (stable, chosen by the operator) and is never guaranteed
+// unique while the operator is still typing it.
+interface SymptomDraft extends OnboardingSymptom {
+  _localId: string;
+}
+
+interface PathDraft extends Omit<OnboardingPath, "symptoms"> {
+  _localId: string;
+  symptoms: SymptomDraft[];
+}
+
+// Onboarding Copy (onboarding v2 screen text) — the key set is FIXED and
+// known ahead of time; editors fill in en/vi values, they never add or
+// rename keys. Grouped by screen for scanability.
+interface CopyFieldDef {
+  key: string;
+  label: string;
+}
+
+interface CopyGroupDef {
+  title: string;
+  fields: CopyFieldDef[];
+}
+
+const COPY_GROUPS: CopyGroupDef[] = [
+  {
+    title: "Intro screen",
+    fields: [
+      { key: "onboardingV2P1TitlePrefix", label: "Title prefix" },
+      { key: "onboardingV2P1TitleBrand", label: "Brand" },
+      { key: "onboardingV2P1SubtitleLine1", label: "Subtitle line 1" },
+      { key: "onboardingV2P1SubtitleLine2", label: "Subtitle line 2" },
+      { key: "onboardingV2P1GetStartedCta", label: "Get started button" },
+    ],
+  },
+  {
+    title: "Name screen",
+    fields: [
+      { key: "onboardingV2P2HeadingPrefix", label: "Heading prefix" },
+      { key: "onboardingV2P2HeadingHighlight", label: "Heading highlight" },
+      { key: "onboardingV2P2Subtitle", label: "Subtitle" },
+      { key: "onboardingV2P2InputHint", label: "Name input hint" },
+    ],
+  },
+  {
+    title: "Notification screen",
+    fields: [
+      { key: "onboardingV2P6HeadingPrefix", label: "Heading prefix" },
+      { key: "onboardingV2P6HeadingHighlight", label: "Heading highlight" },
+      { key: "onboardingV2P6Subtitle", label: "Subtitle" },
+      {
+        key: "onboardingV2NotificationCardTitle",
+        label: "Preview card title",
+      },
+      { key: "onboardingV2NotificationCardBody", label: "Preview card body" },
+      {
+        key: "onboardingV2NotificationCardTimestamp",
+        label: "Preview card timestamp",
+      },
+      { key: "onboardingV2NotifyCta", label: "Notify button" },
+    ],
+  },
+];
+
+const ALL_COPY_KEYS = COPY_GROUPS.flatMap((group) =>
+  group.fields.map((field) => field.key),
+);
+
+type CopyValues = Record<string, { en: string; vi: string }>;
+
+const initCopyValues = (copy?: OnboardingCopy[]): CopyValues => {
+  const values: CopyValues = {};
+  ALL_COPY_KEYS.forEach((key) => {
+    const found = (copy || []).find((c) => c.key === key);
+    values[key] = {
+      en: found?.value?.en || "",
+      vi: found?.value?.vi || "",
+    };
+  });
+  return values;
+};
 
 const sanitizeTranslation = (
   translation: ITranslation | undefined,
@@ -643,6 +747,252 @@ const MotivationInput: React.FC<{
   );
 };
 
+const PathCard: React.FC<{
+  path: PathDraft;
+  index: number;
+  lang: LangCode;
+  keyError?: string;
+  symptomErrors: Record<string, string>;
+  sensors: ReturnType<typeof useSensors>;
+  onChange: (updater: (path: PathDraft) => PathDraft) => void;
+  onDelete: () => void;
+  onAddSymptom: () => void;
+  onRemoveSymptom: (symptomLocalId: string) => void;
+  onSymptomDragEnd: (event: DragEndEvent) => void;
+}> = ({
+  path,
+  index,
+  lang,
+  keyError,
+  symptomErrors,
+  sensors,
+  onChange,
+  onDelete,
+  onAddSymptom,
+  onRemoveSymptom,
+  onSymptomDragEnd,
+}) => {
+  const updateField = <K extends keyof PathDraft>(
+    field: K,
+    value: PathDraft[K],
+  ) => onChange((prev) => ({ ...prev, [field]: value }));
+
+  const updateSymptomField = (
+    symptomLocalId: string,
+    updater: (symptom: SymptomDraft) => SymptomDraft,
+  ) =>
+    onChange((prev) => ({
+      ...prev,
+      symptoms: prev.symptoms.map((s) =>
+        s._localId === symptomLocalId ? updater(s) : s,
+      ),
+    }));
+
+  return (
+    <SortableItem id={path._localId}>
+      <Box
+        sx={{
+          mb: 3,
+          p: 2,
+          borderRadius: 1,
+          bgcolor: "grey.100",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          transition: "all 0.3s ease",
+          "&:hover": { boxShadow: "0 4px 8px rgba(0,0,0,0.15)" },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 2,
+          }}
+        >
+          <Typography variant="subtitle2" color="text.secondary">
+            Path {index + 1}
+          </Typography>
+          <IconButton onClick={onDelete} color="error" size="small" aria-label="Delete path">
+            <Delete />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2 }}>
+          <TextField
+            label="Key"
+            value={path.key}
+            onChange={(e) => updateField("key", e.target.value)}
+            error={Boolean(keyError)}
+            helperText={keyError || "Stable id, e.g. FEEL_BETTER"}
+            size="small"
+            sx={{ minWidth: 220 }}
+          />
+          <TextField
+            label="Short title"
+            value={path.shortTitle}
+            onChange={(e) => updateField("shortTitle", e.target.value)}
+            size="small"
+            sx={{ minWidth: 160 }}
+          />
+          <TextField
+            label="Tracking label"
+            value={path.trackingLabel}
+            onChange={(e) => updateField("trackingLabel", e.target.value)}
+            size="small"
+            sx={{ minWidth: 200 }}
+          />
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+          <TextField
+            label="Title (en)"
+            value={path.title.en || ""}
+            onChange={(e) =>
+              updateField("title", { ...path.title, en: e.target.value })
+            }
+            size="small"
+            fullWidth
+          />
+          <TextField
+            label="Title (vi)"
+            value={path.title.vi || ""}
+            onChange={(e) =>
+              updateField("title", { ...path.title, vi: e.target.value })
+            }
+            size="small"
+            fullWidth
+          />
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start", mb: 1, flexWrap: "wrap" }}>
+          <TextField
+            label="Icon key"
+            value={path.iconKey}
+            onChange={(e) => updateField("iconKey", e.target.value)}
+            helperText="Bundled asset key, e.g. ic_heart"
+            size="small"
+            sx={{ minWidth: 200 }}
+          />
+          <CloudflareFileUpload
+            initialUrl={path.iconUrl || ""}
+            onUrlChange={(newUrl) => updateField("iconUrl", newUrl)}
+            label="Icon URL override (optional)"
+            uploadPayload={{ prefix: "", folder: "onboarding" }}
+          />
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          Symptoms
+        </Typography>
+
+        {path.symptoms.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            No symptoms yet.
+          </Typography>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onSymptomDragEnd}
+          >
+            <SortableContext
+              items={path.symptoms.map((s) => s._localId)}
+              strategy={verticalListSortingStrategy}
+            >
+              {path.symptoms.map((symptom) => (
+                <SortableItem key={symptom._localId} id={symptom._localId}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 2,
+                      alignItems: "flex-start",
+                      mb: 1.5,
+                      p: 1.5,
+                      borderRadius: 1,
+                      bgcolor: "white",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <TextField
+                      label="Key"
+                      value={symptom.key}
+                      onChange={(e) =>
+                        updateSymptomField(symptom._localId, (s) => ({
+                          ...s,
+                          key: e.target.value,
+                        }))
+                      }
+                      error={Boolean(symptomErrors[symptom._localId])}
+                      helperText={symptomErrors[symptom._localId]}
+                      size="small"
+                      sx={{ minWidth: 200 }}
+                    />
+                    <TextField
+                      label="Title (en)"
+                      value={symptom.title.en || ""}
+                      onChange={(e) =>
+                        updateSymptomField(symptom._localId, (s) => ({
+                          ...s,
+                          title: { ...s.title, en: e.target.value },
+                        }))
+                      }
+                      size="small"
+                      sx={{ flex: 1, minWidth: 160 }}
+                    />
+                    <TextField
+                      label="Title (vi)"
+                      value={symptom.title.vi || ""}
+                      onChange={(e) =>
+                        updateSymptomField(symptom._localId, (s) => ({
+                          ...s,
+                          title: { ...s.title, vi: e.target.value },
+                        }))
+                      }
+                      size="small"
+                      sx={{ flex: 1, minWidth: 160 }}
+                    />
+                    <TextField
+                      label="Tracking label"
+                      value={symptom.trackingLabel}
+                      onChange={(e) =>
+                        updateSymptomField(symptom._localId, (s) => ({
+                          ...s,
+                          trackingLabel: e.target.value,
+                        }))
+                      }
+                      size="small"
+                      sx={{ minWidth: 180 }}
+                    />
+                    <IconButton
+                      onClick={() => onRemoveSymptom(symptom._localId)}
+                      color="error"
+                      size="small"
+                      aria-label="Delete symptom"
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                </SortableItem>
+              ))}
+            </SortableContext>
+          </DndContext>
+        )}
+        <Button
+          onClick={onAddSymptom}
+          variant="outlined"
+          size="small"
+          startIcon={<Add />}
+          sx={{ mt: 1 }}
+        >
+          Add symptom
+        </Button>
+      </Box>
+    </SortableItem>
+  );
+};
+
 // --- Component Cha: OnboardingManagement ---
 const OnboardingManagement: React.FC = () => {
   const lang = useSelector((state: RootState) => state.lang.code);
@@ -652,6 +1002,235 @@ const OnboardingManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("intro");
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Learning Paths (onboarding v2)
+  const [paths, setPaths] = useState<PathDraft[]>([]);
+  const [pathPendingDelete, setPathPendingDelete] = useState<PathDraft | null>(
+    null,
+  );
+
+  // Onboarding Copy (onboarding v2 screen text)
+  const [copyValues, setCopyValues] = useState<CopyValues>(() =>
+    initCopyValues(),
+  );
+  const localIdCounter = useRef(0);
+  const nextLocalId = useCallback(() => {
+    localIdCounter.current += 1;
+    return `local-${localIdCounter.current}`;
+  }, []);
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const toSymptomDraft = useCallback(
+    (symptom: OnboardingSymptom): SymptomDraft => ({
+      ...symptom,
+      title: symptom.title || {},
+      _localId: nextLocalId(),
+    }),
+    [nextLocalId],
+  );
+
+  const toPathDraft = useCallback(
+    (path: OnboardingPath): PathDraft => ({
+      ...path,
+      title: path.title || {},
+      iconUrl: path.iconUrl || "",
+      symptoms: (path.symptoms || []).map(toSymptomDraft),
+      _localId: nextLocalId(),
+    }),
+    [nextLocalId, toSymptomDraft],
+  );
+
+  const createPathDraft = (order: number): PathDraft => {
+    const localId = nextLocalId();
+    return {
+      _localId: localId,
+      // Placeholder key — always unique for the session (never reused, even
+      // after add/delete cycles); the operator renames it to a real stable
+      // identifier such as "FEEL_BETTER" before saving.
+      key: `NEW_PATH_${localId.replace("local-", "")}`,
+      title: { [lang]: "" },
+      shortTitle: "",
+      iconKey: "",
+      iconUrl: "",
+      trackingLabel: "",
+      order,
+      symptoms: [],
+    };
+  };
+
+  const createSymptomDraft = (order: number): SymptomDraft => {
+    const localId = nextLocalId();
+    return {
+      _localId: localId,
+      key: `NEW_SYMPTOM_${localId.replace("local-", "")}`,
+      title: { [lang]: "" },
+      trackingLabel: "",
+      order,
+    };
+  };
+
+  const addPath = () => {
+    setPaths((prev) => [...prev, createPathDraft(prev.length)]);
+  };
+
+  const updatePath = (
+    localId: string,
+    updater: (path: PathDraft) => PathDraft,
+  ) => {
+    setPaths((prev) =>
+      prev.map((p) => (p._localId === localId ? updater(p) : p)),
+    );
+  };
+
+  const addSymptom = (pathLocalId: string) => {
+    updatePath(pathLocalId, (p) => ({
+      ...p,
+      symptoms: [...p.symptoms, createSymptomDraft(p.symptoms.length)],
+    }));
+  };
+
+  const removeSymptom = (pathLocalId: string, symptomLocalId: string) => {
+    updatePath(pathLocalId, (p) => ({
+      ...p,
+      symptoms: p.symptoms.filter((s) => s._localId !== symptomLocalId),
+    }));
+  };
+
+  const handlePathDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setPaths((prev) => {
+      const oldIndex = prev.findIndex((p) => p._localId === active.id);
+      const newIndex = prev.findIndex((p) => p._localId === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  const handleSymptomDragEnd = (pathLocalId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    updatePath(pathLocalId, (p) => {
+      const oldIndex = p.symptoms.findIndex((s) => s._localId === active.id);
+      const newIndex = p.symptoms.findIndex((s) => s._localId === over.id);
+      if (oldIndex === -1 || newIndex === -1) return p;
+      return { ...p, symptoms: arrayMove(p.symptoms, oldIndex, newIndex) };
+    });
+  };
+
+  const confirmDeletePath = (path: PathDraft) => setPathPendingDelete(path);
+
+  const handleConfirmDeletePath = () => {
+    if (pathPendingDelete) {
+      setPaths((prev) =>
+        prev.filter((p) => p._localId !== pathPendingDelete._localId),
+      );
+    }
+    setPathPendingDelete(null);
+  };
+
+  // Every path/symptom key must be non-empty and unique (drives icon lookup
+  // and course-recommendation matching in the app) — block Save until fixed.
+  const pathKeyErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    const seen = new Map<string, string>();
+    paths.forEach((path) => {
+      const normalized = path.key.trim().toUpperCase();
+      if (!normalized) {
+        errors[path._localId] = "Key is required";
+        return;
+      }
+      const existing = seen.get(normalized);
+      if (existing) {
+        errors[path._localId] = "Key must be unique";
+        errors[existing] = "Key must be unique";
+      } else {
+        seen.set(normalized, path._localId);
+      }
+    });
+    return errors;
+  }, [paths]);
+
+  const symptomKeyErrorsByPath = useMemo(() => {
+    const map: Record<string, Record<string, string>> = {};
+    paths.forEach((path) => {
+      const errors: Record<string, string> = {};
+      const seen = new Map<string, string>();
+      path.symptoms.forEach((symptom) => {
+        const normalized = symptom.key.trim().toUpperCase();
+        if (!normalized) {
+          errors[symptom._localId] = "Key is required";
+          return;
+        }
+        const existing = seen.get(normalized);
+        if (existing) {
+          errors[symptom._localId] = "Key must be unique";
+          errors[existing] = "Key must be unique";
+        } else {
+          seen.set(normalized, symptom._localId);
+        }
+      });
+      map[path._localId] = errors;
+    });
+    return map;
+  }, [paths]);
+
+  const hasPathErrors =
+    Object.keys(pathKeyErrors).length > 0 ||
+    Object.values(symptomKeyErrorsByPath).some(
+      (errs) => Object.keys(errs).length > 0,
+    );
+
+  const buildPathsPayload = (list: PathDraft[]): OnboardingPath[] =>
+    list.map((path, index) => {
+      const { _localId, symptoms, title, ...rest } = path;
+      return {
+        ...rest,
+        title: sanitizeTranslation(cleanTranslation(title) || title) || {},
+        order: index,
+        symptoms: symptoms.map((symptom, sIndex) => {
+          const {
+            _localId: _symptomLocalId,
+            title: symptomTitle,
+            ...symptomRest
+          } = symptom;
+          return {
+            ...symptomRest,
+            title:
+              sanitizeTranslation(
+                cleanTranslation(symptomTitle) || symptomTitle,
+              ) || {},
+            order: sIndex,
+          };
+        }),
+      };
+    });
+
+  const updateCopyValue = useCallback(
+    (key: string, langCode: LangCode, value: string) => {
+      setCopyValues((prev) => ({
+        ...prev,
+        [key]: { ...prev[key], [langCode]: value },
+      }));
+    },
+    [],
+  );
+
+  // Always emit the full fixed key set — keeps the shape predictable for
+  // whatever reads `copy` server-side, even when an editor leaves a field
+  // blank.
+  const buildCopyPayload = (): OnboardingCopy[] =>
+    ALL_COPY_KEYS.map((key) => ({
+      key,
+      value: {
+        en: copyValues[key]?.en || "",
+        vi: copyValues[key]?.vi || "",
+      },
+    }));
 
   const [nextIds, setNextIds] = useState({
     intro: 1,
@@ -722,6 +1301,8 @@ const OnboardingManagement: React.FC = () => {
         const res = await onboardingService.getOne();
         setOnboarding(res.data);
         calculateNextIds(res.data);
+        setPaths((res.data?.paths || []).map(toPathDraft));
+        setCopyValues(initCopyValues(res.data?.copy));
       } catch (err) {
         showError("Failed to fetch onboarding data");
       } finally {
@@ -798,6 +1379,11 @@ const OnboardingManagement: React.FC = () => {
   const handleSave = async (): Promise<void> => {
     if (!onboarding) return;
 
+    if (hasPathErrors) {
+      showError("Fix empty or duplicate Learning Path keys before saving.");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload: OnboardingPayload = {
@@ -826,6 +1412,8 @@ const OnboardingManagement: React.FC = () => {
         motivationTwo: buildMotivationPayload(onboarding.motivationTwo),
         motivationThree: buildMotivationPayload(onboarding.motivationThree),
         loading: buildMotivationPayload(onboarding.loading),
+        paths: buildPathsPayload(paths),
+        copy: buildCopyPayload(),
       };
 
       await onboardingService.update(onboarding._id, payload);
@@ -941,6 +1529,130 @@ const OnboardingManagement: React.FC = () => {
           Add Intro Step
         </Button>
       </Box>
+    </Box>
+  );
+
+  const renderPathsTab = (): React.ReactNode => (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        Learning Paths
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Drag to reorder. Each path and symptom needs a unique key — it drives
+        icon lookup and course matching in the app.
+      </Typography>
+
+      {paths.length === 0 ? (
+        <Box
+          sx={{ p: 3, textAlign: "center", bgcolor: "grey.100", borderRadius: 1, mb: 2 }}
+        >
+          <Typography color="text.secondary">
+            No learning paths yet — add the first one below.
+          </Typography>
+        </Box>
+      ) : (
+        <DndContext
+          sensors={dndSensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handlePathDragEnd}
+        >
+          <SortableContext
+            items={paths.map((p) => p._localId)}
+            strategy={verticalListSortingStrategy}
+          >
+            {paths.map((path, index) => (
+              <PathCard
+                key={path._localId}
+                path={path}
+                index={index}
+                lang={lang}
+                keyError={pathKeyErrors[path._localId]}
+                symptomErrors={symptomKeyErrorsByPath[path._localId] || {}}
+                sensors={dndSensors}
+                onChange={(updater) => updatePath(path._localId, updater)}
+                onDelete={() => confirmDeletePath(path)}
+                onAddSymptom={() => addSymptom(path._localId)}
+                onRemoveSymptom={(symptomLocalId) =>
+                  removeSymptom(path._localId, symptomLocalId)
+                }
+                onSymptomDragEnd={(event) =>
+                  handleSymptomDragEnd(path._localId, event)
+                }
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      )}
+
+      <Button
+        onClick={addPath}
+        variant="outlined"
+        startIcon={<Add />}
+        sx={{ mt: 1 }}
+      >
+        Add path
+      </Button>
+    </Box>
+  );
+
+  const renderCopyTab = (): React.ReactNode => (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        Onboarding Copy
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Screen text for onboarding v2. Keys are fixed — fill in the English
+        and Vietnamese copy for each field below.
+      </Typography>
+
+      {COPY_GROUPS.map((group, groupIndex) => (
+        <Box
+          key={group.title}
+          sx={{
+            mb: 3,
+            p: 2,
+            borderRadius: 1,
+            bgcolor: "grey.100",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
+            {group.title}
+          </Typography>
+          {group.fields.map((field, fieldIndex) => (
+            <Box key={field.key} sx={{ mb: fieldIndex === group.fields.length - 1 ? 0 : 2 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 0.5 }}
+              >
+                {field.label}
+              </Typography>
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                <TextField
+                  label="en"
+                  value={copyValues[field.key]?.en || ""}
+                  onChange={(e) =>
+                    updateCopyValue(field.key, LangCode.EN, e.target.value)
+                  }
+                  size="small"
+                  sx={{ flex: 1, minWidth: 220 }}
+                />
+                <TextField
+                  label="vi"
+                  value={copyValues[field.key]?.vi || ""}
+                  onChange={(e) =>
+                    updateCopyValue(field.key, LangCode.VI, e.target.value)
+                  }
+                  size="small"
+                  sx={{ flex: 1, minWidth: 220 }}
+                />
+              </Box>
+            </Box>
+          ))}
+          {groupIndex < COPY_GROUPS.length - 1 && <Divider sx={{ mt: 2 }} />}
+        </Box>
+      ))}
     </Box>
   );
 
@@ -1643,6 +2355,206 @@ const OnboardingManagement: React.FC = () => {
               </Box>
             </Box>
 
+            {/* Learning Paths Section (onboarding v2) */}
+            <Box
+              sx={{
+                mb: 6,
+                p: 3,
+                borderRadius: 2,
+                bgcolor: "grey.50",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                transition: "all 0.3s ease",
+                "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.12)" },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  Learning Paths
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Edit />}
+                  onClick={() => handleEdit("paths")}
+                  sx={{
+                    transition: "all 0.3s ease",
+                    "&:hover": { bgcolor: "primary.main", color: "white" },
+                  }}
+                >
+                  Edit
+                </Button>
+              </Box>
+              {paths.length === 0 ? (
+                <Typography color="text.secondary">
+                  No learning paths yet. Click Edit to create the first path.
+                </Typography>
+              ) : (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {paths.map((path, index) => (
+                    <Box
+                      key={path._localId}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        p: 1.5,
+                        borderRadius: 1,
+                        bgcolor: "white",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ minWidth: 20 }}
+                      >
+                        {index + 1}
+                      </Typography>
+                      {path.iconUrl ? (
+                        <CloudflareAssetPreview
+                          src={path.iconUrl}
+                          alt={path.shortTitle || path.key}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            objectFit: "contain",
+                            display: "block",
+                          }}
+                        />
+                      ) : (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ minWidth: 90 }}
+                        >
+                          {path.iconKey || "no icon"}
+                        </Typography>
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: "medium" }}>
+                          {getCurrentTranslationValue(path.title, lang) ||
+                            path.key ||
+                            "Untitled path"}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {path.key} · {path.shortTitle || "no short title"} ·{" "}
+                          {path.symptoms.length} symptom
+                          {path.symptoms.length === 1 ? "" : "s"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+
+            {/* Onboarding Copy Section (onboarding v2 screen text) */}
+            <Box
+              sx={{
+                mb: 6,
+                p: 3,
+                borderRadius: 2,
+                bgcolor: "grey.50",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                transition: "all 0.3s ease",
+                "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.12)" },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  Onboarding Copy
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Edit />}
+                  onClick={() => handleEdit("copy")}
+                  sx={{
+                    transition: "all 0.3s ease",
+                    "&:hover": { bgcolor: "primary.main", color: "white" },
+                  }}
+                >
+                  Edit
+                </Button>
+              </Box>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                {COPY_GROUPS.map((group) => (
+                  <Box key={group.title}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      {group.title}
+                    </Typography>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                      {group.fields.map((field) => {
+                        const en = copyValues[field.key]?.en || "";
+                        const vi = copyValues[field.key]?.vi || "";
+                        return (
+                          <Box
+                            key={field.key}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                              p: 1.5,
+                              borderRadius: 1,
+                              bgcolor: "white",
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{ minWidth: 180, fontWeight: "medium" }}
+                            >
+                              {field.label}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color={en ? "text.primary" : "text.secondary"}
+                              sx={{
+                                flex: 1,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              en: {en || "not set"}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color={vi ? "text.primary" : "text.secondary"}
+                              sx={{
+                                flex: 1,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              vi: {vi || "not set"}
+                            </Typography>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+
             {renderMotivationSection("welcome", "Welcome")}
             {renderMotivationSection("motivationOne", "Motivation One")}
             {renderMotivationSection("motivationTwo", "Motivation Two")}
@@ -1657,7 +2569,7 @@ const OnboardingManagement: React.FC = () => {
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        maxWidth="md"
+        maxWidth={activeTab === "paths" || activeTab === "copy" ? "lg" : "md"}
         fullWidth
         PaperProps={{
           sx: {
@@ -1685,6 +2597,8 @@ const OnboardingManagement: React.FC = () => {
               {activeTab === "learningStruggles" && "Edit Learning Struggles"}
               {activeTab === "comfortableLearningTime" && "Edit Learning Times"}
               {activeTab === "dailyLearningGoal" && "Edit Daily Goals"}
+              {activeTab === "paths" && "Edit Learning Paths"}
+              {activeTab === "copy" && "Edit Onboarding Copy"}
               {activeTab === "welcome" && "Edit Welcome"}
               {activeTab === "motivationOne" && "Edit Motivation One"}
               {activeTab === "motivationTwo" && "Edit Motivation Two"}
@@ -1710,6 +2624,8 @@ const OnboardingManagement: React.FC = () => {
           {activeTab === "comfortableLearningTime" &&
             renderLabelsTab("comfortableLearningTime", "Learning Times", true)}
           {activeTab === "dailyLearningGoal" && renderDailyGoalTab()}
+          {activeTab === "paths" && renderPathsTab()}
+          {activeTab === "copy" && renderCopyTab()}
           {activeTab === "welcome" && renderMotivationTab("welcome", "Welcome")}
           {activeTab === "motivationOne" &&
             renderMotivationTab("motivationOne", "Motivation One")}
@@ -1719,27 +2635,66 @@ const OnboardingManagement: React.FC = () => {
             renderMotivationTab("motivationThree", "Motivation Three")}
           {activeTab === "loading" && renderMotivationTab("loading", "Loading")}
         </DialogContent>
+        <DialogActions sx={{ flexDirection: "column", alignItems: "stretch", px: 3, pb: 2 }}>
+          {hasPathErrors && (
+            <Typography variant="caption" color="error" sx={{ mb: 1 }}>
+              Learning Paths has empty or duplicate keys — fix them before
+              saving.
+            </Typography>
+          )}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+            <Button
+              onClick={() => setIsDialogOpen(false)}
+              sx={{
+                transition: "all 0.3s ease",
+                "&:hover": { bgcolor: "grey.200" },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              variant="contained"
+              startIcon={<Save />}
+              disabled={loading || hasPathErrors}
+              sx={{
+                transition: "all 0.3s ease",
+                "&:hover": { transform: "translateY(-2px)" },
+              }}
+            >
+              {loading ? "Saving..." : "Save"}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(pathPendingDelete)}
+        onClose={() => setPathPendingDelete(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete learning path?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            This removes "
+            {pathPendingDelete
+              ? getCurrentTranslationValue(pathPendingDelete.title, lang) ||
+                pathPendingDelete.key
+              : ""}
+            " and its {pathPendingDelete?.symptoms.length || 0} symptom
+            {pathPendingDelete?.symptoms.length === 1 ? "" : "s"}. This cannot
+            be undone.
+          </Typography>
+        </DialogContent>
         <DialogActions>
+          <Button onClick={() => setPathPendingDelete(null)}>Cancel</Button>
           <Button
-            onClick={() => setIsDialogOpen(false)}
-            sx={{
-              transition: "all 0.3s ease",
-              "&:hover": { bgcolor: "grey.200" },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
+            onClick={handleConfirmDeletePath}
+            color="error"
             variant="contained"
-            startIcon={<Save />}
-            disabled={loading}
-            sx={{
-              transition: "all 0.3s ease",
-              "&:hover": { transform: "translateY(-2px)" },
-            }}
           >
-            {loading ? "Saving..." : "Save"}
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

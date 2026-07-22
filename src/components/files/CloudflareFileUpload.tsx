@@ -11,7 +11,6 @@ import { UploadFileToCloudflare } from "../../types/interface/files/cloudflare.i
 import { cloudflareService } from "../../services/cloudflareR2Service";
 import { RootState } from "../../store";
 import { LangCode } from "../../types/enum/common.enum";
-import { compressImageFile } from "../../utils/compressImage";
 
 const AUDIO_EXT_REGEX = /\.(mp3|wav|m4a|ogg)(\?|#|$)/i;
 const IMAGE_EXT_REGEX = /\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i;
@@ -137,16 +136,16 @@ export default function CloudflareFileUpload({
     setFileType(file.type);
 
     try {
-      const uploadFile = await compressImageFile(file);
-      setFileType(uploadFile.type || file.type);
-
-      const response = await cloudflareService.upload(uploadFile, uploadPayload);
+      // Upload the original file as-is — no client-side downscale/compression,
+      // so images (e.g. full-screen study-theme backgrounds) keep their full
+      // resolution instead of being softened on high-DPI screens.
+      const response = await cloudflareService.upload(file, uploadPayload);
       const newUrl = response?.data?.data?.url;
 
       if (!newUrl) throw new Error("API did not return a valid URL");
 
       setPreviewUrl(newUrl);
-      setFileName(uploadFile.name);
+      setFileName(file.name);
       onUrlChange(newUrl);
     } catch (err: any) {
       console.error("Upload error:", err);

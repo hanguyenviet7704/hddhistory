@@ -20,6 +20,37 @@ export interface OnboardingIntroPayload {
   sourceTitle: string;
 }
 
+// Onboarding v2 — API-driven learning paths / symptoms.
+// See meup-api/plans/260717-onboarding-v2-api-driven/design.md
+export interface OnboardingSymptom {
+  key: string;
+  title: ITranslation;
+  trackingLabel: string;
+  order: number;
+}
+
+export interface OnboardingPath {
+  key: string;
+  title: ITranslation;
+  shortTitle: string;
+  iconKey: string;
+  iconUrl?: string;
+  trackingLabel: string;
+  order: number;
+  symptoms: OnboardingSymptom[];
+}
+
+// Onboarding v2 — fixed-key screen copy (en/vi). Keys are a known, closed set
+// (see OnboardingManagemant.tsx COPY_GROUPS) — editors fill in values, they
+// never invent new keys.
+export interface OnboardingCopy {
+  key: string;
+  value: {
+    en?: string;
+    vi?: string;
+  };
+}
+
 export interface IOnboarding {
   _id: string;
   intro: IOnboardingIntro[];
@@ -35,6 +66,8 @@ export interface IOnboarding {
   motivationTwo: IMotivation;
   motivationThree: IMotivation;
   loading: IMotivation;
+  paths?: OnboardingPath[];
+  copy?: OnboardingCopy[];
 }
 
 export interface OnboardingPayload {
@@ -51,6 +84,8 @@ export interface OnboardingPayload {
   motivationTwo: IMotivation;
   motivationThree: IMotivation;
   loading: IMotivation;
+  paths: OnboardingPath[];
+  copy: OnboardingCopy[];
 }
 
 export class OnboardingListQuery extends BaseQuery {
