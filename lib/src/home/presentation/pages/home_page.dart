@@ -601,7 +601,7 @@ class _HomeQuickTiles extends StatelessWidget {
               subtitle: context.l10n.home.homeTodayHabitSub,
               onTap: () {
                 HomeTracking.track(TrackingKey.homeHabitClick);
-                HabitRoute().go(context);
+                const HabitRoute(source: 'home_habit').go(context);
               },
             ),
           ),

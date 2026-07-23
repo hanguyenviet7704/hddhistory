@@ -186,7 +186,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     final goToHabit = await HabitAddedPopup.show(popupCtx);
     if (goToHabit != true) return;
     // ignore: use_build_context_synchronously
-    HabitRoute().go(popupCtx);
+    const HabitRoute(source: 'habit_added_scr').go(popupCtx);
     Future.delayed(const Duration(milliseconds: 100), () {
       AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
     });

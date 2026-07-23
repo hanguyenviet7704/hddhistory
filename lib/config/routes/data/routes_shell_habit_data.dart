@@ -9,7 +9,13 @@ class HabitShellBranchData extends StatefulShellBranchData {
 //* Habit Route — registered inside the Habit shell branch so HabitPage
 //* renders within the shell and keeps the bottom navigation bar.
 class HabitRoute extends BaseTransitionRouteData with $HabitRoute {
-  const HabitRoute();
+  /// Analytics entry source for the `habit_scr_view` event
+  /// (nav_habit / home_habit / home_banner / habit_added_scr). Passed as a
+  /// query param so each entry point is distinguishable; defaults to
+  /// `nav_habit` (bottom-nav tap).
+  final String? source;
+
+  const HabitRoute({this.source});
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
@@ -20,7 +26,7 @@ class HabitRoute extends BaseTransitionRouteData with $HabitRoute {
       BlocProvider.value(value: AppDI.injector.get<HabitCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
     ],
-    child: const HabitPage(),
+    child: HabitPage(source: source ?? 'nav_habit'),
   );
 }
 

@@ -11,7 +11,7 @@ class HomeHabitReminderCard extends StatelessWidget {
 
   void _goToHabit(BuildContext context, HabitCubit cubit) {
     cubit.dismissHomeReminderToday();
-    HabitRoute().go(context);
+    const HabitRoute(source: 'home_banner').go(context);
     Future.delayed(const Duration(milliseconds: 100), () {
       AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
     });
