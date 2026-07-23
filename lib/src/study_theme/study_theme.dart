@@ -35,6 +35,9 @@ part 'domain/usecases/get_study_themes_usecase.dart';
 part 'presentation/cubits/study_theme_state.dart';
 part 'presentation/cubits/study_theme_cubit.dart';
 
+//* Presentation Layer - Helpers
+part 'presentation/helpers/study_theme_tracking.dart';
+
 //* Presentation Layer - Widgets
 part 'presentation/widgets/themed_background.dart';
 part 'presentation/widgets/themed_glass_card.dart';

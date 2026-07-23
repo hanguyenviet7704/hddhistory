@@ -6,7 +6,11 @@ part of '../../study_theme.dart';
 class ChangeBackgroundButton extends StatelessWidget {
   final double size;
 
-  const ChangeBackgroundButton({super.key, this.size = 42});
+  /// Analytics origin for the theme flow ('home' / 'roadmap' / 'keypoint').
+  /// Threaded into theme_change_click and the opened sheet.
+  final String source;
+
+  const ChangeBackgroundButton({super.key, this.size = 42, this.source = 'home'});
 
   /// Design `cb-theme-icon` — a small "image / theme" glyph. Stroke uses the
   /// brand colour for now; theme-adaptive tinting (light icon on dark
@@ -21,7 +25,10 @@ class ChangeBackgroundButton extends StatelessWidget {
       label: context.l10n.studyTheme.changeBackground,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => ChangeBackgroundSheet.show(context),
+        onTap: () {
+          StudyThemeTracking.track(TrackingKey.themeChangeClick, parameters: {'source': source});
+          ChangeBackgroundSheet.show(context, source: source);
+        },
         child: Container(
           width: size.r,
           height: size.r,

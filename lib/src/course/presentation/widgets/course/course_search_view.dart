@@ -6,11 +6,21 @@ part of '../../../course.dart';
 class CourseSearchView extends StatelessWidget {
   const CourseSearchView({super.key});
 
-  void _navigateToCourse(BuildContext context, CourseEntity course) {
+  void _navigateToCourse(BuildContext context, CourseEntity course, {required String source}) {
     if (course.isComingSoonNow) {
       _showComingSoonSheet(context, course);
       return;
     }
+    // No skillset is in scope on the search/recent surfaces, so skill_id /
+    // skill_name are intentionally omitted here (spec).
+    ExploreTracking.track(
+      TrackingKey.exploreCourseClick,
+      parameters: {
+        ...ExploreTracking.courseParams(course),
+        'course_state': ExploreTracking.courseState(course),
+        'source': source,
+      },
+    );
     context.read<CourseRoadmapCubit>().setRoadmapSource('search');
     context.read<HomeCubit>().selectCourseFromCourseId(course.id);
     CourseRoadmapRoute().go(context);
@@ -43,7 +53,7 @@ class CourseSearchView extends StatelessWidget {
           }
           return _RecentSection(
             courses: state.recentCourses,
-            onTapCourse: (course) => _navigateToCourse(context, course),
+            onTapCourse: (course) => _navigateToCourse(context, course, source: 'recent'),
             onClearAll: () => context.read<CourseCubit>().clearRecentCourses(),
           );
         }
@@ -61,7 +71,7 @@ class CourseSearchView extends StatelessWidget {
 
         return _SearchResultList(
           courses: results,
-          onCourseTap: (course) => _navigateToCourse(context, course),
+          onCourseTap: (course) => _navigateToCourse(context, course, source: 'search'),
         );
       },
     );
@@ -146,6 +156,7 @@ class _RecentSection extends StatelessWidget {
                   key: const Key('recent-courses-clear-all-button'),
                   onPressed: () {
                     AppHaptic.select();
+                    ExploreTracking.track(TrackingKey.exploreRecentClearClick);
                     onClearAll();
                   },
                   style: TextButton.styleFrom(

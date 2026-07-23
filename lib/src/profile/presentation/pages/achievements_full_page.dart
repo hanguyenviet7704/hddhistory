@@ -6,8 +6,23 @@ part of '../../profile.dart';
 /// [_openAchievements] (see profile_page.dart) so it covers the bottom nav
 /// without adding a new typed route / rerunning the router codegen. Needs
 /// [AchievenmentProgressCubit] provided by its caller via BlocProvider.value.
-class AchievementsFullPage extends StatelessWidget {
+class AchievementsFullPage extends StatefulWidget {
   const AchievementsFullPage({super.key});
+
+  @override
+  State<AchievementsFullPage> createState() => _AchievementsFullPageState();
+}
+
+class _AchievementsFullPageState extends State<AchievementsFullPage> {
+  @override
+  void initState() {
+    super.initState();
+    // First-frame view hook (spec profile_achieve_scr_view) — this page is
+    // pushed on the root navigator, so a fresh instance/initState per open.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppService.instance.appTrackingService.trackProfileAchieveScrView();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +41,7 @@ class AchievementsFullPage extends StatelessWidget {
             key: const Key('achievements-back-button'),
             onPressed: () {
               AppHaptic.select();
+              AppService.instance.appTrackingService.trackProfileAchieveBackClick();
               Navigator.of(context).pop();
             },
             icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppCustomColor.textPrimary, size: 20.w),

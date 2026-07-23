@@ -34,9 +34,18 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
   // one is in flight) — blocks re-tap on that row and shows its spinner.
   final Set<String> _togglingIds = {};
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) HabitTracking.manageScrView();
+    });
+  }
+
   Future<void> _togglePause(UserHabitEntity userHabit, bool active) async {
     // Pausing frees a slot; resuming can re-hit the cap — handled below,
     // mirroring _confirm()'s slotFull/failure snackbar handling.
+    HabitTracking.manageToggle(userHabit, active: active);
     setState(() => _togglingIds.add(userHabit.id));
     final cubit = context.read<HabitCubit>();
     try {
@@ -60,6 +69,7 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
 
   Future<void> _confirm() async {
     if (_isSubmitting) return;
+    HabitTracking.manageConfirm();
     setState(() => _isSubmitting = true);
     final cubit = context.read<HabitCubit>();
     final result = await cubit.adopt(
@@ -174,6 +184,7 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
                   borderRadius: BorderRadius.circular(8.r),
                   onTap: () {
                     AppHaptic.select();
+                    HabitTracking.manageBack();
                     Navigator.of(context).pop();
                   },
                   child: Padding(

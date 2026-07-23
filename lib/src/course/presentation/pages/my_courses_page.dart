@@ -43,6 +43,21 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   final Map<String, GlobalKey> _sectionKeys = {};
   int _selectedChip = 0;
 
+  // Compact header: shorter than Material's default kToolbarHeight (56) so the
+  // category chips sit higher, closer to the title. Used for BOTH the AppBar's
+  // toolbarHeight and the body's top clearance under the transparent,
+  // body-behind app bar — keep them equal or a gap/overlap reappears.
+  static const double _kHeaderToolbarHeight = 44;
+
+  @override
+  void initState() {
+    super.initState();
+    // First-frame view hook (spec mycourse_scr_view).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppService.instance.appTrackingService.trackMycourseScrView();
+    });
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -52,6 +67,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   GlobalKey _sectionKey(String skillsetId) => _sectionKeys.putIfAbsent(skillsetId, () => GlobalKey());
 
   void _onChipTap(int index, List<SkillsetEntity> sections) {
+    AppService.instance.appTrackingService.trackProfileMycourseCatClick(sections[index].title.text);
     setState(() => _selectedChip = index);
     final ctx = _sectionKeys[sections[index].id]?.currentContext;
     if (ctx == null) return;
@@ -72,15 +88,17 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: _kHeaderToolbarHeight.h,
         leading: Semantics(
           button: true,
           label: MaterialLocalizations.of(context).backButtonTooltip,
           child: IconButton(
             onPressed: () {
               AppHaptic.select();
+              AppService.instance.appTrackingService.trackMycourseBackClick();
               context.back();
             },
-            constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
+            constraints: BoxConstraints(minWidth: 44.w, minHeight: _kHeaderToolbarHeight.h),
             icon: Icon(Icons.arrow_back_ios_new_rounded, color: studyThemeOnBg(context, AppCustomColor.textPrimary), size: 20.w),
           ),
         ),
@@ -115,11 +133,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
             return Column(
               children: [
                 // Clear the transparent app bar (extendBodyBehindAppBar) so the
-                // chips sit directly below the header while the study bg fills
-                // behind it. No extra gap — the chip row starts flush under the
-                // app bar (any higher would slide the left-most chip under the
-                // back button, which shares its horizontal lane).
-                SizedBox(height: MediaQuery.paddingOf(context).top + kToolbarHeight),
+                // chips sit directly below the (now compact) header while the
+                // study bg fills behind it. Must match the AppBar's
+                // toolbarHeight above, or a gap/overlap reappears.
+                SizedBox(height: MediaQuery.paddingOf(context).top + _kHeaderToolbarHeight.h),
                 _MyCourseChipBar(
                   skillsets: sections,
                   selectedIndex: selected,
@@ -160,6 +177,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
   /// Pops this root-pushed page, then jumps the shell to the course roadmap.
   void _openCourseRoadmap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {
+    AppService.instance.appTrackingService.trackProfileMycourseItemClick(course.title.text);
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
@@ -179,6 +197,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   /// Pops this page, then jumps the shell to the Explore tab at the current
   /// skillset (mirrors CourseRoadmapPage._backFromRoadmap / SkillsetCourses).
   void _exploreMore(BuildContext context) {
+    AppService.instance.appTrackingService.trackProfileMycourseExplore();
     Navigator.of(context, rootNavigator: true).pop();
     final shellContext = AppConfig.instance.context;
     if (shellContext == null) return;

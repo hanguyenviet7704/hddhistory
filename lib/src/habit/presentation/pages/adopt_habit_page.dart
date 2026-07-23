@@ -47,11 +47,24 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
     return widget.habits.first.title.text;
   }
 
+  /// The re-anchor reason the user picked for this habit's source course, used
+  /// as `anchor_id`/`anchor_name` on the adopt events. Null when adopted outside
+  /// a course context or before any reason was picked.
+  ReanchorReasonEntity? get _anchor {
+    final courseId = widget.sourceCourseId;
+    if (courseId == null || courseId.isEmpty) return null;
+    return AppDI.injector.get<HabitCubit>().state.reanchorReasonByCourse[courseId];
+  }
+
   @override
   void initState() {
     super.initState();
     _applyHabitDefaults(_selectedHabit);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureNavHidden());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureNavHidden();
+      final anchor = _anchor;
+      HabitTracking.startScrView(anchorId: anchor?.id, anchorName: anchor?.reason.text, courseId: widget.sourceCourseId);
+    });
   }
 
   /// This full-screen adopt page pushes the paywall (via SlotFullUpgradeSheet);
@@ -87,6 +100,16 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
+
+    final anchor = _anchor;
+    HabitTracking.startAdd(
+      anchorId: anchor?.id,
+      anchorName: anchor?.reason.text,
+      courseId: widget.sourceCourseId,
+      habitId: _selectedHabit.id,
+      habitName: _selectedHabit.title.text,
+      isFullSlot: result == AdoptHabitResult.slotFull,
+    );
 
     switch (result) {
       case AdoptHabitResult.success:
@@ -223,7 +246,17 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
                     text: context.l10n.habit.adoptRemindLaterButton,
                     buttonType: DButtonType.text,
                     style: AppStyle.textBold14.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.streakActive)),
-                    onPressed: () => Navigator.of(context).pop(false),
+                    onPressed: () {
+                      final anchor = _anchor;
+                      HabitTracking.startSkip(
+                        anchorId: anchor?.id,
+                        anchorName: anchor?.reason.text,
+                        courseId: widget.sourceCourseId,
+                        habitId: _selectedHabit.id,
+                        habitName: _selectedHabit.title.text,
+                      );
+                      Navigator.of(context).pop(false);
+                    },
                   ),
                   12.verticalSpace,
                 ],

@@ -62,6 +62,7 @@ class PaywallSuccessPurchasePopup extends StatelessWidget {
                     child: InkWell(
                       onTap: () {
                         AppHaptic.success();
+                        AppService.instance.appTrackingService.trackPaywallSuccessPopupClick();
                         Navigator.of(context).maybePop();
                       },
                       borderRadius: BorderRadius.circular(1000.r),

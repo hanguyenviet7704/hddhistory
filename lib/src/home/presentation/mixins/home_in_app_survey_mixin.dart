@@ -35,6 +35,9 @@ mixin _HomeInAppSurveyMixin on State<HomePage> {
     }
 
     AppService.instance.appTrackingService.trackInAppSurveyEntryClick(source: 'home');
+    // Spec-named banner-tap event (kept alongside the existing rich survey
+    // telemetry, which stays intact).
+    HomeTracking.track(TrackingKey.inappSurveyClick, parameters: {'source': 'home'});
     cubit.openSurvey();
     if (cubit.state.step != InAppSurveyStep.rating) return;
 

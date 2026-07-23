@@ -67,6 +67,7 @@ TextStyle _poppins(
 /// a go_router route — see the class doc on [AchievementsFullPage]) so it
 /// covers the bottom nav and pops back to exactly where the user was.
 void _openAchievements(BuildContext context) {
+  AppService.instance.appTrackingService.trackProfileAchieveSeeall();
   Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute(
       builder: (_) => BlocProvider.value(
@@ -86,7 +87,10 @@ void _openAchievements(BuildContext context) {
 /// Provides HomeCubit + CourseRoadmapCubit + ProgressCubit — the page reads
 /// skillsets/progress for its grouped enrolled-course sections and their
 /// completion %.
-void _openMyCourses(BuildContext context) => MyCoursesPage.open(context);
+void _openMyCourses(BuildContext context) {
+  AppService.instance.appTrackingService.trackProfileMycourseClick();
+  MyCoursesPage.open(context);
+}
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -139,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _trackView() {
     if (_hasTrackedView) return;
-    AppService.instance.appTrackingService.trackSettingScrView();
+    AppService.instance.appTrackingService.trackProfileScrView();
     _hasTrackedView = true;
   }
 
@@ -288,7 +292,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                   key: const Key('profile-settings-button'),
                   onTap: () {
                     AppHaptic.select();
-                    AppService.instance.appTrackingService.trackSettingDetailClick();
+                    AppService.instance.appTrackingService.trackProfileSettingsClick();
                     SettingRoute().go(context);
                   },
                   child: Container(
@@ -402,7 +406,7 @@ class _PremiumBanner extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 AppHaptic.select();
-                AppService.instance.appTrackingService.trackSettingPremiumClick();
+                AppService.instance.appTrackingService.trackProfileUpgradeClick(source: 'profile_banner');
                 AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.profile);
                 const PaywallRoute().push(context);
               },
@@ -463,7 +467,8 @@ class _PremiumBanner extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Streak card — reuses StreakWeekBar; taps open the existing streak overlay
+// Streak card — reuses StreakWeekBar. Display-only: tapping it no longer opens
+// the streak detail (removed per request).
 // ---------------------------------------------------------------------------
 
 class _StreakCard extends StatelessWidget {
@@ -477,24 +482,17 @@ class _StreakCard extends StatelessWidget {
         final streak = state.selectedItem;
         final label = context.l10n.learningStreak.streakDays(count: streak.currentStreak);
         return Semantics(
-          button: true,
           label: label,
-          child: GestureDetector(
+          child: Container(
             key: const Key('profile-streak-card'),
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              AppHaptic.select();
-              const HomeLearningStreakRoute().push(context);
-            },
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
-              decoration: BoxDecoration(
-                color: studyThemeCardColor(context),
-                borderRadius: BorderRadius.circular(20.r),
-                boxShadow: _profileCardShadow,
-              ),
-              child: Column(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
+            decoration: BoxDecoration(
+              color: studyThemeCardColor(context),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: _profileCardShadow,
+            ),
+            child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -513,8 +511,7 @@ class _StreakCard extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        );
+          );
       },
     );
   }
@@ -920,36 +917,72 @@ class _CategoryRow extends StatelessWidget {
     return Column(
       children: [
         Semantics(
+          button: true,
           label: '$name $percent%',
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.h),
-            child: Row(
-              children: [
-                _CategoryIcon(skillsetId: achievement.skillsetId, tint: tint),
-                12.horizontalSpace,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppText(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: _poppins(13, FontWeight.w600),
-                      ),
-                      9.verticalSpace,
-                      _CategoryProgressBar(progress: fraction),
-                    ],
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _openInExplore(context),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: Row(
+                children: [
+                  _CategoryIcon(skillsetId: achievement.skillsetId, tint: tint),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppText(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _poppins(13, FontWeight.w600),
+                        ),
+                        9.verticalSpace,
+                        _CategoryProgressBar(progress: fraction),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  8.horizontalSpace,
+                  // Chevron affordance (design: each Learning Progress row opens
+                  // its skillset in Explore). Matches the Library "My Course" row.
+                  Icon(Icons.chevron_right_rounded, size: 22.w, color: _profileMutedTextColor),
+                ],
+              ),
             ),
           ),
         ),
         if (showDivider) Container(width: double.infinity, height: 1, color: AppCustomColor.borderDefault),
       ],
     );
+  }
+
+  /// Tapping a Learning-Progress category jumps to the Explore tab scrolled to
+  /// that same skillset section (design: Profile progress → the category in
+  /// Explore). The scroll target index is this skillset's position in the
+  /// Explore catalog (HomeCubit.skillsets — the exact list AllCourseTab renders
+  /// and jumpToSkillset scrolls). No-op if the skillset isn't in the catalog.
+  ///
+  /// jumpToSkillset is called explicitly here (not left to CourseRoute's
+  /// selectedTabIndex): the Explore branch is kept alive by the StatefulShell,
+  /// so re-entering it does NOT re-run CoursePage.initState — only an explicit
+  /// scroll request (bumped nonce) lands the user on the category on re-entry.
+  void _openInExplore(BuildContext context) {
+    final homeCubit = AppDI.injector.get<HomeCubit>();
+    final index = homeCubit.state.skillsets.indexWhere((s) => s.id == achievement.skillsetId);
+    if (index < 0) return;
+    AppHaptic.select();
+    homeCubit.selectSkillsetIndex(index);
+    AppDI.injector.get<CourseCubit>()
+      ..setAllCourseSource('profile_progress')
+      ..jumpToSkillset(index);
+    // Explicit route name (not just an index): a cross-branch `.go()` into an
+    // already-built branch fires no didPush, so the observer won't set it — this
+    // lights the Explore tab and keeps the nav guard consistent. Also sets
+    // currentIndex to the Explore branch (3) via the route→tab mapping.
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
+    CourseRoute(selectedTabIndex: index).go(context);
   }
 }
 

@@ -36,7 +36,13 @@ class LessonExitFlow {
 
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExitClick(trackingData);
+      final lessonState = AppDI.injector.get<LessonCubit>().state;
+      final cardType = lessonState.currentLearningItem.type == LearningItemType.theory ? 'theory' : 'exercise';
+      AppService.instance.appTrackingService.trackKeypointExitClick(
+        trackingData,
+        cardIndex: lessonState.currentLearningItemIndex,
+        cardType: cardType,
+      );
     }
 
     await onBeforePopup?.call();

@@ -3,23 +3,23 @@ part of '../../../../lesson.dart';
 class LessonTrackingDelegate {
   const LessonTrackingDelegate();
 
-  void trackKeypointTheoryScrView(TheoryState state) {
+  void trackKeypointTheoryScrView(TheoryState state, {String source = 'keypoint_intro'}) {
     if (state.currentLearningItem.id.isEmpty) return;
 
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData == null) return;
 
-    AppService.instance.appTrackingService.trackKeypointTheoryScrView(trackingData);
+    AppService.instance.appTrackingService.trackKeypointTheoryScrView(trackingData, source: source);
   }
 
-  void trackKeypointExerciseScrView(ExerciseState state) {
+  void trackKeypointExerciseScrView(ExerciseState state, {String source = 'keypoint_intro'}) {
     if (state.currentLearningItem.type != LearningItemType.exercise) return;
     if (state.currentQuestion.id == 0) return;
 
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData == null) return;
 
-    AppService.instance.appTrackingService.trackKeypointExerciseScrView(trackingData);
+    AppService.instance.appTrackingService.trackKeypointExerciseScrView(trackingData, source: source);
   }
 
   void trackCurrentLearningItemScroll({

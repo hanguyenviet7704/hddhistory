@@ -16,6 +16,10 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._theoryCubit,
   ) : super(LessonState.initial());
 
+  // Course id the `live_scr_view` proxy was last fired for, so restarting the
+  // same Live Activity card (or an update()) doesn't refire the event.
+  String? _liveScrViewTrackedCourseId;
+
   void reset() => emit(LessonState.initial());
   void setIsShowResultOverlay(bool value) => emit(state.copyWith(isShowResultOverlay: value));
 
@@ -271,7 +275,20 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           primaryNudge: copy.primaryNudge,
           footerNudge: copy.footerNudge,
         );
-    await scheduleLiveActivityReturnNudge(courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
+    // PROXY EVENT — `live_scr_view` is fired here, when the Live Activity card
+    // is CREATED, NOT when the lock screen is actually viewed (Flutter can't
+    // observe a real lock-screen impression; that is native/OS-only). Fired on
+    // start() only (never on update()), and de-duped per course so a re-start
+    // of the same card doesn't refire it.
+    if (_liveScrViewTrackedCourseId != context.courseId) {
+      _liveScrViewTrackedCourseId = context.courseId;
+      unawaited(
+        AppService.instance.appTrackingService
+            .trackEvent(TrackingKey.liveScrView, parameters: {'course_id': context.courseId, 'course_name': context.courseName})
+            .catchError((_) {}),
+      );
+    }
+    await scheduleLiveActivityReturnNudge(courseId: context.courseId, courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
   }
 
   /// Keeps a "resume this course" Live Activity alive while the user sits on the
@@ -302,7 +319,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
             primaryNudge: copy.primaryNudge,
             footerNudge: copy.footerNudge,
           );
-      await scheduleLiveActivityReturnNudge(courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
+      await scheduleLiveActivityReturnNudge(courseId: context.courseId, courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
       return;
     }
 
@@ -329,7 +346,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           primaryNudge: copy.primaryNudge,
           footerNudge: copy.footerNudge,
         );
-    await scheduleLiveActivityReturnNudge(courseName: context.courseName, isDone: isDone, minutes: context.minutes, progress: progress);
+    await scheduleLiveActivityReturnNudge(courseId: context.courseId, courseName: context.courseName, isDone: isDone, minutes: context.minutes, progress: progress);
   }
 
   /// All Live Activity display copy, localized via slang for the current

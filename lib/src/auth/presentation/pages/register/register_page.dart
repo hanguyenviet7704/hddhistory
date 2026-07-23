@@ -54,6 +54,13 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
+    // Spec signin_scr_view [source]. RegisterRoute is a codegen'd go_route and
+    // threading a new `source` field would require rerunning build_runner, so
+    // source is derived from the existing `showPaywallAfterAuth` intent instead:
+    // arriving here to then show the paywall = 'premium', otherwise 'setting'
+    // (both known entry points — profile guest avatar & setting profile card —
+    // are the plain login path).
+    AppService.instance.appTrackingService.trackSigninScrView(_showPaywallAfterAuth ? 'premium' : 'setting');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(_ensureGuestBootstrapStarted());
@@ -100,6 +107,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onLoginGuest() {
+    AppService.instance.appTrackingService.trackSigninMethodClick('guest');
     unawaited(_handleGuestLogin());
   }
 
@@ -126,6 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onLoginGoogle() {
+    AppService.instance.appTrackingService.trackSigninMethodClick('google');
     unawaited(
       _dispatchAuthChoice(
         _AuthMethod.google,
@@ -138,6 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onLoginApple() {
+    AppService.instance.appTrackingService.trackSigninMethodClick('apple');
     unawaited(
       _dispatchAuthChoice(
         _AuthMethod.apple,

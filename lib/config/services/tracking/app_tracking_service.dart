@@ -21,6 +21,11 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> setUserProperties(Map<String, dynamic> properties) async {
+    _appTrackingService.setUserProperties(properties);
+  }
+
+  @override
   Future<void> trackError(dynamic exception, {StackTrace? stackTrace, Map<String, dynamic>? context, String? errorType}) async {
     _appTrackingService.trackError(exception, stackTrace: stackTrace, context: context, errorType: errorType);
   }
@@ -248,20 +253,24 @@ final class AppTrackingService extends ITrackingService {
     }
   }
 
+  /// Maps the paywall entry point to the PAYWALL spec `source` set
+  /// {profile_banner, habit_slot, roadmap, system, theme}. There is no `theme`
+  /// entry point in [PaywallEntryPoint] today, so `theme` is never emitted;
+  /// any unmapped entry falls through to `system`.
   @visibleForTesting
   String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
     switch (entryPoint) {
-      case PaywallEntryPoint.autoOpen:
-        return 'auto_open';
       case PaywallEntryPoint.courseRoadmap:
-        return 'course_roadmap';
+        return 'roadmap';
       case PaywallEntryPoint.habit:
-        return 'habit';
+        return 'habit_slot';
       case PaywallEntryPoint.settingPre:
       case PaywallEntryPoint.profile:
+        return 'profile_banner';
+      case PaywallEntryPoint.autoOpen:
       case PaywallEntryPoint.manageSubscription:
       case PaywallEntryPoint.other:
-        return 'setting_pre';
+        return 'system';
     }
   }
 
@@ -1219,6 +1228,19 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(TrackingKey.popupLearningIntroSwipe);
   }
 
+  /// Remaps the internal roadmap-source values to the LEARNING spec's `source`
+  /// set: {home_continue, home_recommend, nav_explore, my_course, badge_detail}.
+  @visibleForTesting
+  String remapRoadmapSource(String raw) {
+    if (raw.startsWith('home_continue')) return 'home_continue';
+    if (raw.startsWith('home_recommend')) return 'home_recommend';
+    if (raw == 'my_courses') return 'my_course';
+    if (raw == 'setting_badge') return 'badge_detail';
+    // skillset_courses / change_course / nav_course / course_selection / search /
+    // onboarding / default → the generic explore bucket.
+    return 'nav_explore';
+  }
+
   @override
   Future<void> trackRoadmapScrView(
     CourseTrackingData trackingData, {
@@ -1228,7 +1250,7 @@ final class AppTrackingService extends ITrackingService {
       TrackingKey.roadmapScrView,
       parameters: {
         ..._courseParams(trackingData),
-        'roadmap_source': roadmapSource,
+        'source': remapRoadmapSource(roadmapSource),
       },
     );
   }
@@ -1237,7 +1259,9 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackRoadmapItemClick(
     CourseLessonTrackingData trackingData, {
     required String itemType,
+    required String itemState,
   }) async {
+    final keypoint = trackingData.lesson.firstKeypoint;
     _appTrackingService.trackEvent(
       TrackingKey.roadmapItemClick,
       parameters: {
@@ -1245,6 +1269,9 @@ final class AppTrackingService extends ITrackingService {
         'item_type': itemType,
         'item_id': trackingData.lesson.id,
         'item_name': trackingData.lesson.trackingName,
+        'item_state': itemState,
+        'keypoint_id': keypoint.id,
+        'keypoint_name': keypoint.trackingName,
       },
     );
   }
@@ -1286,13 +1313,13 @@ final class AppTrackingService extends ITrackingService {
   @override
   Future<void> trackRoadmapQuickLearningClick(
     CourseTrackingData trackingData, {
-    required String actionType,
+    required String startType,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.roadmapQuickLearningClick,
       parameters: {
         ..._courseParams(trackingData),
-        'action_type': actionType,
+        'start_type': startType,
       },
     );
   }
@@ -1797,11 +1824,12 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackKeypointAudioPopupReadClick(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_intro_mode_select [mode=read] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointAudioPopupReadClick,
+      TrackingKey.keypointIntroModeSelect,
       parameters: _keypointAudioParams(
         trackingData,
-        mode: LessonEntryMode.read.routeValue,
+        mode: 'read',
         entryPoint: 'roadmap_popup',
       ),
     );
@@ -1809,11 +1837,12 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackKeypointAudioPopupListenClick(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_intro_mode_select [mode=listen] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointAudioPopupListenClick,
+      TrackingKey.keypointIntroModeSelect,
       parameters: _keypointAudioParams(
         trackingData,
-        mode: LessonEntryMode.audio.routeValue,
+        mode: 'listen',
         entryPoint: 'roadmap_popup',
       ),
     );
@@ -1831,10 +1860,14 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackKeypointAudioScreenView(
     KeypointTrackingData trackingData, {
     required String mode,
+    required String source,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointAudioScreenView,
-      parameters: _keypointAudioParams(trackingData, mode: mode),
+      parameters: {
+        ..._keypointAudioParams(trackingData, mode: mode),
+        'source': source,
+      },
     );
   }
 
@@ -1858,9 +1891,13 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackKeypointAudioPlayClick(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_listen_play_toggle [playing=true] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointAudioPlayClick,
-      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+      TrackingKey.keypointListenPlayToggle,
+      parameters: {
+        ..._keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+        'playing': true,
+      },
     );
   }
 
@@ -1869,13 +1906,17 @@ final class AppTrackingService extends ITrackingService {
     KeypointTrackingData trackingData, {
     required int audioPosition,
   }) async {
+    // Consolidated into keypoint_listen_play_toggle [playing=false] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointAudioPauseClick,
-      parameters: _keypointAudioParams(
-        trackingData,
-        mode: LessonEntryMode.audio.routeValue,
-        audioPosition: audioPosition,
-      ),
+      TrackingKey.keypointListenPlayToggle,
+      parameters: {
+        ..._keypointAudioParams(
+          trackingData,
+          mode: LessonEntryMode.audio.routeValue,
+          audioPosition: audioPosition,
+        ),
+        'playing': false,
+      },
     );
   }
 
@@ -1970,33 +2011,51 @@ final class AppTrackingService extends ITrackingService {
   //* Keypoint events
   @override
   Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_read_scroll (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointTheoryScroll,
+      TrackingKey.keypointReadScroll,
       parameters: _keypointParams(trackingData),
     );
   }
 
   @override
-  Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointTheoryScrView(
+    KeypointTrackingData trackingData, {
+    required String source,
+  }) async {
+    // Consolidated into keypoint_read_scr_view [card_type=theory] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointTheoryScrView,
-      parameters: _keypointParams(trackingData),
+      TrackingKey.keypointReadScrView,
+      parameters: {
+        ..._keypointParams(trackingData),
+        'card_type': 'theory',
+        'source': source,
+      },
     );
   }
 
   @override
   Future<void> trackKeypointTheoryContinueClick(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_read_continue (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointTheoryContinueClick,
+      TrackingKey.keypointReadContinue,
       parameters: _keypointParams(trackingData),
     );
   }
 
   @override
-  Future<void> trackKeypointExerciseScrView(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointExerciseScrView(
+    KeypointTrackingData trackingData, {
+    required String source,
+  }) async {
+    // Consolidated into keypoint_read_scr_view [card_type=exercise] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointExerciseScrView,
-      parameters: _keypointParams(trackingData),
+      TrackingKey.keypointReadScrView,
+      parameters: {
+        ..._keypointParams(trackingData),
+        'card_type': 'exercise',
+        'source': source,
+      },
     );
   }
 
@@ -2075,10 +2134,16 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackKeypointExerciseCheckClick(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointExerciseCheckClick(
+    KeypointTrackingData trackingData, {
+    required bool answerCorrect,
+  }) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointExerciseCheckClick,
-      parameters: _keypointParams(trackingData),
+      parameters: {
+        ..._keypointParams(trackingData),
+        'answer_correct': answerCorrect,
+      },
     );
   }
 
@@ -2092,9 +2157,13 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackKeypointExerciseExplainClick(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_exs_explain_toggle [expanded=true] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointExerciseExplainClick,
-      parameters: _keypointParams(trackingData),
+      TrackingKey.keypointExsExplainToggle,
+      parameters: {
+        ..._keypointParams(trackingData),
+        'expanded': true,
+      },
     );
   }
 
@@ -2116,33 +2185,46 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackKeypointExerciseScroll(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_read_scroll (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointExerciseScroll,
+      TrackingKey.keypointReadScroll,
       parameters: _keypointParams(trackingData),
     );
   }
 
   @override
   Future<void> trackKeypointExerciseContinue(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_read_continue (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointExerciseContinue,
+      TrackingKey.keypointReadContinue,
       parameters: _keypointParams(trackingData),
     );
   }
 
   @override
   Future<void> trackKeypointExerciseExplainClose(KeypointTrackingData trackingData) async {
+    // Consolidated into keypoint_exs_explain_toggle [expanded=false] (learning spec).
     _appTrackingService.trackEvent(
-      TrackingKey.keypointExerciseExplainClose,
-      parameters: _keypointParams(trackingData),
+      TrackingKey.keypointExsExplainToggle,
+      parameters: {
+        ..._keypointParams(trackingData),
+        'expanded': false,
+      },
     );
   }
 
   @override
-  Future<void> trackKeypointFinishScrView(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointFinishScrView(
+    KeypointTrackingData trackingData, {
+    required bool isDoneCourse,
+  }) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointFinishScrView,
-      parameters: _keypointParams(trackingData),
+      parameters: {
+        ..._keypointParams(trackingData),
+        'lesson_id': trackingData.lesson.id,
+        'is_done_course': isDoneCourse,
+      },
     );
   }
 
@@ -2171,10 +2253,18 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackKeypointExitClick(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointExitClick(
+    KeypointTrackingData trackingData, {
+    required int cardIndex,
+    required String cardType,
+  }) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointExitClick,
-      parameters: _keypointParams(trackingData),
+      parameters: {
+        ..._keypointParams(trackingData),
+        'card_index': cardIndex,
+        'card_type': cardType,
+      },
     );
   }
 
@@ -2678,6 +2768,89 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackProfileScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.profileScrView);
+  }
+
+  @override
+  Future<void> trackProfileSettingsClick() async {
+    _appTrackingService.trackEvent(TrackingKey.profileSettingsClick);
+  }
+
+  @override
+  Future<void> trackProfileAchieveSeeall() async {
+    _appTrackingService.trackEvent(TrackingKey.profileAchieveSeeall);
+  }
+
+  @override
+  Future<void> trackProfileMycourseClick() async {
+    _appTrackingService.trackEvent(TrackingKey.profileMycourseClick);
+  }
+
+  @override
+  Future<void> trackProfileAchieveScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.profileAchieveScrView);
+  }
+
+  @override
+  Future<void> trackProfileAchieveBackClick() async {
+    _appTrackingService.trackEvent(TrackingKey.profileAchieveBackClick);
+  }
+
+  @override
+  Future<void> trackProfileBadgeCloseClick() async {
+    _appTrackingService.trackEvent(TrackingKey.profileBadgeCloseClick);
+  }
+
+  @override
+  Future<void> trackMycourseScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.mycourseScrView);
+  }
+
+  @override
+  Future<void> trackMycourseBackClick() async {
+    _appTrackingService.trackEvent(TrackingKey.mycourseBackClick);
+  }
+
+  @override
+  Future<void> trackProfileMycourseCatClick(String skill) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.profileMycourseCatClick,
+      parameters: {'skill': skill},
+    );
+  }
+
+  @override
+  Future<void> trackProfileMycourseItemClick(String course) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.profileMycourseItemClick,
+      parameters: {'course': course},
+    );
+  }
+
+  @override
+  Future<void> trackProfileMycourseExplore() async {
+    _appTrackingService.trackEvent(TrackingKey.profileMycourseExplore);
+  }
+
+  @override
+  Future<void> trackSigninScrView(String source) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.signinScrView,
+      parameters: {'source': source},
+    );
+  }
+
+  @override
+  Future<void> trackSigninMethodClick(String loginType) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.signinMethodClick,
+      parameters: {'login_type': loginType},
+    );
+    setUserProperties({'login_type': loginType});
+  }
+
+  @override
   Future<void> trackProfileLanguageView() async {
     _appTrackingService.trackEvent(TrackingKey.profileLanguageView);
   }
@@ -2693,8 +2866,13 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackProfileUpgradeClick() async {
-    _appTrackingService.trackEvent(TrackingKey.profileUpgradeClick);
+  Future<void> trackProfileUpgradeClick({String? source}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.profileUpgradeClick,
+      parameters: {
+        ..._optionalStringParam('source', source),
+      },
+    );
   }
 
   @override
@@ -2759,18 +2937,62 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackSettingLanguageClick() async {
-    _appTrackingService.trackEvent(TrackingKey.settingLanguageClick);
+  Future<void> trackSettingLanguageClick(String currentLanguage) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingLanguageClick,
+      parameters: {
+        'current_language': currentLanguage,
+      },
+    );
   }
 
   @override
-  Future<void> trackSettingLanguageScrView(String language) async {
+  Future<void> trackSettingLanguageScrView(String currentLanguage) async {
     _appTrackingService.trackEvent(
       TrackingKey.settingLanguageScrView,
       parameters: {
-        'language': language,
+        'current_language': currentLanguage,
       },
     );
+  }
+
+  @override
+  Future<void> trackSettingsLangBackClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingsLangBackClick);
+  }
+
+  @override
+  Future<void> trackSettingsLangSelect(String language) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingsLangSelect,
+      parameters: {'language': language},
+    );
+    setUserProperties({'language': language});
+  }
+
+  @override
+  Future<void> trackSettingBackClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingBackClick);
+  }
+
+  @override
+  Future<void> trackSettingNotifToggle(bool enabled) async {
+    final state = enabled ? 'on' : 'off';
+    _appTrackingService.trackEvent(
+      TrackingKey.settingNotifToggle,
+      parameters: {'state': state},
+    );
+    setUserProperties({'notif_state': state});
+  }
+
+  @override
+  Future<void> trackSettingHapticToggle(bool enabled) async {
+    final state = enabled ? 'on' : 'off';
+    _appTrackingService.trackEvent(
+      TrackingKey.settingHapticToggle,
+      parameters: {'state': state},
+    );
+    setUserProperties({'haptic_state': state});
   }
 
   @override
@@ -2848,14 +3070,17 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackPremiumPurchase() async {
+  Future<void> trackPremiumPurchase({required String productId, required String price}) async {
     _appTrackingService.trackEvent(
       TrackingKey.premiumPurchase,
       parameters: {
+        'product_id': productId,
+        ..._optionalStringParam('price', price),
         ..._premiumParams(),
         ..._courseParamsForPaywall(),
       },
     );
+    setUserProperties({'product_id': productId});
   }
 
   @override
@@ -2870,11 +3095,11 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackPremiumAllpackPick(String premiumId) async {
+  Future<void> trackPremiumAllpackPick(String productId) async {
     _appTrackingService.trackEvent(
       TrackingKey.premiumAllpackPick,
       parameters: {
-        'premium_id': premiumId,
+        'product_id': productId,
         ..._premiumParams(),
         ..._courseParamsForPaywall(),
       },
@@ -2882,10 +3107,44 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackPaywallTermsClick() async {
+    _appTrackingService.trackEvent(TrackingKey.paywallTermsClick);
+  }
+
+  @override
+  Future<void> trackPaywallPrivacyClick() async {
+    _appTrackingService.trackEvent(TrackingKey.paywallPrivacyClick);
+  }
+
+  @override
+  Future<void> trackPaywallSuccessPopupView(String productId) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.paywallSuccessPopupView,
+      parameters: {
+        ..._optionalStringParam('product_id', productId),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPaywallSuccessPopupClick() async {
+    _appTrackingService.trackEvent(TrackingKey.paywallSuccessPopupClick);
+  }
+
+  /// Badge params for the profile_badge_* events: badge_id = course id,
+  /// badge_name = course tracking name (spec course→badge param rename).
+  Map<String, dynamic> _badgeParams(CourseTrackingData trackingData) {
+    return {
+      'badge_id': trackingData.course.id,
+      'badge_name': trackingData.course.trackingName,
+    };
+  }
+
+  @override
   Future<void> trackSettingBadgeClick(CourseTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.settingBadgeClick,
-      parameters: _courseParams(trackingData),
+      parameters: _badgeParams(trackingData),
     );
   }
 
@@ -2901,7 +3160,7 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackSettingBadgeDetailView(CourseTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.settingBadgeDetailView,
-      parameters: _courseParams(trackingData),
+      parameters: _badgeParams(trackingData),
     );
   }
 
@@ -2917,7 +3176,9 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackSettingBadgeGoCourse(CourseTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.settingBadgeGoCourse,
-      parameters: _courseParams(trackingData),
+      parameters: {
+        'badge_name': trackingData.course.trackingName,
+      },
     );
   }
 }

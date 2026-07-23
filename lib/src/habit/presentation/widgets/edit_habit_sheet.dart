@@ -35,7 +35,19 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
   // one is in flight) — blocks re-tap on that row and shows its spinner.
   final Set<String> _togglingIds = {};
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = context.read<HabitCubit>().state;
+      final inactive = state.userHabits.where((h) => !h.isActive).length;
+      HabitTracking.editScrView(activeCount: state.activeCount, inactiveCount: inactive);
+    });
+  }
+
   Future<void> _toggleActive(UserHabitEntity userHabit, bool active) async {
+    HabitTracking.editToggle(userHabit, active: active);
     setState(() => _togglingIds.add(userHabit.id));
     final cubit = context.read<HabitCubit>();
     try {
@@ -149,6 +161,7 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
                       icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
                       onPressed: () {
                         AppHaptic.select();
+                        HabitTracking.editClose(activeCount: state.activeCount);
                         Navigator.of(context).pop();
                       },
                     ),

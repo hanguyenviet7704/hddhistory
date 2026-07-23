@@ -8,6 +8,22 @@ part of '../services.dart';
 /// Both native sides internally no-op on OS versions below their minimum
 /// (returning without error), and this service no-ops on any other platform, so
 /// callers never need to platform- or version-check themselves.
+/// Deeplink contract shared with the native Live Activity card and the return
+/// nudge. Mirrors the URL the iOS widget emits in
+/// `ios/MeupHomeWidgetsExtension/MeupLessonLiveActivityView.swift`:
+/// `meup://course-roadmap?courseId=…&source=live_activity`. Unlike the
+/// home-widget deeplink this carries no `widgetType`, so it is NOT a
+/// HomeWidgetDeeplinkTarget — DeeplinkCubit handles it via its own branch.
+abstract final class LiveActivityDeeplink {
+  static const String sourceQueryKey = 'source';
+  static const String sourceValue = 'live_activity';
+  static const String courseIdQueryKey = 'courseId';
+
+  /// The resume deeplink for [courseId], identical to the string the iOS widget
+  /// emits — reused by the return nudge so its tap resumes the same course.
+  static String resumeUri(String courseId) => 'meup://course-roadmap?courseId=$courseId&source=$sourceValue';
+}
+
 @LazySingleton()
 class LiveActivityService {
   final MethodChannel _channel = const MethodChannel('meup/live_activity');

@@ -54,6 +54,9 @@ part 'presentation/pages/manage_slots_page.dart';
 part 'presentation/pages/habit_detail_page.dart';
 part 'presentation/pages/reanchor_page.dart';
 
+//* Presentation Layer - Helpers
+part 'presentation/helpers/habit_tracking.dart';
+
 //* Presentation Layer - Widgets
 part 'presentation/widgets/habit_added_popup.dart';
 part 'presentation/widgets/check_in_diary_sheet.dart';

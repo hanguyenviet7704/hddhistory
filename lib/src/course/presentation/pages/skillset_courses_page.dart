@@ -35,7 +35,26 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureRouteName());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureRouteName();
+      _trackCatlistScrView();
+    });
+  }
+
+  /// Fires the category-list view event once per page mount (initState postFrame
+  /// runs a single time), so it never double-counts on rebuilds. Guards the
+  /// empty-skillset fallback (skillset not yet resolved from the id).
+  void _trackCatlistScrView() {
+    if (!mounted) return;
+    final skillset = AppDI.injector.get<HomeCubit>().state.skillsets.firstWhere(
+          (s) => s.id == widget.skillsetId,
+          orElse: () => const SkillsetEntity(),
+        );
+    if (skillset.id.isEmpty) return;
+    ExploreTracking.track(
+      TrackingKey.exploreCatlistScrView,
+      parameters: ExploreTracking.skillsetParams(skillset),
+    );
   }
 
   @override
@@ -73,6 +92,10 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
                 child: IconButton(
                   onPressed: () {
                     AppHaptic.select();
+                    ExploreTracking.track(
+                      TrackingKey.exploreCatlistBackClick,
+                      parameters: ExploreTracking.skillsetParams(skillset),
+                    );
                     _backToExplore(context);
                   },
                   constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
@@ -160,13 +183,26 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
 
   void _handleCourseTap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {
     if (course.status == CoursePublishStatus.comingSoon) {
-      _showComingSoonSheet(context, course);
+      _showComingSoonSheet(context, course, skillset: skillset);
       return;
     }
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
     }
+    final progress = resolveCourseProgress(
+      course,
+      progressLookup(context.read<ProgressCubit>().state),
+    );
+    ExploreTracking.track(
+      TrackingKey.exploreCourseClick,
+      parameters: {
+        ...ExploreTracking.skillsetParams(skillset),
+        ...ExploreTracking.courseParams(course),
+        'course_state': ExploreTracking.courseState(course, passed: progress.passed, total: progress.total),
+        'source': 'skill_list',
+      },
+    );
     context.read<CourseRoadmapCubit>().setRoadmapSource('skillset_courses');
     context.read<HomeCubit>()
       ..selectSkillset(skillset)

@@ -7,7 +7,9 @@ part of '../../study_theme.dart';
 class ChangeBackgroundSheet extends StatelessWidget {
   const ChangeBackgroundSheet({super.key});
 
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {required String source}) {
+    // Fire once per sheet open (the sheet body is stateless / rebuilds).
+    StudyThemeTracking.track(TrackingKey.themeChangeScrView, parameters: {'source': source});
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -54,7 +56,10 @@ class ChangeBackgroundSheet extends StatelessWidget {
                     style: AppStyle.textBold20.copyWith(color: const Color(0xFF171735)),
                   ),
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () {
+                      StudyThemeTracking.track(TrackingKey.themeChangeExit);
+                      Navigator.of(context).pop();
+                    },
                     behavior: HitTestBehavior.opaque,
                     child: Container(
                       width: 32.w,
@@ -82,7 +87,10 @@ class ChangeBackgroundSheet extends StatelessWidget {
                           _UnlockPremiumBanner(onTap: () => const PaywallRoute().push(context)),
                           14.verticalSpace,
                         ],
-                        _UploadBar(onTap: () => _pickImage(context, cubit)),
+                        _UploadBar(onTap: () {
+                          StudyThemeTracking.track(TrackingKey.themeChangeUpload);
+                          _pickImage(context, cubit);
+                        }),
                         // Catalogue is DB-only (no bundled list): a loading
                         // skeleton until the fetch resolves, an empty/retry state
                         // if it came back empty/failed, else the grouped grid.
@@ -157,6 +165,13 @@ class ChangeBackgroundSheet extends StatelessWidget {
       const PaywallRoute().push(context);
       return;
     }
+    // Fired only when a preset is actually APPLIED (not on the paywall bounce).
+    StudyThemeTracking.track(TrackingKey.themeChangeSelect, parameters: {
+      'theme_id': preset.id,
+      'theme_category': preset.category,
+      'premium': preset.isPremium ? 'yes' : 'no',
+      'theme_type': preset.mode == StudyThemeMode.video ? 'animated' : 'image',
+    });
     cubit.selectPreset(preset);
     // Applied — close the sheet (matches the upload flow, which also pops).
     Navigator.of(context).pop();

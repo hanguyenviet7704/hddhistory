@@ -128,7 +128,16 @@ class _CourseFilterTabBar extends StatelessWidget {
                 key: const Key('course-filter-tab-bar'),
                 skillsets: homeState.skillsets,
                 selectedIndex: selectedIndex,
-                onChipTap: (i) => context.read<CourseCubit>().jumpToSkillset(i),
+                onChipTap: (i) {
+                  final skillsets = homeState.skillsets;
+                  if (i >= 0 && i < skillsets.length) {
+                    ExploreTracking.track(
+                      TrackingKey.exploreCatChipClick,
+                      parameters: ExploreTracking.skillsetParams(skillsets[i]),
+                    );
+                  }
+                  context.read<CourseCubit>().jumpToSkillset(i);
+                },
               ),
             );
           },

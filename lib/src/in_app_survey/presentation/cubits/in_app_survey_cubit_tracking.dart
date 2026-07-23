@@ -68,6 +68,15 @@ extension _InAppSurveyCubitTracking on InAppSurveyCubit {
       selectedOptionIds: response.selectedOptionIds,
       feedbackEmpty: response.feedback.isEmpty,
     );
+    // Spec-named submit event, fired alongside the existing send-click telemetry.
+    AppService.instance.appTrackingService.trackEvent(
+      TrackingKey.inappSurveySubmit,
+      parameters: {
+        'source': _source,
+        'branch_id': branch.id,
+        'branch_index': branch.index,
+      },
+    );
   }
 
   void _trackSendSuccess(InAppSurveyBranchEntity branch, InAppSurveyResponseEntity response) {

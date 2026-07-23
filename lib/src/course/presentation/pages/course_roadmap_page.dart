@@ -38,6 +38,20 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   /// CourseCubit/PageCubit aren't provided above the roadmap tree, so resolve
   /// them from DI (see [TopProgressBar]).
   void _backFromRoadmap(BuildContext context, String source) {
+    // Learning-flow spec: roadmap_back. Best-effort course/skill context.
+    final backCourseId = context.read<CourseRoadmapCubit>().state.roadmap.courseId;
+    final backTrackingData = CourseTrackingData.fromCourseId(context, backCourseId);
+    AppService.instance.appTrackingService.trackEvent(
+      TrackingKey.roadmapBack,
+      parameters: backTrackingData == null
+          ? null
+          : {
+              'skill_id': backTrackingData.skillset.id,
+              'skill_name': backTrackingData.skillset.trackingName,
+              'course_id': backTrackingData.course.id,
+              'course_name': backTrackingData.course.trackingName,
+            },
+    );
     // Opened from a Home card or straight out of onboarding — there's no
     // Explore screen behind it, so back returns to the Home tab.
     if (_kHomeSources.contains(source)) {
@@ -80,17 +94,15 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     CourseRoute(selectedTabIndex: skillsetIndex).go(context);
   }
 
-  void _trackRoadmapQuickLearningClick() {
+  void _trackRoadmapQuickLearningClick(String startType) {
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final courseId = roadmapState.roadmap.courseId;
     if (courseId.isEmpty) return;
     final trackingData = CourseTrackingData.fromCourseId(context, courseId);
     if (trackingData == null) return;
-    final hasProgress = roadmapState.roadmap.levels.any((level) => level.hasRoadmapProgress);
-    final actionType = hasProgress ? 'continue_learning' : 'start_lesson';
     AppService.instance.appTrackingService.trackRoadmapQuickLearningClick(
       trackingData,
-      actionType: actionType,
+      startType: startType,
     );
   }
 
@@ -299,16 +311,17 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                 children: [
                   Column(
                     children: [
-                      // Header: centered skillset dropdown, plus a back arrow on
-                      // the left when the roadmap was opened from Explore
-                      // (grid / My courses / View more / search → back to that
-                      // Explore screen) or from a Home card / onboarding (→ back
-                      // to the Home tab). Reached "naturally" (Courses tab
-                      // default / roleplay return, source 'nav_course') → none.
+                      // Header: a back arrow on the left when the roadmap was
+                      // opened from Explore (grid / My courses / View more /
+                      // search → back to that Explore screen) or from a Home
+                      // card / onboarding (→ back to the Home tab); reached
+                      // "naturally" (Courses tab default / roleplay return,
+                      // source 'nav_course') → no back arrow. Change-theme
+                      // button on the right. (The skillset course-switcher
+                      // dropdown was removed per design.)
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          const TopProgressBar(),
                           BlocSelector<CourseRoadmapCubit, CourseRoadmapState, String>(
                             selector: (state) => state.roadmapSource,
                             builder: (context, source) {
@@ -350,6 +363,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                               child: const ChangeBackgroundButton(
                                 key: Key('roadmap-change-theme'),
                                 size: 40,
+                                source: 'roadmap',
                               ),
                             ),
                           ),
@@ -362,8 +376,13 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                   // (A centerDocked FAB would dock at the screen bottom and sit
                   // behind the floating nav overlay, hiding it.)
                   //
-                  // Decorative white fade behind the CTA — IgnorePointer so it
-                  // never blocks taps on the lesson nodes beneath it.
+                  // Decorative fade behind the CTA — IgnorePointer so it never
+                  // blocks taps on the lesson nodes beneath it. Fades to solid
+                  // white on the stock background, but a solid-white block
+                  // glares over a custom study background, so fade to a
+                  // theme-aware scrim there (soft dark on a dark bg, soft white
+                  // on a light one) — enough to separate the CTA without a white
+                  // slab.
                   Positioned(
                     left: 0,
                     right: 0,
@@ -376,8 +395,8 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              AppCustomColor.backgroundWhite.withValues(alpha: 0),
-                              AppCustomColor.backgroundWhite,
+                              _roadmapFadeColor(context).withValues(alpha: 0),
+                              _roadmapFadeColor(context),
                             ],
                           ),
                         ),
@@ -413,17 +432,18 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                           // the last in-progress lesson.
                           final hasWarmUpAvailable = context.read<WarmUpCubit>().state.hasWarmUpAvailable;
                           if (hasWarmUpAvailable) {
+                            _trackRoadmapQuickLearningClick('warm_up');
                             context.read<WarmUpCubit>().openIntro();
                             WarmUpIntroRoute().push(context);
                             return;
                           }
-                          _trackRoadmapQuickLearningClick();
+                          _trackRoadmapQuickLearningClick('new_lesson');
                           RoadmapNodeActionHelper.startLastInProgressAction(context);
                         },
                       ),
                     ),
                   ),
-                  if (isSwitchingCourse) _buildCourseSwitchOverlay(),
+                  if (isSwitchingCourse) _buildCourseSwitchOverlay(context),
                 ],
               ),
             );
@@ -436,11 +456,28 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   /// Dims the stale (previous course's) roadmap and shows a spinner on top
   /// while [isSwitchingCourse] is true — see the call site above. Absorbs
   /// pointer events so a tap mid-switch can't act on the wrong course's node.
-  Widget _buildCourseSwitchOverlay() {
+  /// End colour of the bottom CTA fade. Solid white on the stock background;
+  /// a semi-opaque theme-aware scrim over a custom study background (dark on a
+  /// dark bg, soft white on a light one) so the CTA still separates from the
+  /// content without stamping a white slab over the personalized background.
+  Color _roadmapFadeColor(BuildContext context) {
+    if (!studyThemeHasCustomBg(context)) return AppCustomColor.backgroundWhite;
+    return studyThemeIsDarkBg(context) ? const Color(0xB3000000) : AppCustomColor.backgroundWhite.op(0.65);
+  }
+
+  Widget _buildCourseSwitchOverlay(BuildContext context) {
+    // Dim the previous course while switching. A flat white veil glares over a
+    // custom study background — a jarring white flash, worst on dark ones — so
+    // use a theme-aware scrim (gentle darkening on a dark bg, a soft white haze
+    // on a light one) and keep the stock white only when no custom background
+    // is active.
+    final Color veil = studyThemeHasCustomBg(context)
+        ? (studyThemeIsDarkBg(context) ? const Color(0x66000000) : const Color(0x40FFFFFF))
+        : AppCustomColor.backgroundWhite.op(0.72);
     return Positioned.fill(
       child: AbsorbPointer(
         child: Container(
-          color: AppCustomColor.backgroundWhite.op(0.72),
+          color: veil,
           child: const Center(
             child: CircularProgressIndicator(
               color: AppCustomColor.brandPrimary,

@@ -36,6 +36,9 @@ class _ReanchorPageState extends State<ReanchorPage> {
     super.initState();
     // Figma shows the first reason pre-selected so the CTA is immediately live.
     if (widget.reasons.isNotEmpty) _selectedId = widget.reasons.first.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      HabitTracking.reanchorScrView(courseId: widget.reasons.isNotEmpty ? widget.reasons.first.courseId : '');
+    });
   }
 
   /// One selectable reason (Figma 11233:40564): a white outlined row — the
@@ -139,9 +142,17 @@ class _ReanchorPageState extends State<ReanchorPage> {
                     style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
                     onPressed: _selectedId == null
                         ? null
-                        : () => Navigator.of(context).pop(
-                            widget.reasons.where((r) => r.id == _selectedId).firstOrNull,
-                          ),
+                        : () {
+                            final selected = widget.reasons.where((r) => r.id == _selectedId).firstOrNull;
+                            if (selected != null) {
+                              HabitTracking.reanchorSelect(
+                                anchorId: selected.id,
+                                anchorName: selected.reason.text,
+                                courseId: selected.courseId,
+                              );
+                            }
+                            Navigator.of(context).pop(selected);
+                          },
                   ),
                   20.verticalSpace,
                 ],

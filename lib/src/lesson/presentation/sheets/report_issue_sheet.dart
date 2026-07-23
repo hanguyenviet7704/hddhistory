@@ -21,6 +21,11 @@ class ReportIssueSheet extends StatelessWidget {
     required String keypointTitle,
     required String keypointImage,
   }) {
+    final reportParams = {'lesson_id': lessonId, 'keypoint_id': keypointId};
+    AppService.instance.appTrackingService.trackEvent(
+      TrackingKey.keypointReportScrView,
+      parameters: reportParams,
+    );
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -38,6 +43,11 @@ class ReportIssueSheet extends StatelessWidget {
           keypointTitle: keypointTitle,
           keypointImage: keypointImage,
         ),
+      ),
+    ).whenComplete(
+      () => AppService.instance.appTrackingService.trackEvent(
+        TrackingKey.keypointReportClose,
+        parameters: reportParams,
       ),
     );
   }

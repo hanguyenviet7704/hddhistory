@@ -71,39 +71,61 @@ mixin TrackingKey {
   static const String obBranchingTryNowClick = 'ob_branching_try_now_click';
   static const String obBranchingChooseMyselfClick = 'ob_branching_choose_myself_click';
   static const String obBranchingFallback = 'ob_branching_fallback';
-  static const String onboardV2P1View = 'obd_scr_view';
-  static const String onboardV2P1GetStartedClick = 'obd_start_click';
-  static const String onboardV2P2View = 'onboard_v2_p2_view';
-  static const String onboardV2P2ContinueClick = 'obd_name_click';
-  static const String onboardV2P3View = 'onboard_v2_p3_view';
+  // Onboard v2 (shipped flow). Event-name VALUES are aligned exactly to the
+  // "[MeUp] Event Tracking" sheet (tab Onboarding, gid 778226447) — that sheet
+  // is the analytics team's source of truth. Constant NAMES keep the pX/step
+  // scheme so call sites don't churn; only the fired strings match the spec.
+  static const String onboardV2P1View = 'obd_welcome_scr_view';
+  static const String onboardV2P1GetStartedClick = 'obd_welcome_get_started';
+  static const String onboardV2P2View = 'obd_name_scr_view';
+  static const String onboardV2P2ContinueClick = 'obd_name_continue';
+  static const String onboardV2P3View = 'obd_age_scr_view';
+  // Per-tap age pick — internal telemetry, not a spec event.
   static const String onboardV2AgeSelect = 'onboard_v2_age_select';
-  static const String onboardV2P3ContinueClick = 'obd_age_click';
+  // Spec `obd_age_select`: fired on Age → Continue (carries user property `age`).
+  static const String onboardV2P3ContinueClick = 'obd_age_select';
+  static const String onboardV2AgeBack = 'obd_age_back';
   static const String onboardV2AnonymousLoginFailure = 'onboard_v2_anonymous_login_failure';
   static const String onboardV2AnonymousLoginSuccess = 'onboard_v2_anonymous_login_success';
   static const String onboardV2UserUpdateFailure = 'onboard_v2_user_update_failure';
   static const String onboardV2UserUpdateSuccess = 'onboard_v2_user_update_success';
-  static const String onboardV2P4View = 'onboard_v2_p4_view';
-  static const String onboardV2P5View = 'onboard_v2_p5_view';
+  static const String onboardV2P4View = 'obd_notif_scr_view';
+  static const String onboardV2P5View = 'obd_paths_scr_view';
+  // Per-tap path toggle — internal telemetry, not a spec event.
   static const String onboardV2PathSelect = 'onboard_v2_path_select';
   static const String onboardV2PathUnselect = 'onboard_v2_path_unselect';
   static const String onboardV2PathMaxReached = 'onboard_v2_path_max_reached';
-  static const String onboardV2P5ContinueClick = 'obd_path_click';
-  static const String onboardV2P6View = 'onboard_v2_p6_view';
-  static const String onboardV2P6ContinueClick = 'obd_path_continue';
-  static const String onboardV2NotificationNotifyClick = 'obd_noti_click';
-  static const String onboardV2NotificationMaybeLaterClick = 'obd_noti_click';
+  // Spec `obd_paths_select`: fired on Paths → Continue (user property `path_selected`).
+  static const String onboardV2P5ContinueClick = 'obd_paths_select';
+  static const String onboardV2PathsBack = 'obd_paths_back';
+  // Brain-science info screen (p6 path map).
+  static const String onboardV2P6View = 'obd_infor_scr_view';
+  static const String onboardV2P6ContinueClick = 'obd_infor_continue';
+  static const String onboardV2InforBack = 'obd_infor_back';
+  // Notification gate: allow vs maybe-later are now DISTINCT events (previously
+  // both fired 'obd_noti_click' — indistinguishable). Both set user property
+  // `noti_allowed`.
+  static const String onboardV2NotificationNotifyClick = 'obd_notif_allow';
+  static const String onboardV2NotificationMaybeLaterClick = 'obd_notif_later';
   static const String onboardV2NotificationResult = 'onboard_v2_notification_result';
-  static const String onboardV2P7View = 'onboard_v2_p7_view';
+  // Habit ("Which one sounds like you?") screen (p7 symptoms).
+  static const String onboardV2P7View = 'obd_symptom_scr_view';
+  // Per-tap symptom toggle — internal telemetry, not a spec event.
   static const String onboardV2SymptomSelect = 'onboard_v2_symptom_select';
   static const String onboardV2SymptomUnselect = 'onboard_v2_symptom_unselect';
-  static const String onboardV2P7ContinueClick = 'obd_path_relate_click';
-  static const String onboardV2P8View = 'onboard_v2_p8_view';
+  // Spec `obd_symptom_select`: fired on Habit → Continue (user property `habit_struggle`).
+  static const String onboardV2P7ContinueClick = 'obd_symptom_select';
+  static const String onboardV2SymptomBack = 'obd_symptom_back';
+  static const String onboardV2P8View = 'obd_course_view';
   static const String onboardV2CoursesLoaded = 'onboard_v2_courses_loaded';
   static const String onboardV2CoursesFailure = 'onboard_v2_courses_failure';
-  static const String onboardV2CourseSelectClick = 'obd_course_click';
-  static const String onboardV2P9View = 'onboard_v2_p9_view';
+  // Spec `obd_course_select`: user property `first_course`.
+  static const String onboardV2CourseSelectClick = 'obd_course_select';
+  static const String onboardV2P9View = 'obd_theme_scr_view';
+  // Per-tap theme pick — internal telemetry, not a spec event.
   static const String onboardV2ThemeSelect = 'onboard_v2_theme_select';
-  static const String onboardV2P9StartExploreClick = 'obd_theme_start_click';
+  // Spec `obd_theme_select`: fired on "Start explore" (finishes onboarding).
+  static const String onboardV2P9StartExploreClick = 'obd_theme_select';
   static const String onboardV2Complete = 'onboard_v2_complete';
 
   //* Home events
@@ -142,6 +164,24 @@ mixin TrackingKey {
   static const String homeWidgetTap = 'home_widget_tap';
   static const String homeWidgetDeeplinkSuccess = 'home_widget_deeplink_success';
   static const String homeWidgetDeeplinkFailure = 'home_widget_deeplink_failure';
+  static const String homeContinueCardClick = 'home_continue_card_click';
+  static const String homeContinueSwipe = 'home_continue_swipe';
+  static const String homeExploreClick = 'home_explore_click';
+  static const String homeHabitClick = 'home_habit_click';
+  static const String homeRcmSeeallClick = 'home_rcm_seeall_click';
+  static const String homeRcmCardClick = 'home_rcm_card_click';
+  static const String homeRcmSwipe = 'home_rcm_swipe';
+  static const String alertUpdateView = 'alert_update_view';
+  static const String alertUpdateConfirm = 'alert_update_confirm';
+  static const String inappSurveyClick = 'inapp_survey_click';
+  static const String inappSurveySubmit = 'inapp_survey_submit';
+
+  //* Change background (theme) events
+  static const String themeChangeClick = 'theme_change_click';
+  static const String themeChangeScrView = 'theme_change_scr_view';
+  static const String themeChangeExit = 'theme_change_exit';
+  static const String themeChangeUpload = 'theme_change_upload';
+  static const String themeChangeSelect = 'theme_change_select';
 
   //* Course selection events
   static const String courseSelectAllCourseView = 'course_select_all_course_view';
@@ -153,6 +193,20 @@ mixin TrackingKey {
   static const String courseSelectExit = 'course_select_exit';
   static const String courseSelectAllCourseScroll = 'course_select_all_course_scroll';
 
+  //* Explore events
+  static const String exploreScrView = 'explore_scr_view';
+  static const String exploreCatChipClick = 'explore_cat_chip_click';
+  static const String exploreCourseClick = 'explore_course_click';
+  static const String exploreCatViewmore = 'explore_cat_viewmore';
+  static const String exploreCatlistScrView = 'explore_catlist_scr_view';
+  static const String exploreCatlistBackClick = 'explore_catlist_back_click';
+  static const String courseComingsoonView = 'course_comingsoon_view';
+  static const String exploreSearchClick = 'explore_search_click';
+  static const String exploreRecentClearClick = 'explore_recent_clear_click';
+  static const String exploreSearchClearClick = 'explore_search_clear_click';
+  static const String exploreSearchResultView = 'explore_search_result_view';
+  static const String exploreSearchNoresultView = 'explore_search_noresult_view';
+
   //* Course events
   static const String popupLearningIntroScrView = 'popup_learning_intro_scr_view';
   static const String popupLearningIntroContinue = 'popup_learning_intro_continue';
@@ -162,7 +216,8 @@ mixin TrackingKey {
   static const String popupItemImp = 'popup_item_imp';
   static const String popupItemClick = 'popup_item_click';
   static const String roadmapItemScroll = 'roadmap_item_scroll';
-  static const String roadmapQuickLearningClick = 'roadmap_quick_learning_click';
+  // Learning-flow rename (spec): fired string aligned to 'roadmap_quickstart_click'.
+  static const String roadmapQuickLearningClick = 'roadmap_quickstart_click';
   static const String howItWorkScrView = 'how_it_work_scr_view';
   static const String outputPracticePopupView = 'output_practice_popup_view';
   static const String outputPracticePopupClose = 'output_practice_popup_close';
@@ -197,21 +252,24 @@ mixin TrackingKey {
   static const String videoLessonMarkCompleteClick = 'video_complete_click';
 
   //* Keypoint audio events
-  static const String keypointAudioPopupView = 'keypoint_audio_popup_view';
+  // NOTE (learning-flow spec alignment): several strings below were renamed to
+  // the LEARNING spec. Constant NAMES keep the keypointAudio* scheme so call
+  // sites don't churn; only the fired VALUES changed. Verified learning-only.
+  static const String keypointAudioPopupView = 'keypoint_intro_scr_view';
   static const String keypointAudioPopupReadClick = 'audio_keypoint_read_click';
   static const String keypointAudioPopupListenClick = 'audio_keypoint_listen_click';
-  static const String keypointAudioPopupExitClick = 'audio_keypoint_exit_click';
-  static const String keypointAudioScreenView = 'audio_play_scr_view';
+  static const String keypointAudioPopupExitClick = 'keypoint_intro_close';
+  static const String keypointAudioScreenView = 'keypoint_listen_scr_view';
   static const String keypointAudioModeSwitch = 'keypoint_audio_mode_switch';
   static const String keypointAudioToTextSwitchClick = 'audio_to_text_switch_click';
   static const String keypointTextToAudioSwitchClick = 'text_to_audio_switch_click';
   static const String keypointAudioPlayClick = 'keypoint_audio_play_click';
   static const String keypointAudioPauseClick = 'audio_pause_click';
   static const String keypointAudioExitClick = 'audio_exit_click';
-  static const String keypointAudioSeekBackClick = 'keypoint_audio_seek_back_click';
-  static const String keypointAudioSeekForwardClick = 'keypoint_audio_seek_forward_click';
-  static const String keypointAudioSpeedOpen = 'keypoint_audio_speed_open';
-  static const String keypointAudioSpeedSelect = 'audio_speed_change';
+  static const String keypointAudioSeekBackClick = 'keypoint_listen_rewind_click';
+  static const String keypointAudioSeekForwardClick = 'keypoint_listen_forward_click';
+  static const String keypointAudioSpeedOpen = 'keypoint_listen_speed_open';
+  static const String keypointAudioSpeedSelect = 'keypoint_listen_speed_set';
   static const String keypointAudioCompleteView = 'keypoint_audio_complete_view';
   static const String keypointAudioCompleteContinueClick = 'audio_complete_continue_click';
 
@@ -227,25 +285,47 @@ mixin TrackingKey {
   static const String keypointExerciseRecordAnswer = 'keypoint_exercise_record_answer';
   static const String keypointExerciseRecordTyping = 'keypoint_exercise_record_typing';
   static const String keypointExerciseRecordVoice = 'keypoint_exercise_record_voice';
-  static const String keypointExerciseCheckClick = 'keypoint_exercise_check_click';
-  static const String keypointExerciseResultView = 'keypoint_exercise_result_view';
+  static const String keypointExerciseCheckClick = 'keypoint_exs_check_click';
+  static const String keypointExerciseResultView = 'keypoint_exs_result_view';
   static const String keypointExerciseExplainClick = 'keypoint_exercise_explain_click';
   static const String keypointExerciseExplainView = 'keypoint_exercise_explain_view';
   static const String keypointExerciseExplainReplay = 'keypoint_exercise_explain_replay';
   static const String keypointExerciseScroll = 'keypoint_exercise_scroll';
   static const String keypointExerciseContinue = 'keypoint_exercise_continue';
   static const String keypointExerciseExplainClose = 'keypoint_exercise_explain_close';
-  static const String keypointFinishScrView = 'keypoint_finish_scr_view';
+  static const String keypointFinishScrView = 'keypoint_complete_scr_view';
   static const String keypointBadgeUpdateScrView = 'keypoint_badge_update_scr_view';
-  static const String keypointFinishComplete = 'keypoint_finish_complete';
+  static const String keypointFinishComplete = 'keypoint_complete_click';
   static const String lessonFinishScrView = 'lesson_finish_scr_view';
-  static const String keypointExitClick = 'keypoint_exit_click';
+  static const String keypointExitClick = 'keypoint_read_exit_click';
   static const String keypointExitPopupView = 'keypoint_exit_popup_view';
   static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
   static const String keypointPopupNavView = 'keypoint_popup_nav_view';
   static const String keypointPopupNavContinue = 'keypoint_popup_nav_continue';
   static const String completionStreakSuccessView = 'completion_streak_success_view';
   static const String completionStreakSuccessCommitClick = 'completion_streak_success_commit_click';
+
+  //* Learning (roadmap/warmup/keypoint report) events
+  static const String roadmapBack = 'roadmap_back';
+  static const String roadmapSuggestContent = 'roadmap_suggest_content';
+  static const String roadmapSkipSuggestContent = 'roadmap_skip_suggest_content';
+  static const String keypointIntroModeSelect = 'keypoint_intro_mode_select';
+  static const String keypointReadScrView = 'keypoint_read_scr_view';
+  static const String keypointReadScroll = 'keypoint_read_scroll';
+  static const String keypointReadContinue = 'keypoint_read_continue';
+  static const String keypointListenPlayToggle = 'keypoint_listen_play_toggle';
+  static const String keypointExsExplainToggle = 'keypoint_exs_explain_toggle';
+  static const String keypointReadMenuOpen = 'keypoint_read_menu_open';
+  static const String keypointReportClick = 'keypoint_report_click';
+  static const String keypointReportScrView = 'keypoint_report_scr_view';
+  static const String keypointReportClose = 'keypoint_report_close';
+  static const String warmupIntroScrView = 'warmup_intro_scr_view';
+  static const String warmupIntroStart = 'warmup_intro_start';
+  static const String warmupIntroSkip = 'warmup_intro_skip';
+  static const String warmupQuizScrView = 'warmup_quiz_scr_view';
+  static const String warmupQuizExit = 'warmup_quiz_exit';
+  static const String warmupDoneScrView = 'warmup_done_scr_view';
+  static const String warmupContinueClick = 'warmup_continue_click';
 
   //* Roleplay events
   static const String roleplayInfoScrView = 'roleplay_info_scr_view';
@@ -311,25 +391,31 @@ mixin TrackingKey {
   static const String settingDetailClick = 'setting_detail_click';
   static const String settingDetailScrView = 'setting_detail_scr_view';
   static const String settingLanguageClick = 'setting_language_click';
-  static const String settingLanguageScrView = 'setting_language_scr_view';
+  // Spec rename (Language): value aligned to 'settings_lang_scr_view'.
+  static const String settingLanguageScrView = 'settings_lang_scr_view';
   static const String settingTermClick = 'setting_term_click';
-  static const String settingRestorePurcClick = 'setting_restore_purc_click';
+  // Spec rename: value aligned to 'setting_restore_click' (const name kept so
+  // the single call site doesn't churn — matches the onboardV2* convention).
+  static const String settingRestorePurcClick = 'setting_restore_click';
   static const String settingLogoutClick = 'setting_logout_click';
   static const String settingPremiumClick = 'setting_premium_click';
   static const String settingNotificationToggleOn = 'setting_notification_toggle_on';
   static const String settingNotificationToggleOff = 'setting_notification_toggle_off';
-  static const String premiumScrView = 'premium_scr_view';
+  // Spec renames (Paywall): const NAMES kept, fired VALUES aligned to the
+  // paywall_* spec set.
+  static const String premiumScrView = 'paywall_scr_view';
   static const String premiumScroll = 'premium_scroll';
   static const String premiumInforSwipe = 'premium_infor_swipe';
-  static const String premiumRestoreClick = 'premium_restore_click';
-  static const String premiumPurchase = 'premium_purchase';
-  static const String premiumScrExit = 'premium_scr_exit';
-  static const String premiumAllpackPick = 'premium_allpack_pick';
-  static const String settingBadgeClick = 'setting_badge_click';
+  static const String premiumRestoreClick = 'paywall_restore_click';
+  static const String premiumPurchase = 'paywall_subscribe_click';
+  static const String premiumScrExit = 'paywall_close_click';
+  static const String premiumAllpackPick = 'paywall_plan_click';
+  // Spec renames (Achievement badges): value aligned to profile_badge_*.
+  static const String settingBadgeClick = 'profile_badge_click';
   static const String settingBadgeSlide = 'setting_badge_slide';
-  static const String settingBadgeDetailView = 'setting_badge_detail_view';
+  static const String settingBadgeDetailView = 'profile_badge_scr_view';
   static const String settingBadgeDetailSlide = 'setting_badge_detail_slide';
-  static const String settingBadgeGoCourse = 'setting_badge_go_course';
+  static const String settingBadgeGoCourse = 'profile_badge_gocourse';
 
   //* Paywall screen events
   static const String paywallScrView = 'paywall_scr_view';
@@ -337,6 +423,77 @@ mixin TrackingKey {
   static const String paywallExitClick = 'paywall_exit_click';
   static const String paywallStartPremiumClick = 'paywall_start_premium_click';
   static const String paywallStorePopupDismiss = 'paywall_store_popup_dismiss';
+
+  //* Habit events
+  static const String habitScrView = 'habit_scr_view';
+  static const String habitItemOpen = 'habit_item_open';
+  static const String habitTaskCheck = 'habit_task_check';
+  static const String habitNoteCheckin = 'habit_note_checkin';
+  static const String habitNoteClose = 'habit_note_close';
+  static const String habitEditOpen = 'habit_edit_open';
+  static const String habitEmptyCourseClick = 'habit_empty_course_click';
+  static const String habitDetailScrView = 'habit_detail_scr_view';
+  static const String habitDetailClose = 'habit_detail_close';
+  static const String habitEditScrView = 'habit_edit_scr_view';
+  static const String habitEditToggle = 'habit_edit_toggle';
+  static const String habitEditClose = 'habit_edit_close';
+  static const String habitReanchorScrView = 'habit_reanchor_scr_view';
+  static const String habitReanchorSelect = 'habit_reanchor_select';
+  static const String habitStartScrView = 'habit_start_scr_view';
+  static const String habitStartAdd = 'habit_start_add';
+  static const String habitStartSkip = 'habit_start_skip';
+  static const String habitAddedScrView = 'habit_added_scr_view';
+  static const String habitAddedGoHabit = 'habit_added_go_habit';
+  static const String habitAddedContinue = 'habit_added_continue';
+  static const String habitSlotsFullScrView = 'habit_slots_full_scr_view';
+  static const String habitSlotsUnlimitedClick = 'habit_slots_unlimited_click';
+  static const String habitSlotsManageClick = 'habit_slots_manage_click';
+  static const String habitSlotsFullClose = 'habit_slots_full_close';
+  static const String habitManageScrView = 'habit_manage_scr_view';
+  static const String habitManageToggle = 'habit_manage_toggle';
+  static const String habitManageConfirm = 'habit_manage_confirm';
+  static const String habitManageBack = 'habit_manage_back';
+
+  //* Profile / Setting / Language / Sign in / Paywall (spec alignment) events
+  // Profile tab.
+  static const String profileScrView = 'profile_scr_view';
+  static const String profileSettingsClick = 'profile_settings_click';
+  static const String profileAchieveSeeall = 'profile_achieve_seeall';
+  static const String profileMycourseClick = 'profile_mycourse_click';
+  // Achievement (full list + badge detail sheet).
+  static const String profileAchieveScrView = 'profile_achieve_scr_view';
+  static const String profileAchieveBackClick = 'profile_achieve_back_click';
+  static const String profileBadgeCloseClick = 'profile_badge_close_click';
+  // My course library.
+  static const String mycourseScrView = 'mycourse_scr_view';
+  static const String mycourseBackClick = 'mycourse_back_click';
+  static const String profileMycourseCatClick = 'profile_mycourse_cat_click';
+  static const String profileMycourseItemClick = 'profile_mycourse_item_click';
+  static const String profileMycourseExplore = 'profile_mycourse_explore';
+  // Setting screen.
+  static const String settingBackClick = 'setting_back_click';
+  static const String settingNotifToggle = 'setting_notif_toggle';
+  static const String settingHapticToggle = 'setting_haptic_toggle';
+  // Language sheet.
+  static const String settingsLangBackClick = 'settings_lang_back_click';
+  static const String settingsLangSelect = 'settings_lang_select';
+  // Sign in.
+  static const String signinScrView = 'signin_scr_view';
+  static const String signinMethodClick = 'signin_method_click';
+  // Paywall (new events not covered by the premium* renames above).
+  static const String paywallTermsClick = 'paywall_terms_click';
+  static const String paywallPrivacyClick = 'paywall_privacy_click';
+  static const String paywallSuccessPopupView = 'paywall_success_popup_view';
+  static const String paywallSuccessPopupClick = 'paywall_success_popup_click';
+
+  //* Live activity events
+  // `liveScrView` is a "card created" PROXY (fired when the Live Activity is
+  // started from Flutter) — NOT a true lock-screen impression, which is
+  // native/OS-only. The other two are genuine tap events routed through the
+  // shared course-roadmap resume deeplink.
+  static const String liveScrView = 'live_scr_view';
+  static const String liveResumeTap = 'live_resume_tap';
+  static const String liveNudgeTap = 'live_nudge_tap';
 
   //* Subscription events
   static const String subscriptionRenewed = 'subscription_renewed';

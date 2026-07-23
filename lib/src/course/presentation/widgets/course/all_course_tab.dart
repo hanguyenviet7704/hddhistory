@@ -107,7 +107,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   void _trackAllCourseScrView() {
     if (!mounted) return;
     final source = _courseCubit.state.allCourseSource;
-    AppService.instance.appTrackingService.trackCourseSelectAllCourseView(source: source);
+    ExploreTracking.track(
+      TrackingKey.exploreScrView,
+      parameters: {'source': ExploreTracking.remapScrViewSource(source)},
+    );
   }
 
   /// Highlights the chip of the section currently at the TOP of the viewport
@@ -148,11 +151,15 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<HomeCubit, HomeState>(
-      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex,
+      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex || prev.status != curr.status,
       builder: (context, homeState) {
         final skillsets = homeState.skillsets;
         if (skillsets.isEmpty) {
-          return const CourseEmptyState();
+          // Cold load (first open, no cached skillsets yet): show a grid
+          // skeleton instead of the "nothing to see" empty state, which is
+          // reserved for a confirmed-empty catalog (status == success).
+          final isColdLoading = homeState.status == HomeStatus.loading || homeState.status == HomeStatus.initial;
+          return isColdLoading ? const _CourseGridSkeleton() : const CourseEmptyState();
         }
         final progressState = context.watch<ProgressCubit>().state;
         final exploreMode = context.select<CourseCubit, CourseExploreMode>(
@@ -238,7 +245,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   ) {
     // Coming-soon courses show an informational bottom sheet instead of navigating.
     if (course.isComingSoonNow) {
-      _showComingSoonSheet(context, course);
+      _showComingSoonSheet(context, course, skillset: skillset);
       return;
     }
 
@@ -247,10 +254,18 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       return;
     }
 
-    AppService.instance.appTrackingService.trackCourseSelectCourseClick(
-      skillset,
+    final progress = resolveCourseProgress(
       course,
-      source: 'all_course',
+      progressLookup(context.read<ProgressCubit>().state),
+    );
+    ExploreTracking.track(
+      TrackingKey.exploreCourseClick,
+      parameters: {
+        ...ExploreTracking.skillsetParams(skillset),
+        ...ExploreTracking.courseParams(course),
+        'course_state': ExploreTracking.courseState(course, passed: progress.passed, total: progress.total),
+        'source': 'nav_explore',
+      },
     );
 
     _handleCourseTap(context, skillset, course, index);
@@ -312,7 +327,14 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 }
 
-void _showComingSoonSheet(BuildContext context, CourseEntity course) {
+void _showComingSoonSheet(BuildContext context, CourseEntity course, {SkillsetEntity? skillset}) {
+  ExploreTracking.track(
+    TrackingKey.courseComingsoonView,
+    parameters: {
+      if (skillset != null) ...ExploreTracking.skillsetParams(skillset),
+      ...ExploreTracking.courseParams(course),
+    },
+  );
   showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppCustomColor.backgroundWhite,
@@ -466,6 +488,10 @@ class _ViewMoreGridCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           AppHaptic.select();
+          ExploreTracking.track(
+            TrackingKey.exploreCatViewmore,
+            parameters: ExploreTracking.skillsetParams(skillset),
+          );
           SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
         },
         // Align the card to the top of the cell and size it to the same height
@@ -517,6 +543,44 @@ class _ViewMoreGridCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Cold-load placeholder for the Explore grid (first open, no cached
+/// skillsets yet). A static, non-interactive 2-column grid of dummy
+/// [_CourseGridCard]s wrapped in Skeletonizer, which auto-generates bone
+/// shapes matching the real card layout (thumbnail + 2-line title). Swapped
+/// out for the real grid the instant skillsets arrive.
+class _CourseGridSkeleton extends StatelessWidget {
+  const _CourseGridSkeleton();
+
+  static const int _kSkeletonCardCount = 6;
+  static const CourseEntity _kSkeletonCourse = CourseEntity(
+    id: 'skeleton',
+    title: BaseMultiLanguage(en: 'Course title placeholder'),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return sk.Skeletonizer(
+      enabled: true,
+      child: GridView.builder(
+        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: _kCourseGridColGap,
+          mainAxisSpacing: _kCourseGridRowGap,
+          mainAxisExtent: _kCourseCardExtent,
+        ),
+        itemCount: _kSkeletonCardCount,
+        itemBuilder: (context, index) => _CourseGridCard(
+          course: _kSkeletonCourse,
+          onTap: () {},
         ),
       ),
     );

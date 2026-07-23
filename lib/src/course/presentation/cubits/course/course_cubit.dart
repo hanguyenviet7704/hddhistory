@@ -19,6 +19,12 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
   /// Debounce so we hit the search API once the user pauses typing.
   Timer? _searchDebounce;
 
+  /// The last query whose search-view event (result / no-result) was fired.
+  /// Fires the view event ONCE per distinct query so a rebuild — or the same
+  /// query being re-run — never double-counts. Reset when search is cleared/
+  /// exited so re-searching the same term in a new session fires again.
+  String? _lastTrackedSearchQuery;
+
   void setCourses(List<CourseEntity> courses) => emit(state.copyWith(courses: courses));
 
   void selectTab(int index) => emit(state.copyWith(selectedTabIndex: index));
@@ -34,6 +40,7 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
   /// Maps to the in-field "X" per the search-flow spec.
   void clearSearchText() {
     _searchDebounce?.cancel();
+    _lastTrackedSearchQuery = null;
     searchController.clear();
     emit(state.copyWith(searchQuery: '', courses: const [], status: CourseStatus.initial));
   }
@@ -41,6 +48,7 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
   /// Exits search mode entirely, returning to the course grid.
   void deactivateSearch() {
     _searchDebounce?.cancel();
+    _lastTrackedSearchQuery = null;
     searchController.clear();
     emit(state.copyWith(
       isSearchActive: false,
@@ -91,12 +99,23 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
     if (query != state.searchQuery.trim()) return;
     result.fold(
       (_) => emit(state.copyWith(status: CourseStatus.failure, courses: const [])),
-      (page) => emit(
-        state.copyWith(
-          status: CourseStatus.success,
-          courses: page.items.where((c) => !c.isComingSoonNow).toList(),
-        ),
-      ),
+      (page) {
+        final results = page.items.where((c) => !c.isComingSoonNow).toList();
+        emit(state.copyWith(status: CourseStatus.success, courses: results));
+        _trackSearchView(query, hasResults: results.isNotEmpty);
+      },
+    );
+  }
+
+  /// Fires the search result / no-result view event once per distinct query.
+  /// Called from [_runSearch]'s success branch (never from a widget build), so
+  /// it can't be re-fired by a rebuild.
+  void _trackSearchView(String query, {required bool hasResults}) {
+    if (query == _lastTrackedSearchQuery) return;
+    _lastTrackedSearchQuery = query;
+    ExploreTracking.track(
+      hasResults ? TrackingKey.exploreSearchResultView : TrackingKey.exploreSearchNoresultView,
+      parameters: {'search_term': query},
     );
   }
 

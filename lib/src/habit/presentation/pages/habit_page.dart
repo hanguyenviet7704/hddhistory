@@ -34,7 +34,13 @@ String _habitGroupTitle(UserHabitEntity h, HabitState state) {
 }
 
 class HabitPage extends StatefulWidget {
-  const HabitPage({super.key});
+  /// Where the tab was opened from (analytics `habit_scr_view.source`). Defaults
+  /// to the bottom-nav tab; other entry points route through the generated
+  /// [HabitRoute] which builds `const HabitPage()`, so they keep the default
+  /// until the route carries a source arg (see task report).
+  final String source;
+
+  const HabitPage({super.key, this.source = 'nav_habit'});
 
   @override
   State<HabitPage> createState() => _HabitPageState();
@@ -45,27 +51,38 @@ class _HabitPageState extends State<HabitPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cubit = context.read<HabitCubit>();
+      HabitTracking.scrView(source: widget.source, isEmpty: cubit.state.userHabits.isEmpty);
       // Recover from a failed/skipped first load, same self-heal shape as
       // HomeCubit.ensureHomeDataLoaded — no-op when data is already present.
-      unawaited(context.read<HabitCubit>().ensureLoaded());
+      unawaited(cubit.ensureLoaded());
     });
   }
 
   /// Tap the check circle → check-in + diary sheet (PRD §9.7). Refreshes the
   /// tracker afterwards so the tick + counts update.
   Future<void> _openCheckIn(UserHabitEntity userHabit) async {
+    HabitTracking.taskCheck(userHabit);
     final done = await CheckInDiarySheet.show(context, userHabit: userHabit);
     if (done == true && mounted) {
       unawaited(context.read<HabitCubit>().load(showLoading: false));
+    } else {
+      // Sheet dismissed without a check-in.
+      HabitTracking.noteClose();
     }
   }
 
   /// Tap the habit row → Habit detail (PRD §9.8).
-  Future<void> _openDetail(UserHabitEntity userHabit) => HabitDetailPage.show(context, userHabit: userHabit);
+  Future<void> _openDetail(UserHabitEntity userHabit) {
+    HabitTracking.itemOpen(userHabit);
+    return HabitDetailPage.show(context, userHabit: userHabit);
+  }
 
   /// Empty state "Go to course" → Explore tab (PRD §9.5): habits are created
   /// from lessons, so a user with none is sent to browse courses.
   void _goToCourse() {
+    HabitTracking.emptyCourseClick();
     context.read<PageCubit>().setCurrentIndex(3);
     CourseRoute().go(context);
   }
@@ -97,7 +114,10 @@ class _HabitPageState extends State<HabitPage> {
                     state: state,
                     onCheckIn: _openCheckIn,
                     onOpenDetail: _openDetail,
-                    onEdit: () => EditHabitSheet.show(context),
+                    onEdit: () {
+                      HabitTracking.editOpen();
+                      EditHabitSheet.show(context);
+                    },
                     onGoToCourse: _goToCourse,
                   ),
                 ],
@@ -299,11 +319,15 @@ class _HabitBody extends StatelessWidget {
             children: [
               AppText(context.l10n.habit.loadErrorTitle, style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.textTertiary))),
               12.verticalSpace,
-              DButton(
-                text: context.l10n.habit.loadErrorRetryButton,
-                backgroundColor: AppCustomColor.brandPrimary,
-                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                onPressed: () => context.read<HabitCubit>().load(),
+              SizedBox(
+                width: 200.w,
+                child: DButton(
+                  text: context.l10n.habit.loadErrorRetryButton,
+                  backgroundColor: AppCustomColor.brandPrimary,
+                  size: Size(double.infinity, 44.h),
+                  style: AppStyle.textBold14.copyWith(color: AppCustomColor.textWhite),
+                  onPressed: () => context.read<HabitCubit>().load(),
+                ),
               ),
             ],
           ),

@@ -22,6 +22,10 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
     // warm-up flow (branch nav doesn't fire the root observer; mirrors
     // keypoint_complete_page). Runs after nav so it wins.
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.warmUpIntro);
+    WarmUpTracking.track(
+      TrackingKey.warmupIntroScrView,
+      parameters: WarmUpTracking.courseParams(AppDI.injector.get<WarmUpCubit>().state.courseId),
+    );
     _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 3200));
     _float = Tween<double>(begin: -8, end: 8).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.repeat(reverse: true);
@@ -34,11 +38,19 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
   }
 
   void _startWarmUp(BuildContext context) {
+    WarmUpTracking.track(
+      TrackingKey.warmupIntroStart,
+      parameters: WarmUpTracking.courseParams(context.read<WarmUpCubit>().state.courseId),
+    );
     context.read<WarmUpCubit>().startWarmUp();
     WarmUpQuestionRoute().go(context);
   }
 
   void _skipToLesson(BuildContext context) {
+    WarmUpTracking.track(
+      TrackingKey.warmupIntroSkip,
+      parameters: WarmUpTracking.courseParams(context.read<WarmUpCubit>().state.courseId),
+    );
     // Same mechanism as the completion CTA: return to the roadmap first and let
     // its WarmUpCubit listener open the lesson — launching from this
     // (root-navigator) page would leave a dead-end warm-up screen underneath

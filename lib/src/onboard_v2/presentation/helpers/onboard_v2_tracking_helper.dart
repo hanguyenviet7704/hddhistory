@@ -21,6 +21,28 @@ class OnboardV2Tracking {
     }
   }
 
+  /// Sets Firebase Analytics user properties. The tracking sheet marks `age`,
+  /// `path_selected`, `habit_struggle`, `noti_allowed` and `first_course` as
+  /// User Properties (not just event params), so they are also persisted here.
+  /// Empty/null values are dropped so a partial step never clears a property.
+  static void setUserProperties(Map<String, dynamic> properties) {
+    final props = <String, dynamic>{...properties}..removeWhere((_, value) => value == null || (value is String && value.trim().isEmpty));
+    if (props.isEmpty) return;
+    try {
+      final trackingService = AppService.instance.appTrackingService;
+      unawaited(trackingService.setUserProperties(props).catchError((_) {}));
+    } catch (_) {
+      return;
+    }
+  }
+
+  /// Comma-joined path values for the `path_selected` user property (spec
+  /// values: feel/think/work/connect/learn/explore).
+  static String selectedPathValue(List<OnboardingPath> selectedPaths) => _joinTrackingValues(selectedPaths.map(_pathSheetValue));
+
+  /// Comma-joined symptom trackingIds for the `habit_struggle` user property.
+  static String selectedHabitValue(List<OnboardingSymptom> selectedSymptoms) => _joinTrackingValues(selectedSymptoms.map((symptom) => symptom.trackingId));
+
   static Map<String, dynamic> ageParams(OnboardOptionEntity age) {
     return {
       'selected_age_id': age.id,
@@ -186,14 +208,16 @@ class OnboardV2Tracking {
     return values.where((value) => value.isNotEmpty).join(',');
   }
 
+  // Values aligned to the tracking sheet's `path_selected` column
+  // (feel/think/work/connect/learn/explore).
   static String _pathSheetValue(OnboardingPath path) {
     return switch (path) {
-      OnboardingPath.feelBetter => 'feel_better',
-      OnboardingPath.thinkBetter => 'think_better',
-      OnboardingPath.workBetter => 'work_better',
-      OnboardingPath.connectBetter => 'connect_better',
-      OnboardingPath.learnBetter => 'learn_better',
-      OnboardingPath.exploreBetter => 'explore_better',
+      OnboardingPath.feelBetter => 'feel',
+      OnboardingPath.thinkBetter => 'think',
+      OnboardingPath.workBetter => 'work',
+      OnboardingPath.connectBetter => 'connect',
+      OnboardingPath.learnBetter => 'learn',
+      OnboardingPath.exploreBetter => 'explore',
     };
   }
 

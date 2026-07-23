@@ -30,6 +30,7 @@ class LessonHeaderMenu extends StatelessWidget {
       shadowColor: AppCustomColor.scrimOverlay,
       constraints: BoxConstraints(minWidth: 200.w),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      onOpened: () => AppService.instance.appTrackingService.trackEvent(TrackingKey.keypointReadMenuOpen),
       icon: SizedBox(
         width: 36.w,
         height: 36.w,
@@ -45,7 +46,8 @@ class LessonHeaderMenu extends StatelessWidget {
       onSelected: (action) {
         AppHaptic.select();
         if (action == _LessonHeaderMenuAction.changeTheme) {
-          ChangeBackgroundSheet.show(context);
+          StudyThemeTracking.track(TrackingKey.themeChangeClick, parameters: {'source': 'keypoint'});
+          ChangeBackgroundSheet.show(context, source: 'keypoint');
         } else {
           onReportProblem();
         }

@@ -25,6 +25,7 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
     if (_isHandling) return;
     setState(() => _isHandling = true);
     OnboardV2Tracking.track(TrackingKey.onboardV2NotificationNotifyClick, parameters: {'noti_allow': 'yes'});
+    OnboardV2Tracking.setUserProperties({'noti_allowed': 'yes'});
     final notificationCubit = context.read<NotificationCubit>();
     var beforeState = notificationCubit.state;
     if (!beforeState.hasLoadedPermissionState) {
@@ -42,6 +43,7 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
     if (_isHandling) return;
     setState(() => _isHandling = true);
     OnboardV2Tracking.track(TrackingKey.onboardV2NotificationMaybeLaterClick, parameters: {'noti_allow': 'no'});
+    OnboardV2Tracking.setUserProperties({'noti_allowed': 'no'});
     await context.read<NotificationCubit>().disableAppPreference();
     if (!mounted) return;
     await _complete(OnboardV2NotificationStatusMapper.maybeLater());

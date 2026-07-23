@@ -22,6 +22,9 @@ class _LessonPageState extends State<LessonPage> {
   late final LessonAudioCubit _lessonAudioCubit;
   late LessonEntryMode _selectedMode;
   bool _hasTrackedAudioShellView = false;
+  // Source for the next keypoint_read_scr_view: 'keypoint_intro' on entry,
+  // flipped to 'mode_switch' the moment the user switches into read mode.
+  String _readViewSource = 'keypoint_intro';
 
   @override
   void initState() {
@@ -113,7 +116,10 @@ class _LessonPageState extends State<LessonPage> {
                 previous.currentLearningItem.id != current.currentLearningItem.id ||
                 previous.currentDocument.id != current.currentDocument.id;
           },
-          listener: (context, state) => _trackingDelegate.trackKeypointTheoryScrView(state),
+          listener: (context, state) {
+            _trackingDelegate.trackKeypointTheoryScrView(state, source: _readViewSource);
+            _readViewSource = 'keypoint_intro';
+          },
         ),
         BlocListener<ExerciseCubit, ExerciseState>(
           listenWhen: (previous, current) {
@@ -121,7 +127,10 @@ class _LessonPageState extends State<LessonPage> {
                 previous.currentLearningItem.id != current.currentLearningItem.id ||
                 previous.currentQuestion.id != current.currentQuestion.id;
           },
-          listener: (context, state) => _trackingDelegate.trackKeypointExerciseScrView(state),
+          listener: (context, state) {
+            _trackingDelegate.trackKeypointExerciseScrView(state, source: _readViewSource);
+            _readViewSource = 'keypoint_intro';
+          },
         ),
       ],
       child: BlocBuilder<LessonCubit, LessonState>(
@@ -210,7 +219,7 @@ class _LessonPageState extends State<LessonPage> {
     }
 
     if (_selectedMode.isAudio) {
-      _trackAudioShellViewIfNeeded();
+      _trackAudioShellViewIfNeeded('keypoint_intro');
       await _lessonAudioCubit.enterAudioMode();
     } else {
       // Read mode: warm the audio in the background so switching to "Nghe"
@@ -219,7 +228,7 @@ class _LessonPageState extends State<LessonPage> {
     }
   }
 
-  void _trackAudioShellViewIfNeeded() {
+  void _trackAudioShellViewIfNeeded(String source) {
     if (_hasTrackedAudioShellView) return;
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData == null) return;
@@ -228,6 +237,7 @@ class _LessonPageState extends State<LessonPage> {
     AppService.instance.appTrackingService.trackKeypointAudioScreenView(
       trackingData,
       mode: _selectedMode.routeValue,
+      source: source,
     );
   }
 
@@ -241,6 +251,9 @@ class _LessonPageState extends State<LessonPage> {
 
     if (!mounted) return;
     setState(() => _selectedMode = nextMode);
+    // The read scr_view that follows a switch into read mode is sourced
+    // 'mode_switch' (reset to 'keypoint_intro' by the scr_view listener).
+    if (nextMode.isRead) _readViewSource = 'mode_switch';
 
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointAudioModeSwitch(
@@ -252,7 +265,7 @@ class _LessonPageState extends State<LessonPage> {
     }
 
     if (nextMode.isAudio) {
-      _trackAudioShellViewIfNeeded();
+      _trackAudioShellViewIfNeeded('mode_switch');
       await _lessonAudioCubit.enterAudioMode();
     }
   }
@@ -295,6 +308,14 @@ class _LessonPageState extends State<LessonPage> {
 
   void _openReportIssueSheet(BuildContext context, KeypointEntity keypoint) {
     final lessonId = context.read<CourseLessonCubit>().state.selectedLesson.id;
+    AppService.instance.appTrackingService.trackEvent(
+      TrackingKey.keypointReportClick,
+      parameters: {
+        'mode': _selectedMode.isAudio ? 'listen' : 'read',
+        'lesson_id': lessonId,
+        'keypoint_id': keypoint.id,
+      },
+    );
     ReportIssueSheet.show(
       context,
       lessonId: lessonId,

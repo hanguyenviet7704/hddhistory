@@ -184,6 +184,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                         // ── Recommended ──────────────────────────────────
                         _RecommendedSection(
                           onSeeAll: () {
+                            HomeTracking.track(TrackingKey.homeRcmSeeallClick);
                             context.read<CourseCubit>()
                               ..setAllCourseSource('home_recommend_view')
                               ..resetExploreToAll();
@@ -298,7 +299,7 @@ class _HomeGreeting extends StatelessWidget {
               ),
               12.horizontalSpace,
               // Design item 2 — "Change background" affordance in the header.
-              const ChangeBackgroundButton(),
+              const ChangeBackgroundButton(source: 'home'),
             ],
           );
         },
@@ -316,52 +317,44 @@ class _HomeWeeklyStreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Display-only streak card: tapping it no longer opens the streak detail
+    // (removed per request) — it's a passive weekly summary now.
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Semantics(
-        button: true,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            AppHaptic.select();
-            const HomeLearningStreakRoute().push(context);
-          },
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
-            decoration: BoxDecoration(
-              color: studyThemeCardColor(context),
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: _homeCardShadow,
-            ),
-            child: BlocSelector<LearningStreakCubit, LearningStreakState, ({int streak, List<bool> week})>(
-              selector: (state) => (
-                streak: state.selectedItem.currentStreak,
-                week: state.selectedItem.normalizedWeekStudy,
-              ),
-              builder: (context, data) {
-                return Column(
-                  children: [
-                    // Header is always the motivational prompt (design copy),
-                    // not an "N days streak" count — the streak itself is shown
-                    // by the day dots below.
-                    AppText(
-                      context.l10n.home.homeStreakEmptyPrompt,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      style: AppStyle.text12.copyWith(
-                        fontSize: 13.sp,
-                        color: AppCustomColor.streakTextMuted,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    14.verticalSpace,
-                    StreakWeekBar(weekStudy: data.week),
-                  ],
-                );
-              },
-            ),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: studyThemeCardColor(context),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: _homeCardShadow,
+        ),
+        child: BlocSelector<LearningStreakCubit, LearningStreakState, ({int streak, List<bool> week})>(
+          selector: (state) => (
+            streak: state.selectedItem.currentStreak,
+            week: state.selectedItem.normalizedWeekStudy,
           ),
+          builder: (context, data) {
+            return Column(
+              children: [
+                // Header is always the motivational prompt (design copy),
+                // not an "N days streak" count — the streak itself is shown
+                // by the day dots below.
+                AppText(
+                  context.l10n.home.homeStreakEmptyPrompt,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text12.copyWith(
+                    fontSize: 13.sp,
+                    color: AppCustomColor.streakTextMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                14.verticalSpace,
+                StreakWeekBar(weekStudy: data.week),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -418,7 +411,10 @@ class _JumpBackInSectionState extends State<_JumpBackInSection> {
           child: PageView.builder(
             controller: _pageController,
             padEnds: false,
-            onPageChanged: (i) => setState(() => _currentIndex = i),
+            onPageChanged: (i) {
+              HomeTracking.track(TrackingKey.homeContinueSwipe, parameters: {'to_index': i});
+              setState(() => _currentIndex = i);
+            },
             itemCount: widget.courses.length,
             itemBuilder: (context, i) {
               return Padding(
@@ -467,6 +463,7 @@ class _JumpBackInCard extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: () {
           AppHaptic.select();
+          HomeTracking.track(TrackingKey.homeContinueCardClick);
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
             ..selectSkillset(course.skillset)
@@ -586,6 +583,7 @@ class _HomeQuickTiles extends StatelessWidget {
               title: context.l10n.home.homeExploreTopics,
               subtitle: context.l10n.home.homeExploreTopicsSub,
               onTap: () {
+                HomeTracking.track(TrackingKey.homeExploreClick);
                 context.read<CourseCubit>()
                   ..setAllCourseSource('home_quick_explore')
                   ..resetExploreToAll();
@@ -601,7 +599,10 @@ class _HomeQuickTiles extends StatelessWidget {
               iconBackground: const Color(0xFFE4F1E7),
               title: context.l10n.home.homeTodayHabit,
               subtitle: context.l10n.home.homeTodayHabitSub,
-              onTap: () => HabitRoute().go(context),
+              onTap: () {
+                HomeTracking.track(TrackingKey.homeHabitClick);
+                HabitRoute().go(context);
+              },
             ),
           ),
         ],
@@ -703,64 +704,141 @@ class _RecommendedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
-      selector: (state) => state.suggestedCourses,
-      builder: (context, courses) {
-        if (courses.isEmpty) return const SizedBox.shrink();
+    // Also select [HomeStatus] (not just the list) so an empty list can be
+    // told apart: still loading (cold start — show a skeleton) vs. loaded
+    // and genuinely empty (hide the section, same as before).
+    return BlocSelector<HomeCubit, HomeState, ({List<SuggestedCourseEntity> courses, HomeStatus status})>(
+      selector: (state) => (courses: state.suggestedCourses, status: state.status),
+      builder: (context, data) {
+        final courses = data.courses;
+        if (courses.isEmpty) {
+          final isColdLoading = data.status == HomeStatus.loading || data.status == HomeStatus.initial;
+          return isColdLoading ? _RecommendedSkeleton(onSeeAll: onSeeAll) : const SizedBox.shrink();
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  AppText(
-                    context.l10n.home.homeRecommended,
-                    style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
-                  ),
-                  Semantics(
-                    button: true,
-                    label: context.l10n.home.homeRecommendedSeeAll,
-                    child: GestureDetector(
-                      onTap: onSeeAll == null
-                          ? null
-                          : () {
-                              AppHaptic.select();
-                              onSeeAll!();
-                            },
-                      child: AppText(
-                        context.l10n.home.homeRecommendedSeeAll,
-                        style: AppStyle.textBold12.copyWith(
-                          fontSize: 13.sp,
-                          color: AppCustomColor.brandPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _RecommendedHeader(onSeeAll: onSeeAll),
             14.verticalSpace,
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.only(left: 20.w, right: 8.w),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (int i = 0; i < courses.length; i++) ...[
-                    _RecommendedCard(course: courses[i]),
-                    if (i < courses.length - 1) 14.horizontalSpace,
+            // Controller-less strip: fire home_rcm_swipe once per gesture on the
+            // settle (ScrollEndNotification only fires when scrolling stops, so
+            // it can't spam mid-drag).
+            NotificationListener<ScrollEndNotification>(
+              onNotification: (notification) {
+                if (notification.depth == 0) {
+                  HomeTracking.track(TrackingKey.homeRcmSwipe);
+                }
+                return false;
+              },
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.only(left: 20.w, right: 8.w),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 0; i < courses.length; i++) ...[
+                      _RecommendedCard(course: courses[i]),
+                      if (i < courses.length - 1) 14.horizontalSpace,
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             28.verticalSpace,
           ],
         );
       },
+    );
+  }
+}
+
+/// "Recommended" section header — title + "See all". Shared by the loaded
+/// strip and its cold-load skeleton so the two stay pixel-identical (no
+/// layout jump when the real content swaps in).
+class _RecommendedHeader extends StatelessWidget {
+  final VoidCallback? onSeeAll;
+
+  const _RecommendedHeader({this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          AppText(
+            context.l10n.home.homeRecommended,
+            style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+          ),
+          Semantics(
+            button: true,
+            label: context.l10n.home.homeRecommendedSeeAll,
+            child: GestureDetector(
+              onTap: onSeeAll == null
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onSeeAll!();
+                    },
+              child: AppText(
+                context.l10n.home.homeRecommendedSeeAll,
+                style: AppStyle.textBold12.copyWith(
+                  fontSize: 13.sp,
+                  color: AppCustomColor.brandPrimary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Cold-load placeholder for the "Recommended" strip (first open, nothing
+/// cached yet). The header stays live (real copy, "See all" still
+/// navigable) — only the course tiles are skeletonized, reusing
+/// [_RecommendedCard] fed dummy entities so Skeletonizer auto-generates bone
+/// shapes matching the real tile layout (thumbnail + 2-line title).
+class _RecommendedSkeleton extends StatelessWidget {
+  final VoidCallback? onSeeAll;
+
+  const _RecommendedSkeleton({this.onSeeAll});
+
+  static const int _kSkeletonCardCount = 4;
+  static const SuggestedCourseEntity _kSkeletonCourse = SuggestedCourseEntity(
+    id: 'skeleton',
+    title: BaseMultiLanguage(en: 'Course title placeholder'),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _RecommendedHeader(onSeeAll: onSeeAll),
+        14.verticalSpace,
+        sk.Skeletonizer(
+          enabled: true,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.only(left: 20.w, right: 8.w),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < _kSkeletonCardCount; i++) ...[
+                  const _RecommendedCard(course: _kSkeletonCourse),
+                  if (i < _kSkeletonCardCount - 1) 14.horizontalSpace,
+                ],
+              ],
+            ),
+          ),
+        ),
+        28.verticalSpace,
+      ],
     );
   }
 }
@@ -779,7 +857,21 @@ class _RecommendedCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           AppHaptic.select();
-          final didSelect = context.read<HomeCubit>().trySelectCourseFromCourseId(course.id);
+          final homeCubit = context.read<HomeCubit>();
+          // skill_id/skill_name aren't on SuggestedCourseEntity beyond its
+          // skillsetId; resolve the human-readable name from the loaded
+          // skillsets (best-effort — empty when the skillset isn't cached).
+          final skillset = homeCubit.state.skillsets.firstWhere(
+            (s) => s.id == course.skillsetId || s.courses.any((c) => c.id == course.id),
+            orElse: () => const SkillsetEntity(),
+          );
+          HomeTracking.track(TrackingKey.homeRcmCardClick, parameters: {
+            'course_id': course.id,
+            'course_name': course.title.text,
+            'skill_id': course.skillsetId.isNotEmpty ? course.skillsetId : skillset.id,
+            'skill_name': skillset.title.text,
+          });
+          final didSelect = homeCubit.trySelectCourseFromCourseId(course.id);
           if (didSelect) {
             context.read<CourseRoadmapCubit>().setRoadmapSource('home_recommended');
             CourseRoadmapRoute().go(context);

@@ -73,7 +73,7 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
-        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData, answerCorrect: isCorrect);
       }
     }
 

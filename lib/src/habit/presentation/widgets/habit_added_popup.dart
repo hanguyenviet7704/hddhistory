@@ -10,12 +10,16 @@ const String _kHabitAddedPlant = 'assets/svg/common/habit_added_plant.svg';
 class HabitAddedPopup extends StatelessWidget {
   final String title;
   final String subtitle;
+  // The "Habit upgraded!" variant reuses this popup; its view/CTA taps are NOT
+  // part of the habit_added_* funnel, so tracking is suppressed when true.
+  final bool isUpgraded;
 
-  const HabitAddedPopup({super.key, required this.title, required this.subtitle});
+  const HabitAddedPopup({super.key, required this.title, required this.subtitle, this.isUpgraded = false});
 
-  static Future<bool?> show(BuildContext context, {String? title, String? subtitle}) {
+  static Future<bool?> show(BuildContext context, {String? title, String? subtitle, bool isUpgraded = false}) {
     final resolvedTitle = title ?? context.l10n.habit.adoptAddedTitle;
     final resolvedSubtitle = subtitle ?? context.l10n.habit.adoptAddedSubtitle;
+    if (!isUpgraded) HabitTracking.addedScrView();
     return showGeneralDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -28,7 +32,7 @@ class HabitAddedPopup extends StatelessWidget {
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: HabitAddedPopup(title: resolvedTitle, subtitle: resolvedSubtitle),
+            child: HabitAddedPopup(title: resolvedTitle, subtitle: resolvedSubtitle, isUpgraded: isUpgraded),
           ),
         );
       },
@@ -40,6 +44,7 @@ class HabitAddedPopup extends StatelessWidget {
     context,
     title: context.l10n.habit.upgradedTitle,
     subtitle: context.l10n.habit.upgradedSubtitle,
+    isUpgraded: true,
   );
 
   @override
@@ -84,7 +89,10 @@ class HabitAddedPopup extends StatelessWidget {
                               backgroundColor: AppCustomColor.brandPrimary50,
                               size: Size(double.infinity, 54.h),
                               style: AppStyle.textBold16.copyWith(color: AppCustomColor.streakActive),
-                              onPressed: () => Navigator.of(context).pop(true),
+                              onPressed: () {
+                                if (!isUpgraded) HabitTracking.addedGoHabit();
+                                Navigator.of(context).pop(true);
+                              },
                             ),
                           ),
                           8.horizontalSpace,
@@ -94,7 +102,10 @@ class HabitAddedPopup extends StatelessWidget {
                               backgroundColor: AppCustomColor.brandPrimary,
                               size: Size(double.infinity, 54.h),
                               style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                              onPressed: () => Navigator.of(context).pop(false),
+                              onPressed: () {
+                                if (!isUpgraded) HabitTracking.addedContinue();
+                                Navigator.of(context).pop(false);
+                              },
                             ),
                           ),
                         ],

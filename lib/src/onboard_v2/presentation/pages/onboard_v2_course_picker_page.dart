@@ -104,6 +104,7 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
         currentCourseIndex: cubit.state.currentCourseIndex,
       ),
     );
+    OnboardV2Tracking.setUserProperties({'first_course': course.id});
     cubit.goToThemeWithSelectedCourse(course);
   }
 

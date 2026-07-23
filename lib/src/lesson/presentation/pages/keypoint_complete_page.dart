@@ -36,7 +36,8 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
       _ensureKeypointCompleteRouteName();
       final trackingData = KeypointTrackingData.fromContext();
       if (trackingData == null) return;
-      AppService.instance.appTrackingService.trackKeypointFinishScrView(trackingData);
+      final isDoneCourse = context.read<CourseRoadmapCubit>().state.roadmap.isAllCurrentRoadmapContentCompleted;
+      AppService.instance.appTrackingService.trackKeypointFinishScrView(trackingData, isDoneCourse: isDoneCourse);
       if (context.read<LessonCubit>().state.completionOrigin == LessonCompletionOrigin.audio) {
         AppService.instance.appTrackingService.trackKeypointAudioCompleteView(trackingData);
       }

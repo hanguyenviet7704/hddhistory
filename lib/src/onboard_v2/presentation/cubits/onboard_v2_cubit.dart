@@ -108,6 +108,16 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     if (currentIndex <= OnboardV2PageStep.values.indexOf(OnboardV2PageStep.p1Intro)) return;
     if (state.currentPage == OnboardV2PageStep.p4Notification || state.currentPage == OnboardV2PageStep.p8CoursePicker) return;
 
+    // Per-screen back events (spec: only Age/Paths/Brain-science/Habit have one).
+    final backEvent = switch (state.currentPage) {
+      OnboardV2PageStep.p3Age => TrackingKey.onboardV2AgeBack,
+      OnboardV2PageStep.p5PathSelection => TrackingKey.onboardV2PathsBack,
+      OnboardV2PageStep.p6PathMap => TrackingKey.onboardV2InforBack,
+      OnboardV2PageStep.p7Symptoms => TrackingKey.onboardV2SymptomBack,
+      _ => null,
+    };
+    if (backEvent != null) OnboardV2Tracking.track(backEvent);
+
     final isCancellingAgeSubmit = state.currentPage == OnboardV2PageStep.p3Age && state.p3SubmitStatus == OnboardV2AsyncStatus.loading;
     if (isCancellingAgeSubmit) {
       _requestSerial += 1;
@@ -153,10 +163,12 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     _isSubmittingAge = true;
     final serial = _requestSerial;
+    final ageSheetParams = OnboardV2Tracking.ageSheetParams(selectedAge);
     OnboardV2Tracking.track(
       TrackingKey.onboardV2P3ContinueClick,
-      parameters: OnboardV2Tracking.ageSheetParams(selectedAge),
+      parameters: ageSheetParams,
     );
+    OnboardV2Tracking.setUserProperties({'age': ageSheetParams['age']});
 
     emit(
       state.copyWith(
@@ -328,6 +340,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   void continueFromP5Paths() {
     if (!state.canContinuePaths) return;
     OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectedPathSheetParams(state.selectedPaths));
+    OnboardV2Tracking.setUserProperties({'path_selected': OnboardV2Tracking.selectedPathValue(state.selectedPaths)});
     emit(state.copyWith(currentPage: OnboardV2PageStep.p6PathMap));
   }
 
@@ -376,6 +389,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         selectedSymptoms: state.selectedSymptoms,
       ),
     );
+    OnboardV2Tracking.setUserProperties({'habit_struggle': OnboardV2Tracking.selectedHabitValue(state.selectedSymptoms)});
     emit(state.copyWith(currentPage: OnboardV2PageStep.p8CoursePicker));
     // Prewarm the home dataset now (in parallel with the course-list fetch) so
     // it is ready — or nearly ready — by the time the user taps "select".

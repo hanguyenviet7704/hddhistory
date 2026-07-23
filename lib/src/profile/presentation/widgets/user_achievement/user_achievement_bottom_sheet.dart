@@ -155,7 +155,12 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
           ),
           child: Column(
             children: [
-              _UserAchievementSheetHeader(onClose: () => context.back()),
+              _UserAchievementSheetHeader(
+                onClose: () {
+                  AppService.instance.appTrackingService.trackProfileBadgeCloseClick();
+                  context.back();
+                },
+              ),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, bottomInset + 20.h),

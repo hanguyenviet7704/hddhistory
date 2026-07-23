@@ -238,6 +238,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _handleUpdatePressed() async {
+    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateConfirm);
     try {
       final String appStoreUrl = Platform.isIOS ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' : 'https://play.google.com/store/apps/details?id=com.eup.meup';
 
@@ -248,6 +249,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _showUpdateDialog() {
+    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateView);
     showDDialog(
       context,
       backgroundColor: Colors.transparent,
