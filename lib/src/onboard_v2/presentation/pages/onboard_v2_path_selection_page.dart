@@ -18,7 +18,9 @@ class OnboardV2PathSelectionPage extends StatelessWidget {
         activeSegments: 1,
         totalSegments: 3,
         pageStep: OnboardV2PageStep.p5PathSelection,
-        showBack: true,
+        // Back hidden: the previous step is the notification gate (p4), which
+        // shouldn't be re-entered from here.
+        showBack: false,
         onBack: cubit.goBack,
       ),
       cta: OnboardV2BottomCta(
