@@ -12,6 +12,9 @@ abstract class HomeState with _$HomeState {
     String? errorMessage,
     @Default(null) QuoteEntity? quote,
     @Default([]) List<SuggestedCourseEntity> suggestedCourses,
+    // Optional-update header banner on Home. Session-only (default false;
+    // set by [HomeCubit.checkOptionalUpdate], cleared by dismiss/update).
+    @Default(false) bool showUpdateBanner,
   }) = _HomeState;
 
   factory HomeState.initial() => HomeState();

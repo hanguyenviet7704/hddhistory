@@ -46,3 +46,5 @@ inAppSurveyRatingAwful: Rất tệ
 inAppSurveyRatingSemantics: Mức đánh giá ${rating}
 inAppSurveySendFeedback: Gửi góp ý
 inAppSurveySendWithoutFeedback: Gửi không kèm góp ý
+updateBannerTitle: Đã có phiên bản mới
+updateBannerAction: Cập nhật

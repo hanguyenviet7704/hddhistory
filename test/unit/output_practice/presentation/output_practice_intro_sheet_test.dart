@@ -58,6 +58,9 @@ class _FakeRemoteConfigService implements IRemoteConfigService {
 
   @override
   Future<bool> shouldForceUpdate() async => false;
+
+  @override
+  Future<bool> optionalUpdateAvailable() async => false;
 }
 
 void main() {

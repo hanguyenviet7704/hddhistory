@@ -169,4 +169,25 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
       return false;
     }
   }
+
+  @override
+  Future<bool> optionalUpdateAvailable() async {
+    try {
+      await _waitForStartupFetch();
+      final config = appVersionConfig;
+      // The forced path is handled by [shouldForceUpdate] (blocking dialog),
+      // so a forced update must NOT also surface the optional header.
+      if (config.forceUserUpdate) return false;
+      if (Platform.isAndroid) {
+        return config.latestAndroidVersion.isNotEmpty && _packageInfoService.isVersionLowerThan(config.latestAndroidVersion);
+      }
+      if (Platform.isIOS) {
+        return config.latestIosVersion.isNotEmpty && _packageInfoService.isVersionLowerThan(config.latestIosVersion);
+      }
+      return false;
+    } catch (e) {
+      LogDev.error('optionalUpdateAvailable: $e');
+      return false;
+    }
+  }
 }
