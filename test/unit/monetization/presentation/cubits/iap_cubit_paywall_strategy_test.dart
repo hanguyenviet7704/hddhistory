@@ -322,6 +322,9 @@ class _FakeRemoteConfigService implements IRemoteConfigService {
 
   @override
   Future<bool> shouldForceUpdate() async => false;
+
+  @override
+  Future<bool> optionalUpdateAvailable() async => false;
 }
 
 class _FakePackageInfoService implements IPackageInfoService {
