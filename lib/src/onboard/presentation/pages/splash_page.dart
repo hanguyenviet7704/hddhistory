@@ -268,15 +268,10 @@ class _SplashPageState extends State<SplashPage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Container(
+          // Design "Splash mới": light backdrop with the brand "?" gradient tile
+          // centred (the tile carries the gradient, so the page stays light).
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF5953EA),
-                Color(0xFF838AF2),
-              ],
-            ),
+            color: Color(0xFFF2F1FA),
           ),
           child: SafeArea(
             top: false,
@@ -288,23 +283,15 @@ class _SplashPageState extends State<SplashPage> {
                   child: Center(
                     child: Image.asset(
                       AppAsset.images.common.mainIconSplash.path,
-                      width: 80.w,
-                      height: 80.w,
+                      width: 120.w,
+                      height: 120.w,
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 60.h + bottomInset),
-                  child: AppText(
-                    'Meup',
-                    style: AppStyle.text20.copyWith(
-                      color: AppCustomColor.textWhite,
-                      fontWeight: FontWeight.w700,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
+                // Design shows only the tile (no wordmark); keep symmetric
+                // bottom spacing so the tile reads as centred.
+                SizedBox(height: 60.h + bottomInset),
               ],
             ),
           ),
