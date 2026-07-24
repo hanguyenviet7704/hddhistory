@@ -18,7 +18,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 #version: 1.4.0+53 # ios
-version: 1.4.1+62 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
+version: 1.4.2+66 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
@@ -48,6 +48,10 @@ dependencies:
   modal_bottom_sheet: ^3.0.0
   video_player: ^2.11.1
   just_audio: ^0.10.5
+  # Background playback + OS media controls (lock-screen/Control Center/Android
+  # notification) for the lesson "Listen mode" player only — scoped via a
+  # dedicated LessonAudioHandler, not applied globally (see lesson_audio_handler.dart).
+  audio_service: ^0.18.19
 #  camera: ^0.11.1
   lottie: ^3.3.3
 #  flutter_polyline_points: ^2.1.0
@@ -356,7 +360,6 @@ flutter:
     - assets/texts/
     - assets/lottie/
     - assets/i18n/
-    - assets/bg/
     # - assets/gif/
     # - assets/audio/
     # - assets/video/
