@@ -23,6 +23,7 @@ import {
   SwatchIcon,
   AdjustmentsHorizontalIcon,
   BugAntIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -68,11 +69,25 @@ const menuGroups = [
     ],
   },
   {
+    // Feedback surfaces gathered in one place (navigation grouping). Reported
+    // Issues + In-App Survey feedback are routable; the per-user keypoint-drop
+    // feedback stays under User Progress (it needs a userId, so it can't be a
+    // standalone link). Survey Feedback deep-links to the settings survey tab.
+    title: "Feedback",
+    items: [
+      { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
+      {
+        name: "Survey Feedback",
+        icon: ChatBubbleLeftRightIcon,
+        path: "/settings?tab=inAppSurvey",
+      },
+    ],
+  },
+  {
     title: "Operations",
     items: [
       { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
       { name: "Payment", icon: CreditCardIcon, path: "/payment" },
-      { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
       { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
       { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
     ],

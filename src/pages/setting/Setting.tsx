@@ -1,5 +1,6 @@
 // src/pages/settings/SettingsPage.tsx
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   UserIcon,
   TagIcon,
@@ -23,17 +24,28 @@ import HabitSlotManagement from "../../components/setting/HabitSlotManagement";
 import DailyWarmUpQuestionTagging from "../../components/setting/DailyWarmUpQuestionTagging";
 
 const SettingsPage = () => {
-  const [activeTab, setActiveTab] = useState<
-    | "users"
-    | "tags"
-    | "avatars"
-    | "icons"
-    | "roleplayColors"
-    | "quotes"
-    | "inAppSurvey"
-    | "warmUp"
-    | "habit"
-  >("users");
+  // Tabs are local state, but allow deep-linking to a specific tab via
+  // `?tab=<key>` (e.g. the sidebar "Feedback" group links to
+  // /settings?tab=inAppSurvey). Falls back to "users" for an absent/unknown tab.
+  const SETTING_TABS = [
+    "users",
+    "tags",
+    "avatars",
+    "icons",
+    "roleplayColors",
+    "quotes",
+    "inAppSurvey",
+    "warmUp",
+    "habit",
+  ] as const;
+  type SettingTab = (typeof SETTING_TABS)[number];
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const initialTab: SettingTab =
+    tabParam && (SETTING_TABS as readonly string[]).includes(tabParam)
+      ? (tabParam as SettingTab)
+      : "users";
+  const [activeTab, setActiveTab] = useState<SettingTab>(initialTab);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
