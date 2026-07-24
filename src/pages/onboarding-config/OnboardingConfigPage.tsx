@@ -570,6 +570,97 @@ function SymptomRow({
   );
 }
 
+// Reusable symptom list editor (key + en/vi label, add / remove / drag-reorder)
+// bound to ONE path item's `symptoms`. Used both inside PathItemRow (the Paths
+// section) and in the Symptoms (screen 7) section's grouped-by-path view — both
+// edit the SAME `paths.items[].symptoms` data, so they stay in sync.
+function SymptomListEditor({
+  symptoms,
+  symptomErrors,
+  dndSensors,
+  onChange,
+}: {
+  symptoms: SymptomDraft[];
+  symptomErrors: Record<string, string>;
+  dndSensors: ReturnType<typeof useSensors>;
+  onChange: (updater: (list: SymptomDraft[]) => SymptomDraft[]) => void;
+}) {
+  const addSymptom = () =>
+    onChange((list) => [
+      ...list,
+      { _localId: nextLocalId(), key: "", label: {} },
+    ]);
+  const updateSymptomItem = (
+    localId: string,
+    updater: (item: SymptomDraft) => SymptomDraft
+  ) =>
+    onChange((list) =>
+      list.map((s) => (s._localId === localId ? updater(s) : s))
+    );
+  const removeSymptom = (localId: string) =>
+    onChange((list) => list.filter((s) => s._localId !== localId));
+  const reorderSymptoms = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    onChange((list) => {
+      const oldIndex = list.findIndex((s) => s._localId === active.id);
+      const newIndex = list.findIndex((s) => s._localId === over.id);
+      if (oldIndex === -1 || newIndex === -1) return list;
+      return arrayMove(list, oldIndex, newIndex);
+    });
+  };
+
+  return (
+    <>
+      <Box className="flex items-center justify-between mb-1.5">
+        <Typography variant="subtitle2">Symptoms</Typography>
+        <Typography variant="caption" color="text.secondary">
+          Drag to reorder
+        </Typography>
+      </Box>
+
+      {symptoms.length === 0 ? (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          No symptoms yet.
+        </Typography>
+      ) : (
+        <DndContext
+          sensors={dndSensors}
+          collisionDetection={closestCenter}
+          onDragEnd={reorderSymptoms}
+        >
+          <SortableContext
+            items={symptoms.map((s) => s._localId)}
+            strategy={verticalListSortingStrategy}
+          >
+            {symptoms.map((symptom, symptomIndex) => (
+              <SymptomRow
+                key={symptom._localId}
+                item={symptom}
+                index={symptomIndex}
+                error={symptomErrors[symptom._localId]}
+                onChange={(updater) =>
+                  updateSymptomItem(symptom._localId, updater)
+                }
+                onRemove={() => removeSymptom(symptom._localId)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      )}
+
+      <Button
+        onClick={addSymptom}
+        variant="outlined"
+        size="small"
+        startIcon={<Add />}
+      >
+        Add symptom
+      </Button>
+    </>
+  );
+}
+
 function PathItemRow({
   item,
   index,
@@ -587,39 +678,6 @@ function PathItemRow({
   onChange: (updater: (item: PathItemDraft) => PathItemDraft) => void;
   onRemove: () => void;
 }) {
-  // Symptom add/update/remove/reorder are scoped to this path item only —
-  // they thread through the path item's own `onChange`, mirroring how the
-  // page-level `makeListHelpers` reaches into ConfigDraft one level up.
-  const updateSymptoms = (
-    updater: (list: SymptomDraft[]) => SymptomDraft[]
-  ) =>
-    onChange((prev) => ({ ...prev, symptoms: updater(prev.symptoms) }));
-
-  const addSymptom = () =>
-    updateSymptoms((list) => [
-      ...list,
-      { _localId: nextLocalId(), key: "", label: {} },
-    ]);
-  const updateSymptomItem = (
-    localId: string,
-    updater: (item: SymptomDraft) => SymptomDraft
-  ) =>
-    updateSymptoms((list) =>
-      list.map((s) => (s._localId === localId ? updater(s) : s))
-    );
-  const removeSymptom = (localId: string) =>
-    updateSymptoms((list) => list.filter((s) => s._localId !== localId));
-  const reorderSymptoms = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    updateSymptoms((list) => {
-      const oldIndex = list.findIndex((s) => s._localId === active.id);
-      const newIndex = list.findIndex((s) => s._localId === over.id);
-      if (oldIndex === -1 || newIndex === -1) return list;
-      return arrayMove(list, oldIndex, newIndex);
-    });
-  };
-
   return (
     <SortableItem id={item._localId}>
       <Box sx={rowSx}>
@@ -678,51 +736,14 @@ function PathItemRow({
         </Box>
 
         <Divider sx={{ my: 1.5 }} />
-        <Box className="flex items-center justify-between mb-1.5">
-          <Typography variant="subtitle2">Symptoms</Typography>
-          <Typography variant="caption" color="text.secondary">
-            Drag to reorder
-          </Typography>
-        </Box>
-
-        {item.symptoms.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            No symptoms yet.
-          </Typography>
-        ) : (
-          <DndContext
-            sensors={dndSensors}
-            collisionDetection={closestCenter}
-            onDragEnd={reorderSymptoms}
-          >
-            <SortableContext
-              items={item.symptoms.map((s) => s._localId)}
-              strategy={verticalListSortingStrategy}
-            >
-              {item.symptoms.map((symptom, symptomIndex) => (
-                <SymptomRow
-                  key={symptom._localId}
-                  item={symptom}
-                  index={symptomIndex}
-                  error={symptomErrors[symptom._localId]}
-                  onChange={(updater) =>
-                    updateSymptomItem(symptom._localId, updater)
-                  }
-                  onRemove={() => removeSymptom(symptom._localId)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        )}
-
-        <Button
-          onClick={addSymptom}
-          variant="outlined"
-          size="small"
-          startIcon={<Add />}
-        >
-          Add symptom
-        </Button>
+        <SymptomListEditor
+          symptoms={item.symptoms}
+          symptomErrors={symptomErrors}
+          dndSensors={dndSensors}
+          onChange={(updater) =>
+            onChange((prev) => ({ ...prev, symptoms: updater(prev.symptoms) }))
+          }
+        />
       </Box>
     </SortableItem>
   );
@@ -1494,6 +1515,50 @@ export default function OnboardingConfigPage() {
                     Leave empty for default.
                   </Typography>
                 </Box>
+
+                <Divider sx={{ my: 1 }} />
+                <Box className="flex items-center justify-between">
+                  <Typography variant="subtitle2">
+                    Symptom items (grouped by path)
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Same data as the Paths section — edits here sync both ways.
+                  </Typography>
+                </Box>
+                {draft.paths.items.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No paths yet — add paths in the Paths section first.
+                  </Typography>
+                ) : (
+                  draft.paths.items.map((pathItem) => (
+                    <Box
+                      key={pathItem._localId}
+                      sx={{ ...rowSx, bgcolor: "background.paper" }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        color="text.secondary"
+                        sx={{ mb: 1 }}
+                      >
+                        {pathItem.label.en || pathItem.key || "Path"}
+                      </Typography>
+                      <SymptomListEditor
+                        symptoms={pathItem.symptoms}
+                        symptomErrors={symptomErrors}
+                        dndSensors={dndSensors}
+                        onChange={(updater) =>
+                          pathItemHelpers.updateItem(
+                            pathItem._localId,
+                            (prev) => ({
+                              ...prev,
+                              symptoms: updater(prev.symptoms),
+                            })
+                          )
+                        }
+                      />
+                    </Box>
+                  ))
+                )}
               </Box>
             </AccordionDetails>
           </Accordion>

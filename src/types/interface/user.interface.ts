@@ -58,6 +58,18 @@ export interface TopinPayload {
   topic: string;
 }
 
+export interface ResetOnboardingPayload {
+  email?: string;
+  userId?: string;
+}
+
+export interface IResetOnboardingResult {
+  id: string;
+  email: string;
+  name: string;
+  isOnboarded: boolean;
+}
+
 export class UserListQuery extends BaseQuery {
   role?: UserRole;
   status?: UserStatus;

@@ -43,6 +43,7 @@ import ImageCompressionPage from "../pages/image-compression/ImageCompressionPag
 import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
 import StudyThemeList from "../pages/study-themes/StudyThemeList";
 import OnboardingConfigPage from "../pages/onboarding-config/OnboardingConfigPage";
+import ResetOnboardingPage from "../pages/users/ResetOnboardingPage";
 
 export default function AppRouter() {
   return (
@@ -125,6 +126,11 @@ export default function AppRouter() {
               <Route
                 path="image-compression"
                 element={<ImageCompressionPage />}
+              />
+
+              <Route
+                path="reset-onboarding"
+                element={<ResetOnboardingPage />}
               />
 
               <Route path="settings" element={<SettingsPage />} />

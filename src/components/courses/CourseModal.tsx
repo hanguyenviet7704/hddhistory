@@ -18,6 +18,7 @@ import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { skillsetService } from "../../services/skillsetService";
+import { onboardingConfigService } from "../../services/onboardingConfigService";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { ITranslation } from "../../utils/translate";
 import { cleanTranslation, getTranslationValue } from "../../utils/translation";
@@ -67,6 +68,12 @@ export default function CourseModal({
   const [onboardingSymptoms, setOnboardingSymptoms] = useState<
     OnboardingSymptom[]
   >([]);
+  // Real symptom sentences (from the onboarding config, keyed by the
+  // OnboardingSymptom enum value) so the checkboxes below read as the actual
+  // symptom the user picks — not the raw title-cased key.
+  const [symptomLabels, setSymptomLabels] = useState<Record<string, string>>(
+    {}
+  );
 
   // State cho Skillset
   const [skillsetId, setSkillsetId] = useState("");
@@ -113,6 +120,34 @@ export default function CourseModal({
 
     setDebouncedQuery("");
   }, [initial, isOpen]);
+
+  // Load the onboarding config once the modal opens to show the REAL symptom
+  // sentences on the "Onboarding Symptoms" checkboxes (tagging a course reads as
+  // "recommend this course when the user picks <symptom>" — matching the app and
+  // how the recommendation, `onboardingSymptoms $in picked`, actually works).
+  // Falls back to the title-cased key when a symptom isn't in the config.
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const config = await onboardingConfigService.getConfig();
+        const map: Record<string, string> = {};
+        for (const path of config?.paths?.items ?? []) {
+          for (const symptom of path.symptoms ?? []) {
+            const label = getTranslationValue(symptom.label, lang);
+            if (symptom.key && label) map[symptom.key] = label;
+          }
+        }
+        if (!cancelled) setSymptomLabels(map);
+      } catch {
+        // Ignore — the checkboxes fall back to the key-derived label.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, lang]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -532,7 +567,10 @@ export default function CourseModal({
                           }
                           className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
-                        <span>{formatOnboardingSymptomLabel(symptom)}</span>
+                        <span>
+                          {symptomLabels[symptom] ??
+                            formatOnboardingSymptomLabel(symptom)}
+                        </span>
                       </label>
                     ))}
                   </div>
