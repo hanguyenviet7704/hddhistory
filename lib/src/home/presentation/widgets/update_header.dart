@@ -1,19 +1,19 @@
 part of '../../home.dart';
 
-/// Optional-update header banner pinned at the top of Home (design "Update
-/// Header"). Shown only when a NEWER, non-forced app version exists — the
-/// forced-update case is handled separately by the blocking splash dialog
-/// ([ForceUpdateContent]). A slim brand-gradient bar with white content;
-/// tapping "Update" opens the platform store and dismisses the banner for the
-/// session (it reappears next launch until the user actually updates).
+/// Optional-update header pinned at the top of Home (design "Update Header" —
+/// the `app:home` top cover-sheet). Shown only when a NEWER, non-forced app
+/// version exists; the forced-update case is the blocking splash dialog
+/// ([ForceUpdateContent]). Solid brand cover-sheet with rounded bottom corners,
+/// an icon chip, a two-line message and a white "Update" pill. Tapping Update
+/// opens the platform store and dismisses the banner for the session (it
+/// reappears next launch until the user actually updates).
 class UpdateHeader extends StatelessWidget {
   const UpdateHeader({super.key, required this.onDismiss});
 
   final VoidCallback onDismiss;
 
-  /// Brand gradient from the new logo (design): #8B8BF0 → #4B45D6.
-  static const Color _gradientStart = Color(0xFF8B8BF0);
-  static const Color _gradientEnd = Color(0xFF4B45D6);
+  /// Design brand indigo (#554FF0) — the cover-sheet fill (NOT a gradient).
+  static const Color _brand = Color(0xFF554FF0);
 
   void _handleUpdatePressed() {
     try {
@@ -30,38 +30,59 @@ class UpdateHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final homeL10n = context.l10n.home;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_gradientStart, _gradientEnd],
-        ),
+      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 14.h),
+      decoration: BoxDecoration(
+        color: _brand,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(22.r)),
+        boxShadow: [
+          BoxShadow(color: _brand.withValues(alpha: 0.34), blurRadius: 30.r, offset: Offset(0, 12.h)),
+        ],
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.system_update_alt,
-            color: AppCustomColor.textWhite,
-            size: 20.w,
+          // Icon chip — 36×36 translucent-white rounded square with an inset border.
+          Container(
+            width: 36.w,
+            height: 36.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppCustomColor.textWhite.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(11.r),
+              border: Border.all(color: AppCustomColor.textWhite.withValues(alpha: 0.25)),
+            ),
+            child: Icon(Icons.arrow_upward_rounded, color: AppCustomColor.textWhite, size: 19.w),
           ),
-          10.horizontalSpace,
+          11.horizontalSpace,
+          // Two-line message.
           Expanded(
-            child: AppText(
-              context.l10n.home.updateBannerTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppStyle.textBold14.copyWith(
-                color: AppCustomColor.textWhite,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  homeL10n.updateBannerTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyle.textBold14.copyWith(color: AppCustomColor.textWhite, height: 1.2),
+                ),
+                2.verticalSpace,
+                AppText(
+                  homeL10n.updateBannerSubtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyle.text12.copyWith(color: AppCustomColor.textWhite.withValues(alpha: 0.85), height: 1.35),
+                ),
+              ],
             ),
           ),
-          10.horizontalSpace,
+          11.horizontalSpace,
+          // White "Update" pill.
           Semantics(
             button: true,
-            label: context.l10n.home.updateBannerAction,
+            label: homeL10n.updateBannerAction,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
@@ -69,18 +90,17 @@ class UpdateHeader extends StatelessWidget {
                 _handleUpdatePressed();
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
+                height: 32.h,
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppCustomColor.textWhite,
-                  borderRadius: BorderRadius.circular(99.r),
+                  borderRadius: BorderRadius.circular(999.r),
                 ),
                 child: AppText(
-                  context.l10n.home.updateBannerAction,
+                  homeL10n.updateBannerAction,
                   maxLines: 1,
-                  style: AppStyle.textBold12.copyWith(
-                    fontSize: 13.sp,
-                    color: AppCustomColor.brandPrimary,
-                  ),
+                  style: AppStyle.textBold12.copyWith(color: _brand),
                 ),
               ),
             ),

@@ -47,5 +47,6 @@ inAppSurveyRatingAwful: Awful
 inAppSurveyRatingSemantics: Survey rating ${rating}
 inAppSurveySendFeedback: Send feedback
 inAppSurveySendWithoutFeedback: Send without feedback
-updateBannerTitle: A new version is available
+updateBannerTitle: A fresh update is ready
+updateBannerSubtitle: Faster, calmer, more reliable — come see!
 updateBannerAction: Update
