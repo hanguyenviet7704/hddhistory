@@ -47,17 +47,38 @@ class HabitPage extends StatefulWidget {
 }
 
 class _HabitPageState extends State<HabitPage> {
+  // Guards habit_scr_view to once per Habit-tab visit. Reset when the tab stops
+  // being the current route (see the PageCubit listener in build) so the next
+  // entry logs a fresh view — the StatefulShellRoute keeps this page alive, so
+  // initState alone would only ever fire on the very first open.
+  bool _scrViewLogged = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final cubit = context.read<HabitCubit>();
-      HabitTracking.scrView(source: widget.source, isEmpty: cubit.state.userHabits.isEmpty);
+      _logScrViewIfActive();
       // Recover from a failed/skipped first load, same self-heal shape as
       // HomeCubit.ensureHomeDataLoaded — no-op when data is already present.
-      unawaited(cubit.ensureLoaded());
+      unawaited(context.read<HabitCubit>().ensureLoaded());
     });
+  }
+
+  /// Logs habit_scr_view once per Habit-tab visit, reading the entry-point
+  /// `source` from [HabitCubit] (set by whoever navigated here; defaults to
+  /// nav_habit for a plain bottom-nav tap). No-op unless Habit is the current
+  /// route.
+  void _logScrViewIfActive() {
+    if (!mounted) return;
+    // Habit is shell branch index 4 (ScaffoldLayout._tabToBranch). Key on the
+    // branch index (not currentRouteName) so it fires for BOTH a bottom-nav tap
+    // and a .go() entry that only updates the index.
+    if (context.read<PageCubit>().state.currentIndex != 4) return;
+    if (_scrViewLogged) return;
+    _scrViewLogged = true;
+    final cubit = context.read<HabitCubit>();
+    HabitTracking.scrView(source: cubit.consumePendingScrSource(), isEmpty: cubit.state.userHabits.isEmpty);
   }
 
   /// Tap the check circle → check-in + diary sheet (PRD §9.7). Refreshes the
@@ -92,9 +113,15 @@ class _HabitPageState extends State<HabitPage> {
     return BlocListener<PageCubit, PageState>(
       listenWhen: (previous, current) => previous.currentIndex != current.currentIndex,
       listener: (context, state) {
-        // Returning to this tab with nothing loaded (initial retry also
-        // failed) -> try again.
-        unawaited(context.read<HabitCubit>().ensureLoaded());
+        if (state.currentIndex == 4) {
+          // Entered (or returned to) the Habit tab — log this visit's view and
+          // self-heal the data if the initial load failed.
+          _logScrViewIfActive();
+          unawaited(context.read<HabitCubit>().ensureLoaded());
+        } else {
+          // Left the tab — arm the next visit's view log.
+          _scrViewLogged = false;
+        }
       },
       child: Scaffold(
         // Transparent only when a custom study background is active.
@@ -439,7 +466,11 @@ class _HabitCategoryCard extends StatelessWidget {
               ),
               child: AppText(
                 title,
-                style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
+                // The "why" header sits inside a translucent glass card; the
+                // muted slate loses contrast over a custom background (dark bleeds
+                // through), so darken it there via studyThemeCardMuted while
+                // keeping the Figma muted slate on the stock white card.
+                style: AppStyle.text14.copyWith(color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted), fontWeight: FontWeight.w600),
               ),
             ),
             // Figma "Today's task": task rows stack with no divider between

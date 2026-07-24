@@ -6,6 +6,13 @@ audioRetry: 重试
 audioSpeedNormal: 正常
 audioSpeedSuffix: 倍速
 audioSpeedTitle: 速度
+textDisplayTitle: 文字显示
+fontSizeLabel: 大小
+fontFamilyLabel: 字体
+fontDefaultLabel: 默认
+fontSerifLabel: Serif
+fontCourierLabel: Courier
+backgroundMusicLabel: 背景音乐
 charCounter: ${currentChars}/${maxChars} 字符
 checkButton: 检查
 closePopupDescription: 如果你现在退出，课程将不会被保存。

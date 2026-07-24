@@ -11,9 +11,31 @@ class DocumentContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Reading font scale/family (Keypoint "Text display" sheet) applies ONLY
+    // to the theory title/body copy — never to captions/chips or any chrome.
+    final display = context.watch<KeypointDisplayCubit>().state;
+
     return switch (type) {
-      ContentDocumentType.title => AppText(content, maxLines: 5, style: AppStyle.textBold18.copyWith(color: const Color(0xFF0D121C))),
-      ContentDocumentType.text => AppText(content, maxLines: 50, style: AppStyle.text18.copyWith(color: const Color(0xFF364152))),
+      ContentDocumentType.title => AppText(
+          content,
+          maxLines: 5,
+          textScaleFactor: display.fontScale,
+          style: AppStyle.textBold18.copyWith(
+            color: const Color(0xFF0D121C),
+            fontFamily: display.fontFamilyName,
+            fontFamilyFallback: display.fontFamilyFallback,
+          ),
+        ),
+      ContentDocumentType.text => AppText(
+          content,
+          maxLines: 50,
+          textScaleFactor: display.fontScale,
+          style: AppStyle.text18.copyWith(
+            color: const Color(0xFF364152),
+            fontFamily: display.fontFamilyName,
+            fontFamilyFallback: display.fontFamilyFallback,
+          ),
+        ),
       ContentDocumentType.caption => _ChoiceDocumentTypeTag(label: content, accentColor: const Color(0xFFEBEAFD)),
       _ => const SizedBox.shrink(),
     };

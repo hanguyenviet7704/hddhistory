@@ -3,7 +3,14 @@ part of '../../../lesson.dart';
 class LessonAudioCubit extends Cubit<LessonAudioState> {
   LessonAudioCubit() : super(LessonAudioState.initial());
 
-  just_audio.AudioPlayer? _audioPlayer;
+  /// Background playback + OS media controls (lock-screen/Control Center/
+  /// Android notification) for this player live in the app-lifetime
+  /// [LessonAudioHandler] — registered once at bootstrap (see
+  /// `AppService._configLessonAudio`) and resolved here rather than owned by
+  /// this cubit, so leaving/re-entering Listen mode never tears down or
+  /// recreates the underlying `just_audio` player.
+  LessonAudioHandler get _handler => AppDI.injector.get<LessonAudioHandler>();
+
   // When the user asks to listen while the source is still (pre)loading, play
   // as soon as it becomes ready instead of dropping the intent.
   bool _playWhenReady = false;
@@ -21,7 +28,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     }
 
     _playWhenReady = false;
-    await _disposePlayer();
+    await _resetHandlerForNewKeypoint();
 
     emit(
       LessonAudioState.initial().copyWith(
@@ -73,7 +80,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   Future<void> retry() async {
     if (!state.hasUsableSource) return;
-    await _disposePlayer();
+    await _resetHandlerForNewKeypoint();
     emit(
       state.copyWith(
         status: LessonAudioLoadStatus.initial,
@@ -93,10 +100,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       await enterAudioMode();
       return;
     }
-    if (!state.isReady || _audioPlayer == null) return;
+    if (!state.isReady) return;
 
     try {
-      await _audioPlayer!.play();
+      await _handler.play();
       if (!isClosed) {
         emit(state.copyWith(isPlaying: true, hasCompletedPlayback: false));
       }
@@ -106,10 +113,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   }
 
   Future<void> pause() async {
-    if (_audioPlayer == null) return;
-
     try {
-      await _audioPlayer!.pause();
+      await _handler.pause();
       if (!isClosed) {
         emit(state.copyWith(isPlaying: false));
       }
@@ -118,16 +123,20 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     }
   }
 
-  Future<void> pauseForModeSwitch() => pause();
+  /// Switching to Read is a real exit from Listen mode (unlike
+  /// [pauseForOverlay], a transient pause under a dialog/sheet).
+  Future<void> pauseForModeSwitch() async {
+    await pause();
+  }
 
   Future<void> pauseForOverlay() => pause();
 
   Future<void> seekBy(Duration delta) async {
-    if (_audioPlayer == null || !state.isReady) return;
+    if (!state.isReady) return;
 
     final target = (state.position + delta).inSeconds.clamp(0, state.durationSeconds);
     try {
-      await _audioPlayer!.seek(Duration(seconds: target));
+      await _handler.seek(Duration(seconds: target));
       if (!isClosed) {
         emit(state.copyWith(positionSeconds: target));
       }
@@ -138,11 +147,11 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   /// Seek to an absolute position — used by dragging/tapping the progress bar.
   Future<void> seekTo(Duration position) async {
-    if (_audioPlayer == null || !state.isReady) return;
+    if (!state.isReady) return;
 
     final target = position.inSeconds.clamp(0, state.durationSeconds);
     try {
-      await _audioPlayer!.seek(Duration(seconds: target));
+      await _handler.seek(Duration(seconds: target));
       if (!isClosed) {
         emit(state.copyWith(positionSeconds: target));
       }
@@ -153,9 +162,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   Future<void> setSpeed(double speed) async {
     if (!LessonAudioStateX.supportedSpeeds.contains(speed)) return;
-    if (_audioPlayer != null) {
+    if (state.hasStartedSession) {
       try {
-        await _audioPlayer!.setSpeed(speed);
+        await _handler.setSpeed(speed);
       } catch (error, stackTrace) {
         _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.setSpeed');
         return;
@@ -183,7 +192,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   Future<void> resetSession() async {
     final status = state.hasUsableSource ? LessonAudioLoadStatus.initial : LessonAudioLoadStatus.unavailable;
     _playWhenReady = false;
-    await _disposePlayer();
+    await _resetHandlerForNewKeypoint();
     emit(
       state.copyWith(
         status: status,
@@ -218,32 +227,31 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         isClosed || state.keypointId != loadKeypointId || state.sourceUrl != loadUrl;
 
     try {
-      final player = _audioPlayer ??= just_audio.AudioPlayer();
       await _cancelSubscriptions();
 
-      _playerStateSubscription = player.playerStateStream.listen((playerState) {
+      _playerStateSubscription = _handler.playerStateStream.listen((playerState) {
         if (isClosed) return;
         if (state.isPlaying == playerState.playing) return;
         emit(state.copyWith(isPlaying: playerState.playing));
       });
 
-      _positionSubscription = player.positionStream.listen((position) {
+      _positionSubscription = _handler.positionStream.listen((position) {
         if (isClosed) return;
         final nextPosition = position.inSeconds.clamp(0, state.durationSeconds > 0 ? state.durationSeconds : 359999);
         if (nextPosition == state.positionSeconds) return;
         emit(state.copyWith(positionSeconds: nextPosition));
       });
 
-      _durationSubscription = player.durationStream.listen((duration) {
+      _durationSubscription = _handler.durationStream.listen((duration) {
         if (isClosed || duration == null) return;
         final nextDuration = duration.inSeconds.clamp(0, 359999);
         if (nextDuration == state.durationSeconds) return;
         emit(state.copyWith(durationSeconds: nextDuration));
       });
 
-      _processingStateSubscription = player.processingStateStream.listen((processingState) async {
+      _processingStateSubscription = _handler.processingStateStream.listen((processingState) async {
         if (isClosed || processingState != just_audio.ProcessingState.completed) return;
-        await player.pause();
+        await _handler.pause();
         if (isClosed) return;
         emit(
           state.copyWith(
@@ -254,13 +262,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         );
       });
 
-      final duration = await player.setUrl(loadUrl);
+      final duration = await _handler.loadItem(
+        url: loadUrl,
+        id: state.keypointId,
+        title: state.title,
+        artUri: state.imageUrl,
+        speed: state.speed,
+      );
       if (isStale()) return;
       if (duration != null && duration.inSeconds > 0) {
         emit(state.copyWith(durationSeconds: duration.inSeconds));
-      }
-      if (state.speed != 1.0) {
-        await player.setSpeed(state.speed);
       }
       if (isStale()) return;
 
@@ -302,10 +313,21 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     }
   }
 
-  Future<void> _disposePlayer() async {
+  /// Stops whatever the shared handler/player was doing for the previous
+  /// keypoint and clears its media item/notification — the handler's player
+  /// is app-lifetime, so this replaces the old `_disposePlayer()` (which used
+  /// to tear down and recreate a cubit-owned `AudioPlayer`).
+  ///
+  /// Only touches the handler if a session was actually started: mirrors the
+  /// old `_disposePlayer()`, which was a cheap no-op (`_audioPlayer?.dispose()`
+  /// on a null player) whenever a keypoint was configured/reset/retried
+  /// without ever entering audio mode — e.g. every keypoint that has no
+  /// usable audio at all.
+  Future<void> _resetHandlerForNewKeypoint() async {
     await _cancelSubscriptions();
-    await _audioPlayer?.dispose();
-    _audioPlayer = null;
+    if (state.hasStartedSession) {
+      await _handler.stop();
+    }
   }
 
   Future<void> _cancelSubscriptions() async {
@@ -322,7 +344,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   @override
   Future<void> close() async {
-    await _disposePlayer();
+    await _cancelSubscriptions();
+    // Leaving Listen mode: stop playback and clear the media item so the
+    // lock-screen/notification controls disappear. The handler's player is
+    // app-lifetime and shared across lesson sessions — it must NOT be
+    // disposed here (that would break the next keypoint/lesson's playback).
+    // Only touches the handler if this cubit ever actually started a
+    // session (mirrors the old no-op `_disposePlayer()` on a null player).
+    if (state.hasStartedSession) {
+      await _handler.stop();
+    }
     return super.close();
   }
 }

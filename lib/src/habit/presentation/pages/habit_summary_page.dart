@@ -253,7 +253,7 @@ class _SummaryBestHabitCard extends StatelessWidget {
                 ),
                 AppText(
                   context.l10n.habit.summaryBestHabitLoop(days: bestHabit.loop),
-                  style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                  style: AppStyle.text12.copyWith(color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted)),
                 ),
               ],
             ),
@@ -300,7 +300,7 @@ class _SummaryCategoryCard extends StatelessWidget {
               ),
               child: AppText(
                 title,
-                style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
+                style: AppStyle.text14.copyWith(color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted), fontWeight: FontWeight.w600),
               ),
             ),
             // Figma: rows just stack with padding — no divider between them.
@@ -350,7 +350,7 @@ class _SummaryStatCell extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppText(label, style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted)),
+        AppText(label, style: AppStyle.text12.copyWith(color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted))),
         6.verticalSpace,
         Row(
           mainAxisSize: MainAxisSize.min,

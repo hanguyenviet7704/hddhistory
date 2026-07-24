@@ -68,7 +68,11 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                 skillsets: s.skillsets,
               ),
               builder: (context, snap) {
-                if (snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) {
+                // Only block with a full spinner on a genuine cold load — never
+                // clobber an already-loaded course list (e.g. Home pull-to-refresh
+                // re-flipping status to loading while this page is open).
+                if ((snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) &&
+                    snap.skillsets.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(color: AppCustomColor.brandPrimary),
                   );

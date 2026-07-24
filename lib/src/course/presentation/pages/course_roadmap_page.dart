@@ -226,7 +226,13 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
           listenWhen: (previous, current) => previous.roadmap.courseId != current.roadmap.courseId,
           listener: (context, state) {
-            _hasTrackedForVisibility = false;
+            // Don't reset _hasTrackedForVisibility here: the courseId-changed
+            // listener and initState/route-changed listener can both fire for
+            // the SAME course on entry, which double-fired roadmap_scr_view.
+            // The dedup in _trackRoadmapScrView (_lastTrackedCourseId) already
+            // lets a genuinely new course through (last != new id) while
+            // blocking a repeat of the same one. The guard is reset only when
+            // LEAVING the roadmap route (above), so re-entry re-tracks.
             _trackRoadmapScrView();
             _loadProgressForRoadmap(state.roadmap.courseId);
             _checkWarmUpForRoadmap(state.roadmap.courseId);

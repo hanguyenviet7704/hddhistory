@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 //* Package imports
 //* Single project import
+import 'package:audio_service/audio_service.dart';
 import 'package:darq/darq.dart';
 import 'package:dio/dio.dart' hide Headers;
 import 'package:dotted_border/dotted_border.dart';
@@ -84,7 +85,10 @@ part 'presentation/cubits/drag_and_drop/drag_and_drop_cubit.dart';
 part 'presentation/cubits/drag_and_drop/drag_and_drop_state.dart';
 part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
+part 'presentation/cubits/keypoint_display/keypoint_display_cubit.dart';
+part 'presentation/cubits/keypoint_display/keypoint_display_state.dart';
 part 'presentation/cubits/lesson_audio/lesson_audio_cubit.dart';
+part 'presentation/cubits/lesson_audio/lesson_audio_handler.dart';
 part 'presentation/cubits/lesson_audio/lesson_audio_state.dart';
 part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
@@ -132,9 +136,10 @@ part 'presentation/widgets/audio/lesson_audio_controls.dart';
 part 'presentation/widgets/audio/lesson_audio_player_media.dart';
 part 'presentation/widgets/audio/lesson_audio_player_card.dart';
 part 'presentation/widgets/audio/lesson_audio_progress_bar.dart';
-part 'presentation/widgets/audio/lesson_audio_speed_pill.dart';
 part 'presentation/widgets/audio/lesson_audio_speed_sheet.dart';
 part 'presentation/widgets/audio/lesson_audio_surface.dart';
+part 'presentation/sheets/keypoint_settings_sheet.dart';
+part 'presentation/sheets/text_display_sheet.dart';
 part 'presentation/widgets/layouts/lesson_mode_toggle.dart';
 part 'presentation/widgets/layouts/lesson_shell_header.dart';
 part 'presentation/widgets/layouts/lesson_header_menu.dart';

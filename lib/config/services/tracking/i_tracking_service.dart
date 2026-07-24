@@ -468,7 +468,12 @@ abstract interface class ITrackingService {
     required int cardIndex,
     required String cardType,
   });
-  Future<void> trackKeypointExitPopupView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointExitPopupView(
+    KeypointTrackingData trackingData, {
+    required String mode,
+    required String cardType,
+    required int cardIndex,
+  });
   Future<void> trackKeypointExitPopupClick(
     KeypointTrackingData trackingData, {
     required String option,

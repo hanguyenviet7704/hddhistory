@@ -144,19 +144,28 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     // (Only the moment the course badge finishes still routes through the
     // badge celebration; every other completion lands on the roadmap.)
     _navigatedAway = true;
-    if (_isCourseLevelBadgeComplete()) {
+    final page = AppDI.injector.get<PageCubit>();
+    final isBadgeComplete = _isCourseLevelBadgeComplete();
+    final destinationRouteName = isBadgeComplete ? RouteNamed.badgeProgress : RouteNamed.courseRoadmap;
+
+    if (isBadgeComplete) {
       BadgeProgressRoute().go(context);
-      Future.delayed(const Duration(milliseconds: 100), () {
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
-      });
     } else {
       CourseRoadmapRoute().go(context);
-      Future.delayed(const Duration(milliseconds: 100), () {
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-      });
     }
 
-    if (suggestions == null || suggestions.isEmpty) return;
+    // Claim the destination's route name — which logs its screen_view (e.g.
+    // roadmap_scr_view) — only once it's the screen the user actually sees.
+    // With no habit prompt that's right after the branch switch. With a prompt
+    // it's deferred until the prompt is dismissed (below), so we never log a
+    // roadmap/badge view for a destination immediately covered by the prompt
+    // on the root navigator.
+    if (suggestions == null || suggestions.isEmpty) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        page.setCurrentRouteName(destinationRouteName);
+      });
+      return;
+    }
 
     // Habit prompt on the ROOT navigator so it overlays the shell and, on
     // "Skip, keep learning", pops straight back to the destination we just
@@ -178,17 +187,37 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         ),
       ),
     );
-    if (added != true) return; // Skip → stay on the destination above.
+    if (added != true) {
+      // Skip → the destination beneath is now the visible screen; claim its
+      // route name now so its screen_view (e.g. roadmap_scr_view) logs here —
+      // when the roadmap is actually shown, not while the prompt covered it.
+      Future.delayed(const Duration(milliseconds: 100), () {
+        page.setCurrentRouteName(destinationRouteName);
+      });
+      return;
+    }
 
     final popupCtx = AppConfig.instance.context;
-    if (popupCtx == null) return;
+    if (popupCtx == null) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        page.setCurrentRouteName(destinationRouteName);
+      });
+      return;
+    }
     // ignore: use_build_context_synchronously
     final goToHabit = await HabitAddedPopup.show(popupCtx);
-    if (goToHabit != true) return;
+    if (goToHabit != true) {
+      // Stayed on the destination → claim its route name (logs its view).
+      Future.delayed(const Duration(milliseconds: 100), () {
+        page.setCurrentRouteName(destinationRouteName);
+      });
+      return;
+    }
+    AppDI.injector.get<HabitCubit>().setPendingScrSource('habit_added_scr');
     // ignore: use_build_context_synchronously
     const HabitRoute(source: 'habit_added_scr').go(popupCtx);
     Future.delayed(const Duration(milliseconds: 100), () {
-      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+      page.setCurrentRouteName(RouteNamed.habit);
     });
   }
 

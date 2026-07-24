@@ -30,6 +30,20 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
 
   Future<void>? _ensureInFlight;
 
+  /// Analytics entry-point for the NEXT `habit_scr_view` (spec source set:
+  /// nav_habit / home_banner / home_habit / habit_added_scr). Entry points set
+  /// it right before navigating to the Habit tab; [HabitPage] consumes it when
+  /// it logs the view. Defaults back to `nav_habit` after each read so a plain
+  /// bottom-nav visit (which sets nothing) is reported correctly. Kept off the
+  /// freezed state on purpose — it's transient routing metadata, not UI state.
+  String _pendingScrSource = 'nav_habit';
+  void setPendingScrSource(String source) => _pendingScrSource = source;
+  String consumePendingScrSource() {
+    final source = _pendingScrSource;
+    _pendingScrSource = 'nav_habit';
+    return source;
+  }
+
   /// Wipe all per-user habit state on an account switch / logout. HabitCubit is
   /// a lazySingleton, so without this the next account (guest → login, or
   /// logout → next login) would keep the previous user's habits, summary, and

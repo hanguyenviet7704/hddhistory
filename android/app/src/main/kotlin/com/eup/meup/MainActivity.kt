@@ -1,9 +1,13 @@
 package com.eup.meup
 
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 
-class MainActivity: FlutterActivity() {
+// AudioServiceActivity (from the audio_service plugin) supplies the shared
+// FlutterEngine that its background audio service also uses, which is
+// required for lesson "Listen mode" background playback + OS media controls.
+// It extends FlutterActivity, so all existing Flutter behavior is preserved.
+class MainActivity: AudioServiceActivity() {
     private var liveActivityChannel: LiveActivityChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

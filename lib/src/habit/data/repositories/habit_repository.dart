@@ -12,6 +12,9 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       apiCall: () => _api.getHabits(skillsetId, keypointId),
       transform: (models) => models.map((model) => model.toEntity()).toList(),
       defaultValue: const [],
+      // Inline error/empty states already communicate a failed list load — the
+      // base auto-toast only surfaced the raw DioException to the user.
+      enableErrorMessages: false,
     );
   }
 
@@ -22,6 +25,7 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       apiCall: () => _api.getUserHabits(stateParam),
       transform: (models) => models.map((model) => model.toEntity()).toList(),
       defaultValue: const [],
+      enableErrorMessages: false,
     );
   }
 
@@ -31,6 +35,7 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       apiCall: () => _api.getUserHabitsSummary(),
       transform: (model) => model.toEntity(),
       defaultValue: const UserHabitSummaryEntity(),
+      enableErrorMessages: false,
     );
   }
 
@@ -43,6 +48,7 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
         return (slots is int && slots >= 1) ? slots : kFreeActiveHabitSlots;
       },
       defaultValue: kFreeActiveHabitSlots,
+      enableErrorMessages: false,
     );
   }
 

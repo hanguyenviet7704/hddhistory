@@ -7,6 +7,13 @@ audioRetry: Thử lại
 audioSpeedNormal: Bình thường
 audioSpeedSuffix: tốc độ
 audioSpeedTitle: Tốc độ
+textDisplayTitle: Hiển thị chữ
+fontSizeLabel: Cỡ chữ
+fontFamilyLabel: Phông chữ
+fontDefaultLabel: Mặc định
+fontSerifLabel: Serif
+fontCourierLabel: Courier
+backgroundMusicLabel: Nhạc nền
 charCounter: ${currentChars}/${maxChars} ký tự
 checkButton: Kiểm tra
 closePopupDescription: Bài học của bạn sẽ không được lưu nếu bạn thoát bây giờ.

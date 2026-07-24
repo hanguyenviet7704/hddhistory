@@ -103,6 +103,8 @@ class AppService {
     // Initialize app event services early - they now handle tracking permission internally
     appEventService.initialize();
 
+    await _configLessonAudio();
+
     unawaited(remoteConfigService.initialize());
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
@@ -111,6 +113,36 @@ class AppService {
     // GeolocatorService.init();
     // UnityAdsService.init();
     // AdMobService.init();
+  }
+
+  /// Background playback + OS media controls (lock-screen/Control Center/
+  /// Android notification) for the lesson "Listen mode" player ONLY — every
+  /// other `just_audio` instance in the app (ambient study-theme audio,
+  /// roleplay audio, the generic `AudioPlayerWidget`) is untouched by
+  /// `audio_service`. Must run once, after DI is initialized (so the handler
+  /// can be registered into [AppDI.injector]) and before [LessonAudioCubit]
+  /// can be created.
+  Future<void> _configLessonAudio() async {
+    // Mirrors the per-flavor Android applicationId (flavorizr.gradle.kts) so
+    // dev/stg/prod each get their own notification channel.
+    final androidPackageId = switch (F.appFlavor) {
+      Flavor.dev => 'com.eup.meup.dev',
+      Flavor.stg => 'com.eup.meup.stg',
+      Flavor.prod => 'com.eup.meup',
+      _ => 'com.eup.meup',
+    };
+
+    final handler = await AudioService.init(
+      builder: () => LessonAudioHandler(),
+      config: AudioServiceConfig(
+        androidNotificationChannelId: '$androidPackageId.audio',
+        androidNotificationChannelName: 'Meup Listen',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+      ),
+    );
+
+    AppDI.injector.registerSingleton<LessonAudioHandler>(handler);
   }
 
   Future<void> _configHelper() async {

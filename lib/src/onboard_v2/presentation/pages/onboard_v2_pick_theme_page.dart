@@ -99,10 +99,6 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
 
   void _selectPreset(StudyThemePreset preset) {
     AppHaptic.select();
-    OnboardV2Tracking.track(
-      TrackingKey.onboardV2ThemeSelect,
-      parameters: {'theme_id': preset.id, 'theme_mode': preset.mode.name},
-    );
     context.read<StudyThemeCubit>().selectPreset(preset);
   }
 
@@ -126,7 +122,11 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
     if (_isNavigating) return;
     setState(() => _isNavigating = true);
 
-    OnboardV2Tracking.track(TrackingKey.onboardV2P9StartExploreClick);
+    final selectedTheme = context.read<StudyThemeCubit>().state.preset;
+    OnboardV2Tracking.track(
+      TrackingKey.onboardV2P9StartExploreClick,
+      parameters: {'theme_id': selectedTheme.id, 'theme_category': selectedTheme.category},
+    );
 
     final cubit = context.read<OnboardV2Cubit>();
     // Reliably persist isOnboarded=true (awaited + retried) before leaving
@@ -171,7 +171,6 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
 
   void _dispatchRoute(CourseHandoffRouteIntent intent, {String? selectedCourseId}) {
     try {
-      var destination = 'course';
       final onboardCubit = context.read<OnboardV2Cubit>();
       final userCubit = context.read<UserCubit>();
       // isOnboarded is now persisted (awaited + retried) in _startExplore
@@ -193,23 +192,12 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
           // a brand-new user's very first course, and the floating bottom nav
           // (gated on isPrimaryRoute) can stay hidden with no way back out.
           context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-          destination = 'course_roadmap';
           break;
         case CourseHandoffRouteIntent.course:
           CourseRoute(selectedTabIndex: 0).go(context);
           break;
       }
       userCubit.setIsUserPassOnboarding(false);
-      final parameters = <String, dynamic>{
-        'destination': destination,
-      };
-      if (selectedCourseId != null) {
-        parameters['selected_course_id'] = selectedCourseId;
-      }
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2Complete,
-        parameters: parameters,
-      );
     } catch (error) {
       LogDev.warning('[OnboardV2PickThemePage] route dispatch failed: $error');
       if (mounted) setState(() => _isNavigating = false);

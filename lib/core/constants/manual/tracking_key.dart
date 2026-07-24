@@ -319,6 +319,23 @@ mixin TrackingKey {
   static const String keypointReportClick = 'keypoint_report_click';
   static const String keypointReportScrView = 'keypoint_report_scr_view';
   static const String keypointReportClose = 'keypoint_report_close';
+
+  //* Keypoint Player overflow menu (…) — mode-aware bottom sheet + its sub-sheets
+  //* (Text display / Report an issue). Fired alongside any existing telemetry.
+  static const String keypointMenuOpen = 'keypoint_menu_open';
+  static const String keypointMenuThemeClick = 'keypoint_menu_theme_click';
+  static const String keypointMenuTextdisplayClick = 'keypoint_menu_textdisplay_click';
+  static const String keypointMenuReportClick = 'keypoint_menu_report_click';
+  static const String keypointMenuBgmusicToggle = 'keypoint_menu_bgmusic_toggle';
+  static const String keypointMenuClose = 'keypoint_menu_close';
+  static const String menuTextdisplayScrView = 'menu_textdisplay_scr_view';
+  static const String menuTextdisplaySizeClick = 'menu_textdisplay_size_click';
+  static const String menuTextdisplayFontClick = 'menu_textdisplay_font_click';
+  static const String menuTextdisplayClose = 'menu_textdisplay_close';
+  static const String menuReportScrView = 'menu_report_scr_view';
+  static const String menuReportSubmit = 'menu_report_submit';
+  static const String menuReportClose = 'menu_report_close';
+
   static const String warmupIntroScrView = 'warmup_intro_scr_view';
   static const String warmupIntroStart = 'warmup_intro_start';
   static const String warmupIntroSkip = 'warmup_intro_skip';
@@ -370,6 +387,15 @@ mixin TrackingKey {
   static const String feedbackCompleteLessonSend = 'feedback_complete_lesson_send';
   static const String feedbackIncompleteLessonView = 'feedback_incomplete_lesson_view';
   static const String feedbackIncompleteLessonSend = 'feedback_incomplete_lesson_send';
+
+  //* Exit feedback events (sheet tab "9. Exit feedback") — the mid-keypoint
+  //* exit "Tell us what happened" popup + its "thanks" popup. Fired alongside
+  //* the existing feedback_incomplete_lesson_* telemetry (which stays intact).
+  static const String exitFeedbackScrView = 'exit_feedback_scr_view';
+  static const String exitFeedbackSendClick = 'exit_feedback_send_click';
+  static const String exitFeedbackCloseClick = 'exit_feedback_close_click';
+  static const String exitThanksScrView = 'exit_thanks_scr_view';
+  static const String exitThanksDoneClick = 'exit_thanks_done_click';
 
   //* Profile screen events
   static const String profileView = 'profile_view';

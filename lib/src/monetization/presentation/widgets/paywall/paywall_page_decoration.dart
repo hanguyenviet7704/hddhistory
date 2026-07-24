@@ -46,13 +46,13 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   void _handleScroll() {
     if (!_scrollController.hasClients || _hasTrackedScroll) return;
     if (_scrollController.position.pixels <= 0) return;
-    AppService.instance.appTrackingService.trackPremiumScroll();
+    // premium_scroll tracking removed (not in the paywall spec).
     _hasTrackedScroll = true;
   }
 
   void _handleInfoSwipe() {
     if (_hasTrackedInfoSwipe) return;
-    AppService.instance.appTrackingService.trackPremiumInforSwipe();
+    // premium_infor_swipe tracking removed (not in the paywall spec).
     _hasTrackedInfoSwipe = true;
   }
 

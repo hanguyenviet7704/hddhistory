@@ -26,10 +26,7 @@ class RoadmapDetailPopup extends StatelessWidget {
     required CourseLevel courseLevel,
   }) async {
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackPopupItemImp(trackingData);
-    }
+    // popup_item_imp tracking removed per request.
 
     final keypointTracking = KeypointTrackingData.fromLesson(
       context,

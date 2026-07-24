@@ -13,6 +13,7 @@ enum PaywallEntryPoint {
   autoOpen,
   courseRoadmap,
   habit,
+  theme,
   other,
 }
 

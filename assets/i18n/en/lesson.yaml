@@ -7,6 +7,13 @@ audioRetry: Try again
 audioSpeedNormal: Normal
 audioSpeedSuffix: speed
 audioSpeedTitle: Speed
+textDisplayTitle: Text display
+fontSizeLabel: Size
+fontFamilyLabel: Font
+fontDefaultLabel: Default
+fontSerifLabel: Serif
+fontCourierLabel: Courier
+backgroundMusicLabel: Background music
 charCounter: ${currentChars}/${maxChars} chars
 checkButton: Check
 closePopupDescription: Your lesson will not be saved if you quit now.

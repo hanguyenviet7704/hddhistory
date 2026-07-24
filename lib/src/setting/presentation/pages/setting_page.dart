@@ -236,6 +236,16 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           'https://meup.training/terms-and-conditions.html'.launchURL();
                         },
                       ),
+                      // Debug-only shortcut to replay onboarding — the splash
+                      // skips it once onboarded (or when dev remote-config
+                      // disables it), so there's no other way to reach it on a
+                      // set-up device. Stripped from release by kDebugMode.
+                      if (kDebugMode)
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icShieldPlus,
+                          title: '[DEBUG] Xem Onboarding',
+                          onTap: () => const OnboardV2Route().go(context),
+                        ),
                       if (!user.anonymous)
                         BlocBuilder<AuthBloc, AuthState>(
                           buildWhen: (previous, current) => previous.status != current.status,

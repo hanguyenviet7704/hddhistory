@@ -594,7 +594,7 @@ class _StatCard extends StatelessWidget {
                   // isn't clipped to "Chuỗi dài nh…" in this narrow half-width
                   // card, while keeping both stat cards a single line / equal height.
                   enableFitScaleDown: true,
-                  style: AppStyle.text12.copyWith(color: _profileMutedTextColor),
+                  style: AppStyle.text12.copyWith(color: studyThemeCardMuted(context, _profileMutedTextColor)),
                 ),
               ],
             ),
@@ -794,7 +794,7 @@ class _AchievementsSummaryCard extends StatelessWidget {
                       context.l10n.setting.settingProfileBadgesEarnedLabel,
                       textAlign: TextAlign.center,
                       maxLines: 2,
-                      style: AppStyle.text13.copyWith(color: _profileMutedTextColor, fontWeight: FontWeight.w500),
+                      style: AppStyle.text13.copyWith(color: studyThemeCardMuted(context, _profileMutedTextColor), fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -947,7 +947,7 @@ class _CategoryRow extends StatelessWidget {
                   8.horizontalSpace,
                   // Chevron affordance (design: each Learning Progress row opens
                   // its skillset in Explore). Matches the Library "My Course" row.
-                  Icon(Icons.chevron_right_rounded, size: 22.w, color: _profileMutedTextColor),
+                  Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
                 ],
               ),
             ),
@@ -1091,7 +1091,7 @@ class _LibrarySection extends StatelessWidget {
                         style: _poppins(15, FontWeight.w600),
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded, size: 22.w, color: _profileMutedTextColor),
+                    Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
                   ],
                 ),
               ),

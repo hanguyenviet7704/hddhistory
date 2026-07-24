@@ -84,7 +84,10 @@ class ChangeBackgroundSheet extends StatelessWidget {
                       children: [
                         // Premium upsell banner — hidden once the user is premium.
                         if (!userIsPremium) ...[
-                          _UnlockPremiumBanner(onTap: () => const PaywallRoute().push(context)),
+                          _UnlockPremiumBanner(onTap: () {
+                            AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.theme);
+                            const PaywallRoute().push(context);
+                          }),
                           14.verticalSpace,
                         ],
                         _UploadBar(onTap: () {
@@ -162,6 +165,7 @@ class ChangeBackgroundSheet extends StatelessWidget {
     bool userIsPremium,
   ) {
     if (preset.isPremium && !userIsPremium) {
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.theme);
       const PaywallRoute().push(context);
       return;
     }

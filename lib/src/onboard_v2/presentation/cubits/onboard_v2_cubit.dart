@@ -147,11 +147,13 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       TrackingKey.onboardV2P2ContinueClick,
       parameters: {'name_length': trimmedName.length},
     );
+    // Spec: obd_name_continue also persists `user_name` as a User Property
+    // (same pattern as age / path_selected).
+    OnboardV2Tracking.setUserProperties({'user_name': trimmedName});
     emit(state.copyWith(name: trimmedName, currentPage: OnboardV2PageStep.p3Age));
   }
 
   void selectAge(OnboardOptionEntity option) {
-    OnboardV2Tracking.track(TrackingKey.onboardV2AgeSelect, parameters: OnboardV2Tracking.ageParams(option));
     emit(state.copyWith(selectedAge: option, p3ErrorMessage: null));
   }
 
@@ -188,20 +190,12 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     if (serial != _requestSerial) return;
 
     if (!hasSession) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateFailure,
-        parameters: {'error_reason': 'missing_session', 'source': source},
-      );
       LogDev.warning('[OnboardV2Cubit] Skip background user update: anonymous session unavailable');
       return;
     }
 
     final currentUserId = _readUserState.user.id.trim();
     if (currentUserId.isEmpty) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateFailure,
-        parameters: {'error_reason': 'missing_user_id', 'source': source},
-      );
       LogDev.warning('[OnboardV2Cubit] Skip background user update: missing user id');
       return;
     }
@@ -218,22 +212,11 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       final updateResult = await _updateUserUseCase(Map<String, dynamic>.from(payload)).run();
       updateResult.fold(
         (failure) {
-          OnboardV2Tracking.track(
-            TrackingKey.onboardV2UserUpdateFailure,
-            parameters: {'error_reason': OnboardV2Tracking.exceptionReason(failure), 'source': source},
-          );
           LogDev.warning('[OnboardV2Cubit] background user update failed: ${failure.displayMessage}');
         },
-        (_) => OnboardV2Tracking.track(
-          TrackingKey.onboardV2UserUpdateSuccess,
-          parameters: {'source': source},
-        ),
+        (_) {},
       );
     } catch (error) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateFailure,
-        parameters: {'error_reason': 'unexpected', 'source': source},
-      );
       LogDev.warning('[OnboardV2Cubit] background user update failed: $error');
     }
   }
@@ -263,19 +246,9 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       );
 
       final success = await (_loginAnonymousSilentlyOverride ?? _authBloc.loginAnonymousSilently)(payload);
-      OnboardV2Tracking.track(
-        success ? TrackingKey.onboardV2AnonymousLoginSuccess : TrackingKey.onboardV2AnonymousLoginFailure,
-        parameters: {
-          'source': source,
-          if (!success) 'error_reason': 'login_failed',
-        },
-      );
+      // onboard_v2_anonymous_login_success/failure tracking removed per request.
       return success;
     } catch (error) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2AnonymousLoginFailure,
-        parameters: {'source': source, 'error_reason': 'unexpected'},
-      );
       LogDev.warning('[OnboardV2Cubit] anonymous onboarding login failed: $error');
       return false;
     }
@@ -301,7 +274,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final isSelecting = index < 0;
 
     if (isSelecting && selected.length >= 2) {
-      OnboardV2Tracking.track(TrackingKey.onboardV2PathMaxReached, parameters: OnboardV2Tracking.selectedPathParams(selected));
       return;
     }
 
@@ -318,11 +290,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       availableSymptoms: availableSymptoms,
     );
     _invalidateCourses();
-
-    OnboardV2Tracking.track(
-      isSelecting ? TrackingKey.onboardV2PathSelect : TrackingKey.onboardV2PathUnselect,
-      parameters: OnboardV2Tracking.pathParams(path, selectedPaths: selectedPaths),
-    );
 
     emit(
       state.copyWith(
@@ -354,7 +321,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     final selected = List<OnboardingSymptom>.from(state.selectedSymptoms);
     final index = selected.indexOf(symptom);
-    final isSelecting = index < 0;
     if (index >= 0) {
       selected.removeAt(index);
     } else {
@@ -363,11 +329,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     final selectedSymptoms = OnboardV2SymptomSelectionMapper.dedupeSymptoms(selected);
     _invalidateCourses();
-
-    OnboardV2Tracking.track(
-      isSelecting ? TrackingKey.onboardV2SymptomSelect : TrackingKey.onboardV2SymptomUnselect,
-      parameters: OnboardV2Tracking.symptomParams(symptom, selectedSymptoms: selectedSymptoms),
-    );
 
     emit(
       state.copyWith(
@@ -480,13 +441,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         return;
       }
 
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2CoursesLoaded,
-        parameters: OnboardV2Tracking.coursesLoadedParams(
-          courses: pickedCourses,
-          selectedSymptoms: selectedSymptoms,
-        ),
-      );
       emit(
         state.copyWith(
           courseStatus: OnboardV2CourseStatus.loaded,
@@ -624,14 +578,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   void markUserOnboardedInBackground() => unawaited(markUserOnboarded());
 
   void _emitCoursesFallback(String reason, {required String stage}) {
-    OnboardV2Tracking.track(
-      TrackingKey.onboardV2CoursesFailure,
-      parameters: {
-        ...OnboardV2Tracking.selectedSymptomParams(state.selectedSymptoms),
-        'error_reason': reason,
-        'stage': stage,
-      },
-    );
     emit(
       state.copyWith(
         courseStatus: OnboardV2CourseStatus.fallback,

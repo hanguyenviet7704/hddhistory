@@ -90,12 +90,18 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   /// every reset to all.
   bool _spyArmed = false;
 
+  /// Guards explore_scr_view to once per Explore-tab visit — the tab is kept
+  /// alive (AutomaticKeepAliveClientMixin), so initState fires only on the very
+  /// first open. Reset when the tab stops being the current route (see the
+  /// PageCubit listener in build) so each re-entry logs a fresh view.
+  bool _scrViewLogged = false;
+
   @override
   void initState() {
     super.initState();
     _courseCubit = context.read<CourseCubit>();
     _positionsListener.itemPositions.addListener(_onPositionsChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackAllCourseScrView());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _logScrViewIfActive());
   }
 
   @override
@@ -104,13 +110,31 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     super.dispose();
   }
 
-  void _trackAllCourseScrView() {
+  /// Logs explore_scr_view once per Explore-tab visit: source (remapped to the
+  /// spec set nav_explore/home_explore/my_course from the entry point's
+  /// allCourseSource) + the active skill_id. No-op unless Explore is the
+  /// current route.
+  void _logScrViewIfActive() {
     if (!mounted) return;
+    // Explore is shell branch index 3 (ScaffoldLayout._tabToBranch). Keying on
+    // the branch index (not currentRouteName) fires reliably for BOTH a
+    // bottom-nav tap AND a Home→Explore .go(), which only setCurrentIndex(3)
+    // without ever setting a route name.
+    if (context.read<PageCubit>().state.currentIndex != 3) return;
+    if (_scrViewLogged) return;
+    _scrViewLogged = true;
     final source = _courseCubit.state.allCourseSource;
+    final skillId = context.read<HomeCubit>().state.currentSkillset.id;
     ExploreTracking.track(
       TrackingKey.exploreScrView,
-      parameters: {'source': ExploreTracking.remapScrViewSource(source)},
+      parameters: {
+        'source': ExploreTracking.remapScrViewSource(source),
+        'skill_id': skillId,
+      },
     );
+    // Reset so a later plain bottom-nav entry (which sets no source) reports
+    // nav_explore instead of reusing the previous entry's source.
+    _courseCubit.setAllCourseSource('nav_explore');
   }
 
   /// Highlights the chip of the section currently at the TOP of the viewport
@@ -150,7 +174,18 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocListener<PageCubit, PageState>(
+      // Fire explore_scr_view on every entry to the Explore tab, not just the
+      // first build — the tab is kept alive so initState won't re-run.
+      listenWhen: (previous, current) => previous.currentIndex != current.currentIndex,
+      listener: (context, state) {
+        if (state.currentIndex == 3) {
+          _logScrViewIfActive();
+        } else {
+          _scrViewLogged = false;
+        }
+      },
+      child: BlocBuilder<HomeCubit, HomeState>(
       buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex || prev.status != curr.status,
       builder: (context, homeState) {
         final skillsets = homeState.skillsets;
@@ -234,6 +269,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           ),
         );
       },
+      ),
     );
   }
 

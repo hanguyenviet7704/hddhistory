@@ -264,13 +264,29 @@ final class AppTrackingService extends ITrackingService {
         return 'roadmap';
       case PaywallEntryPoint.habit:
         return 'habit_slot';
+      case PaywallEntryPoint.theme:
+        return 'theme';
       case PaywallEntryPoint.settingPre:
       case PaywallEntryPoint.profile:
         return 'profile_banner';
       case PaywallEntryPoint.autoOpen:
+        // The auto-open paywall shown to a brand-new GUEST (anonymous) user is
+        // the spec's `guest` source; the same auto-open for a signed-in user is
+        // `system`.
+        return _isPaywallUserAnonymous() ? 'guest' : 'system';
       case PaywallEntryPoint.manageSubscription:
       case PaywallEntryPoint.other:
         return 'system';
+    }
+  }
+
+  /// Whether the current user is an anonymous guest — used to tag the auto-open
+  /// paywall's source as `guest` vs `system`.
+  bool _isPaywallUserAnonymous() {
+    try {
+      return AppDI.injector.get<UserCubit>().state.user.anonymous;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -1816,9 +1832,17 @@ final class AppTrackingService extends ITrackingService {
   //* Keypoint audio events
   @override
   Future<void> trackKeypointAudioPopupView(KeypointTrackingData trackingData) async {
+    // keypoint_intro_scr_view: entry_point dropped; carries duration_min instead
+    // — the keypoint's estimated completion minutes, parsed from its localized
+    // estimate text (e.g. "5 min" / "5 phút"); 0 when it has no number.
+    final durationText = trackingData.keypoint.estimateCompleTime.text;
+    final durationMin = int.tryParse(RegExp(r'\d+').firstMatch(durationText)?.group(0) ?? '') ?? 0;
     _appTrackingService.trackEvent(
       TrackingKey.keypointAudioPopupView,
-      parameters: _keypointAudioParams(trackingData, entryPoint: 'roadmap_popup'),
+      parameters: {
+        ..._keypointParams(trackingData),
+        'duration_min': durationMin,
+      },
     );
   }
 
@@ -2269,10 +2293,20 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackKeypointExitPopupView(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointExitPopupView(
+    KeypointTrackingData trackingData, {
+    required String mode,
+    required String cardType,
+    required int cardIndex,
+  }) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointExitPopupView,
-      parameters: _keypointParams(trackingData),
+      parameters: {
+        ..._keypointParams(trackingData),
+        'mode': mode,
+        'card_type': cardType,
+        'card_index': cardIndex,
+      },
     );
   }
 

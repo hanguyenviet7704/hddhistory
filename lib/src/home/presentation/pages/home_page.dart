@@ -622,7 +622,14 @@ class _HomeQuickTiles extends StatelessWidget {
               subtitle: context.l10n.home.homeTodayHabitSub,
               onTap: () {
                 HomeTracking.track(TrackingKey.homeHabitClick);
+                AppDI.injector.get<HabitCubit>().setPendingScrSource('home_habit');
                 const HabitRoute(source: 'home_habit').go(context);
+                // .go() to a shell branch doesn't update PageCubit's index, so
+                // set it (→ habit branch 4) after the switch settles — that's
+                // what fires HabitPage's habit_scr_view for this entry.
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+                });
               },
             ),
           ),

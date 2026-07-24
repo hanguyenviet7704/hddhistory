@@ -7,6 +7,7 @@ class ReportIssueSheet extends StatelessWidget {
     required this.keypointId,
     required this.keypointTitle,
     required this.keypointImage,
+    required this.onSubmit,
   });
 
   final String lessonId;
@@ -14,18 +15,23 @@ class ReportIssueSheet extends StatelessWidget {
   final String keypointTitle;
   final String keypointImage;
 
+  /// Called when the user taps Submit — lets `show` tell a submit apart from a
+  /// plain dismiss when logging menu_report_close (spec: close = did NOT send).
+  final VoidCallback onSubmit;
+
   static Future<void> show(
     BuildContext context, {
     required String lessonId,
     required String keypointId,
     required String keypointTitle,
     required String keypointImage,
+    String mode = 'read',
   }) {
-    final reportParams = {'lesson_id': lessonId, 'keypoint_id': keypointId};
     AppService.instance.appTrackingService.trackEvent(
-      TrackingKey.keypointReportScrView,
-      parameters: reportParams,
+      TrackingKey.menuReportScrView,
+      parameters: {'keypoint_id': keypointId, 'mode': mode},
     );
+    var submitted = false;
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -42,14 +48,15 @@ class ReportIssueSheet extends StatelessWidget {
           keypointId: keypointId,
           keypointTitle: keypointTitle,
           keypointImage: keypointImage,
+          onSubmit: () => submitted = true,
         ),
       ),
-    ).whenComplete(
-      () => AppService.instance.appTrackingService.trackEvent(
-        TrackingKey.keypointReportClose,
-        parameters: reportParams,
-      ),
-    );
+    ).whenComplete(() {
+      // menu_report_close only when dismissed without submitting.
+      if (!submitted) {
+        AppService.instance.appTrackingService.trackEvent(TrackingKey.menuReportClose);
+      }
+    });
   }
 
   @override
@@ -125,12 +132,17 @@ class ReportIssueSheet extends StatelessWidget {
                           title: context.l10n.lessonReport.submitReport,
                           enabled: state.canSubmit,
                           isLoading: state.isLoading,
-                          onTap: () => context.read<ReportIssueCubit>().submit(
-                            lessonId: lessonId,
-                            keypointId: keypointId,
-                            keypointTitle: keypointTitle,
-                            keypointImage: keypointImage,
-                          ),
+                          onTap: () {
+                            onSubmit();
+                            // Spec event (sheet "3. Learning" menu block).
+                            AppService.instance.appTrackingService.trackEvent(TrackingKey.menuReportSubmit);
+                            context.read<ReportIssueCubit>().submit(
+                              lessonId: lessonId,
+                              keypointId: keypointId,
+                              keypointTitle: keypointTitle,
+                              keypointImage: keypointImage,
+                            );
+                          },
                         ),
                       );
                     },

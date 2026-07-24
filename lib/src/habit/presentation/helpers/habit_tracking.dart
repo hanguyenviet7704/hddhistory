@@ -148,7 +148,6 @@ class HabitTracking {
       ..._courseParams(courseId),
       'habit_id': habitId,
       'habit_name': habitName,
-      'is_full_slot': false,
     });
   }
 

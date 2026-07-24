@@ -50,10 +50,6 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
   }
 
   Future<void> _complete(OnboardV2NotificationStatus status) async {
-    OnboardV2Tracking.track(
-      TrackingKey.onboardV2NotificationResult,
-      parameters: {'notification_status': OnboardV2Tracking.notificationStatus(status)},
-    );
     context.read<UserCubit>().completeFirstTimeNotificationGate();
     context.read<OnboardV2Cubit>().continueFromP4Notification(notificationStatus: status);
     if (!mounted) return;

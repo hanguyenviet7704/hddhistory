@@ -165,17 +165,22 @@ class _LessonPageState extends State<LessonPage> {
           );
           final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
 
-          // Top-right overflow menu (grid icon): Change theme + Report a
-          // problem, consolidated into one dropdown (keypoint design).
+          // Top-right overflow menu (grid icon): opens the mode-aware
+          // KeypointSettingsSheet (Change theme + Report a problem always,
+          // plus Text display / Speed + Background music depending on mode).
+          // Shown in BOTH modes now (Listen mode no longer swaps it out for a
+          // standalone speed pill — Speed lives in the sheet instead).
           final headerMenu = LessonHeaderMenu(
+            mode: _selectedMode,
             onReportProblem: () => _openReportIssueSheet(context, currentKeypoint),
+            onOpenSpeedSheet: _handleOpenAudioSpeedSheet,
           );
 
           if (!currentKeypoint.hasUsableAudio) {
             return LessonShellLayout(
               selectedMode: LessonEntryMode.read,
               onModeSelected: (_) {},
-              onClose: () => LessonExitFlow.open(context),
+              onClose: () => LessonExitFlow.open(context, mode: 'read'),
               showModeToggle: false,
               readBody: readSurface,
               audioBody: const SizedBox.shrink(),
@@ -191,8 +196,8 @@ class _LessonPageState extends State<LessonPage> {
             onModeSelected: _handleModeSelected,
             onClose: () => LessonExitFlow.open(
               context,
+              mode: _selectedMode.isAudio ? 'listen' : 'read',
               onBeforePopup: () {
-                _trackAudioExitIfNeeded();
                 context.read<LessonAudioCubit>().pauseForOverlay();
                 return Future.value();
               },
@@ -200,7 +205,7 @@ class _LessonPageState extends State<LessonPage> {
             readBody: readSurface,
             audioBody: const LessonAudioSurface(),
             bottom: selectedMode.isRead ? bottomButton : null,
-            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : headerMenu,
+            trailing: headerMenu,
             isLoading: state.status == LessonStatus.loading,
           );
         },
@@ -293,35 +298,15 @@ class _LessonPageState extends State<LessonPage> {
     await _lessonAudioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
   }
 
-  Widget _buildAudioSpeedPill() {
-    return BlocBuilder<LessonAudioCubit, LessonAudioState>(
-      buildWhen: (previous, current) => previous.speed != current.speed || previous.status != current.status,
-      builder: (context, state) {
-        return LessonAudioSpeedPill(
-          label: state.speedValueLabel,
-          enabled: !state.isLoading,
-          onTap: _handleOpenAudioSpeedSheet,
-        );
-      },
-    );
-  }
-
   void _openReportIssueSheet(BuildContext context, KeypointEntity keypoint) {
     final lessonId = context.read<CourseLessonCubit>().state.selectedLesson.id;
-    AppService.instance.appTrackingService.trackEvent(
-      TrackingKey.keypointReportClick,
-      parameters: {
-        'mode': _selectedMode.isAudio ? 'listen' : 'read',
-        'lesson_id': lessonId,
-        'keypoint_id': keypoint.id,
-      },
-    );
     ReportIssueSheet.show(
       context,
       lessonId: lessonId,
       keypointId: keypoint.id,
       keypointTitle: keypoint.title.text,
       keypointImage: keypoint.image,
+      mode: _selectedMode.isAudio ? 'listen' : 'read',
     );
   }
 
@@ -360,18 +345,6 @@ class _LessonPageState extends State<LessonPage> {
     _trackingDelegate.trackCurrentLearningItemScroll(
       lessonState: context.read<LessonCubit>().state,
       shouldTrackScroll: _controller.shouldTrackScroll,
-    );
-  }
-
-  void _trackAudioExitIfNeeded() {
-    if (!_selectedMode.isAudio) return;
-
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData == null) return;
-
-    AppService.instance.appTrackingService.trackKeypointAudioExitClick(
-      trackingData,
-      audioPosition: _lessonAudioCubit.state.positionSeconds,
     );
   }
 }

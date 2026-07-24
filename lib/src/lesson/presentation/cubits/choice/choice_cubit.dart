@@ -25,10 +25,9 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
+        // keypoint_exercise_click (single-choice) tracking removed per request.
         if (state.isMultipleChoiceQuestion) {
           AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
-        } else {
-          AppService.instance.appTrackingService.trackKeypointExerciseClick(trackingData);
         }
       }
     }

@@ -117,10 +117,16 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
 
   void _onGoToCourse(BuildContext context, String courseName) {
     AppService.instance.appTrackingService.trackSettingBadgeGoCourse(_buildTrackingData(courseName));
-    context.back();
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
-    CourseRoadmapRoute().go(context);
+    context.back(); // close the badge bottom sheet
+    // Navigate on the ROOT context, not the just-popped sheet context: the
+    // latter is now defunct, so .go on it silently no-ops — the event fired but
+    // the app never moved (the reported bug). The root navigator context always
+    // resolves the router.
+    final rootCtx = AppConfig.instance.context;
+    if (rootCtx == null) return;
+    CourseRoadmapRoute().go(rootCtx);
     // Not just setCurrentIndex(1) — see course_card.dart's identical fix.
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }

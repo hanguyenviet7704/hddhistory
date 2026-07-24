@@ -40,11 +40,6 @@ class PageCubit extends Cubit<PageState> {
       return;
     }
 
-    final tabType = _tabTypeForIndex(index);
-    if (tabType != null) {
-      AppService.instance.appTrackingService.trackHomeTabSwitch(tabType);
-    }
-
     switch (index) {
       case 0:
         setCurrentRouteName(RouteNamed.home);
@@ -116,22 +111,6 @@ class PageCubit extends Cubit<PageState> {
     }
   }
 
-  String? _tabTypeForIndex(int index) {
-    switch (index) {
-      case 0:
-        return 'home';
-      case 1:
-        return 'progress';
-      case 2:
-        return 'setting';
-      case 3:
-        return 'explore';
-      case 4:
-        return 'habit';
-      default:
-        return null;
-    }
-  }
 }
 
 /// Whether a bottom-nav tab tap should be ignored as a no-op.
