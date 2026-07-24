@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Native launch/splash background — matches the Flutter splash
+         (splash_page.dart: solid #F2F1FA light backdrop with the "?" tile) so
+         every native layer (Android-12 splash, pre-12 launch drawable, and the
+         NormalTheme window) reads as the SAME light screen instead of flashing
+         purple→white→gray before Flutter draws its first frame. -->
+    <color name="splashBackground">#FFF2F1FA</color>
+</resources>

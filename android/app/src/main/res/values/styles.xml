@@ -5,6 +5,10 @@
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <!-- Android 12+ (API 31) system splash background — a solid colour (no
+             gradient support here), matching the Flutter splash so the OS splash
+             doesn't flash white. Ignored on API < 31. -->
+        <item name="android:windowSplashScreenBackground">@color/splashBackground</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
@@ -13,6 +17,9 @@
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- Light splash colour (not the system white/gray) so the window behind
+             Flutter's init matches the splash — no gray flash between the OS
+             splash and the Flutter splash. -->
+        <item name="android:windowBackground">@color/splashBackground</item>
     </style>
 </resources>
