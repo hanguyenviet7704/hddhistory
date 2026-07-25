@@ -119,7 +119,10 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     AppService.instance.appTrackingService.trackSettingBadgeGoCourse(_buildTrackingData(courseName));
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
-    context.back(); // close the badge bottom sheet
+    // This sheet is a `showModalBottomSheet` (a Material Navigator route), so it
+    // must be popped on the Navigator — `context.back()`/go_router `pop()` acts
+    // on the router stack and leaves the modal up (the "popup không tắt" bug).
+    Navigator.of(context).pop();
     // Navigate on the ROOT context, not the just-popped sheet context: the
     // latter is now defunct, so .go on it silently no-ops — the event fired but
     // the app never moved (the reported bug). The root navigator context always
