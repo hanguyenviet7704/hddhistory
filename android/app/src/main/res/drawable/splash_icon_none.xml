@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fully transparent "icon" for the Android 12+ system splash. The OS forces
+     the splash icon into a CIRCLE mask, so our rounded-SQUARE brand tile can
+     never match it there — showing the launcher icon here (circular "?") and
+     then the Flutter splash tile (square "?") reads as TWO different splashes.
+     By making the system-splash icon invisible, the brand "?" tile appears
+     exactly once, in the Flutter splash (splash_page.dart), over the same light
+     background — so the whole cold-start reads as a single splash. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@android:color/transparent" />
+</shape>

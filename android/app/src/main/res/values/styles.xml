@@ -9,6 +9,10 @@
              gradient support here), matching the Flutter splash so the OS splash
              doesn't flash white. Ignored on API < 31. -->
         <item name="android:windowSplashScreenBackground">@color/splashBackground</item>
+        <!-- Hide the OS splash icon (it's masked to a CIRCLE and can't match our
+             rounded-square "?" tile — showing both reads as two splashes). The
+             brand tile now appears only in the Flutter splash. Ignored < 31. -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_none</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your

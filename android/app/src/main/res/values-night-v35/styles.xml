@@ -5,13 +5,19 @@
     <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">@color/splashBackground</item>
+        <!-- Hide the circle-masked OS splash icon so the square brand "?" tile
+             shows once (Flutter splash) — otherwise it reads as two splashes. -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_none</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- Match the light Flutter splash (was ?android:colorBackground = system
+             white/gray, which flashed gray between the OS splash and Flutter on
+             API 35). -->
+        <item name="android:windowBackground">@color/splashBackground</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>

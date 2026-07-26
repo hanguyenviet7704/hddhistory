@@ -8,6 +8,9 @@
         <!-- Android 12+ (API 31) system splash background — solid colour matching
              the Flutter splash (same purple in dark mode). Ignored on API < 31. -->
         <item name="android:windowSplashScreenBackground">@color/splashBackground</item>
+        <!-- Hide the OS splash icon (circle-masked, can't match the square brand
+             tile) so the "?" tile shows once, in the Flutter splash. Ignored < 31. -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_none</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
