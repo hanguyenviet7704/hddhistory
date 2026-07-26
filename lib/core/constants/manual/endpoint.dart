@@ -126,6 +126,10 @@ mixin AppEndpoint {
   static const String habits = '/api/v1/habits';
   static const String userHabits = '/api/v1/user-habits';
   static const String userHabitsSummary = '/api/v1/user-habits/summary';
+  // Combined Habit-tab bootstrap: config + habits + summary in one round trip
+  // — replaces separate calls to userHabits + userHabitsSummary + habitConfig
+  // on the tab's initial load.
+  static const String userHabitsScreen = '/api/v1/user-habits/screen';
   static const String habitConfig = '/api/v1/habit-config';
   static const String userHabitsById = '/api/v1/user-habits/{id}';
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';

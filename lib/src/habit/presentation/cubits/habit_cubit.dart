@@ -5,7 +5,6 @@ enum AdoptHabitResult { success, slotFull, failure }
 @lazySingleton
 class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitState> {
   final GetHabitsUseCase _getHabitsUseCase;
-  final GetUserHabitsUseCase _getUserHabitsUseCase;
   final GetUserHabitsSummaryUseCase _getSummaryUseCase;
   final AdoptHabitUseCase _adoptUseCase;
   final UpdateUserHabitUseCase _updateUseCase;
@@ -14,10 +13,11 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final GetHabitCheckinsUseCase _getCheckinsUseCase;
   final GetReanchorReasonsUseCase _getReanchorReasonsUseCase;
   final GetHabitConfigUseCase _getHabitConfigUseCase;
+  final GetHabitScreenUseCase _getHabitScreenUseCase;
+  final GetCachedHabitScreenUseCase _getCachedHabitScreenUseCase;
 
   HabitCubit(
     this._getHabitsUseCase,
-    this._getUserHabitsUseCase,
     this._getSummaryUseCase,
     this._adoptUseCase,
     this._updateUseCase,
@@ -26,6 +26,8 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._getCheckinsUseCase,
     this._getReanchorReasonsUseCase,
     this._getHabitConfigUseCase,
+    this._getHabitScreenUseCase,
+    this._getCachedHabitScreenUseCase,
   ) : super(HabitState.initial());
 
   Future<void>? _ensureInFlight;
@@ -81,19 +83,58 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     emit(state.copyWith(reanchorReasonByCourse: {...state.reanchorReasonByCourse, courseId: reason}));
   }
 
+  /// Loads the Habit tab's tracker + summary + slot cap in a single combined
+  /// request (`GetHabitScreenUseCase` → `GET /user-habits/screen`), replacing
+  /// three separate round trips.
+  ///
+  /// Cache-first (stale-while-revalidate): when nothing is in memory yet, the
+  /// last cached screen is rendered immediately — no blank spinner on a warm
+  /// start — before the network refresh resolves and reconciles it. Skipped
+  /// once data is already in memory (pull-to-refresh, a second concurrent
+  /// call) so a refresh never flashes stale cache over what's already shown.
   Future<void> load({bool showLoading = true}) async {
-    if (showLoading) emit(state.copyWith(status: HabitPageStatus.loading));
-    final result = await _getUserHabitsUseCase().run();
-    result.fold(
-      (exception) => emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: exception.toString())),
+    if (state.userHabits.isEmpty) {
+      final cached = await _getCachedHabitScreenUseCase();
+      if (cached != null && state.userHabits.isEmpty) {
+        emit(
+          state.copyWith(
+            status: HabitPageStatus.success,
+            userHabits: cached.habits,
+            summary: cached.summary,
+            freeActiveSlots: cached.freeActiveSlots,
+          ),
+        );
+      }
+    }
+
+    await runUseCase<HabitScreenEntity>(
+      usecase: () => _getHabitScreenUseCase(),
+      // Only block on the spinner when there's genuinely nothing to show —
+      // no cache landed above and nothing already in state. showLoading:
+      // false (pull-to-refresh, app-resume refresh) never shows it, keeping
+      // the current list visible mid-refresh.
+      buildLoadingState: (showLoading && state.userHabits.isEmpty) ? () => state.copyWith(status: HabitPageStatus.loading) : null,
+      onFailure: (error) {
+        // Keep already-shown (cached or in-memory) data on a failed refresh;
+        // only surface the error state when there is nothing to fall back to.
+        if (state.userHabits.isEmpty) {
+          emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: error));
+        }
+      },
       // A cluster's title reflects ONLY the re-anchor reason the user actually
       // picked — either stored on the habit at adopt time (h.reanchorReason)
       // or captured this session (reanchorReasonByCourse). We never backfill a
       // course's library reason, so a "why" the user didn't choose can't appear.
-      (userHabits) => emit(state.copyWith(status: HabitPageStatus.success, userHabits: userHabits, errorMessage: null)),
+      onSuccess: (screen) => emit(
+        state.copyWith(
+          status: HabitPageStatus.success,
+          userHabits: screen.habits,
+          summary: screen.summary,
+          freeActiveSlots: screen.freeActiveSlots,
+          errorMessage: null,
+        ),
+      ),
     );
-    unawaited(loadSummary());
-    unawaited(loadFreeSlots());
   }
 
   /// Refresh the admin-configured free slot cap; on failure keep the current

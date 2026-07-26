@@ -3,8 +3,9 @@ part of '../../habit.dart';
 @LazySingleton(as: IHabitRepository)
 class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepository {
   final HabitApi _api;
+  final HabitLocalDataSource _localDataSource;
 
-  HabitRepository(this._api);
+  HabitRepository(this._api, this._localDataSource);
 
   @override
   TaskEither<AppException, List<HabitEntity>> getHabits({String? skillsetId, String? keypointId}) {
@@ -50,6 +51,30 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       defaultValue: kFreeActiveHabitSlots,
       enableErrorMessages: false,
     );
+  }
+
+  @override
+  TaskEither<AppException, HabitScreenEntity> getHabitScreen({UserHabitStateEntity? state}) {
+    final stateParam = state == null || state == UserHabitStateEntity.unknown ? null : state.name;
+    return callApiWithTransform<HabitScreenModel, HabitScreenEntity>(
+      apiCall: () => _api.getHabitScreen(stateParam),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async {
+        if (data != null) await _localDataSource.cacheHabitScreen(data);
+      },
+      onError: () async {
+        final cached = await _localDataSource.getCachedHabitScreen();
+        return cached?.toEntity();
+      },
+      defaultValue: const HabitScreenEntity(),
+      enableErrorMessages: false,
+    );
+  }
+
+  @override
+  Future<HabitScreenEntity?> getCachedHabitScreen() async {
+    final cached = await _localDataSource.getCachedHabitScreen();
+    return cached?.toEntity();
   }
 
   @override

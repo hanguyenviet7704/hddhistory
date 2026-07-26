@@ -10,6 +10,16 @@ abstract class IHabitRepository {
   /// Admin-configured free-tier cap on simultaneously-active habits.
   TaskEither<AppException, int> getFreeActiveSlots();
 
+  /// Combined Habit-tab bootstrap: habits + summary + free-tier cap in one
+  /// round trip — replaces separate calls to [getUserHabits],
+  /// [getUserHabitsSummary] and [getFreeActiveSlots] on the tab's initial load.
+  TaskEither<AppException, HabitScreenEntity> getHabitScreen({UserHabitStateEntity? state});
+
+  /// Best-effort read of the last cached combined habit screen (null on a
+  /// cache miss). Used for cache-first rendering before the network refresh
+  /// resolves.
+  Future<HabitScreenEntity?> getCachedHabitScreen();
+
   TaskEither<AppException, UserHabitEntity> adoptHabit({
     required String habitId,
     String? reminderTime,

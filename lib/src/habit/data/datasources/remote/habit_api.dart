@@ -18,6 +18,11 @@ abstract class HabitApi {
   @GET(AppEndpoint.userHabitsSummary)
   Future<BaseResponse<UserHabitSummaryModel>> getUserHabitsSummary();
 
+  /// Combined Habit-tab bootstrap: config + habits + summary in one round
+  /// trip — replaces the three calls above on the tab's initial load.
+  @GET(AppEndpoint.userHabitsScreen)
+  Future<BaseResponse<HabitScreenModel>> getHabitScreen(@Query('state') String? state);
+
   @POST(AppEndpoint.userHabits)
   Future<BaseResponse<UserHabitModel>> adoptHabit(@Body() Map<String, dynamic> body);
 

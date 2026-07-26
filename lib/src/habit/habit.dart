@@ -17,7 +17,9 @@ part 'data/models/user_habit_model.dart';
 part 'data/models/user_habit_summary_model.dart';
 part 'data/models/habit_checkin_model.dart';
 part 'data/models/reanchor_reason_model.dart';
+part 'data/models/habit_screen_model.dart';
 part 'data/datasources/remote/habit_api.dart';
+part 'data/datasources/local/habit_local_data_source.dart';
 part 'data/repositories/habit_repository.dart';
 
 //* Domain Layer - Entities, Repositories, Use Cases
@@ -26,6 +28,7 @@ part 'domain/entities/user_habit_entity.dart';
 part 'domain/entities/user_habit_summary_entity.dart';
 part 'domain/entities/habit_checkin_entity.dart';
 part 'domain/entities/reanchor_reason_entity.dart';
+part 'domain/entities/habit_screen_entity.dart';
 part 'domain/repositories/i_habit_repository.dart';
 part 'domain/usecases/get_habits_usecase.dart';
 part 'domain/usecases/get_user_habits_usecase.dart';
@@ -37,6 +40,8 @@ part 'domain/usecases/check_in_user_habit_usecase.dart';
 part 'domain/usecases/get_habit_checkins_usecase.dart';
 part 'domain/usecases/get_reanchor_reasons_usecase.dart';
 part 'domain/usecases/get_habit_config_usecase.dart';
+part 'domain/usecases/get_habit_screen_usecase.dart';
+part 'domain/usecases/get_cached_habit_screen_usecase.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/habit_qa_flags.dart';
