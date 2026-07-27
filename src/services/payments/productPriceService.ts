@@ -6,7 +6,7 @@ import axiosClient from "../axiosClient";
 
 export const productPriceService = {
   async getList(params?: IProductPriceQuery) {
-    const res = await axiosClient.get("/payment/products/prices", {
+    const res = await axiosClient.get("/payment/product-prices", {
       params,
     });
     return res.data;
@@ -14,7 +14,7 @@ export const productPriceService = {
 
   async sync(payload?: IProductPriceSyncPayload) {
     const res = await axiosClient.post(
-      "/payment/products/prices/sync",
+      "/payment/product-prices/sync",
       payload ?? {}
     );
     return res.data;
