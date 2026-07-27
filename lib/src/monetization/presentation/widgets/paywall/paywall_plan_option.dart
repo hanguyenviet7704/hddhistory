@@ -25,13 +25,13 @@ class PaywallPlanOption extends StatelessWidget {
                   AppHaptic.select();
                   onTap!();
                 },
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(20.r),
           child: Container(
             constraints: BoxConstraints(minHeight: 84.h),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFF2F1FE),
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(
                 color: selected ? const Color(0xFF4B44CA) : AppCustomColor.borderDefault,
                 width: selected ? 2 : 1,
@@ -85,9 +85,11 @@ class PaywallPlanOption extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyle.text20.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: selected ? AppCustomColor.textPrimary : AppCustomColor.textTertiary,
-                        height: 1.5,
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        color: selected ? AppCustomColor.textBrand : AppCustomColor.textTertiary,
+                        height: 1.25,
                       ),
                     ),
                     4.verticalSpace,
@@ -139,8 +141,8 @@ class PaywallPlanOption extends StatelessWidget {
         ),
         if (product.bestDeal)
           Positioned(
-            right: 16.w,
-            top: -6.h,
+            right: 18.w,
+            top: -9.h,
             child: _BestDealBadge(label: l10n.monetization.mostPopularBadge.toUpperCase()),
           ),
       ],

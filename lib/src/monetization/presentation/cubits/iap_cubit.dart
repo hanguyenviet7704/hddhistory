@@ -32,6 +32,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final RestoreUsecase _restoreUsecase;
   final VerifyUsecase _verifyUsecase;
   final ResolvePaywallStrategyUsecase _resolvePaywallStrategyUsecase;
+  final ValidateVoucherUsecase _validateVoucherUsecase;
   final IRemoteConfigService _remoteConfigService;
 
   final IPackageInfoService _packageInfoService;
@@ -52,6 +53,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._restoreUsecase,
     this._verifyUsecase,
     this._resolvePaywallStrategyUsecase,
+    this._validateVoucherUsecase,
     this._remoteConfigService,
     this._packageInfoService,
   ) : super(IapState.initial());
@@ -246,7 +248,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     required int generation,
   }) async {
     emit(state.copyWith(status: MonetizationStatus.loading, errorMessage: null, paywallStrategySignature: loadingSignature));
-    final result = await _getPackagesUsecase.call(GetPackagesParams(platform: platform, selectedProductIds: resolvedStrategy.productIds)).run();
+    final result = await _getPackagesUsecase.call(GetPackagesParams(platform: platform, selectedProductIds: state.applyVoucherSwap(resolvedStrategy.productIds))).run();
     return result.match(
       (error) {
         if (!_isCurrentLoad(loadingSignature, generation)) return false;
@@ -311,6 +313,83 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       if (product.bestDeal) return product;
     }
     return products.first;
+  }
+
+  /// Validates a promo code server-side and, if it authorises a SKU swap,
+  /// reloads the paywall showing the discounted plans.
+  ///
+  /// The server decides which SKUs a code unlocks — the client only renders
+  /// what it is handed, so a tampered build cannot force a cheaper product.
+  Future<void> applyVoucher(String rawCode) async {
+    final code = rawCode.trim().toUpperCase();
+    if (code.isEmpty || state.isValidatingVoucher) return;
+
+    emit(state.copyWith(isValidatingVoucher: true, hasVoucherFeedback: false));
+
+    final result = await _validateVoucherUsecase
+        .call(ValidateVoucherParams(code: code, platform: PaymentPlatform.fromDevicePlatform))
+        .run();
+
+    final validation = result.match(
+      (_) => const VoucherValidationEntity(),
+      (value) => value,
+    );
+
+    if (!validation.isUsable) {
+      emit(
+        state.copyWith(
+          isValidatingVoucher: false,
+          hasVoucherFeedback: true,
+          voucherRejectReason: validation.reason,
+        ),
+      );
+      return;
+    }
+
+    // Snapshot, so a failed reload can be rolled back instead of leaving the
+    // user on an empty paywall.
+    final previousProducts = state.iapProducts;
+    final previousSelectedId = state.selectedProductId;
+
+    emit(
+      state.copyWith(
+        isValidatingVoucher: false,
+        appliedVoucherCode: validation.code.isEmpty ? code : validation.code,
+        voucherProducts: validation.products,
+        hasVoucherFeedback: true,
+        voucherRejectReason: VoucherRejectReason.unknown,
+      ),
+    );
+
+    if (await loadIapProducts(forceRetry: true)) return;
+
+    // The discounted SKUs did not resolve (missing from the store or the
+    // product catalogue). Put the original plans back — never show a blank
+    // paywall because of a promo code.
+    emit(
+      state.copyWith(
+        appliedVoucherCode: '',
+        voucherProducts: const [],
+        iapProducts: previousProducts,
+        selectedProductId: previousSelectedId,
+        status: previousProducts.isEmpty ? MonetizationStatus.failure : MonetizationStatus.success,
+        hasVoucherFeedback: true,
+        voucherRejectReason: VoucherRejectReason.notApplicable,
+      ),
+    );
+  }
+
+  Future<void> removeVoucher() async {
+    if (!state.hasAppliedVoucher) return;
+    emit(
+      state.copyWith(
+        appliedVoucherCode: '',
+        voucherProducts: const [],
+        hasVoucherFeedback: false,
+        voucherRejectReason: VoucherRejectReason.unknown,
+      ),
+    );
+    await loadIapProducts(forceRetry: true);
   }
 
   Future<void> purchaseProduct({bool isHighlight = false, PurchaseOrigin origin = PurchaseOrigin.paywall}) async {
@@ -485,6 +564,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         productId: purchaseDetail.productID,
         packageName: _packageInfoService.packageName,
         storeTransactionId: transactionId,
+        voucherCode: state.appliedVoucherCode,
       );
     } else {
       final verificationData = purchaseDetail.verificationData;
@@ -493,6 +573,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         productId: purchaseDetail.productID,
         packageName: _packageInfoService.packageName,
         storeTransactionId: verificationData.serverVerificationData,
+        voucherCode: state.appliedVoucherCode,
       );
     }
 

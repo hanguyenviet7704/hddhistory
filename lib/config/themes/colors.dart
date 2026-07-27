@@ -50,6 +50,15 @@ mixin AppCustomColor {
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color paywallAqua = Color(0xFF6BBBD8);
   static const Color paywallBestDeal = Color(0xFFF9D31A);
+  // Promo-code block on the paywall. Values come straight from the design
+  // (Claude Design "MeUp App" → pin `paywall`); see
+  // plans/260727-paywall-redesign/design-spec.md.
+  static const Color paywallPromoLink = Color(0xFF6E67D8);
+  static const Color paywallPromoLabel = Color(0xFF4B44CA);
+  static const Color paywallPromoMuted = Color(0xFF9E99C2);
+  static const Color paywallPromoAppliedBg = Color(0xFFE6F4EE);
+  static const Color paywallPromoAppliedText = Color(0xFF2B604E);
+  static const Color paywallPromoRemove = Color(0xFF6E6A85);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
   static const Color surfaceMuted = Color(0xFFEFF3FA);

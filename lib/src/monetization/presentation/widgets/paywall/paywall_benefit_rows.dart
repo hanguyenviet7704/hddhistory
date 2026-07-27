@@ -2,7 +2,8 @@ part of '../../../monetization.dart';
 
 class _PaywallRemoteBenefitRow extends StatelessWidget {
   final PaywallBenefitEntity benefit;
-  final AssetGenImage fallbackAsset;
+  /// Path of an SVG in assets/svg/app, used when the remote icon is absent.
+  final String fallbackAsset;
 
   const _PaywallRemoteBenefitRow({
     required this.benefit,
@@ -17,8 +18,8 @@ class _PaywallRemoteBenefitRow extends StatelessWidget {
           ? _fallbackIcon()
           : CachedNetworkImage(
               imageUrl: iconUrl,
-              width: 32.w,
-              height: 32.w,
+              width: 28.w,
+              height: 28.w,
               fit: BoxFit.contain,
               errorWidget: (_, _, _) => _fallbackIcon(),
               placeholder: (_, _) => _fallbackIcon(),
@@ -27,16 +28,16 @@ class _PaywallRemoteBenefitRow extends StatelessWidget {
     );
   }
 
-  Widget _fallbackIcon() => Image.asset(
-    fallbackAsset.path,
-    width: 32.w,
-    height: 32.w,
+  Widget _fallbackIcon() => SvgPicture.asset(
+    fallbackAsset,
+    width: 28.w,
+    height: 28.w,
     fit: BoxFit.contain,
   );
 }
 
 class _PaywallLocalBenefitRow extends StatelessWidget {
-  final AssetGenImage asset;
+  final String asset;
   final String title;
   final String description;
 
@@ -49,7 +50,7 @@ class _PaywallLocalBenefitRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _BenefitRowShell(
-      icon: Image.asset(asset.path, width: 32.w, height: 32.w, fit: BoxFit.contain),
+      icon: SvgPicture.asset(asset, width: 28.w, height: 28.w, fit: BoxFit.contain),
       text: '$title $description',
     );
   }
@@ -67,21 +68,23 @@ class _BenefitRowShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 32.w,
-          height: 32.w,
+          width: 28.w,
+          height: 28.w,
           child: Center(child: icon),
         ),
-        12.horizontalSpace,
+        14.horizontalSpace,
         Expanded(
           child: AppText(
             text,
             maxLines: 3,
             style: AppStyle.text14.copyWith(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
               color: AppCustomColor.textBrand,
-              height: 1.65,
+              height: 1.55,
             ),
           ),
         ),

@@ -65,6 +65,18 @@ pricePerMonth: per month
 pricePerQuarter: per quarter
 pricePerWeek: per week
 pricePerYear: per year
+promoCodeApplied: Code applied
+promoCodeApply: Apply
+promoCodeCta: Have a promo code?
+promoCodeErrorExhausted: This code has reached its limit
+promoCodeErrorExpired: This code has expired
+promoCodeErrorGeneric: Couldn't apply the code. Please try again.
+promoCodeErrorInvalid: This code isn't valid
+promoCodeErrorNotApplicable: This code doesn't apply to these plans
+promoCodeHide: Hide
+promoCodeHint: Enter code
+promoCodeLabel: Promo code
+promoCodeRemove: Remove
 restore: Restore purchases
 restoreNotFoundToast: No purchases to restore.
 restoreProcessingToast: Restoring purchases

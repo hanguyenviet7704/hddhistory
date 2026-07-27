@@ -66,6 +66,18 @@ pricePerMonth: mỗi tháng
 pricePerQuarter: mỗi quý
 pricePerWeek: mỗi tuần
 pricePerYear: mỗi năm
+promoCodeApplied: Đã áp dụng mã
+promoCodeApply: Áp dụng
+promoCodeCta: Bạn có mã giảm giá?
+promoCodeErrorExhausted: Mã đã hết lượt sử dụng
+promoCodeErrorExpired: Mã đã hết hạn
+promoCodeErrorGeneric: Không áp dụng được mã. Vui lòng thử lại.
+promoCodeErrorInvalid: Mã không hợp lệ
+promoCodeErrorNotApplicable: Mã không áp dụng cho các gói này
+promoCodeHide: Ẩn
+promoCodeHint: Nhập mã
+promoCodeLabel: Mã giảm giá
+promoCodeRemove: Bỏ
 restore: Khôi phục mua hàng
 restoreNotFoundToast: Không tìm thấy giao dịch để khôi phục.
 restoreProcessingToast: Đang khôi phục mua hàng

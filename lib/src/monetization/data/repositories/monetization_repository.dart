@@ -130,6 +130,15 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   }
 
   @override
+  TaskEither<AppException, VoucherValidationEntity> validateVoucher(ValidateVoucherParams params) {
+    return callApiWithTransform<VoucherValidationModel, VoucherValidationEntity>(
+      apiCall: () => _monetizationApi.validateVoucher(params.toJson()),
+      transform: (model) => model.toEntity(),
+      defaultValue: const VoucherValidationEntity(),
+    );
+  }
+
+  @override
   Future<List<String>> loadProcessedTransactionIds() async {
     try {
       final data = await _userSubscriptionLocalDataSource.getProcessedTransactionIds();

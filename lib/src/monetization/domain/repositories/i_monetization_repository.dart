@@ -6,6 +6,7 @@ abstract class IMonetizationRepository {
   TaskEither<AppException, IapVerifyEntity> purchase(PurchaseParams params);
   TaskEither<AppException, IapVerifyEntity> restore();
   TaskEither<AppException, IapVerifyEntity> verify(VerifyParams params);
+  TaskEither<AppException, VoucherValidationEntity> validateVoucher(ValidateVoucherParams params);
   Future<List<String>> loadProcessedTransactionIds();
   Future<void> cacheProcessedTransactionIds(List<String> ids);
   Future<int> getNewUserPaywallImpressionCount();

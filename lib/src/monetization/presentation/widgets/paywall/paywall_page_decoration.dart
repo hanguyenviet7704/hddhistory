@@ -23,10 +23,13 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   bool _hasTrackedScroll = false;
   bool _hasTrackedInfoSwipe = false;
 
-  List<AssetGenImage> get _fallbackBenefitAssets => [
-    AppAsset.images.app.openBook,
-    AppAsset.images.app.statistic,
-    AppAsset.images.app.chart,
+  /// Feature icons from the paywall design, cycled when the remote config
+  /// does not supply one.
+  List<String> get _fallbackBenefitAssets => [
+    AppAsset.svg.app.pwLessons,
+    AppAsset.svg.app.pwPractice,
+    AppAsset.svg.app.pwHabit,
+    AppAsset.svg.app.pwProgress,
   ];
 
   @override
@@ -113,6 +116,14 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             state: widget.state,
             onPlanTap: _handlePlanTap,
           ),
+          PaywallPromoCode(
+            appliedCode: widget.state.hasAppliedVoucher ? widget.state.appliedVoucherCode : null,
+            isApplying: widget.state.isValidatingVoucher,
+            message: _voucherMessage,
+            isMessageError: !widget.state.hasAppliedVoucher,
+            onApply: (code) => context.read<IapCubit>().applyVoucher(code),
+            onRemove: () => context.read<IapCubit>().removeVoucher(),
+          ),
           25.verticalSpace,
           AppText(
             l10n.monetization.paywallHeroSubtitle,
@@ -179,11 +190,25 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
 
   String _fallbackText(String value, String fallback) => value.isEmpty ? fallback : value;
 
+  /// Feedback under the promo field: the success line once a code is applied,
+  /// otherwise the message for whichever reason the server gave.
+  String? get _voucherMessage {
+    if (!widget.state.hasVoucherFeedback) return null;
+    if (widget.state.hasAppliedVoucher) return l10n.monetization.promoCodeApplied;
+    return switch (widget.state.voucherRejectReason) {
+      VoucherRejectReason.notFound => l10n.monetization.promoCodeErrorInvalid,
+      VoucherRejectReason.expired => l10n.monetization.promoCodeErrorExpired,
+      VoucherRejectReason.exhausted => l10n.monetization.promoCodeErrorExhausted,
+      VoucherRejectReason.notApplicable => l10n.monetization.promoCodeErrorNotApplicable,
+      VoucherRejectReason.unknown => l10n.monetization.promoCodeErrorGeneric,
+    };
+  }
+
   List<Widget> _defaultBenefits() {
     final fallback = [
-      (AppAsset.images.app.openBook, l10n.monetization.benefit1Title, l10n.monetization.benefit1Desc),
-      (AppAsset.images.app.statistic, l10n.monetization.benefit2Title, l10n.monetization.benefit2Desc),
-      (AppAsset.images.app.chart, l10n.monetization.benefit3Title, l10n.monetization.benefit3Desc),
+      (AppAsset.svg.app.pwLessons, l10n.monetization.benefit1Title, l10n.monetization.benefit1Desc),
+      (AppAsset.svg.app.pwPractice, l10n.monetization.benefit2Title, l10n.monetization.benefit2Desc),
+      (AppAsset.svg.app.pwProgress, l10n.monetization.benefit3Title, l10n.monetization.benefit3Desc),
     ];
     return [
       for (var index = 0; index < fallback.length; index++)
