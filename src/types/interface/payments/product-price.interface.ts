@@ -25,6 +25,12 @@ export interface IProductPrice {
 export interface IProductPriceQuery {
   productId?: string;
   platform?: PaymentPlatform;
+  /**
+   * Comma-separated territory codes to restrict the result to (both alpha-2
+   * and alpha-3 forms, since Apple and Google disagree on the format -- see
+   * `pages/payments/marketTerritoryMap.ts`). Omitted = every territory.
+   */
+  territories?: string;
 }
 
 export interface IProductPriceSyncPayload {

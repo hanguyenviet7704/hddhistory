@@ -27,9 +27,17 @@ import {
   platformIcons,
   platformLabels,
 } from "../paymentShared";
+import {
+  MARKET_TERRITORIES,
+  MARKET_TERRITORY_PARAM,
+  territoryCodeFor,
+} from "../marketTerritoryMap";
 
 type ProductRecord = IProduct & { _id?: string };
 type ProductOption = { productId: string; title: string; platforms: PaymentPlatform[] };
+
+// SKU column + one column per market (see marketTerritoryMap.ts).
+const TOTAL_COLUMNS = MARKET_TERRITORIES.length + 1;
 
 const normalizeProducts = (payload: any): ProductRecord[] => {
   if (!payload) return [];
@@ -73,6 +81,11 @@ const describeSyncResult = (label: string, result: IPlatformSyncResult) => {
   return `${label}: đã đồng bộ ${result.synced} dòng giá${failedPart}`;
 };
 
+// Cell lookup key: platform + SKU + the store-specific territory code that
+// SKU's row would have been persisted with for that platform.
+const cellKey = (platform: PaymentPlatform, productId: string, territory: string) =>
+  `${platform}|${productId}|${territory.toUpperCase()}`;
+
 const RegionalPriceSection: React.FC = () => {
   const { showSuccess, showError } = useNotification();
 
@@ -82,7 +95,7 @@ const RegionalPriceSection: React.FC = () => {
 
   const [selectedProductId, setSelectedProductId] = useState("");
   const [platformFilter, setPlatformFilter] = useState<string>("");
-  const [territorySearch, setTerritorySearch] = useState("");
+  const [skuSearch, setSkuSearch] = useState("");
 
   const [prices, setPrices] = useState<IProductPrice[]>([]);
   const [loading, setLoading] = useState(false);
@@ -119,7 +132,6 @@ const RegionalPriceSection: React.FC = () => {
         a.title.localeCompare(b.title)
       );
       setProductOptions(options);
-      setSelectedProductId((prev) => prev || options[0]?.productId || "");
     } catch (err: any) {
       console.error("Failed to fetch products for regional prices", err);
       setProductsError(
@@ -133,14 +145,14 @@ const RegionalPriceSection: React.FC = () => {
   }, []);
 
   const fetchPrices = useCallback(async () => {
-    if (!selectedProductId) {
-      setPrices([]);
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
-      const params: IProductPriceQuery = { productId: selectedProductId };
+      // Always scope to the markets the matrix actually renders -- a single
+      // SKU has ~175 synced territories per platform, and the matrix only
+      // ever shows the columns in marketTerritoryMap.ts.
+      const params: IProductPriceQuery = { territories: MARKET_TERRITORY_PARAM };
+      if (selectedProductId) params.productId = selectedProductId;
       if (platformFilter) params.platform = platformFilter as PaymentPlatform;
       const res = await productPriceService.getList(params);
       setPrices(normalizePrices(res));
@@ -206,15 +218,30 @@ const RegionalPriceSection: React.FC = () => {
     }
   };
 
-  const filteredPrices = useMemo(() => {
-    const term = territorySearch.trim().toLowerCase();
-    if (!term) return prices;
-    return prices.filter(
-      (row) =>
-        row.territory.toLowerCase().includes(term) ||
-        row.currency.toLowerCase().includes(term)
-    );
-  }, [prices, territorySearch]);
+  // One lookup per (platform, SKU, store-specific territory code) so a cell
+  // render never has to guess which code form the row was stored with.
+  const priceLookup = useMemo(() => {
+    const map = new Map<string, IProductPrice>();
+    prices.forEach((row) => {
+      map.set(cellKey(row.platform, row.productId, row.territory), row);
+    });
+    return map;
+  }, [prices]);
+
+  // Currency sub-label per market column, read off whichever synced row
+  // happens to match that market (Apple or Google code) -- purely a display
+  // hint, never used for the actual per-cell formatting.
+  const columnCurrency = useMemo(() => {
+    const map = new Map<string, string>();
+    MARKET_TERRITORIES.forEach((market) => {
+      const match = prices.find((row) => {
+        const t = row.territory.toUpperCase();
+        return t === market.apple || t === market.google;
+      });
+      if (match) map.set(market.label, match.currency);
+    });
+    return map;
+  }, [prices]);
 
   const freshestSync = useMemo(() => {
     if (prices.length === 0) return null;
@@ -225,10 +252,59 @@ const RegionalPriceSection: React.FC = () => {
     return newest ? new Date(newest) : null;
   }, [prices]);
 
-  const googleRowCount = useMemo(
-    () => prices.filter((row) => row.platform === PaymentPlatform.GOOGLE).length,
+  const matchesFilters = useCallback(
+    (option: ProductOption) => {
+      if (selectedProductId && option.productId !== selectedProductId) {
+        return false;
+      }
+      const term = skuSearch.trim().toLowerCase();
+      if (!term) return true;
+      return (
+        option.title.toLowerCase().includes(term) ||
+        option.productId.toLowerCase().includes(term)
+      );
+    },
+    [selectedProductId, skuSearch]
+  );
+
+  // Platform is never merged: each store gets its own row group, built from
+  // that store's own SKU list, so an Apple-only or Google-only SKU can never
+  // silently borrow the other platform's price.
+  const showApple = platformFilter === "" || platformFilter === PaymentPlatform.APPLE;
+  const showGoogle = platformFilter === "" || platformFilter === PaymentPlatform.GOOGLE;
+
+  const appleOptions = useMemo(
+    () => productOptions.filter((o) => o.platforms.includes(PaymentPlatform.APPLE)),
+    [productOptions]
+  );
+  const googleOptions = useMemo(
+    () => productOptions.filter((o) => o.platforms.includes(PaymentPlatform.GOOGLE)),
+    [productOptions]
+  );
+
+  const visibleAppleOptions = useMemo(
+    () => (showApple ? appleOptions.filter(matchesFilters) : []),
+    [showApple, appleOptions, matchesFilters]
+  );
+  const visibleGoogleOptions = useMemo(
+    () => (showGoogle ? googleOptions.filter(matchesFilters) : []),
+    [showGoogle, googleOptions, matchesFilters]
+  );
+
+  const totalVisibleRows = visibleAppleOptions.length + visibleGoogleOptions.length;
+  const hasActiveRowFilters = Boolean(selectedProductId) || Boolean(skuSearch.trim());
+
+  const googleHasSyncedRows = useMemo(
+    () => prices.some((row) => row.platform === PaymentPlatform.GOOGLE),
     [prices]
   );
+  const showGoogleGapNotice =
+    !loading && showGoogle && googleOptions.length > 0 && !googleHasSyncedRows;
+
+  const resetRowFilters = () => {
+    setSkuSearch("");
+    setSelectedProductId("");
+  };
 
   const syncScopeLabel = useMemo(() => {
     const productPart = selectedProductId ? `"${selectedProductId}"` : "tất cả SKU đang bật";
@@ -237,6 +313,61 @@ const RegionalPriceSection: React.FC = () => {
       : "trên cả Apple và Google";
     return `Đồng bộ ngay sẽ chỉ chạy cho ${productPart} ${platformPart}.`;
   }, [platformFilter, selectedProductId]);
+
+  const AppleSectionIcon = platformIcons[PaymentPlatform.APPLE];
+  const GoogleSectionIcon = platformIcons[PaymentPlatform.GOOGLE];
+
+  const renderRow = (option: ProductOption, platform: PaymentPlatform) => {
+    const PlatformIcon = platformIcons[platform];
+    const tone = platformIconTone[platform];
+    return (
+      <tr key={`${platform}-${option.productId}`} className="group hover:bg-slate-50/70">
+        <th
+          scope="row"
+          className="sticky left-0 z-10 bg-white group-hover:bg-slate-50 px-4 py-3 border-r border-slate-100 align-top text-left font-normal min-w-[220px] max-w-[240px]"
+        >
+          <div className="flex items-start gap-2 min-w-0">
+            <PlatformIcon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${tone}`} />
+            <div className="min-w-0">
+              <p
+                className="font-semibold text-slate-900 truncate"
+                title={option.title}
+              >
+                {option.title}
+              </p>
+              <code className="text-[11px] text-slate-500">{option.productId}</code>
+            </div>
+          </div>
+        </th>
+        {MARKET_TERRITORIES.map((market) => {
+          const code = territoryCodeFor(market, platform);
+          const row = priceLookup.get(cellKey(platform, option.productId, code));
+          return (
+            <td
+              key={market.label}
+              className="px-4 py-3 text-right tabular-nums whitespace-nowrap min-w-[92px]"
+            >
+              {row ? (
+                <span
+                  className="font-semibold text-slate-800"
+                  title={`Đồng bộ lúc ${formatDateTime(row.syncedAt)}`}
+                >
+                  {formatRegionalPrice(row.customerPrice, row.currency)}
+                </span>
+              ) : (
+                <span
+                  className="text-slate-300"
+                  title="Chưa đồng bộ giá cho thị trường này"
+                >
+                  —
+                </span>
+              )}
+            </td>
+          );
+        })}
+      </tr>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -268,7 +399,7 @@ const RegionalPriceSection: React.FC = () => {
               disabled={productsLoading}
               className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500 disabled:opacity-60 min-w-[220px]"
             >
-              <option value="">Chọn sản phẩm</option>
+              <option value="">Tất cả sản phẩm</option>
               {productOptions.map((option) => (
                 <option key={option.productId} value={option.productId}>
                   {option.title} — {option.productId}
@@ -281,16 +412,16 @@ const RegionalPriceSection: React.FC = () => {
               onChange={(e) => setPlatformFilter(e.target.value)}
               className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
-              <option value="">Tất cả platform</option>
+              <option value="">Cả hai platform</option>
               <option value={PaymentPlatform.APPLE}>Apple</option>
               <option value={PaymentPlatform.GOOGLE}>Google</option>
             </select>
 
             <div className="relative">
               <input
-                value={territorySearch}
-                onChange={(e) => setTerritorySearch(e.target.value)}
-                placeholder="Tìm theo mã khu vực hoặc currency..."
+                value={skuSearch}
+                onChange={(e) => setSkuSearch(e.target.value)}
+                placeholder="Tìm theo tên hoặc SKU..."
                 className="pl-10 pr-9 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-slate-50/50 min-w-[220px]"
               />
               <svg
@@ -306,10 +437,10 @@ const RegionalPriceSection: React.FC = () => {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              {territorySearch && (
+              {skuSearch && (
                 <button
-                  onClick={() => setTerritorySearch("")}
-                  aria-label="Xóa tìm kiếm khu vực"
+                  onClick={() => setSkuSearch("")}
+                  aria-label="Xóa tìm kiếm"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   <XMarkIcon className="h-4 w-4" />
@@ -379,8 +510,9 @@ const RegionalPriceSection: React.FC = () => {
 
         <div className="mx-4 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
           <span>
-            {filteredPrices.length} / {prices.length} khu vực đang hiển thị
+            {totalVisibleRows} SKU × {MARKET_TERRITORIES.length} thị trường đang hiển thị
           </span>
+          <span>— = chưa đồng bộ giá cho thị trường đó, không phải giá bằng 0</span>
           {freshestSync && (
             <span>Cập nhật gần nhất: {formatDateTime(freshestSync)}</span>
           )}
@@ -420,138 +552,131 @@ const RegionalPriceSection: React.FC = () => {
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <div className="max-h-[480px] overflow-y-auto">
-            <table className="min-w-full divide-y divide-slate-100">
-              <thead className="bg-slate-50 sticky top-0 z-10">
+        <div className="mx-4 mt-3 overflow-x-auto rounded-xl border border-slate-100">
+          <div className="max-h-[560px] overflow-y-auto">
+            <table className="min-w-full border-separate border-spacing-0 text-sm">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                    Khu vực
+                  <th
+                    scope="col"
+                    className="sticky left-0 top-0 z-30 bg-slate-50 px-4 py-3 text-left text-xs font-semibold text-slate-600 border-b border-r border-slate-200 min-w-[220px]"
+                  >
+                    SKU
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                    Platform
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                    Giá
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                    Nguồn
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                    Đồng bộ lúc
-                  </th>
+                  {MARKET_TERRITORIES.map((market) => (
+                    <th
+                      key={market.label}
+                      scope="col"
+                      className="sticky top-0 z-20 bg-slate-50 px-4 py-3 text-right text-xs font-semibold text-slate-600 border-b border-slate-200 whitespace-nowrap min-w-[92px]"
+                    >
+                      <div>{market.label}</div>
+                      <div className="text-[10px] font-normal text-slate-400">
+                        {columnCurrency.get(market.label) ?? "—"}
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {loading ? (
+                {productsLoading || loading ? (
                   <tr>
-                    <td colSpan={5} className="py-10">
+                    <td colSpan={TOTAL_COLUMNS} className="py-10">
                       <div className="flex flex-col items-center justify-center text-slate-500 gap-3">
                         <span className="h-8 w-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
-                        Đang tải giá theo khu vực...
+                        Đang tải bảng giá theo khu vực...
                       </div>
                     </td>
                   </tr>
-                ) : !selectedProductId ? (
+                ) : productOptions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-10">
+                    <td colSpan={TOTAL_COLUMNS} className="py-10">
                       <div className="flex flex-col items-center justify-center text-slate-500 gap-2 text-center px-4">
                         <GlobeAltIcon className="h-10 w-10 text-slate-300" />
                         <p className="font-medium text-slate-700">
-                          {productOptions.length === 0 && !productsLoading
-                            ? "Chưa có sản phẩm nào để xem giá"
-                            : "Chọn một sản phẩm để xem giá theo khu vực"}
+                          Chưa có sản phẩm nào để xem giá
                         </p>
-                        {productOptions.length === 0 && !productsLoading && (
-                          <p className="text-sm text-slate-500">
-                            Thêm sản phẩm ở tab Product management trước.
-                          </p>
+                        <p className="text-sm text-slate-500">
+                          Thêm sản phẩm ở tab Product management trước.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : totalVisibleRows === 0 ? (
+                  <tr>
+                    <td colSpan={TOTAL_COLUMNS} className="py-10">
+                      <div className="flex flex-col items-center justify-center text-slate-500 gap-2 text-center px-4">
+                        <GlobeAltIcon className="h-10 w-10 text-slate-300" />
+                        <p className="font-medium text-slate-700">
+                          Không tìm thấy SKU phù hợp với bộ lọc hiện tại
+                        </p>
+                        <p className="text-sm text-slate-500 max-w-md">
+                          Kiểm tra lại bộ lọc sản phẩm/tìm kiếm, hoặc bộ lọc
+                          Platform nếu SKU chỉ tồn tại trên store còn lại.
+                        </p>
+                        {hasActiveRowFilters && (
+                          <button
+                            onClick={resetRowFilters}
+                            className="text-sm text-teal-700 underline underline-offset-2 hover:text-teal-800"
+                          >
+                            Xóa bộ lọc
+                          </button>
                         )}
                       </div>
                     </td>
                   </tr>
-                ) : prices.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-10">
-                      <div className="flex flex-col items-center justify-center text-slate-500 gap-2 text-center px-4">
-                        <GlobeAltIcon className="h-10 w-10 text-slate-300" />
-                        <p className="font-medium text-slate-700">
-                          Chưa có giá theo khu vực cho sản phẩm này
-                        </p>
-                        <p className="text-sm text-slate-500 max-w-md">
-                          {platformFilter === PaymentPlatform.GOOGLE
-                            ? "Có thể do chưa đồng bộ, hoặc do thiếu quyền Play Console Monetization (xem ghi chú phía trên) — nhấn Đồng bộ ngay để kiểm tra."
-                            : "Nhấn Đồng bộ ngay để lấy giá mới nhất từ store."}
-                        </p>
-                        <button
-                          onClick={handleSync}
-                          disabled={syncing}
-                          className="text-sm text-teal-700 underline underline-offset-2 hover:text-teal-800 disabled:opacity-60"
-                        >
-                          Đồng bộ ngay
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : filteredPrices.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-10">
-                      <div className="flex flex-col items-center justify-center text-slate-500 gap-2">
-                        <GlobeAltIcon className="h-10 w-10 text-slate-300" />
-                        <p className="font-medium text-slate-700">
-                          Không tìm thấy khu vực phù hợp với "{territorySearch}"
-                        </p>
-                        <button
-                          onClick={() => setTerritorySearch("")}
-                          className="text-sm text-teal-700 underline underline-offset-2 hover:text-teal-800"
-                        >
-                          Xóa tìm kiếm
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
                 ) : (
-                  filteredPrices.map((row) => {
-                    const PlatformIcon = platformIcons[row.platform];
-                    const platformTone = platformIconTone[row.platform];
-                    return (
-                      <tr
-                        key={`${row.platform}-${row.territory}`}
-                        className="hover:bg-slate-50/70"
-                      >
-                        <td className="px-4 py-3">
-                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700 font-semibold">
-                            {row.territory}
-                          </code>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                            <PlatformIcon className={`h-4 w-4 ${platformTone}`} />
-                            {platformLabels[row.platform]}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-slate-900">
-                          {formatRegionalPrice(row.customerPrice, row.currency)}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-slate-600">
-                          {row.source ? platformLabels[row.source] : "-"}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-slate-600">
-                          {formatDateTime(row.syncedAt)}
-                        </td>
-                      </tr>
-                    );
-                  })
+                  <>
+                    {visibleAppleOptions.length > 0 && (
+                      <React.Fragment>
+                        <tr className="bg-slate-100/70">
+                          <td
+                            colSpan={TOTAL_COLUMNS}
+                            className="px-4 py-2 text-xs font-semibold text-slate-600 border-y border-slate-200"
+                          >
+                            <span className="inline-flex items-center gap-2">
+                              <AppleSectionIcon
+                                className={`h-4 w-4 ${platformIconTone[PaymentPlatform.APPLE]}`}
+                              />
+                              Apple · {visibleAppleOptions.length} SKU
+                            </span>
+                          </td>
+                        </tr>
+                        {visibleAppleOptions.map((option) =>
+                          renderRow(option, PaymentPlatform.APPLE)
+                        )}
+                      </React.Fragment>
+                    )}
+                    {visibleGoogleOptions.length > 0 && (
+                      <React.Fragment>
+                        <tr className="bg-slate-100/70">
+                          <td
+                            colSpan={TOTAL_COLUMNS}
+                            className="px-4 py-2 text-xs font-semibold text-slate-600 border-y border-slate-200"
+                          >
+                            <span className="inline-flex items-center gap-2">
+                              <GoogleSectionIcon
+                                className={`h-4 w-4 ${platformIconTone[PaymentPlatform.GOOGLE]}`}
+                              />
+                              Google · {visibleGoogleOptions.length} SKU
+                            </span>
+                          </td>
+                        </tr>
+                        {visibleGoogleOptions.map((option) =>
+                          renderRow(option, PaymentPlatform.GOOGLE)
+                        )}
+                      </React.Fragment>
+                    )}
+                  </>
                 )}
               </tbody>
             </table>
           </div>
         </div>
 
-        {!loading && prices.length > 0 && platformFilter !== PaymentPlatform.APPLE && googleRowCount === 0 && (
-          <div className="mx-4 mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-center gap-2">
+        {showGoogleGapNotice && (
+          <div className="mx-4 mb-4 mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-center gap-2">
             <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
-            Không có dòng giá Google nào cho sản phẩm này — nhiều khả năng do
+            Không có dòng giá Google nào được đồng bộ — nhiều khả năng do
             thiếu quyền Play Console Monetization, không phải vì giá bằng 0.
           </div>
         )}
