@@ -24,6 +24,7 @@ import {
   AdjustmentsHorizontalIcon,
   BugAntIcon,
   ChatBubbleLeftRightIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -88,6 +89,7 @@ const menuGroups = [
     items: [
       { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
       { name: "Payment", icon: CreditCardIcon, path: "/payment" },
+      { name: "Paywall Config", icon: RocketLaunchIcon, path: "/paywall-config" },
       { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
       { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
     ],

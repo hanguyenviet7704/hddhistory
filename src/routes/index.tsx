@@ -44,6 +44,7 @@ import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
 import StudyThemeList from "../pages/study-themes/StudyThemeList";
 import OnboardingConfigPage from "../pages/onboarding-config/OnboardingConfigPage";
 import ResetOnboardingPage from "../pages/users/ResetOnboardingPage";
+import PaywallConfigPage from "../pages/paywall-config/PaywallConfigPage";
 
 export default function AppRouter() {
   return (
@@ -138,6 +139,7 @@ export default function AppRouter() {
               <Route path="statistics" element={<StatisticsPage />} />
 
               <Route path="payment" element={<PaymentDashboard />} />
+              <Route path="paywall-config" element={<PaywallConfigPage />} />
               <Route path="voiceover" element={<VoiceoverBatch />} />
               <Route
                 path="course-import-jobs/:jobId"

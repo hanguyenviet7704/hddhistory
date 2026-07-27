@@ -2,15 +2,22 @@ import React, { useState } from "react";
 import {
   CreditCardIcon,
   ChartPieIcon,
+  GlobeAltIcon,
   SparklesIcon,
   TicketIcon,
 } from "@heroicons/react/24/outline";
 import RevenueDashboard from "./components/RevenueDashboard";
 import SubscriptionSection from "./components/SubscriptionSection";
 import ProductSection from "./components/ProductSection";
+import RegionalPriceSection from "./components/RegionalPriceSection";
 import VoucherSection from "./components/VoucherSection";
 
-type TabKey = "dashboard" | "subscriptions" | "products" | "vouchers";
+type TabKey =
+  | "dashboard"
+  | "subscriptions"
+  | "products"
+  | "regionalPrices"
+  | "vouchers";
 
 const PaymentDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
@@ -30,6 +37,11 @@ const PaymentDashboard: React.FC = () => {
       key: "products",
       label: "Product management",
       description: "Quản lý SKU, giá và trạng thái hiển thị.",
+    },
+    {
+      key: "regionalPrices",
+      label: "Regional prices",
+      description: "Giá theo khu vực, đồng bộ từ App Store / Google Play.",
     },
     {
       key: "vouchers",
@@ -61,7 +73,7 @@ const PaymentDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -97,6 +109,9 @@ const PaymentDashboard: React.FC = () => {
                   {tab.key === "subscriptions" && (
                     <SparklesIcon className="h-5 w-5" />
                   )}
+                  {tab.key === "regionalPrices" && (
+                    <GlobeAltIcon className="h-5 w-5" />
+                  )}
                   {tab.key === "vouchers" && (
                     <TicketIcon className="h-5 w-5" />
                   )}
@@ -112,6 +127,8 @@ const PaymentDashboard: React.FC = () => {
           <SubscriptionSection />
         ) : activeTab === "products" ? (
           <ProductSection />
+        ) : activeTab === "regionalPrices" ? (
+          <RegionalPriceSection />
         ) : (
           <VoucherSection />
         )}
