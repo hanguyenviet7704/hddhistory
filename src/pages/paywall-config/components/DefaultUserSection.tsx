@@ -28,8 +28,8 @@ const DefaultUserSection: React.FC<DefaultUserSectionProps> = ({
 }) => {
   return (
     <SectionCard
-      title="Default user"
-      description="Shown to everyone who doesn't match the new-user window or an active sale event. Always required."
+      title="Người dùng mặc định"
+      description="Hiển thị cho mọi user không nằm trong cửa sổ người dùng mới và không có sự kiện sale nào đang chạy. Luôn bắt buộc."
       icon={UserIcon}
     >
       <LocaleContentEditor

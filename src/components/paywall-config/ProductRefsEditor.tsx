@@ -67,7 +67,7 @@ const PlatformSelect: React.FC<{
         <span className="text-[11px] text-red-600 flex items-center gap-1">
           <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0" />
           SKU này không tồn tại hoặc đã inactive trong iap_products - chọn lại
-          trước khi publish.
+          trước khi đăng.
         </span>
       )}
       {error && (
@@ -151,7 +151,7 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
       )}
 
       {value.length === 0 ? (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-500">
           Chưa có sản phẩm nào được gán cho mục này.
         </p>
       ) : (
@@ -162,7 +162,7 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
               <div key={row._localId} className="rounded-lg border border-slate-200 p-2.5">
                 <div className="flex items-start gap-2">
                   <PlatformSelect
-                    label="Apple product"
+                    label="Sản phẩm Apple"
                     value={row.appleProductId ?? ""}
                     options={appleOptions}
                     loading={productsLoading}
@@ -171,7 +171,7 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
                     onChange={(v) => updateRow(index, { appleProductId: v })}
                   />
                   <PlatformSelect
-                    label="Google product"
+                    label="Sản phẩm Google"
                     value={row.googleProductId ?? ""}
                     options={googleOptions}
                     loading={productsLoading}

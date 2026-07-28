@@ -49,28 +49,28 @@ const ImpressionRuleCard: React.FC<ImpressionRuleCardProps> = ({
   ).length;
 
   return (
-    <div className="rounded-xl border border-slate-200">
-      <div className="flex items-center justify-between gap-2 p-3">
+    <div className="rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-center justify-between gap-2 p-3 hover:bg-slate-50/60 rounded-xl transition-colors">
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="flex flex-1 items-center gap-2 text-left"
+          className="flex flex-1 items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 rounded"
           aria-expanded={expanded}
         >
           {expanded ? (
-            <ChevronUpIcon className="h-4 w-4 text-slate-400 flex-shrink-0" />
+            <ChevronUpIcon className="h-4 w-4 text-slate-500 flex-shrink-0" />
           ) : (
-            <ChevronDownIcon className="h-4 w-4 text-slate-400 flex-shrink-0" />
+            <ChevronDownIcon className="h-4 w-4 text-slate-500 flex-shrink-0" />
           )}
           <span className="text-sm font-medium text-slate-800">
             Rule {index + 1}
-            {value.fromImpression && ` · from impression ${value.fromImpression}`}
+            {value.fromImpression && ` · từ impression thứ ${value.fromImpression}`}
           </span>
-          <span className="text-xs text-slate-400">{productCount} product(s)</span>
+          <span className="text-xs text-slate-500">{productCount} sản phẩm</span>
           {rowErrors.length > 0 && (
             <span className="inline-flex items-center gap-1 text-xs text-red-600">
               <ExclamationTriangleIcon className="h-3.5 w-3.5" />
-              {rowErrors.length} issue(s)
+              {rowErrors.length} lỗi
             </span>
           )}
         </button>
@@ -78,8 +78,8 @@ const ImpressionRuleCard: React.FC<ImpressionRuleCardProps> = ({
           type="button"
           onClick={onRemove}
           disabled={disabled}
-          aria-label={`Remove rule ${index + 1}`}
-          title="Remove rule"
+          aria-label={`Xóa rule ${index + 1}`}
+          title="Xóa rule"
           className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
         >
           <TrashIcon className="h-4 w-4" />
@@ -88,8 +88,8 @@ const ImpressionRuleCard: React.FC<ImpressionRuleCardProps> = ({
 
       {expanded && (
         <div className="border-t border-slate-100 p-3 space-y-3">
-          <label className="flex flex-col gap-1 text-xs text-slate-600 max-w-[180px]">
-            <span className="font-medium">From impression</span>
+          <label className="flex flex-col gap-1 text-xs text-slate-700 max-w-[180px]">
+            <span className="font-medium">Từ impression thứ</span>
             <input
               type="number"
               min={1}
@@ -102,8 +102,8 @@ const ImpressionRuleCard: React.FC<ImpressionRuleCardProps> = ({
                 fieldErrors[`${prefix}.fromImpression`] ? "border-red-300" : "border-slate-200"
               }`}
             />
-            <span className="text-[11px] text-slate-400">
-              Paywall impression count this rule starts applying from.
+            <span className="text-[11px] text-slate-500">
+              Số lần hiển thị paywall mà từ đó rule này bắt đầu áp dụng.
             </span>
             {fieldErrors[`${prefix}.fromImpression`] && (
               <span className="text-[11px] text-red-600">

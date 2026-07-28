@@ -382,17 +382,17 @@ const validateProductRefRow = (
   const google = ref.googleProductId?.trim();
 
   if (!apple && !google) {
-    errors[field] = `${field} must set appleProductId and/or googleProductId`;
+    errors[field] = `${field}: phải có appleProductId và/hoặc googleProductId`;
     return;
   }
 
   if (!productsByPlatform) return; // catalog still loading -- skip existence check
 
   if (apple && !productsByPlatform.apple.some((p) => p.productId === apple)) {
-    errors[`${field}.appleProductId`] = `product "${apple}" (apple) does not exist or is not active in iap_products`;
+    errors[`${field}.appleProductId`] = `Sản phẩm "${apple}" (apple) không tồn tại hoặc không active trong iap_products`;
   }
   if (google && !productsByPlatform.google.some((p) => p.productId === google)) {
-    errors[`${field}.googleProductId`] = `product "${google}" (google) does not exist or is not active in iap_products`;
+    errors[`${field}.googleProductId`] = `Sản phẩm "${google}" (google) không tồn tại hoặc không active trong iap_products`;
   }
 };
 
@@ -403,7 +403,7 @@ const validateProductsNonEmpty = (
   errors: Record<string, string>
 ) => {
   if (!products.length) {
-    errors[field] = `${field} must be a non-empty array`;
+    errors[field] = `${field}: phải có ít nhất 1 sản phẩm`;
     return;
   }
   products.forEach((ref, index) =>
@@ -418,7 +418,7 @@ export const validateDraft = (
   const errors: Record<string, string> = {};
 
   if (!draft.schemaVersion.trim() || Number(draft.schemaVersion) < 1) {
-    errors.schemaVersion = "schemaVersion is required and must be >= 1";
+    errors.schemaVersion = "schemaVersion là bắt buộc và phải >= 1";
   }
 
   const percent = Number(draft.autoOpenPercent);
@@ -429,21 +429,21 @@ export const validateDraft = (
     percent > 100
   ) {
     errors["autoOpen.sessionRolloutPercent"] =
-      "autoOpen.sessionRolloutPercent is required and must be a number between 0 and 100";
+      "autoOpen.sessionRolloutPercent là bắt buộc và phải là số từ 0 đến 100";
   }
 
   if (draft.lessonLockText.trim()) {
     try {
       JSON.parse(draft.lessonLockText);
     } catch {
-      errors.lessonLock = "lessonLock must be valid JSON";
+      errors.lessonLock = "lessonLock phải là JSON hợp lệ";
     }
   }
 
   // defaultUser
   if (isLocalizedContentEmpty(draft.defaultUser.content)) {
     errors["saleStrategy.defaultUser.content"] =
-      "saleStrategy.defaultUser.content is required";
+      "saleStrategy.defaultUser.content là bắt buộc";
   }
   validateProductsNonEmpty(
     draft.defaultUser.products,
@@ -455,7 +455,7 @@ export const validateDraft = (
   // newUser
   if (draft.newUser.enabled && draft.newUser.impressionRules.length === 0) {
     errors["saleStrategy.newUser.impressionRules"] =
-      "saleStrategy.newUser.impressionRules must have at least one rule when newUser is enabled";
+      "saleStrategy.newUser.impressionRules: phải có ít nhất 1 rule khi bật người dùng mới";
   }
   draft.newUser.impressionRules.forEach((rule, index) => {
     const prefix = `saleStrategy.newUser.impressionRules[${index}]`;
@@ -465,10 +465,10 @@ export const validateDraft = (
       !Number.isInteger(fromImpression) ||
       fromImpression < 1
     ) {
-      errors[`${prefix}.fromImpression`] = `${prefix}.fromImpression must be an integer >= 1`;
+      errors[`${prefix}.fromImpression`] = `${prefix}.fromImpression phải là số nguyên >= 1`;
     }
     if (isLocalizedContentEmpty(rule.content)) {
-      errors[`${prefix}.content`] = `${prefix}.content is required`;
+      errors[`${prefix}.content`] = `${prefix}.content là bắt buộc`;
     }
     validateProductsNonEmpty(
       rule.products,

@@ -51,20 +51,20 @@ const NewUserSection: React.FC<NewUserSectionProps> = ({
 
   return (
     <SectionCard
-      title="New user"
-      description="Shown to users still inside their new-user window, with copy/products that escalate by impression count."
+      title="Người dùng mới"
+      description="Hiển thị cho user còn trong cửa sổ 'người dùng mới', với nội dung/sản phẩm tăng dần theo số lần hiển thị (impression)."
       icon={SparklesIcon}
       headerRight={
         <ToggleSwitch
           checked={value.enabled}
           onChange={(enabled) => onChange({ ...value, enabled })}
-          label="Enabled"
+          label="Bật"
           disabled={disabled}
         />
       }
     >
-      <label className="flex flex-col gap-1 text-xs text-slate-600 max-w-[180px]">
-        <span className="font-medium">Window (days)</span>
+      <label className="flex flex-col gap-1 text-xs text-slate-700 max-w-[180px]">
+        <span className="font-medium">Cửa sổ (số ngày)</span>
         <input
           type="number"
           min={0}
@@ -75,15 +75,15 @@ const NewUserSection: React.FC<NewUserSectionProps> = ({
           placeholder="7"
           className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
         />
-        <span className="text-[11px] text-slate-400">
-          How many days after signup a user still counts as "new". Leave blank
-          for no time limit.
+        <span className="text-[11px] text-slate-500">
+          Số ngày sau khi đăng ký mà user vẫn được tính là "mới". Để trống nếu
+          không giới hạn thời gian.
         </span>
       </label>
 
       <div>
-        <p className="text-xs font-medium text-slate-600 mb-1.5">
-          Default content for this strategy (optional)
+        <p className="text-xs font-medium text-slate-700 mb-1.5">
+          Nội dung mặc định cho nhóm này (không bắt buộc)
         </p>
         <LocaleContentEditor
           idPrefix="new-user"
@@ -93,10 +93,10 @@ const NewUserSection: React.FC<NewUserSectionProps> = ({
         />
       </div>
 
-      <div className="space-y-2 pt-1 border-t border-slate-100">
-        <div className="flex items-center justify-between pt-3">
-          <p className="text-xs font-medium text-slate-600">
-            Impression rules
+      <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/40 p-3.5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-slate-700">
+            Quy tắc theo impression
             {value.enabled && <span className="text-red-500 ml-0.5">*</span>}
           </p>
         </div>
@@ -109,8 +109,8 @@ const NewUserSection: React.FC<NewUserSectionProps> = ({
         )}
 
         {value.impressionRules.length === 0 ? (
-          <p className="text-xs text-slate-400">
-            No impression rules yet - required if "New user" is enabled.
+          <p className="text-xs text-slate-500">
+            Chưa có rule nào - bắt buộc nếu bật "Người dùng mới".
           </p>
         ) : (
           <div className="space-y-2">
