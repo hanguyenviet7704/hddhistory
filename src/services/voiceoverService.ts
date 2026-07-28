@@ -44,9 +44,11 @@ export const voiceoverService = {
 
   // Kick off a background job over every course. force=false only (re)dubs
   // missing/stale/failed cells; force=true regenerates everything.
-  async generateAll(force: boolean) {
+  async generateAll(force: boolean, voice?: VoiceoverVoice) {
     const res = await axiosClient.post(
-      `/voiceover/generate-all?force=${force}`
+      `/voiceover/generate-all?force=${force}`,
+      undefined,
+      { params: voice ? { voice } : undefined }
     );
     return res.data;
   },
