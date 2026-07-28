@@ -8,6 +8,7 @@ import {
   voiceoverService,
   CourseVoiceoverStatus,
   VoiceoverCellStatus,
+  VoiceoverVoice,
 } from "../../services/voiceoverService";
 
 interface Props {
@@ -114,11 +115,16 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     }
   }, [running, job, showSuccess, showError]);
 
+  // Narrator for the next generation run. Google Chirp3-HD ships a male and a
+  // female voice per locale; the backend persists whichever was used on each
+  // keypoint, so leaving this alone re-dubs with the same narrator as before.
+  const [voice, setVoice] = useState<VoiceoverVoice>("female");
+
   const handleGenerate = async () => {
     if (running || starting) return;
     setStarting(true);
     try {
-      await voiceoverService.generateForCourse(courseId);
+      await voiceoverService.generateForCourse(courseId, voice);
       showSuccess("Đã bắt đầu sinh voiceover ở nền…");
       await load(); // picks up the running job → auto-poll kicks in
     } catch (err) {
@@ -137,7 +143,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     if (retrying.has(keypointId) || running) return;
     setRetrying((prev) => new Set(prev).add(keypointId));
     try {
-      await voiceoverService.generateForKeypoint(keypointId);
+      await voiceoverService.generateForKeypoint(keypointId, voice);
       await load();
     } catch (err) {
       showError(
@@ -172,6 +178,19 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             <p className="text-sm text-gray-500 truncate max-w-lg">{courseTitle}</p>
           </div>
           <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <span className="text-gray-500">Voice</span>
+              <select
+                value={voice}
+                onChange={(e) => setVoice(e.target.value as VoiceoverVoice)}
+                disabled={running || starting}
+                className="rounded-lg border border-gray-300 px-2 py-2 text-sm font-medium text-gray-700 disabled:opacity-60"
+                aria-label="Narrator voice"
+              >
+                <option value="female">Nữ</option>
+                <option value="male">Nam</option>
+              </select>
+            </label>
             <button
               onClick={load}
               disabled={loading}
