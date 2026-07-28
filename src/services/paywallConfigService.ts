@@ -1,19 +1,30 @@
-import { PaywallEnvironment } from "../types/enum/paywall-config.enum";
 import { PaywallConfig } from "../types/interface/paywall-config.interface";
 import axiosClient from "./axiosClient";
 
+// MySQL is now the source of truth for `paywall_config` -- there is no
+// `environment` query param anymore. Each deployment's API only ever reads
+// and writes its own database, so "dev" vs "prod" is the deployment itself,
+// not something this client can (or needs to) switch between.
 export const paywallConfigService = {
-  async getConfig(environment: PaywallEnvironment) {
-    const res = await axiosClient.get("/paywall-config", {
-      params: { environment },
-    });
+  async getConfig() {
+    const res = await axiosClient.get("/paywall-config");
     return res.data;
   },
 
-  async updateConfig(environment: PaywallEnvironment, payload: PaywallConfig) {
-    const res = await axiosClient.put("/paywall-config", payload, {
-      params: { environment },
-    });
+  async updateConfig(payload: PaywallConfig) {
+    const res = await axiosClient.put("/paywall-config", payload);
+    return res.data;
+  },
+
+  /** Full version history, newest first, for the version-history panel. */
+  async getVersions() {
+    const res = await axiosClient.get("/paywall-config/versions");
+    return res.data;
+  },
+
+  /** Re-validates and republishes an earlier version as a new, later one. */
+  async restoreVersion(version: number) {
+    const res = await axiosClient.post(`/paywall-config/restore/${version}`);
     return res.data;
   },
 };

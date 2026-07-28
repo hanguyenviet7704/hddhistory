@@ -17,6 +17,7 @@ import {
   CourseVoiceoverSummary,
   GlobalVoiceoverStatus,
   VoiceoverCellStatus,
+  VoiceoverVoice,
 } from "../../services/voiceoverService";
 
 // Stat cards mirror VoiceoverStatusModal's SUMMARY, plus a Total tile since
@@ -137,11 +138,17 @@ export default function VoiceoverBatch() {
     load();
   };
 
+  // Narrator applied to every run started from this page (batch, force, or a
+  // single course row). The backend remembers the narrator per keypoint, so a
+  // "dub what's missing" run at the default still leaves already-dubbed
+  // keypoints on the voice they were made with.
+  const [voice, setVoice] = useState<VoiceoverVoice>("female");
+
   const handleGenerateNeeded = async () => {
     if (running || starting) return;
     setStarting("needed");
     try {
-      await voiceoverService.generateAll(false);
+      await voiceoverService.generateAll(false, voice);
       showSuccess("Đã bắt đầu dub những bài còn thiếu ở nền…");
       await load();
     } catch (err: any) {
@@ -158,7 +165,7 @@ export default function VoiceoverBatch() {
     setConfirmForce(false);
     setStarting("force");
     try {
-      await voiceoverService.generateAll(true);
+      await voiceoverService.generateAll(true, voice);
       showSuccess("Đã bắt đầu force dub lại toàn bộ ở nền…");
       await load();
     } catch (err: any) {
@@ -174,7 +181,7 @@ export default function VoiceoverBatch() {
     if (running || rowDubbing.has(course.courseId)) return;
     setRowDubbing((prev) => new Set(prev).add(course.courseId));
     try {
-      await voiceoverService.generateForCourse(course.courseId);
+      await voiceoverService.generateForCourse(course.courseId, voice);
       showSuccess(
         `Đã bắt đầu dub cho "${getTranslationValue(course.title, lang) || course.courseId}"`
       );
@@ -241,6 +248,19 @@ export default function VoiceoverBatch() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <span className="text-slate-500">Giọng</span>
+              <select
+                value={voice}
+                onChange={(e) => setVoice(e.target.value as VoiceoverVoice)}
+                disabled={running || starting !== null}
+                className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm font-medium text-slate-700 shadow-sm disabled:opacity-60"
+                aria-label="Giọng đọc"
+              >
+                <option value="female">Nữ</option>
+                <option value="male">Nam</option>
+              </select>
+            </label>
             <button
               type="button"
               onClick={handleScan}
