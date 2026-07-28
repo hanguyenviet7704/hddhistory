@@ -246,7 +246,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     AppGlobalValue.accessToken = '';
     AppGlobalValue.refreshToken = '';
     _resetAppCubits();
-    RegisterRoute().go(AppConfig.instance.context!);
+    // Only leave the current screen when the session died on an AUTHENTICATED
+    // one. Re-going to RegisterRoute from a pre-auth screen replaces it with a
+    // fresh instance (restarting the register screen's mount-time bootstrap),
+    // and a 401 burst re-fires this reset every ~2s — that remount loop is what
+    // made the welcome screen permanently untappable after a reinstall.
+    final context = AppConfig.instance.context;
+    if (context == null) return;
+    if (shouldForceRegisterNavigationAfterReset(_pageCubit.state.currentRouteName)) {
+      RegisterRoute().go(context);
+    }
   }
 
   void _resetAppCubits() {

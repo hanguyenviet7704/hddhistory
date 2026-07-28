@@ -10,6 +10,11 @@ class ChangeBackgroundSheet extends StatelessWidget {
   static Future<void> show(BuildContext context, {required String source}) {
     // Fire once per sheet open (the sheet body is stateless / rebuilds).
     StudyThemeTracking.track(TrackingKey.themeChangeScrView, parameters: {'source': source});
+    // Recover a catalogue that never landed — the cubit's constructor fetch can
+    // run before the auth token exists, and that failure was never retried, so
+    // the sheet used to open on its empty state until the user tapped Reload.
+    // No-op when the catalogue is already loaded (see ensureCatalogLoaded).
+    unawaited(AppDI.injector.get<StudyThemeCubit>().ensureCatalogLoaded());
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,

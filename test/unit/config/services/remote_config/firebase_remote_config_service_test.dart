@@ -29,14 +29,17 @@ void main() {
       await service.initialize();
 
       expect(remoteConfigPlatform.settings.fetchTimeout, const Duration(seconds: 10));
-      expect(remoteConfigPlatform.settings.minimumFetchInterval, Duration.zero);
+      // Cached config is served instantly and only refetched after this window,
+      // instead of a live fetch on every launch. Note the trade-off: a Remote
+      // Config change can take up to this long to reach an already-installed app.
+      expect(remoteConfigPlatform.settings.minimumFetchInterval, const Duration(minutes: 30));
     });
 
     test('waits for fetchAndActivate instead of timing out through an app-side startup timer', () async {
       final service = FirebaseRemoteConfigService(_FakePackageInfoService());
       var completed = false;
 
-      final shouldForceUpdate = service.shouldForceUpdate().whenComplete(() {
+      final updateAvailable = service.updateAvailable().whenComplete(() {
         completed = true;
       });
 
@@ -44,8 +47,62 @@ void main() {
 
       expect(completed, isFalse);
       remoteConfigPlatform.completeFetchAndActivate(false);
-      await shouldForceUpdate;
+      await updateAvailable;
       expect(completed, isTrue);
+    });
+  });
+
+  group('shouldShowUpdateBanner', () {
+    bool older(String _) => true;
+    bool upToDate(String _) => false;
+
+    test('shows the banner when the installed version is older than the platform latest', () {
+      const config = AppVersionConfigEntity(latestIosVersion: '2.0.0', latestAndroidVersion: '2.0.0');
+
+      expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: older), isTrue);
+    });
+
+    test('STILL shows the banner when forceUserUpdate is set', () {
+      // The blocking splash dialog was removed, so the Home banner is the ONLY
+      // update surface: a forced config must not suppress it (it used to).
+      const config = AppVersionConfigEntity(
+        forceUserUpdate: true,
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '2.0.0',
+      );
+
+      expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: older), isTrue);
+    });
+
+    test('reads the version for the running platform', () {
+      const config = AppVersionConfigEntity(latestIosVersion: '2.0.0', latestAndroidVersion: '');
+
+      // Android has no latest version configured → nothing to offer there.
+      expect(shouldShowUpdateBanner(config, isIOS: false, isInstalledOlderThan: older), isFalse);
+      expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: older), isTrue);
+    });
+
+    test('hides the banner when the installed version is already up to date', () {
+      const config = AppVersionConfigEntity(latestIosVersion: '2.0.0', latestAndroidVersion: '2.0.0');
+
+      expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: upToDate), isFalse);
+    });
+
+    test('never compares versions when the platform latest is blank', () {
+      const config = AppVersionConfigEntity(latestIosVersion: '   ', latestAndroidVersion: '   ');
+      var compared = false;
+
+      final result = shouldShowUpdateBanner(
+        config,
+        isIOS: true,
+        isInstalledOlderThan: (_) {
+          compared = true;
+          return true;
+        },
+      );
+
+      expect(result, isFalse);
+      expect(compared, isFalse);
     });
   });
 }

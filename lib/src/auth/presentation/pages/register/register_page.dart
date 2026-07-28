@@ -8,6 +8,21 @@ bool shouldBootstrapRegisterGuestSession({
   return accessToken.isEmpty && bootstrapFuture == null;
 }
 
+/// Whether the auth buttons should stop accepting taps.
+///
+/// Deliberately IGNORES the mount-time guest bootstrap: that bootstrap renders
+/// no spinner, so gating on it produced a welcome screen that looked fully
+/// interactive but swallowed every tap for as long as the bootstrap ran — and
+/// forever if it never completed. Tapping a button while it's still running is
+/// safe: [_handleGuestLogin] awaits the very same bootstrap future, and the
+/// tapped button shows its own spinner via [hasActiveAuthMethod].
+bool shouldBlockRegisterAuthButtons({
+  required bool isBootstrapInProgress,
+  required bool hasActiveAuthMethod,
+}) {
+  return hasActiveAuthMethod;
+}
+
 @visibleForTesting
 AuthEvent buildGuestRegisterAuthEvent({
   required bool forceChooseCourseAfterLogin,
@@ -212,12 +227,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         builder: (context, isBootstrapInProgress, _) => ValueListenableBuilder<_AuthMethod?>(
                           valueListenable: _activeAuthMethod,
                           builder: (context, activeMethod, _) => IgnorePointer(
-                            // Silent during the mount-time bootstrap (no button
-                            // has been tapped yet, so there's nothing to show a
-                            // spinner on); once a button IS tapped, the button
-                            // itself renders the spinner (see isLoading below)
-                            // instead of this IgnorePointer masking a static look.
-                            ignoring: isBootstrapInProgress || activeMethod != null,
+                            // Only a tapped button blocks input (it renders its
+                            // own spinner, see isLoading below). The silent
+                            // mount-time bootstrap must NOT block — see
+                            // shouldBlockRegisterAuthButtons.
+                            ignoring: shouldBlockRegisterAuthButtons(
+                              isBootstrapInProgress: isBootstrapInProgress,
+                              hasActiveAuthMethod: activeMethod != null,
+                            ),
                             child: Column(
                               children: [
                                 if (Platform.isIOS) ...[

@@ -8,11 +8,8 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  late final Future<bool> _shouldForceUpdate;
-
   @override
   void initState() {
-    _shouldForceUpdate = _resolveShouldForceUpdate();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
@@ -45,15 +42,6 @@ class _SplashPageState extends State<SplashPage> {
     context.read<UserCubit>().setIsAppEventConfigured(false);
   }
 
-  Future<bool> _resolveShouldForceUpdate() async {
-    try {
-      return await AppService.instance.remoteConfigService.shouldForceUpdate();
-    } catch (e) {
-      LogDev.error('Error checking for update: $e');
-      return false;
-    }
-  }
-
   void _getAppData() {
     final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
     if (onboardingConfig.isEnabled) {
@@ -81,19 +69,9 @@ class _SplashPageState extends State<SplashPage> {
     try {
       if (!mounted) return;
       final splashDelay = Future<void>.delayed(const Duration(milliseconds: 300));
-      // Never let a slow/offline Remote Config fetch stall app entry. Cap the
-      // force-update gate at 1.5s; on timeout treat it as "no forced update"
-      // (the fetch still finishes in the background and is caught next launch).
-      final shouldUpdate = await _shouldForceUpdate.timeout(
-        const Duration(milliseconds: 1500),
-        onTimeout: () => false,
-      );
-      if (!mounted) return;
-      if (shouldUpdate) {
-        _showUpdateDialog();
-        return;
-      }
-
+      // No update gate here: updates are surfaced only by the Home banner
+      // (see HomeCubit.checkOptionalUpdate), so the splash never blocks entry
+      // and never waits on Remote Config.
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
       if (!mounted) return;
@@ -235,28 +213,6 @@ class _SplashPageState extends State<SplashPage> {
 
   void _goToRegister({required bool showPaywallAfterAuth}) {
     NotificationRequestRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
-  }
-
-  void _handleUpdatePressed() async {
-    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateConfirm);
-    try {
-      final String appStoreUrl = Platform.isIOS ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' : 'https://play.google.com/store/apps/details?id=com.eup.meup';
-
-      appStoreUrl.launchURL();
-    } catch (e) {
-      LogDev.error('Error launching app store: $e');
-    }
-  }
-
-  void _showUpdateDialog() {
-    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateView);
-    showDDialog(
-      context,
-      backgroundColor: Colors.transparent,
-      dialogContent: ForceUpdateContent(
-        onUpdatePressed: _handleUpdatePressed,
-      ),
-    );
   }
 
   @override

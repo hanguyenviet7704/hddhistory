@@ -93,9 +93,15 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
   /// recap), so this stays a no-op cost on most Home opens.
   Future<void> _maybeOpenWeeklyRecap() async {
     final habitCubit = AppDI.injector.get<HabitCubit>();
-    // Make sure habits are loaded before reading activeHabits (cold start:
-    // this runs after the paywall/warm-up gates, but the habit fetch kicked
-    // off in initState may not have landed yet).
+    // Already know there's nothing to recap → don't await anything. Without this
+    // an account with no active habits still blocked here on a habit fetch whose
+    // result is guaranteed to fail the check on the next line (and once the
+    // in-memory data goes stale, ensureLoaded() awaits a full round-trip to
+    // revalidate a screen this method won't use).
+    if (habitCubit.state.status == HabitPageStatus.success && habitCubit.state.activeHabits.isEmpty) return;
+    // Otherwise make sure habits are loaded before reading activeHabits (cold
+    // start: this runs after the paywall/warm-up gates, but the habit fetch
+    // kicked off in initState may not have landed yet).
     await habitCubit.ensureLoaded();
     if (!mounted || habitCubit.state.activeHabits.isEmpty) return;
     await habitCubit.loadSummary();

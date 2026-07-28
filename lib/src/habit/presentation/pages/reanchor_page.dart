@@ -104,7 +104,11 @@ class _ReanchorPageState extends State<ReanchorPage> {
                     context.l10n.habit.adoptHeaderLabel,
                     textAlign: TextAlign.center,
                     style: AppStyle.text12.copyWith(
-                      color: AppCustomColor.streakActive,
+                      // Deep brand purple sinks into a dark custom background —
+                      // lift it to light lavender there so the eyebrow stays
+                      // legible (matches the title's studyThemeOnBg + the adopt
+                      // page eyebrow).
+                      color: studyThemeAccentOnBg(context, AppCustomColor.streakActive),
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
                     ),

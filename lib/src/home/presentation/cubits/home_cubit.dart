@@ -232,7 +232,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   /// on Home init; no-op emit when nothing changes.
   Future<void> checkOptionalUpdate() async {
     try {
-      final available = await AppService.instance.remoteConfigService.optionalUpdateAvailable();
+      final available = await AppService.instance.remoteConfigService.updateAvailable();
       if (available && !state.showUpdateBanner) {
         emit(state.copyWith(showUpdateBanner: true));
       }

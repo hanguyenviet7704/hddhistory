@@ -169,14 +169,39 @@ class _LiveBackgroundLayer extends StatefulWidget {
 /// single decode. Each mount owning its own controller meant two decoders of
 /// the same clip ran at once (flicker) and each covering page re-initialised on
 /// entry (a dark "Applying theme…" flash on every navigation into it).
-class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> {
+class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> with SingleTickerProviderStateMixin {
   final _LiveBackground _bg = _LiveBackground.instance;
+
+  // Drives the per-frame repaint that keeps the Android video background moving
+  // (see [_motionOverlay]). Created STOPPED and only run once the video is
+  // actually playing — never during warm-up: a 60fps rebuild loop on a slower
+  // device competes with the platform-channel callbacks that complete
+  // VideoPlayerController.initialize(), which could leave the theme stuck on
+  // "Applying theme…". Gated on [_LiveBackground.isReady] via [_syncPump].
+  late final AnimationController _repaintPump = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 1),
+  );
+  bool _overlayFlip = false;
 
   @override
   void initState() {
     super.initState();
     _bg.retain();
+    _bg.addListener(_syncPump);
     _bg.sync(widget.preset, soundOn: widget.soundOn);
+  }
+
+  /// Run the repaint pump only while the video is ready+playing; stop it during
+  /// warm-up/failure so it can't starve initialization or burn frames on a
+  /// static poster.
+  void _syncPump() {
+    if (!mounted) return;
+    if (_bg.isReady) {
+      if (!_repaintPump.isAnimating) _repaintPump.repeat();
+    } else if (_repaintPump.isAnimating) {
+      _repaintPump.stop();
+    }
   }
 
   @override
@@ -189,6 +214,8 @@ class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> {
 
   @override
   void dispose() {
+    _bg.removeListener(_syncPump);
+    _repaintPump.dispose();
     _bg.release();
     super.dispose();
   }
@@ -200,39 +227,122 @@ class _LiveBackgroundLayerState extends State<_LiveBackgroundLayer> {
       builder: (context, _) {
         final video = _bg.video;
         if (_bg.isReady && video != null) {
-          return FittedBox(
-            fit: BoxFit.cover,
-            clipBehavior: Clip.hardEdge,
-            child: SizedBox(
-              width: video.value.size.width,
-              height: video.value.size.height,
-              child: VideoPlayer(video),
-            ),
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              FittedBox(
+                fit: BoxFit.cover,
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  width: video.value.size.width,
+                  height: video.value.size.height,
+                  child: VideoPlayer(video),
+                ),
+              ),
+              _motionOverlay(),
+            ],
           );
         }
-        // Warming up (or no/failed video): dark fill + "Applying theme…" (item 5).
-        return ColoredBox(
-          color: const Color(0xFF141733),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
-                ),
-                12.verticalSpace,
-                AppText(
-                  context.l10n.studyTheme.applyingTheme,
-                  style: AppStyle.text14.copyWith(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-        );
+        return _warmUp(context);
       },
     );
+  }
+
+  /// The Android "no motion" fix. video_player draws the background through an
+  /// external texture but — unlike iOS's AVFoundation path — does NOT invalidate
+  /// the Flutter scene when the decoder produces a new frame. So on an otherwise
+  /// idle screen the engine stops compositing and the video freezes on its last
+  /// frame while the decoder (and the separate ambient audio) keep running. Any
+  /// real repaint of the background region re-composites the scene and re-samples
+  /// the live texture — proven on device: the video animates the instant a scroll
+  /// or spinner drives repaints, and freezes otherwise. This full-bleed overlay
+  /// flips an imperceptible alpha (0↔1/255 ≈ 0.4% black) every vsync, forcing
+  /// exactly that repaint so the background animates like iOS. It shares the
+  /// video's repaint boundary (a plain [Stack]) so repainting it repaints the
+  /// video texture too. [IgnorePointer] keeps it inert to touches.
+  Widget _motionOverlay() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _repaintPump,
+          builder: (context, _) {
+            _overlayFlip = !_overlayFlip;
+            return ColoredBox(color: Color.fromARGB(_overlayFlip ? 1 : 0, 0, 0, 0));
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Shown until the video is ready — and kept if it ultimately fails/times out,
+  /// so a slow or dead network degrades to the theme's poster (or its gradient)
+  /// instead of an endless "Applying theme…" spinner.
+  Widget _warmUp(BuildContext context) {
+    final poster = _posterProvider(widget.preset);
+    if (poster != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image(image: poster, fit: BoxFit.cover),
+          if (!_bg.hasFailed)
+            const Center(
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              ),
+            ),
+        ],
+      );
+    }
+    if (_bg.hasFailed) {
+      // No poster to fall back on: settle on the preset's own gradient rather
+      // than a stuck spinner.
+      final colors = widget.preset.gradient;
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: colors.length >= 2
+                ? colors
+                : (colors.length == 1
+                    ? [colors.first, colors.first]
+                    : const [Color(0xFF1B1E3B), Color(0xFF141733)]),
+          ),
+        ),
+      );
+    }
+    return ColoredBox(
+      color: const Color(0xFF141733),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+            ),
+            12.verticalSpace,
+            AppText(
+              context.l10n.studyTheme.applyingTheme,
+              style: AppStyle.text14.copyWith(color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// A static poster for the warm-up/failed state: the video preset's own
+  /// thumbnail (remote thumbUrl → bundled thumbAsset → image fields).
+  ImageProvider? _posterProvider(StudyThemePreset preset) {
+    final thumbUrl = preset.thumbUrl ?? preset.imageUrl;
+    if (thumbUrl != null && thumbUrl.trim().isNotEmpty) return CachedNetworkImageProvider(thumbUrl);
+    final thumbAsset = preset.thumbAsset ?? preset.imageAsset;
+    if (thumbAsset != null) return AssetImage(thumbAsset);
+    return null;
   }
 }
 
@@ -257,12 +367,17 @@ class _LiveBackground extends ChangeNotifier with WidgetsBindingObserver {
   StreamSubscription<ja.ProcessingState>? _audioLoopSub;
   bool _audioLoaded = false;
   bool _ready = false;
+  bool _failed = false;
   bool _soundOn = false;
   int _mounts = 0;
   bool _observing = false;
 
   VideoPlayerController? get video => _video;
   bool get isReady => _ready && (_video?.value.isInitialized ?? false);
+
+  /// True once the video load has given up (download/init error or timeout), so
+  /// the layer can settle on a poster/gradient instead of a forever spinner.
+  bool get hasFailed => _failed;
 
   void retain() => _mounts++;
 
@@ -290,6 +405,7 @@ class _LiveBackground extends ChangeNotifier with WidgetsBindingObserver {
     _preset = preset;
     _disposePlayers(); // drop the previous preset's players
     _ready = false;
+    _failed = false;
     _start();
   }
 
@@ -300,9 +416,15 @@ class _LiveBackground extends ChangeNotifier with WidgetsBindingObserver {
     // same order as the image mode's _imageProvider).
     final asset = preset.videoAsset;
     final url = preset.videoUrl;
+    // The background video is muted, so it must NOT contest the Android audio
+    // focus: with the default (mixWithOthers: false) its ExoPlayer registers a
+    // focus handler, and the moment the ambient just_audio track (or any other
+    // app) takes focus the video is silently paused — a frozen background with
+    // the ambience still playing. iOS never exhibited this (no focus contest).
+    final opts = VideoPlayerOptions(mixWithOthers: true);
     VideoPlayerController? controller;
     if (asset != null && asset.trim().isNotEmpty) {
-      controller = VideoPlayerController.asset(asset);
+      controller = VideoPlayerController.asset(asset, videoPlayerOptions: opts);
     } else if (url != null && url.trim().isNotEmpty) {
       // Remote video: resolve to an on-disk cached FILE. First open downloads +
       // caches; every open after plays straight from disk — no network
@@ -310,12 +432,14 @@ class _LiveBackground extends ChangeNotifier with WidgetsBindingObserver {
       // flutter_cache_manager store the image presets already use. Falls back to
       // streaming if the cache/download fails (offline, bad url).
       try {
-        final file = await DefaultCacheManager().getSingleFile(url);
+        // Bound the download so a slow/dead network can't spin "Applying theme…"
+        // forever — on timeout we fall through to progressive streaming below.
+        final file = await DefaultCacheManager().getSingleFile(url).timeout(const Duration(seconds: 25));
         if (!identical(_preset, preset)) return; // preset switched while awaiting
-        controller = VideoPlayerController.file(file);
+        controller = VideoPlayerController.file(file, videoPlayerOptions: opts);
       } catch (_) {
         if (!identical(_preset, preset)) return;
-        controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        controller = VideoPlayerController.networkUrl(Uri.parse(url), videoPlayerOptions: opts);
       }
     }
     if (controller == null) {
@@ -324,7 +448,10 @@ class _LiveBackground extends ChangeNotifier with WidgetsBindingObserver {
     }
     _video = controller;
     try {
-      await controller.initialize();
+      // Bound init too: on some Android devices/networks initialize() can hang;
+      // a timeout turns that into a graceful failure (poster/gradient) instead of
+      // an endless spinner.
+      await controller.initialize().timeout(const Duration(seconds: 15));
       // A newer sync() (preset switch) or a teardown may have replaced/cleared
       // the controller while we awaited — if so this one is orphaned: drop it.
       if (!identical(_video, controller)) {
@@ -335,10 +462,12 @@ class _LiveBackground extends ChangeNotifier with WidgetsBindingObserver {
       await controller.setVolume(0); // video is muted; ambient audio is separate
       await controller.play();
       _ready = true;
+      _failed = false;
       notifyListeners();
     } catch (_) {
       if (identical(_video, controller)) {
         _ready = false;
+        _failed = true; // give up gracefully → layer shows the poster/gradient
         notifyListeners();
       }
     }

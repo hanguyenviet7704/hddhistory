@@ -13,13 +13,17 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   String _lastLoadedProgressCourseId = '';
 
   /// Roadmap-source values that mean the user opened this roadmap FROM Explore
-  /// (the course grid, "My courses", "View more", or search). These show a back
-  /// button that returns to that Explore screen.
+  /// (the course grid, "View more", or search) or from a Profile-pushed page
+  /// ("My courses", the Achievements badge detail). These show a back button;
+  /// 'my_courses' / 'setting_badge' get dedicated returns in [_backFromRoadmap]
+  /// (re-open the root-pushed page over the Profile tab), the rest fall through
+  /// to the Explore screen.
   static const _kExploreSources = {
     'course_selection',
     'my_courses',
     'skillset_courses',
     'search',
+    'setting_badge',
   };
 
   /// Roadmap-source values that mean the user opened this roadmap from a Home
@@ -81,6 +85,20 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final ctx = AppConfig.instance.context;
         if (ctx != null) MyCoursesPage.open(ctx);
+      });
+      return;
+    }
+    // Opened from Profile → Achievements badge detail ("Đi đến khoá học"), a
+    // root-pushed page like My courses. Return there: switch to the Profile
+    // tab, then re-open the Achievements page over it.
+    if (source == 'setting_badge') {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(2); // Setting/Profile branch
+      ProfileRoute().go(context);
+      page.setCurrentRouteName(RouteNamed.profile);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = AppConfig.instance.context;
+        if (ctx != null) AchievementsFullPage.open(ctx);
       });
       return;
     }

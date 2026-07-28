@@ -69,4 +69,36 @@ void main() {
       );
     });
   });
+
+  group('shouldBlockRegisterAuthButtons', () {
+    test('does NOT block while only the silent mount-time bootstrap is running', () {
+      // The bootstrap renders no spinner, so blocking on it leaves a screen that
+      // looks interactive but swallows every tap — the "frozen welcome screen"
+      // after reinstall. Tapping guest awaits the same bootstrap anyway.
+      final blocked = shouldBlockRegisterAuthButtons(
+        isBootstrapInProgress: true,
+        hasActiveAuthMethod: false,
+      );
+
+      expect(blocked, isFalse);
+    });
+
+    test('blocks while an auth method is mid-flight (that button shows a spinner)', () {
+      final blocked = shouldBlockRegisterAuthButtons(
+        isBootstrapInProgress: false,
+        hasActiveAuthMethod: true,
+      );
+
+      expect(blocked, isTrue);
+    });
+
+    test('does not block when idle', () {
+      final blocked = shouldBlockRegisterAuthButtons(
+        isBootstrapInProgress: false,
+        hasActiveAuthMethod: false,
+      );
+
+      expect(blocked, isFalse);
+    });
+  });
 }

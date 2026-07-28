@@ -41,6 +41,31 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
         },
       );
 
+  Future<void>? _catalogInFlight;
+
+  /// Self-heal for the picker, called every time the sheet opens.
+  ///
+  /// `/study-themes` is an AUTHENTICATED endpoint, but [loadCatalog] also runs
+  /// from this cubit's constructor — i.e. whenever DI first resolves it, which on
+  /// a cold start happens before the guest/auth token is attached. That attempt
+  /// 401s, `onFailure` marks the catalogue "loaded" (and empty), and nothing ever
+  /// retried: the sheet showed its empty state and the user had to tap Reload by
+  /// hand every time. Retrying on open fixes that — and because it flips
+  /// [StudyThemeState.catalogLoading], the sheet now shows its skeleton instead
+  /// of an empty grid while the retry runs.
+  ///
+  /// No-op once the catalogue is populated, and de-duped while a fetch is in
+  /// flight, so re-opening the sheet costs nothing. Mirrors
+  /// `HomeCubit.ensureHomeDataLoaded` / `HabitCubit.ensureLoaded`.
+  Future<void> ensureCatalogLoaded() {
+    final inFlight = _catalogInFlight;
+    if (inFlight != null) return inFlight;
+    if (state.catalog.isNotEmpty || state.catalogLoading) return Future.value();
+    final future = loadCatalog().whenComplete(() => _catalogInFlight = null);
+    _catalogInFlight = future;
+    return future;
+  }
+
   /// Apply a catalogue preset, clearing any previously uploaded image.
   void selectPreset(StudyThemePreset preset) {
     emit(state.copyWith(preset: preset, applying: false, uploadedFile: null));

@@ -21,36 +21,6 @@ class AppInterceptor extends BaseInterceptor {
   // + toast. Reset shortly after so a later genuine expiry is still handled.
   bool _isHandlingSessionExpired = false;
 
-  // Route names (PageCubit stores RouteNamed, e.g. 'Register Page' — NOT
-  // RoutePath like '/register') where the user has NOT yet reached an
-  // authenticated area: bootstrap/splash + the whole auth & onboarding flow. A
-  // 401 here is a routine expired/guest token, so we log out silently instead
-  // of shoving a scary "session expired" toast in front of onboarding for a
-  // user who never actively logged in. '' covers the first frame before the
-  // route observer reports anything.
-  static const Set<String> _preAuthRouteNames = {
-    '',
-    RouteNamed.splash,
-    RouteNamed.chooseLanguage,
-    RouteNamed.onboardIntroduce,
-    RouteNamed.noAuth,
-    RouteNamed.onboard,
-    RouteNamed.onboardBranching,
-    RouteNamed.onboardV2,
-    RouteNamed.dataCollect,
-    RouteNamed.dataCollectMotivationStep,
-    RouteNamed.dataCollectFeedback,
-    RouteNamed.dataCollectSummary,
-    RouteNamed.notificationRequest,
-    RouteNamed.login,
-    RouteNamed.register,
-    RouteNamed.registerAuth,
-    RouteNamed.forgotPassword,
-    RouteNamed.otp,
-    RouteNamed.setupPassword,
-    RouteNamed.changePassword,
-  };
-
   AuthBloc get _authBloc => AppDI.injector.get<AuthBloc>();
 
   String get _currentLanguage => _localeCubit.state.localeData.languageCode;
@@ -200,7 +170,7 @@ class AppInterceptor extends BaseInterceptor {
     // the splash take its unauthenticated path and route correctly on its own.
     // Only when the session dies on an authenticated screen do we redirect to
     // the welcome screen and tell the user why.
-    if (!_preAuthRouteNames.contains(currentRouteName)) {
+    if (shouldForceRegisterNavigationAfterReset(currentRouteName)) {
       RegisterRoute().go(context);
       DMessage.showMessage(
         type: MessageType.error,

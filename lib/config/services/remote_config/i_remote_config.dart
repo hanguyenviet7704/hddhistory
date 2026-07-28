@@ -7,10 +7,13 @@ abstract interface class IRemoteConfigService {
   OnboardingConfigEntity get onboardingConfig;
   PaywallConfigEntity get paywallConfig;
   Future<void> initialize();
-  Future<bool> shouldForceUpdate();
 
-  /// True when a NEWER app version exists but the update is NOT forced — the
-  /// signal for the optional-update header banner on Home. The forced case is
-  /// handled separately by [shouldForceUpdate] (blocking splash dialog).
-  Future<bool> optionalUpdateAvailable();
+  /// True when a NEWER app version exists for this platform — the signal for the
+  /// update header banner on Home, which is the app's ONLY update surface.
+  ///
+  /// Deliberately ignores [AppVersionConfigEntity.forceUserUpdate]: the blocking
+  /// splash dialog was removed so the banner shows either way. That flag is
+  /// therefore no longer enforced anywhere — setting it in Remote Config does
+  /// NOT gate old clients.
+  Future<bool> updateAvailable();
 }

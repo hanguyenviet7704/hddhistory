@@ -41,4 +41,3 @@ part 'presentation/cubits/onboard/onboard_state.dart';
 part 'presentation/pages/splash_page.dart';
 //* Widgets
 part 'presentation/widgets/continue_button_widget.dart';
-part 'presentation/widgets/force_update_content.dart';

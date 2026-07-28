@@ -118,8 +118,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     unawaited(cancelLiveActivityReturnNudge());
 
     // Resolve the per-keypoint habit suggestion up front (while this page's
-    // context/cubits are valid) but DON'T show it yet — see below. FR2.8: each
-    // keypoint suggests a habit only once.
+    // context/cubits are valid) but DON'T show it yet — see below.
+    // Behaviour: the add-habit sheet re-appears on EVERY completion of a
+    // keypoint (including every re-learn) as long as the user has NOT yet
+    // adopted a habit sourced from that keypoint; once they adopt one (it
+    // stamps sourceKeypointId == keypointId), it stops appearing for that
+    // keypoint. There is deliberately no "suggested once" flag — the adopted
+    // habit itself is the gate.
     final habitCubit = AppDI.injector.get<HabitCubit>();
     await habitCubit.ensureLoaded();
     if (!mounted) return;

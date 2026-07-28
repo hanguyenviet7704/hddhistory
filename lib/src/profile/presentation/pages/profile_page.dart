@@ -678,7 +678,10 @@ class _SectionHeaderRow extends StatelessWidget {
             },
             child: AppText(
               trailingLabel,
-              style: AppStyle.textBold14.copyWith(color: AppCustomColor.brandPrimary),
+              // Brand link sits directly on the (possibly dark) study background
+              // next to the studyThemeOnBg title — lift it to light lavender there
+              // so "See all" stays legible instead of sinking into the bg.
+              style: AppStyle.textBold14.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)),
             ),
           ),
         ),

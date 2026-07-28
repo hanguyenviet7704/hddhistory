@@ -18,7 +18,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 #version: 1.4.0+53 # ios
-version: 1.4.2+80 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
+version: 1.4.3+83 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
@@ -169,6 +169,9 @@ dependencies:
   file_picker: ^11.0.2
   image_picker: ^1.2.2
   device_info_plus: ^12.4.0
+  # SSAID (Settings.Secure.ANDROID_ID) — stable across reinstalls; guest identity
+  # on Android derives from it so uninstall+reinstall keeps the same guest account.
+  android_id: ^0.4.0
   package_info_plus: ^9.0.1
   # cloud_firestore: ^6.0.0
   collection: ^1.19.1

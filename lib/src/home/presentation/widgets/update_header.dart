@@ -1,11 +1,11 @@
 part of '../../home.dart';
 
-/// Optional-update header pinned at the top of Home (design "Update Header" —
-/// the `app:home` top cover-sheet). Shown only when a NEWER, non-forced app
-/// version exists; the forced-update case is the blocking splash dialog
-/// ([ForceUpdateContent]). Solid brand cover-sheet with rounded bottom corners,
-/// an icon chip, a two-line message and a white "Update" pill. Tapping Update
-/// opens the platform store and dismisses the banner for the session (it
+/// Update header pinned at the top of Home (design "Update Header" — the
+/// `app:home` top cover-sheet). This is the app's ONLY update surface: shown
+/// whenever a NEWER version exists for the platform, forced or not (the blocking
+/// splash dialog was removed). Solid brand cover-sheet with rounded bottom
+/// corners, an icon chip, a two-line message and a white "Update" pill. Tapping
+/// Update opens the platform store and dismisses the banner for the session (it
 /// reappears next launch until the user actually updates).
 class UpdateHeader extends StatelessWidget {
   const UpdateHeader({super.key, required this.onDismiss});

@@ -119,10 +119,16 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     AppService.instance.appTrackingService.trackSettingBadgeGoCourse(_buildTrackingData(courseName));
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
-    // This sheet is a `showModalBottomSheet` (a Material Navigator route), so it
-    // must be popped on the Navigator — `context.back()`/go_router `pop()` acts
-    // on the router stack and leaves the modal up (the "popup không tắt" bug).
-    Navigator.of(context).pop();
+    // This sheet is opened OVER the root-pushed AchievementsFullPage (see
+    // profile_page._openAchievements — `Navigator.push(rootNavigator: true)`),
+    // so the root navigator stack is [shell] → [AchievementsFullPage] → [sheet].
+    // Popping only the sheet leaves AchievementsFullPage on top, and the
+    // roadmap we `.go()` to below it stays hidden — the reported "bấm Đi đến
+    // khoá học vẫn ở màn Thành tích" bug. popUntil(isFirst) strips every
+    // imperative route above the go_router shell (sheet + AchievementsFullPage)
+    // so the roadmap becomes visible. It also replaces the old go_router `pop()`
+    // that left the modal up (the "popup không tắt" bug).
+    Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
     // Navigate on the ROOT context, not the just-popped sheet context: the
     // latter is now defunct, so .go on it silently no-ops — the event fired but
     // the app never moved (the reported bug). The root navigator context always
