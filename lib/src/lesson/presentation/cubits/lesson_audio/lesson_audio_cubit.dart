@@ -19,8 +19,23 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   StreamSubscription<just_audio.PlayerState>? _playerStateSubscription;
   StreamSubscription<just_audio.ProcessingState>? _processingStateSubscription;
 
+  /// Per-CARD narration clips for the configured keypoint, in card order (see
+  /// [KeypointAudioEntity.segments]). Empty for keypoints dubbed before per-card
+  /// generation — those keep the single whole-keypoint clip and get no per-card
+  /// behaviour until they are re-dubbed.
+  List<String> _cardClips = const [];
+
+  /// True when this keypoint has per-card clips, i.e. narration can be scoped to
+  /// the page on screen via [loadCard].
+  bool get hasCardClips => _cardClips.any((clip) => clip.isNotEmpty);
+
   Future<void> configure(KeypointEntity keypoint) async {
-    final nextSourceUrl = keypoint.resolvedAudioUrl;
+    _cardClips = keypoint.resolvedAudioSegments;
+    // First card's clip when dubbed per card, else the legacy single file.
+    final nextSourceUrl = _cardClips.firstWhere(
+      (clip) => clip.isNotEmpty,
+      orElse: () => keypoint.resolvedAudioUrl,
+    );
     final nextTitle = keypoint.title.text;
 
     if (state.keypointId == keypoint.id && state.sourceUrl == nextSourceUrl && state.imageUrl == keypoint.image && state.title == nextTitle) {
@@ -76,6 +91,45 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     if (!state.hasStartedSession) {
       await _initializePlayer();
     }
+  }
+
+  /// Switches narration to the clip that reads card [cardIndex].
+  ///
+  /// This is what ties the voice to the page: each card has its own file, so
+  /// reaching the end of a card simply ends the clip — playback cannot spill
+  /// into a page the reader hasn't opened, and finding where a card starts needs
+  /// no timeline guessing. Returns false when this keypoint has no clip for that
+  /// card (a legacy whole-keypoint dub, or a card with no narratable text), in
+  /// which case narration is left alone.
+  Future<bool> loadCard(int cardIndex, {bool autoplay = false}) async {
+    if (cardIndex < 0 || cardIndex >= _cardClips.length) return false;
+    final url = _cardClips[cardIndex];
+    if (url.isEmpty) return false;
+
+    if (state.sourceUrl == url && state.hasStartedSession) {
+      // Same clip already loaded (e.g. swiping away and back): restart it so the
+      // card is read from its beginning rather than from wherever it stopped.
+      await seekTo(Duration.zero);
+      if (autoplay) await play();
+      return true;
+    }
+
+    _playWhenReady = autoplay;
+    await _resetHandlerForNewKeypoint();
+    emit(
+      state.copyWith(
+        sourceUrl: url,
+        status: LessonAudioLoadStatus.initial,
+        positionSeconds: 0,
+        durationSeconds: 0,
+        isPlaying: false,
+        hasStartedSession: false,
+        hasCompletedPlayback: false,
+        errorMessage: null,
+      ),
+    );
+    await _initializePlayer();
+    return true;
   }
 
   Future<void> retry() async {

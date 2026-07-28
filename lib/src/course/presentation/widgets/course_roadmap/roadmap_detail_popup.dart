@@ -67,7 +67,7 @@ class RoadmapDetailPopup extends StatelessWidget {
     }
   }
 
-  Future<void> _startLearning(BuildContext context, LessonEntryMode mode) async {
+  Future<void> _startLearning(BuildContext context) async {
     if (lesson.id.isEmpty || keypoint.id.isEmpty) return;
     onStart?.call();
 
@@ -75,19 +75,13 @@ class RoadmapDetailPopup extends StatelessWidget {
     // if (trackingData != null) {
     //   AppService.instance.appTrackingService.trackPopupItemClick(trackingData);
     // }
-
-    final keypointTracking = KeypointTrackingData.fromLesson(
-      context,
-      lesson: lesson,
-      keypoint: keypoint,
-    );
-    if (hasAudio && keypointTracking != null) {
-      if (mode.isAudio) {
-        AppService.instance.appTrackingService.trackKeypointAudioPopupListenClick(keypointTracking);
-      } else {
-        AppService.instance.appTrackingService.trackKeypointAudioPopupReadClick(keypointTracking);
-      }
-    }
+    //
+    // The old Đọc/Nghe (Read/Listen) two-button picker collapsed into this
+    // single Start CTA now that the keypoint screen is unified — there is no
+    // mode choice left to track here. `trackKeypointAudioPopupReadClick` /
+    // `trackKeypointAudioPopupListenClick` are no longer called from
+    // anywhere; left defined on the tracking service for the dashboard owner
+    // to formally retire.
 
     // Capture everything needed before closing the sheet below — `context`
     // (this popup's own) is disposed the instant it pops.
@@ -127,7 +121,11 @@ class RoadmapDetailPopup extends StatelessWidget {
       ..setCurrentKeypointId(keypoint.id)
       ..loadLesson(lesson.id);
 
-    LessonRoute(initialMode: mode.routeValue).go(rootContext);
+    // `initial-mode` is repurposed to "autoplay narration for the first
+    // keypoint on entry" (see `LessonRoute`/`LessonPage`) — this Start CTA is
+    // the primary real-world path into a keypoint, so it opts in whenever
+    // there's usable audio to autoplay.
+    LessonRoute(initialMode: hasAudio ? LessonEntryMode.audio.routeValue : LessonEntryMode.read.routeValue).go(rootContext);
 
     roadmapCubit
       ..setCurrentCourseLevel(courseLevel)
@@ -253,38 +251,20 @@ class RoadmapDetailPopup extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 40.h),
-              if (hasAudio)
-                Row(
-                  children: [
-                    Expanded(
-                      child: _RoadmapDetailActionButton(
-                        label: context.l10n.lesson.audioReadLabel,
-                        iconAsset: AppAsset.svg.app.icMenu,
-                        backgroundColor: AppCustomColor.brandPrimary50,
-                        foregroundColor: const Color(0xFF4B44CA),
-                        onTap: () => unawaited(_startLearning(context, LessonEntryMode.read)),
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: _RoadmapDetailActionButton(
-                        label: context.l10n.lesson.audioListenLabel,
-                        iconAsset: AppAsset.svg.app.icMusicNote,
-                        backgroundColor: const Color(0xFF554FF0),
-                        foregroundColor: Colors.white,
-                        onTap: () => unawaited(_startLearning(context, LessonEntryMode.audio)),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                _RoadmapDetailActionButton(
-                  label: context.l10n.lesson.audioReadLabel,
-                  iconAsset: AppAsset.svg.app.icMenu,
-                  backgroundColor: AppCustomColor.brandPrimary50,
-                  foregroundColor: const Color(0xFF4B44CA),
-                  onTap: () => _startLearning(context, LessonEntryMode.read),
-                ),
+              // A single Start CTA — the unified keypoint screen has no
+              // separate Read/Listen entry anymore (default assumption for
+              // this merge; easy to revisit if a future need calls for two
+              // distinct entry buttons again). Narration autoplays on its own
+              // once inside whenever `hasAudio` is true, so there's nothing
+              // left for a second button to pick between.
+              _RoadmapDetailActionButton(
+                key: const ValueKey('roadmap-detail-start-button'),
+                label: context.l10n.lesson.startLearningLabel,
+                iconAsset: hasAudio ? AppAsset.svg.app.icMusicNote : AppAsset.svg.app.icMenu,
+                backgroundColor: const Color(0xFF554FF0),
+                foregroundColor: Colors.white,
+                onTap: () => unawaited(_startLearning(context)),
+              ),
             ],
           ),
         ),
@@ -295,6 +275,7 @@ class RoadmapDetailPopup extends StatelessWidget {
 
 class _RoadmapDetailActionButton extends StatelessWidget {
   const _RoadmapDetailActionButton({
+    super.key,
     required this.label,
     required this.iconAsset,
     required this.backgroundColor,

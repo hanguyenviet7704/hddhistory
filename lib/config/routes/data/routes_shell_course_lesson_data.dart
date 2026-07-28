@@ -27,6 +27,17 @@ Widget _buildLessonFlowPage(Widget child) {
       BlocProvider(create: (_) => LessonAudioCubit()),
       BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
       BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
+      // Not `@lazySingleton`/`@injectable` (see its own doc comment) — needs a
+      // fresh instance per route entry, wired to THIS route's freshly-created
+      // `LessonAudioCubit`/`LessonCubit`/`TheoryCubit` above, not a
+      // process-lifetime singleton holding a stale sibling.
+      BlocProvider(
+        create: (context) => KeypointCardCubit(
+          lessonCubit: context.read<LessonCubit>(),
+          theoryCubit: context.read<TheoryCubit>(),
+          audioCubit: context.read<LessonAudioCubit>(),
+        ),
+      ),
       BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
       BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
@@ -42,6 +53,12 @@ Widget _buildLessonFlowPage(Widget child) {
 }
 
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
+  /// Repurposed from "which mode tab (Read/Listen) to open into" (the old
+  /// dual-mode split) to "should the FIRST keypoint's narration autoplay the
+  /// instant this page mounts" — the unified screen has no mode tabs left.
+  /// Kept as the same `'read'`/`'audio'` wire values (default omits the query
+  /// param entirely, unchanged route-test shape) so existing/legacy deep
+  /// links (incl. `initial-mode=audio`) keep resolving without crashing.
   final String initialMode;
 
   const LessonRoute({
@@ -54,7 +71,7 @@ class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => _buildLessonFlowPage(
     LessonPage(
-      initialMode: LessonEntryMode.fromRouteValue(initialMode),
+      autoplayOnEntry: LessonEntryMode.fromRouteValue(initialMode).isAudio,
     ),
   );
 }

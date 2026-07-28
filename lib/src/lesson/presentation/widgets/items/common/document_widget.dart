@@ -42,14 +42,16 @@ class DocumentWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(
         documents.length,
-        (index) => Padding(
-          padding: EdgeInsets.only(top: topSpacing(index)),
-          child: DocumentItem(
-            document: documents[index],
-            selectedExplanationOptionKey: selectedExplanationOptionKeys[index],
-            onExplanationSelectionChanged: onExplanationSelectionChanged == null ? null : (optionKey) => onExplanationSelectionChanged!(index, optionKey),
-          ),
-        ),
+        (index) {
+          return Padding(
+            padding: EdgeInsets.only(top: topSpacing(index)),
+            child: DocumentItem(
+              document: documents[index],
+              selectedExplanationOptionKey: selectedExplanationOptionKeys[index],
+              onExplanationSelectionChanged: onExplanationSelectionChanged == null ? null : (optionKey) => onExplanationSelectionChanged!(index, optionKey),
+            ),
+          );
+        },
       ),
     );
 

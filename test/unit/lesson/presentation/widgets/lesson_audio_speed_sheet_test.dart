@@ -13,43 +13,6 @@ void main() {
     await resetInjectorForTests();
   });
 
-  group('LessonAudioSurface', () {
-    testWidgets('renders the Figma player card without the old in-content speed chip', (tester) async {
-      _setPhoneViewport(tester);
-      final audioCubit = LessonAudioCubit();
-      addTearDown(audioCubit.close);
-
-      await audioCubit.configure(
-        const KeypointEntity(
-          id: 'audio-keypoint',
-          title: BaseMultiLanguage(en: 'Building nonverbal presence'),
-        ),
-      );
-
-      await tester.pumpWidget(
-        ScreenUtilInit(
-          designSize: const Size(375, 812),
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) => TranslationProvider(
-            child: MaterialApp(
-              home: BlocProvider<LessonAudioCubit>.value(
-                value: audioCubit,
-                child: Scaffold(body: child),
-              ),
-            ),
-          ),
-          child: const LessonAudioSurface(),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(LessonAudioPlayerCard), findsOneWidget);
-      expect(find.text('Building nonverbal presence'), findsOneWidget);
-      expect(find.text('1x speed'), findsNothing);
-    });
-  });
-
   group('showLessonAudioSpeedSheet', () {
     testWidgets('keeps the preset buttons close to the bottom edge without extra spacing', (tester) async {
       _setPhoneViewport(tester);

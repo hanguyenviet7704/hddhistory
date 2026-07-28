@@ -14,6 +14,15 @@ fontDefaultLabel: Mặc định
 fontSerifLabel: Serif
 fontCourierLabel: Courier
 backgroundMusicLabel: Nhạc nền
+startLearningLabel: Bắt đầu
+doneCardTitle: Hoàn thành nội dung trọng tâm
+doneCardSubtitle: Tuyệt vời — bạn đã học hết nội dung này.
+narrationPlaySemantics: Phát giọng đọc
+narrationPauseSemantics: Tạm dừng giọng đọc
+cardProgressSemantics: Thẻ ${current}/${total}
+cardSwipeHint: Vuốt lên để tiếp tục
+cardSwipeBlockedHint: Chọn đáp án để tiếp tục
+cardSwipeReviewHint: Vuốt xuống để xem lại
 charCounter: ${currentChars}/${maxChars} ký tự
 checkButton: Kiểm tra
 closePopupDescription: Bài học của bạn sẽ không được lưu nếu bạn thoát bây giờ.

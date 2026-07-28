@@ -26,6 +26,13 @@ abstract class KeypointDisplayState with _$KeypointDisplayState {
     /// Reading font family, applied only to theory/reading content — never to
     /// chrome/UI text.
     @Default(ReadingFontFamily.defaultFamily) ReadingFontFamily fontFamily,
+
+    /// Narration playback speed, one of [LessonAudioStateX.supportedSpeeds].
+    /// Previously lived as session-only state on `LessonAudioCubit` (reset on
+    /// every new keypoint); now owned here (`HydratedCubit`) so it persists
+    /// across sessions — `LessonAudioCubit.setSpeed` remains the mechanism
+    /// that actually applies it to the player.
+    @Default(1.0) double readingSpeed,
   }) = _KeypointDisplayState;
 
   factory KeypointDisplayState.initial() => const KeypointDisplayState();

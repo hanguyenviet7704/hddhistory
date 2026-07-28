@@ -35,6 +35,12 @@ class KeypointDisplayCubit extends HydratedCubit<KeypointDisplayState> {
     emit(state.copyWith(fontFamily: family));
   }
 
+  void setReadingSpeed(double speed) {
+    if (!LessonAudioStateX.supportedSpeeds.contains(speed)) return;
+    if (state.readingSpeed == speed) return;
+    emit(state.copyWith(readingSpeed: speed));
+  }
+
   void _applyFontScale(double next) {
     final clamped = double.parse(next.clamp(minFontScale, maxFontScale).toStringAsFixed(2));
     if (clamped == state.fontScale) return;

@@ -3,54 +3,40 @@ part of '../../../lesson.dart';
 class LessonShellHeader extends StatelessWidget {
   const LessonShellHeader({
     super.key,
-    required this.selectedMode,
-    required this.onModeSelected,
     required this.onClose,
-    required this.showModeToggle,
-    required this.canSwitchModes,
     this.trailing,
   });
 
-  final LessonEntryMode selectedMode;
-  final ValueChanged<LessonEntryMode> onModeSelected;
   final VoidCallback onClose;
-  final bool showModeToggle;
-  final bool canSwitchModes;
   final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
+    // Design puts everything on ONE row: close · progress pips (flexible) ·
+    // narration toggle · overflow menu. The pips are not a separate band
+    // below the header, and the audio control is not a floating button.
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: SizedBox(
-        width: double.infinity,
-        height: 36.h,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned(
-              left: 0,
-              child: _LessonShellIconButton(
-                key: const ValueKey('lesson-shell-close-button'),
-                onTap: onClose,
-                assetPath: AppAsset.svg.app.icClose,
-              ),
-            ),
-            // "Change theme" now lives inside the top-right overflow menu
-            // ([LessonHeaderMenu], passed in as [trailing]) alongside "Report a
-            // problem", so the header keeps only the close button on the left.
-            if (showModeToggle)
-              LessonModeToggle(
-                selectedMode: selectedMode,
-                onModeSelected: canSwitchModes ? onModeSelected : null,
-              ),
-            if (trailing != null)
-              Positioned(
-                right: 0,
-                child: trailing!,
-              ),
+      padding: EdgeInsets.symmetric(horizontal: 18.w),
+      child: Row(
+        children: [
+          _LessonShellIconButton(
+            key: const ValueKey('lesson-shell-close-button'),
+            onTap: onClose,
+            assetPath: AppAsset.svg.app.icClose,
+          ),
+          12.horizontalSpace,
+          const Expanded(child: KeypointProgressPipBar()),
+          12.horizontalSpace,
+          const KeypointNarrationToggle(),
+          // "Change theme" lives inside the top-right overflow menu
+          // ([LessonHeaderMenu], passed in as [trailing]) alongside "Text
+          // display", "Speed", and "Report a problem" — no Read/Listen mode
+          // toggle anymore (the unified screen has only one mode).
+          if (trailing != null) ...[
+            8.horizontalSpace,
+            trailing!,
           ],
-        ),
+        ],
       ),
     );
   }
