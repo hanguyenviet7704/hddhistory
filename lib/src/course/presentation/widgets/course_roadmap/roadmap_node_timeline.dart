@@ -176,7 +176,10 @@ class RoadmapNodeActionHelper {
     if (lesson.id.isEmpty) return;
     context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
 
-    final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
+    // Same source the paywall itself reads (API -> cache -> Remote Config ->
+    // bundled defaults) so lesson-lock and the paywall never disagree about
+    // `enableLessonLock`/`lessonLock`. See IapCubit.resolvedPaywallConfig.
+    final paywallConfig = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
     final isPremium = context.read<ProfileCubit>().state.user.isPremium;
     final lessonIsLocked = isLocked ?? state.roadmap.isLessonLocked(lesson, paywallConfig, isPremium: isPremium);
     final lockAction = resolveLessonLockAction(

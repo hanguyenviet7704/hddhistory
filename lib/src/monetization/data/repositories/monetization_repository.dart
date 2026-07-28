@@ -6,10 +6,19 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   final IIapService _iapService;
   final UserSubscriptionLocalDataSource _userSubscriptionLocalDataSource;
   final MonetizationLocalDataSource _monetizationLocalDataSource;
+  final PaywallConfigApi _paywallConfigApi;
+  final PaywallConfigLocalDataSource _paywallConfigLocalDataSource;
   late final StreamSubscription<List<PurchaseDetails>> _subscription;
   final StreamController<PurchaseDetails> _purchaseDetailController = StreamController<PurchaseDetails>.broadcast();
 
-  MonetizationRepository(this._monetizationApi, this._iapService, this._userSubscriptionLocalDataSource, this._monetizationLocalDataSource) {
+  MonetizationRepository(
+    this._monetizationApi,
+    this._iapService,
+    this._userSubscriptionLocalDataSource,
+    this._monetizationLocalDataSource,
+    this._paywallConfigApi,
+    this._paywallConfigLocalDataSource,
+  ) {
     _setupSubscription();
   }
 
@@ -135,6 +144,29 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       apiCall: () => _monetizationApi.validateVoucher(params.toJson()),
       transform: (model) => model.toEntity(),
       defaultValue: const VoucherValidationEntity(),
+    );
+  }
+
+  /// See [IMonetizationRepository.getPaywallConfig]: a fetch failure with no
+  /// cached fallback resolves to `Left` — it never invents an empty entity —
+  /// so the caller (IapCubit) knows to keep serving Remote Config / bundled
+  /// defaults instead of overwriting a good in-memory value with a blank one.
+  @override
+  TaskEither<AppException, PaywallConfigEntity> getPaywallConfig() {
+    return callApiWithTransform<dynamic, PaywallConfigEntity>(
+      apiCall: () => _paywallConfigApi.getPaywallConfig(),
+      transform: (data) => PaywallConfigEntity.fromRawConfig(jsonEncode(data)),
+      onSuccess: (data) async {
+        if (data is Map<String, dynamic>) {
+          await _paywallConfigLocalDataSource.cacheConfig(data);
+        }
+      },
+      onError: () async {
+        final cached = await _paywallConfigLocalDataSource.getCachedConfig();
+        if (cached == null) return null;
+        return PaywallConfigEntity.fromRawConfig(jsonEncode(cached));
+      },
+      enableErrorMessages: false,
     );
   }
 

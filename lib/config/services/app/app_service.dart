@@ -106,6 +106,12 @@ class AppService {
     await _configLessonAudio();
 
     unawaited(remoteConfigService.initialize());
+    // Prefetch the paywall config from the API (falls back to the Remote
+    // Config value above, then bundled defaults, if it fails) so the
+    // paywall/lesson-lock reads in IapCubit.resolvedPaywallConfig have fresh
+    // data ready by the time the user reaches them, without ever blocking on
+    // this network round trip.
+    unawaited(AppDI.injector.get<IapCubit>().prefetchPaywallConfig());
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
     // DeepLinkService.init();

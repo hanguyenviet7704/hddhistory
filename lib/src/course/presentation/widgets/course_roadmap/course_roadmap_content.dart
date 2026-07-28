@@ -183,7 +183,10 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
                   ),
                 );
               }
-              final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
+              // Same source the paywall itself reads (API -> cache -> Remote
+              // Config -> bundled defaults) so lesson-lock and the paywall
+              // never disagree. See IapCubit.resolvedPaywallConfig.
+              final paywallConfig = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
               final isPremium = context.read<ProfileCubit>().state.user.isPremium;
               final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig, isPremium: isPremium);
               return BlocBuilder<ProgressCubit, ProgressState>(

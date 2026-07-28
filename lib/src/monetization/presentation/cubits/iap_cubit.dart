@@ -34,6 +34,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final ResolvePaywallStrategyUsecase _resolvePaywallStrategyUsecase;
   final ValidateVoucherUsecase _validateVoucherUsecase;
   final IRemoteConfigService _remoteConfigService;
+  final GetPaywallConfigUsecase _getPaywallConfigUsecase;
 
   final IPackageInfoService _packageInfoService;
 
@@ -43,6 +44,14 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   bool _autoOpenEvaluated = false;
   int? _autoOpenRolloutBucket;
   Future<bool>? _autoOpenPrepareFuture;
+
+  // Paywall config resolution chain: API -> last cached API response ->
+  // Remote Config -> Remote Config's own bundled defaults. `null` means
+  // "the API/cache layer hasn't produced anything yet" and makes
+  // `resolvedPaywallConfig` fall through live to Remote Config, so a cold
+  // start with no network still renders instead of blocking or going blank.
+  PaywallConfigEntity? _resolvedPaywallConfig;
+  Future<void>? _prefetchPaywallConfigFuture;
 
   IapCubit(
     this._iapRepository,
@@ -55,8 +64,48 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._resolvePaywallStrategyUsecase,
     this._validateVoucherUsecase,
     this._remoteConfigService,
+    this._getPaywallConfigUsecase,
     this._packageInfoService,
   ) : super(IapState.initial());
+
+  /// Best available paywall config right now — never awaits a network call.
+  /// Read by the paywall (via [loadIapProducts]/[_prepareAutoOpenPaywall])
+  /// and by course-roadmap lesson-lock checks. Call [prefetchPaywallConfig]
+  /// (app start + whenever the paywall is about to open) to keep this fresh;
+  /// this getter itself is always synchronous and always non-null.
+  PaywallConfigEntity get resolvedPaywallConfig => _resolvedPaywallConfig ?? _remoteConfigService.paywallConfig;
+
+  /// Refreshes [resolvedPaywallConfig] from the API in the background.
+  ///
+  /// Never blocks: callers should fire-and-forget this (see
+  /// `AppService._configService` and [loadIapProducts]) and read
+  /// [resolvedPaywallConfig] immediately for whatever is already resolved.
+  /// Concurrent calls share one in-flight fetch instead of stacking requests.
+  Future<void> prefetchPaywallConfig() {
+    final inFlight = _prefetchPaywallConfigFuture;
+    if (inFlight != null) return inFlight;
+
+    final task = _prefetchPaywallConfig();
+    _prefetchPaywallConfigFuture = task;
+    return task.whenComplete(() {
+      if (identical(_prefetchPaywallConfigFuture, task)) {
+        _prefetchPaywallConfigFuture = null;
+      }
+    });
+  }
+
+  Future<void> _prefetchPaywallConfig() async {
+    final result = await _getPaywallConfigUsecase(unit).run();
+    result.match(
+      (_) {
+        // API failed and there is no cached response either: keep whatever
+        // is already resolved (a previous successful fetch, or — via the
+        // getter's fallback — Remote Config/bundled defaults). Never clear
+        // a good value just because a background refresh failed.
+      },
+      (config) => _resolvedPaywallConfig = config,
+    );
+  }
 
   PaywallEntryPoint get paywallEntryPoint => _paywallEntryPoint;
   CourseTrackingData? get paywallCourseTrackingData => _paywallCourseTrackingData;
@@ -146,7 +195,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     required bool isPremium,
     required Future<bool?> Function() refreshPremiumStatus,
   }) async {
-    final config = _remoteConfigService.paywallConfig.autoOpen;
+    final config = resolvedPaywallConfig.autoOpen;
     final bucket = _autoOpenRolloutBucket ??= Random().nextInt(100);
     if (!shouldPreparePaywallAutoOpen(
       enabled: config.enabled,
@@ -186,11 +235,16 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   Future<bool> loadIapProducts({bool forceRetry = false}) async {
+    // Refresh policy: re-fetch whenever the paywall is about to open, but
+    // never wait on it — this call renders with whatever is already
+    // resolved, and a fresher value (if any) lands in time for the next open.
+    unawaited(prefetchPaywallConfig());
+
     final platform = PaymentPlatform.fromDevicePlatform;
     final storedImpressionCount = await _iapRepository.getNewUserPaywallImpressionCount();
     final resolvedStrategy = _resolvePaywallStrategyUsecase(
       ResolvePaywallStrategyParams(
-        config: _remoteConfigService.paywallConfig,
+        config: resolvedPaywallConfig,
         platform: platform,
         nowUtc: DateTime.now().toUtc(),
         installTime: _installTime,

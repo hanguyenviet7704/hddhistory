@@ -45,6 +45,10 @@ mixin AppEndpoint {
   static const String verify = '/api/v1/payment/purchases/verify';
   static const String userIapSubscriptions = '/api/v1/payment/subscriptions/users/{userId}/active-premium';
 
+  //* Paywall Config API — backend CMS source of truth (Firebase Remote Config
+  //* is kept as a fallback layer only). See IapCubit.resolvedPaywallConfig.
+  static const String paywallConfigMobile = '/api/v1/paywall-config/mobile';
+
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';
   static const String onboardingsScenarios = '/api/v2/onboardings';
