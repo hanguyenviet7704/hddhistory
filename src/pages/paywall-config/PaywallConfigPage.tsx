@@ -1,8 +1,12 @@
-// Admin editor for `paywall_config`, a Firebase Remote Config value the
-// Flutter paywall reads directly. Job: an operator reviews/edits the sale
-// strategies (default user / new user / sale event) and publishes -- there
-// is no list, this always edits the single config for whichever environment
-// (dev/prod) is currently selected.
+// Admin editor for `paywall_config`, now stored in MySQL (append-only,
+// versioned) instead of Firebase Remote Config -- see
+// meup-api/src/modules/paywall-config for the source of truth. Job: an
+// operator reviews/edits the sale strategies (default user / new user / sale
+// event) and publishes. There is no environment switch anymore: each
+// deployment's API only ever reads/writes its own database, so dev vs prod
+// is the deployment itself, not a toggle on this page. Version history
+// (previously free from the Remote Config console) lives in the drawer
+// opened from "History".
 //
 // Client-side validation in `paywallConfigDraft.ts` mirrors
 // `PaywallConfigService.validateShape` + `assertProductsExist` field-for-
@@ -18,14 +22,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowPathIcon,
   CheckCircleIcon,
+  ClockIcon,
   ExclamationTriangleIcon,
   RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 import { useActivePaywallProducts } from "../../components/paywall-config/useActivePaywallProducts";
 import ConfirmDialog from "../../components/paywall-config/ConfirmDialog";
 import { paywallConfigService } from "../../services/paywallConfigService";
-import { PaywallEnvironment } from "../../types/enum/paywall-config.enum";
-import { PaywallConfigResponse } from "../../types/interface/paywall-config.interface";
+import {
+  PaywallConfigResponse,
+  PaywallConfigVersion,
+} from "../../types/interface/paywall-config.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import {
   extractErrorMessage,
@@ -41,28 +48,26 @@ import {
   validateDraft,
 } from "./paywallConfigDraft";
 import DefaultUserSection from "./components/DefaultUserSection";
-import EnvironmentBar from "./components/EnvironmentBar";
 import GeneralSection from "./components/GeneralSection";
 import NewUserSection from "./components/NewUserSection";
 import SaleEventSection from "./components/SaleEventSection";
+import VersionHistoryDrawer from "./components/VersionHistoryDrawer";
 import VersionInfoPanel from "./components/VersionInfoPanel";
 
-interface SourceMeta {
-  source: PaywallConfigResponse["source"];
+interface VersionMeta {
   version: PaywallConfigResponse["version"];
+  publishedAt: PaywallConfigResponse["publishedAt"];
+  publishedBy: PaywallConfigResponse["publishedBy"];
 }
 
-const unwrap = (payload: any): PaywallConfigResponse => payload?.data ?? payload;
+const unwrap = <T,>(payload: any): T => payload?.data ?? payload;
 
 export default function PaywallConfigPage() {
   const { showSuccess, showError } = useNotification();
 
-  const [environment, setEnvironment] = useState<PaywallEnvironment>(
-    PaywallEnvironment.DEV
-  );
   const [draft, setDraft] = useState<ConfigDraft | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
-  const [sourceMeta, setSourceMeta] = useState<SourceMeta | null>(null);
+  const [versionMeta, setVersionMeta] = useState<VersionMeta | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,10 +75,14 @@ export default function PaywallConfigPage() {
   const [notFound, setNotFound] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const [pendingSwitchEnv, setPendingSwitchEnv] = useState<PaywallEnvironment | null>(
-    null
-  );
-  const [confirmEnv, setConfirmEnv] = useState<PaywallEnvironment | null>(null);
+  const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [versions, setVersions] = useState<PaywallConfigVersion[] | null>(null);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState<string | null>(null);
+  const [restoreTarget, setRestoreTarget] = useState<PaywallConfigVersion | null>(null);
+  const [restoringVersion, setRestoringVersion] = useState<number | null>(null);
 
   const {
     productsByPlatform,
@@ -82,40 +91,41 @@ export default function PaywallConfigPage() {
     refetch: refetchProducts,
   } = useActivePaywallProducts();
 
-  const load = useCallback(
-    async (env: PaywallEnvironment) => {
-      setLoading(true);
-      setLoadError(null);
-      setNotFound(false);
-      setFieldErrors({});
-      try {
-        const envelope = await paywallConfigService.getConfig(env);
-        const payload = unwrap(envelope);
-        const newDraft = toDraft(payload.config);
-        setDraft(newDraft);
-        setSavedSnapshot(JSON.stringify(newDraft));
-        setSourceMeta({ source: payload.source, version: payload.version });
-      } catch (err: any) {
-        if (isNotFound(err)) {
-          setNotFound(true);
-          setDraft(null);
-          setSavedSnapshot(null);
-          setSourceMeta(null);
-        } else {
-          const message = extractErrorMessage(err, "Failed to load paywall config");
-          setLoadError(message);
-          showError(message);
-        }
-      } finally {
-        setLoading(false);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    setNotFound(false);
+    setFieldErrors({});
+    try {
+      const envelope = await paywallConfigService.getConfig();
+      const payload = unwrap<PaywallConfigResponse>(envelope);
+      const newDraft = toDraft(payload.config);
+      setDraft(newDraft);
+      setSavedSnapshot(JSON.stringify(newDraft));
+      setVersionMeta({
+        version: payload.version,
+        publishedAt: payload.publishedAt,
+        publishedBy: payload.publishedBy,
+      });
+    } catch (err: any) {
+      if (isNotFound(err)) {
+        setNotFound(true);
+        setDraft(null);
+        setSavedSnapshot(null);
+        setVersionMeta(null);
+      } else {
+        const message = extractErrorMessage(err, "Failed to load paywall config");
+        setLoadError(message);
+        showError(message);
       }
-    },
+    } finally {
+      setLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  }, []);
 
   useEffect(() => {
-    load(environment);
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -136,23 +146,6 @@ export default function PaywallConfigPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
-  const requestSwitchEnvironment = (nextEnv: PaywallEnvironment) => {
-    if (nextEnv === environment || loading || saving) return;
-    if (isDirty) {
-      setPendingSwitchEnv(nextEnv);
-    } else {
-      setEnvironment(nextEnv);
-      load(nextEnv);
-    }
-  };
-
-  const confirmSwitchEnvironment = () => {
-    if (!pendingSwitchEnv) return;
-    setEnvironment(pendingSwitchEnv);
-    load(pendingSwitchEnv);
-    setPendingSwitchEnv(null);
-  };
-
   const handleStartFromDefaults = () => {
     setNotFound(false);
     setDraft(defaultDraft());
@@ -171,33 +164,86 @@ export default function PaywallConfigPage() {
       showError("Fix the highlighted fields before publishing.");
       return;
     }
-    // Snapshot the environment at click time -- the publish call always
-    // targets exactly the environment currently displayed, never a value
-    // read again later from state that could have drifted.
-    setConfirmEnv(environment);
+    setConfirmPublishOpen(true);
   };
 
   const handleConfirmPublish = async () => {
-    if (!draft || !confirmEnv) return;
+    if (!draft) return;
     setSaving(true);
     try {
       const payload = fromDraft(draft);
-      const envelope = await paywallConfigService.updateConfig(confirmEnv, payload);
-      const data = unwrap(envelope);
+      const envelope = await paywallConfigService.updateConfig(payload);
+      const data = unwrap<PaywallConfigResponse>(envelope);
       const newDraft = toDraft(data.config);
       setDraft(newDraft);
       setSavedSnapshot(JSON.stringify(newDraft));
-      setSourceMeta({ source: data.source, version: data.version });
+      setVersionMeta({
+        version: data.version,
+        publishedAt: data.publishedAt,
+        publishedBy: data.publishedBy,
+      });
       setFieldErrors({});
       setNotFound(false);
-      setConfirmEnv(null);
-      showSuccess(`Published paywall config for ${confirmEnv.toUpperCase()}`);
+      showSuccess(`Published paywall config (version ${data.version}).`);
     } catch (err: any) {
       setFieldErrors(extractFieldErrors(err));
       showError(extractErrorMessage(err, "Failed to publish paywall config"));
-      setConfirmEnv(null);
     } finally {
       setSaving(false);
+      setConfirmPublishOpen(false);
+    }
+  };
+
+  const loadVersions = useCallback(async () => {
+    setVersionsLoading(true);
+    setVersionsError(null);
+    try {
+      const envelope = await paywallConfigService.getVersions();
+      const rows = unwrap<PaywallConfigVersion[]>(envelope);
+      setVersions(rows ?? []);
+    } catch (err: any) {
+      setVersionsError(extractErrorMessage(err, "Failed to load version history"));
+    } finally {
+      setVersionsLoading(false);
+    }
+  }, []);
+
+  const handleOpenHistory = () => {
+    setHistoryOpen(true);
+    loadVersions();
+  };
+
+  const handleRequestRestore = (entry: PaywallConfigVersion) => {
+    if (entry.isCurrent || restoringVersion !== null) return;
+    setRestoreTarget(entry);
+  };
+
+  const handleConfirmRestore = async () => {
+    if (!restoreTarget) return;
+    const target = restoreTarget;
+    setRestoringVersion(target.version);
+    try {
+      const envelope = await paywallConfigService.restoreVersion(target.version);
+      const data = unwrap<PaywallConfigResponse>(envelope);
+      const newDraft = toDraft(data.config);
+      setDraft(newDraft);
+      setSavedSnapshot(JSON.stringify(newDraft));
+      setVersionMeta({
+        version: data.version,
+        publishedAt: data.publishedAt,
+        publishedBy: data.publishedBy,
+      });
+      setFieldErrors({});
+      setNotFound(false);
+      showSuccess(
+        `Restored version ${target.version} as the new live version (version ${data.version}).`
+      );
+      loadVersions();
+    } catch (err: any) {
+      showError(extractErrorMessage(err, "Failed to restore this version"));
+    } finally {
+      setRestoringVersion(null);
+      setRestoreTarget(null);
     }
   };
 
@@ -211,14 +257,15 @@ export default function PaywallConfigPage() {
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Paywall Config</h1>
             <p className="text-xs text-slate-500">
-              Edit the <code className="font-mono">paywall_config</code> Remote
-              Config value the mobile paywall reads.
+              Edit the <code className="font-mono">paywall_config</code> value the
+              mobile paywall reads. Publishing goes live immediately - there is no
+              staging step.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => load(environment)}
+              onClick={() => load()}
               disabled={disabled}
               className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
             >
@@ -227,25 +274,28 @@ export default function PaywallConfigPage() {
             </button>
             <button
               type="button"
+              onClick={handleOpenHistory}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
+            >
+              <ClockIcon className="h-5 w-5" />
+              History
+            </button>
+            <button
+              type="button"
               onClick={handlePublishClick}
               disabled={disabled || !draft || productsLoading}
-              className="min-w-[190px] justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-60"
+              className="min-w-[160px] justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-60"
             >
               {saving ? (
                 <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <RocketLaunchIcon className="h-5 w-5" />
               )}
-              Publish to {environment.toUpperCase()}
+              Publish changes
             </button>
           </div>
         </div>
-
-        <EnvironmentBar
-          environment={environment}
-          onSwitch={requestSwitchEnvironment}
-          disabled={disabled}
-        />
       </div>
 
       {loading ? (
@@ -263,7 +313,7 @@ export default function PaywallConfigPage() {
           <p className="text-sm text-red-700">{loadError}</p>
           <button
             type="button"
-            onClick={() => load(environment)}
+            onClick={() => load()}
             className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
           >
             Retry
@@ -273,10 +323,10 @@ export default function PaywallConfigPage() {
         <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-8 text-center space-y-3">
           <ExclamationTriangleIcon className="h-8 w-8 text-amber-500 mx-auto" />
           <p className="text-sm font-medium text-slate-800">
-            No paywall_config value published for {environment.toUpperCase()} yet.
+            No paywall_config published yet.
           </p>
           <p className="text-xs text-slate-500">
-            Fill in the fields below and publish to create it for this environment.
+            Fill in the fields below and publish to create it.
           </p>
           <button
             type="button"
@@ -288,18 +338,18 @@ export default function PaywallConfigPage() {
         </div>
       ) : draft ? (
         <>
-          {sourceMeta && (
+          {versionMeta && (
             <VersionInfoPanel
-              environment={environment}
-              source={sourceMeta.source}
-              version={sourceMeta.version}
+              version={versionMeta.version}
+              publishedAt={versionMeta.publishedAt}
+              publishedBy={versionMeta.publishedBy}
             />
           )}
 
           {isDirty && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-center gap-2">
               <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
-              Unsaved changes - publish to apply them to {environment.toUpperCase()}.
+              Unsaved changes - publish to make them live.
             </div>
           )}
 
@@ -360,51 +410,53 @@ export default function PaywallConfigPage() {
       ) : null}
 
       <ConfirmDialog
-        open={Boolean(pendingSwitchEnv)}
-        title={`Switch to ${pendingSwitchEnv?.toUpperCase()}?`}
-        message="You have unsaved changes that will be discarded. This does not affect what's already published."
-        confirmLabel="Discard & switch"
-        tone="danger"
-        onConfirm={confirmSwitchEnvironment}
-        onCancel={() => setPendingSwitchEnv(null)}
+        open={confirmPublishOpen}
+        title="Publish these changes?"
+        message={
+          <>
+            This becomes the live <code className="font-mono">paywall_config</code>{" "}
+            immediately - every app on this deployment reads it on its next fetch.
+            There is no staging step.
+          </>
+        }
+        confirmLabel={saving ? "Publishing..." : "Publish"}
+        loading={saving}
+        onConfirm={handleConfirmPublish}
+        onCancel={() => setConfirmPublishOpen(false)}
       />
 
       <ConfirmDialog
-        open={Boolean(confirmEnv)}
-        title={
-          confirmEnv === PaywallEnvironment.PROD
-            ? "Publish to PRODUCTION?"
-            : `Publish to ${confirmEnv?.toUpperCase()}?`
-        }
+        open={Boolean(restoreTarget)}
+        title={`Restore version ${restoreTarget?.version}?`}
         message={
-          confirmEnv === PaywallEnvironment.PROD ? (
-            <>
-              This updates the <code className="font-mono">paywall_config</code>{" "}
-              Remote Config value every <strong>production</strong> user reads --
-              immediately, with no staging step.
-            </>
-          ) : (
-            <>
-              This updates the dev-only Remote Config condition for{" "}
-              <code className="font-mono">paywall_config</code>. Only dev-flavor
-              apps read this value.
-            </>
-          )
+          <>
+            This republishes version {restoreTarget?.version}'s config as a new
+            version and makes it live immediately, replacing what's currently
+            published.
+          </>
         }
-        confirmLabel={
-          saving ? "Publishing..." : `Publish to ${confirmEnv?.toUpperCase()}`
-        }
-        tone={confirmEnv === PaywallEnvironment.PROD ? "danger" : "default"}
-        requireTypedConfirmation={confirmEnv === PaywallEnvironment.PROD ? "PROD" : undefined}
-        loading={saving}
-        onConfirm={handleConfirmPublish}
-        onCancel={() => setConfirmEnv(null)}
+        confirmLabel={restoringVersion !== null ? "Restoring..." : "Restore"}
+        tone="danger"
+        loading={restoringVersion !== null}
+        onConfirm={handleConfirmRestore}
+        onCancel={() => setRestoreTarget(null)}
       />
 
-      {!loading && !loadError && draft && !isDirty && errorEntries.length === 0 && sourceMeta && (
+      <VersionHistoryDrawer
+        open={historyOpen}
+        versions={versions}
+        loading={versionsLoading}
+        error={versionsError}
+        restoringVersion={restoringVersion}
+        onRetry={loadVersions}
+        onRestore={handleRequestRestore}
+        onClose={() => setHistoryOpen(false)}
+      />
+
+      {!loading && !loadError && draft && !isDirty && errorEntries.length === 0 && versionMeta && (
         <div className="flex items-center gap-1.5 text-xs text-emerald-700">
           <CheckCircleIcon className="h-4 w-4" />
-          Up to date with {environment.toUpperCase()}.
+          Up to date with the live config (version {versionMeta.version}).
         </div>
       )}
     </div>

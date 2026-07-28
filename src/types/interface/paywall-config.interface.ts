@@ -1,5 +1,3 @@
-import { PaywallEnvironment } from "../enum/paywall-config.enum";
-
 // Mirrors meup-api src/modules/paywall-config/dto/paywall-config.dto.ts --
 // keep both in sync if the backend contract changes.
 
@@ -93,24 +91,23 @@ export interface PaywallConfig {
   saleStrategy: PaywallSaleStrategy;
 }
 
-export interface PaywallConfigVersionUser {
-  email?: string;
-  name?: string;
-}
-
-export interface PaywallConfigVersion {
-  versionNumber?: string;
-  updateTime?: string;
-  updateUser?: PaywallConfigVersionUser;
-}
-
+// Mirrors meup-api dto/paywall-config-response.dto.ts. MySQL is now the
+// source of truth (previously Firebase Remote Config's own
+// `template.version`) -- `version` is a monotonically increasing integer
+// starting at 1, append-only: publishing (or restoring) never mutates an
+// existing row, it always writes a new, later version.
 export interface PaywallConfigResponse {
-  environment: PaywallEnvironment;
   config: PaywallConfig;
-  // dev-only: "conditional" = a dev override exists; "default" = dev is
-  // currently just inheriting the prod value. Always "default" for prod.
-  source: "conditional" | "default";
-  version?: PaywallConfigVersion;
+  version: number;
+  publishedAt: string;
+  /** Publishing admin's user id/email, or the Remote Config seed sentinel. */
+  publishedBy?: string;
+}
+
+/** One row of `GET /paywall-config/versions`, newest first. */
+export interface PaywallConfigVersion extends PaywallConfigResponse {
+  /** Whether this is the version currently served live. */
+  isCurrent: boolean;
 }
 
 /** Field-level validation error, as produced by PaywallConfigService. */
