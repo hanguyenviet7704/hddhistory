@@ -1,16 +1,30 @@
 import axiosClient from "./axiosClient";
 
-// TTS voiceover generation (edge-tts, server-side). Audio is generated from a
-// keypoint's theory content and stored on keypoint.audio.url — the manual
-// audio fields are gone, this is the only way audio is produced now.
+/// Narrator an admin picks when generating. Google Chirp3-HD offers one male and
+/// one female voice per locale; the backend stores the choice on each keypoint's
+/// audio, so omitting it re-dubs with whatever narrator that keypoint already
+/// had rather than silently switching.
+export type VoiceoverVoice = "female" | "male";
+
+// TTS voiceover generation (Google Cloud Chirp3-HD, server-side). Audio is
+// generated from a keypoint's theory content and stored on keypoint.audio.url —
+// the manual audio fields are gone, this is the only way audio is produced now.
 export const voiceoverService = {
-  async generateForKeypoint(keypointId: string) {
-    const res = await axiosClient.post(`/voiceover/keypoint/${keypointId}`);
+  async generateForKeypoint(keypointId: string, voice?: VoiceoverVoice) {
+    const res = await axiosClient.post(
+      `/voiceover/keypoint/${keypointId}`,
+      undefined,
+      { params: voice ? { voice } : undefined }
+    );
     return res.data;
   },
 
-  async generateForCourse(courseId: string) {
-    const res = await axiosClient.post(`/voiceover/course/${courseId}`);
+  async generateForCourse(courseId: string, voice?: VoiceoverVoice) {
+    const res = await axiosClient.post(
+      `/voiceover/course/${courseId}`,
+      undefined,
+      { params: voice ? { voice } : undefined }
+    );
     return res.data;
   },
 
