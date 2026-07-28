@@ -8,6 +8,7 @@ import 'dart:isolate';
 import 'dart:ui' as ui;
 
 //* Import all dependencies here
+import 'package:android_id/android_id.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:app_links/app_links.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
@@ -43,6 +44,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:injectable/injectable.dart' hide Scope;
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meup/core/dev_tools/event_inspector.dart';
 import 'package:meup/flavors.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';

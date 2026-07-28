@@ -32,6 +32,13 @@ abstract class BaseTrackingService {
   }) async {
     // LogDev.one('$trackingServiceName [Tracking] trackEvent: $eventName parameters: $parameters');
     // LogDev.info('$trackingServiceName [Tracking] $eventName params: $parameters');
+
+    // Mirror every fired event into the in-app Event Inspector (DEV only) so a
+    // tester can tap through a screen and see exactly what went out. This is
+    // the one choke point all events reach: the `AppTrackingService.track*`
+    // helpers call `BaseTrackingService.trackEvent` on the concrete service,
+    // and FirebaseAnalyticsService (the DI-bound one) calls `super` here.
+    _recordForInspector(eventName, parameters, InspectedEventKind.event);
   }
 
   /// Log when a screen is viewed
@@ -40,6 +47,29 @@ abstract class BaseTrackingService {
     String? screenClass,
   }) async {
     LogDev.one('$trackingServiceName trackScreenView: $screenName \n screenClass: $screenClass');
+    _recordForInspector(
+      screenName,
+      screenClass == null ? null : {'screen_class': screenClass},
+      InspectedEventKind.screen,
+    );
+  }
+
+  /// DEV-flavor-only tap into [EventInspectorStore]. No-op everywhere else, so
+  /// stg/prod pay nothing beyond the flavor check.
+  void _recordForInspector(
+    String name,
+    Map<String, dynamic>? parameters,
+    InspectedEventKind kind,
+  ) {
+    if (F.appFlavor != Flavor.dev) return;
+    EventInspectorStore.instance.add(
+      InspectedEvent(
+        name: name,
+        time: DateTime.now(),
+        kind: kind,
+        parameters: parameters,
+      ),
+    );
   }
 
   /// Track an error or exception
