@@ -91,16 +91,15 @@ pipeline {
             steps {
                 echo "Deploying to production environment"
                 sshagent(['gitlab-ssh-key']) {
-                    sh """ssh -o StrictHostKeyChecking=no ansible@159.223.67.7 << EOF
-                        docker pull registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
-                        exit
-                    EOF"""
-
-                    sh """ssh -o StrictHostKeyChecking=no ansible@159.223.56.178 << EOF
-                        docker service update --image registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} meup_admin
-                        exit
-
-                    EOF"""
+                    sh """ssh -o StrictHostKeyChecking=no ansible@192.168.10.137 << EOF
+                            kubectl config use-context do-sgp1-k8s-all-project
+                            kubectl set image deployment/admin //
+                                    admin=registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} //
+                                    -n meup
+                            kubectl config use-context do-sgp1-k8s-all-project
+                            kubectl rollout status deployment/admin -n meup
+                            exit
+                        EOF"""
                 }
             }
         }
