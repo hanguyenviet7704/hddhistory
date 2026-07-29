@@ -114,7 +114,7 @@ export default function PaywallConfigPage() {
         setSavedSnapshot(null);
         setVersionMeta(null);
       } else {
-        const message = extractErrorMessage(err, "Failed to load paywall config");
+        const message = extractErrorMessage(err, "Không tải được cấu hình paywall");
         setLoadError(message);
         showError(message);
       }
@@ -161,7 +161,7 @@ export default function PaywallConfigPage() {
     const errors = validateDraft(draft, productsByPlatform);
     setFieldErrors(errors);
     if (hasAnyError(errors)) {
-      showError("Fix the highlighted fields before publishing.");
+      showError("Sửa các trường được đánh dấu trước khi đăng.");
       return;
     }
     setConfirmPublishOpen(true);
@@ -184,10 +184,10 @@ export default function PaywallConfigPage() {
       });
       setFieldErrors({});
       setNotFound(false);
-      showSuccess(`Published paywall config (version ${data.version}).`);
+      showSuccess(`Đã đăng cấu hình paywall (phiên bản ${data.version}).`);
     } catch (err: any) {
       setFieldErrors(extractFieldErrors(err));
-      showError(extractErrorMessage(err, "Failed to publish paywall config"));
+      showError(extractErrorMessage(err, "Không đăng được cấu hình paywall"));
     } finally {
       setSaving(false);
       setConfirmPublishOpen(false);
@@ -202,7 +202,7 @@ export default function PaywallConfigPage() {
       const rows = unwrap<PaywallConfigVersion[]>(envelope);
       setVersions(rows ?? []);
     } catch (err: any) {
-      setVersionsError(extractErrorMessage(err, "Failed to load version history"));
+      setVersionsError(extractErrorMessage(err, "Không tải được lịch sử phiên bản"));
     } finally {
       setVersionsLoading(false);
     }
@@ -236,11 +236,11 @@ export default function PaywallConfigPage() {
       setFieldErrors({});
       setNotFound(false);
       showSuccess(
-        `Restored version ${target.version} as the new live version (version ${data.version}).`
+        `Đã khôi phục phiên bản ${target.version} thành bản đang chạy mới (phiên bản ${data.version}).`
       );
       loadVersions();
     } catch (err: any) {
-      showError(extractErrorMessage(err, "Failed to restore this version"));
+      showError(extractErrorMessage(err, "Không khôi phục được phiên bản này"));
     } finally {
       setRestoringVersion(null);
       setRestoreTarget(null);
@@ -249,17 +249,19 @@ export default function PaywallConfigPage() {
 
   const errorEntries = Object.entries(fieldErrors);
   const disabled = loading || saving;
+  const showVersionSkeleton = loading && !versionMeta;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-4">
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur pb-3 space-y-3">
+    <div className="p-6 max-w-5xl mx-auto space-y-5">
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur pb-4 mb-1 border-b border-slate-200/80 space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">Paywall Config</h1>
-            <p className="text-xs text-slate-500">
-              Edit the <code className="font-mono">paywall_config</code> value the
-              mobile paywall reads. Publishing goes live immediately - there is no
-              staging step.
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+              Cấu hình paywall
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Chỉnh giá trị <code className="font-mono">paywall_config</code> mà app
+              đọc. Đăng là áp dụng ngay, không có bước staging.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -267,38 +269,57 @@ export default function PaywallConfigPage() {
               type="button"
               onClick={() => load()}
               disabled={disabled}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
+              aria-label="Tải lại cấu hình"
+              title="Tải lại"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
               <ArrowPathIcon className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
-              Reload
             </button>
             <button
               type="button"
               onClick={handleOpenHistory}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
               <ClockIcon className="h-5 w-5" />
-              History
+              Lịch sử phiên bản
             </button>
             <button
               type="button"
               onClick={handlePublishClick}
               disabled={disabled || !draft || productsLoading}
-              className="min-w-[160px] justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-60"
+              className="relative min-w-[170px] justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
+              {isDirty && !saving && (
+                <span
+                  className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-amber-400 border-2 border-slate-50"
+                  aria-hidden="true"
+                />
+              )}
               {saving ? (
                 <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <RocketLaunchIcon className="h-5 w-5" />
               )}
-              Publish changes
+              {saving ? "Đang đăng..." : "Đăng thay đổi"}
             </button>
           </div>
         </div>
+
+        {showVersionSkeleton ? (
+          <div className="h-10 rounded-xl border border-slate-100 bg-slate-100 animate-pulse" />
+        ) : (
+          versionMeta && (
+            <VersionInfoPanel
+              version={versionMeta.version}
+              publishedAt={versionMeta.publishedAt}
+              publishedBy={versionMeta.publishedBy}
+            />
+          )
+        )}
       </div>
 
-      {loading ? (
+      {loading && !draft ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -314,50 +335,42 @@ export default function PaywallConfigPage() {
           <button
             type="button"
             onClick={() => load()}
-            className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
+            className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
           >
-            Retry
+            Thử lại
           </button>
         </div>
       ) : notFound && !draft ? (
         <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-8 text-center space-y-3">
           <ExclamationTriangleIcon className="h-8 w-8 text-amber-500 mx-auto" />
           <p className="text-sm font-medium text-slate-800">
-            No paywall_config published yet.
+            Chưa có paywall_config nào được đăng.
           </p>
           <p className="text-xs text-slate-500">
-            Fill in the fields below and publish to create it.
+            Điền các trường bên dưới rồi bấm Đăng để tạo mới.
           </p>
           <button
             type="button"
             onClick={handleStartFromDefaults}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
           >
-            Start from defaults
+            Dùng giá trị mặc định
           </button>
         </div>
       ) : draft ? (
         <>
-          {versionMeta && (
-            <VersionInfoPanel
-              version={versionMeta.version}
-              publishedAt={versionMeta.publishedAt}
-              publishedBy={versionMeta.publishedBy}
-            />
-          )}
-
           {isDirty && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-center gap-2">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 flex items-center gap-2">
               <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
-              Unsaved changes - publish to make them live.
+              Có thay đổi chưa được đăng - bấm "Đăng thay đổi" để áp dụng.
             </div>
           )}
 
           {errorEntries.length > 0 && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 space-y-1">
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 space-y-1">
               <p className="text-xs font-semibold text-red-800 flex items-center gap-1.5">
                 <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
-                Validation failed - fix the highlighted fields:
+                Validate thất bại - sửa các trường được đánh dấu:
               </p>
               {errorEntries.map(([field, message]) => (
                 <p key={field} className="text-xs text-red-700 pl-5">
@@ -411,15 +424,15 @@ export default function PaywallConfigPage() {
 
       <ConfirmDialog
         open={confirmPublishOpen}
-        title="Publish these changes?"
+        title="Đăng những thay đổi này?"
         message={
           <>
-            This becomes the live <code className="font-mono">paywall_config</code>{" "}
-            immediately - every app on this deployment reads it on its next fetch.
-            There is no staging step.
+            Cấu hình này sẽ trở thành <code className="font-mono">paywall_config</code>{" "}
+            đang chạy ngay lập tức - mọi app trên deployment này sẽ đọc giá trị
+            mới ở lần fetch tiếp theo. Không có bước staging.
           </>
         }
-        confirmLabel={saving ? "Publishing..." : "Publish"}
+        confirmLabel={saving ? "Đang đăng..." : "Đăng"}
         loading={saving}
         onConfirm={handleConfirmPublish}
         onCancel={() => setConfirmPublishOpen(false)}
@@ -427,15 +440,15 @@ export default function PaywallConfigPage() {
 
       <ConfirmDialog
         open={Boolean(restoreTarget)}
-        title={`Restore version ${restoreTarget?.version}?`}
+        title={`Khôi phục phiên bản ${restoreTarget?.version}?`}
         message={
           <>
-            This republishes version {restoreTarget?.version}'s config as a new
-            version and makes it live immediately, replacing what's currently
-            published.
+            Thao tác này sẽ đăng lại cấu hình của phiên bản {restoreTarget?.version}{" "}
+            thành một phiên bản mới và áp dụng ngay lập tức, thay thế cấu hình
+            đang chạy hiện tại.
           </>
         }
-        confirmLabel={restoringVersion !== null ? "Restoring..." : "Restore"}
+        confirmLabel={restoringVersion !== null ? "Đang khôi phục..." : "Khôi phục"}
         tone="danger"
         loading={restoringVersion !== null}
         onConfirm={handleConfirmRestore}
@@ -454,9 +467,9 @@ export default function PaywallConfigPage() {
       />
 
       {!loading && !loadError && draft && !isDirty && errorEntries.length === 0 && versionMeta && (
-        <div className="flex items-center gap-1.5 text-xs text-emerald-700">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
           <CheckCircleIcon className="h-4 w-4" />
-          Up to date with the live config (version {versionMeta.version}).
+          Đã đồng bộ với bản đang chạy (phiên bản {versionMeta.version}).
         </div>
       )}
     </div>

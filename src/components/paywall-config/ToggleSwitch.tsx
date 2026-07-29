@@ -3,9 +3,11 @@ import React from "react";
 interface ToggleSwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
-  label: string;
+  label?: string;
   description?: string;
   disabled?: boolean;
+  /** Renders as a full-width row: label + hint pinned left, switch pinned right. */
+  fullWidth?: boolean;
 }
 
 // Hand-rolled accessible switch: a visually-hidden native checkbox drives a
@@ -17,14 +19,19 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   label,
   description,
   disabled = false,
+  fullWidth = false,
 }) => (
   <label
-    className={`flex items-center gap-3 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+    className={`flex items-center gap-3 ${fullWidth ? "w-full justify-between" : ""} ${
+      disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+    }`}
   >
     {(label || description) && (
-      <span className="text-right">
+      <span className={fullWidth ? "text-left" : "text-right"}>
         <span className="block text-sm font-medium text-slate-800">{label}</span>
-        {description && <span className="block text-xs text-slate-500">{description}</span>}
+        {description && (
+          <span className="block text-xs text-slate-500 mt-0.5">{description}</span>
+        )}
       </span>
     )}
     <span className="relative inline-flex h-6 w-11 flex-shrink-0 items-center">

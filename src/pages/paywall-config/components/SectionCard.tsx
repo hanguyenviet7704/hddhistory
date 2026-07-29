@@ -19,25 +19,27 @@ const SectionCard: React.FC<SectionCardProps> = ({
   errorSummary = [],
   children,
 }) => (
-  <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
-    <div className="flex items-start justify-between gap-3 p-4 border-b border-slate-100">
+  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="flex items-start justify-between gap-3 p-4 border-b border-slate-100 bg-slate-50/60 rounded-t-2xl">
       <div className="flex items-start gap-3">
         {Icon && (
-          <div className="h-9 w-9 flex-shrink-0 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+          <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
             <Icon className="h-5 w-5" />
           </div>
         )}
         <div>
-          <p className="text-sm font-semibold text-slate-900">{title}</p>
-          {description && <p className="text-xs text-slate-500 mt-0.5 max-w-xl">{description}</p>}
+          <p className="text-sm font-semibold text-slate-900 tracking-tight">{title}</p>
+          {description && (
+            <p className="text-xs text-slate-500 mt-0.5 max-w-xl leading-relaxed">{description}</p>
+          )}
         </div>
       </div>
       {headerRight}
     </div>
 
-    <div className="p-4 space-y-4">
+    <div className="p-5 space-y-5">
       {errorSummary.length > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 space-y-1">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 space-y-1">
           {errorSummary.map(([field, message]) => (
             <p key={field} className="text-xs text-red-700 flex items-start gap-1.5">
               <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />

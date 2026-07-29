@@ -29,21 +29,21 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
 }) => {
   return (
     <SectionCard
-      title="Sale event"
-      description="A time-boxed campaign (e.g. Black Friday) that overrides the other strategies while active."
+      title="Sự kiện sale"
+      description="Một chiến dịch có thời hạn (vd: Black Friday) sẽ ghi đè các chiến lược khác trong lúc đang chạy."
       icon={MegaphoneIcon}
       headerRight={
         <ToggleSwitch
           checked={value.enabled}
           onChange={(enabled) => onChange({ ...value, enabled })}
-          label="Enabled"
+          label="Bật"
           disabled={disabled}
         />
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <label className="flex flex-col gap-1 text-xs text-slate-600">
-          <span className="font-medium">Campaign ID</span>
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Mã chiến dịch</span>
           <input
             value={value.campaignId}
             onChange={(e) => onChange({ ...value, campaignId: e.target.value })}
@@ -53,8 +53,8 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-slate-600">
-          <span className="font-medium">Start (UTC)</span>
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Bắt đầu (UTC)</span>
           <input
             type="datetime-local"
             value={value.startAtUtc}
@@ -64,8 +64,8 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-slate-600">
-          <span className="font-medium">End (UTC)</span>
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Kết thúc (UTC)</span>
           <input
             type="datetime-local"
             value={value.endAtUtc}
@@ -76,25 +76,25 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
         </label>
       </div>
 
-      <label className="flex flex-col gap-1 text-xs text-slate-600">
-        <span className="font-medium">Applies to</span>
+      <label className="flex flex-col gap-1 text-xs text-slate-700">
+        <span className="font-medium">Áp dụng cho</span>
         <input
           value={value.appliesTo}
           onChange={(e) => onChange({ ...value, appliesTo: e.target.value })}
           placeholder="all"
           disabled={disabled}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+          className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono bg-slate-50/70 focus:bg-white transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
         />
-        <span className="text-[11px] text-slate-400">
-          Target audience selector - shape not fixed by the backend. Plain
-          text (e.g. "all") is stored as-is; valid JSON (an object or array)
-          is parsed and stored as that shape.
+        <span className="text-[11px] text-slate-500">
+          Bộ lọc đối tượng áp dụng - định dạng không cố định phía backend.
+          Text thường (vd "all") được lưu nguyên văn; JSON hợp lệ (object
+          hoặc array) sẽ được lưu đúng theo cấu trúc đó.
         </span>
       </label>
 
       <div>
-        <p className="text-xs font-medium text-slate-600 mb-1.5">
-          Content for this campaign (optional)
+        <p className="text-xs font-medium text-slate-700 mb-1.5">
+          Nội dung cho chiến dịch này (không bắt buộc)
         </p>
         <LocaleContentEditor
           idPrefix="sale-event"

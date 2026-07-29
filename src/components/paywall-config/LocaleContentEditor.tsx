@@ -100,7 +100,7 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
               aria-controls={`${idPrefix}-panel-${locale}`}
               id={`${idPrefix}-tab-${locale}`}
               onClick={() => setActiveLocale(locale)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition inline-flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition inline-flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 ${
                 isActive
                   ? "bg-teal-600 border-teal-600 text-white"
                   : "border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -126,10 +126,10 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
             type="button"
             onClick={copyFromEn}
             disabled={disabled}
-            className="ml-1 inline-flex items-center gap-1 text-xs text-teal-700 hover:text-teal-800 disabled:opacity-50"
+            className="ml-1 inline-flex items-center gap-1 text-xs text-teal-700 hover:text-teal-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 rounded"
           >
             <DocumentDuplicateIcon className="h-3.5 w-3.5" />
-            Copy from EN
+            Sao chép từ EN
           </button>
         )}
       </div>
@@ -141,23 +141,23 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
         className="rounded-lg border border-slate-200 p-3 space-y-3"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-slate-600">
-            <span className="font-medium">Subheading</span>
+          <label className="flex flex-col gap-1 text-xs text-slate-700">
+            <span className="font-medium">Tiêu đề phụ</span>
             <input
               value={current.subheading}
               onChange={(e) => updateLocale(activeLocale, { subheading: e.target.value })}
-              placeholder="Limited time offer"
+              placeholder="Ưu đãi có thời hạn"
               disabled={disabled}
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-slate-600">
-            <span className="font-medium">Heading</span>
+          <label className="flex flex-col gap-1 text-xs text-slate-700">
+            <span className="font-medium">Tiêu đề chính</span>
             <input
               value={current.heading}
               onChange={(e) => updateLocale(activeLocale, { heading: e.target.value })}
-              placeholder="Unlock everything"
+              placeholder="Mở khóa toàn bộ"
               disabled={disabled}
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
             />
@@ -166,11 +166,11 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-600">Benefits</span>
+            <span className="text-xs font-medium text-slate-700">Lợi ích</span>
           </div>
 
           {current.benefits.length === 0 ? (
-            <p className="text-xs text-slate-400">No benefits listed for this locale.</p>
+            <p className="text-xs text-slate-500">Chưa có lợi ích nào cho ngôn ngữ này.</p>
           ) : (
             <div className="space-y-2">
               {current.benefits.map((benefit, index) => (
@@ -178,14 +178,14 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
                   <input
                     value={benefit.icon}
                     onChange={(e) => updateBenefit(index, { icon: e.target.value })}
-                    placeholder="icon (e.g. sparkle)"
+                    placeholder="icon (vd: sparkle)"
                     disabled={disabled}
                     className="w-36 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
                   />
                   <input
                     value={benefit.title}
                     onChange={(e) => updateBenefit(index, { title: e.target.value })}
-                    placeholder="Unlimited lessons"
+                    placeholder="Học không giới hạn"
                     disabled={disabled}
                     className="flex-1 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
                   />
@@ -193,8 +193,8 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
                     type="button"
                     onClick={() => removeBenefit(index)}
                     disabled={disabled}
-                    aria-label="Remove benefit"
-                    title="Remove benefit"
+                    aria-label="Xóa lợi ích"
+                    title="Xóa lợi ích"
                     className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
                   >
                     <TrashIcon className="h-4 w-4" />
@@ -211,7 +211,7 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-slate-300 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
           >
             <PlusIcon className="h-3.5 w-3.5" />
-            Add benefit
+            Thêm lợi ích
           </button>
         </div>
       </div>
