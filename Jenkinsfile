@@ -93,8 +93,8 @@ pipeline {
                 sshagent(['gitlab-ssh-key']) {
                     sh """ssh -o StrictHostKeyChecking=no ansible@192.168.10.137 << EOF
                             kubectl config use-context do-sgp1-k8s-all-project
-                            kubectl set image deployment/admin //
-                                    admin=registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} //
+                            kubectl set image deployment/admin \
+                                    admin=registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} \
                                     -n meup
                             kubectl config use-context do-sgp1-k8s-all-project
                             kubectl rollout status deployment/admin -n meup
