@@ -116,9 +116,9 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     }
   }, [running, job, showSuccess, showError]);
 
-  // Narrator for the next generation run. Google Chirp3-HD ships a male and a
-  // female voice per locale; the backend persists whichever was used on each
-  // keypoint, so leaving this alone re-dubs with the same narrator as before.
+  // Narrator for the next generation run, per language. The backend persists
+  // whichever was used on each keypoint, so leaving this alone re-dubs with the
+  // same narrator as before.
   const [voices, setVoices] = useState<VoiceoverVoiceSelection>({});
 
   const handleGenerate = async () => {

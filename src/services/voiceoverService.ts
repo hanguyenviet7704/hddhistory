@@ -1,31 +1,30 @@
 import axiosClient from "./axiosClient";
 
-/// One narrator Google offers for a language, as returned by
-/// GET /voiceover/voices.
+/// One narrator offered for a language, as returned by GET /voiceover/voices.
 export interface VoiceoverVoiceOption {
-  /// Full Google voice name, e.g. `zh-CN-Chirp3-HD-Achernar`.
+  /// Full voice name, e.g. `zh-CN-XiaoxiaoNeural`.
   name: string;
   /// Trailing speaker segment, e.g. `Achernar` — what the picker shows.
   speaker: string;
   gender: string;
 }
 
-/// Narrator per language code, e.g. `{ zh: "zh-CN-Chirp3-HD-Achernar" }`.
+/// Narrator per language code, e.g. `{ zh: "zh-CN-XiaoxiaoNeural" }`.
 ///
 /// Per language, not one narrator for the whole run: failures are per language,
 /// so Chinese erroring must be fixable without re-dubbing the other four. A
 /// language left out keeps whatever narrator it was last dubbed with.
 export type VoiceoverVoiceSelection = Record<string, string>;
 
-// TTS voiceover generation (Google Cloud Chirp3-HD, server-side — billed per
-// character). One clip per CARD (theory pages read in full, exercise cards read
+// TTS voiceover generation (free Microsoft Edge neural voices, server-side — no
+// key, no per-character billing). One clip per CARD (theory pages read in full, exercise cards read
 // the QUESTION only) plus one whole-keypoint file for app builds released before
 // per-card narration. Stored on keypoint.audio; the manual audio fields are gone,
 // this is the only way audio is produced now.
 export const voiceoverService = {
-  // Narrators available per language, straight from Google's catalogue. The
-  // list is NOT hardcoded client-side on purpose: a name invented here is how
-  // every Chinese keypoint once failed with "Voice does not exist".
+  // Narrators available per language, straight from the TTS endpoint's own
+  // catalogue. The list is NOT hardcoded client-side on purpose: a name invented
+  // here is how every Chinese keypoint once failed with "Voice does not exist".
   async getVoiceOptions(): Promise<Record<string, VoiceoverVoiceOption[]>> {
     const res = await axiosClient.get("/voiceover/voices");
     // The API wraps payloads in a `data` envelope, so `res.data` is

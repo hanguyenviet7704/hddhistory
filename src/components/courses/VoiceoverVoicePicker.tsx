@@ -20,7 +20,8 @@ interface VoiceoverVoicePickerProps {
   disabled?: boolean;
 }
 
-/// One narrator select PER LANGUAGE, populated from Google's own catalogue.
+/// One narrator select PER LANGUAGE, populated from the TTS endpoint's own
+/// catalogue.
 ///
 /// Two deliberate choices here:
 ///
@@ -29,7 +30,8 @@ interface VoiceoverVoicePickerProps {
 ///   cannot express "leave the other four alone".
 /// - **Options are fetched, never hardcoded.** A voice name invented on the
 ///   client is exactly how every Chinese keypoint ended up failing with
-///   `Voice 'zh-CN-Chirp3-HD-Zephyr' does not exist`.
+///   `Voice 'zh-CN-Chirp3-HD-Zephyr' does not exist` (a Google-era name built by
+///   concatenation).
 ///
 /// An empty value means "keep whatever that language was last dubbed with",
 /// which is why the placeholder option is not a real voice.
@@ -99,7 +101,7 @@ export default function VoiceoverVoicePicker({
   if (!langs.length) {
     return (
       <span className="text-sm text-slate-500">
-        Google không trả về giọng Chirp3-HD nào
+        Không lấy được danh sách giọng
       </span>
     );
   }
