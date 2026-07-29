@@ -26,6 +26,7 @@ import {
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
   LinkIcon,
+  FireIcon as StreakIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -93,6 +94,7 @@ const menuGroups = [
       { name: "Cấu hình paywall", icon: RocketLaunchIcon, path: "/paywall-config" },
       { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
       { name: "Link tải app", icon: LinkIcon, path: "/download-links" },
+      { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
       { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
     ],
   },

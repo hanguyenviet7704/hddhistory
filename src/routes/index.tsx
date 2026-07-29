@@ -31,6 +31,7 @@ import SettingsPage from "../pages/setting/Setting";
 import SkillsetList from "../pages/skillsets/skillsetList";
 import HabitList from "../pages/habits/HabitList";
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
+import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
@@ -74,6 +75,7 @@ export default function AppRouter() {
 
               <Route path="study-themes" element={<StudyThemeList />} />
               <Route path="download-links" element={<DownloadLinkList />} />
+              <Route path="streak-config" element={<StreakConfigPage />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />
