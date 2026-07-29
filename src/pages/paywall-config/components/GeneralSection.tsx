@@ -1,5 +1,5 @@
 import React from "react";
-import { AdjustmentsHorizontalIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { AdjustmentsHorizontalIcon, BookOpenIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import ToggleSwitch from "../../../components/paywall-config/ToggleSwitch";
 import { ConfigDraft } from "../paywallConfigDraft";
 import SectionCard from "./SectionCard";
@@ -138,6 +138,75 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
             Phần trăm phiên (0-100) sẽ tự động thấy paywall bật lên.
           </span>
         </label>
+      </SectionCard>
+
+      <SectionCard
+        title="Mở paywall trong bài học"
+        description="Mở paywall ngay khi user cuộn qua thẻ đầu tiên của một keypoint."
+        icon={BookOpenIcon}
+        headerRight={
+          <ToggleSwitch
+            checked={draft.inLessonEnabled}
+            onChange={(checked) => onChange({ inLessonEnabled: checked })}
+            label="Bật"
+            disabled={disabled}
+          />
+        }
+      >
+        <div className="flex flex-wrap gap-4">
+          <label className="flex flex-col gap-1 text-xs text-slate-700 w-40">
+            <span className="font-medium">Keypoint thứ</span>
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={draft.inLessonKeypointOrdinal}
+              onChange={(e) =>
+                onChange({ inLessonKeypointOrdinal: e.target.value })
+              }
+              disabled={disabled || !draft.inLessonEnabled}
+              className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+                fieldErrors["inLessonPaywall.keypointOrdinal"]
+                  ? "border-red-300"
+                  : "border-slate-200"
+              }`}
+            />
+            {fieldErrors["inLessonPaywall.keypointOrdinal"] && (
+              <span className="text-[11px] text-red-600">
+                {fieldErrors["inLessonPaywall.keypointOrdinal"]}
+              </span>
+            )}
+            <span className="text-[11px] text-slate-500">
+              Tính theo thứ tự bài trong khóa, giống cách "khóa bài học" đếm. Để
+              0 nếu muốn áp cho mọi keypoint.
+            </span>
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-slate-700 w-40">
+            <span className="font-medium">Mở sau khi qua mấy thẻ</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={draft.inLessonAfterCards}
+              onChange={(e) => onChange({ inLessonAfterCards: e.target.value })}
+              disabled={disabled || !draft.inLessonEnabled}
+              className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+                fieldErrors["inLessonPaywall.afterCards"]
+                  ? "border-red-300"
+                  : "border-slate-200"
+              }`}
+            />
+            {fieldErrors["inLessonPaywall.afterCards"] && (
+              <span className="text-[11px] text-red-600">
+                {fieldErrors["inLessonPaywall.afterCards"]}
+              </span>
+            )}
+            <span className="text-[11px] text-slate-500">
+              1 = mở đúng lúc user cuộn từ thẻ 1 sang thẻ 2.
+            </span>
+          </label>
+        </div>
       </SectionCard>
     </div>
   );

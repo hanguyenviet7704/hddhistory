@@ -1,30 +1,52 @@
 import axiosClient from "./axiosClient";
 
-/// Narrator an admin picks when generating. Google Chirp3-HD offers one male and
-/// one female voice per locale; the backend stores the choice on each keypoint's
-/// audio, so omitting it re-dubs with whatever narrator that keypoint already
-/// had rather than silently switching.
-export type VoiceoverVoice = "female" | "male";
+/// One narrator Google offers for a language, as returned by
+/// GET /voiceover/voices.
+export interface VoiceoverVoiceOption {
+  /// Full Google voice name, e.g. `zh-CN-Chirp3-HD-Achernar`.
+  name: string;
+  /// Trailing speaker segment, e.g. `Achernar` — what the picker shows.
+  speaker: string;
+  gender: string;
+}
 
-// TTS voiceover generation (Google Cloud Chirp3-HD, server-side). Audio is
-// generated from a keypoint's theory content and stored on keypoint.audio.url —
-// the manual audio fields are gone, this is the only way audio is produced now.
+/// Narrator per language code, e.g. `{ zh: "zh-CN-Chirp3-HD-Achernar" }`.
+///
+/// Per language, not one narrator for the whole run: failures are per language,
+/// so Chinese erroring must be fixable without re-dubbing the other four. A
+/// language left out keeps whatever narrator it was last dubbed with.
+export type VoiceoverVoiceSelection = Record<string, string>;
+
+// TTS voiceover generation (Google Cloud Chirp3-HD, server-side — billed per
+// character). One clip per CARD (theory pages read in full, exercise cards read
+// the QUESTION only) plus one whole-keypoint file for app builds released before
+// per-card narration. Stored on keypoint.audio; the manual audio fields are gone,
+// this is the only way audio is produced now.
 export const voiceoverService = {
-  async generateForKeypoint(keypointId: string, voice?: VoiceoverVoice) {
-    const res = await axiosClient.post(
-      `/voiceover/keypoint/${keypointId}`,
-      undefined,
-      { params: voice ? { voice } : undefined }
+  // Narrators available per language, straight from Google's catalogue. The
+  // list is NOT hardcoded client-side on purpose: a name invented here is how
+  // every Chinese keypoint once failed with "Voice does not exist".
+  async getVoiceOptions() {
+    const res = await axiosClient.get<Record<string, VoiceoverVoiceOption[]>>(
+      "/voiceover/voices"
     );
     return res.data;
   },
 
-  async generateForCourse(courseId: string, voice?: VoiceoverVoice) {
-    const res = await axiosClient.post(
-      `/voiceover/course/${courseId}`,
-      undefined,
-      { params: voice ? { voice } : undefined }
-    );
+  async generateForKeypoint(
+    keypointId: string,
+    voices?: VoiceoverVoiceSelection
+  ) {
+    const res = await axiosClient.post(`/voiceover/keypoint/${keypointId}`, {
+      voices,
+    });
+    return res.data;
+  },
+
+  async generateForCourse(courseId: string, voices?: VoiceoverVoiceSelection) {
+    const res = await axiosClient.post(`/voiceover/course/${courseId}`, {
+      voices,
+    });
     return res.data;
   },
 
@@ -44,11 +66,10 @@ export const voiceoverService = {
 
   // Kick off a background job over every course. force=false only (re)dubs
   // missing/stale/failed cells; force=true regenerates everything.
-  async generateAll(force: boolean, voice?: VoiceoverVoice) {
+  async generateAll(force: boolean, voices?: VoiceoverVoiceSelection) {
     const res = await axiosClient.post(
       `/voiceover/generate-all?force=${force}`,
-      undefined,
-      { params: voice ? { voice } : undefined }
+      { voices }
     );
     return res.data;
   },

@@ -8,8 +8,9 @@ import {
   voiceoverService,
   CourseVoiceoverStatus,
   VoiceoverCellStatus,
-  VoiceoverVoice,
+  VoiceoverVoiceSelection,
 } from "../../services/voiceoverService";
+import VoiceoverVoicePicker from "./VoiceoverVoicePicker";
 
 interface Props {
   open: boolean;
@@ -29,10 +30,10 @@ const SUMMARY: Array<{
   color: string;
 }> = [
   { key: "done", label: "Done", hint: "Đã có audio khớp", color: "text-green-600" },
-  { key: "stale", label: "Stale", hint: "Theory đã đổi", color: "text-amber-600" },
-  { key: "missing", label: "Missing", hint: "Có theory, chưa audio", color: "text-sky-600" },
+  { key: "stale", label: "Stale", hint: "Nội dung đã đổi", color: "text-amber-600" },
+  { key: "missing", label: "Missing", hint: "Có nội dung, chưa audio", color: "text-sky-600" },
   { key: "failed", label: "Failed", hint: "Lỗi, xem bên dưới", color: "text-red-600" },
-  { key: "none", label: "No theory", hint: "Không có gì để đọc", color: "text-gray-400" },
+  { key: "none", label: "Không có text", hint: "Không có gì để đọc", color: "text-gray-400" },
 ];
 
 const CELL_CLASS: Record<VoiceoverCellStatus, string> = {
@@ -118,13 +119,13 @@ const VoiceoverStatusModal: React.FC<Props> = ({
   // Narrator for the next generation run. Google Chirp3-HD ships a male and a
   // female voice per locale; the backend persists whichever was used on each
   // keypoint, so leaving this alone re-dubs with the same narrator as before.
-  const [voice, setVoice] = useState<VoiceoverVoice>("female");
+  const [voices, setVoices] = useState<VoiceoverVoiceSelection>({});
 
   const handleGenerate = async () => {
     if (running || starting) return;
     setStarting(true);
     try {
-      await voiceoverService.generateForCourse(courseId, voice);
+      await voiceoverService.generateForCourse(courseId, voices);
       showSuccess("Đã bắt đầu sinh voiceover ở nền…");
       await load(); // picks up the running job → auto-poll kicks in
     } catch (err) {
@@ -143,7 +144,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     if (retrying.has(keypointId) || running) return;
     setRetrying((prev) => new Set(prev).add(keypointId));
     try {
-      await voiceoverService.generateForKeypoint(keypointId, voice);
+      await voiceoverService.generateForKeypoint(keypointId, voices);
       await load();
     } catch (err) {
       showError(
@@ -178,19 +179,11 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             <p className="text-sm text-gray-500 truncate max-w-lg">{courseTitle}</p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <span className="text-gray-500">Voice</span>
-              <select
-                value={voice}
-                onChange={(e) => setVoice(e.target.value as VoiceoverVoice)}
-                disabled={running || starting}
-                className="rounded-lg border border-gray-300 px-2 py-2 text-sm font-medium text-gray-700 disabled:opacity-60"
-                aria-label="Narrator voice"
-              >
-                <option value="female">Nữ</option>
-                <option value="male">Nam</option>
-              </select>
-            </label>
+            <VoiceoverVoicePicker
+              value={voices}
+              onChange={setVoices}
+              disabled={running || starting}
+            />
             <button
               onClick={load}
               disabled={loading}
@@ -393,8 +386,8 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                   </tbody>
                 </table>
                 <p className="mt-3 text-xs text-gray-400">
-                  ✓ done · ↻ stale (theory đổi) · — missing · ✕ failed · · no
-                  theory — bấm vào ô ✕ / ↻ / — để chạy lại riêng bài đó.
+                  ✓ done · ↻ stale (nội dung đổi) · — missing · ✕ failed · ·
+                  không có text — bấm vào ô ✕ / ↻ / — để chạy lại riêng bài đó.
                 </p>
               </div>
             </>

@@ -10,6 +10,7 @@
 import {
   PAYWALL_CONFIG_LOCALES,
   PaywallAutoOpen,
+  PaywallInLesson,
   PaywallBenefit,
   PaywallConfig,
   PaywallDefaultUser,
@@ -88,6 +89,9 @@ export interface ConfigDraft {
   lessonLockText: string;
   autoOpenEnabled: boolean;
   autoOpenPercent: string;
+  inLessonEnabled: boolean;
+  inLessonKeypointOrdinal: string;
+  inLessonAfterCards: string;
   defaultUser: DefaultUserDraft;
   newUser: NewUserDraft;
   saleEvent: SaleEventDraft;
@@ -127,6 +131,9 @@ export const defaultDraft = (): ConfigDraft => ({
   lessonLockText: "",
   autoOpenEnabled: false,
   autoOpenPercent: "0",
+  inLessonEnabled: false,
+  inLessonKeypointOrdinal: "2",
+  inLessonAfterCards: "1",
   defaultUser: {
     content: emptyLocalizedContent(),
     products: [],
@@ -205,6 +212,18 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     config.autoOpen?.sessionRolloutPercent != null
       ? String(config.autoOpen.sessionRolloutPercent)
       : "0",
+  inLessonEnabled: Boolean(config.inLessonPaywall?.enabled),
+  // Defaults match the design intent (2nd keypoint, leaving card 1) so a
+  // version saved before this gate existed opens the form on sane numbers
+  // rather than zeros.
+  inLessonKeypointOrdinal:
+    config.inLessonPaywall?.keypointOrdinal != null
+      ? String(config.inLessonPaywall.keypointOrdinal)
+      : "2",
+  inLessonAfterCards:
+    config.inLessonPaywall?.afterCards != null
+      ? String(config.inLessonPaywall.afterCards)
+      : "1",
   defaultUser: {
     content: toLocalizedContentDraft(config.saleStrategy?.defaultUser?.content),
     products: (config.saleStrategy?.defaultUser?.products ?? []).map(
@@ -347,6 +366,12 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     sessionRolloutPercent: Number(draft.autoOpenPercent || 0),
   };
 
+  const inLessonPaywall: PaywallInLesson = {
+    enabled: draft.inLessonEnabled,
+    keypointOrdinal: Number(draft.inLessonKeypointOrdinal || 0),
+    afterCards: Number(draft.inLessonAfterCards || 1),
+  };
+
   let lessonLock: Record<string, unknown> | undefined;
   if (draft.lessonLockText.trim()) {
     try {
@@ -361,6 +386,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     enableLessonLock: draft.enableLessonLock,
     lessonLock,
     autoOpen,
+    inLessonPaywall,
     saleStrategy,
   };
 };

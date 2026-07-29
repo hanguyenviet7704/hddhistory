@@ -80,6 +80,19 @@ export interface PaywallAutoOpen {
 }
 
 /**
+ * Opens the paywall from inside a keypoint, when the reader swipes off card 1
+ * onto the next one. Optional on the wire: versions published before this gate
+ * existed simply have no such key.
+ */
+export interface PaywallInLesson {
+  enabled: boolean;
+  /** 1-based keypoint position in the course's flat lesson list; 0 = every keypoint. */
+  keypointOrdinal?: number;
+  /** Cards passed before it opens. 1 = leaving the first card. */
+  afterCards?: number;
+}
+
+/**
  * `lessonLock`'s internal shape is a large hand-edited JSON blob not
  * specified by the design doc -- round-tripped as-is, never decomposed.
  */
@@ -88,6 +101,7 @@ export interface PaywallConfig {
   enableLessonLock: boolean;
   lessonLock?: Record<string, unknown>;
   autoOpen: PaywallAutoOpen;
+  inLessonPaywall?: PaywallInLesson;
   saleStrategy: PaywallSaleStrategy;
 }
 

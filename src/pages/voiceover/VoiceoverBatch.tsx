@@ -17,8 +17,9 @@ import {
   CourseVoiceoverSummary,
   GlobalVoiceoverStatus,
   VoiceoverCellStatus,
-  VoiceoverVoice,
+  VoiceoverVoiceSelection,
 } from "../../services/voiceoverService";
+import VoiceoverVoicePicker from "../../components/courses/VoiceoverVoicePicker";
 
 // Stat cards mirror VoiceoverStatusModal's SUMMARY, plus a Total tile since
 // the global report already carries an aggregate count.
@@ -29,10 +30,10 @@ const STAT_CARDS: Array<{
   color: string;
 }> = [
   { key: "done", label: "Done", hint: "Đã có audio khớp", color: "text-green-600" },
-  { key: "stale", label: "Stale", hint: "Theory đã đổi", color: "text-amber-600" },
-  { key: "missing", label: "Missing", hint: "Có theory, chưa audio", color: "text-sky-600" },
+  { key: "stale", label: "Stale", hint: "Nội dung đã đổi", color: "text-amber-600" },
+  { key: "missing", label: "Missing", hint: "Có nội dung, chưa audio", color: "text-sky-600" },
   { key: "failed", label: "Failed", hint: "Lỗi, xem bên dưới", color: "text-red-600" },
-  { key: "none", label: "No theory", hint: "Không có gì để đọc", color: "text-gray-400" },
+  { key: "none", label: "Không có text", hint: "Không có gì để đọc", color: "text-gray-400" },
   { key: "total", label: "Total", hint: "Tổng số ô ngôn ngữ × keypoint", color: "text-indigo-600" },
 ];
 
@@ -49,7 +50,7 @@ const CHIP_LABEL: Record<VoiceoverCellStatus, string> = {
   stale: "Stale",
   missing: "Missing",
   failed: "Failed",
-  none: "No theory",
+  none: "Không có text",
 };
 
 const STATE_FILTERS: Array<{ value: VoiceoverCellStatus | "all"; label: string }> = [
@@ -58,7 +59,7 @@ const STATE_FILTERS: Array<{ value: VoiceoverCellStatus | "all"; label: string }
   { value: "stale", label: "Stale" },
   { value: "missing", label: "Missing" },
   { value: "failed", label: "Failed" },
-  { value: "none", label: "No theory" },
+  { value: "none", label: "Không có text" },
 ];
 
 export default function VoiceoverBatch() {
@@ -142,13 +143,13 @@ export default function VoiceoverBatch() {
   // single course row). The backend remembers the narrator per keypoint, so a
   // "dub what's missing" run at the default still leaves already-dubbed
   // keypoints on the voice they were made with.
-  const [voice, setVoice] = useState<VoiceoverVoice>("female");
+  const [voices, setVoices] = useState<VoiceoverVoiceSelection>({});
 
   const handleGenerateNeeded = async () => {
     if (running || starting) return;
     setStarting("needed");
     try {
-      await voiceoverService.generateAll(false, voice);
+      await voiceoverService.generateAll(false, voices);
       showSuccess("Đã bắt đầu dub những bài còn thiếu ở nền…");
       await load();
     } catch (err: any) {
@@ -165,7 +166,7 @@ export default function VoiceoverBatch() {
     setConfirmForce(false);
     setStarting("force");
     try {
-      await voiceoverService.generateAll(true, voice);
+      await voiceoverService.generateAll(true, voices);
       showSuccess("Đã bắt đầu force dub lại toàn bộ ở nền…");
       await load();
     } catch (err: any) {
@@ -181,7 +182,7 @@ export default function VoiceoverBatch() {
     if (running || rowDubbing.has(course.courseId)) return;
     setRowDubbing((prev) => new Set(prev).add(course.courseId));
     try {
-      await voiceoverService.generateForCourse(course.courseId, voice);
+      await voiceoverService.generateForCourse(course.courseId, voices);
       showSuccess(
         `Đã bắt đầu dub cho "${getTranslationValue(course.title, lang) || course.courseId}"`
       );
@@ -248,19 +249,11 @@ export default function VoiceoverBatch() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
-              <span className="text-slate-500">Giọng</span>
-              <select
-                value={voice}
-                onChange={(e) => setVoice(e.target.value as VoiceoverVoice)}
-                disabled={running || starting !== null}
-                className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm font-medium text-slate-700 shadow-sm disabled:opacity-60"
-                aria-label="Giọng đọc"
-              >
-                <option value="female">Nữ</option>
-                <option value="male">Nam</option>
-              </select>
-            </label>
+            <VoiceoverVoicePicker
+              value={voices}
+              onChange={setVoices}
+              disabled={running || starting !== null}
+            />
             <button
               type="button"
               onClick={handleScan}
