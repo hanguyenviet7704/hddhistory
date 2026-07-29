@@ -26,11 +26,16 @@ export const voiceoverService = {
   // Narrators available per language, straight from Google's catalogue. The
   // list is NOT hardcoded client-side on purpose: a name invented here is how
   // every Chinese keypoint once failed with "Voice does not exist".
-  async getVoiceOptions() {
-    const res = await axiosClient.get<Record<string, VoiceoverVoiceOption[]>>(
-      "/voiceover/voices"
-    );
-    return res.data;
+  async getVoiceOptions(): Promise<Record<string, VoiceoverVoiceOption[]>> {
+    const res = await axiosClient.get("/voiceover/voices");
+    // The API wraps payloads in a `data` envelope, so `res.data` is
+    // `{ data: {...} }` — the same `res?.data ?? res` unwrap every other reader
+    // here does. Returning the envelope instead handed the picker an object
+    // where it expected arrays and blanked the whole page.
+    return (res?.data?.data ?? res?.data ?? {}) as Record<
+      string,
+      VoiceoverVoiceOption[]
+    >;
   },
 
   async generateForKeypoint(

@@ -49,7 +49,15 @@ export default function VoiceoverVoicePicker({
     (async () => {
       try {
         const data = await voiceoverService.getVoiceOptions();
-        if (alive) setOptions(data);
+        // Keep only languages that really came back as a list. This picker is an
+        // optional enhancement on a page whose actual job is the coverage report,
+        // so a payload in an unexpected shape has to degrade to the notice below
+        // — an early version let one bad shape throw and white-screened the whole
+        // page.
+        const lists = Object.fromEntries(
+          Object.entries(data ?? {}).filter(([, value]) => Array.isArray(value))
+        ) as Record<string, VoiceoverVoiceOption[]>;
+        if (alive) setOptions(lists);
       } catch (err: any) {
         if (alive) {
           setError(
