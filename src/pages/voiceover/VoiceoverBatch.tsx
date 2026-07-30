@@ -2,7 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux";
 import {
   AlertTriangleIcon,
+  CheckCircle2Icon,
+  ClockIcon,
   Loader2Icon,
+  PlayIcon,
   RefreshCwIcon,
   SearchIcon,
   Volume2Icon,
@@ -17,6 +20,8 @@ import {
   CourseVoiceoverSummary,
   GlobalVoiceoverStatus,
   VoiceoverCellStatus,
+  VoiceoverJob,
+  VoiceoverJobFeed,
 } from "../../services/voiceoverService";
 
 // Stat cards mirror VoiceoverStatusModal's SUMMARY, plus a Total tile since
@@ -60,14 +65,59 @@ const STATE_FILTERS: Array<{ value: VoiceoverCellStatus | "all"; label: string }
   { value: "none", label: "Không có text" },
 ];
 
+// Where a course sits in the run currently in flight. This is the answer to
+// "cái nào đang trong tiến trình" — before, a row's Dub started a background job
+// the page never displayed, and the only progress shown was the global banner's
+// raw course id.
+type RowRunState = "running" | "queued" | "done" | "failed" | "interrupted";
+
+const ROW_BADGE: Record<
+  RowRunState,
+  { label: string; className: string; spinning?: boolean }
+> = {
+  running: {
+    label: "Đang dub",
+    className: "bg-indigo-100 text-indigo-700",
+    spinning: true,
+  },
+  queued: { label: "Đang chờ", className: "bg-slate-100 text-slate-600" },
+  done: { label: "Xong", className: "bg-green-100 text-green-700" },
+  failed: { label: "Lỗi", className: "bg-red-100 text-red-700" },
+  // Not the same thing as a failure: the run's process died (deploy/restart)
+  // rather than the dubbing going wrong. Dub again to pick up where it stopped.
+  interrupted: { label: "Bị ngắt", className: "bg-amber-100 text-amber-700" },
+};
+
+// The progress poll runs even when nothing is dubbing, just slowly, so a run
+// started from another tab (or another admin) still shows up here.
+const POLL_RUNNING_MS = 3000;
+const POLL_IDLE_MS = 20000;
+const POLL_HIDDEN_MS = 60000;
+
+function formatEta(seconds: number | null | undefined): string | null {
+  if (!seconds || seconds <= 0) return null;
+  if (seconds < 60) return `${seconds}s`;
+
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} phút`;
+
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h${String(rest).padStart(2, "0")}` : `${hours}h`;
+}
+
 export default function VoiceoverBatch() {
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showSuccess, showError } = useNotification();
 
   const [status, setStatus] = useState<GlobalVoiceoverStatus | null>(null);
+  const [feed, setFeed] = useState<VoiceoverJobFeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [starting, setStarting] = useState<"needed" | "force" | null>(null);
+  const [starting, setStarting] = useState<"needed" | "force" | "resume" | null>(
+    null
+  );
+  const [startingRows, setStartingRows] = useState<Set<string>>(new Set());
   const [confirmForce, setConfirmForce] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -75,11 +125,12 @@ export default function VoiceoverBatch() {
   const [langFilter, setLangFilter] = useState<string>("all");
 
   const [drillCourse, setDrillCourse] = useState<CourseVoiceoverSummary | null>(null);
-  const [rowDubbing, setRowDubbing] = useState<Set<string>>(new Set());
 
   const wasRunningRef = useRef(false);
   const pollRef = useRef<number | undefined>(undefined);
 
+  // The full coverage scan. Reads every keypoint of every course, so it stays an
+  // explicit action (first load + Quét + once a run ends) and never the poll.
   const load = useCallback(async () => {
     try {
       const res = await voiceoverService.getGlobalStatus();
@@ -96,59 +147,104 @@ export default function VoiceoverBatch() {
     }
   }, []);
 
+  // The progress poll: one document per run in flight.
+  const refreshJobs = useCallback(async () => {
+    try {
+      const res = await voiceoverService.getJobs();
+      setFeed((res?.data ?? res) as VoiceoverJobFeed);
+    } catch {
+      // A dropped poll isn't worth an error banner — the next tick retries, and
+      // the coverage numbers below are unaffected.
+    }
+  }, []);
+
   useEffect(() => {
     load();
-  }, [load]);
+    refreshJobs();
+  }, [load, refreshJobs]);
 
-  const job = status?.job ?? null;
-  const running = job?.status === "running";
+  const globalJob = feed?.global ?? null;
+  const courseJobs = feed?.courses ?? [];
+  const globalRunning = globalJob?.status === "running";
+  const runningCourseJobs = courseJobs.filter((job) => job.status === "running");
+  const anyRunning = globalRunning || runningCourseJobs.length > 0;
 
-  // Poll while a global batch job is running; back off to 30s in a hidden
-  // tab, same convention as CourseImportJobDetail.
   useEffect(() => {
     window.clearTimeout(pollRef.current);
-    if (!running) return;
-    const delay = document.hidden ? 30000 : 3000;
-    pollRef.current = window.setTimeout(load, delay);
+    const delay = document.hidden
+      ? POLL_HIDDEN_MS
+      : anyRunning
+      ? POLL_RUNNING_MS
+      : POLL_IDLE_MS;
+    pollRef.current = window.setTimeout(refreshJobs, delay);
     return () => window.clearTimeout(pollRef.current);
-  }, [running, job, load]);
+  }, [anyRunning, feed, refreshJobs]);
 
-  // Announce completion once, on the running -> done/failed transition.
+  // Announce completion once, on the running -> finished transition, and refresh
+  // the coverage numbers that the run just changed.
   useEffect(() => {
-    if (running) {
+    if (globalRunning) {
       wasRunningRef.current = true;
       return;
     }
-    if (wasRunningRef.current && job) {
-      wasRunningRef.current = false;
-      if (job.status === "failed") {
-        showError(`Job lồng tiếng thất bại: ${job.lastError ?? "lỗi không rõ"}`);
-      } else {
-        showSuccess(
-          `Đã dub xong: ${job.generated} tạo mới, ${job.skipped} bỏ qua` +
-            (job.failed ? `, ${job.failed} lỗi` : "")
-        );
+    if (!wasRunningRef.current || !globalJob) return;
+    wasRunningRef.current = false;
+
+    if (globalJob.status === "failed") {
+      showError(`Job lồng tiếng thất bại: ${globalJob.lastError || "lỗi không rõ"}`);
+    } else if (globalJob.status === "interrupted") {
+      showError("Job lồng tiếng bị ngắt giữa — bấm Chạy tiếp để tiếp tục.");
+    } else {
+      showSuccess(
+        `Đã dub xong: ${globalJob.generated} tạo mới, ${globalJob.skipped} bỏ qua` +
+          (globalJob.failed ? `, ${globalJob.failed} lỗi` : "")
+      );
+    }
+    load();
+  }, [globalRunning, globalJob, showError, showSuccess, load]);
+
+  // Which badge each course row shows. The global run contributes the queued /
+  // done / current split; a per-course run overrides it for its own row.
+  const rowStates = useMemo(() => {
+    const states = new Map<string, RowRunState>();
+
+    if (globalJob?.status === "running") {
+      globalJob.queuedCourseIds.forEach((id) => states.set(id, "queued"));
+      globalJob.doneCourseIds.forEach((id) => states.set(id, "done"));
+      if (globalJob.currentCourseId) {
+        states.set(globalJob.currentCourseId, "running");
       }
     }
-  }, [running, job, showError, showSuccess]);
+
+    for (const job of courseJobs) {
+      if (job.status === "running") states.set(job.courseId, "running");
+      else if (job.status === "done") states.set(job.courseId, "done");
+      else if (job.status === "failed") states.set(job.courseId, "failed");
+      else if (job.status === "interrupted") {
+        states.set(job.courseId, "interrupted");
+      }
+    }
+
+    return states;
+  }, [globalJob, courseJobs]);
 
   const handleScan = () => {
     setLoading(true);
     load();
   };
 
-  // Narrator applied to every run started from this page (batch, force, or a
-  // single course row). The backend remembers the narrator per keypoint, so a
-  // "dub what's missing" run at the default still leaves already-dubbed
-  // keypoints on the voice they were made with.
-
-  const handleGenerateNeeded = async () => {
-    if (running || starting) return;
-    setStarting("needed");
+  const startGlobal = async (
+    kind: "needed" | "force" | "resume",
+    force: boolean,
+    resume: boolean,
+    successMessage: string
+  ) => {
+    if (anyRunning || starting) return;
+    setStarting(kind);
     try {
-      await voiceoverService.generateAll(false);
-      showSuccess("Đã bắt đầu dub những bài còn thiếu ở nền…");
-      await load();
+      await voiceoverService.generateAll(force, resume);
+      showSuccess(successMessage);
+      await refreshJobs();
     } catch (err: any) {
       showError(
         err?.response?.data?.message || "Failed to start voiceover batch"
@@ -158,38 +254,41 @@ export default function VoiceoverBatch() {
     }
   };
 
-  const handleForceAll = async () => {
-    if (running || starting) return;
+  const handleGenerateNeeded = () =>
+    startGlobal("needed", false, false, "Đã bắt đầu dub những bài còn thiếu ở nền…");
+
+  const handleForceAll = () => {
     setConfirmForce(false);
-    setStarting("force");
-    try {
-      await voiceoverService.generateAll(true);
-      showSuccess("Đã bắt đầu force dub lại toàn bộ ở nền…");
-      await load();
-    } catch (err: any) {
-      showError(
-        err?.response?.data?.message || "Failed to start voiceover batch"
-      );
-    } finally {
-      setStarting(null);
-    }
+    return startGlobal("force", true, false, "Đã bắt đầu force dub lại toàn bộ ở nền…");
   };
+
+  // Continues an interrupted run in the mode it was started with, skipping the
+  // courses it had already finished.
+  const handleResume = () =>
+    startGlobal(
+      "resume",
+      globalJob?.mode === "force",
+      true,
+      "Đang chạy tiếp job đã bị ngắt…"
+    );
 
   const handleRowDub = async (course: CourseVoiceoverSummary) => {
-    if (running || rowDubbing.has(course.courseId)) return;
-    setRowDubbing((prev) => new Set(prev).add(course.courseId));
+    if (anyRunning || startingRows.has(course.courseId)) return;
+    setStartingRows((prev) => new Set(prev).add(course.courseId));
     try {
       await voiceoverService.generateForCourse(course.courseId);
       showSuccess(
         `Đã bắt đầu dub cho "${getTranslationValue(course.title, lang) || course.courseId}"`
       );
-      await load();
+      // Pull the feed straight away so the row's badge appears now rather than
+      // at the next poll tick.
+      await refreshJobs();
     } catch (err: any) {
       showError(
         err?.response?.data?.message || "Failed to start course voiceover"
       );
     } finally {
-      setRowDubbing((prev) => {
+      setStartingRows((prev) => {
         const next = new Set(prev);
         next.delete(course.courseId);
         return next;
@@ -217,6 +316,15 @@ export default function VoiceoverBatch() {
     setStateFilter("all");
     setLangFilter("all");
   };
+
+  const jobCourseName = (job: VoiceoverJob) =>
+    getTranslationValue(job.currentCourseTitle, lang) ||
+    job.currentCourseId ||
+    "—";
+  const jobKeypointName = (job: VoiceoverJob) =>
+    getTranslationValue(job.currentKeypointTitle, lang) ||
+    job.currentKeypointId ||
+    "—";
 
   if (loading && !status) {
     return (
@@ -258,7 +366,7 @@ export default function VoiceoverBatch() {
             <button
               type="button"
               onClick={handleGenerateNeeded}
-              disabled={running || starting !== null}
+              disabled={anyRunning || starting !== null}
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60"
             >
               <Volume2Icon className="h-4 w-4" />
@@ -267,7 +375,7 @@ export default function VoiceoverBatch() {
             <button
               type="button"
               onClick={() => setConfirmForce(true)}
-              disabled={running || starting !== null}
+              disabled={anyRunning || starting !== null}
               className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 shadow-sm transition hover:bg-amber-100 disabled:opacity-60"
             >
               <ZapIcon className="h-4 w-4" />
@@ -292,46 +400,100 @@ export default function VoiceoverBatch() {
           </div>
         )}
 
-        {/* Running global job banner */}
-        {job && job.status === "running" && (
+        {/* Running global job */}
+        {globalJob && globalJob.status === "running" && (
           <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-indigo-800">
               <span className="flex items-center gap-2 font-medium">
                 <Loader2Icon className="h-4 w-4 animate-spin" />
-                Đang {job.mode === "force" ? "force dub" : "dub"} ở nền…{" "}
-                {job.processedCourses}/{job.totalCourses} course ·{" "}
-                {job.processed}/{job.totalKeypoints} keypoint
+                Đang {globalJob.mode === "force" ? "force dub" : "dub"} ở nền…{" "}
+                {globalJob.processedCourses}/{globalJob.totalCourses} course ·{" "}
+                {globalJob.processed}/{globalJob.totalKeypoints} keypoint
               </span>
-              <span className="text-xs text-indigo-500">tự cập nhật mỗi 3s</span>
+              <span className="text-xs text-indigo-500">
+                {formatEta(globalJob.etaSeconds)
+                  ? `còn ~${formatEta(globalJob.etaSeconds)}`
+                  : "tự cập nhật mỗi 3s"}
+              </span>
             </div>
             <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-indigo-100">
               <div
                 className="h-full rounded-full bg-indigo-500 transition-all"
                 style={{
                   width: `${
-                    job.totalKeypoints
-                      ? (job.processed / job.totalKeypoints) * 100
+                    globalJob.totalKeypoints
+                      ? (globalJob.processed / globalJob.totalKeypoints) * 100
                       : 0
                   }%`,
                 }}
               />
             </div>
+            <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-indigo-700 sm:grid-cols-2">
+              <div className="flex gap-1 truncate">
+                <dt className="text-indigo-500">Course:</dt>
+                <dd className="truncate font-medium" title={jobCourseName(globalJob)}>
+                  {jobCourseName(globalJob)}
+                </dd>
+              </div>
+              <div className="flex gap-1 truncate">
+                <dt className="text-indigo-500">Keypoint:</dt>
+                <dd className="truncate font-medium" title={jobKeypointName(globalJob)}>
+                  {jobKeypointName(globalJob)}
+                </dd>
+              </div>
+            </dl>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-indigo-700">
-              <span>Đã tạo: {job.generated}</span>
-              <span>Bỏ qua: {job.skipped}</span>
-              <span>Lỗi: {job.failed}</span>
-              {job.currentCourseId && (
-                <span className="truncate">
-                  Course hiện tại: {job.currentCourseId}
-                </span>
-              )}
+              <span>Đã tạo: {globalJob.generated}</span>
+              <span>Bỏ qua: {globalJob.skipped}</span>
+              <span>Lỗi: {globalJob.failed}</span>
             </div>
           </div>
         )}
-        {job && job.status === "failed" && !running && (
+
+        {/* Per-course runs, when there is no global run to fold them into */}
+        {!globalRunning && runningCourseJobs.length > 0 && (
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800 shadow-sm">
+            {runningCourseJobs.map((job) => (
+              <div key={job.courseId} className="flex flex-wrap items-center gap-2">
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+                <span className="font-medium">Đang dub {jobCourseName(job)}</span>
+                <span className="text-xs text-indigo-600">
+                  {job.processed}/{job.totalKeypoints} keypoint · keypoint hiện tại:{" "}
+                  {jobKeypointName(job)}
+                  {formatEta(job.etaSeconds) ? ` · còn ~${formatEta(job.etaSeconds)}` : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Interrupted global job — the run's process died (deploy/restart) */}
+        {globalJob && globalJob.status === "interrupted" && (
+          <div className="flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="flex items-start gap-2">
+              <AlertTriangleIcon className="mt-0.5 h-5 w-5 flex-none text-amber-600" />
+              <span>
+                Job lồng tiếng bị ngắt giữa (deploy/restart) sau{" "}
+                {globalJob.processedCourses}/{globalJob.totalCourses} course.
+                Những course đã xong sẽ được bỏ qua khi chạy tiếp.
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={handleResume}
+              disabled={starting !== null}
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 disabled:opacity-60"
+            >
+              <PlayIcon className="h-4 w-4" />
+              {starting === "resume" ? "Đang bắt đầu…" : "Chạy tiếp"}
+            </button>
+          </div>
+        )}
+
+        {globalJob && globalJob.status === "failed" && (
           <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
             <AlertTriangleIcon className="mt-0.5 h-5 w-5 flex-none" />
-            Job lồng tiếng lần trước thất bại: {job.lastError ?? "lỗi không rõ"}
+            Job lồng tiếng lần trước thất bại: {globalJob.lastError || "lỗi không rõ"}
           </div>
         )}
 
@@ -349,6 +511,31 @@ export default function VoiceoverBatch() {
             </div>
           ))}
         </div>
+
+        {/* Why the failed cells failed. Without this, a count can't tell an
+            endpoint refusing calls now from stale errors left by a TTS provider
+            that has since been swapped out. */}
+        {(status?.topErrors?.length ?? 0) > 0 && (
+          <div className="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <AlertTriangleIcon className="h-4 w-4 text-red-500" />
+              Lỗi thường gặp nhất
+            </h2>
+            <ul className="mt-2 space-y-1">
+              {status?.topErrors.map((tally) => (
+                <li
+                  key={tally.message}
+                  className="flex items-start justify-between gap-3 text-xs text-slate-600"
+                >
+                  <span className="break-all">{tally.message}</span>
+                  <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 font-semibold text-red-700">
+                    {tally.count} ô
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-end md:justify-between">
@@ -465,6 +652,7 @@ export default function VoiceoverBatch() {
                   <tr className="text-left text-slate-500">
                     <th className="px-4 py-3 font-medium">Course</th>
                     <th className="px-4 py-3 text-center font-medium">Keypoint</th>
+                    <th className="px-4 py-3 font-medium">Tiến trình</th>
                     <th className="px-4 py-3 font-medium">Độ phủ</th>
                     <th className="px-4 py-3 text-right font-medium">Hành động</th>
                   </tr>
@@ -472,9 +660,24 @@ export default function VoiceoverBatch() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredCourses.map((course) => {
                     const title = getTranslationValue(course.title, lang) || course.courseId;
-                    const busy = rowDubbing.has(course.courseId);
+                    const rowState = rowStates.get(course.courseId);
+                    const badge = rowState ? ROW_BADGE[rowState] : null;
+                    const rowStarting = startingRows.has(course.courseId);
+                    const isCurrent = rowState === "running";
+                    // Whichever run is dubbing this row — the global one when it
+                    // is on this course, otherwise the row's own job.
+                    const rowJob = isCurrent
+                      ? globalRunning && globalJob?.currentCourseId === course.courseId
+                        ? globalJob
+                        : courseJobs.find((j) => j.courseId === course.courseId)
+                      : undefined;
                     return (
-                      <tr key={course.courseId} className="align-top hover:bg-indigo-50/30">
+                      <tr
+                        key={course.courseId}
+                        className={`align-top ${
+                          isCurrent ? "bg-indigo-50/60" : "hover:bg-indigo-50/30"
+                        }`}
+                      >
                         <td className="max-w-xs px-4 py-3">
                           <p className="truncate font-medium text-slate-900" title={title}>
                             {title}
@@ -483,6 +686,34 @@ export default function VoiceoverBatch() {
                         </td>
                         <td className="px-4 py-3 text-center text-slate-600">
                           {course.keypointCount}
+                        </td>
+                        <td className="px-4 py-3">
+                          {badge ? (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
+                            >
+                              {badge.spinning ? (
+                                <Loader2Icon className="h-3 w-3 animate-spin" />
+                              ) : rowState === "queued" ? (
+                                <ClockIcon className="h-3 w-3" />
+                              ) : rowState === "done" ? (
+                                <CheckCircle2Icon className="h-3 w-3" />
+                              ) : (
+                                <AlertTriangleIcon className="h-3 w-3" />
+                              )}
+                              {badge.label}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-300">—</span>
+                          )}
+                          {rowJob && (
+                            <p
+                              className="mt-1 max-w-[14rem] truncate text-[11px] text-indigo-600"
+                              title={jobKeypointName(rowJob)}
+                            >
+                              {jobKeypointName(rowJob)}
+                            </p>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1">
@@ -513,10 +744,10 @@ export default function VoiceoverBatch() {
                             <button
                               type="button"
                               onClick={() => handleRowDub(course)}
-                              disabled={running || busy}
+                              disabled={anyRunning || rowStarting}
                               className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                             >
-                              {busy ? (
+                              {rowStarting ? (
                                 <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
                               ) : (
                                 <Volume2Icon className="h-3.5 w-3.5" />

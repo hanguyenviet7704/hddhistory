@@ -104,7 +104,11 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     if (wasRunningRef.current && job) {
       wasRunningRef.current = false;
       if (job.status === "failed") {
-        showError(`Voiceover job failed: ${job.lastError ?? "error"}`);
+        showError(`Voiceover job failed: ${job.lastError || "error"}`);
+      } else if (job.status === "interrupted") {
+        // The run's process died (deploy/restart). Re-triggering resumes via the
+        // per-keypoint hash skip.
+        showError("Job lồng tiếng bị ngắt giữa — bấm Sinh lại để tiếp tục.");
       } else {
         showSuccess(
           `Voiceover done: ${job.generated} generated, ${job.skipped} unchanged` +
@@ -218,8 +222,8 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                 <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
                   <div className="flex items-center justify-between text-sm text-indigo-800">
                     <span className="font-medium">
-                      Đang sinh voiceover ở nền… {job.processed}/{job.total}{" "}
-                      keypoint
+                      Đang sinh voiceover ở nền… {job.processed}/
+                      {job.totalKeypoints} keypoint
                     </span>
                     <span className="text-xs text-indigo-500">tự cập nhật</span>
                   </div>
@@ -228,11 +232,20 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                       className="h-full rounded-full bg-indigo-500 transition-all"
                       style={{
                         width: `${
-                          job.total ? (job.processed / job.total) * 100 : 0
+                          job.totalKeypoints
+                            ? (job.processed / job.totalKeypoints) * 100
+                            : 0
                         }%`,
                       }}
                     />
                   </div>
+                  {job.currentKeypointTitle && (
+                    <p className="mt-2 truncate text-xs text-indigo-600">
+                      Keypoint hiện tại:{" "}
+                      {getTranslationValue(job.currentKeypointTitle, lang) ||
+                        job.currentKeypointId}
+                    </p>
+                  )}
                 </div>
               )}
 
