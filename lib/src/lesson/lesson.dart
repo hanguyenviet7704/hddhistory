@@ -132,6 +132,7 @@ part 'presentation/widgets/body/keypoint_done_card.dart';
 part 'presentation/widgets/body/mark_stress_word_lesson_body.dart';
 part 'presentation/widgets/body/multiple_choice_lesson_body.dart';
 part 'presentation/widgets/body/quiz_card_body.dart';
+part 'presentation/widgets/body/quiz_preview_card_body.dart';
 part 'presentation/widgets/body/single_choice_no_correct_answer_lesson_body.dart';
 part 'presentation/widgets/body/single_choice_lesson_body.dart';
 part 'presentation/widgets/body/speaking_lesson_body.dart';

@@ -3,6 +3,7 @@ audioErrorTitle: 오디오를 사용할 수 없음
 audioListenLabel: 듣기
 audioReadLabel: 읽기
 audioRetry: 다시 시도
+cardNotReachedHint: 위 문제에 답하면 이 문제가 열립니다
 audioSpeedNormal: 보통
 audioSpeedSuffix: 속도
 audioSpeedTitle: 속도

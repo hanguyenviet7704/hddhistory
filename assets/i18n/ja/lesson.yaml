@@ -3,6 +3,7 @@ audioErrorTitle: 音声を利用できません
 audioListenLabel: 聞く
 audioReadLabel: 読む
 audioRetry: もう一度試す
+cardNotReachedHint: 上の問題に答えるとこの問題が開きます
 audioSpeedNormal: 通常
 audioSpeedSuffix: 速度
 audioSpeedTitle: 速度

@@ -3,6 +3,7 @@ audioErrorTitle: 无法播放音频
 audioListenLabel: 收听
 audioReadLabel: 阅读
 audioRetry: 重试
+cardNotReachedHint: 回答上面的题目即可解锁本题
 audioSpeedNormal: 正常
 audioSpeedSuffix: 倍速
 audioSpeedTitle: 速度

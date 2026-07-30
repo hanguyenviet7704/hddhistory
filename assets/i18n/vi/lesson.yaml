@@ -24,6 +24,7 @@ cardProgressSemantics: Thẻ ${current}/${total}
 cardSwipeHint: Vuốt lên để tiếp tục
 cardSwipeBlockedHint: Chọn đáp án để tiếp tục
 cardSwipeReviewHint: Vuốt xuống để xem lại
+cardNotReachedHint: Trả lời câu phía trên để mở câu này
 charCounter: ${currentChars}/${maxChars} ký tự
 checkButton: Kiểm tra
 closePopupDescription: Bài học của bạn sẽ không được lưu nếu bạn thoát bây giờ.

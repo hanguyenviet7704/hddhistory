@@ -229,6 +229,7 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
                                       cardIndex: index,
                                       descriptor: state.cards[index],
                                       isLive: index == state.furthestCardIndex,
+                                      isPreview: index > state.furthestCardIndex,
                                       bodyFactory: widget.bodyFactory,
                                       onAnswerChecked: widget.onAnswerChecked,
                                     ),
@@ -562,6 +563,7 @@ class _KeypointCardPage extends StatelessWidget {
     required this.cardIndex,
     required this.descriptor,
     required this.isLive,
+    required this.isPreview,
     required this.bodyFactory,
     required this.onAnswerChecked,
   });
@@ -569,6 +571,11 @@ class _KeypointCardPage extends StatelessWidget {
   final int cardIndex;
   final KeypointCardDescriptor descriptor;
   final bool isLive;
+
+  /// Past the lesson's live edge — a card narration read on to while the app was
+  /// off screen. Read-only; see [QuizPreviewCardBody].
+  final bool isPreview;
+
   final LessonBodyFactory bodyFactory;
   final ValueChanged<bool> onAnswerChecked;
 
@@ -587,7 +594,7 @@ class _KeypointCardPage extends StatelessWidget {
             isLive: isLive,
             onAnswerChecked: onAnswerChecked,
           )
-        : QuizCardBody(descriptor: descriptor, isLive: isLive, bodyFactory: bodyFactory);
+        : QuizCardBody(descriptor: descriptor, isLive: isLive, isPreview: isPreview, bodyFactory: bodyFactory);
 
     return Padding(padding: padding, child: card);
   }

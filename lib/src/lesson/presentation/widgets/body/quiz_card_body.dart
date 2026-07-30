@@ -18,16 +18,25 @@ class QuizCardBody extends StatelessWidget {
     super.key,
     required this.descriptor,
     required this.isLive,
+    required this.isPreview,
     required this.bodyFactory,
   });
 
   final KeypointCardDescriptor descriptor;
   final bool isLive;
+
+  /// Past the live edge: narration read this question aloud while the app was
+  /// away, but the reader has not reached it. Neither of the other two branches
+  /// fits — see [QuizPreviewCardBody].
+  final bool isPreview;
+
   final LessonBodyFactory bodyFactory;
 
   @override
   Widget build(BuildContext context) {
     final question = context.read<KeypointCardCubit>().questionForCard(descriptor);
-    return isLive ? bodyFactory.buildExerciseBody(question) : bodyFactory.buildReviewBody(question);
+    if (isLive) return bodyFactory.buildExerciseBody(question);
+    if (isPreview) return QuizPreviewCardBody(question: question);
+    return bodyFactory.buildReviewBody(question);
   }
 }
