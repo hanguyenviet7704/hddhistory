@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  ArrowUpTrayIcon,
+} from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import {
@@ -15,11 +20,31 @@ import {
   updateTranslationValue,
 } from "../../utils/translation";
 import { LangCode } from "../../types/enum/common.enum";
+import { ITranslation } from "../../utils/translate";
+import ExportImportButtons from "../common/ExportImportButtons";
+import {
+  downloadQuotesXlsx,
+  parseQuotesXlsx,
+  ParsedQuoteRow,
+} from "../../utils/quoteXlsx";
 
 const defaultColors = {
   backgroundColor: "#362F82",
   textColor: "#FFFFFF",
 };
+
+/// Every locale a quote can carry, English FIRST because it is the fallback:
+/// the dispatcher resolves `translations[userLang] || translations.en`, so a
+/// quote missing the user's language still reads in English — but one missing
+/// ENGLISH resolves to '' and `resolveContext` returns null, which silently
+/// drops that user's daily reminder altogether.
+const QUOTE_LANGS: { code: LangCode; label: string }[] = [
+  { code: "en" as LangCode, label: "EN" },
+  { code: "vi" as LangCode, label: "VI" },
+  { code: "zh" as LangCode, label: "ZH" },
+  { code: "ja" as LangCode, label: "JA" },
+  { code: "ko" as LangCode, label: "KO" },
+];
 
 const normalizeQuoteList = (payload: any): IQuote[] => {
   const data = payload?.data ?? payload ?? {};
@@ -41,25 +66,17 @@ const QuoteManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingQuote, setEditingQuote] = useState<IQuote | null>(null);
   const [formData, setFormData] = useState<QuotePayload>({
-    content: { [lang]: "" },
+    content: {},
     ...defaultColors,
   });
   const [confirmDelete, setConfirmDelete] = useState<IQuote | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     fetchQuotes();
   }, []);
-
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      content: updateTranslationValue(
-        prev.content || {},
-        lang,
-        prev.content?.[lang] || ""
-      ),
-    }));
-  }, [lang]);
 
   const fetchQuotes = async () => {
     try {
@@ -79,17 +96,14 @@ const QuoteManagement = () => {
 
   const resetForm = () => {
     setEditingQuote(null);
-    setFormData({
-      content: { [lang]: "" },
-      ...defaultColors,
-    });
+    setFormData({ content: {}, ...defaultColors });
     setShowForm(false);
   };
 
   const handleEdit = (quote: IQuote) => {
     setEditingQuote(quote);
     setFormData({
-      content: quote.content || { [lang]: "" },
+      content: quote.content || {},
       backgroundColor: quote.backgroundColor || defaultColors.backgroundColor,
       textColor: quote.textColor || defaultColors.textColor,
     });
@@ -98,13 +112,11 @@ const QuoteManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanedContent = cleanTranslation(
-      updateTranslationValue(
-        formData.content || {},
-        lang,
-        formData.content?.[lang] || ""
-      )
-    ) || { [lang]: "" };
+    const cleanedContent = cleanTranslation(formData.content || {}) || {};
+    if (!cleanedContent.en?.trim()) {
+      showError("Cần ít nhất bản tiếng Anh — đó là bản fallback cho mọi ngôn ngữ khác");
+      return;
+    }
 
     const payload: QuotePayload = {
       content: cleanedContent,
@@ -128,6 +140,96 @@ const QuoteManagement = () => {
       showError("Lưu quote thất bại");
     }
   };
+
+
+
+  /// Creates every parsed row that is not already stored, and reports the split.
+  ///
+  /// Shared by the JSON paste box and the Excel importer so the two cannot drift
+  /// on what "already exists" means. One POST per quote — the API has no bulk
+  /// route — and duplicates are matched on the English line, which makes a
+  /// re-run after a partial failure safe rather than doubling what landed.
+  const createMissingQuotes = async (
+    rows: { content?: ITranslation; backgroundColor?: string; textColor?: string }[]
+  ) => {
+    const existing = new Set(
+      quotes.map((quote) => (quote.content?.en || "").trim()).filter(Boolean)
+    );
+
+    let created = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const row of rows) {
+      const content = cleanTranslation(row?.content || {}) || {};
+      const english = (content.en || "").trim();
+      if (!english) {
+        failed += 1;
+        continue;
+      }
+      if (existing.has(english)) {
+        skipped += 1;
+        continue;
+      }
+      try {
+        await quoteService.create({
+          content,
+          backgroundColor: row?.backgroundColor || defaultColors.backgroundColor,
+          textColor: row?.textColor || defaultColors.textColor,
+        });
+        existing.add(english);
+        created += 1;
+      } catch (err) {
+        console.error("Failed to import quote", english, err);
+        failed += 1;
+      }
+    }
+
+    return { created, skipped, failed };
+  };
+
+  /// Bulk-create from a pasted JSON array — the shape `quotes-seed.json` uses,
+  /// so a batch prepared elsewhere goes in without retyping.
+  const handleImport = async () => {
+    let parsed: any;
+    try {
+      parsed = JSON.parse(importText);
+    } catch (err) {
+      showError("JSON không hợp lệ");
+      return;
+    }
+    const rows: any[] = Array.isArray(parsed) ? parsed : parsed?.quotes;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      showError("Cần một mảng quote, hoặc { quotes: [...] }");
+      return;
+    }
+
+    setImporting(true);
+    let result = { created: 0, skipped: 0, failed: 0 };
+    try {
+      result = await createMissingQuotes(rows);
+    } finally {
+      setImporting(false);
+    }
+
+    // Reported even when some failed: a silent partial import is how you end up
+    // believing all 30 landed when 6 did not.
+    const summary = `Đã thêm ${result.created}, bỏ qua ${result.skipped} (đã có), lỗi ${result.failed}`;
+    result.failed ? showError(summary) : showSuccess(summary);
+    setImportText("");
+    setShowImport(false);
+    fetchQuotes();
+  };
+
+  /// Excel path. Parsing and creating stay separate so the shared
+  /// [ExportImportButtons] can show the parsed row count for confirmation before
+  /// anything is written — an import of the wrong sheet is caught there rather
+  /// than after 30 POSTs.
+  const handleParseExcel = async (file: File): Promise<ParsedQuoteRow[]> =>
+    parseQuotesXlsx(file);
+
+  const handleImportExcel = async (rows: ParsedQuoteRow[]) =>
+    createMissingQuotes(rows);
 
   const handleDelete = async () => {
     if (!confirmDelete?._id) return;
@@ -159,7 +261,21 @@ const QuoteManagement = () => {
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+        <ExportImportButtons
+          label="quotes"
+          onExport={async () => downloadQuotesXlsx(quotes)}
+          onParse={handleParseExcel}
+          onImport={handleImportExcel}
+          onImported={fetchQuotes}
+        />
+        <button
+          onClick={() => setShowImport((open) => !open)}
+          className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <ArrowUpTrayIcon className="h-5 w-5 mr-2" />
+          Import JSON
+        </button>
         <button
           onClick={() => {
             setShowForm(true);
@@ -172,32 +288,105 @@ const QuoteManagement = () => {
         </button>
       </div>
 
+      {showImport && (
+        <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-medium text-gray-900 mb-1">Import JSON</h2>
+          <p className="text-sm text-gray-500 mb-3">
+            Dán một mảng{" "}
+            <code className="text-xs">
+              {'[{ "content": { "en": "...", "vi": "..." }, "backgroundColor": "#362F82", "textColor": "#FFFFFF" }]'}
+            </code>
+            . Câu nào trùng dòng EN đã có sẽ được bỏ qua, nên chạy lại nhiều lần
+            không bị nhân đôi.
+          </p>
+          <textarea
+            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            rows={10}
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder='[{ "content": { "en": "A little every day beats a lot once in a while." } }]'
+          />
+          <div className="mt-3 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowImport(false);
+                setImportText("");
+              }}
+              disabled={importing}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              Huỷ
+            </button>
+            <button
+              type="button"
+              onClick={handleImport}
+              disabled={importing || !importText.trim()}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {importing ? "Đang import..." : "Import"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {showForm && (
         <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 className="text-lg font-medium text-gray-900 mb-4">
             {editingQuote ? "Edit Quote" : "Create New Quote"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Content ({lang})
+            {/* Every locale at once. The old form showed only the admin's
+                current display language, so filling a quote in five languages
+                meant saving it, switching the header language, reopening it,
+                and saving again — five times per quote, with no way to see
+                which locale was still blank. */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Content
               </label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={3}
-                value={formData.content?.[lang] || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    content: updateTranslationValue(
-                      prev.content || {},
-                      lang,
-                      e.target.value
-                    ),
-                  }))
-                }
-                required
-              />
+              {QUOTE_LANGS.map(({ code, label }) => {
+                const isFallback = code === ("en" as LangCode);
+                return (
+                  <div key={code} className="flex gap-2">
+                    <span
+                      className={`mt-2 w-10 shrink-0 text-xs font-semibold ${
+                        isFallback ? "text-indigo-600" : "text-gray-400"
+                      }`}
+                      title={
+                        isFallback
+                          ? "Bắt buộc — bản fallback khi user dùng ngôn ngữ chưa dịch"
+                          : undefined
+                      }
+                    >
+                      {label}
+                      {isFallback ? " *" : ""}
+                    </span>
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      rows={2}
+                      value={formData.content?.[code] || ""}
+                      placeholder={
+                        isFallback ? "Bắt buộc" : "Để trống sẽ dùng bản EN"
+                      }
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          content: updateTranslationValue(
+                            prev.content || {},
+                            code,
+                            e.target.value
+                          ),
+                        }))
+                      }
+                    />
+                  </div>
+                );
+              })}
+              <p className="text-xs text-gray-500">
+                Chỉ EN là bắt buộc: user ở ngôn ngữ chưa dịch sẽ đọc bản EN.
+                Thiếu EN thì user đó không nhận được nhắc nhở nào cả.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
