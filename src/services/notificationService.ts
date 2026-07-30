@@ -33,6 +33,7 @@ export const notificationService = {
     payload: {
       enabled?: boolean;
       localHour?: number;
+      localMinute?: number;
       deeplink?: string;
       copies?: { locale: string; title: string; body: string }[];
     }

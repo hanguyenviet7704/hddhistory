@@ -20,6 +20,8 @@ export interface NotificationTemplate {
   enabled: boolean;
   /** Hour of the USER's own day (0-23), not server time. */
   localHour: number;
+  /** Minute within [localHour] (0-59). Absent on templates saved before it existed. */
+  localMinute?: number;
   deeplink: NotificationDeeplink;
   /** Keyed by locale on the wire; the page works with the array form. */
   copies: Record<string, { title: string; body: string }>;
@@ -31,6 +33,7 @@ export interface NotificationTemplateFile {
     type: NotificationType;
     enabled: boolean;
     localHour: number;
+    localMinute?: number;
     deeplink: NotificationDeeplink;
     copies: NotificationCopy[];
   }[];

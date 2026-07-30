@@ -104,7 +104,10 @@ const ContentSection: React.FC = () => {
   const [savingType, setSavingType] = useState<NotificationType | null>(null);
   const [message, setMessage] = useState<string>("");
   const [drafts, setDrafts] = useState<
-    Record<string, { localHour: string; copies: NotificationCopy[] }>
+    Record<
+      string,
+      { localHour: string; localMinute: string; copies: NotificationCopy[] }
+    >
   >({});
 
   const load = useCallback(async () => {
@@ -118,6 +121,7 @@ const ContentSection: React.FC = () => {
             template.type,
             {
               localHour: String(template.localHour ?? 0),
+              localMinute: String(template.localMinute ?? 0),
               copies: toCopyList(template.copies),
             },
           ])
@@ -142,6 +146,7 @@ const ContentSection: React.FC = () => {
       await notificationService.updateTemplate(template.type, {
         enabled: enabled ?? template.enabled,
         localHour: Number(draft?.localHour ?? template.localHour),
+        localMinute: Number(draft?.localMinute ?? template.localMinute ?? 0),
         // Locales left completely empty are dropped rather than saved as blanks —
         // an empty title would push a notification with no text.
         copies: (draft?.copies ?? []).filter(
@@ -248,6 +253,25 @@ const ContentSection: React.FC = () => {
                       }))
                     }
                     className="w-16 rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                    aria-label="Giờ gửi"
+                  />
+                  <span className="text-slate-400">:</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    value={draft?.localMinute ?? ""}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [template.type]: {
+                          ...prev[template.type],
+                          localMinute: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-16 rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                    aria-label="Phút gửi"
                   />
                 </label>
                 <ToggleSwitch
