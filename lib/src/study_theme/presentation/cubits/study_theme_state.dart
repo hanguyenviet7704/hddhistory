@@ -7,7 +7,16 @@ abstract class StudyThemeState with _$StudyThemeState {
     required StudyThemePreset preset,
 
     /// Ambient audio toggle for live presets (persisted alongside the preset).
+    /// This is the reader's PREFERENCE — see [soundAudible] for whether the
+    /// ambience is actually playing right now.
     @Default(true) bool soundOn,
+
+    /// Ambience silenced for as long as something else needs the ears — a
+    /// keypoint being narrated (see `LessonPage`). Deliberately separate from
+    /// [soundOn] and deliberately NOT persisted: a lesson must be able to
+    /// silence the background without rewriting the reader's preference, so that
+    /// the app being killed mid-lesson can't leave their music off for good.
+    @Default(false) bool soundSuspended,
 
     /// Whether the readability overlay is painted (design `cbScrim`).
     @Default(true) bool scrimOn,
@@ -36,4 +45,11 @@ abstract class StudyThemeState with _$StudyThemeState {
 
   factory StudyThemeState.initial() =>
       const StudyThemeState(preset: PresetCatalog.defaultPreset);
+}
+
+extension StudyThemeStateX on StudyThemeState {
+  /// Whether the background's ambient audio should be heard right now: the
+  /// reader wants it AND nothing is currently borrowing the ears. This — not
+  /// [StudyThemeState.soundOn] — is what the player and the sound toggles read.
+  bool get soundAudible => soundOn && !soundSuspended;
 }

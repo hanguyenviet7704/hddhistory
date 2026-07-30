@@ -61,23 +61,59 @@ class _LessonShellIconButton extends StatelessWidget {
       },
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
+        // Slightly larger than the circle so the tap target stays comfortable
+        // without changing the header's spacing.
         width: 36.w,
         height: 36.w,
         child: Center(
-          child: SvgPicture.asset(
-            assetPath,
-            width: 20.w,
-            height: 20.w,
-            // Bare on the background (the close button sits directly on the
-            // Scaffold, above any content card) — swap to light ink over a
-            // dark custom bg.
-            colorFilter: ColorFilter.mode(
-              studyThemeOnBg(context, AppCustomColor.textQuaternary),
-              BlendMode.srcIn,
+          child: KeypointHeaderButtonChrome(
+            child: SvgPicture.asset(
+              assetPath,
+              width: 20.w,
+              height: 20.w,
+              colorFilter: ColorFilter.mode(
+                studyThemeOnBg(context, AppCustomColor.textPrimary),
+                BlendMode.srcIn,
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Round translucent chrome behind a keypoint header control — the design's 34pt
+/// circle at `rgba(255,255,255,.9)`, flipping to a dark circle over a dark study
+/// background so the icon inside stays legible either way.
+///
+/// Shared by all three header controls (close, narration, overflow menu) rather
+/// than repeated in each: they were drifting already — close and menu had no
+/// circle at all and drew their icon in a pale grey that a photo background
+/// swallowed, while narration had its own copy at a different opacity.
+///
+/// The design pairs the circle with `backdrop-filter: blur(6px)`. That is
+/// deliberately not reproduced: `ThemedGlassCard` dropped its own BackdropFilter
+/// because the blur haloed edges over a photo, and a 34pt circle would show the
+/// same rim. The flat translucent fill covers the icon just as well.
+class KeypointHeaderButtonChrome extends StatelessWidget {
+  const KeypointHeaderButtonChrome({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkBg = studyThemeIsDarkBg(context);
+
+    return Container(
+      width: 34.w,
+      height: 34.w,
+      decoration: BoxDecoration(
+        color: isDarkBg ? const Color(0xFF12141C).withValues(alpha: 0.52) : AppCustomColor.backgroundWhite.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: child,
     );
   }
 }

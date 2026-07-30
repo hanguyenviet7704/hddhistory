@@ -1,5 +1,8 @@
 part of '../../../lesson.dart';
 
+/// Multiple-choice exercise card (Keypoint v2 design). Checking and the verdict
+/// live inside the card — see [KeypointExerciseAction] and the note on
+/// [SingleChoiceLessonBody] for why the result sheet went away.
 class MultipleChoiceLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
@@ -9,51 +12,6 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
     required this.onAnswerChecked,
     this.isReadOnly = false,
   });
-
-  void _showResultOverlay(
-    BuildContext context,
-    ResultType type, {
-    bool isReview = false,
-    bool showExplainAction = true,
-  }) {
-    LessonResultOverlayHelper.showResultOverlay(
-      context: context,
-      isReview: isReview,
-      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: parentContext.read<ChoiceCubit>()),
-          BlocProvider.value(value: parentContext.read<LessonCubit>()),
-        ],
-        child: BlocBuilder<ChoiceCubit, ChoiceState>(
-          builder: (context, state) {
-            final hasExplanation = state.question.hasExplanation;
-            return ResultBottomSheet(
-              type: type,
-              showExplanation: state.showExplanation,
-              explanationText: state.question.explanationText,
-              onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation ? () => context.read<ChoiceCubit>().toggleExplanation() : null,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, ChoiceState state) {
-    if (isReadOnly) {
-      context.read<LessonCubit>().consumePendingAdvance();
-    }
-    if (currentQuestion.hasExplanation && !state.showExplanation) {
-      context.read<ChoiceCubit>().toggleExplanation();
-    }
-    _showResultOverlay(
-      context,
-      state.isCorrect ? ResultType.correct : ResultType.incorrect,
-      isReview: isReadOnly,
-      showExplainAction: false,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,18 +24,22 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
         onAnswerChecked(state.isCorrect);
         final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
         if (isRoleplay) return;
-        _showResultOverlay(
-          context,
-          state.isCorrect ? ResultType.correct : ResultType.incorrect,
-        );
+        KeypointExerciseAction.trackResultViewed();
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
-          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           return LessonContentCard(
+            // Pinned to the card's bottom edge (design's `flex:1` spacer above
+            // it) rather than trailing the last option.
+            footer: KeypointExerciseAction(
+              hasChecked: state.hasChecked,
+              isCorrect: state.isCorrect,
+              canCheck: !isReadOnly && state.selectedAnswersIndices.isNotEmpty,
+              onCheck: isReadOnly ? null : () => context.read<ChoiceCubit>().checkAnswer(),
+              explanationText: currentQuestion.explanationText,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -90,26 +52,19 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
                         DocumentWidget(
                           documents: currentQuestion.document,
                           asCard: false,
+                          prose: DocumentProse.question,
                         ),
-                        12.verticalSpace,
+                        8.verticalSpace,
                       ],
-                      AppText(
-                        context.l10n.exercise.exerciseMultiChoicesInstruction,
-                        margin: EdgeInsets.symmetric(vertical: 8.h),
-                        maxLines: 10,
-                        style: AppStyle.text12.copyWith(
-                          // Was textTertiary (#7F8EA4) — too faint on the
-                          // translucent themed card over a busy photo. Darker
-                          // secondary stays a clear hint yet readable everywhere.
-                          color: AppCustomColor.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      KeypointExerciseInstruction(
+                        text: context.l10n.exercise.exerciseMultiChoicesInstruction,
+                        accent: KeypointExerciseAccent.green,
                       ),
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: state.answerOptions.length,
-                        separatorBuilder: (context, index) => 12.verticalSpace,
+                        separatorBuilder: (context, index) => 10.verticalSpace,
                         itemBuilder: (context, index) {
                           return MultipleChoiceAnswerCard(
                             option: state.answerOptions[index],
@@ -121,13 +76,6 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
                     ],
                   ),
                 ),
-                if (showExplainButton) ...[
-                  16.verticalSpace,
-                  LessonExplainButton(
-                    onTap: () => _handleExplainTap(context, currentQuestion, state),
-                    hasExplanation: currentQuestion.hasExplanation,
-                  ),
-                ],
               ],
             ),
           );
@@ -140,10 +88,6 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ChoiceCubit, ChoiceState>(
       builder: (context, state) {
-        // if (state.hasChecked) {
-        //   return const SizedBox.shrink();
-        // }
-
         final canCheck = state.selectedAnswersIndices.isNotEmpty;
 
         return ExerciseContinueButton(
@@ -154,4 +98,7 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
       },
     );
   }
+
+  @override
+  bool get rendersOwnAction => true;
 }

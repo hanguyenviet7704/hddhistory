@@ -32,6 +32,7 @@ class _LessonPageState extends State<LessonPage> {
   /// write the persisted [KeypointDisplayCubit] value, so the page listens
   /// here and pushes it into the route-scoped [LessonAudioCubit].
   StreamSubscription<KeypointDisplayState>? _readingSpeedSubscription;
+
   bool _hasSyncedFirstKeypoint = false;
   String _lastTrackedScrollKey = '';
   // Source for the next keypoint_read_scr_view: 'keypoint_intro' on entry,
@@ -53,6 +54,13 @@ class _LessonPageState extends State<LessonPage> {
       reviewBodyBuilder: _reviewBodyBuilder,
     );
     _trackingDelegate = const LessonTrackingDelegate();
+
+    // Narration and the study background's ambient music talking at once makes
+    // the voice hard to follow, so the lesson borrows the ears while it is open
+    // and hands them back in `dispose`. Suspending rather than toggling the
+    // reader's own preference is what lets that survive being killed mid-lesson
+    // (see `StudyThemeCubit.suspendSound`).
+    AppDI.injector.get<StudyThemeCubit>().suspendSound(true);
 
     final displayCubit = AppDI.injector.get<KeypointDisplayCubit>();
     var appliedSpeed = displayCubit.state.readingSpeed;
@@ -77,6 +85,9 @@ class _LessonPageState extends State<LessonPage> {
   @override
   void dispose() {
     unawaited(_readingSpeedSubscription?.cancel());
+    // Leaving the lesson: the ambience comes back if the reader had it on, and
+    // stays off if they didn't — the preference was never touched.
+    AppDI.injector.get<StudyThemeCubit>().suspendSound(false);
     super.dispose();
   }
 

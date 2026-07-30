@@ -115,7 +115,19 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
   /// Back to the stock light background — always available offline.
   void reset() => selectPreset(PresetCatalog.defaultPreset);
 
-  void setSound(bool on) => emit(state.copyWith(soundOn: on));
+  /// The reader's own toggle. Also clears any suspension: asking for sound while
+  /// something else had silenced it is an explicit override, and leaving the
+  /// switch on with nothing playing would read as broken.
+  void setSound(bool on) => emit(state.copyWith(soundOn: on, soundSuspended: false));
+
+  /// Silences the ambience WITHOUT touching the reader's preference — narration
+  /// and background music competing makes the voice hard to follow, so a lesson
+  /// borrows the ears for as long as it is open and hands them back on the way
+  /// out (see [StudyThemeState.soundSuspended]).
+  void suspendSound(bool suspended) {
+    if (state.soundSuspended == suspended) return;
+    emit(state.copyWith(soundSuspended: suspended));
+  }
 
   void setApplying(bool applying) => emit(state.copyWith(applying: applying));
 

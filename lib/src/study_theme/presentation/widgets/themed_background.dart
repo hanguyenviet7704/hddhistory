@@ -120,7 +120,7 @@ class _StudyBackgroundLayer extends StatelessWidget {
         return _LiveBackgroundLayer(
           key: ValueKey('live-${preset.id}'),
           preset: preset,
-          soundOn: state.soundOn,
+          soundOn: state.soundAudible,
         );
     }
   }

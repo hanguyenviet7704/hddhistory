@@ -116,14 +116,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             state: widget.state,
             onPlanTap: _handlePlanTap,
           ),
-          PaywallPromoCode(
-            appliedCode: widget.state.hasAppliedVoucher ? widget.state.appliedVoucherCode : null,
-            isApplying: widget.state.isValidatingVoucher,
-            message: _voucherMessage,
-            isMessageError: !widget.state.hasAppliedVoucher,
-            onApply: (code) => context.read<IapCubit>().applyVoucher(code),
-            onRemove: () => context.read<IapCubit>().removeVoucher(),
-          ),
+          PaywallPromoCode(state: widget.state),
           25.verticalSpace,
           AppText(
             l10n.monetization.paywallHeroSubtitle,
@@ -189,20 +182,6 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   }
 
   String _fallbackText(String value, String fallback) => value.isEmpty ? fallback : value;
-
-  /// Feedback under the promo field: the success line once a code is applied,
-  /// otherwise the message for whichever reason the server gave.
-  String? get _voucherMessage {
-    if (!widget.state.hasVoucherFeedback) return null;
-    if (widget.state.hasAppliedVoucher) return l10n.monetization.promoCodeApplied;
-    return switch (widget.state.voucherRejectReason) {
-      VoucherRejectReason.notFound => l10n.monetization.promoCodeErrorInvalid,
-      VoucherRejectReason.expired => l10n.monetization.promoCodeErrorExpired,
-      VoucherRejectReason.exhausted => l10n.monetization.promoCodeErrorExhausted,
-      VoucherRejectReason.notApplicable => l10n.monetization.promoCodeErrorNotApplicable,
-      VoucherRejectReason.unknown => l10n.monetization.promoCodeErrorGeneric,
-    };
-  }
 
   List<Widget> _defaultBenefits() {
     final fallback = [

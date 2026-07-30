@@ -14,6 +14,18 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   // When the user asks to listen while the source is still (pre)loading, play
   // as soon as it becomes ready instead of dropping the intent.
   bool _playWhenReady = false;
+
+  /// Bumped by every [_initializePlayer] call, so a load that has been
+  /// SUPERSEDED can tell and stay quiet.
+  ///
+  /// This is what keeps fast swiping from killing narration. Each card change
+  /// loads that card's clip over whatever was playing; starting a load while
+  /// another is in flight makes `just_audio` throw `PlayerInterruptedException`
+  /// ("Loading interrupted") out of the FIRST one — which then reported failure
+  /// over the perfectly good load that replaced it, leaving a dead player.
+  /// Comparing generations catches that even when both loads are for the same
+  /// url, which the keypointId/sourceUrl check alone cannot.
+  int _loadGeneration = 0;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<just_audio.PlayerState>? _playerStateSubscription;
@@ -29,8 +41,88 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// the page on screen via [loadCard].
   bool get hasCardClips => _cardClips.any((clip) => clip.isNotEmpty);
 
+  /// Whether [clipIndex] names a clip this keypoint actually has. A keypoint
+  /// dubbed before exercise questions were narrated has clips for its theory
+  /// cards only, so its later cards ask for indexes past the end — the caller
+  /// leaves narration alone rather than pointing at nothing.
+  bool hasClipAt(int clipIndex) => clipIndex >= 0 && clipIndex < _cardClips.length && _cardClips[clipIndex].isNotEmpty;
+
+  /// Clip currently loaded, as an index into [_cardClips] — the same space
+  /// [loadCard] takes. Kept so narration can find its own way to the next clip
+  /// when the deck is not there to point it (see [playNextClip]).
+  int _activeClipIndex = -1;
+
+  /// True while the player holds the read-to-the-end QUEUE rather than the one
+  /// clip the deck pointed it at — i.e. the voice is free to run ahead of the
+  /// page on screen. Only [playRestOfKeypoint] sets it; any deck-driven
+  /// [loadCard] tears the queue down and clears it.
+  bool _isAheadOfDeck = false;
+
+  bool get isAheadOfDeck => _isAheadOfDeck;
+
+  /// Reads the rest of the keypoint straight through, WITHOUT the deck moving.
+  ///
+  /// This is the backgrounded listener's path. On screen the deck is what walks
+  /// narration from card to card, and it deliberately holds at an unanswered
+  /// question — a page that walked itself past the quiz would be answering for
+  /// the reader. With the app in the background there is no page to hold and no
+  /// way to answer, and the OS now-playing controls promise an ordinary audio
+  /// player, so narration reads on to the end of the keypoint instead.
+  ///
+  /// Hands every remaining clip to the player AT ONCE so the platform walks the
+  /// queue itself. Chaining them one at a time from the `completed` listener
+  /// works on paper but leaves a network fetch at every card boundary and needs
+  /// Dart to still be scheduled to start each one — neither is a promise worth
+  /// making to an app the OS has put in the background.
+  ///
+  /// Deliberately touches nothing but the player. Advancing the deck for real
+  /// would run `LessonCubit.nextLearningItem()` past the last item into
+  /// `completeCurrentKeypoint()`, writing keypoint progress to the server (and
+  /// pushing a route) for a keypoint whose questions were never answered.
+  ///
+  /// Uses the per-card clips rather than the keypoint's single whole-length
+  /// `audio.url`: that one file would be the tidier now-playing track, but the
+  /// API ships no per-segment offsets, so there is no way to start it at the
+  /// card the reader actually reached — it could only ever replay the keypoint
+  /// from the top.
+  ///
+  /// Returns false when nothing is left to read.
+  Future<bool> playRestOfKeypoint() async {
+    if (_activeClipIndex < 0) return false;
+    // Skip cards with nothing to read (video, roleplay) rather than stopping.
+    final remaining = [
+      for (var i = _activeClipIndex + 1; i < _cardClips.length; i++)
+        if (_cardClips[i].isNotEmpty) _cardClips[i],
+    ];
+    if (remaining.isEmpty) return false;
+
+    _playWhenReady = true;
+    await _resetHandlerForNewKeypoint();
+    // This run consumes every clip that was left, so a second call finds nothing
+    // and cannot queue the tail of the keypoint twice.
+    _activeClipIndex = _cardClips.length - 1;
+    _isAheadOfDeck = true;
+    emit(
+      state.copyWith(
+        sourceUrl: remaining.first,
+        status: LessonAudioLoadStatus.initial,
+        positionSeconds: 0,
+        durationSeconds: 0,
+        isPlaying: false,
+        hasStartedSession: false,
+        hasCompletedPlayback: false,
+        errorMessage: null,
+      ),
+    );
+    await _initializePlayer(queue: remaining);
+    return true;
+  }
+
   Future<void> configure(KeypointEntity keypoint) async {
     _cardClips = keypoint.resolvedAudioSegments;
+    // A different keypoint's clip list — the old index means nothing in it.
+    _activeClipIndex = -1;
+    _isAheadOfDeck = false;
     // First card's clip when dubbed per card, else the legacy single file.
     final nextSourceUrl = _cardClips.firstWhere(
       (clip) => clip.isNotEmpty,
@@ -77,6 +169,14 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return;
     }
 
+    // A load that FAILED (dropped connection, or one superseded so fast the
+    // player gave up) leaves `hasStartedSession` true, which made every later tap
+    // fall through both branches below and do nothing at all — the narration
+    // button looked alive and was dead. Start the session over instead.
+    if (state.status == LessonAudioLoadStatus.failure) {
+      await _resetForReload();
+    }
+
     if (autoplay) _playWhenReady = true;
 
     // Already prepared (e.g. background preload finished): just play.
@@ -106,7 +206,35 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final url = _cardClips[cardIndex];
     if (url.isEmpty) return false;
 
-    if (state.sourceUrl == url && state.hasStartedSession) {
+    // Every call that arrives here is the DECK pointing narration at a page, so
+    // the two are back in step — only [playRestOfKeypoint] breaks them apart.
+    // Read before clearing: the shortcut below has to know we are LEAVING queue
+    // mode, and clearing first would make its own guard always true.
+    final wasAheadOfDeck = _isAheadOfDeck;
+    _activeClipIndex = cardIndex;
+    _isAheadOfDeck = false;
+
+    // `!wasAheadOfDeck` matters: in queue mode the player holds every remaining
+    // clip, and its first one may well be this very url. Taking the shortcut
+    // below would leave that queue loaded, and the voice would walk off the page
+    // again the moment the clip ended. Coming back to the deck always reloads a
+    // single source.
+    if (state.sourceUrl == url && state.hasStartedSession && !wasAheadOfDeck && state.status != LessonAudioLoadStatus.failure) {
+      // Still fetching this very clip — starting a second load is exactly what
+      // interrupts the first one, so leave the play intent for the load in flight
+      // to honour and let it finish.
+      if (!state.isReady) {
+        // RAISE the intent, never lower it. This branch is reached by simply
+        // re-pointing at the clip that is already loading, and the caller
+        // computes `autoplay` from "is it playing right now?" — which is false
+        // while it loads. Assigning that over a pending `true` is what silenced
+        // narration on entry: `enterAudioMode` asks for autoplay at postFrame,
+        // then the lesson's learning items land mid-load and
+        // `KeypointCardCubit` re-points at card 0 with `autoplay: false`,
+        // cancelling the very intent it was echoing.
+        _playWhenReady = _playWhenReady || autoplay;
+        return true;
+      }
       // Same clip already loaded (e.g. swiping away and back): restart it so the
       // card is read from its beginning rather than from wherever it stopped.
       await seekTo(Duration.zero);
@@ -134,6 +262,14 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   Future<void> retry() async {
     if (!state.hasUsableSource) return;
+    await _resetForReload();
+    await enterAudioMode();
+  }
+
+  /// Puts the session back to "never started" for the SAME source, so the next
+  /// [enterAudioMode] loads it from scratch. Silences the player first — a
+  /// half-loaded or failed player left running would fight the new load.
+  Future<void> _resetForReload() async {
     await _resetHandlerForNewKeypoint();
     emit(
       state.copyWith(
@@ -146,7 +282,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         errorMessage: null,
       ),
     );
-    await enterAudioMode();
   }
 
   Future<void> play() async {
@@ -167,6 +302,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   }
 
   Future<void> pause() async {
+    // Asking for silence also withdraws any pending "play when the load lands"
+    // intent — otherwise pausing during the ~5s fetch is ignored and the clip
+    // starts talking the moment it is ready.
+    _playWhenReady = false;
     try {
       await _handler.pause();
       if (!isClosed) {
@@ -261,7 +400,11 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     );
   }
 
-  Future<void> _initializePlayer() async {
+  /// Loads [state.sourceUrl], or [queue] as one gapless run when the
+  /// backgrounded listener is reading to the end of the keypoint.
+  Future<void> _initializePlayer({List<String>? queue}) async {
+    final generation = ++_loadGeneration;
+
     emit(
       state.copyWith(
         status: LessonAudioLoadStatus.loading,
@@ -278,7 +421,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final loadKeypointId = state.keypointId;
     final loadUrl = state.sourceUrl;
     bool isStale() =>
-        isClosed || state.keypointId != loadKeypointId || state.sourceUrl != loadUrl;
+        isClosed ||
+        generation != _loadGeneration ||
+        state.keypointId != loadKeypointId ||
+        state.sourceUrl != loadUrl;
 
     try {
       await _cancelSubscriptions();
@@ -305,6 +451,14 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
       _processingStateSubscription = _handler.processingStateStream.listen((processingState) async {
         if (isClosed || processingState != just_audio.ProcessingState.completed) return;
+
+        // Publishing `hasCompletedPlayback` is what turns the page: it is
+        // [KeypointCardCubit] that owns "which card comes next", because only it
+        // knows the card order, which cards are revealed, and that an unanswered
+        // quiz card stops the deck. It reacts by moving the view forward, which
+        // points narration at the new card's clip — so the voice carries on
+        // through the keypoint, screen locked or not, without this cubit
+        // second-guessing the deck it cannot see.
         await _handler.pause();
         if (isClosed) return;
         emit(
@@ -316,13 +470,21 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         );
       });
 
-      final duration = await _handler.loadItem(
-        url: loadUrl,
-        id: state.keypointId,
-        title: state.title,
-        artUri: state.imageUrl,
-        speed: state.speed,
-      );
+      final duration = queue == null
+          ? await _handler.loadItem(
+              url: loadUrl,
+              id: state.keypointId,
+              title: state.title,
+              artUri: state.imageUrl,
+              speed: state.speed,
+            )
+          : await _handler.loadQueue(
+              urls: queue,
+              id: state.keypointId,
+              title: state.title,
+              artUri: state.imageUrl,
+              speed: state.speed,
+            );
       if (isStale()) return;
       if (duration != null && duration.inSeconds > 0) {
         emit(state.copyWith(durationSeconds: duration.inSeconds));
@@ -338,6 +500,29 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       }
     } catch (error, stackTrace) {
       if (isStale()) return;
+      // "Loading interrupted" is not a failure: `just_audio` throws it out of
+      // the load that was REPLACED, so by the time it lands someone has already
+      // taken the player somewhere better. [_loadGeneration] catches the
+      // ordinary case, but not an interrupt from outside this cubit — the
+      // handler is app-lifetime and shared, so the next route's cubit (built
+      // before this one is closed) can supersede us without ever touching our
+      // counter. Reporting it marked a perfectly good session dead and filed a
+      // Crashlytics error for it.
+      //
+      // Deliberately does NOT touch the handler: whoever interrupted us is
+      // driving it now, and pausing would silence THEM. Just fall back to
+      // "never started" so a later tap loads this clip again from scratch.
+      if (error is just_audio.PlayerInterruptedException) {
+        emit(
+          state.copyWith(
+            status: LessonAudioLoadStatus.initial,
+            isPlaying: false,
+            hasStartedSession: false,
+            errorMessage: null,
+          ),
+        );
+        return;
+      }
       _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.initialize');
     }
   }
@@ -367,10 +552,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     }
   }
 
-  /// Stops whatever the shared handler/player was doing for the previous
-  /// keypoint and clears its media item/notification — the handler's player
-  /// is app-lifetime, so this replaces the old `_disposePlayer()` (which used
-  /// to tear down and recreate a cubit-owned `AudioPlayer`).
+  /// Halts whatever the shared handler/player was doing so a different source
+  /// can be loaded over it — the handler's player is app-lifetime, so this
+  /// replaces the old `_disposePlayer()` (which used to tear down and recreate
+  /// a cubit-owned `AudioPlayer`).
+  ///
+  /// PAUSES rather than stops: `stop()` publishes `AudioProcessingState.idle`,
+  /// which `audio_service` reads as "done" and answers by shutting the platform
+  /// service down — inaudible in the foreground, fatal in the background, where
+  /// it left narration ending with whichever card was playing when the reader
+  /// locked the screen. See [LessonAudioHandler.pauseForSourceSwitch].
   ///
   /// Only touches the handler if a session was actually started: mirrors the
   /// old `_disposePlayer()`, which was a cheap no-op (`_audioPlayer?.dispose()`
@@ -378,9 +569,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// without ever entering audio mode — e.g. every keypoint that has no
   /// usable audio at all.
   Future<void> _resetHandlerForNewKeypoint() async {
+    // Bump FIRST. A load already in flight is about to be interrupted by the
+    // `loadItem` its replacement issues, and it has to be able to tell it was
+    // superseded BEFORE it throws. Bumping only inside `_initializePlayer` was
+    // too late — that runs after this returns, so the interrupted load still saw
+    // its own generation (and its own sourceUrl, not yet replaced) and reported
+    // failure over a session that was about to be replaced anyway.
+    _loadGeneration++;
     await _cancelSubscriptions();
     if (state.hasStartedSession) {
-      await _handler.stop();
+      await _handler.pauseForSourceSwitch();
     }
   }
 

@@ -6,6 +6,7 @@ audioRetry: 重试
 audioSpeedNormal: 正常
 audioSpeedSuffix: 倍速
 audioSpeedTitle: 速度
+checkAnswerButton: 检查答案
 textDisplayTitle: 文字显示
 fontSizeLabel: 大小
 fontFamilyLabel: 字体

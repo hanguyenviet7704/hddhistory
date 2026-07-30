@@ -10,6 +10,10 @@ class DocumentWidget extends StatelessWidget {
   /// study background (theory keypoint design). No effect when [asCard] is false.
   final bool frosted;
 
+  /// Typographic role for the copy in these documents — see [DocumentProse].
+  /// Exercise bodies pass [DocumentProse.question]; theory keeps the default.
+  final DocumentProse prose;
+
   const DocumentWidget({
     super.key,
     required this.documents,
@@ -17,6 +21,7 @@ class DocumentWidget extends StatelessWidget {
     this.onExplanationSelectionChanged,
     this.asCard = true,
     this.frosted = false,
+    this.prose = DocumentProse.theory,
   });
 
   double topSpacing(int index) {
@@ -47,6 +52,7 @@ class DocumentWidget extends StatelessWidget {
             padding: EdgeInsets.only(top: topSpacing(index)),
             child: DocumentItem(
               document: documents[index],
+              prose: prose,
               selectedExplanationOptionKey: selectedExplanationOptionKeys[index],
               onExplanationSelectionChanged: onExplanationSelectionChanged == null ? null : (optionKey) => onExplanationSelectionChanged!(index, optionKey),
             ),

@@ -305,11 +305,16 @@ class _SpeedStepButton extends StatelessWidget {
 }
 
 /// Ambient background-audio toggle, always shown now (previously Listen-mode
-/// only). Wired to [StudyThemeCubit.soundOn] — the study background's own
+/// only). Wired to [StudyThemeCubit]'s sound state — the study background's own
 /// ambient sound layer already plays behind the lesson shell ([ThemedBackground]
 /// wraps [LessonShellLayout]'s body), so "Background music" in the keypoint
 /// sheet controls that same toggle rather than introducing a second,
 /// competing audio layer.
+///
+/// Opening a keypoint silences that ambience so it doesn't talk over the
+/// narration, which is why this reads [StudyThemeStateX.soundAudible] and not the
+/// stored preference: inside a lesson the switch shows OFF, and flipping it on
+/// here is the reader overriding that for the rest of the lesson.
 class _BackgroundMusicRow extends StatelessWidget {
   const _BackgroundMusicRow();
 
@@ -340,7 +345,7 @@ class _BackgroundMusicRow extends StatelessWidget {
               ),
               _KeypointToggleSwitch(
                 key: const ValueKey('keypoint-settings-background-music-toggle'),
-                value: state.soundOn,
+                value: state.soundAudible,
                 onChanged: (value) {
                   AppService.instance.appTrackingService.trackEvent(
                     TrackingKey.keypointMenuBgmusicToggle,

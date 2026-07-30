@@ -29,7 +29,7 @@ part of '../../../lesson.dart';
 /// (also not a singleton), not a process-lifetime singleton holding a stale
 /// sibling. Constructed directly in `_buildLessonFlowPage`
 /// (`routes_shell_course_lesson_data.dart`).
-class KeypointCardCubit extends Cubit<KeypointCardState> {
+class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObserver {
   KeypointCardCubit({
     required LessonCubit lessonCubit,
     required TheoryCubit theoryCubit,
@@ -41,6 +41,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
     _previousCompletionOrigin = _lessonCubit.state.completionOrigin;
     _rebuildCards(_lessonCubit.state);
     _lessonSubscription = _lessonCubit.stream.listen(_onLessonStateChanged);
+    _audioSubscription = _audioCubit.stream.listen(_onAudioStateChanged);
+    // Whether the app is on screen decides who walks narration forward — this
+    // cubit, or the player reading on by itself (see [_listenOnWhileAway]).
+    WidgetsBinding.instance.addObserver(this);
   }
 
   final LessonCubit _lessonCubit;
@@ -48,21 +52,39 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
   final LessonAudioCubit _audioCubit;
 
   StreamSubscription<LessonState>? _lessonSubscription;
+  StreamSubscription<LessonAudioState>? _audioSubscription;
 
   /// Flat card index → its narration-clip index.
   ///
-  /// Clips are numbered across the keypoint's theory documents in order, which
-  /// is NOT the flat card index: quiz cards sit between theory cards and carry
-  /// no narration. Only revealed theory cards appear here.
+  /// Clips are numbered across the keypoint's theory documents and exercise
+  /// questions in item order, which is NOT the flat card index: a video or
+  /// roleplay item contributes cards but no clips. Only revealed cards appear
+  /// here.
   Map<int, int> _cardToClip = const {};
 
   LessonCompletionOrigin _previousCompletionOrigin = LessonCompletionOrigin.none;
 
   bool _pausedForQuiz = false;
 
+  /// Whether the clip that has finished was already acted on, so one completion
+  /// turns exactly one page. `hasCompletedPlayback` stays true until another clip
+  /// loads, and any later emit on the audio cubit would otherwise read as a
+  /// second completion — that is the shape the old audio-driven paging cascaded
+  /// through, advancing several cards from one clip.
+  bool _completionHandled = false;
+
   /// Card whose clip is currently loaded in the player, so progress can be read
   /// off real playback instead of being inferred.
   int _loadedClipCardIndex = -1;
+
+  /// The card the player is reading RIGHT NOW, or -1 when narration isn't scoped
+  /// to a card at all (a keypoint still dubbed as one whole file, or one with no
+  /// clip for this card). Anything syncing itself to the voice — the pip fill, the
+  /// text auto-scroll — has to gate on this: with a whole-keypoint file the
+  /// position/duration pair describes the keypoint, not the page on screen, so
+  /// treating it as page progress moves the text by a fraction of a percent per
+  /// second and reads as nothing happening at all.
+  int get loadedClipCardIndex => _loadedClipCardIndex;
 
   // ---- Lookups consumed by the card widgets ----
 
@@ -136,10 +158,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
   void _loadCardNarration(int index) {
     if (!_audioCubit.hasCardClips) return;
     if (index < 0 || index >= state.cards.length) return;
-    if (!state.cards[index].isTheory) return;
 
+    // Whether this card has a clip at all is `_cardToClip`'s answer, not the
+    // card type's: theory cards are read in full and exercise cards have their
+    // question read, while video/roleplay cards carry their own audio.
     final clipIndex = _cardToClip[index];
     if (clipIndex == null) return;
+    if (!_audioCubit.hasClipAt(clipIndex)) return;
 
     // Keep talking if it was talking, and keep going when the previous card's
     // clip had simply run to its end — that is a reader listening through, not
@@ -155,6 +180,116 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
 
   void _onLessonStateChanged(LessonState lessonState) {
     _rebuildCards(lessonState);
+  }
+
+  /// Reaching the end of a card's clip turns the page, exactly as the reader's
+  /// own swipe would — that is what makes the screen read itself instead of
+  /// waiting to be pushed.
+  ///
+  /// The last page is included: reading a keypoint to its end IS finishing it, so
+  /// the clip running out there completes the keypoint exactly as the final swipe
+  /// would. (This deliberately does NOT resurrect the old "audio finished →
+  /// complete the keypoint, skipping the quiz" shortcut — completion still comes
+  /// from the last card being reached in order, and an unanswered quiz card below
+  /// still stops the deck dead.)
+  ///
+  /// Two deliberate places it refuses to turn:
+  ///
+  /// - **An exercise card.** Its clip reads the question and then the deck holds:
+  ///   the reader has to answer, and a page that walked itself past the question
+  ///   would be answering for them.
+  /// - **A card still owing an explanation choice** (`TheoryCubit.canContinue`) —
+  ///   the same gate the swipe has.
+  void _onAudioStateChanged(LessonAudioState audioState) {
+    // The clips may have arrived after the cards did (see
+    // [_ensureNarrationOnViewedCard]) — this is the other half of that.
+    _ensureNarrationOnViewedCard();
+
+    if (!audioState.hasCompletedPlayback) {
+      _completionHandled = false;
+      return;
+    }
+    if (_completionHandled) return;
+
+    // Narration is off reading the rest of the keypoint on its own, so this
+    // completion is the END of that whole run — not "the page on screen
+    // finished". Turning a card here would turn one the voice left behind
+    // several clips ago.
+    if (_audioCubit.isAheadOfDeck) {
+      _completionHandled = true;
+      return;
+    }
+
+    final index = state.viewedCardIndex;
+    // Only the clip of the card ON SCREEN may turn that card. On a keypoint
+    // dubbed as one whole file `_loadedClipCardIndex` is -1, so this never fires:
+    // "the audio finished" there means the whole keypoint, not this page.
+    if (_loadedClipCardIndex != index) return;
+    if (index < 0 || index >= state.cards.length) return;
+
+    _completionHandled = true;
+
+    // An exercise card: the deck holds here, because answering is the reader's
+    // to do. Off screen there is nobody to answer, so the voice reads on alone.
+    if (!state.cards[index].isTheory) {
+      _listenOnWhileAway();
+      return;
+    }
+
+    // A card the reader had already passed — the next one is revealed, so this is
+    // just moving the view (and narration with it) forward through the deck.
+    if (index < state.furthestCardIndex) {
+      viewCard(index + 1);
+      return;
+    }
+
+    if (!_theoryCubit.state.canContinue) {
+      _listenOnWhileAway();
+      return;
+    }
+    _theoryCubit.nextDocument();
+  }
+
+  /// Hands the rest of the keypoint to the player when the deck has refused to
+  /// turn AND the app is off screen.
+  ///
+  /// The two gates the deck holds at — an unanswered question, and an
+  /// explanation the reader still owes a choice on — both exist to stop a page
+  /// from acting on the reader's behalf. Backgrounded there is no page and no
+  /// way to act: the reader is looking at the OS now-playing controls, which
+  /// promise an ordinary audio player. So the voice reads on, and the deck stays
+  /// exactly where they left it.
+  void _listenOnWhileAway() {
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    // Anything short of genuinely backgrounded counts as on screen. `inactive`
+    // in particular is the half-second of pulling down notification centre or
+    // taking a call — the deck is still there and still the reader's to drive,
+    // and reading ahead for it would need undoing the moment they let go.
+    // A null state (before the first lifecycle event) reads as on screen too:
+    // never read ahead on a guess.
+    if (lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive) return;
+    if (!_audioCubit.hasCardClips) return;
+    unawaited(_audioCubit.playRestOfKeypoint());
+  }
+
+  /// Coming back on screen ends the read-ahead: the voice stops and is pointed
+  /// back at the card the reader is actually looking at, silent, so the next tap
+  /// on play reads the page in front of them.
+  ///
+  /// The deck deliberately does NOT jump forward to wherever the voice reached.
+  /// Reaching those pages for real means running the exercise past unanswered
+  /// questions and, at the end of the last item, `completeCurrentKeypoint()` —
+  /// which writes keypoint progress to the server. Listening on a walk must not
+  /// silently mark a keypoint finished.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    if (lifecycleState != AppLifecycleState.resumed) return;
+    if (!_audioCubit.isAheadOfDeck) return;
+
+    unawaited(_audioCubit.pause());
+    final clipIndex = _cardToClip[state.viewedCardIndex];
+    if (clipIndex == null || !_audioCubit.hasClipAt(clipIndex)) return;
+    unawaited(_audioCubit.loadCard(clipIndex));
   }
 
   void _rebuildCards(LessonState lessonState) {
@@ -188,15 +323,44 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
         cards: built.cards,
         furthestCardIndex: nextFurthestIndex,
         viewedCardIndex: nextViewedIndex,
+        isLiveCardAnswered: _isCardAnswered(built.cards, nextFurthestIndex),
       ),
     );
 
     if (nextViewedIndex != previousViewedIndex) {
       _reconcileQuizPause(previousViewedIndex, nextViewedIndex);
-      // Every card change takes narration with it, so the voice is always
-      // reading the page on screen.
-      _loadCardNarration(nextViewedIndex);
     }
+    // Every card change takes narration with it, so the voice is always reading
+    // the page on screen.
+    _ensureNarrationOnViewedCard();
+  }
+
+  /// Points narration at the card on screen unless it is already there.
+  ///
+  /// The card-CHANGE path can't cover entry: the deck's first card is already
+  /// the viewed one, so nothing changes and nothing would ever claim it — which
+  /// left the first page of every keypoint with `_loadedClipCardIndex == -1`, so
+  /// it neither turned itself nor scrolled, and the screen only came alive from
+  /// the second page on.
+  ///
+  /// Entry also has no fixed order: the cards arrive when the learning items load
+  /// and the clips arrive when [LessonAudioCubit.configure] runs, either way
+  /// round. So this is called from BOTH sides — the card rebuild and the audio
+  /// state — and whichever lands last is the one that starts narration.
+  void _ensureNarrationOnViewedCard() {
+    if (_loadedClipCardIndex == state.viewedCardIndex) return;
+    _loadCardNarration(state.viewedCardIndex);
+  }
+
+  /// Whether [index] is a quiz card whose question already carries a result.
+  ///
+  /// Theory and done cards are never "answered" — they have no verdict to wait
+  /// for, and the forward gate for them lives in `TheoryCubit.canContinue`.
+  bool _isCardAnswered(List<KeypointCardDescriptor> cards, int index) {
+    if (index < 0 || index >= cards.length) return false;
+    final descriptor = cards[index];
+    if (!descriptor.isQuiz) return false;
+    return questionForCard(descriptor).hasResult;
   }
 
   /// How far into the CURRENT learning item the reader actually is.
@@ -242,21 +406,36 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
         if (item.type == LearningItemType.theory || item.type == LearningItemType.video) {
           final documents = item.documents;
           if (documents.isEmpty) continue;
+          // Video items are NOT dubbed — they carry their own audio, and the
+          // backend leaves them out of its clip list (see
+          // `VoiceoverService.buildSegments`). Counting their documents here
+          // shifted every clip index after the first video, so those cards played
+          // a neighbour's clip (or ran past the end and played nothing).
+          final isDubbed = item.type == LearningItemType.theory;
           final activeDocIndex = isCurrentItem ? math.min(_liveIndexForCurrentItem(lessonState, item), documents.length - 1) : documents.length - 1;
           for (var docIndex = 0; docIndex <= activeDocIndex; docIndex++) {
             cards.add(KeypointCardDescriptor.theory(learningItemId: item.id, documentIndex: docIndex));
-            cardToClip[cards.length - 1] = clipPosition + docIndex;
+            if (isDubbed) cardToClip[cards.length - 1] = clipPosition + docIndex;
             if (isCurrentItem && docIndex == activeDocIndex) liveCardIndex = cards.length - 1;
           }
-          clipPosition += documents.length;
+          if (isDubbed) clipPosition += documents.length;
         } else if (item.type == LearningItemType.exercise || item.type == LearningItemType.roleplay) {
           final questions = item.questions;
           if (questions.isEmpty) continue;
+          // An exercise card's clip reads its QUESTION (the backend dubs the
+          // question alone, never the options). Roleplay items are not dubbed —
+          // they have their own recorded lines. Neither is the synthetic
+          // sub-question round `LessonCubit.reviewDone` appends: its questions
+          // come from `subQuestions`, which the backend never dubs, so counting
+          // them would shift nothing but claim clips that don't exist.
+          final isDubbed = item.type == LearningItemType.exercise && !item.isPlayingSubQuestions;
           final activeQuestionIndex = isCurrentItem ? math.min(_liveIndexForCurrentItem(lessonState, item), questions.length - 1) : questions.length - 1;
           for (var questionIndex = 0; questionIndex <= activeQuestionIndex; questionIndex++) {
             cards.add(KeypointCardDescriptor.quiz(learningItemId: item.id, questionIndex: questionIndex));
+            if (isDubbed) cardToClip[cards.length - 1] = clipPosition + questionIndex;
             if (isCurrentItem && questionIndex == activeQuestionIndex) liveCardIndex = cards.length - 1;
           }
+          if (isDubbed) clipPosition += questions.length;
         }
       }
     }
@@ -271,12 +450,17 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
     );
   }
 
-  /// Quiz cards are narration-silent: entering an unanswered one pauses
-  /// playback (if it was playing) so narration doesn't keep advancing behind
-  /// the user's back while they answer; only resumes automatically when
-  /// leaving back onto a theory card, and only if THIS cubit was the one that
-  /// paused it — a user-initiated pause stays paused.
+  /// Legacy (whole-keypoint dub) fallback: silence a quiz card.
+  ///
+  /// On a keypoint with per-card clips there is nothing to reconcile — an
+  /// exercise card's clip reads its question and ends there, so narration can't
+  /// advance behind the reader's back while they answer. On a keypoint still
+  /// dubbed as ONE file the voice would read straight through the question and
+  /// on into later pages, so entering an unanswered quiz pauses it; that only
+  /// resumes on the way back onto a theory card, and only if THIS cubit was what
+  /// paused it — a reader's own pause stays paused.
   void _reconcileQuizPause(int previousIndex, int nextIndex) {
+    if (_audioCubit.hasCardClips) return;
     if (previousIndex == nextIndex) return;
     final cards = state.cards;
     if (nextIndex < 0 || nextIndex >= cards.length) return;
@@ -300,7 +484,9 @@ class KeypointCardCubit extends Cubit<KeypointCardState> {
 
   @override
   Future<void> close() {
+    WidgetsBinding.instance.removeObserver(this);
     unawaited(_lessonSubscription?.cancel());
+    unawaited(_audioSubscription?.cancel());
     return super.close();
   }
 }

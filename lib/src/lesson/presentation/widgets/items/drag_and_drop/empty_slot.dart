@@ -1,5 +1,8 @@
 part of '../../../../lesson.dart';
 
+/// An unfilled gap in a text-gap-filling sentence (Keypoint v2 design): a
+/// dashed brand-tinted pill sitting inline on the sentence, not the grey box it
+/// used to be. Fills with brand tint while a word hovers over it.
 class EmptySlot extends StatelessWidget {
   final bool isHighlighted;
   const EmptySlot({super.key, required this.isHighlighted});
@@ -8,25 +11,23 @@ class EmptySlot extends StatelessWidget {
   Widget build(BuildContext context) {
     return DottedBorder(
       options: RoundedRectDottedBorderOptions(
-        color: isHighlighted ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
-        strokeWidth: 2.w,
+        color: isHighlighted ? AppCustomColor.brandPrimary : AppCustomColor.brandPrimary200,
+        strokeWidth: isHighlighted ? 2.w : 1.5.w,
         dashPattern: [6.w, 4.w],
-        radius: Radius.circular(8.r),
+        radius: Radius.circular(9.r),
         padding: EdgeInsets.zero,
       ),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 4.h),
+        // A fixed width, NOT `constraints: minWidth`: this Container has no
+        // child, and a childless Container takes the largest size its parent
+        // allows — inside the sentence `Wrap` that meant every empty gap
+        // stretched to the full card width and pushed the prose onto its own
+        // lines. `dart analyze` cannot see this; it only shows up on screen.
+        width: 96.w,
+        height: 34.h,
         decoration: BoxDecoration(
-          color: isHighlighted ? const Color(0xFF554FF0).withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: AppText(
-          ' ',
-          style: AppStyle.text20.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.white.withValues(alpha: 0),
-            height: 1.5,
-          ),
+          color: isHighlighted ? AppCustomColor.brandPrimary.withValues(alpha: 0.08) : Colors.transparent,
+          borderRadius: BorderRadius.circular(9.r),
         ),
       ),
     );

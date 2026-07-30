@@ -301,9 +301,18 @@ private struct MeupLessonDIExpandedBottom: View {
 
 // Matches the existing static widgets' tap-to-open convention (see
 // MeupHomeWidgetViews.swift's `.widgetURL(URL(string: entry.payload.deeplink))`).
+/// Carries `keypointId` whenever the card was last updated from inside a lesson,
+/// so a tap can reopen that exact keypoint even after the app was force-quit
+/// (the app process keeps no such memory across a cold start). Without it — a
+/// card raised from the roadmap — the link stays course-only and resolves to the
+/// roadmap, which is what the reader was looking at.
 @available(iOS 16.2, *)
-private func meupLessonDeeplink(courseId: String) -> URL? {
-  URL(string: "meup://course-roadmap?courseId=\(courseId)&source=live_activity")
+private func meupLessonDeeplink(courseId: String, keypointId: String?) -> URL? {
+  var url = "meup://course-roadmap?courseId=\(courseId)&source=live_activity"
+  if let keypointId, !keypointId.isEmpty {
+    url += "&keypointId=\(keypointId)"
+  }
+  return URL(string: url)
 }
 
 @available(iOS 16.2, *)
@@ -313,7 +322,7 @@ struct MeupLessonLiveActivity: Widget {
       MeupLessonLockScreenView(attributes: context.attributes, state: context.state)
         .activityBackgroundTint(Color.white)
         .activitySystemActionForegroundColor(LiveActivityColor.title)
-        .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId))
+        .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId, keypointId: context.state.keypointId))
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
@@ -324,7 +333,7 @@ struct MeupLessonLiveActivity: Widget {
         }
         DynamicIslandExpandedRegion(.bottom) {
           MeupLessonDIExpandedBottom(state: context.state)
-            .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId))
+            .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId, keypointId: context.state.keypointId))
         }
       } compactLeading: {
         MeupLessonDICompactLeading()

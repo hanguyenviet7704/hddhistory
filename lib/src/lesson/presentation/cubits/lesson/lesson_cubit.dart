@@ -241,7 +241,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           onSuccess: (item) => setCurrentLearningItem(item),
         );
         preloadNextLearningItem();
-        if (isInit) unawaited(_startLiveActivity());
+        if (isInit) unawaited(_startLiveActivity(keypointId: keypointId ?? _liveActivityKeypointId));
       },
     );
   }
@@ -249,13 +249,20 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   /// Live Activity (Lock Screen + Dynamic Island) for the lesson just opened
   /// — best-effort, iOS 16.1+ only (see LiveActivityService), so failures here
   /// must never affect the actual lesson flow.
-  Future<void> _startLiveActivity({String? preferredCourseId}) async {
+  /// Keypoint the card should reopen on a cold-start tap. Read from
+  /// [CourseLessonCubit] rather than tracked here: that cubit is already the
+  /// single owner of "which keypoint is open" (set by the roadmap's Start CTA),
+  /// so a second copy could only drift from it.
+  String get _liveActivityKeypointId => AppDI.injector.get<CourseLessonCubit>().state.currentKeypointId;
+
+  Future<void> _startLiveActivity({String? preferredCourseId, String keypointId = ''}) async {
     final context = _resolveLiveActivityCourseContext(preferredCourseId: preferredCourseId);
     if (context.courseId.isEmpty) return;
 
     String imagePath = '';
     if (context.courseImageUrl.isNotEmpty) {
-      imagePath = await AppDI.injector.get<HomeWidgetBridge>().saveImageAndGetPath(
+      imagePath =
+          await AppDI.injector.get<HomeWidgetBridge>().saveImageAndGetPath(
             key: 'meup_live_activity_course_image',
             imageUrl: context.courseImageUrl,
           ) ??
@@ -264,17 +271,18 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     final copy = _liveActivityCopy(context.minutes, isDone: context.courseProgress >= 1);
     await AppDI.injector.get<LiveActivityService>().start(
-          courseId: context.courseId,
-          courseName: context.courseName,
-          courseImagePath: imagePath,
-          progress: context.courseProgress,
-          isDone: context.courseProgress >= 1,
-          inLessonLabel: copy.inLessonLabel,
-          continueLearningLabel: copy.continueLearningLabel,
-          resumeLabel: copy.resumeLabel,
-          primaryNudge: copy.primaryNudge,
-          footerNudge: copy.footerNudge,
-        );
+      courseId: context.courseId,
+      courseName: context.courseName,
+      courseImagePath: imagePath,
+      progress: context.courseProgress,
+      isDone: context.courseProgress >= 1,
+      inLessonLabel: copy.inLessonLabel,
+      continueLearningLabel: copy.continueLearningLabel,
+      resumeLabel: copy.resumeLabel,
+      primaryNudge: copy.primaryNudge,
+      footerNudge: copy.footerNudge,
+      keypointId: keypointId,
+    );
     // PROXY EVENT — `live_scr_view` is fired here, when the Live Activity card
     // is CREATED, NOT when the lock screen is actually viewed (Flutter can't
     // observe a real lock-screen impression; that is native/OS-only). Fired on
@@ -288,7 +296,14 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
             .catchError((_) {}),
       );
     }
-    await scheduleLiveActivityReturnNudge(courseId: context.courseId, courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
+    await scheduleLiveActivityReturnNudge(
+      courseId: context.courseId,
+      courseName: context.courseName,
+      isDone: false,
+      minutes: context.minutes,
+      progress: context.courseProgress,
+      keypointId: keypointId,
+    );
   }
 
   /// Keeps a "resume this course" Live Activity alive while the user sits on the
@@ -312,13 +327,16 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     if (service.activeCourseId == context.courseId) {
       final copy = _liveActivityCopy(context.minutes, isDone: false);
+      // No keypoint: the reader is sitting on the roadmap, so a tap belongs on
+      // the roadmap too. This deliberately clears any keypoint a previous
+      // in-lesson update installed — leaving the lesson is what dropped it.
       await service.update(
-            progress: context.courseProgress,
-            isDone: false,
-            resumeLabel: copy.resumeLabel,
-            primaryNudge: copy.primaryNudge,
-            footerNudge: copy.footerNudge,
-          );
+        progress: context.courseProgress,
+        isDone: false,
+        resumeLabel: copy.resumeLabel,
+        primaryNudge: copy.primaryNudge,
+        footerNudge: copy.footerNudge,
+      );
       await scheduleLiveActivityReturnNudge(courseId: context.courseId, courseName: context.courseName, isDone: false, minutes: context.minutes, progress: context.courseProgress);
       return;
     }
@@ -340,13 +358,21 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     final isDone = progress >= 1;
     final copy = _liveActivityCopy(context.minutes, isDone: isDone);
     await AppDI.injector.get<LiveActivityService>().update(
-          progress: progress,
-          isDone: isDone,
-          resumeLabel: copy.resumeLabel,
-          primaryNudge: copy.primaryNudge,
-          footerNudge: copy.footerNudge,
-        );
-    await scheduleLiveActivityReturnNudge(courseId: context.courseId, courseName: context.courseName, isDone: isDone, minutes: context.minutes, progress: progress);
+      progress: progress,
+      isDone: isDone,
+      resumeLabel: copy.resumeLabel,
+      primaryNudge: copy.primaryNudge,
+      footerNudge: copy.footerNudge,
+      keypointId: _liveActivityKeypointId,
+    );
+    await scheduleLiveActivityReturnNudge(
+      courseId: context.courseId,
+      courseName: context.courseName,
+      isDone: isDone,
+      minutes: context.minutes,
+      progress: progress,
+      keypointId: _liveActivityKeypointId,
+    );
   }
 
   /// All Live Activity display copy, localized via slang for the current
@@ -364,7 +390,9 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     );
   }
 
-  ({String courseId, String courseName, String courseImageUrl, int minutes, double courseProgress, double optimisticProgressAfterKeypoint}) _resolveLiveActivityCourseContext({String? preferredCourseId}) {
+  ({String courseId, String courseName, String courseImageUrl, int minutes, double courseProgress, double optimisticProgressAfterKeypoint}) _resolveLiveActivityCourseContext({
+    String? preferredCourseId,
+  }) {
     final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
     final roadmapState = AppDI.injector.get<CourseRoadmapCubit>().state;
     final homeState = AppDI.injector.get<HomeCubit>().state;

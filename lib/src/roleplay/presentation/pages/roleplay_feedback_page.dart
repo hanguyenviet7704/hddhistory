@@ -63,8 +63,6 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
         AppService.instance.appTrackingService.trackRoleplayResultContinue(trackingData);
       }
 
-      await _handleLearningStreakGate();
-      if (!mounted) return;
 
       AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
       CourseRoadmapRoute().go(context);
@@ -77,35 +75,6 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
     }
   }
 
-  Future<void> _handleLearningStreakGate() async {
-    final userCubit = AppDI.injector.get<UserCubit>();
-    final userState = userCubit.state;
-    final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
-    final nowUtc = DateTime.now().toUtc();
-    final gateUtcDay = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
-
-    if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) return;
-
-    final streakResult = await learningStreakCubit.loadUserLearningStreak(
-      triggerSource: LearningStreakTriggerSource.completionCta,
-      requestedUserId: userState.user.id,
-      timeout: const Duration(seconds: 2),
-    );
-
-    if (!mounted) return;
-    if (!streakResult.isRemoteSuccessWithPositiveStreak) return;
-    if (LearningStreakModalGuard.hasBlockingModal(context)) return;
-
-    final committed = await LearningStreakSuccessOverlay.show(
-      context,
-      streak: streakResult.streak,
-    );
-    if (!mounted) return;
-
-    if (committed) {
-      learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
-    }
-  }
 
   @override
   void initState() {

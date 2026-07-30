@@ -43,6 +43,18 @@ extension ArrangeTheSequenceStateX on ArrangeTheSequenceState {
 
   List<String> get correctOrderLabels => questionRuntimeAnswers(question).map((answer) => _answerLabel(answer)).toList();
 
+  /// 1-based position the item currently sitting at [index] SHOULD occupy.
+  ///
+  /// A graded row shows this number (design) instead of a bare cross, so a
+  /// misplaced step tells the reader where it belonged without them having to
+  /// diff the whole list. Null when the item can't be matched against the
+  /// answer key at all.
+  int? correctPositionFor(int index) {
+    if (index < 0 || index >= currentItems.length) return null;
+    final position = correctOrderLabels.indexOf(_optionLabel(currentItems[index]));
+    return position < 0 ? null : position + 1;
+  }
+
   ArrangeAnswerState getItemState(int index) {
     if (!hasChecked) return ArrangeAnswerState.normal;
     final runtimeAnswers = questionRuntimeAnswers(question);

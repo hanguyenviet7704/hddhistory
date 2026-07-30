@@ -56,13 +56,17 @@ class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   /// Repurposed from "which mode tab (Read/Listen) to open into" (the old
   /// dual-mode split) to "should the FIRST keypoint's narration autoplay the
   /// instant this page mounts" — the unified screen has no mode tabs left.
-  /// Kept as the same `'read'`/`'audio'` wire values (default omits the query
-  /// param entirely, unchanged route-test shape) so existing/legacy deep
-  /// links (incl. `initial-mode=audio`) keep resolving without crashing.
+  /// Kept as the same `'read'`/`'audio'` wire values so existing/legacy deep
+  /// links keep resolving without crashing.
+  ///
+  /// Defaults to `'audio'`: opening a keypoint starts reading it out. It used to
+  /// default to `'read'` and every call site had to remember to opt in, which is
+  /// how entries like the lesson list ended up silent. Opting OUT is now the
+  /// thing a caller has to say explicitly, and only a link does.
   final String initialMode;
 
   const LessonRoute({
-    this.initialMode = 'read',
+    this.initialMode = 'audio',
   });
 
   @override

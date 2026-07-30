@@ -76,6 +76,14 @@ abstract class KeypointCardState with _$KeypointCardState {
     /// "narration already finished this card" and bouncing to the next one
     /// (see `KeypointCardCubit.seekSuppressWindow`).
     @Default(false) bool isSeeking,
+
+    /// Whether the live card is a quiz that already has a stored result.
+    ///
+    /// Mirrored into state deliberately: the card LIST doesn't change when a
+    /// question is graded (same descriptors, same indices), so without this the
+    /// rebuilt state compared equal, `emit` dropped it, and the shell never
+    /// learned the forward swipe had been unlocked.
+    @Default(false) bool isLiveCardAnswered,
   }) = _KeypointCardState;
 
   factory KeypointCardState.initial() => const KeypointCardState();

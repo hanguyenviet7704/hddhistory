@@ -12,21 +12,24 @@ void main() {
     // dual-mode split opened into. The unified keypoint screen has no mode
     // tabs left, so it's repurposed to mean "should the first keypoint's
     // narration autoplay the instant this page mounts" (see `LessonPage`).
-    // The wire values/route shape are deliberately unchanged (still
-    // `'read'`/`'audio'`, default still omits the query param entirely) so
+    // The wire values are deliberately unchanged (still `'read'`/`'audio'`) so
     // legacy/deep links built against the old meaning keep resolving.
-    test('omits the initial-mode query when narration should not autoplay on entry', () {
+    //
+    // Autoplay is now the DEFAULT — opening a keypoint reads it out — so it is
+    // the opt-OUT that has to be spelled out on the wire.
+    test('the plain route autoplays narration and needs no query param for it', () {
       const route = LessonRoute();
 
       expect(route.location, '/course-roadmap/lesson');
       expect(route.location, isNot(contains('initial-mode=')));
+      expect(LessonEntryMode.fromRouteValue(route.initialMode).isAudio, isTrue);
     });
 
-    test('adds the initial-mode query when narration should autoplay on entry', () {
-      const route = LessonRoute(initialMode: 'audio');
+    test('adds the initial-mode query when a link opts OUT of autoplay', () {
+      const route = LessonRoute(initialMode: 'read');
 
       expect(route.location, contains('/course-roadmap/lesson'));
-      expect(route.location, contains('initial-mode=audio'));
+      expect(route.location, contains('initial-mode=read'));
     });
 
     test('a legacy initial-mode=audio deep link resolves to autoplay-on-entry, not a mode tab', () {

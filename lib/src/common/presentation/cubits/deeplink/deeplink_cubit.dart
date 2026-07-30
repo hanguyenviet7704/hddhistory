@@ -183,7 +183,8 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     if (_serviceRouteQuery[LiveActivityDeeplink.sourceQueryKey] != LiveActivityDeeplink.sourceValue) return false;
 
     final courseId = _serviceRouteQuery[LiveActivityDeeplink.courseIdQueryKey]?.trim() ?? '';
-    if (!openCourseRoadmapFromLiveActivity(courseId)) return false;
+    final keypointId = _serviceRouteQuery[LiveActivityDeeplink.keypointIdQueryKey]?.trim() ?? '';
+    if (!openCourseRoadmapFromLiveActivity(courseId, keypointId: keypointId)) return false;
 
     unawaited(
       AppService.instance.appTrackingService
@@ -197,16 +198,59 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// card does — reuses [_openCourseRoadmap] (the home_widget→course path) and
   /// falls back to Home when the course can't be selected. Public so the
   /// return-nudge interaction subscriber drives the identical resume.
-  bool openCourseRoadmapFromLiveActivity(String courseId) {
+  bool openCourseRoadmapFromLiveActivity(String courseId, {String keypointId = ''}) {
     final navContext = AppConfig.instance.context;
     if (navContext == null) {
       LogDev.warning('Ignoring live activity resume because navigator context is unavailable');
       return false;
     }
+
+    // Tapping the card while the lesson it belongs to is still on screen must
+    // leave navigation alone. The tap only brings a backgrounded app forward,
+    // which already lands back on the lesson — `.go()`-ing to the roadmap here
+    // would throw away the very lesson the user asked to return to. Counted as
+    // handled so the tap still tracks and isn't logged as an unsupported route.
+    //
+    // A cold start still resolves to the roadmap: the card carries only
+    // `courseId` (see [LiveActivityDeeplink.resumeUri]), so once the process is
+    // gone nothing identifies which lesson to reopen.
+    if (_isLessonFlowOnScreen(navContext)) {
+      LogDev.info('Live activity resume: lesson already on screen, keeping it');
+      return true;
+    }
+
+    // Cold start (or a tap from anywhere else in the app): hand the keypoint to
+    // the roadmap, which is the screen that loads course data, and let it open
+    // the lesson once it can resolve the id. Routing straight to the lesson from
+    // here would race that fetch with nothing to fall back on.
+    if (keypointId.isNotEmpty) {
+      AppDI.injector.get<CourseRoadmapCubit>().setPendingResumeKeypointId(keypointId);
+    }
+
     if (!_openCourseRoadmap(navContext, courseId, LiveActivityDeeplink.sourceValue)) {
+      // No roadmap to land on, so nothing can consume the request either.
+      AppDI.injector.get<CourseRoadmapCubit>().clearPendingResumeKeypointId();
       HomeRoute().go(navContext);
     }
     return true;
+  }
+
+  /// True while the lesson route — or anything pushed over it, such as the
+  /// exercise-result popup or keypoint-complete page — is the current location.
+  ///
+  /// Reads the router's own configuration rather than `PageCubit`'s tracked
+  /// route name: a popup pushed above the lesson re-anchors that name, so it
+  /// would report "not in a lesson" exactly when the user is deepest in one.
+  /// Matches a whole path segment, so `lesson-list` and `video-lesson` don't
+  /// count as the lesson flow.
+  bool _isLessonFlowOnScreen(BuildContext navContext) {
+    try {
+      final uri = GoRouter.of(navContext).routerDelegate.currentConfiguration.uri;
+      return uri.pathSegments.contains(RoutePath.lesson);
+    } catch (error) {
+      LogDev.warning('Could not read current route for live activity resume: $error');
+      return false;
+    }
   }
 
   /// Best-effort course title from the full catalog (never throws / returns ''
@@ -231,16 +275,15 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
 
     final raw = interaction.payload.raw;
     final courseId = (raw['course_id'] ?? '').toString().trim();
+    final keypointId = (raw['keypoint_id'] ?? '').toString().trim();
     var courseName = (raw['course_name'] ?? '').toString().trim();
     if (courseName.isEmpty) courseName = _resolveLiveActivityCourseName(courseId);
 
     unawaited(
-      AppService.instance.appTrackingService
-          .trackEvent(TrackingKey.liveNudgeTap, parameters: {'course_id': courseId, 'course_name': courseName})
-          .catchError((_) {}),
+      AppService.instance.appTrackingService.trackEvent(TrackingKey.liveNudgeTap, parameters: {'course_id': courseId, 'course_name': courseName}).catchError((_) {}),
     );
 
-    openCourseRoadmapFromLiveActivity(courseId);
+    openCourseRoadmapFromLiveActivity(courseId, keypointId: keypointId);
   }
 
   void _trackHomeWidgetRoute(

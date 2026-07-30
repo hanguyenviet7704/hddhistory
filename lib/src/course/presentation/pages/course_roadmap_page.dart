@@ -171,6 +171,53 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     unawaited(AppDI.injector.get<LessonCubit>().ensureLiveActivityForRoadmap(courseId));
   }
 
+  /// Completes a Live Activity resume that asked for a specific keypoint: the
+  /// deeplink lands here (the roadmap is what loads course data), and the lesson
+  /// opens as soon as that data can resolve the keypoint.
+  ///
+  /// Returns without consuming the request while the roadmap can't resolve it
+  /// yet — a cold start races the fetch, and a later emission retries.
+  void _tryResumePendingKeypoint(CourseRoadmapState state) {
+    final roadmapCubit = context.read<CourseRoadmapCubit>();
+    final keypointId = roadmapCubit.pendingResumeKeypointId;
+    if (keypointId.isEmpty) return;
+
+    final lesson = findLessonByKeypointId(state.roadmap, keypointId);
+    if (lesson == null) return;
+
+    final keypoint = lesson.keypoints.firstWhere((item) => item.id == keypointId, orElse: KeypointEntity.new);
+    if (keypoint.id.isEmpty) return;
+    roadmapCubit.clearPendingResumeKeypointId();
+
+    // A stale card must never walk past lesson lock: the paywall config or the
+    // user's premium state can have changed since the card was raised, so this
+    // re-checks exactly what the roadmap's own tap path checks and otherwise
+    // leaves the reader on the roadmap.
+    final paywallConfig = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
+    final isPremium = context.read<ProfileCubit>().state.user.isPremium;
+    if (state.roadmap.isLessonLocked(lesson, paywallConfig, isPremium: isPremium)) {
+      LogDev.info('Live activity resume: keypoint $keypointId is locked, staying on the roadmap');
+      return;
+    }
+
+    startKeypointLesson(
+      lessonCubit: AppDI.injector.get<LessonCubit>(),
+      courseLessonCubit: context.read<CourseLessonCubit>(),
+      roadmapCubit: roadmapCubit,
+      navContext: context,
+      lesson: lesson,
+      keypoint: keypoint,
+      courseLevel: _resolveResumeCourseLevel(state, lesson),
+    );
+  }
+
+  CourseLevel _resolveResumeCourseLevel(CourseRoadmapState state, LessonEntity lesson) {
+    for (final level in state.roadmap.levels) {
+      if (level.roadmapLessonsList.any((item) => item.isSameLesson(lesson))) return level.level;
+    }
+    return state.currentCourseLevel;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -184,6 +231,9 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         _loadProgressForRoadmap(courseId);
         _checkWarmUpForRoadmap(courseId);
         _ensureRoadmapLiveActivity(courseId);
+        // Hydrated roadmap already holds the course → resolve the resume now
+        // instead of waiting for a fetch that may never emit a change.
+        _tryResumePendingKeypoint(context.read<CourseRoadmapCubit>().state);
       }
     });
   }
@@ -256,6 +306,16 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
             _checkWarmUpForRoadmap(state.roadmap.courseId);
             _ensureRoadmapLiveActivity(state.roadmap.courseId);
           },
+        ),
+        // Separate from the listener above on purpose: a resume also has to fire
+        // when the lesson list fills in for a course whose id never changed
+        // (hydrated roadmap → fetch lands), and widening that listener's
+        // condition would re-run its tracking/progress calls too.
+        BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
+          listenWhen: (previous, current) =>
+              current.roadmap.courseId.isNotEmpty &&
+              (previous.roadmap.courseId != current.roadmap.courseId || previous.roadmap.flatLessons.length != current.roadmap.flatLessons.length),
+          listener: (context, state) => _tryResumePendingKeypoint(state),
         ),
         BlocListener<FeedbackCubit, FeedbackState>(
           listenWhen: (previous, current) => previous.pendingFeedbackIncompletePrompt != current.pendingFeedbackIncompletePrompt || previous.status != current.status,
@@ -495,9 +555,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     // use a theme-aware scrim (gentle darkening on a dark bg, a soft white haze
     // on a light one) and keep the stock white only when no custom background
     // is active.
-    final Color veil = studyThemeHasCustomBg(context)
-        ? (studyThemeIsDarkBg(context) ? const Color(0x66000000) : const Color(0x40FFFFFF))
-        : AppCustomColor.backgroundWhite.op(0.72);
+    final Color veil = studyThemeHasCustomBg(context) ? (studyThemeIsDarkBg(context) ? const Color(0x66000000) : const Color(0x40FFFFFF)) : AppCustomColor.backgroundWhite.op(0.72);
     return Positioned.fill(
       child: AbsorbPointer(
         child: Container(

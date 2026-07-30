@@ -16,7 +16,7 @@ class LessonHeaderMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = studyThemeOnBg(context, AppCustomColor.textQuaternary);
+    final iconColor = studyThemeOnBg(context, AppCustomColor.textPrimary);
 
     return GestureDetector(
       key: const ValueKey('lesson-shell-overflow-menu-button'),
@@ -28,14 +28,18 @@ class LessonHeaderMenu extends StatelessWidget {
         KeypointSettingsSheet.show(context, onReportProblem: onReportProblem);
       },
       child: SizedBox(
+        // Slightly larger than the circle so the tap target stays comfortable
+        // without changing the header's spacing.
         width: 36.w,
         height: 36.w,
         child: Center(
-          child: SvgPicture.asset(
-            AppAsset.svg.app.icGridMenu,
-            width: 20.w,
-            height: 20.w,
-            colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+          child: KeypointHeaderButtonChrome(
+            child: SvgPicture.asset(
+              AppAsset.svg.app.icGridMenu,
+              width: 18.w,
+              height: 18.w,
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+            ),
           ),
         ),
       ),

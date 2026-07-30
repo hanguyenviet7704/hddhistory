@@ -1,5 +1,12 @@
 part of '../../../lesson.dart';
 
+/// Arrange-the-sequence exercise card (Keypoint v2 design).
+///
+/// Grading marks every row in place: a correct step turns green, a misplaced one
+/// turns red and carries the position it belonged at (see
+/// [ArrangeSequenceAnswerCard]). That is the whole correction, so the result
+/// sheet that used to restate the ordered list is gone — only the verdict and
+/// explanation remain, inside the card.
 class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
@@ -9,60 +16,6 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
     required this.onAnswerChecked,
     this.isReadOnly = false,
   });
-
-  void _showResultOverlay(
-    BuildContext context,
-    ResultType type, {
-    bool isReview = false,
-    bool showExplainAction = true,
-  }) {
-    LessonResultOverlayHelper.showResultOverlay(
-      context: context,
-      isReview: isReview,
-      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: parentContext.read<ArrangeTheSequenceCubit>()),
-          BlocProvider.value(value: parentContext.read<LessonCubit>()),
-        ],
-        child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
-          builder: (context, state) {
-            final runtimeAnswers = questionRuntimeAnswers(state.question);
-            final runtimeOptions = questionRuntimeOptions(state.question);
-            final correctAnswers = runtimeAnswers.map((answer) {
-              return runtimeOptions.firstWhere(
-                (option) => option.id == answer.id,
-                orElse: () => const OptionEntity(),
-              );
-            }).toList();
-            final hasExplanation = state.question.hasExplanation;
-            return ArrangeSequenceResultBottomSheet(
-              type: type,
-              showExplanation: state.showExplanation,
-              explanationText: state.question.explanationText,
-              arrangedAnswers: correctAnswers,
-              onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation() : null,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, ArrangeTheSequenceState state) {
-    if (isReadOnly) {
-      context.read<LessonCubit>().consumePendingAdvance();
-    }
-    if (currentQuestion.hasExplanation && !state.showExplanation) {
-      context.read<ArrangeTheSequenceCubit>().toggleExplanation();
-    }
-    _showResultOverlay(
-      context,
-      state.isCorrect ? ResultType.correct : ResultType.incorrect,
-      isReview: isReadOnly,
-      showExplainAction: false,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,18 +28,22 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
         onAnswerChecked(state.isCorrect);
         final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
         if (isRoleplay) return;
-        _showResultOverlay(
-          context,
-          state.isCorrect ? ResultType.correct : ResultType.incorrect,
-        );
+        KeypointExerciseAction.trackResultViewed();
       },
       child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
-          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           return LessonContentCard(
+            // Pinned to the card's bottom edge (design's `flex:1` spacer above
+            // it) rather than trailing the last step.
+            footer: KeypointExerciseAction(
+              hasChecked: state.hasChecked,
+              isCorrect: state.isCorrect,
+              canCheck: !isReadOnly && state.currentItems.isNotEmpty && !state.hasChecked,
+              onCheck: isReadOnly ? null : () => context.read<ArrangeTheSequenceCubit>().checkAnswer(),
+              explanationText: currentQuestion.explanationText,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -99,18 +56,13 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                         DocumentWidget(
                           documents: currentQuestion.document,
                           asCard: false,
+                          prose: DocumentProse.question,
                         ),
-                        12.verticalSpace,
+                        8.verticalSpace,
                       ],
-                      AppText(
-                        context.l10n.exercise.exerciseSequenceInstruction,
-                        margin: EdgeInsets.symmetric(vertical: 8.h),
-                        maxLines: 10,
-                        style: AppStyle.text12.copyWith(
-                          color: AppCustomColor.textSecondary,
-                          fontWeight: FontWeight.w500,
-                          height: 1.5,
-                        ),
+                      KeypointExerciseInstruction(
+                        text: context.l10n.exercise.exerciseSequenceInstruction,
+                        accent: KeypointExerciseAccent.green,
                       ),
                       ReorderableListView.builder(
                         shrinkWrap: true,
@@ -150,6 +102,7 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                               index: index,
                               state: state.getItemState(index),
                               dragEnabled: !state.hasChecked,
+                              correctPosition: state.correctPositionFor(index),
                             ),
                           );
                         },
@@ -157,13 +110,6 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                     ],
                   ),
                 ),
-                if (showExplainButton) ...[
-                  16.verticalSpace,
-                  LessonExplainButton(
-                    onTap: () => _handleExplainTap(context, currentQuestion, state),
-                    hasExplanation: currentQuestion.hasExplanation,
-                  ),
-                ],
               ],
             ),
           );
@@ -186,4 +132,7 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
       },
     );
   }
+
+  @override
+  bool get rendersOwnAction => true;
 }

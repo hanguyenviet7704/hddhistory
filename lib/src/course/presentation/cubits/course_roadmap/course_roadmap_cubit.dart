@@ -11,6 +11,18 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   bool _hasLoadedThisSession = false;
   Future<void>? _ensureInFlight;
 
+  /// Keypoint a Live Activity / return-nudge tap asked to reopen, held until the
+  /// roadmap has loaded enough to resolve it (see [CourseRoadmapPage]).
+  ///
+  /// Deliberately NOT part of the hydrated state: a resume request belongs to
+  /// one tap, and persisting it would hijack the next cold start too.
+  String _pendingResumeKeypointId = '';
+  String get pendingResumeKeypointId => _pendingResumeKeypointId;
+
+  void setPendingResumeKeypointId(String keypointId) => _pendingResumeKeypointId = keypointId;
+
+  void clearPendingResumeKeypointId() => _pendingResumeKeypointId = '';
+
   /// The course id an EXPLICIT course-switch call to [loadRoadmap] (a
   /// `courseId` argument different from the one currently on screen — e.g.
   /// HomeCubit.selectCourseIndex when the user picks another course) is

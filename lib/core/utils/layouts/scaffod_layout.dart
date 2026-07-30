@@ -80,7 +80,13 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // Wrapped in ThemedBackground so the user's chosen study background
             // (study_theme) paints behind every tab that opts in with a
             // transparent Scaffold; seamless across tab switches (single host).
-            Positioned.fill(child: ThemedBackground(child: widget.navigationShell)),
+            // StreakPopupHost wraps the shell (not Home) so the daily
+            // time counter keeps running across every tab.
+            Positioned.fill(
+              child: StreakPopupHost(
+                child: ThemedBackground(child: widget.navigationShell),
+              ),
+            ),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(
               selector: (state) => state.isPrimaryRoute,

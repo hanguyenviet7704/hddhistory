@@ -8,4 +8,7 @@ abstract class LearningStreakApi {
 
   @GET(AppEndpoint.coursesUserProgressStreak)
   Future<BaseResponse<UserLearningStreakModel>> getUserLearningStreak();
+
+  @GET(AppEndpoint.streakConfig)
+  Future<BaseResponse<StreakPopupConfigModel>> getStreakPopupConfig();
 }

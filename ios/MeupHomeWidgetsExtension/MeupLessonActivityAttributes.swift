@@ -22,5 +22,14 @@ struct MeupLessonActivityAttributes: ActivityAttributes {
     var resumeLabel: String // "Resume lesson" / "Next lesson"
     var primaryNudge: String // lock-screen footer: "~3 min to finish…" / "Tap to start…"
     var footerNudge: String // Dynamic Island footer: "~3 min to finish…" / "Course complete"
+
+    /// Keypoint the card should reopen, or nil/empty when the card belongs to
+    /// the roadmap rather than an open lesson. Lives here, not in the fixed
+    /// attributes, because the target moves as the reader advances through a
+    /// course while one card stays alive.
+    ///
+    /// Optional on purpose: a card started by an older build has no such key,
+    /// and a synthesized `Codable` would fail to decode a non-optional one.
+    var keypointId: String?
   }
 }

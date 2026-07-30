@@ -1,174 +1,82 @@
 part of '../../../monetization.dart';
 
-/// Promo-code block on the paywall, directly under the plan cards.
+/// Promo code on the paywall: a low-emphasis trigger under the plan cards,
+/// swapped for a chip once a code is live. Entry itself lives in
+/// [PaywallPromoCodeSheet].
 ///
-/// Four states, per the design (see
-/// `plans/260727-paywall-redesign/design-spec.md`):
-/// collapsed link → open panel → code entry → applied.
+/// The field was inline here before. It sat in the scroll area that runs under
+/// the fixed purchase bar, and that bar knows nothing about the keyboard — so
+/// the field being typed into could end up behind the countdown strip. A modal
+/// sheet rides above the bar with its own keyboard offset, which removes the
+/// conflict instead of tuning padding around it.
 ///
-/// Purely presentational: it owns only whether the panel is expanded and the
-/// text being typed. Whether a code is applied, and any message to show, are
-/// driven from outside so the cubit stays the single source of truth.
-class PaywallPromoCode extends StatefulWidget {
-  const PaywallPromoCode({
-    super.key,
-    required this.onApply,
-    required this.onRemove,
-    this.appliedCode,
-    this.isApplying = false,
-    this.message,
-    this.isMessageError = false,
-  });
+/// Renders nothing while no plan resolved: there is no price to discount, and
+/// applying a code then fails with a message that blames the code.
+class PaywallPromoCode extends StatelessWidget {
+  const PaywallPromoCode({super.key, required this.state});
 
-  /// Non-null once a code is successfully applied — switches to the applied state.
-  final String? appliedCode;
-
-  /// True while the validate call is in flight.
-  final bool isApplying;
-
-  /// Feedback under the field; shown for both success and failure.
-  final String? message;
-  final bool isMessageError;
-
-  final ValueChanged<String> onApply;
-  final VoidCallback onRemove;
-
-  @override
-  State<PaywallPromoCode> createState() => _PaywallPromoCodeState();
-}
-
-class _PaywallPromoCodeState extends State<PaywallPromoCode> {
-  final TextEditingController _controller = TextEditingController();
-  bool _expanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // A code applied before this mounted (e.g. restored with the paywall
-    // state) must not open onto the collapsed link.
-    _expanded = widget.appliedCode != null;
-    _controller.addListener(_onTextChanged);
-  }
-
-  @override
-  void didUpdateWidget(PaywallPromoCode oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.appliedCode != null && !_expanded) {
-      _expanded = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller
-      ..removeListener(_onTextChanged)
-      ..dispose();
-    super.dispose();
-  }
-
-  void _onTextChanged() => setState(() {});
-
-  bool get _canApply => _controller.text.trim().isNotEmpty && !widget.isApplying;
-
-  void _open() {
-    AppHaptic.select();
-    setState(() => _expanded = true);
-  }
-
-  void _hide() {
-    AppHaptic.select();
-    FocusScope.of(context).unfocus();
-    setState(() => _expanded = false);
-  }
-
-  void _apply() {
-    if (!_canApply) return;
-    AppHaptic.select();
-    FocusScope.of(context).unfocus();
-    widget.onApply(_controller.text.trim().toUpperCase());
-  }
-
-  void _remove() {
-    AppHaptic.select();
-    _controller.clear();
-    widget.onRemove();
-  }
+  final IapState state;
 
   @override
   Widget build(BuildContext context) {
-    if (!_expanded) return _CollapsedLink(onTap: _open);
+    if (state.iapProducts.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: EdgeInsets.only(top: 14.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _PanelHeader(onHide: _hide),
-          8.verticalSpace,
-          if (widget.appliedCode != null)
-            _AppliedRow(code: widget.appliedCode!, onRemove: _remove)
-          else
-            _EntryRow(
-              controller: _controller,
-              isApplying: widget.isApplying,
-              canApply: _canApply,
-              onApply: _apply,
-            ),
-          if (widget.message != null && widget.message!.isNotEmpty) ...[
-            10.verticalSpace,
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 2.w),
-              child: AppText(
-                widget.message!,
-                style: AppStyle.text14.copyWith(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: widget.isMessageError
-                      ? AppCustomColor.errorRed
-                      : AppCustomColor.successGreen,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      alignment: Alignment.topCenter,
+      child: state.hasAppliedVoucher
+          ? _AppliedChip(
+              code: state.appliedVoucherCode,
+              onRemove: () => context.read<IapCubit>().removeVoucher(),
+            )
+          : _PromoTrigger(onTap: () => unawaited(PaywallPromoCodeSheet.show(context))),
     );
   }
 }
 
-class _CollapsedLink extends StatelessWidget {
-  const _CollapsedLink({required this.onTap});
+/// "Have a promo code?" — deliberately quieter than the plan cards (14/w600,
+/// not 15/w700): it must be findable without competing with the price choice.
+class _PromoTrigger extends StatelessWidget {
+  const _PromoTrigger({required this.onTap});
 
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 10.h),
+      padding: EdgeInsets.only(top: 12.h),
       child: Center(
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.local_offer_outlined,
-                  size: 17.w,
-                  color: AppCustomColor.paywallPromoLink,
-                ),
-                8.horizontalSpace,
-                AppText(
-                  l10n.monetization.promoCodeCta,
-                  style: AppStyle.text14.copyWith(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
+        child: Semantics(
+          button: true,
+          child: GestureDetector(
+            onTap: () {
+              AppHaptic.select();
+              onTap();
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              constraints: BoxConstraints(minHeight: 44.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.local_offer_outlined,
+                    size: 16.w,
                     color: AppCustomColor.paywallPromoLink,
                   ),
-                ),
-              ],
+                  8.horizontalSpace,
+                  AppText(
+                    l10n.monetization.promoCodeCta,
+                    style: AppStyle.text14.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppCustomColor.paywallPromoLink,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -177,211 +85,82 @@ class _CollapsedLink extends StatelessWidget {
   }
 }
 
-class _PanelHeader extends StatelessWidget {
-  const _PanelHeader({required this.onHide});
-
-  final VoidCallback onHide;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.local_offer_outlined,
-              size: 16.w,
-              color: AppCustomColor.paywallPromoLink,
-            ),
-            7.horizontalSpace,
-            AppText(
-              l10n.monetization.promoCodeLabel,
-              style: AppStyle.text14.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppCustomColor.paywallPromoLabel,
-              ),
-            ),
-          ],
-        ),
-        GestureDetector(
-          onTap: onHide,
-          behavior: HitTestBehavior.opaque,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 2.h),
-            child: AppText(
-              l10n.monetization.promoCodeHide,
-              style: AppStyle.text14.copyWith(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-                color: AppCustomColor.paywallPromoMuted,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _EntryRow extends StatelessWidget {
-  const _EntryRow({
-    required this.controller,
-    required this.isApplying,
-    required this.canApply,
-    required this.onApply,
-  });
-
-  final TextEditingController controller;
-  final bool isApplying;
-  final bool canApply;
-  final VoidCallback onApply;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 48.h,
-            child: TextField(
-              controller: controller,
-              enabled: !isApplying,
-              textCapitalization: TextCapitalization.characters,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => onApply(),
-              style: AppStyle.text14.copyWith(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
-                color: AppCustomColor.textBrand,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: AppCustomColor.backgroundWhite,
-                hintText: l10n.monetization.promoCodeHint,
-                hintStyle: AppStyle.text14.copyWith(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppCustomColor.paywallPromoMuted,
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-                border: _border(AppCustomColor.borderSecondary),
-                enabledBorder: _border(AppCustomColor.borderSecondary),
-                disabledBorder: _border(AppCustomColor.borderSecondary),
-                focusedBorder: _border(AppCustomColor.brandPrimary),
-              ),
-            ),
-          ),
-        ),
-        10.horizontalSpace,
-        GestureDetector(
-          onTap: canApply ? onApply : null,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            height: 48.h,
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: canApply
-                  ? AppCustomColor.brandPrimary
-                  : AppCustomColor.buttonDisable,
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-            child: isApplying
-                ? SizedBox(
-                    width: 18.w,
-                    height: 18.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppCustomColor.backgroundWhite,
-                      ),
-                    ),
-                  )
-                : AppText(
-                    l10n.monetization.promoCodeApply,
-                    style: AppStyle.text14.copyWith(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w800,
-                      color: canApply
-                          ? AppCustomColor.backgroundWhite
-                          : AppCustomColor.paywallPromoMuted,
-                    ),
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  OutlineInputBorder _border(Color color) => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(14.r),
-    borderSide: BorderSide(color: color, width: 1.5),
-  );
-}
-
-class _AppliedRow extends StatelessWidget {
-  const _AppliedRow({required this.code, required this.onRemove});
+/// Applied state. Tinted with the brand colour rather than the green pair it
+/// used to carry — that green existed nowhere else in the app.
+class _AppliedChip extends StatelessWidget {
+  const _AppliedChip({required this.code, required this.onRemove});
 
   final String code;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.paywallPromoAppliedBg,
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  AppAsset.svg.app.pwPromoApplied,
-                  width: 22.w,
-                  height: 21.w,
-                ),
-                10.horizontalSpace,
-                Flexible(
-                  child: AppText(
-                    code,
-                    maxLines: 1,
-                    style: AppStyle.text14.copyWith(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                      color: AppCustomColor.paywallPromoAppliedText,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return Padding(
+      padding: EdgeInsets.only(top: 12.h),
+      child: Container(
+        constraints: BoxConstraints(minHeight: 52.h),
+        padding: EdgeInsets.only(left: 14.w, right: 4.w),
+        decoration: BoxDecoration(
+          color: AppCustomColor.brandPrimary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: AppCustomColor.brandPrimary.withValues(alpha: 0.22),
           ),
-          10.horizontalSpace,
-          GestureDetector(
-            onTap: onRemove,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 2.h),
-              child: AppText(
-                l10n.monetization.promoCodeRemove,
-                style: AppStyle.text14.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppCustomColor.paywallPromoRemove,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Semantics(
+                container: true,
+                label: '${l10n.monetization.promoCodeApplied}: $code',
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                      AppAsset.svg.app.pwPromoApplied,
+                      width: 20.w,
+                      height: 20.w,
+                    ),
+                    10.horizontalSpace,
+                    Expanded(
+                      child: AppText(
+                        code,
+                        maxLines: 1,
+                        style: AppStyle.text14.copyWith(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                          color: AppCustomColor.paywallPromoLabel,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+            Semantics(
+              button: true,
+              label: l10n.monetization.promoCodeRemove,
+              child: GestureDetector(
+                onTap: () {
+                  AppHaptic.select();
+                  onRemove();
+                },
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  width: 44.w,
+                  height: 44.h,
+                  child: Center(
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18.w,
+                      color: AppCustomColor.paywallPromoRemove,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

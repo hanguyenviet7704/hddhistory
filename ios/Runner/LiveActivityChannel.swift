@@ -129,7 +129,10 @@ final class LiveActivityChannel {
       isDone: args["isDone"] as? Bool ?? false,
       resumeLabel: args["resumeLabel"] as? String ?? "",
       primaryNudge: args["primaryNudge"] as? String ?? "",
-      footerNudge: args["footerNudge"] as? String ?? ""
+      footerNudge: args["footerNudge"] as? String ?? "",
+      // Empty (roadmap card) is normalized to nil so the widget's deeplink
+      // builder has a single "no keypoint" case to test.
+      keypointId: (args["keypointId"] as? String).flatMap { $0.isEmpty ? nil : $0 }
     )
   }
 }

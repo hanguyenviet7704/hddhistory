@@ -82,10 +82,10 @@ class _CountdownStripState extends State<_CountdownStrip> {
           AppText(
             l10n.monetization.saleCountdownEndsIn,
             maxLines: 1,
-            style: AppStyle.text10.copyWith(
-              color: AppCustomColor.textBrand.withValues(alpha: 0.7),
-              fontWeight: FontWeight.w700,
-              height: 1.75,
+            style: AppStyle.text12.copyWith(
+              color: AppCustomColor.paywallSaleStripMuted,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
             ),
           ),
           6.horizontalSpace,
@@ -156,10 +156,10 @@ class _CountdownColon extends StatelessWidget {
       child: AppText(
         ':',
         maxLines: 1,
-        style: AppStyle.text12.copyWith(
-          color: AppCustomColor.textBrand.withValues(alpha: 0.7),
+        style: AppStyle.text14.copyWith(
+          color: AppCustomColor.backgroundWhite,
           fontWeight: FontWeight.w700,
-          height: 1.75,
+          height: 1.4,
         ),
       ),
     );

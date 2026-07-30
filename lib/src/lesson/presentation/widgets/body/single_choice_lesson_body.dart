@@ -1,5 +1,11 @@
 part of '../../../lesson.dart';
 
+/// Single-choice exercise card (Keypoint v2 design).
+///
+/// Checking and the verdict both live inside the card — see
+/// [KeypointExerciseAction]. The result sheet this used to push over the deck is
+/// gone: it covered the very options the reader had just weighed up, and its
+/// Continue button duplicated the swipe the rest of the deck already uses.
 class SingleChoiceLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
@@ -10,51 +16,6 @@ class SingleChoiceLessonBody extends LessonBodyWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(
-    BuildContext context,
-    ResultType type, {
-    bool isReview = false,
-    bool showExplainAction = true,
-  }) {
-    LessonResultOverlayHelper.showResultOverlay(
-      context: context,
-      isReview: isReview,
-      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: parentContext.read<ChoiceCubit>()),
-          BlocProvider.value(value: parentContext.read<LessonCubit>()),
-        ],
-        child: BlocBuilder<ChoiceCubit, ChoiceState>(
-          builder: (context, state) {
-            final hasExplanation = state.question.hasExplanation;
-            return ResultBottomSheet(
-              type: type,
-              showExplanation: state.showExplanation,
-              explanationText: state.question.explanationText,
-              onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation ? () => context.read<ChoiceCubit>().toggleExplanation() : null,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, ChoiceState state) {
-    if (isReadOnly) {
-      context.read<LessonCubit>().consumePendingAdvance();
-    }
-    if (currentQuestion.hasExplanation && !state.showExplanation) {
-      context.read<ChoiceCubit>().toggleExplanation();
-    }
-    _showResultOverlay(
-      context,
-      state.isCorrect ? ResultType.correct : ResultType.incorrect,
-      isReview: isReadOnly,
-      showExplainAction: false,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<ChoiceCubit, ChoiceState>(
@@ -64,32 +25,18 @@ class SingleChoiceLessonBody extends LessonBodyWidget {
       },
       listener: (context, state) {
         onAnswerChecked(state.isCorrect);
+        // Roleplay renders its own result surface around this body, so grading
+        // there is not a keypoint-card event.
         final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
-        final bool isRoleplay = exerciseType == LearningItemType.roleplay;
-        if (isRoleplay) return;
-        _showResultOverlay(
-          context,
-          state.isCorrect ? ResultType.correct : ResultType.incorrect,
-        );
+        if (exerciseType == LearningItemType.roleplay) return;
+        KeypointExerciseAction.trackResultViewed();
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
-          final currentQuestion = state.question;
-          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
-
           return _SingleChoiceQuestionContent(
             state: state,
             ignoreAnswers: isReadOnly,
-            footer: [
-              if (showExplainButton) ...[
-                16.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, currentQuestion, state),
-                  hasExplanation: currentQuestion.hasExplanation,
-                ),
-              ],
-            ],
+            showInlineAction: true,
           );
         },
       ),
@@ -100,6 +47,9 @@ class SingleChoiceLessonBody extends LessonBodyWidget {
   Widget buildBottomButton(BuildContext context) {
     return _buildSingleChoiceBottomButton(context);
   }
+
+  @override
+  bool get rendersOwnAction => true;
 }
 
 class _SingleChoiceQuestionContent extends StatelessWidget {
@@ -107,10 +57,16 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
   final List<Widget> footer;
   final bool ignoreAnswers;
 
+  /// Opt-in because this content block is shared with the no-correct-answer
+  /// reflection question, which the v2 design does not cover and which keeps the
+  /// sticky bottom button plus its own follow-up documents.
+  final bool showInlineAction;
+
   const _SingleChoiceQuestionContent({
     required this.state,
     this.footer = const [],
     this.ignoreAnswers = false,
+    this.showInlineAction = false,
   });
 
   @override
@@ -119,6 +75,17 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
     final instructionText = _resolveSingleChoiceInstruction(context, currentQuestion);
 
     return LessonContentCard(
+      // Pinned to the card's bottom edge (design's `flex:1` spacer above it)
+      // rather than trailing the last option.
+      footer: showInlineAction
+          ? KeypointExerciseAction(
+              hasChecked: state.hasChecked,
+              isCorrect: state.isCorrect,
+              canCheck: !ignoreAnswers && state.selectedAnswerIndex != -1,
+              onCheck: ignoreAnswers ? null : () => context.read<ChoiceCubit>().checkAnswer(),
+              explanationText: state.question.explanationText,
+            )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,23 +98,19 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
                   DocumentWidget(
                     documents: currentQuestion.document,
                     asCard: false,
+                    prose: DocumentProse.question,
                   ),
-                  12.verticalSpace,
+                  8.verticalSpace,
                 ],
-                AppText(
-                  instructionText,
-                  margin: EdgeInsets.symmetric(vertical: 8.h),
-                  maxLines: 10,
-                  style: AppStyle.text12.copyWith(
-                    color: AppCustomColor.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                KeypointExerciseInstruction(
+                  text: instructionText,
+                  accent: KeypointExerciseAccent.violet,
                 ),
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: state.answerOptions.length,
-                  separatorBuilder: (context, index) => 12.verticalSpace,
+                  separatorBuilder: (context, index) => 10.verticalSpace,
                   itemBuilder: (context, index) {
                     return ChoiceAnswerCard(
                       option: state.answerOptions[index],

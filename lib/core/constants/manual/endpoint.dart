@@ -48,6 +48,7 @@ mixin AppEndpoint {
   //* Paywall Config API — backend CMS source of truth (Firebase Remote Config
   //* is kept as a fallback layer only). See IapCubit.resolvedPaywallConfig.
   static const String paywallConfigMobile = '/api/v1/paywall-config/mobile';
+  static const String streakConfig = '/api/v1/streak-config';
 
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';

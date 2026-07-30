@@ -57,8 +57,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         }
       }
 
-      await _handleLearningStreakGate();
-      if (!mounted) return;
       await _navigateAfterCompletion(lessonState);
     } finally {
       if (mounted) {
@@ -67,35 +65,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
   }
 
-  Future<void> _handleLearningStreakGate() async {
-    final userCubit = AppDI.injector.get<UserCubit>();
-    final userState = userCubit.state;
-    final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
-    final nowUtc = DateTime.now().toUtc();
-    final gateUtcDay = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
-
-    if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) return;
-
-    final streakResult = await learningStreakCubit.loadUserLearningStreak(
-      triggerSource: LearningStreakTriggerSource.completionCta,
-      requestedUserId: userState.user.id,
-      timeout: const Duration(seconds: 2),
-    );
-
-    if (!mounted) return;
-    if (!streakResult.isRemoteSuccessWithPositiveStreak) return;
-    if (LearningStreakModalGuard.hasBlockingModal(context)) return;
-
-    final committed = await LearningStreakSuccessOverlay.show(
-      context,
-      streak: streakResult.streak,
-    );
-    if (!mounted) return;
-
-    if (committed) {
-      learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
-    }
-  }
 
   /// Whether the course-level badge just became fully unlocked (last
   /// keypoint of its last lesson). Mirrors

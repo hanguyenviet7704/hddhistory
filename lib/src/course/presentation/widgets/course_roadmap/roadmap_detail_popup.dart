@@ -113,23 +113,15 @@ class RoadmapDetailPopup extends StatelessWidget {
     final rootContext = AppConfig.instance.context;
     if (rootContext == null || !rootContext.mounted) return;
 
-    lessonCubit
-      ..reset()
-      ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
-    courseLessonCubit
-      ..setSelectedLesson(lesson)
-      ..setCurrentKeypointId(keypoint.id)
-      ..loadLesson(lesson.id);
-
-    // `initial-mode` is repurposed to "autoplay narration for the first
-    // keypoint on entry" (see `LessonRoute`/`LessonPage`) — this Start CTA is
-    // the primary real-world path into a keypoint, so it opts in whenever
-    // there's usable audio to autoplay.
-    LessonRoute(initialMode: hasAudio ? LessonEntryMode.audio.routeValue : LessonEntryMode.read.routeValue).go(rootContext);
-
-    roadmapCubit
-      ..setCurrentCourseLevel(courseLevel)
-      ..setCurrentLesson(lesson);
+    startKeypointLesson(
+      lessonCubit: lessonCubit,
+      courseLessonCubit: courseLessonCubit,
+      roadmapCubit: roadmapCubit,
+      navContext: rootContext,
+      lesson: lesson,
+      keypoint: keypoint,
+      courseLevel: courseLevel,
+    );
 
     // Remember the picked reason so it can be attached when a habit is later
     // adopted from this course (§9.5 tracker cluster title).
@@ -260,7 +252,10 @@ class RoadmapDetailPopup extends StatelessWidget {
               _RoadmapDetailActionButton(
                 key: const ValueKey('roadmap-detail-start-button'),
                 label: context.l10n.lesson.startLearningLabel,
-                iconAsset: hasAudio ? AppAsset.svg.app.icMusicNote : AppAsset.svg.app.icMenu,
+                // One icon for every keypoint, audio or not: the button starts
+                // the same screen either way, so a music note on some cards and
+                // a list on others read as two different actions.
+                iconAsset: AppAsset.svg.app.icMenu,
                 backgroundColor: const Color(0xFF554FF0),
                 foregroundColor: Colors.white,
                 onTap: () => unawaited(_startLearning(context)),

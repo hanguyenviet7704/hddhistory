@@ -79,6 +79,39 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
     return duration;
   }
 
+  /// Loads [urls] as ONE gapless queue and reports the first item's duration.
+  ///
+  /// The backgrounded listener's source. `just_audio` walks the queue natively:
+  /// the next clip is prefetched and started by the platform player, with no
+  /// Dart code at the boundary. Chaining clip-by-clip from a `completed`
+  /// listener instead puts a network fetch and an isolate round-trip between
+  /// every card — audible as a gap, and dependent on Dart still being scheduled
+  /// when the OS has the app in the background.
+  ///
+  /// [MediaItem] is the whole run, not the clip: the lock-screen shows the
+  /// keypoint, and the queue moving underneath does not flicker the title.
+  Future<Duration?> loadQueue({
+    required List<String> urls,
+    required String id,
+    required String title,
+    required String artUri,
+    double speed = 1.0,
+  }) async {
+    final art = artUri.isNotEmpty ? Uri.tryParse(artUri) : null;
+    final item = MediaItem(id: id, title: title, artUri: art);
+    mediaItem.add(item);
+
+    final duration = await _player.setAudioSources(
+      [for (final url in urls) just_audio.AudioSource.uri(Uri.parse(url), tag: item)],
+    );
+
+    if (speed != 1.0) {
+      await _player.setSpeed(speed);
+    }
+
+    return duration;
+  }
+
   // play/pause/seek/setSpeed deliberately do NOT swallow errors: when called
   // from [LessonAudioCubit] (the normal in-app path), the cubit wraps every
   // call in its own try/catch and reports failures via `_handleFailure` —
@@ -98,10 +131,33 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> setSpeed(double speed) => _player.setSpeed(speed);
 
-  /// Stops playback and clears the media item/notification. Used both when
-  /// switching keypoints (so a stale notification never lingers across a new
-  /// `loadItem`) and when the cubit closes (leaving Listen mode) — the
-  /// player itself is app-lifetime and is intentionally never disposed here.
+  /// Halts playback so a different clip can be loaded over it, WITHOUT tearing
+  /// the background audio service down.
+  ///
+  /// Switching clips must never go through [stop]. Both halves of that method
+  /// publish `AudioProcessingState.idle` — `_player.stop()` via
+  /// [_broadcastState], and `super.stop()` directly — and `audio_service`
+  /// treats idle as "this handler is finished": `AudioService`'s
+  /// `_observePlaybackState` sees it and calls `stopService`, which deactivates
+  /// the iOS audio session / stops the Android foreground service. In the
+  /// foreground the next `loadItem` + `play` quietly brings it all back, so the
+  /// damage is invisible; in the BACKGROUND there is nothing left to bring it
+  /// back — iOS suspends the app before the replacement source finishes
+  /// loading, and narration ends with whatever card was playing when the reader
+  /// locked the screen.
+  ///
+  /// `pause` keeps the processing state at `completed`/`ready`, so the service
+  /// stays alive and [loadItem] can swap the source underneath it.
+  Future<void> pauseForSourceSwitch() async {
+    try {
+      await _player.pause();
+    } catch (_) {}
+  }
+
+  /// Stops playback and clears the media item/notification. Only for LEAVING
+  /// Listen mode (the cubit closing) — dismissing the lock-screen controls is
+  /// the point there. Use [pauseForSourceSwitch] when merely changing clips.
+  /// The player itself is app-lifetime and is intentionally never disposed here.
   @override
   Future<void> stop() async {
     try {

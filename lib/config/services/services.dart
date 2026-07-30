@@ -111,6 +111,7 @@ part 'graphql/graphql_interceptor.dart';
 part 'graphql/graphql_link.dart';
 part 'graphql/graphql_service.dart';
 part 'graphql/performance_interceptor.dart';
+part 'iap/dev_mock_products.dart';
 part 'iap/i_iap_service.dart';
 part 'iap/iap_service.dart';
 part 'live_activity/live_activity_service.dart';

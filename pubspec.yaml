@@ -18,7 +18,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 #version: 1.4.0+53 # ios
-version: 1.4.3+83 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
+version: 1.4.3+88 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
@@ -231,6 +231,10 @@ dependencies:
   app_tracking_transparency: ^2.0.7
   flutter_quill: ^11.5.1
   home_widget: ^0.9.3
+  # 0.13.x: bản cuối còn widget RiveAnimation. 0.14 chuyển sang rive_native,
+  # cần RiveNative.init() và kéo theo binary native — quá nặng cho một ngọn
+  # lửa 26px trong toast.
+  rive: ^0.13.20
   # timezone: ^0.9.2
 
 # dependency_overrides:
@@ -358,6 +362,7 @@ flutter:
     - assets/icons/common/
     - assets/images/app/
     - assets/images/common/
+    - assets/rive/
     - assets/svg/app/
     - assets/svg/common/
     - assets/texts/

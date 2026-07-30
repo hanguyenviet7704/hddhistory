@@ -59,6 +59,15 @@ mixin AppCustomColor {
   static const Color paywallPromoAppliedBg = Color(0xFFE6F4EE);
   static const Color paywallPromoAppliedText = Color(0xFF2B604E);
   static const Color paywallPromoRemove = Color(0xFF6E6A85);
+  // Paywall bottom bar, same design source as the promo block above. The CTA
+  // gradient ends on `brandPrimary` (#554FF0) and the countdown digit boxes use
+  // #4B44CA == `paywallPromoLabel`, so neither gets a duplicate token.
+  static const Color paywallCtaGradientStart = Color(0xFF6C63FF);
+  static const Color paywallCtaCaption = Color(0xFF9A96AE);
+  static const Color paywallCtaCaptionStrong = Color(0xFF3A3355);
+  static const Color paywallSaleStripStart = Color(0xFF7B71EC);
+  static const Color paywallSaleStripEnd = Color(0xFF655CE6);
+  static const Color paywallSaleStripMuted = Color(0xFFD8D5F7);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
   static const Color surfaceMuted = Color(0xFFEFF3FA);
@@ -103,6 +112,42 @@ mixin AppCustomColor {
   static const Color ctaDisabledText = Color(0xFF9A97B5);
   static const Color textMuted = Color(0xFF9AA4B2);
   static const Color inputFill = Color(0xFFF0F3F9);
+
+  // Keypoint v2 — the swipeable theory + exercise card deck. Exact values from
+  // Claude Design "MeUp" → `Keypoint v2.dc.html` / `Keypoint Swipe Lab`. Where a
+  // design value already had a token it is reused instead of duplicated here:
+  // brand `#554FF0` == brandPrimary, empty gap-slot dash `#C7C5FA` ==
+  // brandPrimary200, gap-slot label `#4B44CA` == streakActive, muted caption
+  // `#9AA4B2` == textMuted, heading `#0D121C` == textPrimary, arrange badges
+  // `#41AE8C`/`#E34646` == successGreen/errorRed.
+  static const Color kpBodyText = Color(0xFF3D3D46);
+  static const Color kpOptionBorder = Color(0xFFEEF1F6);
+  static const Color kpOptionText = Color(0xFF3A4250);
+  static const Color kpCorrectSurface = Color(0xFFEAF9F1);
+  static const Color kpCorrectBorder = Color(0xFF35B37E);
+  static const Color kpCorrectText = Color(0xFF1F8A5B);
+  static const Color kpWrongSurface = Color(0xFFFDECEA);
+  static const Color kpWrongBorder = Color(0xFFF0564B);
+  static const Color kpWrongText = Color(0xFFE0483C);
+  static const Color kpResultCorrectSurface = Color(0xFFE7F7EE);
+  static const Color kpMissedSurface = Color(0xFFEEF1F6);
+  static const Color kpMissedBorder = Color(0xFF2E3648);
+  static const Color kpMissedBadge = Color(0xFF8B96AB);
+  static const Color kpDimText = Color(0xFFB4BDCB);
+  static const Color kpDimBorder = Color(0xFFF2F4F8);
+  static const Color kpCheckDisabled = Color(0xFFC3C0F2);
+  static const Color kpArrangeText = Color(0xFF2B3242);
+  static const Color kpArrangeHandle = Color(0xFFC3C9D6);
+  static const Color kpArrangeHandleCorrect = Color(0xFF8BD3B0);
+  static const Color kpArrangeHandleWrong = Color(0xFFF3A69E);
+  // Per-exercise-type accents: the design tints each card's instruction line
+  // violet (single choice, text gap) or green (multiple choice, arrange), and
+  // reuses the violet for a filled gap's dashed outline.
+  static const Color kpAccentViolet = Color(0xFF8A82E8);
+  static const Color kpAccentGreen = Color(0xFF3AA07E);
+  static const Color kpGapFilledSurface = Color(0xFFEDEAFE);
+  static const Color kpChipPlaceholder = Color(0xFFF1F3F8);
+  static const Color kpCorrectAnswerSurface = Color(0xFFF3F5F9);
 }
 
 mixin AppTheme {

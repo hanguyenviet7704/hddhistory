@@ -43,6 +43,7 @@ paymentSuccessToast: Payment successful
 paywallBannerSubtitle: Learn from real-life RolePlay and practice with Scenario Branching
 paywallBannerTitle: Learn by Doing
 paywallCtaUpgrade: Upgrade to Premium
+paywallCtaUpgradePrice: Upgrade to Premium · ${price}
 paywallHeroEyebrow: Don’t just scroll.
 paywallHeroSubtitle: See how MeUp helps you
 paywallHeroTitle: 'Learn something
@@ -66,17 +67,15 @@ pricePerQuarter: per quarter
 pricePerWeek: per week
 pricePerYear: per year
 promoCodeApplied: Code applied
-promoCodeApply: Apply
 promoCodeCta: Have a promo code?
 promoCodeErrorExhausted: This code has reached its limit
 promoCodeErrorExpired: This code has expired
 promoCodeErrorGeneric: Couldn't apply the code. Please try again.
 promoCodeErrorInvalid: This code isn't valid
 promoCodeErrorNotApplicable: This code doesn't apply to these plans
-promoCodeHide: Hide
-promoCodeHint: Enter code
-promoCodeLabel: Promo code
 promoCodeRemove: Remove
+promoSheetApply: Apply code
+promoSheetTitle: Enter promo code
 restore: Restore purchases
 restoreNotFoundToast: No purchases to restore.
 restoreProcessingToast: Restoring purchases

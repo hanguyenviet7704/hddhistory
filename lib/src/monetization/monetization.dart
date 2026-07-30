@@ -65,6 +65,7 @@ part 'presentation/widgets/paywall/paywall_page_decoration.dart';
 part 'presentation/widgets/paywall/paywall_plan_option.dart';
 part 'presentation/widgets/paywall/paywall_plan_option_badges.dart';
 part 'presentation/widgets/paywall/paywall_promo_code.dart';
+part 'presentation/widgets/paywall/paywall_promo_code_sheet.dart';
 part 'presentation/widgets/paywall/paywall_purchase_button.dart';
 part 'presentation/widgets/paywall/paywall_success_purchase_popup.dart';
 part 'presentation/widgets/paywall/paywall_top_bar.dart';

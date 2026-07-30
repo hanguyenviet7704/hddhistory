@@ -12,6 +12,10 @@ enum PaywallEntryPoint {
   manageSubscription,
   autoOpen,
   courseRoadmap,
+
+  /// Opened mid-keypoint by the `inLessonPaywall` gate, when the reader swipes
+  /// off the first card.
+  inLesson,
   habit,
   theme,
   other,

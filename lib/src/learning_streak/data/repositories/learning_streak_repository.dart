@@ -11,6 +11,21 @@ class LearningStreakRepository implements ILearningStreakRepository {
   );
 
   @override
+  TaskEither<AppException, StreakPopupConfigEntity> getStreakPopupConfig() {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.getStreakPopupConfig();
+        return (response.data ?? const StreakPopupConfigModel()).toEntity();
+      },
+      // No cache and no fallback entity here: the caller decides. Inventing a
+      // default on failure would silently turn a server outage into "popup
+      // enabled with the built-in delay", which is a behaviour change nobody
+      // asked for.
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
   TaskEither<AppException, LearningStreakFetchEntity> getUserLearningStreak(String userId) {
     return TaskEither.tryCatch(
       () async {

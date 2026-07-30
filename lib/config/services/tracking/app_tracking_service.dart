@@ -274,6 +274,11 @@ final class AppTrackingService extends ITrackingService {
         // the spec's `guest` source; the same auto-open for a signed-in user is
         // `system`.
         return _isPaywallUserAnonymous() ? 'guest' : 'system';
+      case PaywallEntryPoint.inLesson:
+        // Reported as `roadmap`: the spec's source set has no in-lesson value,
+        // and this gate fires on a course keypoint, so it belongs with the other
+        // course-content entry rather than the catch-all `system`.
+        return 'roadmap';
       case PaywallEntryPoint.manageSubscription:
       case PaywallEntryPoint.other:
         return 'system';

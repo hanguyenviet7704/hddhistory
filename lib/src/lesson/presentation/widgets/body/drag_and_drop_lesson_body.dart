@@ -1,5 +1,11 @@
 part of '../../../lesson.dart';
 
+/// Text-gap-filling exercise card (Keypoint v2 design).
+///
+/// The sentence sits as bare prose on the card with dashed inline gaps, the word
+/// bank below it has no tray, and grading resolves in place: a wrong answer gets
+/// the model sentence stacked directly above the verdict (see
+/// [GapFillCorrectAnswerPanel]) instead of a sheet over the deck.
 class DragAndDropLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
@@ -9,54 +15,6 @@ class DragAndDropLessonBody extends LessonBodyWidget {
     required this.onAnswerChecked,
     this.isReadOnly = false,
   });
-
-  void _showResultOverlay(
-    BuildContext context,
-    ResultType type, {
-    bool isReview = false,
-    bool showExplainAction = true,
-  }) {
-    LessonResultOverlayHelper.showResultOverlay(
-      context: context,
-      isReview: isReview,
-      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: parentContext.read<DragAndDropCubit>()),
-          BlocProvider.value(value: parentContext.read<LessonCubit>()),
-        ],
-        child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
-          builder: (context, state) {
-            final hasExplanation = state.question.hasExplanation;
-            return DragAndDropResultBottomSheet(
-              type: type,
-              showExplanation: state.showExplanation,
-              explanationText: state.question.explanationText,
-              targetArea: questionRuntimeTargetArea(state.question).text,
-              placedWords: state.placedWords,
-              correctAnswers: questionRuntimeAnswers(state.question).map((a) => a.correctAnswer.text).toList(),
-              onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation ? () => context.read<DragAndDropCubit>().toggleExplanation() : null,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, DragAndDropState state) {
-    if (isReadOnly) {
-      context.read<LessonCubit>().consumePendingAdvance();
-    }
-    if (currentQuestion.hasExplanation && !state.showExplanation) {
-      context.read<DragAndDropCubit>().toggleExplanation();
-    }
-    _showResultOverlay(
-      context,
-      state.isCorrect ? ResultType.correct : ResultType.incorrect,
-      isReview: isReadOnly,
-      showExplainAction: false,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,18 +26,27 @@ class DragAndDropLessonBody extends LessonBodyWidget {
         onAnswerChecked(state.isCorrect);
         final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
         if (isRoleplay) return;
-        _showResultOverlay(
-          context,
-          state.isCorrect ? ResultType.correct : ResultType.incorrect,
-        );
+        KeypointExerciseAction.trackResultViewed();
       },
       child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
         builder: (context, state) {
           final currentQuestion = state.question;
-          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
+          final targetArea = questionRuntimeTargetArea(currentQuestion).text;
 
           return LessonContentCard(
+            // Pinned to the card's bottom edge (design's `flex:1` spacer above
+            // it) rather than trailing the word bank.
+            footer: KeypointExerciseAction(
+              hasChecked: state.hasChecked,
+              isCorrect: state.isCorrect,
+              canCheck: !isReadOnly && state.isAllFilled,
+              onCheck: isReadOnly ? null : () => context.read<DragAndDropCubit>().checkAnswer(),
+              explanationText: currentQuestion.explanationText,
+              correctAnswer: GapFillCorrectAnswerPanel(
+                targetArea: targetArea,
+                correctAnswers: questionRuntimeAnswers(currentQuestion).map((answer) => answer.correctAnswer.text).toList(),
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -92,12 +59,13 @@ class DragAndDropLessonBody extends LessonBodyWidget {
                         DocumentWidget(
                           documents: currentQuestion.document,
                           asCard: false,
+                          prose: DocumentProse.question,
                         ),
                         12.verticalSpace,
                       ],
                       SentenceBuilder(
                         placedWords: state.placedWords,
-                        targetArea: questionRuntimeTargetArea(currentQuestion).text,
+                        targetArea: targetArea,
                         answerCount: state.dropZoneCount,
                         onWordPlaced: (index, word, fromIndex) {
                           context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
@@ -107,16 +75,11 @@ class DragAndDropLessonBody extends LessonBodyWidget {
                         },
                         getSlotState: (index) => state.getSlotState(index),
                       ),
-                      24.verticalSpace,
-                      AppText(
-                        context.l10n.exercise.exerciseGapFillingInstruction,
-                        style: AppStyle.text12.copyWith(
-                          color: AppCustomColor.textSecondary,
-                          fontWeight: FontWeight.w500,
-                          height: 1.5,
-                        ),
+                      18.verticalSpace,
+                      KeypointExerciseInstruction(
+                        text: context.l10n.exercise.exerciseGapFillingInstruction,
+                        accent: KeypointExerciseAccent.violet,
                       ),
-                      12.verticalSpace,
                       AnswerCardsArea(
                         availableWords: state.availableWords,
                         onWordReturnedFromSlot: (word, fromIndex) {
@@ -126,13 +89,6 @@ class DragAndDropLessonBody extends LessonBodyWidget {
                     ],
                   ),
                 ),
-                if (showExplainButton) ...[
-                  16.verticalSpace,
-                  LessonExplainButton(
-                    onTap: () => _handleExplainTap(context, currentQuestion, state),
-                    hasExplanation: currentQuestion.hasExplanation,
-                  ),
-                ],
               ],
             ),
           );
@@ -155,4 +111,7 @@ class DragAndDropLessonBody extends LessonBodyWidget {
       },
     );
   }
+
+  @override
+  bool get rendersOwnAction => true;
 }

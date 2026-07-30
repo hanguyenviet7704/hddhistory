@@ -43,6 +43,7 @@ paymentSuccessToast: 支付成功
 paywallBannerSubtitle: 从真实角色扮演学习并用情景分支练习
 paywallBannerTitle: 通过实战学习
 paywallCtaUpgrade: 升级高级版
+paywallCtaUpgradePrice: 升级高级版 · ${price}
 paywallHeroEyebrow: 别再只是滑过。
 paywallHeroSubtitle: 看看 MeUp 如何帮助你
 paywallHeroTitle: '每天都学到
@@ -66,17 +67,15 @@ pricePerQuarter: 每季度
 pricePerWeek: 每周
 pricePerYear: 每年
 promoCodeApplied: 优惠码已应用
-promoCodeApply: 应用
 promoCodeCta: 有优惠码吗？
 promoCodeErrorExhausted: 优惠码已达使用上限
 promoCodeErrorExpired: 优惠码已过期
 promoCodeErrorGeneric: 无法应用优惠码，请重试。
 promoCodeErrorInvalid: 优惠码无效
 promoCodeErrorNotApplicable: 此优惠码不适用于这些方案
-promoCodeHide: 隐藏
-promoCodeHint: 输入优惠码
-promoCodeLabel: 优惠码
 promoCodeRemove: 移除
+promoSheetApply: 应用优惠码
+promoSheetTitle: 输入优惠码
 restore: 恢复购买
 restoreNotFoundToast: 没有可恢复的购买。
 restoreProcessingToast: 正在恢复购买

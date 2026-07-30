@@ -1,15 +1,18 @@
 part of '../../../lesson.dart';
 
-/// One quiz card in the unified keypoint swipe screen.
+/// One quiz card in the keypoint reading screen's continuous scroll.
 ///
 /// Zero duplicated answer-checking logic: the LIVE card reuses
 /// [LessonBodyFactory.buildExerciseBody] unchanged (still bound to the
 /// singleton `ExerciseCubit`/`ChoiceCubit` + sibling exercise-type cubits, and
-/// their own Check/Continue + result-overlay flow). Already-answered quiz
-/// cards behind `viewedCardIndex` render via the existing
-/// [LessonBodyFactory.buildReviewBody] (`LessonReviewBodyBuilder`) — the same
-/// read-only path `LessonTimelineBuilder`'s `ListView` history used, so
-/// swiping back to look never resets a given answer.
+/// their own Check flow). Already-answered quiz cards above it render via the
+/// existing [LessonBodyFactory.buildReviewBody] (`LessonReviewBodyBuilder`) —
+/// the same read-only path the old `LessonTimelineBuilder` history used, so
+/// scrolling back to look never resets a given answer.
+///
+/// No scroller of its own: this card is one item in [KeypointCardShell]'s single
+/// continuous scroll, which owns the padding and the room a floating action
+/// needs.
 class QuizCardBody extends StatelessWidget {
   const QuizCardBody({
     super.key,
@@ -25,14 +28,6 @@ class QuizCardBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final question = context.read<KeypointCardCubit>().questionForCard(descriptor);
-    final body = isLive ? bodyFactory.buildExerciseBody(question) : bodyFactory.buildReviewBody(question);
-
-    return SingleChildScrollView(
-      // Extra bottom room on the live card: its Check action floats OVER the
-      // pager (so the pager's viewport height never changes — see
-      // `KeypointCardShell`), which would otherwise cover the last option.
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, isLive ? 108.h : 20.h),
-      child: body,
-    );
+    return isLive ? bodyFactory.buildExerciseBody(question) : bodyFactory.buildReviewBody(question);
   }
 }

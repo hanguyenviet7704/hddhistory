@@ -26,17 +26,17 @@ class TheoryCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isLive) {
-      final document = context.read<KeypointCardCubit>().documentForCard(descriptor);
-      return SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-        child: DocumentWidget(documents: document.document, frosted: true),
-      );
-    }
+    // No scroller of its own: the card is a fixed panel filling its page and
+    // scrolls its own CONTENTS (see `LessonContentCard`), exactly as the design
+    // does. Wrapping the whole card in a scroll view instead made it slide under
+    // the pager's clip, slicing the first line of text in half.
+    final Widget content = isLive
+        ? TheoryLessonBody(onAnswerChecked: onAnswerChecked)
+        : DocumentWidget(documents: context.read<KeypointCardCubit>().documentForCard(descriptor).document, frosted: true);
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-      child: TheoryLessonBody(onAnswerChecked: onAnswerChecked),
-    );
+    // Narration reads whichever card is ON SCREEN — including one the reader
+    // swiped back to re-read — so that is the card whose text follows the voice,
+    // not necessarily the live one.
+    return NarrationAutoScroll(cardIndex: cardIndex, child: content);
   }
 }

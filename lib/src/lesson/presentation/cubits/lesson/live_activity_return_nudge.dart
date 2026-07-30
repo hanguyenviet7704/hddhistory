@@ -22,6 +22,7 @@ Future<void> scheduleLiveActivityReturnNudge({
   required int minutes,
   required double progress,
   Duration delay = liveActivityReturnNudgeDelay,
+  String keypointId = '',
 }) async {
   try {
     final lesson = l10n.lesson;
@@ -40,7 +41,10 @@ Future<void> scheduleLiveActivityReturnNudge({
           payload: {
             'course_id': courseId,
             'course_name': courseName,
-            NotificationConstants.payloadDeeplinkKey: LiveActivityDeeplink.resumeUri(courseId),
+            // Empty while the nudge was scheduled from the roadmap — the tap
+            // then resumes the course, not a specific keypoint.
+            'keypoint_id': keypointId,
+            NotificationConstants.payloadDeeplinkKey: LiveActivityDeeplink.resumeUri(courseId, keypointId: keypointId),
           },
         ),
         scheduledAt: DateTime.now().add(delay),
