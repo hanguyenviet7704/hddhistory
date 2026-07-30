@@ -216,7 +216,10 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
                                   controller: _pageController,
                                   scrollDirection: Axis.vertical,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: state.furthestCardIndex + 1,
+                                  // Reachability, not progress: narration that read
+                                  // on while the app was away extends this past the
+                                  // lesson's live edge (see `revealBound`).
+                                  itemCount: state.revealBound + 1,
                                   onPageChanged: (index) => context.read<KeypointCardCubit>().viewCard(index),
                                   itemBuilder: (context, index) => _KeypointCardStackSlot(
                                     controller: _pageController,

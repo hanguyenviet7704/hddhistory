@@ -71,6 +71,15 @@ abstract class KeypointCardState with _$KeypointCardState {
     /// question's stored result) allows the underlying content to advance.
     @Default(0) int furthestCardIndex,
 
+    /// Highest card index the NARRATION reached while the app was off screen,
+    /// which can sit past [furthestCardIndex]: the voice reads on through a gate
+    /// the deck holds at, and coming back has to be able to show that page.
+    ///
+    /// Reachability only — this is NOT progress. No card counted here advanced
+    /// `TheoryCubit`/`LessonCubit`, nothing was answered on the reader's behalf,
+    /// and every card past [furthestCardIndex] renders read-only.
+    @Default(0) int narrationRevealIndex,
+
     /// True for a short window right after a card change seeks playback —
     /// keeps a stale in-flight `just_audio` position tick from being read as
     /// "narration already finished this card" and bouncing to the next one
@@ -93,4 +102,12 @@ extension KeypointCardStateX on KeypointCardState {
   KeypointCardDescriptor get viewedCard => cards.elementAtOrDefault(viewedCardIndex, defaultValue: const KeypointCardDescriptor.done());
 
   bool get isViewingLiveCard => viewedCardIndex == furthestCardIndex;
+
+  /// Furthest card the reader can reach right now: the lesson's live edge, or
+  /// further when narration read ahead while the app was away.
+  ///
+  /// Only reachability reads this — the `PageView`'s item count and the pip
+  /// bar's own reach. Everything asking "where is the lesson?" keeps reading
+  /// [furthestCardIndex].
+  int get revealBound => math.max(furthestCardIndex, narrationRevealIndex);
 }

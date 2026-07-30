@@ -62,6 +62,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// here.
   Map<int, int> _cardToClip = const {};
 
+  /// Clip narration reached while the app was off screen, or -1 when the deck and
+  /// the voice are in step.
+  ///
+  /// Kept OUTSIDE state on purpose: `_rebuildCards` re-derives
+  /// `furthestCardIndex` from the lesson on every lesson emit, so a reveal stored
+  /// only in state would be wiped on the next tick. This is the input that
+  /// survives and is fed back into every rebuild.
+  int _revealToClipIndex = -1;
+
   LessonCompletionOrigin _previousCompletionOrigin = LessonCompletionOrigin.none;
 
   bool _pausedForQuiz = false;
@@ -114,7 +123,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     final current = state;
     if (index < 0 || index >= current.cards.length) return 0;
     if (index < current.furthestCardIndex) return 1;
-    if (index > current.furthestCardIndex) return 0;
+    // Past the live edge but within reach means narration read ahead to it, so
+    // let the theory branch below show real playback rather than an empty pip.
+    if (index > current.revealBound) return 0;
+    if (index > current.furthestCardIndex && index != _loadedClipCardIndex) return 0;
 
     final descriptor = current.cards[index];
     if (descriptor.isDone) return 1;
@@ -304,7 +316,9 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // `LessonPage`'s existing isLoading state own the screen until items land.
     if (lessonState.pageData.items.isEmpty && lessonState.status != LessonStatus.success) {
       if (state.status != KeypointCardStatus.initial || state.cards.isNotEmpty) {
-        emit(state.copyWith(status: KeypointCardStatus.initial, cards: const [], viewedCardIndex: 0, furthestCardIndex: 0));
+        // A different keypoint's reveal means nothing here — drop it with the cards.
+        _revealToClipIndex = -1;
+        emit(state.copyWith(status: KeypointCardStatus.initial, cards: const [], viewedCardIndex: 0, furthestCardIndex: 0, narrationRevealIndex: 0));
       }
       return;
     }
@@ -319,6 +333,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
           defaultValue: const LearningItemEntity(),
         ),
       ),
+      revealToClipIndex: _revealToClipIndex,
     );
     _cardToClip = built.cardToClip;
 
@@ -332,6 +347,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         status: KeypointCardStatus.ready,
         cards: built.cards,
         furthestCardIndex: nextFurthestIndex,
+        narrationRevealIndex: built.revealCardIndex,
         viewedCardIndex: nextViewedIndex,
         isLiveCardAnswered: _isCardAnswered(built.cards, nextFurthestIndex),
       ),

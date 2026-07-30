@@ -41,7 +41,7 @@ class KeypointProgressPipBar extends StatelessWidget {
             ),
             child: Row(
               children: List.generate(pipCount, (index) {
-                final isReachable = index <= state.furthestCardIndex;
+                final isReachable = index <= state.revealBound;
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 1.5.w),
