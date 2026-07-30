@@ -8,9 +8,7 @@ import {
   voiceoverService,
   CourseVoiceoverStatus,
   VoiceoverCellStatus,
-  VoiceoverVoiceSelection,
 } from "../../services/voiceoverService";
-import VoiceoverVoicePicker from "./VoiceoverVoicePicker";
 
 interface Props {
   open: boolean;
@@ -119,13 +117,12 @@ const VoiceoverStatusModal: React.FC<Props> = ({
   // Narrator for the next generation run, per language. The backend persists
   // whichever was used on each keypoint, so leaving this alone re-dubs with the
   // same narrator as before.
-  const [voices, setVoices] = useState<VoiceoverVoiceSelection>({});
 
   const handleGenerate = async () => {
     if (running || starting) return;
     setStarting(true);
     try {
-      await voiceoverService.generateForCourse(courseId, voices);
+      await voiceoverService.generateForCourse(courseId);
       showSuccess("Đã bắt đầu sinh voiceover ở nền…");
       await load(); // picks up the running job → auto-poll kicks in
     } catch (err) {
@@ -144,7 +141,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
     if (retrying.has(keypointId) || running) return;
     setRetrying((prev) => new Set(prev).add(keypointId));
     try {
-      await voiceoverService.generateForKeypoint(keypointId, voices);
+      await voiceoverService.generateForKeypoint(keypointId);
       await load();
     } catch (err) {
       showError(
@@ -179,11 +176,6 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             <p className="text-sm text-gray-500 truncate max-w-lg">{courseTitle}</p>
           </div>
           <div className="flex items-center gap-2">
-            <VoiceoverVoicePicker
-              value={voices}
-              onChange={setVoices}
-              disabled={running || starting}
-            />
             <button
               onClick={load}
               disabled={loading}

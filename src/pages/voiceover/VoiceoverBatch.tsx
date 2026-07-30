@@ -17,9 +17,7 @@ import {
   CourseVoiceoverSummary,
   GlobalVoiceoverStatus,
   VoiceoverCellStatus,
-  VoiceoverVoiceSelection,
 } from "../../services/voiceoverService";
-import VoiceoverVoicePicker from "../../components/courses/VoiceoverVoicePicker";
 
 // Stat cards mirror VoiceoverStatusModal's SUMMARY, plus a Total tile since
 // the global report already carries an aggregate count.
@@ -143,13 +141,12 @@ export default function VoiceoverBatch() {
   // single course row). The backend remembers the narrator per keypoint, so a
   // "dub what's missing" run at the default still leaves already-dubbed
   // keypoints on the voice they were made with.
-  const [voices, setVoices] = useState<VoiceoverVoiceSelection>({});
 
   const handleGenerateNeeded = async () => {
     if (running || starting) return;
     setStarting("needed");
     try {
-      await voiceoverService.generateAll(false, voices);
+      await voiceoverService.generateAll(false);
       showSuccess("Đã bắt đầu dub những bài còn thiếu ở nền…");
       await load();
     } catch (err: any) {
@@ -166,7 +163,7 @@ export default function VoiceoverBatch() {
     setConfirmForce(false);
     setStarting("force");
     try {
-      await voiceoverService.generateAll(true, voices);
+      await voiceoverService.generateAll(true);
       showSuccess("Đã bắt đầu force dub lại toàn bộ ở nền…");
       await load();
     } catch (err: any) {
@@ -182,7 +179,7 @@ export default function VoiceoverBatch() {
     if (running || rowDubbing.has(course.courseId)) return;
     setRowDubbing((prev) => new Set(prev).add(course.courseId));
     try {
-      await voiceoverService.generateForCourse(course.courseId, voices);
+      await voiceoverService.generateForCourse(course.courseId);
       showSuccess(
         `Đã bắt đầu dub cho "${getTranslationValue(course.title, lang) || course.courseId}"`
       );
@@ -249,11 +246,6 @@ export default function VoiceoverBatch() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <VoiceoverVoicePicker
-              value={voices}
-              onChange={setVoices}
-              disabled={running || starting !== null}
-            />
             <button
               type="button"
               onClick={handleScan}

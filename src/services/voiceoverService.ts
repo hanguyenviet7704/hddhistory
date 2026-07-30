@@ -1,56 +1,24 @@
 import axiosClient from "./axiosClient";
 
-/// One narrator offered for a language, as returned by GET /voiceover/voices.
-export interface VoiceoverVoiceOption {
-  /// Full voice name, e.g. `zh-CN-XiaoxiaoNeural`.
-  name: string;
-  /// Trailing speaker segment, e.g. `Achernar` — what the picker shows.
-  speaker: string;
-  gender: string;
-}
-
-/// Narrator per language code, e.g. `{ zh: "zh-CN-XiaoxiaoNeural" }`.
-///
-/// Per language, not one narrator for the whole run: failures are per language,
-/// so Chinese erroring must be fixable without re-dubbing the other four. A
-/// language left out keeps whatever narrator it was last dubbed with.
-export type VoiceoverVoiceSelection = Record<string, string>;
-
 // TTS voiceover generation (free Microsoft Edge neural voices, server-side — no
 // key, no per-character billing). One clip per CARD (theory pages read in full, exercise cards read
 // the QUESTION only) plus one whole-keypoint file for app builds released before
 // per-card narration. Stored on keypoint.audio; the manual audio fields are gone,
 // this is the only way audio is produced now.
+//
+// The narrator is fixed server-side at one female voice per language, so none of
+// these calls sends a body. The old per-language picker (and its
+// `GET /voiceover/voices` feed) is gone: a keypoint's stored narrator used to be
+// reused on every re-dub, which quietly kept old male-voiced keypoints male
+// forever.
 export const voiceoverService = {
-  // Narrators available per language, straight from the TTS endpoint's own
-  // catalogue. The list is NOT hardcoded client-side on purpose: a name invented
-  // here is how every Chinese keypoint once failed with "Voice does not exist".
-  async getVoiceOptions(): Promise<Record<string, VoiceoverVoiceOption[]>> {
-    const res = await axiosClient.get("/voiceover/voices");
-    // The API wraps payloads in a `data` envelope, so `res.data` is
-    // `{ data: {...} }` — the same `res?.data ?? res` unwrap every other reader
-    // here does. Returning the envelope instead handed the picker an object
-    // where it expected arrays and blanked the whole page.
-    return (res?.data?.data ?? res?.data ?? {}) as Record<
-      string,
-      VoiceoverVoiceOption[]
-    >;
-  },
-
-  async generateForKeypoint(
-    keypointId: string,
-    voices?: VoiceoverVoiceSelection
-  ) {
-    const res = await axiosClient.post(`/voiceover/keypoint/${keypointId}`, {
-      voices,
-    });
+  async generateForKeypoint(keypointId: string) {
+    const res = await axiosClient.post(`/voiceover/keypoint/${keypointId}`);
     return res.data;
   },
 
-  async generateForCourse(courseId: string, voices?: VoiceoverVoiceSelection) {
-    const res = await axiosClient.post(`/voiceover/course/${courseId}`, {
-      voices,
-    });
+  async generateForCourse(courseId: string) {
+    const res = await axiosClient.post(`/voiceover/course/${courseId}`);
     return res.data;
   },
 
@@ -70,11 +38,8 @@ export const voiceoverService = {
 
   // Kick off a background job over every course. force=false only (re)dubs
   // missing/stale/failed cells; force=true regenerates everything.
-  async generateAll(force: boolean, voices?: VoiceoverVoiceSelection) {
-    const res = await axiosClient.post(
-      `/voiceover/generate-all?force=${force}`,
-      { voices }
-    );
+  async generateAll(force: boolean) {
+    const res = await axiosClient.post(`/voiceover/generate-all?force=${force}`);
     return res.data;
   },
 };
