@@ -87,6 +87,7 @@ part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
 part 'presentation/cubits/keypoint_card/keypoint_card_cubit.dart';
 part 'presentation/cubits/keypoint_card/keypoint_card_state.dart';
+part 'presentation/cubits/keypoint_card/keypoint_cards_builder.dart';
 part 'presentation/cubits/keypoint_display/keypoint_display_cubit.dart';
 part 'presentation/cubits/keypoint_display/keypoint_display_state.dart';
 part 'presentation/cubits/lesson_audio/lesson_audio_cubit.dart';
