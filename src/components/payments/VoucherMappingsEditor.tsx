@@ -161,8 +161,15 @@ const VoucherMappingsEditor: React.FC<VoucherMappingsEditorProps> = ({
                 key={index}
                 className="rounded-lg border border-slate-200 p-3 space-y-2"
               >
-                <div className="grid grid-cols-1 md:grid-cols-[minmax(0,120px)_1fr_1fr_auto] gap-2 items-start">
-                  <label className="flex flex-col gap-1 text-xs text-slate-600">
+                {/* `minmax(0,1fr)`, not `1fr`. A bare `1fr` is `minmax(auto,1fr)`, and a
+                    <select>'s min-content width is its LONGEST option — here
+                    "meup_sub_1y_30off · Yearly (sale 30%)". So the two SKU columns
+                    refused to shrink, ate the row, and squeezed the fixed Platform
+                    column to nothing: its label collapsed onto the next one and the
+                    platform dropdown became unreachable, which is exactly how a
+                    voucher ends up saved Apple-only. */}
+                <div className="grid grid-cols-1 md:grid-cols-[7rem_minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 items-start">
+                  <label className="flex min-w-0 flex-col gap-1 text-xs text-slate-600">
                     <span className="font-medium">Platform</span>
                     <select
                       value={row.platform}
@@ -173,14 +180,14 @@ const VoucherMappingsEditor: React.FC<VoucherMappingsEditorProps> = ({
                         )
                       }
                       disabled={disabled}
-                      className="rounded-lg border border-slate-200 px-2 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full min-w-0 truncate rounded-lg border border-slate-200 px-2 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     >
                       <option value={PaymentPlatform.APPLE}>Apple</option>
                       <option value={PaymentPlatform.GOOGLE}>Google</option>
                     </select>
                   </label>
 
-                  <label className="flex flex-col gap-1 text-xs text-slate-600">
+                  <label className="flex min-w-0 flex-col gap-1 text-xs text-slate-600">
                     <span className="font-medium">SKU gốc (baseProductId)</span>
                     <select
                       value={row.baseProductId}
@@ -188,7 +195,7 @@ const VoucherMappingsEditor: React.FC<VoucherMappingsEditorProps> = ({
                         updateRow(index, { baseProductId: e.target.value })
                       }
                       disabled={disabled || loading || baseOptions.length === 0}
-                      className="rounded-lg border border-slate-200 px-2 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+                      className="w-full min-w-0 truncate rounded-lg border border-slate-200 px-2 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
                     >
                       <option value="">
                         {loading
@@ -208,7 +215,7 @@ const VoucherMappingsEditor: React.FC<VoucherMappingsEditorProps> = ({
                     </select>
                   </label>
 
-                  <label className="flex flex-col gap-1 text-xs text-slate-600">
+                  <label className="flex min-w-0 flex-col gap-1 text-xs text-slate-600">
                     <span className="font-medium">
                       SKU khuyến mãi (targetProductId)
                     </span>
@@ -218,7 +225,7 @@ const VoucherMappingsEditor: React.FC<VoucherMappingsEditorProps> = ({
                         updateRow(index, { targetProductId: e.target.value })
                       }
                       disabled={disabled || loading || targetOptions.length === 0}
-                      className="rounded-lg border border-slate-200 px-2 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+                      className="w-full min-w-0 truncate rounded-lg border border-slate-200 px-2 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
                     >
                       <option value="">
                         {loading
