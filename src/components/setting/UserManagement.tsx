@@ -77,8 +77,17 @@ const formatLastActionValue = (lastAction?: IUser["lastAction"]) => {
 
 const formatDevicesValue = (devices?: IUser["devices"]) => {
   if (!devices || devices.length === 0) return "No devices";
+  // Marks which devices are actually reachable by push. "1 device (iPhone)" alone
+  // hid the thing you need when a notification does not arrive: a device row
+  // exists for every login, but only one carrying a pushToken can be sent to.
   const names = devices
-    .map((d) => d.deviceName || d.deviceId)
+    .map((d) => {
+      const label = d.deviceName || d.deviceId || "?";
+      if (!d.pushToken) return `${label} · chưa có push`;
+      return d.pushEnabled === false
+        ? `${label} · push TẮT trong app`
+        : `${label} · push OK`;
+    })
     .filter(Boolean)
     .join(", ");
   return `${devices.length} device${devices.length > 1 ? "s" : ""}${
@@ -841,6 +850,24 @@ const UserManagement = () => {
                         }))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Timezone
+                    </label>
+                    {/* Read-only: the APP reports this on push registration, and it
+                        is what decides when a scheduled notification fires. Typing
+                        one here would set a send time the device never agreed to —
+                        and an empty value is real information (that user is not
+                        schedulable yet), not a blank to fill in. */}
+                    <input
+                      type="text"
+                      readOnly
+                      value={formData.timezone || ""}
+                      placeholder="chưa có — app chưa đăng ký push"
+                      title="Do app gửi lên khi đăng ký push. Trống = user này chưa nhận được thông báo định kỳ."
+                      className="w-full px-3 py-2 border border-gray-200 bg-gray-50 text-gray-600 rounded-md"
                     />
                   </div>
                   <div>

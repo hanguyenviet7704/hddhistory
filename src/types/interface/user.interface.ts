@@ -12,8 +12,17 @@ export interface IDevice {
   deviceName: string;
   refreshToken: string;
   loginAt: Date;
+  /** Set by the app's push registration; absent means this device cannot be pushed to. */
+  pushToken?: string;
+  /** The app's own notification switch, independent of the OS permission. */
+  pushEnabled?: boolean;
+  pushPlatform?: string;
 }
 export interface IUser {
+  /** IANA zone the app reported (`Asia/Ho_Chi_Minh`). Empty until the device
+   * registers for push — the scheduled-notification query skips users without
+   * one rather than guessing a send time. */
+  timezone?: string;
   name: string;
   email: string;
   phone: string;
