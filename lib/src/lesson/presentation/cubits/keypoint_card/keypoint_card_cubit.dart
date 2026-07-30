@@ -150,13 +150,18 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// `PageView` is built with `itemCount: furthestCardIndex + 1`, so forward
   /// swipe/tap past the live edge is structurally impossible, never a gate
   /// this cubit has to re-check.
-  void viewCard(int index) {
-    if (index == state.viewedCardIndex) return;
+  /// [startAt] is the resume path only: narration is already playing this card
+  /// mid-clip, so the source is reloaded out of queue mode at that position
+  /// instead of restarting the card. It also bypasses the same-index early
+  /// return — coming back onto the card the reader left still has to leave queue
+  /// mode, or the voice would walk off the page again at the end of the clip.
+  void viewCard(int index, {Duration? startAt}) {
+    if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
     final previousIndex = state.viewedCardIndex;
     emit(state.copyWith(viewedCardIndex: index));
     _reconcileQuizPause(previousIndex, index);
-    _loadCardNarration(index);
+    _loadCardNarration(index, startAt: startAt);
   }
 
   /// Points the player at [index]'s own clip, so the card on screen is the one
@@ -167,7 +172,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// Keypoints still on a single whole-keypoint dub have no per-card clips; there
   /// narration is left exactly as the reader set it (the audio button is the only
   /// control) until the keypoint is re-dubbed.
-  void _loadCardNarration(int index) {
+  void _loadCardNarration(int index, {Duration? startAt}) {
     if (!_audioCubit.hasCardClips) return;
     if (index < 0 || index >= state.cards.length) return;
 
@@ -182,10 +187,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // clip had simply run to its end — that is a reader listening through, not
     // one who asked for silence. A manual pause leaves both false, so it stays
     // quiet.
+    // A resume always keeps playing: the voice was mid-sentence when the reader
+    // came back, and `isPlaying` is not a reliable read of that — coming out of
+    // queue mode the player is between sources.
     final audioState = _audioCubit.state;
-    final autoplay = audioState.isPlaying || audioState.hasCompletedPlayback;
+    final autoplay = startAt != null || audioState.isPlaying || audioState.hasCompletedPlayback;
     _loadedClipCardIndex = index;
-    unawaited(_audioCubit.loadCard(clipIndex, autoplay: autoplay));
+    unawaited(_audioCubit.loadCard(clipIndex, autoplay: autoplay, startAt: startAt));
   }
 
   // ---- LessonState reactions ----
@@ -284,20 +292,47 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     unawaited(_audioCubit.playRestOfKeypoint());
   }
 
-  /// Coming back on screen ends the read-ahead: the voice stops and is pointed
-  /// back at the card the reader is actually looking at, silent, so the next tap
-  /// on play reads the page in front of them.
+  /// Coming back on screen lands on the card the voice is reading, at the second
+  /// it is at, still playing.
   ///
-  /// The deck deliberately does NOT jump forward to wherever the voice reached.
-  /// Reaching those pages for real means running the exercise past unanswered
-  /// questions and, at the end of the last item, `completeCurrentKeypoint()` —
-  /// which writes keypoint progress to the server. Listening on a walk must not
-  /// silently mark a keypoint finished.
+  /// The reveal bound is raised and the cards rebuilt BEFORE the clip is looked
+  /// up: [KeypointCardsBuilder] normally stops at the lesson's live position, so
+  /// until then no descriptor for that card exists and the lookup can only fail.
+  ///
+  /// Progress is untouched. [viewCard] moves the view, reconciles the quiz pause
+  /// and points narration — it never calls `nextDocument()` /
+  /// `nextLearningItem()`, so nothing here can write keypoint progress or reach
+  /// `completeCurrentKeypoint()` for questions nobody answered. Cards past the
+  /// live edge render read-only (see [QuizPreviewCardBody]).
   @override
   void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
     if (lifecycleState != AppLifecycleState.resumed) return;
     if (!_audioCubit.isAheadOfDeck) return;
 
+    final narratedClip = _audioCubit.narratingClipIndex;
+    if (narratedClip != null) {
+      // Read the position BEFORE anything touches the player.
+      final position = _audioCubit.narratingPosition;
+      _revealToClipIndex = narratedClip;
+      _rebuildCards(_lessonCubit.state);
+
+      int? narratedCard;
+      for (final entry in _cardToClip.entries) {
+        if (entry.value == narratedClip) {
+          narratedCard = entry.key;
+          break;
+        }
+      }
+      if (narratedCard != null && narratedCard < state.cards.length) {
+        viewCard(narratedCard, startAt: position);
+        return;
+      }
+      // The clip has no card even after rebuilding (content shorter than the
+      // clip list, e.g. a keypoint dubbed before an item was removed): fall
+      // through to the old behaviour rather than leave the deck lying.
+    }
+
+    // Nothing to follow — the run finished, or the player has no slot to report.
     unawaited(_audioCubit.pause());
     final clipIndex = _cardToClip[state.viewedCardIndex];
     if (clipIndex == null || !_audioCubit.hasClipAt(clipIndex)) return;
