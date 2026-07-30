@@ -13,27 +13,28 @@ dart run build_runner clean                               # Clean generated file
 
 ### Testing and Analysis
 ```bash
-flutter test                    # All tests
-flutter test test/unit/         # Unit tests only
-flutter analyze                 # Static analysis
+flutter analyze                 # Static analysis — the default correctness gate
+flutter test test/unit/<feature>/<target>_test.dart   # ONE targeted test
 dart format lib/ test/          # Format code (180 char line width)
 ```
 
+**Do not run the full `flutter test` suite on this dev machine** — it exhausts RAM.
+Verify with `flutter analyze`; run a single test file when one is genuinely needed.
+
 ### Localization
 ```bash
-# Pull from Google Sheets (macOS/Linux)
-tools/macos/localization/localization.sh pull
-# Windows: tools\windows\localization\localization.bat pull
-
-# If you edited YAML locally, push + re-pull before slang
-tools/<os>/localization/localization.sh push --apply
-tools/<os>/localization/localization.sh pull
-
-tools/<os>/localization/localization.sh slang  # Regenerate translations after pull
+dart run slang                  # Regenerate lib/config/l10n/ from the YAML
 ```
+The YAML under `assets/i18n/<locale>/<module>.yaml` **is** the source of truth —
+edit it directly, then regenerate. The Google-Sheets round-trip under
+`tools/<os>/localization/` still exists but is no longer the workflow.
 
 ### Building
 ```bash
+# Local run / install (simulator, emulator, attached device)
+./tools/macos/build/run_app.sh <dev|stg|prod>
+./tools/macos/build/install_app.sh <dev|stg|prod>
+
 # Android
 ./tools/macos/build/build_apk.sh <dev|stg|prod>
 ./tools/macos/build/build_appbundle.sh <dev|stg|prod>
@@ -122,27 +123,32 @@ Never edit generated files (`*.g.dart`, `*.config.dart`, `*.freezed.dart`). Reru
 - Cubit/BLoC: suffix with `Cubit`/`Bloc`
 
 ### Commit Messages
-Format: `type/TICKET-ID: subject`
-- Extract ticket ID from branch (e.g., `feature/MEUP-123-desc` → `MEUP-123`)
+Format: `type/MEUP: subject` — no numeric ticket ID (those fell out of use).
 - Types: `feature`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `perf`
-- Example: `feature/MEUP-123: add social login functionality`
+- Imperative, lowercase, English or Vietnamese — match surrounding history
+- Example: `feature/MEUP: one swipeable keypoint screen with per-card narration`
 
 ### Branch Naming
-`type/TICKET-ID-description` (e.g., `feature/MEUP-123-add-login`)
+`type/MEUP-<slug>` (e.g. `feature/MEUP-keypoint-swipe-narration`). The integration
+branch is `develop`.
 
 ## Localization
 
-- YAML source: `assets/i18n/<locale>/<module>.yaml`
-- Generated Dart: `lib/config/l10n/`
+- YAML source: `assets/i18n/<locale>/<module>.yaml` — **this is the source of truth**
+- Generated Dart: `lib/config/l10n/` (config `slang.yaml`, base locale `en`,
+  `fallback_strategy: base_locale`, non-base locales lazily deferred)
+- **Five locales ship** — `en`, `vi`, `zh`, `ja`, `ko`. A new key must be added to
+  all five, or it silently falls back to English.
 - Keys: lowerCamelCase without module prefix (module is the namespace)
-- Workflow: `pull` → edit keys → `push --apply` → `pull` → `slang`
+- Workflow: edit YAML → `dart run slang` → `flutter analyze`
 
 ## Testing
 
 - Tests in `test/unit/<feature>/` mirroring feature structure
 - Name: `<target>_test.dart`
 - Mock injected services and storage for `hydrated_bloc`
-- Run `flutter test` before PR
+- Run `flutter analyze` before PR, plus targeted test files — never the full suite
+  on this machine (RAM). For on-device UI verification use the `sim-test` skill.
 
 ## Security Notes
 
