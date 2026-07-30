@@ -60,6 +60,26 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   bool get isAheadOfDeck => _isAheadOfDeck;
 
+  /// Clip index behind each slot of the queue [playRestOfKeypoint] handed the
+  /// player. Cards with nothing to read are skipped when the queue is built, so a
+  /// queue slot is NOT a clip index — this is the map between them, and without
+  /// it the slot the player reports means nothing to the deck.
+  List<int> _queueClipIndexes = const [];
+
+  /// Clip the voice is on while reading ahead of the deck, or null when the two
+  /// are in step (then the deck already knows where narration is) or when the
+  /// player has no slot to report.
+  int? get narratingClipIndex {
+    if (!_isAheadOfDeck) return null;
+    final slot = _handler.currentIndex;
+    if (slot == null || slot < 0 || slot >= _queueClipIndexes.length) return null;
+    return _queueClipIndexes[slot];
+  }
+
+  /// How far into that clip the voice is, so resuming can carry the position
+  /// across instead of restarting the card.
+  Duration get narratingPosition => _handler.position;
+
   /// Reads the rest of the keypoint straight through, WITHOUT the deck moving.
   ///
   /// This is the backgrounded listener's path. On screen the deck is what walks
@@ -89,12 +109,18 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// Returns false when nothing is left to read.
   Future<bool> playRestOfKeypoint() async {
     if (_activeClipIndex < 0) return false;
-    // Skip cards with nothing to read (video, roleplay) rather than stopping.
-    final remaining = [
-      for (var i = _activeClipIndex + 1; i < _cardClips.length; i++)
-        if (_cardClips[i].isNotEmpty) _cardClips[i],
-    ];
+    // Skip cards with nothing to read (video, roleplay) rather than stopping —
+    // and remember which clip each surviving slot holds, so the slot the player
+    // reports can be turned back into a card when the reader returns.
+    final remaining = <String>[];
+    final queueClipIndexes = <int>[];
+    for (var i = _activeClipIndex + 1; i < _cardClips.length; i++) {
+      if (_cardClips[i].isEmpty) continue;
+      remaining.add(_cardClips[i]);
+      queueClipIndexes.add(i);
+    }
     if (remaining.isEmpty) return false;
+    _queueClipIndexes = queueClipIndexes;
 
     _playWhenReady = true;
     await _resetHandlerForNewKeypoint();
@@ -120,6 +146,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   Future<void> configure(KeypointEntity keypoint) async {
     _cardClips = keypoint.resolvedAudioSegments;
+    _queueClipIndexes = const [];
     // A different keypoint's clip list — the old index means nothing in it.
     _activeClipIndex = -1;
     _isAheadOfDeck = false;
@@ -201,7 +228,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// no timeline guessing. Returns false when this keypoint has no clip for that
   /// card (a legacy whole-keypoint dub, or a card with no narratable text), in
   /// which case narration is left alone.
-  Future<bool> loadCard(int cardIndex, {bool autoplay = false}) async {
+  Future<bool> loadCard(int cardIndex, {bool autoplay = false, Duration? startAt}) async {
     if (cardIndex < 0 || cardIndex >= _cardClips.length) return false;
     final url = _cardClips[cardIndex];
     if (url.isEmpty) return false;
@@ -213,6 +240,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final wasAheadOfDeck = _isAheadOfDeck;
     _activeClipIndex = cardIndex;
     _isAheadOfDeck = false;
+    // Leaving queue mode: the slot map describes a queue that is about to be
+    // replaced by a single source, so it must not outlive it.
+    _queueClipIndexes = const [];
 
     // `!wasAheadOfDeck` matters: in queue mode the player holds every remaining
     // clip, and its first one may well be this very url. Taking the shortcut
@@ -236,8 +266,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         return true;
       }
       // Same clip already loaded (e.g. swiping away and back): restart it so the
-      // card is read from its beginning rather than from wherever it stopped.
-      await seekTo(Duration.zero);
+      // card is read from its beginning rather than from wherever it stopped —
+      // unless a position was handed in, which is a resume, not a re-read.
+      await seekTo(startAt ?? Duration.zero);
       if (autoplay) await play();
       return true;
     }
@@ -256,7 +287,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         errorMessage: null,
       ),
     );
-    await _initializePlayer();
+    await _initializePlayer(startAt: startAt);
     return true;
   }
 
@@ -402,7 +433,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   /// Loads [state.sourceUrl], or [queue] as one gapless run when the
   /// backgrounded listener is reading to the end of the keypoint.
-  Future<void> _initializePlayer({List<String>? queue}) async {
+  Future<void> _initializePlayer({List<String>? queue, Duration? startAt}) async {
     final generation = ++_loadGeneration;
 
     emit(
@@ -477,6 +508,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
               title: state.title,
               artUri: state.imageUrl,
               speed: state.speed,
+              initialPosition: startAt,
             )
           : await _handler.loadQueue(
               urls: queue,

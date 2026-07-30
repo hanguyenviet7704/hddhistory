@@ -48,6 +48,16 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Stream<just_audio.ProcessingState> get processingStateStream => _player.processingStateStream;
 
+  /// Where the player is inside the CURRENT source. In queue mode that is the
+  /// current item, not the whole run — `just_audio` reports position and duration
+  /// per item — which is exactly what resuming onto one card needs.
+  Duration get position => _player.position;
+
+  /// Which queue slot is playing, or null when the source is a single item.
+  /// Only meaningful together with [LessonAudioCubit]'s slot → clip map: the
+  /// queue skips cards with nothing to read, so a slot is not a clip index.
+  int? get currentIndex => _player.currentIndex;
+
   /// Loads [url] as the active source and pushes the matching [MediaItem] so
   /// the lock-screen/Control Center/Android notification show the right
   /// title + artwork. Returns the resolved duration (mirrors
@@ -59,6 +69,11 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
     required String title,
     required String artUri,
     double speed = 1.0,
+
+    /// Start the source here instead of at zero. Handed to `setAudioSource` so
+    /// resuming lands mid-clip in one step — loading at zero and seeking after
+    /// is audible as the clip restarting before it jumps.
+    Duration? initialPosition,
   }) async {
     final art = artUri.isNotEmpty ? Uri.tryParse(artUri) : null;
     final item = MediaItem(id: id, title: title, artUri: art);
@@ -66,6 +81,7 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
 
     final duration = await _player.setAudioSource(
       just_audio.AudioSource.uri(Uri.parse(url), tag: item),
+      initialPosition: initialPosition,
     );
 
     if (speed != 1.0) {
