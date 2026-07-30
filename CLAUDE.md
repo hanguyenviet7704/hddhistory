@@ -6,20 +6,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a React TypeScript admin panel for an AI Tutor platform, built with Create React App. The application manages educational content including courses, lessons, exercises, roleplays, theories, and user progress.
 
+It is one of four repos in the Meup workspace — see the parent `../CLAUDE.md` for
+the shared domain model, the backend it talks to, and the branch/commit conventions.
+
 ## Development Commands
 
+- `npx tsc --noEmit` - Type-check only. **The cheapest correctness gate; prefer it.**
+  A `PostToolUse` hook in the workspace `.claude/settings.json` already runs this
+  after every edit — read that output instead of re-running it.
 - `npm start` - Run development server on http://localhost:3000
-- `npm test` - Run tests in interactive watch mode
+- `npm test -- App.test.tsx` - Run ONE suite. Do not run the full `npm test` watch
+  suite on the dev machine — it exhausts RAM.
 - `npm run build` - Build for production
-- `npm run eject` - Eject from Create React App (one-way operation)
+- Do **not** `npm run eject` — CRA config stays as-is.
 
 ## Architecture
 
 ### Core Structure
 - **Entry Point**: `src/index.tsx` renders the main Router component
-- **Router**: `src/routes/index.tsx` handles all routing with protected routes
-- **State Management**: Redux Toolkit with slices for language and notifications
+- **Router**: `src/routes/index.tsx` (React Router 7) handles all routing with protected routes
+- **State Management**: Redux Toolkit, but only for cross-cutting UI concerns
 - **API Layer**: Axios client with automatic token refresh and language headers
+
+### Redux is narrow — server data is not in the store
+There are exactly two slices (`src/store/slices/lang.slice.ts`,
+`notification.slice.ts`) and **zero** `createAsyncThunk`. Entities are never
+normalized into the store: a page calls its own `src/services/<entity>Service.ts`
+and holds the result in local component state. Follow that pattern for new pages
+instead of adding an entity slice.
 
 ### Key Directories
 - `src/components/` - Reusable UI components (layout, common, forms)
@@ -61,5 +75,6 @@ This is a React TypeScript admin panel for an AI Tutor platform, built with Crea
 - Material-UI (@mui/material) for components
 - Tailwind CSS for styling
 - Framer Motion for animations
-- React Dn Kit for drag and drop functionality
+- dnd-kit (`@dnd-kit/*`) for drag and drop (ordering lessons, keypoints, etc.)
+- TipTap for rich-text (lesson theory content)
 - Lucide React & Heroicons for icons
