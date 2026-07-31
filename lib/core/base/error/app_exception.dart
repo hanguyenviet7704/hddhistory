@@ -32,9 +32,25 @@ extension ExceptionExtension on AppException {
       UnexpectedException(message: final msg) => msg,
       ForbiddenException(message: final msg) => msg,
       PendingException(message: final msg) => msg,
-      FromDioException(error: final error) => error.message,
+      FromDioException(error: final error) => _friendlyDioMessage(error),
       FromGraphQLErrorException(error: final error) => error.toString(),
     };
+  }
+
+  /// Network/timeout Dio errors carry a raw, technical `message` (e.g.
+  /// "The connection errored: Failed host lookup ...") that must never reach the
+  /// user — map them to a friendly, localized line. Other Dio types keep their
+  /// message (server responses may carry a meaningful one).
+  String? _friendlyDioMessage(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        return l10n.common.errorNoInternetConnection;
+      default:
+        return error.message;
+    }
   }
 
   /// Gets a user-friendly message or a default one
@@ -55,7 +71,7 @@ extension ExceptionExtension on AppException {
       UnexpectedException() => 'An unexpected error occurred',
       ForbiddenException() => 'Access forbidden',
       PendingException() => 'Operation is pending',
-      FromDioException(error: final error) => 'Network error: ${error.type.name}',
+      FromDioException() => l10n.common.errorSomethingHappened,
       FromGraphQLErrorException() => 'GraphQL error occurred',
     };
   }

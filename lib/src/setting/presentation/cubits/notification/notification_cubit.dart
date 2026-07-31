@@ -139,7 +139,45 @@ class NotificationCubit extends HydratedCubit<NotificationState> {
       errorMessage: null,
     );
     emit(nextState);
+    // Once per off→on transition, not once per call: this method also runs on
+    // every plain load of the notification screen, and re-POSTing the same token
+    // each time someone opens Settings is noise. The cubit is a lazySingleton,
+    // so the flag spans the app run — which also makes the first authorized load
+    // after launch a cheap self-heal if the server somehow has no token.
+    if (permissionState.isAuthorized) {
+      if (!_pushRegistrationSynced) {
+        _pushRegistrationSynced = true;
+        _syncPushRegistrationSafely();
+      }
+    } else {
+      _pushRegistrationSynced = false;
+    }
     return nextState;
+  }
+
+  /// Whether this app run has already handed the server a token while
+  /// permission was granted. Reset whenever permission drops, so turning
+  /// notifications off and on again re-registers.
+  bool _pushRegistrationSynced = false;
+
+  /// Hands the server this device's FCM token the moment permission allows one.
+  ///
+  /// Not left to `AuthBloc`'s token-refresh listener alone: that only fires when
+  /// FCM mints a NEW token. Someone who turns notifications off in iOS Settings
+  /// and back on keeps the token they already had, so no refresh event ever
+  /// arrives — and until this call existed, the server went on believing that
+  /// device had no token and skipped it in every scheduled send.
+  ///
+  /// Reached through the injector rather than a constructor dependency because
+  /// AuthBloc already depends on this feature's siblings; taking it as a field
+  /// here would close the loop. Best-effort by design — [syncPushRegistration]
+  /// swallows and logs its own failures.
+  void _syncPushRegistrationSafely() {
+    try {
+      unawaited(AppDI.injector.get<AuthBloc>().syncPushRegistration());
+    } catch (error) {
+      LogDev.warning('[NotificationCubit] could not sync push registration: $error');
+    }
   }
 
   Future<void> _persistAppPreferenceSafely(bool notificationsEnabled) async {

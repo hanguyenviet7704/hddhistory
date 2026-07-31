@@ -1,5 +1,11 @@
 part of '../../../../lesson.dart';
 
+/// One answer option on a single- or multiple-choice card (Keypoint v2 design).
+///
+/// Five visual states, all driven by [AnswerState] — the design's grading pass
+/// distinguishes "you picked it and were right", "you picked it and were wrong",
+/// "this was right and you missed it" and "wrong, and you left it alone", so a
+/// reader can read the whole outcome off the list without opening anything.
 class ChoiceAnswerCard extends StatelessWidget {
   final OptionEntity option;
   final bool isMultiChoice;
@@ -16,68 +22,85 @@ class ChoiceAnswerCard extends StatelessWidget {
 
   Color get backgroundColor {
     return switch (state) {
-      AnswerState.selected => Colors.white,
-      AnswerState.correct => const Color(0xFFEAFFEF),
-      AnswerState.incorrect => const Color(0xFFFDEAE7),
-      AnswerState.disabled => Colors.white,
-      _ => Colors.white,
+      AnswerState.correct => AppCustomColor.kpCorrectSurface,
+      AnswerState.incorrect => AppCustomColor.kpWrongSurface,
+      AnswerState.correctNotSelected => AppCustomColor.kpMissedSurface,
+      _ => AppCustomColor.backgroundWhite,
     };
   }
 
   Color get borderColor {
     return switch (state) {
-      AnswerState.selected => const Color(0xFF554FF0),
-      AnswerState.correct => const Color(0xFF1DA75E),
-      AnswerState.incorrect => const Color(0xFFE34646),
-      AnswerState.disabled => const Color(0xFFE3E8EF),
-      _ => const Color(0xFFE3E8EF),
+      AnswerState.selected => AppCustomColor.brandPrimary,
+      AnswerState.correct => AppCustomColor.kpCorrectBorder,
+      AnswerState.incorrect => AppCustomColor.kpWrongBorder,
+      AnswerState.correctNotSelected => AppCustomColor.kpMissedBorder,
+      // Left alone and wrong: recedes rather than competing with the verdict.
+      AnswerState.disabled => AppCustomColor.kpDimBorder,
+      _ => AppCustomColor.kpOptionBorder,
     };
   }
 
-  double get opacity {
+  /// The design thickens the border only once an option carries meaning —
+  /// selected, or graded.
+  double get borderWidth {
     return switch (state) {
-      AnswerState.selected => 1.0,
-      AnswerState.correct => 1.0,
-      AnswerState.incorrect => 1.0,
-      AnswerState.disabled => 0.7,
-      _ => 1.0,
+      AnswerState.selected => 2,
+      AnswerState.correct => 2,
+      AnswerState.incorrect => 2,
+      AnswerState.correctNotSelected => 2,
+      _ => 1.5,
     };
   }
 
-  FontWeight get fontWeight {
+  Color get textColor {
     return switch (state) {
-      AnswerState.selected => FontWeight.w500,
-      AnswerState.correct => FontWeight.w500,
-      AnswerState.incorrect => FontWeight.w500,
-      AnswerState.disabled => FontWeight.w400,
-      _ => FontWeight.w400,
+      AnswerState.disabled => AppCustomColor.kpDimText,
+      _ => AppCustomColor.kpOptionText,
+    };
+  }
+
+  Widget? get badge {
+    return switch (state) {
+      AnswerState.correct => const KeypointOptionBadge(isCorrect: true),
+      AnswerState.incorrect => const KeypointOptionBadge(isCorrect: false),
+      AnswerState.correctNotSelected => const KeypointOptionBadge(isCorrect: true, muted: true),
+      _ => null,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: opacity,
-      child: GestureDetector(
-        onTap: state == AnswerState.disabled ? null : onTap,
-        child: Container(
-          alignment: Alignment.centerLeft,
-          constraints: BoxConstraints(minHeight: 60.h),
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            border: Border.all(color: borderColor, width: 2.w),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: AppText(
-            option.value.text,
-            maxLines: 10,
-            style: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              fontWeight: fontWeight,
-              height: 1.75,
+    final trailing = badge;
+
+    return GestureDetector(
+      onTap: state == AnswerState.disabled ? null : onTap,
+      child: Container(
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border.all(color: borderColor, width: borderWidth),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: AppText(
+                option.value.text,
+                maxLines: 10,
+                style: AppStyle.text14.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
             ),
-          ),
+            if (trailing != null) ...[
+              12.horizontalSpace,
+              trailing,
+            ],
+          ],
         ),
       ),
     );

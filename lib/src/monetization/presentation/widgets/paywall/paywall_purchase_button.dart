@@ -19,22 +19,23 @@ class _PurchaseButton extends StatelessWidget {
       opacity: enabled ? 1 : 0.58,
       child: Container(
         width: double.infinity,
-        height: 54.h,
+        height: 58.h,
         decoration: BoxDecoration(
+          // Design: linear-gradient(135deg, #6C63FF, #554FF0).
           gradient: const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              Color(0xFF554FF0),
-              Color(0xFF4B44CA),
+              AppCustomColor.paywallCtaGradientStart,
+              AppCustomColor.brandPrimary,
             ],
           ),
           borderRadius: BorderRadius.circular(1000.r),
           boxShadow: [
             BoxShadow(
-              color: AppCustomColor.brandPrimary.withValues(alpha: 0.28),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
+              color: AppCustomColor.brandPrimary.withValues(alpha: 0.35),
+              blurRadius: 26,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
@@ -58,14 +59,21 @@ class _PurchaseButton extends StatelessWidget {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : AppText(
-                      label,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      style: AppStyle.text16.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        height: 1.5,
+                  : Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      child: AppText(
+                        label,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        // Now carries the plan price, so it must survive a long
+                        // total (e.g. "1.199.000đ") without clipping.
+                        enableFitScaleDown: true,
+                        style: AppStyle.text16.copyWith(
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.4,
+                        ),
                       ),
                     ),
             ),

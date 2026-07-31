@@ -69,7 +69,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
 
   void _trackView() {
     if (_hasTrackedView) return;
-    AppService.instance.appTrackingService.trackSettingDetailScrView();
+    AppService.instance.appTrackingService.trackSettingScrView();
     _hasTrackedView = true;
   }
 
@@ -112,11 +112,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   }
 
   Future<void> _handleNotificationToggle(bool value) async {
-    if (value) {
-      AppService.instance.appTrackingService.trackSettingNotificationToggleOn();
-    } else {
-      AppService.instance.appTrackingService.trackSettingNotificationToggleOff();
-    }
+    AppService.instance.appTrackingService.trackSettingNotifToggle(value);
 
     final notificationCubit = context.read<NotificationCubit>();
     final resolvedState = notificationCubit.state.hasLoadedPermissionState
@@ -166,7 +162,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                         title: context.l10n.setting.settingRowLanguage,
                         trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
                         onTap: () {
-                          AppService.instance.appTrackingService.trackSettingLanguageClick();
+                          AppService.instance.appTrackingService.trackSettingLanguageClick(context.read<LocaleCubit>().state.label);
                           const ChangeLanguageRoute().go(context);
                         },
                       ),
@@ -184,10 +180,13 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                       BlocBuilder<HapticSettingCubit, bool>(
                         builder: (context, hapticEnabled) {
                           return SettingSwitchTile(
-                            iconAsset: AppAsset.svg.app.icAim,
+                            iconAsset: AppAsset.svg.app.icHaptic,
                             title: context.l10n.setting.settingHapticLabel,
                             value: hapticEnabled,
-                            onChanged: (v) => context.read<HapticSettingCubit>().setEnabled(v),
+                            onChanged: (v) {
+                              AppService.instance.appTrackingService.trackSettingHapticToggle(v);
+                              context.read<HapticSettingCubit>().setEnabled(v);
+                            },
                           );
                         },
                       ),
@@ -237,6 +236,16 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           'https://meup.training/terms-and-conditions.html'.launchURL();
                         },
                       ),
+                      // Debug-only shortcut to replay onboarding — the splash
+                      // skips it once onboarded (or when dev remote-config
+                      // disables it), so there's no other way to reach it on a
+                      // set-up device. Stripped from release by kDebugMode.
+                      if (kDebugMode)
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icShieldPlus,
+                          title: '[DEBUG] Xem Onboarding',
+                          onTap: () => const OnboardV2Route().go(context),
+                        ),
                       if (!user.anonymous)
                         BlocBuilder<AuthBloc, AuthState>(
                           buildWhen: (previous, current) => previous.status != current.status,
@@ -336,6 +345,7 @@ class SettingHeader extends StatelessWidget {
         InkWell(
           onTap: () {
             AppHaptic.select();
+            AppService.instance.appTrackingService.trackSettingBackClick();
             context.back();
           },
           child: Icon(

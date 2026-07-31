@@ -106,10 +106,12 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   Future<void> loadRandomQuote() async {
     await runUseCase<QuoteEntity>(
       usecase: () => _getRandomQuoteUseCase(),
-      onFailure: (error) => emit(state.copyWith(
-        errorMessage: error,
-        quote: _fallbackQuote,
-      )),
+      onFailure: (error) => emit(
+        state.copyWith(
+          errorMessage: error,
+          quote: _fallbackQuote,
+        ),
+      ),
       onSuccess: (quote) => emit(state.copyWith(quote: quote)),
     );
   }
@@ -222,6 +224,28 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
         );
       },
     );
+  }
+
+  /// Checks Remote Config for a NEWER, non-forced app version and surfaces the
+  /// optional-update header on Home when one exists. Forced updates are handled
+  /// by the blocking splash dialog, so this never fires for them. Safe to call
+  /// on Home init; no-op emit when nothing changes.
+  Future<void> checkOptionalUpdate() async {
+    try {
+      final available = await AppService.instance.remoteConfigService.updateAvailable();
+      if (available && !state.showUpdateBanner) {
+        emit(state.copyWith(showUpdateBanner: true));
+      }
+    } catch (e) {
+      LogDev.error('checkOptionalUpdate: $e');
+    }
+  }
+
+  /// Hides the optional-update header for the rest of this session (reappears
+  /// next launch until the installed version is actually up to date).
+  void dismissUpdateBanner() {
+    if (!state.showUpdateBanner) return;
+    emit(state.copyWith(showUpdateBanner: false));
   }
 
   Future<void> loadSkillset(String id) async {

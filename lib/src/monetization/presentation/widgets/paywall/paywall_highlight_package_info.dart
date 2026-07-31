@@ -12,7 +12,11 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
         return PaywallBottomPurchaseBar(
           state: state,
           onPurchase: () {
-            AppService.instance.appTrackingService.trackPremiumPurchase();
+            final product = state.selectedProduct;
+            AppService.instance.appTrackingService.trackPremiumPurchase(
+              productId: product.productId,
+              price: product.price,
+            );
             context.read<IapCubit>().purchaseProduct();
           },
           onRetry: () => context.read<IapCubit>().loadIapProducts(forceRetry: true),

@@ -21,8 +21,8 @@ private enum LiveActivityColor {
   static let trackLight = Color.black.opacity(0.1)
   static let nudgeBg = Color(hex: 0x8B7BFF).opacity(0.16)
   static let thumbnailFallback = Color(hex: 0x2A2545)
-  static let logoStart = Color(hex: 0x6C63E8)
-  static let logoEnd = Color(hex: 0x4B44CA)
+  static let logoStart = Color(hex: 0x8B8BF0)
+  static let logoEnd = Color(hex: 0x4B45D6)
   static let ringTint = Color(hex: 0x8E7BFF)
   static let ringTrackDark = Color.white.opacity(0.2)
   static let diTitle = Color.white
@@ -32,11 +32,15 @@ private enum LiveActivityColor {
   static let gradientStops: [Color] = [Color(hex: 0x5B4FE8), Color(hex: 0xC56BD6), Color(hex: 0xF4A45C)]
 }
 
-// Exact "M" mark from the design file's Component.logo() (viewBox 0 0 45 28.111,
-// path data copied verbatim) — a tiny M/L/C-only SVG path parser, since
-// SwiftUI/CoreGraphics has no built-in "Path(svgPathString:)" initializer.
+// The new Meup brand mark: a "?" glyph (Poppins-Bold "question", viewBox
+// 479 x 749) extracted verbatim from the bundled Poppins-Bold.ttf — the same
+// mark shipped on the app icon (design "9 · Logo"). Kept as a tiny M/L/C/Z-only
+// SVG path (Poppins TrueType quadratics converted to cubics) since
+// SwiftUI/CoreGraphics has no built-in "Path(svgPathString:)" initializer. The
+// -4° tilt + gradient tile are applied by meupLessonLogo(), not baked here.
+// The Android side uses the IDENTICAL path in drawable/ic_stat_meup.xml.
 private let meupLogoMarkPathData = """
-M 41.067 1.773 C 40.803 0.555 39.618 -0.215 38.42 0.053 L 30.016 1.935 C 29.056 2.15 28.349 2.981 28.279 3.978 L 27.649 12.859 C 27.561 14.102 28.482 15.183 29.705 15.273 C 30.929 15.363 31.992 14.427 32.08 13.183 L 32.436 8.162 C 33.089 8.64 33.8 9.184 34.522 9.778 C 35.865 10.883 37.206 12.127 38.284 13.406 C 39.384 14.712 40.082 15.906 40.34 16.906 C 40.843 18.85 40.431 20.501 39.562 21.649 C 38.69 22.801 37.245 23.595 35.381 23.595 C 35.016 23.595 34.425 23.439 33.564 22.895 C 32.719 22.361 31.769 21.551 30.729 20.494 C 28.645 18.375 26.455 15.532 24.284 12.641 C 22.168 9.821 20.033 6.902 18.189 4.886 C 17.278 3.889 16.296 2.951 15.298 2.364 C 14.339 1.799 12.712 1.209 11.159 2.261 C 10.234 2.889 9.228 3.973 8.296 5.111 C 7.32 6.302 6.275 7.742 5.27 9.245 C 3.282 12.218 1.329 15.628 0.372 18.05 C -0.552 20.389 0.368 22.993 1.791 24.768 C 3.294 26.643 5.718 28.111 8.69 28.111 C 11.745 28.111 14.359 26.282 16 24.825 C 16.864 24.058 17.565 23.298 18.05 22.73 C 18.294 22.445 18.487 22.204 18.621 22.031 C 18.689 21.944 18.742 21.874 18.78 21.823 C 18.8 21.797 18.815 21.776 18.826 21.76 L 18.849 21.729 C 19.573 20.722 19.357 19.31 18.367 18.574 C 17.377 17.838 15.988 18.057 15.263 19.063 L 15.263 19.064 C 15.26 19.068 15.246 19.087 15.241 19.093 C 15.22 19.122 15.184 19.169 15.136 19.231 C 15.039 19.356 14.89 19.542 14.697 19.768 C 14.307 20.224 13.75 20.827 13.077 21.424 C 11.645 22.696 10.077 23.595 8.69 23.595 C 7.218 23.595 6.004 22.875 5.234 21.915 C 4.384 20.855 4.398 19.978 4.494 19.733 C 5.277 17.752 7.026 14.652 8.944 11.783 C 9.892 10.365 10.85 9.05 11.71 8.001 C 12.332 7.241 12.839 6.699 13.209 6.359 C 13.614 6.63 14.187 7.142 14.935 7.96 C 16.59 9.769 18.548 12.442 20.753 15.38 C 22.904 18.246 25.263 21.324 27.588 23.687 C 28.753 24.872 29.973 25.943 31.218 26.73 C 32.446 27.506 33.864 28.111 35.381 28.111 C 38.551 28.111 41.326 26.723 43.083 24.403 C 44.842 22.079 45.467 18.97 44.637 15.759 C 44.133 13.808 42.95 12.003 41.658 10.469 C 40.344 8.909 38.781 7.473 37.317 6.268 C 36.869 5.899 36.426 5.549 35.997 5.22 L 39.376 4.463 C 40.574 4.195 41.331 2.99 41.067 1.773 Z
+M 479.0 214.0 C 479.0 339.33 389.67 412.67 255.0 414.0 L 250.0 489.0 L 100.0 489.0 L 95.0 303.0 L 155.0 303.0 C 257.67 303.0 313.0 281.67 313.0 215.0 C 313.0 168.33 286.33 140.0 241.0 140.0 C 193.0 140.0 165.0 169.33 165.0 216.0 L 4.0 216.0 C 0.0 94.0 89.0 0.0 243.0 0.0 C 385.67 0.0 479.0 78.0 479.0 214.0 Z M 75.0 657.0 C 75.0 603.67 117.0 563.0 177.0 563.0 C 235.67 563.0 278.0 603.67 278.0 657.0 C 278.0 709.0 235.67 749.0 177.0 749.0 C 117.0 749.0 75.0 709.0 75.0 657.0 Z
 """
 
 private func meupParseSVGPath(_ d: String, scale: CGFloat, offset: CGPoint) -> Path {
@@ -71,7 +75,7 @@ private func meupParseSVGPath(_ d: String, scale: CGFloat, offset: CGPoint) -> P
 }
 
 private struct MeupLogoMarkShape: Shape {
-  static let sourceSize = CGSize(width: 45, height: 28.111)
+  static let sourceSize = CGSize(width: 479, height: 749)
 
   func path(in rect: CGRect) -> Path {
     let scale = min(rect.width / Self.sourceSize.width, rect.height / Self.sourceSize.height)
@@ -89,9 +93,15 @@ private func meupLessonLogo(size: CGFloat) -> some View {
     .fill(LinearGradient(colors: [LiveActivityColor.logoStart, LiveActivityColor.logoEnd], startPoint: .topLeading, endPoint: .bottomTrailing))
     .frame(width: size, height: size)
     .overlay(
+      // "?" is taller than wide — size it by height (~58% of the tile) and let
+      // width follow the glyph aspect, then apply the design's -4° tilt.
       MeupLogoMarkShape()
         .fill(Color.white)
-        .frame(width: size * 0.62, height: size * 0.62 * (MeupLogoMarkShape.sourceSize.height / MeupLogoMarkShape.sourceSize.width))
+        .frame(
+          width: size * 0.58 * (MeupLogoMarkShape.sourceSize.width / MeupLogoMarkShape.sourceSize.height),
+          height: size * 0.58
+        )
+        .rotationEffect(.degrees(-4))
     )
 }
 
@@ -291,9 +301,18 @@ private struct MeupLessonDIExpandedBottom: View {
 
 // Matches the existing static widgets' tap-to-open convention (see
 // MeupHomeWidgetViews.swift's `.widgetURL(URL(string: entry.payload.deeplink))`).
+/// Carries `keypointId` whenever the card was last updated from inside a lesson,
+/// so a tap can reopen that exact keypoint even after the app was force-quit
+/// (the app process keeps no such memory across a cold start). Without it — a
+/// card raised from the roadmap — the link stays course-only and resolves to the
+/// roadmap, which is what the reader was looking at.
 @available(iOS 16.2, *)
-private func meupLessonDeeplink(courseId: String) -> URL? {
-  URL(string: "meup://course-roadmap?courseId=\(courseId)&source=live_activity")
+private func meupLessonDeeplink(courseId: String, keypointId: String?) -> URL? {
+  var url = "meup://course-roadmap?courseId=\(courseId)&source=live_activity"
+  if let keypointId, !keypointId.isEmpty {
+    url += "&keypointId=\(keypointId)"
+  }
+  return URL(string: url)
 }
 
 @available(iOS 16.2, *)
@@ -303,7 +322,7 @@ struct MeupLessonLiveActivity: Widget {
       MeupLessonLockScreenView(attributes: context.attributes, state: context.state)
         .activityBackgroundTint(Color.white)
         .activitySystemActionForegroundColor(LiveActivityColor.title)
-        .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId))
+        .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId, keypointId: context.state.keypointId))
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
@@ -314,7 +333,7 @@ struct MeupLessonLiveActivity: Widget {
         }
         DynamicIslandExpandedRegion(.bottom) {
           MeupLessonDIExpandedBottom(state: context.state)
-            .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId))
+            .widgetURL(meupLessonDeeplink(courseId: context.attributes.courseId, keypointId: context.state.keypointId))
         }
       } compactLeading: {
         MeupLessonDICompactLeading()

@@ -24,6 +24,12 @@ abstract class AuthApi {
   @POST(AppEndpoint.logout)
   Future<BaseResponse> logout();
 
+  /// Hands the server this device's FCM token, in-app notification switch, IANA
+  /// zone and locale — everything the scheduled notifications need to reach this
+  /// user at their own 08:00 / 14:00 / 21:00.
+  @POST(AppEndpoint.pushRegistration)
+  Future<BaseResponse> registerPushDevice(@Body() Map<String, dynamic> data);
+
   @POST(AppEndpoint.forgotPassword)
   Future<BaseResponse<AuthModel>> forgotPassword(@Body() Map<String, dynamic> data);
 

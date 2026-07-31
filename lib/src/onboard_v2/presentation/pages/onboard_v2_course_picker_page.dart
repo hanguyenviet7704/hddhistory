@@ -9,7 +9,6 @@ class OnboardV2CoursePickerPage extends StatefulWidget {
 
 class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   late final PageController _courseController;
-  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -32,6 +31,7 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   Widget build(BuildContext context) {
     final state = context.watch<OnboardV2Cubit>().state;
     final onboardingL10n = context.l10n.onboarding;
+    final onboardData = state.onboardData;
     return PopScope(
       canPop: false,
       child: OnboardV2ScreenShell(
@@ -41,12 +41,12 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
           children: [
             12.verticalSpace,
             AppText(
-              onboardingL10n.onboardingV2P8Eyebrow,
+              onbCopy(onboardData, 'onboardingV2P8Eyebrow', fallback: onboardingL10n.onboardingV2P8Eyebrow),
               textAlign: TextAlign.center,
               style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary.op(0.5), height: 1.75),
             ),
             AppText(
-              onboardingL10n.onboardingV2P8Title,
+              onbCopy(onboardData, 'onboardingV2P8Title', fallback: onboardingL10n.onboardingV2P8Title),
               textAlign: TextAlign.center,
               style: AppStyle.text20.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.5),
             ),
@@ -67,31 +67,35 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   }
 
   Widget _buildCta(OnboardV2State state, Translations$onboarding$en onboardingL10n) {
+    final onboardData = state.onboardData;
+    final selectCta = onbCopy(onboardData, 'onboardingV2P8SelectCta', fallback: onboardingL10n.onboardingV2P8SelectCta);
     final course = state.currentCourse;
     if (state.courseStatus == OnboardV2CourseStatus.loading) {
-      return OnboardV2BottomCta(label: onboardingL10n.onboardingV2P8SelectCta, isLoading: true, onPressed: null);
+      return OnboardV2BottomCta(label: selectCta, isLoading: true, onPressed: null);
     }
 
     if (course != null && course.id.isNotEmpty) {
       return OnboardV2BottomCta(
-        label: onboardingL10n.onboardingV2P8SelectCta,
-        isLoading: _isNavigating,
-        onPressed: () => unawaited(_goSelectedCourse(course)),
+        label: selectCta,
+        onPressed: () => _goSelectedCourse(course),
       );
     }
 
     return OnboardV2BottomCta(
       label: onboardingL10n.onboardingV2RetryCta,
-      isLoading: _isNavigating,
       onPressed: () => unawaited(context.read<OnboardV2Cubit>().retryCoursesForP8()),
-      secondaryLabel: onboardingL10n.onboardingV2P8CatalogCta,
-      onSecondaryPressed: () => unawaited(_goCourseCatalog()),
+      secondaryLabel: onbCopy(onboardData, 'onboardingV2P8CatalogCta', fallback: onboardingL10n.onboardingV2P8CatalogCta),
+      onSecondaryPressed: _goCourseCatalog,
     );
   }
 
-  Future<void> _goSelectedCourse(CourseEntity course) async {
-    if (_isNavigating) return;
-    setState(() => _isNavigating = true);
+  /// Hands off to P9 ("Make it yours") with the picked course stashed on the
+  /// cubit — the actual resolve + route dispatch now happens from there (see
+  /// `onboard_v2_pick_theme_page.dart`'s "Start Explore"), so the user always
+  /// personalizes their study background before landing in the app. The
+  /// prewarm kicked off when P8 opened (`continueFromP7Symptoms`) keeps
+  /// running in the background either way.
+  void _goSelectedCourse(CourseEntity course) {
     final cubit = context.read<OnboardV2Cubit>();
     OnboardV2Tracking.track(
       TrackingKey.onboardV2CourseSelectClick,
@@ -100,75 +104,13 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
         currentCourseIndex: cubit.state.currentCourseIndex,
       ),
     );
-
-    final resolvedCourse = await cubit.resolveCourseForHandoff(course);
-    if (!mounted) return;
-    if (resolvedCourse == null) {
-      setState(() => _isNavigating = false);
-      return;
-    }
-
-    final intent = await const CourseHandoffHelper().prepareRecommendedCourse(
-      course: resolvedCourse,
-      // Await the prewarmed home load (already in-flight since P8 opened)
-      // instead of a fresh cold fetch — no duplicate round-trips, and the wait
-      // is near-zero when the prewarm has already completed.
-      initializeHomeData: cubit.prewarmHomeData,
-    );
-    if (!mounted) return;
-    _dispatchRoute(intent, selectedCourseId: resolvedCourse.id);
+    OnboardV2Tracking.setUserProperties({'first_course': course.id});
+    cubit.goToThemeWithSelectedCourse(course);
   }
 
-  Future<void> _goCourseCatalog() async {
-    if (_isNavigating) return;
-    setState(() => _isNavigating = true);
-
-    final intent = await const CourseHandoffHelper().prepareCourseCatalog(
-      initializeHomeData: context.read<OnboardV2Cubit>().prewarmHomeData,
-    );
-    if (!mounted) return;
-    _dispatchRoute(intent);
-  }
-
-  void _dispatchRoute(CourseHandoffRouteIntent intent, {String? selectedCourseId}) {
-    try {
-      var destination = 'course';
-      final onboardCubit = context.read<OnboardV2Cubit>();
-      final userCubit = context.read<UserCubit>();
-      onboardCubit.markUserOnboardedInBackground();
-      userCubit.setOnboardingPathOrder(onboardCubit.state.selectedPaths);
-      switch (intent) {
-        case CourseHandoffRouteIntent.courseRoadmap:
-          CourseRoadmapRoute().go(context);
-          // Every OTHER roadmap entry point pairs .go() with this (see
-          // all_course_tab.dart) — .go() to the roadmap branch root doesn't
-          // re-fire the route observer, so without it PageCubit.currentRouteName
-          // stays on whatever it was before onboarding. That silently breaks
-          // two things gated on it: the re-anchor prompt (§9.1) never fires for
-          // a brand-new user's very first course, and the floating bottom nav
-          // (gated on isPrimaryRoute) can stay hidden with no way back out.
-          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-          destination = 'course_roadmap';
-          break;
-        case CourseHandoffRouteIntent.course:
-          CourseRoute(selectedTabIndex: 0).go(context);
-          break;
-      }
-      userCubit.setIsUserPassOnboarding(false);
-      final parameters = <String, dynamic>{
-        'destination': destination,
-      };
-      if (selectedCourseId != null) {
-        parameters['selected_course_id'] = selectedCourseId;
-      }
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2Complete,
-        parameters: parameters,
-      );
-    } catch (error) {
-      LogDev.warning('[OnboardV2CoursePickerPage] route dispatch failed: $error');
-      if (mounted) setState(() => _isNavigating = false);
-    }
+  /// Same P9 handoff as [_goSelectedCourse] for the "browse courses" path.
+  void _goCourseCatalog() {
+    context.read<OnboardV2Cubit>().goToThemeAsBrowse();
   }
 }
 
@@ -189,7 +131,7 @@ class _CourseCarousel extends StatelessWidget {
     final hasMultipleCourses = state.recommendedCourses.length > 1;
     return Column(
       children: [
-        if (isFirstCourse) const _BestMatchedLabel() else 21.verticalSpace,
+        if (isFirstCourse) _BestMatchedLabel(onboardData: state.onboardData) else 21.verticalSpace,
         12.verticalSpace,
         SizedBox(
           height: 260.w,
@@ -251,7 +193,9 @@ class _CourseCarousel extends StatelessWidget {
 }
 
 class _BestMatchedLabel extends StatelessWidget {
-  const _BestMatchedLabel();
+  const _BestMatchedLabel({required this.onboardData});
+
+  final OnboardEntity onboardData;
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +207,7 @@ class _BestMatchedLabel extends StatelessWidget {
         _labelStar(),
         8.horizontalSpace,
         AppText(
-          onboardingL10n.onboardingV2P8Label.toUpperCase(),
+          onbCopy(onboardData, 'onboardingV2P8Label', fallback: onboardingL10n.onboardingV2P8Label).toUpperCase(),
           textAlign: TextAlign.center,
           style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700, height: 1.75),
         ),

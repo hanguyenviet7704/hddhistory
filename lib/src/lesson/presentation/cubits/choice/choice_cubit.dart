@@ -25,10 +25,9 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
+        // keypoint_exercise_click (single-choice) tracking removed per request.
         if (state.isMultipleChoiceQuestion) {
           AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
-        } else {
-          AppService.instance.appTrackingService.trackKeypointExerciseClick(trackingData);
         }
       }
     }
@@ -52,6 +51,16 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   void checkAnswer() {
     if (state.question.id == 0) return;
 
+    // Resolve correctness FIRST so keypoint_exs_check_click can carry
+    // answer_correct (learning spec).
+    final isCorrect = resolveChoiceCheckResult(
+      isMultipleChoice: state.isMultipleChoiceQuestion,
+      isNoCorrectSingleChoice: state.isNoCorrectSingleChoiceQuestion,
+      selectedAnswerIndex: state.selectedAnswerIndex,
+      selectedAnswersIndices: state.selectedAnswersIndices,
+      correctOptionsIndices: state.correctOptionsIndices,
+    );
+
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType == LearningItemType.roleplay) {
       final trackingData = _roleplayTrackingData();
@@ -61,17 +70,9 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
-        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData, answerCorrect: isCorrect);
       }
     }
-
-    final isCorrect = resolveChoiceCheckResult(
-      isMultipleChoice: state.isMultipleChoiceQuestion,
-      isNoCorrectSingleChoice: state.isNoCorrectSingleChoiceQuestion,
-      selectedAnswerIndex: state.selectedAnswerIndex,
-      selectedAnswersIndices: state.selectedAnswersIndices,
-      correctOptionsIndices: state.correctOptionsIndices,
-    );
 
     emit(
       state.copyWith(

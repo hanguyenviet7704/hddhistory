@@ -14,6 +14,7 @@ Future<void> showLessonAudioSpeedSheet(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: AppCustomColor.scrimOverlay,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26.r))),
     builder: (context) {
       double selectedSpeed = initialSpeed;
 
@@ -36,13 +37,26 @@ Future<void> showLessonAudioSpeedSheet(
                 key: _lessonAudioSpeedSheetSurfaceKey,
                 decoration: BoxDecoration(
                   color: AppCustomColor.backgroundWhite,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(26.r)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(bottom: bottomInset + 16.h),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: 14.h, bottom: 4.h),
+                        child: Center(
+                          child: Container(
+                            width: 40.w,
+                            height: 5.h,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDADCE4),
+                              borderRadius: BorderRadius.circular(99.r),
+                            ),
+                          ),
+                        ),
+                      ),
                       Padding(
                         padding: EdgeInsets.all(16.w),
                         child: Row(
@@ -51,7 +65,7 @@ Future<void> showLessonAudioSpeedSheet(
                               child: AppText(
                                 context.l10n.lesson.audioSpeedTitle,
                                 style: AppStyle.text18.copyWith(
-                                  color: const Color(0xFF0D121C),
+                                  color: AppCustomColor.textPrimary,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -101,7 +115,7 @@ Future<void> showLessonAudioSpeedSheet(
                                 AppText(
                                   _lessonAudioSpeedTitle(selectedSpeed),
                                   style: AppStyle.textBold32.copyWith(
-                                    color: const Color(0xFF554FF0),
+                                    color: AppCustomColor.brandPrimary,
                                   ),
                                 ),
                                 SizedBox(width: 32.w),
@@ -131,10 +145,10 @@ Future<void> showLessonAudioSpeedSheet(
                                       },
                                       behavior: HitTestBehavior.opaque,
                                       child: Container(
-                                        height: 40.h,
+                                        height: 48.h,
                                         decoration: BoxDecoration(
-                                          color: isSelected ? const Color(0xFF0D121C) : const Color(0xFFEEF2F6),
-                                          borderRadius: BorderRadius.circular(10.r),
+                                          color: isSelected ? AppCustomColor.brandPrimary : AppCustomColor.inputFill,
+                                          borderRadius: BorderRadius.circular(13.r),
                                         ),
                                         alignment: Alignment.center,
                                         padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -148,7 +162,7 @@ Future<void> showLessonAudioSpeedSheet(
                                           // (which overflowed the fixed height).
                                           enableFitScaleDown: true,
                                           style: (isSelected ? AppStyle.textBold14 : AppStyle.text14).copyWith(
-                                            color: isSelected ? Colors.white : const Color(0xFF364152),
+                                            color: isSelected ? Colors.white : AppCustomColor.textSecondary,
                                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                                           ),
                                         ),
@@ -191,16 +205,16 @@ class _LessonAudioSpeedAdjustButton extends StatelessWidget {
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
-        width: 48.r,
-        height: 48.r,
+        width: 52.r,
+        height: 52.r,
         decoration: BoxDecoration(
-          color: const Color(0xFFEEF2F6),
-          borderRadius: BorderRadius.circular(12.r),
+          color: AppCustomColor.inputFill,
+          borderRadius: BorderRadius.circular(16.r),
         ),
         alignment: Alignment.center,
         child: Icon(
           icon,
-          color: const Color(0xFF0D121C),
+          color: AppCustomColor.textPrimary,
           size: 20.sp,
         ),
       ),

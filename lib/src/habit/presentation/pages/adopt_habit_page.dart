@@ -47,11 +47,24 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
     return widget.habits.first.title.text;
   }
 
+  /// The re-anchor reason the user picked for this habit's source course, used
+  /// as `anchor_id`/`anchor_name` on the adopt events. Null when adopted outside
+  /// a course context or before any reason was picked.
+  ReanchorReasonEntity? get _anchor {
+    final courseId = widget.sourceCourseId;
+    if (courseId == null || courseId.isEmpty) return null;
+    return AppDI.injector.get<HabitCubit>().state.reanchorReasonByCourse[courseId];
+  }
+
   @override
   void initState() {
     super.initState();
     _applyHabitDefaults(_selectedHabit);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureNavHidden());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureNavHidden();
+      final anchor = _anchor;
+      HabitTracking.startScrView(anchorId: anchor?.id, anchorName: anchor?.reason.text, courseId: widget.sourceCourseId);
+    });
   }
 
   /// This full-screen adopt page pushes the paywall (via SlotFullUpgradeSheet);
@@ -87,6 +100,16 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
+
+    final anchor = _anchor;
+    HabitTracking.startAdd(
+      anchorId: anchor?.id,
+      anchorName: anchor?.reason.text,
+      courseId: widget.sourceCourseId,
+      habitId: _selectedHabit.id,
+      habitName: _selectedHabit.title.text,
+      isFullSlot: result == AdoptHabitResult.slotFull,
+    );
 
     switch (result) {
       case AdoptHabitResult.success:
@@ -163,71 +186,81 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
         });
       },
       child: Scaffold(
-        backgroundColor: AppCustomColor.brandPrimary50,
-        body: SafePage(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                24.verticalSpace,
-                Center(
-                  child: AppText(
-                    context.l10n.habit.adoptProblemLabel,
-                    style: AppStyle.text12.copyWith(
-                      color: AppCustomColor.streakActive,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-                4.verticalSpace,
-                AppText(
-                  _headline,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
-                ),
-                16.verticalSpace,
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: AppCustomColor.backgroundWhite,
-                      borderRadius: BorderRadius.circular(20.r),
-                      boxShadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText(
-                            context.l10n.habit.adoptChooseHabitLabel,
-                            style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                          ),
-                          12.verticalSpace,
-                          ...widget.habits.map(_buildHabitOption),
-                        ],
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.brandPrimary50),
+        body: ThemedBackground(
+          child: SafePage(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  24.verticalSpace,
+                  Center(
+                    child: AppText(
+                      context.l10n.habit.adoptProblemLabel,
+                      style: AppStyle.text12.copyWith(
+                        color: studyThemeAccentOnBg(context, AppCustomColor.streakActive),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ),
-                ),
-                16.verticalSpace,
-                DButton(
-                  text: context.l10n.habit.adoptAddButton,
-                  backgroundColor: AppCustomColor.brandPrimary,
-                  size: Size(double.infinity, 54.h),
-                  style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                  onPressed: _isSubmitting ? null : _start,
-                ),
-                4.verticalSpace,
-                DButton(
-                  text: context.l10n.habit.adoptRemindLaterButton,
-                  buttonType: DButtonType.text,
-                  style: AppStyle.textBold14.copyWith(color: AppCustomColor.streakActive),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-                12.verticalSpace,
-              ],
+                  4.verticalSpace,
+                  AppText(
+                    _headline,
+                    textAlign: TextAlign.center,
+                    style: AppStyle.textBold24.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+                  ),
+                  16.verticalSpace,
+                  Expanded(
+                    child: ThemedGlassCard(
+                      padding: EdgeInsets.all(16.w),
+                      radius: 20,
+                      shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 4)],
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppText(
+                              context.l10n.habit.adoptChooseHabitLabel,
+                              style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+                            ),
+                            12.verticalSpace,
+                            ...widget.habits.map(_buildHabitOption),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  16.verticalSpace,
+                  DButton(
+                    text: context.l10n.habit.adoptAddButton,
+                    backgroundColor: AppCustomColor.brandPrimary,
+                    size: Size(double.infinity, 54.h),
+                    style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+                    onPressed: _isSubmitting ? null : _start,
+                  ),
+                  4.verticalSpace,
+                  DButton(
+                    text: context.l10n.habit.adoptRemindLaterButton,
+                    buttonType: DButtonType.text,
+                    style: AppStyle.textBold14.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.streakActive)),
+                    onPressed: () {
+                      final anchor = _anchor;
+                      HabitTracking.startSkip(
+                        anchorId: anchor?.id,
+                        anchorName: anchor?.reason.text,
+                        courseId: widget.sourceCourseId,
+                        habitId: _selectedHabit.id,
+                        habitName: _selectedHabit.title.text,
+                      );
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  12.verticalSpace,
+                ],
+              ),
             ),
           ),
         ),

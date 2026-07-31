@@ -9,9 +9,26 @@ class _FakeLearningStreakRepository implements ILearningStreakRepository {
 
   TaskEither<AppException, LearningStreakFetchEntity> Function(String userId) handler;
 
+  /// Overridden per test that exercises the check-in path; the default is a
+  /// success carrying whatever [handler] would return, so tests that only care
+  /// about the read path need not set it.
+  TaskEither<AppException, UserLearningStreakEntity> Function(String userId)? checkInHandler;
+
   @override
   TaskEither<AppException, LearningStreakFetchEntity> getUserLearningStreak(String userId) {
     return handler(userId);
+  }
+
+  @override
+  TaskEither<AppException, UserLearningStreakEntity> checkInStreak(String userId) {
+    final override = checkInHandler;
+    if (override != null) return override(userId);
+    return handler(userId).map((fetch) => fetch.streak);
+  }
+
+  @override
+  TaskEither<AppException, StreakPopupConfigEntity> getStreakPopupConfig() {
+    return TaskEither.right(const StreakPopupConfigEntity());
   }
 }
 
@@ -53,7 +70,10 @@ Future<_LearningStreakPageHarness> _pumpHarness(WidgetTester tester) async {
       ),
     ),
   );
-  final learningStreakCubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo));
+  final learningStreakCubit = LearningStreakCubit(
+    GetUserLearningStreakUseCase(repo),
+    CheckInStreakUseCase(repo),
+  );
   AppDI.injector.registerSingleton<LearningStreakCubit>(learningStreakCubit);
 
   final router = GoRouter(

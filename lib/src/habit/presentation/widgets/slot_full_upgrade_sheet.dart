@@ -9,26 +9,37 @@ part of '../../habit.dart';
 class SlotFullUpgradeSheet extends StatelessWidget {
   final String pendingHabitTitle;
   final HabitEntity? pendingHabit;
+  // Set by _upgrade/_manage so the dismiss handler can tell an explicit action
+  // apart from a barrier/swipe dismiss (habit_slots_full_close).
+  final VoidCallback? onAction;
 
-  const SlotFullUpgradeSheet({super.key, required this.pendingHabitTitle, this.pendingHabit});
+  const SlotFullUpgradeSheet({super.key, required this.pendingHabitTitle, this.pendingHabit, this.onAction});
 
   static Future<void> show(BuildContext context, {String? pendingHabitTitle, HabitEntity? pendingHabit}) {
     final title = pendingHabit?.title.text ?? pendingHabitTitle ?? '';
+    HabitTracking.slotsFullScrView();
+    var actionTaken = false;
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => SlotFullUpgradeSheet(pendingHabitTitle: title, pendingHabit: pendingHabit),
-    );
+      builder: (_) => SlotFullUpgradeSheet(pendingHabitTitle: title, pendingHabit: pendingHabit, onAction: () => actionTaken = true),
+    ).whenComplete(() {
+      if (!actionTaken) HabitTracking.slotsFullClose();
+    });
   }
 
   void _upgrade(BuildContext context) {
+    HabitTracking.slotsUnlimitedClick();
+    onAction?.call();
     Navigator.of(context).pop();
     AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.habit);
     PaywallRoute().push(context);
   }
 
   void _manage(BuildContext context) {
+    HabitTracking.slotsManageClick();
+    onAction?.call();
     Navigator.of(context).pop();
     final habit = pendingHabit;
     if (habit != null) {

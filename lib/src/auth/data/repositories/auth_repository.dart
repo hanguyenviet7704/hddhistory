@@ -191,6 +191,11 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
+  TaskEither<AppException, Unit> registerPushDevice(Map<String, dynamic> body) {
+    return executeApiAction(apiCall: () => _authApi.registerPushDevice(body));
+  }
+
+  @override
   TaskEither<AppException, Unit> resendOTP(String phone) {
     return executeApiAction(apiCall: () => _authApi.resendOTP(phone));
   }

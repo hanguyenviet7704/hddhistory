@@ -65,6 +65,30 @@ void main() {
 
       expect(cubit.state.speed, 1.0);
     });
+
+    test('reports no narrated clip while the deck and the voice are in step', () async {
+      final cubit = LessonAudioCubit();
+      addTearDown(cubit.close);
+
+      await cubit.configure(_audioKeypoint());
+
+      // Nothing has read ahead, so there is nothing for the deck to catch up to —
+      // and `narratingClipIndex` must say so rather than guess a slot.
+      expect(cubit.isAheadOfDeck, isFalse);
+      expect(cubit.narratingClipIndex, isNull);
+    });
+
+    test('has nothing to read on from when the keypoint has no per-card clips', () async {
+      final cubit = LessonAudioCubit();
+      addTearDown(cubit.close);
+
+      // A legacy whole-keypoint dub: one `url`, no `segments`.
+      await cubit.configure(_audioKeypoint());
+
+      expect(cubit.hasCardClips, isFalse);
+      expect(await cubit.playRestOfKeypoint(), isFalse);
+      expect(cubit.narratingClipIndex, isNull);
+    });
   });
 }
 

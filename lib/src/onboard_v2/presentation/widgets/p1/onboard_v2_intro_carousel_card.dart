@@ -36,7 +36,10 @@ class _OnboardV2CarouselCard extends StatelessWidget {
                 ),
                 boxShadow: values.shadows,
               ),
-              child: Image.asset(asset, fit: BoxFit.cover),
+              // [asset] is a config-driven source: a network url (admin-uploaded
+              // deck image) or a bundled asset path (mapper fallback). DCachedImage
+              // handles both (http → CachedNetworkImage, else → Image.asset).
+              child: DCachedImage(url: asset, fit: BoxFit.cover),
             ),
           ),
         ),

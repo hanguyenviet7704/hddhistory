@@ -185,3 +185,45 @@ mixin RouteNamed {
   static const String dailyCheckIn = 'Daily Check In';
   static const String habitSummary = 'Habit Summary';
 }
+
+/// Route names (PageCubit stores [RouteNamed], e.g. 'Register Page' — NOT
+/// [RoutePath] like '/register') where the user has NOT yet reached an
+/// authenticated area: bootstrap/splash + the whole auth & onboarding flow. A
+/// 401 here is a routine expired/guest token, so the app logs out silently
+/// instead of shoving a scary "session expired" toast in front of onboarding for
+/// a user who never actively logged in. '' covers the first frame before the
+/// route observer reports anything.
+const Set<String> preAuthRouteNames = {
+  '',
+  RouteNamed.splash,
+  RouteNamed.chooseLanguage,
+  RouteNamed.onboardIntroduce,
+  RouteNamed.noAuth,
+  RouteNamed.onboard,
+  RouteNamed.onboardBranching,
+  RouteNamed.onboardV2,
+  RouteNamed.dataCollect,
+  RouteNamed.dataCollectMotivationStep,
+  RouteNamed.dataCollectFeedback,
+  RouteNamed.dataCollectSummary,
+  RouteNamed.notificationRequest,
+  RouteNamed.login,
+  RouteNamed.register,
+  RouteNamed.registerAuth,
+  RouteNamed.forgotPassword,
+  RouteNamed.otp,
+  RouteNamed.setupPassword,
+  RouteNamed.changePassword,
+};
+
+/// Whether a session reset should force-navigate to the welcome/register screen.
+///
+/// Only true when the session died on an AUTHENTICATED screen. From a pre-auth
+/// screen it must stay false: going to RegisterRoute while already on it
+/// REPLACES the page with a fresh instance whose mount-time guest bootstrap
+/// restarts, and a burst of 401s re-fires the reset every couple of seconds —
+/// the welcome screen then remounts forever and never becomes interactive
+/// ("xoá app cài lại → màn login không bấm được gì"). Splash and the onboarding
+/// flow own their own routing and must not be hijacked either.
+bool shouldForceRegisterNavigationAfterReset(String currentRouteName) =>
+    !preAuthRouteNames.contains(currentRouteName);

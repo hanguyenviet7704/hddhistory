@@ -43,12 +43,48 @@ abstract class HabitState with _$HabitState {
   factory HabitState.initial() => const HabitState();
 }
 
-/// True when the tab should (re)fetch: no data loaded yet, an earlier load
-/// failed, or nothing is currently loading. Mirrors [shouldSelfHealHomeData] —
-/// a genuinely empty habit list (new user) also refetches on each entry,
-/// same accepted trade-off, since there's no cheap way to distinguish
-/// "confirmed empty" from "never loaded" without an extra flag.
-bool shouldEnsureHabitsReload(HabitState state) => state.status != HabitPageStatus.loading && state.userHabits.isEmpty;
+/// How long a successful habit-screen load stays "fresh": re-entering Home or
+/// the Habit tab inside this window reuses what's in memory instead of hitting
+/// the network again. Mirrors HomeCubit's `_initFreshnessWindow`.
+const Duration kHabitFreshnessWindow = Duration(seconds: 45);
+
+/// What [HabitCubit.ensureLoaded] should do on a page mount / tab return.
+enum HabitReloadAction {
+  /// Reuse what's already in memory — no request.
+  none,
+
+  /// Fetch and show the spinner: there is genuinely nothing to display yet.
+  blocking,
+
+  /// Fetch in the background, keeping the current UI on screen.
+  silent,
+}
+
+/// Resolves the self-heal action for the Habit screen.
+///
+/// The previous rule was `status != loading && userHabits.isEmpty`, which
+/// treated "confirmed empty" as "never loaded". For an account with NO habits
+/// that condition was ALWAYS true, so every Home mount and every Habit-tab
+/// entry refetched behind a blocking spinner (measured: two full round-trips per
+/// Home open) while accounts WITH habits rendered instantly from memory. A
+/// successful load is now remembered via [lastLoadedAt], so "empty" becomes a
+/// terminal state that renders immediately and only revalidates once stale.
+HabitReloadAction resolveHabitReloadAction({
+  required HabitPageStatus status,
+  required DateTime? lastLoadedAt,
+  required DateTime now,
+  Duration freshness = kHabitFreshnessWindow,
+}) {
+  // A load is already in flight — its result will land on its own.
+  if (status == HabitPageStatus.loading) return HabitReloadAction.none;
+  // Never loaded, failed, or rendered from cache without a completed fetch:
+  // there is nothing trustworthy on screen, so block and show progress.
+  if (status != HabitPageStatus.success || lastLoadedAt == null) {
+    return HabitReloadAction.blocking;
+  }
+  // Loaded recently → reuse; otherwise revalidate without disturbing the UI.
+  return now.difference(lastLoadedAt) < freshness ? HabitReloadAction.none : HabitReloadAction.silent;
+}
 
 extension HabitStateX on HabitState {
   List<UserHabitEntity> get activeHabits => userHabits.where((habit) => habit.isActive).toList();

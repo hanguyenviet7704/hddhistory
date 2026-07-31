@@ -11,6 +11,7 @@ class PaywallLegalLinks extends StatelessWidget {
         _LegalLink(
           label: l10n.auth.termsOfUse,
           url: LegalUrl.termsAndConditions,
+          onTrack: () => AppService.instance.appTrackingService.trackPaywallTermsClick(),
         ),
         Container(
           margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -21,6 +22,7 @@ class PaywallLegalLinks extends StatelessWidget {
         _LegalLink(
           label: l10n.auth.privacyPolicy,
           url: LegalUrl.privacyPolicy,
+          onTrack: () => AppService.instance.appTrackingService.trackPaywallPrivacyClick(),
         ),
       ],
     );
@@ -30,10 +32,12 @@ class PaywallLegalLinks extends StatelessWidget {
 class _LegalLink extends StatelessWidget {
   final String label;
   final String url;
+  final VoidCallback onTrack;
 
   const _LegalLink({
     required this.label,
     required this.url,
+    required this.onTrack,
   });
 
   @override
@@ -42,6 +46,7 @@ class _LegalLink extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         AppHaptic.select();
+        onTrack();
         url.launchURL();
       },
       child: AppText(

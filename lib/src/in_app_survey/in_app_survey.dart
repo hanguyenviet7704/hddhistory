@@ -40,7 +40,6 @@ part 'domain/usecases/create_in_app_survey_config_usecase.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/in_app_survey_state.dart';
 part 'presentation/cubits/in_app_survey_cubit.dart';
-part 'presentation/cubits/in_app_survey_cubit_tracking.dart';
 
 //* Presentation Layer - Pages
 part 'presentation/pages/in_app_survey_page.dart';

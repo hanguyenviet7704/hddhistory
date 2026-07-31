@@ -8,11 +8,8 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  late final Future<bool> _shouldForceUpdate;
-
   @override
   void initState() {
-    _shouldForceUpdate = _resolveShouldForceUpdate();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
@@ -45,20 +42,10 @@ class _SplashPageState extends State<SplashPage> {
     context.read<UserCubit>().setIsAppEventConfigured(false);
   }
 
-  Future<bool> _resolveShouldForceUpdate() async {
-    try {
-      return await AppService.instance.remoteConfigService.shouldForceUpdate();
-    } catch (e) {
-      LogDev.error('Error checking for update: $e');
-      return false;
-    }
-  }
-
   void _getAppData() {
     final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
     if (onboardingConfig.isEnabled) {
       AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-      AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
     }
 
     UserState userState = context.read<UserCubit>().state;
@@ -81,14 +68,10 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _initScreen(_) async {
     try {
       if (!mounted) return;
-      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 700));
-      final shouldUpdate = await _shouldForceUpdate;
-      if (!mounted) return;
-      if (shouldUpdate) {
-        _showUpdateDialog();
-        return;
-      }
-
+      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 300));
+      // No update gate here: updates are surfaced only by the Home banner
+      // (see HomeCubit.checkOptionalUpdate), so the splash never blocks entry
+      // and never waits on Remote Config.
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
       if (!mounted) return;
@@ -218,6 +201,8 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    // onboard_v2 — the shipped, design-matching onboarding UI. Its content
+    // (paths / symptoms / copy / age options) is API-driven via /onboardings.
     OnboardV2Route().go(context);
   }
 
@@ -230,26 +215,6 @@ class _SplashPageState extends State<SplashPage> {
     NotificationRequestRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
   }
 
-  void _handleUpdatePressed() async {
-    try {
-      final String appStoreUrl = Platform.isIOS ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' : 'https://play.google.com/store/apps/details?id=com.eup.meup';
-
-      appStoreUrl.launchURL();
-    } catch (e) {
-      LogDev.error('Error launching app store: $e');
-    }
-  }
-
-  void _showUpdateDialog() {
-    showDDialog(
-      context,
-      backgroundColor: Colors.transparent,
-      dialogContent: ForceUpdateContent(
-        onUpdatePressed: _handleUpdatePressed,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final double bottomInset = MediaQuery.paddingOf(context).bottom;
@@ -259,15 +224,10 @@ class _SplashPageState extends State<SplashPage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Container(
+          // Design "Splash mới": light backdrop with the brand "?" gradient tile
+          // centred (the tile carries the gradient, so the page stays light).
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF5953EA),
-                Color(0xFF838AF2),
-              ],
-            ),
+            color: Color(0xFFF2F1FA),
           ),
           child: SafeArea(
             top: false,
@@ -279,23 +239,15 @@ class _SplashPageState extends State<SplashPage> {
                   child: Center(
                     child: Image.asset(
                       AppAsset.images.common.mainIconSplash.path,
-                      width: 80.w,
-                      height: 80.w,
+                      width: 120.w,
+                      height: 120.w,
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 60.h + bottomInset),
-                  child: AppText(
-                    'Meup',
-                    style: AppStyle.text20.copyWith(
-                      color: AppCustomColor.textWhite,
-                      fontWeight: FontWeight.w700,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
+                // Design shows only the tile (no wordmark); keep symmetric
+                // bottom spacing so the tile reads as centred.
+                SizedBox(height: 60.h + bottomInset),
               ],
             ),
           ),

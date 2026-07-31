@@ -6,12 +6,22 @@ class DocumentWidget extends StatelessWidget {
   final void Function(int contentDocumentIndex, String? optionKey)? onExplanationSelectionChanged;
   final bool asCard;
 
+  /// When [asCard], render the wrapping card as frosted glass over a custom
+  /// study background (theory keypoint design). No effect when [asCard] is false.
+  final bool frosted;
+
+  /// Typographic role for the copy in these documents — see [DocumentProse].
+  /// Exercise bodies pass [DocumentProse.question]; theory keeps the default.
+  final DocumentProse prose;
+
   const DocumentWidget({
     super.key,
     required this.documents,
     this.selectedExplanationOptionKeys = const {},
     this.onExplanationSelectionChanged,
     this.asCard = true,
+    this.frosted = false,
+    this.prose = DocumentProse.theory,
   });
 
   double topSpacing(int index) {
@@ -37,18 +47,21 @@ class DocumentWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(
         documents.length,
-        (index) => Padding(
-          padding: EdgeInsets.only(top: topSpacing(index)),
-          child: DocumentItem(
-            document: documents[index],
-            selectedExplanationOptionKey: selectedExplanationOptionKeys[index],
-            onExplanationSelectionChanged: onExplanationSelectionChanged == null ? null : (optionKey) => onExplanationSelectionChanged!(index, optionKey),
-          ),
-        ),
+        (index) {
+          return Padding(
+            padding: EdgeInsets.only(top: topSpacing(index)),
+            child: DocumentItem(
+              document: documents[index],
+              prose: prose,
+              selectedExplanationOptionKey: selectedExplanationOptionKeys[index],
+              onExplanationSelectionChanged: onExplanationSelectionChanged == null ? null : (optionKey) => onExplanationSelectionChanged!(index, optionKey),
+            ),
+          );
+        },
       ),
     );
 
     if (!asCard) return content;
-    return LessonContentCard(child: content);
+    return LessonContentCard(frosted: frosted, child: content);
   }
 }

@@ -75,7 +75,7 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
-        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData, answerCorrect: isCorrect);
       }
     }
 

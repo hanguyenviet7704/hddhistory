@@ -18,7 +18,7 @@ mixin _HomeInAppSurveyMixin on State<HomePage> {
 
     if (_surveyEntryViewTracked) return;
     _surveyEntryViewTracked = true;
-    AppService.instance.appTrackingService.trackInAppSurveyEntryView(source: 'home');
+    // in_app_survey_entry_view tracking removed per request.
   }
 
   Future<void> _openInAppSurveyDialog() async {
@@ -34,7 +34,7 @@ mixin _HomeInAppSurveyMixin on State<HomePage> {
       if (!mounted) return;
     }
 
-    AppService.instance.appTrackingService.trackInAppSurveyEntryClick(source: 'home');
+    // in_app_survey entry-click / inapp_survey_click tracking removed per request.
     cubit.openSurvey();
     if (cubit.state.step != InAppSurveyStep.rating) return;
 

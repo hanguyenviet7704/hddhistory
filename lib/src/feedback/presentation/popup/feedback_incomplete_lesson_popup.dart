@@ -24,6 +24,9 @@ class FeedbackIncompleteLessonPopup extends StatefulWidget {
         source: _feedbackSourceFromEntry(entry),
       );
     }
+    // Spec event (sheet "9. Exit feedback"), fired alongside the existing
+    // feedback_incomplete_lesson_view telemetry.
+    AppService.instance.appTrackingService.trackEvent(TrackingKey.exitFeedbackScrView);
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -73,7 +76,11 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
         });
       },
       child: FeedbackPopupShell(
-        onTapOutside: () => context.back(),
+        onTapOutside: () {
+          // Dismiss without sending = exit feedback close (spec "9. Exit feedback").
+          AppService.instance.appTrackingService.trackEvent(TrackingKey.exitFeedbackCloseClick);
+          context.back();
+        },
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20.r),
@@ -96,6 +103,12 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                 child: FeedbackHeader(
                   title: context.l10n.feedback.incompleteTitle,
                   subtitle: context.l10n.feedback.incompleteSubtitle,
+                  // ✕ dismiss = same as tapping outside (spec "9. Exit feedback"
+                  // close): log the close event, then pop without sending.
+                  onClose: () {
+                    AppService.instance.appTrackingService.trackEvent(TrackingKey.exitFeedbackCloseClick);
+                    context.back();
+                  },
                 ),
               ),
               Padding(
@@ -146,6 +159,8 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                                 );
                               }
                               _submitted = true;
+                              // Spec event (sheet "9. Exit feedback").
+                              AppService.instance.appTrackingService.trackEvent(TrackingKey.exitFeedbackSendClick);
                               context.read<FeedbackCubit>().submitFeedback();
                             },
                           ),

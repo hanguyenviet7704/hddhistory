@@ -3,52 +3,80 @@ part of '../../lesson.dart';
 class LessonPage extends StatefulWidget {
   const LessonPage({
     super.key,
-    required this.initialMode,
+    required this.autoplayOnEntry,
   });
 
-  final LessonEntryMode initialMode;
+  /// Whether the FIRST keypoint synced after this page mounts should
+  /// autoplay its narration immediately. Every keypoint synced AFTER the
+  /// first one within the same session always autoplays regardless (the
+  /// unified screen's standing behavior — narration follows the reader by
+  /// default) — this only covers the initial "should the very first keypoint
+  /// just start talking at me?" decision, sourced from the `initial-mode`
+  /// route query (see `routes_shell_course_lesson_data.dart` /
+  /// `LessonEntryMode` — repurposed from "which mode tab to open" to this).
+  final bool autoplayOnEntry;
 
   @override
   State<LessonPage> createState() => _LessonPageState();
 }
 
 class _LessonPageState extends State<LessonPage> {
-  late final LessonPageController _controller;
   late final LessonReviewBodyBuilder _reviewBodyBuilder;
   late final LessonBodyFactory _bodyFactory;
-  late final LessonTimelineBuilder _timelineBuilder;
   late final LessonTrackingDelegate _trackingDelegate;
   late final LessonCubit _lessonCubit;
   late final LessonAudioCubit _lessonAudioCubit;
-  late LessonEntryMode _selectedMode;
-  bool _hasTrackedAudioShellView = false;
+  /// Applies reading-speed changes to the player. The speed control now lives
+  /// as an inline stepper inside [KeypointSettingsSheet], which is a modal
+  /// route and therefore sits OUTSIDE this page's provider scope — it can only
+  /// write the persisted [KeypointDisplayCubit] value, so the page listens
+  /// here and pushes it into the route-scoped [LessonAudioCubit].
+  StreamSubscription<KeypointDisplayState>? _readingSpeedSubscription;
+
+  bool _hasSyncedFirstKeypoint = false;
+  String _lastTrackedScrollKey = '';
+  // Source for the next keypoint_read_scr_view: 'keypoint_intro' on entry,
+  // flipped to 'mode_switch' the moment the user switches into read mode.
+  // Now only ever 'keypoint_intro' — the unified screen has no mode switch
+  // left to flip it — kept as a field (rather than a literal) so a future
+  // distinct entry source is a one-line change.
+  final String _readViewSource = 'keypoint_intro';
 
   @override
   void initState() {
     super.initState();
-    _selectedMode = widget.initialMode;
     _lessonCubit = context.read<LessonCubit>();
     _lessonAudioCubit = context.read<LessonAudioCubit>();
-    _controller = LessonPageController(
-      onBottomButtonVisibilityChanged: (isVisible) => _lessonCubit.setBottomButtonVisible(isVisible),
-      onClearSuppressNextAutoScroll: () => _lessonCubit.clearSuppressNextAutoScroll(),
-      isMounted: () => mounted,
-    );
     _reviewBodyBuilder = const LessonReviewBodyBuilder();
     _bodyFactory = LessonBodyFactory(
       onAnswerChecked: _handleAnswerChecked,
       onContinueUnsupported: () => AppDI.injector.get<ExerciseCubit>().nextQuestion(),
       reviewBodyBuilder: _reviewBodyBuilder,
     );
-    _timelineBuilder = const LessonTimelineBuilder();
     _trackingDelegate = const LessonTrackingDelegate();
+
+    // Narration and the study background's ambient music talking at once makes
+    // the voice hard to follow, so the lesson borrows the ears while it is open
+    // and hands them back in `dispose`. Suspending rather than toggling the
+    // reader's own preference is what lets that survive being killed mid-lesson
+    // (see `StudyThemeCubit.suspendSound`).
+    AppDI.injector.get<StudyThemeCubit>().suspendSound(true);
+
+    final displayCubit = AppDI.injector.get<KeypointDisplayCubit>();
+    var appliedSpeed = displayCubit.state.readingSpeed;
+    _readingSpeedSubscription = displayCubit.stream.listen((state) {
+      if (state.readingSpeed == appliedSpeed) return;
+      appliedSpeed = state.readingSpeed;
+      _lessonAudioCubit.setSpeed(state.readingSpeed);
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      // Assert this page's (non-primary) route name so the shell's floating nav
-      // pill stays hidden over the lesson. Otherwise the first-time navigation
-      // popup (and any other overlay) shown below writes the UNDERLYING primary
-      // route name (courseRoadmap) on dismissal, un-hiding the nav over the CTA.
+      // Assert this page's (non-primary) route name so the shell's floating
+      // nav pill stays hidden over the lesson. Otherwise the first-time
+      // navigation popup (and any other overlay) shown below writes the
+      // UNDERLYING primary route name (courseRoadmap) on dismissal, un-hiding
+      // the nav over the CTA.
       _ensureLessonRouteName();
       await _syncAudioKeypoint(context.read<CourseLessonCubit>().state.resolvedCurrentKeypoint);
     });
@@ -56,7 +84,10 @@ class _LessonPageState extends State<LessonPage> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    unawaited(_readingSpeedSubscription?.cancel());
+    // Leaving the lesson: the ambience comes back if the reader had it on, and
+    // stays off if they didn't — the preference was never touched.
+    AppDI.injector.get<StudyThemeCubit>().suspendSound(false);
     super.dispose();
   }
 
@@ -73,6 +104,7 @@ class _LessonPageState extends State<LessonPage> {
   @override
   Widget build(BuildContext context) {
     final currentKeypoint = context.select((CourseLessonCubit cubit) => cubit.state.resolvedCurrentKeypoint);
+    final isLoading = context.select((LessonCubit cubit) => cubit.state.status == LessonStatus.loading);
 
     return MultiBlocListener(
       listeners: [
@@ -98,22 +130,15 @@ class _LessonPageState extends State<LessonPage> {
             await _syncAudioKeypoint(state.resolvedCurrentKeypoint);
           },
         ),
-        BlocListener<LessonAudioCubit, LessonAudioState>(
-          listenWhen: (previous, current) => previous.hasCompletedPlayback != current.hasCompletedPlayback && current.hasCompletedPlayback,
-          listener: (context, state) {
-            context.read<LessonCubit>().completeCurrentKeypoint(
-              origin: LessonCompletionOrigin.audio,
-              bypassReviewQueue: true,
-            );
-          },
-        ),
         BlocListener<TheoryCubit, TheoryState>(
           listenWhen: (previous, current) {
             return previous.currentDocumentIndex != current.currentDocumentIndex ||
                 previous.currentLearningItem.id != current.currentLearningItem.id ||
                 previous.currentDocument.id != current.currentDocument.id;
           },
-          listener: (context, state) => _trackingDelegate.trackKeypointTheoryScrView(state),
+          listener: (context, state) {
+            _trackingDelegate.trackKeypointTheoryScrView(state, source: _readViewSource);
+          },
         ),
         BlocListener<ExerciseCubit, ExerciseState>(
           listenWhen: (previous, current) {
@@ -121,76 +146,33 @@ class _LessonPageState extends State<LessonPage> {
                 previous.currentLearningItem.id != current.currentLearningItem.id ||
                 previous.currentQuestion.id != current.currentQuestion.id;
           },
-          listener: (context, state) => _trackingDelegate.trackKeypointExerciseScrView(state),
+          listener: (context, state) {
+            _trackingDelegate.trackKeypointExerciseScrView(state, source: _readViewSource);
+          },
+        ),
+        // Swiping to a different card is this screen's equivalent of the old
+        // ListView's "scrolled a new item into view" signal.
+        BlocListener<KeypointCardCubit, KeypointCardState>(
+          listenWhen: (previous, current) => previous.viewedCardIndex != current.viewedCardIndex,
+          listener: (context, state) => _trackCurrentLearningItemScroll(),
         ),
       ],
-      child: BlocBuilder<LessonCubit, LessonState>(
-        // This builder only renders: the timeline/active body (depends on
-        // pageData + currentLearningItemIndex + currentLessonIndex), the
-        // auto-scroll trigger (suppressNextAutoScroll), and the loading
-        // overlay (status/errorMessage). Every other field is either pure
-        // cubit-internal bookkeeping (hasPendingAdvance, subQuestions) or
-        // already consumed by its own narrower BlocSelector elsewhere
-        // (isBottomButtonVisible in lesson_layout.dart, isShowResultOverlay
-        // in speaking_bottom_action.dart) or by a different page
-        // (completionOrigin in keypoint_complete_page.dart) — those must NOT
-        // trigger a rebuild here to avoid rebuilding the whole lesson
-        // subtree on every keypoint advance/answer check/audio tick.
-        buildWhen: (previous, current) {
-          return previous.status != current.status ||
-              previous.errorMessage != current.errorMessage ||
-              previous.pageData != current.pageData ||
-              previous.currentLearningItemIndex != current.currentLearningItemIndex ||
-              previous.currentLessonIndex != current.currentLessonIndex ||
-              previous.suppressNextAutoScroll != current.suppressNextAutoScroll;
-        },
-        builder: (context, state) {
-          final activeBody = _buildActiveBody(context, state);
-          final readSurface = LessonReadSurface(
-            state: state,
-            activeBody: activeBody,
-            controller: _controller,
-            timelineBuilder: _timelineBuilder,
-            buildReviewBody: _bodyFactory.buildReviewBody,
-            onTrackCurrentLearningItemScroll: _trackCurrentLearningItemScroll,
-          );
-          final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
-
-          final flagButton = _buildFlagButton(context, currentKeypoint);
-
-          if (!currentKeypoint.hasUsableAudio) {
-            return LessonShellLayout(
-              selectedMode: LessonEntryMode.read,
-              onModeSelected: (_) {},
-              onClose: () => LessonExitFlow.open(context),
-              showModeToggle: false,
-              readBody: readSurface,
-              audioBody: const SizedBox.shrink(),
-              bottom: bottomButton,
-              trailing: flagButton,
-              isLoading: state.status == LessonStatus.loading,
-            );
-          }
-
-          final selectedMode = _selectedMode;
-          return LessonDualModeLayout(
-            selectedMode: selectedMode,
-            onModeSelected: _handleModeSelected,
-            onClose: () => LessonExitFlow.open(
-              context,
-              onBeforePopup: () {
-                _trackAudioExitIfNeeded();
-                context.read<LessonAudioCubit>().pauseForOverlay();
-                return Future.value();
-              },
-            ),
-            readBody: readSurface,
-            audioBody: const LessonAudioSurface(),
-            bottom: selectedMode.isRead ? bottomButton : null,
-            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : flagButton,
-            isLoading: state.status == LessonStatus.loading,
-          );
-        },
+      child: LessonShellLayout(
+        onClose: () => LessonExitFlow.open(
+          context,
+          onBeforePopup: () {
+            context.read<LessonAudioCubit>().pauseForOverlay();
+            return Future.value();
+          },
+        ),
+        trailing: LessonHeaderMenu(
+          onReportProblem: () => _openReportIssueSheet(context, currentKeypoint),
+        ),
+        isLoading: isLoading,
+        body: KeypointCardShell(
+          bodyFactory: _bodyFactory,
+          onAnswerChecked: _handleAnswerChecked,
+        ),
       ),
     );
   }
@@ -198,116 +180,21 @@ class _LessonPageState extends State<LessonPage> {
   Future<void> _syncAudioKeypoint(KeypointEntity keypoint) async {
     await _lessonAudioCubit.configure(keypoint);
 
-    if (!keypoint.hasUsableAudio) {
-      if (_selectedMode.isAudio && mounted) {
-        setState(() => _selectedMode = LessonEntryMode.read);
-      }
-      return;
-    }
+    if (!keypoint.hasUsableAudio) return;
 
-    if (_selectedMode.isAudio) {
-      _trackAudioShellViewIfNeeded();
-      await _lessonAudioCubit.enterAudioMode();
-    } else {
-      // Read mode: warm the audio in the background so switching to "Nghe"
-      // later finds it ready instead of waiting on the ~5s load spinner.
-      unawaited(_lessonAudioCubit.preload());
-    }
-  }
+    await _lessonAudioCubit.setSpeed(AppDI.injector.get<KeypointDisplayCubit>().state.readingSpeed);
 
-  void _trackAudioShellViewIfNeeded() {
-    if (_hasTrackedAudioShellView) return;
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData == null) return;
-
-    _hasTrackedAudioShellView = true;
-    AppService.instance.appTrackingService.trackKeypointAudioScreenView(
-      trackingData,
-      mode: _selectedMode.routeValue,
-    );
-  }
-
-  Future<void> _handleModeSelected(LessonEntryMode nextMode) async {
-    if (_selectedMode == nextMode) return;
-
-    final trackingData = KeypointTrackingData.fromContext();
-    if (nextMode.isRead) {
-      await _lessonAudioCubit.pauseForModeSwitch();
-    }
-
-    if (!mounted) return;
-    setState(() => _selectedMode = nextMode);
-
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointAudioModeSwitch(
-        trackingData,
-        mode: nextMode.routeValue,
-        entryPoint: 'in_route_switch',
-        audioPosition: nextMode.isRead ? _lessonAudioCubit.state.positionSeconds : null,
-      );
-    }
-
-    if (nextMode.isAudio) {
-      _trackAudioShellViewIfNeeded();
+    final isFirstKeypointSynced = !_hasSyncedFirstKeypoint;
+    _hasSyncedFirstKeypoint = true;
+    // Every keypoint AFTER the first one always autoplays — narration
+    // following the reader is this screen's standing behavior. The FIRST
+    // keypoint's autoplay is gated on the route's entry intent so internal
+    // navigations that don't represent "starting a fresh keypoint" (e.g.
+    // `LessonCubit.reviewDone`'s bare re-entry) don't surprise the user with
+    // sound.
+    if (!isFirstKeypointSynced || widget.autoplayOnEntry) {
       await _lessonAudioCubit.enterAudioMode();
     }
-  }
-
-  Future<void> _openSpeedSheet() async {
-    final shouldResume = await _lessonAudioCubit.pauseForSpeedSheet();
-
-    if (!mounted) return;
-
-    await showLessonAudioSpeedSheet(
-      context,
-      initialSpeed: _lessonAudioCubit.state.speed,
-      onSpeedChanged: (speed) {
-        final trackingData = KeypointTrackingData.fromContext();
-        if (trackingData != null) {
-          AppService.instance.appTrackingService.trackKeypointAudioSpeedSelect(
-            trackingData,
-            speed: speed,
-          );
-        }
-        _lessonAudioCubit.setSpeed(speed);
-      },
-    );
-
-    await _lessonAudioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
-  }
-
-  Widget _buildAudioSpeedPill() {
-    return BlocBuilder<LessonAudioCubit, LessonAudioState>(
-      buildWhen: (previous, current) => previous.speed != current.speed || previous.status != current.status,
-      builder: (context, state) {
-        return LessonAudioSpeedPill(
-          label: state.speedValueLabel,
-          enabled: !state.isLoading,
-          onTap: _handleOpenAudioSpeedSheet,
-        );
-      },
-    );
-  }
-
-  Widget _buildFlagButton(BuildContext context, KeypointEntity keypoint) {
-    return GestureDetector(
-      onTap: () {
-        AppHaptic.select();
-        _openReportIssueSheet(context, keypoint);
-      },
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 36.w,
-        height: 36.w,
-        child: Center(
-          child: Icon(
-            Icons.flag_outlined,
-            size: 20.sp,
-            color: AppCustomColor.textQuaternary,
-          ),
-        ),
-      ),
-    );
   }
 
   void _openReportIssueSheet(BuildContext context, KeypointEntity keypoint) {
@@ -321,14 +208,6 @@ class _LessonPageState extends State<LessonPage> {
     );
   }
 
-  Future<void> _handleOpenAudioSpeedSheet() async {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointAudioSpeedOpen(trackingData);
-    }
-    await _openSpeedSheet();
-  }
-
   void _handleAnswerChecked(bool isCorrect) {
     debugPrint('Answer is correct: $isCorrect');
     final lessonState = context.read<LessonCubit>().state;
@@ -337,37 +216,14 @@ class _LessonPageState extends State<LessonPage> {
     context.read<LessonCubit>().markPendingAdvance();
   }
 
-  Widget _buildActiveBody(BuildContext context, LessonState state) {
-    if (state.pageData.items.isEmpty) return const SizedBox.shrink();
-
-    switch (state.currentLearningItem.type) {
-      case LearningItemType.exercise || LearningItemType.roleplay:
-        final question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
-        return _bodyFactory.buildExerciseBody(question);
-      case LearningItemType.theory:
-        return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
-      case LearningItemType.video:
-      case LearningItemType.unknown:
-        return const SizedBox.shrink();
-    }
-  }
-
   void _trackCurrentLearningItemScroll() {
     _trackingDelegate.trackCurrentLearningItemScroll(
-      lessonState: context.read<LessonCubit>().state,
-      shouldTrackScroll: _controller.shouldTrackScroll,
-    );
-  }
-
-  void _trackAudioExitIfNeeded() {
-    if (!_selectedMode.isAudio) return;
-
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData == null) return;
-
-    AppService.instance.appTrackingService.trackKeypointAudioExitClick(
-      trackingData,
-      audioPosition: _lessonAudioCubit.state.positionSeconds,
+      lessonState: _lessonCubit.state,
+      shouldTrackScroll: (key) {
+        if (key == _lastTrackedScrollKey) return false;
+        _lastTrackedScrollKey = key;
+        return true;
+      },
     );
   }
 }

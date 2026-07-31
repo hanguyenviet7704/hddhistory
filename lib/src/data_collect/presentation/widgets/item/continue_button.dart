@@ -11,12 +11,6 @@ class ContinueButton extends StatelessWidget {
     return options.map((option) => option.trackingLabel).toList();
   }
 
-  String _resolveUserName(DataCollectCubit cubit) {
-    final stateName = cubit.state.userName?.trim() ?? '';
-    if (stateName.isNotEmpty) return stateName;
-    return cubit.nameController.text.trim();
-  }
-
   void _onPressed(BuildContext context) {
     final cubit = context.read<DataCollectCubit>();
     final state = cubit.state;
@@ -41,11 +35,6 @@ class ContinueButton extends StatelessWidget {
       final flowConfig = AppService.instance.remoteConfigService.onboardingConfig;
       if (flowConfig.isDisabled) {
         const NotificationRequestRoute(courseEntryMode: true).go(context);
-        return;
-      }
-
-      if (flowConfig.isBranching && !state.shouldSkipBranchingFlow) {
-        OnboardBranchingRoute(userName: _resolveUserName(cubit)).go(context);
         return;
       }
 

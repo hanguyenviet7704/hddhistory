@@ -44,12 +44,14 @@ paymentSuccessToast: Thanh toán thành công
 paywallBannerSubtitle: Học từ role-play thực tế và luyện tập với kịch bản rẽ nhánh
 paywallBannerTitle: Học bằng thực hành
 paywallCtaUpgrade: Nâng cấp Premium
+paywallCtaUpgradePrice: Nâng cấp Premium · ${price}
 paywallHeroEyebrow: Đừng chỉ lướt mãi.
 paywallHeroSubtitle: Xem MeUp giúp bạn thế nào
 paywallHeroTitle: 'Học một điều mới
 
   mỗi ngày'
 paywallHighlightSubtitle: Mở khoá toàn bộ. Huỷ bất cứ lúc nào
+paywallOriginalPriceLabel: Giá gốc ${price}
 paywallPlanAnnual: Hằng năm
 paywallPlanLifetime: Trọn đời
 paywallPlanMonthly: Hằng tháng
@@ -66,6 +68,16 @@ pricePerMonth: mỗi tháng
 pricePerQuarter: mỗi quý
 pricePerWeek: mỗi tuần
 pricePerYear: mỗi năm
+promoCodeApplied: Đã áp dụng mã
+promoCodeCta: Bạn có mã giảm giá?
+promoCodeErrorExhausted: Mã đã hết lượt sử dụng
+promoCodeErrorExpired: Mã đã hết hạn
+promoCodeErrorGeneric: Không áp dụng được mã. Vui lòng thử lại.
+promoCodeErrorInvalid: Mã không hợp lệ
+promoCodeErrorNotApplicable: Mã không áp dụng cho các gói này
+promoCodeRemove: Bỏ
+promoSheetApply: Áp dụng mã
+promoSheetTitle: Nhập mã giảm giá
 restore: Khôi phục mua hàng
 restoreNotFoundToast: Không tìm thấy giao dịch để khôi phục.
 restoreProcessingToast: Đang khôi phục mua hàng

@@ -43,7 +43,7 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
                   color: AppCustomColor.backgroundGray,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: DCachedImage(url: icon),
+                child: CacheNetworkGraphic(url: icon, fit: BoxFit.cover),
               ),
               12.horizontalSpace,
             ],

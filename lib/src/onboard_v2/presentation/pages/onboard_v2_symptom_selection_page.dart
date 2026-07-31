@@ -8,6 +8,10 @@ class OnboardV2SymptomSelectionPage extends StatelessWidget {
     final state = context.watch<OnboardV2Cubit>().state;
     final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
+    final onboardData = state.onboardData;
+    final resolvedSymptomsByKey = {
+      for (final resolvedSymptom in OnboardV2PathResolver.resolveSymptoms(state.onboardData)) resolvedSymptom.key: resolvedSymptom,
+    };
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
         activeSegments: 3,
@@ -25,22 +29,29 @@ class OnboardV2SymptomSelectionPage extends StatelessWidget {
         children: [
           24.verticalSpace,
           AppText(
-            onboardingL10n.onboardingV2P4HeadingPrefix,
+            onbCopy(onboardData, 'onboardingV2P4HeadingPrefix', fallback: onboardingL10n.onboardingV2P4HeadingPrefix),
             style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
           ),
-          OnboardV2GradientText(onboardingL10n.onboardingV2P4HeadingHighlight, style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4)),
+          OnboardV2GradientText(
+            onbCopy(onboardData, 'onboardingV2P4HeadingHighlight', fallback: onboardingL10n.onboardingV2P4HeadingHighlight),
+            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+          ),
           12.verticalSpace,
-          AppText(onboardingL10n.onboardingV2P4Subtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),
+          AppText(
+            onbCopy(onboardData, 'onboardingV2P4Subtitle', fallback: onboardingL10n.onboardingV2P4Subtitle),
+            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+          ),
           28.verticalSpace,
           if (state.availableSymptoms.isEmpty)
             _InlineError(message: onboardingL10n.onboardingV2GenericError, onRetry: cubit.goBack)
           else
             ...state.availableSymptoms.map((symptom) {
               final selected = state.selectedSymptoms.contains(symptom);
+              final resolvedLabel = resolvedSymptomsByKey[symptom.trackingId]?.title.text.trim();
               return Padding(
                 padding: EdgeInsets.only(bottom: 12.h),
                 child: OnboardV2SelectableOptionRow(
-                  label: symptom.title,
+                  label: (resolvedLabel != null && resolvedLabel.isNotEmpty) ? resolvedLabel : symptom.title,
                   selected: selected,
                   onTap: () => cubit.toggleSymptom(symptom),
                 ),

@@ -12,12 +12,23 @@ class ClosePopupLesson extends StatelessWidget {
 
   static void show(
     BuildContext context, {
+    required String mode,
     VoidCallback? onQuit,
     VoidCallback? onKeepLearning,
   }) {
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExitPopupView(trackingData);
+      final lessonState = AppDI.injector.get<LessonCubit>().state;
+      final cardType = lessonState.currentLearningItem.type == LearningItemType.theory ? 'theory' : 'exercise';
+      AppService.instance.appTrackingService.trackKeypointExitPopupView(
+        trackingData,
+        mode: mode,
+        cardType: cardType,
+        // The CARD's position in the flow (which document/question is showing),
+        // not the learning-item/folder index — see the report: card_index was
+        // logging the folder index.
+        cardIndex: lessonState.currentLessonIndex,
+      );
     }
     showModalBottomSheet(
       context: context,

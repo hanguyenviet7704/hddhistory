@@ -5,6 +5,7 @@ abstract interface class ITrackingService {
   Future<void> initialize();
   Future<void> trackScreenView(String screenName);
   Future<void> trackEvent(String eventName, {Map<String, dynamic>? parameters});
+  Future<void> setUserProperties(Map<String, dynamic> properties);
   Future<void> trackError(dynamic exception, {StackTrace? stackTrace, Map<String, dynamic>? context, String? errorType});
   Future<void> trackBreadcrumb(String message, {Map<String, dynamic>? data, String? category});
 
@@ -199,13 +200,14 @@ abstract interface class ITrackingService {
   Future<void> trackRoadmapItemClick(
     CourseLessonTrackingData trackingData, {
     required String itemType,
+    required String itemState,
   });
   Future<void> trackPopupItemImp(CourseLessonTrackingData trackingData);
   Future<void> trackPopupItemClick(CourseLessonTrackingData trackingData);
   Future<void> trackRoadmapItemScroll(CourseTrackingData trackingData);
   Future<void> trackRoadmapQuickLearningClick(
     CourseTrackingData trackingData, {
-    required String actionType,
+    required String startType,
   });
   Future<void> trackHowItWorkScrView(
     CourseLessonTrackingData trackingData, {
@@ -381,6 +383,7 @@ abstract interface class ITrackingService {
   Future<void> trackKeypointAudioScreenView(
     KeypointTrackingData trackingData, {
     required String mode,
+    required String source,
   });
   Future<void> trackKeypointAudioModeSwitch(
     KeypointTrackingData trackingData, {
@@ -417,9 +420,15 @@ abstract interface class ITrackingService {
 
   //* Keypoint events
   Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData);
-  Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointTheoryScrView(
+    KeypointTrackingData trackingData, {
+    required String source,
+  });
   Future<void> trackKeypointTheoryContinueClick(KeypointTrackingData trackingData);
-  Future<void> trackKeypointExerciseScrView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointExerciseScrView(
+    KeypointTrackingData trackingData, {
+    required String source,
+  });
   Future<void> trackKeypointExerciseClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseMultiClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseDrag(KeypointTrackingData trackingData);
@@ -436,7 +445,10 @@ abstract interface class ITrackingService {
     KeypointTrackingData trackingData, {
     required String recordInteraction,
   });
-  Future<void> trackKeypointExerciseCheckClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointExerciseCheckClick(
+    KeypointTrackingData trackingData, {
+    required bool answerCorrect,
+  });
   Future<void> trackKeypointExerciseResultView(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseExplainClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseExplainView(KeypointTrackingData trackingData);
@@ -444,12 +456,24 @@ abstract interface class ITrackingService {
   Future<void> trackKeypointExerciseScroll(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseContinue(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseExplainClose(KeypointTrackingData trackingData);
-  Future<void> trackKeypointFinishScrView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointFinishScrView(
+    KeypointTrackingData trackingData, {
+    required bool isDoneCourse,
+  });
   Future<void> trackKeypointBadgeUpdateScrView(KeypointTrackingData trackingData);
   Future<void> trackKeypointFinishComplete(KeypointTrackingData trackingData);
   Future<void> trackLessonFinishScrView(CourseLessonTrackingData trackingData);
-  Future<void> trackKeypointExitClick(KeypointTrackingData trackingData);
-  Future<void> trackKeypointExitPopupView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointExitClick(
+    KeypointTrackingData trackingData, {
+    required int cardIndex,
+    required String cardType,
+  });
+  Future<void> trackKeypointExitPopupView(
+    KeypointTrackingData trackingData, {
+    required String mode,
+    required String cardType,
+    required int cardIndex,
+  });
   Future<void> trackKeypointExitPopupClick(
     KeypointTrackingData trackingData, {
     required String option,
@@ -551,15 +575,36 @@ abstract interface class ITrackingService {
 
   //* Profile events
   Future<void> trackProfileView();
+  Future<void> trackProfileScrView();
   Future<void> trackProfileLanguageView();
   Future<void> trackProfileLanguageSelect(String language);
   Future<void> trackProfileSignoutClick();
-  Future<void> trackProfileUpgradeClick();
+  Future<void> trackProfileUpgradeClick({String? source});
   Future<void> trackProfileSettingClick();
+  Future<void> trackProfileSettingsClick();
+  Future<void> trackProfileAchieveSeeall();
+  Future<void> trackProfileMycourseClick();
+
+  //* Achievement events
+  Future<void> trackProfileAchieveScrView();
+  Future<void> trackProfileAchieveBackClick();
+  Future<void> trackProfileBadgeCloseClick();
+
+  //* My course events
+  Future<void> trackMycourseScrView();
+  Future<void> trackMycourseBackClick();
+  Future<void> trackProfileMycourseCatClick(String skill);
+  Future<void> trackProfileMycourseItemClick(String course);
+  Future<void> trackProfileMycourseExplore();
+
+  //* Sign in events
+  Future<void> trackSigninScrView(String source);
+  Future<void> trackSigninMethodClick(String loginType);
 
   //* Setting events
   Future<void> trackSettingScrView();
   Future<void> trackSettingScroll();
+  Future<void> trackSettingBackClick();
   Future<void> trackSettingProfileClick();
   Future<void> trackSettingProfileEditClick();
   Future<void> trackSettingProfileDoneClick();
@@ -568,21 +613,29 @@ abstract interface class ITrackingService {
   Future<void> trackProfileDeleteOptionClick(String value);
   Future<void> trackSettingDetailClick();
   Future<void> trackSettingDetailScrView();
-  Future<void> trackSettingLanguageClick();
-  Future<void> trackSettingLanguageScrView(String language);
+  Future<void> trackSettingLanguageClick(String currentLanguage);
+  Future<void> trackSettingLanguageScrView(String currentLanguage);
+  Future<void> trackSettingsLangBackClick();
+  Future<void> trackSettingsLangSelect(String language);
   Future<void> trackSettingTermClick();
   Future<void> trackSettingRestorePurchClick();
   Future<void> trackSettingLogoutClick();
   Future<void> trackSettingPremiumClick();
   Future<void> trackSettingNotificationToggleOn();
   Future<void> trackSettingNotificationToggleOff();
+  Future<void> trackSettingNotifToggle(bool enabled);
+  Future<void> trackSettingHapticToggle(bool enabled);
   Future<void> trackPremiumScrView();
   Future<void> trackPremiumScroll();
   Future<void> trackPremiumInforSwipe();
   Future<void> trackPremiumRestoreClick();
-  Future<void> trackPremiumPurchase();
+  Future<void> trackPremiumPurchase({required String productId, required String price});
   Future<void> trackPremiumScrExit();
-  Future<void> trackPremiumAllpackPick(String premiumId);
+  Future<void> trackPremiumAllpackPick(String productId);
+  Future<void> trackPaywallTermsClick();
+  Future<void> trackPaywallPrivacyClick();
+  Future<void> trackPaywallSuccessPopupView(String productId);
+  Future<void> trackPaywallSuccessPopupClick();
   Future<void> trackSettingBadgeClick(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeSlide(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeDetailView(CourseTrackingData trackingData);

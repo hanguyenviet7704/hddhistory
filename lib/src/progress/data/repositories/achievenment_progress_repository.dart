@@ -26,6 +26,12 @@ class AchievenmentProgressRepository with RestfulRequestHandlerMixin implements 
   }
 
   @override
+  Future<List<AchievenmentResponseEntity>> getCachedAchievenmentResponses() async {
+    final cachedModels = await _localDataSource.getCachedAchievenmentResponses();
+    return cachedModels.map((model) => model.toEntity()).toList();
+  }
+
+  @override
   TaskEither<AppException, List<CourseLevelProgressEntity>> getCourseLevelProgress(String courseId) {
     return callApiListWithTransform<CourseLevelProgressModel, CourseLevelProgressEntity>(
       apiCall: () => _api.getCourseLevelProgress(courseId),

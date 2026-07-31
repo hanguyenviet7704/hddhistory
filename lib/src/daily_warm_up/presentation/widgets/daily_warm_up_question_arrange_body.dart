@@ -25,7 +25,7 @@ class DailyWarmUpArrangeBody extends StatelessWidget {
           margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
           maxLines: 10,
           style: AppStyle.text12.copyWith(
-            color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+            color: AppCustomColor.textSecondary,
             fontWeight: FontWeight.w500,
             height: 1.5,
           ),

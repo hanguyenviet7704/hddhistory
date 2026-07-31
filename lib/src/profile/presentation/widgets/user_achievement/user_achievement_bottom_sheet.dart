@@ -117,10 +117,25 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
 
   void _onGoToCourse(BuildContext context, String courseName) {
     AppService.instance.appTrackingService.trackSettingBadgeGoCourse(_buildTrackingData(courseName));
-    context.back();
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
-    CourseRoadmapRoute().go(context);
+    // This sheet is opened OVER the root-pushed AchievementsFullPage (see
+    // profile_page._openAchievements — `Navigator.push(rootNavigator: true)`),
+    // so the root navigator stack is [shell] → [AchievementsFullPage] → [sheet].
+    // Popping only the sheet leaves AchievementsFullPage on top, and the
+    // roadmap we `.go()` to below it stays hidden — the reported "bấm Đi đến
+    // khoá học vẫn ở màn Thành tích" bug. popUntil(isFirst) strips every
+    // imperative route above the go_router shell (sheet + AchievementsFullPage)
+    // so the roadmap becomes visible. It also replaces the old go_router `pop()`
+    // that left the modal up (the "popup không tắt" bug).
+    Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+    // Navigate on the ROOT context, not the just-popped sheet context: the
+    // latter is now defunct, so .go on it silently no-ops — the event fired but
+    // the app never moved (the reported bug). The root navigator context always
+    // resolves the router.
+    final rootCtx = AppConfig.instance.context;
+    if (rootCtx == null) return;
+    CourseRoadmapRoute().go(rootCtx);
     // Not just setCurrentIndex(1) — see course_card.dart's identical fix.
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
@@ -155,7 +170,12 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
           ),
           child: Column(
             children: [
-              _UserAchievementSheetHeader(onClose: () => context.back()),
+              _UserAchievementSheetHeader(
+                onClose: () {
+                  AppService.instance.appTrackingService.trackProfileBadgeCloseClick();
+                  context.back();
+                },
+              ),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, bottomInset + 20.h),

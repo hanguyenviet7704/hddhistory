@@ -42,7 +42,7 @@ class RoadmapLessonCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isLockedVisual
                     ? AppCustomColor.backgroundGray
-                    : AppCustomColor.backgroundWhite,
+                    : studyThemeCardColor(context),
                 borderRadius: BorderRadius.circular(16.r),
                 border: isLockedVisual
                     ? null

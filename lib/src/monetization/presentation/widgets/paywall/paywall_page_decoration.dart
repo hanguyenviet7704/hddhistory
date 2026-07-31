@@ -23,10 +23,13 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   bool _hasTrackedScroll = false;
   bool _hasTrackedInfoSwipe = false;
 
-  List<AssetGenImage> get _fallbackBenefitAssets => [
-    AppAsset.images.app.openBook,
-    AppAsset.images.app.statistic,
-    AppAsset.images.app.chart,
+  /// Feature icons from the paywall design, cycled when the remote config
+  /// does not supply one.
+  List<String> get _fallbackBenefitAssets => [
+    AppAsset.svg.app.pwLessons,
+    AppAsset.svg.app.pwPractice,
+    AppAsset.svg.app.pwHabit,
+    AppAsset.svg.app.pwProgress,
   ];
 
   @override
@@ -46,13 +49,13 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   void _handleScroll() {
     if (!_scrollController.hasClients || _hasTrackedScroll) return;
     if (_scrollController.position.pixels <= 0) return;
-    AppService.instance.appTrackingService.trackPremiumScroll();
+    // premium_scroll tracking removed (not in the paywall spec).
     _hasTrackedScroll = true;
   }
 
   void _handleInfoSwipe() {
     if (_hasTrackedInfoSwipe) return;
-    AppService.instance.appTrackingService.trackPremiumInforSwipe();
+    // premium_infor_swipe tracking removed (not in the paywall spec).
     _hasTrackedInfoSwipe = true;
   }
 
@@ -113,6 +116,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             state: widget.state,
             onPlanTap: _handlePlanTap,
           ),
+          PaywallPromoCode(state: widget.state),
           25.verticalSpace,
           AppText(
             l10n.monetization.paywallHeroSubtitle,
@@ -181,9 +185,9 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
 
   List<Widget> _defaultBenefits() {
     final fallback = [
-      (AppAsset.images.app.openBook, l10n.monetization.benefit1Title, l10n.monetization.benefit1Desc),
-      (AppAsset.images.app.statistic, l10n.monetization.benefit2Title, l10n.monetization.benefit2Desc),
-      (AppAsset.images.app.chart, l10n.monetization.benefit3Title, l10n.monetization.benefit3Desc),
+      (AppAsset.svg.app.pwLessons, l10n.monetization.benefit1Title, l10n.monetization.benefit1Desc),
+      (AppAsset.svg.app.pwPractice, l10n.monetization.benefit2Title, l10n.monetization.benefit2Desc),
+      (AppAsset.svg.app.pwProgress, l10n.monetization.benefit3Title, l10n.monetization.benefit3Desc),
     ];
     return [
       for (var index = 0; index < fallback.length; index++)

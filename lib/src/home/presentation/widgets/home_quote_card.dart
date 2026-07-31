@@ -22,6 +22,12 @@ class HomeQuoteCard extends StatelessWidget {
       builder: (context, quote) {
         if (quote == null || quote.content.text.isEmpty) return const SizedBox.shrink();
 
+        // Over a custom study background the solid lavender reads too dense next
+        // to the translucent glass cards — soften it to the same ~0.82 see-through
+        // level so the personalized background shows softly through. Keep the
+        // solid design lavender on the stock background.
+        final Color quoteBackground = studyThemeHasCustomBg(context) ? _kQuoteBackground.withValues(alpha: 0.82) : _kQuoteBackground;
+
         return Semantics(
           label: context.l10n.home.homeQuoteLabel,
           child: Padding(
@@ -30,7 +36,7 @@ class HomeQuoteCard extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(22.w, 22.h, 22.w, 20.h),
               decoration: BoxDecoration(
-                color: _kQuoteBackground,
+                color: quoteBackground,
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Column(

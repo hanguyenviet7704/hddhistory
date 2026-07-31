@@ -6,11 +6,16 @@ class VerifyParams {
   final String packageName;
   final String storeTransactionId;
 
+  /// Promo code the user had applied when they bought. The server re-validates
+  /// it before recording — a stale code must never fail the purchase.
+  final String voucherCode;
+
   VerifyParams({
     required this.platform,
     this.productId = '',
     this.packageName = '',
     this.storeTransactionId = '',
+    this.voucherCode = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -19,6 +24,7 @@ class VerifyParams {
       'productId': productId,
       'packageName': packageName,
       'storeTransactionId': storeTransactionId,
+      if (voucherCode.isNotEmpty) 'voucherCode': voucherCode,
     };
   }
 }

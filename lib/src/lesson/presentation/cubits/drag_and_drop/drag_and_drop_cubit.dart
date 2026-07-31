@@ -114,7 +114,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
-        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData, answerCorrect: allCorrect);
       }
     }
 

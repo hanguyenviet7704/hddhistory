@@ -2,13 +2,22 @@ part of '../services.dart';
 
 @LazySingleton(as: IAuthService)
 class AuthService implements IAuthService {
+  // Web OAuth client ID (google-services.json client_type=3 / iOS CLIENT_ID).
+  // google_sign_in v7 REQUIRES serverClientId on Android to mint the Firebase
+  // idToken — without it authenticate() throws
+  // GoogleSignInException(clientConfigurationError) and Google login fails on
+  // Android (iOS reads its own client id from Info.plist). Same web client
+  // across dev/stg/prod (single Firebase project 116378588635).
+  static const String _googleServerClientId = '116378588635-dh31ru0hg8acqraovlfm7j3aejdiehvi.apps.googleusercontent.com';
+
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   @override
   Future<UserCredential> signInWithGoogle() async {
     try {
-      // Initialize Google Sign In
-      await _googleSignIn.initialize();
+      // Initialize Google Sign In (serverClientId required for the Android
+      // idToken flow — see _googleServerClientId).
+      await _googleSignIn.initialize(serverClientId: _googleServerClientId);
       // Trigger the authentication flow
       final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 

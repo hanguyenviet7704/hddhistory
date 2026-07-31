@@ -13,7 +13,11 @@ void main() {
   });
 
   group('RoadmapDetailPopup', () {
-    testWidgets('shows read and listen actions when the keypoint has usable audio', (tester) async {
+    // The keypoint reading screen is unified now (no separate Read/Listen
+    // surfaces to pick between), so this popup always shows a single Start
+    // CTA regardless of whether the keypoint has usable audio — narration
+    // autoplays on its own once inside when it does.
+    testWidgets('shows a single Start action when the keypoint has usable audio', (tester) async {
       LocaleSettings.setLocaleSync(AppLocale.en);
 
       await tester.pumpWidget(
@@ -25,11 +29,12 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Read'), findsOneWidget);
-      expect(find.text('Listen'), findsOneWidget);
+      expect(find.byKey(const ValueKey('roadmap-detail-start-button')), findsOneWidget);
+      expect(find.text('Read'), findsNothing);
+      expect(find.text('Listen'), findsNothing);
     });
 
-    testWidgets('shows only read action when the keypoint has no usable audio', (tester) async {
+    testWidgets('shows the same single Start action when the keypoint has no usable audio', (tester) async {
       await LocaleSettings.setLocale(AppLocale.en);
 
       await tester.pumpWidget(
@@ -39,11 +44,12 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Read'), findsOneWidget);
+      expect(find.byKey(const ValueKey('roadmap-detail-start-button')), findsOneWidget);
+      expect(find.text('Read'), findsNothing);
       expect(find.text('Listen'), findsNothing);
     });
 
-    testWidgets('keeps the action buttons close to the bottom edge without extra inset gap', (tester) async {
+    testWidgets('keeps the action button close to the bottom edge without extra inset gap', (tester) async {
       _setPhoneViewport(tester);
       await LocaleSettings.setLocale(AppLocale.en);
 
@@ -61,16 +67,11 @@ void main() {
       );
       await tester.pump();
 
-      final listenButton = find
-          .ancestor(
-            of: find.text('Listen'),
-            matching: find.byType(GestureDetector),
-          )
-          .first;
+      final startButton = find.byKey(const ValueKey('roadmap-detail-start-button'));
       final sheetSurface = find.byKey(const ValueKey('roadmap-detail-sheet-surface'));
       final screenBottom = tester.getRect(find.byType(Scaffold)).bottom;
       final surfaceBottom = tester.getRect(sheetSurface).bottom;
-      final buttonBottom = tester.getRect(listenButton).bottom;
+      final buttonBottom = tester.getRect(startButton).bottom;
 
       expect(screenBottom - surfaceBottom, lessThanOrEqualTo(1));
       expect(surfaceBottom - buttonBottom, greaterThanOrEqualTo(34));

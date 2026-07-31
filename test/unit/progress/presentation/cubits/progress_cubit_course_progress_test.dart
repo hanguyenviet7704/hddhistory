@@ -100,9 +100,8 @@ class _FakeRemoteConfigService implements IRemoteConfigService {
   @override
   PaywallConfigEntity get paywallConfig => const PaywallConfigEntity();
   @override
-  Future<void> initialize() async {}
-  @override
-  Future<bool> shouldForceUpdate() async => false;
+  Future<void> initialize() async {}  @override
+  Future<bool> updateAvailable() async => false;
 }
 
 class _FakeTrackingService extends BaseTrackingService {}

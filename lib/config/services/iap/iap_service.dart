@@ -61,6 +61,9 @@ class IAPService implements IIapService {
 
       _products.addAll(response.productDetails);
     });
+    // DEV only, and only for SKUs the store did not return. A real listing
+    // always wins, so this cannot mask one — see [DevMockProducts].
+    _products.addAll(DevMockProducts.fillMissing(requestedIds: productIds, resolved: _products));
     return _products;
   }
 

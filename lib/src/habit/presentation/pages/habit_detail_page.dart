@@ -43,6 +43,7 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
     final checkins = await context.read<HabitCubit>().getCheckins(widget.userHabit.id);
     if (!mounted) return;
     setState(() => _checkins = checkins);
+    HabitTracking.detailScrView(widget.userHabit, completionRate: _completionRate, currentLoops: widget.userHabit.currentStreak);
   }
 
   DateTime get _startedAt => widget.userHabit.startedAt ?? _checkins?.lastOrNull?.date ?? DateTime.now();
@@ -94,6 +95,7 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
                 icon: Icon(Icons.close, size: 24.w, color: AppCustomColor.textTertiary),
                 onPressed: () {
                   AppHaptic.select();
+                  HabitTracking.detailClose();
                   Navigator.of(context).pop();
                 },
               ),

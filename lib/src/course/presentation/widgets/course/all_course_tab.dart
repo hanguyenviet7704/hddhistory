@@ -90,12 +90,18 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   /// every reset to all.
   bool _spyArmed = false;
 
+  /// Guards explore_scr_view to once per Explore-tab visit — the tab is kept
+  /// alive (AutomaticKeepAliveClientMixin), so initState fires only on the very
+  /// first open. Reset when the tab stops being the current route (see the
+  /// PageCubit listener in build) so each re-entry logs a fresh view.
+  bool _scrViewLogged = false;
+
   @override
   void initState() {
     super.initState();
     _courseCubit = context.read<CourseCubit>();
     _positionsListener.itemPositions.addListener(_onPositionsChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackAllCourseScrView());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _logScrViewIfActive());
   }
 
   @override
@@ -104,10 +110,31 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     super.dispose();
   }
 
-  void _trackAllCourseScrView() {
+  /// Logs explore_scr_view once per Explore-tab visit: source (remapped to the
+  /// spec set nav_explore/home_explore/my_course from the entry point's
+  /// allCourseSource) + the active skill_id. No-op unless Explore is the
+  /// current route.
+  void _logScrViewIfActive() {
     if (!mounted) return;
+    // Explore is shell branch index 3 (ScaffoldLayout._tabToBranch). Keying on
+    // the branch index (not currentRouteName) fires reliably for BOTH a
+    // bottom-nav tap AND a Home→Explore .go(), which only setCurrentIndex(3)
+    // without ever setting a route name.
+    if (context.read<PageCubit>().state.currentIndex != 3) return;
+    if (_scrViewLogged) return;
+    _scrViewLogged = true;
     final source = _courseCubit.state.allCourseSource;
-    AppService.instance.appTrackingService.trackCourseSelectAllCourseView(source: source);
+    final skillId = context.read<HomeCubit>().state.currentSkillset.id;
+    ExploreTracking.track(
+      TrackingKey.exploreScrView,
+      parameters: {
+        'source': ExploreTracking.remapScrViewSource(source),
+        'skill_id': skillId,
+      },
+    );
+    // Reset so a later plain bottom-nav entry (which sets no source) reports
+    // nav_explore instead of reusing the previous entry's source.
+    _courseCubit.setAllCourseSource('nav_explore');
   }
 
   /// Highlights the chip of the section currently at the TOP of the viewport
@@ -147,12 +174,27 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocBuilder<HomeCubit, HomeState>(
-      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex,
+    return BlocListener<PageCubit, PageState>(
+      // Fire explore_scr_view on every entry to the Explore tab, not just the
+      // first build — the tab is kept alive so initState won't re-run.
+      listenWhen: (previous, current) => previous.currentIndex != current.currentIndex,
+      listener: (context, state) {
+        if (state.currentIndex == 3) {
+          _logScrViewIfActive();
+        } else {
+          _scrViewLogged = false;
+        }
+      },
+      child: BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex || prev.status != curr.status,
       builder: (context, homeState) {
         final skillsets = homeState.skillsets;
         if (skillsets.isEmpty) {
-          return const CourseEmptyState();
+          // Cold load (first open, no cached skillsets yet): show a grid
+          // skeleton instead of the "nothing to see" empty state, which is
+          // reserved for a confirmed-empty catalog (status == success).
+          final isColdLoading = homeState.status == HomeStatus.loading || homeState.status == HomeStatus.initial;
+          return isColdLoading ? const _CourseGridSkeleton() : const CourseEmptyState();
         }
         final progressState = context.watch<ProgressCubit>().state;
         final exploreMode = context.select<CourseCubit, CourseExploreMode>(
@@ -227,6 +269,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           ),
         );
       },
+      ),
     );
   }
 
@@ -238,7 +281,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   ) {
     // Coming-soon courses show an informational bottom sheet instead of navigating.
     if (course.isComingSoonNow) {
-      _showComingSoonSheet(context, course);
+      _showComingSoonSheet(context, course, skillset: skillset);
       return;
     }
 
@@ -247,10 +290,18 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       return;
     }
 
-    AppService.instance.appTrackingService.trackCourseSelectCourseClick(
-      skillset,
+    final progress = resolveCourseProgress(
       course,
-      source: 'all_course',
+      progressLookup(context.read<ProgressCubit>().state),
+    );
+    ExploreTracking.track(
+      TrackingKey.exploreCourseClick,
+      parameters: {
+        ...ExploreTracking.skillsetParams(skillset),
+        ...ExploreTracking.courseParams(course),
+        'course_state': ExploreTracking.courseState(course, passed: progress.passed, total: progress.total),
+        'source': 'nav_explore',
+      },
     );
 
     _handleCourseTap(context, skillset, course, index);
@@ -312,7 +363,14 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 }
 
-void _showComingSoonSheet(BuildContext context, CourseEntity course) {
+void _showComingSoonSheet(BuildContext context, CourseEntity course, {SkillsetEntity? skillset}) {
+  ExploreTracking.track(
+    TrackingKey.courseComingsoonView,
+    parameters: {
+      if (skillset != null) ...ExploreTracking.skillsetParams(skillset),
+      ...ExploreTracking.courseParams(course),
+    },
+  );
   showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppCustomColor.backgroundWhite,
@@ -400,7 +458,7 @@ class _CourseSection extends StatelessWidget {
       children: [
         AppText(
           skillset.title.text,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         12.verticalSpace,
         // Manual 2-column grid (not GridView.count): cells size to their own
@@ -466,6 +524,10 @@ class _ViewMoreGridCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           AppHaptic.select();
+          ExploreTracking.track(
+            TrackingKey.exploreCatViewmore,
+            parameters: ExploreTracking.skillsetParams(skillset),
+          );
           SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
         },
         // Align the card to the top of the cell and size it to the same height
@@ -517,6 +579,44 @@ class _ViewMoreGridCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Cold-load placeholder for the Explore grid (first open, no cached
+/// skillsets yet). A static, non-interactive 2-column grid of dummy
+/// [_CourseGridCard]s wrapped in Skeletonizer, which auto-generates bone
+/// shapes matching the real card layout (thumbnail + 2-line title). Swapped
+/// out for the real grid the instant skillsets arrive.
+class _CourseGridSkeleton extends StatelessWidget {
+  const _CourseGridSkeleton();
+
+  static const int _kSkeletonCardCount = 6;
+  static const CourseEntity _kSkeletonCourse = CourseEntity(
+    id: 'skeleton',
+    title: BaseMultiLanguage(en: 'Course title placeholder'),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return sk.Skeletonizer(
+      enabled: true,
+      child: GridView.builder(
+        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: _kCourseGridColGap,
+          mainAxisSpacing: _kCourseGridRowGap,
+          mainAxisExtent: _kCourseCardExtent,
+        ),
+        itemCount: _kSkeletonCardCount,
+        itemBuilder: (context, index) => _CourseGridCard(
+          course: _kSkeletonCourse,
+          onTap: () {},
         ),
       ),
     );
@@ -601,7 +701,7 @@ class _CourseGridCard extends StatelessWidget {
               child: AppText(
                 course.title.text,
                 style: AppStyle.textBold14.copyWith(
-                  color: AppCustomColor.textPrimary,
+                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                   height: 1.4,
                 ),
                 maxLines: 2,

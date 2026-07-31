@@ -12,7 +12,14 @@ void main() {
         _store('annual', price: r'$50.00', rawPrice: 50),
         _store('quarter', price: r'$20.00', rawPrice: 20),
       ]);
-      final repository = MonetizationRepository(api, iap, _FakeUserSubscriptionLocalDataSource(), _FakeMonetizationLocalDataSource());
+      final repository = MonetizationRepository(
+        api,
+        iap,
+        _FakeUserSubscriptionLocalDataSource(),
+        _FakeMonetizationLocalDataSource(),
+        _FakePaywallConfigApi(),
+        _FakePaywallConfigLocalDataSource(),
+      );
 
       final result = await repository
           .getProducts(
@@ -41,6 +48,8 @@ void main() {
         _FakeIapService([_store('annual')]),
         _FakeUserSubscriptionLocalDataSource(),
         _FakeMonetizationLocalDataSource(),
+        _FakePaywallConfigApi(),
+        _FakePaywallConfigLocalDataSource(),
       );
       final missingStore = MonetizationRepository(
         _FakeMonetizationApi([
@@ -49,6 +58,8 @@ void main() {
         _FakeIapService([_store('annual')]),
         _FakeUserSubscriptionLocalDataSource(),
         _FakeMonetizationLocalDataSource(),
+        _FakePaywallConfigApi(),
+        _FakePaywallConfigLocalDataSource(),
       );
 
       for (final repository in [missingBe, missingStore]) {
@@ -118,6 +129,9 @@ class _FakeMonetizationApi implements MonetizationApi {
 
   @override
   Future<BaseResponse<IapVerifyModel>> verify(Map<String, dynamic> params) async => const BaseResponse(data: IapVerifyModel());
+
+  @override
+  Future<BaseResponse<VoucherValidationModel>> validateVoucher(Map<String, dynamic> params) async => const BaseResponse(data: VoucherValidationModel());
 }
 
 class _FakeIapService implements IIapService {
@@ -191,4 +205,17 @@ class _FakeMonetizationLocalDataSource implements MonetizationLocalDataSource {
 
   @override
   Future<void> setNewUserPaywallImpressionCount(int count) async => impressionCount = count;
+}
+
+class _FakePaywallConfigApi implements PaywallConfigApi {
+  @override
+  Future<BaseResponse<dynamic>> getPaywallConfig() async => const BaseResponse(data: <String, dynamic>{});
+}
+
+class _FakePaywallConfigLocalDataSource implements PaywallConfigLocalDataSource {
+  @override
+  Future<Map<String, dynamic>?> getCachedConfig() async => null;
+
+  @override
+  Future<void> cacheConfig(Map<String, dynamic> json) async {}
 }

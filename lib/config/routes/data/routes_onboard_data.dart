@@ -1,30 +1,5 @@
 part of '../routes.dart';
 
-//* Onboard Page
-@TypedGoRoute<OnboardRoute>(path: RoutePath.onboard, name: RouteNamed.onboard)
-class OnboardRoute extends GoRouteData with $OnboardRoute {
-  const OnboardRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<OnboardCubit>(),
-    child: const OnboardPage(),
-  );
-}
-
-@TypedGoRoute<OnboardBranchingRoute>(path: RoutePath.onboardBranching, name: RouteNamed.onboardBranching)
-class OnboardBranchingRoute extends GoRouteData with $OnboardBranchingRoute {
-  const OnboardBranchingRoute({this.userName = ''});
-
-  final String userName;
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<OnboardBranchingCubit>(),
-    child: OnboardBranchingPage(userName: userName),
-  );
-}
-
 @TypedGoRoute<OnboardV2Route>(path: RoutePath.onboardV2, name: RouteNamed.onboardV2)
 class OnboardV2Route extends GoRouteData with $OnboardV2Route {
   const OnboardV2Route();
@@ -118,6 +93,13 @@ class NotificationRequestRoute extends GoRouteData with $NotificationRequestRout
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
       BlocProvider.value(value: AppDI.injector.get<UserCubit>()),
       BlocProvider.value(value: AppDI.injector.get<NotificationCubit>()),
+      // This gate reuses OnboardV2NotificationPreview, whose floating card reads
+      // OnboardV2Cubit (context.select) for its config-driven copy. Without the
+      // cubit in the tree that lookup throws ProviderNotFoundException and — in
+      // release — ErrorWidget.builder swaps the card for the generic error
+      // illustration. Provide the singleton (no initialize(): the card falls back
+      // to l10n copy when onboarding hasn't been run) so the card renders here too.
+      BlocProvider.value(value: AppDI.injector.get<OnboardV2Cubit>()),
     ],
     child: NotificationRequestPage(
       courseEntryMode: courseEntryMode,

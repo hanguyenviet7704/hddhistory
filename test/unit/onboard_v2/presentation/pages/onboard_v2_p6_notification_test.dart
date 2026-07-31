@@ -32,12 +32,9 @@ class _FakeDeviceInfoService implements IDeviceInfoService {
   Future<bool> isAndroid13OrHigher() async => false;
 }
 
-class _FakeOnboardRepository implements IOnboardRepository {
+class _FakeOnboardingRepository implements IOnboardingRepository {
   @override
-  TaskEither<AppException, OnboardEntity> getAllOnboards() => TaskEither.right(const OnboardEntity());
-
-  @override
-  TaskEither<AppException, UserEntity> getUserByDeviceId(String deviceId) => TaskEither.right(const UserEntity());
+  TaskEither<AppException, OnboardingContentConfigEntity> getOnboardingConfig() => TaskEither.right(const OnboardingContentConfigEntity());
 }
 
 class _FakeProfileRepository implements IProfileRepository {
@@ -82,7 +79,7 @@ class _FakeCourseRepository implements ICourseRepository {
 class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   _SeededOnboardV2Cubit()
     : super.withRandom(
-        GetAllOnboardsUseCase(_FakeOnboardRepository()),
+        GetOnboardingContentConfigUseCase(_FakeOnboardingRepository()),
         UpdateUserUseCase(_FakeProfileRepository()),
         GetAllCoursesUseCase(_FakeCourseRepository()),
         GetCourseUseCase(_FakeCourseRepository()),

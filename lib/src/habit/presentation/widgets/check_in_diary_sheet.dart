@@ -41,14 +41,16 @@ class _CheckInDiarySheetState extends State<CheckInDiarySheet> {
   Future<void> _checkIn() async {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
+    final note = _noteController.text;
     final ok = await context.read<HabitCubit>().checkIn(
       widget.userHabit.id,
       done: true,
-      note: _noteController.text,
+      note: note,
     );
     if (!mounted) return;
     setState(() => _isSubmitting = false);
     if (ok) {
+      HabitTracking.noteCheckin(widget.userHabit, hasNote: note.trim().isNotEmpty);
       Navigator.of(context).pop(true);
     } else {
       context.showDSnackBar(message: context.l10n.common.errorSomethingHappened, type: MessageType.error);

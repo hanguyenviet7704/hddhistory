@@ -28,9 +28,9 @@ class LearningStreakCompletionGate {
     try {
       final userCubit = AppDI.injector.get<UserCubit>();
       final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
-      final gateUtcDay = resolveGateUtcDay(nowUtc ?? DateTime.now().toUtc());
+      final gateDay = resolveGateDay(nowUtc ?? DateTime.now().toUtc());
 
-      if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) {
+      if (learningStreakCubit.isSameStreakCountedDay(gateDay)) {
         return LearningStreakCompletionGateResult.skippedSameDay;
       }
 
@@ -67,7 +67,7 @@ class LearningStreakCompletionGate {
       }
 
       if (committed) {
-        learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
+        learningStreakCubit.setLastStreakCountedDate(gateDay);
         return LearningStreakCompletionGateResult.committed;
       }
 
@@ -77,9 +77,8 @@ class LearningStreakCompletionGate {
     }
   }
 
+  /// Delegates to [StreakDay] so there is exactly one definition of "which day
+  /// does this count as" across the feature.
   @visibleForTesting
-  static DateTime resolveGateUtcDay(DateTime value) {
-    final utc = value.toUtc();
-    return DateTime.utc(utc.year, utc.month, utc.day);
-  }
+  static DateTime resolveGateDay(DateTime value) => StreakDay.resolve(value);
 }

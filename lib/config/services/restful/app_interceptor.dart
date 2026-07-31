@@ -16,6 +16,11 @@ class AppInterceptor extends BaseInterceptor {
   static const String _retryCountKey = 'retry_count';
   static const int _maxRetryAttempts = 1;
 
+  // Guards against a burst of concurrent 401s (e.g. the splash's parallel
+  // requests all failing on an expired session) each running logout + navigate
+  // + toast. Reset shortly after so a later genuine expiry is still handled.
+  bool _isHandlingSessionExpired = false;
+
   AuthBloc get _authBloc => AppDI.injector.get<AuthBloc>();
 
   String get _currentLanguage => _localeCubit.state.localeData.languageCode;
@@ -36,6 +41,13 @@ class AppInterceptor extends BaseInterceptor {
       options.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
     }
     options.headers['lang'] = _currentLanguage;
+    // Minutes this device is ahead of UTC (Vietnam = 420). The API buckets
+    // day-scoped data — the learning streak's week strip above all — by the
+    // user's own calendar day; without this it falls back to the server's
+    // timezone (UTC), which files anything done between 00:00 and 07:00 local
+    // under the previous day. Read per request so travel and DST need no
+    // handling of their own.
+    options.headers['x-timezone-offset'] = DateTime.now().timeZoneOffset.inMinutes.toString();
   }
 
   @override
@@ -131,30 +143,51 @@ class AppInterceptor extends BaseInterceptor {
   }
 
   void _handleUnauthorized() {
-    final onboardingCubit = AppDI.injector.get<OnboardBranchingCubit>();
-    if (onboardingCubit.state.isOnboardingTransitionActive) {
-      onboardingCubit.handleUnauthorizedDuringTransition();
-      return;
-    }
-
     final context = AppConfig.instance.context;
     if (context == null) {
       return;
     }
 
     final currentRouteName = _pageCubit.state.currentRouteName;
-    if (currentRouteName == RoutePath.login) {
+
+    // A burst of concurrent 401s (the splash fires several authenticated
+    // requests at once) must trigger logout+navigate ONCE — otherwise we stack
+    // toasts and route pushes. Reset after the burst settles so a later genuine
+    // expiry is still handled.
+    if (_isHandlingSessionExpired) {
       return;
     }
+    _isHandlingSessionExpired = true;
 
-    AppService.instance.resetDI();
+    // NOTE: do NOT reset the DI container here. resetDI() disposes and recreates
+    // every singleton (cubits included) while the UI is live and mid-navigation
+    // to the login screen — that left the login screen bound to disposed cubits,
+    // so its buttons stopped responding ("frozen login" after reinstall).
+    // Clearing the user + auth session is enough to log out.
     _userCubit.clearData();
     _authBloc.add(AuthEvent.clearSession());
-    RegisterRoute().go(context);
 
-    DMessage.showMessage(
-      type: MessageType.error,
-      message: context.l10n.auth.authSessionHasExpired,
+    // During the bootstrap / auth / onboarding flow the SPLASH owns routing — it
+    // decides welcome vs onboarding vs home from device-recognition + onboarding
+    // state (see splash_page.dart _handleUnauthenticatedEntry). Force-navigating
+    // to Register here HIJACKS that: the user lands on the welcome screen instead
+    // of onboarding, and only reaches onboarding after killing + relaunching the
+    // app (by then the token is cleared, so no 401 fires to hijack). So in the
+    // pre-auth flow we just clear the dead session silently — clearing it makes
+    // the splash take its unauthenticated path and route correctly on its own.
+    // Only when the session dies on an authenticated screen do we redirect to
+    // the welcome screen and tell the user why.
+    if (shouldForceRegisterNavigationAfterReset(currentRouteName)) {
+      RegisterRoute().go(context);
+      DMessage.showMessage(
+        type: MessageType.error,
+        message: context.l10n.auth.authSessionHasExpired,
+      );
+    }
+
+    Future.delayed(
+      const Duration(seconds: 2),
+      () => _isHandlingSessionExpired = false,
     );
   }
 

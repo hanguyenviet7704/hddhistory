@@ -12,6 +12,9 @@ class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
   bool _hasTrackedView = false;
 
   void _handleSelectLanguage(BuildContext context, AppLocale locale) {
+    // Spec settings_lang_select: sends `language` event param + `language`
+    // user property (the display label English/Tiếng Việt/中文/日本語/한국어).
+    AppService.instance.appTrackingService.trackSettingsLangSelect(locale.label);
     context.read<LocaleCubit>().setLocale(locale);
     context.back();
   }
@@ -19,7 +22,7 @@ class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
   void _trackView() {
     if (_hasTrackedView) return;
     final locale = context.read<LocaleCubit>().state;
-    AppService.instance.appTrackingService.trackSettingLanguageScrView(locale.languageAISupport);
+    AppService.instance.appTrackingService.trackSettingLanguageScrView(locale.label);
     _hasTrackedView = true;
   }
 
@@ -58,7 +61,12 @@ class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: _LanguageSheetBackButton(onPressed: () => context.pop()),
+                    child: _LanguageSheetBackButton(
+                      onPressed: () {
+                        AppService.instance.appTrackingService.trackSettingsLangBackClick();
+                        context.pop();
+                      },
+                    ),
                   ),
                   Text(
                     context.l10n.setting.settingRowLanguage,

@@ -42,7 +42,7 @@ class DailyWarmUpDragDropBody extends StatelessWidget {
           context.l10n.exercise.exerciseGapFillingInstruction,
           margin: EdgeInsets.symmetric(horizontal: 20.w),
           style: AppStyle.text12.copyWith(
-            color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+            color: AppCustomColor.textSecondary,
             fontWeight: FontWeight.w500,
             height: 1.5,
           ),

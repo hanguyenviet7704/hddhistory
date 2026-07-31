@@ -18,9 +18,17 @@ class _WarmUpCompletionPageState extends State<WarmUpCompletionPage> {
     // Non-primary route name → hides the shell's floating bottom nav on the
     // completion screen (branch nav doesn't fire the root observer).
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.warmUpCompletion);
+    WarmUpTracking.track(
+      TrackingKey.warmupDoneScrView,
+      parameters: WarmUpTracking.courseParams(AppDI.injector.get<WarmUpCubit>().state.courseId),
+    );
   }
 
   void _startTodaysLesson(BuildContext context) {
+    WarmUpTracking.track(
+      TrackingKey.warmupContinueClick,
+      parameters: WarmUpTracking.courseParams(context.read<WarmUpCubit>().state.courseId),
+    );
     // Leave the warm-up flow FIRST (back to the roadmap), then let the roadmap
     // page launch today's lesson via the WarmUpCubit listener. Launching the
     // lesson/paywall from this (root-navigator) page left the completion screen

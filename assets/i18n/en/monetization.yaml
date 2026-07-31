@@ -43,12 +43,14 @@ paymentSuccessToast: Payment successful
 paywallBannerSubtitle: Learn from real-life RolePlay and practice with Scenario Branching
 paywallBannerTitle: Learn by Doing
 paywallCtaUpgrade: Upgrade to Premium
+paywallCtaUpgradePrice: Upgrade to Premium · ${price}
 paywallHeroEyebrow: Don’t just scroll.
 paywallHeroSubtitle: See how MeUp helps you
 paywallHeroTitle: 'Learn something
 
   every day'
 paywallHighlightSubtitle: Unlock full access. Cancel anytime
+paywallOriginalPriceLabel: Original price ${price}
 paywallPlanAnnual: Annual
 paywallPlanLifetime: Lifetime
 paywallPlanMonthly: Monthly
@@ -65,6 +67,16 @@ pricePerMonth: per month
 pricePerQuarter: per quarter
 pricePerWeek: per week
 pricePerYear: per year
+promoCodeApplied: Code applied
+promoCodeCta: Have a promo code?
+promoCodeErrorExhausted: This code has reached its limit
+promoCodeErrorExpired: This code has expired
+promoCodeErrorGeneric: Couldn't apply the code. Please try again.
+promoCodeErrorInvalid: This code isn't valid
+promoCodeErrorNotApplicable: This code doesn't apply to these plans
+promoCodeRemove: Remove
+promoSheetApply: Apply code
+promoSheetTitle: Enter promo code
 restore: Restore purchases
 restoreNotFoundToast: No purchases to restore.
 restoreProcessingToast: Restoring purchases

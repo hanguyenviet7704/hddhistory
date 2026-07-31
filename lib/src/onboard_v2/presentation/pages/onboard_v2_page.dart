@@ -52,6 +52,7 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
               OnboardV2PathMapPage(),
               OnboardV2SymptomSelectionPage(),
               OnboardV2CoursePickerPage(),
+              OnboardV2PickThemePage(),
             ],
           ),
         );

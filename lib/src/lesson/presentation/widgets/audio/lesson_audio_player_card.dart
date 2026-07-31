@@ -45,7 +45,16 @@ class LessonAudioPlayerCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  LessonAudioProgressBar(progress: state.progressFraction),
+                  LessonAudioProgressBar(
+                    progress: state.progressFraction,
+                    // Tap/drag to scrub. Only interactive once a duration is
+                    // known; the cubit seeks to fraction × total.
+                    onSeek: state.durationSeconds > 0
+                        ? (fraction) => context.read<LessonAudioCubit>().seekTo(
+                              Duration(seconds: (fraction * state.durationSeconds).round()),
+                            )
+                        : null,
+                  ),
                   SizedBox(height: 8.h),
                   AppText(
                     state.playbackLabel,

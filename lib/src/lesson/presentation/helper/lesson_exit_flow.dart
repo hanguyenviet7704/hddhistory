@@ -30,20 +30,19 @@ class LessonExitFlow {
 
   static Future<void> open(
     BuildContext context, {
+    String mode = 'read',
     Future<void> Function()? onBeforePopup,
   }) async {
     if (AppDI.injector.get<LessonCubit>().state.isShowResultOverlay) return;
 
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExitClick(trackingData);
-    }
+    // keypoint_read_exit_click tracking removed per request.
 
     await onBeforePopup?.call();
     if (!context.mounted) return;
 
     ClosePopupLesson.show(
       context,
+      mode: mode,
       onQuit: () => _handleQuit(context),
       onKeepLearning: () => context.back(),
     );

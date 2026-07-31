@@ -76,7 +76,31 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
     return success;
   }
 
+  /// LEARNING spec: roadmap_suggest_content / roadmap_skip_suggest_content,
+  /// carrying best-effort skill + course context.
+  void _trackSuggestContent(String eventName) {
+    final courseId = context.read<CourseRoadmapCubit>().state.roadmap.courseId;
+    final trackingData = CourseTrackingData.fromCourseId(context, courseId);
+    AppService.instance.appTrackingService.trackEvent(
+      eventName,
+      parameters: trackingData == null
+          ? null
+          : {
+              'skill_id': trackingData.skillset.id,
+              'skill_name': trackingData.skillset.trackingName,
+              'course_id': trackingData.course.id,
+              'course_name': trackingData.course.trackingName,
+            },
+    );
+  }
+
+  Future<bool> _handleNoAdditionalContentRequest(CourseLevel level) {
+    _trackSuggestContent(TrackingKey.roadmapSkipSuggestContent);
+    return _submitAdditionalContentRequest(level: level, requested: false);
+  }
+
   void _showRequestPopup(CourseLevel level) {
+    _trackSuggestContent(TrackingKey.roadmapSuggestContent);
     CompletedLevelAdditionalContentRequestPopup.show(
       context,
       onSubmit: (requestText) => _submitAdditionalContentRequest(
@@ -159,7 +183,10 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
                   ),
                 );
               }
-              final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
+              // Same source the paywall itself reads (API -> cache -> Remote
+              // Config -> bundled defaults) so lesson-lock and the paywall
+              // never disagree. See IapCubit.resolvedPaywallConfig.
+              final paywallConfig = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
               final isPremium = context.read<ProfileCubit>().state.user.isPremium;
               final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig, isPremium: isPremium);
               return BlocBuilder<ProgressCubit, ProgressState>(
@@ -204,10 +231,7 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
                             userProgress: progressState.userCourseProgress,
                           ),
                           isSubmittingAdditionalContentRequest: progressState.isSubmittingCompletedLevelAdditionalContentRequest,
-                          onNoAdditionalContentRequest: () => _submitAdditionalContentRequest(
-                            level: level.level,
-                            requested: false,
-                          ),
+                          onNoAdditionalContentRequest: () => _handleNoAdditionalContentRequest(level.level),
                           onYesAdditionalContentRequest: () => _showRequestPopup(level.level),
                         );
                       },

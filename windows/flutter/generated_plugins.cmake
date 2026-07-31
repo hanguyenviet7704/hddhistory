@@ -11,9 +11,11 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   firebase_remote_config
   flutter_secure_storage_windows
+  flutter_timezone
   gal
   permission_handler_windows
   record_windows
+  rive_common
   sentry_flutter
   share_plus
   url_launcher_windows

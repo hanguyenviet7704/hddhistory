@@ -35,7 +35,26 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureRouteName());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureRouteName();
+      _trackCatlistScrView();
+    });
+  }
+
+  /// Fires the category-list view event once per page mount (initState postFrame
+  /// runs a single time), so it never double-counts on rebuilds. Guards the
+  /// empty-skillset fallback (skillset not yet resolved from the id).
+  void _trackCatlistScrView() {
+    if (!mounted) return;
+    final skillset = AppDI.injector.get<HomeCubit>().state.skillsets.firstWhere(
+          (s) => s.id == widget.skillsetId,
+          orElse: () => const SkillsetEntity(),
+        );
+    if (skillset.id.isEmpty) return;
+    ExploreTracking.track(
+      TrackingKey.exploreCatlistScrView,
+      parameters: ExploreTracking.skillsetParams(skillset),
+    );
   }
 
   @override
@@ -61,9 +80,18 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
 
           return Scaffold(
             key: const Key('skillset-courses-page'),
-            backgroundColor: AppCustomColor.backgroundWhite,
+            // Transparent only when a custom study background is active.
+            backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
+            // The header floats over the background instead of sitting on an
+            // opaque white bar, so the study background runs to the very top of
+            // the screen. The grid below re-adds the header's height as padding.
+            extendBodyBehindAppBar: true,
             appBar: AppBar(
-              backgroundColor: AppCustomColor.backgroundWhite,
+              backgroundColor: Colors.transparent,
+              // Material 3 would otherwise tint the bar once content scrolls
+              // under it, bringing the white band back mid-scroll.
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0,
               elevation: 0,
               centerTitle: true,
               leading: Semantics(
@@ -72,51 +100,74 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
                 child: IconButton(
                   onPressed: () {
                     AppHaptic.select();
+                    ExploreTracking.track(
+                      TrackingKey.exploreCatlistBackClick,
+                      parameters: ExploreTracking.skillsetParams(skillset),
+                    );
                     _backToExplore(context);
                   },
                   constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
                   icon: Icon(
                     Icons.arrow_back_ios_new_rounded,
-                    color: AppCustomColor.textPrimary,
+                    // Lifted to a light ink on a dark study background — the bar
+                    // is transparent now, so the slate default could land on a
+                    // dark photo.
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                     size: 20.w,
                   ),
                 ),
               ),
               title: AppText(
                 skillset.title.text,
-                style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+                style: AppStyle.textBold20.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
               ),
             ),
-            body: sorted.isEmpty
-                ? const CourseEmptyState()
-                : GridView.builder(
-                    key: const Key('skillset-courses-grid'),
-                    // Generous bottom slack: with the exact (no-slack) cell
-                    // extent, Android font metrics can run a few px taller than
-                    // the reserved title box, and 24 left the last row's title
-                    // clipped at max scroll. 48 + the safe-area inset keeps the
-                    // final row fully scrollable clear of the system nav bar.
-                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 48.h + MediaQuery.paddingOf(context).bottom),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: _kCourseGridColGap,
-                      mainAxisSpacing: _kCourseGridRowGap,
-                      // Exact card height (no slack) so the row gap is exactly 24.
-                      mainAxisExtent: _kCourseCardExtent,
+            body: ThemedBackground(
+              child: sorted.isEmpty
+                  ? const CourseEmptyState()
+                  : GridView.builder(
+                      key: const Key('skillset-courses-grid'),
+                      // Generous bottom slack: with the exact (no-slack) cell
+                      // extent, Android font metrics can run a few px taller than
+                      // the reserved title box, and 24 left the last row's title
+                      // clipped at max scroll. 48 + the safe-area inset keeps the
+                      // final row fully scrollable clear of the system nav bar.
+                      // Top inset replaces what the opaque AppBar used to
+                      // occupy: status bar + toolbar, now that the body runs
+                      // behind both.
+                      //
+                      // viewPadding, NOT padding: Scaffold hands the body a
+                      // MediaQuery with the top padding already removed (the
+                      // AppBar is deemed to have consumed it), so `padding.top`
+                      // reads 0 here and the first row would sit on the title.
+                      // viewPadding survives that removal.
+                      padding: EdgeInsets.fromLTRB(
+                        20.w,
+                        MediaQuery.viewPaddingOf(context).top + kToolbarHeight + 8.h,
+                        20.w,
+                        48.h + MediaQuery.paddingOf(context).bottom,
+                      ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: _kCourseGridColGap,
+                        mainAxisSpacing: _kCourseGridRowGap,
+                        // Exact card height (no slack) so the row gap is exactly 24.
+                        mainAxisExtent: _kCourseCardExtent,
+                      ),
+                      itemCount: sorted.length,
+                      itemBuilder: (context, index) {
+                        final course = sorted[index];
+                        final progressInfo = _progressInfoFor(course, progressById);
+                        return _CourseGridCard(
+                          key: ValueKey(course.id),
+                          course: course,
+                          completedLessons: progressInfo.completedLessons,
+                          totalLessons: progressInfo.totalLessons,
+                          onTap: () => _handleCourseTap(context, skillset, course),
+                        );
+                      },
                     ),
-                    itemCount: sorted.length,
-                    itemBuilder: (context, index) {
-                      final course = sorted[index];
-                      final progressInfo = _progressInfoFor(course, progressById);
-                      return _CourseGridCard(
-                        key: ValueKey(course.id),
-                        course: course,
-                        completedLessons: progressInfo.completedLessons,
-                        totalLessons: progressInfo.totalLessons,
-                        onTap: () => _handleCourseTap(context, skillset, course),
-                      );
-                    },
-                  ),
+            ),
           );
         },
       ),
@@ -147,7 +198,15 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   /// back would re-open this grid — an infinite ping-pong. Jumping straight to
   /// the Explore branch (mirrors CourseRoadmapPage._backFromRoadmap) breaks it.
   void _backToExplore(BuildContext context) {
-    final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
+    final homeState = AppDI.injector.get<HomeCubit>().state;
+    // Resolve the target from THIS page's own [skillsetId], not from
+    // `HomeCubit.selectedSkillsetIndex`. That field tracks the Home carousel /
+    // roadmap selection, and Explore's "View more" card opens this page without
+    // ever writing it — so it was whatever Home last pointed at (0 on a fresh
+    // install). Back then jumped Explore to skillset 0, which reads as "it
+    // scrolled to the very top" rather than back to the section departed from.
+    final resolved = homeState.skillsets.indexWhere((s) => s.id == widget.skillsetId);
+    final skillsetIndex = resolved >= 0 ? resolved : homeState.selectedSkillsetIndex;
     AppDI.injector.get<CourseCubit>()
       ..setAllCourseSource('skillset_courses_back')
       ..jumpToSkillset(skillsetIndex);
@@ -157,13 +216,26 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
 
   void _handleCourseTap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {
     if (course.status == CoursePublishStatus.comingSoon) {
-      _showComingSoonSheet(context, course);
+      _showComingSoonSheet(context, course, skillset: skillset);
       return;
     }
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
     }
+    final progress = resolveCourseProgress(
+      course,
+      progressLookup(context.read<ProgressCubit>().state),
+    );
+    ExploreTracking.track(
+      TrackingKey.exploreCourseClick,
+      parameters: {
+        ...ExploreTracking.skillsetParams(skillset),
+        ...ExploreTracking.courseParams(course),
+        'course_state': ExploreTracking.courseState(course, passed: progress.passed, total: progress.total),
+        'source': 'skill_list',
+      },
+    );
     context.read<CourseRoadmapCubit>().setRoadmapSource('skillset_courses');
     context.read<HomeCubit>()
       ..selectSkillset(skillset)

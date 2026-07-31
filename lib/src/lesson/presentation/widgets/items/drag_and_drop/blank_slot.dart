@@ -35,6 +35,11 @@ class BlankSlot extends StatelessWidget {
         if (isFilled && word != null) {
           return Draggable<Map<String, dynamic>>(
             data: {'word': word, 'fromIndex': index},
+            // Pulling a placed word back out is a downward drag — exactly the
+            // direction the deck reads as a backwards swipe. See
+            // [KeypointDeckDragLock].
+            onDragStarted: KeypointDeckDragLock.begin,
+            onDragEnd: (_) => KeypointDeckDragLock.end(),
             feedback: Material(
               elevation: 8,
               borderRadius: BorderRadius.circular(8.r),

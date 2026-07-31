@@ -43,12 +43,14 @@ paymentSuccessToast: 支払いが完了しました
 paywallBannerSubtitle: リアルなロールプレイで学び、シナリオ分岐で練習しよう
 paywallBannerTitle: 実践で学ぶ
 paywallCtaUpgrade: プレミアムにアップグレード
+paywallCtaUpgradePrice: プレミアムにアップグレード · ${price}
 paywallHeroEyebrow: スクロールするだけじゃもったいない。
 paywallHeroSubtitle: MeUp があなたをどう助けるかご覧ください
 paywallHeroTitle: '毎日
 
   何かを学ぼう'
 paywallHighlightSubtitle: すべての機能を解放。いつでも解約可能
+paywallOriginalPriceLabel: 通常価格 ${price}
 paywallPlanAnnual: 年間
 paywallPlanLifetime: 永久
 paywallPlanMonthly: 月間
@@ -65,6 +67,16 @@ pricePerMonth: 月あたり
 pricePerQuarter: 四半期あたり
 pricePerWeek: 週あたり
 pricePerYear: 年あたり
+promoCodeApplied: コードを適用しました
+promoCodeCta: プロモコードをお持ちですか？
+promoCodeErrorExhausted: このコードは利用上限に達しました
+promoCodeErrorExpired: このコードは有効期限が切れています
+promoCodeErrorGeneric: コードを適用できませんでした。もう一度お試しください。
+promoCodeErrorInvalid: このコードは無効です
+promoCodeErrorNotApplicable: このコードはこれらのプランには適用できません
+promoCodeRemove: 削除
+promoSheetApply: コードを適用
+promoSheetTitle: プロモコードを入力
 restore: 購入を復元
 restoreNotFoundToast: 復元できる購入がありません。
 restoreProcessingToast: 購入を復元しています

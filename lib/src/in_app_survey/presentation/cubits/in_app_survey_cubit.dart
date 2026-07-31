@@ -53,13 +53,9 @@ class InAppSurveyCubit extends Cubit<InAppSurveyState> with CubitUseCaseHandlerM
         ),
       ),
     );
-    _trackPopupView(InAppSurveyStep.rating);
   }
 
   void closeSurvey() {
-    if (state.step != InAppSurveyStep.entry && state.step != InAppSurveyStep.hidden) {
-      _trackPopupClose(state.step);
-    }
     emit(_resetDraft(state.copyWith(step: state.hasUsableConfig ? InAppSurveyStep.entry : InAppSurveyStep.hidden)));
   }
 
@@ -79,8 +75,6 @@ class InAppSurveyCubit extends Cubit<InAppSurveyState> with CubitUseCaseHandlerM
         errorMessage: null,
       ),
     );
-    _trackEmojiClick(branch);
-    _trackClosedQuestionView(branch);
   }
 
   void toggleOption(String optionId) {
@@ -97,16 +91,13 @@ class InAppSurveyCubit extends Cubit<InAppSurveyState> with CubitUseCaseHandlerM
     };
 
     emit(state.copyWith(selectedOptionIds: next, errorMessage: null));
-    _trackClosedOptionClick(branch, next);
   }
 
   void continueToOpenFeedback() {
     if (!state.canContinueClosedQuestion) return;
     final branch = state.selectedBranch;
     if (branch == null) return;
-    _trackClosedContinueClick(branch, state.selectedOptionIds);
     emit(state.copyWith(step: InAppSurveyStep.openFeedback, errorMessage: null));
-    _trackOpenQuestionView(branch, state.selectedOptionIds);
   }
 
   void updateFeedback(String value) {
@@ -126,12 +117,10 @@ class InAppSurveyCubit extends Cubit<InAppSurveyState> with CubitUseCaseHandlerM
     );
 
     emit(state.copyWith(isSubmitting: true, errorMessage: null));
-    _trackSendClick(branch, response);
     final result = await _createResponseUseCase(response).run();
 
     result.fold(
       (exception) {
-        _trackSendFailure(branch, response, exception);
         emit(
           state.copyWith(
             status: InAppSurveyStatus.failure,
@@ -141,7 +130,6 @@ class InAppSurveyCubit extends Cubit<InAppSurveyState> with CubitUseCaseHandlerM
         );
       },
       (_) {
-        _trackSendSuccess(branch, response);
         emit(
           _resetDraft(
             state.copyWith(

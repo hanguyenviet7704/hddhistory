@@ -44,32 +44,48 @@ void main() {
   group('resolvePremiumTrackingSource', () {
     final trackingService = AppTrackingService(NoOpTrackingService());
 
-    test('returns auto_open for automatic paywall entry', () {
+    // Values aligned to the tracking sheet's paywall `source` vocabulary
+    // (profile_banner / habit_slot / roadmap / system / theme).
+    test('returns system for automatic paywall entry', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.autoOpen),
-        'auto_open',
+        'system',
       );
     });
 
-    test('returns course_roadmap for roadmap paywall entry', () {
+    test('returns roadmap for roadmap paywall entry', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.courseRoadmap),
-        'course_roadmap',
+        'roadmap',
       );
     });
 
-    test('keeps non-roadmap explicit entries mapped to setting_pre', () {
+    test('returns habit_slot for habit paywall entry', () {
+      expect(
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.habit),
+        'habit_slot',
+      );
+    });
+
+    test('maps profile / settingPre entries to profile_banner', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.profile),
-        'setting_pre',
-      );
-      expect(
-        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.manageSubscription),
-        'setting_pre',
+        'profile_banner',
       );
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.settingPre),
-        'setting_pre',
+        'profile_banner',
+      );
+    });
+
+    test('maps manageSubscription / other entries to system', () {
+      expect(
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.manageSubscription),
+        'system',
+      );
+      expect(
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.other),
+        'system',
       );
     });
   });

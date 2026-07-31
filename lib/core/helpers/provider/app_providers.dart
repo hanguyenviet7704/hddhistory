@@ -16,6 +16,8 @@ class AppProviders extends StatelessWidget {
         BlocProvider<DeeplinkCubit>(create: (_) => AppDI.injector.get<DeeplinkCubit>()),
         BlocProvider<UserCubit>.value(value: AppDI.injector.get<UserCubit>()),
         BlocProvider<PageCubit>.value(value: AppDI.injector.get<PageCubit>()),
+        BlocProvider<StudyThemeCubit>.value(value: AppDI.injector.get<StudyThemeCubit>()),
+        BlocProvider<KeypointDisplayCubit>.value(value: AppDI.injector.get<KeypointDisplayCubit>()),
       ],
       child: ScreenUtilInit(
         designSize: AppGlobalValue.designSize,

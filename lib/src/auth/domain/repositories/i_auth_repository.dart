@@ -8,6 +8,11 @@ abstract interface class IAuthRepository {
   TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body);
   TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body);
   TaskEither<AppException, Unit> logout();
+
+  /// Reports this device's push token + locale + IANA zone so the server can
+  /// schedule notifications for it. Best-effort by nature: a failure must never
+  /// block a login.
+  TaskEither<AppException, Unit> registerPushDevice(Map<String, dynamic> body);
   // TaskEither<AppException, BaseResponse<AuthEntity>> forgotPassword(Map<String, dynamic> body);
   TaskEither<AppException, Unit> resetPassword(Map<String, dynamic> body);
   TaskEither<AppException, Unit> resendOTP(String phone);

@@ -2,6 +2,7 @@ library;
 
 //* Package imports
 import 'package:dio/dio.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -32,6 +33,7 @@ part 'domain/usecases/login_sso_apple_usecase.dart';
 part 'domain/usecases/login_sso_google_usecase.dart';
 part 'domain/usecases/login_usecase.dart';
 part 'domain/usecases/logout_usecase.dart';
+part 'domain/usecases/register_push_device_usecase.dart';
 part 'domain/usecases/refresh_token_usecase.dart';
 part 'domain/usecases/register_usecase.dart';
 part 'domain/usecases/resend_otp_usecase.dart';

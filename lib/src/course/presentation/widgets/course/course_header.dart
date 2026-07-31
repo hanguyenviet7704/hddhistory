@@ -16,6 +16,7 @@ class CourseHeader extends StatelessWidget {
                 ? null
                 : () {
                     AppHaptic.select();
+                    ExploreTracking.track(TrackingKey.exploreSearchClick);
                     context.read<CourseCubit>().activateSearch();
                   },
             child: Container(
@@ -95,6 +96,7 @@ class CourseHeader extends StatelessWidget {
                           if (state.searchQuery.isEmpty) {
                             cubit.deactivateSearch();
                           } else {
+                            ExploreTracking.track(TrackingKey.exploreSearchClearClick);
                             cubit.clearSearchText();
                           }
                         },

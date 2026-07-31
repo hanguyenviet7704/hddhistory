@@ -34,38 +34,76 @@ String _habitGroupTitle(UserHabitEntity h, HabitState state) {
 }
 
 class HabitPage extends StatefulWidget {
-  const HabitPage({super.key});
+  /// Where the tab was opened from (analytics `habit_scr_view.source`). Defaults
+  /// to the bottom-nav tab; other entry points route through the generated
+  /// [HabitRoute] which builds `const HabitPage()`, so they keep the default
+  /// until the route carries a source arg (see task report).
+  final String source;
+
+  const HabitPage({super.key, this.source = 'nav_habit'});
 
   @override
   State<HabitPage> createState() => _HabitPageState();
 }
 
 class _HabitPageState extends State<HabitPage> {
+  // Guards habit_scr_view to once per Habit-tab visit. Reset when the tab stops
+  // being the current route (see the PageCubit listener in build) so the next
+  // entry logs a fresh view — the StatefulShellRoute keeps this page alive, so
+  // initState alone would only ever fire on the very first open.
+  bool _scrViewLogged = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _logScrViewIfActive();
       // Recover from a failed/skipped first load, same self-heal shape as
       // HomeCubit.ensureHomeDataLoaded — no-op when data is already present.
       unawaited(context.read<HabitCubit>().ensureLoaded());
     });
   }
 
+  /// Logs habit_scr_view once per Habit-tab visit, reading the entry-point
+  /// `source` from [HabitCubit] (set by whoever navigated here; defaults to
+  /// nav_habit for a plain bottom-nav tap). No-op unless Habit is the current
+  /// route.
+  void _logScrViewIfActive() {
+    if (!mounted) return;
+    // Habit is shell branch index 4 (ScaffoldLayout._tabToBranch). Key on the
+    // branch index (not currentRouteName) so it fires for BOTH a bottom-nav tap
+    // and a .go() entry that only updates the index.
+    if (context.read<PageCubit>().state.currentIndex != 4) return;
+    if (_scrViewLogged) return;
+    _scrViewLogged = true;
+    final cubit = context.read<HabitCubit>();
+    HabitTracking.scrView(source: cubit.consumePendingScrSource(), isEmpty: cubit.state.userHabits.isEmpty);
+  }
+
   /// Tap the check circle → check-in + diary sheet (PRD §9.7). Refreshes the
   /// tracker afterwards so the tick + counts update.
   Future<void> _openCheckIn(UserHabitEntity userHabit) async {
+    HabitTracking.taskCheck(userHabit);
     final done = await CheckInDiarySheet.show(context, userHabit: userHabit);
     if (done == true && mounted) {
       unawaited(context.read<HabitCubit>().load(showLoading: false));
+    } else {
+      // Sheet dismissed without a check-in.
+      HabitTracking.noteClose();
     }
   }
 
   /// Tap the habit row → Habit detail (PRD §9.8).
-  Future<void> _openDetail(UserHabitEntity userHabit) => HabitDetailPage.show(context, userHabit: userHabit);
+  Future<void> _openDetail(UserHabitEntity userHabit) {
+    HabitTracking.itemOpen(userHabit);
+    return HabitDetailPage.show(context, userHabit: userHabit);
+  }
 
   /// Empty state "Go to course" → Explore tab (PRD §9.5): habits are created
   /// from lessons, so a user with none is sent to browse courses.
   void _goToCourse() {
+    HabitTracking.emptyCourseClick();
     context.read<PageCubit>().setCurrentIndex(3);
     CourseRoute().go(context);
   }
@@ -75,12 +113,19 @@ class _HabitPageState extends State<HabitPage> {
     return BlocListener<PageCubit, PageState>(
       listenWhen: (previous, current) => previous.currentIndex != current.currentIndex,
       listener: (context, state) {
-        // Returning to this tab with nothing loaded (initial retry also
-        // failed) -> try again.
-        unawaited(context.read<HabitCubit>().ensureLoaded());
+        if (state.currentIndex == 4) {
+          // Entered (or returned to) the Habit tab — log this visit's view and
+          // self-heal the data if the initial load failed.
+          _logScrViewIfActive();
+          unawaited(context.read<HabitCubit>().ensureLoaded());
+        } else {
+          // Left the tab — arm the next visit's view log.
+          _scrViewLogged = false;
+        }
       },
       child: Scaffold(
-        backgroundColor: AppCustomColor.backgroundGray,
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
         // No top SafeArea: the green header scene paints edge-to-edge behind
         // the status bar (Figma "Today's task" — the status-bar strip is green,
         // not white). The scene reserves the top inset itself.
@@ -96,7 +141,10 @@ class _HabitPageState extends State<HabitPage> {
                     state: state,
                     onCheckIn: _openCheckIn,
                     onOpenDetail: _openDetail,
-                    onEdit: () => EditHabitSheet.show(context),
+                    onEdit: () {
+                      HabitTracking.editOpen();
+                      EditHabitSheet.show(context);
+                    },
                     onGoToCourse: _goToCourse,
                   ),
                 ],
@@ -127,11 +175,19 @@ class _HabitHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Only true once the user has picked a custom study background — gates the
+    // green "nature" scene below: a custom photo/colour background wins and
+    // the scene is skipped entirely so it can show through unobstructed. The
+    // Default preset keeps the scene exactly as before.
+    final isCustomBg = context.watch<StudyThemeCubit>().state.preset.isCustom;
+
     // The status-bar strip is part of the green scene (Figma): fill the top
     // inset with the scene's top gradient colour so it reads as one continuous
-    // header instead of a white band above the green.
+    // header instead of a white band above the green. On a custom background
+    // that strip is transparent instead, so the background paints all the way
+    // to the top of the screen.
     final topInset = MediaQuery.paddingOf(context).top;
-    final statusBarCover = Container(width: double.infinity, height: topInset, color: _kHabitHeaderTopGreen);
+    final statusBarCover = Container(width: double.infinity, height: topInset, color: isCustomBg ? Colors.transparent : _kHabitHeaderTopGreen);
 
     // Figma "Empty" (11418:15157): the green scene carries no title at all —
     // just the decorative backdrop — only when the user has never adopted a
@@ -141,7 +197,7 @@ class _HabitHeader extends StatelessWidget {
       return Column(
         children: [
           statusBarCover,
-          SizedBox(width: double.infinity, height: 140.h, child: const _HabitHeaderScene()),
+          if (!isCustomBg) SizedBox(width: double.infinity, height: 140.h, child: const _HabitHeaderScene()),
         ],
       );
     }
@@ -160,7 +216,7 @@ class _HabitHeader extends StatelessWidget {
           height: 140.h,
           child: Stack(
             children: [
-              const Positioned.fill(child: _HabitHeaderScene()),
+              if (!isCustomBg) const Positioned.fill(child: _HabitHeaderScene()),
               Positioned(
                 left: 20.w,
                 right: 20.w,
@@ -169,9 +225,9 @@ class _HabitHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppText(title, style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary)),
+                    AppText(title, style: AppStyle.textBold24.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary))),
                     4.verticalSpace,
-                    AppText(subtitle, style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted)),
+                    AppText(subtitle, style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.streakTextMuted))),
                   ],
                 ),
               ),
@@ -288,13 +344,17 @@ class _HabitBody extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AppText(context.l10n.habit.loadErrorTitle, style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary)),
+              AppText(context.l10n.habit.loadErrorTitle, style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.textTertiary))),
               12.verticalSpace,
-              DButton(
-                text: context.l10n.habit.loadErrorRetryButton,
-                backgroundColor: AppCustomColor.brandPrimary,
-                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-                onPressed: () => context.read<HabitCubit>().load(),
+              SizedBox(
+                width: 200.w,
+                child: DButton(
+                  text: context.l10n.habit.loadErrorRetryButton,
+                  backgroundColor: AppCustomColor.brandPrimary,
+                  size: Size(double.infinity, 44.h),
+                  style: AppStyle.textBold14.copyWith(color: AppCustomColor.textWhite),
+                  onPressed: () => context.read<HabitCubit>().load(),
+                ),
               ),
             ],
           ),
@@ -319,12 +379,13 @@ class _HabitBody extends StatelessWidget {
 
     // Figma "Today's task": content lives on the soft-gray body (flush under the
     // green header), holding one white card per category (the "problem" a
-    // cluster of habits addresses).
+    // cluster of habits addresses). Transparent only when a custom study
+    // background is active, so it shows through instead of the flat gray.
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Container(
         width: double.infinity,
-        color: AppCustomColor.backgroundGray,
+        color: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
         padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 120.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,11 +414,11 @@ class _HabitBody extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit_outlined, size: 20.w, color: AppCustomColor.textQuaternary),
+                      Icon(Icons.edit_outlined, size: 20.w, color: studyThemeOnBg(context, AppCustomColor.textQuaternary)),
                       8.horizontalSpace,
                       AppText(
                         context.l10n.habit.editHabitLink,
-                        style: AppStyle.text14.copyWith(color: AppCustomColor.textQuaternary, fontWeight: FontWeight.w700),
+                        style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.textQuaternary), fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -388,40 +449,40 @@ class _HabitCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.only(bottom: 8.h),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: ThemedGlassCard(
+        padding: EdgeInsets.all(16.w),
+        radius: 12,
+        shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(bottom: 8.h),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
+              ),
+              child: AppText(
+                title,
+                // The "why" header sits inside a translucent glass card; the
+                // muted slate loses contrast over a custom background (dark bleeds
+                // through), so darken it there via studyThemeCardMuted while
+                // keeping the Figma muted slate on the stock white card.
+                style: AppStyle.text14.copyWith(color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted), fontWeight: FontWeight.w600),
+              ),
             ),
-            child: AppText(
-              title,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w600),
-            ),
-          ),
-          // Figma "Today's task": task rows stack with no divider between them
-          // — only the category header keeps its bottom border.
-          for (final userHabit in userHabits)
-            HabitTaskRow(
-              userHabit: userHabit,
-              onCheckInTap: () => onCheckIn(userHabit),
-              onOpenDetail: () => onOpenDetail(userHabit),
-            ),
-        ],
+            // Figma "Today's task": task rows stack with no divider between
+            // them — only the category header keeps its bottom border.
+            for (final userHabit in userHabits)
+              HabitTaskRow(
+                userHabit: userHabit,
+                onCheckInTap: () => onCheckIn(userHabit),
+                onOpenDetail: () => onOpenDetail(userHabit),
+              ),
+          ],
+        ),
       ),
     );
   }

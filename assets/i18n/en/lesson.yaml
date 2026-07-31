@@ -7,6 +7,24 @@ audioRetry: Try again
 audioSpeedNormal: Normal
 audioSpeedSuffix: speed
 audioSpeedTitle: Speed
+checkAnswerButton: Check answer
+textDisplayTitle: Text display
+fontSizeLabel: Size
+fontFamilyLabel: Font
+fontDefaultLabel: Default
+fontSerifLabel: Serif
+fontCourierLabel: Courier
+backgroundMusicLabel: Background music
+startLearningLabel: Start
+doneCardTitle: Keypoint complete
+doneCardSubtitle: Nice work — you covered everything in this keypoint.
+narrationPlaySemantics: Play narration
+narrationPauseSemantics: Pause narration
+cardProgressSemantics: Card ${current} of ${total}
+cardSwipeHint: Swipe up to continue
+cardSwipeBlockedHint: Choose an answer to continue
+cardSwipeReviewHint: Swipe down to review
+cardNotReachedHint: Answer the question above to open this one
 charCounter: ${currentChars}/${maxChars} chars
 checkButton: Check
 closePopupDescription: Your lesson will not be saved if you quit now.

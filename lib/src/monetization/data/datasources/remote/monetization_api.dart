@@ -11,4 +11,7 @@ abstract class MonetizationApi {
 
   @POST(AppEndpoint.verify)
   Future<BaseResponse<IapVerifyModel>> verify(@Body() Map<String, dynamic> params);
+
+  @POST(AppEndpoint.voucherValidate)
+  Future<BaseResponse<VoucherValidationModel>> validateVoucher(@Body() Map<String, dynamic> params);
 }

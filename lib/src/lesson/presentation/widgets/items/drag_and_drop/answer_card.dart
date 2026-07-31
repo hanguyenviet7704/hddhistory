@@ -1,5 +1,12 @@
 part of '../../../../lesson.dart';
 
+/// A draggable word chip in the text-gap-filling word bank (Keypoint v2
+/// design): white, lightly bordered and lifted by its own shadow, so the chips
+/// read as loose pieces on the card rather than rows in a list.
+///
+/// [isInvisible] is the gap left behind while the chip is being dragged — the
+/// design keeps a flat grey placeholder there so the bank does not reflow
+/// mid-drag.
 class AnswerCard extends StatelessWidget {
   final String word;
   final bool isDragging;
@@ -9,32 +16,48 @@ class AnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isInvisible) {
+      return Container(
+        constraints: BoxConstraints(minWidth: 80.w, minHeight: 44.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.kpChipPlaceholder,
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+      );
+    }
+
+    // No `alignment` here — it would turn this into an Align that expands to
+    // the word bank's full width, so every chip became a full-width row.
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      constraints: BoxConstraints(minHeight: 44.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: isInvisible ? const Color(0xFFEEF2F6) : Colors.white,
+        color: AppCustomColor.backgroundWhite,
         border: Border.all(
-          color: isInvisible ? const Color(0xFFEEF2F6) : const Color(0xFFE3E8EF),
-          width: 2,
+          color: isDragging ? AppCustomColor.brandPrimary : AppCustomColor.kpOptionBorder,
+          width: 1.5,
         ),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: isDragging
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppCustomColor.neutral01.withValues(alpha: isDragging ? 0.12 : 0.05),
+            blurRadius: isDragging ? 20.r : 16.r,
+            offset: Offset(0, isDragging ? 8.h : 6.h),
+          ),
+        ],
       ),
-      child: AppText(
-        word,
-        style: AppStyle.text14.copyWith(
-          fontWeight: FontWeight.w400,
-          color: isInvisible ? Colors.transparent : const Color(0xFF364152),
-          height: 1.5,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            word,
+            style: AppStyle.text14.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppCustomColor.textPrimary,
+              height: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }

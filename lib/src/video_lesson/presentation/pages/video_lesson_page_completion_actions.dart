@@ -20,15 +20,11 @@ extension _VideoLessonPageCompletionActions on _VideoLessonPageState {
     if (_isHandlingCompletionSuccess || _hasTrackedExit || !mounted) return;
     _isHandlingCompletionSuccess = true;
 
-    LearningStreakCompletionGateResult gateResult;
-    try {
-      gateResult = await LearningStreakCompletionGate.run(context);
-    } catch (_) {
-      gateResult = LearningStreakCompletionGateResult.failedOpen;
-    }
-
+    // The streak popup used to be raised here, on keypoint completion. It now
+    // fires on time spent in the app instead ([StreakPopupScheduler]), so this
+    // path only has to get out of the way of whatever modal is already up.
     if (!mounted || _hasTrackedExit) return;
-    if (gateResult == LearningStreakCompletionGateResult.skippedBlockedModal) {
+    if (LearningStreakModalGuard.hasBlockingModal(context)) {
       await _waitForCurrentRouteBeforeCompletionExit();
       if (!mounted || _hasTrackedExit) return;
     }

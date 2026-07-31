@@ -5,7 +5,6 @@ enum AdoptHabitResult { success, slotFull, failure }
 @lazySingleton
 class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitState> {
   final GetHabitsUseCase _getHabitsUseCase;
-  final GetUserHabitsUseCase _getUserHabitsUseCase;
   final GetUserHabitsSummaryUseCase _getSummaryUseCase;
   final AdoptHabitUseCase _adoptUseCase;
   final UpdateUserHabitUseCase _updateUseCase;
@@ -14,10 +13,11 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final GetHabitCheckinsUseCase _getCheckinsUseCase;
   final GetReanchorReasonsUseCase _getReanchorReasonsUseCase;
   final GetHabitConfigUseCase _getHabitConfigUseCase;
+  final GetHabitScreenUseCase _getHabitScreenUseCase;
+  final GetCachedHabitScreenUseCase _getCachedHabitScreenUseCase;
 
   HabitCubit(
     this._getHabitsUseCase,
-    this._getUserHabitsUseCase,
     this._getSummaryUseCase,
     this._adoptUseCase,
     this._updateUseCase,
@@ -26,9 +26,31 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._getCheckinsUseCase,
     this._getReanchorReasonsUseCase,
     this._getHabitConfigUseCase,
+    this._getHabitScreenUseCase,
+    this._getCachedHabitScreenUseCase,
   ) : super(HabitState.initial());
 
   Future<void>? _ensureInFlight;
+
+  /// When the last SUCCESSFUL network load landed. Drives the freshness guard in
+  /// [ensureLoaded] (see [resolveHabitReloadAction]) so a confirmed-empty tab
+  /// isn't refetched behind a spinner on every entry. Deliberately off the
+  /// freezed state — it's a fetch bookkeeping detail, not UI state.
+  DateTime? _lastLoadedAt;
+
+  /// Analytics entry-point for the NEXT `habit_scr_view` (spec source set:
+  /// nav_habit / home_banner / home_habit / habit_added_scr). Entry points set
+  /// it right before navigating to the Habit tab; [HabitPage] consumes it when
+  /// it logs the view. Defaults back to `nav_habit` after each read so a plain
+  /// bottom-nav visit (which sets nothing) is reported correctly. Kept off the
+  /// freezed state on purpose — it's transient routing metadata, not UI state.
+  String _pendingScrSource = 'nav_habit';
+  void setPendingScrSource(String source) => _pendingScrSource = source;
+  String consumePendingScrSource() {
+    final source = _pendingScrSource;
+    _pendingScrSource = 'nav_habit';
+    return source;
+  }
 
   /// Wipe all per-user habit state on an account switch / logout. HabitCubit is
   /// a lazySingleton, so without this the next account (guest → login, or
@@ -38,6 +60,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   /// `_ensureInFlight` lets the next `ensureLoaded()` actually refetch.
   void reset() {
     _ensureInFlight = null;
+    _lastLoadedAt = null;
     emit(HabitState.initial());
   }
 
@@ -67,19 +90,68 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     emit(state.copyWith(reanchorReasonByCourse: {...state.reanchorReasonByCourse, courseId: reason}));
   }
 
+  /// Loads the Habit tab's tracker + summary + slot cap in a single combined
+  /// request (`GetHabitScreenUseCase` → `GET /user-habits/screen`), replacing
+  /// three separate round trips.
+  ///
+  /// Cache-first (stale-while-revalidate): when nothing is in memory yet, the
+  /// last cached screen is rendered immediately — no blank spinner on a warm
+  /// start — before the network refresh resolves and reconciles it. Skipped
+  /// once data is already in memory (pull-to-refresh, a second concurrent
+  /// call) so a refresh never flashes stale cache over what's already shown.
   Future<void> load({bool showLoading = true}) async {
-    if (showLoading) emit(state.copyWith(status: HabitPageStatus.loading));
-    final result = await _getUserHabitsUseCase().run();
-    result.fold(
-      (exception) => emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: exception.toString())),
+    var renderedFromCache = false;
+    if (state.userHabits.isEmpty) {
+      final cached = await _getCachedHabitScreenUseCase();
+      if (cached != null && state.userHabits.isEmpty) {
+        renderedFromCache = true;
+        emit(
+          state.copyWith(
+            status: HabitPageStatus.success,
+            userHabits: cached.habits,
+            summary: cached.summary,
+            freeActiveSlots: cached.freeActiveSlots,
+          ),
+        );
+      }
+    }
+
+    await runUseCase<HabitScreenEntity>(
+      usecase: () => _getHabitScreenUseCase(),
+      // Only block on the spinner when there's genuinely nothing to show.
+      // `renderedFromCache` covers the case the list check can't: a cache entry
+      // that legitimately holds ZERO habits was still "empty", so a brand-new
+      // user got a spinner over an answer we already had — show the empty state
+      // straight away and let the refresh reconcile behind it. showLoading:
+      // false (pull-to-refresh, app-resume, stale revalidation) never shows it,
+      // keeping the current list visible mid-refresh.
+      buildLoadingState: (showLoading && !renderedFromCache && state.userHabits.isEmpty) ? () => state.copyWith(status: HabitPageStatus.loading) : null,
+      onFailure: (error) {
+        // Keep already-shown (cached or in-memory) data on a failed refresh;
+        // only surface the error state when there is nothing to fall back to.
+        if (state.userHabits.isEmpty) {
+          emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: error));
+        }
+      },
       // A cluster's title reflects ONLY the re-anchor reason the user actually
       // picked — either stored on the habit at adopt time (h.reanchorReason)
       // or captured this session (reanchorReasonByCourse). We never backfill a
       // course's library reason, so a "why" the user didn't choose can't appear.
-      (userHabits) => emit(state.copyWith(status: HabitPageStatus.success, userHabits: userHabits, errorMessage: null)),
+      onSuccess: (screen) {
+        // Mark the moment a real fetch confirmed the screen — including a
+        // confirmed-EMPTY one, which is what stops the refetch-on-every-entry.
+        _lastLoadedAt = DateTime.now();
+        emit(
+          state.copyWith(
+            status: HabitPageStatus.success,
+            userHabits: screen.habits,
+            summary: screen.summary,
+            freeActiveSlots: screen.freeActiveSlots,
+            errorMessage: null,
+          ),
+        );
+      },
     );
-    unawaited(loadSummary());
-    unawaited(loadFreeSlots());
   }
 
   /// Refresh the admin-configured free slot cap; on failure keep the current
@@ -100,16 +172,21 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     );
   }
 
-  /// Self-heal for the Habit tab: refetches when nothing is loaded yet (a
-  /// failed/skipped first load) or the tab is genuinely empty (new user who
-  /// hasn't adopted a habit — this also refetches, an accepted trade-off,
-  /// mirroring [shouldSelfHealHomeData]). No-op mid-load, so it's safe to
-  /// call on every page mount and tab return.
+  /// Self-heal for the Habit tab, safe to call on every page mount and tab
+  /// return. [resolveHabitReloadAction] decides between three outcomes: block
+  /// with a spinner (nothing loaded yet / previous attempt failed), do nothing
+  /// (a recent load already confirmed the screen — including a confirmed-empty
+  /// one), or revalidate silently once that load goes stale.
   Future<void> ensureLoaded() {
     final inFlight = _ensureInFlight;
     if (inFlight != null) return inFlight;
-    if (!shouldEnsureHabitsReload(state)) return Future.value();
-    final future = load().whenComplete(() => _ensureInFlight = null);
+    final action = resolveHabitReloadAction(
+      status: state.status,
+      lastLoadedAt: _lastLoadedAt,
+      now: DateTime.now(),
+    );
+    if (action == HabitReloadAction.none) return Future.value();
+    final future = load(showLoading: action == HabitReloadAction.blocking).whenComplete(() => _ensureInFlight = null);
     _ensureInFlight = future;
     return future;
   }

@@ -59,8 +59,12 @@ class HabitTaskRow extends StatelessWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: done ? AppCustomColor.streakActive : Colors.transparent,
-                        border: done ? null : Border.all(color: AppCustomColor.neutral300, width: 2),
+                        // Unchecked: a faint white fill + a mid-slate ring
+                        // (textTertiary, not the pale neutral300) so the target
+                        // stays clearly visible on a translucent themed card
+                        // instead of dissolving into it.
+                        color: done ? AppCustomColor.streakActive : AppCustomColor.backgroundWhite.op(0.45),
+                        border: done ? null : Border.all(color: AppCustomColor.textTertiary, width: 2),
                       ),
                       child: done ? Icon(Icons.check_rounded, size: 14.w, color: AppCustomColor.textWhite) : null,
                     ),

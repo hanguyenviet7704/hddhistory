@@ -62,32 +62,37 @@ class _CoursePageState extends State<CoursePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: const Key('course-page'),
-      backgroundColor: AppCustomColor.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            16.verticalSpace,
-            const CourseHeader(),
-            12.verticalSpace,
-            BlocBuilder<CourseCubit, CourseState>(
-              buildWhen: (prev, curr) => prev.isSearchActive != curr.isSearchActive,
-              builder: (context, state) {
-                if (state.isSearchActive) {
-                  return const Expanded(child: CourseSearchView());
-                }
-                return Expanded(
-                  child: Column(
-                    children: [
-                      const _CourseFilterTabBar(),
-                      12.verticalSpace,
-                      const Expanded(child: AllCourseTab()),
-                    ],
-                  ),
-                );
-              },
+      // Transparent only when a custom study background is active.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                16.verticalSpace,
+                const CourseHeader(),
+                12.verticalSpace,
+                BlocBuilder<CourseCubit, CourseState>(
+                  buildWhen: (prev, curr) => prev.isSearchActive != curr.isSearchActive,
+                  builder: (context, state) {
+                    if (state.isSearchActive) {
+                      return const Expanded(child: CourseSearchView());
+                    }
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          const _CourseFilterTabBar(),
+                          12.verticalSpace,
+                          const Expanded(child: AllCourseTab()),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -123,7 +128,16 @@ class _CourseFilterTabBar extends StatelessWidget {
                 key: const Key('course-filter-tab-bar'),
                 skillsets: homeState.skillsets,
                 selectedIndex: selectedIndex,
-                onChipTap: (i) => context.read<CourseCubit>().jumpToSkillset(i),
+                onChipTap: (i) {
+                  final skillsets = homeState.skillsets;
+                  if (i >= 0 && i < skillsets.length) {
+                    ExploreTracking.track(
+                      TrackingKey.exploreCatChipClick,
+                      parameters: ExploreTracking.skillsetParams(skillsets[i]),
+                    );
+                  }
+                  context.read<CourseCubit>().jumpToSkillset(i);
+                },
               ),
             );
           },

@@ -21,6 +21,10 @@ class _WarmUpQuestionPageState extends State<WarmUpQuestionPage> {
     // page sets its own (non-primary) route name to hide the shell's floating
     // nav (mirrors keypoint_complete_page). Runs after nav → wins.
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.warmUpQuestion);
+    WarmUpTracking.track(
+      TrackingKey.warmupQuizScrView,
+      parameters: WarmUpTracking.courseParams(AppDI.injector.get<WarmUpCubit>().state.courseId),
+    );
   }
 
   @override
@@ -43,7 +47,16 @@ class _WarmUpQuestionPageState extends State<WarmUpQuestionPage> {
         final cubit = context.read<WarmUpCubit>();
         return DailyWarmUpQuestionStep(
           state: state.asDailyWarmUpState,
+          // Design item 11 — this is the return-refresher quiz (a distinct
+          // flow from the daily_warm_up mini check-in that also renders
+          // through this shared widget), so it alone opts into the study
+          // background + glass question card.
+          applyStudyTheme: true,
           onClose: () {
+            WarmUpTracking.track(
+              TrackingKey.warmupQuizExit,
+              parameters: WarmUpTracking.courseParams(cubit.state.courseId),
+            );
             cubit.closeFlow();
             if (context.canPop()) context.pop();
           },

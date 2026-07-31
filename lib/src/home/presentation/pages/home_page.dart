@@ -3,15 +3,12 @@ part of '../../home.dart';
 /// Soft shadow shared by every white card on the redesigned Home
 /// (design: `0 6px 18px rgba(37,37,37,.05)`).
 List<BoxShadow> get _homeCardShadow => [
-      BoxShadow(
-        color: const Color(0x0D252525),
-        offset: Offset(0, 6.h),
-        blurRadius: 18.r,
-      ),
-    ];
-
-/// Flat gray-lavender page background behind the white cards (design #EFEEF9).
-const Color _homeBackground = Color(0xFFEFEEF9);
+  BoxShadow(
+    color: const Color(0x0D252525),
+    offset: Offset(0, 6.h),
+    blurRadius: 18.r,
+  ),
+];
 
 /// Heading/title helper. Uses the app's default font (Mulish, `AppFont.mulish`)
 /// so Home matches the rest of the app (e.g. the Habit screens) — the earlier
@@ -23,15 +20,14 @@ TextStyle _poppins(
   Color color = AppCustomColor.textPrimary,
   double? height,
   double? letterSpacing,
-}) =>
-    TextStyle(
-      fontFamily: AppFont.mulish,
-      fontSize: size.sp,
-      fontWeight: weight,
-      color: color,
-      height: height,
-      letterSpacing: letterSpacing,
-    );
+}) => TextStyle(
+  fontFamily: AppFont.mulish,
+  fontSize: size.sp,
+  fontWeight: weight,
+  color: color,
+  height: height,
+  letterSpacing: letterSpacing,
+);
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -71,6 +67,9 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
       // And for the recommended-courses strip, hidden when empty.
       unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
+      // Optional-update header: surface the pinned banner when a newer,
+      // non-forced app version exists (forced updates are gated at splash).
+      unawaited(context.read<HomeCubit>().checkOptionalUpdate());
       // Habit data so the check-in reminder card (§9.4) knows today's count.
       unawaited(AppDI.injector.get<HabitCubit>().ensureLoaded());
       await _prefetchLearningStreak();
@@ -94,9 +93,15 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
   /// recap), so this stays a no-op cost on most Home opens.
   Future<void> _maybeOpenWeeklyRecap() async {
     final habitCubit = AppDI.injector.get<HabitCubit>();
-    // Make sure habits are loaded before reading activeHabits (cold start:
-    // this runs after the paywall/warm-up gates, but the habit fetch kicked
-    // off in initState may not have landed yet).
+    // Already know there's nothing to recap → don't await anything. Without this
+    // an account with no active habits still blocked here on a habit fetch whose
+    // result is guaranteed to fail the check on the next line (and once the
+    // in-memory data goes stale, ensureLoaded() awaits a full round-trip to
+    // revalidate a screen this method won't use).
+    if (habitCubit.state.status == HabitPageStatus.success && habitCubit.state.activeHabits.isEmpty) return;
+    // Otherwise make sure habits are loaded before reading activeHabits (cold
+    // start: this runs after the paywall/warm-up gates, but the habit fetch
+    // kicked off in initState may not have landed yet).
     await habitCubit.ensureLoaded();
     if (!mounted || habitCubit.state.activeHabits.isEmpty) return;
     await habitCubit.loadSummary();
@@ -127,100 +132,122 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         listener: (context, state) => _handleSurveyStateChanged(state),
         child: Scaffold(
           key: const Key('home-page'),
-          backgroundColor: _homeBackground,
+          // Transparent only when a custom study background is active (so it
+          // shows through); otherwise the stock flat lavender is preserved.
+          backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFEFEEF9)),
           body: SafeBody(
-            child: Stack(
+            // Optional-update header is pinned ABOVE the scroll so it stays
+            // fixed while Home content scrolls under it. Shown only when a
+            // newer, non-forced version exists and the user hasn't dismissed
+            // it this session (see HomeCubit.checkOptionalUpdate).
+            child: Column(
               children: [
-                RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<HomeCubit>().initializeData(isInit: true, force: true);
-                    await _prefetchLearningStreak();
-                    final didOpenPaywall = await _tryOpenPaywallAutoOpen();
-                    if (didOpenPaywall) return;
-                    final didOpenWarmUp = await _tryOpenDailyWarmUp();
-                    if (!didOpenWarmUp) await _loadInAppSurveyConfig();
+                BlocSelector<HomeCubit, HomeState, bool>(
+                  selector: (state) => state.showUpdateBanner,
+                  builder: (context, showUpdateBanner) {
+                    if (!showUpdateBanner) return const SizedBox.shrink();
+                    return UpdateHeader(
+                      onDismiss: () => context.read<HomeCubit>().dismissUpdateBanner(),
+                    );
                   },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    // Each section owns its own horizontal padding (20) so the
-                    // "Jump back in" / "Recommended" horizontal strips can bleed
-                    // to the screen edge; only vertical padding lives here.
-                    padding: EdgeInsets.only(top: 8.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── Greeting ──────────────────────────────────────
-                        const _HomeGreeting(),
-                        26.verticalSpace,
-
-                        // ── Weekly streak ────────────────────────────────
-                        const _HomeWeeklyStreakCard(),
-                        26.verticalSpace,
-
-                        // ── Jump back in (in-progress courses) ───────────
-                        BlocBuilder<ProgressCubit, ProgressState>(
-                          // Only myCoursesPageData drives this section — see the
-                          // original buildWhen note: ProgressCubit also emits on
-                          // frequent mid-lesson progress updates we don't need here.
-                          buildWhen: (previous, current) => previous.myCoursesPageData != current.myCoursesPageData,
-                          builder: (context, state) {
-                            // Only surface courses with something left to
-                            // continue — a 100%-complete course drops out.
-                            final inProgress = state.myCourses.where((c) => c.completionPercentage < 100).toList();
-                            if (inProgress.isEmpty) return const SizedBox.shrink();
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: 28.h),
-                              child: _JumpBackInSection(courses: inProgress),
-                            );
-                          },
-                        ),
-
-                        // ── Quick tiles: Explore · Today's habit ─────────
-                        const _HomeQuickTiles(),
-                        28.verticalSpace,
-
-                        // ── Motivation quote ─────────────────────────────
-                        const HomeQuoteCard(),
-
-                        // ── Recommended ──────────────────────────────────
-                        _RecommendedSection(
-                          onSeeAll: () {
-                            context.read<CourseCubit>()
-                              ..setAllCourseSource('home_recommend_view')
-                              ..resetExploreToAll();
-                            // Switch to the Explore shell branch (index 3).
-                            context.read<PageCubit>().setCurrentIndex(3);
-                            CourseRoute().go(context);
-                          },
-                        ),
-
-                        // ── Got ideas? feedback banner ───────────────────
-                        GotIdeasBanner(onTap: _openInAppSurveyDialog),
-
-                        // Bottom padding — clear the floating nav bar and, when
-                        // showing, the habit reminder card that floats above it
-                        // (see the Positioned below), otherwise the banner stays
-                        // clipped under those overlays.
-                        BlocBuilder<HabitCubit, HabitState>(
-                          bloc: AppDI.injector.get<HabitCubit>(),
-                          buildWhen: (previous, current) => previous.showHomeReminder != current.showHomeReminder,
-                          builder: (context, state) {
-                            final extra = state.showHomeReminder ? 8.h + 80.h + 16.h : 16.h;
-                            return SizedBox(height: floatingNavBarHeight(context) + extra);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<HomeCubit>().initializeData(isInit: true, force: true);
+                          await _prefetchLearningStreak();
+                          final didOpenPaywall = await _tryOpenPaywallAutoOpen();
+                          if (didOpenPaywall) return;
+                          final didOpenWarmUp = await _tryOpenDailyWarmUp();
+                          if (!didOpenWarmUp) await _loadInAppSurveyConfig();
+                        },
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          // Each section owns its own horizontal padding (20) so the
+                          // "Jump back in" / "Recommended" horizontal strips can bleed
+                          // to the screen edge; only vertical padding lives here.
+                          padding: EdgeInsets.only(top: 8.h),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // ── Greeting ──────────────────────────────────────
+                              const _HomeGreeting(),
+                              26.verticalSpace,
 
-                // Habit check-in reminder — floats above the bottom nav
-                // (PRD §9.4). Renders nothing when there's nothing to check in.
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: floatingNavBarHeight(context) + 8.h,
-                  child: const HomeHabitReminderCard(),
+                              // ── Weekly streak ────────────────────────────────
+                              const _HomeWeeklyStreakCard(),
+                              26.verticalSpace,
+
+                              // ── Jump back in (in-progress courses) ───────────
+                              BlocBuilder<ProgressCubit, ProgressState>(
+                                // Only myCoursesPageData drives this section — see the
+                                // original buildWhen note: ProgressCubit also emits on
+                                // frequent mid-lesson progress updates we don't need here.
+                                buildWhen: (previous, current) => previous.myCoursesPageData != current.myCoursesPageData,
+                                builder: (context, state) {
+                                  // Only surface courses with something left to
+                                  // continue — a 100%-complete course drops out.
+                                  final inProgress = state.myCourses.where((c) => c.completionPercentage < 100).toList();
+                                  if (inProgress.isEmpty) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 28.h),
+                                    child: _JumpBackInSection(courses: inProgress),
+                                  );
+                                },
+                              ),
+
+                              // ── Quick tiles: Explore · Today's habit ─────────
+                              const _HomeQuickTiles(),
+                              28.verticalSpace,
+
+                              // ── Motivation quote ─────────────────────────────
+                              const HomeQuoteCard(),
+
+                              // ── Recommended ──────────────────────────────────
+                              _RecommendedSection(
+                                onSeeAll: () {
+                                  HomeTracking.track(TrackingKey.homeRcmSeeallClick);
+                                  context.read<CourseCubit>()
+                                    ..setAllCourseSource('home_recommend_view')
+                                    ..resetExploreToAll();
+                                  // Switch to the Explore shell branch (index 3).
+                                  context.read<PageCubit>().setCurrentIndex(3);
+                                  CourseRoute().go(context);
+                                },
+                              ),
+
+                              // ── Got ideas? feedback banner ───────────────────
+                              GotIdeasBanner(onTap: _openInAppSurveyDialog),
+
+                              // Bottom padding — clear the floating nav bar and, when
+                              // showing, the habit reminder card that floats above it
+                              // (see the Positioned below), otherwise the banner stays
+                              // clipped under those overlays.
+                              BlocBuilder<HabitCubit, HabitState>(
+                                bloc: AppDI.injector.get<HabitCubit>(),
+                                buildWhen: (previous, current) => previous.showHomeReminder != current.showHomeReminder,
+                                builder: (context, state) {
+                                  final extra = state.showHomeReminder ? 8.h + 80.h + 16.h : 16.h;
+                                  return SizedBox(height: floatingNavBarHeight(context) + extra);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Habit check-in reminder — floats above the bottom nav
+                      // (PRD §9.4). Renders nothing when there's nothing to check in.
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: floatingNavBarHeight(context) + 8.h,
+                        child: const HomeHabitReminderCard(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -271,25 +298,35 @@ class _HomeGreeting extends StatelessWidget {
         builder: (context, username) {
           final firstName = username.trim().split(' ').first;
           final greeting = firstName.isEmpty ? context.l10n.home.homeGreetingPrefix : '${context.l10n.home.homeGreetingPrefix}, $firstName';
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AppText(
-                greeting,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppStyle.text14.copyWith(
-                  fontSize: 15.sp,
-                  color: AppCustomColor.streakTextMuted,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      greeting,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppStyle.text14.copyWith(
+                        fontSize: 15.sp,
+                        color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                      ),
+                    ),
+                    2.verticalSpace,
+                    AppText(
+                      context.l10n.home.homeMindQuestion,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: _poppins(21, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+                    ),
+                  ],
                 ),
               ),
-              2.verticalSpace,
-              AppText(
-                context.l10n.home.homeMindQuestion,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: _poppins(21, FontWeight.w700),
-              ),
+              12.horizontalSpace,
+              // Design item 2 — "Change background" affordance in the header.
+              const ChangeBackgroundButton(source: 'home'),
             ],
           );
         },
@@ -307,52 +344,44 @@ class _HomeWeeklyStreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Display-only streak card: tapping it no longer opens the streak detail
+    // (removed per request) — it's a passive weekly summary now.
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Semantics(
-        button: true,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            AppHaptic.select();
-            const HomeLearningStreakRoute().push(context);
-          },
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
-            decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: _homeCardShadow,
-            ),
-            child: BlocSelector<LearningStreakCubit, LearningStreakState, ({int streak, List<bool> week})>(
-              selector: (state) => (
-                streak: state.selectedItem.currentStreak,
-                week: state.selectedItem.normalizedWeekStudy,
-              ),
-              builder: (context, data) {
-                return Column(
-                  children: [
-                    // Header is always the motivational prompt (design copy),
-                    // not an "N days streak" count — the streak itself is shown
-                    // by the day dots below.
-                    AppText(
-                      context.l10n.home.homeStreakEmptyPrompt,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      style: AppStyle.text12.copyWith(
-                        fontSize: 13.sp,
-                        color: AppCustomColor.streakTextMuted,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    14.verticalSpace,
-                    StreakWeekBar(weekStudy: data.week),
-                  ],
-                );
-              },
-            ),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: studyThemeCardColor(context),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: _homeCardShadow,
+        ),
+        child: BlocSelector<LearningStreakCubit, LearningStreakState, ({int streak, List<bool> week})>(
+          selector: (state) => (
+            streak: state.selectedItem.currentStreak,
+            week: state.selectedItem.normalizedWeekStudy,
           ),
+          builder: (context, data) {
+            return Column(
+              children: [
+                // Header is always the motivational prompt (design copy),
+                // not an "N days streak" count — the streak itself is shown
+                // by the day dots below.
+                AppText(
+                  context.l10n.home.homeStreakEmptyPrompt,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text12.copyWith(
+                    fontSize: 13.sp,
+                    color: AppCustomColor.streakTextMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                14.verticalSpace,
+                StreakWeekBar(weekStudy: data.week),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -398,7 +427,7 @@ class _JumpBackInSectionState extends State<_JumpBackInSection> {
         AppText(
           context.l10n.home.homeJumpBackIn,
           margin: EdgeInsets.symmetric(horizontal: 20.w),
-          style: _poppins(18, FontWeight.w700),
+          style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         SizedBox(
@@ -409,7 +438,10 @@ class _JumpBackInSectionState extends State<_JumpBackInSection> {
           child: PageView.builder(
             controller: _pageController,
             padEnds: false,
-            onPageChanged: (i) => setState(() => _currentIndex = i),
+            onPageChanged: (i) {
+              HomeTracking.track(TrackingKey.homeContinueSwipe, parameters: {'to_index': i});
+              setState(() => _currentIndex = i);
+            },
             itemCount: widget.courses.length,
             itemBuilder: (context, i) {
               return Padding(
@@ -458,6 +490,7 @@ class _JumpBackInCard extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: () {
           AppHaptic.select();
+          HomeTracking.track(TrackingKey.homeContinueCardClick);
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
             ..selectSkillset(course.skillset)
@@ -470,7 +503,7 @@ class _JumpBackInCard extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(14.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _homeCardShadow,
           ),
@@ -577,6 +610,7 @@ class _HomeQuickTiles extends StatelessWidget {
               title: context.l10n.home.homeExploreTopics,
               subtitle: context.l10n.home.homeExploreTopicsSub,
               onTap: () {
+                HomeTracking.track(TrackingKey.homeExploreClick);
                 context.read<CourseCubit>()
                   ..setAllCourseSource('home_quick_explore')
                   ..resetExploreToAll();
@@ -592,7 +626,17 @@ class _HomeQuickTiles extends StatelessWidget {
               iconBackground: const Color(0xFFE4F1E7),
               title: context.l10n.home.homeTodayHabit,
               subtitle: context.l10n.home.homeTodayHabitSub,
-              onTap: () => HabitRoute().go(context),
+              onTap: () {
+                HomeTracking.track(TrackingKey.homeHabitClick);
+                AppDI.injector.get<HabitCubit>().setPendingScrSource('home_habit');
+                const HabitRoute(source: 'home_habit').go(context);
+                // .go() to a shell branch doesn't update PageCubit's index, so
+                // set it (→ habit branch 4) after the switch settles — that's
+                // what fires HabitPage's habit_scr_view for this entry.
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+                });
+              },
             ),
           ),
         ],
@@ -642,7 +686,7 @@ class _QuickTile extends StatelessWidget {
           height: 172.h,
           padding: EdgeInsets.all(18.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _homeCardShadow,
           ),
@@ -694,64 +738,141 @@ class _RecommendedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
-      selector: (state) => state.suggestedCourses,
-      builder: (context, courses) {
-        if (courses.isEmpty) return const SizedBox.shrink();
+    // Also select [HomeStatus] (not just the list) so an empty list can be
+    // told apart: still loading (cold start — show a skeleton) vs. loaded
+    // and genuinely empty (hide the section, same as before).
+    return BlocSelector<HomeCubit, HomeState, ({List<SuggestedCourseEntity> courses, HomeStatus status})>(
+      selector: (state) => (courses: state.suggestedCourses, status: state.status),
+      builder: (context, data) {
+        final courses = data.courses;
+        if (courses.isEmpty) {
+          final isColdLoading = data.status == HomeStatus.loading || data.status == HomeStatus.initial;
+          return isColdLoading ? _RecommendedSkeleton(onSeeAll: onSeeAll) : const SizedBox.shrink();
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  AppText(
-                    context.l10n.home.homeRecommended,
-                    style: _poppins(18, FontWeight.w700),
-                  ),
-                  Semantics(
-                    button: true,
-                    label: context.l10n.home.homeRecommendedSeeAll,
-                    child: GestureDetector(
-                      onTap: onSeeAll == null
-                          ? null
-                          : () {
-                              AppHaptic.select();
-                              onSeeAll!();
-                            },
-                      child: AppText(
-                        context.l10n.home.homeRecommendedSeeAll,
-                        style: AppStyle.textBold12.copyWith(
-                          fontSize: 13.sp,
-                          color: AppCustomColor.brandPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _RecommendedHeader(onSeeAll: onSeeAll),
             14.verticalSpace,
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.only(left: 20.w, right: 8.w),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (int i = 0; i < courses.length; i++) ...[
-                    _RecommendedCard(course: courses[i]),
-                    if (i < courses.length - 1) 14.horizontalSpace,
+            // Controller-less strip: fire home_rcm_swipe once per gesture on the
+            // settle (ScrollEndNotification only fires when scrolling stops, so
+            // it can't spam mid-drag).
+            NotificationListener<ScrollEndNotification>(
+              onNotification: (notification) {
+                if (notification.depth == 0) {
+                  HomeTracking.track(TrackingKey.homeRcmSwipe);
+                }
+                return false;
+              },
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.only(left: 20.w, right: 8.w),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 0; i < courses.length; i++) ...[
+                      _RecommendedCard(course: courses[i]),
+                      if (i < courses.length - 1) 14.horizontalSpace,
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             28.verticalSpace,
           ],
         );
       },
+    );
+  }
+}
+
+/// "Recommended" section header — title + "See all". Shared by the loaded
+/// strip and its cold-load skeleton so the two stay pixel-identical (no
+/// layout jump when the real content swaps in).
+class _RecommendedHeader extends StatelessWidget {
+  final VoidCallback? onSeeAll;
+
+  const _RecommendedHeader({this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          AppText(
+            context.l10n.home.homeRecommended,
+            style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+          ),
+          Semantics(
+            button: true,
+            label: context.l10n.home.homeRecommendedSeeAll,
+            child: GestureDetector(
+              onTap: onSeeAll == null
+                  ? null
+                  : () {
+                      AppHaptic.select();
+                      onSeeAll!();
+                    },
+              child: AppText(
+                context.l10n.home.homeRecommendedSeeAll,
+                style: AppStyle.textBold12.copyWith(
+                  fontSize: 13.sp,
+                  color: AppCustomColor.brandPrimary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Cold-load placeholder for the "Recommended" strip (first open, nothing
+/// cached yet). The header stays live (real copy, "See all" still
+/// navigable) — only the course tiles are skeletonized, reusing
+/// [_RecommendedCard] fed dummy entities so Skeletonizer auto-generates bone
+/// shapes matching the real tile layout (thumbnail + 2-line title).
+class _RecommendedSkeleton extends StatelessWidget {
+  final VoidCallback? onSeeAll;
+
+  const _RecommendedSkeleton({this.onSeeAll});
+
+  static const int _kSkeletonCardCount = 4;
+  static const SuggestedCourseEntity _kSkeletonCourse = SuggestedCourseEntity(
+    id: 'skeleton',
+    title: BaseMultiLanguage(en: 'Course title placeholder'),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _RecommendedHeader(onSeeAll: onSeeAll),
+        14.verticalSpace,
+        sk.Skeletonizer(
+          enabled: true,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.only(left: 20.w, right: 8.w),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < _kSkeletonCardCount; i++) ...[
+                  const _RecommendedCard(course: _kSkeletonCourse),
+                  if (i < _kSkeletonCardCount - 1) 14.horizontalSpace,
+                ],
+              ],
+            ),
+          ),
+        ),
+        28.verticalSpace,
+      ],
     );
   }
 }
@@ -770,7 +891,24 @@ class _RecommendedCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           AppHaptic.select();
-          final didSelect = context.read<HomeCubit>().trySelectCourseFromCourseId(course.id);
+          final homeCubit = context.read<HomeCubit>();
+          // skill_id/skill_name aren't on SuggestedCourseEntity beyond its
+          // skillsetId; resolve the human-readable name from the loaded
+          // skillsets (best-effort — empty when the skillset isn't cached).
+          final skillset = homeCubit.state.skillsets.firstWhere(
+            (s) => s.id == course.skillsetId || s.courses.any((c) => c.id == course.id),
+            orElse: () => const SkillsetEntity(),
+          );
+          HomeTracking.track(
+            TrackingKey.homeRcmCardClick,
+            parameters: {
+              'course_id': course.id,
+              'course_name': course.title.text,
+              'skill_id': course.skillsetId.isNotEmpty ? course.skillsetId : skillset.id,
+              'skill_name': skillset.title.text,
+            },
+          );
+          final didSelect = homeCubit.trySelectCourseFromCourseId(course.id);
           if (didSelect) {
             context.read<CourseRoadmapCubit>().setRoadmapSource('home_recommended');
             CourseRoadmapRoute().go(context);
@@ -851,7 +989,7 @@ class _RecommendedCard extends StatelessWidget {
                   style: AppStyle.text12.copyWith(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
-                    color: AppCustomColor.textPrimary,
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                     height: 1.35,
                   ),
                 ),

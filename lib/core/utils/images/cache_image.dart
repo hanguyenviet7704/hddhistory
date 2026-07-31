@@ -146,17 +146,31 @@ class DCachedImage extends StatelessWidget {
     //   );
     // }
 
+    // Many callers size the image through their PARENT rather than these fields
+    // (`Positioned.fill`, `StackFit.expand`, a fixed-height SizedBox…) and pass
+    // no width/height. [sk.Bone] renders a `SizedBox(width: …, height: …)`, so
+    // with both null it received loose constraints and collapsed to 0×0 — the
+    // shimmer was built but invisible, leaving a blank box until the thumbnail
+    // landed (seen on the Explore course cards and the "Background" theme
+    // tiles). Fall back to the space the parent actually offers, and only when
+    // that axis is bounded so an unbounded parent can never throw.
     return sk.Skeletonizer.zone(
       effect: sk.ShimmerEffect(
         duration: const Duration(milliseconds: 1500), // Slower, gentler animation
       ),
-      child: Container(
-        alignment: Alignment.center,
-        child: sk.Bone(
-          width: width,
-          height: height,
-          borderRadius: borderRadius ?? BorderRadius.circular(8),
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double? boneWidth = width ?? (constraints.hasBoundedWidth ? constraints.maxWidth : null);
+          final double? boneHeight = height ?? (constraints.hasBoundedHeight ? constraints.maxHeight : null);
+          return Container(
+            alignment: Alignment.center,
+            child: sk.Bone(
+              width: boneWidth,
+              height: boneHeight,
+              borderRadius: borderRadius ?? BorderRadius.circular(8),
+            ),
+          );
+        },
       ),
     );
   }

@@ -8,6 +8,29 @@ part of '../services.dart';
 /// Both native sides internally no-op on OS versions below their minimum
 /// (returning without error), and this service no-ops on any other platform, so
 /// callers never need to platform- or version-check themselves.
+/// Deeplink contract shared with the native Live Activity card and the return
+/// nudge. Mirrors the URL the iOS widget emits in
+/// `ios/MeupHomeWidgetsExtension/MeupLessonLiveActivityView.swift`:
+/// `meup://course-roadmap?courseId=…&source=live_activity`. Unlike the
+/// home-widget deeplink this carries no `widgetType`, so it is NOT a
+/// HomeWidgetDeeplinkTarget — DeeplinkCubit handles it via its own branch.
+abstract final class LiveActivityDeeplink {
+  static const String sourceQueryKey = 'source';
+  static const String sourceValue = 'live_activity';
+  static const String courseIdQueryKey = 'courseId';
+  static const String keypointIdQueryKey = 'keypointId';
+
+  /// The resume deeplink for [courseId], identical to the string the iOS widget
+  /// emits — reused by the return nudge so its tap resumes the same course.
+  ///
+  /// [keypointId] is appended only when the card belongs to an open lesson; a
+  /// roadmap card stays course-only and so resolves to the roadmap.
+  static String resumeUri(String courseId, {String keypointId = ''}) {
+    final base = 'meup://course-roadmap?courseId=$courseId&source=$sourceValue';
+    return keypointId.isEmpty ? base : '$base&$keypointIdQueryKey=$keypointId';
+  }
+}
+
 @LazySingleton()
 class LiveActivityService {
   final MethodChannel _channel = const MethodChannel('meup/live_activity');
@@ -33,6 +56,7 @@ class LiveActivityService {
     required String resumeLabel,
     required String primaryNudge,
     required String footerNudge,
+    String keypointId = '',
   }) {
     _activeCourseId = courseId;
     return _invoke('start', {
@@ -46,21 +70,27 @@ class LiveActivityService {
       'resumeLabel': resumeLabel,
       'primaryNudge': primaryNudge,
       'footerNudge': footerNudge,
+      'keypointId': keypointId,
     });
   }
 
+  /// [keypointId] must be passed on every update, not only when it changes:
+  /// ContentState is replaced wholesale on the native side, so omitting it would
+  /// silently drop the resume target the previous update installed.
   Future<void> update({
     required double progress,
     required bool isDone,
     required String resumeLabel,
     required String primaryNudge,
     required String footerNudge,
+    String keypointId = '',
   }) => _invoke('update', {
     'progress': progress,
     'isDone': isDone,
     'resumeLabel': resumeLabel,
     'primaryNudge': primaryNudge,
     'footerNudge': footerNudge,
+    'keypointId': keypointId,
   });
 
   Future<void> end() {

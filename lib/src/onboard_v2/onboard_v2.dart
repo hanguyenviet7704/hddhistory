@@ -31,7 +31,11 @@ part 'presentation/cubits/onboard_v2_cubit.dart';
 
 //* Presentation Layer - Helpers
 part 'presentation/helpers/onboard_v2_age_text_resolver.dart';
+part 'presentation/helpers/onboard_v2_config_mapper.dart';
+part 'presentation/helpers/onboard_v2_copy_resolver.dart';
+part 'presentation/helpers/onboard_v2_icon_resolver.dart';
 part 'presentation/helpers/onboard_v2_notification_status_mapper.dart';
+part 'presentation/helpers/onboard_v2_path_resolver.dart';
 part 'presentation/helpers/onboard_v2_random_course_picker.dart';
 part 'presentation/helpers/onboard_v2_symptom_selection_mapper.dart';
 part 'presentation/helpers/onboard_v2_tracking_helper.dart';
@@ -43,6 +47,7 @@ part 'presentation/pages/onboard_v2_name_page.dart';
 part 'presentation/pages/onboard_v2_notification_page.dart';
 part 'presentation/pages/onboard_v2_page.dart';
 part 'presentation/pages/onboard_v2_course_picker_page.dart';
+part 'presentation/pages/onboard_v2_pick_theme_page.dart';
 part 'presentation/pages/onboard_v2_path_map_page.dart';
 part 'presentation/pages/onboard_v2_path_selection_page.dart';
 part 'presentation/pages/onboard_v2_symptom_selection_page.dart';

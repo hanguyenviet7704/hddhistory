@@ -16,6 +16,7 @@ mixin AppEndpoint {
   static const String verifyOTP = '/api/v1/users/verify-otp';
   static const String updatePassword = '/api/v1/users/update-password';
   static const String deletePermanentUser = '/api/v1/users/delete-permanently-user';
+  static const String pushRegistration = '/api/v1/users/push-registration';
   static const String deleteAccount = '/api/v1/users/delete-my-account';
   static const String changeProfileId = '/rest/v1/rpc/p_change_user_profile_id';
 
@@ -41,13 +42,22 @@ mixin AppEndpoint {
 
   //* IAP
   static const String packages = '/api/v1/payment/products';
+  static const String voucherValidate = '/api/v1/payment/vouchers/validate';
   static const String verify = '/api/v1/payment/purchases/verify';
   static const String userIapSubscriptions = '/api/v1/payment/subscriptions/users/{userId}/active-premium';
+
+  //* Paywall Config API — backend CMS source of truth (Firebase Remote Config
+  //* is kept as a fallback layer only). See IapCubit.resolvedPaywallConfig.
+  static const String paywallConfigMobile = '/api/v1/paywall-config/mobile';
+  static const String streakConfig = '/api/v1/streak-config';
 
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';
   static const String onboardingsScenarios = '/api/v2/onboardings';
   static const String onboardingsById = '/api/v1/onboardings/{id}';
+
+  //* Onboarding Content Config API (P3 redesign — admin-editable 9-screen flow)
+  static const String onboardingContentConfig = '/api/v1/onboarding-config';
 
   //* Chats API
   static const String chatMessages = '/api/v1/chats/messages';
@@ -96,6 +106,7 @@ mixin AppEndpoint {
   static const String coursesUserProgressAchievements = '/api/v1/courses-user-progress/achievements';
   static const String coursesUserProgressBadgeProgress = '/api/v1/courses-user-progress/badge-progress/{courseId}';
   static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
+  static const String coursesUserProgressStreakCheckIn = '/api/v1/courses-user-progress/streak/check-in';
   static const String coursesUserProgressWidgetInProgress = '/api/v1/courses-user-progress/widget/in-progress';
   static const String coursesUserProgressWidgetSuggestCourse = '/api/v1/courses-user-progress/widget/suggest-course';
   static const String coursesQuotesRandom = '/api/v1/courses-quotes/random';
@@ -123,6 +134,10 @@ mixin AppEndpoint {
   static const String habits = '/api/v1/habits';
   static const String userHabits = '/api/v1/user-habits';
   static const String userHabitsSummary = '/api/v1/user-habits/summary';
+  // Combined Habit-tab bootstrap: config + habits + summary in one round trip
+  // — replaces separate calls to userHabits + userHabitsSummary + habitConfig
+  // on the tab's initial load.
+  static const String userHabitsScreen = '/api/v1/user-habits/screen';
   static const String habitConfig = '/api/v1/habit-config';
   static const String userHabitsById = '/api/v1/user-habits/{id}';
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
@@ -132,6 +147,9 @@ mixin AppEndpoint {
   //* In App Survey API
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';
   static const String inAppSurveyResponses = '/api/v1/courses-in-app-survey/responses';
+
+  //* Study Theme (Change Background) API
+  static const String studyThemes = '/api/v1/study-themes';
 
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';

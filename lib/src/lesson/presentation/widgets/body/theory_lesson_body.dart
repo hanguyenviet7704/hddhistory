@@ -22,23 +22,23 @@ class TheoryLessonBody extends LessonBodyWidget {
         builder: (context, state) {
           final currentDocument = state.currentDocument;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (currentDocument.document.isNotEmpty) ...[
-                DocumentWidget(
-                  documents: currentDocument.document,
-                  selectedExplanationOptionKeys: state.selectedExplanationOptionKeys,
-                  onExplanationSelectionChanged: (contentDocumentIndex, optionKey) {
-                    context.read<TheoryCubit>().selectExplanationOption(
-                      contentDocumentIndex: contentDocumentIndex,
-                      optionKey: optionKey,
-                    );
-                  },
-                ),
-                12.verticalSpace,
-              ],
-            ],
+          if (currentDocument.document.isEmpty) return const SizedBox.shrink();
+
+          // Returned bare, with no Column or trailing spacer around it: the card
+          // is a fixed panel sized to fill its page now, so anything stacked
+          // after it overflowed the page by exactly that spacer's height.
+          return DocumentWidget(
+            documents: currentDocument.document,
+            // Theory content card is frosted glass over a custom study
+            // background (design), unlike the solid exercise cards.
+            frosted: true,
+            selectedExplanationOptionKeys: state.selectedExplanationOptionKeys,
+            onExplanationSelectionChanged: (contentDocumentIndex, optionKey) {
+              context.read<TheoryCubit>().selectExplanationOption(
+                contentDocumentIndex: contentDocumentIndex,
+                optionKey: optionKey,
+              );
+            },
           );
         },
       ),

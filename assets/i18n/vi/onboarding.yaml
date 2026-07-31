@@ -178,6 +178,11 @@ onboardingV2P8FallbackTitle: Chưa tải được khóa học phù hợp
 onboardingV2P8Label: Phù hợp nhất
 onboardingV2P8SelectCta: Chọn
 onboardingV2P8Title: Chọn khóa học của bạn
+onboardingV2P9Cta: Bắt đầu khám phá
+onboardingV2P9Helper: Bạn có thể đổi lại sau trong ứng dụng
+onboardingV2P9Subtitle: Chọn giao diện cho toàn bộ ứng dụng
+onboardingV2P9TitleHighlight: giao diện
+onboardingV2P9TitlePrefix: Cá nhân hoá
 onboardingV2PathConnectBetter: Kết nối tốt hơn
 onboardingV2PathExploreBetter: Khám phá tốt hơn
 onboardingV2PathFeelBetter: Cảm xúc tốt hơn
@@ -187,24 +192,24 @@ onboardingV2PathWorkBetter: Làm việc tốt hơn
 onboardingV2RetryCta: Thử lại
 onboardingV2SkillsetEmpty: Chưa có kỹ năng nào
 onboardingV2SkillsetLoadError: Không thể tải kỹ năng
-onboardingV2SymptomAmazedByHumanBody: Cơ thể con người khiến tôi kinh ngạc
-onboardingV2SymptomAnxietyAroundHardConversations: Cuộc trò chuyện khó làm tôi lo
+onboardingV2SymptomAmazedByHumanBody: Tôi ăn uống theo cảm xúc
+onboardingV2SymptomAnxietyAroundHardConversations: Quan hệ nơi làm việc khiến tôi kiệt sức
   lắng
-onboardingV2SymptomCuriousAboutBody: Tôi tò mò về cơ thể mình
-onboardingV2SymptomDifficultyBuildingHabits: Xây dựng thói quen khó hơn tôi muốn
-onboardingV2SymptomEndlessScrollingFeelsEmpty: Lướt mãi vẫn thấy trống rỗng
-onboardingV2SymptomForgettingAfterStudying: Tôi quên nhanh sau khi học
-onboardingV2SymptomLearningDoesNotStick: Kiến thức không đọng lại
-onboardingV2SymptomLifeFeelsOverwhelming: Cuộc sống khiến tôi quá tải
-onboardingV2SymptomLosingTrainOfThought: Tôi hay mất mạch suy nghĩ
-onboardingV2SymptomLoveLearningFromGreatMinds: Tôi thích học từ những bộ óc lớn
-onboardingV2SymptomMotivationDisappears: Động lực của tôi biến mất
-onboardingV2SymptomOverthinking: Tôi suy nghĩ quá nhiều
-onboardingV2SymptomRegretSayingThingsInEmotion: Tôi hối hận khi nói trong cảm xúc
-onboardingV2SymptomRushedDecisions: Tôi ra quyết định vội vàng
-onboardingV2SymptomStrugglingToBreakBadHabits: Tôi muốn bỏ thói quen xấu nhưng chưa
+onboardingV2SymptomCuriousAboutBody: Tôi muốn hiểu bản thân hơn
+onboardingV2SymptomDifficultyBuildingHabits: Tôi lúc nào cũng mệt
+onboardingV2SymptomEndlessScrollingFeelsEmpty: Tôi luôn cảm thấy căng thẳng
+onboardingV2SymptomForgettingAfterStudying: Tôi học chăm nhưng không đọng lại
+onboardingV2SymptomLearningDoesNotStick: Tôi biết nhiều nhưng làm được ít
+onboardingV2SymptomLifeFeelsOverwhelming: Tâm trí tôi cứ lo lắng không ngừng
+onboardingV2SymptomLosingTrainOfThought: Tôi quên mọi thứ rất nhanh
+onboardingV2SymptomLoveLearningFromGreatMinds: Tôi muốn mở mang trí tuệ
+onboardingV2SymptomMotivationDisappears: Tôi đang trải qua giai đoạn khó khăn
+onboardingV2SymptomOverthinking: Tôi hay làm sai mà không hiểu vì sao
+onboardingV2SymptomRegretSayingThingsInEmotion: Tôi khó tin tưởng ai đó
+onboardingV2SymptomRushedDecisions: Tôi khó đưa ra quyết định
+onboardingV2SymptomStrugglingToBreakBadHabits: Tôi cứ trì hoãn mọi việc
   được
-onboardingV2SymptomTimeSlipsAway: Thời gian trôi khỏi tay tôi
-onboardingV2SymptomTryingToDoTooMuch: Tôi cố làm quá nhiều thứ
-onboardingV2SymptomWantToListenMoreDeeply: Tôi muốn lắng nghe sâu hơn
+onboardingV2SymptomTimeSlipsAway: Tôi đã mất động lực
+onboardingV2SymptomTryingToDoTooMuch: Suy nghĩ của tôi rối bời
+onboardingV2SymptomWantToListenMoreDeeply: Tôi ước mình hiểu người khác hơn
 onboardingYoungAdultOption: 18–24

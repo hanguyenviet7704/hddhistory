@@ -71,6 +71,9 @@ class _PaywallPageState extends State<PaywallPage> {
     _isHandlingPurchaseSuccess = true;
 
     try {
+      AppService.instance.appTrackingService.trackPaywallSuccessPopupView(
+        context.read<IapCubit>().state.selectedProductId,
+      );
       await PaywallSuccessPurchasePopup.show(context);
       if (!mounted) return;
 
@@ -134,7 +137,11 @@ class _PaywallPageState extends State<PaywallPage> {
                     child: PaywallBottomPurchaseBar(
                       state: state,
                       onPurchase: () {
-                        AppService.instance.appTrackingService.trackPremiumPurchase();
+                        final product = state.selectedProduct;
+                        AppService.instance.appTrackingService.trackPremiumPurchase(
+                          productId: product.productId,
+                          price: product.price,
+                        );
                         context.read<IapCubit>().purchaseProduct();
                       },
                       onRetry: () => context.read<IapCubit>().loadIapProducts(forceRetry: true),

@@ -27,6 +27,9 @@ part 'domain/usecases/check_warm_up_for_course_usecase.dart';
 part 'presentation/cubits/warm_up_state.dart';
 part 'presentation/cubits/warm_up_cubit.dart';
 
+//* Presentation Layer - Helpers
+part 'presentation/helpers/warm_up_tracking.dart';
+
 //* Presentation Layer - Pages
 part 'presentation/pages/warm_up_intro_page.dart';
 part 'presentation/pages/warm_up_question_page.dart';

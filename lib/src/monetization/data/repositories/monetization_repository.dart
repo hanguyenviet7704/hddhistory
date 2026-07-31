@@ -6,10 +6,19 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   final IIapService _iapService;
   final UserSubscriptionLocalDataSource _userSubscriptionLocalDataSource;
   final MonetizationLocalDataSource _monetizationLocalDataSource;
+  final PaywallConfigApi _paywallConfigApi;
+  final PaywallConfigLocalDataSource _paywallConfigLocalDataSource;
   late final StreamSubscription<List<PurchaseDetails>> _subscription;
   final StreamController<PurchaseDetails> _purchaseDetailController = StreamController<PurchaseDetails>.broadcast();
 
-  MonetizationRepository(this._monetizationApi, this._iapService, this._userSubscriptionLocalDataSource, this._monetizationLocalDataSource) {
+  MonetizationRepository(
+    this._monetizationApi,
+    this._iapService,
+    this._userSubscriptionLocalDataSource,
+    this._monetizationLocalDataSource,
+    this._paywallConfigApi,
+    this._paywallConfigLocalDataSource,
+  ) {
     _setupSubscription();
   }
 
@@ -44,7 +53,7 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       () async {
         final selectedIds = _validatedSelectedProductIds(params.selectedProductIds);
         final remoteProducts = await _loadSelectedRemoteProducts(params, selectedIds);
-        final productDetails = await _iapService.getProducts(productIds: selectedIds.toSet());
+        final productDetails = await _iapService.getProducts(productIds: _storeIdsToQuery(selectedIds, remoteProducts));
         final storeProducts = productDetails.toIapProducts();
         final products = remoteProducts.mapStoreData(storeProducts);
         if (products.length != selectedIds.length) {
@@ -54,6 +63,21 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       },
       (error, stackTrace) => AppException.unexpected(error.toString()),
     );
+  }
+
+  /// The selected SKUs plus every SKU they are priced against, because the
+  /// struck-through price on the paywall is the *real* store price of that
+  /// other SKU rather than a number typed in admin.
+  ///
+  /// A compare-at SKU never becomes a purchasable row: `mapStoreData` iterates
+  /// the selected products only, so these extra ids are used for their price
+  /// and nothing else — and one missing from the store cannot fail the
+  /// "configured store product is missing" guard below.
+  Set<String> _storeIdsToQuery(List<String> selectedIds, List<IapProductModel> remoteProducts) {
+    return <String>{
+      ...selectedIds,
+      ...remoteProducts.map((product) => product.compareAtProductId.trim()).where((id) => id.isNotEmpty),
+    };
   }
 
   List<String> _validatedSelectedProductIds(List<String> selectedProductIds) {
@@ -126,6 +150,38 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       apiCall: () => _monetizationApi.verify(params.toJson()),
       transform: (model) => model.toEntity(),
       defaultValue: IapVerifyEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, VoucherValidationEntity> validateVoucher(ValidateVoucherParams params) {
+    return callApiWithTransform<VoucherValidationModel, VoucherValidationEntity>(
+      apiCall: () => _monetizationApi.validateVoucher(params.toJson()),
+      transform: (model) => model.toEntity(),
+      defaultValue: const VoucherValidationEntity(),
+    );
+  }
+
+  /// See [IMonetizationRepository.getPaywallConfig]: a fetch failure with no
+  /// cached fallback resolves to `Left` — it never invents an empty entity —
+  /// so the caller (IapCubit) knows to keep serving Remote Config / bundled
+  /// defaults instead of overwriting a good in-memory value with a blank one.
+  @override
+  TaskEither<AppException, PaywallConfigEntity> getPaywallConfig() {
+    return callApiWithTransform<dynamic, PaywallConfigEntity>(
+      apiCall: () => _paywallConfigApi.getPaywallConfig(),
+      transform: (data) => PaywallConfigEntity.fromRawConfig(jsonEncode(data)),
+      onSuccess: (data) async {
+        if (data is Map<String, dynamic>) {
+          await _paywallConfigLocalDataSource.cacheConfig(data);
+        }
+      },
+      onError: () async {
+        final cached = await _paywallConfigLocalDataSource.getCachedConfig();
+        if (cached == null) return null;
+        return PaywallConfigEntity.fromRawConfig(jsonEncode(cached));
+      },
+      enableErrorMessages: false,
     );
   }
 

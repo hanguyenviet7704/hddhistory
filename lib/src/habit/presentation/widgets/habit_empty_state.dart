@@ -23,13 +23,13 @@ class HabitEmptyState extends StatelessWidget {
             AppText(
               context.l10n.habit.emptyStateTitle,
               textAlign: TextAlign.center,
-              style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
+              style: AppStyle.textBold24.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
             ),
             8.verticalSpace,
             AppText(
               context.l10n.habit.emptyStateSubtitle,
               textAlign: TextAlign.center,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+              style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.textSecondary)),
             ),
             24.verticalSpace,
             // Figma: a compact pill sized to its label (36px h-padding, 54px

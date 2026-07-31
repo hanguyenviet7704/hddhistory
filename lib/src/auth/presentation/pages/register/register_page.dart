@@ -8,6 +8,21 @@ bool shouldBootstrapRegisterGuestSession({
   return accessToken.isEmpty && bootstrapFuture == null;
 }
 
+/// Whether the auth buttons should stop accepting taps.
+///
+/// Deliberately IGNORES the mount-time guest bootstrap: that bootstrap renders
+/// no spinner, so gating on it produced a welcome screen that looked fully
+/// interactive but swallowed every tap for as long as the bootstrap ran — and
+/// forever if it never completed. Tapping a button while it's still running is
+/// safe: [_handleGuestLogin] awaits the very same bootstrap future, and the
+/// tapped button shows its own spinner via [hasActiveAuthMethod].
+bool shouldBlockRegisterAuthButtons({
+  required bool isBootstrapInProgress,
+  required bool hasActiveAuthMethod,
+}) {
+  return hasActiveAuthMethod;
+}
+
 @visibleForTesting
 AuthEvent buildGuestRegisterAuthEvent({
   required bool forceChooseCourseAfterLogin,
@@ -54,6 +69,13 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
+    // Spec signin_scr_view [source]. RegisterRoute is a codegen'd go_route and
+    // threading a new `source` field would require rerunning build_runner, so
+    // source is derived from the existing `showPaywallAfterAuth` intent instead:
+    // arriving here to then show the paywall = 'premium', otherwise 'setting'
+    // (both known entry points — profile guest avatar & setting profile card —
+    // are the plain login path).
+    AppService.instance.appTrackingService.trackSigninScrView(_showPaywallAfterAuth ? 'premium' : 'setting');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(_ensureGuestBootstrapStarted());
@@ -100,6 +122,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onLoginGuest() {
+    AppService.instance.appTrackingService.trackSigninMethodClick('guest');
     unawaited(_handleGuestLogin());
   }
 
@@ -126,6 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onLoginGoogle() {
+    AppService.instance.appTrackingService.trackSigninMethodClick('google');
     unawaited(
       _dispatchAuthChoice(
         _AuthMethod.google,
@@ -138,6 +162,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onLoginApple() {
+    AppService.instance.appTrackingService.trackSigninMethodClick('apple');
     unawaited(
       _dispatchAuthChoice(
         _AuthMethod.apple,
@@ -202,12 +227,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         builder: (context, isBootstrapInProgress, _) => ValueListenableBuilder<_AuthMethod?>(
                           valueListenable: _activeAuthMethod,
                           builder: (context, activeMethod, _) => IgnorePointer(
-                            // Silent during the mount-time bootstrap (no button
-                            // has been tapped yet, so there's nothing to show a
-                            // spinner on); once a button IS tapped, the button
-                            // itself renders the spinner (see isLoading below)
-                            // instead of this IgnorePointer masking a static look.
-                            ignoring: isBootstrapInProgress || activeMethod != null,
+                            // Only a tapped button blocks input (it renders its
+                            // own spinner, see isLoading below). The silent
+                            // mount-time bootstrap must NOT block — see
+                            // shouldBlockRegisterAuthButtons.
+                            ignoring: shouldBlockRegisterAuthButtons(
+                              isBootstrapInProgress: isBootstrapInProgress,
+                              hasActiveAuthMethod: activeMethod != null,
+                            ),
                             child: Column(
                               children: [
                                 if (Platform.isIOS) ...[

@@ -43,6 +43,21 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   final Map<String, GlobalKey> _sectionKeys = {};
   int _selectedChip = 0;
 
+  // Compact header: shorter than Material's default kToolbarHeight (56) so the
+  // category chips sit higher, closer to the title. Used for BOTH the AppBar's
+  // toolbarHeight and the body's top clearance under the transparent,
+  // body-behind app bar — keep them equal or a gap/overlap reappears.
+  static const double _kHeaderToolbarHeight = 44;
+
+  @override
+  void initState() {
+    super.initState();
+    // First-frame view hook (spec mycourse_scr_view).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppService.instance.appTrackingService.trackMycourseScrView();
+    });
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -52,6 +67,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   GlobalKey _sectionKey(String skillsetId) => _sectionKeys.putIfAbsent(skillsetId, () => GlobalKey());
 
   void _onChipTap(int index, List<SkillsetEntity> sections) {
+    AppService.instance.appTrackingService.trackProfileMycourseCatClick(sections[index].title.text);
     setState(() => _selectedChip = index);
     final ctx = _sectionKeys[sections[index].id]?.currentContext;
     if (ctx == null) return;
@@ -62,91 +78,106 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: const Key('my-courses-page'),
-      backgroundColor: AppCustomColor.backgroundWhite,
+      // Transparent only when a custom study background is active.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
+      // Let the custom study background (painted in the body) run edge-to-edge
+      // behind the transparent app bar; on the default theme the white scaffold
+      // shows through so the header still reads as a white bar.
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: AppCustomColor.backgroundWhite,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: _kHeaderToolbarHeight.h,
         leading: Semantics(
           button: true,
           label: MaterialLocalizations.of(context).backButtonTooltip,
           child: IconButton(
             onPressed: () {
               AppHaptic.select();
+              AppService.instance.appTrackingService.trackMycourseBackClick();
               context.back();
             },
-            constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.w),
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppCustomColor.textPrimary, size: 20.w),
+            constraints: BoxConstraints(minWidth: 44.w, minHeight: _kHeaderToolbarHeight.h),
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: studyThemeOnBg(context, AppCustomColor.textPrimary), size: 20.w),
           ),
         ),
         title: AppText(
           context.l10n.allcourse.allcourseMyCourse,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
       ),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.status != curr.status,
-        builder: (context, homeState) {
-          final progressState = context.watch<ProgressCubit>().state;
-          final progressById = progressLookup(progressState);
+      body: ThemedBackground(
+        child: BlocBuilder<HomeCubit, HomeState>(
+          buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.status != curr.status,
+          builder: (context, homeState) {
+            final progressState = context.watch<ProgressCubit>().state;
+            final progressById = progressLookup(progressState);
 
-          // Only skillsets the user is enrolled in (≥1 course in their progress).
-          final sections = homeState.skillsets
-              .where((s) => s.courses.any((c) => progressById.containsKey(c.id)))
-              .toList();
+            // Only skillsets the user is enrolled in (≥1 course in their progress).
+            final sections = homeState.skillsets.where((s) => s.courses.any((c) => progressById.containsKey(c.id))).toList();
 
-          if (homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) {
-            return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
-          }
+            // Only block with a full spinner on a genuine cold load — don't
+            // replace an already-loaded list with a spinner when Home refreshes.
+            if ((homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) &&
+                homeState.skillsets.isEmpty) {
+              return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
+            }
 
-          if (sections.isEmpty) {
-            return _MyCoursesEmpty(onExplore: () => _exploreMore(context));
-          }
+            if (sections.isEmpty) {
+              return _MyCoursesEmpty(onExplore: () => _exploreMore(context));
+            }
 
-          final selected = _selectedChip.clamp(0, sections.length - 1);
+            final selected = _selectedChip.clamp(0, sections.length - 1);
 
-          return Column(
-            children: [
-              8.verticalSpace,
-              _MyCourseChipBar(
-                skillsets: sections,
-                selectedIndex: selected,
-                onTap: (i) => _onChipTap(i, sections),
-              ),
-              14.verticalSpace,
-              Expanded(
-                child: ListView(
-                  controller: _scrollController,
-                  padding: EdgeInsets.fromLTRB(24.w, 4.h, 24.w, 16.h),
-                  children: [
-                    for (var i = 0; i < sections.length; i++)
-                      KeyedSubtree(
-                        key: _sectionKey(sections[i].id),
-                        child: _MyCourseSection(
-                          skillset: sections[i],
-                          progressState: progressState,
-                          onTapCourse: (skillset, course) => _openCourseRoadmap(context, skillset, course),
-                          showBottomSpacing: i < sections.length - 1,
-                        ),
-                      ),
-                  ],
+            return Column(
+              children: [
+                // Clear the transparent app bar (extendBodyBehindAppBar) so the
+                // chips sit directly below the (now compact) header while the
+                // study bg fills behind it. Must match the AppBar's
+                // toolbarHeight above, or a gap/overlap reappears.
+                SizedBox(height: MediaQuery.paddingOf(context).top + _kHeaderToolbarHeight.h),
+                _MyCourseChipBar(
+                  skillsets: sections,
+                  selectedIndex: selected,
+                  onTap: (i) => _onChipTap(i, sections),
                 ),
-              ),
-              // Pinned bottom CTA (design: sticky bottom).
-              Container(
-                color: AppCustomColor.backgroundWhite,
-                padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 20.h + MediaQuery.paddingOf(context).bottom),
-                child: _ExploreMoreCoursesButton(onTap: () => _exploreMore(context)),
-              ),
-            ],
-          );
-        },
+                14.verticalSpace,
+                Expanded(
+                  child: ListView(
+                    controller: _scrollController,
+                    padding: EdgeInsets.fromLTRB(24.w, 4.h, 24.w, 16.h),
+                    children: [
+                      for (var i = 0; i < sections.length; i++)
+                        KeyedSubtree(
+                          key: _sectionKey(sections[i].id),
+                          child: _MyCourseSection(
+                            skillset: sections[i],
+                            progressState: progressState,
+                            onTapCourse: (skillset, course) => _openCourseRoadmap(context, skillset, course),
+                            showBottomSpacing: i < sections.length - 1,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Pinned bottom CTA (design: sticky bottom).
+                Container(
+                  color: studyThemeScaffoldColor(context, AppCustomColor.backgroundWhite),
+                  padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 20.h + MediaQuery.paddingOf(context).bottom),
+                  child: _ExploreMoreCoursesButton(onTap: () => _exploreMore(context)),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
   /// Pops this root-pushed page, then jumps the shell to the course roadmap.
   void _openCourseRoadmap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {
+    AppService.instance.appTrackingService.trackProfileMycourseItemClick(course.title.text);
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
@@ -166,6 +197,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   /// Pops this page, then jumps the shell to the Explore tab at the current
   /// skillset (mirrors CourseRoadmapPage._backFromRoadmap / SkillsetCourses).
   void _exploreMore(BuildContext context) {
+    AppService.instance.appTrackingService.trackProfileMycourseExplore();
     Navigator.of(context, rootNavigator: true).pop();
     final shellContext = AppConfig.instance.context;
     if (shellContext == null) return;
@@ -270,9 +302,11 @@ class _MyCourseSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Bare section header sitting directly on the (possibly custom)
+        // background — the enrolled-course rows below stay opaque cards.
         AppText(
           skillset.title.text,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         for (var i = 0; i < enrolled.length; i++) ...[

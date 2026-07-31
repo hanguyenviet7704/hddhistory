@@ -142,7 +142,7 @@ class _LessonListPageState extends State<LessonListPage> {
                                     ..reset()
                                     ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
                                   context.read<CourseLessonCubit>().setCurrentKeypointId(keypoint.id);
-                                  const LessonRoute(initialMode: 'read').go(context);
+                                  const LessonRoute().go(context);
                                 },
                               );
                             },

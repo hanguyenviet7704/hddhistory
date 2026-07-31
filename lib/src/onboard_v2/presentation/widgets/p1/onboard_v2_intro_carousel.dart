@@ -17,6 +17,9 @@ class _OnboardV2IntroCarouselState extends State<OnboardV2IntroCarousel> with Si
   static const _slotDuration = Duration(milliseconds: 700);
   static const _slotCurve = Cubic(0.4, 0.0, 0.2, 1.0);
 
+  /// Fallback deck used only when the config carries no `welcome.deck` at all
+  /// (first run / offline). Otherwise the cards come from the admin-editable
+  /// deck via [OnboardV2ConfigMapper] → `onboardData.intro` (see [_resolveSources]).
   static final _cards = [
     AppAsset.images.app.onboardExploreDeco.path,
     AppAsset.images.app.onboardConnectDecor.path,
@@ -25,6 +28,10 @@ class _OnboardV2IntroCarouselState extends State<OnboardV2IntroCarousel> with Si
     AppAsset.images.app.onboardThinkDecor.path,
     AppAsset.images.app.onboardWorkDecor.path,
   ];
+
+  /// Effective card image sources (network urls and/or bundled asset paths),
+  /// refreshed from the config on every build. Length drives the wrap math.
+  List<String> _sources = _cards;
 
   late final AnimationController _slotController;
   Timer? _cycleTimer;
@@ -83,6 +90,7 @@ class _OnboardV2IntroCarouselState extends State<OnboardV2IntroCarousel> with Si
 
   @override
   Widget build(BuildContext context) {
+    _sources = _resolveSources(context);
     return SizedBox(
       key: const Key('onboard_v2_intro_carousel'),
       width: 335.w,
@@ -95,7 +103,7 @@ class _OnboardV2IntroCarouselState extends State<OnboardV2IntroCarousel> with Si
             final progress = _reduceMotion ? 0.0 : _slotCurve.transform(_slotController.value);
             final renderedCards = List.generate(5, (index) {
               final startPosition = index - 1;
-              final asset = _cards[_wrapCardIndex(_leftCardIndex + startPosition)];
+              final asset = _sources[_wrapCardIndex(_leftCardIndex + startPosition)];
               final values = _OnboardV2CarouselSlotValues.lerp(
                 _slotFor(startPosition),
                 _slotFor(startPosition - 1),
@@ -155,7 +163,18 @@ class _OnboardV2IntroCarouselState extends State<OnboardV2IntroCarousel> with Si
 
   bool get _canAnimate => !_reduceMotion && widget.isVisible;
 
-  int _wrapCardIndex(int index) => index % _cards.length < 0 ? index % _cards.length + _cards.length : index % _cards.length;
+  /// Resolves the deck image sources from the admin-editable config
+  /// (`onboardData.intro`, populated by [OnboardV2ConfigMapper]). Blank items
+  /// were already backfilled with bundled assets in the mapper, so this only
+  /// falls back to the hardcoded [_cards] when there is no config deck at all.
+  List<String> _resolveSources(BuildContext context) {
+    final intro = context.select<OnboardV2Cubit, List<OnboardIntroEntity>>((cubit) => cubit.state.onboardData.intro);
+    if (intro.isEmpty) return _cards;
+    final images = [for (final item in intro) if (item.image.trim().isNotEmpty) item.image.trim()];
+    return images.isEmpty ? _cards : images;
+  }
+
+  int _wrapCardIndex(int index) => index % _sources.length < 0 ? index % _sources.length + _sources.length : index % _sources.length;
 
   _OnboardV2CarouselSlotValues _slotFor(int position) {
     if (position <= -1) return _OnboardV2CarouselSlotValues.farLeft;

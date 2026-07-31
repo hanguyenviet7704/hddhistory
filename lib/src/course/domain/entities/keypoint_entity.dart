@@ -29,6 +29,14 @@ extension KeypointEntityExtension on KeypointEntity {
 
   bool get hasUsableAudio => resolvedAudioUrl.isNotEmpty;
 
+  /// Narration clip per card, for the active locale — see
+  /// [KeypointAudioEntity.segments]. Empty for keypoints dubbed before per-card
+  /// generation; callers fall back to [resolvedAudioUrl] (one clip, no per-card
+  /// sync) in that case.
+  List<String> get resolvedAudioSegments => audio?.resolvedSegments ?? const [];
+
+  bool get hasCardAudio => resolvedAudioSegments.any((clip) => clip.isNotEmpty);
+
   ProcessEnum get progressFromAverageScore {
     if (averageScore >= 0) return ProcessEnum.done;
     return progess;

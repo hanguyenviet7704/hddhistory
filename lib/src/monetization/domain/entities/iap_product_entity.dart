@@ -15,6 +15,13 @@ abstract class IapProductEntity with _$IapProductEntity {
     @Default('') String currencyCode,
     @Default('') String currencySymbol,
     @Default(false) bool bestDeal,
+
+    /// The SKU this plan is priced against, and the store's own localized
+    /// numbers for it. See [IapProductEntityX.hasCompareAtPrice].
+    @Default('') String compareAtProductId,
+    @Default('') String compareAtPrice,
+    @Default(0) double compareAtRawPrice,
+    @Default('') String compareAtCurrencyCode,
   }) = _IapProductEntity;
 
   factory IapProductEntity.fromJson(Map<String, dynamic> json) => _$IapProductEntityFromJson(json);
@@ -23,16 +30,18 @@ abstract class IapProductEntity with _$IapProductEntity {
 extension IapProductEntityX on IapProductEntity {
   bool get hasDiscount => rawPrice > 0 && salePercent > 0 && salePercent < 100;
 
-  double get saleScale => (salePercent / 100);
-
-  double get originalPrice {
-    if (!hasDiscount) return rawPrice;
-    return rawPrice / (1 - saleScale);
-  }
-
-  String get originalPriceString {
-    return _formatPriceWithCurrency(originalPrice);
-  }
+  /// Whether the struck-through price above this plan can be shown. Every
+  /// condition here is a case where showing it would be wrong rather than
+  /// merely missing:
+  /// - no store answer for the configured SKU (unlisted / not approved / no
+  ///   reference configured at all)
+  /// - the reference is not actually more expensive, so there is no saving
+  /// - the two prices are in different currencies, which cannot be compared
+  bool get hasCompareAtPrice =>
+      compareAtPrice.isNotEmpty &&
+      rawPrice > 0 &&
+      compareAtRawPrice > rawPrice &&
+      (compareAtCurrencyCode.isEmpty || compareAtCurrencyCode == currencyCode);
 
   String get periodLabel {
     // if (productId.contains('1y') || productId.toLowerCase().contains('year')) return t.monetization.pricePerYear;

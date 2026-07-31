@@ -67,6 +67,7 @@ TextStyle _poppins(
 /// a go_router route — see the class doc on [AchievementsFullPage]) so it
 /// covers the bottom nav and pops back to exactly where the user was.
 void _openAchievements(BuildContext context) {
+  AppService.instance.appTrackingService.trackProfileAchieveSeeall();
   Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute(
       builder: (_) => BlocProvider.value(
@@ -86,7 +87,10 @@ void _openAchievements(BuildContext context) {
 /// Provides HomeCubit + CourseRoadmapCubit + ProgressCubit — the page reads
 /// skillsets/progress for its grouped enrolled-course sections and their
 /// completion %.
-void _openMyCourses(BuildContext context) => MyCoursesPage.open(context);
+void _openMyCourses(BuildContext context) {
+  AppService.instance.appTrackingService.trackProfileMycourseClick();
+  MyCoursesPage.open(context);
+}
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -139,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _trackView() {
     if (_hasTrackedView) return;
-    AppService.instance.appTrackingService.trackSettingScrView();
+    AppService.instance.appTrackingService.trackProfileScrView();
     _hasTrackedView = true;
   }
 
@@ -177,7 +181,8 @@ class _ProfilePageState extends State<ProfilePage> {
       },
       child: Scaffold(
         key: const Key('profile-page'),
-        backgroundColor: _profileBackground,
+        // Transparent only when a custom study background is active.
+        backgroundColor: studyThemeScaffoldColor(context, _profileBackground),
         body: SafeBody(
           child: Column(
             children: [
@@ -198,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       const _PremiumBanner(),
                       AppText(
                         context.l10n.setting.settingProfileProgressSection,
-                        style: _poppins(20, FontWeight.w700),
+                        style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                       ),
                       14.verticalSpace,
                       const _StreakCard(),
@@ -264,7 +269,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                       _resolveName(user, context),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: _poppins(20, FontWeight.w700),
+                      style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
                     ),
                     4.verticalSpace,
                     AppText(
@@ -272,7 +277,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyle.text13.copyWith(
-                        color: _profileMutedTextColor,
+                        color: studyThemeOnBg(context, _profileMutedTextColor),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -287,7 +292,7 @@ class _ProfileIdentityHeader extends StatelessWidget {
                   key: const Key('profile-settings-button'),
                   onTap: () {
                     AppHaptic.select();
-                    AppService.instance.appTrackingService.trackSettingDetailClick();
+                    AppService.instance.appTrackingService.trackProfileSettingsClick();
                     SettingRoute().go(context);
                   },
                   child: Container(
@@ -298,8 +303,8 @@ class _ProfileIdentityHeader extends StatelessWidget {
                       AppAsset.svg.app.icSetting,
                       width: 24.w,
                       height: 24.w,
-                      colorFilter: const ColorFilter.mode(
-                        AppCustomColor.streakTextMuted,
+                      colorFilter: ColorFilter.mode(
+                        studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                         BlendMode.srcIn,
                       ),
                     ),
@@ -401,7 +406,7 @@ class _PremiumBanner extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 AppHaptic.select();
-                AppService.instance.appTrackingService.trackSettingPremiumClick();
+                AppService.instance.appTrackingService.trackProfileUpgradeClick(source: 'profile_banner');
                 AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.profile);
                 const PaywallRoute().push(context);
               },
@@ -462,7 +467,8 @@ class _PremiumBanner extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Streak card — reuses StreakWeekBar; taps open the existing streak overlay
+// Streak card — reuses StreakWeekBar. Display-only: tapping it no longer opens
+// the streak detail (removed per request).
 // ---------------------------------------------------------------------------
 
 class _StreakCard extends StatelessWidget {
@@ -476,24 +482,17 @@ class _StreakCard extends StatelessWidget {
         final streak = state.selectedItem;
         final label = context.l10n.learningStreak.streakDays(count: streak.currentStreak);
         return Semantics(
-          button: true,
           label: label,
-          child: GestureDetector(
+          child: Container(
             key: const Key('profile-streak-card'),
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              AppHaptic.select();
-              const HomeLearningStreakRoute().push(context);
-            },
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
-              decoration: BoxDecoration(
-                color: AppCustomColor.backgroundWhite,
-                borderRadius: BorderRadius.circular(20.r),
-                boxShadow: _profileCardShadow,
-              ),
-              child: Column(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
+            decoration: BoxDecoration(
+              color: studyThemeCardColor(context),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: _profileCardShadow,
+            ),
+            child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -512,8 +511,7 @@ class _StreakCard extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        );
+          );
       },
     );
   }
@@ -568,7 +566,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
+        color: studyThemeCardColor(context),
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: _profileCardShadow,
       ),
@@ -596,7 +594,7 @@ class _StatCard extends StatelessWidget {
                   // isn't clipped to "Chuỗi dài nh…" in this narrow half-width
                   // card, while keeping both stat cards a single line / equal height.
                   enableFitScaleDown: true,
-                  style: AppStyle.text12.copyWith(color: _profileMutedTextColor),
+                  style: AppStyle.text12.copyWith(color: studyThemeCardMuted(context, _profileMutedTextColor)),
                 ),
               ],
             ),
@@ -667,7 +665,7 @@ class _SectionHeaderRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: AppText(title, style: _poppins(20, FontWeight.w700)),
+          child: AppText(title, style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary))),
         ),
         Semantics(
           button: true,
@@ -680,7 +678,10 @@ class _SectionHeaderRow extends StatelessWidget {
             },
             child: AppText(
               trailingLabel,
-              style: AppStyle.textBold14.copyWith(color: AppCustomColor.brandPrimary),
+              // Brand link sits directly on the (possibly dark) study background
+              // next to the studyThemeOnBg title — lift it to light lavender there
+              // so "See all" stays legible instead of sinking into the bg.
+              style: AppStyle.textBold14.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)),
             ),
           ),
         ),
@@ -713,7 +714,7 @@ class _InlineSectionError extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
+        color: studyThemeCardColor(context),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: _profileCardShadow,
       ),
@@ -772,7 +773,7 @@ class _AchievementsSummaryCard extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
@@ -796,7 +797,7 @@ class _AchievementsSummaryCard extends StatelessWidget {
                       context.l10n.setting.settingProfileBadgesEarnedLabel,
                       textAlign: TextAlign.center,
                       maxLines: 2,
-                      style: AppStyle.text13.copyWith(color: _profileMutedTextColor, fontWeight: FontWeight.w500),
+                      style: AppStyle.text13.copyWith(color: studyThemeCardMuted(context, _profileMutedTextColor), fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -830,14 +831,14 @@ class _LearningProgressSection extends StatelessWidget {
         30.verticalSpace,
         AppText(
           context.l10n.setting.settingProfileLearningProgressSection,
-          style: _poppins(20, FontWeight.w700),
+          style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
@@ -919,36 +920,72 @@ class _CategoryRow extends StatelessWidget {
     return Column(
       children: [
         Semantics(
+          button: true,
           label: '$name $percent%',
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.h),
-            child: Row(
-              children: [
-                _CategoryIcon(skillsetId: achievement.skillsetId, tint: tint),
-                12.horizontalSpace,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppText(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: _poppins(13, FontWeight.w600),
-                      ),
-                      9.verticalSpace,
-                      _CategoryProgressBar(progress: fraction),
-                    ],
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _openInExplore(context),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: Row(
+                children: [
+                  _CategoryIcon(skillsetId: achievement.skillsetId, tint: tint),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppText(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _poppins(13, FontWeight.w600),
+                        ),
+                        9.verticalSpace,
+                        _CategoryProgressBar(progress: fraction),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  8.horizontalSpace,
+                  // Chevron affordance (design: each Learning Progress row opens
+                  // its skillset in Explore). Matches the Library "My Course" row.
+                  Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
+                ],
+              ),
             ),
           ),
         ),
         if (showDivider) Container(width: double.infinity, height: 1, color: AppCustomColor.borderDefault),
       ],
     );
+  }
+
+  /// Tapping a Learning-Progress category jumps to the Explore tab scrolled to
+  /// that same skillset section (design: Profile progress → the category in
+  /// Explore). The scroll target index is this skillset's position in the
+  /// Explore catalog (HomeCubit.skillsets — the exact list AllCourseTab renders
+  /// and jumpToSkillset scrolls). No-op if the skillset isn't in the catalog.
+  ///
+  /// jumpToSkillset is called explicitly here (not left to CourseRoute's
+  /// selectedTabIndex): the Explore branch is kept alive by the StatefulShell,
+  /// so re-entering it does NOT re-run CoursePage.initState — only an explicit
+  /// scroll request (bumped nonce) lands the user on the category on re-entry.
+  void _openInExplore(BuildContext context) {
+    final homeCubit = AppDI.injector.get<HomeCubit>();
+    final index = homeCubit.state.skillsets.indexWhere((s) => s.id == achievement.skillsetId);
+    if (index < 0) return;
+    AppHaptic.select();
+    homeCubit.selectSkillsetIndex(index);
+    AppDI.injector.get<CourseCubit>()
+      ..setAllCourseSource('profile_progress')
+      ..jumpToSkillset(index);
+    // Explicit route name (not just an index): a cross-branch `.go()` into an
+    // already-built branch fires no didPush, so the observer won't set it — this
+    // lights the Explore tab and keeps the nav guard consistent. Also sets
+    // currentIndex to the Explore branch (3) via the route→tab mapping.
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
+    CourseRoute(selectedTabIndex: index).go(context);
   }
 }
 
@@ -1024,14 +1061,14 @@ class _LibrarySection extends StatelessWidget {
       children: [
         AppText(
           context.l10n.setting.settingProfileLibrarySection,
-          style: _poppins(20, FontWeight.w700),
+          style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
         Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: _profileCardShadow,
           ),
@@ -1057,7 +1094,7 @@ class _LibrarySection extends StatelessWidget {
                         style: _poppins(15, FontWeight.w600),
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded, size: 22.w, color: _profileMutedTextColor),
+                    Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
                   ],
                 ),
               ),

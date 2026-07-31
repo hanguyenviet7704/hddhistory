@@ -3,7 +3,7 @@ part of '../../onboard_v2.dart';
 @lazySingleton
 class OnboardV2Cubit extends Cubit<OnboardV2State> {
   OnboardV2Cubit(
-    this._getAllOnboardsUseCase,
+    this._getOnboardingConfigUseCase,
     this._updateUserUseCase,
     this._getAllCoursesUseCase,
     this._getCourseUseCase,
@@ -19,7 +19,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   @visibleForTesting
   OnboardV2Cubit.withRandom(
-    this._getAllOnboardsUseCase,
+    this._getOnboardingConfigUseCase,
     this._updateUserUseCase,
     this._getAllCoursesUseCase,
     this._getCourseUseCase,
@@ -36,7 +36,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
        _readUserStateOverride = readUserState,
        super(OnboardV2State.initial());
 
-  final GetAllOnboardsUseCase _getAllOnboardsUseCase;
+  final GetOnboardingContentConfigUseCase _getOnboardingConfigUseCase;
   final UpdateUserUseCase _updateUserUseCase;
   final GetAllCoursesUseCase _getAllCoursesUseCase;
   final GetCourseUseCase _getCourseUseCase;
@@ -84,7 +84,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final serial = _requestSerial;
     emit(state.copyWith(onboardStatus: OnboardV2AsyncStatus.loading, onboardErrorMessage: null));
 
-    final result = await _getAllOnboardsUseCase(unit).run();
+    final result = await _getOnboardingConfigUseCase(unit).run();
     if (serial != _requestSerial) return;
 
     result.fold(
@@ -94,10 +94,10 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
           onboardErrorMessage: failure.displayMessage,
         ),
       ),
-      (onboardData) => emit(
+      (config) => emit(
         state.copyWith(
           onboardStatus: OnboardV2AsyncStatus.success,
-          onboardData: onboardData,
+          onboardData: OnboardV2ConfigMapper.toOnboardEntity(config),
         ),
       ),
     );
@@ -107,6 +107,16 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final currentIndex = OnboardV2PageStep.values.indexOf(state.currentPage);
     if (currentIndex <= OnboardV2PageStep.values.indexOf(OnboardV2PageStep.p1Intro)) return;
     if (state.currentPage == OnboardV2PageStep.p4Notification || state.currentPage == OnboardV2PageStep.p8CoursePicker) return;
+
+    // Per-screen back events (spec: only Age/Paths/Brain-science/Habit have one).
+    final backEvent = switch (state.currentPage) {
+      OnboardV2PageStep.p3Age => TrackingKey.onboardV2AgeBack,
+      OnboardV2PageStep.p5PathSelection => TrackingKey.onboardV2PathsBack,
+      OnboardV2PageStep.p6PathMap => TrackingKey.onboardV2InforBack,
+      OnboardV2PageStep.p7Symptoms => TrackingKey.onboardV2SymptomBack,
+      _ => null,
+    };
+    if (backEvent != null) OnboardV2Tracking.track(backEvent);
 
     final isCancellingAgeSubmit = state.currentPage == OnboardV2PageStep.p3Age && state.p3SubmitStatus == OnboardV2AsyncStatus.loading;
     if (isCancellingAgeSubmit) {
@@ -137,11 +147,13 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       TrackingKey.onboardV2P2ContinueClick,
       parameters: {'name_length': trimmedName.length},
     );
+    // Spec: obd_name_continue also persists `user_name` as a User Property
+    // (same pattern as age / path_selected).
+    OnboardV2Tracking.setUserProperties({'user_name': trimmedName});
     emit(state.copyWith(name: trimmedName, currentPage: OnboardV2PageStep.p3Age));
   }
 
   void selectAge(OnboardOptionEntity option) {
-    OnboardV2Tracking.track(TrackingKey.onboardV2AgeSelect, parameters: OnboardV2Tracking.ageParams(option));
     emit(state.copyWith(selectedAge: option, p3ErrorMessage: null));
   }
 
@@ -153,10 +165,12 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     _isSubmittingAge = true;
     final serial = _requestSerial;
+    final ageSheetParams = OnboardV2Tracking.ageSheetParams(selectedAge);
     OnboardV2Tracking.track(
       TrackingKey.onboardV2P3ContinueClick,
-      parameters: OnboardV2Tracking.ageSheetParams(selectedAge),
+      parameters: ageSheetParams,
     );
+    OnboardV2Tracking.setUserProperties({'age': ageSheetParams['age']});
 
     emit(
       state.copyWith(
@@ -176,20 +190,12 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     if (serial != _requestSerial) return;
 
     if (!hasSession) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateFailure,
-        parameters: {'error_reason': 'missing_session', 'source': source},
-      );
       LogDev.warning('[OnboardV2Cubit] Skip background user update: anonymous session unavailable');
       return;
     }
 
     final currentUserId = _readUserState.user.id.trim();
     if (currentUserId.isEmpty) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateFailure,
-        parameters: {'error_reason': 'missing_user_id', 'source': source},
-      );
       LogDev.warning('[OnboardV2Cubit] Skip background user update: missing user id');
       return;
     }
@@ -206,22 +212,11 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       final updateResult = await _updateUserUseCase(Map<String, dynamic>.from(payload)).run();
       updateResult.fold(
         (failure) {
-          OnboardV2Tracking.track(
-            TrackingKey.onboardV2UserUpdateFailure,
-            parameters: {'error_reason': OnboardV2Tracking.exceptionReason(failure), 'source': source},
-          );
           LogDev.warning('[OnboardV2Cubit] background user update failed: ${failure.displayMessage}');
         },
-        (_) => OnboardV2Tracking.track(
-          TrackingKey.onboardV2UserUpdateSuccess,
-          parameters: {'source': source},
-        ),
+        (_) {},
       );
     } catch (error) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateFailure,
-        parameters: {'error_reason': 'unexpected', 'source': source},
-      );
       LogDev.warning('[OnboardV2Cubit] background user update failed: $error');
     }
   }
@@ -251,19 +246,9 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       );
 
       final success = await (_loginAnonymousSilentlyOverride ?? _authBloc.loginAnonymousSilently)(payload);
-      OnboardV2Tracking.track(
-        success ? TrackingKey.onboardV2AnonymousLoginSuccess : TrackingKey.onboardV2AnonymousLoginFailure,
-        parameters: {
-          'source': source,
-          if (!success) 'error_reason': 'login_failed',
-        },
-      );
+      // onboard_v2_anonymous_login_success/failure tracking removed per request.
       return success;
     } catch (error) {
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2AnonymousLoginFailure,
-        parameters: {'source': source, 'error_reason': 'unexpected'},
-      );
       LogDev.warning('[OnboardV2Cubit] anonymous onboarding login failed: $error');
       return false;
     }
@@ -289,7 +274,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final isSelecting = index < 0;
 
     if (isSelecting && selected.length >= 2) {
-      OnboardV2Tracking.track(TrackingKey.onboardV2PathMaxReached, parameters: OnboardV2Tracking.selectedPathParams(selected));
       return;
     }
 
@@ -300,17 +284,12 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     }
 
     final selectedPaths = OnboardV2SymptomSelectionMapper.dedupePaths(selected);
-    final availableSymptoms = OnboardV2SymptomSelectionMapper.availableSymptoms(selectedPaths);
+    final availableSymptoms = OnboardV2SymptomSelectionMapper.availableSymptoms(selectedPaths, onboardData: state.onboardData);
     final selectedSymptoms = OnboardV2SymptomSelectionMapper.retainAvailableSymptoms(
       selectedSymptoms: state.selectedSymptoms,
       availableSymptoms: availableSymptoms,
     );
     _invalidateCourses();
-
-    OnboardV2Tracking.track(
-      isSelecting ? TrackingKey.onboardV2PathSelect : TrackingKey.onboardV2PathUnselect,
-      parameters: OnboardV2Tracking.pathParams(path, selectedPaths: selectedPaths),
-    );
 
     emit(
       state.copyWith(
@@ -328,6 +307,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   void continueFromP5Paths() {
     if (!state.canContinuePaths) return;
     OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectedPathSheetParams(state.selectedPaths));
+    OnboardV2Tracking.setUserProperties({'path_selected': OnboardV2Tracking.selectedPathValue(state.selectedPaths)});
     emit(state.copyWith(currentPage: OnboardV2PageStep.p6PathMap));
   }
 
@@ -341,7 +321,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     final selected = List<OnboardingSymptom>.from(state.selectedSymptoms);
     final index = selected.indexOf(symptom);
-    final isSelecting = index < 0;
     if (index >= 0) {
       selected.removeAt(index);
     } else {
@@ -350,11 +329,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     final selectedSymptoms = OnboardV2SymptomSelectionMapper.dedupeSymptoms(selected);
     _invalidateCourses();
-
-    OnboardV2Tracking.track(
-      isSelecting ? TrackingKey.onboardV2SymptomSelect : TrackingKey.onboardV2SymptomUnselect,
-      parameters: OnboardV2Tracking.symptomParams(symptom, selectedSymptoms: selectedSymptoms),
-    );
 
     emit(
       state.copyWith(
@@ -376,6 +350,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         selectedSymptoms: state.selectedSymptoms,
       ),
     );
+    OnboardV2Tracking.setUserProperties({'habit_struggle': OnboardV2Tracking.selectedHabitValue(state.selectedSymptoms)});
     emit(state.copyWith(currentPage: OnboardV2PageStep.p8CoursePicker));
     // Prewarm the home dataset now (in parallel with the course-list fetch) so
     // it is ready — or nearly ready — by the time the user taps "select".
@@ -466,13 +441,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         return;
       }
 
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2CoursesLoaded,
-        parameters: OnboardV2Tracking.coursesLoadedParams(
-          courses: pickedCourses,
-          selectedSymptoms: selectedSymptoms,
-        ),
-      );
       emit(
         state.copyWith(
           courseStatus: OnboardV2CourseStatus.loaded,
@@ -497,6 +465,34 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final nextIndex = index.clamp(0, state.recommendedCourses.length - 1);
     if (nextIndex == state.currentCourseIndex) return;
     emit(state.copyWith(currentCourseIndex: nextIndex));
+  }
+
+  /// P8 -> P9 handoff: the user picked a specific recommended course. Stashes
+  /// it as the pending handoff action — consumed by P9's "Start Explore" (see
+  /// `onboard_v2_pick_theme_page.dart`, which now owns [resolveCourseForHandoff]
+  /// + the route dispatch) — and moves the flow onto the theme picker so every
+  /// path through onboarding ends with the user personalizing their study
+  /// background before landing in the app.
+  void goToThemeWithSelectedCourse(CourseEntity course) {
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p9Theme,
+        pendingHandoffCourse: course,
+        pendingHandoffIsBrowse: false,
+      ),
+    );
+  }
+
+  /// P8 -> P9 handoff: the user chose to browse the course catalog instead of
+  /// a recommended course. See [goToThemeWithSelectedCourse].
+  void goToThemeAsBrowse() {
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p9Theme,
+        pendingHandoffCourse: null,
+        pendingHandoffIsBrowse: true,
+      ),
+    );
   }
 
   Future<CourseEntity?> resolveCourseForHandoff(CourseEntity course) async {
@@ -540,7 +536,14 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     }
   }
 
-  void markUserOnboardedInBackground() {
+  /// Persist `isOnboarded = true` to the server for the current (anonymous)
+  /// user — AWAITED and retried. This flag is what `check-onboarding` uses to
+  /// recognise a returning device after a reinstall, so it MUST actually land;
+  /// the previous fire-and-forget single PATCH often didn't (app navigated away
+  /// before it completed), which is why users kept re-seeing onboarding.
+  /// Retries a few times, then returns regardless so a transient network
+  /// failure never traps the onboarding CTA.
+  Future<void> markUserOnboarded() async {
     final user = _readUserState.user;
     final userId = user.id.trim();
     if (userId.isEmpty) {
@@ -555,30 +558,26 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       'isOnboarded': true,
     };
 
-    unawaited(_markUserOnboarded(payload));
-  }
-
-  Future<void> _markUserOnboarded(Map<String, dynamic> payload) async {
-    try {
-      final result = await _updateUserUseCase(payload).run();
-      result.fold(
-        (failure) => LogDev.warning('[OnboardV2Cubit] onboarded update failed: ${failure.displayMessage}'),
-        (_) {},
-      );
-    } catch (error) {
-      LogDev.warning('[OnboardV2Cubit] onboarded update failed: $error');
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        final result = await _updateUserUseCase(Map<String, dynamic>.from(payload)).run();
+        if (result.isRight()) return;
+        LogDev.warning('[OnboardV2Cubit] onboarded update attempt $attempt failed');
+      } catch (error) {
+        LogDev.warning('[OnboardV2Cubit] onboarded update attempt $attempt error: $error');
+      }
+      if (attempt < 3) {
+        await Future<void>.delayed(Duration(milliseconds: 500 * attempt));
+      }
     }
   }
 
+  /// Fire-and-forget variant for non-blocking callers — now retried via
+  /// [markUserOnboarded]. Prefer awaiting [markUserOnboarded] at the point the
+  /// user actually finishes onboarding so the flag is guaranteed to land.
+  void markUserOnboardedInBackground() => unawaited(markUserOnboarded());
+
   void _emitCoursesFallback(String reason, {required String stage}) {
-    OnboardV2Tracking.track(
-      TrackingKey.onboardV2CoursesFailure,
-      parameters: {
-        ...OnboardV2Tracking.selectedSymptomParams(state.selectedSymptoms),
-        'error_reason': reason,
-        'stage': stage,
-      },
-    );
     emit(
       state.copyWith(
         courseStatus: OnboardV2CourseStatus.fallback,

@@ -22,7 +22,9 @@ void main() {
         RestoreUsecase(repository),
         VerifyUsecase(repository),
         const ResolvePaywallStrategyUsecase(),
+        ValidateVoucherUsecase(repository),
         remoteConfig,
+        GetPaywallConfigUsecase(repository),
         _FakePackageInfoService(),
       );
     });
@@ -201,7 +203,9 @@ IapCubit _newCubit(_FakeMonetizationRepository repository, _FakeRemoteConfigServ
     RestoreUsecase(repository),
     VerifyUsecase(repository),
     const ResolvePaywallStrategyUsecase(),
+    ValidateVoucherUsecase(repository),
     remoteConfig,
+    GetPaywallConfigUsecase(repository),
     _FakePackageInfoService(),
   );
 }
@@ -230,6 +234,13 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
   int getProductsCalls = 0;
   int impressionCount = 0;
   Duration? delay;
+  // Simulates "no live API data and no cache yet" by default, so
+  // IapCubit.resolvedPaywallConfig keeps deferring to the injected
+  // `_FakeRemoteConfigService` exactly like these tests expect — tests that
+  // care about the API layer itself live in
+  // test/unit/monetization/data/repositories/monetization_repository_paywall_config_test.dart
+  // and a dedicated IapCubit fallback test.
+  PaywallConfigEntity? apiPaywallConfig;
 
   @override
   Stream<PurchaseDetails> get purchaseDetailStream => const Stream.empty();
@@ -275,6 +286,16 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
 
   @override
   TaskEither<AppException, IapVerifyEntity> verify(VerifyParams params) => TaskEither.right(const IapVerifyEntity());
+
+  @override
+  TaskEither<AppException, VoucherValidationEntity> validateVoucher(ValidateVoucherParams params) => TaskEither.right(const VoucherValidationEntity());
+
+  @override
+  TaskEither<AppException, PaywallConfigEntity> getPaywallConfig() {
+    final config = apiPaywallConfig;
+    if (config == null) return TaskEither.left(AppException.unexpected('not_configured'));
+    return TaskEither.right(config);
+  }
 }
 
 class _FakeIapService implements IIapService {
@@ -321,7 +342,7 @@ class _FakeRemoteConfigService implements IRemoteConfigService {
   PaywallConfigEntity get paywallConfig => config;
 
   @override
-  Future<bool> shouldForceUpdate() async => false;
+  Future<bool> updateAvailable() async => false;
 }
 
 class _FakePackageInfoService implements IPackageInfoService {

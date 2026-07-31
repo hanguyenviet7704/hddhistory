@@ -4,6 +4,8 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
   const FeedbackBeforeYouGoPopup({super.key});
 
   static Future<void> show(BuildContext context) {
+    // Spec event (sheet "9. Exit feedback"): the post-send "thanks" popup shown.
+    AppService.instance.appTrackingService.trackEvent(TrackingKey.exitThanksScrView);
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -35,6 +37,8 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           AppHaptic.select();
+          // "Done" tap (spec "9. Exit feedback").
+          AppService.instance.appTrackingService.trackEvent(TrackingKey.exitThanksDoneClick);
           context.back();
         },
         child: FeedbackThankYouBody(

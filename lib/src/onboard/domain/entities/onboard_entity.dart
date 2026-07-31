@@ -11,6 +11,8 @@ abstract class OnboardEntity with _$OnboardEntity {
     @Default([]) List<OnboardOptionEntity> learningStruggles,
     @Default([]) List<OnboardOptionEntity> comfortableLearningTime,
     @Default([]) List<OnboardOptionEntity> dailyLearningGoal,
+    @Default([]) List<OnboardPathEntity> paths,
+    @Default([]) List<OnboardCopyEntity> copy,
     @Default([]) List<OnboardIntroEntity> intro,
     @Default(OnboardMotivationEntity()) OnboardMotivationEntity welcome,
     @Default(OnboardMotivationEntity()) OnboardMotivationEntity motivationOne,

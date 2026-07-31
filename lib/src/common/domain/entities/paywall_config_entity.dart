@@ -7,6 +7,7 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     @Default(false) bool enableLessonLock,
     @Default(0) int lessonLock,
     @Default(PaywallAutoOpenEntity()) PaywallAutoOpenEntity autoOpen,
+    @Default(PaywallInLessonEntity()) PaywallInLessonEntity inLessonPaywall,
     PaywallSaleStrategyEntity? saleStrategy,
   }) = _PaywallConfigEntity;
 
@@ -23,6 +24,28 @@ abstract class PaywallAutoOpenEntity with _$PaywallAutoOpenEntity {
   }) = _PaywallAutoOpenEntity;
 
   factory PaywallAutoOpenEntity.fromJson(Map<String, dynamic> json) => _$PaywallAutoOpenEntityFromJson(json);
+}
+
+/// Opens the paywall from inside a keypoint, the moment the reader swipes off
+/// the first card. A third, independent gate: `enableLessonLock`/`lessonLock`
+/// blocks a lesson before it opens, `autoOpen` fires on Home/Course, and this
+/// one fires mid-lesson.
+@freezed
+abstract class PaywallInLessonEntity with _$PaywallInLessonEntity {
+  const factory PaywallInLessonEntity({
+    @Default(false) bool enabled,
+
+    /// 1-based keypoint position in the course's flat lesson list — the same
+    /// ordering [RoadmapEntity.lockedLessonStartIndex] counts in. 0 = every
+    /// keypoint.
+    @Default(0) int keypointOrdinal,
+
+    /// Cards the reader may pass before the paywall opens; 1 means it opens on
+    /// the move from card 1 to card 2.
+    @Default(1) int afterCards,
+  }) = _PaywallInLessonEntity;
+
+  factory PaywallInLessonEntity.fromJson(Map<String, dynamic> json) => _$PaywallInLessonEntityFromJson(json);
 }
 
 @freezed
@@ -134,6 +157,7 @@ class _PaywallConfigParser {
         enableLessonLock: _boolValue(decoded['enableLessonLock']),
         lessonLock: _intValue(decoded['lessonLock']),
         autoOpen: _autoOpen(decoded['autoOpen']),
+        inLessonPaywall: _inLessonPaywall(decoded['inLessonPaywall']),
         saleStrategy: _saleStrategy(decoded['saleStrategy']),
       );
     } catch (_) {
@@ -147,6 +171,20 @@ class _PaywallConfigParser {
     final percent = _intValue(rawPercent);
     final enabled = _boolValue(value['enabled']) && rawPercent is int && percent >= 0 && percent <= 100;
     return PaywallAutoOpenEntity(enabled: enabled, sessionRolloutPercent: percent);
+  }
+
+  /// A missing key (any version published before this gate existed) parses to
+  /// disabled, and `afterCards` never drops below 1 — 0 would mean "open before
+  /// the reader has seen anything", which is the one thing this gate must not do.
+  static PaywallInLessonEntity _inLessonPaywall(Object? value) {
+    if (value is! Map<String, dynamic>) return const PaywallInLessonEntity();
+    final ordinal = _intValue(value['keypointOrdinal']);
+    final afterCards = _intValue(value['afterCards'], fallback: 1);
+    return PaywallInLessonEntity(
+      enabled: _boolValue(value['enabled']),
+      keypointOrdinal: ordinal < 0 ? 0 : ordinal,
+      afterCards: afterCards < 1 ? 1 : afterCards,
+    );
   }
 
   static PaywallSaleStrategyEntity? _saleStrategy(Object? value) {

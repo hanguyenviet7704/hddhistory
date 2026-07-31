@@ -3,6 +3,12 @@ part of '../services.dart';
 @LazySingleton(as: IRemoteConfigService)
 class FirebaseRemoteConfigService implements IRemoteConfigService {
   static const Duration _fetchTimeout = Duration(seconds: 10);
+  // Serve cached config instantly and only refetch after this interval, instead
+  // of forcing a live network fetch on EVERY launch (Duration.zero) — that was
+  // making the splash wait on a Remote Config round-trip each cold start.
+  // Config still refreshes in the background at least this often, and the
+  // force-update gate is additionally capped by a timeout in SplashPage.
+  static const Duration _minimumFetchInterval = Duration(minutes: 30);
 
   late final FirebaseRemoteConfig _remoteConfig;
   final IPackageInfoService _packageInfoService;
@@ -45,7 +51,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: _fetchTimeout,
-          minimumFetchInterval: Duration.zero,
+          minimumFetchInterval: _minimumFetchInterval,
         ),
       );
 
@@ -140,27 +146,36 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   }
 
   @override
-  Future<bool> shouldForceUpdate() async {
+  Future<bool> updateAvailable() async {
     try {
       await _waitForStartupFetch();
-      final config = appVersionConfig;
-      if (!config.forceUserUpdate) {
-        return false;
-      }
-
-      if (Platform.isAndroid) {
-        if (config.latestAndroidVersion.isEmpty) return false;
-        return _packageInfoService.isVersionLowerThan(config.latestAndroidVersion);
-      }
-      if (Platform.isIOS) {
-        if (config.latestIosVersion.isEmpty) return false;
-        return _packageInfoService.isVersionLowerThan(config.latestIosVersion);
-      }
-
-      return false;
+      return shouldShowUpdateBanner(
+        appVersionConfig,
+        isIOS: Platform.isIOS,
+        isInstalledOlderThan: _packageInfoService.isVersionLowerThan,
+      );
     } catch (e) {
-      LogDev.error('Error checking app version: $e');
+      LogDev.error('updateAvailable: $e');
       return false;
     }
   }
+}
+
+/// Whether Home should surface the update banner, kept pure so the branching is
+/// unit-testable (the platform checks and the version comparison are injected).
+///
+/// Note what is NOT consulted: [AppVersionConfigEntity.forceUserUpdate]. The
+/// blocking splash dialog was removed in favour of a single update surface on
+/// Home, so a forced config shows the same banner rather than suppressing it —
+/// re-adding a `forceUserUpdate` guard here would hide the only update prompt
+/// the app still has.
+@visibleForTesting
+bool shouldShowUpdateBanner(
+  AppVersionConfigEntity config, {
+  required bool isIOS,
+  required bool Function(String latestVersion) isInstalledOlderThan,
+}) {
+  final latestVersion = isIOS ? config.latestIosVersion : config.latestAndroidVersion;
+  if (latestVersion.trim().isEmpty) return false;
+  return isInstalledOlderThan(latestVersion);
 }
