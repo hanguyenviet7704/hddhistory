@@ -17,6 +17,12 @@ export interface IProduct {
   price?: string;
   salePrice?: number;
   salePercent?: number | null;
+  /**
+   * SKU on the same platform whose real store price the app strikes through
+   * above this one's selling price. A reference, never an amount — the app
+   * asks the store for it, so the struck number stays localized per country.
+   */
+  compareAtProductId?: string | null;
   isActive: boolean;
   bestDeal: boolean;
 }

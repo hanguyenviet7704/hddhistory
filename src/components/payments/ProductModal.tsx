@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   PaymentCurrency,
@@ -16,6 +16,12 @@ interface ProductModalProps {
   onSubmit: (payload: Partial<IProduct>, id?: string) => Promise<void>;
   loading?: boolean;
   error?: string | null;
+  /**
+   * Full catalog (unfiltered by the list's search/paging) used to populate the
+   * compare-at SKU picker. Passing the list page's own filtered rows would hide
+   * the SKU the operator needs to pick.
+   */
+  catalog?: ProductRecord[];
 }
 
 const getProductId = (product?: ProductRecord | null) =>
@@ -34,6 +40,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   onSubmit,
   loading = false,
   error = null,
+  catalog = [],
 }) => {
   const [title, setTitle] = useState("");
   const [productId, setProductId] = useState("");
@@ -48,6 +55,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     PaymentCurrency.USD
   );
   const [salePercent, setSalePercent] = useState("");
+  const [compareAtProductId, setCompareAtProductId] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [bestDeal, setBestDeal] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -67,6 +75,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
           ? String(initial.salePercent)
           : ""
       );
+      setCompareAtProductId(initial.compareAtProductId || "");
       setIsActive(initial.isActive ?? true);
       setBestDeal(Boolean(initial.bestDeal));
     } else {
@@ -77,11 +86,47 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setType(ProductType.SUBSCRIPTION_AUTO_RENEW);
       setCurrency(PaymentCurrency.USD);
       setSalePercent("");
+      setCompareAtProductId("");
       setIsActive(true);
       setBestDeal(false);
     }
     setFormError(null);
   }, [initial, isOpen]);
+
+  // Only SKUs on the same store can be compared -- a struck Google price above
+  // an Apple SKU would be a different product entirely. Excludes itself.
+  const compareAtOptions = useMemo(
+    () =>
+      catalog.filter(
+        (item) =>
+          item.platform === platform &&
+          item.productId &&
+          item.productId !== productId.trim()
+      ),
+    [catalog, platform, productId]
+  );
+
+  // A saved reference that is not in the catalog list (other platform, or the
+  // catalog fetch failed) must stay visible, or saving the form would silently
+  // clear a working config.
+  const compareAtIsUnlisted =
+    !!compareAtProductId &&
+    !compareAtOptions.some((item) => item.productId === compareAtProductId);
+
+  useEffect(() => {
+    if (!isOpen || !compareAtProductId) return;
+    if (compareAtOptions.some((item) => item.productId === compareAtProductId)) {
+      return;
+    }
+    // Keep an unlisted value that was already saved on this platform (the
+    // catalog fetch can fail); drop it once the operator switches platform,
+    // since a cross-store reference is rejected by the API anyway.
+    const savedOnSamePlatform =
+      initial?.compareAtProductId === compareAtProductId &&
+      initial?.platform === platform;
+    if (savedOnSamePlatform) return;
+    setCompareAtProductId("");
+  }, [compareAtOptions, compareAtProductId, initial, isOpen, platform]);
 
   if (!isOpen) return null;
 
@@ -101,6 +146,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
       type,
       currency,
       salePercent: numberOrUndefined(salePercent),
+      // Empty string is meaningful: it clears the reference on the API side.
+      compareAtProductId: compareAtProductId.trim(),
       isActive,
       bestDeal,
     };
@@ -203,27 +250,54 @@ const ProductModal: React.FC<ProductModalProps> = ({
             </label>
           </div>
 
-          <label className="flex flex-col gap-1 text-sm text-slate-700">
-            <span className="font-medium">Giảm giá %</span>
-            <div className="relative w-40">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                value={salePercent}
-                onChange={(e) => setSalePercent(e.target.value)}
-                placeholder="50"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
-                %
-              </span>
-            </div>
-            <p className="text-xs text-slate-400">
-              Badge "-50%" hiển thị trên paywall app. Để trống nếu không có khuyến mãi.
-            </p>
-          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="flex flex-col gap-1 text-sm text-slate-700">
+              <span className="font-medium">Giảm giá %</span>
+              <div className="relative w-40">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={salePercent}
+                  onChange={(e) => setSalePercent(e.target.value)}
+                  placeholder="50"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                  %
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Badge "-50%" hiển thị trên paywall app. Để trống nếu không có khuyến mãi.
+              </p>
+            </label>
+
+            <label className="flex flex-col gap-1 text-sm text-slate-700">
+              <span className="font-medium">Giá gốc so sánh (SKU)</span>
+              <select
+                value={compareAtProductId}
+                onChange={(e) => setCompareAtProductId(e.target.value)}
+                className="rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">— Không hiện giá gốc —</option>
+                {compareAtIsUnlisted && (
+                  <option value={compareAtProductId}>
+                    {compareAtProductId} (không có trong danh mục)
+                  </option>
+                )}
+                {compareAtOptions.map((item) => (
+                  <option key={item.productId} value={item.productId}>
+                    {item.productId} · {item.title}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-400">
+                App gạch ngang giá thật của SKU này lấy từ store, nên số tiền
+                luôn đúng theo từng quốc gia. Chỉ chọn được SKU cùng platform.
+              </p>
+            </label>
+          </div>
 
           <label className="flex flex-col gap-1 text-sm text-slate-700">
             <span className="font-medium">Description</span>

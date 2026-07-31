@@ -40,6 +40,7 @@ const normalizeProducts = (payload: any): ProductRecord[] => {
 
 const ProductSection: React.FC = () => {
   const [products, setProducts] = useState<ProductRecord[]>([]);
+  const [catalog, setCatalog] = useState<ProductRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -98,6 +99,28 @@ const ProductSection: React.FC = () => {
     return () => clearTimeout(handle);
   }, [fetchProducts]);
 
+  /**
+   * Whole catalog, ignoring the list's filters and paging: the modal's
+   * compare-at SKU picker must offer every SKU, not just the rows currently on
+   * screen. The catalog is small (tens of SKUs), so one unfiltered fetch is
+   * cheaper than a search-as-you-type picker.
+   */
+  const fetchCatalog = useCallback(async () => {
+    try {
+      const query = new ProductListQuery({ take: 200, page: 1 });
+      query.isAll = true;
+      const res = await productService.getList(query);
+      setCatalog(normalizeProducts(res));
+    } catch (err) {
+      console.error("Failed to fetch product catalog", err);
+      setCatalog([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCatalog();
+  }, [fetchCatalog]);
+
   useEffect(() => {
     setPage(1);
   }, [platformFilter, search, statusFilter, typeFilter]);
@@ -131,7 +154,7 @@ const ProductSection: React.FC = () => {
       }
       setModalOpen(false);
       setSelected(null);
-      await fetchProducts();
+      await Promise.all([fetchProducts(), fetchCatalog()]);
     } catch (err: any) {
       console.error("Save product failed", err);
       setModalError(err?.response?.data?.message || "Không thể lưu sản phẩm");
@@ -439,9 +462,22 @@ const ProductSection: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
-                          {product.productId}
-                        </code>
+                        <div className="space-y-1">
+                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
+                            {product.productId}
+                          </code>
+                          {product.compareAtProductId && (
+                            <p
+                              className="text-[11px] text-slate-500"
+                              title="Paywall gạch ngang giá store của SKU này"
+                            >
+                              gạch giá{" "}
+                              <span className="font-medium text-slate-600">
+                                {product.compareAtProductId}
+                              </span>
+                            </p>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
@@ -584,6 +620,7 @@ const ProductSection: React.FC = () => {
         onSubmit={handleSave}
         loading={modalLoading}
         error={modalError}
+        catalog={catalog}
       />
     </div>
   );
