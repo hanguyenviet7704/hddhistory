@@ -12,32 +12,44 @@ class LessonShellHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Design puts everything on ONE row: close · progress pips (flexible) ·
-    // narration toggle · overflow menu. The pips are not a separate band
-    // below the header, and the audio control is not a floating button.
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18.w),
-      child: Row(
-        children: [
-          _LessonShellIconButton(
-            key: const ValueKey('lesson-shell-close-button'),
-            onTap: onClose,
-            assetPath: AppAsset.svg.app.icClose,
+    // Two bands, per the design (`11 · Keypoint.dc.html`): the controls sit on
+    // their own row — close pinned left, narration + overflow menu pinned right
+    // with the space between them empty — and the progress pips get a row of
+    // their own underneath, inset further (36 vs 18) so the bar reads as a
+    // measure of the whole screen rather than as another header control.
+    //
+    // They shared one row before, which made the pip bar's width a function of
+    // how many buttons were showing and pushed it off-centre.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 18.w),
+          child: Row(
+            children: [
+              _LessonShellIconButton(
+                key: const ValueKey('lesson-shell-close-button'),
+                onTap: onClose,
+                assetPath: AppAsset.svg.app.icKpClose,
+              ),
+              const Spacer(),
+              const KeypointNarrationToggle(),
+              // "Change theme" lives inside the top-right overflow menu
+              // ([LessonHeaderMenu], passed in as [trailing]) alongside "Text
+              // display", "Speed", and "Report a problem" — no Read/Listen mode
+              // toggle anymore (the unified screen has only one mode).
+              if (trailing != null) ...[
+                8.horizontalSpace,
+                trailing!,
+              ],
+            ],
           ),
-          12.horizontalSpace,
-          const Expanded(child: KeypointProgressPipBar()),
-          12.horizontalSpace,
-          const KeypointNarrationToggle(),
-          // "Change theme" lives inside the top-right overflow menu
-          // ([LessonHeaderMenu], passed in as [trailing]) alongside "Text
-          // display", "Speed", and "Report a problem" — no Read/Listen mode
-          // toggle anymore (the unified screen has only one mode).
-          if (trailing != null) ...[
-            8.horizontalSpace,
-            trailing!,
-          ],
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 36.w, right: 36.w, top: 6.h),
+          child: const KeypointProgressPipBar(),
+        ),
+      ],
     );
   }
 }
@@ -71,8 +83,8 @@ class _LessonShellIconButton extends StatelessWidget {
               assetPath,
               width: 20.w,
               height: 20.w,
-              colorFilter: ColorFilter.mode(
-                studyThemeOnBg(context, AppCustomColor.textPrimary),
+              colorFilter: const ColorFilter.mode(
+                KeypointHeaderChrome.icon,
                 BlendMode.srcIn,
               ),
             ),
@@ -83,9 +95,36 @@ class _LessonShellIconButton extends StatelessWidget {
   }
 }
 
-/// Round translucent chrome behind a keypoint header control — the design's 34pt
-/// circle at `rgba(255,255,255,.9)`, flipping to a dark circle over a dark study
-/// background so the icon inside stays legible either way.
+/// The keypoint header's chrome tokens, taken from the design's own `light`
+/// treatment (`11 · Keypoint.dc.html`).
+///
+/// The design defines three treatments (`scrim` / `light` / `outline`) and picks
+/// `light` by default, with the comment "Header chrome is theme-independent —
+/// same on every theme". So these do NOT flip with the study background: they
+/// used to, which is why the pips came out white-on-dark instead of the design's
+/// indigo-on-white.
+abstract final class KeypointHeaderChrome {
+  /// `btn: rgba(255,255,255,.9)`
+  static final Color buttonBg = AppCustomColor.backgroundWhite.withValues(alpha: 0.9);
+
+  /// `icon: #0D121C`
+  static const Color icon = Color(0xFF0D121C);
+
+  /// `audioOn: #554FF0`
+  static const Color audioOn = Color(0xFF554FF0);
+
+  /// `audioOff: #9AA4B2`
+  static const Color audioOff = Color(0xFF9AA4B2);
+
+  /// `pipTrack: rgba(255,255,255,.9)`
+  static final Color pipTrack = AppCustomColor.backgroundWhite.withValues(alpha: 0.9);
+
+  /// `pipFill: #554FF0`
+  static const Color pipFill = Color(0xFF554FF0);
+}
+
+/// Round chrome behind a keypoint header control — the design's 34pt circle at
+/// `rgba(255,255,255,.9)`.
 ///
 /// Shared by all three header controls (close, narration, overflow menu) rather
 /// than repeated in each: they were drifting already — close and menu had no
@@ -103,13 +142,11 @@ class KeypointHeaderButtonChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkBg = studyThemeIsDarkBg(context);
-
     return Container(
       width: 34.w,
       height: 34.w,
       decoration: BoxDecoration(
-        color: isDarkBg ? const Color(0xFF12141C).withValues(alpha: 0.52) : AppCustomColor.backgroundWhite.withValues(alpha: 0.9),
+        color: KeypointHeaderChrome.buttonBg,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,

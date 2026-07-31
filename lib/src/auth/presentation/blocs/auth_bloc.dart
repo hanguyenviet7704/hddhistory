@@ -98,6 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final DeleteAccountUsecase _deleteAccountUsecase;
   final DeletePermanentUserUsecase _deletePermanentUserUsecase;
   final RefreshTokenUsecase _refreshTokenUsecase;
+  final RegisterPushDeviceUsecase _registerPushDeviceUsecase;
   final SyncHomeWidgetsUseCase _syncHomeWidgetsUseCase;
   final ClearHomeWidgetsUseCase _clearHomeWidgetsUseCase;
 
@@ -138,6 +139,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._deleteAccountUsecase,
     this._deletePermanentUserUsecase,
     this._refreshTokenUsecase,
+    this._registerPushDeviceUsecase,
     this._syncHomeWidgetsUseCase,
     this._clearHomeWidgetsUseCase,
     this._deviceInfoService,
@@ -158,6 +160,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     on<_Logout>(_onLogout);
     on<_DeleteAccountPermanently>(_onDeletePermanentUser);
     on<_ClearSession>(_onClearSession);
+
+    // FCM issues the FIRST token only once notification permission is granted —
+    // which on iOS is usually AFTER login, since the token needs an APNs
+    // registration that a denied prompt never produces. Registering only in
+    // [_onAuthSuccess] therefore missed exactly the people who said yes on the
+    // second ask: `getToken()` was null at login, the sync returned early, and
+    // nothing sent the token that arrived a moment later. The server kept
+    // reporting "user has no push token" until they signed out and back in.
+    //
+    // The stream carries genuine refreshes only — `syncInitialToken` publishes
+    // with `emitToStream: false` — and never an empty token, so every event
+    // here is worth acting on.
+    _pushTokenRefreshSubscription = NotificationService.tokenRefreshStream.listen((tokenState) {
+      if (!tokenState.hasToken) return;
+      // No session yet: `push-registration` writes onto the device row that
+      // login creates, so there is nothing to attach to and the call would
+      // 404. [_onAuthSuccess] picks the token up when login lands.
+      if (AppGlobalValue.accessToken.isEmpty) return;
+      unawaited(syncPushRegistration());
+    });
+  }
+
+  /// Keeps the server's copy of this device's FCM token current — see the
+  /// listener in the constructor for why login alone is not enough.
+  StreamSubscription<NotificationTokenState>? _pushTokenRefreshSubscription;
+
+  @override
+  Future<void> close() async {
+    await _pushTokenRefreshSubscription?.cancel();
+    return super.close();
   }
 
   void _onAuthSuccess(AuthEntity auth) {
@@ -166,6 +198,46 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     AppGlobalValue.refreshToken = auth.token.refreshToken;
     _profileCubit.loadUser();
     unawaited(_syncHomeWidgetsUseCase(HomeWidgetSyncParams(localeCode: _localeCubit.state.languageCode)).run());
+    unawaited(syncPushRegistration());
+  }
+
+  /// Tells the server which device this session is on, so the scheduled
+  /// notifications (08:00 / 14:00 / 21:00 local) can reach it.
+  ///
+  /// Called after every login path — the device row the token is written onto is
+  /// created by that login — and again on an FCM token refresh (see the
+  /// `tokenRefreshStream` listener in the constructor). Entirely best-effort: a
+  /// failure here must never surface to someone who just signed in, so it only
+  /// logs.
+  Future<void> syncPushRegistration() async {
+    try {
+      final pushToken = await NotificationService.getToken();
+      if (pushToken == null || pushToken.isEmpty) return;
+
+      await _registerPushDeviceUsecase(
+        RegisterPushDeviceParams(
+          pushToken: pushToken,
+          pushEnabled: await isAppNotificationPreferenceEnabled(),
+          platform: Platform.isIOS ? 'ios' : 'android',
+          timezone: await _resolveTimezone(),
+          language: _localeCubit.state.languageCode,
+        ),
+      ).run();
+    } catch (error) {
+      LogDev.warning('[AuthBloc] push registration failed: $error');
+    }
+  }
+
+  /// IANA zone of the device. Sent as null when the platform channel fails
+  /// rather than guessing: the server treats a missing zone as "not schedulable"
+  /// instead of nudging someone at 08:00 UTC.
+  Future<String?> _resolveTimezone() async {
+    try {
+      return await FlutterTimezone.getLocalTimezone();
+    } catch (error) {
+      LogDev.warning('[AuthBloc] could not resolve timezone: $error');
+      return null;
+    }
   }
 
   Future<bool> _userHaveCourseData() async {

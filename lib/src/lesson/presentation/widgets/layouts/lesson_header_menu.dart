@@ -16,7 +16,12 @@ class LessonHeaderMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = studyThemeOnBg(context, AppCustomColor.textPrimary);
+    // Theme-independent, like the rest of the header chrome — see
+    // [KeypointHeaderChrome]. It used to be `studyThemeOnBg(...)`, which returns
+    // WHITE over a dark study background: once the button circle became
+    // permanently white, that painted a white icon on a white circle and the
+    // button looked empty.
+    const iconColor = KeypointHeaderChrome.icon;
 
     return GestureDetector(
       key: const ValueKey('lesson-shell-overflow-menu-button'),
@@ -35,10 +40,11 @@ class LessonHeaderMenu extends StatelessWidget {
         child: Center(
           child: KeypointHeaderButtonChrome(
             child: SvgPicture.asset(
-              AppAsset.svg.app.icGridMenu,
+              // The design's 2x2 outline grid, not the old solid-square glyph.
+              AppAsset.svg.app.icKpGrid,
               width: 18.w,
               height: 18.w,
-              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              colorFilter: const ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
           ),
         ),

@@ -73,6 +73,19 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
   LessonCompletionOrigin _previousCompletionOrigin = LessonCompletionOrigin.none;
 
+  /// Holds the view on the FIRST card for as long as the reader has not moved
+  /// the deck themselves — see [_rebuildCards].
+  ///
+  /// Not a one-shot "first build" flag: opening a keypoint produces a burst of
+  /// rebuilds (LessonCubit emits `currentLearningItemIndex: 0`, then the first
+  /// readable item, then the loaded item, then TheoryCubit restores its document
+  /// index), and the live edge only climbs to the stored position somewhere in
+  /// the middle of that burst. A flag cleared on the first build would let the
+  /// very next one jump to the restored edge, which is exactly what it did.
+  ///
+  /// Cleared by [viewCard] — the single path every deliberate move goes through.
+  bool _entryPinActive = true;
+
   bool _pausedForQuiz = false;
 
   /// Whether the clip that has finished was already acted on, so one completion
@@ -158,6 +171,12 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   void viewCard(int index, {Duration? startAt}) {
     if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
+    // TEMP-DEBUG(entry-pin): remove once the entry position is confirmed fixed.
+    LogDev.warning('[DeckDbg] viewCard($index) from=${state.viewedCardIndex} pinWas=$_entryPinActive startAt=$startAt');
+    // A deliberate move off the entry card — swipe, pip tap, the voice turning
+    // the page, or the return-from-background jump. From here on the deck is
+    // being driven, so it may follow the live edge again (see [_entryPinActive]).
+    _entryPinActive = false;
     final previousIndex = state.viewedCardIndex;
     emit(state.copyWith(viewedCardIndex: index));
     _reconcileQuizPause(previousIndex, index);
@@ -249,8 +268,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     _completionHandled = true;
 
-    // An exercise card: the deck holds here, because answering is the reader's
-    // to do. Off screen there is nobody to answer, so the voice reads on alone.
+    // An exercise card: its clip has read the QUESTION (the backend never dubs
+    // the options) and the deck holds here — answering is the reader's to do,
+    // confirmed as the intended flow on 2026-07-30. Off screen there is nobody
+    // to answer, so the voice reads on alone.
     if (!state.cards[index].isTheory) {
       _listenOnWhileAway();
       return;
@@ -267,6 +288,14 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       _listenOnWhileAway();
       return;
     }
+    // On the keypoint's last document this runs through `nextLearningItem()`
+    // into `completeCurrentKeypoint()` — deliberate (product decision,
+    // 2026-07-30): a keypoint is read theory card by theory card, and hearing
+    // the final card out IS finishing the lesson. A guard against this briefly
+    // existed, added while a stream-replay bug was burning through all cards in
+    // seconds and "completing" keypoints nobody had listened to; with that
+    // fixed (see LessonAudioCubit's completed-listener), auto-completion at the
+    // true end is the wanted behaviour again.
     _theoryCubit.nextDocument();
   }
 
@@ -292,6 +321,29 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     unawaited(_audioCubit.playRestOfKeypoint());
   }
 
+  /// Moves the view onto the card carrying [clipIndex], building the card list
+  /// out to it first when the lesson's own live edge has not reached it.
+  ///
+  /// Order is load-bearing: raise the bound and rebuild BEFORE looking the clip
+  /// up, because until then no descriptor for that card exists and the lookup can
+  /// only fail. Returns false when the clip has no card even after rebuilding.
+  bool _followNarrationToClip(int clipIndex, {Duration? startAt}) {
+    _revealToClipIndex = clipIndex;
+    _rebuildCards(_lessonCubit.state);
+
+    int? cardIndex;
+    for (final entry in _cardToClip.entries) {
+      if (entry.value == clipIndex) {
+        cardIndex = entry.key;
+        break;
+      }
+    }
+    if (cardIndex == null || cardIndex >= state.cards.length) return false;
+
+    viewCard(cardIndex, startAt: startAt);
+    return true;
+  }
+
   /// Coming back on screen lands on the card the voice is reading, at the second
   /// it is at, still playing.
   ///
@@ -313,20 +365,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (narratedClip != null) {
       // Read the position BEFORE anything touches the player.
       final position = _audioCubit.narratingPosition;
-      _revealToClipIndex = narratedClip;
-      _rebuildCards(_lessonCubit.state);
-
-      int? narratedCard;
-      for (final entry in _cardToClip.entries) {
-        if (entry.value == narratedClip) {
-          narratedCard = entry.key;
-          break;
-        }
-      }
-      if (narratedCard != null && narratedCard < state.cards.length) {
-        viewCard(narratedCard, startAt: position);
-        return;
-      }
+      if (_followNarrationToClip(narratedClip, startAt: position)) return;
       // The clip has no card even after rebuilding (content shorter than the
       // clip list, e.g. a keypoint dubbed before an item was removed): fall
       // through to the old behaviour rather than leave the deck lying.
@@ -371,11 +410,51 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       revealToClipIndex: _revealToClipIndex,
     );
     _cardToClip = built.cardToClip;
+    // Tell the player which clips belong to the reading flow at all, so the
+    // background queue never reads an exercise question's clip aloud.
+    _audioCubit.setNarratableClips(built.narratableClips);
+
+    // Once the lesson's own live edge has caught up with the card narration read
+    // ahead to, the extra bound has done its job and must go: leaving it set
+    // keeps every later rebuild extending the list past the live edge, long after
+    // the reader is driving the deck again.
+    //
+    // Cleared HERE rather than at the end of the resume jump on purpose — clearing
+    // it there would make the very next lesson emit rebuild without the revealed
+    // cards, and the reader looking at one would be yanked back.
+    if (_revealToClipIndex >= 0 && built.liveCardIndex >= built.revealCardIndex) {
+      _revealToClipIndex = -1;
+    }
 
     final wasFollowingEdge = state.viewedCardIndex == state.furthestCardIndex;
     final nextFurthestIndex = completionJustTriggered ? built.doneCardIndex : built.liveCardIndex;
     final previousViewedIndex = state.viewedCardIndex.clamp(0, built.cards.length - 1);
-    final nextViewedIndex = (completionJustTriggered || wasFollowingEdge) ? nextFurthestIndex : previousViewedIndex;
+
+    // Opening a keypoint always lands on its FIRST card, never where the reader
+    // left off. Position inside a keypoint is deliberately not restored (product
+    // call): re-entering re-reads from the top.
+    //
+    // The pin has to outlive the entry BURST, not just the first build: the live
+    // edge climbs to the stored position several rebuilds in, and by then
+    // `wasFollowingEdge` is trivially true (view 0 == edge 0) and would carry the
+    // view along with it. It is released by the first [viewCard], i.e. the moment
+    // the reader — or the voice — actually moves the deck.
+    //
+    // Progress itself is untouched: `furthestCardIndex` still tracks the live
+    // edge, so every card already cleared stays cleared, the pip bar still shows
+    // them, and swiping forward back to the edge is unblocked.
+    final nextViewedIndex = completionJustTriggered
+        ? nextFurthestIndex
+        : _entryPinActive
+        ? 0
+        : (wasFollowingEdge ? nextFurthestIndex : previousViewedIndex);
+
+    // TEMP-DEBUG(entry-pin): remove once the entry position is confirmed fixed.
+    LogDev.warning(
+      '[DeckDbg] rebuild pin=$_entryPinActive cards=${built.cards.length} live=${built.liveCardIndex} '
+      'furthest=${state.furthestCardIndex}→$nextFurthestIndex viewed=$previousViewedIndex→$nextViewedIndex '
+      'followEdge=$wasFollowingEdge completion=$completionJustTriggered itemIdx=${lessonState.currentLearningItemIndex}',
+    );
 
     emit(
       state.copyWith(

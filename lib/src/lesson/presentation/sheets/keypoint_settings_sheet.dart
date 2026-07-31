@@ -2,13 +2,13 @@ part of '../../lesson.dart';
 
 /// Bottom sheet reachable from the keypoint header's overflow (⊞) menu
 /// ([LessonHeaderMenu]). The unified keypoint screen has no Read/Listen mode
-/// split anymore, so every control is always shown: a 2x2 grid of equal
-/// action cards (Change theme, Text display, Speed, Report a problem) plus a
-/// Background music row underneath — a real layout pass from the old
-/// mode-branched single row of exactly 3 cards, not just removing an `if`
-/// (see `narration_timing_estimator`/`keypoint_card_cubit` plan notes: a 4th
-/// card crammed into one row read too cramped, especially in Vietnamese,
-/// where every label runs longer).
+/// split anymore, so every control is always shown: one row of three equal
+/// action cards (Change theme, Text display, Report a problem) plus a
+/// Background music row underneath.
+///
+/// Narration speed is deliberately NOT here — it lives on the header's `1x`
+/// pill next to play/pause, where the reader is already looking while
+/// listening. Two entry points for one setting only invited them to disagree.
 class KeypointSettingsSheet extends StatelessWidget {
   const KeypointSettingsSheet({
     super.key,
@@ -72,8 +72,8 @@ class KeypointSettingsSheet extends StatelessWidget {
             ),
           ),
           18.verticalSpace,
-          // Design: ONE row of three equal action cards, then reading speed
-          // as an inline stepper row, then the background-music toggle row.
+          // Design: ONE row of three equal action cards, then the
+          // background-music toggle row.
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -124,8 +124,6 @@ class KeypointSettingsSheet extends StatelessWidget {
             ),
           ),
           14.verticalSpace,
-          const _ReadingSpeedRow(),
-          10.verticalSpace,
           const _BackgroundMusicRow(),
         ],
       ),
@@ -190,120 +188,6 @@ class _KeypointSettingsCard extends StatelessWidget {
   }
 }
 
-/// Narration speed as an INLINE stepper row (design) — icon · label · a
-/// pill-shaped −/value/+ control — instead of pushing the user into a separate
-/// speed sheet. Backed by [KeypointDisplayCubit.readingSpeed], which persists
-/// across sessions and is applied to the player by [LessonAudioCubit].
-class _ReadingSpeedRow extends StatelessWidget {
-  const _ReadingSpeedRow();
-
-  static const _speeds = LessonAudioStateX.supportedSpeeds;
-
-  @override
-  Widget build(BuildContext context) {
-    final speed = context.select((KeypointDisplayCubit cubit) => cubit.state.readingSpeed);
-    final index = _speeds.indexOf(speed);
-    final canSlower = index > 0;
-    final canFaster = index >= 0 && index < _speeds.length - 1;
-
-    return Padding(
-      key: const ValueKey('keypoint-settings-reading-speed'),
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        children: [
-          SvgPicture.asset(
-            AppAsset.svg.app.icPlaybackSpeed,
-            width: 22.w,
-            height: 22.w,
-            colorFilter: const ColorFilter.mode(AppCustomColor.textSecondary, BlendMode.srcIn),
-          ),
-          14.horizontalSpace,
-          Expanded(
-            child: AppText(
-              context.l10n.lesson.audioSpeedTitle,
-              style: AppStyle.textBold14.copyWith(color: AppCustomColor.textPrimary),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(4.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F6FB),
-              borderRadius: BorderRadius.circular(99.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _SpeedStepButton(
-                  key: const ValueKey('keypoint-settings-speed-slower'),
-                  icon: Icons.remove_rounded,
-                  isEnabled: canSlower,
-                  onTap: () => _setSpeed(context, _speeds[index - 1]),
-                ),
-                SizedBox(
-                  width: 44.w,
-                  child: AppText(
-                    // Same "1x / 1.25x" formatting the speed sheet already
-                    // used, so the value reads identically wherever it shows.
-                    _lessonAudioSpeedLabel(speed),
-                    textAlign: TextAlign.center,
-                    style: AppStyle.textBold14.copyWith(color: AppCustomColor.brandPrimary),
-                  ),
-                ),
-                _SpeedStepButton(
-                  key: const ValueKey('keypoint-settings-speed-faster'),
-                  icon: Icons.add_rounded,
-                  isEnabled: canFaster,
-                  onTap: () => _setSpeed(context, _speeds[index + 1]),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _setSpeed(BuildContext context, double speed) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointAudioSpeedSelect(trackingData, speed: speed);
-    }
-    context.read<KeypointDisplayCubit>().setReadingSpeed(speed);
-  }
-}
-
-class _SpeedStepButton extends StatelessWidget {
-  const _SpeedStepButton({super.key, required this.icon, required this.isEnabled, required this.onTap});
-
-  final IconData icon;
-  final bool isEnabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: isEnabled
-          ? () {
-              AppHaptic.select();
-              onTap();
-            }
-          : null,
-      child: Container(
-        width: 32.w,
-        height: 32.w,
-        decoration: const BoxDecoration(color: AppCustomColor.backgroundWhite, shape: BoxShape.circle),
-        alignment: Alignment.center,
-        child: Icon(
-          icon,
-          size: 18.sp,
-          color: isEnabled ? AppCustomColor.textPrimary : AppCustomColor.borderDefault,
-        ),
-      ),
-    );
-  }
-}
-
 /// Ambient background-audio toggle, always shown now (previously Listen-mode
 /// only). Wired to [StudyThemeCubit]'s sound state — the study background's own
 /// ambient sound layer already plays behind the lesson shell ([ThemedBackground]
@@ -322,9 +206,8 @@ class _BackgroundMusicRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<StudyThemeCubit, StudyThemeState>(
       builder: (context, state) {
-        // Design renders this (and the speed row above) as a plain row on the
-        // sheet surface — no card fill — so only the three action tiles read
-        // as tappable cards.
+        // Design renders this as a plain row on the sheet surface — no card
+        // fill — so only the three action tiles read as tappable cards.
         return Padding(
           key: const ValueKey('keypoint-settings-background-music'),
           padding: EdgeInsets.symmetric(vertical: 4.h),

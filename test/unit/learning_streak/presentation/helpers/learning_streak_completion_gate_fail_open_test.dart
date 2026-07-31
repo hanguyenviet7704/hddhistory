@@ -9,9 +9,26 @@ class _FakeLearningStreakRepository implements ILearningStreakRepository {
 
   TaskEither<AppException, LearningStreakFetchEntity> Function(String userId) handler;
 
+  /// Overridden per test that exercises the check-in path; the default is a
+  /// success carrying whatever [handler] would return, so tests that only care
+  /// about the read path need not set it.
+  TaskEither<AppException, UserLearningStreakEntity> Function(String userId)? checkInHandler;
+
   @override
   TaskEither<AppException, LearningStreakFetchEntity> getUserLearningStreak(String userId) {
     return handler(userId);
+  }
+
+  @override
+  TaskEither<AppException, UserLearningStreakEntity> checkInStreak(String userId) {
+    final override = checkInHandler;
+    if (override != null) return override(userId);
+    return handler(userId).map((fetch) => fetch.streak);
+  }
+
+  @override
+  TaskEither<AppException, StreakPopupConfigEntity> getStreakPopupConfig() {
+    return TaskEither.right(const StreakPopupConfigEntity());
   }
 }
 
@@ -51,7 +68,7 @@ void main() {
 
       expect(result, LearningStreakCompletionGateResult.skippedNotRemotePositive);
       expect(overlayCount, 0);
-      expect(harness.learningStreakCubit.state.lastStreakCountedUtcDay, isNull);
+      expect(harness.learningStreakCubit.state.lastStreakCountedDay, isNull);
 
       await _closeGateHarness(harness);
     });
@@ -74,7 +91,7 @@ void main() {
 
       expect(result, LearningStreakCompletionGateResult.skippedNotRemotePositive);
       expect(overlayCount, 0);
-      expect(harness.learningStreakCubit.state.lastStreakCountedUtcDay, isNull);
+      expect(harness.learningStreakCubit.state.lastStreakCountedDay, isNull);
 
       await _closeGateHarness(harness);
     });
@@ -101,7 +118,7 @@ void main() {
 
       expect(result, LearningStreakCompletionGateResult.skippedNotRemotePositive);
       expect(overlayCount, 0);
-      expect(harness.learningStreakCubit.state.lastStreakCountedUtcDay, isNull);
+      expect(harness.learningStreakCubit.state.lastStreakCountedDay, isNull);
 
       await _closeGateHarness(harness);
     });
@@ -124,7 +141,7 @@ void main() {
 
       expect(result, LearningStreakCompletionGateResult.failedOpen);
       expect(overlayCount, 0);
-      expect(harness.learningStreakCubit.state.lastStreakCountedUtcDay, isNull);
+      expect(harness.learningStreakCubit.state.lastStreakCountedDay, isNull);
 
       await _closeGateHarness(harness);
     });
@@ -140,8 +157,10 @@ _GateHarness _registerGateHarness(
   TaskEither<AppException, LearningStreakFetchEntity> Function(String userId) handler,
 ) {
   final userCubit = _TestUserCubit()..setTestUser(const UserEntity(id: 'user-1'));
+  final repository = _FakeLearningStreakRepository(handler);
   final learningStreakCubit = LearningStreakCubit(
-    GetUserLearningStreakUseCase(_FakeLearningStreakRepository(handler)),
+    GetUserLearningStreakUseCase(repository),
+    CheckInStreakUseCase(repository),
   );
 
   AppDI.injector.registerSingleton<UserCubit>(userCubit);

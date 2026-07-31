@@ -66,6 +66,20 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// it the slot the player reports means nothing to the deck.
   List<int> _queueClipIndexes = const [];
 
+  /// Clip indices that belong to the reading flow at all — theory documents
+  /// only, supplied by the deck ([KeypointCardCubit]) from the card list it
+  /// builds. Exercise-question clips still exist in `segments` (the backend
+  /// dubs questions), but the exercise flow left the keypoint screen, so the
+  /// background queue must not read them aloud. Null means "no deck has said" —
+  /// then nothing is filtered, which keeps this cubit correct stand-alone.
+  Set<int>? _narratableClips;
+
+  void setNarratableClips(Set<int> clips) {
+    _narratableClips = clips;
+  }
+
+  bool _isNarratable(int clipIndex) => _narratableClips == null || _narratableClips!.contains(clipIndex);
+
   /// Clip the voice is on while reading ahead of the deck, or null when the two
   /// are in step (then the deck already knows where narration is) or when the
   /// player has no slot to report.
@@ -116,6 +130,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final queueClipIndexes = <int>[];
     for (var i = _activeClipIndex + 1; i < _cardClips.length; i++) {
       if (_cardClips[i].isEmpty) continue;
+      // Question clips are skipped like empty ones: dubbed, but narrated nowhere
+      // since the exercise flow left this screen.
+      if (!_isNarratable(i)) continue;
       remaining.add(_cardClips[i]);
       queueClipIndexes.add(i);
     }
@@ -147,6 +164,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   Future<void> configure(KeypointEntity keypoint) async {
     _cardClips = keypoint.resolvedAudioSegments;
     _queueClipIndexes = const [];
+    // A different keypoint's clip universe — the deck will supply a fresh set.
+    _narratableClips = null;
     // A different keypoint's clip list — the old index means nothing in it.
     _activeClipIndex = -1;
     _isAheadOfDeck = false;
@@ -482,6 +501,17 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
       _processingStateSubscription = _handler.processingStateStream.listen((processingState) async {
         if (isClosed || processingState != just_audio.ProcessingState.completed) return;
+
+        // just_audio's streams REPLAY their latest value to every new listener,
+        // and this subscription is created while the PREVIOUS clip's `completed`
+        // is still the player's current state — `loadItem` below hasn't swapped
+        // the source yet. Acting on that replay marked the brand-new clip
+        // finished the moment it began loading, the deck read that as the new
+        // card ending and turned the page, whose load replayed `completed`
+        // again… one real completion cascaded the whole keypoint in seconds,
+        // with no audio ever heard. A completion can only belong to THIS load
+        // once the load has finished: same generation, status out of `loading`.
+        if (generation != _loadGeneration || state.status != LessonAudioLoadStatus.ready) return;
 
         // Publishing `hasCompletedPlayback` is what turns the page: it is
         // [KeypointCardCubit] that owns "which card comes next", because only it

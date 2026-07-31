@@ -235,6 +235,49 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     return true;
   }
 
+  /// Routes a tap on one of the server's scheduled notifications, using the
+  /// `deeplink` value its data payload carries. Returns false when the payload is
+  /// not one of ours, so the caller can fall through to the other handlers.
+  ///
+  /// The server sends a symbolic destination (`home` / `resume_lesson` /
+  /// `habit_tracker`) rather than a path, so renaming a route here never needs a
+  /// server-side config change.
+  bool _handleScheduledNotificationTap(NotificationInteraction interaction) {
+    final raw = interaction.payload.raw;
+    final deeplink = (raw['deeplink'] ?? '').toString().trim();
+    if (deeplink.isEmpty) return false;
+
+    final navContext = AppConfig.instance.context;
+    if (navContext == null) {
+      LogDev.warning('Ignoring scheduled notification tap: no navigator context');
+      return false;
+    }
+
+    switch (deeplink) {
+      case 'home':
+        HomeRoute().go(navContext);
+        return true;
+
+      case 'resume_lesson':
+        // Same resume the Live Activity card uses: hand the keypoint to the
+        // roadmap and let it open the lesson once course data can resolve it.
+        openCourseRoadmapFromLiveActivity(
+          (raw['courseId'] ?? '').toString().trim(),
+          keypointId: (raw['keypointId'] ?? '').toString().trim(),
+        );
+        return true;
+
+      case 'habit_tracker':
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+        HabitRoute().go(navContext);
+        return true;
+
+      default:
+        LogDev.warning('Unsupported scheduled notification deeplink: $deeplink');
+        return false;
+    }
+  }
+
   /// True while the lesson route — or anything pushed over it, such as the
   /// exercise-result popup or keypoint-complete page — is the current location.
   ///
@@ -270,6 +313,11 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// opens, foreground receipts, other locals) is ignored — the local nudge's
   /// notification id is the only match.
   void _handleNotificationInteraction(NotificationInteraction interaction) {
+    // Scheduled server notifications (daily remind / unfinished lesson / habit)
+    // are recognised by the `deeplink` key their payload carries, not by a
+    // notification id — the id is assigned by the OS on delivery.
+    if (_handleScheduledNotificationTap(interaction)) return;
+
     final sourceId = int.tryParse(interaction.payload.sourceId ?? '');
     if (sourceId != liveActivityReturnNudgeNotificationId) return;
 

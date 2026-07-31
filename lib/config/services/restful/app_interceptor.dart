@@ -41,6 +41,13 @@ class AppInterceptor extends BaseInterceptor {
       options.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
     }
     options.headers['lang'] = _currentLanguage;
+    // Minutes this device is ahead of UTC (Vietnam = 420). The API buckets
+    // day-scoped data — the learning streak's week strip above all — by the
+    // user's own calendar day; without this it falls back to the server's
+    // timezone (UTC), which files anything done between 00:00 and 07:00 local
+    // under the previous day. Read per request so travel and DST need no
+    // handling of their own.
+    options.headers['x-timezone-offset'] = DateTime.now().timeZoneOffset.inMinutes.toString();
   }
 
   @override

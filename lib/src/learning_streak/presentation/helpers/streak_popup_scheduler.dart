@@ -11,10 +11,11 @@ part of '../../learning_streak.dart';
 /// twenty-second visits show as much intent as one two-minute sit, and a
 /// per-session timer would never fire for the first kind of user at all.
 ///
-/// The counter is keyed by UTC day to match
-/// [LearningStreakCubit.isSameStreakCountedUtcDay], which owns the
-/// once-per-day rule. Two different day definitions would let the popup fire
-/// twice around midnight.
+/// The counter is keyed by the user's LOCAL day (see [StreakDay]) to match both
+/// once-per-day latches on [LearningStreakCubit] and the day the server files a
+/// check-in under. Two different day definitions would let the popup fire twice
+/// around midnight — and keying by UTC day, as this did before, reset the
+/// counter at 07:00 in Vietnam rather than at midnight.
 class StreakPopupScheduler with WidgetsBindingObserver {
   StreakPopupScheduler(this._localStore);
 
@@ -74,8 +75,10 @@ class StreakPopupScheduler with WidgetsBindingObserver {
 
   Future<void> _onTick() async {
     await _flush();
-    if (!_config.popupEnabled) return;
-
+    // Deliberately NOT gated on `_config.popupEnabled`: that flag is a UI kill
+    // switch for the toast, and crossing the threshold now also records the
+    // day. Stopping here would make turning the toast off silently break every
+    // user's streak.
     final seconds = await _readSeconds();
     if (seconds < _config.triggerAfterSeconds) return;
 
@@ -103,9 +106,9 @@ class StreakPopupScheduler with WidgetsBindingObserver {
     await _localStore.setInt(key: _secondsKey(), value: current + elapsed);
   }
 
-  /// Resets the counter when the UTC day changes. Returns true when it did.
+  /// Resets the counter when the local day changes. Returns true when it did.
   Future<bool> _rolloverIfNewDay() async {
-    final today = _utcDayKey(DateTime.now());
+    final today = StreakDay.key(DateTime.now());
     final stored = await _localStore.getString(key: _dayKey);
     if (stored == today) return false;
 
@@ -122,11 +125,5 @@ class StreakPopupScheduler with WidgetsBindingObserver {
     }
   }
 
-  String _secondsKey() => '${_secondsKeyPrefix}_${_utcDayKey(DateTime.now())}';
-
-  static String _utcDayKey(DateTime value) {
-    final utc = value.toUtc();
-    return '${utc.year}-${utc.month.toString().padLeft(2, '0')}-'
-        '${utc.day.toString().padLeft(2, '0')}';
-  }
+  String _secondsKey() => '${_secondsKeyPrefix}_${StreakDay.key(DateTime.now())}';
 }

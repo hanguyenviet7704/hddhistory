@@ -3,7 +3,8 @@ part of '../../learning_streak.dart';
 @lazySingleton
 class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitUseCaseHandlerMixin<LearningStreakState> {
   final GetUserLearningStreakUseCase _getUseCase;
-  LearningStreakCubit(this._getUseCase) : super(LearningStreakState.initial());
+  final CheckInStreakUseCase _checkInUseCase;
+  LearningStreakCubit(this._getUseCase, this._checkInUseCase) : super(LearningStreakState.initial());
 
   @override
   LearningStreakState fromJson(Map<String, dynamic> json) => LearningStreakState.fromJson(json);
@@ -26,8 +27,45 @@ class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitU
   static const _homeChipFreshnessWindow = Duration(seconds: 30);
 
   void reset() => emit(LearningStreakState.initial());
-  void setLastStreakCountedDate(DateTime? utcDate) => emit(state.copyWith(lastStreakCountedDate: utcDate?.toUtc()));
-  bool isSameStreakCountedUtcDay(DateTime utcDate) => state.isSameStreakCountedUtcDay(utcDate.toUtc());
+
+  void setLastStreakCountedDate(DateTime? date) => emit(state.copyWith(lastStreakCountedDate: date));
+  bool isSameStreakCountedDay(DateTime date) => state.isSameStreakCountedDay(date);
+
+  bool isSameCheckInDay(DateTime date) => state.isSameCheckInDay(date);
+
+  /// Records today as a day the user showed up — the only thing that moves the
+  /// streak now that finishing a lesson no longer does.
+  ///
+  /// The day latch is set ONLY on success, so a failed request is retried on the
+  /// next tick instead of silently costing the user their day. On success the
+  /// returned streak is emitted straight into state, which is what lets the
+  /// toast show a week strip that already includes today.
+  Future<bool> checkIn({required String requestedUserId}) async {
+    final normalizedUserId = _normalizeUserId(requestedUserId);
+    final result = await _checkInUseCase(normalizedUserId).run();
+
+    return result.match(
+      (error) {
+        LogDev.warning('Streak check-in failed: ${error.message}');
+        return false;
+      },
+      (streak) {
+        emit(
+          state.copyWith(
+            status: LearningStreakStatus.success,
+            selectedItem: streak,
+            requestedUserId: normalizedUserId,
+            dataOrigin: LearningStreakDataOrigin.remote,
+            lastCheckInDate: StreakDay.today(),
+            errorMessage: null,
+          ),
+        );
+        // The home widget shows the same week strip, so keep it in step.
+        HomeWidgetSyncTrigger.requestDebouncedSync();
+        return true;
+      },
+    );
+  }
 
   Future<LearningStreakRequestResult> loadUserLearningStreak({
     required LearningStreakTriggerSource triggerSource,
@@ -68,19 +106,22 @@ class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitU
       );
     }
 
-    final future = _doLoadUserLearningStreak(
-      triggerSource: triggerSource,
-      requestedUserId: requestedUserId,
-      timeout: timeout,
-      emitLoading: emitLoading,
-      allowSafeDefaultOnFailure: allowSafeDefaultOnFailure,
-    ).then((result) {
-      if (result.isSuccess) {
-        _lastHomeChipSuccessAt = DateTime.now();
-        _lastHomeChipUserId = normalizedUserId;
-      }
-      return result;
-    }).whenComplete(() => _homeChipInFlight = null);
+    final future =
+        _doLoadUserLearningStreak(
+              triggerSource: triggerSource,
+              requestedUserId: requestedUserId,
+              timeout: timeout,
+              emitLoading: emitLoading,
+              allowSafeDefaultOnFailure: allowSafeDefaultOnFailure,
+            )
+            .then((result) {
+              if (result.isSuccess) {
+                _lastHomeChipSuccessAt = DateTime.now();
+                _lastHomeChipUserId = normalizedUserId;
+              }
+              return result;
+            })
+            .whenComplete(() => _homeChipInFlight = null);
     _homeChipInFlight = future;
     return future;
   }

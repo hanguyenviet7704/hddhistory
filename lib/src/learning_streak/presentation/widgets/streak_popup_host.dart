@@ -1,7 +1,15 @@
 part of '../../learning_streak.dart';
 
-/// Mounts [StreakPopupScheduler] for the lifetime of the shell and raises the
-/// streak toast when the daily time threshold is crossed.
+/// Mounts [StreakPopupScheduler] for the lifetime of the shell, and when the
+/// daily time threshold is crossed does two things in order: records today as a
+/// day the user showed up, then raises the streak toast.
+///
+/// That order is the whole point. Time in the app is now the ONLY thing that
+/// counts a streak day, so the check-in must not be skipped by anything that
+/// merely stops the toast — a dialog being open, or the admin's `popupEnabled`
+/// kill switch. It also means the toast is drawn from a streak that already
+/// includes today, so its flame over today's slot tells the truth; before, the
+/// toast could congratulate a day the server had not counted.
 ///
 /// Lives on the shell rather than on Home so the clock keeps running while the
 /// user is in Explore, Habit or Profile — the threshold is "time in the app",
@@ -17,13 +25,12 @@ class StreakPopupHost extends StatefulWidget {
 
 class _StreakPopupHostState extends State<StreakPopupHost> {
   late final StreakPopupScheduler _scheduler;
-  bool _showing = false;
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    _scheduler = StreakPopupScheduler(AppDI.injector.get<ILocalStoreService>())
-      ..onThresholdReached = _maybeShow;
+    _scheduler = StreakPopupScheduler(AppDI.injector.get<ILocalStoreService>())..onThresholdReached = _maybeCheckInAndShow;
     unawaited(_scheduler.start());
     unawaited(_loadConfig());
   }
@@ -35,10 +42,7 @@ class _StreakPopupHostState extends State<StreakPopupHost> {
   }
 
   Future<void> _loadConfig() async {
-    final result = await AppDI.injector
-        .get<GetStreakPopupConfigUseCase>()
-        .call()
-        .run();
+    final result = await AppDI.injector.get<GetStreakPopupConfigUseCase>().call().run();
     // On failure keep the built-in defaults rather than disabling the popup:
     // a config request that fails once should not silently switch the feature
     // off for that session.
@@ -48,53 +52,75 @@ class _StreakPopupHostState extends State<StreakPopupHost> {
     );
   }
 
-  Future<void> _maybeShow() async {
-    if (_showing || !mounted) return;
+  Future<void> _maybeCheckInAndShow() async {
+    if (_busy || !mounted) return;
 
     final streakCubit = AppDI.injector.get<LearningStreakCubit>();
-    final todayUtc = LearningStreakCompletionGate.resolveGateUtcDay(
-      DateTime.now().toUtc(),
-    );
-    // Once per day, sharing the very same guard the old completion trigger
-    // used — so switching trigger cannot make the popup show twice in a day.
-    // Một lần mỗi ngày, dùng chung đúng chốt mà trigger hoàn-thành-keypoint
-    // cũ đã dùng — nên việc đổi trigger không thể khiến popup bung hai lần
-    // trong cùng một ngày.
-    if (streakCubit.isSameStreakCountedUtcDay(todayUtc)) {
-      LogDev.info('Streak popup: đã hiện hôm nay, bỏ qua');
+    final today = StreakDay.today();
+
+    // Nothing left to do today: the day is recorded AND the toast has been
+    // shown. Checked together so the cheap case costs no work at all.
+    if (streakCubit.isSameCheckInDay(today) && streakCubit.isSameStreakCountedDay(today)) {
       return;
     }
 
-    // Never interrupt a sheet or dialog the user is already dealing with.
-    if (LearningStreakModalGuard.hasBlockingModal(context)) {
-      LogDev.info('Streak popup: có modal khác đang mở, bỏ qua');
-      return;
-    }
-
-    _showing = true;
+    _busy = true;
     try {
       final userId = AppDI.injector.get<UserCubit>().state.user.id;
-      final result = await streakCubit.loadUserLearningStreak(
-        triggerSource: LearningStreakTriggerSource.homeChip,
-        requestedUserId: userId,
-      );
+
+      // 1. Record the day. Runs before every toast concern below, and its latch
+      // is set only on success (inside the cubit), so a failed request is
+      // retried on the next tick rather than costing the user their day.
+      if (!streakCubit.isSameCheckInDay(today)) {
+        final checkedIn = await streakCubit.checkIn(requestedUserId: userId);
+        if (!checkedIn) {
+          LogDev.info('Streak check-in: gọi API hỏng, sẽ thử lại ở tick sau');
+          return;
+        }
+        LogDev.info('Streak check-in: đã tính ngày hôm nay');
+      }
       if (!mounted) return;
-      if (!result.isRemoteSuccessWithPositiveStreak) {
-        LogDev.info('Streak popup: streak không dương hoặc gọi API hỏng, bỏ qua');
+
+      // 2. The toast is optional decoration on top of that. `popupEnabled` is
+      // the admin's kill switch for it alone — the day above is already counted.
+      if (!_scheduler.config.popupEnabled) return;
+      if (streakCubit.isSameStreakCountedDay(today)) {
+        LogDev.info('Streak popup: đã hiện hôm nay, bỏ qua');
         return;
       }
-      LogDev.info('Streak popup: mở toast (streak=${result.streak.currentStreak})');
+      // Never interrupt a sheet or dialog the user is already dealing with. The
+      // day's toast ticket is deliberately NOT spent here, so it can still show
+      // once the modal closes.
+      if (LearningStreakModalGuard.hasBlockingModal(context)) {
+        LogDev.info('Streak popup: có modal khác đang mở, bỏ qua');
+        return;
+      }
 
-      await StreakToastOverlay.show(
+      final streak = streakCubit.state.selectedItem;
+      if (streak.currentStreak <= 0) {
+        LogDev.info('Streak popup: streak không dương, bỏ qua');
+        return;
+      }
+      LogDev.info('Streak popup: mở toast (streak=${streak.currentStreak})');
+
+      final didShow = await StreakToastOverlay.show(
         context,
-        streak: result.streak,
+        streak: streak,
         autoHideAfter: _scheduler.config.autoHideAfter,
       );
-      streakCubit.setLastStreakCountedDate(todayUtc);
+      // Chỉ tiêu "vé mỗi ngày" khi toast thực sự được chèn và hiện ra. Trước
+      // đây dòng này chạy vô điều kiện, nên một lần show trả về sớm (không tìm
+      // được overlay) vẫn đánh dấu là đã hiện — và vì cờ này được Hydrated lưu
+      // xuống đĩa, cả ngày còn lại sẽ im lặng dù người dùng chưa thấy gì.
+      if (!didShow) {
+        LogDev.info('Streak popup: không chèn được toast, giữ lại lượt hôm nay');
+        return;
+      }
+      streakCubit.setLastStreakCountedDate(today);
     } catch (error) {
-      LogDev.warning('Streak popup failed to open: $error');
+      LogDev.warning('Streak check-in/popup failed: $error');
     } finally {
-      _showing = false;
+      _busy = false;
     }
   }
 

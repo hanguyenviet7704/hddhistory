@@ -9,9 +9,26 @@ class _FakeLearningStreakRepository implements ILearningStreakRepository {
 
   TaskEither<AppException, LearningStreakFetchEntity> Function(String userId) handler;
 
+  /// Overridden per test that exercises the check-in path; the default is a
+  /// success carrying whatever [handler] would return, so tests that only care
+  /// about the read path need not set it.
+  TaskEither<AppException, UserLearningStreakEntity> Function(String userId)? checkInHandler;
+
   @override
   TaskEither<AppException, LearningStreakFetchEntity> getUserLearningStreak(String userId) {
     return handler(userId);
+  }
+
+  @override
+  TaskEither<AppException, UserLearningStreakEntity> checkInStreak(String userId) {
+    final override = checkInHandler;
+    if (override != null) return override(userId);
+    return handler(userId).map((fetch) => fetch.streak);
+  }
+
+  @override
+  TaskEither<AppException, StreakPopupConfigEntity> getStreakPopupConfig() {
+    return TaskEither.right(const StreakPopupConfigEntity());
   }
 }
 
@@ -34,7 +51,7 @@ void main() {
           ),
         ),
       );
-      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo));
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
 
       final result = await cubit.loadUserLearningStreak(
         triggerSource: LearningStreakTriggerSource.completionCta,
@@ -62,7 +79,7 @@ void main() {
           (error, _) => AppException.unexpected(error.toString()),
         ),
       );
-      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo));
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
 
       final result = await cubit.loadUserLearningStreak(
         triggerSource: LearningStreakTriggerSource.completionCta,
@@ -91,7 +108,7 @@ void main() {
           (error, _) => AppException.unexpected(error.toString()),
         ),
       );
-      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo));
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
 
       final firstRequest = cubit.loadUserLearningStreak(
         triggerSource: LearningStreakTriggerSource.homeChip,
@@ -137,7 +154,7 @@ void main() {
           ),
         ),
       );
-      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo));
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
 
       await cubit.loadUserLearningStreak(
         triggerSource: LearningStreakTriggerSource.homeChip,
@@ -159,4 +176,80 @@ void main() {
       await cubit.close();
     });
   });
+
+  group('LearningStreakCubit.checkIn', () {
+    setUp(() async {
+      await setupLocaleCubitForTests();
+    });
+
+    tearDown(() async {
+      await resetInjectorForTests();
+    });
+
+    test('emits the returned streak and latches today on success', () async {
+      final repo = _FakeLearningStreakRepository((_) => _remoteStreak(0));
+      repo.checkInHandler = (_) => TaskEither.right(
+        const UserLearningStreakEntity(
+          currentStreak: 3,
+          weekStudy: [false, false, true, true, true, false, false],
+        ),
+      );
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
+
+      final didCheckIn = await cubit.checkIn(requestedUserId: 'user-1');
+
+      expect(didCheckIn, isTrue);
+      expect(cubit.state.selectedItem.currentStreak, 3);
+      expect(cubit.state.dataOrigin, LearningStreakDataOrigin.remote);
+      // The toast reads its week strip straight off state, so the strip the
+      // check-in responded with has to land there rather than be dropped.
+      expect(cubit.state.selectedItem.weekStudy[4], isTrue);
+      expect(cubit.isSameCheckInDay(StreakDay.today()), isTrue);
+
+      await cubit.close();
+    });
+
+    test('leaves the day unlatched on failure so the next tick retries', () async {
+      final repo = _FakeLearningStreakRepository((_) => _remoteStreak(0));
+      repo.checkInHandler = (_) => TaskEither.left(AppException.unexpected('network'));
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
+
+      final didCheckIn = await cubit.checkIn(requestedUserId: 'user-1');
+
+      expect(didCheckIn, isFalse);
+      // Latching here would cost the user the day: nothing was recorded server
+      // side, and no further attempt would be made until tomorrow.
+      expect(cubit.state.lastCheckInDate, isNull);
+      expect(cubit.isSameCheckInDay(StreakDay.today()), isFalse);
+
+      await cubit.close();
+    });
+
+    test('keeps the two once-a-day latches independent', () async {
+      final repo = _FakeLearningStreakRepository((_) => _remoteStreak(0));
+      repo.checkInHandler = (_) => TaskEither.right(const UserLearningStreakEntity(currentStreak: 1));
+      final cubit = LearningStreakCubit(GetUserLearningStreakUseCase(repo), CheckInStreakUseCase(repo));
+
+      await cubit.checkIn(requestedUserId: 'user-1');
+
+      // The day is recorded but no toast has been shown, which is exactly the
+      // state a `popupEnabled: false` config leaves behind.
+      expect(cubit.isSameCheckInDay(StreakDay.today()), isTrue);
+      expect(cubit.isSameStreakCountedDay(StreakDay.today()), isFalse);
+
+      cubit.setLastStreakCountedDate(StreakDay.today());
+      expect(cubit.isSameStreakCountedDay(StreakDay.today()), isTrue);
+
+      await cubit.close();
+    });
+  });
+}
+
+TaskEither<AppException, LearningStreakFetchEntity> _remoteStreak(int currentStreak) {
+  return TaskEither.right(
+    LearningStreakFetchEntity(
+      streak: UserLearningStreakEntity(currentStreak: currentStreak),
+      origin: LearningStreakDataOrigin.remote,
+    ),
+  );
 }

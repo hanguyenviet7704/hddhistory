@@ -198,7 +198,15 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   /// back would re-open this grid — an infinite ping-pong. Jumping straight to
   /// the Explore branch (mirrors CourseRoadmapPage._backFromRoadmap) breaks it.
   void _backToExplore(BuildContext context) {
-    final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
+    final homeState = AppDI.injector.get<HomeCubit>().state;
+    // Resolve the target from THIS page's own [skillsetId], not from
+    // `HomeCubit.selectedSkillsetIndex`. That field tracks the Home carousel /
+    // roadmap selection, and Explore's "View more" card opens this page without
+    // ever writing it — so it was whatever Home last pointed at (0 on a fresh
+    // install). Back then jumped Explore to skillset 0, which reads as "it
+    // scrolled to the very top" rather than back to the section departed from.
+    final resolved = homeState.skillsets.indexWhere((s) => s.id == widget.skillsetId);
+    final skillsetIndex = resolved >= 0 ? resolved : homeState.selectedSkillsetIndex;
     AppDI.injector.get<CourseCubit>()
       ..setAllCourseSource('skillset_courses_back')
       ..jumpToSkillset(skillsetIndex);

@@ -6,4 +6,9 @@
          NormalTheme window) reads as the SAME light screen instead of flashing
          purple→white→gray before Flutter draws its first frame. -->
     <color name="splashBackground">#FFF2F1FA</color>
+    <!-- Notification accent Android tints the small icon and the app name with.
+         Kept identical to the Dart side (awesome_local_notification_service's
+         NotificationChannel.defaultColor) so a server push and a local
+         notification are indistinguishable in the shade. -->
+    <color name="notificationAccent">#FF9D50DD</color>
 </resources>

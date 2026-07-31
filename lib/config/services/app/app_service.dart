@@ -143,6 +143,11 @@ class AppService {
       config: AudioServiceConfig(
         androidNotificationChannelId: '$androidPackageId.audio',
         androidNotificationChannelName: 'Meup Listen',
+        // audio_service defaults this to 'mipmap/ic_launcher', and a launcher
+        // icon used as a notification SMALL icon is flattened to a white
+        // silhouette of the whole rounded square — a blob, not the logo. Point
+        // it at the same monochrome mark every other Meup notification uses.
+        androidNotificationIcon: 'drawable/ic_stat_meup',
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
       ),

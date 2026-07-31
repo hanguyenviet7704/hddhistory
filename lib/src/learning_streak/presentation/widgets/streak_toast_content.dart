@@ -88,13 +88,16 @@ class StreakToastContent extends StatelessWidget {
 class StreakToastOverlay {
   const StreakToastOverlay._();
 
-  static Future<void> show(
+  /// Returns false when there was no overlay to insert into, i.e. nothing was
+  /// ever drawn. The caller MUST NOT spend the once-per-day token on a false —
+  /// doing so burns the day on a toast the user never had a chance to see.
+  static Future<bool> show(
     BuildContext context, {
     required UserLearningStreakEntity streak,
     Duration? autoHideAfter,
   }) async {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
-    if (overlay == null) return;
+    if (overlay == null) return false;
 
     final completer = Completer<void>();
     late final OverlayEntry entry;
@@ -124,7 +127,8 @@ class StreakToastOverlay {
       Future<void>.delayed(autoHideAfter, remove);
     }
 
-    return completer.future;
+    await completer.future;
+    return true;
   }
 }
 
@@ -225,38 +229,42 @@ class _ToastWeekBar extends StatelessWidget {
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
-                  Container(
-                    // Kích thước phải ĐẶT TƯỜNG MINH. Con không-Positioned của
-                    // Stack nhận ràng buộc lỏng, nên Container KHÔNG con thì
-                    // giãn hết 28, còn Container CÓ con (dấu tích 18sp) lại co
-                    // về đúng cỡ con — thành ra chấm đã tick nhỏ hơn hẳn chấm
-                    // chưa tick.
-                    width: 28.r,
-                    height: 28.r,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isActive
-                          ? AppCustomColor.streakActive
-                          : AppCustomColor.backgroundWhite,
-                      border: Border.all(
-                        color: isActive || isToday
+                  // Hôm nay CHỈ có ngọn lửa, không có chấm phía sau: ngọn lửa
+                  // hẹp hơn chấm 28px nên phần rìa tròn tím lòi ra hai bên,
+                  // trông như lỗi render chứ không phải chủ đích thiết kế.
+                  if (!isToday)
+                    Container(
+                      // Kích thước phải ĐẶT TƯỜNG MINH. Con không-Positioned
+                      // của Stack nhận ràng buộc lỏng, nên Container KHÔNG con
+                      // thì giãn hết 28, còn Container CÓ con (dấu tích 18sp)
+                      // lại co về đúng cỡ con — thành ra chấm đã tick nhỏ hơn
+                      // hẳn chấm chưa tick.
+                      width: 28.r,
+                      height: 28.r,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isActive
                             ? AppCustomColor.streakActive
-                            : AppCustomColor.borderDefault,
-                        width: 2,
+                            : AppCustomColor.backgroundWhite,
+                        border: Border.all(
+                          color: isActive
+                              ? AppCustomColor.streakActive
+                              : AppCustomColor.borderDefault,
+                          width: 2,
+                        ),
                       ),
+                      // Icons.check ở 13sp quá mảnh so với nét 2.8/24 của
+                      // design; check_rounded ở 18sp khớp độ dày hơn.
+                      child: isActive
+                          ? Icon(
+                              Icons.check_rounded,
+                              size: 18.sp,
+                              weight: 700,
+                              color: AppCustomColor.textWhite,
+                            )
+                          : null,
                     ),
-                    // Icons.check ở 13sp quá mảnh so với nét 2.8/24 của
-                    // design; check_rounded ở 18sp khớp độ dày hơn.
-                    child: isActive
-                        ? Icon(
-                            Icons.check_rounded,
-                            size: 18.sp,
-                            weight: 700,
-                            color: AppCustomColor.textWhite,
-                          )
-                        : null,
-                  ),
-                  // The flame overflows its 26px dot on purpose (42px in the
+                  // The flame overflows its 28px slot on purpose (42px in the
                   // design), so the Stack must not clip.
                   if (isToday)
                     Positioned(

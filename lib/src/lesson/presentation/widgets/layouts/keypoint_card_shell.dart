@@ -220,7 +220,15 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
                                   // on while the app was away extends this past the
                                   // lesson's live edge (see `revealBound`).
                                   itemCount: state.revealBound + 1,
-                                  onPageChanged: (index) => context.read<KeypointCardCubit>().viewCard(index),
+                                  // Deliberately NOT wired to `viewCard`. Physics are
+                                  // never-scrollable, so every move here is one this
+                                  // widget started — and `animateToPage` fires this
+                                  // callback for EVERY page it crosses, not just the
+                                  // one it lands on. Feeding that back into state made
+                                  // one re-sync animation report five card changes,
+                                  // each re-pointing narration: the deck appeared to
+                                  // scroll at random. Intent flows one way now —
+                                  // gesture/narration → state → `_followViewedCardIndex`.
                                   itemBuilder: (context, index) => _KeypointCardStackSlot(
                                     controller: _pageController,
                                     cardIndex: index,
@@ -414,17 +422,14 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
 
     if (mode == _DragMode.page) {
       // Snap: to the neighbour if the drag committed, back to where it started
-      // otherwise. `onPageChanged` reports the landing card, which is what
-      // moves narration (see `KeypointCardCubit.viewCard`).
+      // otherwise. The gesture states the intent — it is the only thing that
+      // knows a drag committed — and the controller follows from state via
+      // [_followViewedCardIndex]. It must NOT animate the controller itself:
+      // `onPageChanged` would then be the only thing telling state where the
+      // deck went, and it reports every page an animation crosses.
       final target = committed ? state.viewedCardIndex + (dy < 0 ? 1 : -1) : state.viewedCardIndex;
       if (committed) AppHaptic.select();
-      unawaited(
-        _pageController.animateToPage(
-          target.clamp(0, state.furthestCardIndex),
-          duration: _snapDuration,
-          curve: _snapCurve,
-        ),
-      );
+      context.read<KeypointCardCubit>().viewCard(target.clamp(0, state.furthestCardIndex));
       return;
     }
 
@@ -479,6 +484,18 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       return;
     }
 
+    // Only a genuine neighbour move is animated. A larger gap is not the reader
+    // travelling — it is the controller having lost its place: `page` is
+    // `pixels / viewportDimension`, and this PageView lives in a LayoutBuilder
+    // whose height changes, so the same offset re-maps to a different page (a
+    // height that doubles halves the index). Animating across that gap scrolls
+    // visibly through cards nobody asked for; jumping restores the page silently.
+    final currentPage = _pageController.page?.round();
+    if (currentPage != null && (currentPage - targetPage).abs() > 1) {
+      _pageController.jumpToPage(targetPage);
+      return;
+    }
+
     _pageController.animateToPage(
       targetPage,
       duration: _snapDuration,
@@ -506,6 +523,32 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
 /// reads as "behind it" rather than as a stray line.
 const _kNeighbourOpacity = 0.62;
 const _kNeighbourScale = 0.95;
+
+/// The deck position [_KeypointCardStackSlot] dims/scales against, falling back
+/// to [settledIndex] on the frames before the controller has dimensions.
+///
+/// Derived from RAW pixels, deliberately not [PageController.page]: that getter
+/// clamps pixels against the position's extents, which lag one layout behind on
+/// the listen-mode resume path — the deck is extended and jumped past the old
+/// last card in the same emit, so the frame that first builds the revealed
+/// cards still reads the OLD last card as the page. The card actually on screen
+/// then gets the neighbour treatment (dimmed, shrunk, and its frosted
+/// BackdropFilter defeated by the Opacity's saveLayer), and since fixing the
+/// extents in layout notifies nobody, it stays dimmed until the next drag.
+///
+/// Near-integer results are rounded exactly as `_PagePosition.getPageFromPixels`
+/// rounds, so a settled deck still hits the slot's `distance == 0` fast path —
+/// float dust there would wrap the live card in a saveLayer that breaks its
+/// frost even at an imperceptible dim.
+@visibleForTesting
+double keypointDeckPage(PageController controller, {required int settledIndex}) {
+  final hasPosition = controller.hasClients && controller.position.haveDimensions;
+  if (!hasPosition) return settledIndex.toDouble();
+  final position = controller.position;
+  final page = position.pixels / math.max(1.0, position.viewportDimension * controller.viewportFraction);
+  final rounded = page.roundToDouble();
+  return (page - rounded).abs() < precisionErrorTolerance ? rounded : page;
+}
 
 /// Applies that treatment, interpolated against the live scroll position so a
 /// card fades and grows into focus as it is dragged in rather than snapping at
@@ -538,8 +581,7 @@ class _KeypointCardStackSlot extends StatelessWidget {
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
-        final hasPosition = controller.hasClients && controller.position.haveDimensions;
-        final page = hasPosition ? (controller.page ?? settledIndex.toDouble()) : settledIndex.toDouble();
+        final page = keypointDeckPage(controller, settledIndex: settledIndex);
         final distance = (cardIndex - page).abs().clamp(0.0, 1.0);
         if (distance == 0) return child;
 
@@ -668,28 +710,83 @@ class _SwipeHintPill extends StatelessWidget {
 /// seeking happens via swipe/pip-tap (see `KeypointCardCubit`), so unlike the
 /// old Listen-mode player this needs no ±10s buttons. Hidden entirely for a
 /// keypoint with no usable audio.
-class KeypointNarrationToggle extends StatelessWidget {
+/// The header's narration control, in the design's two states
+/// (`11 · Keypoint.dc.html`):
+///
+/// * **collapsed** (silent) — a 34pt circle with the headphone glyph. Tapping it
+///   is the design's `expandAudio`: start playing.
+/// * **expanded** (playing) — a 34pt-tall pill holding a speed chip and a pause
+///   button. Tapping pause is `collapseAudio`: stop and shrink back to the
+///   circle. Tapping the chip opens the speed bubble beneath it.
+///
+/// Only the collapsed circle existed before; playing just tinted its icon, so the
+/// speed control was reachable solely through the overflow menu.
+class KeypointNarrationToggle extends StatefulWidget {
   const KeypointNarrationToggle({super.key});
+
+  @override
+  State<KeypointNarrationToggle> createState() => _KeypointNarrationToggleState();
+}
+
+class _KeypointNarrationToggleState extends State<KeypointNarrationToggle> {
+  /// Anchors the speed bubble to the pill. The design places it
+  /// `position:absolute; top:42px; right:0` against the control, which an
+  /// OverlayPortal reproduces without the header having to reserve room for it.
+  final _bubbleController = OverlayPortalController();
+  final _bubbleLink = LayerLink();
+
+  /// `OverlayPortalController.hide()` asserts when the controller has never been
+  /// attached to a mounted [OverlayPortal] — which is exactly the collapsed state,
+  /// where no portal exists. Calling it from the play tap threw inside the gesture
+  /// handler, so the button silently did nothing.
+  void _hideBubble() {
+    if (_bubbleController.isShowing) _bubbleController.hide();
+  }
 
   @override
   Widget build(BuildContext context) {
     final hasUsableSource = context.select((LessonAudioCubit cubit) => cubit.state.hasUsableSource);
     if (!hasUsableSource) return const SizedBox.shrink();
 
-    final iconColor = studyThemeOnBg(context, AppCustomColor.brandPrimary);
+    // Theme-independent, like the rest of the header chrome — see
+    // [KeypointHeaderChrome].
+    const iconColor = KeypointHeaderChrome.audioOn;
 
     return BlocBuilder<LessonAudioCubit, LessonAudioState>(
       builder: (context, audioState) {
         final isPlaying = audioState.isPlaying;
         final isLoading = audioState.isLoading;
 
+        // Playing is the design's "expanded": the circle becomes a pill with the
+        // speed chip and pause in it. A load in flight keeps the circle (with its
+        // spinner) rather than flashing the pill for a few hundred ms.
+        if (isPlaying && !isLoading) {
+          return CompositedTransformTarget(
+            link: _bubbleLink,
+            child: _NarrationExpandedPill(
+              speed: audioState.speed,
+              bubbleController: _bubbleController,
+              bubbleLink: _bubbleLink,
+              onPause: () {
+                _hideBubble();
+                _togglePlayback(context, audioState);
+              },
+            ),
+          );
+        }
+
         return Semantics(
           button: true,
-          label: isPlaying ? context.l10n.lesson.narrationPauseSemantics : context.l10n.lesson.narrationPlaySemantics,
+          label: context.l10n.lesson.narrationPlaySemantics,
           child: GestureDetector(
             key: const ValueKey('keypoint-card-narration-toggle'),
             behavior: HitTestBehavior.opaque,
-            onTap: isLoading ? null : () => _togglePlayback(context, audioState),
+            onTap: isLoading
+                ? null
+                : () {
+                    _hideBubble();
+                    _togglePlayback(context, audioState);
+                  },
             // Same circle as the close and overflow buttons — see
             // [KeypointHeaderButtonChrome]; this used to carry its own copy at a
             // slightly different opacity.
@@ -703,12 +800,17 @@ class KeypointNarrationToggle extends StatelessWidget {
                         valueColor: AlwaysStoppedAnimation<Color>(iconColor),
                       ),
                     )
-                  : Icon(
-                      // Design uses a speaker (on) / muted speaker (off) —
-                      // narration is a voice track, not a media player.
-                      isPlaying ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                      color: isPlaying ? iconColor : iconColor.withValues(alpha: 0.6),
-                      size: 18.sp,
+                  : SvgPicture.asset(
+                      // The design's headphone glyph at its 18pt size. Silent, so
+                      // it takes the design's `audioOff` grey — the indigo
+                      // `audioOn` belongs to the expanded pill.
+                      AppAsset.svg.app.icKpHeadphone,
+                      width: 18.w,
+                      height: 18.w,
+                      colorFilter: const ColorFilter.mode(
+                        KeypointHeaderChrome.audioOff,
+                        BlendMode.srcIn,
+                      ),
                     ),
             ),
           ),
@@ -733,5 +835,211 @@ class KeypointNarrationToggle extends StatelessWidget {
       AppService.instance.appTrackingService.trackKeypointAudioPlayClick(trackingData);
     }
     await audioCubit.enterAudioMode();
+  }
+}
+
+/// The playing state of [KeypointNarrationToggle] — the design's expanded pill:
+/// `height:34; border-radius:99; background:btn; padding:0 3; gap:2`, holding a
+/// speed chip and a pause button.
+class _NarrationExpandedPill extends StatelessWidget {
+  const _NarrationExpandedPill({
+    required this.speed,
+    required this.bubbleController,
+    required this.bubbleLink,
+    required this.onPause,
+  });
+
+  final double speed;
+  final OverlayPortalController bubbleController;
+  final LayerLink bubbleLink;
+  final VoidCallback onPause;
+
+  /// `1` rather than `1.0`, `1.25` kept as is — the design's
+  /// `(v === 1 ? '1' : String(v)) + 'x'`.
+  static String label(double v) => '${v == v.roundToDouble() ? v.toInt() : v}x';
+
+  /// Writes the pick to [KeypointDisplayCubit] rather than straight to
+  /// [LessonAudioCubit], because this pill is now the ONLY narration-speed
+  /// control (the keypoint settings sheet no longer carries a Speed row).
+  ///
+  /// `LessonPage` re-applies `readingSpeed` to the player on every keypoint
+  /// sync, so a direct `LessonAudioCubit.setSpeed` here would be undone by the
+  /// next swipe. Going through the hydrated display cubit is what makes the
+  /// choice stick across cards and across app launches — `LessonPage`'s
+  /// `readingSpeed` listener pushes it into the player.
+  void _setSpeed(double value) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointAudioSpeedSelect(trackingData, speed: value);
+    }
+    AppDI.injector.get<KeypointDisplayCubit>().setReadingSpeed(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OverlayPortal(
+      controller: bubbleController,
+      overlayChildBuilder: (_) => _NarrationSpeedBubble(
+        link: bubbleLink,
+        current: speed,
+        onPick: (value) {
+          bubbleController.hide();
+          _setSpeed(value);
+        },
+        onDismiss: bubbleController.hide,
+      ),
+      child: Container(
+        height: 34.w,
+        padding: EdgeInsets.symmetric(horizontal: 3.w),
+        decoration: BoxDecoration(
+          color: KeypointHeaderChrome.buttonBg,
+          borderRadius: BorderRadius.circular(99.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(
+              button: true,
+              label: context.l10n.lesson.audioSpeedTitle,
+              child: GestureDetector(
+                key: const ValueKey('keypoint-card-narration-speed-chip'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  AppHaptic.select();
+                  bubbleController.toggle();
+                },
+                child: Container(
+                  constraints: BoxConstraints(minWidth: 30.w),
+                  height: 28.w,
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(horizontal: 7.w),
+                  decoration: BoxDecoration(
+                    color: bubbleController.isShowing ? const Color(0xFF0D121C).withValues(alpha: 0.08) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(99.r),
+                  ),
+                  child: Text(
+                    label(speed),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w800,
+                      color: KeypointHeaderChrome.icon,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            2.horizontalSpace,
+            Semantics(
+              button: true,
+              label: context.l10n.lesson.narrationPauseSemantics,
+              child: GestureDetector(
+                key: const ValueKey('keypoint-card-narration-pause'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  bubbleController.hide();
+                  onPause();
+                },
+                child: SizedBox(
+                  width: 28.w,
+                  height: 28.w,
+                  child: Center(
+                    // The design's two 4.2x15 rounded bars in a 24 box, at 14pt.
+                    child: Icon(Icons.pause_rounded, size: 18.sp, color: KeypointHeaderChrome.icon),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The design's speed bubble: a white pill `top:42; right:0` under the control,
+/// `border-radius:99; padding:4; box-shadow:0 10px 26px rgba(13,18,28,.18)`, with
+/// the selected option on `#EEEDFB` in `#554FF0`.
+class _NarrationSpeedBubble extends StatelessWidget {
+  const _NarrationSpeedBubble({
+    required this.link,
+    required this.current,
+    required this.onPick,
+    required this.onDismiss,
+  });
+
+  final LayerLink link;
+  final double current;
+  final ValueChanged<double> onPick;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Tapping anywhere else closes it, as the design's `closeAll` does.
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onDismiss,
+          ),
+        ),
+        CompositedTransformFollower(
+          link: link,
+          targetAnchor: Alignment.bottomRight,
+          followerAnchor: Alignment.topRight,
+          offset: Offset(0, 8.h),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: EdgeInsets.all(4.w),
+              decoration: BoxDecoration(
+                color: AppCustomColor.backgroundWhite,
+                borderRadius: BorderRadius.circular(99.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0D121C).withValues(alpha: 0.18),
+                    blurRadius: 26,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final value in LessonAudioStateX.supportedSpeeds) ...[
+                    if (value != LessonAudioStateX.supportedSpeeds.first) 3.horizontalSpace,
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        AppHaptic.select();
+                        onPick(value);
+                      },
+                      child: Container(
+                        constraints: BoxConstraints(minWidth: 34.w),
+                        height: 28.w,
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(horizontal: 8.w),
+                        decoration: BoxDecoration(
+                          color: value == current ? const Color(0xFFEEEDFB) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(99.r),
+                        ),
+                        child: Text(
+                          _NarrationExpandedPill.label(value),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: value == current ? FontWeight.w800 : FontWeight.w600,
+                            color: value == current ? KeypointHeaderChrome.audioOn : const Color(0xFF3A4250),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -66,21 +66,38 @@ void main() {
     expect(built.cardToClip[2], 0);
   });
 
+  test('exercise items contribute clips but no cards', () {
+    // The exercise flow left the keypoint screen (PO, 2026-07-30): e1's two
+    // dubbed question clips still occupy slots 1..2 in the backend numbering,
+    // but no quiz card exists and its clips are not narratable.
+    final built = builder.build(
+      items: [_theory('t1', 1), _exercise('e1', 2), _theory('t2', 1)],
+      currentLearningItemIndex: 2,
+      liveIndexInCurrentItem: 0,
+    );
+
+    expect(built.cards.where((c) => c.isQuiz), isEmpty);
+    expect(built.cards.length, 3); // t1 d0, t2 d0, done
+    expect(built.cardToClip[0], 0);
+    expect(built.cardToClip[1], 3); // t2 d0 sits past e1's two question clips
+    expect(built.narratableClips, {0, 3});
+  });
+
   test('extends past the live edge until the narrated clip has a card', () {
     final built = builder.build(
       items: [_theory('t1', 2), _exercise('e1', 2), _theory('t2', 2)],
-      currentLearningItemIndex: 1,
+      currentLearningItemIndex: 2,
       liveIndexInCurrentItem: 0,
-      // Live edge is e1's first question (card 2, clip 2). The voice is on
-      // clip 4 — t2's first document, two cards past the edge.
-      revealToClipIndex: 4,
+      // Live edge is t2's first document (card 2, clip 4 — e1's question clips
+      // hold slots 2..3). The voice is on clip 5, one card past the edge.
+      revealToClipIndex: 5,
     );
 
     expect(built.liveCardIndex, 2);
-    expect(built.revealCardIndex, 4);
-    expect(built.cards[4].isTheory, isTrue);
-    expect(built.cards[4].learningItemId, 't2');
-    expect(built.cardToClip[4], 4);
+    expect(built.revealCardIndex, 3);
+    expect(built.cards[3].isTheory, isTrue);
+    expect(built.cards[3].learningItemId, 't2');
+    expect(built.cardToClip[3], 5);
     // The done card still comes last.
     expect(built.cards.last.isDone, isTrue);
   });

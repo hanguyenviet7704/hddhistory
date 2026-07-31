@@ -68,6 +68,38 @@ class LearningStreakRepository implements ILearningStreakRepository {
     );
   }
 
+  @override
+  TaskEither<AppException, UserLearningStreakEntity> checkInStreak(String userId) {
+    return TaskEither.tryCatch(
+      () async {
+        final normalizedUserId = _normalizeUserId(userId);
+        final response = await _api.checkInStreak();
+        final model = (response.data ?? const UserLearningStreakModel()).sanitized();
+
+        // Cache the post-check-in streak, not just remote reads: the week strip
+        // must still show today ticked if the next launch is offline.
+        if (normalizedUserId.isNotEmpty && _isCurrentUser(normalizedUserId)) {
+          await _localDataSource.cacheUserLearningStreak(normalizedUserId, model);
+        }
+
+        return model.toEntity();
+      },
+      // No cache fallback on purpose, unlike the GET: a failed check-in means
+      // the day was NOT recorded, and returning a cached streak would let the
+      // caller latch the day as done and never retry.
+      (error, stackTrace) {
+        AppService.instance.appTrackingService.trackError(
+          error,
+          errorType: 'LearningStreakRepository.checkInStreak',
+          stackTrace: stackTrace,
+        );
+        if (error is AppException) return error;
+        if (error is DioException) return AppException.fromDioException(error);
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
   String _normalizeUserId(String userId) {
     return userId.trim();
   }

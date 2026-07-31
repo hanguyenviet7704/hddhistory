@@ -16,6 +16,7 @@ mixin AppEndpoint {
   static const String verifyOTP = '/api/v1/users/verify-otp';
   static const String updatePassword = '/api/v1/users/update-password';
   static const String deletePermanentUser = '/api/v1/users/delete-permanently-user';
+  static const String pushRegistration = '/api/v1/users/push-registration';
   static const String deleteAccount = '/api/v1/users/delete-my-account';
   static const String changeProfileId = '/rest/v1/rpc/p_change_user_profile_id';
 
@@ -105,6 +106,7 @@ mixin AppEndpoint {
   static const String coursesUserProgressAchievements = '/api/v1/courses-user-progress/achievements';
   static const String coursesUserProgressBadgeProgress = '/api/v1/courses-user-progress/badge-progress/{courseId}';
   static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
+  static const String coursesUserProgressStreakCheckIn = '/api/v1/courses-user-progress/streak/check-in';
   static const String coursesUserProgressWidgetInProgress = '/api/v1/courses-user-progress/widget/in-progress';
   static const String coursesUserProgressWidgetSuggestCourse = '/api/v1/courses-user-progress/widget/suggest-course';
   static const String coursesQuotesRandom = '/api/v1/courses-quotes/random';

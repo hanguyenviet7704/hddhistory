@@ -60,13 +60,30 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     }
   }
 
+  /// First index at or after [from] whose item still belongs to the reading
+  /// flow. Exercise and roleplay items are passed over entirely — the exercise
+  /// flow was cut from the keypoint screen (PO decision, 2026-07-30): a keypoint
+  /// is read theory card by theory card, sequentially, and completes from
+  /// reading alone. Returns `items.length` when nothing readable remains.
+  int _nextReadableIndex(int from) {
+    final items = state.pageData.items;
+    var index = from;
+    while (index < items.length) {
+      final type = items[index].type;
+      if (type == LearningItemType.theory || type == LearningItemType.video) return index;
+      index++;
+    }
+    return index;
+  }
+
   void nextLearningItem() {
-    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
+    final next = _nextReadableIndex(state.currentLearningItemIndex + 1);
+    if (next >= state.pageData.items.length) {
       completeCurrentKeypoint();
       return;
     }
 
-    emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
+    emit(state.copyWith(currentLearningItemIndex: next));
     setCurrentLearningItem(state.currentLearningItem);
     preloadNextLearningItem();
     unawaited(_updateLiveActivity());
@@ -236,8 +253,18 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       onSuccess: (pageData) {
         emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
         if (pageData.items.isEmpty) return;
+        // A keypoint may OPEN on an exercise item (old content orders exist) —
+        // skip to the first readable one, exactly as nextLearningItem does
+        // between items. Falling back to 0 keeps an exercise-only keypoint from
+        // indexing out of range; its deck builds no cards and the done card
+        // owns completion, same as an empty keypoint.
+        final firstIndex = _nextReadableIndex(0);
+        final firstItem = firstIndex < pageData.items.length ? pageData.items[firstIndex] : pageData.items.first;
+        if (firstIndex < pageData.items.length && firstIndex != 0) {
+          emit(state.copyWith(currentLearningItemIndex: firstIndex));
+        }
         loadLearningItem(
-          pageData.items.first.id,
+          firstItem.id,
           onSuccess: (item) => setCurrentLearningItem(item),
         );
         preloadNextLearningItem();

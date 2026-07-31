@@ -73,6 +73,15 @@
     <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
     <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
     <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
+    <!-- Server pushes that carry an FCM `notification` payload (the scheduled
+         daily-remind / progress / habit notifications) are drawn by the Firebase
+         SDK itself while the app is backgrounded or killed — Flutter never runs,
+         so the small icon awesome_notifications sets in Dart does not apply.
+         Without these two the SDK falls back to the launcher icon, which Android
+         flattens into a white blob silhouette. Same mark + accent as every other
+         Meup notification surface. -->
+    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_meup"/>
+    <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/notificationAccent"/>
     <!-- Lesson "Listen mode" background audio (audio_service) -->
     <service android:name="com.ryanheise.audioservice.AudioService" android:foregroundServiceType="mediaPlayback" android:exported="true" tools:ignore="Instantiatable">
       <intent-filter>

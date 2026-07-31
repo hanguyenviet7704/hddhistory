@@ -33,6 +33,7 @@ class KeypointCardsBuilder {
   }) {
     final cards = <KeypointCardDescriptor>[];
     final cardToClip = <int, int>{};
+    final narratableClips = <int>{};
     var liveCardIndex = -1;
     var revealCardIndex = -1;
 
@@ -62,17 +63,26 @@ class KeypointCardsBuilder {
       final isQuizLike = item.type == LearningItemType.exercise || item.type == LearningItemType.roleplay;
       if (!isTheoryLike && !isQuizLike) continue;
 
-      final unitCount = isTheoryLike ? item.documents.length : item.questions.length;
+      // Exercise/roleplay items contribute NO cards: the exercise flow was cut
+      // from the keypoint screen (PO decision, 2026-07-30) — a keypoint is read
+      // theory card by theory card, sequentially. Their DUBBED question clips
+      // still occupy slots in the backend's clip numbering though, so
+      // `clipPosition` must advance past them exactly as before or every theory
+      // card after an exercise item plays a neighbour's clip. The same rule
+      // in the other direction: video items contribute cards but no clips (the
+      // backend leaves them out of its list — `VoiceoverService.buildSegments`),
+      // and the synthetic sub-question round (`isPlayingSubQuestions`) is never
+      // dubbed at all.
+      if (isQuizLike) {
+        final isDubbedExercise = item.type == LearningItemType.exercise && !item.isPlayingSubQuestions;
+        if (isDubbedExercise) clipPosition += item.questions.length;
+        continue;
+      }
+
+      final unitCount = item.documents.length;
       if (unitCount == 0) continue;
 
-      // Video items are NOT dubbed — they carry their own audio, and the backend
-      // leaves them out of its clip list (see `VoiceoverService.buildSegments`).
-      // Roleplay items are not dubbed either (their lines are recorded), and
-      // neither is the synthetic sub-question round `LessonCubit.reviewDone`
-      // appends: those come from `subQuestions`, which the backend never dubs.
-      // Counting any of them would shift every later clip index, so those cards
-      // played a neighbour's clip (or ran past the end and played nothing).
-      final isDubbed = isTheoryLike ? item.type == LearningItemType.theory : item.type == LearningItemType.exercise && !item.isPlayingSubQuestions;
+      final isDubbed = item.type == LearningItemType.theory;
 
       final liveUnitIndex = isCurrentItem ? math.min(liveIndexInCurrentItem, unitCount - 1) : unitCount - 1;
 
@@ -81,9 +91,7 @@ class KeypointCardsBuilder {
         if (!withinLive && !stillSeekingReveal()) break;
 
         emitCard(
-          isTheoryLike
-              ? KeypointCardDescriptor.theory(learningItemId: item.id, documentIndex: unitIndex)
-              : KeypointCardDescriptor.quiz(learningItemId: item.id, questionIndex: unitIndex),
+          KeypointCardDescriptor.theory(learningItemId: item.id, documentIndex: unitIndex),
           isDubbed ? clipPosition + unitIndex : null,
         );
 
@@ -96,6 +104,22 @@ class KeypointCardsBuilder {
       if (isDubbed) clipPosition += unitCount;
     }
 
+    // Which clip indices belong to the reading flow at all, across the WHOLE
+    // keypoint (not just the built prefix). This is what keeps the background
+    // queue from reading exercise questions aloud: their clips exist in
+    // `segments` but no longer belong to anything on screen.
+    var narratablePosition = 0;
+    for (final item in items) {
+      if (item.type == LearningItemType.theory) {
+        for (var i = 0; i < item.documents.length; i++) {
+          narratableClips.add(narratablePosition + i);
+        }
+        narratablePosition += item.documents.length;
+      } else if (item.type == LearningItemType.exercise && !item.isPlayingSubQuestions) {
+        narratablePosition += item.questions.length;
+      }
+    }
+
     if (liveCardIndex < 0) liveCardIndex = cards.isEmpty ? 0 : cards.length - 1;
     // An unreachable bound is simply ignored rather than shortening anything.
     if (revealCardIndex < liveCardIndex) revealCardIndex = liveCardIndex;
@@ -106,6 +130,7 @@ class KeypointCardsBuilder {
       liveCardIndex: liveCardIndex,
       cardToClip: cardToClip,
       revealCardIndex: revealCardIndex,
+      narratableClips: narratableClips,
     );
   }
 }
@@ -116,6 +141,7 @@ class BuiltKeypointCards {
     required this.liveCardIndex,
     required this.cardToClip,
     required this.revealCardIndex,
+    required this.narratableClips,
   });
 
   /// Includes the trailing synthetic done card.
@@ -132,6 +158,12 @@ class BuiltKeypointCards {
   /// [liveCardIndex]; otherwise equal to it. Never below it — an unreachable
   /// bound reveals nothing.
   final int revealCardIndex;
+
+  /// Clip indices that belong to the reading flow, across the whole keypoint —
+  /// theory documents only. Exercise-question clips exist in `segments` but are
+  /// narrated nowhere since the exercise flow left this screen; the background
+  /// queue filters on this.
+  final Set<int> narratableClips;
 
   int get doneCardIndex => cards.length - 1;
 }

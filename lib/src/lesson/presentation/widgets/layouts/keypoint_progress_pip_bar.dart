@@ -10,8 +10,8 @@ class KeypointProgressPipBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // No horizontal padding of its own: this sits inside the header Row
-    // (design), which already owns the screen edge inset.
+    // No horizontal padding of its own: [LessonShellHeader] gives this its own
+    // row under the controls and owns the (wider) inset the design asks for.
     return BlocBuilder<KeypointCardCubit, KeypointCardState>(
         builder: (context, state) {
           // One pip per card in the WHOLE keypoint, shown from the start (per
@@ -42,7 +42,13 @@ class KeypointProgressPipBar extends StatelessWidget {
             child: Row(
               children: List.generate(pipCount, (index) {
                 final isReachable = index <= state.revealBound;
+                // The design gives the card being read a pip 5x the width of the
+                // others and 2pt taller (`flex: i === cur ? 5 : 1`,
+                // `h: i === cur ? '7px' : '5px'`), animated — so the bar reads as
+                // "you are here" rather than as an even row of ticks.
+                final isCurrent = index == state.viewedCardIndex;
                 return Expanded(
+                  flex: isCurrent ? 5 : 1,
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 1.5.w),
                     child: GestureDetector(
@@ -58,20 +64,30 @@ class KeypointProgressPipBar extends StatelessWidget {
                         // >=48dp tall even though the visual track is thin.
                         height: 24.h,
                         alignment: Alignment.center,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(99.r),
-                          child: Container(
-                            height: 5.h,
-                            // Track/fill flip over a dark custom study
-                            // background so the bar stays visible on photo
-                            // themes (design's dark-chrome variant).
-                            color: studyThemeIsDarkBg(context)
-                                ? const Color(0xFF12141C).withValues(alpha: 0.45)
-                                : AppCustomColor.backgroundWhite.withValues(alpha: 0.85),
-                            alignment: Alignment.centerLeft,
-                            child: FractionallySizedBox(
-                              widthFactor: cubit.progressForCard(index),
-                              child: Container(color: studyThemeOnBg(context, AppCustomColor.brandPrimary)),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeOutCubic,
+                          height: (isCurrent ? 7 : 5).h,
+                          decoration: BoxDecoration(
+                            // Theme-independent, per the design's own note that
+                            // the header chrome is the same on every theme —
+                            // white track, indigo fill. See [KeypointHeaderChrome].
+                            color: KeypointHeaderChrome.pipTrack,
+                            borderRadius: BorderRadius.circular(99.r),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          alignment: Alignment.centerLeft,
+                          child: FractionallySizedBox(
+                            widthFactor: cubit.progressForCard(index),
+                            // Container, NOT DecoratedBox: with no child a
+                            // DecoratedBox takes the SMALLEST size its
+                            // constraints allow, so the fill collapsed to zero
+                            // height and the bar showed only its track.
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: KeypointHeaderChrome.pipFill,
+                                borderRadius: BorderRadius.circular(99.r),
+                              ),
                             ),
                           ),
                         ),
