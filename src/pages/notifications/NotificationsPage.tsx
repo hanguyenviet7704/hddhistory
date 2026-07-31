@@ -308,7 +308,7 @@ const ContentSection: React.FC = () => {
                     className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
                   />
                   <input
-                    placeholder="Body — dùng {user_name}, {lesson_name}, {quote}"
+                    placeholder="Body — dùng {user_name}, {course_name}, {quote}"
                     value={copy.body}
                     onChange={(e) =>
                       setDrafts((prev) => {
