@@ -50,6 +50,7 @@ paywallHeroTitle: '每天都学到
 
   新东西'
 paywallHighlightSubtitle: 解锁全部内容，随时可取消
+paywallOriginalPriceLabel: 原价 ${price}
 paywallPlanAnnual: 年度
 paywallPlanLifetime: 终身
 paywallPlanMonthly: 月度

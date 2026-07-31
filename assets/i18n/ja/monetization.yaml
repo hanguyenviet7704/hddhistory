@@ -50,6 +50,7 @@ paywallHeroTitle: '毎日
 
   何かを学ぼう'
 paywallHighlightSubtitle: すべての機能を解放。いつでも解約可能
+paywallOriginalPriceLabel: 通常価格 ${price}
 paywallPlanAnnual: 年間
 paywallPlanLifetime: 永久
 paywallPlanMonthly: 月間

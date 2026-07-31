@@ -94,15 +94,19 @@ class PaywallPlanOption extends StatelessWidget {
                     ),
                     4.verticalSpace,
                     if (_showOriginalPrice)
-                      AppText(
-                        product.originalPriceString,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppStyle.text12.copyWith(
-                          color: const Color(0xFF95A7C2),
-                          fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.lineThrough,
-                          height: 1.75,
+                      Semantics(
+                        label: l10n.monetization.paywallOriginalPriceLabel(price: product.compareAtPrice),
+                        excludeSemantics: true,
+                        child: AppText(
+                          product.compareAtPrice,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppStyle.text12.copyWith(
+                            color: const Color(0xFF95A7C2),
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.lineThrough,
+                            height: 1.75,
+                          ),
                         ),
                       )
                     else
@@ -167,7 +171,11 @@ class PaywallPlanOption extends StatelessWidget {
 
   bool get _showDiscountPill => product.hasDiscount;
 
-  bool get _showOriginalPrice => false;
+  /// The struck-through price is the live store price of the SKU configured in
+  /// admin ("Giá gốc so sánh"), so it replaces the per-period line rather than
+  /// stacking with it. Hidden whenever that price cannot be trusted — see
+  /// [IapProductEntityX.hasCompareAtPrice].
+  bool get _showOriginalPrice => product.hasCompareAtPrice;
 
   String _periodUnit(IapProductEntity product) {
     final label = product.periodLabel.trim();

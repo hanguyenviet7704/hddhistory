@@ -50,6 +50,7 @@ paywallHeroTitle: '매일
 
   무언가를 배우세요'
 paywallHighlightSubtitle: 전체 이용 잠금 해제. 언제든 취소 가능
+paywallOriginalPriceLabel: 정가 ${price}
 paywallPlanAnnual: 연간
 paywallPlanLifetime: 평생
 paywallPlanMonthly: 월간

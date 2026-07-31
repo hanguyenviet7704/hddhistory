@@ -15,6 +15,19 @@ abstract class IapProductModel with _$IapProductModel {
     @Default('') String currencyCode,
     @Default('') String currencySymbol,
     @Default(false) bool bestDeal,
+
+    /// Another SKU on the same store, configured in admin, whose real price is
+    /// struck through above this one's. A reference and never an amount, so the
+    /// struck number stays localized per storefront (Apple prices in 175
+    /// territories) and cannot drift from what the store charges.
+    @Default('') String compareAtProductId,
+
+    /// Filled by [IapProductModelListExtension.mapStoreData] from the store's
+    /// answer for [compareAtProductId] — never sent by the API, which does not
+    /// know local prices.
+    @Default('') String compareAtPrice,
+    @Default(0) double compareAtRawPrice,
+    @Default('') String compareAtCurrencyCode,
   }) = _IapProductModel;
 
   factory IapProductModel.fromJson(Map<String, dynamic> json) => _$IapProductModelFromJson(json);
@@ -36,17 +49,6 @@ enum PaymentPlatform {
 
 extension IapProductModelExtension on IapProductModel {
   bool get isSale => id.contains('monthly');
-
-  double get originalPrice => rawPrice * saleScale;
-
-  String get originalPriceString {
-    int currencySymbolIndex = price.indexOf(RegExp(r'[^0-9.,\s]'));
-    if (currencySymbolIndex == -1) return price;
-    if (currencySymbolIndex == 0) return '${price.substring(0, currencySymbolIndex)}${originalPrice.currency}';
-    return '${originalPrice.currency}${price.substring(currencySymbolIndex)}';
-  }
-
-  double get saleScale => 2;
 
   String period(BuildContext context) {
     return switch (id) {
@@ -81,6 +83,10 @@ extension IapProductModelExtension on IapProductModel {
     currencyCode: currencyCode,
     currencySymbol: currencySymbol,
     bestDeal: bestDeal,
+    compareAtProductId: compareAtProductId,
+    compareAtPrice: compareAtPrice,
+    compareAtRawPrice: compareAtRawPrice,
+    compareAtCurrencyCode: compareAtCurrencyCode,
   );
 }
 
@@ -92,6 +98,10 @@ extension IapProductModelListExtension on List<IapProductModel> {
     for (final item in this) {
       final storeDataItem = storeByProductId[item.productId];
       if (storeDataItem == null) continue;
+      // Absent when the SKU has no reference configured or the store did not
+      // return it (unlisted, not approved yet, removed). Both cases simply
+      // leave the struck-through price empty — never a blocked paywall.
+      final compareAtItem = item.compareAtProductId.isEmpty ? null : storeByProductId[item.compareAtProductId];
       result.add(
         item.copyWith(
           title: storeDataItem.title,
@@ -100,6 +110,9 @@ extension IapProductModelListExtension on List<IapProductModel> {
           rawPrice: storeDataItem.rawPrice,
           currencyCode: storeDataItem.currencyCode,
           currencySymbol: storeDataItem.currencySymbol,
+          compareAtPrice: compareAtItem?.price ?? '',
+          compareAtRawPrice: compareAtItem?.rawPrice ?? 0,
+          compareAtCurrencyCode: compareAtItem?.currencyCode ?? '',
         ),
       );
     }

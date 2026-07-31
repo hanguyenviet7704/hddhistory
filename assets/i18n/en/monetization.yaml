@@ -50,6 +50,7 @@ paywallHeroTitle: 'Learn something
 
   every day'
 paywallHighlightSubtitle: Unlock full access. Cancel anytime
+paywallOriginalPriceLabel: Original price ${price}
 paywallPlanAnnual: Annual
 paywallPlanLifetime: Lifetime
 paywallPlanMonthly: Monthly

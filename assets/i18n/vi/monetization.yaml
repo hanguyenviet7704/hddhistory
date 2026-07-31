@@ -51,6 +51,7 @@ paywallHeroTitle: 'Học một điều mới
 
   mỗi ngày'
 paywallHighlightSubtitle: Mở khoá toàn bộ. Huỷ bất cứ lúc nào
+paywallOriginalPriceLabel: Giá gốc ${price}
 paywallPlanAnnual: Hằng năm
 paywallPlanLifetime: Trọn đời
 paywallPlanMonthly: Hằng tháng

@@ -53,7 +53,7 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       () async {
         final selectedIds = _validatedSelectedProductIds(params.selectedProductIds);
         final remoteProducts = await _loadSelectedRemoteProducts(params, selectedIds);
-        final productDetails = await _iapService.getProducts(productIds: selectedIds.toSet());
+        final productDetails = await _iapService.getProducts(productIds: _storeIdsToQuery(selectedIds, remoteProducts));
         final storeProducts = productDetails.toIapProducts();
         final products = remoteProducts.mapStoreData(storeProducts);
         if (products.length != selectedIds.length) {
@@ -63,6 +63,21 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       },
       (error, stackTrace) => AppException.unexpected(error.toString()),
     );
+  }
+
+  /// The selected SKUs plus every SKU they are priced against, because the
+  /// struck-through price on the paywall is the *real* store price of that
+  /// other SKU rather than a number typed in admin.
+  ///
+  /// A compare-at SKU never becomes a purchasable row: `mapStoreData` iterates
+  /// the selected products only, so these extra ids are used for their price
+  /// and nothing else — and one missing from the store cannot fail the
+  /// "configured store product is missing" guard below.
+  Set<String> _storeIdsToQuery(List<String> selectedIds, List<IapProductModel> remoteProducts) {
+    return <String>{
+      ...selectedIds,
+      ...remoteProducts.map((product) => product.compareAtProductId.trim()).where((id) => id.isNotEmpty),
+    };
   }
 
   List<String> _validatedSelectedProductIds(List<String> selectedProductIds) {
