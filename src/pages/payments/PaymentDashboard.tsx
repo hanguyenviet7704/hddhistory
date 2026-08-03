@@ -4,7 +4,6 @@ import {
   ChartPieIcon,
   GlobeAltIcon,
   SparklesIcon,
-  Square3Stack3DIcon,
   TicketIcon,
 } from "@heroicons/react/24/outline";
 import RevenueDashboard from "./components/RevenueDashboard";
@@ -12,15 +11,13 @@ import SubscriptionSection from "./components/SubscriptionSection";
 import ProductSection from "./components/ProductSection";
 import RegionalPriceSection from "./components/RegionalPriceSection";
 import VoucherSection from "./components/VoucherSection";
-import DiscountTierSection from "./components/DiscountTierSection";
 
 type TabKey =
   | "dashboard"
   | "subscriptions"
   | "products"
   | "regionalPrices"
-  | "vouchers"
-  | "discountTiers";
+  | "vouchers";
 
 const PaymentDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
@@ -51,11 +48,6 @@ const PaymentDashboard: React.FC = () => {
       label: "Vouchers",
       description: "Tra lịch sử mã khuyến mãi (chỉ đọc).",
     },
-    {
-      key: "discountTiers",
-      label: "Bậc giảm giá",
-      description: "Quy đổi % giảm giá của affiliate sang cặp SKU đổi giá.",
-    },
   ];
 
   return (
@@ -81,7 +73,7 @@ const PaymentDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -123,9 +115,6 @@ const PaymentDashboard: React.FC = () => {
                   {tab.key === "vouchers" && (
                     <TicketIcon className="h-5 w-5" />
                   )}
-                  {tab.key === "discountTiers" && (
-                    <Square3Stack3DIcon className="h-5 w-5" />
-                  )}
                 </div>
               </div>
             </button>
@@ -140,10 +129,8 @@ const PaymentDashboard: React.FC = () => {
           <ProductSection />
         ) : activeTab === "regionalPrices" ? (
           <RegionalPriceSection />
-        ) : activeTab === "vouchers" ? (
-          <VoucherSection />
         ) : (
-          <DiscountTierSection />
+          <VoucherSection />
         )}
       </div>
     </div>
