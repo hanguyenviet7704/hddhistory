@@ -31,6 +31,9 @@ const EMPTY: DownloadLinkPayload = {
   utmSource: "",
   utmMedium: "",
   utmCampaign: "",
+  ogTitle: "",
+  ogDescription: "",
+  ogImage: "",
   isActive: true,
 };
 
@@ -71,6 +74,9 @@ const DownloadLinkModal: React.FC<Props> = ({
             utmSource: link.utmSource ?? "",
             utmMedium: link.utmMedium ?? "",
             utmCampaign: link.utmCampaign ?? "",
+            ogTitle: link.ogTitle ?? "",
+            ogDescription: link.ogDescription ?? "",
+            ogImage: link.ogImage ?? "",
             isActive: link.isActive,
           }
         : EMPTY
@@ -94,9 +100,17 @@ const DownloadLinkModal: React.FC<Props> = ({
       ? "Chỉ dùng chữ thường, số và dấu gạch ngang"
       : "";
 
+  // Mirrors the API's rule: crawlers reject data: URIs and http images, so
+  // anything but an absolute https URL is refused before the round trip.
+  const ogImageError =
+    form.ogImage?.trim() && !/^https:\/\/.+/.test(form.ogImage.trim())
+      ? "Phải là URL tuyệt đối bắt đầu bằng https://"
+      : "";
+
   const canSubmit =
     form.name.trim() !== "" &&
     (isEdit || (form.slug?.trim() !== "" && !slugError)) &&
+    !ogImageError &&
     !saving;
 
   const handleSubmit = () => {
@@ -107,6 +121,9 @@ const DownloadLinkModal: React.FC<Props> = ({
       utmSource: form.utmSource?.trim() || undefined,
       utmMedium: form.utmMedium?.trim() || undefined,
       utmCampaign: form.utmCampaign?.trim() || undefined,
+      ogTitle: form.ogTitle?.trim() || undefined,
+      ogDescription: form.ogDescription?.trim() || undefined,
+      ogImage: form.ogImage?.trim() || undefined,
       isActive: form.isActive,
       // Omitted when editing: the API rejects slug changes, because a link
       // already printed or turned into a QR code cannot be recalled.
@@ -188,6 +205,47 @@ const DownloadLinkModal: React.FC<Props> = ({
           Play. Chưa có gì đọc chúng — để sẵn cho sau này, khỏi phải phát lại
           link đã in ra.
         </p>
+
+        <div className="flex flex-col gap-4 border-t pt-4">
+          <p className="-mb-1 text-sm font-semibold text-gray-700">
+            Preview khi chia sẻ
+          </p>
+          <TextField
+            label="Tiêu đề preview"
+            value={form.ogTitle}
+            onChange={(e) => set("ogTitle", e.target.value)}
+            fullWidth
+            size="small"
+            placeholder="MeUp — Học kỹ năng mềm mỗi ngày"
+          />
+          <TextField
+            label="Mô tả preview"
+            value={form.ogDescription}
+            onChange={(e) => set("ogDescription", e.target.value)}
+            fullWidth
+            size="small"
+            multiline
+            minRows={2}
+            placeholder="7 ngày xây thói quen học cùng MeUp."
+          />
+          <TextField
+            label="Ảnh preview (URL)"
+            value={form.ogImage}
+            onChange={(e) => set("ogImage", e.target.value)}
+            fullWidth
+            size="small"
+            error={Boolean(ogImageError)}
+            helperText={
+              ogImageError ||
+              "URL https tuyệt đối, nên là ảnh 1200×630. Bỏ trống = ảnh MeUp mặc định."
+            }
+            placeholder="https://meup.training/og-image.png"
+          />
+          <p className="-mt-2 text-xs text-gray-500">
+            Thẻ hiển thị khi link được dán lên Facebook, Threads, TikTok,
+            Zalo... Bỏ trống thì dùng thẻ MeUp chung.
+          </p>
+        </div>
 
         <FormControlLabel
           control={

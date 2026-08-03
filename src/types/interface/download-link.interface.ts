@@ -1,5 +1,22 @@
 export type ClickPlatform = "ios" | "android" | "desktop" | "unknown";
 
+/**
+ * Where a click came from, detected server-side from the in-app webview's
+ * User-Agent first (those send no Referer) and the Referer host second.
+ * "unknown" = clicks recorded before source detection existed.
+ */
+export type ClickSource =
+  | "facebook"
+  | "instagram"
+  | "threads"
+  | "tiktok"
+  | "zalo"
+  | "telegram"
+  | "google"
+  | "direct"
+  | "other"
+  | "unknown";
+
 export interface IDownloadLink {
   id: string;
   slug: string;
@@ -8,6 +25,11 @@ export interface IDownloadLink {
   utmSource?: string | null;
   utmMedium?: string | null;
   utmCampaign?: string | null;
+  /** Preview card served to link crawlers. Empty = generic MeUp card. */
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  /** Absolute https URL, ideally 1200x630 — crawlers reject data: URIs. */
+  ogImage?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -23,6 +45,9 @@ export interface DownloadLinkPayload {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
   isActive?: boolean;
 }
 
@@ -51,4 +76,5 @@ export interface DownloadLinkStats {
   byDay: ClickBucket[];
   byPlatform: ClickBucket[];
   byCountry: ClickBucket[];
+  bySource: ClickBucket[];
 }

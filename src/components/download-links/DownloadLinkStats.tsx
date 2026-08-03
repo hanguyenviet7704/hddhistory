@@ -26,6 +26,20 @@ const PLATFORM_LABEL: Record<string, string> = {
   unknown: "Không rõ",
 };
 
+const SOURCE_LABEL: Record<string, string> = {
+  facebook: "Facebook",
+  instagram: "Instagram",
+  threads: "Threads",
+  tiktok: "TikTok",
+  zalo: "Zalo",
+  telegram: "Telegram",
+  google: "Google",
+  direct: "Trực tiếp / QR",
+  other: "Nguồn khác",
+  // Clicks recorded before source detection shipped.
+  unknown: "Chưa phân loại",
+};
+
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
 /** Bar list — a full chart library is not worth pulling in for this. */
@@ -169,6 +183,12 @@ const DownloadLinkStats: React.FC<Props> = ({ link, onClose }) => {
                 title="Theo ngày"
                 buckets={stats.byDay}
                 empty="Chưa có click nào trong khoảng này."
+              />
+              <BucketBars
+                title="Theo nguồn chia sẻ"
+                buckets={stats.bySource ?? []}
+                labelOf={(k) => SOURCE_LABEL[k] ?? k}
+                empty="Chưa có dữ liệu."
               />
               <BucketBars
                 title="Theo nền tảng"
