@@ -182,14 +182,17 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
       CourseLessonEmptyNotiPopup.show(context);
       return;
     }
-    final index = skillset.courses.indexWhere((c) => c.id == course.id);
     Navigator.of(context, rootNavigator: true).pop();
     final shellContext = AppConfig.instance.context;
     if (shellContext == null) return;
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('my_courses');
+    // selectCourse, not selectCourseIndex(index >= 0 ? index : 0): falling back
+    // to index 0 opened a DIFFERENT course's roadmap whenever this course was
+    // missing from the loaded catalog. selectCourse loads the right roadmap
+    // directly in that case.
     AppDI.injector.get<HomeCubit>()
       ..selectSkillset(skillset)
-      ..selectCourseIndex(index >= 0 ? index : 0);
+      ..selectCourse(course);
     CourseRoadmapRoute().go(shellContext);
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }

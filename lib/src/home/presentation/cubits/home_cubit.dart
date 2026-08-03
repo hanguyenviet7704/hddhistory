@@ -150,8 +150,27 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
 
   void selectCourse(CourseEntity course) {
     int courseIndex = state.currentSkillset.courses.indexWhere((c) => c.id == course.id);
-    if (courseIndex == -1) return;
+    if (courseIndex == -1) {
+      _loadRoadmapOutsideCatalog(course.id);
+      return;
+    }
     selectCourseIndex(courseIndex);
+  }
+
+  /// Fetches the roadmap for a course the skillsets catalog does not contain.
+  ///
+  /// The catalog only exposes published and coming-soon courses, and it can
+  /// also simply have failed to load — while /user-progress/my-course hands
+  /// Home a course the user already started, whatever its state. Every caller
+  /// of [selectCourse] / [selectCourseFromCourseId] navigates to the roadmap
+  /// immediately afterwards, and [selectCourseIndex] is the only thing that
+  /// fetches it, so returning early here left the page on the previous
+  /// course's roadmap — or on nothing at all — with no error and no spinner.
+  /// The header keeps its generic title in this case: HomeState.currentCourse
+  /// is derived from a catalog index that by definition has no entry.
+  void _loadRoadmapOutsideCatalog(String courseId) {
+    if (courseId.isEmpty) return;
+    AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: courseId);
   }
 
   void selectCourseFromCourseId(String courseId) {
@@ -159,10 +178,16 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
       (s) => s.courses.any((c) => c.id == courseId),
       orElse: () => SkillsetEntity(),
     );
-    if (skillset.id.isEmpty) return;
+    if (skillset.id.isEmpty) {
+      _loadRoadmapOutsideCatalog(courseId);
+      return;
+    }
     selectSkillset(skillset);
     int courseIndex = skillset.courses.indexWhere((c) => c.id == courseId);
-    if (courseIndex == -1) return;
+    if (courseIndex == -1) {
+      _loadRoadmapOutsideCatalog(courseId);
+      return;
+    }
     selectCourseIndex(courseIndex);
   }
 
