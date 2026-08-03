@@ -1,5 +1,5 @@
 import React from "react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export interface VoucherSharedFieldsValue {
   owner: string;
@@ -124,10 +124,10 @@ const VoucherSharedFields: React.FC<VoucherSharedFieldsProps> = ({
       </label>
 
       <div className="rounded-lg border border-slate-200 p-3 space-y-3 bg-slate-50/60">
-        <p className="text-xs font-medium text-amber-700 flex items-center gap-1.5">
-          <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
-          Chưa được backend áp dụng - dữ liệu bên dưới chỉ được lưu lại, chưa
-          giới hạn thực tế lượt đổi.
+        <p className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+          <InformationCircleIcon className="h-4 w-4 flex-shrink-0" />
+          Các giới hạn này giờ do hệ thống affiliate (voucher.eup.ai) quản lý,
+          Meup không còn enforce trực tiếp - trường bên dưới chỉ để đối chiếu.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="flex flex-col gap-1 text-sm text-slate-700">

@@ -20,9 +20,11 @@ export interface IVoucher {
   validTo?: string;
   maxUses?: number;
   usedCount: number;
-  // Stored but not yet enforced by the backend.
+  // Managed by the affiliate system (voucher.eup.ai) now - kept here for
+  // historical display only, Meup no longer enforces this limit.
   perUserLimit?: number;
-  // Stored but not yet enforced by the backend.
+  // Managed by the affiliate system (voucher.eup.ai) now - kept here for
+  // historical display only, Meup no longer enforces this restriction.
   countries?: string[];
   isActive: boolean;
   mappings?: IVoucherProductMapping[];
