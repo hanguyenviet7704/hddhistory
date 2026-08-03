@@ -42,10 +42,27 @@ const DefaultUserSection: React.FC<DefaultUserSectionProps> = ({
 
       <ProductRefsEditor
         fieldPrefix="saleStrategy.defaultUser.products"
+        title="Sản phẩm — danh sách đầy đủ"
+        hint="Hiện ở các điểm mở paywall được đặt là 'đầy đủ'."
         value={value.products}
         onChange={(products) => onChange({ ...value, products })}
         disabled={disabled}
         required
+        fieldErrors={fieldErrors}
+        productsByPlatform={productsByPlatform}
+        productsLoading={productsLoading}
+        productsError={productsError}
+        onRefreshProducts={onRefreshProducts}
+      />
+
+      <ProductRefsEditor
+        fieldPrefix="saleStrategy.defaultUser.compactProducts"
+        title="Sản phẩm — danh sách rút gọn"
+        hint="Hiện ở các điểm mở paywall được đặt là 'rút gọn'. Để trống thì dùng danh sách đầy đủ."
+        emptyHint="Để trống — các điểm 'rút gọn' sẽ dùng danh sách đầy đủ ở trên."
+        value={value.compactProducts}
+        onChange={(compactProducts) => onChange({ ...value, compactProducts })}
+        disabled={disabled}
         fieldErrors={fieldErrors}
         productsByPlatform={productsByPlatform}
         productsLoading={productsLoading}

@@ -54,43 +54,95 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
         </label>
 
         <label className="flex flex-col gap-1 text-xs text-slate-700">
-          <span className="font-medium">Bắt đầu (UTC)</span>
+          <span className="font-medium">
+            Bắt đầu (UTC)
+            {value.enabled && <span className="text-red-500 ml-0.5">*</span>}
+          </span>
           <input
             type="datetime-local"
             value={value.startAtUtc}
             onChange={(e) => onChange({ ...value, startAtUtc: e.target.value })}
             disabled={disabled}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+            className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+              fieldErrors["saleStrategy.saleEvent.startAtUtc"]
+                ? "border-red-300"
+                : "border-slate-200"
+            }`}
           />
+          {fieldErrors["saleStrategy.saleEvent.startAtUtc"] && (
+            <span className="text-[11px] text-red-600">
+              {fieldErrors["saleStrategy.saleEvent.startAtUtc"]}
+            </span>
+          )}
         </label>
 
         <label className="flex flex-col gap-1 text-xs text-slate-700">
-          <span className="font-medium">Kết thúc (UTC)</span>
+          <span className="font-medium">
+            Kết thúc (UTC)
+            {value.enabled && <span className="text-red-500 ml-0.5">*</span>}
+          </span>
           <input
             type="datetime-local"
             value={value.endAtUtc}
             onChange={(e) => onChange({ ...value, endAtUtc: e.target.value })}
             disabled={disabled}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+            className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+              fieldErrors["saleStrategy.saleEvent.endAtUtc"]
+                ? "border-red-300"
+                : "border-slate-200"
+            }`}
           />
+          {fieldErrors["saleStrategy.saleEvent.endAtUtc"] && (
+            <span className="text-[11px] text-red-600">
+              {fieldErrors["saleStrategy.saleEvent.endAtUtc"]}
+            </span>
+          )}
         </label>
       </div>
 
-      <label className="flex flex-col gap-1 text-xs text-slate-700">
-        <span className="font-medium">Áp dụng cho</span>
-        <input
-          value={value.appliesTo}
-          onChange={(e) => onChange({ ...value, appliesTo: e.target.value })}
-          placeholder="all"
-          disabled={disabled}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono bg-slate-50/70 focus:bg-white transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
-        />
+      {/* Was a free-text field whose placeholder was `all` -- a value the app
+          always dropped, so the campaign silently targeted nobody. The wire
+          shape is a list of these two names and nothing else. */}
+      <fieldset className="flex flex-col gap-1 text-xs text-slate-700">
+        <legend className="font-medium">
+          Áp dụng cho
+          {value.enabled && <span className="text-red-500 ml-0.5">*</span>}
+        </legend>
+        <div className="flex flex-wrap gap-4 pt-1">
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={value.appliesToDefaultUser}
+              onChange={(e) =>
+                onChange({ ...value, appliesToDefaultUser: e.target.checked })
+              }
+              disabled={disabled}
+              className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+            />
+            <span>Người dùng mặc định</span>
+          </label>
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={value.appliesToNewUser}
+              onChange={(e) =>
+                onChange({ ...value, appliesToNewUser: e.target.checked })
+              }
+              disabled={disabled}
+              className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+            />
+            <span>Người dùng mới</span>
+          </label>
+        </div>
         <span className="text-[11px] text-slate-500">
-          Bộ lọc đối tượng áp dụng - định dạng không cố định phía backend.
-          Text thường (vd "all") được lưu nguyên văn; JSON hợp lệ (object
-          hoặc array) sẽ được lưu đúng theo cấu trúc đó.
+          Không chọn đối tượng nào thì chiến dịch không hiện với ai cả.
         </span>
-      </label>
+        {fieldErrors["saleStrategy.saleEvent.appliesTo"] && (
+          <span className="text-[11px] text-red-600">
+            {fieldErrors["saleStrategy.saleEvent.appliesTo"]}
+          </span>
+        )}
+      </fieldset>
 
       <div>
         <p className="text-xs font-medium text-slate-700 mb-1.5">
@@ -106,10 +158,26 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
 
       <ProductRefsEditor
         fieldPrefix="saleStrategy.saleEvent.products"
+        title="Sản phẩm — danh sách đầy đủ"
         value={value.products}
         onChange={(products) => onChange({ ...value, products })}
         disabled={disabled}
         required={value.enabled}
+        fieldErrors={fieldErrors}
+        productsByPlatform={productsByPlatform}
+        productsLoading={productsLoading}
+        productsError={productsError}
+        onRefreshProducts={onRefreshProducts}
+      />
+
+      <ProductRefsEditor
+        fieldPrefix="saleStrategy.saleEvent.compactProducts"
+        title="Sản phẩm — danh sách rút gọn"
+        hint="Nhờ danh sách này mà chiến dịch sale vẫn tới được user đang học, chỉ với gói rút gọn. Để trống thì dùng danh sách đầy đủ."
+        emptyHint="Để trống — dùng danh sách đầy đủ ở trên."
+        value={value.compactProducts}
+        onChange={(compactProducts) => onChange({ ...value, compactProducts })}
+        disabled={disabled}
         fieldErrors={fieldErrors}
         productsByPlatform={productsByPlatform}
         productsLoading={productsLoading}

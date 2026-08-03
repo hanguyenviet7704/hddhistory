@@ -25,6 +25,12 @@ interface ProductRefsEditorProps {
   fieldErrors?: Record<string, string>;
   /** Backend field path prefix, e.g. "saleStrategy.defaultUser.products". */
   fieldPrefix: string;
+  /** Heading above the rows. Defaults to the full plan list's label. */
+  title?: string;
+  /** Explanatory line under the heading. */
+  hint?: string;
+  /** Shown in place of "no products yet" when the list is empty. */
+  emptyHint?: string;
 }
 
 const PlatformSelect: React.FC<{
@@ -91,6 +97,9 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
   required = false,
   fieldErrors = {},
   fieldPrefix,
+  title = "Sản phẩm",
+  hint,
+  emptyHint = "Chưa có sản phẩm nào được gán cho mục này.",
 }) => {
   const appleOptions = productsByPlatform?.apple ?? [];
   const googleOptions = productsByPlatform?.google ?? [];
@@ -115,7 +124,7 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-slate-600">
-          Sản phẩm {required && <span className="text-red-500">*</span>}
+          {title} {required && <span className="text-red-500">*</span>}
         </span>
         <button
           type="button"
@@ -127,6 +136,8 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
           Làm mới catalog
         </button>
       </div>
+
+      {hint && <p className="text-[11px] text-slate-500 -mt-1">{hint}</p>}
 
       {productsError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 flex items-center gap-2">
@@ -151,9 +162,7 @@ const ProductRefsEditor: React.FC<ProductRefsEditorProps> = ({
       )}
 
       {value.length === 0 ? (
-        <p className="text-xs text-slate-500">
-          Chưa có sản phẩm nào được gán cho mục này.
-        </p>
+        <p className="text-xs text-slate-500">{emptyHint}</p>
       ) : (
         <div className="space-y-2">
           {value.map((row, index) => {

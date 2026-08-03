@@ -1,5 +1,10 @@
 import React from "react";
-import { AdjustmentsHorizontalIcon, BookOpenIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import {
+  AdjustmentsHorizontalIcon,
+  BookOpenIcon,
+  ExclamationTriangleIcon,
+  LockClosedIcon,
+} from "@heroicons/react/24/outline";
 import ToggleSwitch from "../../../components/paywall-config/ToggleSwitch";
 import { ConfigDraft } from "../paywallConfigDraft";
 import SectionCard from "./SectionCard";
@@ -53,32 +58,45 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
           />
         </div>
 
-        <label className="flex flex-col gap-1 text-xs text-slate-700">
+        <label className="flex flex-col gap-1 text-xs text-slate-700 max-w-[200px]">
           <span className="font-medium">
-            Quy tắc khóa bài học (JSON thô, không bắt buộc)
+            Số bài học miễn phí
+            {draft.enableLessonLock && <span className="text-red-500 ml-0.5">*</span>}
             {!draft.enableLessonLock && (
               <span className="ml-1 font-normal text-slate-500">
                 - chỉ dùng khi bật khóa bài học
               </span>
             )}
           </span>
-          <textarea
-            value={draft.lessonLockText}
-            onChange={(e) => onChange({ lessonLockText: e.target.value })}
+          <input
+            type="number"
+            min={0}
+            step={1}
+            value={draft.lessonLockCount}
+            onChange={(e) => onChange({ lessonLockCount: e.target.value })}
             disabled={disabled}
-            rows={6}
-            placeholder='{ "lockedAfterLesson": 3 }'
-            spellCheck={false}
-            className={`rounded-lg border px-3 py-2.5 text-[13px] leading-relaxed font-mono bg-slate-50/70 focus:bg-white transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+            placeholder="3"
+            className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
               fieldErrors.lessonLock ? "border-red-300" : "border-slate-200"
             }`}
           />
           <span className="text-[11px] text-slate-500">
-            Định dạng không cố định trong trình chỉnh này - được lưu nguyên
-            trạng. Để trống nếu không cần.
+            Số bài đầu khóa học vẫn mở; từ bài kế tiếp trở đi sẽ hiện paywall.
+            Tính theo thứ tự bài trong toàn khóa.
           </span>
           {fieldErrors.lessonLock && (
             <span className="text-[11px] text-red-600">{fieldErrors.lessonLock}</span>
+          )}
+          {/* 0 is a legitimate value (a course sold in full) but it is far more
+              often a slip, and the consequence is severe: the first lesson is
+              locked while still `notStarted`, so tapping it does nothing at all
+              rather than opening the paywall. */}
+          {draft.enableLessonLock && draft.lessonLockCount.trim() === "0" && (
+            <span className="text-[11px] text-amber-700 flex items-start gap-1">
+              <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0 mt-px" />
+              0 nghĩa là khóa toàn bộ khóa học ngay từ bài đầu — user sẽ không mở
+              được bài nào. Chỉ dùng nếu đó đúng là ý bạn.
+            </span>
           )}
         </label>
       </SectionCard>
@@ -156,6 +174,10 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
         <div className="flex flex-wrap gap-4">
           <label className="flex flex-col gap-1 text-xs text-slate-700 w-40">
             <span className="font-medium">Keypoint thứ</span>
+            {/* Counts keypoints, in roadmap order — NOT the same ordering the
+                lesson-lock count above uses. The client used to count lessons
+                here despite the field name; see
+                meup-api/plans/260803-paywall-entry-point-variants/design.md. */}
             <input
               type="number"
               min={0}
@@ -177,8 +199,8 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
               </span>
             )}
             <span className="text-[11px] text-slate-500">
-              Tính theo thứ tự bài trong khóa, giống cách "khóa bài học" đếm. Để
-              0 nếu muốn áp cho mọi keypoint.
+              Đếm theo thứ tự <b>keypoint</b> trong toàn khóa (khác cách "số bài
+              học miễn phí" đếm). Để 0 nếu muốn áp cho mọi keypoint.
             </span>
           </label>
 

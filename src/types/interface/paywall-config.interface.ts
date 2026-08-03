@@ -39,19 +39,33 @@ export interface PaywallProductRef {
   googleProductId?: string;
 }
 
+/**
+ * Which of a strategy's two SKU lists the paywall renders. `full` = `products`,
+ * `compact` = `compactProducts`. The strategy owns the copy either way; this
+ * only picks between its SKU lists.
+ */
+export type PaywallProductVariant = "full" | "compact";
+
+/** Audience a sale event can target. */
+export type PaywallAudienceSegment = "defaultUser" | "newUser";
+
 export interface PaywallDefaultUser {
   content: PaywallLocalizedContent;
   products: PaywallProductRef[];
+  /** Reduced list for `compact` entry points. Absent/empty falls back to `products`. */
+  compactProducts?: PaywallProductRef[];
 }
 
 export interface PaywallImpressionRule {
   fromImpression: number;
   content: PaywallLocalizedContent;
   products: PaywallProductRef[];
+  compactProducts?: PaywallProductRef[];
 }
 
 export interface PaywallNewUser {
   enabled: boolean;
+  /** Required >= 1 by the backend when `enabled`: 0 puts every user in the default segment. */
   windowDays?: number;
   content?: PaywallLocalizedContent;
   impressionRules: PaywallImpressionRule[];
@@ -60,12 +74,16 @@ export interface PaywallNewUser {
 export interface PaywallSaleEvent {
   enabled: boolean;
   campaignId?: string;
+  /** Both bounds required by the backend when `enabled` — the client drops a campaign missing either. */
   startAtUtc?: string;
   endAtUtc?: string;
-  // Shape not fixed upstream -- round-tripped as-is (see backend DTO comment).
-  appliesTo?: unknown;
+  // Was `unknown` "round-tripped as-is", which let a bare `all` be saved. The
+  // client reads this as a list of segment names and drops anything else, so
+  // such a value silently meant "targets nobody".
+  appliesTo?: PaywallAudienceSegment[];
   content?: PaywallLocalizedContent;
   products?: PaywallProductRef[];
+  compactProducts?: PaywallProductRef[];
 }
 
 export interface PaywallSaleStrategy {
@@ -86,22 +104,65 @@ export interface PaywallAutoOpen {
  */
 export interface PaywallInLesson {
   enabled: boolean;
-  /** 1-based keypoint position in the course's flat lesson list; 0 = every keypoint. */
+  /**
+   * 1-based position among the course's KEYPOINTS in roadmap order; 0 = every
+   * keypoint. Not the same ordering `lessonLock` counts in — the client used to
+   * count lessons here despite the name.
+   */
   keypointOrdinal?: number;
   /** Cards passed before it opens. 1 = leaving the first card. */
   afterCards?: number;
 }
 
 /**
- * `lessonLock`'s internal shape is a large hand-edited JSON blob not
- * specified by the design doc -- round-tripped as-is, never decomposed.
+ * Every place the app can open the paywall from. These strings are exactly the
+ * Flutter `PaywallEntryPoint` enum's `.name` values -- the client looks a
+ * variant up by that name, so they must match character for character.
  */
+export const PAYWALL_ENTRY_POINTS = [
+  "inLesson",
+  "courseRoadmap",
+  "autoOpen",
+  "profile",
+  "settingPre",
+  "manageSubscription",
+  "habit",
+  "theme",
+  "other",
+] as const;
+export type PaywallEntryPoint = (typeof PAYWALL_ENTRY_POINTS)[number];
+
+export const PAYWALL_ENTRY_POINT_LABELS: Record<PaywallEntryPoint, string> = {
+  inLesson: "Trong bài học (swipe qua thẻ keypoint)",
+  courseRoadmap: "Roadmap khóa học (tap bài bị khóa)",
+  autoOpen: "Tự động bật (Home / Explore)",
+  profile: "Trang cá nhân",
+  settingPre: "Cài đặt · thẻ Premium",
+  manageSubscription: "Quản lý gói đăng ký",
+  habit: "Habit · hết slot",
+  theme: "Đổi hình nền học",
+  other: "Khác",
+};
+
+/** Missing entry point ⇒ `full`, so the whole object may be absent. */
+export type PaywallEntryPointVariants = Partial<
+  Record<PaywallEntryPoint, PaywallProductVariant>
+>;
+
 export interface PaywallConfig {
   schemaVersion: number;
   enableLessonLock: boolean;
-  lessonLock?: Record<string, unknown>;
+  /**
+   * Lessons left free before the gate — a COUNT, matching the backend DTO and
+   * the client's `int`. Was typed as a JSON blob here, which meant the editor
+   * could never publish a usable value: valid JSON was rejected with a 400, and
+   * leaving it blank dropped the key, which the client reads as 0 — locking the
+   * course from lesson one, where the tap is swallowed rather than gated.
+   */
+  lessonLock?: number;
   autoOpen: PaywallAutoOpen;
   inLessonPaywall?: PaywallInLesson;
+  entryPointVariants?: PaywallEntryPointVariants;
   saleStrategy: PaywallSaleStrategy;
 }
 

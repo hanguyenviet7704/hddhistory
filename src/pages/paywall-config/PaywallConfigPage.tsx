@@ -48,6 +48,7 @@ import {
   validateDraft,
 } from "./paywallConfigDraft";
 import DefaultUserSection from "./components/DefaultUserSection";
+import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
 import GeneralSection from "./components/GeneralSection";
 import NewUserSection from "./components/NewUserSection";
 import SaleEventSection from "./components/SaleEventSection";
@@ -385,6 +386,20 @@ export default function PaywallConfigPage() {
             onChange={patchDraft}
             disabled={disabled}
             fieldErrors={fieldErrors}
+          />
+
+          <EntryPointVariantsSection
+            value={draft.entryPointVariants}
+            onChange={(entryPointVariants) => patchDraft({ entryPointVariants })}
+            disabled={disabled}
+            compactCounts={{
+              defaultUser: draft.defaultUser.compactProducts.length,
+              newUser: draft.newUser.impressionRules.reduce(
+                (total, rule) => total + rule.compactProducts.length,
+                0
+              ),
+              saleEvent: draft.saleEvent.compactProducts.length,
+            }}
           />
 
           <DefaultUserSection

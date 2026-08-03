@@ -64,21 +64,37 @@ const NewUserSection: React.FC<NewUserSectionProps> = ({
       }
     >
       <label className="flex flex-col gap-1 text-xs text-slate-700 max-w-[180px]">
-        <span className="font-medium">Cửa sổ (số ngày)</span>
+        <span className="font-medium">
+          Cửa sổ (số ngày)
+          {value.enabled && <span className="text-red-500 ml-0.5">*</span>}
+        </span>
         <input
           type="number"
-          min={0}
+          min={1}
           step={1}
           value={value.windowDays}
           onChange={(e) => onChange({ ...value, windowDays: e.target.value })}
           disabled={disabled}
           placeholder="7"
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+          className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+            fieldErrors["saleStrategy.newUser.windowDays"]
+              ? "border-red-300"
+              : "border-slate-200"
+          }`}
         />
+        {/* Not optional despite reading like it: the app treats a blank window
+            as 0 days, which puts every user in the default segment, so every
+            rule below would be dead config. */}
         <span className="text-[11px] text-slate-500">
-          Số ngày sau khi đăng ký mà user vẫn được tính là "mới". Để trống nếu
-          không giới hạn thời gian.
+          Số ngày sau khi cài app mà user vẫn được tính là "mới". Bắt buộc khi
+          bật nhóm này — để trống thì không ai nằm trong cửa sổ và các rule dưới
+          không bao giờ chạy.
         </span>
+        {fieldErrors["saleStrategy.newUser.windowDays"] && (
+          <span className="text-[11px] text-red-600">
+            {fieldErrors["saleStrategy.newUser.windowDays"]}
+          </span>
+        )}
       </label>
 
       <div>

@@ -122,10 +122,26 @@ const ImpressionRuleCard: React.FC<ImpressionRuleCardProps> = ({
 
           <ProductRefsEditor
             fieldPrefix={`${prefix}.products`}
+            title="Sản phẩm — danh sách đầy đủ"
             value={value.products}
             onChange={(products) => onChange({ ...value, products })}
             disabled={disabled}
             required
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={onRefreshProducts}
+          />
+
+          <ProductRefsEditor
+            fieldPrefix={`${prefix}.compactProducts`}
+            title="Sản phẩm — danh sách rút gọn"
+            hint="Để trống thì các điểm 'rút gọn' dùng danh sách đầy đủ."
+            emptyHint="Để trống — dùng danh sách đầy đủ ở trên."
+            value={value.compactProducts}
+            onChange={(compactProducts) => onChange({ ...value, compactProducts })}
+            disabled={disabled}
             fieldErrors={fieldErrors}
             productsByPlatform={productsByPlatform}
             productsLoading={productsLoading}

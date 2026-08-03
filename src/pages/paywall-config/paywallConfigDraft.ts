@@ -9,17 +9,22 @@
 // collapse structured `errors` arrays down to a single message today).
 import {
   PAYWALL_CONFIG_LOCALES,
+  PAYWALL_ENTRY_POINTS,
+  PaywallAudienceSegment,
   PaywallAutoOpen,
   PaywallInLesson,
   PaywallBenefit,
   PaywallConfig,
   PaywallDefaultUser,
+  PaywallEntryPoint,
+  PaywallEntryPointVariants,
   PaywallImpressionRule,
   PaywallLocale,
   PaywallLocaleContent,
   PaywallLocalizedContent,
   PaywallNewUser,
   PaywallProductRef,
+  PaywallProductVariant,
   PaywallSaleEvent,
   PaywallSaleStrategy,
 } from "../../types/interface/paywall-config.interface";
@@ -57,6 +62,7 @@ export type LocalizedContentDraft = Record<PaywallLocale, LocaleContentDraft>;
 export interface DefaultUserDraft {
   content: LocalizedContentDraft;
   products: ProductRefDraft[];
+  compactProducts: ProductRefDraft[];
 }
 
 export interface ImpressionRuleDraft {
@@ -64,6 +70,7 @@ export interface ImpressionRuleDraft {
   fromImpression: string;
   content: LocalizedContentDraft;
   products: ProductRefDraft[];
+  compactProducts: ProductRefDraft[];
 }
 
 export interface NewUserDraft {
@@ -78,20 +85,30 @@ export interface SaleEventDraft {
   campaignId: string;
   startAtUtc: string;
   endAtUtc: string;
-  appliesTo: string;
+  /** One flag per audience — the wire shape is an enum array, not free text. */
+  appliesToDefaultUser: boolean;
+  appliesToNewUser: boolean;
   content: LocalizedContentDraft;
   products: ProductRefDraft[];
+  compactProducts: ProductRefDraft[];
 }
+
+export type EntryPointVariantsDraft = Record<
+  PaywallEntryPoint,
+  PaywallProductVariant
+>;
 
 export interface ConfigDraft {
   schemaVersion: string;
   enableLessonLock: boolean;
-  lessonLockText: string;
+  /** Lessons left free before the gate, as a count. Was a raw-JSON textarea. */
+  lessonLockCount: string;
   autoOpenEnabled: boolean;
   autoOpenPercent: string;
   inLessonEnabled: boolean;
   inLessonKeypointOrdinal: string;
   inLessonAfterCards: string;
+  entryPointVariants: EntryPointVariantsDraft;
   defaultUser: DefaultUserDraft;
   newUser: NewUserDraft;
   saleEvent: SaleEventDraft;
@@ -123,20 +140,32 @@ export const emptyImpressionRule = (): ImpressionRuleDraft => ({
   fromImpression: "",
   content: emptyLocalizedContent(),
   products: [],
+  compactProducts: [],
 });
+
+/**
+ * Everything `full` — the behaviour of every config published before entry-point
+ * variants existed, so a fresh draft never quietly narrows anyone's plan list.
+ */
+export const defaultEntryPointVariants = (): EntryPointVariantsDraft =>
+  Object.fromEntries(
+    PAYWALL_ENTRY_POINTS.map((entryPoint) => [entryPoint, "full"])
+  ) as EntryPointVariantsDraft;
 
 export const defaultDraft = (): ConfigDraft => ({
   schemaVersion: "1",
   enableLessonLock: false,
-  lessonLockText: "",
+  lessonLockCount: "",
   autoOpenEnabled: false,
   autoOpenPercent: "0",
   inLessonEnabled: false,
   inLessonKeypointOrdinal: "2",
   inLessonAfterCards: "1",
+  entryPointVariants: defaultEntryPointVariants(),
   defaultUser: {
     content: emptyLocalizedContent(),
     products: [],
+    compactProducts: [],
   },
   newUser: {
     enabled: false,
@@ -149,9 +178,11 @@ export const defaultDraft = (): ConfigDraft => ({
     campaignId: "",
     startAtUtc: "",
     endAtUtc: "",
-    appliesTo: "",
+    appliesToDefaultUser: true,
+    appliesToNewUser: true,
     content: emptyLocalizedContent(),
     products: [],
+    compactProducts: [],
   },
 });
 
@@ -191,22 +222,41 @@ const toDateTimeInput = (value?: string): string => {
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-const stringifyAppliesTo = (value: unknown): string => {
-  if (value === undefined || value === null) return "";
-  if (typeof value === "string") return value;
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
+/**
+ * Whether a saved `appliesTo` selects `segment`.
+ *
+ * A value that is not an array of these names — the bare `"all"` the old
+ * free-text field invited, an object, anything else — was always dropped by the
+ * client, so there is no audience to recover from it. Those start with every
+ * audience selected rather than an empty list the backend now rejects.
+ */
+const hasAudience = (
+  appliesTo: PaywallAudienceSegment[] | undefined,
+  segment: PaywallAudienceSegment
+): boolean => {
+  if (!Array.isArray(appliesTo)) return true;
+  return appliesTo.includes(segment);
 };
+
+/**
+ * A config saved before entry-point variants existed has no such object; every
+ * missing entry point reads as `full`, which is what the client does too.
+ */
+const toEntryPointVariantsDraft = (
+  variants?: PaywallEntryPointVariants
+): EntryPointVariantsDraft =>
+  Object.fromEntries(
+    PAYWALL_ENTRY_POINTS.map((entryPoint) => [
+      entryPoint,
+      variants?.[entryPoint] === "compact" ? "compact" : "full",
+    ])
+  ) as EntryPointVariantsDraft;
 
 export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   schemaVersion: String(config.schemaVersion ?? 1),
   enableLessonLock: Boolean(config.enableLessonLock),
-  lessonLockText: config.lessonLock
-    ? JSON.stringify(config.lessonLock, null, 2)
-    : "",
+  lessonLockCount:
+    config.lessonLock != null ? String(config.lessonLock) : "",
   autoOpenEnabled: Boolean(config.autoOpen?.enabled),
   autoOpenPercent:
     config.autoOpen?.sessionRolloutPercent != null
@@ -224,11 +274,15 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     config.inLessonPaywall?.afterCards != null
       ? String(config.inLessonPaywall.afterCards)
       : "1",
+  entryPointVariants: toEntryPointVariantsDraft(config.entryPointVariants),
   defaultUser: {
     content: toLocalizedContentDraft(config.saleStrategy?.defaultUser?.content),
     products: (config.saleStrategy?.defaultUser?.products ?? []).map(
       toProductRefDraft
     ),
+    compactProducts: (
+      config.saleStrategy?.defaultUser?.compactProducts ?? []
+    ).map(toProductRefDraft),
   },
   newUser: {
     enabled: Boolean(config.saleStrategy?.newUser?.enabled),
@@ -243,6 +297,7 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
         fromImpression: String(rule.fromImpression ?? ""),
         content: toLocalizedContentDraft(rule.content),
         products: (rule.products ?? []).map(toProductRefDraft),
+        compactProducts: (rule.compactProducts ?? []).map(toProductRefDraft),
       })
     ),
   },
@@ -251,11 +306,24 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     campaignId: config.saleStrategy?.saleEvent?.campaignId ?? "",
     startAtUtc: toDateTimeInput(config.saleStrategy?.saleEvent?.startAtUtc),
     endAtUtc: toDateTimeInput(config.saleStrategy?.saleEvent?.endAtUtc),
-    appliesTo: stringifyAppliesTo(config.saleStrategy?.saleEvent?.appliesTo),
+    // A pre-existing free-text value (`"all"`, an object, anything that is not
+    // this list of names) never matched on the client, so there is no audience
+    // to carry forward from it — default both on and let the operator confirm.
+    appliesToDefaultUser: hasAudience(
+      config.saleStrategy?.saleEvent?.appliesTo,
+      "defaultUser"
+    ),
+    appliesToNewUser: hasAudience(
+      config.saleStrategy?.saleEvent?.appliesTo,
+      "newUser"
+    ),
     content: toLocalizedContentDraft(config.saleStrategy?.saleEvent?.content),
     products: (config.saleStrategy?.saleEvent?.products ?? []).map(
       toProductRefDraft
     ),
+    compactProducts: (
+      config.saleStrategy?.saleEvent?.compactProducts ?? []
+    ).map(toProductRefDraft),
   },
 });
 
@@ -308,22 +376,28 @@ const fromDateTimeInput = (value: string): string | undefined => {
   return date.toISOString();
 };
 
-const parseAppliesTo = (value: string): unknown => {
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    // Not JSON (e.g. the bare word `all`, per the DTO's example) -- pass
-    // the raw string through, matching `appliesTo: unknown`.
-    return trimmed;
-  }
+/**
+ * `compactProducts` is omitted entirely when empty rather than sent as `[]`.
+ * Both mean "fall back to `products`" to the client, but omitting keeps the
+ * stored JSON free of keys that assert nothing.
+ */
+const fromCompactProductsDraft = (
+  rows: ProductRefDraft[]
+): PaywallProductRef[] | undefined =>
+  rows.length ? rows.map(fromProductRefDraft) : undefined;
+
+const fromAudienceFlags = (draft: SaleEventDraft): PaywallAudienceSegment[] => {
+  const appliesTo: PaywallAudienceSegment[] = [];
+  if (draft.appliesToDefaultUser) appliesTo.push("defaultUser");
+  if (draft.appliesToNewUser) appliesTo.push("newUser");
+  return appliesTo;
 };
 
 export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
   const defaultUser: PaywallDefaultUser = {
     content: fromLocalizedContentDraft(draft.defaultUser.content),
     products: draft.defaultUser.products.map(fromProductRefDraft),
+    compactProducts: fromCompactProductsDraft(draft.defaultUser.compactProducts),
   };
 
   const newUserContentEmpty = isLocalizedContentEmpty(draft.newUser.content);
@@ -340,6 +414,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
         fromImpression: Number(rule.fromImpression),
         content: fromLocalizedContentDraft(rule.content),
         products: rule.products.map(fromProductRefDraft),
+        compactProducts: fromCompactProductsDraft(rule.compactProducts),
       })
     ),
   };
@@ -350,13 +425,14 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     campaignId: draft.saleEvent.campaignId.trim() || undefined,
     startAtUtc: fromDateTimeInput(draft.saleEvent.startAtUtc),
     endAtUtc: fromDateTimeInput(draft.saleEvent.endAtUtc),
-    appliesTo: parseAppliesTo(draft.saleEvent.appliesTo),
+    appliesTo: fromAudienceFlags(draft.saleEvent),
     content: saleEventContentEmpty
       ? undefined
       : fromLocalizedContentDraft(draft.saleEvent.content),
     products: draft.saleEvent.products.length
       ? draft.saleEvent.products.map(fromProductRefDraft)
       : undefined,
+    compactProducts: fromCompactProductsDraft(draft.saleEvent.compactProducts),
   };
 
   const saleStrategy: PaywallSaleStrategy = { defaultUser, newUser, saleEvent };
@@ -372,14 +448,18 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     afterCards: Number(draft.inLessonAfterCards || 1),
   };
 
-  let lessonLock: Record<string, unknown> | undefined;
-  if (draft.lessonLockText.trim()) {
-    try {
-      lessonLock = JSON.parse(draft.lessonLockText);
-    } catch {
-      lessonLock = undefined;
-    }
-  }
+  const lessonLockCount = draft.lessonLockCount.trim();
+  const lessonLock = lessonLockCount ? Number(lessonLockCount) : undefined;
+
+  // Sent in full (all nine keys) rather than only the `compact` ones: the stored
+  // JSON then states the intent for every entry point, so reading the config
+  // later never requires knowing what the client's default happens to be.
+  const entryPointVariants: PaywallEntryPointVariants = Object.fromEntries(
+    PAYWALL_ENTRY_POINTS.map((entryPoint) => [
+      entryPoint,
+      draft.entryPointVariants[entryPoint],
+    ])
+  );
 
   return {
     schemaVersion: Number(draft.schemaVersion || 1),
@@ -387,6 +467,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     lessonLock,
     autoOpen,
     inLessonPaywall,
+    entryPointVariants,
     saleStrategy,
   };
 };
@@ -437,6 +518,20 @@ const validateProductsNonEmpty = (
   );
 };
 
+/**
+ * Same per-row rule but an empty list is valid: for `compactProducts` that
+ * means "dùng danh sách đầy đủ", which is a real choice, not an omission.
+ */
+const validateOptionalProducts = (
+  products: ProductRefDraft[],
+  field: string,
+  productsByPlatform: ProductsByPlatform | null,
+  errors: Record<string, string>
+) => {
+  if (!products.length) return;
+  validateProductsNonEmpty(products, field, productsByPlatform, errors);
+};
+
 export const validateDraft = (
   draft: ConfigDraft,
   productsByPlatform: ProductsByPlatform | null
@@ -458,12 +553,17 @@ export const validateDraft = (
       "autoOpen.sessionRolloutPercent là bắt buộc và phải là số từ 0 đến 100";
   }
 
-  if (draft.lessonLockText.trim()) {
-    try {
-      JSON.parse(draft.lessonLockText);
-    } catch {
-      errors.lessonLock = "lessonLock phải là JSON hợp lệ";
+  // A missing count with the lock ON is what breaks: the client reads the
+  // absent field as 0, and 0 locks the course from lesson one -- where the tap
+  // is swallowed rather than gated, so the course just looks broken.
+  const lessonLockCount = draft.lessonLockCount.trim();
+  if (draft.enableLessonLock) {
+    if (!lessonLockCount || !Number.isInteger(Number(lessonLockCount))) {
+      errors.lessonLock =
+        "lessonLock là bắt buộc và phải là số nguyên khi bật khóa bài học";
     }
+  } else if (lessonLockCount && !Number.isInteger(Number(lessonLockCount))) {
+    errors.lessonLock = "lessonLock phải là số nguyên";
   }
 
   // defaultUser
@@ -477,11 +577,30 @@ export const validateDraft = (
     productsByPlatform,
     errors
   );
+  validateOptionalProducts(
+    draft.defaultUser.compactProducts,
+    "saleStrategy.defaultUser.compactProducts",
+    productsByPlatform,
+    errors
+  );
 
   // newUser
   if (draft.newUser.enabled && draft.newUser.impressionRules.length === 0) {
     errors["saleStrategy.newUser.impressionRules"] =
       "saleStrategy.newUser.impressionRules: phải có ít nhất 1 rule khi bật người dùng mới";
+  }
+  // Without a window nobody is ever in the new-user segment, so every rule
+  // below would be dead config.
+  if (draft.newUser.enabled) {
+    const windowDays = Number(draft.newUser.windowDays);
+    if (
+      !draft.newUser.windowDays.trim() ||
+      !Number.isInteger(windowDays) ||
+      windowDays < 1
+    ) {
+      errors["saleStrategy.newUser.windowDays"] =
+        "saleStrategy.newUser.windowDays phải là số nguyên >= 1 khi bật người dùng mới (0 hoặc để trống nghĩa là không ai nằm trong cửa sổ này)";
+    }
   }
   draft.newUser.impressionRules.forEach((rule, index) => {
     const prefix = `saleStrategy.newUser.impressionRules[${index}]`;
@@ -502,6 +621,12 @@ export const validateDraft = (
       productsByPlatform,
       errors
     );
+    validateOptionalProducts(
+      rule.compactProducts,
+      `${prefix}.compactProducts`,
+      productsByPlatform,
+      errors
+    );
   });
 
   // saleEvent
@@ -512,6 +637,39 @@ export const validateDraft = (
       productsByPlatform,
       errors
     );
+    validateOptionalProducts(
+      draft.saleEvent.compactProducts,
+      "saleStrategy.saleEvent.compactProducts",
+      productsByPlatform,
+      errors
+    );
+
+    // The client drops a campaign whose window does not fully parse and whose
+    // start does not precede its end -- an enabled event missing a bound is not
+    // an open-ended event, it is no event at all.
+    const startAt = draft.saleEvent.startAtUtc
+      ? new Date(draft.saleEvent.startAtUtc).getTime()
+      : NaN;
+    const endAt = draft.saleEvent.endAtUtc
+      ? new Date(draft.saleEvent.endAtUtc).getTime()
+      : NaN;
+    if (Number.isNaN(startAt)) {
+      errors["saleStrategy.saleEvent.startAtUtc"] =
+        "saleStrategy.saleEvent.startAtUtc là bắt buộc khi bật sự kiện sale";
+    }
+    if (Number.isNaN(endAt)) {
+      errors["saleStrategy.saleEvent.endAtUtc"] =
+        "saleStrategy.saleEvent.endAtUtc là bắt buộc khi bật sự kiện sale";
+    }
+    if (!Number.isNaN(startAt) && !Number.isNaN(endAt) && startAt >= endAt) {
+      errors["saleStrategy.saleEvent.endAtUtc"] =
+        "saleStrategy.saleEvent.endAtUtc phải sau startAtUtc (nếu không client bỏ cả chiến dịch)";
+    }
+
+    if (!draft.saleEvent.appliesToDefaultUser && !draft.saleEvent.appliesToNewUser) {
+      errors["saleStrategy.saleEvent.appliesTo"] =
+        "saleStrategy.saleEvent.appliesTo phải chọn ít nhất 1 đối tượng khi bật sự kiện sale";
+    }
   }
 
   return errors;
