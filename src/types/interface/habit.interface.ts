@@ -32,5 +32,7 @@ export interface HabitPayload {
 export interface HabitListQuery {
   isAll?: boolean;
   skillsetId?: string;
+  /** Habits on any keypoint of this course, resolved server side. */
+  courseId?: string;
   status?: HabitStatus;
 }

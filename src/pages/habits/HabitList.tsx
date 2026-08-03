@@ -29,14 +29,11 @@ import { habitService } from "../../services/habitService";
 import { skillsetService } from "../../services/skillsetService";
 import { courseService } from "../../services/courseService";
 import { keypointService } from "../../services/keypointService";
-import { lessonService } from "../../services/lessonService";
 import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { ICourse } from "../../types/interface/course.interface";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
-import { ILesson } from "../../types/interface/lesson.interface";
-import { LessonType } from "../../types/enum/lesson.enum";
 import { getTranslationValue } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -73,14 +70,12 @@ const HabitList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<HabitStatus | "">("");
   const [skillsetFilter, setSkillsetFilter] = useState("");
-  // Course filter for habits: habits store keypointIds, not courseId, so a
-  // course is resolved to the set of its keypoint ids (via its lessons) and
-  // habits are kept when any of their keypoints is in that set. null = no
-  // course filter; empty set = course selected but it has no keypoints.
+  // Course filter is applied by the API (GET /habits?courseId=), which resolves
+  // the course to its keypoints through the same roadmap walk the import uses.
+  // It used to be resolved here from the lesson list instead — two different
+  // sources for the same question, so habits could be attached exactly as the
+  // sheet asked and still show up under no course at all.
   const [courseFilter, setCourseFilter] = useState("");
-  const [courseKeypointIds, setCourseKeypointIds] = useState<Set<string> | null>(
-    null
-  );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -166,13 +161,17 @@ const HabitList: React.FC = () => {
   // admin list always fetches every status and filters by status client
   // side. `skillsetId` is not affected by that rule and is still sent to
   // narrow the query server side.
-  const fetchHabits = async (skillsetIdFilter = skillsetFilter) => {
+  const fetchHabits = async (
+    skillsetIdFilter = skillsetFilter,
+    courseIdFilter = courseFilter
+  ) => {
     setLoading(true);
     setError(null);
     try {
       const response = await habitService.getList({
         isAll: true,
         ...(skillsetIdFilter && { skillsetId: skillsetIdFilter }),
+        ...(courseIdFilter && { courseId: courseIdFilter }),
       });
       setHabits(response.data ?? []);
     } catch (err: any) {
@@ -193,66 +192,13 @@ const HabitList: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchHabits(skillsetFilter);
+    fetchHabits(skillsetFilter, courseFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skillsetFilter]);
-
-  // Resolve the selected course to the set of keypoint ids it owns, so habits
-  // (which store keypointIds, not courseId) can be filtered by course. The
-  // lesson LIST response does NOT embed keypoints — only the full lesson
-  // detail does — so we list the course's lessons then fetch each by id and
-  // collect their keypoint ids. Cleared when no course is picked; guarded
-  // against a stale response when the filter changes fast.
-  useEffect(() => {
-    if (!courseFilter) {
-      setCourseKeypointIds(null);
-      return;
-    }
-    let active = true;
-    (async () => {
-      try {
-        const listRes = await lessonService.getList({
-          courseId: courseFilter,
-          type: LessonType.LESSON,
-          page: 1,
-          take: 500,
-        });
-        const lessonList = (listRes.data?.items ?? []) as { _id: string }[];
-        const details = await Promise.all(
-          lessonList.map((l) =>
-            lessonService
-              .getById(l._id)
-              .then((r: any) => (r?.data?.data ?? r?.data) as ILesson | undefined)
-              .catch(() => undefined)
-          )
-        );
-        const ids = new Set<string>();
-        for (const lesson of details) {
-          for (const kp of lesson?.keypoints ?? []) {
-            if (kp?._id) ids.add(kp._id);
-          }
-        }
-        if (active) setCourseKeypointIds(ids);
-      } catch (err) {
-        console.error("Failed to resolve course keypoints", err);
-        if (active) setCourseKeypointIds(new Set());
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [courseFilter]);
+  }, [skillsetFilter, courseFilter]);
 
   const filteredHabits = useMemo(() => {
     return habits.filter((habit) => {
       if (statusFilter && habit.status !== statusFilter) return false;
-      // Course filter: keep habits attached to any keypoint of the course.
-      if (courseKeypointIds) {
-        const inCourse = (habit.keypointIds ?? []).some((id) =>
-          courseKeypointIds.has(id)
-        );
-        if (!inCourse) return false;
-      }
       if (search.trim()) {
         const term = search.trim().toLowerCase();
         // Search across every locale so a habit is findable regardless of the
@@ -264,7 +210,7 @@ const HabitList: React.FC = () => {
       }
       return true;
     });
-  }, [habits, search, statusFilter, courseKeypointIds]);
+  }, [habits, search, statusFilter]);
 
   const hasActiveFilters =
     !!search.trim() || !!statusFilter || !!skillsetFilter || !!courseFilter;
@@ -314,7 +260,7 @@ const HabitList: React.FC = () => {
   // bulk action can never act on a row that is no longer shown.
   useEffect(() => {
     setSelectedIds([]);
-  }, [search, statusFilter, skillsetFilter, courseKeypointIds]);
+  }, [search, statusFilter, skillsetFilter, courseFilter]);
 
   const toggleOne = (id: string) => {
     setSelectedIds((prev) =>
