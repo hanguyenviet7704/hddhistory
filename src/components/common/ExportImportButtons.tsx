@@ -1,6 +1,10 @@
 import React, { useRef, useState } from "react";
 import { DownloadIcon, UploadIcon, XIcon, Loader2Icon } from "lucide-react";
 import { useNotification } from "../../utils/hooks/useNotification";
+import type {
+  ParseResult,
+  SkippedRow,
+} from "../../utils/habitContentXlsx";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_AI_TUTOR || "(unknown backend)";
 
@@ -13,8 +17,12 @@ interface Props {
   label: string;
   /** Fetch current data and trigger the .xlsx download. */
   onExport: () => Promise<void>;
-  /** Parse a chosen .xlsx file into portable rows. */
-  onParse: (file: File) => Promise<any[]>;
+  /**
+   * Parse a chosen .xlsx file into portable rows. Return a [ParseResult] to
+   * also report the rows the parser had to drop; a bare array still works for
+   * parsers that don't track them.
+   */
+  onParse: (file: File) => Promise<ParseResult<any> | any[]>;
   /** Send parsed rows to the backend import endpoint; returns the report. */
   onImport: (rows: any[]) => Promise<ImportReport>;
   /** Called after a successful import so the page can refresh. */
@@ -45,6 +53,7 @@ const ExportImportButtons: React.FC<Props> = ({
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [pendingRows, setPendingRows] = useState<any[] | null>(null);
+  const [pendingSkipped, setPendingSkipped] = useState<SkippedRow[]>([]);
   const [pendingName, setPendingName] = useState("");
   const [report, setReport] = useState<ImportReport | null>(null);
 
@@ -65,12 +74,19 @@ const ExportImportButtons: React.FC<Props> = ({
     e.target.value = ""; // allow re-selecting the same file
     if (!file) return;
     try {
-      const rows = await onParse(file);
+      const parsed = await onParse(file);
+      const rows = Array.isArray(parsed) ? parsed : parsed.rows;
+      const skipped = Array.isArray(parsed) ? [] : parsed.skipped;
       if (!rows.length) {
-        showError("No valid rows found in that file.");
+        showError(
+          skipped.length
+            ? `No valid rows found — all ${skipped.length} rows were skipped. First: row ${skipped[0].row}, ${skipped[0].reason}.`
+            : "No valid rows found in that file.",
+        );
         return;
       }
       setPendingRows(rows);
+      setPendingSkipped(skipped);
       setPendingName(file.name);
     } catch (err: any) {
       showError(err?.message || "Could not read that .xlsx file.");
@@ -82,8 +98,21 @@ const ExportImportButtons: React.FC<Props> = ({
     setImporting(true);
     try {
       const result = await onImport(pendingRows);
+      const skipped = pendingSkipped;
       setPendingRows(null);
-      setReport(result || {});
+      setPendingSkipped([]);
+      // Fold the browser-side losses into the same report. They never reached
+      // the server, so no count it returns can account for them — shown apart
+      // from the server's own numbers for exactly that reason.
+      setReport({
+        ...(result || {}),
+        ...(skipped.length
+          ? {
+              rowsSkippedInFile: skipped.length,
+              skippedInFile: skipped.map((s) => `row ${s.row}: ${s.reason}`),
+            }
+          : {}),
+      });
       showSuccess(`Imported ${label}.`);
       onImported?.();
     } catch (e: any) {
@@ -151,6 +180,29 @@ const ExportImportButtons: React.FC<Props> = ({
               This <b>replaces</b> existing {label} for every course/keypoint in
               the file. Courses/keypoints not in the file are left untouched.
             </p>
+            {/* Surfaced BEFORE importing: these rows never reach the server, so
+                no number in the result can reveal them afterwards. */}
+            {pendingSkipped.length > 0 && (
+              <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3">
+                <p className="text-sm font-semibold text-amber-900">
+                  {pendingSkipped.length} row
+                  {pendingSkipped.length > 1 ? "s" : ""} in the file could not be
+                  read and will NOT be imported
+                </p>
+                <ul className="mt-1 max-h-32 list-inside list-disc overflow-auto text-xs text-amber-900">
+                  {pendingSkipped.slice(0, 20).map((s) => (
+                    <li key={s.row} className="break-all">
+                      row {s.row}: {s.reason}
+                    </li>
+                  ))}
+                </ul>
+                {pendingSkipped.length > 20 && (
+                  <p className="mt-1 text-xs text-amber-800">
+                    …and {pendingSkipped.length - 20} more.
+                  </p>
+                )}
+              </div>
+            )}
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setPendingRows(null)}
