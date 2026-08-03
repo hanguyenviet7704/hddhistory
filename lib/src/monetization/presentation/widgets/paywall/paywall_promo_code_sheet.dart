@@ -311,5 +311,9 @@ String _promoRejectMessage(VoucherRejectReason reason) => switch (reason) {
   VoucherRejectReason.expired => l10n.monetization.promoCodeErrorExpired,
   VoucherRejectReason.exhausted => l10n.monetization.promoCodeErrorExhausted,
   VoucherRejectReason.notApplicable => l10n.monetization.promoCodeErrorNotApplicable,
+  // Not a failure from the user's point of view — they already have the better
+  // deal — so the copy reassures rather than blames.
+  VoucherRejectReason.notBetter => l10n.monetization.promoCodeErrorNotBetter,
+  VoucherRejectReason.unavailable => l10n.monetization.promoCodeErrorUnavailable,
   VoucherRejectReason.unknown => l10n.monetization.promoCodeErrorGeneric,
 };

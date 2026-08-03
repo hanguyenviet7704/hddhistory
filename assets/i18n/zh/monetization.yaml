@@ -74,6 +74,8 @@ promoCodeErrorExpired: 优惠码已过期
 promoCodeErrorGeneric: 无法应用优惠码，请重试。
 promoCodeErrorInvalid: 优惠码无效
 promoCodeErrorNotApplicable: 此优惠码不适用于这些方案
+promoCodeErrorNotBetter: 当前优惠更划算，已为你保留
+promoCodeErrorUnavailable: 暂时无法验证优惠码，请稍后再试。
 promoCodeRemove: 移除
 promoSheetApply: 应用优惠码
 promoSheetTitle: 输入优惠码

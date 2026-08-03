@@ -38,6 +38,15 @@ abstract class IapState with _$IapState {
     // code; the SKU swap it authorised is kept so the paywall can re-apply it
     // whenever the product list reloads.
     @Default('') String appliedVoucherCode,
+    // Code kept purely for affiliate attribution. Set whenever the affiliate
+    // service RECOGNISED the code, which includes the case where it did not
+    // lower the price (`not_better`) and so never became
+    // [appliedVoucherCode]. Their spec wants the referral credited either way,
+    // so this — not [appliedVoucherCode] — is what verify sends up. Keeping the
+    // two apart matters: [appliedVoucherCode] drives the SKU swap and the
+    // "applied" chip, and showing that chip for a code that changed no price
+    // would contradict the message the sheet just displayed.
+    @Default('') String attributedVoucherCode,
     @Default(<VoucherProductMappingEntity>[]) List<VoucherProductMappingEntity> voucherProducts,
     @Default(false) bool isValidatingVoucher,
     @Default(VoucherRejectReason.unknown) VoucherRejectReason voucherRejectReason,

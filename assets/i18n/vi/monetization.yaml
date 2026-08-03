@@ -75,6 +75,8 @@ promoCodeErrorExpired: Mã đã hết hạn
 promoCodeErrorGeneric: Không áp dụng được mã. Vui lòng thử lại.
 promoCodeErrorInvalid: Mã không hợp lệ
 promoCodeErrorNotApplicable: Mã không áp dụng cho các gói này
+promoCodeErrorNotBetter: Ưu đãi hiện tại đang tốt hơn, bạn vẫn giữ giá này
+promoCodeErrorUnavailable: Chưa kiểm tra được mã lúc này. Vui lòng thử lại sau ít phút.
 promoCodeRemove: Bỏ
 promoSheetApply: Áp dụng mã
 promoSheetTitle: Nhập mã giảm giá
