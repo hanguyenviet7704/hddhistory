@@ -218,9 +218,15 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     }
     if (refreshedPremium != false) return false;
 
-    final isReady = await loadIapProducts();
-    if (!isReady || state.iapProducts.isEmpty) return false;
+    // Entry point FIRST: loadIapProducts resolves the SKU variant off the
+    // live entry point, so setting it after the load rendered autoOpen with
+    // whatever entry point happened to be lying around.
     setPaywallEntryPoint(PaywallEntryPoint.autoOpen);
+    final isReady = await loadIapProducts();
+    if (!isReady || state.iapProducts.isEmpty) {
+      resetPaywallEntryPoint();
+      return false;
+    }
     return true;
   }
 
@@ -249,6 +255,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         nowUtc: DateTime.now().toUtc(),
         installTime: _installTime,
         storedImpressionCount: storedImpressionCount,
+        // The LIVE entry point, set by whoever is opening the paywall. Left
+        // out, the params default to `other` and every paywall rendered the
+        // 'other' variant — the per-entry-point compact list never applied
+        // anywhere (found on inLesson, 2026-08-04). Callers set the entry
+        // point BEFORE loading products; anything that doesn't gets `other`
+        // = full, which is the safe fallback.
+        entryPoint: paywallEntryPoint,
       ),
     );
 
@@ -380,9 +393,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
     emit(state.copyWith(isValidatingVoucher: true, hasVoucherFeedback: false));
 
-    final result = await _validateVoucherUsecase
-        .call(ValidateVoucherParams(code: code, platform: PaymentPlatform.fromDevicePlatform))
-        .run();
+    final result = await _validateVoucherUsecase.call(ValidateVoucherParams(code: code, platform: PaymentPlatform.fromDevicePlatform)).run();
 
     final validation = result.match(
       (_) => const VoucherValidationEntity(),
