@@ -165,6 +165,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     final current = state;
     if (index < 0 || index >= current.cards.length) return 0;
     if (index < current.furthestCardIndex) return 1;
+    // Left of where the reader/voice currently stands reads as PASSED — the
+    // bar is a position indicator. Without this, a lock-screen seek that
+    // jumped several cards left the skipped pips empty: a hole in the middle
+    // of the bar ("tua ngoài nền xong quay lại thanh bị trống giữa").
+    if (index < current.viewedCardIndex && index <= current.revealBound) return 1;
     // Past the live edge but within reach means narration read ahead to it, so
     // let the theory branch below show real playback rather than an empty pip.
     if (index > current.revealBound) return 0;
