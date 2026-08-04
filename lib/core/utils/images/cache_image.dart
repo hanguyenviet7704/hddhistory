@@ -84,17 +84,26 @@ class DCachedImage extends StatelessWidget {
 
   Widget _buildImage() {
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      return CachedNetworkImage(
-        imageUrl: url,
-        fit: fit,
-        alignment: alignment,
-        width: width,
-        height: height,
-        progressIndicatorBuilder: _buildProgressIndicator,
-        color: color,
-        // placeholder: (context, url) => _buildPlaceHolder(context, url),
-        // colorBlendMode: colorBlendMode,
-        errorWidget: (_, _, _) => _buildErrorPlaceholder(),
+      // Decode at DISPLAY size, not source size. Course art is 1024×1024, so
+      // full-resolution decoding costs 4MB of RGBA per image — Home alone
+      // shows ~8 of them in tiles 96–170px wide, i.e. tens of MB of bitmaps
+      // and the frame drops that come with it (measured 2026-08-04).
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return CachedNetworkImage(
+            imageUrl: url,
+            fit: fit,
+            alignment: alignment,
+            width: width,
+            height: height,
+            memCacheWidth: _memCacheWidth(context, constraints),
+            progressIndicatorBuilder: _buildProgressIndicator,
+            color: color,
+            // placeholder: (context, url) => _buildPlaceHolder(context, url),
+            // colorBlendMode: colorBlendMode,
+            errorWidget: (_, _, _) => _buildErrorPlaceholder(),
+          );
+        },
       );
     }
 
@@ -118,6 +127,32 @@ class DCachedImage extends StatelessWidget {
       color: color,
       errorBuilder: (_, _, _) => _buildErrorPlaceholder(),
     );
+  }
+
+  /// Physical-pixel width to decode a network image at, or null to keep the
+  /// source resolution.
+  ///
+  /// Only the width is capped: [ResizeImage] given BOTH axes resizes to those
+  /// exact dimensions and would squash the bitmap, so the height follows the
+  /// source aspect ratio. The cap is the LARGER display axis (× device pixel
+  /// ratio) because `BoxFit.cover` on a portrait box needs the source scaled
+  /// by the taller side; using the width alone there would visibly soften it.
+  /// Never upscales — [ResizeImage] leaves an already-smaller image alone.
+  ///
+  /// Returns null when the size can't be known (both fields null and the
+  /// parent offers unbounded space) or when this image can be opened in the
+  /// full-screen viewer, where the source resolution is the point.
+  int? _memCacheWidth(BuildContext context, BoxConstraints constraints) {
+    if (enablePhotoView) return null;
+
+    final double? displayWidth = width ?? (constraints.hasBoundedWidth ? constraints.maxWidth : null);
+    final double? displayHeight = height ?? (constraints.hasBoundedHeight ? constraints.maxHeight : null);
+
+    final double longestSide = max(displayWidth ?? 0, displayHeight ?? 0);
+    if (longestSide <= 0) return null;
+
+    final double dpr = MediaQuery.devicePixelRatioOf(context);
+    return (longestSide * dpr).round();
   }
 
   /// Icon-less fallback for a failed (or briefly mid-load) image — a plain tonal

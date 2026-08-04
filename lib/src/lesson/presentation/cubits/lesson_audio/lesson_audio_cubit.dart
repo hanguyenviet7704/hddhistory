@@ -650,6 +650,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
               artUri: state.imageUrl,
               speed: state.speed,
               initialPosition: startAt,
+              // Only the merged file is worth caching: it is loaded once per
+              // keypoint and re-read by every resume and lock-screen seek. The
+              // legacy per-card clips are tiny and each is played once.
+              cacheToDisk: isMergedMode,
             )
           : await _handler.loadQueue(
               urls: queue,
