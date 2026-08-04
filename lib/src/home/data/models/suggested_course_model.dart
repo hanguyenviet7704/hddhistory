@@ -12,6 +12,15 @@ abstract class SuggestedCourseModel with _$SuggestedCourseModel {
     @Default(false) bool isNew,
     DateTime? publishAt,
     int? newDurationDays,
+    // Editorial fields set per course in admin. Nullable on purpose: the "New
+    // today" card hides each half when the content team left it blank.
+    String? author,
+    int? viewCount,
+
+    /// When the course was created — the "New today" card picks the latest.
+    /// Null from an older API/cache; the card then falls back to its
+    /// day-seeded rotation.
+    DateTime? createdAt,
   }) = _SuggestedCourseModel;
 
   factory SuggestedCourseModel.fromJson(Map<String, dynamic> json) => _$SuggestedCourseModelFromJson(json);
@@ -19,16 +28,19 @@ abstract class SuggestedCourseModel with _$SuggestedCourseModel {
 
 extension SuggestedCourseModelX on SuggestedCourseModel {
   SuggestedCourseEntity toEntity() => SuggestedCourseEntity(
-        id: courseId,
-        title: title,
-        description: description,
-        image: image,
-        skillsetId: skillsetId,
-        numberOfLesson: numberOfLesson,
-        isNew: isNew,
-        publishAt: publishAt,
-        newDurationDays: newDurationDays,
-      );
+    id: courseId,
+    title: title,
+    description: description,
+    image: image,
+    skillsetId: skillsetId,
+    numberOfLesson: numberOfLesson,
+    isNew: isNew,
+    publishAt: publishAt,
+    newDurationDays: newDurationDays,
+    author: author,
+    viewCount: viewCount,
+    createdAt: createdAt,
+  );
 }
 
 BaseMultiLanguage _suggestedCourseMultiLanguageFromJson(Object? json) {

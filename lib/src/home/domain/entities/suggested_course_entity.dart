@@ -12,6 +12,15 @@ abstract class SuggestedCourseEntity with _$SuggestedCourseEntity {
     @Default(false) bool isNew,
     DateTime? publishAt,
     int? newDurationDays,
+
+    /// Author credit for the "New today" card. Null when unset in admin.
+    String? author,
+
+    /// Curated reach figure for that card, raw (6300 renders as "6.3k").
+    int? viewCount,
+
+    /// Course creation time — the "New today" card shows the latest one.
+    DateTime? createdAt,
   }) = _SuggestedCourseEntity;
 
   factory SuggestedCourseEntity.fromJson(Map<String, dynamic> json) => _$SuggestedCourseEntityFromJson(json);
