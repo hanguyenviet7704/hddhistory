@@ -173,7 +173,7 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
       >
         <div className="flex flex-wrap gap-4">
           <label className="flex flex-col gap-1 text-xs text-slate-700 w-40">
-            <span className="font-medium">Keypoint thứ</span>
+            <span className="font-medium">Từ keypoint thứ</span>
             {/* Counts keypoints, in roadmap order — NOT the same ordering the
                 lesson-lock count above uses. The client used to count lessons
                 here despite the field name; see
@@ -199,8 +199,10 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
               </span>
             )}
             <span className="text-[11px] text-slate-500">
-              Đếm theo thứ tự <b>keypoint</b> trong toàn khóa (khác cách "số bài
-              học miễn phí" đếm). Để 0 nếu muốn áp cho mọi keypoint.
+              Áp cho keypoint thứ N <b>trở đi</b>, đếm theo thứ tự{" "}
+              <b>keypoint</b> trong toàn khóa (khác cách "số bài học miễn phí"
+              đếm) — user đã học quá mốc này (vd premium hết hạn) vẫn gặp
+              paywall. Để 0 nếu muốn áp cho mọi keypoint.
             </span>
           </label>
 
