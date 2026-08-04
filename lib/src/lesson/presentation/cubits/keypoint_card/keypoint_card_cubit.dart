@@ -347,6 +347,27 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     }
 
     final index = state.viewedCardIndex;
+
+    // Merged mode: a completion may only drive the deck when the app is ON
+    // screen and the voice ended on the very cue of the card being viewed.
+    // Backgrounded, the file plays ahead of the deck — acting on its end here
+    // would advance (or complete) from wherever the reader left the deck,
+    // which is the merged equivalent of the isAheadOfDeck case above. The
+    // resumed path reveals to wherever the voice got instead.
+    if (_audioCubit.isMergedMode) {
+      if (_isBackgrounded) {
+        _completionHandled = true;
+        return;
+      }
+      final descriptor = (index >= 0 && index < state.cards.length) ? state.cards[index] : null;
+      final viewedCue = descriptor != null && descriptor.isTheory
+          ? _audioCubit.cueForCard(learningItemId: descriptor.learningItemId, documentIndex: descriptor.documentIndex)
+          : null;
+      if (viewedCue == null || viewedCue != audioState.activeCueIndex) {
+        _completionHandled = true;
+        return;
+      }
+    }
     // Only the clip of the card ON SCREEN may turn that card. On a keypoint
     // dubbed as one whole file `_loadedClipCardIndex` is -1, so this never fires:
     // "the audio finished" there means the whole keypoint, not this page.
