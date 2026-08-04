@@ -26,8 +26,11 @@ import {
 } from "../../types/interface/user-feedback.interface";
 import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
+import UserBehaviorTab from "./behavior/UserBehaviorTab";
 
 const DEFAULT_PAGE_SIZE = 20;
+
+type UserProgressTab = "progress" | "behavior";
 
 const formatDate = (value?: string | Date) => {
   if (!value) return "-";
@@ -330,6 +333,7 @@ export default function UserProgressSummaryList() {
   const [removing, setRemoving] = useState(false);
   const [confirmFeedbackRemove, setConfirmFeedbackRemove] = useState(false);
   const [removingFeedback, setRemovingFeedback] = useState(false);
+  const [activeTab, setActiveTab] = useState<UserProgressTab>("progress");
   const userLabel = stateUserLabel;
 
   const fetchProgress = useCallback(
@@ -525,6 +529,7 @@ export default function UserProgressSummaryList() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {activeTab === "progress" ? (
             <button
               onClick={() => fetchProgress(page)}
               disabled={loading}
@@ -536,6 +541,7 @@ export default function UserProgressSummaryList() {
               />
               Làm mới
             </button>
+            ) : null}
             <button
               onClick={() => navigate(-1)}
               className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm shadow-sm"
@@ -545,6 +551,32 @@ export default function UserProgressSummaryList() {
           </div>
         </div>
 
+        <div className="flex items-center gap-1 border-b border-gray-200">
+          {(
+            [
+              { key: "progress", label: "Tiến độ" },
+              { key: "behavior", label: "Hành vi" },
+            ] as { key: UserProgressTab; label: string }[]
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+                activeTab === tab.key
+                  ? "border-blue-600 text-blue-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "behavior" ? (
+          <UserBehaviorTab userId={userId} />
+        ) : (
+        <>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {loading ? (
             <div className="p-10 text-center text-gray-500">
@@ -791,6 +823,8 @@ export default function UserProgressSummaryList() {
             </div>
           )}
         </div>
+        </>
+        )}
 
         {confirmCourseId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
