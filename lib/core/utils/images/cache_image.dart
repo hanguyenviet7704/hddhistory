@@ -46,7 +46,7 @@ class DCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = _buildImage();
+    Widget child = _buildImage(context);
 
     child = ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
@@ -82,26 +82,29 @@ class DCachedImage extends StatelessWidget {
     return child;
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       // Decode at DISPLAY size, not source size. Course art is 1024×1024, so
       // full-resolution decoding costs 4MB of RGBA per image — Home alone
       // shows ~8 of them in tiles 96–170px wide, i.e. tens of MB of bitmaps
       // and the frame drops that come with it (measured 2026-08-04).
+      //
+      // The size is read from [width]/[height] when the caller gave a usable
+      // one, and only otherwise from the parent's constraints — a LayoutBuilder
+      // changes how intrinsic sizing propagates, so it is not put in the tree
+      // unless it is the only way to learn the size.
+      final double? declaredSide = _largestFiniteSide(width, height);
+      if (declaredSide != null) {
+        return _networkImage(_memCacheWidthFor(context, declaredSide));
+      }
       return LayoutBuilder(
         builder: (context, constraints) {
-          return CachedNetworkImage(
-            imageUrl: url,
-            fit: fit,
-            alignment: alignment,
-            width: width,
-            height: height,
-            memCacheWidth: _memCacheWidth(context, constraints),
-            progressIndicatorBuilder: _buildProgressIndicator,
-            color: color,
-            // placeholder: (context, url) => _buildPlaceHolder(context, url),
-            // colorBlendMode: colorBlendMode,
-            errorWidget: (_, _, _) => _buildErrorPlaceholder(),
+          final double? constrainedSide = _largestFiniteSide(
+            constraints.hasBoundedWidth ? constraints.maxWidth : null,
+            constraints.hasBoundedHeight ? constraints.maxHeight : null,
+          );
+          return _networkImage(
+            constrainedSide == null ? null : _memCacheWidthFor(context, constrainedSide),
           );
         },
       );
@@ -129,30 +132,61 @@ class DCachedImage extends StatelessWidget {
     );
   }
 
+  Widget _networkImage(int? memCacheWidth) => CachedNetworkImage(
+    imageUrl: url,
+    fit: fit,
+    alignment: alignment,
+    width: width,
+    height: height,
+    memCacheWidth: memCacheWidth,
+    progressIndicatorBuilder: _buildProgressIndicator,
+    color: color,
+    // placeholder: (context, url) => _buildPlaceHolder(context, url),
+    // colorBlendMode: colorBlendMode,
+    errorWidget: (_, _, _) => _buildErrorPlaceholder(),
+  );
+
+  /// Largest usable side out of [a]/[b], or null when neither is usable.
+  ///
+  /// Callers routinely pass `width: double.infinity` ("fill the parent") and a
+  /// parent can offer an unbounded axis, so a side is only usable when it is
+  /// finite and positive. Missing this is what made `infinity.round()` throw
+  /// `Unsupported operation: Infinity or NaN toInt` mid-layout, which blanked
+  /// every card holding an image and left the page unable to lay out or be
+  /// swiped (found on the 1.4.4+106 build, 2026-08-05).
+  static double? _largestFiniteSide(double? a, double? b) {
+    final bool aOk = a != null && a.isFinite && a > 0;
+    final bool bOk = b != null && b.isFinite && b > 0;
+    if (!aOk && !bOk) return null;
+    if (aOk && bOk) return max(a, b);
+    return aOk ? a : b;
+  }
+
   /// Physical-pixel width to decode a network image at, or null to keep the
   /// source resolution.
   ///
   /// Only the width is capped: [ResizeImage] given BOTH axes resizes to those
   /// exact dimensions and would squash the bitmap, so the height follows the
-  /// source aspect ratio. The cap is the LARGER display axis (× device pixel
-  /// ratio) because `BoxFit.cover` on a portrait box needs the source scaled
-  /// by the taller side; using the width alone there would visibly soften it.
-  /// Never upscales — [ResizeImage] leaves an already-smaller image alone.
+  /// source aspect ratio. The cap comes from the LARGER display axis because
+  /// `BoxFit.cover` on a portrait box needs the source scaled by the taller
+  /// side; using the width alone there would visibly soften it. Never upscales
+  /// — [ResizeImage] leaves an already-smaller image alone.
   ///
-  /// Returns null when the size can't be known (both fields null and the
-  /// parent offers unbounded space) or when this image can be opened in the
-  /// full-screen viewer, where the source resolution is the point.
-  int? _memCacheWidth(BuildContext context, BoxConstraints constraints) {
+  /// Returns null when this image can be opened in the full-screen viewer
+  /// (source resolution is the point there) or when the maths can't produce a
+  /// sane pixel count.
+  int? _memCacheWidthFor(BuildContext context, double displaySide) {
     if (enablePhotoView) return null;
 
-    final double? displayWidth = width ?? (constraints.hasBoundedWidth ? constraints.maxWidth : null);
-    final double? displayHeight = height ?? (constraints.hasBoundedHeight ? constraints.maxHeight : null);
-
-    final double longestSide = max(displayWidth ?? 0, displayHeight ?? 0);
-    if (longestSide <= 0) return null;
-
     final double dpr = MediaQuery.devicePixelRatioOf(context);
-    return (longestSide * dpr).round();
+    if (!dpr.isFinite || dpr <= 0) return null;
+
+    final double pixels = displaySide * dpr;
+    if (!pixels.isFinite || pixels < 1) return null;
+
+    // 4096 is comfortably above any full-screen image on a phone and keeps a
+    // stray huge constraint from asking for an absurd decode.
+    return pixels.round().clamp(1, 4096);
   }
 
   /// Icon-less fallback for a failed (or briefly mid-load) image — a plain tonal
