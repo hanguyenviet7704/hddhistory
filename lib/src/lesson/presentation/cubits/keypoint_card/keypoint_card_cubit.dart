@@ -45,8 +45,12 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // Merged mode: `canContinue` (the explanation-choice gate) changes on
     // TheoryCubit emits that never reach LessonCubit, and the allowed-cue
     // bound must follow it at once — the voice would otherwise sail through
-    // a boundary the deck meant to hold.
-    _theorySubscription = _theoryCubit.stream.listen((_) => _pushAllowedThroughCue());
+    // a boundary the deck meant to hold. Answering the question is also what
+    // resumes a voice held at that gate.
+    _theorySubscription = _theoryCubit.stream.listen((theoryState) {
+      _pushAllowedThroughCue();
+      _resumeNarrationIfGateOpened(theoryState);
+    });
     // Whether the app is on screen decides who walks narration forward — this
     // cubit, or the player reading on by itself (see [_listenOnWhileAway]).
     WidgetsBinding.instance.addObserver(this);
@@ -450,36 +454,66 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     return !(lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive);
   }
 
-  /// Highest cue the voice may play INTO without stopping.
-  ///
-  /// One rule, foreground and background alike (user call, 2026-08-04:
-  /// "không được tự động tắt audio khi user nghe"): the ONLY thing that stops
-  /// the voice mid-keypoint is the paywall wall. The `canContinue` gate no
-  /// longer pauses playback — it still gates PROGRESS (nextDocument refuses),
-  /// and [_onMergedCueChanged] then follows the voice with read-only revealed
-  /// cards instead of silencing it.
-  void _pushAllowedThroughCue() {
-    if (!_audioCubit.isMergedMode) return;
-    final cap = _paywallCardCap;
-    if (cap == null) {
-      _audioCubit.setAllowedThroughCue(LessonAudioCubit.unboundedCue);
-      return;
-    }
-
-    // Last audible cue among the cards the paywall still allows.
-    var allowedCue = -1;
-    for (var index = 0; index <= cap && index < state.cards.length; index++) {
+  /// Last audible cue among the built cards up to [cardBound], or null when
+  /// none of them is dubbed (entry burst, empty deck).
+  int? _lastAudibleCueUpTo(int cardBound) {
+    int? found;
+    for (var index = 0; index <= cardBound && index < state.cards.length; index++) {
       final descriptor = state.cards[index];
       if (!descriptor.isTheory) continue;
       final cue = _audioCubit.cueForCard(
         learningItemId: descriptor.learningItemId,
         documentIndex: descriptor.documentIndex,
       );
-      if (cue != null) allowedCue = cue;
+      if (cue != null) found = cue;
     }
-    // Cards not built yet (entry burst) — leave the voice unrestrained rather
-    // than pausing narration on a transient empty deck.
-    _audioCubit.setAllowedThroughCue(allowedCue < 0 ? LessonAudioCubit.unboundedCue : allowedCue);
+    return found;
+  }
+
+  /// Highest cue the voice may play INTO without stopping.
+  ///
+  /// The flow rules (user call, 2026-08-04): BACKGROUNDED the voice reads
+  /// straight through everything — questions included — because the lock
+  /// screen promises an ordinary audio player. IN THE APP an interactive card
+  /// (a `canContinue` gate: choice/question) holds the voice at the END of
+  /// its own cue — the question gets read aloud, then narration waits for the
+  /// answer; answering lifts the bound and [_resumeNarrationIfGateOpened]
+  /// presses play. The gate only lives at the LIVE EDGE: revealed (read-only)
+  /// question cards cannot be answered, so holding on them would deadlock —
+  /// and the crossing-based clamp in [LessonAudioCubit._onMergedTick] already
+  /// leaves a voice that is PAST the bound alone. The paywall wall wins over
+  /// everything, background included.
+  void _pushAllowedThroughCue() {
+    if (!_audioCubit.isMergedMode) return;
+    if (_audioCubit.timeline == null) return;
+
+    final cap = _paywallCardCap;
+    final capCue = cap == null ? null : _lastAudibleCueUpTo(cap);
+
+    int? gateCue;
+    if (!_isBackgrounded && !_theoryCubit.state.canContinue) {
+      gateCue = _lastAudibleCueUpTo(state.furthestCardIndex);
+    }
+
+    var bound = LessonAudioCubit.unboundedCue;
+    if (capCue != null && capCue < bound) bound = capCue;
+    if (gateCue != null && gateCue < bound) bound = gateCue;
+    _audioCubit.setAllowedThroughCue(bound);
+  }
+
+  /// The reader just answered the question the voice was held at: play on.
+  ///
+  /// "Held at the gate" is the completed-looking pause the bound clamp leaves
+  /// — a MANUAL pause never sets `hasCompletedPlayback`, so it is never
+  /// auto-resumed here.
+  void _resumeNarrationIfGateOpened(TheoryState theoryState) {
+    if (!_audioCubit.isMergedMode || _isBackgrounded) return;
+    if (!theoryState.canContinue) return;
+    final audioState = _audioCubit.state;
+    if (audioState.isPlaying || !audioState.hasCompletedPlayback) return;
+    final lastAudible = _audioCubit.timeline?.lastAudibleCueIndex ?? -1;
+    if (audioState.activeCueIndex < 0 || audioState.activeCueIndex >= lastAudible) return;
+    unawaited(_audioCubit.play());
   }
 
   /// The player crossed into a new cue: bring the deck along. Mirrors the
@@ -596,9 +630,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (_audioCubit.isMergedMode) {
       _pushAllowedThroughCue();
       if (lifecycleState != AppLifecycleState.resumed) {
-        // Going away: nothing to do — playback only ever auto-pauses at the
-        // paywall or the end of the file, and neither is the lock screen's to
-        // lift.
+        // Going away while the voice was held at a question: backgrounded
+        // listening reads STRAIGHT THROUGH exercises (user call, 2026-08-04)
+        // — the bound was just lifted above, so press play. A manual pause
+        // never carries hasCompletedPlayback and stays paused.
+        final audioState = _audioCubit.state;
+        final lastAudible = _audioCubit.timeline?.lastAudibleCueIndex ?? -1;
+        if (audioState.hasCompletedPlayback && !audioState.isPlaying && audioState.activeCueIndex >= 0 && audioState.activeCueIndex < lastAudible) {
+          unawaited(_audioCubit.play());
+        }
         return;
       }
       // Back on screen: land the deck on the card being read, at full flight —
