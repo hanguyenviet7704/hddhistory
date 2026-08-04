@@ -267,12 +267,21 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         documentIndex: descriptor.documentIndex,
       );
       if (cueIndex == null) return;
+      final previousNarratedIndex = _loadedClipCardIndex;
       _loadedClipCardIndex = index;
       // The voice is already reading this very cue (deck following player):
       // do NOT seek — that restarts the sentence mid-word.
       if (cueIndex == _audioCubit.state.activeCueIndex && startAt == null) return;
       final audioState = _audioCubit.state;
-      final autoplay = startAt != null || audioState.isPlaying || audioState.hasCompletedPlayback;
+      // Moving FORWARD onto a new card is a listening intent in itself ("mở
+      // loa lên luôn", user call 2026-08-04): the reader just answered the
+      // question card or swiped on, and the next card must start talking even
+      // when the carry flags (playing / just-completed) got consumed along
+      // the way. Requires a started session so a silent read-mode entry
+      // never starts speaking by itself; backward swipes keep the old carry
+      // rule.
+      final movingForward = audioState.hasStartedSession && index > previousNarratedIndex;
+      final autoplay = startAt != null || audioState.isPlaying || audioState.hasCompletedPlayback || movingForward;
       unawaited(_audioCubit.playCue(cueIndex, autoplay: autoplay, offset: startAt));
       return;
     }
