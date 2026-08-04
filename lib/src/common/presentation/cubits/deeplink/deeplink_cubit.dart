@@ -240,8 +240,10 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// not one of ours, so the caller can fall through to the other handlers.
   ///
   /// The server sends a symbolic destination (`home` / `resume_lesson` /
-  /// `habit_tracker`) rather than a path, so renaming a route here never needs a
-  /// server-side config change.
+  /// `habit_tracker` / `new_course`) rather than a path, so renaming a route here
+  /// never needs a server-side config change. An unknown value is logged and
+  /// falls through, which is what an app build older than a newly added
+  /// destination does — the tap then just brings the app forward.
   bool _handleScheduledNotificationTap(NotificationInteraction interaction) {
     final raw = interaction.payload.raw;
     final deeplink = (raw['deeplink'] ?? '').toString().trim();
@@ -272,9 +274,32 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         HabitRoute().go(navContext);
         return true;
 
+      case 'new_course':
+        _openNewCourseRoadmap(navContext, (raw['courseId'] ?? '').toString().trim());
+        return true;
+
       default:
         LogDev.warning('Unsupported scheduled notification deeplink: $deeplink');
         return false;
+    }
+  }
+
+  /// Roadmap source tag for a tap on the daily new-course notification. Unknown
+  /// to `remapRoadmapSource`, which buckets it into the generic explore source —
+  /// correct, since this is not one of the home surfaces it distinguishes.
+  static const String _newCourseRoadmapSource = 'notification_new_course';
+
+  /// Opens the roadmap of the course a `new_course` notification announced,
+  /// falling back to Home when the payload carries no course or the course can no
+  /// longer be selected (unpublished since the push, say).
+  ///
+  /// Deliberately NOT [openCourseRoadmapFromLiveActivity]: that path keeps a
+  /// lesson that is already on screen, which is right for "resume what you were
+  /// doing" and wrong here — the reader tapped a specific new course and has to
+  /// land on it.
+  void _openNewCourseRoadmap(BuildContext navContext, String courseId) {
+    if (courseId.isEmpty || !_openCourseRoadmap(navContext, courseId, _newCourseRoadmapSource)) {
+      HomeRoute().go(navContext);
     }
   }
 
