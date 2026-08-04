@@ -37,6 +37,33 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// behaviour until they are re-dubbed.
   List<String> _cardClips = const [];
 
+  /// Cue math for the keypoint's ONE merged narration file, or null when the
+  /// keypoint has no merged audio for the active locale — then every legacy
+  /// per-card path below applies unchanged.
+  MergedNarrationTimeline? _timeline;
+
+  MergedNarrationTimeline? get timeline => _timeline;
+
+  bool get isMergedMode => _timeline != null;
+
+  /// "No bound" sentinel for [_allowedThroughCue] — any real cue index is
+  /// smaller.
+  static const int unboundedCue = 1 << 30;
+
+  /// Highest cue the voice may play INTO without stopping. Owned by the deck
+  /// ([KeypointCardCubit] computes it from its gates + app lifecycle); this
+  /// cubit only enforces it at cue boundaries in [_onMergedTick].
+  int _allowedThroughCue = unboundedCue;
+
+  /// File-time home of one card, or null (no cue / silent card) — the deck's
+  /// bridge from card identity to [playCue]'s cue index.
+  int? cueForCard({required String learningItemId, required int documentIndex}) => _timeline?.cueIndexForCard(learningItemId: learningItemId, documentIndex: documentIndex);
+
+  /// The deck's gate bound. RAISING it while the voice sits paused at that
+  /// very boundary does not auto-play — the deck decides that (it knows why
+  /// the bound rose).
+  void setAllowedThroughCue(int cueIndex) => _allowedThroughCue = cueIndex;
+
   /// True when this keypoint has per-card clips, i.e. narration can be scoped to
   /// the page on screen via [loadCard].
   bool get hasCardClips => _cardClips.any((clip) => clip.isNotEmpty);
@@ -169,11 +196,17 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // A different keypoint's clip list — the old index means nothing in it.
     _activeClipIndex = -1;
     _isAheadOfDeck = false;
-    // First card's clip when dubbed per card, else the legacy single file.
-    final nextSourceUrl = _cardClips.firstWhere(
-      (clip) => clip.isNotEmpty,
-      orElse: () => keypoint.resolvedAudioUrl,
-    );
+    // Merged-first: one file for the whole keypoint when the backend has it,
+    // else first card's clip when dubbed per card, else the legacy single file.
+    final mergedAudio = keypoint.resolvedMergedAudio;
+    _timeline = mergedAudio == null ? null : MergedNarrationTimeline(mergedAudio);
+    _allowedThroughCue = unboundedCue;
+    final nextSourceUrl =
+        mergedAudio?.url ??
+        _cardClips.firstWhere(
+          (clip) => clip.isNotEmpty,
+          orElse: () => keypoint.resolvedAudioUrl,
+        );
     final nextTitle = keypoint.title.text;
 
     if (state.keypointId == keypoint.id && state.sourceUrl == nextSourceUrl && state.imageUrl == keypoint.image && state.title == nextTitle) {
@@ -189,6 +222,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         sourceUrl: nextSourceUrl,
         imageUrl: keypoint.image,
         title: nextTitle,
+        isMergedMode: _timeline != null,
         status: nextSourceUrl.isEmpty ? LessonAudioLoadStatus.unavailable : LessonAudioLoadStatus.initial,
       ),
     );
@@ -204,7 +238,11 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     await _initializePlayer();
   }
 
-  Future<void> enterAudioMode({bool autoplay = true}) async {
+  /// [startAt] is the resume path: an absolute position in the MERGED file to
+  /// open at (ignored in legacy mode, which has no cue map to make sense of
+  /// it). Loading at the position beats loading at zero and seeking after —
+  /// the latter is audible as the keypoint restarting before it jumps.
+  Future<void> enterAudioMode({bool autoplay = true, Duration? startAt}) async {
     if (!state.hasUsableSource) {
       emit(
         state.copyWith(
@@ -227,6 +265,14 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
     // Already prepared (e.g. background preload finished): just play.
     if (state.isReady) {
+      if (startAt != null && isMergedMode) {
+        try {
+          await _handler.seek(startAt);
+        } catch (error, stackTrace) {
+          _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.enterAudioMode');
+          return;
+        }
+      }
       if (autoplay) await play();
       return;
     }
@@ -235,7 +281,29 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // (loading), _initializePlayer's completion will honor _playWhenReady, so
     // we don't kick off a second load here.
     if (!state.hasStartedSession) {
-      await _initializePlayer();
+      await _initializePlayer(startAt: isMergedMode ? startAt : null);
+    }
+  }
+
+  /// Points the merged file at [cueIndex] (+[offset] inside it). The deck's
+  /// merged-mode replacement for [loadCard] — a seek, never a source reload.
+  Future<void> playCue(int cueIndex, {bool autoplay = false, Duration? offset}) async {
+    final timeline = _timeline;
+    final cue = timeline?.cueAt(cueIndex);
+    if (timeline == null || cue == null || cue.durMs <= 0) return;
+
+    final target = Duration(milliseconds: cue.startMs + (offset?.inMilliseconds ?? 0));
+    if (!state.hasStartedSession) {
+      _playWhenReady = autoplay;
+      await _initializePlayer(startAt: target);
+      return;
+    }
+    try {
+      await _handler.seek(target);
+      emit(state.copyWith(activeCueIndex: cueIndex, hasCompletedPlayback: false));
+      if (autoplay) await play();
+    } catch (error, stackTrace) {
+      _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.playCue');
     }
   }
 
@@ -470,11 +538,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // stale ready/failure over the new state.
     final loadKeypointId = state.keypointId;
     final loadUrl = state.sourceUrl;
-    bool isStale() =>
-        isClosed ||
-        generation != _loadGeneration ||
-        state.keypointId != loadKeypointId ||
-        state.sourceUrl != loadUrl;
+    bool isStale() => isClosed || generation != _loadGeneration || state.keypointId != loadKeypointId || state.sourceUrl != loadUrl;
 
     try {
       await _cancelSubscriptions();
@@ -487,13 +551,20 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
       _positionSubscription = _handler.positionStream.listen((position) {
         if (isClosed) return;
+        if (isMergedMode) {
+          _onMergedTick(position.inMilliseconds);
+          return;
+        }
         final nextPosition = position.inSeconds.clamp(0, state.durationSeconds > 0 ? state.durationSeconds : 359999);
         if (nextPosition == state.positionSeconds) return;
         emit(state.copyWith(positionSeconds: nextPosition));
       });
 
       _durationSubscription = _handler.durationStream.listen((duration) {
-        if (isClosed || duration == null) return;
+        // Merged mode: durationSeconds is CARD-relative (the active cue's
+        // length, from the cue map) — the file's own duration never lands in
+        // state.
+        if (isClosed || duration == null || isMergedMode) return;
         final nextDuration = duration.inSeconds.clamp(0, 359999);
         if (nextDuration == state.durationSeconds) return;
         emit(state.copyWith(durationSeconds: nextDuration));
@@ -548,7 +619,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
               speed: state.speed,
             );
       if (isStale()) return;
-      if (duration != null && duration.inSeconds > 0) {
+      if (!isMergedMode && duration != null && duration.inSeconds > 0) {
         emit(state.copyWith(durationSeconds: duration.inSeconds));
       }
       if (isStale()) return;
@@ -586,6 +657,58 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         return;
       }
       _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.initialize');
+    }
+  }
+
+  /// One raw position tick of the merged file → cue bookkeeping.
+  ///
+  /// Publishes CARD-relative position/duration (per-card consumers keep
+  /// working unchanged) and enforces the deck's [_allowedThroughCue] bound:
+  /// crossing into a cue past it pauses EXACTLY at the allowed cue's end, in
+  /// the same completed-looking state a finished per-card clip leaves — so
+  /// every existing deck reaction applies unchanged. Open boundaries are
+  /// flowed through without pausing; that is the whole point of the merge.
+  void _onMergedTick(int positionMs) {
+    final timeline = _timeline;
+    if (timeline == null || state.status != LessonAudioLoadStatus.ready) return;
+
+    final cueIndex = timeline.cueIndexAtMs(positionMs);
+    if (cueIndex < 0) return;
+
+    if (cueIndex > _allowedThroughCue) {
+      // Already holding at the bound — don't re-emit on every late tick.
+      if (!state.isPlaying && state.hasCompletedPlayback) return;
+      final boundCue = _allowedThroughCue.clamp(0, timeline.merged.cues.length - 1);
+      final holdMs = timeline.endMsOf(boundCue);
+      unawaited(_handler.pause());
+      unawaited(_handler.seek(Duration(milliseconds: holdMs)));
+      final heldCueIndex = timeline.cueIndexAtMs(holdMs > 0 ? holdMs - 1 : 0);
+      final heldCue = timeline.cueAt(heldCueIndex);
+      final heldSeconds = heldCue == null ? 0 : (heldCue.durMs / 1000).round().clamp(0, 359999);
+      emit(
+        state.copyWith(
+          isPlaying: false,
+          hasCompletedPlayback: true,
+          activeCueIndex: heldCueIndex,
+          positionSeconds: heldSeconds,
+          durationSeconds: heldSeconds,
+        ),
+      );
+      return;
+    }
+
+    final cue = timeline.cueAt(cueIndex)!;
+    final cardPositionSeconds = ((positionMs - cue.startMs) / 1000).floor().clamp(0, 359999);
+    final cardDurationSeconds = (cue.durMs / 1000).round().clamp(0, 359999);
+    if (cueIndex != state.activeCueIndex || cardPositionSeconds != state.positionSeconds || cardDurationSeconds != state.durationSeconds) {
+      emit(
+        state.copyWith(
+          activeCueIndex: cueIndex,
+          positionSeconds: cardPositionSeconds,
+          durationSeconds: cardDurationSeconds,
+          hasCompletedPlayback: false,
+        ),
+      );
     }
   }
 
