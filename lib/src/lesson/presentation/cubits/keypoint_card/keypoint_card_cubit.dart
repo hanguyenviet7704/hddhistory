@@ -450,38 +450,25 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     return !(lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive);
   }
 
-  /// Highest cue the voice may play INTO without stopping, from the deck's
-  /// gates. Backgrounded, everything up to the paywall is allowed (the OS
-  /// controls promise an ordinary player — same rule [_listenOnWhileAway]
-  /// encodes for the legacy path; the paywall wall wins over everything,
-  /// background included). Foregrounded: through the deck's reachable region
-  /// — [KeypointCardState.revealBound], NOT `furthestCardIndex`, because
-  /// after a background read-ahead the voice legitimately sits on revealed
-  /// cards and a tighter bound would yank it backwards — plus one audible cue
-  /// more when the live card owes nothing (`canContinue`): crossing it is
-  /// what advances the live edge, and this recomputes for the next boundary.
-  /// That extension lives in CUE space ([MergedNarrationTimeline
-  /// .nextAudibleCueAfter]): at the live edge the next card does not exist
-  /// yet, so a card-space walk could never reach it.
+  /// Highest cue the voice may play INTO without stopping.
+  ///
+  /// One rule, foreground and background alike (user call, 2026-08-04:
+  /// "không được tự động tắt audio khi user nghe"): the ONLY thing that stops
+  /// the voice mid-keypoint is the paywall wall. The `canContinue` gate no
+  /// longer pauses playback — it still gates PROGRESS (nextDocument refuses),
+  /// and [_onMergedCueChanged] then follows the voice with read-only revealed
+  /// cards instead of silencing it.
   void _pushAllowedThroughCue() {
     if (!_audioCubit.isMergedMode) return;
-    final timeline = _audioCubit.timeline;
-    if (timeline == null) return;
-
-    final isBackground = _isBackgrounded;
     final cap = _paywallCardCap;
-
-    if (isBackground && cap == null) {
+    if (cap == null) {
       _audioCubit.setAllowedThroughCue(LessonAudioCubit.unboundedCue);
       return;
     }
 
-    var allowedCardBound = isBackground ? cap! : state.revealBound;
-    if (cap != null && allowedCardBound > cap) allowedCardBound = cap;
-
-    // Last audible cue among the reachable (built) cards.
+    // Last audible cue among the cards the paywall still allows.
     var allowedCue = -1;
-    for (var index = 0; index <= allowedCardBound && index < state.cards.length; index++) {
+    for (var index = 0; index <= cap && index < state.cards.length; index++) {
       final descriptor = state.cards[index];
       if (!descriptor.isTheory) continue;
       final cue = _audioCubit.cueForCard(
@@ -492,19 +479,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     }
     // Cards not built yet (entry burst) — leave the voice unrestrained rather
     // than pausing narration on a transient empty deck.
-    if (allowedCue < 0) {
-      _audioCubit.setAllowedThroughCue(LessonAudioCubit.unboundedCue);
-      return;
-    }
-
-    // One boundary further ONLY at the true live edge with an open gate —
-    // never while the deck sits in revealed (read-only) territory.
-    final atTrueLiveEdge = state.revealBound == state.furthestCardIndex;
-    final underCap = cap == null || state.furthestCardIndex < cap;
-    if (!isBackground && atTrueLiveEdge && underCap && _theoryCubit.state.canContinue) {
-      allowedCue = timeline.nextAudibleCueAfter(allowedCue);
-    }
-    _audioCubit.setAllowedThroughCue(allowedCue);
+    _audioCubit.setAllowedThroughCue(allowedCue < 0 ? LessonAudioCubit.unboundedCue : allowedCue);
   }
 
   /// The player crossed into a new cue: bring the deck along. Mirrors the
@@ -545,6 +520,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         _rebuildCards(_lessonCubit.state);
         final after = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
         if (after == before) break; // refused (gate/end) — stop pushing
+        cardIndex = cardIndexForCue();
+      }
+      if (cardIndex < 0 && !isAtPaywallWall) {
+        // The gate refused (a choice still owed): the voice reads ON — audio
+        // never auto-stops mid-listen (user call, 2026-08-04) — so reveal the
+        // card it entered and follow read-only. Progress stays behind: the
+        // reveal is not progress, exactly like the background read-ahead.
+        _revealToCardTarget = (learningItemId: cue.learningItemId, documentIndex: cue.documentIndex);
+        _rebuildCards(_lessonCubit.state);
         cardIndex = cardIndexForCue();
       }
     }
@@ -612,14 +596,9 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (_audioCubit.isMergedMode) {
       _pushAllowedThroughCue();
       if (lifecycleState != AppLifecycleState.resumed) {
-        // Going away mid-hold: the voice paused at a gate the reader cannot
-        // answer from the lock screen — read on, exactly like the legacy
-        // queue does. The bound was just lifted above.
-        final audioState = _audioCubit.state;
-        final lastAudible = _audioCubit.timeline?.lastAudibleCueIndex ?? -1;
-        if (audioState.hasCompletedPlayback && !audioState.isPlaying && audioState.activeCueIndex >= 0 && audioState.activeCueIndex < lastAudible) {
-          unawaited(_audioCubit.play());
-        }
+        // Going away: nothing to do — playback only ever auto-pauses at the
+        // paywall or the end of the file, and neither is the lock screen's to
+        // lift.
         return;
       }
       // Back on screen: land the deck on the card being read, at full flight —
