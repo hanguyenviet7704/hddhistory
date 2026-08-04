@@ -2,16 +2,33 @@
 export type NotificationType =
   | "daily_remind"
   | "progress_finish"
-  | "habit_tracking";
+  | "habit_tracking"
+  | "new_course";
 
 export type NotificationLogStatus = "sent" | "failed" | "skipped";
 
-export type NotificationDeeplink = "home" | "resume_lesson" | "habit_tracker";
+export type NotificationDeeplink =
+  | "home"
+  | "resume_lesson"
+  | "habit_tracker"
+  | "new_course";
 
 export interface NotificationCopy {
   locale: string;
   title: string;
   body: string;
+}
+
+/**
+ * One wording of a notification, in every locale it has.
+ *
+ * `key` comes from the server and must be sent back unchanged when editing:
+ * the "not the same wording as the last three days per user" memory is keyed by
+ * it, so a new key resets that memory for the sentence.
+ */
+export interface NotificationVariant {
+  key: string;
+  copies: Record<string, { title: string; body: string }>;
 }
 
 export interface NotificationTemplate {
@@ -23,8 +40,13 @@ export interface NotificationTemplate {
   /** Minute within [localHour] (0-59). Absent on templates saved before it existed. */
   localMinute?: number;
   deeplink: NotificationDeeplink;
-  /** Keyed by locale on the wire; the page works with the array form. */
+  /**
+   * Legacy single wording, kept by the server in step with the first variant.
+   * The page reads `variants` and only falls back here for a template saved
+   * before variants existed.
+   */
   copies: Record<string, { title: string; body: string }>;
+  variants?: NotificationVariant[];
 }
 
 /** Shape of both `GET templates/export` and `POST templates/import`. */
@@ -35,7 +57,8 @@ export interface NotificationTemplateFile {
     localHour: number;
     localMinute?: number;
     deeplink: NotificationDeeplink;
-    copies: NotificationCopy[];
+    copies?: NotificationCopy[];
+    variants?: { key?: string; copies: NotificationCopy[] }[];
   }[];
 }
 

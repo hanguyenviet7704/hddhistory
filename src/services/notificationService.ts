@@ -35,7 +35,16 @@ export const notificationService = {
       localHour?: number;
       localMinute?: number;
       deeplink?: string;
+      /** Legacy single-wording form; ignored by the API when `variants` is sent. */
       copies?: { locale: string; title: string; body: string }[];
+      /**
+       * The whole list, every time — a variant left out is deleted server-side,
+       * which is how the page removes one. Omit `key` for a new variant.
+       */
+      variants?: {
+        key?: string;
+        copies: { locale: string; title: string; body: string }[];
+      }[];
     }
   ): Promise<NotificationTemplate> {
     const res = await axiosClient.put(
@@ -80,16 +89,31 @@ export const notificationService = {
     return unwrapData<NotificationSummary>(res.data);
   },
 
-  /** Fires one notification at one user, ignoring schedule/condition/caps. */
+  /**
+   * Fires one notification at one user, ignoring schedule/condition/caps.
+   * `variantKey` pins the wording; omitted, the server picks as it would in
+   * production and reports which one it used.
+   */
   async sendTest(
     type: NotificationType,
-    userId: string
-  ): Promise<{ sent: boolean; reason?: string; conditionMet?: boolean }> {
+    userId: string,
+    variantKey?: string
+  ): Promise<{
+    sent: boolean;
+    reason?: string;
+    conditionMet?: boolean;
+    variantKey?: string;
+  }> {
     const res = await axiosClient.post(
       "/notifications/test-send",
-      { type, userId },
+      { type, userId, ...(variantKey ? { variantKey } : {}) },
       {}
     );
-    return unwrapData<{ sent: boolean; reason?: string }>(res.data);
+    return unwrapData<{
+      sent: boolean;
+      reason?: string;
+      conditionMet?: boolean;
+      variantKey?: string;
+    }>(res.data);
   },
 };

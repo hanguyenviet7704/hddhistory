@@ -3,7 +3,11 @@ import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   BellAlertIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   PaperAirplaneIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 
 import ToggleSwitch from "../../components/paywall-config/ToggleSwitch";
@@ -24,6 +28,22 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   daily_remind: "1. Daily remind",
   progress_finish: "2. Progress finish",
   habit_tracking: "3. Habit tracking",
+  new_course: "4. Khoá học mới",
+};
+
+/** Display order, so the cards do not follow whatever order Mongo returns. */
+const TYPE_ORDER = Object.keys(TYPE_LABELS) as NotificationType[];
+
+/**
+ * What each type can substitute. A wording that uses a variable with no value
+ * for a given user is skipped for that user, so this is not decoration — it is
+ * the difference between a wording that sends and one that never does.
+ */
+const TYPE_VARIABLES: Record<NotificationType, string> = {
+  daily_remind: "{quote}",
+  progress_finish: "{user_name}, {course_name}, {topic_name}",
+  habit_tracking: "{user_name}",
+  new_course: "{user_name}, {course_name}, {topic_name}",
 };
 
 const STATUS_LABELS: Record<NotificationLogStatus, string> = {
@@ -50,6 +70,37 @@ const toCopyList = (
     body: copies?.[locale]?.body ?? "",
   }));
 
+/** One wording being edited. No `key` means the server has yet to name it. */
+interface VariantDraft {
+  key?: string;
+  copies: NotificationCopy[];
+}
+
+interface TemplateDraft {
+  localHour: string;
+  localMinute: string;
+  variants: VariantDraft[];
+}
+
+const toVariantDrafts = (template: NotificationTemplate): VariantDraft[] => {
+  if (template.variants?.length) {
+    return template.variants.map((variant) => ({
+      key: variant.key,
+      copies: toCopyList(variant.copies),
+    }));
+  }
+  // Saved before variants existed: its single wording becomes the first one.
+  return [{ copies: toCopyList(template.copies) }];
+};
+
+const emptyVariant = (): VariantDraft => ({
+  copies: LOCALES.map((locale) => ({ locale, title: "", body: "" })),
+});
+
+/** First non-empty title, for the collapsed row. */
+const variantPreview = (variant: VariantDraft): string =>
+  variant.copies.find((copy) => copy.title.trim() !== "")?.title ?? "";
+
 const NotificationsPage: React.FC = () => {
   const [tab, setTab] = useState<"content" | "monitor">("content");
 
@@ -62,8 +113,8 @@ const NotificationsPage: React.FC = () => {
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Thông báo định kỳ</h1>
           <p className="text-sm text-slate-500">
-            Nội dung + giờ gửi của 3 loại noti, và log đã gửi. Giờ là giờ địa
-            phương của từng user; tối đa 2 noti/ngày/user.
+            Nội dung + giờ gửi của 4 loại noti, và log đã gửi. Giờ là giờ địa
+            phương của từng user; tối đa 4 noti/ngày/user.
           </p>
         </div>
       </header>
@@ -103,26 +154,28 @@ const ContentSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [savingType, setSavingType] = useState<NotificationType | null>(null);
   const [message, setMessage] = useState<string>("");
-  const [drafts, setDrafts] = useState<
-    Record<
-      string,
-      { localHour: string; localMinute: string; copies: NotificationCopy[] }
-    >
-  >({});
+  const [drafts, setDrafts] = useState<Record<string, TemplateDraft>>({});
+  // Keyed `<type>:<index>`. Seven wordings across eight locales is 56 inputs per
+  // type, so everything but the first starts closed.
+  const [openVariants, setOpenVariants] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const list = await notificationService.getTemplates();
-      setTemplates(list);
+      const ordered = [...list].sort(
+        (left, right) =>
+          TYPE_ORDER.indexOf(left.type) - TYPE_ORDER.indexOf(right.type)
+      );
+      setTemplates(ordered);
       setDrafts(
         Object.fromEntries(
-          list.map((template) => [
+          ordered.map((template) => [
             template.type,
             {
               localHour: String(template.localHour ?? 0),
               localMinute: String(template.localMinute ?? 0),
-              copies: toCopyList(template.copies),
+              variants: toVariantDrafts(template),
             },
           ])
         )
@@ -138,8 +191,35 @@ const ContentSection: React.FC = () => {
     void load();
   }, [load]);
 
+  const updateVariants = (
+    type: NotificationType,
+    change: (variants: VariantDraft[]) => VariantDraft[]
+  ) =>
+    setDrafts((prev) => ({
+      ...prev,
+      [type]: { ...prev[type], variants: change(prev[type]?.variants ?? []) },
+    }));
+
   const save = async (template: NotificationTemplate, enabled?: boolean) => {
     const draft = drafts[template.type];
+
+    // Locales left completely empty are dropped rather than saved as blanks — an
+    // empty title would push a notification with no text.
+    const variants = (draft?.variants ?? [])
+      .map((variant) => ({
+        ...(variant.key ? { key: variant.key } : {}),
+        copies: variant.copies.filter(
+          (copy) => copy.title.trim() !== "" || copy.body.trim() !== ""
+        ),
+      }))
+      .filter((variant) => variant.copies.length > 0);
+
+    if (variants.length === 0) {
+      setMessage("Cần ít nhất 1 biến thể có nội dung");
+      return;
+    }
+    const dropped = (draft?.variants?.length ?? 0) - variants.length;
+
     setSavingType(template.type);
     setMessage("");
     try {
@@ -147,13 +227,12 @@ const ContentSection: React.FC = () => {
         enabled: enabled ?? template.enabled,
         localHour: Number(draft?.localHour ?? template.localHour),
         localMinute: Number(draft?.localMinute ?? template.localMinute ?? 0),
-        // Locales left completely empty are dropped rather than saved as blanks —
-        // an empty title would push a notification with no text.
-        copies: (draft?.copies ?? []).filter(
-          (copy) => copy.title.trim() !== "" || copy.body.trim() !== ""
-        ),
+        variants,
       });
-      setMessage(`Đã lưu ${TYPE_LABELS[template.type]}`);
+      setMessage(
+        `Đã lưu ${TYPE_LABELS[template.type]}` +
+          (dropped > 0 ? ` (bỏ ${dropped} biến thể trống)` : "")
+      );
       await load();
     } catch (error: any) {
       setMessage(error?.message ?? "Lưu thất bại");
@@ -213,7 +292,7 @@ const ContentSection: React.FC = () => {
             }}
           />
         </label>
-        <TestSendBox />
+        <TestSendBox templates={templates} />
         {message && (
           <span className="text-xs text-slate-600">{message}</span>
         )}
@@ -221,6 +300,7 @@ const ContentSection: React.FC = () => {
 
       {templates.map((template) => {
         const draft = drafts[template.type];
+        const variants = draft?.variants ?? [];
         return (
           <section
             key={template.type}
@@ -283,50 +363,152 @@ const ContentSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-4 space-y-3">
-              {(draft?.copies ?? []).map((copy, index) => (
-                <div
-                  key={copy.locale}
-                  className="grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-3 md:grid-cols-[64px_1fr_1fr]"
-                >
-                  <span className="self-center text-xs font-semibold uppercase text-slate-500">
-                    {copy.locale}
-                  </span>
-                  <input
-                    placeholder="Title"
-                    value={copy.title}
-                    onChange={(e) =>
-                      setDrafts((prev) => {
-                        const copies = [...prev[template.type].copies];
-                        copies[index] = { ...copies[index], title: e.target.value };
-                        return {
-                          ...prev,
-                          [template.type]: { ...prev[template.type], copies },
-                        };
-                      })
-                    }
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                  />
-                  <input
-                    placeholder="Body — dùng {user_name}, {course_name}, {quote}"
-                    value={copy.body}
-                    onChange={(e) =>
-                      setDrafts((prev) => {
-                        const copies = [...prev[template.type].copies];
-                        copies[index] = { ...copies[index], body: e.target.value };
-                        return {
-                          ...prev,
-                          [template.type]: { ...prev[template.type], copies },
-                        };
-                      })
-                    }
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                  />
-                </div>
-              ))}
+            <p className="mt-3 text-xs text-slate-500">
+              {variants.length > 1
+                ? `${variants.length} biến thể — mỗi ngày chọn ngẫu nhiên 1, không trùng 3 ngày gần nhất của cùng user. `
+                : ""}
+              Biến dùng được: <code>{TYPE_VARIABLES[template.type]}</code>. Câu
+              nào chứa biến không có giá trị cho user đó sẽ bị bỏ qua, không gửi
+              kèm chữ trong ngoặc.
+            </p>
+
+            <div className="mt-3 space-y-2">
+              {variants.map((variant, variantIndex) => {
+                const openKey = `${template.type}:${variantIndex}`;
+                const isOpen = openVariants[openKey] ?? variantIndex === 0;
+                const preview = variantPreview(variant);
+                return (
+                  <div
+                    key={variant.key ?? `new-${variantIndex}`}
+                    className="rounded-xl border border-slate-200"
+                  >
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenVariants((prev) => ({
+                            ...prev,
+                            [openKey]: !isOpen,
+                          }))
+                        }
+                        aria-expanded={isOpen}
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                      >
+                        {isOpen ? (
+                          <ChevronDownIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                        ) : (
+                          <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                        )}
+                        <span className="shrink-0 text-sm font-medium text-slate-800">
+                          Biến thể {variantIndex + 1}
+                        </span>
+                        <code className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                          {variant.key ?? "mới"}
+                        </code>
+                        <span className="truncate text-xs text-slate-500">
+                          {preview || "chưa có nội dung"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            !window.confirm(
+                              `Xoá biến thể ${variantIndex + 1}? Nội dung sẽ mất khi bấm Lưu thay đổi.`
+                            )
+                          )
+                            return;
+                          updateVariants(template.type, (list) =>
+                            list.filter((_, index) => index !== variantIndex)
+                          );
+                        }}
+                        aria-label={`Xoá biến thể ${variantIndex + 1}`}
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {isOpen && (
+                      <div className="space-y-2 border-t border-slate-100 p-3">
+                        {variant.copies.map((copy, copyIndex) => (
+                          <div
+                            key={copy.locale}
+                            className="grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-3 md:grid-cols-[64px_1fr_1fr]"
+                          >
+                            <span className="self-center text-xs font-semibold uppercase text-slate-500">
+                              {copy.locale}
+                            </span>
+                            <input
+                              placeholder="Title"
+                              value={copy.title}
+                              onChange={(e) =>
+                                updateVariants(template.type, (list) =>
+                                  list.map((item, index) =>
+                                    index !== variantIndex
+                                      ? item
+                                      : {
+                                          ...item,
+                                          copies: item.copies.map((entry, i) =>
+                                            i !== copyIndex
+                                              ? entry
+                                              : { ...entry, title: e.target.value }
+                                          ),
+                                        }
+                                  )
+                                )
+                              }
+                              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                              aria-label={`Title ${copy.locale} biến thể ${variantIndex + 1}`}
+                            />
+                            <input
+                              placeholder={`Body — ${TYPE_VARIABLES[template.type]}`}
+                              value={copy.body}
+                              onChange={(e) =>
+                                updateVariants(template.type, (list) =>
+                                  list.map((item, index) =>
+                                    index !== variantIndex
+                                      ? item
+                                      : {
+                                          ...item,
+                                          copies: item.copies.map((entry, i) =>
+                                            i !== copyIndex
+                                              ? entry
+                                              : { ...entry, body: e.target.value }
+                                          ),
+                                        }
+                                  )
+                                )
+                              }
+                              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                              aria-label={`Body ${copy.locale} biến thể ${variantIndex + 1}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  updateVariants(template.type, (list) => [
+                    ...list,
+                    emptyVariant(),
+                  ]);
+                  setOpenVariants((prev) => ({
+                    ...prev,
+                    [`${template.type}:${variants.length}`]: true,
+                  }));
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <PlusIcon className="h-4 w-4" /> Thêm biến thể
+              </button>
               <button
                 onClick={() => void save(template)}
                 disabled={savingType === template.type}
@@ -346,19 +528,30 @@ const ContentSection: React.FC = () => {
   );
 };
 
-const TestSendBox: React.FC = () => {
+const TestSendBox: React.FC<{ templates: NotificationTemplate[] }> = ({
+  templates,
+}) => {
   const [type, setType] = useState<NotificationType>("progress_finish");
+  const [variantKey, setVariantKey] = useState("");
   const [userId, setUserId] = useState("");
   const [result, setResult] = useState("");
+
+  const variants =
+    templates.find((template) => template.type === type)?.variants ?? [];
 
   const send = async () => {
     if (!userId.trim()) return;
     setResult("Đang gửi…");
     try {
-      const response = await notificationService.sendTest(type, userId.trim());
+      const response = await notificationService.sendTest(
+        type,
+        userId.trim(),
+        variantKey || undefined
+      );
+      const which = response.variantKey ? ` [${response.variantKey}]` : "";
       setResult(
         response.sent
-          ? `Đã gửi${response.conditionMet === false ? " (điều kiện thực tế KHÔNG thỏa — chỉ để xem nội dung)" : ""}`
+          ? `Đã gửi${which}${response.conditionMet === false ? " (điều kiện thực tế KHÔNG thỏa — chỉ để xem nội dung)" : ""}`
           : `Không gửi: ${response.reason ?? "không rõ"}`
       );
     } catch (error: any) {
@@ -370,12 +563,29 @@ const TestSendBox: React.FC = () => {
     <div className="flex flex-wrap items-center gap-2">
       <select
         value={type}
-        onChange={(e) => setType(e.target.value as NotificationType)}
+        onChange={(e) => {
+          setType(e.target.value as NotificationType);
+          setVariantKey("");
+        }}
         className="rounded-lg border border-slate-200 px-2 py-2 text-sm"
+        aria-label="Loại noti gửi thử"
       >
-        {Object.entries(TYPE_LABELS).map(([value, label]) => (
+        {TYPE_ORDER.map((value) => (
           <option key={value} value={value}>
-            {label}
+            {TYPE_LABELS[value]}
+          </option>
+        ))}
+      </select>
+      <select
+        value={variantKey}
+        onChange={(e) => setVariantKey(e.target.value)}
+        className="rounded-lg border border-slate-200 px-2 py-2 text-sm"
+        aria-label="Biến thể gửi thử"
+      >
+        <option value="">Biến thể: random</option>
+        {variants.map((variant, index) => (
+          <option key={variant.key} value={variant.key}>
+            {`Biến thể ${index + 1} (${variant.key})`}
           </option>
         ))}
       </select>
@@ -444,7 +654,7 @@ const MonitorSection: React.FC = () => {
   return (
     <div className="space-y-4">
       {summary && (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {summaryRows.map(({ type, counts }) => (
             <div
               key={type}
@@ -485,9 +695,9 @@ const MonitorSection: React.FC = () => {
             className="rounded-lg border border-slate-200 px-2 py-2 text-sm"
           >
             <option value="">Tất cả</option>
-            {Object.entries(TYPE_LABELS).map(([value, label]) => (
+            {TYPE_ORDER.map((value) => (
               <option key={value} value={value}>
-                {label}
+                {TYPE_LABELS[value]}
               </option>
             ))}
           </select>
@@ -605,6 +815,13 @@ const MonitorSection: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 align-top">
                     {TYPE_LABELS[log.type] ?? log.type}
+                    {typeof log.meta?.variantKey === "string" && (
+                      <div className="mt-1">
+                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                          {log.meta.variantKey}
+                        </code>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 align-top">
                     <span
