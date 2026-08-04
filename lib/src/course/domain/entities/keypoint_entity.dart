@@ -37,6 +37,10 @@ extension KeypointEntityExtension on KeypointEntity {
 
   bool get hasCardAudio => resolvedAudioSegments.any((clip) => clip.isNotEmpty);
 
+  /// Merged whole-keypoint narration for the active locale — null until the
+  /// backend has merged this keypoint; callers then use the per-card path.
+  MergedKeypointAudioEntity? get resolvedMergedAudio => audio?.resolvedMerged;
+
   ProcessEnum get progressFromAverageScore {
     if (averageScore >= 0) return ProcessEnum.done;
     return progess;
