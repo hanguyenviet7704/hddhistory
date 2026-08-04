@@ -455,6 +455,36 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     return !(lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive);
   }
 
+  /// Cue bound for the paywall CARD cap, computed over the keypoint's FULL
+  /// card walk (straight from the lesson items) — never from the
+  /// incrementally built deck. At entry only card 0 exists, and bounding by
+  /// built cards made the wall bite one card early: the voice stalled at the
+  /// end of the FIRST card of a plain-theory keypoint even though the free
+  /// allowance was two ("card đầu chỉ có theory phải chạy bình thường",
+  /// 2026-08-04). The walk mirrors [KeypointCardsBuilder]: theory + video
+  /// documents are cards, theory documents carry the cues, in item order —
+  /// the same order the merged cue list is built in.
+  ///
+  /// Null = nothing to bound yet (items still loading) — treat as unbounded;
+  /// the first cue outlasts the entry burst by an order of magnitude.
+  int? _cueBoundForCardCap(int cap) {
+    var cardIndex = -1;
+    var cueIndex = -1;
+    int? lastAllowedAudibleCue;
+    for (final item in _lessonCubit.state.pageData.items) {
+      final isTheory = item.type == LearningItemType.theory;
+      final isVideo = item.type == LearningItemType.video;
+      if (!isTheory && !isVideo) continue;
+      for (var d = 0; d < item.documents.length; d++) {
+        cardIndex++;
+        if (isTheory) cueIndex++;
+        if (cardIndex > cap) return lastAllowedAudibleCue;
+        if (isTheory) lastAllowedAudibleCue = cueIndex;
+      }
+    }
+    return lastAllowedAudibleCue;
+  }
+
   /// Last audible cue among the built cards up to [cardBound], or null when
   /// none of them is dubbed (entry burst, empty deck).
   int? _lastAudibleCueUpTo(int cardBound) {
@@ -489,7 +519,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (_audioCubit.timeline == null) return;
 
     final cap = _paywallCardCap;
-    final capCue = cap == null ? null : _lastAudibleCueUpTo(cap);
+    final capCue = cap == null ? null : _cueBoundForCardCap(cap);
 
     int? gateCue;
     if (!_isBackgrounded && !_theoryCubit.state.canContinue) {
