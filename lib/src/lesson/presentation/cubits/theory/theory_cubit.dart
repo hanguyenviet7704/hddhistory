@@ -68,6 +68,22 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
     setTheoryData(state.currentDocument);
   }
 
+  /// Resume-entry only: land on [index] directly, without [nextDocument]'s
+  /// `canContinue` gate — the listener already heard these documents before
+  /// the app was killed, this is not a forward walk. Index 0 is a no-op
+  /// because [setCurrentLearningItem] just put the item there.
+  void jumpToDocument(int index) {
+    final documents = state.currentLearningItem.documents;
+    if (index <= 0 || index >= documents.length) return;
+    emit(
+      state.copyWith(
+        currentDocumentIndex: index,
+        selectedExplanationOptionKeys: const {},
+      ),
+    );
+    setTheoryData(state.currentDocument);
+  }
+
   void loadLearningItem(String id) async {
     await runUseCase<LearningItemEntity>(
       usecase: () => _getLearningItemUseCase(id),

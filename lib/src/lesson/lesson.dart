@@ -94,6 +94,8 @@ part 'presentation/cubits/lesson_audio/lesson_audio_cubit.dart';
 part 'presentation/cubits/lesson_audio/lesson_audio_handler.dart';
 part 'presentation/cubits/lesson_audio/lesson_audio_state.dart';
 part 'presentation/cubits/lesson_audio/merged_narration_timeline.dart';
+part 'presentation/cubits/listen_resume/listen_resume_cubit.dart';
+part 'presentation/cubits/listen_resume/listen_resume_state.dart';
 part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
 part 'presentation/cubits/lesson/live_activity_return_nudge.dart';

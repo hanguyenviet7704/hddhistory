@@ -118,6 +118,13 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       reviews: '',
     );
 
+    // A finished keypoint has nothing to resume — the "đang nghe dở" bookmark
+    // must not drag the reader back into it on the next entry.
+    final completedKeypointId = keypointData.keypointId;
+    if (completedKeypointId != null && completedKeypointId.isNotEmpty) {
+      ListenResumeCubit.instanceOrNull?.clearFor(completedKeypointId);
+    }
+
     UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
     _progressCubit.updateUserProgressKeypoint(LessonType.lesson, keypointParams);
   }
@@ -126,6 +133,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     if (state.currentLearningItemIndex <= 0) return;
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex - 1));
     setCurrentLearningItem(state.currentLearningItem);
+  }
+
+  /// Resume-entry only: place the live edge on [index] without walking
+  /// [nextLearningItem]'s gates — the listener genuinely heard their way here
+  /// before the app was killed. Content cubits are NOT pointed at the item
+  /// here; the resume flow does that itself (it also needs a document index).
+  void jumpToItem(int index) {
+    if (index < 0 || index >= state.pageData.items.length) return;
+    emit(state.copyWith(currentLearningItemIndex: index));
   }
 
   void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));

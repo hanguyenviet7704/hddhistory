@@ -64,6 +64,23 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// the bound rose).
   void setAllowedThroughCue(int cueIndex) => _allowedThroughCue = cueIndex;
 
+  /// Last merged position bookmarked, for the ~5s write throttle.
+  int _lastResumePersistMs = -1;
+
+  /// Bookmarks the merged position every ~5s of playback so an app kill loses
+  /// at most a few seconds; [pause]/[close] write the exact position on top.
+  void _maybePersistResume(int positionMs) {
+    if (!isMergedMode || !state.isPlaying || state.keypointId.isEmpty) return;
+    if (_lastResumePersistMs >= 0 && (positionMs - _lastResumePersistMs).abs() < 5000) return;
+    _lastResumePersistMs = positionMs;
+    ListenResumeCubit.instanceOrNull?.record(keypointId: state.keypointId, positionMs: positionMs);
+  }
+
+  void _persistResumeNow() {
+    if (!isMergedMode || !state.hasStartedSession || state.keypointId.isEmpty) return;
+    ListenResumeCubit.instanceOrNull?.record(keypointId: state.keypointId, positionMs: _handler.position.inMilliseconds);
+  }
+
   /// True when this keypoint has per-card clips, i.e. narration can be scoped to
   /// the page on screen via [loadCard].
   bool get hasCardClips => _cardClips.any((clip) => clip.isNotEmpty);
@@ -201,6 +218,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final mergedAudio = keypoint.resolvedMergedAudio;
     _timeline = mergedAudio == null ? null : MergedNarrationTimeline(mergedAudio);
     _allowedThroughCue = unboundedCue;
+    _lastResumePersistMs = -1;
     final nextSourceUrl =
         mergedAudio?.url ??
         _cardClips.firstWhere(
@@ -426,6 +444,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     _playWhenReady = false;
     try {
       await _handler.pause();
+      _persistResumeNow();
       if (!isClosed) {
         emit(state.copyWith(isPlaying: false));
       }
@@ -675,6 +694,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final cueIndex = timeline.cueIndexAtMs(positionMs);
     if (cueIndex < 0) return;
 
+    _maybePersistResume(positionMs);
+
     if (cueIndex > _allowedThroughCue) {
       // Already holding at the bound — don't re-emit on every late tick.
       if (!state.isPlaying && state.hasCompletedPlayback) return;
@@ -789,6 +810,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // Only touches the handler if this cubit ever actually started a
     // session (mirrors the old no-op `_disposePlayer()` on a null player).
     if (state.hasStartedSession) {
+      _persistResumeNow();
       await _handler.stop();
     }
     return super.close();
