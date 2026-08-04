@@ -833,8 +833,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // disposed here (that would break the next keypoint/lesson's playback).
     // Only touches the handler if this cubit ever actually started a
     // session (mirrors the old no-op `_disposePlayer()` on a null player).
+    //
+    // Closing = the reader LEFT the lesson on purpose (X, completion — an app
+    // kill never runs this), and that ends the listening session (product
+    // call, 2026-08-04): drop the "đang nghe dở" bookmark so re-opening the
+    // keypoint reads from the top with a clean bar. Resume stays for the
+    // paths that never reach here — kill and background.
     if (state.hasStartedSession) {
-      _persistResumeNow();
+      if (isMergedMode && state.keypointId.isNotEmpty) {
+        ListenResumeCubit.instanceOrNull?.clearFor(state.keypointId);
+      }
       await _handler.stop();
     }
     return super.close();

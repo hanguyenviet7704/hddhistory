@@ -267,6 +267,20 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         emit(state.copyWith(status: LessonStatus.failure, errorMessage: error));
       },
       onSuccess: (pageData) {
+        // Entering a keypoint the reader has visited before: the @lazySingleton
+        // TheoryCubit/ExerciseCubit still hold the PREVIOUS session's item +
+        // document/question index, and `setCurrentLearningItem` below only
+        // resets them once the item DETAIL fetch lands — until then (and
+        // forever, if that fetch fails) the deck's entry rebuilds read the
+        // stale index back via `_liveIndexForCurrentItem` and the pip bar
+        // shows a fresh keypoint as already half-read ("bị lưu tiến độ").
+        // This is the leak the deck-side note (keypoint_card_cubit,
+        // 2026-08-03) says must be fixed at the source — reset synchronously,
+        // BEFORE any listener rebuilds off this emit.
+        if (isInit) {
+          _theoryCubit.reset();
+          _exerciseCubit.reset();
+        }
         emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
         if (pageData.items.isEmpty) return;
         // A keypoint may OPEN on an exercise item (old content orders exist) —

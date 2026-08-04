@@ -39,6 +39,10 @@ class _LessonPageState extends State<LessonPage> {
   // out) this session — the lesson emits `success` more than once and the
   // jump must not re-fire over a deck the reader is already driving.
   String _resumeAppliedForKeypoint = '';
+  // One-shot guard re-asserting the resume jump if the entry flow's ASYNC
+  // item-detail fetch lands after it and resets TheoryCubit to document 0 —
+  // see [_applyListenResume].
+  StreamSubscription<TheoryState>? _resumeGuard;
   String _lastTrackedScrollKey = '';
   // Source for the next keypoint_read_scr_view: 'keypoint_intro' on entry,
   // flipped to 'mode_switch' the moment the user switches into read mode.
@@ -89,6 +93,7 @@ class _LessonPageState extends State<LessonPage> {
 
   @override
   void dispose() {
+    unawaited(_resumeGuard?.cancel());
     unawaited(_readingSpeedSubscription?.cancel());
     // Leaving the lesson: the ambience comes back if the reader had it on, and
     // stays off if they didn't — the preference was never touched.
@@ -237,13 +242,43 @@ class _LessonPageState extends State<LessonPage> {
     final itemIndex = items.indexWhere((item) => item.id == cue.learningItemId);
     if (itemIndex < 0) return;
 
-    _lessonCubit.jumpToItem(itemIndex);
-    _lessonCubit.setCurrentLearningItem(items[itemIndex]);
-    AppDI.injector.get<TheoryCubit>().jumpToDocument(cue.documentIndex);
-    context.read<KeypointCardCubit>().jumpToCard(
-      learningItemId: cue.learningItemId,
-      documentIndex: cue.documentIndex,
-    );
+    final keypointCardCubit = context.read<KeypointCardCubit>();
+    void applyJump() {
+      _lessonCubit.jumpToItem(itemIndex);
+      _lessonCubit.setCurrentLearningItem(items[itemIndex]);
+      AppDI.injector.get<TheoryCubit>().jumpToDocument(cue.documentIndex);
+      keypointCardCubit.jumpToCard(
+        learningItemId: cue.learningItemId,
+        documentIndex: cue.documentIndex,
+      );
+    }
+
+    applyJump();
+
+    // The entry flow (`loadAllLearningItems.onSuccess`) fetches the first
+    // item's DETAIL asynchronously and, on landing, resets TheoryCubit to
+    // document 0 of the first item — arriving after this jump it clobbers the
+    // restored position (live edge snaps back, the deck yanks the view). Watch
+    // for that one reset and re-assert once; the window is short-lived so an
+    // ordinary user navigation can never re-trigger a stale jump.
+    unawaited(_resumeGuard?.cancel());
+    var reasserted = false;
+    _resumeGuard = AppDI.injector.get<TheoryCubit>().stream.listen((theoryState) {
+      if (reasserted) return;
+      final onResumeSpot = theoryState.currentLearningItem.id == cue.learningItemId && theoryState.currentDocumentIndex == cue.documentIndex;
+      if (onResumeSpot) return;
+      // The clobber lands as a RESET (document 0) — anything else in this
+      // window is the reader or the voice moving on, never ours to undo.
+      if (theoryState.currentDocumentIndex != 0) return;
+      reasserted = true;
+      unawaited(_resumeGuard?.cancel());
+      _resumeGuard = null;
+      applyJump();
+    });
+    Future.delayed(const Duration(seconds: 4), () {
+      unawaited(_resumeGuard?.cancel());
+      _resumeGuard = null;
+    });
   }
 
   void _openReportIssueSheet(BuildContext context, KeypointEntity keypoint) {
