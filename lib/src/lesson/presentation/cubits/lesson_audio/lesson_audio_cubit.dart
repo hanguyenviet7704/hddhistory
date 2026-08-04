@@ -715,19 +715,29 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     final cueIndex = timeline.cueIndexAtMs(positionMs);
     if (cueIndex < 0) return;
 
+    // Held at a gate/paywall/file end: the parked position sits ON a boundary,
+    // and boundaries read as the NEXT cue — acting on these idle ticks cleared
+    // the hold state and let the deck slide into the very card the gate meant
+    // to keep shut (the "tự động lướt qua câu hỏi" bug). While held, ticks
+    // mean nothing; [playCue]/[play] emit their own state when narration is
+    // deliberately moved or resumed.
+    if (!state.isPlaying && state.hasCompletedPlayback) return;
+
     _maybePersistResume(positionMs);
 
     final crossedBound = _previousTickCue >= 0 && _previousTickCue <= _allowedThroughCue && cueIndex > _allowedThroughCue;
     _previousTickCue = cueIndex;
 
     if (crossedBound) {
-      // Already holding at the bound — don't re-emit on every late tick.
-      if (!state.isPlaying && state.hasCompletedPlayback) return;
       final boundCue = _allowedThroughCue.clamp(0, timeline.merged.cues.length - 1);
-      final holdMs = timeline.endMsOf(boundCue);
+      // Park a hair BEFORE the boundary, never on it: the exact boundary
+      // belongs to the next cue (see [MergedNarrationTimeline.cueIndexAtMs]),
+      // so parking there made every later position read report the gated-away
+      // card as active. 50ms of replay on resume is inaudible.
+      final holdMs = (timeline.endMsOf(boundCue) - 50).clamp(0, 1 << 62);
       unawaited(_handler.pause());
       unawaited(_handler.seek(Duration(milliseconds: holdMs)));
-      final heldCueIndex = timeline.cueIndexAtMs(holdMs > 0 ? holdMs - 1 : 0);
+      final heldCueIndex = timeline.cueIndexAtMs(holdMs);
       final heldCue = timeline.cueAt(heldCueIndex);
       final heldSeconds = heldCue == null ? 0 : (heldCue.durMs / 1000).round().clamp(0, 359999);
       emit(
