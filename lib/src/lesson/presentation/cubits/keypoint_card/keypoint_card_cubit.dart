@@ -45,12 +45,8 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // Merged mode: `canContinue` (the explanation-choice gate) changes on
     // TheoryCubit emits that never reach LessonCubit, and the allowed-cue
     // bound must follow it at once — the voice would otherwise sail through
-    // a boundary the deck meant to hold. Answering the question is also what
-    // resumes a voice held at that gate.
-    _theorySubscription = _theoryCubit.stream.listen((theoryState) {
-      _pushAllowedThroughCue();
-      _resumeNarrationIfGateOpened(theoryState);
-    });
+    // a boundary the deck meant to hold.
+    _theorySubscription = _theoryCubit.stream.listen((_) => _pushAllowedThroughCue());
     // Whether the app is on screen decides who walks narration forward — this
     // cubit, or the player reading on by itself (see [_listenOnWhileAway]).
     WidgetsBinding.instance.addObserver(this);
@@ -501,20 +497,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     _audioCubit.setAllowedThroughCue(bound);
   }
 
-  /// The reader just answered the question the voice was held at: play on.
-  ///
-  /// "Held at the gate" is the completed-looking pause the bound clamp leaves
-  /// — a MANUAL pause never sets `hasCompletedPlayback`, so it is never
-  /// auto-resumed here.
-  void _resumeNarrationIfGateOpened(TheoryState theoryState) {
-    if (!_audioCubit.isMergedMode || _isBackgrounded) return;
-    if (!theoryState.canContinue) return;
-    final audioState = _audioCubit.state;
-    if (audioState.isPlaying || !audioState.hasCompletedPlayback) return;
-    final lastAudible = _audioCubit.timeline?.lastAudibleCueIndex ?? -1;
-    if (audioState.activeCueIndex < 0 || audioState.activeCueIndex >= lastAudible) return;
-    unawaited(_audioCubit.play());
-  }
+  // Answering a question does NOT auto-play (user call, 2026-08-04: the
+  // feedback under the chosen option deserves a quiet read) — the FIRST swipe
+  // after answering is what turns the page and brings narration with it:
+  // the hold leaves `hasCompletedPlayback` standing, and
+  // [_loadCardNarration]'s autoplay rule reads that as "listening through",
+  // so the new card starts talking on its own. Backgrounding while held still
+  // reads on (see [didChangeAppLifecycleState]).
 
   /// The player crossed into a new cue: bring the deck along. Mirrors the
   /// per-clip completion branches — same gates, same order — but as a FOLLOW
