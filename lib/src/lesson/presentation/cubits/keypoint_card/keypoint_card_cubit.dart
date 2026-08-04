@@ -42,9 +42,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     _rebuildCards(_lessonCubit.state);
     _lessonSubscription = _lessonCubit.stream.listen(_onLessonStateChanged);
     _audioSubscription = _audioCubit.stream.listen(_onAudioStateChanged);
+    // Merged mode: `canContinue` (the explanation-choice gate) changes on
+    // TheoryCubit emits that never reach LessonCubit, and the allowed-cue
+    // bound must follow it at once — the voice would otherwise sail through
+    // a boundary the deck meant to hold.
+    _theorySubscription = _theoryCubit.stream.listen((_) => _pushAllowedThroughCue());
     // Whether the app is on screen decides who walks narration forward — this
     // cubit, or the player reading on by itself (see [_listenOnWhileAway]).
     WidgetsBinding.instance.addObserver(this);
+    _pushAllowedThroughCue();
   }
 
   final LessonCubit _lessonCubit;
@@ -53,6 +59,16 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
   StreamSubscription<LessonState>? _lessonSubscription;
   StreamSubscription<LessonAudioState>? _audioSubscription;
+  StreamSubscription<TheoryState>? _theorySubscription;
+
+  /// Merged-mode reveal target (card IDENTITY), the cue-map counterpart of
+  /// [_revealToClipIndex]. Same lifetime rules: fed back into every rebuild,
+  /// cleared once the live edge catches up.
+  ({String learningItemId, int documentIndex})? _revealToCardTarget;
+
+  /// Last cue index acted on, so one boundary crossing moves the deck exactly
+  /// once (the audio cubit re-emits state for position ticks too).
+  int _lastSeenCueIndex = -1;
 
   /// Flat card index → its narration-clip index.
   ///
@@ -83,8 +99,21 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// the middle of that burst. A flag cleared on the first build would let the
   /// very next one jump to the restored edge, which is exactly what it did.
   ///
-  /// Cleared by [viewCard] — the single path every deliberate move goes through.
+  /// Cleared by [viewCard] and by [releaseEntryPin].
   bool _entryPinActive = true;
+
+  /// Releases the entry pin for a deliberate forward move that does NOT go
+  /// through [viewCard].
+  ///
+  /// The live-edge swipe is one: it reveals the next card (`nextDocument()` /
+  /// `nextQuestion()`) and lets `wasFollowingEdge` carry the view along, so it
+  /// never calls [viewCard] — and the pin then held the view on card 1 while the
+  /// new card appeared behind it. On the first card of a fresh keypoint, where
+  /// the live edge IS card 1, that swallowed the reader's swipe outright: they
+  /// swiped, nothing moved, and the deck only caught up when narration finished
+  /// the card and turned the page for them.
+  // ignore: use_setters_to_change_properties
+  void releaseEntryPin() => _entryPinActive = false;
 
   bool _pausedForQuiz = false;
 
@@ -161,6 +190,27 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// Called by the `PageView`'s `onPageChanged` (drag) or a pip tap. Only
   /// ever asked for an index already within `furthestCardIndex` — the
   /// `PageView` is built with `itemCount: furthestCardIndex + 1`, so forward
+  /// Highest card index the in-lesson paywall lets the reader reach, or `null`
+  /// when nothing gates this keypoint.
+  ///
+  /// Owned by `KeypointCardShell`, which holds the paywall decision (config,
+  /// premium, which keypoint is armed) and pushes the resulting bound down here.
+  /// This cubit only enforces it — it deliberately knows nothing about paywalls.
+  int? _paywallCardCap;
+
+  // ignore: use_setters_to_change_properties
+  void setPaywallCardCap(int? cap) => _paywallCardCap = cap;
+
+  /// Whether the view already sits on the last card the paywall allows, so
+  /// revealing another one would hand over paid content.
+  bool get isAtPaywallWall {
+    final cap = _paywallCardCap;
+    return cap != null && state.viewedCardIndex >= cap;
+  }
+
+  /// Called by the `PageView`'s `onPageChanged` (drag) or a pip tap. Only
+  /// ever asked for an index already within `furthestCardIndex` — the
+  /// `PageView` is built with `itemCount: furthestCardIndex + 1`, so forward
   /// swipe/tap past the live edge is structurally impossible, never a gate
   /// this cubit has to re-check.
   /// [startAt] is the resume path only: narration is already playing this card
@@ -169,10 +219,19 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// return — coming back onto the card the reader left still has to leave queue
   /// mode, or the voice would walk off the page again at the end of the clip.
   void viewCard(int index, {Duration? startAt}) {
+    // The paywall wall is enforced HERE rather than at each call site because
+    // the deck is driven from four of them — the reader's swipe, a progress-pip
+    // tap, the voice turning the page, and the return-from-background jump —
+    // and only the swipe goes through the widget that knows about the paywall.
+    // Walling that one alone left the other three walking straight past it.
+    final cap = _paywallCardCap;
+    if (cap != null && index > cap) index = cap;
+
     if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
-    // TEMP-DEBUG(entry-pin): remove once the entry position is confirmed fixed.
-    LogDev.warning('[DeckDbg] viewCard($index) from=${state.viewedCardIndex} pinWas=$_entryPinActive startAt=$startAt');
+    // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
+    // both confirmed settled.
+    LogDev.warning('[DeckDbg] viewCard($index) from=${state.viewedCardIndex} pinWas=$_entryPinActive cap=$cap startAt=$startAt');
     // A deliberate move off the entry card — swipe, pip tap, the voice turning
     // the page, or the return-from-background jump. From here on the deck is
     // being driven, so it may follow the live edge again (see [_entryPinActive]).
@@ -192,6 +251,27 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// narration is left exactly as the reader set it (the audio button is the only
   /// control) until the keypoint is re-dubbed.
   void _loadCardNarration(int index, {Duration? startAt}) {
+    // Merged mode: one file, so pointing narration at a card is a SEEK to its
+    // cue — never a source reload. Identity lookup, no clip arithmetic.
+    if (_audioCubit.isMergedMode) {
+      if (index < 0 || index >= state.cards.length) return;
+      final descriptor = state.cards[index];
+      if (!descriptor.isTheory) return;
+      final cueIndex = _audioCubit.cueForCard(
+        learningItemId: descriptor.learningItemId,
+        documentIndex: descriptor.documentIndex,
+      );
+      if (cueIndex == null) return;
+      _loadedClipCardIndex = index;
+      // The voice is already reading this very cue (deck following player):
+      // do NOT seek — that restarts the sentence mid-word.
+      if (cueIndex == _audioCubit.state.activeCueIndex && startAt == null) return;
+      final audioState = _audioCubit.state;
+      final autoplay = startAt != null || audioState.isPlaying || audioState.hasCompletedPlayback;
+      unawaited(_audioCubit.playCue(cueIndex, autoplay: autoplay, offset: startAt));
+      return;
+    }
+
     if (!_audioCubit.hasCardClips) return;
     if (index < 0 || index >= state.cards.length) return;
 
@@ -244,6 +324,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // [_ensureNarrationOnViewedCard]) — this is the other half of that.
     _ensureNarrationOnViewedCard();
 
+    // Merged mode: the file plays THROUGH open boundaries without stopping,
+    // so "the voice moved on" arrives as a cue change, not a completion.
+    if (_audioCubit.isMergedMode && audioState.activeCueIndex >= 0 && audioState.activeCueIndex != _lastSeenCueIndex) {
+      _lastSeenCueIndex = audioState.activeCueIndex;
+      _onMergedCueChanged(audioState.activeCueIndex);
+    }
+
     if (!audioState.hasCompletedPlayback) {
       _completionHandled = false;
       return;
@@ -284,6 +371,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       return;
     }
 
+    // The in-lesson paywall stands here. The voice must not read its way past a
+    // wall the reader cannot swipe past: this is the path that REVEALS the next
+    // card, so letting it through hands over the paid content and lifts
+    // `furthestCardIndex` above the wall, after which every other bound in this
+    // deck (the drag's `clamp(0, furthestCardIndex)`, the progress pips) happily
+    // follows. Not `_listenOnWhileAway()` either — that reads the rest of the
+    // keypoint aloud, which is the same giveaway through the speaker.
+    if (isAtPaywallWall) return;
+
     if (!_theoryCubit.state.canContinue) {
       _listenOnWhileAway();
       return;
@@ -309,6 +405,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// promise an ordinary audio player. So the voice reads on, and the deck stays
   /// exactly where they left it.
   void _listenOnWhileAway() {
+    // Merged mode: background continuation is automatic — the file simply
+    // keeps playing and [_pushAllowedThroughCue] lifts the bound on lifecycle
+    // change. The legacy queue would fight the single source.
+    if (_audioCubit.isMergedMode) return;
     final lifecycle = WidgetsBinding.instance.lifecycleState;
     // Anything short of genuinely backgrounded counts as on screen. `inactive`
     // in particular is the half-second of pulling down notification centre or
@@ -319,6 +419,136 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive) return;
     if (!_audioCubit.hasCardClips) return;
     unawaited(_audioCubit.playRestOfKeypoint());
+  }
+
+  /// Whether the app is genuinely off screen (merged-mode gate + follow rules
+  /// relax there). `inactive`/null count as ON screen — same reasoning as
+  /// [_listenOnWhileAway].
+  bool get _isBackgrounded {
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    return !(lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive);
+  }
+
+  /// Highest cue the voice may play INTO without stopping, from the deck's
+  /// gates. Backgrounded, everything up to the paywall is allowed (the OS
+  /// controls promise an ordinary player — same rule [_listenOnWhileAway]
+  /// encodes for the legacy path; the paywall wall wins over everything,
+  /// background included). Foregrounded: through the deck's reachable region
+  /// — [KeypointCardState.revealBound], NOT `furthestCardIndex`, because
+  /// after a background read-ahead the voice legitimately sits on revealed
+  /// cards and a tighter bound would yank it backwards — plus one audible cue
+  /// more when the live card owes nothing (`canContinue`): crossing it is
+  /// what advances the live edge, and this recomputes for the next boundary.
+  /// That extension lives in CUE space ([MergedNarrationTimeline
+  /// .nextAudibleCueAfter]): at the live edge the next card does not exist
+  /// yet, so a card-space walk could never reach it.
+  void _pushAllowedThroughCue() {
+    if (!_audioCubit.isMergedMode) return;
+    final timeline = _audioCubit.timeline;
+    if (timeline == null) return;
+
+    final isBackground = _isBackgrounded;
+    final cap = _paywallCardCap;
+
+    if (isBackground && cap == null) {
+      _audioCubit.setAllowedThroughCue(LessonAudioCubit.unboundedCue);
+      return;
+    }
+
+    var allowedCardBound = isBackground ? cap! : state.revealBound;
+    if (cap != null && allowedCardBound > cap) allowedCardBound = cap;
+
+    // Last audible cue among the reachable (built) cards.
+    var allowedCue = -1;
+    for (var index = 0; index <= allowedCardBound && index < state.cards.length; index++) {
+      final descriptor = state.cards[index];
+      if (!descriptor.isTheory) continue;
+      final cue = _audioCubit.cueForCard(
+        learningItemId: descriptor.learningItemId,
+        documentIndex: descriptor.documentIndex,
+      );
+      if (cue != null) allowedCue = cue;
+    }
+    // Cards not built yet (entry burst) — leave the voice unrestrained rather
+    // than pausing narration on a transient empty deck.
+    if (allowedCue < 0) {
+      _audioCubit.setAllowedThroughCue(LessonAudioCubit.unboundedCue);
+      return;
+    }
+
+    // One boundary further ONLY at the true live edge with an open gate —
+    // never while the deck sits in revealed (read-only) territory.
+    final atTrueLiveEdge = state.revealBound == state.furthestCardIndex;
+    final underCap = cap == null || state.furthestCardIndex < cap;
+    if (!isBackground && atTrueLiveEdge && underCap && _theoryCubit.state.canContinue) {
+      allowedCue = timeline.nextAudibleCueAfter(allowedCue);
+    }
+    _audioCubit.setAllowedThroughCue(allowedCue);
+  }
+
+  /// The player crossed into a new cue: bring the deck along. Mirrors the
+  /// per-clip completion branches — same gates, same order — but as a FOLLOW
+  /// (the audio kept playing through the boundary; nothing reloads).
+  void _onMergedCueChanged(int cueIndex) {
+    final timeline = _audioCubit.timeline;
+    final cue = timeline?.cueAt(cueIndex);
+    if (cue == null) return;
+
+    int cardIndexForCue() {
+      for (var i = 0; i < state.cards.length; i++) {
+        final descriptor = state.cards[i];
+        if (descriptor.isTheory && descriptor.learningItemId == cue.learningItemId && descriptor.documentIndex == cue.documentIndex) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    final isBackground = _isBackgrounded;
+    var cardIndex = cardIndexForCue();
+
+    // Cue past the built deck (true live edge). Foreground with an open gate:
+    // advance for real — this is where lesson progress moves (the per-clip
+    // path's nextDocument call, relocated). One cue can be several documents
+    // ahead when silent cards sit between audible ones, so advance until the
+    // cue's card exists; nextDocument emits synchronously but the deck's own
+    // stream listener runs a microtask later, hence the direct _rebuildCards.
+    // Backgrounded: leave the deck alone; the return path reveals to wherever
+    // the voice got (didChangeAppLifecycleState → jumpToCard).
+    if (cardIndex < 0 && !isBackground) {
+      var guard = 0;
+      while (cardIndex < 0 && guard++ < 50) {
+        if (isAtPaywallWall || !_theoryCubit.state.canContinue) break;
+        final before = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
+        _theoryCubit.nextDocument();
+        _rebuildCards(_lessonCubit.state);
+        final after = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
+        if (after == before) break; // refused (gate/end) — stop pushing
+        cardIndex = cardIndexForCue();
+      }
+    }
+
+    if (cardIndex >= 0) {
+      if (cardIndex != state.viewedCardIndex && !isBackground) viewCard(cardIndex);
+      if (cardIndex == state.viewedCardIndex) _loadedClipCardIndex = cardIndex;
+    }
+    _pushAllowedThroughCue();
+  }
+
+  /// Moves the view onto the card with this identity, revealing it first when
+  /// it sits past the live edge (revealed cards are NOT progress — they render
+  /// read-only past the edge exactly like the legacy narration reveal).
+  void jumpToCard({required String learningItemId, required int documentIndex, Duration? startAt}) {
+    _revealToCardTarget = (learningItemId: learningItemId, documentIndex: documentIndex);
+    _rebuildCards(_lessonCubit.state);
+
+    for (var i = 0; i < state.cards.length; i++) {
+      final descriptor = state.cards[i];
+      if (descriptor.isTheory && descriptor.learningItemId == learningItemId && descriptor.documentIndex == documentIndex) {
+        viewCard(i, startAt: startAt);
+        return;
+      }
+    }
   }
 
   /// Moves the view onto the card carrying [clipIndex], building the card list
@@ -358,6 +588,29 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// live edge render read-only (see [QuizPreviewCardBody]).
   @override
   void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    if (_audioCubit.isMergedMode) {
+      _pushAllowedThroughCue();
+      if (lifecycleState != AppLifecycleState.resumed) {
+        // Going away mid-hold: the voice paused at a gate the reader cannot
+        // answer from the lock screen — read on, exactly like the legacy
+        // queue does. The bound was just lifted above.
+        final audioState = _audioCubit.state;
+        final lastAudible = _audioCubit.timeline?.lastAudibleCueIndex ?? -1;
+        if (audioState.hasCompletedPlayback && !audioState.isPlaying && audioState.activeCueIndex >= 0 && audioState.activeCueIndex < lastAudible) {
+          unawaited(_audioCubit.play());
+        }
+        return;
+      }
+      // Back on screen: land the deck on the card being read, at full flight —
+      // the player never stopped, so this is pure view work (no reload, no
+      // seek). Progress is untouched; revealed cards render read-only.
+      final cue = _audioCubit.timeline?.cueAt(_audioCubit.state.activeCueIndex);
+      if (cue != null) {
+        jumpToCard(learningItemId: cue.learningItemId, documentIndex: cue.documentIndex);
+      }
+      return;
+    }
+
     if (lifecycleState != AppLifecycleState.resumed) return;
     if (!_audioCubit.isAheadOfDeck) return;
 
@@ -408,6 +661,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         ),
       ),
       revealToClipIndex: _revealToClipIndex,
+      revealToCard: _revealToCardTarget,
     );
     _cardToClip = built.cardToClip;
     // Tell the player which clips belong to the reading flow at all, so the
@@ -425,10 +679,23 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (_revealToClipIndex >= 0 && built.liveCardIndex >= built.revealCardIndex) {
       _revealToClipIndex = -1;
     }
+    if (_revealToCardTarget != null && built.liveCardIndex >= built.revealCardIndex) {
+      _revealToCardTarget = null;
+    }
 
     final wasFollowingEdge = state.viewedCardIndex == state.furthestCardIndex;
-    final nextFurthestIndex = completionJustTriggered ? built.doneCardIndex : built.liveCardIndex;
     final previousViewedIndex = state.viewedCardIndex.clamp(0, built.cards.length - 1);
+
+    // Do NOT clamp this to the pinned view. `furthestCardIndex` is what the
+    // `PageView` is sized from (`itemCount: furthestCardIndex + 1`), so holding
+    // it at 0 during the entry pin leaves the deck with a single page: nothing
+    // to swipe to, and the pin is released by [viewCard] — which that swipe is
+    // the only way to reach. Tried on 2026-08-03 to stop the pip bar showing a
+    // fresh keypoint's cards as already read; it deadlocked every keypoint
+    // instead. The pip-bar leak is stale `@lazySingleton` TheoryCubit /
+    // ExerciseCubit indices read back by [_liveIndexForCurrentItem] during the
+    // entry burst, and it has to be fixed at that source, not here.
+    final nextFurthestIndex = completionJustTriggered ? built.doneCardIndex : built.liveCardIndex;
 
     // Opening a keypoint always lands on its FIRST card, never where the reader
     // left off. Position inside a keypoint is deliberately not restored (product
@@ -439,19 +706,23 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // `wasFollowingEdge` is trivially true (view 0 == edge 0) and would carry the
     // view along with it. It is released by the first [viewCard], i.e. the moment
     // the reader — or the voice — actually moves the deck.
-    //
-    // Progress itself is untouched: `furthestCardIndex` still tracks the live
-    // edge, so every card already cleared stays cleared, the pip bar still shows
-    // them, and swiping forward back to the edge is unblocked.
-    final nextViewedIndex = completionJustTriggered
+    final restoredViewedIndex = completionJustTriggered
         ? nextFurthestIndex
         : _entryPinActive
         ? 0
         : (wasFollowingEdge ? nextFurthestIndex : previousViewedIndex);
 
-    // TEMP-DEBUG(entry-pin): remove once the entry position is confirmed fixed.
+    // The paywall wall clamps the restored position too. Without this, a reader
+    // who got past the wall before it existed would be handed straight back to
+    // where they were, every time they re-entered — this emit does not go through
+    // [viewCard], so its cap does not cover it.
+    final cap = _paywallCardCap;
+    final nextViewedIndex = cap != null && restoredViewedIndex > cap ? cap : restoredViewedIndex;
+
+    // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
+    // both confirmed settled.
     LogDev.warning(
-      '[DeckDbg] rebuild pin=$_entryPinActive cards=${built.cards.length} live=${built.liveCardIndex} '
+      '[DeckDbg] rebuild pin=$_entryPinActive cap=$cap cards=${built.cards.length} live=${built.liveCardIndex} '
       'furthest=${state.furthestCardIndex}→$nextFurthestIndex viewed=$previousViewedIndex→$nextViewedIndex '
       'followEdge=$wasFollowingEdge completion=$completionJustTriggered itemIdx=${lessonState.currentLearningItemIndex}',
     );
@@ -473,6 +744,9 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // Every card change takes narration with it, so the voice is always reading
     // the page on screen.
     _ensureNarrationOnViewedCard();
+    // The card region just changed shape, so the voice's permission to cross
+    // the next boundary may have too.
+    _pushAllowedThroughCue();
   }
 
   /// Points narration at the card on screen unless it is already there.
@@ -563,6 +837,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_lessonSubscription?.cancel());
     unawaited(_audioSubscription?.cancel());
+    unawaited(_theorySubscription?.cancel());
     return super.close();
   }
 }
