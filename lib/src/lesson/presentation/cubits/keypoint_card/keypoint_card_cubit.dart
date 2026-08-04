@@ -676,9 +676,28 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       }
       // Back on screen: land the deck on the card being read, at full flight —
       // the player never stopped, so this is pure view work (no reload, no
-      // seek). Progress is untouched; revealed cards render read-only.
+      // seek). When the voice got AHEAD while away, the ground it covered is
+      // made REAL (live edge fast-forwarded, same as resume-after-kill), not
+      // merely revealed: a reveal left the live edge parked at an unanswered
+      // question the voice had long passed, and every forward swipe then ran
+      // through that stale gate and died ("card exercise, thoát ra vào lại
+      // không vuốt được tiếp", 2026-08-04). Background listening reads
+      // through gates by product call — so coming back treats what was heard
+      // as reached.
       final cue = _audioCubit.timeline?.cueAt(_audioCubit.state.activeCueIndex);
       if (cue != null) {
+        final items = _lessonCubit.state.pageData.items;
+        final itemIndex = items.indexWhere((item) => item.id == cue.learningItemId);
+        final liveItemIndex = _lessonCubit.state.currentLearningItemIndex;
+        final liveDocIndex = _theoryCubit.state.currentDocumentIndex;
+        // Forward only — never drag the live edge BACK when the reader was
+        // re-listening an earlier card.
+        final voiceIsAhead = itemIndex > liveItemIndex || (itemIndex == liveItemIndex && cue.documentIndex > liveDocIndex);
+        if (itemIndex >= 0 && voiceIsAhead) {
+          _lessonCubit.jumpToItem(itemIndex);
+          _lessonCubit.setCurrentLearningItem(items[itemIndex]);
+          _theoryCubit.jumpToDocument(cue.documentIndex);
+        }
         jumpToCard(learningItemId: cue.learningItemId, documentIndex: cue.documentIndex);
       }
       return;
