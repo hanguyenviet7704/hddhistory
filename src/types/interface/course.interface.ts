@@ -27,6 +27,10 @@ export interface ICourse {
   newDurationDays?: number | null;
   /** Manual override: force the "New course" badge regardless of publish date. */
   isNew?: boolean;
+  /** Author credit on the app's "New today" card. Not translated. */
+  author?: string | null;
+  /** Curated reach figure on that card — raw number; the app shows "6.3k". */
+  viewCount?: number | null;
 }
 
 export type CoursePayload = Omit<ICourse, "_id">;

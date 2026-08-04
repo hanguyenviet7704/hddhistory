@@ -64,6 +64,9 @@ export default function CourseModal({
   const [newDurationDays, setNewDurationDays] = useState("");
   // Manual override to force the "New course" badge regardless of publish date.
   const [isNew, setIsNew] = useState(false);
+  // Kept as strings so an empty input stays empty rather than collapsing to 0.
+  const [author, setAuthor] = useState("");
+  const [viewCount, setViewCount] = useState("");
   const [prices, setPrices] = useState<IPrice[]>([]);
   const [onboardingSymptoms, setOnboardingSymptoms] = useState<
     OnboardingSymptom[]
@@ -98,6 +101,8 @@ export default function CourseModal({
         initial.newDurationDays != null ? String(initial.newDurationDays) : ""
       );
       setIsNew(initial.isNew ?? false);
+      setAuthor(initial.author ?? "");
+      setViewCount(initial.viewCount != null ? String(initial.viewCount) : "");
       setPrices(initial.prices ?? []);
       setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
       setSkillsetId(initial.skillsetId ?? "");
@@ -111,6 +116,8 @@ export default function CourseModal({
       setPublishAt("");
       setNewDurationDays("");
       setIsNew(false);
+      setAuthor("");
+      setViewCount("");
       setPrices([]);
       setOnboardingSymptoms([]);
       setSkillsetId("");
@@ -230,6 +237,11 @@ export default function CourseModal({
           : null,
       // Manual "New course" override (independent of publish date).
       isNew,
+      // Editorial credit + reach for the app's "New today" card. Empty stays
+      // null (not "" / 0) so the app hides each half rather than crediting
+      // nobody or claiming zero reach.
+      author: author.trim() || null,
+      viewCount: viewCount.trim() ? Number(viewCount) : null,
     };
 
     // Only include description if it has values
@@ -545,6 +557,49 @@ export default function CourseModal({
                     </span>
                   </span>
                 </label>
+              </div>
+
+              {/* Author + reach for the app's "New today" card on Home. Both
+                  optional: each half is hidden in the app when left empty. */}
+              <div className="rounded-lg border border-gray-200 p-4">
+                <p className="text-sm font-semibold text-gray-700">
+                  “New today” card (Home)
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Shown under the course title on the app's Home screen. Leave a
+                  field empty to hide just that half.
+                </p>
+
+                <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+                  Author
+                </label>
+                <input
+                  type="text"
+                  maxLength={120}
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  placeholder="e.g. Sara Kim"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Not translated — the same name shows in every language.
+                </p>
+
+                <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+                  View count
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={viewCount}
+                  onChange={(e) => setViewCount(e.target.value)}
+                  placeholder="e.g. 6300"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Enter the raw number — the app shortens 6300 to “6.3k”. This is
+                  a curated figure, not a real counter.
+                </p>
               </div>
 
               {/* Onboarding Symptoms */}
