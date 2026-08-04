@@ -182,6 +182,22 @@ extension IntDataHelper on int {
     };
   }
 
+  /// Compact reader-count for course cards: 6300 → "6.3k", 1200000 → "1.2M".
+  /// Lowercase "k" per the design (vs [shortCurrency]'s uppercase money "K");
+  /// 999_999 would round to "1000k", so it promotes to "1M".
+  String get compactViews {
+    if (this >= 1000000) {
+      final m = this / 1000000;
+      return '${m.toStringAsFixed(m >= 10 ? 0 : 1).replaceFirst(RegExp(r'\.0$'), '')}M';
+    }
+    if (this >= 1000) {
+      final k = this / 1000;
+      final rounded = k.toStringAsFixed(k >= 10 ? 0 : 1).replaceFirst(RegExp(r'\.0$'), '');
+      return rounded == '1000' ? '1M' : '${rounded}k';
+    }
+    return '$this';
+  }
+
   String get getCountTime => this > 9 ? '9+' : '$this';
 }
 

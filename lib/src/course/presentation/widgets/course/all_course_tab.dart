@@ -12,11 +12,15 @@ double get _kCourseThumbHeight => 160.w;
 /// is uniform regardless of title length.
 double get _kCourseTitleHeight => (14 * 1.4 * 2).sp;
 
-/// Exact height of a [_CourseGridCard] = thumbnail + 12 gap + 2-line title.
-/// Used as the grid cell extent so there is NO leftover slack and the visible
-/// row gap equals exactly the configured spacing (Figma Spacing/600 = 24).
+/// One author line under the title (icon 12 / text 11.5 with 1.4 leading).
+/// Reserved on every card — even author-less ones — so grid rows stay aligned.
+double get _kCourseAuthorHeight => (11.5 * 1.4).sp;
+
+/// Exact height of a [_CourseGridCard] = thumbnail + 12 gap + 2-line title
+/// + 4 gap + author line. Used as the grid cell extent so there is NO leftover
+/// slack and the visible row gap equals exactly the configured spacing.
 double get _kCourseCardExtent =>
-    _kCourseThumbHeight + 12.h + _kCourseTitleHeight;
+    _kCourseThumbHeight + 12.h + _kCourseTitleHeight + 4.h + _kCourseAuthorHeight;
 
 /// Inter-row / inter-column gaps for the course grids (Figma redline).
 double get _kCourseGridRowGap => 24.h; // Spacing/600 (vertical)
@@ -689,6 +693,12 @@ class _CourseGridCard extends StatelessWidget {
                         totalLessons: totalLessons,
                       ),
                     ),
+                    if ((course.viewCount ?? 0) > 0)
+                      Positioned(
+                        right: 9.r,
+                        bottom: 9.r,
+                        child: CourseViewsChip(count: course.viewCount!),
+                      ),
                   ],
                 ),
               ),
@@ -707,6 +717,22 @@ class _CourseGridCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
+            ),
+            4.verticalSpace,
+            // Fixed-height author slot (kept even when blank) so grid rows
+            // stay aligned — same trick as the 2-line title above.
+            SizedBox(
+              height: _kCourseAuthorHeight,
+              width: double.infinity,
+              child: (course.author?.trim() ?? '').isEmpty
+                  ? null
+                  : Align(
+                      alignment: Alignment.centerLeft,
+                      child: CourseAuthorLine(
+                        author: course.author!.trim(),
+                        color: studyThemeOnBg(context, kCourseMetaAuthorColor),
+                      ),
+                    ),
             ),
           ],
         ),

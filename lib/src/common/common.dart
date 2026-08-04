@@ -38,6 +38,8 @@ part 'presentation/pages/no_internet_connection.dart';
 part 'presentation/pages/server_error_page.dart';
 
 //* Presentation Layer - Widgets
+part 'presentation/widgets/course_card_meta.dart';
+part 'presentation/widgets/support_fanpage_card.dart';
 
 //* Parts for generated files
 part 'common.freezed.dart';

@@ -796,6 +796,8 @@ class _RecommendedSkeleton extends StatelessWidget {
   static const SuggestedCourseEntity _kSkeletonCourse = SuggestedCourseEntity(
     id: 'skeleton',
     title: BaseMultiLanguage(en: 'Course title placeholder'),
+    author: 'Author name',
+    viewCount: 6300,
   );
 
   @override
@@ -1177,6 +1179,12 @@ class _RecommendedCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if ((course.viewCount ?? 0) > 0)
+                      Positioned(
+                        right: 9.r,
+                        bottom: 9.r,
+                        child: CourseViewsChip(count: course.viewCount!),
+                      ),
                   ],
                 ),
               ),
@@ -1194,6 +1202,16 @@ class _RecommendedCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if ((course.author?.trim() ?? '').isNotEmpty) ...[
+                4.verticalSpace,
+                SizedBox(
+                  width: 132.r,
+                  child: CourseAuthorLine(
+                    author: course.author!.trim(),
+                    color: studyThemeOnBg(context, kCourseMetaAuthorColor),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
