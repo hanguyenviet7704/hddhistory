@@ -101,6 +101,7 @@ saleCountdownLabel: Ưu đãi giới hạn thời gian
 seeAllPlans: Xem tất cả gói
 seeLessPlans: Thu gọn
 selectPlan: Chọn gói
+storeAccountLinkedToOtherToast: Tài khoản ${store} này đã gắn gói với một tài khoản Meup khác. Hãy đăng nhập đúng tài khoản đó để dùng gói, hoặc thanh toán bằng tài khoản ${store} khác.
 subscriptionActiveToast: Gói đăng ký của bạn đã được kích hoạt!
 subscriptionTitle: Gói đăng ký
 successCta: Khám phá ngay
