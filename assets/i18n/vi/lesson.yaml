@@ -54,3 +54,10 @@ liveActivityNudgeNotifTitle: Bài học của bạn còn dang dở
 liveActivityNudgeNotifBody(param=count): Hoàn thành ${count} phút cuối ngay, trước khi quên.
 liveActivityDoneNotifTitle: Giữ kiến thức tươi mới ngày mai
 liveActivityDoneNotifBody(param=course): Bạn đã hoàn thành ${course}. Quay lại ngày mai để ghi nhớ lâu.
+
+# Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
+peekPracticeHint: Chạm để luyện tập keypoint này
+practiceQuizDoneTitle: Hoàn thành quiz
+practiceQuizDoneSubtitle: Vuốt xuống để xem lại câu bất kỳ.
+practiceQuizScore: Đúng ${correct}/${total}
+practiceQuizDoneButton: Xong

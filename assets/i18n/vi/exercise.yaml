@@ -41,3 +41,8 @@ exerciseSubheaderLabelBuildNonverbal: Xây dựng sự hiện diện phi ngôn n
 exerciseTapToSpeakButton: Chạm để nói
 exerciseVoiceAnalysisTitle: Phân tích câu trả lời
 exerciseYourAnswer: Câu trả lời của bạn
+
+# Shared practice-quiz deck strings (QuizQuestionCard — habit quiz + keypoint practice)
+exerciseSelectOneInstruction: Chọn đáp án đúng nhất
+exerciseSelectManyInstruction: Chọn tất cả đáp án đúng
+exerciseSwipeNextHint: Vuốt lên để sang câu tiếp

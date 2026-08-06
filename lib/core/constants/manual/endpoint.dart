@@ -142,7 +142,6 @@ mixin AppEndpoint {
   static const String userHabitsById = '/api/v1/user-habits/{id}';
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
   static const String userHabitsCheckins = '/api/v1/user-habits/{id}/checkins';
-  static const String reanchorReasons = '/api/v1/reanchor-reasons';
   // Published practices for one habit, content hydrated from learning_item.
   static const String habitPractices = '/api/v1/habit-practices';
   // Finishing a practice ALSO files the day's check-in server-side — do not

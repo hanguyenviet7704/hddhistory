@@ -105,12 +105,8 @@ homeReminderSubtitle: 保持连续打卡的节奏！
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: 去看课程
 
-# Re-anchor (§9.1)
-reanchorTitle: 这对你为什么重要？
-reanchorStartButton: 开始学习
 summaryBestHabitLabel: 最佳习惯
 summaryBestHabitLoop: ${days} 天连续
-reanchorPickLabel: 选择最适合你的一项
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: 今天怎么样？
@@ -128,9 +124,8 @@ practiceJournalTitle: 写日记
 practiceJournalSubtitle: 用你自己的话记录
 practiceQuizTitle: 做小测
 practiceQuizSubtitle: 关于这个习惯的快速问题
-quizSelectOne: 选择最合适的答案
-quizSelectMany: 选出所有正确答案
-quizCheckButton: 检查
+quizDoneSwipeSubtitle: 下滑可回看任意一题。
+quizEmptyTitle: 此练习还没有可作答的题目
 quizNextButton: 继续
 quizCorrectLabel: 回答正确！
 quizIncorrectLabel: 不正确

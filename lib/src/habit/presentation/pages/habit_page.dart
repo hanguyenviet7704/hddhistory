@@ -7,19 +7,12 @@ String _habitGroupKey(UserHabitEntity h) => (h.sourceCourseId?.isNotEmpty ?? fal
 
 /// Human title for a group: the course's title ("the problem"), else the
 /// skillset title.
-String _habitGroupTitle(UserHabitEntity h, HabitState state) {
-  // §9.5: label the cluster with the re-anchor reason the user picked for this
-  // course ("their why"). Prefer the value persisted on the habit at adopt
-  // time; else the reason picked this session (remembered in state, so it
-  // shows immediately after picking even for habits adopted earlier); else
-  // fall back to the course title, then the skillset.
-  final reason = h.reanchorReason.text;
-  if (reason.isNotEmpty) return reason;
+/// The re-anchor reason used to win here ("their why", §9.5). That prompt is
+/// gone, so the course title is now the cluster label.
+String _habitGroupTitle(UserHabitEntity h) {
   final skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
   final courseId = h.sourceCourseId;
   if (courseId != null && courseId.isNotEmpty) {
-    final picked = state.reanchorReasonByCourse[courseId]?.reason.text ?? '';
-    if (picked.isNotEmpty) return picked;
     // Look up the course from the FULL catalog (HomeCubit.skillsets), not
     // ProgressCubit.myCourses — myCourses only carries courses with SAVED
     // progress, so it can still be stale/missing this exact course right

@@ -106,12 +106,8 @@ homeReminderSubtitle: Keep the loop going!
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: Go to course
 
-# Re-anchor (§9.1)
-reanchorTitle: Why does this matter to you?
-reanchorStartButton: Start Learning
 summaryBestHabitLabel: Best habit
 summaryBestHabitLoop: ${days}-days loop
-reanchorPickLabel: Pick the one that fits you best
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: How did it go today?
@@ -129,9 +125,8 @@ practiceJournalTitle: Write a journal
 practiceJournalSubtitle: Reflect in your own words
 practiceQuizTitle: Take a quiz
 practiceQuizSubtitle: Quick questions on this habit
-quizSelectOne: Select the best answer
-quizSelectMany: Select all that apply
-quizCheckButton: Check
+quizDoneSwipeSubtitle: Swipe down to revisit any question.
+quizEmptyTitle: This practice has no playable question yet
 quizNextButton: Continue
 quizCorrectLabel: Correct answer!
 quizIncorrectLabel: Incorrect

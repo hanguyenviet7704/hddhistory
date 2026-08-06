@@ -106,12 +106,8 @@ homeReminderSubtitle: Giữ nhịp mỗi ngày!
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: Đến khóa học
 
-# Re-anchor (§9.1)
-reanchorTitle: Vì sao điều này quan trọng với bạn?
-reanchorStartButton: Bắt đầu học
 summaryBestHabitLabel: Thói quen tốt nhất
 summaryBestHabitLoop: Chuỗi ${days} ngày
-reanchorPickLabel: Chọn điều phù hợp nhất với bạn
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: Hôm nay thế nào?
@@ -129,9 +125,8 @@ practiceJournalTitle: Viết nhật ký
 practiceJournalSubtitle: Ghi lại bằng lời của bạn
 practiceQuizTitle: Làm quiz
 practiceQuizSubtitle: Vài câu hỏi nhanh về thói quen này
-quizSelectOne: Chọn đáp án đúng nhất
-quizSelectMany: Chọn tất cả đáp án đúng
-quizCheckButton: Kiểm tra
+quizDoneSwipeSubtitle: Vuốt xuống để xem lại câu bất kỳ.
+quizEmptyTitle: Bài luyện tập này chưa có câu hỏi chơi được
 quizNextButton: Tiếp tục
 quizCorrectLabel: Chính xác!
 quizIncorrectLabel: Chưa đúng

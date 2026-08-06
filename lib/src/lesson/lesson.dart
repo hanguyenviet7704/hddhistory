@@ -122,6 +122,7 @@ part 'presentation/models/lesson_mode.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/badge_progress_page.dart';
 part 'presentation/pages/keypoint_complete_page.dart';
+part 'presentation/pages/keypoint_quiz_page.dart';
 part 'presentation/pages/lesson_body_factory.dart';
 part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/no_correct_answer_document_page.dart';
@@ -175,6 +176,8 @@ part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_result_summary.dart';
 part 'presentation/widgets/items/common/keypoint_complete_progress_card.dart';
 part 'presentation/widgets/items/common/keypoint_exercise_action.dart';
+part 'presentation/widgets/items/common/quiz_card_answer.dart';
+part 'presentation/widgets/items/common/quiz_deck_cards.dart';
 part 'presentation/widgets/items/common/keypoint_tracking_data.dart';
 part 'presentation/widgets/items/common/lesson_badge.dart';
 part 'presentation/widgets/items/common/lesson_completion_header.dart';

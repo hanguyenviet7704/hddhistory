@@ -105,12 +105,8 @@ homeReminderSubtitle: この調子で続けましょう！
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: コースへ
 
-# Re-anchor (§9.1)
-reanchorTitle: これはあなたにとってなぜ大切ですか？
-reanchorStartButton: 学習を始める
 summaryBestHabitLabel: ベストな習慣
 summaryBestHabitLoop: ${days}日連続
-reanchorPickLabel: 自分に一番合うものを選んでください
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: 今日はどうでしたか？
@@ -128,9 +124,8 @@ practiceJournalTitle: 日記を書く
 practiceJournalSubtitle: 自分の言葉で振り返る
 practiceQuizTitle: クイズに挑戦
 practiceQuizSubtitle: この習慣についての短い質問
-quizSelectOne: 最適な答えを選んでください
-quizSelectMany: 当てはまるものすべてを選んでください
-quizCheckButton: 確認
+quizDoneSwipeSubtitle: 下にスワイプするとどの問題にも戻れます。
+quizEmptyTitle: この練習にはまだ解答できる問題がありません
 quizNextButton: 続ける
 quizCorrectLabel: 正解です！
 quizIncorrectLabel: 不正解

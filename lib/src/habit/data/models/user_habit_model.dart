@@ -19,7 +19,6 @@ abstract class UserHabitModel with _$UserHabitModel {
     @Default([]) List<bool> weekGrid,
     String? sourceKeypointId,
     String? sourceCourseId,
-    @Default(BaseMultiLanguage()) BaseMultiLanguage reanchorReason,
   }) = _UserHabitModel;
 
   factory UserHabitModel.fromJson(Map<String, dynamic> json) => _$UserHabitModelFromJson(json);
@@ -43,6 +42,5 @@ extension UserHabitModelX on UserHabitModel {
     weekGrid: weekGrid,
     sourceKeypointId: sourceKeypointId,
     sourceCourseId: sourceCourseId,
-    reanchorReason: reanchorReason,
   );
 }

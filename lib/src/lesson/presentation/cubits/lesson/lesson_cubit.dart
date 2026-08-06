@@ -89,6 +89,17 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     unawaited(_updateLiveActivity());
   }
 
+  /// Records the keypoint as completed — progress written, `completionOrigin`
+  /// set (which is what reveals the deck's terminal peek card), Live Activity
+  /// updated — WITHOUT leaving the deck.
+  ///
+  /// It used to also navigate to [KeypointCompleteRoute], which covered the
+  /// terminal card within a frame or two. That card is now the design's peek
+  /// card carrying the keypoint's practice entry, so the reader stays on it;
+  /// its Continue calls [openKeypointComplete] for the exact old handoff.
+  /// Completing and moving on are separate acts now, but completing itself is
+  /// unchanged — audio finishing the last card in the background still files
+  /// progress the moment it happens.
   void completeCurrentKeypoint({
     LessonCompletionOrigin origin = LessonCompletionOrigin.read,
     bool bypassReviewQueue = false,
@@ -104,6 +115,12 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     _updateUserProgressKeypoint();
     emit(state.copyWith(completionOrigin: origin));
     unawaited(_updateLiveActivity(keypointJustCompleted: true));
+  }
+
+  /// The peek card's Continue: hand the reader to the completion screen
+  /// (badge progress → habit suggestion → roadmap), exactly where
+  /// [completeCurrentKeypoint] used to jump on its own.
+  void openKeypointComplete() {
     KeypointCompleteRoute().go(AppConfig.instance.context!);
     Future.delayed(const Duration(milliseconds: 100), () {
       AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);

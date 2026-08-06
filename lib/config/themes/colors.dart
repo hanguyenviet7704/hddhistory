@@ -159,6 +159,13 @@ mixin AppCustomColor {
   static const Color habitStateTodoSurface = Color(0xFFFFF3E2);
   static const Color habitStateTodoText = Color(0xFFB2711A);
   static const Color habitStateTodoDot = Color(0xFFE9A23B);
+
+  // Keypoint peek card — the deck's terminal quote card (design
+  // `_Keypoint Swipe Lab` → `c.isPeek`). Exact design hex.
+  static const Color kpPeekQuoteMark = Color(0xFFF0EEFC);
+  static const Color kpPeekDivider = Color(0xFFCFCBF2);
+  static const Color kpPeekSource = Color(0xFF5F6F86);
+  static const Color kpPeekHint = Color(0xFF7C74B0);
 }
 
 mixin AppTheme {

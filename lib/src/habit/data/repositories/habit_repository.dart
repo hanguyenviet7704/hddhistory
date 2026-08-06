@@ -84,8 +84,6 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
     int? packLength,
     String? sourceKeypointId,
     String? sourceCourseId,
-    String? reanchorReasonId,
-    BaseMultiLanguage? reanchorReason,
   }) {
     return callApiWithTransform<UserHabitModel, UserHabitEntity>(
       apiCall: () => _api.adoptHabit({
@@ -94,8 +92,6 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
         if (packLength != null) 'packLength': packLength,
         if (sourceKeypointId != null) 'sourceKeypointId': sourceKeypointId,
         if (sourceCourseId != null) 'sourceCourseId': sourceCourseId,
-        if (reanchorReasonId != null) 'reanchorReasonId': reanchorReasonId,
-        if (reanchorReason != null) 'reanchorReason': reanchorReason.toJson(),
       }),
       transform: (model) => model.toEntity(),
       defaultValue: const UserHabitEntity(),
@@ -176,15 +172,6 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
   TaskEither<AppException, List<HabitCheckinEntity>> getCheckins(String id) {
     return callApiWithTransform<List<HabitCheckinModel>, List<HabitCheckinEntity>>(
       apiCall: () => _api.getCheckins(id),
-      transform: (models) => models.map((model) => model.toEntity()).toList(),
-      defaultValue: const [],
-    );
-  }
-
-  @override
-  TaskEither<AppException, List<ReanchorReasonEntity>> getReanchorReasons(String courseId) {
-    return callApiWithTransform<List<ReanchorReasonModel>, List<ReanchorReasonEntity>>(
-      apiCall: () => _api.getReanchorReasons(courseId),
       transform: (models) => models.map((model) => model.toEntity()).toList(),
       defaultValue: const [],
     );

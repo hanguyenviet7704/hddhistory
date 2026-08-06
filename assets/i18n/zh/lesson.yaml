@@ -44,3 +44,10 @@ liveActivityNudgeNotifTitle: 你的课程还没完成
 liveActivityNudgeNotifBody(param=count): 趁还记得，现在完成最后 ${count} 分钟。
 liveActivityDoneNotifTitle: 明天保持新鲜
 liveActivityDoneNotifBody(param=course): 你已完成《${course}》。明天再来巩固记忆。
+
+# Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
+peekPracticeHint: 点按练习这个知识点
+practiceQuizDoneTitle: 测验完成
+practiceQuizDoneSubtitle: 下滑可回看任意一题。
+practiceQuizScore: 正确 ${correct}/${total}
+practiceQuizDoneButton: 完成

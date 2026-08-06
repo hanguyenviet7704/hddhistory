@@ -44,3 +44,10 @@ liveActivityNudgeNotifTitle: レッスンが未完了です
 liveActivityNudgeNotifBody(param=count): 忘れないうちに、残り約${count}分を今すぐ終えましょう。
 liveActivityDoneNotifTitle: 明日も記憶を新鮮に
 liveActivityDoneNotifBody(param=course): 「${course}」を完了しました。明日また戻って定着させましょう。
+
+# Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
+peekPracticeHint: タップしてこのキーポイントを練習
+practiceQuizDoneTitle: クイズ完了
+practiceQuizDoneSubtitle: 下にスワイプするとどの問題にも戻れます。
+practiceQuizScore: 正解 ${correct}/${total}
+practiceQuizDoneButton: 完了

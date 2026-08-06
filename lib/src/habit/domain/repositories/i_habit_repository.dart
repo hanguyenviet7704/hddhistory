@@ -26,8 +26,6 @@ abstract class IHabitRepository {
     int? packLength,
     String? sourceKeypointId,
     String? sourceCourseId,
-    String? reanchorReasonId,
-    BaseMultiLanguage? reanchorReason,
   });
 
   TaskEither<AppException, UserHabitEntity> updateUserHabit(
@@ -51,7 +49,6 @@ abstract class IHabitRepository {
 
   TaskEither<AppException, List<HabitCheckinEntity>> getCheckins(String id);
 
-  TaskEither<AppException, List<ReanchorReasonEntity>> getReanchorReasons(String courseId);
 
   /// Published practices for a library habit, content hydrated.
   TaskEither<AppException, List<HabitPracticeEntity>> getHabitPractices(String habitId);

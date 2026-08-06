@@ -1,6 +1,8 @@
 library;
 
 //* Single project import
+import 'dart:math' as math;
+
 import 'package:meup/meup.dart';
 
 //* Package imports
@@ -16,7 +18,6 @@ part 'data/models/habit_model.dart';
 part 'data/models/user_habit_model.dart';
 part 'data/models/user_habit_summary_model.dart';
 part 'data/models/habit_checkin_model.dart';
-part 'data/models/reanchor_reason_model.dart';
 part 'data/models/habit_screen_model.dart';
 part 'data/models/habit_practice_model.dart';
 part 'data/models/habit_practice_attempt_result_model.dart';
@@ -29,7 +30,6 @@ part 'domain/entities/habit_entity.dart';
 part 'domain/entities/user_habit_entity.dart';
 part 'domain/entities/user_habit_summary_entity.dart';
 part 'domain/entities/habit_checkin_entity.dart';
-part 'domain/entities/reanchor_reason_entity.dart';
 part 'domain/entities/habit_screen_entity.dart';
 part 'domain/entities/habit_practice_entity.dart';
 part 'domain/repositories/i_habit_repository.dart';
@@ -41,7 +41,6 @@ part 'domain/usecases/update_user_habit_usecase.dart';
 part 'domain/usecases/remove_user_habit_usecase.dart';
 part 'domain/usecases/check_in_user_habit_usecase.dart';
 part 'domain/usecases/get_habit_checkins_usecase.dart';
-part 'domain/usecases/get_reanchor_reasons_usecase.dart';
 part 'domain/usecases/get_habit_config_usecase.dart';
 part 'domain/usecases/get_habit_screen_usecase.dart';
 part 'domain/usecases/get_cached_habit_screen_usecase.dart';
@@ -65,7 +64,6 @@ part 'presentation/pages/habit_summary_page.dart';
 part 'presentation/pages/upgrade_habit_page.dart';
 part 'presentation/pages/manage_slots_page.dart';
 part 'presentation/pages/habit_detail_page.dart';
-part 'presentation/pages/reanchor_page.dart';
 
 //* Presentation Layer - Helpers
 part 'presentation/helpers/habit_tracking.dart';

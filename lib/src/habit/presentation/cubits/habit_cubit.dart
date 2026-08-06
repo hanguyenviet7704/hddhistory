@@ -11,7 +11,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final RemoveUserHabitUseCase _removeUseCase;
   final CheckInUserHabitUseCase _checkInUseCase;
   final GetHabitCheckinsUseCase _getCheckinsUseCase;
-  final GetReanchorReasonsUseCase _getReanchorReasonsUseCase;
   final GetHabitConfigUseCase _getHabitConfigUseCase;
   final GetHabitScreenUseCase _getHabitScreenUseCase;
   final GetCachedHabitScreenUseCase _getCachedHabitScreenUseCase;
@@ -26,7 +25,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._removeUseCase,
     this._checkInUseCase,
     this._getCheckinsUseCase,
-    this._getReanchorReasonsUseCase,
     this._getHabitConfigUseCase,
     this._getHabitScreenUseCase,
     this._getCachedHabitScreenUseCase,
@@ -83,17 +81,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     ),
   );
 
-  /// Mark a course's Re-anchor as shown so it appears at most once (§9.1).
-  void markReanchorShown(String courseId) => emit(state.copyWith(reanchorShownCourseIds: {...state.reanchorShownCourseIds, courseId}));
-
-  /// Remember the re-anchor reason the user picked for a course (§9.5), so it
-  /// can be attached when a habit is later adopted from that course's keypoint
-  /// and shown as the tracker cluster title.
-  void setReanchorReason(String courseId, ReanchorReasonEntity reason) {
-    if (courseId.isEmpty) return;
-    emit(state.copyWith(reanchorReasonByCourse: {...state.reanchorReasonByCourse, courseId: reason}));
-  }
-
   /// Loads the Habit tab's tracker + summary + slot cap in a single combined
   /// request (`GetHabitScreenUseCase` → `GET /user-habits/screen`), replacing
   /// three separate round trips.
@@ -137,10 +124,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
           emit(state.copyWith(status: HabitPageStatus.failure, errorMessage: error));
         }
       },
-      // A cluster's title reflects ONLY the re-anchor reason the user actually
-      // picked — either stored on the habit at adopt time (h.reanchorReason)
-      // or captured this session (reanchorReasonByCourse). We never backfill a
-      // course's library reason, so a "why" the user didn't choose can't appear.
       onSuccess: (screen) {
         // Mark the moment a real fetch confirmed the screen — including a
         // confirmed-EMPTY one, which is what stops the refetch-on-every-entry.
@@ -226,17 +209,12 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     String? sourceKeypointId,
     String? sourceCourseId,
   }) async {
-    // Attach the re-anchor reason the user picked for this course (if any), so
-    // the tracker can label the habit's cluster with it (§9.5).
-    final picked = (sourceCourseId != null && sourceCourseId.isNotEmpty) ? state.reanchorReasonByCourse[sourceCourseId] : null;
     final result = await _adoptUseCase(
       habitId: habitId,
       reminderTime: reminderTime,
       packLength: packLength,
       sourceKeypointId: sourceKeypointId,
       sourceCourseId: sourceCourseId,
-      reanchorReasonId: picked?.id,
-      reanchorReason: picked?.reason,
     ).run();
     return result.fold(
       (exception) => _isSlotFullError(exception) ? AdoptHabitResult.slotFull : AdoptHabitResult.failure,
@@ -379,23 +357,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   Future<List<HabitCheckinEntity>> getCheckins(String userHabitId) async {
     final result = await _getCheckinsUseCase(userHabitId).run();
     return result.fold((_) => const [], (checkins) => checkins);
-  }
-
-  // Memoised per course so a prefetch (kicked off in parallel with the roadmap
-  // fetch — see CourseRoadmapCubit.loadRoadmap) is reused instantly by
-  // _maybeShowReanchor, letting the prompt open the moment the roadmap lands
-  // instead of after a second round-trip.
-  final Map<String, List<ReanchorReasonEntity>> _reanchorReasonsCache = {};
-
-  /// BTV-authored re-anchor reasons for a course (§9.1). Empty when none
-  /// configured — the caller then skips the Re-anchor screen entirely.
-  Future<List<ReanchorReasonEntity>> getReanchorReasons(String courseId) async {
-    final cached = _reanchorReasonsCache[courseId];
-    if (cached != null) return cached;
-    final result = await _getReanchorReasonsUseCase(courseId).run();
-    final reasons = result.fold((_) => const <ReanchorReasonEntity>[], (reasons) => reasons);
-    _reanchorReasonsCache[courseId] = reasons;
-    return reasons;
   }
 
   void _replaceUserHabit(UserHabitEntity updated) {

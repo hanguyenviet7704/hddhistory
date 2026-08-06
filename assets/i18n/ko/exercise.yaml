@@ -40,3 +40,8 @@ exerciseSubheaderLabelBuildNonverbal: 비언어적 존재감 키우기
 exerciseTapToSpeakButton: 탭하여 말하기
 exerciseVoiceAnalysisTitle: 답변 분석
 exerciseYourAnswer: 내 답변
+
+# Shared practice-quiz deck strings (QuizQuestionCard — habit quiz + keypoint practice)
+exerciseSelectOneInstruction: 가장 알맞은 답을 고르세요
+exerciseSelectManyInstruction: 해당하는 답을 모두 고르세요
+exerciseSwipeNextHint: 위로 스와이프하면 다음 문제

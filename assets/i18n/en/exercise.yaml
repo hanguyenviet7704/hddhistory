@@ -41,3 +41,8 @@ exerciseSubheaderLabelBuildNonverbal: Building Nonverbal Presence
 exerciseTapToSpeakButton: Tap to speak
 exerciseVoiceAnalysisTitle: Answer analysis
 exerciseYourAnswer: Your answer
+
+# Shared practice-quiz deck strings (QuizQuestionCard — habit quiz + keypoint practice)
+exerciseSelectOneInstruction: Select the best answer
+exerciseSelectManyInstruction: Select all that apply
+exerciseSwipeNextHint: Swipe up for the next question

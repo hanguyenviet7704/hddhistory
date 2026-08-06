@@ -463,8 +463,6 @@ mixin TrackingKey {
   static const String habitEditScrView = 'habit_edit_scr_view';
   static const String habitEditToggle = 'habit_edit_toggle';
   static const String habitEditClose = 'habit_edit_close';
-  static const String habitReanchorScrView = 'habit_reanchor_scr_view';
-  static const String habitReanchorSelect = 'habit_reanchor_select';
   static const String habitStartScrView = 'habit_start_scr_view';
   static const String habitStartAdd = 'habit_start_add';
   static const String habitStartSkip = 'habit_start_skip';

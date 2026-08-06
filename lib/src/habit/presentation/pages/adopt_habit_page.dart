@@ -28,15 +28,12 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
   String _selectedReminderTime = '08:00';
   bool _isSubmitting = false;
 
-  /// The "PROBLEM" headline (Figma 10788:53255) = the re-anchor reason the user
-  /// picked for this course ("their why", §9.5) — the same "vấn đề" shown on the
-  /// tracker cluster. Falls back to the course title, then the first suggested
-  /// habit's own title, only when no reason was picked.
+  /// The "PROBLEM" headline (Figma 10788:53255). The re-anchor reason used to
+  /// win here; with that prompt gone it is the course title, then the first
+  /// suggested habit's own title.
   String get _headline {
     final courseId = widget.sourceCourseId;
     if (courseId != null && courseId.isNotEmpty) {
-      final reason = AppDI.injector.get<HabitCubit>().state.reanchorReasonByCourse[courseId]?.reason.text ?? '';
-      if (reason.isNotEmpty) return reason;
       // FULL catalog (HomeCubit.skillsets), not ProgressCubit.myCourses — this
       // page is reached right after finishing a keypoint, so myCourses (only
       // courses with SAVED progress) can still be stale for this exact course.
@@ -47,23 +44,15 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
     return widget.habits.first.title.text;
   }
 
-  /// The re-anchor reason the user picked for this habit's source course, used
-  /// as `anchor_id`/`anchor_name` on the adopt events. Null when adopted outside
-  /// a course context or before any reason was picked.
-  ReanchorReasonEntity? get _anchor {
-    final courseId = widget.sourceCourseId;
-    if (courseId == null || courseId.isEmpty) return null;
-    return AppDI.injector.get<HabitCubit>().state.reanchorReasonByCourse[courseId];
-  }
-
   @override
   void initState() {
     super.initState();
     _applyHabitDefaults(_selectedHabit);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _ensureNavHidden();
-      final anchor = _anchor;
-      HabitTracking.startScrView(anchorId: anchor?.id, anchorName: anchor?.reason.text, courseId: widget.sourceCourseId);
+      // anchor_id/anchor_name stay on the event schema but are always null now
+      // that the re-anchor prompt is gone — nothing picks an anchor any more.
+      HabitTracking.startScrView(courseId: widget.sourceCourseId);
     });
   }
 
@@ -101,10 +90,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
-    final anchor = _anchor;
     HabitTracking.startAdd(
-      anchorId: anchor?.id,
-      anchorName: anchor?.reason.text,
       courseId: widget.sourceCourseId,
       habitId: _selectedHabit.id,
       habitName: _selectedHabit.title.text,
@@ -247,10 +233,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
                     buttonType: DButtonType.text,
                     style: AppStyle.textBold14.copyWith(color: studyThemeAccentOnBg(context, AppCustomColor.streakActive)),
                     onPressed: () {
-                      final anchor = _anchor;
                       HabitTracking.startSkip(
-                        anchorId: anchor?.id,
-                        anchorName: anchor?.reason.text,
                         courseId: widget.sourceCourseId,
                         habitId: _selectedHabit.id,
                         habitName: _selectedHabit.title.text,

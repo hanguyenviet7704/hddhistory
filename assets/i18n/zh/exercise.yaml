@@ -40,3 +40,8 @@ exerciseSubheaderLabelBuildNonverbal: 建立非语言表现力
 exerciseTapToSpeakButton: 点击说话
 exerciseVoiceAnalysisTitle: 答案分析
 exerciseYourAnswer: 你的答案
+
+# Shared practice-quiz deck strings (QuizQuestionCard — habit quiz + keypoint practice)
+exerciseSelectOneInstruction: 选择最合适的答案
+exerciseSelectManyInstruction: 选出所有正确答案
+exerciseSwipeNextHint: 上滑进入下一题

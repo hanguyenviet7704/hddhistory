@@ -34,7 +34,6 @@ abstract class UserHabitEntity with _$UserHabitEntity {
     String? sourceCourseId,
     // The re-anchor reason the user picked for this habit's course (§9.5) — a
     // snapshot from adopt time, used as the tracker cluster title.
-    @Default(BaseMultiLanguage()) BaseMultiLanguage reanchorReason,
   }) = _UserHabitEntity;
 
   factory UserHabitEntity.fromJson(Map<String, dynamic> json) => _$UserHabitEntityFromJson(json);

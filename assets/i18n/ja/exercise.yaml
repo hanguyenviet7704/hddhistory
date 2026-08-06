@@ -40,3 +40,8 @@ exerciseSubheaderLabelBuildNonverbal: 非言語的な存在感を高める
 exerciseTapToSpeakButton: タップして話す
 exerciseVoiceAnalysisTitle: 解答の分析
 exerciseYourAnswer: あなたの解答
+
+# Shared practice-quiz deck strings (QuizQuestionCard — habit quiz + keypoint practice)
+exerciseSelectOneInstruction: 最適な答えを選んでください
+exerciseSelectManyInstruction: 当てはまるものすべてを選んでください
+exerciseSwipeNextHint: 上にスワイプで次の問題へ

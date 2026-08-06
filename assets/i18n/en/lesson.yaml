@@ -54,3 +54,10 @@ liveActivityNudgeNotifTitle: Your lesson is unfinished
 liveActivityNudgeNotifBody(param=count): Finish the last ${count} min now, before it fades.
 liveActivityDoneNotifTitle: Keep it fresh tomorrow
 liveActivityDoneNotifBody(param=course): You finished ${course}. Come back tomorrow so it sticks.
+
+# Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
+peekPracticeHint: Tap to practise this keypoint
+practiceQuizDoneTitle: Quiz complete
+practiceQuizDoneSubtitle: Swipe down to revisit any question.
+practiceQuizScore: ${correct}/${total} correct
+practiceQuizDoneButton: Done

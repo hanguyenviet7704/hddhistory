@@ -32,12 +32,10 @@ abstract class HabitState with _$HabitState {
     DateTime? weeklyRecapShownWeekStart,
     // Courses whose Re-anchor prompt (§9.1) has already been shown this session,
     // so it appears at most once per course.
-    @Default(<String>{}) Set<String> reanchorShownCourseIds,
     // The re-anchor reason the user picked per course (keyed by courseId),
     // remembered from the Re-anchor screen so it can be attached when a habit
     // is later adopted from that course's keypoint — it becomes the tracker
     // cluster title (§9.5).
-    @Default(<String, ReanchorReasonEntity>{}) Map<String, ReanchorReasonEntity> reanchorReasonByCourse,
   }) = _HabitState;
 
   factory HabitState.initial() => const HabitState();

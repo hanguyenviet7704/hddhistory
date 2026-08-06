@@ -97,15 +97,6 @@ class HabitTracking {
     track(TrackingKey.habitEditClose, parameters: {'active_count': activeCount});
   }
 
-  //* Re-anchor screen
-  static void reanchorScrView({required String courseId}) {
-    track(TrackingKey.habitReanchorScrView, parameters: _courseParams(courseId));
-  }
-
-  static void reanchorSelect({required String anchorId, required String anchorName, required String courseId}) {
-    track(TrackingKey.habitReanchorSelect, parameters: {'anchor_id': anchorId, 'anchor_name': anchorName, ..._courseParams(courseId)});
-  }
-
   //* Adopt / start-habit screen
   static void startScrView({String? anchorId, String? anchorName, String? courseId}) {
     track(TrackingKey.habitStartScrView, parameters: {'anchor_id': anchorId, 'anchor_name': anchorName, ..._courseParams(courseId)});

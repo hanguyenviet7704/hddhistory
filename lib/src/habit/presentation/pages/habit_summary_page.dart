@@ -142,7 +142,7 @@ class _HabitSummaryPageState extends State<HabitSummaryPage> {
                           for (int i = 0; i < categoryGroups.length; i++) ...[
                             if (i > 0) 24.verticalSpace,
                             _SummaryCategoryCard(
-                              title: _habitGroupTitle(categoryGroups[i].first, state),
+                              title: _habitGroupTitle(categoryGroups[i].first),
                               userHabits: categoryGroups[i],
                             ),
                           ],
