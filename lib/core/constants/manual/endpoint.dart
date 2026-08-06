@@ -151,6 +151,9 @@ mixin AppEndpoint {
   //* Study Theme (Change Background) API
   static const String studyThemes = '/api/v1/study-themes';
 
+  //* Analytics API (behaviour event sink read by the admin panel)
+  static const String analyticsEvents = '/api/v1/analytics/events';
+
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';
   static const String skillsetsById = '/api/v1/skillsets/{id}';

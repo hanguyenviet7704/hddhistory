@@ -60,7 +60,9 @@ class CompositeTrackingService extends BaseTrackingService {
       await service.trackEvent(eventName, parameters: parameters);
     }
 
-    super.trackEvent(eventName, parameters: parameters);
+    // No super call on purpose: BaseTrackingService.trackEvent mirrors into the
+    // DEV Event Inspector, and the children above already did that. Calling it
+    // here too would show every event twice.
   }
 
   @override
@@ -75,7 +77,7 @@ class CompositeTrackingService extends BaseTrackingService {
       await service.trackScreenView(screenName, screenClass: screenClass);
     }
 
-    super.trackScreenView(screenName, screenClass: screenClass);
+    // Same reason as trackEvent: the children already fed the Event Inspector.
   }
 
   @override

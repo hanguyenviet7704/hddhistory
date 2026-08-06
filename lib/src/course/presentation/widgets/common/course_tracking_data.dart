@@ -10,7 +10,15 @@ class CourseTrackingData {
   });
 
   static CourseTrackingData? fromCourseId(BuildContext context, String courseId) {
-    final homeState = context.read<HomeCubit>().state;
+    return fromHomeState(context.read<HomeCubit>().state, courseId);
+  }
+
+  /// Context-free variant, for callers that cannot rely on a `HomeCubit` being
+  /// above them in the widget tree — the lesson flow's routes do not provide
+  /// one, so `fromCourseId` throws there (`HomeCubit` is a `@lazySingleton`, so
+  /// reading it from `AppDI.injector` yields the very same instance the other
+  /// routes wrap).
+  static CourseTrackingData? fromHomeState(HomeState homeState, String courseId) {
     final skillset = homeState.skillsets.resolveSkillsetByCourseId(
       courseId,
       fallback: homeState.currentSkillset,
