@@ -30,6 +30,8 @@ import KeypointDetail from "../pages/keypoints/KeypointDetail";
 import SettingsPage from "../pages/setting/Setting";
 import SkillsetList from "../pages/skillsets/skillsetList";
 import HabitList from "../pages/habits/HabitList";
+import HabitCheckinList from "../pages/habit-checkins/HabitCheckinList";
+import HabitCheckinDetail from "../pages/habit-checkins/HabitCheckinDetail";
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
 import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
@@ -68,6 +70,12 @@ export default function AppRouter() {
               <Route path="skillset" element={<SkillsetList />} />
 
               <Route path="habits" element={<HabitList />} />
+
+              <Route path="habit-checkins" element={<HabitCheckinList />} />
+              <Route
+                path="habit-checkins/user/:userId"
+                element={<HabitCheckinDetail />}
+              />
 
               <Route
                 path="reanchor-reasons"

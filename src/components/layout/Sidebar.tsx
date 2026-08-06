@@ -27,6 +27,7 @@ import {
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
   LinkIcon,
+  ClipboardDocumentCheckIcon,
   FireIcon as StreakIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
@@ -59,6 +60,9 @@ const menuGroups = [
     title: "Habits & Personalization",
     items: [
       { name: "Habits", icon: FireIcon, path: "/habits" },
+      // Habits manages the library (content); Habit check-ins is the read-only
+      // view of what users actually do with it, journal text included.
+      { name: "Habit check-ins", icon: ClipboardDocumentCheckIcon, path: "/habit-checkins" },
       { name: "Re-anchor reasons", icon: ArrowPathIcon, path: "/reanchor-reasons" },
       { name: "Study Themes", icon: SwatchIcon, path: "/study-themes" },
     ],
