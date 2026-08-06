@@ -46,8 +46,21 @@ liveActivityDoneNotifTitle: 明日も記憶を新鮮に
 liveActivityDoneNotifBody(param=course): 「${course}」を完了しました。明日また戻って定着させましょう。
 
 # Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
-peekPracticeHint: タップしてこのキーポイントを練習
 practiceQuizDoneTitle: クイズ完了
 practiceQuizDoneSubtitle: 下にスワイプするとどの問題にも戻れます。
 practiceQuizScore: 正解 ${correct}/${total}
 practiceQuizDoneButton: 完了
+# Lesson complete + practice hub (design "3 · Learning")
+peekRecapHint: タップして要約を見る
+lessonCompleteTitle: レッスン完了！
+lessonCompletePracticeNow: 今すぐ練習
+lessonCompleteSkip: スキップして次のレッスンへ
+practiceHubTitle: 練習
+practiceHubSubtitle: 練習のしかたを選んでください
+practiceModeQuizTitle: クイズ
+practiceModeQuizSubtitle: 学んだばかりの内容から数問
+practiceModeRoleplayTitle: ロールプレイ
+practiceModeRoleplaySubtitle: AIパートナーと話して練習
+practiceModeVideoTitle: ショート動画
+practiceModeVideoSubtitle: 実際の場面でスキルの使い方を見る
+practiceComingSoon: 近日公開

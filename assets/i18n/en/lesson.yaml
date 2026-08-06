@@ -56,8 +56,21 @@ liveActivityDoneNotifTitle: Keep it fresh tomorrow
 liveActivityDoneNotifBody(param=course): You finished ${course}. Come back tomorrow so it sticks.
 
 # Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
-peekPracticeHint: Tap to practise this keypoint
 practiceQuizDoneTitle: Quiz complete
 practiceQuizDoneSubtitle: Swipe down to revisit any question.
 practiceQuizScore: ${correct}/${total} correct
 practiceQuizDoneButton: Done
+# Lesson complete + practice hub (design "3 · Learning")
+peekRecapHint: Tap to see the recap
+lessonCompleteTitle: Lesson complete!
+lessonCompletePracticeNow: Practice now
+lessonCompleteSkip: Skip to next lesson
+practiceHubTitle: Practice
+practiceHubSubtitle: Pick how you want to practise
+practiceModeQuizTitle: Quiz
+practiceModeQuizSubtitle: A few questions on what you just learnt
+practiceModeRoleplayTitle: Roleplay
+practiceModeRoleplaySubtitle: Talk it through with an AI partner
+practiceModeVideoTitle: Short video
+practiceModeVideoSubtitle: See the skill used in a real scene
+practiceComingSoon: Coming soon

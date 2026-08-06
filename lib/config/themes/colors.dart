@@ -166,6 +166,19 @@ mixin AppCustomColor {
   static const Color kpPeekDivider = Color(0xFFCFCBF2);
   static const Color kpPeekSource = Color(0xFF5F6F86);
   static const Color kpPeekHint = Color(0xFF7C74B0);
+
+  // Back face of the recap flip card (design `_MeUp App` → RECAP). Exact hex.
+  static const Color kpRecapBackSurface = Color(0xFF211B40);
+
+  // Practice hub mode tiles (design "3 · Learning" → Practice — pick a mode).
+  // Quiz reuses brandPrimary50; the roleplay/video tints sit in the truncated
+  // tail of the design file, so these are picked from its screenshot family and
+  // should be replaced if the exact values turn up.
+  static const Color practiceRoleplayTint = Color(0xFFFDEBF2);
+  static const Color practiceRoleplayIcon = Color(0xFFD96BA0);
+  static const Color practiceComingSoonChip = Color(0xFFEEF1F6);
+  static const Color practiceModeSubtext = Color(0xFF7C8AA4);
+  static const Color practiceChevron = Color(0xFFB4BDCB);
 }
 
 mixin AppTheme {

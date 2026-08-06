@@ -1,20 +1,21 @@
 part of '../../../lesson.dart';
 
-/// Terminal card of the unified keypoint swipe screen — the design's peek card
-/// (`_Keypoint Swipe Lab` → `c.isPeek`): the keypoint restated as a white quote
-/// card, a practice entry beneath it, and Continue at the bottom.
+/// Terminal card of the unified keypoint swipe screen — the design's recap flip
+/// card (`_MeUp App` → `RECAP (flip cards)` / `_Keypoint Swipe Lab` → `c.isPeek`):
+/// the keypoint restated as a white quote card that FLIPS on tap to a dark card
+/// carrying the recap text, with Continue at the bottom.
 ///
 /// This card used to be a checkmark visible for a frame or two:
 /// [LessonCubit.completeCurrentKeypoint] navigated to [KeypointCompleteRoute]
 /// the instant the last real card finished, covering it. Completion still fires
 /// exactly then (progress written, Live Activity updated, `completionOrigin`
 /// set — nothing about WHAT completing means changed), but navigation now waits
-/// for Continue here, because this card carries the keypoint's practice: the
-/// keypoint's own exercises, played as a swipe quiz ([KeypointQuizPage]).
-/// Practice hangs off the keypoint — the same rule the server uses to derive a
-/// habit's practice — so this is where it is offered, while the keypoint is
-/// still on screen. Readers who want none of it tap Continue and get the exact
-/// old flow.
+/// for Continue here, which hands over to the lesson-complete screen — where
+/// the practice entry lives ("Practice now" → [PracticeHubPage]).
+///
+/// The recap text is the keypoint's `description`. A keypoint without one keeps
+/// the quote card but loses the flip and its hint — a card that flips to
+/// nothing teaches the reader the gesture is a lie.
 ///
 /// The explicit completion call below is a fallback for the one path where
 /// nothing else would have triggered completion: a keypoint with no content at
@@ -26,7 +27,18 @@ class KeypointDoneCard extends StatefulWidget {
   State<KeypointDoneCard> createState() => _KeypointDoneCardState();
 }
 
-class _KeypointDoneCardState extends State<KeypointDoneCard> {
+class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerProviderStateMixin {
+  /// 0 → front (quote), 1 → back (recap text). The design's
+  /// `transition: transform .6s cubic-bezier(.2,.7,.25,1)`.
+  late final AnimationController _flip = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 600),
+  );
+  late final Animation<double> _turn = CurvedAnimation(
+    parent: _flip,
+    curve: const Cubic(0.2, 0.7, 0.25, 1),
+  );
+
   @override
   void initState() {
     super.initState();
@@ -40,33 +52,27 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> {
     });
   }
 
-  /// The keypoint's playable exercise questions — what [KeypointQuizPage] will
-  /// deal as cards. Same filter the server's habit-practice derivation applies:
-  /// `type: exercise` items with questions, in authored order.
-  List<QuestionEntity> _practiceQuestions(LessonState lessonState) {
-    return lessonState.pageData.items
-        .where((item) => item.type == LearningItemType.exercise)
-        .expand((item) => item.mainQuestions)
-        .where(QuizCardAnswer.isPlayableQuestion)
-        .toList();
+  @override
+  void dispose() {
+    _flip.dispose();
+    super.dispose();
   }
 
-  void _openPractice(BuildContext context, List<QuestionEntity> questions) {
-    if (questions.isEmpty) return;
+  void _toggleFlip(bool hasRecap) {
+    if (!hasRecap || _flip.isAnimating) return;
     AppHaptic.select();
-    final title = context.read<CourseLessonCubit>().state.currentTitle;
-    KeypointQuizPage.push(context, title: title, questions: questions);
+    _flip.isCompleted || _flip.value > 0.5 ? _flip.reverse() : _flip.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    final lessonState = context.watch<LessonCubit>().state;
     final courseLessonState = context.watch<CourseLessonCubit>().state;
     final keypoint = courseLessonState.resolvedCurrentKeypoint;
     final keypointTitle = keypoint.title.text.isNotEmpty ? keypoint.title.text : courseLessonState.selectedLesson.title.text;
     final lessonTitle = courseLessonState.selectedLesson.title.text;
     final imageUrl = keypoint.image.isNotEmpty ? keypoint.image : courseLessonState.selectedLesson.image;
-    final questions = _practiceQuestions(lessonState);
+    final recapText = keypoint.description.text.trim();
+    final hasRecap = recapText.isNotEmpty;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -74,12 +80,54 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> {
         children: [
           const Spacer(),
           GestureDetector(
-            onTap: () => _openPractice(context, questions),
-            child: _quoteCard(context, keypointTitle: keypointTitle, lessonTitle: lessonTitle, imageUrl: imageUrl),
+            onTap: () => _toggleFlip(hasRecap),
+            child: AnimatedBuilder(
+              animation: _turn,
+              builder: (context, _) {
+                final angle = _turn.value * math.pi;
+                final showBack = angle > math.pi / 2;
+                return Transform(
+                  alignment: Alignment.center,
+                  // The slight perspective entry is what reads as a card turning
+                  // in space rather than squashing flat (design: perspective 1400).
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.0008)
+                    ..rotateY(angle),
+                  child: showBack
+                      // Pre-mirrored so the back face reads left-to-right once
+                      // the card has turned past its edge.
+                      ? Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()..rotateY(math.pi),
+                          child: _recapBack(context, keypointTitle: keypointTitle, recapText: recapText),
+                        )
+                      : _quoteFront(context, keypointTitle: keypointTitle, lessonTitle: lessonTitle, imageUrl: imageUrl),
+                );
+              },
+            ),
           ),
-          if (questions.isNotEmpty) ...[
+          if (hasRecap) ...[
             16.verticalSpace,
-            _practiceHint(context, questions),
+            // The design fades the hint with the front face — once flipped the
+            // reader knows the gesture, and the line under a text card is noise.
+            AnimatedBuilder(
+              animation: _turn,
+              builder: (context, child) => Opacity(opacity: (1 - _turn.value).clamp(0, 1), child: child),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.touch_app_outlined, size: 17.w, color: AppCustomColor.kpPeekHint),
+                  7.horizontalSpace,
+                  AppText(
+                    context.l10n.lesson.peekRecapHint,
+                    style: AppStyle.text13.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppCustomColor.kpPeekHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
           const Spacer(),
           _continueButton(context),
@@ -89,126 +137,91 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> {
     );
   }
 
-  /// The design's white quote card: 290×(3:4), a giant pale quote mark behind
-  /// the keypoint title, the lesson it belongs to as the uppercase source line,
-  /// and the keypoint's illustration in the lower-right corner.
-  Widget _quoteCard(BuildContext context, {required String keypointTitle, required String lessonTitle, required String imageUrl}) {
-    return Container(
-      width: 290.w,
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(26.r),
-        boxShadow: [
-          BoxShadow(color: const Color(0x1A141828), blurRadius: 34, offset: const Offset(0, 14)),
-        ],
-      ),
-      child: AspectRatio(
-        aspectRatio: 3 / 4,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(26.r),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 6.h,
-                left: 14.w,
-                child: Text(
-                  '“',
-                  style: TextStyle(
-                    fontFamily: AppFont.poppins,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 130.sp,
-                    height: 1,
-                    color: AppCustomColor.kpPeekQuoteMark,
-                  ),
-                ),
+  /// Front: the design's white quote card — 290×(3:4), a giant pale quote mark
+  /// behind the keypoint title, the lesson it belongs to as the uppercase
+  /// source line, and the keypoint's illustration in the lower-right corner.
+  Widget _quoteFront(BuildContext context, {required String keypointTitle, required String lessonTitle, required String imageUrl}) {
+    return _cardShell(
+      color: AppCustomColor.backgroundWhite,
+      shadow: BoxShadow(color: const Color(0x1A141828), blurRadius: 34, offset: const Offset(0, 14)),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 6.h,
+            left: 14.w,
+            child: Text(
+              '“',
+              style: TextStyle(
+                fontFamily: AppFont.poppins,
+                fontWeight: FontWeight.w700,
+                fontSize: 130.sp,
+                height: 1,
+                color: AppCustomColor.kpPeekQuoteMark,
               ),
-              if (imageUrl.isNotEmpty)
-                Positioned(
-                  right: 20.w,
-                  bottom: 20.h,
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    width: 92.w,
-                    height: 118.h,
-                    fit: BoxFit.contain,
-                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+          if (imageUrl.isNotEmpty)
+            Positioned(
+              right: 20.w,
+              bottom: 20.h,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                width: 92.w,
+                height: 118.h,
+                fit: BoxFit.contain,
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          Padding(
+            // Bottom inset keeps the text clear of the illustration corner —
+            // the design reserves the card's lower strip for it.
+            padding: EdgeInsets.fromLTRB(26.w, 30.h, 26.w, 108.h),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  keypointTitle,
+                  maxLines: 5,
+                  // Design 21/700 — the app scale has no 21, and this card is
+                  // a design set piece, so it keeps the exact value.
+                  style: TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 21.sp,
+                    fontWeight: FontWeight.w700,
+                    height: 1.28,
+                    color: AppCustomColor.textPrimary,
                   ),
                 ),
-              Padding(
-                // Bottom inset keeps the text clear of the illustration corner —
-                // the design reserves the card's lower strip for it.
-                padding: EdgeInsets.fromLTRB(26.w, 30.h, 26.w, 108.h),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      keypointTitle,
-                      maxLines: 5,
-                      // Design 21/700 — the app scale has no 21, and this card is
-                      // a design set piece, so it keeps the exact value.
+                11.verticalSpace,
+                Container(
+                  width: 28.w,
+                  height: 2.h,
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.kpPeekDivider,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                if (lessonTitle.isNotEmpty) ...[
+                  8.verticalSpace,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 203.w),
+                    child: AppText(
+                      lessonTitle.toUpperCase(),
+                      maxLines: 3,
+                      // Design 8.5/700, .08em tracking — exact values, see above.
                       style: TextStyle(
                         fontFamily: AppFont.mulish,
-                        fontSize: 21.sp,
+                        fontSize: 8.5.sp,
                         fontWeight: FontWeight.w700,
-                        height: 1.28,
-                        color: AppCustomColor.textPrimary,
+                        height: 1.45,
+                        letterSpacing: 8.5 * 0.08,
+                        color: AppCustomColor.kpPeekSource,
                       ),
                     ),
-                    11.verticalSpace,
-                    Container(
-                      width: 28.w,
-                      height: 2.h,
-                      decoration: BoxDecoration(
-                        color: AppCustomColor.kpPeekDivider,
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                    if (lessonTitle.isNotEmpty) ...[
-                      8.verticalSpace,
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 203.w),
-                        child: AppText(
-                          lessonTitle.toUpperCase(),
-                          maxLines: 3,
-                          // Design 8.5/700, .08em tracking — exact values, see above.
-                          style: TextStyle(
-                            fontFamily: AppFont.mulish,
-                            fontSize: 8.5.sp,
-                            fontWeight: FontWeight.w700,
-                            height: 1.45,
-                            letterSpacing: 8.5 * 0.08,
-                            color: AppCustomColor.kpPeekSource,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// The design's tap hint under the card, repurposed for what tapping does
-  /// here: practise this keypoint.
-  Widget _practiceHint(BuildContext context, List<QuestionEntity> questions) {
-    return GestureDetector(
-      onTap: () => _openPractice(context, questions),
-      behavior: HitTestBehavior.opaque,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.touch_app_outlined, size: 17.w, color: AppCustomColor.kpPeekHint),
-          7.horizontalSpace,
-          AppText(
-            context.l10n.lesson.peekPracticeHint,
-            style: AppStyle.text13.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppCustomColor.kpPeekHint,
+                  ),
+                ],
+              ],
             ),
           ),
         ],
@@ -216,8 +229,123 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> {
     );
   }
 
+  /// Back: the design's dark recap card — deep violet, the title capped at 78%
+  /// width, a hairline, and the recap text scrolling under a bottom fade.
+  Widget _recapBack(BuildContext context, {required String keypointTitle, required String recapText}) {
+    return _cardShell(
+      color: AppCustomColor.kpRecapBackSurface,
+      shadow: BoxShadow(color: const Color(0x57211B40), blurRadius: 38, offset: const Offset(0, 16)),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 6.h,
+            right: 22.w,
+            child: Text(
+              '“',
+              style: TextStyle(
+                fontFamily: AppFont.poppins,
+                fontWeight: FontWeight.w700,
+                fontSize: 64.sp,
+                height: 1,
+                color: AppCustomColor.textWhite.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(26.w, 30.h, 26.w, 24.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 226.w),
+                  child: AppText(
+                    keypointTitle,
+                    maxLines: 3,
+                    // Design 17/800.
+                    style: TextStyle(
+                      fontFamily: AppFont.mulish,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w800,
+                      height: 1.3,
+                      color: AppCustomColor.textWhite,
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(top: 12.h, bottom: 14.h),
+                  height: 1,
+                  color: AppCustomColor.textWhite.withValues(alpha: 0.24),
+                ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      SingleChildScrollView(
+                        padding: EdgeInsets.only(right: 4.w, bottom: 24.h),
+                        child: AppText(
+                          recapText,
+                          maxLines: 200,
+                          // Design 14.5/600, lh 1.62.
+                          style: TextStyle(
+                            fontFamily: AppFont.mulish,
+                            fontSize: 14.5.sp,
+                            fontWeight: FontWeight.w600,
+                            height: 1.62,
+                            color: AppCustomColor.textWhite.withValues(alpha: 0.92),
+                          ),
+                        ),
+                      ),
+                      // The design's bottom fade: tells the reader there is more
+                      // text without a scrollbar over a photo-free dark card.
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          child: Container(
+                            height: 44.h,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  AppCustomColor.kpRecapBackSurface.withValues(alpha: 0),
+                                  AppCustomColor.kpRecapBackSurface,
+                                ],
+                                stops: const [0, 0.88],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Both faces share the same geometry so the flip reads as one card turning.
+  Widget _cardShell({required Color color, required BoxShadow shadow, required Widget child}) {
+    return Container(
+      width: 290.w,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(26.r),
+        boxShadow: [shadow],
+      ),
+      child: AspectRatio(
+        aspectRatio: 3 / 4,
+        child: ClipRRect(borderRadius: BorderRadius.circular(26.r), child: child),
+      ),
+    );
+  }
+
   /// Full-width Continue (design: 54 tall, pill radius) — hands the reader to
-  /// the completion screen the deck used to jump to on its own.
+  /// the lesson-complete screen the deck used to jump to on its own.
   Widget _continueButton(BuildContext context) {
     return Semantics(
       button: true,

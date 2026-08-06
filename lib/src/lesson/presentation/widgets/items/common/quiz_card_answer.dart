@@ -64,6 +64,16 @@ class QuizCardAnswer {
     _ => false,
   };
 
+  /// The keypoint's playable exercise questions, straight from the loaded
+  /// lesson items — what the practice quiz deals as cards. The same filter the
+  /// server's habit-practice derivation applies: `type: exercise` items with
+  /// questions, in authored order.
+  static List<QuestionEntity> practiceQuestionsOf(LessonState lessonState) => lessonState.pageData.items
+      .where((item) => item.type == LearningItemType.exercise)
+      .expand((item) => item.mainQuestions)
+      .where(isPlayableQuestion)
+      .toList();
+
   List<QuestionChoiceOptionEntity> get choiceOptions => switch (question.typedPayload) {
     QuestionSingleChoicePayloadEntity(:final options) => options,
     QuestionMultipleChoicePayloadEntity(:final options) => options,

@@ -46,8 +46,21 @@ liveActivityDoneNotifTitle: 明天保持新鲜
 liveActivityDoneNotifBody(param=course): 你已完成《${course}》。明天再来巩固记忆。
 
 # Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
-peekPracticeHint: 点按练习这个知识点
 practiceQuizDoneTitle: 测验完成
 practiceQuizDoneSubtitle: 下滑可回看任意一题。
 practiceQuizScore: 正确 ${correct}/${total}
 practiceQuizDoneButton: 完成
+# Lesson complete + practice hub (design "3 · Learning")
+peekRecapHint: 点按查看摘要
+lessonCompleteTitle: 课程完成！
+lessonCompletePracticeNow: 立即练习
+lessonCompleteSkip: 跳过，进入下一课
+practiceHubTitle: 练习
+practiceHubSubtitle: 选择你想要的练习方式
+practiceModeQuizTitle: 测验
+practiceModeQuizSubtitle: 针对刚学内容的几道题
+practiceModeRoleplayTitle: 角色扮演
+practiceModeRoleplaySubtitle: 与AI伙伴对话练习
+practiceModeVideoTitle: 短视频
+practiceModeVideoSubtitle: 看看技能在真实场景中的运用
+practiceComingSoon: 即将推出

@@ -56,8 +56,21 @@ liveActivityDoneNotifTitle: Giữ kiến thức tươi mới ngày mai
 liveActivityDoneNotifBody(param=course): Bạn đã hoàn thành ${course}. Quay lại ngày mai để ghi nhớ lâu.
 
 # Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
-peekPracticeHint: Chạm để luyện tập keypoint này
 practiceQuizDoneTitle: Hoàn thành quiz
 practiceQuizDoneSubtitle: Vuốt xuống để xem lại câu bất kỳ.
 practiceQuizScore: Đúng ${correct}/${total}
 practiceQuizDoneButton: Xong
+# Lesson complete + practice hub (design "3 · Learning")
+peekRecapHint: Chạm để xem tóm tắt
+lessonCompleteTitle: Hoàn thành bài học!
+lessonCompletePracticeNow: Luyện tập ngay
+lessonCompleteSkip: Bỏ qua, sang bài tiếp theo
+practiceHubTitle: Luyện tập
+practiceHubSubtitle: Chọn cách bạn muốn luyện tập
+practiceModeQuizTitle: Quiz
+practiceModeQuizSubtitle: Vài câu hỏi về nội dung bạn vừa học
+practiceModeRoleplayTitle: Nhập vai
+practiceModeRoleplaySubtitle: Trò chuyện cùng một người bạn AI
+practiceModeVideoTitle: Video ngắn
+practiceModeVideoSubtitle: Xem kỹ năng được dùng trong tình huống thật
+practiceComingSoon: Sắp có

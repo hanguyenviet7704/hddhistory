@@ -195,18 +195,12 @@ class _BadgeProgressContent extends StatelessWidget {
   final BadgeProgressStep step;
   final String currentTitle;
   final VoidCallback onPrimaryCta;
-  // Drives the primary CTA's spinner while the tap is still resolving async
-  // work (e.g. keypoint-complete's streak gate + habit-suggestion fetch before
-  // it navigates). Defaults off, so the badge page — whose advance is
-  // synchronous — is unaffected.
-  final bool isLoading;
 
   const _BadgeProgressContent({
     required this.progress,
     required this.step,
     required this.currentTitle,
     required this.onPrimaryCta,
-    this.isLoading = false,
   });
 
   bool get _isInProgress => step == BadgeProgressStep.inProgress;
@@ -304,7 +298,6 @@ class _BadgeProgressContent extends StatelessWidget {
             backgroundColor: AppCustomColor.brandPrimary,
             size: Size(double.infinity, 54.h),
             style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-            isLoading: isLoading,
             onPressed: onPrimaryCta,
           ),
         ),

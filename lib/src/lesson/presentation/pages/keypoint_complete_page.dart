@@ -195,10 +195,15 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     });
   }
 
+  void _openPractice(BuildContext context, CourseLessonState lessonState) {
+    AppHaptic.select();
+    final questions = QuizCardAnswer.practiceQuestionsOf(context.read<LessonCubit>().state);
+    PracticeHubPage.push(context, title: lessonState.currentTitle, questions: questions);
+  }
+
   @override
   Widget build(BuildContext context) {
     final lessonState = context.select((CourseLessonCubit cubit) => cubit.state);
-    final currentTitle = lessonState.currentTitle;
 
     return MultiBlocListener(
       listeners: [
@@ -220,33 +225,186 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
           },
         ),
       ],
+      // Design "3 · Learning" → Lesson complete: X top-left, the floating
+      // stacked-cards illustration with a drawn check, "Lesson complete!", and
+      // "Practice now" over "Skip to next lesson". It replaced the badge-progress
+      // reuse that used to render here (Figma 10326:35300); the badge "complete"
+      // celebration is still reachable — [_navigateAfterCompletion] routes
+      // through [BadgeProgressRoute] the moment the course badge finishes.
       child: Scaffold(
         key: const Key('keypoint-complete-page'),
-        backgroundColor: AppCustomColor.backgroundWhite,
-        body: SafeArea(
-          // Reuses the badge-progress design (Figma 10326:35300) so completing
-          // a keypoint always shows the course-level badge's current state —
-          // grayed badge + progress bar + "N lessons left to unlock" — instead
-          // of the old plain checkmark screen. The "complete" step (lit badge
-          // + congrats Lottie) is intentionally never shown here: it's only
-          // reachable via [BadgeProgressRoute], triggered from
-          // [_navigateAfterCompletion] the moment the badge finishes.
-          child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, CourseLevelProgressEntity>(
-            selector: (state) => state.currentLevelProgress,
-            builder: (context, progress) {
-              return _BadgeProgressContent(
-                progress: progress,
-                step: BadgeProgressStep.inProgress,
-                currentTitle: currentTitle,
-                // Continue kicks off async work (streak gate + habit-suggestion
-                // fetch) before navigating — show a spinner so the button isn't
-                // a dead tap for that beat.
-                isLoading: _isHandlingPrimaryCta,
-                onPrimaryCta: () => _handlePrimaryCta(lessonState),
-              );
-            },
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundBrandSoft),
+        body: ThemedBackground(
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // The design's X leaves for the roadmap — same act as skipping,
+                  // so it runs the same flow (streak gate + habit suggestion
+                  // included) rather than a second, quieter exit path.
+                  Semantics(
+                    button: true,
+                    label: context.l10n.common.close,
+                    child: GestureDetector(
+                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState),
+                      child: Container(
+                        width: 36.w,
+                        height: 36.w,
+                        decoration: BoxDecoration(
+                          color: AppCustomColor.textPrimary.withValues(alpha: 0.06),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(Icons.close, size: 18.w, color: AppCustomColor.kpOptionText),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const _LessonCompleteIllustration(),
+                          24.verticalSpace,
+                          AppText(
+                            context.l10n.lesson.lessonCompleteTitle,
+                            textAlign: TextAlign.center,
+                            // Design 34/800, -0.01em.
+                            style: TextStyle(
+                              fontFamily: AppFont.mulish,
+                              fontSize: 34.sp,
+                              fontWeight: FontWeight.w800,
+                              height: 1.2,
+                              letterSpacing: 34 * -0.01,
+                              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Practice now → the hub. Deliberately NOT gated on the keypoint
+                  // having questions: the hub also carries the coming-soon modes,
+                  // and Quiz itself guards an empty deck.
+                  Semantics(
+                    button: true,
+                    child: Material(
+                      color: AppCustomColor.brandPrimary,
+                      borderRadius: BorderRadius.circular(999.r),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(999.r),
+                        onTap: () => _openPractice(context, lessonState),
+                        child: Container(
+                          height: 56.h,
+                          alignment: Alignment.center,
+                          child: AppText(
+                            context.l10n.lesson.lessonCompletePracticeNow,
+                            style: AppStyle.text16.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppCustomColor.textWhite,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  10.verticalSpace,
+                  // Skip kicks off async work (streak gate + habit-suggestion
+                  // fetch) before navigating — show a spinner so the button isn't
+                  // a dead tap for that beat.
+                  Semantics(
+                    button: true,
+                    child: GestureDetector(
+                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        height: 44.h,
+                        alignment: Alignment.center,
+                        child: _isHandlingPrimaryCta
+                            ? SizedBox(
+                                width: 18.w,
+                                height: 18.w,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: studyThemeOnBg(context, AppCustomColor.brandPrimary),
+                                ),
+                              )
+                            : AppText(
+                                context.l10n.lesson.lessonCompleteSkip,
+                                // Design 15/600 — the app scale has no 15.
+                                style: TextStyle(
+                                  fontFamily: AppFont.mulish,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: studyThemeOnBg(context, AppCustomColor.brandPrimary),
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The design's illustration: two stacked report cards, a drawn check disc and
+/// two sparkles (design `showComplete`'s inline SVG, its staged CSS keyframes
+/// collapsed into one pop-in + a slow float — the per-element choreography
+/// belongs to a prototype, not a production page a reader sees for seconds).
+class _LessonCompleteIllustration extends StatefulWidget {
+  const _LessonCompleteIllustration();
+
+  @override
+  State<_LessonCompleteIllustration> createState() => _LessonCompleteIllustrationState();
+}
+
+class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration> with SingleTickerProviderStateMixin {
+  /// The design's `muFloat 4s ease-in-out infinite` — a gentle ±4px bob.
+  late final AnimationController _float = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  )..repeat(reverse: true);
+
+  static const String _svg = '''
+<svg viewBox="0 0 267 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="61.1621" y="63.1577" width="177.608" height="48" rx="12" fill="#EBEAFD" opacity="0.6"/>
+  <rect x="33.9336" y="1" width="232.066" height="90.2105" rx="11" fill="#EBEAFD" stroke="white" stroke-width="2"/>
+  <rect x="57.9336" y="20.5" width="55" height="12" rx="6" fill="#D6CAFD"/>
+  <rect x="57.9336" y="40.5" width="120" height="12" rx="6" fill="#D6CAFD" opacity="0.4"/>
+  <circle cx="32.93" cy="41.28" r="18.82" fill="#4B44CA"/>
+  <path d="M25.4355 40.9344L30.6628 46.2832L40.4355 36.2832" stroke="white" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="4.66754" cy="20.9449" r="2.44489" fill="#C7C5FA"/>
+  <path d="M10.1645 7.85788L11.6958 2.49857C11.9058 1.76362 12.9473 1.76362 13.1573 2.49857L14.6885 7.85788L20.0478 9.38911C20.7828 9.59909 20.7828 10.6406 20.0478 10.8506L14.6885 12.3819L13.1573 17.7412C12.9473 18.4761 11.9058 18.4761 11.6958 17.7412L10.1645 12.3819L4.79114 10.8686C4.05477 10.6612 4.05168 9.61848 4.78682 9.40675L10.1645 7.85788Z" fill="#C7C5FA"/>
+</svg>
+''';
+
+  @override
+  void dispose() {
+    _float.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.9, end: 1),
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutBack,
+      builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+      child: AnimatedBuilder(
+        animation: _float,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(0, -4.h * _float.value),
+          child: child,
+        ),
+        child: SvgPicture.string(_svg, width: 290.w),
       ),
     );
   }

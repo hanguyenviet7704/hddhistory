@@ -124,6 +124,7 @@ part 'presentation/pages/badge_progress_page.dart';
 part 'presentation/pages/keypoint_complete_page.dart';
 part 'presentation/pages/keypoint_quiz_page.dart';
 part 'presentation/pages/lesson_body_factory.dart';
+part 'presentation/pages/practice_hub_page.dart';
 part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/no_correct_answer_document_page.dart';
 part 'presentation/pages/review_time_page.dart';
