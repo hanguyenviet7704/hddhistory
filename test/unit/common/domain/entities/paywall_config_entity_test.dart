@@ -152,6 +152,58 @@ void main() {
 
       expect(roundTripped, parsed);
     });
+
+    test('Given no entryPointVariants key, When parsed, Then every entry point reads as full', () {
+      final config = PaywallConfigEntity.fromRawConfig(_approvedConfig);
+
+      expect(config.entryPointVariants, isEmpty);
+      expect(config.variantForEntryPoint('inLesson'), PaywallProductVariant.full);
+      expect(config.variantForEntryPoint('profile'), PaywallProductVariant.full);
+    });
+
+    test('Given entryPointVariants, When parsed, Then known values map and unknown ones fall back to full', () {
+      final config = PaywallConfigEntity.fromRawConfig(r'''
+{
+  "schemaVersion": 2,
+  "enableLessonLock": false,
+  "lessonLock": 5,
+  "autoOpen": {"enabled": false, "sessionRolloutPercent": 0},
+  "entryPointVariants": {
+    "inLesson": "compact",
+    "profile": "full",
+    "habit": "medium",
+    "theme": 3
+  },
+  "saleStrategy": {
+    "defaultUser": {
+      "content": {"en": {"heading": "Head"}},
+      "products": [{"appleProductId": "a1", "googleProductId": "g1"}],
+      "compactProducts": [{"appleProductId": "a1m", "googleProductId": "g1m"}]
+    },
+    "newUser": {"enabled": false, "windowDays": 0, "impressionRules": []},
+    "saleEvent": {"enabled": false}
+  }
+}
+''');
+
+      expect(config.variantForEntryPoint('inLesson'), PaywallProductVariant.compact);
+      expect(config.variantForEntryPoint('profile'), PaywallProductVariant.full);
+      // Unparseable values are dropped rather than guessed at, so the getter's
+      // safe default applies.
+      expect(config.variantForEntryPoint('habit'), PaywallProductVariant.full);
+      expect(config.variantForEntryPoint('theme'), PaywallProductVariant.full);
+      expect(config.variantForEntryPoint('autoOpen'), PaywallProductVariant.full);
+      expect(config.saleStrategy!.defaultUser.compactProducts, hasLength(1));
+      expect(config.saleStrategy!.defaultUser.compactProducts.first.googleProductId, 'g1m');
+    });
+
+    test('Given no compactProducts anywhere, When parsed, Then each strategy has an empty reduced list', () {
+      final config = PaywallConfigEntity.fromRawConfig(_approvedConfig);
+      final strategy = config.saleStrategy!;
+
+      expect(strategy.defaultUser.compactProducts, isEmpty);
+      expect(strategy.newUser.impressionRules.every((rule) => rule.compactProducts.isEmpty), isTrue);
+    });
   });
 }
 

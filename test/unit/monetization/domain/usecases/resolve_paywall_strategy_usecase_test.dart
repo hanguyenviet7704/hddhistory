@@ -11,6 +11,7 @@ void main() {
     DateTime? installTime,
     int storedImpressionCount = 0,
     DateTime? nowUtc,
+    PaywallEntryPoint entryPoint = PaywallEntryPoint.other,
   }) {
     return resolver(
       ResolvePaywallStrategyParams(
@@ -19,6 +20,7 @@ void main() {
         nowUtc: nowUtc ?? now,
         installTime: installTime,
         storedImpressionCount: storedImpressionCount,
+        entryPoint: entryPoint,
       ),
     );
   }
@@ -145,6 +147,129 @@ void main() {
       expect(result.strategyType, ResolvedPaywallStrategyType.defaultUser);
     });
   });
+
+  group('ResolvePaywallStrategyUsecase entry-point variants', () {
+    test('Given a compact entry point, When resolved, Then renders the reduced list', () {
+      final result = resolve(config: _compactConfig(), entryPoint: PaywallEntryPoint.inLesson);
+
+      expect(result.variant, PaywallProductVariant.compact);
+      expect(result.productIds, ['google-default-compact']);
+    });
+
+    test('Given a full entry point, When resolved, Then renders the full list', () {
+      final result = resolve(config: _compactConfig(), entryPoint: PaywallEntryPoint.profile);
+
+      expect(result.variant, PaywallProductVariant.full);
+      expect(result.productIds, ['google-default-1', 'google-default-2']);
+    });
+
+    test('Given an entry point absent from the map, When resolved, Then defaults to the full list', () {
+      final result = resolve(config: _compactConfig(), entryPoint: PaywallEntryPoint.habit);
+
+      expect(result.variant, PaywallProductVariant.full);
+      expect(result.productIds, ['google-default-1', 'google-default-2']);
+    });
+
+    test('Given no entryPointVariants at all, When resolved, Then every entry point stays full', () {
+      for (final entryPoint in PaywallEntryPoint.values) {
+        final result = resolve(entryPoint: entryPoint);
+
+        expect(result.variant, PaywallProductVariant.full);
+        expect(result.productIds, ['google-default-1', 'google-default-2']);
+      }
+    });
+
+    test('Given a compact entry point and a new user, When resolved, Then uses the matched rule reduced list', () {
+      final result = resolve(
+        config: _compactConfig(),
+        installTime: DateTime(2026, 6, 18),
+        storedImpressionCount: 1,
+        entryPoint: PaywallEntryPoint.inLesson,
+      );
+
+      expect(result.strategyType, ResolvedPaywallStrategyType.newUser);
+      expect(result.variant, PaywallProductVariant.compact);
+      expect(result.productIds, ['google-new-2-compact']);
+    });
+
+    test('Given an active sale event and a compact entry point, When resolved, Then the campaign still reaches the reader', () {
+      final result = resolve(
+        config: _compactConfig(onSaleEvent: true),
+        nowUtc: DateTime.utc(2026, 6, 25),
+        entryPoint: PaywallEntryPoint.inLesson,
+      );
+
+      expect(result.strategyType, ResolvedPaywallStrategyType.saleEvent);
+      expect(result.campaignId, 'summer');
+      expect(result.variant, PaywallProductVariant.compact);
+      expect(result.productIds, ['google-event-compact']);
+    });
+
+    test('Given an active sale event and a compact entry point, When resolved, Then the countdown is kept', () {
+      final result = resolve(
+        config: _compactConfig(onSaleEvent: true),
+        nowUtc: DateTime.utc(2026, 6, 25),
+        entryPoint: PaywallEntryPoint.inLesson,
+      );
+
+      expect(result.hasSaleCountdown, isTrue);
+    });
+
+    test('Given the same strategy on two entry points, When resolved, Then the signatures differ', () {
+      final config = _compactConfig();
+
+      final compact = resolve(config: config, entryPoint: PaywallEntryPoint.inLesson);
+      final full = resolve(config: config, entryPoint: PaywallEntryPoint.profile);
+
+      // If these matched, IapCubit.loadIapProducts would reuse the first
+      // entry point's store products for the second.
+      expect(compact.signature, isNot(full.signature));
+    });
+
+    group('falls back to the full list rather than blanking the paywall', () {
+      test('Given an empty compact list, When a compact entry point resolves, Then uses the full list', () {
+        final result = resolve(
+          config: _compactConfig(defaultUserCompact: const []),
+          entryPoint: PaywallEntryPoint.inLesson,
+        );
+
+        expect(result.isValid, isTrue);
+        expect(result.variant, PaywallProductVariant.full);
+        expect(result.productIds, ['google-default-1', 'google-default-2']);
+      });
+
+      test('Given a compact list with a blank id for this platform, When resolved, Then uses the full list', () {
+        final result = resolve(
+          config: _compactConfig(
+            defaultUserCompact: const [
+              PaywallProductReferenceEntity(appleProductId: 'apple-only-compact'),
+            ],
+          ),
+          entryPoint: PaywallEntryPoint.inLesson,
+        );
+
+        expect(result.isValid, isTrue);
+        expect(result.variant, PaywallProductVariant.full);
+        expect(result.productIds, ['google-default-1', 'google-default-2']);
+      });
+
+      test('Given a compact list with duplicate ids, When resolved, Then uses the full list', () {
+        final result = resolve(
+          config: _compactConfig(
+            defaultUserCompact: const [
+              PaywallProductReferenceEntity(googleProductId: 'google-dup'),
+              PaywallProductReferenceEntity(googleProductId: 'google-dup'),
+            ],
+          ),
+          entryPoint: PaywallEntryPoint.inLesson,
+        );
+
+        expect(result.isValid, isTrue);
+        expect(result.variant, PaywallProductVariant.full);
+        expect(result.productIds, ['google-default-1', 'google-default-2']);
+      });
+    });
+  });
 }
 
 const _content = PaywallContentEntity(
@@ -157,6 +282,49 @@ const _content = PaywallContentEntity(
     ),
   ],
 );
+
+/// `entryPointVariants` marking in-lesson as compact, plus a one-SKU reduced
+/// list on every strategy — the shipped default of the entry-point-variants
+/// feature.
+PaywallConfigEntity _compactConfig({
+  List<PaywallProductReferenceEntity>? defaultUserCompact,
+  bool onSaleEvent = false,
+}) {
+  final base = onSaleEvent ? _eventConfig() : _config;
+  final strategy = base.saleStrategy!;
+  return base.copyWith(
+    entryPointVariants: const {
+      'inLesson': PaywallProductVariant.compact,
+      'profile': PaywallProductVariant.full,
+    },
+    saleStrategy: strategy.copyWith(
+      defaultUser: strategy.defaultUser.copyWith(
+        compactProducts: defaultUserCompact ??
+            const [
+              PaywallProductReferenceEntity(appleProductId: 'apple-default-compact', googleProductId: 'google-default-compact'),
+            ],
+      ),
+      newUser: strategy.newUser.copyWith(
+        impressionRules: [
+          for (final rule in strategy.newUser.impressionRules)
+            rule.copyWith(
+              compactProducts: [
+                PaywallProductReferenceEntity(
+                  appleProductId: 'apple-new-${rule.fromImpression}-compact',
+                  googleProductId: 'google-new-${rule.fromImpression}-compact',
+                ),
+              ],
+            ),
+        ],
+      ),
+      saleEvent: strategy.saleEvent?.copyWith(
+        compactProducts: const [
+          PaywallProductReferenceEntity(appleProductId: 'apple-event-compact', googleProductId: 'google-event-compact'),
+        ],
+      ),
+    ),
+  );
+}
 
 const _config = PaywallConfigEntity(
   schemaVersion: 2,
