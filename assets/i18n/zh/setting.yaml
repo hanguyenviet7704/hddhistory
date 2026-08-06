@@ -75,6 +75,9 @@ settingProfileAchievementsSeeAll: 查看全部
 settingProfileBadgesEarnedLabel: 已获得徽章
 settingProfileLearningProgressSection: 学习进度
 settingProfileLibrarySection: 资料库
+settingProfileSupportSection: 支持
+settingSupportFanpageTitle: 联系我们的主页
+settingSupportFanpageSubtitle: 需要帮助？和我们聊聊
 settingProfileAchievementsSectionProgress: ${completed}/${total}
 settingProfileAchievementsEmptyTitle: 还没有徽章
 settingProfileAchievementsEmptyMessage: 完成课程即可开始赢取徽章。

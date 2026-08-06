@@ -75,6 +75,9 @@ settingProfileAchievementsSeeAll: すべて見る
 settingProfileBadgesEarnedLabel: 獲得したバッジ
 settingProfileLearningProgressSection: 学習の進捗
 settingProfileLibrarySection: ライブラリ
+settingProfileSupportSection: サポート
+settingSupportFanpageTitle: Fanpage に連絡
+settingSupportFanpageSubtitle: お困りですか？チャットでご相談ください
 settingProfileAchievementsSectionProgress: ${completed}/${total}
 settingProfileAchievementsEmptyTitle: バッジはまだありません
 settingProfileAchievementsEmptyMessage: レッスンを完了してバッジを獲得しましょう。
