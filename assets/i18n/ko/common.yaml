@@ -15,6 +15,9 @@ fakedoorComingSoon: 곧 출시
 fakedoorFeaturesNameIsAlmostReady: ${featuresName}이(가) 거의 준비되었어요!
 fakedoorIDoNotWantNotifications: 알림을 받지 않을게요
 fakedoorNotifyMe: 알림 받기
+forceUpdateAction: 업데이트하기
+forceUpdateMessage: 새로운 기능과 더 나은 경험을 위해 앱을 업데이트해 주세요.
+forceUpdateTitle: 더 좋아졌어요!
 next: 다음
 'no': 아니요
 skip: 건너뛰기

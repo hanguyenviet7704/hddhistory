@@ -146,7 +146,22 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   }
 
   @override
-  Future<bool> updateAvailable() async {
+  Future<bool> shouldForceUpdate() async {
+    try {
+      await _waitForStartupFetch();
+      return shouldBlockForForcedUpdate(
+        appVersionConfig,
+        isIOS: Platform.isIOS,
+        isInstalledOlderThan: _packageInfoService.isVersionLowerThan,
+      );
+    } catch (e) {
+      LogDev.error('shouldForceUpdate: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> optionalUpdateAvailable() async {
     try {
       await _waitForStartupFetch();
       return shouldShowUpdateBanner(
@@ -155,22 +170,48 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
         isInstalledOlderThan: _packageInfoService.isVersionLowerThan,
       );
     } catch (e) {
-      LogDev.error('updateAvailable: $e');
+      LogDev.error('optionalUpdateAvailable: $e');
       return false;
     }
   }
 }
 
-/// Whether Home should surface the update banner, kept pure so the branching is
-/// unit-testable (the platform checks and the version comparison are injected).
+/// Whether the splash must block entry until the user updates, kept pure so the
+/// branching is unit-testable (the platform check and the version comparison are
+/// injected).
 ///
-/// Note what is NOT consulted: [AppVersionConfigEntity.forceUserUpdate]. The
-/// blocking splash dialog was removed in favour of a single update surface on
-/// Home, so a forced config shows the same banner rather than suppressing it —
-/// re-adding a `forceUserUpdate` guard here would hide the only update prompt
-/// the app still has.
+/// Named differently from the `shouldForceUpdate` method that calls it: a
+/// top-level function sharing a method's name would be shadowed by that method
+/// inside the class, turning the delegation into infinite recursion.
+@visibleForTesting
+bool shouldBlockForForcedUpdate(
+  AppVersionConfigEntity config, {
+  required bool isIOS,
+  required bool Function(String latestVersion) isInstalledOlderThan,
+}) {
+  if (!config.forceUserUpdate) return false;
+  return _isOlderThanLatest(config, isIOS: isIOS, isInstalledOlderThan: isInstalledOlderThan);
+}
+
+/// Whether Home should surface the optional-update banner, kept pure for the
+/// same reason.
+///
+/// Returns false when [AppVersionConfigEntity.forceUserUpdate] is set: that case
+/// belongs to the blocking splash dialog, and showing both would stack two
+/// update surfaces on the same launch.
 @visibleForTesting
 bool shouldShowUpdateBanner(
+  AppVersionConfigEntity config, {
+  required bool isIOS,
+  required bool Function(String latestVersion) isInstalledOlderThan,
+}) {
+  if (config.forceUserUpdate) return false;
+  return _isOlderThanLatest(config, isIOS: isIOS, isInstalledOlderThan: isInstalledOlderThan);
+}
+
+/// An empty version means "no ceiling published for this platform", which must
+/// never be read as "everyone is out of date".
+bool _isOlderThanLatest(
   AppVersionConfigEntity config, {
   required bool isIOS,
   required bool Function(String latestVersion) isInstalledOlderThan,

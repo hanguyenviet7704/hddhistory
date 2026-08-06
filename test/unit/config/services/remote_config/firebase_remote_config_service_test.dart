@@ -39,7 +39,7 @@ void main() {
       final service = FirebaseRemoteConfigService(_FakePackageInfoService());
       var completed = false;
 
-      final updateAvailable = service.updateAvailable().whenComplete(() {
+      final updateAvailable = service.optionalUpdateAvailable().whenComplete(() {
         completed = true;
       });
 
@@ -62,16 +62,16 @@ void main() {
       expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: older), isTrue);
     });
 
-    test('STILL shows the banner when forceUserUpdate is set', () {
-      // The blocking splash dialog was removed, so the Home banner is the ONLY
-      // update surface: a forced config must not suppress it (it used to).
+    test('hides the banner when forceUserUpdate is set', () {
+      // The forced case belongs to the blocking splash dialog; showing both
+      // would stack two update surfaces on the same launch.
       const config = AppVersionConfigEntity(
         forceUserUpdate: true,
         latestIosVersion: '2.0.0',
         latestAndroidVersion: '2.0.0',
       );
 
-      expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: older), isTrue);
+      expect(shouldShowUpdateBanner(config, isIOS: true, isInstalledOlderThan: older), isFalse);
     });
 
     test('reads the version for the running platform', () {
@@ -103,6 +103,94 @@ void main() {
 
       expect(result, isFalse);
       expect(compared, isFalse);
+    });
+  });
+
+  group('shouldBlockForForcedUpdate', () {
+    bool older(String _) => true;
+    bool upToDate(String _) => false;
+
+    test('blocks when forceUserUpdate is set and the build is older than the platform latest', () {
+      const config = AppVersionConfigEntity(
+        forceUserUpdate: true,
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '2.0.0',
+      );
+
+      expect(shouldBlockForForcedUpdate(config, isIOS: true, isInstalledOlderThan: older), isTrue);
+    });
+
+    test('never blocks while forceUserUpdate is off, however old the build is', () {
+      // This is the kill switch: clearing the flag in Remote Config must free
+      // every user on the next fetch without touching the version fields.
+      const config = AppVersionConfigEntity(
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '2.0.0',
+      );
+
+      expect(shouldBlockForForcedUpdate(config, isIOS: true, isInstalledOlderThan: older), isFalse);
+    });
+
+    test('does not block a build that already meets the latest version', () {
+      const config = AppVersionConfigEntity(
+        forceUserUpdate: true,
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '2.0.0',
+      );
+
+      expect(shouldBlockForForcedUpdate(config, isIOS: true, isInstalledOlderThan: upToDate), isFalse);
+    });
+
+    test('reads the version for the running platform', () {
+      const config = AppVersionConfigEntity(
+        forceUserUpdate: true,
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '',
+      );
+
+      expect(shouldBlockForForcedUpdate(config, isIOS: false, isInstalledOlderThan: older), isFalse);
+      expect(shouldBlockForForcedUpdate(config, isIOS: true, isInstalledOlderThan: older), isTrue);
+    });
+
+    test('never blocks on a blank platform version, even with the flag set', () {
+      // A missing ceiling must never read as "everyone is out of date" — that
+      // would lock the whole user base out of the app.
+      const config = AppVersionConfigEntity(
+        forceUserUpdate: true,
+        latestIosVersion: '   ',
+        latestAndroidVersion: '   ',
+      );
+      var compared = false;
+
+      final result = shouldBlockForForcedUpdate(
+        config,
+        isIOS: true,
+        isInstalledOlderThan: (_) {
+          compared = true;
+          return true;
+        },
+      );
+
+      expect(result, isFalse);
+      expect(compared, isFalse);
+    });
+
+    test('is mutually exclusive with the optional banner', () {
+      const forced = AppVersionConfigEntity(
+        forceUserUpdate: true,
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '2.0.0',
+      );
+      const optional = AppVersionConfigEntity(
+        latestIosVersion: '2.0.0',
+        latestAndroidVersion: '2.0.0',
+      );
+
+      expect(shouldBlockForForcedUpdate(forced, isIOS: true, isInstalledOlderThan: older), isTrue);
+      expect(shouldShowUpdateBanner(forced, isIOS: true, isInstalledOlderThan: older), isFalse);
+
+      expect(shouldBlockForForcedUpdate(optional, isIOS: true, isInstalledOlderThan: older), isFalse);
+      expect(shouldShowUpdateBanner(optional, isIOS: true, isInstalledOlderThan: older), isTrue);
     });
   });
 }
