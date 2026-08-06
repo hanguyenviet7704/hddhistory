@@ -277,21 +277,12 @@ class _ToastWeekBar extends StatelessWidget {
                       top: -9.r,
                       width: 46.r,
                       height: 46.r,
-                      child: IgnorePointer(
+                      child: const IgnorePointer(
                         // The design's own animated flame, exported straight
                         // from the Claude Design project. Not the orange
                         // Lottie the old popup uses — at 26px that reads as a
                         // different brand entirely.
-                        child: RiveAnimation.asset(
-                          AppAsset.rive.streakFlame,
-                          // File có cả animation 'Streak' lẫn 'State Machine
-                          // 1'. Trỏ state machine không làm nó chạy (layer chỉ
-                          // có một state, không transition nên đứng ở entry),
-                          // nên chạy thẳng timeline 'Streak'.
-                          animations: const ['Streak'],
-                          fit: BoxFit.contain,
-                          antialiasing: true,
-                        ),
+                        child: _StreakFlame(),
                       ),
                     ),
                 ],
@@ -301,5 +292,73 @@ class _ToastWeekBar extends StatelessWidget {
         );
       }),
     );
+  }
+}
+
+/// The animated streak flame from `streak_flame.riv`.
+///
+/// rive 0.14 (rive_native) has no `RiveAnimation.asset` any more: the runtime
+/// must be initialised, the file decoded, and a painter chosen by hand. The
+/// painter runs the raw `'Streak'` timeline — the file's 'State Machine 1' has
+/// a single state with no transitions, so driving the state machine (the new
+/// API's default) shows a frozen flame.
+class _StreakFlame extends StatefulWidget {
+  const _StreakFlame();
+
+  @override
+  State<_StreakFlame> createState() => _StreakFlameState();
+}
+
+class _StreakFlameState extends State<_StreakFlame> {
+  /// One runtime init per app run, shared by every toast shown after it.
+  static Future<bool>? _runtimeReady;
+
+  rive.File? _file;
+  rive.SingleAnimationPainter? _painter;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    _runtimeReady ??= rive.RiveNative.init().then(
+      (_) => true,
+      // A device the native runtime cannot start on keeps the toast working —
+      // the flame is decoration, never worth an error state.
+      onError: (Object _) => false,
+    );
+    if (!await _runtimeReady!) return;
+
+    final file = await rive.File.asset(
+      AppAsset.rive.streakFlame,
+      riveFactory: rive.Factory.rive,
+    );
+    if (!mounted) {
+      file?.dispose();
+      return;
+    }
+    if (file == null) return;
+    setState(() {
+      _file = file;
+      _painter = rive.SingleAnimationPainter('Streak', fit: rive.Fit.contain);
+    });
+  }
+
+  @override
+  void dispose() {
+    _painter?.dispose();
+    _file?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final file = _file;
+    final painter = _painter;
+    // Transparent while decoding (a few ms) — the toast lays out identically.
+    if (file == null || painter == null) return const SizedBox.shrink();
+    return rive.RiveFileWidget(file: file, painter: painter);
   }
 }

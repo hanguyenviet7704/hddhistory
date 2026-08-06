@@ -9,7 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_timezone
   gtk
   record_linux
-  rive_common
+  rive_native
   sentry_flutter
   url_launcher_linux
 )
