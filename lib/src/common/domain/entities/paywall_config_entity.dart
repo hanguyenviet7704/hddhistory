@@ -1,5 +1,16 @@
 part of '../../common.dart';
 
+/// Which of a strategy's two SKU lists the paywall renders.
+///
+/// The strategy still owns the copy and both lists; the entry point the paywall
+/// was opened from only picks between them. See [PaywallConfigEntity.entryPointVariants].
+enum PaywallProductVariant {
+  @JsonValue('full')
+  full,
+  @JsonValue('compact')
+  compact,
+}
+
 @freezed
 abstract class PaywallConfigEntity with _$PaywallConfigEntity {
   const factory PaywallConfigEntity({
@@ -8,12 +19,33 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     @Default(0) int lessonLock,
     @Default(PaywallAutoOpenEntity()) PaywallAutoOpenEntity autoOpen,
     @Default(PaywallInLessonEntity()) PaywallInLessonEntity inLessonPaywall,
+
+    /// Entry-point name (`PaywallEntryPoint.name`) → which SKU list it renders.
+    ///
+    /// Keyed by raw `String` rather than the enum so this layer stays free of
+    /// `monetization`, which is what depends on `common`, not the other way
+    /// round. Missing keys read as [PaywallProductVariant.full] — see
+    /// [PaywallConfigEntityX.variantForEntryPoint].
+    @Default({}) Map<String, PaywallProductVariant> entryPointVariants,
     PaywallSaleStrategyEntity? saleStrategy,
   }) = _PaywallConfigEntity;
 
   factory PaywallConfigEntity.fromRawConfig(String rawConfig) => _PaywallConfigParser.parse(rawConfig);
 
   factory PaywallConfigEntity.fromJson(Map<String, dynamic> json) => _$PaywallConfigEntityFromJson(json);
+}
+
+extension PaywallConfigEntityX on PaywallConfigEntity {
+  /// The variant configured for [entryPointName], defaulting to
+  /// [PaywallProductVariant.full].
+  ///
+  /// `full` is the default in every unknown case — absent map, absent key,
+  /// unrecognised value — because it is the behaviour of every config published
+  /// before variants existed. Narrowing someone's plan list is the change that
+  /// needs to be asked for explicitly.
+  PaywallProductVariant variantForEntryPoint(String entryPointName) {
+    return entryPointVariants[entryPointName] ?? PaywallProductVariant.full;
+  }
 }
 
 @freezed
@@ -35,9 +67,13 @@ abstract class PaywallInLessonEntity with _$PaywallInLessonEntity {
   const factory PaywallInLessonEntity({
     @Default(false) bool enabled,
 
-    /// 1-based keypoint position in the course's flat lesson list — the same
-    /// ordering [RoadmapEntity.lockedLessonStartIndex] counts in. 0 = every
-    /// keypoint.
+    /// 1-based position among the course's keypoints in roadmap order (lesson
+    /// by lesson, keypoints within each lesson in order). 0 = every keypoint.
+    ///
+    /// Counts KEYPOINTS. It used to count lessons despite the name, which made
+    /// a configured value mean something other than what the admin panel said
+    /// it did — deliberately NOT the same ordering
+    /// [RoadmapEntity.lockedLessonStartIndex] counts in.
     @Default(0) int keypointOrdinal,
 
     /// Cards the reader may pass before the paywall opens; 1 means it opens on
@@ -64,6 +100,11 @@ abstract class PaywallDefaultUserStrategyEntity with _$PaywallDefaultUserStrateg
   const factory PaywallDefaultUserStrategyEntity({
     @Default(PaywallContentEntity()) PaywallContentEntity content,
     @Default([]) List<PaywallProductReferenceEntity> products,
+
+    /// Reduced list rendered where the entry point asks for
+    /// [PaywallProductVariant.compact]. Empty means "use [products]" — see
+    /// `ResolvePaywallStrategyUsecase`.
+    @Default([]) List<PaywallProductReferenceEntity> compactProducts,
   }) = _PaywallDefaultUserStrategyEntity;
 
   factory PaywallDefaultUserStrategyEntity.fromJson(Map<String, dynamic> json) => _$PaywallDefaultUserStrategyEntityFromJson(json);
@@ -87,6 +128,7 @@ abstract class PaywallImpressionRuleEntity with _$PaywallImpressionRuleEntity {
     @Default(0) int fromImpression,
     @Default(PaywallContentEntity()) PaywallContentEntity content,
     @Default([]) List<PaywallProductReferenceEntity> products,
+    @Default([]) List<PaywallProductReferenceEntity> compactProducts,
   }) = _PaywallImpressionRuleEntity;
 
   factory PaywallImpressionRuleEntity.fromJson(Map<String, dynamic> json) => _$PaywallImpressionRuleEntityFromJson(json);
@@ -102,6 +144,7 @@ abstract class PaywallSaleEventStrategyEntity with _$PaywallSaleEventStrategyEnt
     @Default([]) List<PaywallAudienceSegment> appliesTo,
     @Default(PaywallContentEntity()) PaywallContentEntity content,
     @Default([]) List<PaywallProductReferenceEntity> products,
+    @Default([]) List<PaywallProductReferenceEntity> compactProducts,
   }) = _PaywallSaleEventStrategyEntity;
 
   factory PaywallSaleEventStrategyEntity.fromJson(Map<String, dynamic> json) => _$PaywallSaleEventStrategyEntityFromJson(json);
@@ -158,6 +201,7 @@ class _PaywallConfigParser {
         lessonLock: _intValue(decoded['lessonLock']),
         autoOpen: _autoOpen(decoded['autoOpen']),
         inLessonPaywall: _inLessonPaywall(decoded['inLessonPaywall']),
+        entryPointVariants: _entryPointVariants(decoded['entryPointVariants']),
         saleStrategy: _saleStrategy(decoded['saleStrategy']),
       );
     } catch (_) {
@@ -187,6 +231,23 @@ class _PaywallConfigParser {
     );
   }
 
+  /// Only `'full'`/`'compact'` are kept. An unrecognised value is dropped
+  /// rather than guessed at, which leaves the getter returning `full` — the
+  /// same, safe answer as a missing key.
+  static Map<String, PaywallProductVariant> _entryPointVariants(Object? value) {
+    if (value is! Map<String, dynamic>) return const {};
+    final variants = <String, PaywallProductVariant>{};
+    for (final entry in value.entries) {
+      final variant = switch (entry.value) {
+        'full' => PaywallProductVariant.full,
+        'compact' => PaywallProductVariant.compact,
+        _ => null,
+      };
+      if (variant != null) variants[entry.key] = variant;
+    }
+    return variants;
+  }
+
   static PaywallSaleStrategyEntity? _saleStrategy(Object? value) {
     if (value is! Map<String, dynamic>) return null;
     return PaywallSaleStrategyEntity(
@@ -201,6 +262,7 @@ class _PaywallConfigParser {
     return PaywallDefaultUserStrategyEntity(
       content: _content(value['content']),
       products: _products(value['products']),
+      compactProducts: _products(value['compactProducts']),
     );
   }
 
@@ -221,6 +283,7 @@ class _PaywallConfigParser {
       fromImpression: _intValue(value['fromImpression']),
       content: _content(value['content']),
       products: _products(value['products']),
+      compactProducts: _products(value['compactProducts']),
     );
   }
 
@@ -238,6 +301,7 @@ class _PaywallConfigParser {
       appliesTo: appliesTo is List ? appliesTo.map(_segment).nonNulls.toList() : const [],
       content: _content(value['content']),
       products: _products(value['products']),
+      compactProducts: _products(value['compactProducts']),
     );
   }
 

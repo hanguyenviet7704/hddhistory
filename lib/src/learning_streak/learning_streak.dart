@@ -10,7 +10,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:lottie/lottie.dart';
 import 'package:retrofit/retrofit.dart';
-import 'package:rive/rive.dart';
+// Prefixed: rive 0.14 (rive_native) exports `File` and `Factory`, which would
+// otherwise collide with dart:io / Flutter foundation via the meup barrel.
+import 'package:rive/rive.dart' as rive;
 
 //* Data Layer - Models, Datasources, Repositories
 part 'data/models/user_learning_streak_model.dart';

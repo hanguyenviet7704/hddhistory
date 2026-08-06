@@ -15,6 +15,9 @@ fakedoorComingSoon: 近日公開
 fakedoorFeaturesNameIsAlmostReady: ${featuresName} はもうすぐ完成します！
 fakedoorIDoNotWantNotifications: 通知は不要です
 fakedoorNotifyMe: 通知を受け取る
+forceUpdateAction: アップデートする
+forceUpdateMessage: 新機能と快適な操作をご利用いただくため、アプリを更新してください。
+forceUpdateTitle: アプリがさらに進化しました！
 next: 次へ
 'no': いいえ
 skip: スキップ

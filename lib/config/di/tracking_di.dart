@@ -2,13 +2,21 @@ part of 'di.dart';
 
 @module
 abstract class TrackingModule {
-  // Default tracking service implementation that combines Firebase and Sentry
+  // The service AppTrackingService fans out to: Firebase Analytics (unchanged)
+  // plus the meup-api sink that backs the admin panel's behaviour tab. Sentry is
+  // deliberately left out — it never received events before either, and putting
+  // ~442 events through it would be a behaviour change nobody asked for.
   @Named(DIKey.trackingService)
   @lazySingleton
   BaseTrackingService get trackingService => CompositeTrackingService([
     firebaseAnalyticsService,
-    sentryTrackingService,
+    backendTrackingService,
   ]);
+
+  // Behaviour sink read by the admin panel.
+  @Named(DIKey.backendTrackingService)
+  @lazySingleton
+  BaseTrackingService get backendTrackingService => BackendTrackingService();
 
   // Firebase Analytics Service
   @Named(DIKey.firebaseAnalyticsService)

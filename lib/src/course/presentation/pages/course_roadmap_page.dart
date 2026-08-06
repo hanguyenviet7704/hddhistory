@@ -7,36 +7,49 @@ class CourseRoadmapPage extends StatefulWidget {
   State<CourseRoadmapPage> createState() => _CourseRoadmapPageState();
 }
 
+/// Roadmap-source values that mean the user opened this roadmap FROM Explore
+/// (the course grid, "View more", or search) or from a Profile-pushed page
+/// ("My courses", the Achievements badge detail). These show a back button;
+/// 'my_courses' / 'setting_badge' get dedicated returns in `_backFromRoadmap`
+/// (re-open the root-pushed page over the Profile tab), the rest fall through
+/// to the Explore screen.
+@visibleForTesting
+const roadmapExploreSources = {
+  'course_selection',
+  'my_courses',
+  'skillset_courses',
+  'search',
+  'setting_badge',
+};
+
+/// Roadmap-source values that mean the user opened this roadmap from a Home
+/// course card (or straight out of onboarding). These also show a back button,
+/// but it returns to the Home tab — there's no Explore screen behind them (see
+/// `_backFromRoadmap`). The bare "Courses tab default" / roleplay returns
+/// (source 'nav_course') are deliberately NOT included, so those keep showing no
+/// back button.
+///
+/// EVERY source a Home entry point passes to `setRoadmapSource` has to be listed
+/// here, or that entry point strands the user on a roadmap with no way back.
+/// That is exactly how 'home_new_today' shipped broken.
+@visibleForTesting
+const roadmapHomeSources = {
+  'home_continue_learning',
+  'home_recommended',
+  'home_new_today',
+  'onboarding',
+};
+
+/// Whether the roadmap renders its back button for [source]. Kept pure and
+/// top-level so the source→back-button contract is testable without standing up
+/// the whole roadmap widget tree.
+@visibleForTesting
+bool roadmapShowsBackButton(String source) => roadmapExploreSources.contains(source) || roadmapHomeSources.contains(source);
+
 class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
   String _lastTrackedCourseId = '';
   String _lastLoadedProgressCourseId = '';
-
-  /// Roadmap-source values that mean the user opened this roadmap FROM Explore
-  /// (the course grid, "View more", or search) or from a Profile-pushed page
-  /// ("My courses", the Achievements badge detail). These show a back button;
-  /// 'my_courses' / 'setting_badge' get dedicated returns in [_backFromRoadmap]
-  /// (re-open the root-pushed page over the Profile tab), the rest fall through
-  /// to the Explore screen.
-  static const _kExploreSources = {
-    'course_selection',
-    'my_courses',
-    'skillset_courses',
-    'search',
-    'setting_badge',
-  };
-
-  /// Roadmap-source values that mean the user opened this roadmap from a Home
-  /// course card (or straight out of onboarding). These also show a back
-  /// button, but it returns to the Home tab — there's no Explore screen behind
-  /// them (see [_backFromRoadmap]). The bare "Courses tab default" / roleplay
-  /// returns (source 'nav_course') are deliberately NOT included, so those keep
-  /// showing no back button.
-  static const _kHomeSources = {
-    'home_continue_learning',
-    'home_recommended',
-    'onboarding',
-  };
 
   /// Returns to wherever the user opened this roadmap from.
   /// CourseCubit/PageCubit aren't provided above the roadmap tree, so resolve
@@ -58,7 +71,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     );
     // Opened from a Home card or straight out of onboarding — there's no
     // Explore screen behind it, so back returns to the Home tab.
-    if (_kHomeSources.contains(source)) {
+    if (roadmapHomeSources.contains(source)) {
       final page = context.read<PageCubit>();
       page.setCurrentIndex(0); // Home branch
       HomeRoute().go(context);
@@ -409,7 +422,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                           BlocSelector<CourseRoadmapCubit, CourseRoadmapState, String>(
                             selector: (state) => state.roadmapSource,
                             builder: (context, source) {
-                              if (!_kExploreSources.contains(source) && !_kHomeSources.contains(source)) {
+                              if (!roadmapShowsBackButton(source)) {
                                 return const SizedBox.shrink();
                               }
                               return Align(

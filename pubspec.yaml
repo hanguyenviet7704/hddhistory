@@ -17,8 +17,8 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-#version: 1.4.0+53 # ios
-version: 1.4.3+92 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
+#version: 1.4.3+100 # ios
+version: 1.4.4+112 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
@@ -236,10 +236,13 @@ dependencies:
   # an abbreviation like "ICT" — and the server needs the real zone to know when
   # 08:00 is for this user, including across daylight saving.
   flutter_timezone: ^4.1.1
-  # 0.13.x: bản cuối còn widget RiveAnimation. 0.14 chuyển sang rive_native,
-  # cần RiveNative.init() và kéo theo binary native — quá nặng cho một ngọn
-  # lửa 26px trong toast.
-  rive: ^0.13.20
+  # 0.14+ (rive_native): bắt buộc, không còn là lựa chọn cân nặng nữa — Google
+  # Play chặn phát hành production vì librive_text.so của rive_common 0.4.15
+  # (bản CUỐI của nhánh 0.13) chỉ align 4 KB, không đạt yêu cầu 16 KB page
+  # size; rive_native đã hỗ trợ 16 KB. Đổi lại phải RiveNative.init() và mang
+  # binary native mới. Widget cũ RiveAnimation → RiveWidget (xem
+  # streak_toast_content.dart).
+  rive: ^0.14.11
   # timezone: ^0.9.2
 
 # dependency_overrides:

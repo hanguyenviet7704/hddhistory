@@ -77,6 +77,9 @@ settingProfileAchievementsSeeAll: 전체 보기
 settingProfileBadgesEarnedLabel: 획득한 배지
 settingProfileLearningProgressSection: 학습 진행 상황
 settingProfileLibrarySection: 라이브러리
+settingProfileSupportSection: 지원
+settingSupportFanpageTitle: 페이스북 페이지 문의
+settingSupportFanpageSubtitle: 도움이 필요하세요? 채팅으로 문의하세요
 settingProfileAchievementsSectionProgress: ${completed}/${total}
 settingProfileAchievementsEmptyTitle: 아직 배지가 없어요
 settingProfileAchievementsEmptyMessage: 레슨을 완료하면 배지를 얻을 수 있어요.

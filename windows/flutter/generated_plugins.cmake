@@ -15,7 +15,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   gal
   permission_handler_windows
   record_windows
-  rive_common
+  rive_native
   sentry_flutter
   share_plus
   url_launcher_windows

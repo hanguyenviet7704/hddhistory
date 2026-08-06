@@ -3,7 +3,9 @@ part of '../services.dart';
 @LazySingleton(as: ITrackingService)
 final class AppTrackingService extends ITrackingService {
   final BaseTrackingService _appTrackingService;
-  AppTrackingService(@Named(DIKey.firebaseAnalyticsService) this._appTrackingService);
+  // The composite (Firebase Analytics + meup-api behaviour sink), not the bare
+  // Firebase service — that is what puts every event on both rails.
+  AppTrackingService(@Named(DIKey.trackingService) this._appTrackingService);
 
   @override
   Future<void> initialize() async {

@@ -41,6 +41,7 @@ mixin DIKey {
   static const String sentryTrackingService = 'sentryTrackingService';
   static const String noOpTrackingService = 'noOpTrackingService';
   static const String compositeTrackingService = 'compositeTrackingService';
+  static const String backendTrackingService = 'backendTrackingService';
 
   //* Cache Services
   static const String defaultCacheManager = 'defaultCacheManager';

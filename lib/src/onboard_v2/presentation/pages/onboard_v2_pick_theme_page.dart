@@ -180,7 +180,7 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
       switch (intent) {
         case CourseHandoffRouteIntent.courseRoadmap:
           // Mark the roadmap as opened from onboarding so it shows a back
-          // button that returns to Home (see CourseRoadmapPage._kHomeSources) —
+          // button that returns to Home (see `roadmapHomeSources`) —
           // a brand-new user's first course has no Explore screen behind it.
           AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('onboarding');
           CourseRoadmapRoute().go(context);

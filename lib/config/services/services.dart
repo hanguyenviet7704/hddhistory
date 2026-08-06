@@ -136,6 +136,7 @@ part 'restful/base_interceptor.dart';
 part 'restful/custom_interceptor.dart';
 part 'restful/restful_service.dart';
 part 'tracking/app_tracking_service.dart';
+part 'tracking/backend_tracking_service.dart';
 part 'tracking/base_tracking_service.dart';
 part 'tracking/composite_tracking_service.dart';
 part 'tracking/firebase_analytics_service.dart';

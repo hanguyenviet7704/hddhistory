@@ -8,8 +8,14 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  /// Kicked off in [initState] rather than awaited in [_initScreen] so the
+  /// Remote Config round-trip overlaps the rest of startup instead of adding to
+  /// it.
+  late final Future<bool> _shouldForceUpdate;
+
   @override
   void initState() {
+    _shouldForceUpdate = _resolveShouldForceUpdate();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
@@ -22,6 +28,15 @@ class _SplashPageState extends State<SplashPage> {
   void _trackSplashView() {
     final userId = context.read<UserCubit>().state.user.id;
     AppService.instance.appTrackingService.trackSplashScrView(userId: userId);
+  }
+
+  Future<bool> _resolveShouldForceUpdate() async {
+    try {
+      return await AppService.instance.remoteConfigService.shouldForceUpdate();
+    } catch (e) {
+      LogDev.error('Error checking for update: $e');
+      return false;
+    }
   }
 
   Future<void> _configAppLocalization() async {
@@ -69,9 +84,20 @@ class _SplashPageState extends State<SplashPage> {
     try {
       if (!mounted) return;
       final splashDelay = Future<void>.delayed(const Duration(milliseconds: 300));
-      // No update gate here: updates are surfaced only by the Home banner
-      // (see HomeCubit.checkOptionalUpdate), so the splash never blocks entry
-      // and never waits on Remote Config.
+      // Forced updates block entry here; the optional case is left to the Home
+      // banner (see HomeCubit.checkOptionalUpdate). Capped at 1.5s so a slow or
+      // failed Remote Config fetch degrades to "not forced" instead of hanging
+      // the splash — never trade entry to the app for a config round-trip.
+      final shouldUpdate = await _shouldForceUpdate.timeout(
+        const Duration(milliseconds: 1500),
+        onTimeout: () => false,
+      );
+      if (!mounted) return;
+      if (shouldUpdate) {
+        _showUpdateDialog();
+        return;
+      }
+
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
       if (!mounted) return;
@@ -213,6 +239,29 @@ class _SplashPageState extends State<SplashPage> {
 
   void _goToRegister({required bool showPaywallAfterAuth}) {
     NotificationRequestRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
+  }
+
+  void _handleUpdatePressed() {
+    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateConfirm);
+    try {
+      final String appStoreUrl = Platform.isIOS ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' : 'https://play.google.com/store/apps/details?id=com.eup.meup';
+      appStoreUrl.launchURL();
+    } catch (e) {
+      LogDev.error('Error launching app store: $e');
+    }
+    // Deliberately does NOT dismiss: the user has to come back with a newer
+    // build, so the gate must still be here when they return from the store.
+  }
+
+  void _showUpdateDialog() {
+    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateView);
+    showDDialog(
+      context,
+      backgroundColor: Colors.transparent,
+      dialogContent: ForceUpdateContent(
+        onUpdatePressed: _handleUpdatePressed,
+      ),
+    );
   }
 
   @override

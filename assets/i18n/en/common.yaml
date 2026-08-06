@@ -15,6 +15,9 @@ fakedoorComingSoon: Coming Soon
 fakedoorFeaturesNameIsAlmostReady: ${featuresName} is almost ready!
 fakedoorIDoNotWantNotifications: I do not want notifications
 fakedoorNotifyMe: Notify Me
+forceUpdateAction: Go to Update
+forceUpdateMessage: Update to unlock new features and a smoother experience.
+forceUpdateTitle: We're getting better!
 next: Next
 'no': 'No'
 skip: Skip

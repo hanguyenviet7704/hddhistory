@@ -213,6 +213,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       const _AchievementsAndProgressSection(),
                       30.verticalSpace,
                       const _LibrarySection(),
+                      30.verticalSpace,
+                      const SupportSection(),
                     ],
                   ),
                 ),

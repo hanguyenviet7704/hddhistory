@@ -7,12 +7,17 @@ class ResolvePaywallStrategyParams {
   final DateTime? installTime;
   final int storedImpressionCount;
 
+  /// Where the paywall is being opened from. Decides nothing about WHICH
+  /// strategy wins — only which of that strategy's SKU lists is rendered.
+  final PaywallEntryPoint entryPoint;
+
   const ResolvePaywallStrategyParams({
     required this.config,
     required this.platform,
     required this.nowUtc,
     required this.installTime,
     required this.storedImpressionCount,
+    this.entryPoint = PaywallEntryPoint.other,
   });
 }
 
@@ -24,6 +29,10 @@ class ResolvePaywallStrategyUsecase {
     final saleStrategy = params.config.saleStrategy;
     if (saleStrategy == null) return _invalid('missing_sale_strategy');
 
+    // Which strategy wins is decided exactly as before; the entry point only
+    // narrows the winner's SKU list afterwards.
+    final variant = params.config.variantForEntryPoint(params.entryPoint.name);
+
     final segment = _segmentFor(params.installTime, params.nowUtc, saleStrategy.newUser.windowDays);
     final event = saleStrategy.saleEvent;
     if (_isActiveEvent(event, segment, params.nowUtc)) {
@@ -31,6 +40,8 @@ class ResolvePaywallStrategyUsecase {
         strategyType: ResolvedPaywallStrategyType.saleEvent,
         segment: segment,
         products: event!.products,
+        compactProducts: event.compactProducts,
+        variant: variant,
         content: event.content,
         campaignId: event.campaignId,
         endAtUtc: event.endAtUtc,
@@ -46,6 +57,8 @@ class ResolvePaywallStrategyUsecase {
         strategyType: ResolvedPaywallStrategyType.newUser,
         segment: segment,
         products: rule.products,
+        compactProducts: rule.compactProducts,
+        variant: variant,
         content: rule.content.copyWith(benefits: saleStrategy.newUser.content.benefits),
         impressionNumber: impressionNumber,
         ruleThreshold: rule.fromImpression,
@@ -57,6 +70,8 @@ class ResolvePaywallStrategyUsecase {
       strategyType: ResolvedPaywallStrategyType.defaultUser,
       segment: segment,
       products: saleStrategy.defaultUser.products,
+      compactProducts: saleStrategy.defaultUser.compactProducts,
+      variant: variant,
       content: saleStrategy.defaultUser.content,
       platform: params.platform,
     );
@@ -98,6 +113,8 @@ class ResolvePaywallStrategyUsecase {
     required ResolvedPaywallStrategyType strategyType,
     required ResolvedPaywallSegment segment,
     required List<PaywallProductReferenceEntity> products,
+    required List<PaywallProductReferenceEntity> compactProducts,
+    required PaywallProductVariant variant,
     required PaywallContentEntity content,
     required PaymentPlatform platform,
     String campaignId = '',
@@ -105,7 +122,16 @@ class ResolvePaywallStrategyUsecase {
     int? impressionNumber,
     int? ruleThreshold,
   }) {
-    final productIds = _platformProductIds(products, platform);
+    // The compact list is an override, not a requirement: an absent, empty or
+    // unusable one falls back to the full list rather than failing. A SKU
+    // problem in a reduced list must never be able to blank a paywall that has
+    // a perfectly good full list sitting next to it.
+    final compactIds = variant == PaywallProductVariant.compact //
+        ? _platformProductIds(compactProducts, platform)
+        : const <String>[];
+    final usesCompact = _hasValidProductIds(compactIds);
+
+    final productIds = usesCompact ? compactIds : _platformProductIds(products, platform);
     if (!_hasValidProductIds(productIds)) {
       return _invalid(
         'invalid_product_ids',
@@ -118,6 +144,10 @@ class ResolvePaywallStrategyUsecase {
       strategyType: strategyType,
       segment: segment,
       isValid: true,
+      // Records the variant actually rendered, not the one asked for, so a
+      // silent fallback to the full list is visible in tracking instead of
+      // looking like a compact paywall that happened to show three plans.
+      variant: usesCompact ? PaywallProductVariant.compact : PaywallProductVariant.full,
       campaignId: campaignId,
       endAtUtc: endAtUtc,
       impressionNumber: impressionNumber,
