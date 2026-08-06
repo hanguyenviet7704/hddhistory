@@ -22,6 +22,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   PencilIcon,
+  PlayCircleIcon,
   PlusIcon,
   TrashIcon,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNotification } from "../../utils/hooks/useNotification";
 import HabitModal from "../../components/habits/HabitModal";
+import HabitPracticeModal from "../../components/habits/HabitPracticeModal";
 import HabitConfirm from "../../components/habits/HabitConfirm";
 import ExportImportButtons from "../../components/common/ExportImportButtons";
 import {
@@ -80,6 +82,9 @@ const HabitList: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState<IHabit | null>(null);
+  // Practices need the habit's id, so this is a row action rather than a tab in
+  // the create/edit form (a habit being created has no id yet).
+  const [practiceHabit, setPracticeHabit] = useState<IHabit | null>(null);
 
   // Bulk selection (select-all-visible + bulk delete / publish / unpublish).
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -653,6 +658,14 @@ const HabitList: React.FC = () => {
                         <TableCell>{habit.order}</TableCell>
                         <TableCell align="right">
                           <button
+                            aria-label="Manage practices"
+                            title="Practices"
+                            onClick={() => setPracticeHabit(habit)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <PlayCircleIcon className="h-5 w-5 text-emerald-600" />
+                          </button>
+                          <button
                             aria-label="Edit habit"
                             onClick={() => openEditModal(habit)}
                             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -685,6 +698,12 @@ const HabitList: React.FC = () => {
         courses={courses}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
+      />
+
+      <HabitPracticeModal
+        isOpen={!!practiceHabit}
+        habit={practiceHabit}
+        onClose={() => setPracticeHabit(null)}
       />
 
       <HabitConfirm
