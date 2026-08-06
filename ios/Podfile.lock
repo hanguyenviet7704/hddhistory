@@ -304,7 +304,7 @@ PODS:
   - RecaptchaInterop (101.0.0)
   - record_ios (2.0.0):
     - Flutter
-  - rive_common (0.0.1):
+  - rive_native (0.0.1):
     - Flutter
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
@@ -361,7 +361,7 @@ DEPENDENCIES:
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - quill_native_bridge_ios (from `.symlinks/plugins/quill_native_bridge_ios/ios`)
   - record_ios (from `.symlinks/plugins/record_ios/ios`)
-  - rive_common (from `.symlinks/plugins/rive_common/ios`)
+  - rive_native (from `.symlinks/plugins/rive_native/ios`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/darwin`)
@@ -473,8 +473,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/quill_native_bridge_ios/ios"
   record_ios:
     :path: ".symlinks/plugins/record_ios/ios"
-  rive_common:
-    :path: ".symlinks/plugins/rive_common/ios"
+  rive_native:
+    :path: ".symlinks/plugins/rive_native/ios"
   sentry_flutter:
     :path: ".symlinks/plugins/sentry_flutter/ios"
   share_plus:
@@ -554,7 +554,7 @@ SPEC CHECKSUMS:
   quill_native_bridge_ios: 2b01d585fcc73d0f5eed78c0bd244ee564b06f5a
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   record_ios: 41f9412c3311401689babe6d7ba69362f10b8325
-  rive_common: 4743dbfd2911c99066547a3c6454681e0fa907df
+  rive_native: 6fd739ece3e1976374c6804badde07053aa05b36
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   Sentry: 108fdbb76299c4189af12246bf0308c09c278922
   sentry_flutter: 23107cf6ac9e0b93600711a4a3ae3d4c1de01b9e
