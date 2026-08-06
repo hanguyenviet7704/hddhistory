@@ -39,8 +39,11 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   double _dragDy = 0;
   bool _isDragging = false;
 
-  /// One `inLessonPaywall` open per keypoint — see [_maybeOpenInLessonPaywall].
-  bool _hasOpenedInLessonPaywall = false;
+  /// Set only when the gate itself failed, to stop it retrying (and re-logging)
+  /// on every card change. Whether the paywall is currently up is derived from
+  /// [IapCubit.paywallEntryPoint], not tracked here — see
+  /// [_maybeOpenInLessonPaywall].
+  bool _inLessonPaywallGateBroken = false;
 
   /// What the current gesture was claimed for, decided once it passes
   /// [_dragSlop]: `null` = undecided, `_DragMode.content` = the card's own
@@ -108,6 +111,10 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       initialPage: context.read<KeypointCardCubit>().state.viewedCardIndex,
       viewportFraction: _peekViewportFraction,
     );
+    // Post-frame, not here: the wall is read off `CourseRoadmapCubit` /
+    // `CourseLessonCubit` / `ProfileCubit`, and it races the narration that
+    // starts reading the moment this page mounts.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncPaywallCap());
   }
 
   @override
@@ -123,7 +130,14 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       listenWhen: (previous, current) => previous.viewedCardIndex != current.viewedCardIndex,
       listener: (context, state) {
         _followViewedCardIndex(state);
-        _maybeOpenInLessonPaywall(state);
+        // Backstop. The wall itself lives in `_settleDrag`, which covers the two
+        // ways the reader moves the deck; this catches the paths that move it
+        // for them — narration following the voice, a tap on the progress pips —
+        // landing beyond the wall. It only raises the paywall and deliberately
+        // does NOT drag the view back: correcting the index from inside this
+        // listener is what read as a stutter.
+        final cap = _syncPaywallCap();
+        if (cap != null && state.viewedCardIndex > cap) unawaited(_openInLessonPaywall());
       },
       builder: (context, state) {
         if (state.cards.isEmpty) return const SizedBox.shrink();
@@ -300,31 +314,122 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   ///
   /// Deliberately does NOT block the deck — the paywall is pushed over the
   /// keypoint and closing it leaves the reader exactly where they were. Once per
-  /// keypoint open (this State lives as long as the deck), so backing out and
-  /// re-entering the keypoint can show it again but scrolling back and forth
-  /// cannot.
-  void _maybeOpenInLessonPaywall(KeypointCardState state) {
-    if (_hasOpenedInLessonPaywall) return;
-
-    final iapCubit = AppDI.injector.get<IapCubit>();
-    final config = iapCubit.resolvedPaywallConfig.inLessonPaywall;
-    if (!config.enabled) return;
-    if (state.viewedCardIndex < config.afterCards) return;
-    if (context.read<ProfileCubit>().state.user.isPremium) return;
-    if (!_isPaywallGatedKeypoint(config.keypointOrdinal)) return;
-
-    _hasOpenedInLessonPaywall = true;
-    final courseId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.courseId;
-    iapCubit.setPaywallEntryPoint(
-      PaywallEntryPoint.inLesson,
-      trackingData: CourseTrackingData.fromCourseId(context, courseId),
-    );
-    PaywallRoute().push(context);
+  /// Highest card index the reader may reach right now, or `null` when nothing
+  /// gates this keypoint.
+  ///
+  /// `afterCards` counts the cards they are allowed to PASS, so the last
+  /// readable index is one less: `afterCards: 1` leaves only card 1 (index 0)
+  /// readable, and the wall stands between it and card 2.
+  ///
+  /// Fails OPEN — any error here returns `null` and the keypoint reads normally.
+  /// A paywall that cannot be evaluated must not be able to lock content away.
+  ///
+  /// Everything comes from `AppDI.injector`, never `context.read`: the lesson
+  /// flow's route (`_buildLessonFlowPage`) provides neither `ProfileCubit` nor
+  /// `HomeCubit`, so reading either off this context throws
+  /// `ProviderNotFoundException`. Both are `@lazySingleton`, so the injector
+  /// hands back the very same instances the other routes wrap.
+  /// Recomputes the wall and hands it to the deck, which enforces it across
+  /// every path that moves the view — not just the reader's swipe.
+  ///
+  /// Must run before the voice can turn the first card: narration autoplays on
+  /// entry (`LessonRoute.initialMode` defaults to `'audio'`), so a cap installed
+  /// only on the first swipe arrives after the deck has already been walked past
+  /// the wall for the reader.
+  int? _syncPaywallCap() {
+    final cap = _inLessonPaywallCap();
+    if (mounted) context.read<KeypointCardCubit>().setPaywallCardCap(cap);
+    return cap;
   }
 
-  /// Whether the keypoint on screen is the one the config arms. Position is
-  /// 1-based over the course's flat lesson list — the same ordering `lessonLock`
-  /// counts in — and an ordinal of 0 arms every keypoint.
+  int? _inLessonPaywallCap() {
+    if (_inLessonPaywallGateBroken) return null;
+    try {
+      final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig.inLessonPaywall;
+      if (!config.enabled) return null;
+      if (AppDI.injector.get<ProfileCubit>().state.user.isPremium) return null;
+      if (!_isPaywallGatedKeypoint(config.keypointOrdinal)) return null;
+      return config.afterCards - 1;
+    } catch (error, stackTrace) {
+      _inLessonPaywallGateBroken = true;
+      LogDev.error('inLessonPaywall gate failed; leaving this keypoint ungated: $error\n$stackTrace');
+      return null;
+    }
+  }
+
+  /// Whether moving the view to [target] would cross the wall — and if so,
+  /// raises the paywall.
+  ///
+  /// The caller must then leave the deck where it is. Correcting the move
+  /// afterwards instead (advance, then snap back) is what made the swipe read
+  /// as a stutter: the deck animates forward before anything can pull it back.
+  bool _blockedByInLessonPaywall(int target, KeypointCardState state) {
+    // Going back is never gated, and neither is staying put.
+    if (target <= state.viewedCardIndex) return false;
+    final cap = _syncPaywallCap();
+    if (cap == null || target <= cap) return false;
+    unawaited(_openInLessonPaywall());
+    return true;
+  }
+
+  /// Raises the in-lesson paywall. The decision to raise it belongs to
+  /// [_blockedByInLessonPaywall]; this only performs it.
+  Future<void> _openInLessonPaywall() async {
+    // Derived, not latched: the gate is closed exactly while an in-lesson
+    // paywall is on screen. `PaywallPage.dispose` resets the entry point, so
+    // this re-arms the moment the reader dismisses it and the next attempt to
+    // move past the walled card raises it again — no bool to get out of step
+    // with what is actually displayed.
+    final iapCubit = AppDI.injector.get<IapCubit>();
+    if (iapCubit.paywallEntryPoint == PaywallEntryPoint.inLesson) return;
+
+    try {
+      final courseId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.courseId;
+      iapCubit.setPaywallEntryPoint(
+        PaywallEntryPoint.inLesson,
+        trackingData: CourseTrackingData.fromHomeState(
+          AppDI.injector.get<HomeCubit>().state,
+          courseId,
+        ),
+      );
+
+      // Deliberately NOT awaited to decide anything. `PaywallRoute().push`'s
+      // future completes as soon as the route is pushed here, not when the
+      // reader dismisses it (verified in the route-observer trail: the deck
+      // moved back before `didPop` was ever logged), so treating it as "the
+      // paywall closed" snapped the deck mid-animation and read as a stutter.
+      //
+      // Re-arming instead rides on `PaywallEntryPoint`, which `PaywallPage`
+      // resets in its own `dispose` — a signal tied to the paywall actually
+      // going away.
+      unawaited(PaywallRoute().push(context));
+    } catch (error, stackTrace) {
+      // Raising the paywall runs off a gesture callback. Letting anything escape
+      // from here put an exception through the deck's own gesture/listener path,
+      // and the deck stopped following the reader — enabling the gate made the
+      // lesson unreadable instead of gated. Losing the paywall for this keypoint
+      // is an acceptable failure; losing the lesson is not.
+      _inLessonPaywallGateBroken = true;
+      LogDev.error('inLessonPaywall gate failed; skipping it for this keypoint: $error\n$stackTrace');
+    }
+  }
+
+  /// Whether the keypoint on screen is at or past the position the config
+  /// arms. Position is 1-based over the course's KEYPOINTS in roadmap order —
+  /// lesson by lesson, keypoints within each lesson in order — and an ordinal
+  /// of 0 arms every keypoint.
+  ///
+  /// A THRESHOLD (>=), not an exact match (user call, 2026-08-04): a reader
+  /// who is already past the configured keypoint — a lapsed premium, or
+  /// content resequenced under them — opens keypoint #5 and must still meet
+  /// the wall; comparing for equality armed exactly one keypoint of the whole
+  /// course and let everyone past it read on free forever.
+  ///
+  /// This counted LESSONS until the entry-point-variants change: it returned as
+  /// soon as it found the lesson containing the current keypoint and compared
+  /// that lesson's position, so `keypointOrdinal: 2` armed every keypoint of the
+  /// second lesson and none of the first lesson's later keypoints. The admin
+  /// panel has always called this field a keypoint position.
   bool _isPaywallGatedKeypoint(int keypointOrdinal) {
     if (keypointOrdinal <= 0) return true;
 
@@ -332,9 +437,11 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     if (keypointId.isEmpty) return false;
 
     final lessons = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.flatLessons;
-    for (var index = 0; index < lessons.length; index++) {
-      if (lessons[index].keypoints.any((keypoint) => keypoint.id == keypointId)) {
-        return index + 1 == keypointOrdinal;
+    var ordinal = 0;
+    for (final lesson in lessons) {
+      for (final keypoint in lesson.keypoints) {
+        ordinal++;
+        if (keypoint.id == keypointId) return ordinal >= keypointOrdinal;
       }
     }
     return false;
@@ -428,8 +535,31 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       // `onPageChanged` would then be the only thing telling state where the
       // deck went, and it reports every page an animation crosses.
       final target = committed ? state.viewedCardIndex + (dy < 0 ? 1 : -1) : state.viewedCardIndex;
-      if (committed) AppHaptic.select();
-      context.read<KeypointCardCubit>().viewCard(target.clamp(0, state.furthestCardIndex));
+      // A move the paywall refuses is treated exactly like a drag that never
+      // reached the threshold — the deck stays put and snaps back, a path this
+      // widget already handles — so there is no forward animation to undo.
+      final blocked = _blockedByInLessonPaywall(target, state);
+      final resolved = blocked ? state.viewedCardIndex : target;
+      final clamped = resolved.clamp(0, state.furthestCardIndex);
+
+      // The mode was chosen when the drag BEGAN, with a revealed card ahead. By
+      // the time it settles the deck can have caught up to the live edge — the
+      // reader swiping faster than cards are revealed, or narration turning a
+      // page mid-gesture — and then this clamp collapses the target back onto the
+      // card already on screen, `viewCard` sees no change, and the swipe vanishes
+      // with no trace. That is the "swiped but it did not move" report; the
+      // gesture was committed, it just had nowhere left to land.
+      //
+      // Hand it to the live-edge path instead, which is the mode this drag would
+      // have been given had it started a moment later. The quiz condition mirrors
+      // `_resolveDragMode`: an unanswered question still must not budge.
+      if (!blocked && committed && dy < 0 && clamped == state.viewedCardIndex) {
+        _advanceAtLiveEdge(context, state, liveDescriptor);
+        return;
+      }
+
+      if (committed && !blocked) AppHaptic.select();
+      context.read<KeypointCardCubit>().viewCard(clamped);
       return;
     }
 
@@ -438,9 +568,35 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     // card has nothing behind it, so it just springs back (the elastic offset
     // was already reset above).
     if (!committed || dy >= 0) return;
+    // The live edge is the other way forward: it does not move the view, it
+    // reveals a NEW card (`nextDocument()` / `nextQuestion()`). Walling only the
+    // page drag above would leave this wide open — and this is the path that
+    // grows `furthestCardIndex`, so letting it through is what makes cards 4, 5,
+    // 6 reachable at all.
+    if (_blockedByInLessonPaywall(state.viewedCardIndex + 1, state)) return;
+    _advanceAtLiveEdge(context, state, liveDescriptor);
+  }
+
+  /// Reveals the next card at the live edge on the reader's behalf.
+  ///
+  /// Releases the entry pin FIRST. This path never calls
+  /// `KeypointCardCubit.viewCard` — it reveals a card and lets the deck's
+  /// follow-the-edge rule move the view — so with the pin still up the reveal
+  /// happened while the view stayed on card 1, and the swipe looked ignored.
+  void _advanceAtLiveEdge(
+    BuildContext context,
+    KeypointCardState state,
+    KeypointCardDescriptor liveDescriptor,
+  ) {
+    // Mirrors `_resolveDragMode`: an unanswered quiz must not budge, and a
+    // theory card owing an explanation choice is refused inside
+    // `_advanceLiveTheoryCard`. Releasing the pin for a gesture those two turn
+    // away is harmless — it only means the view may follow the edge from now on,
+    // which is true the moment the reader has tried to move at all.
+    context.read<KeypointCardCubit>().releaseEntryPin();
     if (liveDescriptor.isTheory) {
       _advanceLiveTheoryCard(context);
-    } else if (liveDescriptor.isQuiz) {
+    } else if (liveDescriptor.isQuiz && state.isLiveCardAnswered) {
       _advanceLiveQuizCard();
     }
   }

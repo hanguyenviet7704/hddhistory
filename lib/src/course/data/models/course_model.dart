@@ -15,6 +15,10 @@ abstract class CourseModel with _$CourseModel {
     @Default(false) bool isNew,
     DateTime? publishAt,
     int? newDurationDays,
+    // Editorial credit + reach, set per course in admin. Nullable on purpose:
+    // cards drop each half when the content team left it blank.
+    String? author,
+    int? viewCount,
   }) = _CourseModel;
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
@@ -215,5 +219,7 @@ extension CourseModelExtension on CourseModel {
     isNew: isNew,
     publishAt: publishAt,
     newDurationDays: newDurationDays,
+    author: author,
+    viewCount: viewCount,
   );
 }

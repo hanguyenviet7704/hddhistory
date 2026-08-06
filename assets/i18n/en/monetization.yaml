@@ -100,6 +100,7 @@ saleCountdownLabel: Limited-time offer
 seeAllPlans: See all plans
 seeLessPlans: See fewer
 selectPlan: Select plan
+storeAccountLinkedToOtherToast: This ${store} account already has a subscription linked to a different Meup account. Sign in with that account to use it, or pay with a different ${store} account.
 subscriptionActiveToast: Your subscription is now active!
 subscriptionTitle: Subscription
 successCta: Explore now

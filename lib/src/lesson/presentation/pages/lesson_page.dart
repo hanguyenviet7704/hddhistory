@@ -26,6 +26,7 @@ class _LessonPageState extends State<LessonPage> {
   late final LessonTrackingDelegate _trackingDelegate;
   late final LessonCubit _lessonCubit;
   late final LessonAudioCubit _lessonAudioCubit;
+
   /// Applies reading-speed changes to the player. The speed control now lives
   /// as an inline stepper inside [KeypointSettingsSheet], which is a modal
   /// route and therefore sits OUTSIDE this page's provider scope — it can only
@@ -34,6 +35,14 @@ class _LessonPageState extends State<LessonPage> {
   StreamSubscription<KeypointDisplayState>? _readingSpeedSubscription;
 
   bool _hasSyncedFirstKeypoint = false;
+  // Keypoint whose "đang nghe dở" bookmark has already been applied (or ruled
+  // out) this session — the lesson emits `success` more than once and the
+  // jump must not re-fire over a deck the reader is already driving.
+  String _resumeAppliedForKeypoint = '';
+  // One-shot guard re-asserting the resume jump if the entry flow's ASYNC
+  // item-detail fetch lands after it and resets TheoryCubit to document 0 —
+  // see [_applyListenResume].
+  StreamSubscription<TheoryState>? _resumeGuard;
   String _lastTrackedScrollKey = '';
   // Source for the next keypoint_read_scr_view: 'keypoint_intro' on entry,
   // flipped to 'mode_switch' the moment the user switches into read mode.
@@ -84,6 +93,7 @@ class _LessonPageState extends State<LessonPage> {
 
   @override
   void dispose() {
+    unawaited(_resumeGuard?.cancel());
     unawaited(_readingSpeedSubscription?.cancel());
     // Leaving the lesson: the ambience comes back if the reader had it on, and
     // stays off if they didn't — the preference was never touched.
@@ -129,6 +139,15 @@ class _LessonPageState extends State<LessonPage> {
           listener: (context, state) async {
             await _syncAudioKeypoint(state.resolvedCurrentKeypoint);
           },
+        ),
+        // Resume "đang nghe dở": the audio already opened at the bookmarked
+        // second (see [_syncAudioKeypoint]); once the learning items land the
+        // deck is jumped to the matching card. Split on purpose — the sound is
+        // right within a second of entry, the cards follow as soon as they
+        // exist.
+        BlocListener<LessonCubit, LessonState>(
+          listenWhen: (previous, current) => previous.status != current.status && current.status == LessonStatus.success,
+          listener: (context, lessonState) => _applyListenResume(lessonState),
         ),
         BlocListener<TheoryCubit, TheoryState>(
           listenWhen: (previous, current) {
@@ -186,15 +205,80 @@ class _LessonPageState extends State<LessonPage> {
 
     final isFirstKeypointSynced = !_hasSyncedFirstKeypoint;
     _hasSyncedFirstKeypoint = true;
+    // A live "đang nghe dở" bookmark opens the merged file at that exact
+    // second (deck follows in [_applyListenResume] once items land) and is a
+    // listening intent in itself, so it also wins the autoplay decision.
+    final resume = ListenResumeCubit.instanceOrNull?.recordFor(keypoint.id);
     // Every keypoint AFTER the first one always autoplays — narration
     // following the reader is this screen's standing behavior. The FIRST
     // keypoint's autoplay is gated on the route's entry intent so internal
     // navigations that don't represent "starting a fresh keypoint" (e.g.
     // `LessonCubit.reviewDone`'s bare re-entry) don't surprise the user with
     // sound.
-    if (!isFirstKeypointSynced || widget.autoplayOnEntry) {
-      await _lessonAudioCubit.enterAudioMode();
+    if (!isFirstKeypointSynced || widget.autoplayOnEntry || resume != null) {
+      await _lessonAudioCubit.enterAudioMode(
+        startAt: resume == null ? null : Duration(milliseconds: resume.positionMs),
+      );
     }
+  }
+
+  /// Second half of resume: land the deck on the card the bookmarked second
+  /// belongs to. The live edge is fast-forwarded for real (jump APIs) — the
+  /// listener genuinely heard their way here, so finishing the keypoint from
+  /// here must still write completion exactly as an unbroken session would.
+  void _applyListenResume(LessonState lessonState) {
+    final keypoint = context.read<CourseLessonCubit>().state.resolvedCurrentKeypoint;
+    if (keypoint.id.isEmpty || _resumeAppliedForKeypoint == keypoint.id) return;
+    _resumeAppliedForKeypoint = keypoint.id;
+
+    final resume = ListenResumeCubit.instanceOrNull?.recordFor(keypoint.id);
+    final timeline = _lessonAudioCubit.timeline;
+    if (resume == null || timeline == null) return;
+
+    final cue = timeline.cueAt(timeline.cueIndexAtMs(resume.positionMs));
+    if (cue == null) return;
+
+    final items = lessonState.pageData.items;
+    final itemIndex = items.indexWhere((item) => item.id == cue.learningItemId);
+    if (itemIndex < 0) return;
+
+    final keypointCardCubit = context.read<KeypointCardCubit>();
+    void applyJump() {
+      _lessonCubit.jumpToItem(itemIndex);
+      _lessonCubit.setCurrentLearningItem(items[itemIndex]);
+      AppDI.injector.get<TheoryCubit>().jumpToDocument(cue.documentIndex);
+      keypointCardCubit.jumpToCard(
+        learningItemId: cue.learningItemId,
+        documentIndex: cue.documentIndex,
+      );
+    }
+
+    applyJump();
+
+    // The entry flow (`loadAllLearningItems.onSuccess`) fetches the first
+    // item's DETAIL asynchronously and, on landing, resets TheoryCubit to
+    // document 0 of the first item — arriving after this jump it clobbers the
+    // restored position (live edge snaps back, the deck yanks the view). Watch
+    // for that one reset and re-assert once; the window is short-lived so an
+    // ordinary user navigation can never re-trigger a stale jump.
+    unawaited(_resumeGuard?.cancel());
+    var reasserted = false;
+    _resumeGuard = AppDI.injector.get<TheoryCubit>().stream.listen((theoryState) {
+      if (reasserted) return;
+      final onResumeSpot = theoryState.currentLearningItem.id == cue.learningItemId && theoryState.currentDocumentIndex == cue.documentIndex;
+      if (onResumeSpot) return;
+      // The clobber lands as a RESET (document 0) — anything else in this
+      // window is the reader or the voice moving on, never ours to undo.
+      if (theoryState.currentDocumentIndex != 0) return;
+      reasserted = true;
+      unawaited(_resumeGuard?.cancel());
+      _resumeGuard = null;
+      applyJump();
+    });
+    Future.delayed(const Duration(seconds: 4), () {
+      unawaited(_resumeGuard?.cancel());
+      _resumeGuard = null;
+    });
   }
 
   void _openReportIssueSheet(BuildContext context, KeypointEntity keypoint) {

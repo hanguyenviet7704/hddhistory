@@ -30,6 +30,12 @@ class KeypointCardsBuilder {
     /// branch). Pass -1 for "no narration to follow", which builds exactly what
     /// the live edge alone would.
     int revealToClipIndex = -1,
+
+    /// Merged-mode counterpart of [revealToClipIndex]: reveal until the card
+    /// with this IDENTITY exists. Cues carry (learningItemId, documentIndex),
+    /// never a clip index, so the merged deck reveals by identity and the two
+    /// numbering spaces never have to be reconciled.
+    ({String learningItemId, int documentIndex})? revealToCard,
   }) {
     final cards = <KeypointCardDescriptor>[];
     final cardToClip = <int, int>{};
@@ -37,13 +43,16 @@ class KeypointCardsBuilder {
     var liveCardIndex = -1;
     var revealCardIndex = -1;
 
-    // True while the reveal clip has been asked for and not yet emitted. This is
-    // the ONLY reason a card past the live edge is built, and it goes false the
-    // moment that card exists — so the list never grows further than it must.
-    bool stillSeekingReveal() => revealToClipIndex >= 0 && revealCardIndex < 0;
+    // True while the reveal target has been asked for and not yet emitted. This
+    // is the ONLY reason a card past the live edge is built, and it goes false
+    // the moment that card exists — so the list never grows further than it must.
+    bool stillSeekingReveal() => (revealToClipIndex >= 0 || revealToCard != null) && revealCardIndex < 0;
 
     void emitCard(KeypointCardDescriptor descriptor, int? clipIndex) {
       cards.add(descriptor);
+      if (revealToCard != null && descriptor.learningItemId == revealToCard.learningItemId && descriptor.documentIndex == revealToCard.documentIndex) {
+        revealCardIndex = cards.length - 1;
+      }
       if (clipIndex == null) return;
       cardToClip[cards.length - 1] = clipIndex;
       if (clipIndex == revealToClipIndex) revealCardIndex = cards.length - 1;
