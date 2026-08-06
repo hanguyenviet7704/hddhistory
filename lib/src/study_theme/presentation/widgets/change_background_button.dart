@@ -10,7 +10,12 @@ class ChangeBackgroundButton extends StatelessWidget {
   /// Threaded into theme_change_click and the opened sheet.
   final String source;
 
-  const ChangeBackgroundButton({super.key, this.size = 42, this.source = 'home'});
+  /// Glyph size as a fraction of [size]. The floating variants keep the original
+  /// half-size glyph; Home's 28px header button needs a proportionally larger
+  /// one (19/28) or the icon disappears inside the circle.
+  final double iconRatio;
+
+  const ChangeBackgroundButton({super.key, this.size = 42, this.source = 'home', this.iconRatio = 0.5});
 
   /// Design `cb-theme-icon` — a small "image / theme" glyph. Stroke uses the
   /// brand colour for now; theme-adaptive tinting (light icon on dark
@@ -41,7 +46,7 @@ class ChangeBackgroundButton extends StatelessWidget {
             border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
           ),
           alignment: Alignment.center,
-          child: SvgPicture.string(_iconSvg, width: (size * 0.5).r, height: (size * 0.5).r),
+          child: SvgPicture.string(_iconSvg, width: (size * iconRatio).r, height: (size * iconRatio).r),
         ),
       ),
     );

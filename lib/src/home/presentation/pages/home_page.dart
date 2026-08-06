@@ -289,47 +289,71 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
 // Greeting
 // ───────────────────────────────────────────────────────────────────────────
 
+/// Header row: the greeting is the page's only title (design "2 · Home"), with
+/// the streak count and the change-background affordance trailing it.
 class _HomeGreeting extends StatelessWidget {
   const _HomeGreeting();
 
+  /// The streak chip switches to the Profile tab (user call, 2026-08-05).
+  ///
+  /// It used to push the streak-detail popup. Profile's own streak card is now
+  /// where the week is read, so the chip hands over to that page instead of
+  /// stacking a second streak surface on top of Home. No re-entrancy guard is
+  /// needed any more either: switching a branch is idempotent, where the old
+  /// `push` would stack a duplicate route on a double tap.
+  ///
+  /// Sets the branch index AND the route name. Entering an already-built branch
+  /// through a raw `.go()` fires no didPush, so PageCubit's mirror — which the
+  /// floating nav reads to decide which tab is lit — would otherwise stay on
+  /// Home (see the comment on `PageCubit.onTapTab`).
+  void _openProfile(BuildContext context, int currentStreak) {
+    AppService.instance.appTrackingService.trackHomeStreakChipClick(currentStreak: currentStreak);
+
+    final page = context.read<PageCubit>();
+    page.setCurrentIndex(2); // Setting/Profile branch
+    ProfileRoute().go(context);
+    page.setCurrentRouteName(RouteNamed.profile);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentStreak = context.select((LearningStreakCubit cubit) => cubit.state.selectedItem.currentStreak);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: BlocSelector<ProfileCubit, ProfileState, String>(
         selector: (state) => state.user.name,
         builder: (context, username) {
           final firstName = username.trim().split(' ').first;
-          final greeting = firstName.isEmpty ? context.l10n.home.homeGreetingPrefix : '${context.l10n.home.homeGreetingPrefix}, $firstName';
+          final prefix = context.l10n.home.homeGreetingPrefix;
+          final greeting = firstName.isEmpty ? '$prefix!' : '$prefix, $firstName!';
           return Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      greeting,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppStyle.text14.copyWith(
-                        fontSize: 15.sp,
-                        color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
-                      ),
-                    ),
-                    2.verticalSpace,
-                    AppText(
-                      context.l10n.home.homeMindQuestion,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: _poppins(21, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
-                    ),
-                  ],
+                // One line, no secondary question beneath it: the design promotes
+                // the greeting itself to the page title.
+                child: AppText(
+                  greeting,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 21.sp,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                  ),
                 ),
               ),
               12.horizontalSpace,
+              StreakHomeChip(
+                currentStreak: currentStreak,
+                onTap: () => _openProfile(context, currentStreak),
+              ),
+              12.horizontalSpace,
               // Design item 2 — "Change background" affordance in the header.
-              const ChangeBackgroundButton(source: 'home'),
+              const ChangeBackgroundButton(source: 'home', size: 28, iconRatio: 19 / 28),
             ],
           );
         },
