@@ -15,6 +15,8 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final GetHabitConfigUseCase _getHabitConfigUseCase;
   final GetHabitScreenUseCase _getHabitScreenUseCase;
   final GetCachedHabitScreenUseCase _getCachedHabitScreenUseCase;
+  final GetHabitPracticesUseCase _getHabitPracticesUseCase;
+  final SubmitPracticeAttemptUseCase _submitPracticeAttemptUseCase;
 
   HabitCubit(
     this._getHabitsUseCase,
@@ -28,6 +30,8 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._getHabitConfigUseCase,
     this._getHabitScreenUseCase,
     this._getCachedHabitScreenUseCase,
+    this._getHabitPracticesUseCase,
+    this._submitPracticeAttemptUseCase,
   ) : super(HabitState.initial());
 
   Future<void>? _ensureInFlight;
@@ -296,12 +300,73 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     );
   }
 
-  Future<bool> checkIn(String userHabitId, {required bool done, String? note}) async {
-    final result = await _checkInUseCase(userHabitId, done: done, note: note).run();
+  /// Files a day's check-in. [method] records HOW it was filed — omit it for the
+  /// quick 7-day-strip toggle, which the API reads as `tap`; the journal and
+  /// quiz flows pass their own. [mood] is the journal's 3-level scale (1..3).
+  Future<bool> checkIn(
+    String userHabitId, {
+    required bool done,
+    String? note,
+    HabitCheckinMethodEntity? method,
+    int? mood,
+    int? score,
+  }) async {
+    final result = await _checkInUseCase(
+      userHabitId,
+      done: done,
+      note: note,
+      method: method,
+      mood: mood,
+      score: score,
+    ).run();
     return result.fold(
       (_) => false,
       (updated) {
         if (done) AppHaptic.success();
+        _replaceUserHabit(updated);
+        unawaited(loadSummary());
+        return true;
+      },
+    );
+  }
+
+  /// Published practices for a library habit. Returns empty on failure so the
+  /// picker simply offers journal only — the same thing it shows for a habit
+  /// with no authored content, which is the common case today.
+  Future<List<HabitPracticeEntity>> loadPractices(String habitId) async {
+    if (habitId.isEmpty) return const [];
+    final result = await _getHabitPracticesUseCase(habitId).run();
+    return result.fold((_) => const [], (practices) => practices);
+  }
+
+  /// Finishes a practice. The server files the day's check-in in the same
+  /// request, so this must NOT be paired with [checkIn] — two writes would race
+  /// on the same `{userHabitId, date}` row.
+  Future<bool> submitPracticeAttempt({
+    required String userHabitId,
+    required HabitCheckinMethodEntity method,
+    String? learningItemId,
+    List<Map<String, dynamic>>? exercisesResult,
+    int? score,
+    int? total,
+    int? mood,
+    String? note,
+  }) async {
+    final result = await _submitPracticeAttemptUseCase(
+      userHabitId: userHabitId,
+      method: method,
+      learningItemId: learningItemId,
+      exercisesResult: exercisesResult,
+      score: score,
+      total: total,
+      mood: mood,
+      note: note,
+    ).run();
+
+    return result.fold(
+      (_) => false,
+      (updated) {
+        AppHaptic.success();
         _replaceUserHabit(updated);
         unawaited(loadSummary());
         return true;

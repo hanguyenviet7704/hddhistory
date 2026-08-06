@@ -68,20 +68,14 @@ class HabitTracking {
     track(TrackingKey.habitItemOpen, parameters: habitParams(habit));
   }
 
-  static void taskCheck(UserHabitEntity habit) {
-    track(TrackingKey.habitTaskCheck, parameters: {...habitParams(habit), 'checked': habit.todayDone});
-  }
-
   static void emptyCourseClick() => track(TrackingKey.habitEmptyCourseClick);
 
   static void editOpen() => track(TrackingKey.habitEditOpen);
 
-  //* Check-in + diary sheet
+  //* Check-in (filed by the practice flow — journal or quiz)
   static void noteCheckin(UserHabitEntity habit, {required bool hasNote}) {
     track(TrackingKey.habitNoteCheckin, parameters: {...habitParams(habit), 'has_note': hasNote});
   }
-
-  static void noteClose() => track(TrackingKey.habitNoteClose);
 
   //* Habit detail
   static void detailScrView(UserHabitEntity habit, {required int completionRate, required int currentLoops}) {

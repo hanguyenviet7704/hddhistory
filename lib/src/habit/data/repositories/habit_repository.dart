@@ -151,12 +151,21 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
     required bool done,
     DateTime? date,
     String? note,
+    HabitCheckinMethodEntity? method,
+    int? mood,
+    int? score,
   }) {
+    final methodValue = method?.apiValue;
     return callApiWithTransform<UserHabitModel, UserHabitEntity>(
       apiCall: () => _api.checkIn(id, {
         'done': done,
         if (date != null) 'date': date.toIso8601String().split('T').first,
         if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+        if (methodValue != null) 'method': methodValue,
+        // The API validates mood as 1..3, so a 0 from a bad caller would 400.
+        // Dropping it here keeps a UI bug from failing the whole check-in.
+        if (mood != null && mood > 0) 'mood': mood,
+        if (score != null) 'score': score,
       }),
       transform: (model) => model.toEntity(),
       defaultValue: const UserHabitEntity(),
@@ -178,6 +187,45 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
       apiCall: () => _api.getReanchorReasons(courseId),
       transform: (models) => models.map((model) => model.toEntity()).toList(),
       defaultValue: const [],
+    );
+  }
+
+  @override
+  TaskEither<AppException, List<HabitPracticeEntity>> getHabitPractices(String habitId) {
+    return callApiWithTransform<List<HabitPracticeModel>, List<HabitPracticeEntity>>(
+      apiCall: () => _api.getHabitPractices(habitId),
+      transform: (models) => models.map((model) => model.toEntity()).toList(),
+      defaultValue: const [],
+    );
+  }
+
+  @override
+  TaskEither<AppException, UserHabitEntity> submitPracticeAttempt({
+    required String userHabitId,
+    required HabitCheckinMethodEntity method,
+    String? learningItemId,
+    List<Map<String, dynamic>>? exercisesResult,
+    int? score,
+    int? total,
+    int? mood,
+    String? note,
+  }) {
+    final methodValue = method.apiValue;
+    return callApiWithTransform<HabitPracticeAttemptResultModel, UserHabitEntity>(
+      apiCall: () => _api.submitPracticeAttempt({
+        'userHabitId': userHabitId,
+        if (methodValue != null) 'method': methodValue,
+        if (learningItemId != null && learningItemId.isNotEmpty) 'learningItemId': learningItemId,
+        if (exercisesResult != null && exercisesResult.isNotEmpty) 'exercisesResult': exercisesResult,
+        if (score != null) 'score': score,
+        if (total != null) 'total': total,
+        // The API validates mood as 1..3; dropping a 0 keeps a UI bug from
+        // failing the whole submission.
+        if (mood != null && mood > 0) 'mood': mood,
+        if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+      }),
+      transform: (model) => model.userHabit?.toEntity() ?? const UserHabitEntity(),
+      defaultValue: const UserHabitEntity(),
     );
   }
 }

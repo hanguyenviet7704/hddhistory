@@ -143,6 +143,12 @@ mixin AppEndpoint {
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
   static const String userHabitsCheckins = '/api/v1/user-habits/{id}/checkins';
   static const String reanchorReasons = '/api/v1/reanchor-reasons';
+  // Published practices for one habit, content hydrated from learning_item.
+  static const String habitPractices = '/api/v1/habit-practices';
+  // Finishing a practice ALSO files the day's check-in server-side — do not
+  // post to userHabitsCheckIn as well, or the two writes race on the same
+  // {userHabitId, date} row.
+  static const String habitPracticeAttempts = '/api/v1/habit-practices/attempts';
 
   //* In App Survey API
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';

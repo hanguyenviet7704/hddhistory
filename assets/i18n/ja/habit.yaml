@@ -10,6 +10,9 @@ headerInProgressSubtitle: 今日も続けよう
 headerEmptySubtitle: 最初の習慣を始めよう
 taskToggleLabel: タスク
 habitToggleLabel: 習慣
+trackerStateDone: 今日は完了
+trackerStateTodo: 練習が必要
+trackerDetails: 詳細
 editHabitLink: 習慣を編集
 noProgressLabel: 進捗なし
 streakDaysLabel: ${days} 日連続
@@ -82,11 +85,6 @@ manageSlotsHabitSection: 習慣
 manageSlotsNewSection: 新しい習慣
 manageSlotsConfirmButton: 変更を確定
 
-# Check-in + diary (§9.7)
-checkInAddNote: メモを追加
-checkInNotePlaceholder: ここにメモを書いてください…
-checkInSubmit: チェックイン
-
 # Habit detail (§9.8)
 detailCompletionRate: 達成率
 detailCurrentLoop: 現在の連続
@@ -96,6 +94,8 @@ detailSince: ${date} から
 detailDiaryTitle: 習慣ダイアリー
 detailDiaryEmpty: まだメモがありません
 detailDiaryCheckedIn: チェックイン済み
+detailDiaryCount: ${count} 件
+detailDiaryViewAll: すべて見る
 
 # Home reminder card (§9.4)
 homeReminderHabitCount: ${count}個の習慣
@@ -111,3 +111,31 @@ reanchorStartButton: 学習を始める
 summaryBestHabitLabel: ベストな習慣
 summaryBestHabitLoop: ${days}日連続
 reanchorPickLabel: 自分に一番合うものを選んでください
+
+# Journal check-in (design "5 · Habit" — Practice with a journal)
+journalTitle: 今日はどうでしたか？
+journalMoodTough: つらかった
+journalMoodOkay: ふつう
+journalMoodGreat: よかった
+journalPlaceholder: 浮かんだことを書いてみましょう…
+journalSaveButton: チェックインを保存
+practiceNowButton: 今すぐ練習
+
+# Practice picker + quiz + complete (design "5 · Habit")
+practicePickTitle: どの方法でチェックインしますか？
+practicePickSubtitle: 今の気力に合う方法を選んでください。
+practiceJournalTitle: 日記を書く
+practiceJournalSubtitle: 自分の言葉で振り返る
+practiceQuizTitle: クイズに挑戦
+practiceQuizSubtitle: この習慣についての短い質問
+quizSelectOne: 最適な答えを選んでください
+quizSelectMany: 当てはまるものすべてを選んでください
+quizCheckButton: 確認
+quizNextButton: 続ける
+quizCorrectLabel: 正解です！
+quizIncorrectLabel: 不正解
+quizProgressLabel: ${current}/${total}
+practiceDoneTitle: 練習完了
+practiceDoneSubtitle: 今日はチェックイン済みです。続けましょう！
+practiceDoneScore: 正解 ${correct}/${total}
+practiceDoneButton: 習慣に戻る

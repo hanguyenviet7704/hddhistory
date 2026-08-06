@@ -10,6 +10,9 @@ headerInProgressSubtitle: Tiếp tục nào
 headerEmptySubtitle: Bắt đầu thói quen đầu tiên
 taskToggleLabel: Việc cần làm
 habitToggleLabel: Thói quen
+trackerStateDone: Đã hoàn thành hôm nay
+trackerStateTodo: Cần luyện tập
+trackerDetails: Chi tiết
 editHabitLink: Chỉnh sửa thói quen
 noProgressLabel: Chưa có tiến độ
 streakDaysLabel: Chuỗi ${days} ngày
@@ -83,11 +86,6 @@ manageSlotsHabitSection: Thói quen
 manageSlotsNewSection: THÓI QUEN MỚI
 manageSlotsConfirmButton: Xác nhận thay đổi
 
-# Check-in + diary (§9.7)
-checkInAddNote: Thêm ghi chú
-checkInNotePlaceholder: Viết ghi chú của bạn ở đây (không bắt buộc)
-checkInSubmit: Điểm danh
-
 # Habit detail (§9.8)
 detailCompletionRate: Tỉ lệ hoàn thành
 detailCurrentLoop: Chuỗi hiện tại
@@ -97,6 +95,8 @@ detailSince: Từ ${date}
 detailDiaryTitle: Nhật ký thói quen
 detailDiaryEmpty: Chưa có ghi chú nào
 detailDiaryCheckedIn: Đã điểm danh
+detailDiaryCount: ${count} lần ghi
+detailDiaryViewAll: Xem tất cả
 
 # Home reminder card (§9.4)
 homeReminderHabitCount: ${count} thói quen
@@ -112,3 +112,31 @@ reanchorStartButton: Bắt đầu học
 summaryBestHabitLabel: Thói quen tốt nhất
 summaryBestHabitLoop: Chuỗi ${days} ngày
 reanchorPickLabel: Chọn điều phù hợp nhất với bạn
+
+# Journal check-in (design "5 · Habit" — Practice with a journal)
+journalTitle: Hôm nay thế nào?
+journalMoodTough: Khó
+journalMoodOkay: Ổn
+journalMoodGreat: Tuyệt
+journalPlaceholder: Viết bất cứ điều gì bạn đang nghĩ…
+journalSaveButton: Lưu check-in
+practiceNowButton: Luyện tập ngay
+
+# Practice picker + quiz + complete (design "5 · Habit")
+practicePickTitle: Bạn muốn check-in kiểu nào?
+practicePickSubtitle: Chọn cách phù hợp với năng lượng của bạn lúc này.
+practiceJournalTitle: Viết nhật ký
+practiceJournalSubtitle: Ghi lại bằng lời của bạn
+practiceQuizTitle: Làm quiz
+practiceQuizSubtitle: Vài câu hỏi nhanh về thói quen này
+quizSelectOne: Chọn đáp án đúng nhất
+quizSelectMany: Chọn tất cả đáp án đúng
+quizCheckButton: Kiểm tra
+quizNextButton: Tiếp tục
+quizCorrectLabel: Chính xác!
+quizIncorrectLabel: Chưa đúng
+quizProgressLabel: ${current}/${total}
+practiceDoneTitle: Hoàn thành luyện tập
+practiceDoneSubtitle: Hôm nay đã check-in. Giữ chuỗi nhé!
+practiceDoneScore: Đúng ${correct}/${total}
+practiceDoneButton: Về thói quen

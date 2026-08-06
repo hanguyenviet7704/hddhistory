@@ -10,6 +10,9 @@ headerInProgressSubtitle: 今天继续加油
 headerEmptySubtitle: 开始你的第一个习惯
 taskToggleLabel: 任务
 habitToggleLabel: 习惯
+trackerStateDone: 今天已完成
+trackerStateTodo: 需要练习
+trackerDetails: 详情
 editHabitLink: 编辑习惯
 noProgressLabel: 暂无进度
 streakDaysLabel: 连续 ${days} 天
@@ -82,11 +85,6 @@ manageSlotsHabitSection: 习惯
 manageSlotsNewSection: 新习惯
 manageSlotsConfirmButton: 确认更改
 
-# Check-in + diary (§9.7)
-checkInAddNote: 添加备注
-checkInNotePlaceholder: 在这里写下你的备注……
-checkInSubmit: 打卡
-
 # Habit detail (§9.8)
 detailCompletionRate: 完成率
 detailCurrentLoop: 当前连续
@@ -96,6 +94,8 @@ detailSince: 自 ${date}
 detailDiaryTitle: 习惯日记
 detailDiaryEmpty: 还没有日记
 detailDiaryCheckedIn: 已打卡
+detailDiaryCount: ${count} 条记录
+detailDiaryViewAll: 查看全部
 
 # Home reminder card (§9.4)
 homeReminderHabitCount: ${count} 个习惯
@@ -111,3 +111,31 @@ reanchorStartButton: 开始学习
 summaryBestHabitLabel: 最佳习惯
 summaryBestHabitLoop: ${days} 天连续
 reanchorPickLabel: 选择最适合你的一项
+
+# Journal check-in (design "5 · Habit" — Practice with a journal)
+journalTitle: 今天怎么样？
+journalMoodTough: 有点难
+journalMoodOkay: 还行
+journalMoodGreat: 很棒
+journalPlaceholder: 写下你此刻的想法…
+journalSaveButton: 保存打卡
+practiceNowButton: 立即练习
+
+# Practice picker + quiz + complete (design "5 · Habit")
+practicePickTitle: 你想怎么打卡？
+practicePickSubtitle: 选一个适合你此刻状态的方式。
+practiceJournalTitle: 写日记
+practiceJournalSubtitle: 用你自己的话记录
+practiceQuizTitle: 做小测
+practiceQuizSubtitle: 关于这个习惯的快速问题
+quizSelectOne: 选择最合适的答案
+quizSelectMany: 选出所有正确答案
+quizCheckButton: 检查
+quizNextButton: 继续
+quizCorrectLabel: 回答正确！
+quizIncorrectLabel: 不正确
+quizProgressLabel: ${current}/${total}
+practiceDoneTitle: 练习完成
+practiceDoneSubtitle: 今天已打卡，继续保持！
+practiceDoneScore: 正确 ${correct}/${total}
+practiceDoneButton: 返回习惯

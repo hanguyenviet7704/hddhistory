@@ -81,19 +81,6 @@ class _HabitPageState extends State<HabitPage> {
     HabitTracking.scrView(source: cubit.consumePendingScrSource(), isEmpty: cubit.state.userHabits.isEmpty);
   }
 
-  /// Tap the check circle → check-in + diary sheet (PRD §9.7). Refreshes the
-  /// tracker afterwards so the tick + counts update.
-  Future<void> _openCheckIn(UserHabitEntity userHabit) async {
-    HabitTracking.taskCheck(userHabit);
-    final done = await CheckInDiarySheet.show(context, userHabit: userHabit);
-    if (done == true && mounted) {
-      unawaited(context.read<HabitCubit>().load(showLoading: false));
-    } else {
-      // Sheet dismissed without a check-in.
-      HabitTracking.noteClose();
-    }
-  }
-
   /// Tap the habit row → Habit detail (PRD §9.8).
   Future<void> _openDetail(UserHabitEntity userHabit) {
     HabitTracking.itemOpen(userHabit);
@@ -139,7 +126,6 @@ class _HabitPageState extends State<HabitPage> {
                   SliverToBoxAdapter(child: _HabitHeader(state: state)),
                   _HabitBody(
                     state: state,
-                    onCheckIn: _openCheckIn,
                     onOpenDetail: _openDetail,
                     onEdit: () {
                       HabitTracking.editOpen();
@@ -225,9 +211,25 @@ class _HabitHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppText(title, style: AppStyle.textBold24.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary))),
-                    4.verticalSpace,
-                    AppText(subtitle, style: AppStyle.text14.copyWith(color: studyThemeOnBg(context, AppCustomColor.streakTextMuted))),
+                    // Design: 34/700 over a 16/600 subtitle. The ladder has no
+                    // 34, and this is the screen's one big heading, so the exact
+                    // size is set rather than rounded to 32 or 36.
+                    AppText(
+                      title,
+                      style: AppStyle.text32.copyWith(
+                        fontSize: 34.sp,
+                        fontWeight: FontWeight.w700,
+                        color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                      ),
+                    ),
+                    6.verticalSpace,
+                    AppText(
+                      subtitle,
+                      style: AppStyle.text16.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -319,14 +321,12 @@ class _HabitHeaderScene extends StatelessWidget {
 
 class _HabitBody extends StatelessWidget {
   final HabitState state;
-  final ValueChanged<UserHabitEntity> onCheckIn;
   final ValueChanged<UserHabitEntity> onOpenDetail;
   final VoidCallback onEdit;
   final VoidCallback onGoToCourse;
 
   const _HabitBody({
     required this.state,
-    required this.onCheckIn,
     required this.onOpenDetail,
     required this.onEdit,
     required this.onGoToCourse,
@@ -372,10 +372,6 @@ class _HabitBody extends StatelessWidget {
       return SliverFillRemaining(child: HabitEmptyState(onGoToCourse: onGoToCourse));
     }
 
-    final byGroup = <String, List<UserHabitEntity>>{};
-    for (final userHabit in state.activeHabits) {
-      byGroup.putIfAbsent(_habitGroupKey(userHabit), () => []).add(userHabit);
-    }
 
     // Figma "Today's task": content lives on the soft-gray body (flush under the
     // green header), holding one white card per category (the "problem" a
@@ -391,12 +387,10 @@ class _HabitBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             8.verticalSpace,
-            ...byGroup.entries.map(
-              (entry) => _HabitCategoryCard(
-                title: _habitGroupTitle(entry.value.first, state),
-                userHabits: entry.value,
-                onCheckIn: onCheckIn,
-                onOpenDetail: onOpenDetail,
+            ...state.activeHabits.map(
+              (userHabit) => HabitTrackerCard(
+                userHabit: userHabit,
+                onOpenDetail: () => onOpenDetail(userHabit),
               ),
             ),
             4.verticalSpace,
@@ -432,58 +426,3 @@ class _HabitBody extends StatelessWidget {
   }
 }
 
-/// One white category card (Figma "Today's task"): a muted category title with
-/// a divider, then its habits as checklist rows.
-class _HabitCategoryCard extends StatelessWidget {
-  final String title;
-  final List<UserHabitEntity> userHabits;
-  final ValueChanged<UserHabitEntity> onCheckIn;
-  final ValueChanged<UserHabitEntity> onOpenDetail;
-
-  const _HabitCategoryCard({
-    required this.title,
-    required this.userHabits,
-    required this.onCheckIn,
-    required this.onOpenDetail,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: ThemedGlassCard(
-        padding: EdgeInsets.all(16.w),
-        radius: 12,
-        shadow: [BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 2)],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.only(bottom: 8.h),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppCustomColor.borderDefault)),
-              ),
-              child: AppText(
-                title,
-                // The "why" header sits inside a translucent glass card; the
-                // muted slate loses contrast over a custom background (dark bleeds
-                // through), so darken it there via studyThemeCardMuted while
-                // keeping the Figma muted slate on the stock white card.
-                style: AppStyle.text14.copyWith(color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted), fontWeight: FontWeight.w600),
-              ),
-            ),
-            // Figma "Today's task": task rows stack with no divider between
-            // them — only the category header keeps its bottom border.
-            for (final userHabit in userHabits)
-              HabitTaskRow(
-                userHabit: userHabit,
-                onCheckInTap: () => onCheckIn(userHabit),
-                onOpenDetail: () => onOpenDetail(userHabit),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}

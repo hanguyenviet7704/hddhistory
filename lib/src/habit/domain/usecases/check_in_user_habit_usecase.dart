@@ -11,5 +11,16 @@ class CheckInUserHabitUseCase {
     required bool done,
     DateTime? date,
     String? note,
-  }) => _repository.checkIn(id, done: done, date: date, note: note);
+    HabitCheckinMethodEntity? method,
+    int? mood,
+    int? score,
+  }) => _repository.checkIn(
+    id,
+    done: done,
+    date: date,
+    note: note,
+    method: method,
+    mood: mood,
+    score: score,
+  );
 }

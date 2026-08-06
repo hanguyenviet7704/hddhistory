@@ -43,4 +43,12 @@ abstract class HabitApi {
 
   @GET(AppEndpoint.reanchorReasons)
   Future<BaseResponse<List<ReanchorReasonModel>>> getReanchorReasons(@Query('courseId') String courseId);
+
+  @GET(AppEndpoint.habitPractices)
+  Future<BaseResponse<List<HabitPracticeModel>>> getHabitPractices(@Query('habitId') String habitId);
+
+  /// Finishing a practice also files the day's check-in server-side, so the
+  /// response carries the refreshed user habit — never call checkIn as well.
+  @POST(AppEndpoint.habitPracticeAttempts)
+  Future<BaseResponse<HabitPracticeAttemptResultModel>> submitPracticeAttempt(@Body() Map<String, dynamic> body);
 }

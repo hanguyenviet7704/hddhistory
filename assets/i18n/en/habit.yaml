@@ -10,6 +10,9 @@ headerInProgressSubtitle: Keep going today
 headerEmptySubtitle: Start your first habit
 taskToggleLabel: Task
 habitToggleLabel: Habit
+trackerStateDone: Completed today
+trackerStateTodo: Need practice
+trackerDetails: Details
 editHabitLink: Edit habits
 noProgressLabel: No progress
 streakDaysLabel: ${days} days streak
@@ -83,11 +86,6 @@ manageSlotsHabitSection: Habit
 manageSlotsNewSection: NEW HABIT
 manageSlotsConfirmButton: Confirm changes
 
-# Check-in + diary (§9.7)
-checkInAddNote: Add note
-checkInNotePlaceholder: Add your notes here (optional)
-checkInSubmit: Check in
-
 # Habit detail (§9.8)
 detailCompletionRate: Completion rate
 detailCurrentLoop: Current loops
@@ -97,6 +95,8 @@ detailSince: Since ${date}
 detailDiaryTitle: Habit diary
 detailDiaryEmpty: No diary notes yet
 detailDiaryCheckedIn: Checked in
+detailDiaryCount: ${count} entries
+detailDiaryViewAll: View all
 
 # Home reminder card (§9.4)
 homeReminderHabitCount: ${count} habits
@@ -112,3 +112,31 @@ reanchorStartButton: Start Learning
 summaryBestHabitLabel: Best habit
 summaryBestHabitLoop: ${days}-days loop
 reanchorPickLabel: Pick the one that fits you best
+
+# Journal check-in (design "5 · Habit" — Practice with a journal)
+journalTitle: How did it go today?
+journalMoodTough: Tough
+journalMoodOkay: Okay
+journalMoodGreat: Great
+journalPlaceholder: Write whatever comes to mind…
+journalSaveButton: Save check-in
+practiceNowButton: Practice now
+
+# Practice picker + quiz + complete (design "5 · Habit")
+practicePickTitle: How do you want to check in?
+practicePickSubtitle: Pick the way that fits your energy right now.
+practiceJournalTitle: Write a journal
+practiceJournalSubtitle: Reflect in your own words
+practiceQuizTitle: Take a quiz
+practiceQuizSubtitle: Quick questions on this habit
+quizSelectOne: Select the best answer
+quizSelectMany: Select all that apply
+quizCheckButton: Check
+quizNextButton: Continue
+quizCorrectLabel: Correct answer!
+quizIncorrectLabel: Incorrect
+quizProgressLabel: ${current}/${total}
+practiceDoneTitle: Practice complete
+practiceDoneSubtitle: Today is checked in. Keep the loop going!
+practiceDoneScore: ${correct}/${total} correct
+practiceDoneButton: Back to habit

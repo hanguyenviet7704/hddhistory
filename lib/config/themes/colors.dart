@@ -148,6 +148,17 @@ mixin AppCustomColor {
   static const Color kpGapFilledSurface = Color(0xFFEDEAFE);
   static const Color kpChipPlaceholder = Color(0xFFF1F3F8);
   static const Color kpCorrectAnswerSurface = Color(0xFFF3F5F9);
+
+  // Habit tracker state pill — design "5 · Habit" → Habit tab. Two states:
+  // checked in today (green) and still waiting (amber). The green reuses the
+  // keypoint result tokens (`kpCorrectSurface` / `kpCorrectText` /
+  // `kpCorrectBorder`); the palette had no amber surface/text/dot trio, so it
+  // gets one here. The design's own hex for this pill sits past the 256 KiB read
+  // cap on the design file — these are picked from its warm accent family and
+  // should be replaced if the exact values turn up.
+  static const Color habitStateTodoSurface = Color(0xFFFFF3E2);
+  static const Color habitStateTodoText = Color(0xFFB2711A);
+  static const Color habitStateTodoDot = Color(0xFFE9A23B);
 }
 
 mixin AppTheme {

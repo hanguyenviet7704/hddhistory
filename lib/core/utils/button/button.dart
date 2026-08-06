@@ -13,6 +13,17 @@ class DButton extends StatelessWidget {
   final TextStyle? style;
   final int expandedFlex;
   final Color? backgroundColor;
+
+  /// Fill to use while the button is disabled (no `onPressed`, or `isLoading`).
+  ///
+  /// Needed because `styleFrom(backgroundColor:)` only applies to the ENABLED
+  /// state — disabled falls back to the Material default, which is a low-opacity
+  /// `onSurface` tint. Over a flat page that reads as a greyed-out button; over
+  /// the study-theme photo backgrounds it disappears completely, leaving a
+  /// caption floating on the wallpaper with no button under it.
+  ///
+  /// Left null by default so existing callers keep the Material behaviour.
+  final Color? disabledBackgroundColor;
   final Color? surfaceTintColor;
   final Color? textColor;
   final BorderSide? borderSide;
@@ -35,6 +46,7 @@ class DButton extends StatelessWidget {
     this.style,
     this.expandedFlex = 0,
     this.backgroundColor,
+    this.disabledBackgroundColor,
     this.surfaceTintColor,
     this.borderSide,
     this.buttonType = DButtonType.fill,
@@ -84,6 +96,7 @@ class DButton extends StatelessWidget {
           alignment: alignment,
           padding: padding.w,
           backgroundColor: backgroundColor,
+          disabledBackgroundColor: disabledBackgroundColor,
           surfaceTintColor: surfaceTintColor,
           elevation: elevation,
           shape: shape,

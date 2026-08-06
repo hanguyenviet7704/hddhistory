@@ -44,9 +44,28 @@ abstract class IHabitRepository {
     required bool done,
     DateTime? date,
     String? note,
+    HabitCheckinMethodEntity? method,
+    int? mood,
+    int? score,
   });
 
   TaskEither<AppException, List<HabitCheckinEntity>> getCheckins(String id);
 
   TaskEither<AppException, List<ReanchorReasonEntity>> getReanchorReasons(String courseId);
+
+  /// Published practices for a library habit, content hydrated.
+  TaskEither<AppException, List<HabitPracticeEntity>> getHabitPractices(String habitId);
+
+  /// Finishes a practice. The server files the day's check-in in the same
+  /// request and returns the refreshed user habit — do NOT also call [checkIn].
+  TaskEither<AppException, UserHabitEntity> submitPracticeAttempt({
+    required String userHabitId,
+    required HabitCheckinMethodEntity method,
+    String? learningItemId,
+    List<Map<String, dynamic>>? exercisesResult,
+    int? score,
+    int? total,
+    int? mood,
+    String? note,
+  });
 }
