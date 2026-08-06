@@ -25,6 +25,11 @@ class HapticSettingCubit extends HydratedCubit<bool> {
     AppHaptic.enabled = change.nextState;
   }
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'HapticSettingCubit';
+
   @override
   bool fromJson(Map<String, dynamic> json) => json['enabled'] as bool? ?? true;
 

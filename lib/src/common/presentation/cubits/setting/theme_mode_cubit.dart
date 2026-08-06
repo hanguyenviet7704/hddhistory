@@ -10,6 +10,11 @@ class ThemeModeCubit extends HydratedCubit<ThemeModeType> {
     LogDev.trace('Change theme mode to ${themeMode.label}');
   }
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'ThemeModeCubit';
+
   @override
   ThemeModeType? fromJson(Map<String, dynamic> json) => ThemeModeType.fromString(json['themeMode'] as String);
 

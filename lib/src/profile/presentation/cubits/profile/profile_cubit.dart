@@ -14,6 +14,11 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
     this._getUserIapSubscriptionsUseCase,
   ) : super(ProfileState.initial());
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'ProfileCubit';
+
   @override
   ProfileState fromJson(Map<String, dynamic> json) => normalizeHydratedProfileState(ProfileState.fromJson(json));
 

@@ -4,6 +4,11 @@ part of '../../../setting.dart';
 class NotificationCubit extends HydratedCubit<NotificationState> {
   NotificationCubit() : super(NotificationState.initial());
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'NotificationCubit';
+
   @override
   NotificationState fromJson(Map<String, dynamic> json) => NotificationState.fromJson(json);
 

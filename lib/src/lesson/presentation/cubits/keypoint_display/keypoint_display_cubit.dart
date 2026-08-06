@@ -47,6 +47,11 @@ class KeypointDisplayCubit extends HydratedCubit<KeypointDisplayState> {
     emit(state.copyWith(fontScale: clamped));
   }
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'KeypointDisplayCubit';
+
   @override
   KeypointDisplayState? fromJson(Map<String, dynamic> json) {
     try {

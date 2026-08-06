@@ -48,6 +48,11 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
     this._getRoadmapUseCase,
   ) : super(CourseRoadmapState.initial());
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'CourseRoadmapCubit';
+
   @override
   CourseRoadmapState fromJson(Map<String, dynamic> json) => normalizeHydratedRoadmapState(CourseRoadmapState.fromJson(json));
 
@@ -117,19 +122,6 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
     // Opening a course's roadmap is the universal "view" signal — record it so
     // the course surfaces in the search screen's "Recent" list.
     AppDI.injector.get<CourseCubit>().recordCourseView(courseId);
-
-    // Warm the Re-anchor reasons cache here (the earliest point the courseId
-    // is known), NOT to decide anything now — the prompt (§9.1) only appears
-    // later, right before the user actually starts a lesson (after picking
-    // Read/Listen — see RoadmapDetailPopup._startLearning), so it's asked once
-    // they've committed to studying, not the instant the roadmap loads. By
-    // prefetching here, HabitCubit.getReanchorReasons's memoized cache is
-    // likely already warm by the time that check runs. Skipped once the
-    // course's prompt has already been shown this session.
-    final habitCubit = AppDI.injector.get<HabitCubit>();
-    if (!habitCubit.state.reanchorShownCourseIds.contains(courseId)) {
-      unawaited(habitCubit.getReanchorReasons(courseId));
-    }
 
     await runUseCase<RoadmapEntity>(
       usecase: () => _getRoadmapUseCase(courseId),

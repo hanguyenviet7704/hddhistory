@@ -10,6 +10,11 @@ class FeedbackCubit extends HydratedCubit<FeedbackState> with CubitUseCaseHandle
     this._updateUserFeedbackUseCase,
   ) : super(FeedbackState.initial());
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'FeedbackCubit';
+
   @override
   FeedbackState fromJson(Map<String, dynamic> json) => FeedbackState.fromJson(json);
 

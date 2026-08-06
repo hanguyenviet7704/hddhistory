@@ -30,6 +30,11 @@ class LocaleCubit extends HydratedCubit<AppLocale> {
     AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap();
   }
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'LocaleCubit';
+
   @override
   AppLocale fromJson(Map<String, dynamic> json) => AppLocaleUtils.parse(json['locale'] as String? ?? AppLocale.en.languageCode);
 

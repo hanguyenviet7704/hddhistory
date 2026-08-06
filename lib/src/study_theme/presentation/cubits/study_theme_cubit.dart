@@ -136,6 +136,11 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
   // catalogue on load (stays valid as the catalogue grows). A user UPLOAD can't
   // be pointed at by id, so it persists its stable file copy + computed
   // ink/overlay instead (see [selectUploadedImage] / [_persistUploadCopy]).
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'StudyThemeCubit';
+
   @override
   StudyThemeState? fromJson(Map<String, dynamic> json) {
     try {

@@ -48,6 +48,11 @@ class ListenResumeCubit extends HydratedCubit<ListenResumeState> {
   @visibleForTesting
   void emitForTest(ListenResumeState next) => emit(next);
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'ListenResumeCubit';
+
   @override
   ListenResumeState? fromJson(Map<String, dynamic> json) => ListenResumeState.fromJson(json);
 

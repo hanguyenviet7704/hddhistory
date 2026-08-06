@@ -1,5 +1,35 @@
 part of '../services.dart';
 
+/// Sets up the on-disk store every `HydratedCubit` in the app writes to.
+///
+/// ## Why every hydrated cubit here pins its own `storagePrefix`
+///
+/// A cubit's stored state is keyed by `storagePrefix`, which `hydrated_bloc`
+/// defaults to `runtimeType.toString()`. Release builds are compiled with
+/// `--obfuscate` (see `tools/macos/build/build_apk.sh` and `build_ipa.sh`), and
+/// obfuscation renames classes — so the key is not `'UserCubit'` but whatever
+/// short string the compiler assigned it in THAT build.
+///
+/// Those assignments are re-derived from the whole program every time, so an
+/// ordinary release shifts them. Measured on two builds of this app differing by
+/// about twenty lines: `UserCubit` went `wUb` → `yUb`, and all thirteen hydrated
+/// cubits changed, along with 46% of every symbol in the binary.
+///
+/// The consequence was silent and total. After an update the app looked for
+/// `yUb`, the previous build had written `wUb`, and the read came back null —
+/// so `UserCubit` rebuilt from `UserState.initial()` with no access token and no
+/// refresh token, and a signed-in reader was sent back to the login screen.
+/// Nothing had expired and nothing was rejected: the session was still on disk
+/// under a key nobody looked for any more. Themes, locale, study theme, streak
+/// and reading preferences went the same way.
+///
+/// It could also collide rather than merely miss — `HapticSettingCubit` drew
+/// `qVb` in the second build, which was `ThemeCubit`'s key in the first, so it
+/// read a blob written for another cubit entirely.
+///
+/// Pinning each prefix to a literal is what makes the key survive a release. The
+/// literals must therefore stay hardcoded and stay put: renaming the Dart class
+/// is now free, but changing the string abandons that cubit's stored state.
 class HydrateBlocService {
   HydrateBlocService._();
   static final HydrateBlocService _instance = HydrateBlocService._();

@@ -6,6 +6,11 @@ class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitU
   final CheckInStreakUseCase _checkInUseCase;
   LearningStreakCubit(this._getUseCase, this._checkInUseCase) : super(LearningStreakState.initial());
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'LearningStreakCubit';
+
   @override
   LearningStreakState fromJson(Map<String, dynamic> json) => LearningStreakState.fromJson(json);
 

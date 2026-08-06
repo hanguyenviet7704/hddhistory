@@ -8,6 +8,11 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   // final RegisterUsecase _registerUsecase;
   final BaseTrackingService _appTrackingService;
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'UserCubit';
+
   @override
   UserState fromJson(Map<String, dynamic> json) => UserState.fromJson(json);
 

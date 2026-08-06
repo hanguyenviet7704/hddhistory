@@ -10,6 +10,11 @@ class ThemeCubit extends HydratedCubit<ThemeType> {
     LogDev.trace('Change theme to ${theme.label}');
   }
 
+  /// Pinned so an obfuscated release build cannot rename the key this
+  /// cubit's state is stored under — see [HydrateBlocService].
+  @override
+  String get storagePrefix => 'ThemeCubit';
+
   @override
   ThemeType fromJson(Map<String, dynamic> json) => ThemeType.fromString(json['theme'] as String);
 
