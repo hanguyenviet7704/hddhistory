@@ -74,6 +74,8 @@ promoCodeErrorExpired: このコードは有効期限が切れています
 promoCodeErrorGeneric: コードを適用できませんでした。もう一度お試しください。
 promoCodeErrorInvalid: このコードは無効です
 promoCodeErrorNotApplicable: このコードはこれらのプランには適用できません
+promoCodeErrorNotBetter: 現在の割引のほうがお得なため、そのまま適用しています
+promoCodeErrorUnavailable: 現在コードを確認できません。しばらくしてからお試しください。
 promoCodeRemove: 削除
 promoSheetApply: コードを適用
 promoSheetTitle: プロモコードを入力

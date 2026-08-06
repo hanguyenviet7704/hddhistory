@@ -43,6 +43,21 @@ enum VoucherRejectReason {
   exhausted,
   @JsonValue('not_applicable')
   notApplicable,
+
+  /// The code is real, but the sale already running is as good or better, so
+  /// the server deliberately did not apply it — the user keeps the better
+  /// price. Unlike every other reason here this one is NOT a dead end: the
+  /// affiliate still gets the redemption attributed (see
+  /// `IapState.attributedVoucherCode`).
+  @JsonValue('not_better')
+  notBetter,
+
+  /// The affiliate voucher service timed out or errored. Distinct from
+  /// [notFound] so a third-party outage never reads to the user as "you typed
+  /// a bad code".
+  @JsonValue('unavailable')
+  unavailable,
+
   unknown,
 }
 

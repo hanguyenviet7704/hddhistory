@@ -74,6 +74,8 @@ promoCodeErrorExpired: This code has expired
 promoCodeErrorGeneric: Couldn't apply the code. Please try again.
 promoCodeErrorInvalid: This code isn't valid
 promoCodeErrorNotApplicable: This code doesn't apply to these plans
+promoCodeErrorNotBetter: Your current offer is already better, so we kept it
+promoCodeErrorUnavailable: Can't check codes right now. Please try again shortly.
 promoCodeRemove: Remove
 promoSheetApply: Apply code
 promoSheetTitle: Enter promo code

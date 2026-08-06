@@ -223,13 +223,17 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     }
     if (refreshedPremium != false) return false;
 
-    // Entry point FIRST: loadIapProducts resolves the SKU variant off the
-    // live entry point, so setting it after the load rendered autoOpen with
-    // whatever entry point happened to be lying around.
+    // Set BEFORE loading, not after: the entry point is what decides which SKU
+    // list gets loaded, so loading first would fetch whatever the previous
+    // entry point resolved to and then need a second fetch on the paywall
+    // itself. Restored on failure so a prepare that never opened a paywall does
+    // not leave `autoOpen` behind for the next screen's tracking.
+    final previousEntryPoint = _paywallEntryPoint;
     setPaywallEntryPoint(PaywallEntryPoint.autoOpen);
+
     final isReady = await loadIapProducts();
     if (!isReady || state.iapProducts.isEmpty) {
-      resetPaywallEntryPoint();
+      setPaywallEntryPoint(previousEntryPoint);
       return false;
     }
     return true;
@@ -260,13 +264,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         nowUtc: DateTime.now().toUtc(),
         installTime: _installTime,
         storedImpressionCount: storedImpressionCount,
-        // The LIVE entry point, set by whoever is opening the paywall. Left
-        // out, the params default to `other` and every paywall rendered the
-        // 'other' variant — the per-entry-point compact list never applied
-        // anywhere (found on inLesson, 2026-08-04). Callers set the entry
-        // point BEFORE loading products; anything that doesn't gets `other`
-        // = full, which is the safe fallback.
-        entryPoint: paywallEntryPoint,
+        // Entry point is always set before the paywall is pushed (and before
+        // this load, in the auto-open path), so it is current by the time the
+        // strategy resolves.
+        entryPoint: _paywallEntryPoint,
       ),
     );
 
@@ -411,6 +412,11 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
           isValidatingVoucher: false,
           hasVoucherFeedback: true,
           voucherRejectReason: validation.reason,
+          // `not_better` means the affiliate DID recognise the code, it just
+          // does not beat the sale already running. No SKU swap happens and the
+          // user keeps the better price, but the referral is still theirs, so
+          // hold the code for verify to report. Every other reason detaches it.
+          attributedVoucherCode: validation.reason == VoucherRejectReason.notBetter ? code : '',
         ),
       );
       return;
@@ -425,6 +431,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       state.copyWith(
         isValidatingVoucher: false,
         appliedVoucherCode: validation.code.isEmpty ? code : validation.code,
+        attributedVoucherCode: validation.code.isEmpty ? code : validation.code,
         voucherProducts: validation.products,
         hasVoucherFeedback: true,
         voucherRejectReason: VoucherRejectReason.unknown,
@@ -454,6 +461,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     emit(
       state.copyWith(
         appliedVoucherCode: '',
+        // Removing the code is an explicit detach, so attribution goes too --
+        // unlike the rollback path below, where the code stayed valid and only
+        // the SKU swap failed.
+        attributedVoucherCode: '',
         voucherProducts: const [],
         hasVoucherFeedback: false,
         voucherRejectReason: VoucherRejectReason.unknown,
@@ -634,7 +645,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         productId: purchaseDetail.productID,
         packageName: _packageInfoService.packageName,
         storeTransactionId: transactionId,
-        voucherCode: state.appliedVoucherCode,
+        voucherCode: state.attributedVoucherCode,
       );
     } else {
       final verificationData = purchaseDetail.verificationData;
@@ -643,7 +654,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         productId: purchaseDetail.productID,
         packageName: _packageInfoService.packageName,
         storeTransactionId: verificationData.serverVerificationData,
-        voucherCode: state.appliedVoucherCode,
+        voucherCode: state.attributedVoucherCode,
       );
     }
 
