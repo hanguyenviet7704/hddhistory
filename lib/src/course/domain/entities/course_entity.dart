@@ -16,6 +16,12 @@ abstract class CourseEntity with _$CourseEntity {
     @Default(false) bool isNew,
     DateTime? publishAt,
     int? newDurationDays,
+
+    /// Author credit for course cards. Null when unset in admin.
+    String? author,
+
+    /// Curated reach figure, raw (6300 renders as "6.3k"). Null when unset.
+    int? viewCount,
   }) = _CourseEntity;
 
   factory CourseEntity.fromJson(Map<String, dynamic> json) => _$CourseEntityFromJson(json);

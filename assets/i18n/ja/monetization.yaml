@@ -99,6 +99,7 @@ saleCountdownLabel: 期間限定オファー
 seeAllPlans: すべてのプランを見る
 seeLessPlans: 表示を減らす
 selectPlan: プランを選択
+storeAccountLinkedToOtherToast: この ${store} アカウントのサブスクリプションは別の Meup アカウントに紐づいています。そのアカウントでログインしてご利用いただくか、別の ${store} アカウントでお支払いください。
 subscriptionActiveToast: サブスクリプションが有効になりました！
 subscriptionTitle: サブスクリプション
 successCta: 今すぐ見る

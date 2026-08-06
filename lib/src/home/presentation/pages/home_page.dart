@@ -174,11 +174,17 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                             children: [
                               // ── Greeting ──────────────────────────────────────
                               const _HomeGreeting(),
-                              26.verticalSpace,
+                              18.verticalSpace,
 
-                              // ── Weekly streak ────────────────────────────────
-                              const _HomeWeeklyStreakCard(),
-                              26.verticalSpace,
+                              // ── Motivation quote ─────────────────────────────
+                              // Sits directly under the greeting per the design:
+                              // it is the first thing read on opening the app.
+                              const HomeQuoteCard(),
+                              22.verticalSpace,
+
+                              // ── New today (one big course) ───────────────────
+                              const _NewTodaySection(),
+                              28.verticalSpace,
 
                               // ── Jump back in (in-progress courses) ───────────
                               BlocBuilder<ProgressCubit, ProgressState>(
@@ -201,9 +207,6 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                               // ── Quick tiles: Explore · Today's habit ─────────
                               const _HomeQuickTiles(),
                               28.verticalSpace,
-
-                              // ── Motivation quote ─────────────────────────────
-                              const HomeQuoteCard(),
 
                               // ── Recommended ──────────────────────────────────
                               _RecommendedSection(
@@ -330,59 +333,6 @@ class _HomeGreeting extends StatelessWidget {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Weekly streak card
-// ───────────────────────────────────────────────────────────────────────────
-
-class _HomeWeeklyStreakCard extends StatelessWidget {
-  const _HomeWeeklyStreakCard();
-
-  @override
-  Widget build(BuildContext context) {
-    // Display-only streak card: tapping it no longer opens the streak detail
-    // (removed per request) — it's a passive weekly summary now.
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
-        decoration: BoxDecoration(
-          color: studyThemeCardColor(context),
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: _homeCardShadow,
-        ),
-        child: BlocSelector<LearningStreakCubit, LearningStreakState, ({int streak, List<bool> week})>(
-          selector: (state) => (
-            streak: state.selectedItem.currentStreak,
-            week: state.selectedItem.normalizedWeekStudy,
-          ),
-          builder: (context, data) {
-            return Column(
-              children: [
-                // Header is always the motivational prompt (design copy),
-                // not an "N days streak" count — the streak itself is shown
-                // by the day dots below.
-                AppText(
-                  context.l10n.home.homeStreakEmptyPrompt,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text12.copyWith(
-                    fontSize: 13.sp,
-                    color: AppCustomColor.streakTextMuted,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                14.verticalSpace,
-                StreakWeekBar(weekStudy: data.week),
-              ],
-            );
-          },
-        ),
       ),
     );
   }
@@ -846,6 +796,8 @@ class _RecommendedSkeleton extends StatelessWidget {
   static const SuggestedCourseEntity _kSkeletonCourse = SuggestedCourseEntity(
     id: 'skeleton',
     title: BaseMultiLanguage(en: 'Course title placeholder'),
+    author: 'Author name',
+    viewCount: 6300,
   );
 
   @override
@@ -878,6 +830,287 @@ class _RecommendedSkeleton extends StatelessWidget {
 }
 
 /// Compact 132×132 course tile for the Recommended horizontal scroll.
+/// Opens a suggested course: straight to its roadmap when the catalog can
+/// resolve it, otherwise into Explore. Shared by the Recommended strip and the
+/// "New today" card so both report the same tracking shape and behave
+/// identically on a course the catalog has not loaded.
+void _openSuggestedCourse(
+  BuildContext context,
+  SuggestedCourseEntity course, {
+  required String source,
+}) {
+  AppHaptic.select();
+  final homeCubit = context.read<HomeCubit>();
+  // skill_id/skill_name aren't on SuggestedCourseEntity beyond its skillsetId;
+  // resolve the human-readable name from the loaded skillsets (best-effort —
+  // empty when the skillset isn't cached).
+  final skillset = homeCubit.state.skillsets.firstWhere(
+    (s) => s.id == course.skillsetId || s.courses.any((c) => c.id == course.id),
+    orElse: () => const SkillsetEntity(),
+  );
+  HomeTracking.track(
+    TrackingKey.homeRcmCardClick,
+    parameters: {
+      'course_id': course.id,
+      'course_name': course.title.text,
+      'skill_id': course.skillsetId.isNotEmpty ? course.skillsetId : skillset.id,
+      'skill_name': skillset.title.text,
+      'source': source,
+    },
+  );
+  final didSelect = homeCubit.trySelectCourseFromCourseId(course.id);
+  if (didSelect) {
+    context.read<CourseRoadmapCubit>().setRoadmapSource(source);
+    CourseRoadmapRoute().go(context);
+    context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+  } else {
+    context.read<CourseCubit>()
+      ..setAllCourseSource(source)
+      ..resetExploreToAll();
+    context.read<PageCubit>().setCurrentIndex(3);
+    CourseRoute().go(context);
+  }
+}
+
+/// The one big course tile under the quote — "New today".
+///
+/// Shows the NEWEST course for real — latest `createdAt` wins (user call,
+/// 2026-08-04) — so the card is the same for everyone and only changes when
+/// the content team actually publishes something. Courses served by an older
+/// API/cache carry no `createdAt`; those fall back to the previous behavior,
+/// a calendar-day-seeded pick (stable within the day, no mid-scroll
+/// reshuffle), rather than a blank card.
+class _NewTodaySection extends StatelessWidget {
+  const _NewTodaySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
+      selector: (state) => state.suggestedCourses,
+      builder: (context, courses) {
+        if (courses.isEmpty) return const SizedBox.shrink();
+
+        SuggestedCourseEntity? newest;
+        for (final course in courses) {
+          final createdAt = course.createdAt;
+          if (createdAt == null) continue;
+          if (newest == null || createdAt.isAfter(newest.createdAt!)) {
+            newest = course;
+          }
+        }
+
+        final now = DateTime.now();
+        final dayIndex = DateTime(now.year, now.month, now.day).difference(DateTime(2020)).inDays % courses.length;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: _NewTodayCard(course: newest ?? courses[dayIndex]),
+        );
+      },
+    );
+  }
+}
+
+class _NewTodayCard extends StatelessWidget {
+  final SuggestedCourseEntity course;
+
+  const _NewTodayCard({required this.course});
+
+  @override
+  Widget build(BuildContext context) {
+    // The card content sits INSIDE a themed card, so its ink uses the card
+    // helpers (textPrimary / studyThemeCardMuted), not the on-background ones.
+    final metaColor = studyThemeCardMuted(context, AppCustomColor.textSecondary);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left-aligned section heading, per the design.
+        AppText(
+          context.l10n.home.homeNewTodayLabel,
+          style: TextStyle(
+            fontFamily: AppFont.mulish,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+          ),
+        ),
+        16.verticalSpace,
+        Semantics(
+          button: true,
+          label: course.title.text,
+          child: GestureDetector(
+            key: const Key('home-new-today-card'),
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _openSuggestedCourse(context, course, source: 'home_new_today'),
+            child: ThemedGlassCard(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+              radius: 20,
+              child: Column(
+                children: [
+                  Container(
+                    width: 170.r,
+                    height: 170.r,
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.brandPrimary50,
+                      borderRadius: BorderRadius.circular(18.r),
+                      border: Border.all(color: AppCustomColor.textPrimary.withValues(alpha: 0.08)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CacheNetworkGraphic(
+                            url: course.image,
+                            fit: BoxFit.cover,
+                            borderRadius: BorderRadius.circular(18.r),
+                          ),
+                        ),
+                        if (course.isNewNow)
+                          Positioned(
+                            top: 10.r,
+                            left: 10.r,
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(6.w, 4.h, 9.w, 4.h),
+                              decoration: BoxDecoration(
+                                color: AppCustomColor.backgroundWhite,
+                                borderRadius: BorderRadius.circular(99.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome_rounded, size: 12.r, color: const Color(0xFF2B604E)),
+                                  4.horizontalSpace,
+                                  AppText(
+                                    context.l10n.home.homeRecommendedNewCourse,
+                                    style: AppStyle.text10.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF2B604E),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  12.verticalSpace,
+                  AppText(
+                    course.title.text,
+                    maxLines: 3,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: AppFont.mulish,
+                      fontSize: 19.sp,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                      color: AppCustomColor.textPrimary,
+                    ),
+                  ),
+                  6.verticalSpace,
+                  // Author + reach, both configured per course in admin. Each
+                  // half is dropped when unset rather than crediting nobody or
+                  // claiming zero reach; with neither set the row falls back to
+                  // the lesson count so the card never ends on a bare title.
+                  _NewTodayMetaRow(course: course, color: metaColor),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Author + view count under the "New today" title, per the design.
+///
+/// Both come from admin per course and either can be blank, so this renders
+/// whichever halves exist and falls back to the lesson count when neither does.
+class _NewTodayMetaRow extends StatelessWidget {
+  final SuggestedCourseEntity course;
+  final Color color;
+
+  const _NewTodayMetaRow({required this.course, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final author = course.author?.trim() ?? '';
+    final views = course.viewCount;
+
+    final parts = <Widget>[
+      if (author.isNotEmpty) _NewTodayMetaItem(icon: Icons.edit_outlined, label: author, color: color),
+      if (views != null && views > 0)
+        _NewTodayMetaItem(
+          icon: Icons.visibility_outlined,
+          label: _compactCount(views),
+          color: color,
+        ),
+    ];
+
+    if (parts.isEmpty) {
+      parts.add(
+        _NewTodayMetaItem(
+          icon: Icons.menu_book_rounded,
+          label: context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
+          color: color,
+        ),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (int i = 0; i < parts.length; i++) ...[
+          if (i > 0) 14.horizontalSpace,
+          parts[i],
+        ],
+      ],
+    );
+  }
+}
+
+/// One icon + label pair in the "New today" meta row.
+class _NewTodayMetaItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _NewTodayMetaItem({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14.r, color: color),
+        5.horizontalSpace,
+        AppText(
+          label,
+          style: AppStyle.text12.copyWith(fontWeight: FontWeight.w500, color: color),
+        ),
+      ],
+    );
+  }
+}
+
+/// 6300 -> "6.3k", 1200000 -> "1.2M". The raw number is what admin stores, so
+/// the abbreviation is a display concern and lives here.
+String _compactCount(int value) {
+  if (value >= 1000000) {
+    final m = value / 1000000;
+    return '${m.toStringAsFixed(m >= 10 ? 0 : 1).replaceFirst(RegExp(r'\.0$'), '')}M';
+  }
+  if (value >= 1000) {
+    final k = value / 1000;
+    final rounded = k.toStringAsFixed(k >= 10 ? 0 : 1).replaceFirst(RegExp(r'\.0$'), '');
+    // 999_999 rounds to "1000k", which reads as broken — promote it to "1M".
+    return rounded == '1000' ? '1M' : '${rounded}k';
+  }
+  return '$value';
+}
+
 class _RecommendedCard extends StatelessWidget {
   final SuggestedCourseEntity course;
 
@@ -889,38 +1122,7 @@ class _RecommendedCard extends StatelessWidget {
       button: true,
       label: course.title.text,
       child: GestureDetector(
-        onTap: () {
-          AppHaptic.select();
-          final homeCubit = context.read<HomeCubit>();
-          // skill_id/skill_name aren't on SuggestedCourseEntity beyond its
-          // skillsetId; resolve the human-readable name from the loaded
-          // skillsets (best-effort — empty when the skillset isn't cached).
-          final skillset = homeCubit.state.skillsets.firstWhere(
-            (s) => s.id == course.skillsetId || s.courses.any((c) => c.id == course.id),
-            orElse: () => const SkillsetEntity(),
-          );
-          HomeTracking.track(
-            TrackingKey.homeRcmCardClick,
-            parameters: {
-              'course_id': course.id,
-              'course_name': course.title.text,
-              'skill_id': course.skillsetId.isNotEmpty ? course.skillsetId : skillset.id,
-              'skill_name': skillset.title.text,
-            },
-          );
-          final didSelect = homeCubit.trySelectCourseFromCourseId(course.id);
-          if (didSelect) {
-            context.read<CourseRoadmapCubit>().setRoadmapSource('home_recommended');
-            CourseRoadmapRoute().go(context);
-            context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-          } else {
-            context.read<CourseCubit>()
-              ..setAllCourseSource('home_recommended')
-              ..resetExploreToAll();
-            context.read<PageCubit>().setCurrentIndex(3);
-            CourseRoute().go(context);
-          }
-        },
+        onTap: () => _openSuggestedCourse(context, course, source: 'home_recommended'),
         child: SizedBox(
           width: 132.r,
           child: Column(
@@ -977,6 +1179,12 @@ class _RecommendedCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if ((course.viewCount ?? 0) > 0)
+                      Positioned(
+                        right: 9.r,
+                        bottom: 9.r,
+                        child: CourseViewsChip(count: course.viewCount!),
+                      ),
                   ],
                 ),
               ),
@@ -994,6 +1202,16 @@ class _RecommendedCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if ((course.author?.trim() ?? '').isNotEmpty) ...[
+                4.verticalSpace,
+                SizedBox(
+                  width: 132.r,
+                  child: CourseAuthorLine(
+                    author: course.author!.trim(),
+                    color: studyThemeOnBg(context, kCourseMetaAuthorColor),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

@@ -74,13 +74,26 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
     /// resuming lands mid-clip in one step — loading at zero and seeking after
     /// is audible as the clip restarting before it jumps.
     Duration? initialPosition,
+
+    /// Keep the downloaded bytes on disk and replay from there next time.
+    ///
+    /// Set for the merged whole-keypoint file: it is ~900KB, the CDN serves it
+    /// with no `Cache-Control` and no edge cache (`cf-cache-status: DYNAMIC`,
+    /// measured 2026-08-04), and neither AVPlayer nor ExoPlayer persists
+    /// streamed media — so every re-entry, every kill-and-resume and every
+    /// lock-screen seek re-fetched the whole thing over the network. Cached,
+    /// the second listen and every resume read locally.
+    bool cacheToDisk = false,
   }) async {
     final art = artUri.isNotEmpty ? Uri.tryParse(artUri) : null;
     final item = MediaItem(id: id, title: title, artUri: art);
     mediaItem.add(item);
 
+    final uri = Uri.parse(url);
     final duration = await _player.setAudioSource(
-      just_audio.AudioSource.uri(Uri.parse(url), tag: item),
+      cacheToDisk
+          ? just_audio.LockCachingAudioSource(uri, tag: item)
+          : just_audio.AudioSource.uri(uri, tag: item),
       initialPosition: initialPosition,
     );
 

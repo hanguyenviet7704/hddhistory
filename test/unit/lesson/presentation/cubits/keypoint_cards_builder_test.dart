@@ -138,4 +138,20 @@ void main() {
     expect(withNone.cards.length, 3);
     expect(withNone.revealCardIndex, withNone.liveCardIndex);
   });
+
+  test('reveal by card identity builds out to that card (merged mode)', () {
+    final built = builder.build(
+      items: [_theory('A', 2), _theory('B', 2)],
+      currentLearningItemIndex: 0,
+      liveIndexInCurrentItem: 0,
+      revealToCard: (learningItemId: 'B', documentIndex: 1),
+    );
+
+    // A d0..d1, B d0..d1 (revealed), then done.
+    expect(built.cards.length, 5);
+    expect(built.revealCardIndex, 3);
+    expect(built.liveCardIndex, 0);
+    expect(built.cards[3].learningItemId, 'B');
+    expect(built.cards[3].documentIndex, 1);
+  });
 }

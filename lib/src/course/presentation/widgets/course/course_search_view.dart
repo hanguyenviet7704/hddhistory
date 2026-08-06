@@ -307,6 +307,10 @@ class _SearchCourseCard extends StatelessWidget {
                     ),
                     8.verticalSpace,
                     _CourseProgressChip(course: course),
+                    if ((course.author?.trim() ?? '').isNotEmpty || (course.viewCount ?? 0) > 0) ...[
+                      6.verticalSpace,
+                      CourseMetaInline(author: course.author, viewCount: course.viewCount),
+                    ],
                   ],
                 ),
               ),

@@ -145,6 +145,11 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   Timer? _restoreTimeout;
   bool _ignoreHandledOnce = false; // bypass dedup once for user-triggered flows
 
+  /// Set by [_verifyPurchase] when the server refused for a reason the buyer
+  /// can actually act on, so the generic toast can be replaced with it. Reset
+  /// on every attempt — a queued retry must not inherit the last one's reason.
+  String? _verifyRefusalMessage;
+
   void setSelectedProductId(String productId) {
     emit(state.copyWith(selectedProductId: productId));
     // purchaseProduct();
@@ -394,9 +399,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
     emit(state.copyWith(isValidatingVoucher: true, hasVoucherFeedback: false));
 
-    final result = await _validateVoucherUsecase
-        .call(ValidateVoucherParams(code: code, platform: PaymentPlatform.fromDevicePlatform))
-        .run();
+    final result = await _validateVoucherUsecase.call(ValidateVoucherParams(code: code, platform: PaymentPlatform.fromDevicePlatform)).run();
 
     final validation = result.match(
       (_) => const VoucherValidationEntity(),
@@ -617,7 +620,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
       await _safeFinishTransaction(currentDetail);
       if (transactionId.isEmpty) {
-        _onPurchaseFailure(error: l10n.monetization.verificationFailToast);
+        _onPurchaseFailure(error: _verifyRefusalMessage ?? l10n.monetization.verificationFailToast);
         return;
       }
 
@@ -625,7 +628,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       if (nextDetail == null) {
         _markHandled(transactionId);
         _verifyingTransactionIds.remove(transactionId);
-        _onPurchaseFailure(error: l10n.monetization.verificationFailToast);
+        _onPurchaseFailure(error: _verifyRefusalMessage ?? l10n.monetization.verificationFailToast);
         return;
       }
 
@@ -655,15 +658,48 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       );
     }
 
-    bool isSuccess = false;
-    await runUseCase<IapVerifyEntity>(
-      usecase: () => _verifyUsecase.call(params),
-      onSuccess: (verify) {
-        isSuccess = true;
-      },
-      onFailure: (error) => isSuccess = false,
+    _verifyRefusalMessage = null;
+    // Folded by hand rather than through runUseCase: that helper narrows the
+    // failure to `exception.message`, and the one refusal worth explaining is
+    // identified by a code in the response body, not by its text.
+    final result = await _verifyUsecase.call(params).run();
+    return result.fold((exception) {
+      _verifyRefusalMessage = _refusalMessage(exception);
+      return false;
+    }, (_) => true);
+  }
+
+  /// The buyer-actionable refusal, or null to keep the generic toast.
+  ///
+  /// One store account holds one subscription, so paying again from a store
+  /// account whose transaction already belongs to a different Meup account is
+  /// refused — and until now that surfaced as "Verification failed", which
+  /// tells them nothing and reads like we lost their money. Nothing was
+  /// charged: the store re-presented the existing transaction.
+  ///
+  /// Keyed on the server's stable `code`, never on the message text, which is
+  /// localised on both sides and reworded freely. Localised here rather than
+  /// shown from the response because the API speaks en/vi and the app ships
+  /// five languages. Every other failure keeps the generic line — server
+  /// messages for those are config faults ("Product not found"), not something
+  /// to put in front of a buyer.
+  String? _refusalMessage(AppException exception) {
+    final data = switch (exception) {
+      FromDioException(error: final error) => error.response?.data,
+      _ => null,
+    };
+    if (data is! Map) return null;
+    final errors = data['errors'];
+    if (errors is! List) return null;
+
+    final isLinkedElsewhere = errors.any(
+      (entry) => entry is Map && entry['code'] == 'TRANSACTION_LINKED_TO_ANOTHER_USER',
     );
-    return isSuccess;
+    if (!isLinkedElsewhere) return null;
+
+    return l10n.monetization.storeAccountLinkedToOtherToast(
+      store: Platform.isIOS ? 'Apple ID' : 'Google',
+    );
   }
 
   void _onPurchaseSuccess(PurchaseDetails purchaseDetail) {

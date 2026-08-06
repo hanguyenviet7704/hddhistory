@@ -97,6 +97,7 @@ saleCountdownLabel: 限时优惠
 seeAllPlans: 查看全部方案
 seeLessPlans: 收起
 selectPlan: 选择方案
+storeAccountLinkedToOtherToast: 此 ${store} 账户的订阅已绑定到另一个 Meup 账户。请登录该账户使用，或改用其他 ${store} 账户付款。
 subscriptionActiveToast: 您的订阅已激活！
 subscriptionTitle: 订阅
 successCta: 立即体验

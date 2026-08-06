@@ -100,6 +100,7 @@ saleCountdownLabel: 기간 한정 혜택
 seeAllPlans: 모든 플랜 보기
 seeLessPlans: 간략히 보기
 selectPlan: 플랜 선택
+storeAccountLinkedToOtherToast: 이 ${store} 계정의 구독은 다른 Meup 계정에 연결되어 있습니다. 해당 계정으로 로그인해 사용하거나, 다른 ${store} 계정으로 결제해 주세요.
 subscriptionActiveToast: 구독이 활성화되었습니다!
 subscriptionTitle: 구독
 successCta: 지금 둘러보기

@@ -16,12 +16,25 @@ abstract class LessonAudioState with _$LessonAudioState {
     @Default('') String sourceUrl,
     @Default('') String imageUrl,
     @Default('') String title,
+
+    /// In merged mode these two are CARD-relative — position inside / duration
+    /// of the active cue — so per-card consumers (pip fill, narration
+    /// auto-scroll) keep reading them unchanged. The lock screen shows the
+    /// real whole-file position straight from the player.
     @Default(0) int positionSeconds,
     @Default(0) int durationSeconds,
     @Default(1.0) double speed,
     @Default(false) bool isPlaying,
     @Default(false) bool hasStartedSession,
     @Default(false) bool hasCompletedPlayback,
+
+    /// True when this keypoint plays its ONE merged narration file (cue map
+    /// from the backend) instead of per-card clips.
+    @Default(false) bool isMergedMode,
+
+    /// Cue the merged file is currently inside, or -1 (legacy mode / nothing
+    /// loaded). The deck follows this across boundaries.
+    @Default(-1) int activeCueIndex,
     String? errorMessage,
   }) = _LessonAudioState;
 
