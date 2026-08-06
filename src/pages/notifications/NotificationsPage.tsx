@@ -17,6 +17,7 @@ import {
 } from "../../services/notificationService";
 import {
   NotificationCopy,
+  NotificationDeeplink,
   NotificationLog,
   NotificationLogStatus,
   NotificationSummary,
@@ -26,9 +27,20 @@ import {
 
 const TYPE_LABELS: Record<NotificationType, string> = {
   daily_remind: "1. Daily remind",
-  progress_finish: "2. Progress finish",
+  progress_finish: "2a. Progress finish (còn bài học dở)",
+  progress_start: "2b. Progress start (không còn bài dở)",
   habit_tracking: "3. Habit tracking",
   new_course: "4. Khoá học mới",
+};
+
+/**
+ * The pair at 11:45 is one row in the sheet split by a condition, so the cards
+ * say which reader each one reaches. Nobody receives both on the same day.
+ */
+const TYPE_HINTS: Partial<Record<NotificationType, string>> = {
+  progress_finish: "Gửi cho user còn ít nhất 1 bài học dang dở.",
+  progress_start:
+    "Gửi cho user chưa bắt đầu bài nào, hoặc đã hoàn thành hết. Cùng khung giờ với 2a và loại trừ lẫn nhau.",
 };
 
 /** Display order, so the cards do not follow whatever order Mongo returns. */
@@ -42,9 +54,24 @@ const TYPE_ORDER = Object.keys(TYPE_LABELS) as NotificationType[];
 const TYPE_VARIABLES: Record<NotificationType, string> = {
   daily_remind: "{quote}",
   progress_finish: "{user_name}, {course_name}, {topic_name}",
+  // No course name: the tap lands on the catalog, not on a course.
+  progress_start: "{user_name}, {topic_name}",
   habit_tracking: "{user_name}",
   new_course: "{user_name}, {course_name}, {topic_name}",
 };
+
+/** Every destination the API accepts, with what it opens in the app. */
+const DEEPLINK_LABELS: Record<NotificationDeeplink, string> = {
+  home: "home — Trang chủ",
+  resume_lesson: "resume_lesson — Roadmap khoá đang học dở",
+  habit_tracker: "habit_tracker — Màn Thói quen",
+  new_course: "new_course — Roadmap khoá mới",
+  explore: "explore — Tab Khám phá (cần bản app mới)",
+};
+
+const DEEPLINK_OPTIONS = Object.keys(
+  DEEPLINK_LABELS
+) as NotificationDeeplink[];
 
 const STATUS_LABELS: Record<NotificationLogStatus, string> = {
   sent: "Đã gửi",
@@ -79,6 +106,7 @@ interface VariantDraft {
 interface TemplateDraft {
   localHour: string;
   localMinute: string;
+  deeplink: NotificationDeeplink;
   variants: VariantDraft[];
 }
 
@@ -113,8 +141,9 @@ const NotificationsPage: React.FC = () => {
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Thông báo định kỳ</h1>
           <p className="text-sm text-slate-500">
-            Nội dung + giờ gửi của 4 loại noti, và log đã gửi. Giờ là giờ địa
-            phương của từng user; tối đa 4 noti/ngày/user.
+            Nội dung + giờ gửi của 5 loại noti, và log đã gửi. Giờ là giờ địa
+            phương của từng user; tối đa 4 noti/ngày/user (2a và 2b loại trừ
+            nhau nên không ai nhận cả hai).
           </p>
         </div>
       </header>
@@ -175,6 +204,7 @@ const ContentSection: React.FC = () => {
             {
               localHour: String(template.localHour ?? 0),
               localMinute: String(template.localMinute ?? 0),
+              deeplink: template.deeplink,
               variants: toVariantDrafts(template),
             },
           ])
@@ -227,6 +257,7 @@ const ContentSection: React.FC = () => {
         enabled: enabled ?? template.enabled,
         localHour: Number(draft?.localHour ?? template.localHour),
         localMinute: Number(draft?.localMinute ?? template.localMinute ?? 0),
+        deeplink: draft?.deeplink ?? template.deeplink,
         variants,
       });
       setMessage(
@@ -311,9 +342,34 @@ const ContentSection: React.FC = () => {
                 <h2 className="text-base font-semibold text-slate-900">
                   {TYPE_LABELS[template.type]}
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Deep link: <code>{template.deeplink}</code>
-                </p>
+                {TYPE_HINTS[template.type] && (
+                  <p className="text-xs text-slate-500">
+                    {TYPE_HINTS[template.type]}
+                  </p>
+                )}
+                <label className="mt-1 flex items-center gap-2 text-xs text-slate-700">
+                  <span className="font-medium">Deep link</span>
+                  <select
+                    value={draft?.deeplink ?? template.deeplink}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [template.type]: {
+                          ...prev[template.type],
+                          deeplink: e.target.value as NotificationDeeplink,
+                        },
+                      }))
+                    }
+                    className="rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                    aria-label="Deep link"
+                  >
+                    {DEEPLINK_OPTIONS.map((value) => (
+                      <option key={value} value={value}>
+                        {DEEPLINK_LABELS[value]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-xs text-slate-700">

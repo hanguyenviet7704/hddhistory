@@ -2,6 +2,7 @@
 export type NotificationType =
   | "daily_remind"
   | "progress_finish"
+  | "progress_start"
   | "habit_tracking"
   | "new_course";
 
@@ -11,7 +12,13 @@ export type NotificationDeeplink =
   | "home"
   | "resume_lesson"
   | "habit_tracker"
-  | "new_course";
+  | "new_course"
+  /**
+   * The Explore tab. Newer than the others: an app build that predates it treats
+   * the value as unknown and does not navigate at all, so only pick this once the
+   * release that handles it is live.
+   */
+  | "explore";
 
 export interface NotificationCopy {
   locale: string;
