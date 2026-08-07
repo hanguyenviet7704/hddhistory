@@ -57,6 +57,9 @@ paywallPlanMonthly: Monthly
 paywallPlanQuarterly: Quarterly
 paywallPlanWeekly: Weekly
 paywallPrimaryCta: Start learning today!
+paywallScienceSubtitle: "from MIT and Harvard"
+paywallScienceTitle: "Built on brain science"
+paywallStoreRating: "5/5 · App Store & Google Play"
 paywallSubscriptionCaption: Subscribe for ${price}. Cancel anytime
 paywallSubtitle: Unlock unlimited energy and every lesson.
 paywallTitle: Go Premium

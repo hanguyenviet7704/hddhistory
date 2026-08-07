@@ -57,6 +57,9 @@ paywallPlanMonthly: 월간
 paywallPlanQuarterly: 분기
 paywallPlanWeekly: 주간
 paywallPrimaryCta: 오늘부터 배워보세요!
+paywallScienceSubtitle: "MIT와 하버드의 연구에서"
+paywallScienceTitle: "뇌과학에 기반한 설계"
+paywallStoreRating: "5/5 · App Store 및 Google Play"
 paywallSubscriptionCaption: ${price}로 구독하세요. 언제든 취소 가능
 paywallSubtitle: 무제한 에너지와 모든 레슨을 잠금 해제하세요.
 paywallTitle: 프리미엄으로 전환

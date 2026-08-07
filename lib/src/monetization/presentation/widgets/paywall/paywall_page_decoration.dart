@@ -23,15 +23,6 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   bool _hasTrackedScroll = false;
   bool _hasTrackedInfoSwipe = false;
 
-  /// Feature icons from the paywall design, cycled when the remote config
-  /// does not supply one.
-  List<String> get _fallbackBenefitAssets => [
-    AppAsset.svg.app.pwLessons,
-    AppAsset.svg.app.pwPractice,
-    AppAsset.svg.app.pwHabit,
-    AppAsset.svg.app.pwProgress,
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -91,56 +82,68 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             showCloseButton: widget.showCloseButton,
             onClose: () => unawaited(widget.onClose()),
           ),
-          30.verticalSpace,
-          AppText(
-            subheading,
-            textAlign: TextAlign.center,
-            maxLines: 3,
-            style: AppStyle.textBold16.copyWith(
-              color: AppCustomColor.textBrand.withValues(alpha: 0.45),
-              height: 1.7,
+          10.verticalSpace,
+          // Floating hero illustration. Decorative only — excluded from semantics
+          // so the reader lands straight on the heading.
+          ExcludeSemantics(
+            child: SvgPicture.asset(
+              AppAsset.svg.app.pwHeaderGraphic,
+              width: 260.w,
+              fit: BoxFit.contain,
             ),
           ),
-          6.verticalSpace,
+          18.verticalSpace,
+          // Heading first, then the subheading beneath it. This used to be the
+          // other way round, which put the smallest, faintest text at the top of
+          // the screen and buried the promise under it.
           AppText(
             heading,
             textAlign: TextAlign.center,
             maxLines: 4,
             style: AppStyle.textBold24.copyWith(
+              fontSize: 30.sp,
               color: AppCustomColor.textBrand,
               height: 1.18,
+              letterSpacing: -0.7,
             ),
           ),
-          22.verticalSpace,
-          _PaywallInlinePlans(
-            state: widget.state,
-            onPlanTap: _handlePlanTap,
-          ),
-          PaywallPromoCode(state: widget.state),
-          25.verticalSpace,
+          6.verticalSpace,
           AppText(
-            l10n.monetization.paywallHeroSubtitle,
+            subheading,
             textAlign: TextAlign.center,
-            maxLines: 2,
+            maxLines: 3,
             style: AppStyle.text14.copyWith(
-              color: AppCustomColor.textBrand.withValues(alpha: 0.4),
+              fontSize: 17.sp,
               fontWeight: FontWeight.w600,
-              height: 1.75,
+              color: const Color(0xFF8F8AB9),
+              height: 1.4,
             ),
           ),
-          12.verticalSpace,
+          30.verticalSpace,
+          // Benefits sit ABOVE the plans: the reader has to know what they get
+          // before a price means anything.
           if (benefits.isEmpty)
             ..._defaultBenefits()
           else
             for (var index = 0; index < benefits.length; index++)
               Padding(
-                padding: EdgeInsets.only(top: index == 0 ? 0 : 12.h),
-                child: _PaywallRemoteBenefitRow(
-                  benefit: benefits[index],
-                  fallbackAsset: _fallbackBenefitAssets[index % _fallbackBenefitAssets.length],
-                ),
+                padding: EdgeInsets.only(top: index == 0 ? 0 : 8.h),
+                child: _PaywallBenefitRow(text: benefits[index].title.text),
               ),
-          36.verticalSpace,
+          30.verticalSpace,
+          // Full-width countdown, directly above the plans it discounts. The
+          // compact copy inside the purchase bar stays — that one follows the
+          // button, this one gives the offer its own line. Renders nothing when
+          // no sale is running.
+          _CountdownStrip(strategy: widget.state.resolvedPaywallStrategy),
+          _PaywallInlinePlans(
+            state: widget.state,
+            onPlanTap: _handlePlanTap,
+          ),
+          PaywallPromoCode(state: widget.state),
+          32.verticalSpace,
+          const _PaywallCredibilityBlock(),
+          30.verticalSpace,
           PaywallFeedbackList(onFirstScroll: _handleInfoSwipe),
           30.verticalSpace,
           GestureDetector(
@@ -185,20 +188,105 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
 
   List<Widget> _defaultBenefits() {
     final fallback = [
-      (AppAsset.svg.app.pwLessons, l10n.monetization.benefit1Title, l10n.monetization.benefit1Desc),
-      (AppAsset.svg.app.pwPractice, l10n.monetization.benefit2Title, l10n.monetization.benefit2Desc),
-      (AppAsset.svg.app.pwProgress, l10n.monetization.benefit3Title, l10n.monetization.benefit3Desc),
+      '${l10n.monetization.benefit1Title} ${l10n.monetization.benefit1Desc}',
+      '${l10n.monetization.benefit2Title} ${l10n.monetization.benefit2Desc}',
+      '${l10n.monetization.benefit3Title} ${l10n.monetization.benefit3Desc}',
     ];
     return [
       for (var index = 0; index < fallback.length; index++)
         Padding(
-          padding: EdgeInsets.only(top: index == 0 ? 0 : 12.h),
-          child: _PaywallLocalBenefitRow(
-            asset: fallback[index].$1,
-            title: fallback[index].$2,
-            description: fallback[index].$3,
-          ),
+          padding: EdgeInsets.only(top: index == 0 ? 0 : 8.h),
+          child: _PaywallBenefitRow(text: fallback[index]),
         ),
     ];
   }
+}
+
+/// The trust strip between the plans and the reviews: a laurel-framed claim
+/// about where the method comes from, and the store rating.
+///
+/// Only ONE laurel asset ships. The right-hand branch is the same drawing
+/// mirrored on X — the artwork is symmetric, so a second file would have been a
+/// second copy of the same paths to download and cache.
+class _PaywallCredibilityBlock extends StatelessWidget {
+  const _PaywallCredibilityBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _laurel(),
+            10.horizontalSpace,
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 220.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppText(
+                    l10n.monetization.paywallScienceTitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: AppStyle.text14.copyWith(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppCustomColor.textBrand,
+                      height: 1.35,
+                    ),
+                  ),
+                  AppText(
+                    l10n.monetization.paywallScienceSubtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: AppStyle.text14.copyWith(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF6E67D8),
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            10.horizontalSpace,
+            // Mirrored, not a separate asset.
+            Transform.flip(flipX: true, child: _laurel()),
+          ],
+        ),
+        16.verticalSpace,
+        // The stars are decoration for a rating the text already states, so
+        // they are hidden from screen readers rather than read out five times.
+        ExcludeSemantics(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < 5; i++)
+                Icon(Icons.star_rounded, size: 20.w, color: const Color(0xFFF9C51A)),
+            ],
+          ),
+        ),
+        6.verticalSpace,
+        AppText(
+          l10n.monetization.paywallStoreRating,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          style: AppStyle.text14.copyWith(
+            fontSize: 12.5.sp,
+            fontWeight: FontWeight.w800,
+            color: AppCustomColor.textBrand,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _laurel() => SvgPicture.asset(
+    AppAsset.svg.app.pwLaurelLeft,
+    width: 24.w,
+    height: 44.w,
+    fit: BoxFit.contain,
+  );
 }

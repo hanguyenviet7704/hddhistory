@@ -57,6 +57,9 @@ paywallPlanMonthly: 月度
 paywallPlanQuarterly: 季度
 paywallPlanWeekly: 每周
 paywallPrimaryCta: 今天就开始学习！
+paywallScienceSubtitle: "来自 MIT 与哈佛"
+paywallScienceTitle: "基于脑科学研究"
+paywallStoreRating: "5/5 · App Store 与 Google Play"
 paywallSubscriptionCaption: 订阅 ${price}，随时可取消
 paywallSubtitle: 解锁无限能量和全部课程。
 paywallTitle: 升级高级版
