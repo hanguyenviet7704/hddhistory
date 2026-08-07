@@ -2,6 +2,7 @@ part of '../../../onboard_v2.dart';
 
 class _OnboardV2CarouselCard extends StatelessWidget {
   const _OnboardV2CarouselCard({
+    super.key,
     required this.asset,
     required this.values,
   });
@@ -12,6 +13,13 @@ class _OnboardV2CarouselCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final opacity = values.opacity.clamp(0.0, 1.0);
+    // The border/shadow follow a SNAPPED emphasis, not the per-frame lerp: with
+    // a lerped emphasis the blurred BoxShadow of all 5 cards changed every
+    // animation tick, so nothing behind the RepaintBoundary could be cached and
+    // the raster thread re-blurred 5 shadows per frame — the P1 jank. Snapping
+    // keeps the card body byte-identical across ticks (the boundary layer is
+    // reused); the one mid-slide flip is masked by the card's own motion.
+    final double emphasis = values.emphasis >= 0.5 ? 1.0 : 0.0;
     return Transform.translate(
       offset: Offset(values.x.w, 0),
       child: Transform.rotate(
@@ -20,26 +28,28 @@ class _OnboardV2CarouselCard extends StatelessWidget {
           scale: values.scale,
           child: Opacity(
             opacity: opacity,
-            child: Container(
-              width: 148.w,
-              height: 180.h,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: AppCustomColor.backgroundWhite,
-                borderRadius: BorderRadius.circular(18.r),
-                border: Border.all(
-                  color: Color.lerp(
-                    AppCustomColor.borderDefault,
-                    AppCustomColor.brandPrimary.withValues(alpha: 0.12),
-                    values.emphasis,
-                  )!,
+            child: RepaintBoundary(
+              child: Container(
+                width: 148.w,
+                height: 180.h,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.backgroundWhite,
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(
+                    color: Color.lerp(
+                      AppCustomColor.borderDefault,
+                      AppCustomColor.brandPrimary.withValues(alpha: 0.12),
+                      emphasis,
+                    )!,
+                  ),
+                  boxShadow: _OnboardV2CarouselSlotValues.shadowsFor(emphasis),
                 ),
-                boxShadow: values.shadows,
+                // [asset] is a config-driven source: a network url (admin-uploaded
+                // deck image) or a bundled asset path (mapper fallback). DCachedImage
+                // handles both (http → CachedNetworkImage, else → Image.asset).
+                child: DCachedImage(url: asset, fit: BoxFit.cover),
               ),
-              // [asset] is a config-driven source: a network url (admin-uploaded
-              // deck image) or a bundled asset path (mapper fallback). DCachedImage
-              // handles both (http → CachedNetworkImage, else → Image.asset).
-              child: DCachedImage(url: asset, fit: BoxFit.cover),
             ),
           ),
         ),
@@ -106,7 +116,9 @@ class _OnboardV2CarouselSlotValues {
   final double z;
   final double emphasis;
 
-  List<BoxShadow> get shadows {
+  List<BoxShadow> get shadows => shadowsFor(emphasis);
+
+  static List<BoxShadow> shadowsFor(double emphasis) {
     final t = emphasis.clamp(0.0, 1.0);
     return [
       BoxShadow(

@@ -17,9 +17,17 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
     _nameController = TextEditingController(text: context.read<OnboardV2Cubit>().state.name);
     _nameFocusNode = FocusNode();
     _nameController.addListener(_syncNameToCubit);
+    // This page is first built the moment the P1→P2 PageView animation (340ms)
+    // starts, so focusing on the next frame raised the keyboard mid-transition —
+    // keyboard slide + page scroll + first paint stacked into visible jank on
+    // both screens. Wait the transition out, then bring the keyboard up.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _nameFocusNode.requestFocus();
+      Future<void>.delayed(const Duration(milliseconds: 400), () {
+        if (!mounted) return;
+        if (context.read<OnboardV2Cubit>().state.currentPage != OnboardV2PageStep.p2Name) return;
+        _nameFocusNode.requestFocus();
+      });
     });
   }
 
@@ -89,7 +97,6 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
               key: const Key('onboard_v2_name_input'),
               controller: _nameController,
               focusNode: _nameFocusNode,
-              autofocus: true,
               keyboardType: TextInputType.name,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.done,

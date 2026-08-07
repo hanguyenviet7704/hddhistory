@@ -109,7 +109,14 @@ class _OnboardV2IntroCarouselState extends State<OnboardV2IntroCarousel> with Si
                 _slotFor(startPosition - 1),
                 progress,
               );
-              return _OnboardV2CarouselCard(asset: asset, values: values);
+              // Keyed by list slot: the z-sort below reorders the Stack children
+              // mid-animation, and without keys that reorder rebuilds every card
+              // and throws away their RepaintBoundary layers on that frame.
+              return _OnboardV2CarouselCard(
+                key: ValueKey('onboard_v2_intro_card_$startPosition'),
+                asset: asset,
+                values: values,
+              );
             })..sort((a, b) => a.values.z.compareTo(b.values.z));
 
             return Stack(
