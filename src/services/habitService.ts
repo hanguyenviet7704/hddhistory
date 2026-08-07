@@ -27,7 +27,8 @@ export const habitService = {
     return axiosClient.delete(`/habits/${id}`);
   },
 
-  // Portable rows keyed by course.title.en + S/KP — see utils/habitContentXlsx.
+  // Rows keyed by courseId + S/KP — see utils/habitContentXlsx. The course title
+  // rides along for readability but is never matched on.
   async exportData() {
     const res = await axiosClient.get("/habits/export");
     return res.data?.data ?? [];

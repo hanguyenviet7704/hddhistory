@@ -19,6 +19,14 @@ export interface ReanchorRow {
 
 export interface HabitRow {
   id?: string;
+  /**
+   * The course this row belongs to. The ONLY thing import matches on.
+   *
+   * `course` below is the title, written next to it so the sheet stays readable
+   * — but it is a label, not a key. Matching on the title meant a rename moved a
+   * course's habits nowhere and two courses sharing a title took each other's.
+   */
+  courseId: string;
   course: string;
   section: number;
   keypoint: number;
@@ -91,7 +99,12 @@ function readSheet(data: ArrayBuffer): {
   // A "row 412 was skipped" report that points at the wrong line is worse than
   // no report; blank rows are dropped in the loop instead, silently.
   const aoa = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1, defval: "", blankrows: true });
-  let headerIdx = aoa.findIndex((r) => r.some((c) => str(c).toLowerCase() === "course title"));
+  // Either column marks the header row: the habit sheet is keyed by "Course ID"
+  // and may carry no title column at all, while re-anchor still leads with
+  // "Course Title".
+  let headerIdx = aoa.findIndex((r) =>
+    r.some((c) => ["course title", "course id"].includes(str(c).toLowerCase())),
+  );
   if (headerIdx < 0) headerIdx = 0;
   const header = (aoa[headerIdx] || []).map((c) => str(c).toLowerCase());
   const colOf = (name: string) => header.indexOf(name.toLowerCase());
@@ -221,12 +234,16 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
   const sorted = [...rows].sort(
     (a, b) =>
       a.course.localeCompare(b.course) ||
+      // Two courses can carry the same title; the id keeps their rows in
+      // separate blocks instead of interleaving them under one heading.
+      a.courseId.localeCompare(b.courseId) ||
       a.section - b.section ||
       a.keypoint - b.keypoint ||
       a.habitIndex - b.habitIndex,
   );
   const header = [
     "ID",
+    "Course ID",
     "Course Title",
     "Keypoint #",
     "Keypoint title (VI)",
@@ -238,14 +255,19 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
     "KO",
   ];
   const aoa: (string | number)[][] = [header];
-  let prevCourse = "";
+  let prevCourseId = "";
   let prevKp = "";
   for (const r of sorted) {
     const kp = `S${r.section}-KP${r.keypoint}`;
+    // Blank-on-repeat (the merged-cell look) is keyed on the id, not the title.
+    // Keying it on the title would fold two same-titled courses into one block
+    // and leave the second one's rows with no id of their own.
+    const sameCourse = r.courseId === prevCourseId;
     aoa.push([
       r.id ?? "", // stable identity — do NOT edit this column
-      r.course === prevCourse ? "" : r.course,
-      kp === prevKp && r.course === prevCourse ? "" : kp,
+      sameCourse ? "" : r.courseId, // the import key — do NOT edit this column
+      sameCourse ? "" : r.course,
+      kp === prevKp && sameCourse ? "" : kp,
       r.keypointTitleVi ?? "",
       r.habitIndex,
       r.title.vi ?? "",
@@ -254,7 +276,7 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
       r.title.ja ?? "",
       r.title.ko ?? "",
     ]);
-    prevCourse = r.course;
+    prevCourseId = r.courseId;
     prevKp = kp;
   }
   const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -270,11 +292,14 @@ export async function parseHabitXlsx(
     await file.arrayBuffer(),
   );
   const cId = colOf("id");
+  const cCourseId = colOf("course id");
+  // Optional, and never matched on — carried through only so a failed row can
+  // be reported by a name a content editor recognises.
   const cCourse = colOf("course title");
   const cKp = colOf("keypoint #");
   const cHabit = colOf("habit #");
   requireColumns(sheetName, header, {
-    "Course Title": cCourse,
+    "Course ID": cCourseId,
     "Keypoint #": cKp,
     "Habit #": cHabit,
   });
@@ -287,39 +312,47 @@ export async function parseHabitXlsx(
   };
   const out: HabitRow[] = [];
   const skipped: SkippedRow[] = [];
+  let courseId = "";
   let course = "";
   let kpRef = "";
   rows.forEach((raw, i) => {
     if (isBlankRow(raw)) return;
-    const c = str(raw[cCourse]);
+    const idCell = str(raw[cCourseId]);
     // A new course restarts the keypoint reference. Carrying the previous
     // course's S/KP forward would silently file its habits under the wrong
-    // keypoint instead of reporting a missing cell.
-    if (c && c !== course) {
-      course = c;
+    // keypoint instead of reporting a missing cell. Keyed on the id, so two
+    // courses that happen to share a title still restart properly.
+    if (idCell && idCell !== courseId) {
+      courseId = idCell;
+      course = "";
       kpRef = "";
     }
+    const titleCell = cCourse >= 0 ? str(raw[cCourse]) : "";
+    if (titleCell) course = titleCell;
     const kpCell = str(raw[cKp]);
     if (kpCell) kpRef = kpCell;
     const habitIndex = parseInt(str(raw[cHabit]), 10);
     const m = /S(\d+)\s*-\s*KP(\d+)/i.exec(kpRef);
-    if (!course) {
-      skipped.push({ row: rowNumber(i), reason: "no Course Title yet" });
+    if (!courseId) {
+      skipped.push({ row: rowNumber(i), reason: "no Course ID yet" });
       return;
     }
+    // Skip reasons name the course by title where the sheet has one and by id
+    // otherwise, since the title column is optional now.
+    const label = course || courseId;
     if (!m) {
       skipped.push({
         row: rowNumber(i),
         reason: kpRef
-          ? `Keypoint # is not S<n>-KP<m> ("${kpRef}") — ${course}`
-          : `no Keypoint # yet — ${course}`,
+          ? `Keypoint # is not S<n>-KP<m> ("${kpRef}") — ${label}`
+          : `no Keypoint # yet — ${label}`,
       });
       return;
     }
     if (!Number.isFinite(habitIndex)) {
       skipped.push({
         row: rowNumber(i),
-        reason: `Habit # is not a number ("${str(raw[cHabit])}") — ${course} ${kpRef}`,
+        reason: `Habit # is not a number ("${str(raw[cHabit])}") — ${label} ${kpRef}`,
       });
       return;
     }
@@ -333,13 +366,14 @@ export async function parseHabitXlsx(
     if (!Object.keys(title).length) {
       skipped.push({
         row: rowNumber(i),
-        reason: `all language columns empty — ${course} ${kpRef}`,
+        reason: `all language columns empty — ${label} ${kpRef}`,
       });
       return;
     }
     const id = cId >= 0 ? str(raw[cId]) : "";
     out.push({
       ...(id ? { id } : {}),
+      courseId,
       course,
       section: parseInt(m[1], 10),
       keypoint: parseInt(m[2], 10),
