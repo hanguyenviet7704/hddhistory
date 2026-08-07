@@ -279,6 +279,12 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
         userHabit: widget.userHabit,
         practice: playable,
       );
+      // The design's payoff screen ("3 · Practice complete" — Habit is
+      // growing!) follows EVERY completed practice; the journal path pushes it
+      // from inside its own page, the quiz reports back with `saved` instead.
+      if (saved == true && mounted) {
+        await PracticeDonePage.push(context, userHabit: widget.userHabit);
+      }
     }
 
     // Re-read the log so the heatmap and diary pick up what was just written.

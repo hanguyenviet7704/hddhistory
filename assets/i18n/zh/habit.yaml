@@ -131,7 +131,6 @@ quizCorrectLabel: 回答正确！
 quizIncorrectLabel: 不正确
 quizProgressLabel: ${current}/${total}
 practiceDoneTitle: 练习完成
-practiceDoneSubtitle: 今天已打卡，继续保持！
 practiceDoneScore: 正确 ${correct}/${total}
 practiceDoneButton: 返回习惯
 # Recap-flow habit step (design "3 · Learning" -> Recap)
@@ -139,3 +138,6 @@ habitSuggestTitle: 添加一个，获得每日练习提醒
 habitSuggestSubtitle: 这节课帮助你养成这些习惯
 habitSuggestAdd: 添加
 habitSuggestAdded: 已添加
+practiceGrowTitle: 习惯正在生长！
+practiceGrowBubble: 重复得够多，它就成了日常
+practiceGrowLoop: 已循环 ${days} 天

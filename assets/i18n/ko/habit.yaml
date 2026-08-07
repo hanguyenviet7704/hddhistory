@@ -131,7 +131,6 @@ quizCorrectLabel: 정답이에요!
 quizIncorrectLabel: 오답
 quizProgressLabel: ${current}/${total}
 practiceDoneTitle: 연습 완료
-practiceDoneSubtitle: 오늘 체크인했어요. 계속 이어가요!
 practiceDoneScore: ${correct}/${total} 정답
 practiceDoneButton: 습관으로 돌아가기
 # Recap-flow habit step (design "3 · Learning" -> Recap)
@@ -139,3 +138,6 @@ habitSuggestTitle: 하나 추가하고 매일 연습 알림을 받아보세요
 habitSuggestSubtitle: 이 레슨은 다음 습관을 기르는 데 도움이 됩니다
 habitSuggestAdd: 추가
 habitSuggestAdded: 추가됨
+practiceGrowTitle: 습관이 자라고 있어요!
+practiceGrowBubble: 충분히 반복하면 일상이 됩니다
+practiceGrowLoop: ${days}일 루프

@@ -1,161 +1,190 @@
 part of '../../habit.dart';
 
-/// "Practice complete" (design "5 · Habit" → quizdone / journaldone).
+/// "Practice complete" (design "5 · Habit" → 3 · Practice complete): the
+/// habit-as-plant payoff screen. A speech bubble ("Repeat it enough, it
+/// becomes everyday life") floats over the potted-plant illustration,
+/// "Habit is growing!" underneath, then the streak as an "∞ N days loop"
+/// chip, and a full-width "Back to habit" pill at the bottom.
 ///
-/// Shown after the attempt has already been submitted, so it reports rather than
-/// writes — there is no retry here, and closing it cannot lose the check-in.
-/// [correct] and [total] are omitted for a journal, which has nothing to score.
+/// Shown after the attempt has already been submitted, so it reports rather
+/// than writes — there is no retry here, and closing it cannot lose the
+/// check-in. The streak is read from [HabitCubit]'s CURRENT state rather than
+/// the passed-in row: the check-in that just happened bumped it, and the
+/// caller's copy may predate that write.
 class PracticeDonePage extends StatelessWidget {
   final UserHabitEntity userHabit;
-  final int? correct;
-  final int? total;
 
-  const PracticeDonePage({super.key, required this.userHabit, this.correct, this.total});
+  const PracticeDonePage({super.key, required this.userHabit});
 
-  static Future<void> push(
-    BuildContext context, {
-    required UserHabitEntity userHabit,
-    int? correct,
-    int? total,
-  }) {
+  static Future<void> push(BuildContext context, {required UserHabitEntity userHabit}) {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => PracticeDonePage(userHabit: userHabit, correct: correct, total: total),
-      ),
+      MaterialPageRoute(builder: (_) => PracticeDonePage(userHabit: userHabit)),
     );
   }
 
-  bool get _hasScore => correct != null && total != null && total! > 0;
+  int _currentStreak() {
+    final fresh = AppDI.injector.get<HabitCubit>().state.userHabits.where((row) => row.id == userHabit.id).firstOrNull;
+    return (fresh ?? userHabit).currentStreak;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final streak = _currentStreak();
+
     return Scaffold(
       backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundBrandSoft),
       body: ThemedBackground(
         child: SafePage(
-          // In the design this is the LAST CARD of the quiz deck, not a bare
-          // screen — so it keeps the deck's card: same inset, same radius, same
-          // frosted-over-a-custom-background treatment. On the wallpaper alone
-          // the white title and grey subtitle had to compete with the photo.
-          //
-          // Inside it: a centred stack with a 14 gap, a solid pale-green disc
-          // (NOT a 12%-alpha tint — over a photo that washed out to invisible),
-          // and a pill sized to its label rather than a screen-wide bar.
           child: Padding(
-            padding: EdgeInsets.fromLTRB(18.w, 10.h, 18.w, 28.h),
-            child: ThemedGlassCard(
-              frosted: true,
-              radius: 22,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-              shadow: [
-                BoxShadow(
-                  color: AppCustomColor.textPrimary.withValues(alpha: 0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 74.w,
-                    height: 74.w,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppCustomColor.kpResultCorrectSurface,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.check_rounded, size: 34.w, color: AppCustomColor.successGreen),
-                  ),
-                  14.verticalSpace,
-                  AppText(
-                    context.l10n.habit.practiceDoneTitle,
-                    textAlign: TextAlign.center,
-                    // Design 21/700.
-                    style: AppStyle.text22.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppCustomColor.textPrimary,
-                    ),
-                  ),
-                  14.verticalSpace,
-                  AppText(
-                    context.l10n.habit.practiceDoneSubtitle,
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    style: AppStyle.text14.copyWith(
-                      height: 1.6,
-                      color: AppCustomColor.textTertiary,
-                    ),
-                  ),
-                  if (_hasScore) ...[
-                    14.verticalSpace,
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-                      // Brand tint, not white: this now sits ON the white card,
-                      // where a white pill would be an invisible chip.
-                      decoration: BoxDecoration(
-                        color: AppCustomColor.brandPrimary50,
-                        borderRadius: BorderRadius.circular(99.r),
-                      ),
-                      child: AppText(
-                        context.l10n.habit.practiceDoneScore(
-                          correct: '$correct',
-                          total: '$total',
+            padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _speechBubble(context),
+                        14.verticalSpace,
+                        _plant(),
+                        26.verticalSpace,
+                        AppText(
+                          context.l10n.habit.practiceGrowTitle,
+                          textAlign: TextAlign.center,
+                          // Design 26/800.
+                          style: TextStyle(
+                            fontFamily: AppFont.mulish,
+                            fontSize: 26.sp,
+                            fontWeight: FontWeight.w800,
+                            height: 1.25,
+                            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                          ),
                         ),
-                        style: AppStyle.textBold16.copyWith(color: AppCustomColor.brandPrimary),
-                      ),
-                    ),
-                  ],
-                  14.verticalSpace,
-                  AppText(
-                    userHabit.displayTitle,
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    style: AppStyle.text14.copyWith(
-                      color: AppCustomColor.textSecondary,
+                        if (streak > 0) ...[
+                          12.verticalSpace,
+                          Container(
+                            height: 28.h,
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            decoration: BoxDecoration(
+                              color: AppCustomColor.kpResultCorrectSurface,
+                              borderRadius: BorderRadius.circular(99.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.all_inclusive_rounded, size: 14.w, color: AppCustomColor.successGreen),
+                                6.horizontalSpace,
+                                AppText(
+                                  context.l10n.habit.practiceGrowLoop(days: '$streak'),
+                                  style: AppStyle.text12.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppCustomColor.successGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  22.verticalSpace,
-                  Semantics(
-                    button: true,
-                    child: Material(
-                      color: AppCustomColor.brandPrimary,
+                ),
+                Semantics(
+                  button: true,
+                  child: Material(
+                    color: AppCustomColor.brandPrimary,
+                    borderRadius: BorderRadius.circular(999.r),
+                    child: InkWell(
                       borderRadius: BorderRadius.circular(999.r),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(999.r),
-                        onTap: () {
-                          AppHaptic.select();
-                          Navigator.of(context).pop();
-                        },
-                        // A Row(mainAxisSize.min), not `alignment:` — setting
-                        // alignment turns the Container into an Align, which
-                        // expands to the incoming width and would stretch this
-                        // content-sized pill across the whole screen.
-                        child: Container(
-                          height: 50.h,
-                          padding: EdgeInsets.symmetric(horizontal: 28.w),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AppText(
-                                context.l10n.habit.practiceDoneButton,
-                                style: AppStyle.text16.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: AppCustomColor.textWhite,
-                                ),
-                              ),
-                            ],
+                      onTap: () {
+                        AppHaptic.select();
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        height: 54.h,
+                        alignment: Alignment.center,
+                        child: AppText(
+                          context.l10n.habit.practiceDoneButton,
+                          style: AppStyle.text16.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppCustomColor.textWhite,
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// The design's caption bubble above the plant — white rounded card with a
+  /// small diamond tail pointing down at the sprout.
+  Widget _speechBubble(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          constraints: BoxConstraints(maxWidth: 210.w),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundWhite,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [BoxShadow(color: const Color(0x14141828), blurRadius: 14, offset: const Offset(0, 4))],
+          ),
+          child: AppText(
+            context.l10n.habit.practiceGrowBubble,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            // Design ~11.5/600.
+            style: TextStyle(
+              fontFamily: AppFont.mulish,
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+              color: AppCustomColor.textPrimary,
+            ),
+          ),
+        ),
+        // Tail: a rotated square tucked under the bubble.
+        Transform.translate(
+          offset: Offset(0, -4.h),
+          child: Transform.rotate(
+            angle: math.pi / 4,
+            child: Container(width: 9.w, height: 9.w, color: AppCustomColor.backgroundWhite),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The potted plant with the design's little sparkles. The pot art is the
+  /// existing habit motif asset, so this screen and the reminders share one
+  /// plant.
+  Widget _plant() {
+    return SizedBox(
+      width: 170.w,
+      height: 150.h,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SvgPicture.asset(AppAsset.svg.common.habitReminderPlant, width: 112.w),
+          Positioned(
+            left: 18.w,
+            top: 26.h,
+            child: Icon(Icons.auto_awesome, size: 16.w, color: AppCustomColor.successGreen.withValues(alpha: 0.75)),
+          ),
+          Positioned(
+            right: 22.w,
+            bottom: 34.h,
+            child: Icon(Icons.auto_awesome, size: 11.w, color: AppCustomColor.successGreen.withValues(alpha: 0.55)),
+          ),
+        ],
       ),
     );
   }
