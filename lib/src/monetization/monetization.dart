@@ -55,6 +55,7 @@ part 'presentation/pages/user_subcription_page.dart';
 part 'presentation/widgets/paywall/paywall_banner_carousel.dart';
 part 'presentation/widgets/paywall/paywall_benefit_rows.dart';
 part 'presentation/widgets/paywall/paywall_bottom_purchase_bar.dart';
+part 'presentation/widgets/paywall/paywall_compact_body.dart';
 part 'presentation/widgets/paywall/paywall_countdown_strip.dart';
 part 'presentation/widgets/paywall/paywall_dots_indicator.dart';
 part 'presentation/widgets/paywall/paywall_feedback_list.dart';

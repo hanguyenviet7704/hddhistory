@@ -191,6 +191,26 @@ class _PaywallPageState extends State<PaywallPage> {
             },
             builder: (context, state) {
               _trackValidRender(state);
+
+              // "Rút gọn" in the admin's entry-point table means THIS surface:
+              // the sheet-style single-plan paywall, not the full page with a
+              // shorter list. The gift popup is skipped here — two sheets
+              // stacked on one entry point would fight for the same gesture.
+              if (state.resolvedPaywallStrategy?.variant == PaywallProductVariant.compact) {
+                return _PaywallCompactBody(
+                  state: state,
+                  onClose: _handleClose,
+                  onPurchase: () {
+                    final product = state.selectedProduct;
+                    AppService.instance.appTrackingService.trackPremiumPurchase(
+                      productId: product.productId,
+                      price: product.price,
+                    );
+                    context.read<IapCubit>().purchaseProduct();
+                  },
+                );
+              }
+
               _maybeShowGiftCampaign(state);
               return Stack(
                 children: [
