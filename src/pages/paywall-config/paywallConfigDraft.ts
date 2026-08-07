@@ -26,6 +26,7 @@ import {
   PaywallProductRef,
   PaywallProductVariant,
   PaywallGiftCampaign,
+  PaywallGiftTitle,
   PaywallReview,
   PaywallReviewContent,
   PaywallReviewLocaleContent,
@@ -97,18 +98,12 @@ export interface SaleEventDraft {
   compactProducts: ProductRefDraft[];
 }
 
+/** One string per locale; `en` is the only one the backend requires non-absent. */
+export type GiftTitleDraft = Record<PaywallLocale, string>;
+
 export interface GiftCampaignDraft {
   enabled: boolean;
-  campaignId: string;
-  startAtUtc: string;
-  endAtUtc: string;
-  /** Kept as text like every numeric draft field; validated on publish. */
-  discountPercent: string;
-  appliesToDefaultUser: boolean;
-  appliesToNewUser: boolean;
-  popupContent: LocalizedContentDraft;
-  sheetContent: LocalizedContentDraft;
-  products: ProductRefDraft[];
+  title: GiftTitleDraft;
 }
 
 export type EntryPointVariantsDraft = Record<
@@ -180,6 +175,9 @@ export const emptyImpressionRule = (): ImpressionRuleDraft => ({
   compactProducts: [],
 });
 
+export const emptyGiftTitle = (): GiftTitleDraft =>
+  Object.fromEntries(PAYWALL_CONFIG_LOCALES.map((locale) => [locale, ""])) as GiftTitleDraft;
+
 export const emptyReviewContent = (): ReviewContentDraft => ({
   title: "",
   body: "",
@@ -241,15 +239,7 @@ export const defaultDraft = (): ConfigDraft => ({
   },
   giftCampaign: {
     enabled: false,
-    campaignId: "",
-    startAtUtc: "",
-    endAtUtc: "",
-    discountPercent: "33",
-    appliesToDefaultUser: true,
-    appliesToNewUser: false,
-    popupContent: emptyLocalizedContent(),
-    sheetContent: emptyLocalizedContent(),
-    products: [],
+    title: emptyGiftTitle(),
   },
   // SHOWN by default, matching the app build that introduced the strip.
   showCredibilityBlock: true,
@@ -282,6 +272,11 @@ const toProductRefDraft = (ref: PaywallProductRef): ProductRefDraft => ({
   appleProductId: ref.appleProductId ?? "",
   googleProductId: ref.googleProductId ?? "",
 });
+
+const toGiftTitleDraft = (title?: PaywallGiftTitle): GiftTitleDraft =>
+  Object.fromEntries(
+    PAYWALL_CONFIG_LOCALES.map((locale) => [locale, title?.[locale] ?? ""])
+  ) as GiftTitleDraft;
 
 const toDateTimeInput = (value?: string): string => {
   if (!value) return "";
@@ -421,21 +416,7 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   },
   giftCampaign: {
     enabled: Boolean(config.giftCampaign?.enabled),
-    campaignId: config.giftCampaign?.campaignId ?? "",
-    startAtUtc: toDateTimeInput(config.giftCampaign?.startAtUtc),
-    endAtUtc: toDateTimeInput(config.giftCampaign?.endAtUtc),
-    discountPercent:
-      config.giftCampaign?.discountPercent != null
-        ? String(config.giftCampaign.discountPercent)
-        : "33",
-    appliesToDefaultUser: hasAudience(
-      config.giftCampaign?.appliesTo,
-      "defaultUser"
-    ),
-    appliesToNewUser: hasAudience(config.giftCampaign?.appliesTo, "newUser"),
-    popupContent: toLocalizedContentDraft(config.giftCampaign?.popupContent),
-    sheetContent: toLocalizedContentDraft(config.giftCampaign?.sheetContent),
-    products: (config.giftCampaign?.products ?? []).map(toProductRefDraft),
+    title: toGiftTitleDraft(config.giftCampaign?.title),
   },
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
   showCredibilityBlock: config.showCredibilityBlock !== false,
@@ -536,6 +517,22 @@ const fromReviewDraft = (review: ReviewDraft): PaywallReview => ({
   content: fromReviewLocalizedContentDraft(review.content),
 });
 
+export const isGiftTitleEmpty = (title: GiftTitleDraft): boolean =>
+  PAYWALL_CONFIG_LOCALES.every((locale) => !title[locale].trim());
+
+/** Omitted entirely when every locale is blank -- absent means the app's bundled copy. */
+const fromGiftTitleDraft = (title: GiftTitleDraft): PaywallGiftTitle | undefined => {
+  if (isGiftTitleEmpty(title)) return undefined;
+  const result = { en: title.en.trim() } as PaywallGiftTitle;
+  PAYWALL_CONFIG_LOCALES.forEach((locale) => {
+    if (locale === "en") return;
+    if (title[locale].trim()) {
+      (result as any)[locale] = title[locale].trim();
+    }
+  });
+  return result;
+};
+
 const fromAudienceFlags = (draft: SaleEventDraft): PaywallAudienceSegment[] => {
   const appliesTo: PaywallAudienceSegment[] = [];
   if (draft.appliesToDefaultUser) appliesTo.push("defaultUser");
@@ -611,29 +608,9 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     ])
   );
 
-  const giftPopupEmpty = isLocalizedContentEmpty(draft.giftCampaign.popupContent);
-  const giftSheetEmpty = isLocalizedContentEmpty(draft.giftCampaign.sheetContent);
-  const giftAppliesTo: PaywallAudienceSegment[] = [];
-  if (draft.giftCampaign.appliesToDefaultUser) giftAppliesTo.push("defaultUser");
-  if (draft.giftCampaign.appliesToNewUser) giftAppliesTo.push("newUser");
   const giftCampaign: PaywallGiftCampaign = {
     enabled: draft.giftCampaign.enabled,
-    campaignId: draft.giftCampaign.campaignId.trim() || undefined,
-    startAtUtc: fromDateTimeInput(draft.giftCampaign.startAtUtc),
-    endAtUtc: fromDateTimeInput(draft.giftCampaign.endAtUtc),
-    discountPercent: draft.giftCampaign.discountPercent.trim()
-      ? Number(draft.giftCampaign.discountPercent)
-      : undefined,
-    appliesTo: giftAppliesTo,
-    popupContent: giftPopupEmpty
-      ? undefined
-      : fromLocalizedContentDraft(draft.giftCampaign.popupContent),
-    sheetContent: giftSheetEmpty
-      ? undefined
-      : fromLocalizedContentDraft(draft.giftCampaign.sheetContent),
-    products: draft.giftCampaign.products.length
-      ? draft.giftCampaign.products.map(fromProductRefDraft)
-      : undefined,
+    title: fromGiftTitleDraft(draft.giftCampaign.title),
   };
 
   // Omitted entirely when empty rather than sent as `[]`: both mean "use the
@@ -857,49 +834,13 @@ export const validateDraft = (
     }
   }
 
-  // giftCampaign — same rules as saleEvent (the client drops a campaign with a
-  // broken window or no products), plus the display-only percent bounds.
-  if (draft.giftCampaign.enabled) {
-    validateProductsNonEmpty(
-      draft.giftCampaign.products,
-      "giftCampaign.products",
-      productsByPlatform,
-      errors
-    );
-
-    const startAt = draft.giftCampaign.startAtUtc
-      ? new Date(draft.giftCampaign.startAtUtc).getTime()
-      : NaN;
-    const endAt = draft.giftCampaign.endAtUtc
-      ? new Date(draft.giftCampaign.endAtUtc).getTime()
-      : NaN;
-    if (Number.isNaN(startAt)) {
-      errors["giftCampaign.startAtUtc"] =
-        "giftCampaign.startAtUtc là bắt buộc khi bật gift campaign";
-    }
-    if (Number.isNaN(endAt)) {
-      errors["giftCampaign.endAtUtc"] =
-        "giftCampaign.endAtUtc là bắt buộc khi bật gift campaign (sheet đếm ngược về mốc này)";
-    }
-    if (!Number.isNaN(startAt) && !Number.isNaN(endAt) && startAt >= endAt) {
-      errors["giftCampaign.endAtUtc"] =
-        "giftCampaign.endAtUtc phải sau startAtUtc";
-    }
-
-    const percentText = draft.giftCampaign.discountPercent.trim();
-    const percent = Number(percentText);
-    if (percentText && (!Number.isInteger(percent) || percent < 1 || percent > 99)) {
-      errors["giftCampaign.discountPercent"] =
-        "giftCampaign.discountPercent phải là số nguyên 1-99";
-    }
-
-    if (
-      !draft.giftCampaign.appliesToDefaultUser &&
-      !draft.giftCampaign.appliesToNewUser
-    ) {
-      errors["giftCampaign.appliesTo"] =
-        "giftCampaign.appliesTo phải chọn ít nhất 1 đối tượng khi bật gift campaign";
-    }
+  // giftCampaign — the popup's title is entirely optional (absent uses the
+  // app's bundled copy), but the backend's `en` field is a plain required
+  // string, not optional: sending some other locale filled in with `en`
+  // blank would publish a title object whose i18n fallback is empty text.
+  if (!isGiftTitleEmpty(draft.giftCampaign.title) && !draft.giftCampaign.title.en.trim()) {
+    errors["giftCampaign.title.en"] =
+      "giftCampaign.title.en là bắt buộc khi đã điền tiêu đề cho ít nhất 1 ngôn ngữ";
   }
 
   // reviews — purely client-side rules (the backend itself only requires

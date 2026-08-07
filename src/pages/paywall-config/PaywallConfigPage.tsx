@@ -47,6 +47,7 @@ import {
   toDraft,
   validateDraft,
 } from "./paywallConfigDraft";
+import CompactPaywallSection from "./components/CompactPaywallSection";
 import DefaultUserSection from "./components/DefaultUserSection";
 import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
 import GeneralSection from "./components/GeneralSection";
@@ -254,6 +255,22 @@ export default function PaywallConfigPage() {
   const disabled = loading || saving;
   const showVersionSkeleton = loading && !versionMeta;
 
+  // Shared by EntryPointVariantsSection (setting the variant) and
+  // CompactPaywallSection (filling the list) so both surface the same
+  // "chosen compact but nothing to show" warning from the same numbers.
+  const compactCounts = useMemo(
+    () => ({
+      defaultUser: draft?.defaultUser.compactProducts.length ?? 0,
+      newUser:
+        draft?.newUser.impressionRules.reduce(
+          (total, rule) => total + rule.compactProducts.length,
+          0
+        ) ?? 0,
+      saleEvent: draft?.saleEvent.compactProducts.length ?? 0,
+    }),
+    [draft]
+  );
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur pb-4 mb-1 border-b border-slate-200/80 space-y-3">
@@ -394,14 +411,26 @@ export default function PaywallConfigPage() {
             value={draft.entryPointVariants}
             onChange={(entryPointVariants) => patchDraft({ entryPointVariants })}
             disabled={disabled}
-            compactCounts={{
-              defaultUser: draft.defaultUser.compactProducts.length,
-              newUser: draft.newUser.impressionRules.reduce(
-                (total, rule) => total + rule.compactProducts.length,
-                0
-              ),
-              saleEvent: draft.saleEvent.compactProducts.length,
-            }}
+            compactCounts={compactCounts}
+          />
+
+          <CompactPaywallSection
+            entryPointVariants={draft.entryPointVariants}
+            compactCounts={compactCounts}
+            defaultUserCompactProducts={draft.defaultUser.compactProducts}
+            onChangeDefaultUserCompactProducts={(compactProducts) =>
+              patchDraft({ defaultUser: { ...draft.defaultUser, compactProducts } })
+            }
+            saleEventCompactProducts={draft.saleEvent.compactProducts}
+            onChangeSaleEventCompactProducts={(compactProducts) =>
+              patchDraft({ saleEvent: { ...draft.saleEvent, compactProducts } })
+            }
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={refetchProducts}
           />
 
           <DefaultUserSection
@@ -442,10 +471,6 @@ export default function PaywallConfigPage() {
             onChange={(giftCampaign) => patchDraft({ giftCampaign })}
             disabled={disabled}
             fieldErrors={fieldErrors}
-            productsByPlatform={productsByPlatform}
-            productsLoading={productsLoading}
-            productsError={productsError}
-            onRefreshProducts={refetchProducts}
           />
 
           <ReviewsSection

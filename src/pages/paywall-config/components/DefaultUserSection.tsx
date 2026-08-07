@@ -55,20 +55,10 @@ const DefaultUserSection: React.FC<DefaultUserSectionProps> = ({
         onRefreshProducts={onRefreshProducts}
       />
 
-      <ProductRefsEditor
-        fieldPrefix="saleStrategy.defaultUser.compactProducts"
-        title="Sản phẩm — danh sách rút gọn"
-        hint="Hiện ở các điểm mở paywall được đặt là 'rút gọn'. Để trống thì dùng danh sách đầy đủ."
-        emptyHint="Để trống — các điểm 'rút gọn' sẽ dùng danh sách đầy đủ ở trên."
-        value={value.compactProducts}
-        onChange={(compactProducts) => onChange({ ...value, compactProducts })}
-        disabled={disabled}
-        fieldErrors={fieldErrors}
-        productsByPlatform={productsByPlatform}
-        productsLoading={productsLoading}
-        productsError={productsError}
-        onRefreshProducts={onRefreshProducts}
-      />
+      <p className="text-[11px] text-slate-500">
+        Danh sách rút gọn của người dùng mặc định đã chuyển sang section
+        "Paywall rút gọn".
+      </p>
     </SectionCard>
   );
 };

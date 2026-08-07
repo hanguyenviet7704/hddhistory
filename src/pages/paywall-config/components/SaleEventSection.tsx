@@ -170,20 +170,10 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
         onRefreshProducts={onRefreshProducts}
       />
 
-      <ProductRefsEditor
-        fieldPrefix="saleStrategy.saleEvent.compactProducts"
-        title="Sản phẩm — danh sách rút gọn"
-        hint="Nhờ danh sách này mà chiến dịch sale vẫn tới được user đang học, chỉ với gói rút gọn. Để trống thì dùng danh sách đầy đủ."
-        emptyHint="Để trống — dùng danh sách đầy đủ ở trên."
-        value={value.compactProducts}
-        onChange={(compactProducts) => onChange({ ...value, compactProducts })}
-        disabled={disabled}
-        fieldErrors={fieldErrors}
-        productsByPlatform={productsByPlatform}
-        productsLoading={productsLoading}
-        productsError={productsError}
-        onRefreshProducts={onRefreshProducts}
-      />
+      <p className="text-[11px] text-slate-500">
+        Danh sách rút gọn của sự kiện sale đã chuyển sang section "Paywall rút
+        gọn".
+      </p>
     </SectionCard>
   );
 };

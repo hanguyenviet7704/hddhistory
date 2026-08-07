@@ -92,30 +92,24 @@ export interface PaywallSaleStrategy {
   saleEvent: PaywallSaleEvent;
 }
 
+/** Same locale contract as `PaywallLocalizedContent`: en required, rest optional. */
+export type PaywallGiftTitle = {
+  en: string;
+} & Partial<Record<Exclude<PaywallLocale, "en">, string>>;
+
 /**
- * The two-step gift offer: a popup ("A special gift for you!") that opens a
- * bottom sheet headlined with `discountPercent` and a Claim Offer CTA.
- *
- * NOT part of `saleStrategy`: a sale event restyles the paywall the reader is
- * already on, while this interrupts with two surfaces of its own, on its own
- * schedule — the client drops an enabled campaign with no products, so the
- * Claim button can never point at nothing.
+ * The gift popup: its only job is to open the COMPACT paywall on a schedule
+ * hardcoded in the app (first habit on day 0, first open of each day 1-7,
+ * premium users skipped). Everything the reader sees after the tap belongs to
+ * the compact paywall's own config (see `PaywallEntryPointVariants` /
+ * `compactProducts` below) — the ONLY thing configurable here is the popup's
+ * title line; absent falls back to the app's bundled copy ("A special gift
+ * for you!"). The CTA label ("Open") is hardcoded too.
  */
 export interface PaywallGiftCampaign {
   enabled: boolean;
-  campaignId?: string;
-  startAtUtc?: string;
-  /** Campaign deadline AND the sheet countdown's source — one field, no drift. */
-  endAtUtc?: string;
-  /** Headline "N% OFF" only; the real price is the store product. 1-99. */
-  discountPercent?: number;
-  appliesTo?: PaywallAudienceSegment[];
-  /** Copy for the popup step (heading only is read today). */
-  popupContent?: PaywallLocalizedContent;
-  /** Copy for the bottom-sheet step. */
-  sheetContent?: PaywallLocalizedContent;
-  /** SKU the Claim Offer button purchases. */
-  products?: PaywallProductRef[];
+  /** Popup title per locale. Absent uses the app's bundled copy. */
+  title?: PaywallGiftTitle;
 }
 
 /** One locale's worth of one review card's text (already in that locale). */
