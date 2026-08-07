@@ -69,6 +69,10 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     if (!hasRecap || _flip.isAnimating) return;
     AppHaptic.select();
     _flip.isCompleted || _flip.value > 0.5 ? _flip.reverse() : _flip.forward();
+    // The in-app listening flow pauses on arriving at this card and waits for
+    // exactly this tap — resume so the takeaway is read out. No-op when
+    // nothing was gated.
+    context.read<KeypointCardCubit>().resumeRecapNarrationIfGated();
   }
 
   /// Narration is reading THIS card's text (the takeaway clip) once, so show

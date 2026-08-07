@@ -92,6 +92,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// card), which no descriptor-identity lookup can discover on its own.
   String? _takeawayLearningItemId;
 
+  /// Cue index the in-app recap gate last paused on — guards the pause to one
+  /// firing per arrival, so the reader's own play/pause on that card is never
+  /// fought over.
+  int _recapGateCueIndex = -1;
+
   LessonCompletionOrigin _previousCompletionOrigin = LessonCompletionOrigin.none;
 
   /// Holds the view on the FIRST card for as long as the reader has not moved
@@ -614,10 +619,31 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     }
 
     if (cardIndex >= 0) {
+      // In-app, the recap card is a STOP: pause and wait for the reader to tap
+      // the card open ([resumeRecapNarrationIfGated]); background listening
+      // reads straight through — no one is there to tap. Paused BEFORE
+      // viewCard, whose narration pointing derives autoplay from "is it
+      // playing right now".
+      final isTakeawayCue = _takeawayLearningItemId != null && cue.learningItemId == _takeawayLearningItemId;
+      if (isTakeawayCue && !isBackground && cueIndex != _recapGateCueIndex) {
+        _recapGateCueIndex = cueIndex;
+        unawaited(_audioCubit.pause());
+      }
       if (cardIndex != state.viewedCardIndex && !isBackground) viewCard(cardIndex);
       if (cardIndex == state.viewedCardIndex) _loadedClipCardIndex = cardIndex;
     }
     _pushAllowedThroughCue();
+  }
+
+  /// The reader opened the recap flip card after the in-app gate above paused
+  /// the voice on its cue — resume, so the takeaway is read to the face now
+  /// showing. A no-op unless narration really is parked on the takeaway's cue:
+  /// flipping the card around while nothing was gated stays silent.
+  void resumeRecapNarrationIfGated() {
+    if (_recapGateCueIndex < 0 || _audioCubit.state.isPlaying) return;
+    final cue = _audioCubit.timeline?.cueAt(_audioCubit.state.activeCueIndex);
+    final parkedOnTakeaway = cue != null && _takeawayLearningItemId != null && cue.learningItemId == _takeawayLearningItemId;
+    if (parkedOnTakeaway) unawaited(_audioCubit.play());
   }
 
   /// Moves the view onto the card with this identity, revealing it first when
@@ -780,6 +806,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       revealToCard: _revealToCardTarget,
     );
     _cardToClip = built.cardToClip;
+    if (_takeawayLearningItemId != built.takeawayLearningItemId) _recapGateCueIndex = -1;
     _takeawayLearningItemId = built.takeawayLearningItemId;
     // Tell the player which clips belong to the reading flow at all, so the
     // background queue never reads an exercise question's clip aloud.
