@@ -29,8 +29,12 @@ class HabitSuggestPage extends StatefulWidget {
   });
 
   /// Pushed on the ROOT navigator so it overlays the shell (and its floating
-  /// nav) exactly like [AdoptHabitPage] did. Resolves when the reader
-  /// continues.
+  /// nav) exactly like [AdoptHabitPage] did. Fades in/out — the whole
+  /// completion flow (recap → habit → lesson complete) speaks in fades, and a
+  /// MaterialPageRoute slide here read as being shoved sideways between them.
+  /// Resolves when the reader continues; navigation onward is THIS page's job
+  /// (see [_continue]) so the lesson-complete screen is already underneath
+  /// when the fade-out reveals it.
   static Future<void> push(
     BuildContext context, {
     required List<HabitEntity> habits,
@@ -38,14 +42,20 @@ class HabitSuggestPage extends StatefulWidget {
     String? sourceCourseId,
   }) {
     return Navigator.of(context, rootNavigator: true).push<void>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 380),
+        reverseTransitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (_, __, ___) => BlocProvider.value(
           value: AppDI.injector.get<HabitCubit>(),
           child: HabitSuggestPage(
             habits: habits,
             sourceKeypointId: sourceKeypointId,
             sourceCourseId: sourceCourseId,
           ),
+        ),
+        transitionsBuilder: (_, animation, __, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          child: child,
         ),
       ),
     );
@@ -141,7 +151,15 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
         habitName: widget.habits.first.title.text,
       );
     }
-    Navigator.of(context).pop();
+    // Swap the page UNDERNEATH this overlay to lesson-complete first, then
+    // fade this page out one frame later — the fade reveals the destination
+    // directly instead of flashing the deck it was pushed over. Same pattern
+    // as the quiz's exit to the roadmap.
+    AppDI.injector.get<LessonCubit>().openKeypointComplete();
+    final navigator = Navigator.of(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigator.canPop()) navigator.pop();
+    });
   }
 
   @override

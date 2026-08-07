@@ -419,13 +419,17 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
           roadmapCourseId: roadmapCourseId,
           homeCourseId: homeCourseId,
         );
+        // The habit page navigates ONWARD itself (its Continue swaps the page
+        // beneath to lesson-complete before fading out) — navigating here too
+        // would double-fire. Backing out of it without Continue simply lands
+        // back on this card, where Continue works again.
         await HabitSuggestPage.push(
           context,
           habits: suggestions,
           sourceKeypointId: keypointId,
           sourceCourseId: courseId,
         );
-        if (!mounted) return;
+        return;
       }
 
       lessonCubit.openKeypointComplete();

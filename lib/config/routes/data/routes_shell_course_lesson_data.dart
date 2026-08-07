@@ -131,8 +131,10 @@ class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
 class KeypointCompleteRoute extends BaseTransitionRouteData with $KeypointCompleteRoute {
   const KeypointCompleteRoute();
 
+  // Fade, matching the rest of the completion flow (recap → habit → here →
+  // practice) — the scale-in read as a shove next to the overlays' fades.
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
