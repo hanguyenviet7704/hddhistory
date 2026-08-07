@@ -127,6 +127,23 @@ class _PaywallGiftSheetState extends State<PaywallGiftSheet> {
                   height: 1.1,
                 ),
               ),
+            // The urgency line under the headline ("You will never see this
+            // again if you exit" in the design) — admin copy, per locale, via
+            // sheetContent. No copy published → no line, not a blank row.
+            if (widget.campaign.sheetContent.subheading.text.isNotEmpty) ...[
+              8.verticalSpace,
+              AppText(
+                widget.campaign.sheetContent.subheading.text,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: AppStyle.text12.copyWith(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF8F8AB9),
+                  height: 1.4,
+                ),
+              ),
+            ],
             if (endAtUtc != null) ...[
               14.verticalSpace,
               _CountdownRow(endAtUtc: endAtUtc),
