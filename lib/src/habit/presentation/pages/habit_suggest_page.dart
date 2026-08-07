@@ -52,11 +52,17 @@ class HabitSuggestPage extends StatefulWidget {
 class _HabitSuggestPageState extends State<HabitSuggestPage> {
   static const int _defaultPackLength = 3;
 
-  /// Habit id currently mid-adopt — its row shows a spinner chip and every
-  /// other row ignores taps, so two quick taps can't fire two adopts.
+  /// Habit id currently mid-write (adopt OR check-in) — its row shows a
+  /// spinner chip and every other row ignores taps, so two quick taps can't
+  /// fire two writes.
   String? _submittingHabitId;
 
-  bool _isAdopted(HabitEntity habit) => context.read<HabitCubit>().state.userHabits.any((userHabit) => userHabit.habitId == habit.id);
+  UserHabitEntity? _adoptedRowFor(HabitEntity habit) {
+    for (final userHabit in context.read<HabitCubit>().state.userHabits) {
+      if (userHabit.habitId == habit.id) return userHabit;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -76,7 +82,7 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
   }
 
   Future<void> _adopt(HabitEntity habit) async {
-    if (_submittingHabitId != null || _isAdopted(habit)) return;
+    if (_submittingHabitId != null) return;
     AppHaptic.select();
     setState(() => _submittingHabitId = habit.id);
 
@@ -108,9 +114,26 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     }
   }
 
+  /// A habit adopted on an earlier visit is not a dead row: while today's
+  /// check-in is still open, the same tap files it right here — the reader
+  /// just finished a lesson that reinforces this habit, which IS the practice.
+  Future<void> _checkIn(UserHabitEntity userHabit) async {
+    if (_submittingHabitId != null) return;
+    AppHaptic.select();
+    setState(() => _submittingHabitId = userHabit.habitId);
+
+    final ok = await context.read<HabitCubit>().checkIn(userHabit.id, done: true);
+
+    if (!mounted) return;
+    setState(() => _submittingHabitId = null);
+    if (!ok) {
+      context.showDSnackBar(message: context.l10n.common.errorSomethingHappened, type: MessageType.error);
+    }
+  }
+
   void _continue() {
     AppHaptic.select();
-    final adoptedAny = widget.habits.any(_isAdopted);
+    final adoptedAny = widget.habits.any((habit) => _adoptedRowFor(habit) != null);
     if (!adoptedAny && widget.habits.isNotEmpty) {
       // Same telemetry meaning as the old prompt's skip: offered, left empty.
       HabitTracking.startSkip(
@@ -212,21 +235,29 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
   }
 
   /// One suggested habit (design row): white card, domain icon, title, and the
-  /// add-state chip. The whole row is the tap target — the chip alone is too
-  /// small a thumb target for the row's single action.
+  /// state chip. The whole row is the tap target — the chip alone is too small
+  /// a thumb target for the row's single action. The action ladders down:
+  /// not adopted → adopt; adopted with today's check-in open → check in;
+  /// adopted and checked in → nothing left to do here.
   Widget _habitRow(BuildContext context, HabitEntity habit) {
-    final isAdded = _isAdopted(habit);
+    final adopted = _adoptedRowFor(habit);
+    final canCheckIn = adopted != null && adopted.isActive && !adopted.todayDone;
+    final isDone = adopted != null && !canCheckIn;
     final isSubmitting = _submittingHabitId == habit.id;
 
     return Semantics(
-      button: !isAdded,
+      button: !isDone,
       label: habit.title.text,
       child: Material(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
-          onTap: isAdded ? null : () => _adopt(habit),
+          onTap: isDone
+              ? null
+              : canCheckIn
+              ? () => _checkIn(adopted)
+              : () => _adopt(habit),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             decoration: BoxDecoration(
@@ -245,7 +276,7 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
                   ),
                 ),
                 10.horizontalSpace,
-                _stateChip(context, isAdded: isAdded, isSubmitting: isSubmitting),
+                _stateChip(context, canCheckIn: canCheckIn, isDone: isDone, isSubmitting: isSubmitting),
               ],
             ),
           ),
@@ -254,26 +285,31 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     );
   }
 
-  Widget _stateChip(BuildContext context, {required bool isAdded, required bool isSubmitting}) {
+  Widget _stateChip(BuildContext context, {required bool canCheckIn, required bool isDone, required bool isSubmitting}) {
     if (isSubmitting) {
       return SizedBox(width: 16.w, height: 16.w, child: const CircularProgressIndicator(strokeWidth: 2, color: AppCustomColor.brandPrimary));
     }
+    final label = isDone
+        ? context.l10n.habit.habitSuggestCheckedIn
+        : canCheckIn
+        ? context.l10n.habit.habitSuggestCheckIn
+        : context.l10n.habit.habitSuggestAdd;
     return Container(
       height: 24.h,
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: isAdded ? AppCustomColor.kpResultCorrectSurface : AppCustomColor.brandPrimary50,
+        color: isDone ? AppCustomColor.kpResultCorrectSurface : AppCustomColor.brandPrimary50,
         borderRadius: BorderRadius.circular(99.r),
       ),
       child: AppText(
-        isAdded ? context.l10n.habit.habitSuggestAdded : context.l10n.habit.habitSuggestAdd,
+        label,
         // Design 11.5/700 — the app scale has no 11.5.
         style: TextStyle(
           fontFamily: AppFont.mulish,
           fontSize: 11.5.sp,
           fontWeight: FontWeight.w700,
-          color: isAdded ? AppCustomColor.successGreen : AppCustomColor.brandPrimary,
+          color: isDone ? AppCustomColor.successGreen : AppCustomColor.brandPrimary,
         ),
       ),
     );
