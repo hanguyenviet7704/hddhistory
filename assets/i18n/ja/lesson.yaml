@@ -49,7 +49,7 @@ liveActivityDoneNotifBody(param=course): 「${course}」を完了しました。
 practiceQuizDoneTitle: クイズ完了
 practiceQuizDoneSubtitle: 下にスワイプするとどの問題にも戻れます。
 practiceQuizScore: 正解 ${correct}/${total}
-practiceQuizDoneButton: 完了
+practiceQuizDoneButton: ロードマップに戻る
 # Lesson complete + practice hub (design "3 · Learning")
 peekRecapHint: タップして要約を見る
 lessonCompleteTitle: レッスン完了！

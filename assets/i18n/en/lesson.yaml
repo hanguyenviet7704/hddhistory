@@ -59,7 +59,7 @@ liveActivityDoneNotifBody(param=course): You finished ${course}. Come back tomor
 practiceQuizDoneTitle: Quiz complete
 practiceQuizDoneSubtitle: Swipe down to revisit any question.
 practiceQuizScore: ${correct}/${total} correct
-practiceQuizDoneButton: Done
+practiceQuizDoneButton: Back to roadmap
 # Lesson complete + practice hub (design "3 · Learning")
 peekRecapHint: Tap to see the recap
 lessonCompleteTitle: Lesson complete!

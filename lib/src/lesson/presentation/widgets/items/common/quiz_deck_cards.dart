@@ -32,6 +32,18 @@ class QuizQuestionCard extends StatelessWidget {
   /// Grade this card. The host decides what grading reveals.
   final VoidCallback onCheck;
 
+  /// [QuestionEntity.questionText] falls back to the literal string
+  /// 'No question text' when the document list is empty — which is a NORMAL
+  /// authoring shape for gap-filling questions (the sentence lives in
+  /// `targetArea`, there is no separate prompt). Rendering the fallback as a
+  /// title put "No question text" above real questions; the instruction line
+  /// alone is the design's header for those cards. (video_lesson and
+  /// daily_warm_up filter the same magic value.)
+  String get _displayQuestionText {
+    final text = answer.question.questionText;
+    return text == 'No question text' ? '' : text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -39,9 +51,9 @@ class QuizQuestionCard extends StatelessWidget {
       children: [
         // Question first, instruction under it — the design's order. Leading
         // with "Select the best answer" buried the actual question.
-        if (answer.question.questionText.isNotEmpty)
+        if (_displayQuestionText.isNotEmpty)
           AppText(
-            answer.question.questionText,
+            _displayQuestionText,
             maxLines: 8,
             style: AppStyle.text18.copyWith(
               fontWeight: FontWeight.w700,

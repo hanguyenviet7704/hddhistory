@@ -49,7 +49,7 @@ liveActivityDoneNotifBody(param=course): ${course}을(를) 완료했어요. 내�
 practiceQuizDoneTitle: 퀴즈 완료
 practiceQuizDoneSubtitle: 아래로 스와이프하면 어떤 문제든 다시 볼 수 있어요.
 practiceQuizScore: ${correct}/${total} 정답
-practiceQuizDoneButton: 완료
+practiceQuizDoneButton: 로드맵으로 돌아가기
 # Lesson complete + practice hub (design "3 · Learning")
 peekRecapHint: 탭해서 요약 보기
 lessonCompleteTitle: 레슨 완료!

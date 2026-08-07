@@ -49,7 +49,7 @@ liveActivityDoneNotifBody(param=course): 你已完成《${course}》。明天再
 practiceQuizDoneTitle: 测验完成
 practiceQuizDoneSubtitle: 下滑可回看任意一题。
 practiceQuizScore: 正确 ${correct}/${total}
-practiceQuizDoneButton: 完成
+practiceQuizDoneButton: 返回学习路线
 # Lesson complete + practice hub (design "3 · Learning")
 peekRecapHint: 点按查看摘要
 lessonCompleteTitle: 课程完成！

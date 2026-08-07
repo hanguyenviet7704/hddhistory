@@ -59,7 +59,7 @@ liveActivityDoneNotifBody(param=course): Bạn đã hoàn thành ${course}. Quay
 practiceQuizDoneTitle: Hoàn thành quiz
 practiceQuizDoneSubtitle: Vuốt xuống để xem lại câu bất kỳ.
 practiceQuizScore: Đúng ${correct}/${total}
-practiceQuizDoneButton: Xong
+practiceQuizDoneButton: Quay lại lộ trình
 # Lesson complete + practice hub (design "3 · Learning")
 peekRecapHint: Chạm để xem tóm tắt
 lessonCompleteTitle: Hoàn thành bài học!

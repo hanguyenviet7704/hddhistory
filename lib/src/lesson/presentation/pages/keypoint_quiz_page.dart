@@ -253,12 +253,23 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
               ),
             ),
             22.verticalSpace,
+            // Design ("3 · Learning" → Sau Check): the quiz's terminal card ends
+            // the whole lesson flow with "Back to roadmap" — not a pop back to
+            // the hub. The imperatively pushed routes (this quiz, the practice
+            // hub) must be popped BEFORE `.go`: they are not go_router pages, so
+            // a location change alone would leave them stacked on top of the
+            // roadmap it navigated to.
             QuizActionPill(
               label: context.l10n.lesson.practiceQuizDoneButton,
               isEnabled: true,
               onPressed: () {
                 AppHaptic.select();
-                Navigator.of(context).pop();
+                // `.go` FIRST: it only swaps the go_router pages underneath and
+                // leaves this imperative route mounted, so `context` is still
+                // live for it. Popping first would dispose this page and hand
+                // `.go` a defunct context.
+                CourseRoadmapRoute().go(context);
+                Navigator.of(context).popUntil((route) => route.settings is Page);
               },
             ),
           ],
