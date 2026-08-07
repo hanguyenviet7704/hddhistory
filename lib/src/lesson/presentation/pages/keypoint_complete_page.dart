@@ -80,28 +80,16 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 
   Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
-    // Tapping Continue here ends the keypoint session — whichever branch we
-    // route to next (Habit, badge, roadmap), the lesson is no longer open, so
-    // the Live Activity must end. Done first so it ends on every path.
+    // Leaving here ends the keypoint session — whichever branch we route to
+    // next (badge, roadmap), the lesson is no longer open, so the Live
+    // Activity must end. Done first so it ends on every path.
     unawaited(AppDI.injector.get<LiveActivityService>().end());
     unawaited(cancelLiveActivityReturnNudge());
 
-    // Resolve the per-keypoint habit suggestion up front (while this page's
-    // context/cubits are valid) but DON'T show it yet — see below.
-    // Behaviour: the add-habit sheet re-appears on EVERY completion of a
-    // keypoint (including every re-learn) as long as the user has NOT yet
-    // adopted a habit sourced from that keypoint; once they adopt one (it
-    // stamps sourceKeypointId == keypointId), it stops appearing for that
-    // keypoint. There is deliberately no "suggested once" flag — the adopted
-    // habit itself is the gate.
-    final habitCubit = AppDI.injector.get<HabitCubit>();
-    await habitCubit.ensureLoaded();
-    if (!mounted) return;
-    final keypointId = lessonState.currentKeypointId;
-    final canSuggest = keypointId.isEmpty || !habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId);
-    final suggestions = canSuggest ? await habitCubit.loadLibrary(keypointId: keypointId) : null;
-    if (!mounted) return;
-
+    // No habit prompt on this path any more: the habit step moved to WHERE THE
+    // DESIGN puts it — between the recap flip card and this screen
+    // ([HabitSuggestPage], pushed by [KeypointDoneCard]'s Continue). Prompting
+    // again here would ask twice in the same minute, on the reader's way OUT.
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final homeState = context.read<HomeCubit>().state;
     final courseId = resolveLessonFlowCourseId(
@@ -111,12 +99,8 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     );
     syncHomeSelectionForLessonFlowCourse(courseId);
 
-    // Leave this badge-progress completion page for its FINAL destination
-    // FIRST, then show the habit prompt on top of that destination. Skipping
-    // the prompt then reveals the roadmap/celebration underneath, instead of
-    // flashing this page back for a frame during the prompt's pop animation.
-    // (Only the moment the course badge finishes still routes through the
-    // badge celebration; every other completion lands on the roadmap.)
+    // Only the moment the course badge finishes still routes through the
+    // badge celebration; every other completion lands on the roadmap.
     _navigatedAway = true;
     final page = AppDI.injector.get<PageCubit>();
     final isBadgeComplete = _isCourseLevelBadgeComplete();
@@ -129,69 +113,9 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
 
     // Claim the destination's route name — which logs its screen_view (e.g.
-    // roadmap_scr_view) — only once it's the screen the user actually sees.
-    // With no habit prompt that's right after the branch switch. With a prompt
-    // it's deferred until the prompt is dismissed (below), so we never log a
-    // roadmap/badge view for a destination immediately covered by the prompt
-    // on the root navigator.
-    if (suggestions == null || suggestions.isEmpty) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        page.setCurrentRouteName(destinationRouteName);
-      });
-      return;
-    }
-
-    // Habit prompt on the ROOT navigator so it overlays the shell and, on
-    // "Skip, keep learning", pops straight back to the destination we just
-    // navigated to (never this completion page).
-    final ctx = AppConfig.instance.context;
-    if (ctx == null) return;
-    // ctx is the app-global root context (AppConfig), not this disposed page's
-    // — always valid here, so the async-gap lint is a false positive.
-    // ignore: use_build_context_synchronously
-    final added = await Navigator.of(ctx, rootNavigator: true).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: AppDI.injector.get<HabitCubit>(),
-          child: AdoptHabitPage(
-            habits: suggestions,
-            sourceKeypointId: keypointId,
-            sourceCourseId: courseId,
-          ),
-        ),
-      ),
-    );
-    if (added != true) {
-      // Skip → the destination beneath is now the visible screen; claim its
-      // route name now so its screen_view (e.g. roadmap_scr_view) logs here —
-      // when the roadmap is actually shown, not while the prompt covered it.
-      Future.delayed(const Duration(milliseconds: 100), () {
-        page.setCurrentRouteName(destinationRouteName);
-      });
-      return;
-    }
-
-    final popupCtx = AppConfig.instance.context;
-    if (popupCtx == null) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        page.setCurrentRouteName(destinationRouteName);
-      });
-      return;
-    }
-    // ignore: use_build_context_synchronously
-    final goToHabit = await HabitAddedPopup.show(popupCtx);
-    if (goToHabit != true) {
-      // Stayed on the destination → claim its route name (logs its view).
-      Future.delayed(const Duration(milliseconds: 100), () {
-        page.setCurrentRouteName(destinationRouteName);
-      });
-      return;
-    }
-    AppDI.injector.get<HabitCubit>().setPendingScrSource('habit_added_scr');
-    // ignore: use_build_context_synchronously
-    const HabitRoute(source: 'habit_added_scr').go(popupCtx);
+    // roadmap_scr_view) — once it's the screen the user actually sees.
     Future.delayed(const Duration(milliseconds: 100), () {
-      page.setCurrentRouteName(RouteNamed.habit);
+      page.setCurrentRouteName(destinationRouteName);
     });
   }
 

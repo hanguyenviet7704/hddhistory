@@ -134,3 +134,8 @@ practiceDoneTitle: 練習完了
 practiceDoneSubtitle: 今日はチェックイン済みです。続けましょう！
 practiceDoneScore: 正解 ${correct}/${total}
 practiceDoneButton: 習慣に戻る
+# Recap-flow habit step (design "3 · Learning" -> Recap)
+habitSuggestTitle: 1つ追加して毎日の練習リマインダーを受け取ろう
+habitSuggestSubtitle: このレッスンはこれらの習慣づくりに役立ちます
+habitSuggestAdd: 追加
+habitSuggestAdded: 追加済み

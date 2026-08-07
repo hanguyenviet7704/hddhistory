@@ -135,3 +135,8 @@ practiceDoneTitle: Hoàn thành luyện tập
 practiceDoneSubtitle: Hôm nay đã check-in. Giữ chuỗi nhé!
 practiceDoneScore: Đúng ${correct}/${total}
 practiceDoneButton: Về thói quen
+# Recap-flow habit step (design "3 · Learning" -> Recap)
+habitSuggestTitle: Thêm một thói quen để được nhắc luyện tập mỗi ngày
+habitSuggestSubtitle: Bài học này giúp bạn xây những thói quen sau
+habitSuggestAdd: Thêm
+habitSuggestAdded: Đã thêm

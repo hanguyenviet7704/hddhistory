@@ -31,6 +31,10 @@ class KeypointDoneCard extends StatefulWidget {
 }
 
 class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerProviderStateMixin {
+  /// Continue is resolving the habit step (network) — the button shows a
+  /// spinner and ignores taps for that beat.
+  bool _isContinuing = false;
+
   /// 0 → front (quote), 1 → back (recap text). The design's
   /// `transition: transform .6s cubic-bezier(.2,.7,.25,1)`.
   late final AnimationController _flip = AnimationController(
@@ -354,8 +358,54 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     );
   }
 
+  /// Continue = the design's `goStartHabit`: the recap hands over to the habit
+  /// step ([HabitSuggestPage] — "Add one to get daily practice reminders")
+  /// when this keypoint has suggestions the reader hasn't adopted, and to the
+  /// lesson-complete screen after it (or directly, when there's nothing to
+  /// suggest). The suggestion gate is the same one the old post-skip prompt
+  /// used: a habit adopted FROM this keypoint (`sourceKeypointId`) switches
+  /// the step off for it — the adopted habit itself is the flag.
+  Future<void> _continue() async {
+    if (_isContinuing) return;
+    AppHaptic.select();
+    setState(() => _isContinuing = true);
+    try {
+      final lessonCubit = context.read<LessonCubit>();
+      final keypointId = context.read<CourseLessonCubit>().state.currentKeypointId;
+
+      final habitCubit = AppDI.injector.get<HabitCubit>();
+      await habitCubit.ensureLoaded();
+      if (!mounted) return;
+      final canSuggest = keypointId.isEmpty || !habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId);
+      final suggestions = canSuggest ? await habitCubit.loadLibrary(keypointId: keypointId) : const <HabitEntity>[];
+      if (!mounted) return;
+
+      if (suggestions.isNotEmpty) {
+        final roadmapCourseId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.courseId;
+        final homeCourseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+        final courseId = resolveLessonFlowCourseId(
+          lessonCourseId: context.read<CourseLessonCubit>().state.selectedLesson.courseId,
+          roadmapCourseId: roadmapCourseId,
+          homeCourseId: homeCourseId,
+        );
+        await HabitSuggestPage.push(
+          context,
+          habits: suggestions,
+          sourceKeypointId: keypointId,
+          sourceCourseId: courseId,
+        );
+        if (!mounted) return;
+      }
+
+      lessonCubit.openKeypointComplete();
+    } finally {
+      if (mounted) setState(() => _isContinuing = false);
+    }
+  }
+
   /// Full-width Continue (design: 54 tall, pill radius) — hands the reader to
-  /// the lesson-complete screen the deck used to jump to on its own.
+  /// the habit step, then the lesson-complete screen the deck used to jump to
+  /// on its own.
   Widget _continueButton(BuildContext context) {
     return Semantics(
       button: true,
@@ -364,20 +414,23 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
         borderRadius: BorderRadius.circular(999.r),
         child: InkWell(
           borderRadius: BorderRadius.circular(999.r),
-          onTap: () {
-            AppHaptic.select();
-            context.read<LessonCubit>().openKeypointComplete();
-          },
+          onTap: _isContinuing ? null : _continue,
           child: Container(
             height: 54.h,
             alignment: Alignment.center,
-            child: AppText(
-              context.l10n.common.kContinue,
-              style: AppStyle.text16.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppCustomColor.textWhite,
-              ),
-            ),
+            child: _isContinuing
+                ? SizedBox(
+                    width: 20.w,
+                    height: 20.w,
+                    child: const CircularProgressIndicator(strokeWidth: 2, color: AppCustomColor.textWhite),
+                  )
+                : AppText(
+                    context.l10n.common.kContinue,
+                    style: AppStyle.text16.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppCustomColor.textWhite,
+                    ),
+                  ),
           ),
         ),
       ),

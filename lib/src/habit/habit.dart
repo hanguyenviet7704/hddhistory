@@ -56,6 +56,7 @@ part 'presentation/cubits/habit_reminder_scheduler.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/habit_page.dart';
 part 'presentation/pages/adopt_habit_page.dart';
+part 'presentation/pages/habit_suggest_page.dart';
 part 'presentation/pages/daily_check_in_page.dart';
 part 'presentation/pages/journal_check_in_page.dart';
 part 'presentation/pages/habit_quiz_page.dart';

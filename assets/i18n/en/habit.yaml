@@ -135,3 +135,8 @@ practiceDoneTitle: Practice complete
 practiceDoneSubtitle: Today is checked in. Keep the loop going!
 practiceDoneScore: ${correct}/${total} correct
 practiceDoneButton: Back to habit
+# Recap-flow habit step (design "3 · Learning" -> Recap)
+habitSuggestTitle: Add one to get daily practice reminders
+habitSuggestSubtitle: This lesson helps you build these habits
+habitSuggestAdd: Add
+habitSuggestAdded: Added
