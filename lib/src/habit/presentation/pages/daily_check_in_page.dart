@@ -95,7 +95,7 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', size: 56),
+                            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', imageUrl: userHabit.habit?.image ?? '', size: 56),
                             20.verticalSpace,
                             AppText(
                               userHabit.displayTitle,

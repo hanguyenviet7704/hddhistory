@@ -185,7 +185,7 @@ class _JournalCheckInPageState extends State<JournalCheckInPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        HabitDomainIcon(skillsetId: widget.userHabit.habit?.skillsetId ?? '', size: 38),
+        HabitDomainIcon(skillsetId: widget.userHabit.habit?.skillsetId ?? '', imageUrl: widget.userHabit.habit?.image ?? '', size: 38),
         12.horizontalSpace,
         Expanded(
           child: AppText(

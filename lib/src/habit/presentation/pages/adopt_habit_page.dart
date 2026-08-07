@@ -133,7 +133,7 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
           ),
           child: Row(
             children: [
-              HabitDomainIcon(skillsetId: habit.skillsetId, size: 32),
+              HabitDomainIcon(skillsetId: habit.skillsetId, imageUrl: habit.image, size: 32),
               12.horizontalSpace,
               Expanded(
                 child: AppText(

@@ -7,6 +7,9 @@ abstract class HabitModel with _$HabitModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default('') String skillsetId,
     @Default(HabitLibraryStatusEntity.unknown) HabitLibraryStatusEntity status,
+    // Null on the wire for a habit with no picture; the default keeps every
+    // consumer dealing in a plain empty string instead of a nullable.
+    @JsonKey(defaultValue: '') @Default('') String image,
     String? defaultReminderTime,
     @JsonKey(name: 'order') @Default(0) int sortOrder,
   }) = _HabitModel;
@@ -20,6 +23,7 @@ extension HabitModelX on HabitModel {
     title: title,
     skillsetId: skillsetId,
     status: status,
+    image: image,
     defaultReminderTime: defaultReminderTime,
     sortOrder: sortOrder,
   );

@@ -276,21 +276,17 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
             ),
             child: Row(
               children: [
-                // Design ("Add a habit"): every row carries the SAME green
-                // sprout tile — the habit-as-plant motif — not the skillset
-                // logo the Habit tab uses. Uniform on purpose: this list is
-                // "habits this lesson builds", and per-row domain logos read
-                // as three different apps.
-                Container(
-                  width: 34.w,
-                  height: 34.w,
-                  decoration: BoxDecoration(
-                    color: AppCustomColor.kpResultCorrectSurface,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(Icons.spa_rounded, size: 19.w, color: AppCustomColor.successGreen),
-                ),
+                // Each row now carries the habit's OWN picture, at the design's
+                // 34/r10 rather than the 8 the Habit tab uses.
+                //
+                // This list used to force one uniform green sprout on every
+                // row, because the alternative then was the SKILLSET logo and
+                // three domain logos in a row read as three different apps.
+                // A per-habit picture is not that: it identifies the habit
+                // itself, which is what the row is offering. A habit with no
+                // picture still lands on a sprout tile, so a half-filled
+                // catalog degrades to the old look rather than to a hole.
+                HabitDomainIcon(skillsetId: habit.skillsetId, imageUrl: habit.image, size: 34, radius: 10),
                 12.horizontalSpace,
                 Expanded(
                   child: AppText(

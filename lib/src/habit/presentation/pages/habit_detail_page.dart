@@ -161,7 +161,7 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
       ),
       child: Row(
         children: [
-          HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', size: 38),
+          HabitDomainIcon(skillsetId: habit.habit?.skillsetId ?? '', imageUrl: habit.habit?.image ?? '', size: 38),
           12.horizontalSpace,
           Expanded(
             child: AppText(

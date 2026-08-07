@@ -103,7 +103,7 @@ class _EditHabitSheetState extends State<EditHabitSheet> {
       ),
       child: Row(
         children: [
-          HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', size: 48),
+          HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', imageUrl: userHabit.habit?.image ?? '', size: 48),
           12.horizontalSpace,
           Expanded(
             child: AppText(

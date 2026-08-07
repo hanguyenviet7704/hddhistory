@@ -312,7 +312,7 @@ class _SummaryCategoryCard extends StatelessWidget {
                   children: [
                     // Figma item icon is the same 48px domain badge as the
                     // Today's-task rows, not a smaller 32 variant.
-                    HabitDomainIcon(skillsetId: userHabits[i].habit?.skillsetId ?? '', size: 48),
+                    HabitDomainIcon(skillsetId: userHabits[i].habit?.skillsetId ?? '', imageUrl: userHabits[i].habit?.image ?? '', size: 48),
                     12.horizontalSpace,
                     Expanded(
                       child: Column(

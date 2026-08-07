@@ -72,6 +72,7 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
                   label: context.l10n.habit.upgradeCurrentLabel,
                   title: widget.currentHabit.displayTitle,
                   skillsetId: widget.currentHabit.habit?.skillsetId ?? '',
+                  imageUrl: widget.currentHabit.habit?.image ?? '',
                   highlighted: false,
                 ),
                 16.verticalSpace,
@@ -80,6 +81,7 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
                   label: context.l10n.habit.upgradeNewLabel,
                   title: widget.newHabit.title.text,
                   skillsetId: widget.newHabit.skillsetId,
+                  imageUrl: widget.newHabit.image,
                   highlighted: true,
                 ),
                 const Spacer(),
@@ -110,12 +112,14 @@ class _UpgradeCard extends StatelessWidget {
   final String label;
   final String title;
   final String skillsetId;
+  final String imageUrl;
   final bool highlighted;
 
   const _UpgradeCard({
     required this.label,
     required this.title,
     required this.skillsetId,
+    required this.imageUrl,
     required this.highlighted,
   });
 
@@ -130,7 +134,7 @@ class _UpgradeCard extends StatelessWidget {
         ),
         if (highlighted) ...[
           16.verticalSpace,
-          HabitDomainIcon(skillsetId: skillsetId, size: 48),
+          HabitDomainIcon(skillsetId: skillsetId, imageUrl: imageUrl, size: 48),
         ],
         highlighted ? 16.verticalSpace : 8.verticalSpace,
         AppText(

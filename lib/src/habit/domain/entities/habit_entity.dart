@@ -16,6 +16,9 @@ abstract class HabitEntity with _$HabitEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default('') String skillsetId,
     @Default(HabitLibraryStatusEntity.unknown) HabitLibraryStatusEntity status,
+    /// The habit's own picture. Empty for a habit no editor has given one, and
+    /// the icon falls back to the skillset logo then — see [HabitDomainIcon].
+    @Default('') String image,
     String? defaultReminderTime,
     @Default(0) int sortOrder,
   }) = _HabitEntity;

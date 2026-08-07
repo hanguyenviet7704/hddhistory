@@ -119,6 +119,7 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
   Widget _habitRow({
     required String title,
     required String skillsetId,
+    required String imageUrl,
     required bool active,
     ValueChanged<bool>? onChanged,
     bool isNew = false,
@@ -137,7 +138,7 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
       ),
       child: Row(
         children: [
-          HabitDomainIcon(skillsetId: skillsetId, size: 48),
+          HabitDomainIcon(skillsetId: skillsetId, imageUrl: imageUrl, size: 48),
           12.horizontalSpace,
           Expanded(
             child: AppText(
@@ -271,6 +272,7 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
                         (h) => _habitRow(
                           title: h.displayTitle,
                           skillsetId: h.habit?.skillsetId ?? '',
+                          imageUrl: h.habit?.image ?? '',
                           active: h.isActive,
                           onChanged: (v) => _togglePause(h, v),
                           isLoading: _togglingIds.contains(h.id),
@@ -287,6 +289,7 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
                       _habitRow(
                         title: widget.newHabit.title.text,
                         skillsetId: widget.newHabit.skillsetId,
+                        imageUrl: widget.newHabit.image,
                         active: true,
                         onChanged: null,
                         isNew: true,

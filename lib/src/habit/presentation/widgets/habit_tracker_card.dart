@@ -66,7 +66,7 @@ class HabitTrackerCard extends StatelessWidget {
         },
         child: Row(
           children: [
-            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', size: 44),
+            HabitDomainIcon(skillsetId: userHabit.habit?.skillsetId ?? '', imageUrl: userHabit.habit?.image ?? '', size: 44),
             12.horizontalSpace,
             Expanded(
               child: AppText(
