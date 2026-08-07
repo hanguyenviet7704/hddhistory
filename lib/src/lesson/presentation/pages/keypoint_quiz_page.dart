@@ -138,34 +138,62 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
     );
   }
 
+  /// Design quiz header ("3 · Learning" → Quiz — question deck): close pinned
+  /// LEFT, the settings grid pinned RIGHT — the same two controls, same chrome,
+  /// as the reading deck's shell header — and no title text between them (the
+  /// pips row underneath is the header's whole middle). It shipped as
+  /// title + right-side X first, which is the HABIT quiz's header, not this
+  /// screen's.
   Widget _header(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: AppText(
-            widget.title,
-            maxLines: 2,
-            style: AppStyle.text16.copyWith(
-              fontWeight: FontWeight.w700,
-              height: 1.3,
-              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+        Semantics(
+          button: true,
+          label: context.l10n.common.close,
+          child: GestureDetector(
+            onTap: () {
+              AppHaptic.select();
+              Navigator.of(context).pop();
+            },
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: 36.w,
+              height: 36.w,
+              child: Center(
+                child: KeypointHeaderButtonChrome(
+                  child: SvgPicture.asset(
+                    AppAsset.svg.app.icKpClose,
+                    width: 18.w,
+                    height: 18.w,
+                    colorFilter: const ColorFilter.mode(KeypointHeaderChrome.icon, BlendMode.srcIn),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
-        8.horizontalSpace,
-        GestureDetector(
-          onTap: () {
-            AppHaptic.select();
-            Navigator.of(context).pop();
-          },
-          behavior: HitTestBehavior.opaque,
-          child: SizedBox(
-            width: 34.w,
-            height: 34.w,
-            child: Icon(Icons.close, size: 22.w, color: studyThemeOnBg(context, AppCustomColor.textTertiary)),
-          ),
-        ),
+        const Spacer(),
+        // Same sheet as the reading deck: Change theme, Text display, Speed,
+        // Background music, Report a problem.
+        LessonHeaderMenu(onReportProblem: () => _openReportIssueSheet(context)),
       ],
+    );
+  }
+
+  /// Mirror of [LessonPage._openReportIssueSheet] — the quiz reports against
+  /// the same keypoint the deck was reading. The cubit comes from DI, not
+  /// `context.read`: this page sits on an imperative [MaterialPageRoute], and
+  /// the lesson routes' `BlocProvider.value`s don't reach across routes — the
+  /// DI instance IS the one those routes provide (`@lazySingleton`).
+  void _openReportIssueSheet(BuildContext context) {
+    final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
+    final keypoint = courseLessonState.resolvedCurrentKeypoint;
+    ReportIssueSheet.show(
+      context,
+      lessonId: courseLessonState.selectedLesson.id,
+      keypointId: keypoint.id,
+      keypointTitle: keypoint.title.text,
+      keypointImage: keypoint.image,
     );
   }
 
