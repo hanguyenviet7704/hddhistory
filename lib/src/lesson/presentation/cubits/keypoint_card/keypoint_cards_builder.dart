@@ -88,6 +88,11 @@ class KeypointCardsBuilder {
     // order the backend dubbed them — so it keeps advancing past the revealed
     // edge and must not be derived from the (growing) card list.
     var clipPosition = 0;
+    // The takeaway's dubbed clips belong to the DONE card (its back face is
+    // the takeaway text), so remember where they live in the numbering.
+    String? takeawayItemId;
+    var takeawayClipStart = -1;
+    var takeawayClipCount = 0;
     for (var itemIndex = 0; itemIndex < items.length; itemIndex++) {
       final item = items[itemIndex];
       final isCurrentItem = itemIndex == currentLearningItemIndex;
@@ -114,12 +119,15 @@ class KeypointCardsBuilder {
         continue;
       }
 
-      // The takeaway summary is content, but not a card — it IS the recap flip
-      // card's back face. Its clip slots must still be skipped over exactly
-      // like the exercise clips above: the backend dubs every theory item, so
-      // the takeaway's documents occupy positions in the clip numbering whether
-      // or not anything on screen renders them.
+      // The takeaway summary is content, but not a card of its own — it IS the
+      // recap flip card's back face, and its dubbed clips are re-pointed at
+      // the done card after the walk (so narration reads it and the deck
+      // follows onto the recap, exactly like every other card). Here it only
+      // has to keep its slots in the clip numbering.
       if (item.isTakeawaySummary) {
+        takeawayItemId = item.id;
+        takeawayClipStart = clipPosition;
+        takeawayClipCount = item.documents.length;
         clipPosition += item.documents.length;
         continue;
       }
@@ -156,13 +164,10 @@ class KeypointCardsBuilder {
     var narratablePosition = 0;
     for (final item in items) {
       if (item.type == LearningItemType.theory) {
-        // The takeaway's clips advance the position but are NOT narratable:
-        // there is no card on screen for them, so the background queue reading
-        // one aloud would narrate a card the deck no longer has.
-        if (!item.isTakeawaySummary) {
-          for (var i = 0; i < item.documents.length; i++) {
-            narratableClips.add(narratablePosition + i);
-          }
+        // The takeaway's clips are narratable too — their on-screen card is
+        // the terminal recap card, wired up right below.
+        for (var i = 0; i < item.documents.length; i++) {
+          narratableClips.add(narratablePosition + i);
         }
         narratablePosition += item.documents.length;
       } else if (item.type == LearningItemType.exercise && !item.isPlayingSubQuestions) {
@@ -175,12 +180,25 @@ class KeypointCardsBuilder {
     if (revealCardIndex < liveCardIndex) revealCardIndex = liveCardIndex;
     cards.add(const KeypointCardDescriptor.done());
 
+    // The done card carries the takeaway's clips: narration pointing works
+    // when the reader lands on it, and a reveal aimed at the takeaway (by clip
+    // index or by cue identity) resolves to it — so listening scrolls the deck
+    // onto the recap card exactly like any other card.
+    final doneCardIndex = cards.length - 1;
+    if (takeawayItemId != null && takeawayClipStart >= 0 && takeawayClipCount > 0) {
+      cardToClip[doneCardIndex] = takeawayClipStart;
+      final clipHit = revealToClipIndex >= takeawayClipStart && revealToClipIndex < takeawayClipStart + takeawayClipCount;
+      final cueHit = revealToCard != null && revealToCard.learningItemId == takeawayItemId;
+      if (clipHit || cueHit) revealCardIndex = doneCardIndex;
+    }
+
     return BuiltKeypointCards(
       cards: cards,
       liveCardIndex: liveCardIndex,
       cardToClip: cardToClip,
       revealCardIndex: revealCardIndex,
       narratableClips: narratableClips,
+      takeawayLearningItemId: takeawayItemId,
     );
   }
 }
@@ -192,6 +210,7 @@ class BuiltKeypointCards {
     required this.cardToClip,
     required this.revealCardIndex,
     required this.narratableClips,
+    this.takeawayLearningItemId,
   });
 
   /// Includes the trailing synthetic done card.
@@ -214,6 +233,12 @@ class BuiltKeypointCards {
   /// narrated nowhere since the exercise flow left this screen; the background
   /// queue filters on this.
   final Set<int> narratableClips;
+
+  /// Learning-item id of the takeaway summary, when the keypoint has one. Cues
+  /// carry (learningItemId, documentIndex) and the takeaway has no theory card
+  /// to match — its card is the terminal done card, and the cubit needs this id
+  /// to make that resolution.
+  final String? takeawayLearningItemId;
 
   int get doneCardIndex => cards.length - 1;
 }

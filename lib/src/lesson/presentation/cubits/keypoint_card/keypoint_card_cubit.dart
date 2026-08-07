@@ -87,6 +87,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// survives and is fed back into every rebuild.
   int _revealToClipIndex = -1;
 
+  /// Id of the keypoint's takeaway summary item, from the last build. Its
+  /// cues/clips resolve to the terminal done card (the recap flip card IS its
+  /// card), which no descriptor-identity lookup can discover on its own.
+  String? _takeawayLearningItemId;
+
   LessonCompletionOrigin _previousCompletionOrigin = LessonCompletionOrigin.none;
 
   /// Holds the view on the FIRST card for as long as the reader has not moved
@@ -558,6 +563,14 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (cue == null) return;
 
     int cardIndexForCue() {
+      // The takeaway's cue belongs to the terminal done card — but only once
+      // the deck can actually SHOW it. Reporting it missing before then lets
+      // the advance loop below drive the last real cards to completion first,
+      // exactly like a normal final card, which is what reveals it.
+      if (_takeawayLearningItemId != null && cue.learningItemId == _takeawayLearningItemId) {
+        final doneIndex = state.cards.length - 1;
+        return state.cards.isNotEmpty && state.revealBound >= doneIndex ? doneIndex : -1;
+      }
       for (var i = 0; i < state.cards.length; i++) {
         final descriptor = state.cards[i];
         if (descriptor.isTheory && descriptor.learningItemId == cue.learningItemId && descriptor.documentIndex == cue.documentIndex) {
@@ -613,6 +626,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   void jumpToCard({required String learningItemId, required int documentIndex, Duration? startAt}) {
     _revealToCardTarget = (learningItemId: learningItemId, documentIndex: documentIndex);
     _rebuildCards(_lessonCubit.state);
+
+    // The takeaway's card is the terminal done card (the rebuild above raised
+    // the reveal bound to it via the builder's cue match).
+    if (_takeawayLearningItemId != null && learningItemId == _takeawayLearningItemId && state.cards.isNotEmpty) {
+      viewCard(state.cards.length - 1, startAt: startAt);
+      return;
+    }
 
     for (var i = 0; i < state.cards.length; i++) {
       final descriptor = state.cards[i];
@@ -693,7 +713,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         // Forward only — never drag the live edge BACK when the reader was
         // re-listening an earlier card.
         final voiceIsAhead = itemIndex > liveItemIndex || (itemIndex == liveItemIndex && cue.documentIndex > liveDocIndex);
-        if (itemIndex >= 0 && voiceIsAhead) {
+        // The takeaway is not a stop in the reading flow (_nextReadableIndex
+        // skips it), so the live edge is never parked ON it — jumpToCard below
+        // still lands the view on the recap card, and the done card's own
+        // completion fallback files the keypoint.
+        if (itemIndex >= 0 && voiceIsAhead && !items[itemIndex].isTakeawaySummary) {
           _lessonCubit.jumpToItem(itemIndex);
           _lessonCubit.setCurrentLearningItem(items[itemIndex]);
           _theoryCubit.jumpToDocument(cue.documentIndex);
@@ -756,6 +780,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       revealToCard: _revealToCardTarget,
     );
     _cardToClip = built.cardToClip;
+    _takeawayLearningItemId = built.takeawayLearningItemId;
     // Tell the player which clips belong to the reading flow at all, so the
     // background queue never reads an exercise question's clip aloud.
     _audioCubit.setNarratableClips(built.narratableClips);

@@ -71,6 +71,20 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     _flip.isCompleted || _flip.value > 0.5 ? _flip.reverse() : _flip.forward();
   }
 
+  /// Narration is reading THIS card's text (the takeaway clip) once, so show
+  /// the face that carries it. Only ever fires forward, and only once — a
+  /// reader who flips back to the quote mid-listen is not fought over it.
+  bool _autoFlipped = false;
+
+  void _maybeAutoFlip({required bool hasRecap, required bool isViewed, required bool isNarrating}) {
+    if (_autoFlipped || !hasRecap || !isViewed || !isNarrating) return;
+    _autoFlipped = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _flip.isAnimating || _flip.value > 0) return;
+      _flip.forward();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final courseLessonState = context.watch<CourseLessonCubit>().state;
@@ -87,6 +101,13 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
         .firstWhere((text) => text.isNotEmpty, orElse: () => '');
     final recapText = takeawayText.isNotEmpty ? takeawayText : keypoint.description.text.trim();
     final hasRecap = recapText.isNotEmpty;
+
+    // Narration reads the takeaway clip while this card is the viewed one →
+    // flip to the face being read.
+    final deckState = context.watch<KeypointCardCubit>().state;
+    final isViewedCard = deckState.cards.isNotEmpty && deckState.viewedCardIndex == deckState.cards.length - 1;
+    final isNarrating = context.watch<LessonAudioCubit>().state.isPlaying;
+    _maybeAutoFlip(hasRecap: hasRecap, isViewed: isViewedCard, isNarrating: isNarrating);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
