@@ -28,6 +28,15 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     /// [PaywallConfigEntityX.variantForEntryPoint].
     @Default({}) Map<String, PaywallProductVariant> entryPointVariants,
     PaywallSaleStrategyEntity? saleStrategy,
+
+    /// The two-step gift offer (popup → discount sheet). Null when no campaign
+    /// is configured, which is every config published before it existed.
+    PaywallGiftCampaignEntity? giftCampaign,
+
+    /// The laurel + store-rating strip under the plans. Defaults to SHOWN so
+    /// configs published before the switch existed keep the build's behaviour;
+    /// hiding a marketing claim is the change that has to be asked for.
+    @Default(true) bool showCredibilityBlock,
   }) = _PaywallConfigEntity;
 
   factory PaywallConfigEntity.fromRawConfig(String rawConfig) => _PaywallConfigParser.parse(rawConfig);
@@ -188,8 +197,56 @@ enum PaywallAudienceSegment {
   newUser,
 }
 
+/// The two-step gift offer: a popup, then a bottom sheet headlined with
+/// [discountPercent] and counting down to [endAtUtc].
+///
+/// [discountPercent] is the headline number ONLY. What the reader is charged
+/// comes from the store product in [products], so the two disagreeing is a copy
+/// bug, never an overcharge.
+@freezed
+abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
+  const factory PaywallGiftCampaignEntity({
+    @Default(false) bool enabled,
+    String? campaignId,
+    String? startAtUtc,
+
+    /// Campaign deadline AND the sheet's countdown source — one field, so the
+    /// timer can never outlive the offer it is counting down to.
+    String? endAtUtc,
+    @Default(0) int discountPercent,
+    @Default(PaywallContentEntity()) PaywallContentEntity popupContent,
+    @Default(PaywallContentEntity()) PaywallContentEntity sheetContent,
+    @Default(<PaywallProductReferenceEntity>[]) List<PaywallProductReferenceEntity> products,
+  }) = _PaywallGiftCampaignEntity;
+
+  factory PaywallGiftCampaignEntity.fromJson(Map<String, dynamic> json) => _$PaywallGiftCampaignEntityFromJson(json);
+}
+
 class _PaywallConfigParser {
   static const _locales = ['en', 'vi', 'zh', 'ja', 'ko'];
+
+  /// Absent, malformed, or switched off all parse to null so the caller has one
+  /// thing to check. An enabled campaign with no product would render a Claim
+  /// Offer button that cannot charge anything, so that also reads as no
+  /// campaign rather than a dead-end sheet.
+  static PaywallGiftCampaignEntity? _giftCampaign(Object? value) {
+    if (value is! Map<String, dynamic>) return null;
+    if (!_boolValue(value['enabled'])) return null;
+
+    final products = _products(value['products']);
+    if (products.isEmpty) return null;
+
+    return PaywallGiftCampaignEntity(
+      enabled: true,
+      campaignId: value['campaignId'] is String ? value['campaignId'] as String : null,
+      startAtUtc: value['startAtUtc'] is String ? value['startAtUtc'] as String : null,
+      endAtUtc: value['endAtUtc'] is String ? value['endAtUtc'] as String : null,
+      discountPercent: _intValue(value['discountPercent']),
+      popupContent: _content(value['popupContent']),
+      sheetContent: _content(value['sheetContent']),
+      products: products,
+    );
+  }
 
   static PaywallConfigEntity parse(String rawConfig) {
     try {
@@ -203,6 +260,9 @@ class _PaywallConfigParser {
         inLessonPaywall: _inLessonPaywall(decoded['inLessonPaywall']),
         entryPointVariants: _entryPointVariants(decoded['entryPointVariants']),
         saleStrategy: _saleStrategy(decoded['saleStrategy']),
+        giftCampaign: _giftCampaign(decoded['giftCampaign']),
+        // Absent reads as SHOWN, matching the build that introduced the strip.
+        showCredibilityBlock: decoded['showCredibilityBlock'] is bool ? decoded['showCredibilityBlock'] as bool : true,
       );
     } catch (_) {
       return const PaywallConfigEntity();
