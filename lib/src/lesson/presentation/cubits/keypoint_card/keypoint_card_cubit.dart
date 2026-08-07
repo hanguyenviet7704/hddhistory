@@ -650,15 +650,23 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// position, and a playing player would read the takeaway straight through
   /// the gate from its new position.
   void _parkNarrationAtRecap(int index) {
-    if (_takeawayLearningItemId == null) return;
     if (!_audioCubit.state.hasStartedSession) return;
-    final cueIndex = _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
-    if (cueIndex == null) return;
-    _loadedClipCardIndex = index;
-    _recapGateCueIndex = cueIndex;
+
+    // Arriving on the terminal card ALWAYS silences the voice, even when the
+    // takeaway has no cue to park on (a keypoint dubbed before its takeaway
+    // existed): whatever it was reading no longer matches the screen. The
+    // condition is deliberately not folded into the seek below — an early
+    // return there must never skip the mute.
+    final cueIndex = _takeawayLearningItemId == null
+        ? null
+        : _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
+    if (cueIndex != null) {
+      _loadedClipCardIndex = index;
+      _recapGateCueIndex = cueIndex;
+    }
     unawaited(() async {
       if (_audioCubit.state.isPlaying) await _audioCubit.pause();
-      if (_audioCubit.state.activeCueIndex != cueIndex) {
+      if (cueIndex != null && _audioCubit.state.activeCueIndex != cueIndex) {
         await _audioCubit.playCue(cueIndex, autoplay: false);
       }
     }());
