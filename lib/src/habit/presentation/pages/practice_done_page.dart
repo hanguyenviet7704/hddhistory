@@ -11,20 +11,73 @@ part of '../../habit.dart';
 /// check-in. The streak is read from [HabitCubit]'s CURRENT state rather than
 /// the passed-in row: the check-in that just happened bumped it, and the
 /// caller's copy may predate that write.
-class PracticeDonePage extends StatelessWidget {
+class PracticeDonePage extends StatefulWidget {
   final UserHabitEntity userHabit;
 
   const PracticeDonePage({super.key, required this.userHabit});
 
+  /// A payoff screen fades IN over where the reader already is — the default
+  /// right-to-left push read as navigating somewhere else, not as a reward
+  /// appearing.
   static Future<void> push(BuildContext context, {required UserHabitEntity userHabit}) {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => PracticeDonePage(userHabit: userHabit)),
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 380),
+        reverseTransitionDuration: const Duration(milliseconds: 240),
+        pageBuilder: (_, __, ___) => PracticeDonePage(userHabit: userHabit),
+        transitionsBuilder: (_, animation, __, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  @override
+  State<PracticeDonePage> createState() => _PracticeDonePageState();
+}
+
+class _PracticeDonePageState extends State<PracticeDonePage> with TickerProviderStateMixin {
+  /// One clock for the staged entrance; element delays are [Interval]s on it —
+  /// same pattern as the lesson-complete illustration.
+  static const _introMs = 900;
+  late final AnimationController _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: _introMs))..forward();
+
+  /// Gentle ±3px bob of the plant group, forever.
+  late final AnimationController _float = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat(reverse: true);
+
+  Animation<double> _stage(int delayMs, int durationMs, [Curve curve = Curves.easeOut]) {
+    return CurvedAnimation(parent: _intro, curve: Interval(delayMs / _introMs, (delayMs + durationMs) / _introMs, curve: curve));
+  }
+
+  @override
+  void dispose() {
+    _intro.dispose();
+    _float.dispose();
+    super.dispose();
+  }
+
+  /// Fade in while drifting up into place.
+  Widget _rise(Animation<double> t, Widget child) {
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(opacity: t.value.clamp(0, 1), child: Transform.translate(offset: Offset(0, 14 * (1 - t.value)), child: child)),
+      child: child,
+    );
+  }
+
+  /// Scale in with an overshoot — the plant "grows" into place.
+  Widget _pop(Animation<double> t, Widget child) {
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(opacity: t.value.clamp(0, 1), child: Transform.scale(scale: 0.6 + 0.4 * t.value, child: child)),
+      child: child,
     );
   }
 
   int _currentStreak() {
-    final fresh = AppDI.injector.get<HabitCubit>().state.userHabits.where((row) => row.id == userHabit.id).firstOrNull;
-    return (fresh ?? userHabit).currentStreak;
+    final fresh = AppDI.injector.get<HabitCubit>().state.userHabits.where((row) => row.id == widget.userHabit.id).firstOrNull;
+    return (fresh ?? widget.userHabit).currentStreak;
   }
 
   @override
@@ -45,47 +98,65 @@ class PracticeDonePage extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _speechBubble(context),
-                        14.verticalSpace,
-                        _plant(),
+                        // The plant grows in first, the bubble comments on it,
+                        // then the words land — with the whole plant group
+                        // bobbing gently once it is up.
+                        AnimatedBuilder(
+                          animation: _float,
+                          builder: (context, child) => Transform.translate(offset: Offset(0, -3.h * _float.value), child: child),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _rise(_stage(250, 400), _speechBubble(context)),
+                              14.verticalSpace,
+                              _pop(_stage(0, 500, Curves.easeOutBack), _plant()),
+                            ],
+                          ),
+                        ),
                         26.verticalSpace,
-                        AppText(
-                          context.l10n.habit.practiceGrowTitle,
-                          textAlign: TextAlign.center,
-                          // Design 26/800.
-                          style: TextStyle(
-                            fontFamily: AppFont.mulish,
-                            fontSize: 26.sp,
-                            fontWeight: FontWeight.w800,
-                            height: 1.25,
-                            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                        _rise(
+                          _stage(380, 400),
+                          AppText(
+                            context.l10n.habit.practiceGrowTitle,
+                            textAlign: TextAlign.center,
+                            // Design 26/800.
+                            style: TextStyle(
+                              fontFamily: AppFont.mulish,
+                              fontSize: 26.sp,
+                              fontWeight: FontWeight.w800,
+                              height: 1.25,
+                              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                            ),
                           ),
                         ),
                         if (streak > 0) ...[
                           12.verticalSpace,
-                          Container(
-                            height: 28.h,
-                            padding: EdgeInsets.symmetric(horizontal: 12.w),
-                            // Design: a WHITE pill, the green lives in the glyph
-                            // and text.
-                            decoration: BoxDecoration(
-                              color: AppCustomColor.backgroundWhite,
-                              borderRadius: BorderRadius.circular(99.r),
-                              boxShadow: [BoxShadow(color: const Color(0x0F141828), blurRadius: 10, offset: const Offset(0, 3))],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.all_inclusive_rounded, size: 14.w, color: AppCustomColor.successGreen),
-                                6.horizontalSpace,
-                                AppText(
-                                  context.l10n.habit.practiceGrowLoop(days: '$streak'),
-                                  style: AppStyle.text12.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppCustomColor.successGreen,
+                          _rise(
+                            _stage(520, 380),
+                            Container(
+                              height: 28.h,
+                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                              // Design: a WHITE pill, the green lives in the glyph
+                              // and text.
+                              decoration: BoxDecoration(
+                                color: AppCustomColor.backgroundWhite,
+                                borderRadius: BorderRadius.circular(99.r),
+                                boxShadow: [BoxShadow(color: const Color(0x0F141828), blurRadius: 10, offset: const Offset(0, 3))],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.all_inclusive_rounded, size: 14.w, color: AppCustomColor.successGreen),
+                                  6.horizontalSpace,
+                                  AppText(
+                                    context.l10n.habit.practiceGrowLoop(days: '$streak'),
+                                    style: AppStyle.text12.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppCustomColor.successGreen,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
