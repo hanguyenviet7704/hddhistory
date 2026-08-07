@@ -15,6 +15,7 @@ typedef FirebasePushTransportForegroundPresentationSetter =
 typedef FirebasePushTransportBackgroundRegistrar = void Function(BackgroundMessageHandler handler);
 typedef FirebasePushTransportInitialMessageGetter = Future<RemoteMessage?> Function();
 typedef FirebasePushTransportTokenGetter = Future<String?> Function();
+typedef FirebasePushTransportApnsTokenGetter = Future<String?> Function();
 typedef FirebasePushTransportNotificationSettingsGetter = Future<NotificationSettings> Function();
 typedef FirebasePushTransportPermissionRequester =
     Future<NotificationSettings> Function(
@@ -52,6 +53,10 @@ Future<RemoteMessage?> _defaultFirebasePushTransportGetInitialMessage() {
 
 Future<String?> _defaultFirebasePushTransportGetToken() {
   return FirebaseMessaging.instance.getToken();
+}
+
+Future<String?> _defaultFirebasePushTransportGetApnsToken() {
+  return FirebaseMessaging.instance.getAPNSToken();
 }
 
 Stream<String> _defaultFirebasePushTransportTokenRefreshStream() {

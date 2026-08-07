@@ -66,9 +66,12 @@ class PracticeDonePage extends StatelessWidget {
                           Container(
                             height: 28.h,
                             padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            // Design: a WHITE pill, the green lives in the glyph
+                            // and text.
                             decoration: BoxDecoration(
-                              color: AppCustomColor.kpResultCorrectSurface,
+                              color: AppCustomColor.backgroundWhite,
                               borderRadius: BorderRadius.circular(99.r),
+                              boxShadow: [BoxShadow(color: const Color(0x0F141828), blurRadius: 10, offset: const Offset(0, 3))],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -90,25 +93,30 @@ class PracticeDonePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                Semantics(
-                  button: true,
-                  child: Material(
-                    color: AppCustomColor.brandPrimary,
-                    borderRadius: BorderRadius.circular(999.r),
-                    child: InkWell(
+                // Design: the pill is content-width centred (~254/390), not a
+                // screen-wide bar.
+                Center(
+                  child: Semantics(
+                    button: true,
+                    child: Material(
+                      color: AppCustomColor.brandPrimary,
                       borderRadius: BorderRadius.circular(999.r),
-                      onTap: () {
-                        AppHaptic.select();
-                        Navigator.of(context).pop();
-                      },
-                      child: Container(
-                        height: 54.h,
-                        alignment: Alignment.center,
-                        child: AppText(
-                          context.l10n.habit.practiceDoneButton,
-                          style: AppStyle.text16.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppCustomColor.textWhite,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(999.r),
+                        onTap: () {
+                          AppHaptic.select();
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          width: 254.w,
+                          height: 52.h,
+                          alignment: Alignment.center,
+                          child: AppText(
+                            context.l10n.habit.practiceDoneButton,
+                            style: AppStyle.text16.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppCustomColor.textWhite,
+                            ),
                           ),
                         ),
                       ),
@@ -163,29 +171,10 @@ class PracticeDonePage extends StatelessWidget {
     );
   }
 
-  /// The potted plant with the design's little sparkles. The pot art is the
-  /// existing habit motif asset, so this screen and the reminders share one
-  /// plant.
+  /// The design's own plant-pot illustration (`assets/illus-plant-pot.svg` in
+  /// the MeUp design project, copied verbatim) — sprout, purple pot, and the
+  /// green/white sparkles are all IN the art, so nothing is overlaid here.
   Widget _plant() {
-    return SizedBox(
-      width: 170.w,
-      height: 150.h,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SvgPicture.asset(AppAsset.svg.common.habitReminderPlant, width: 112.w),
-          Positioned(
-            left: 18.w,
-            top: 26.h,
-            child: Icon(Icons.auto_awesome, size: 16.w, color: AppCustomColor.successGreen.withValues(alpha: 0.75)),
-          ),
-          Positioned(
-            right: 22.w,
-            bottom: 34.h,
-            child: Icon(Icons.auto_awesome, size: 11.w, color: AppCustomColor.successGreen.withValues(alpha: 0.55)),
-          ),
-        ],
-      ),
-    );
+    return SvgPicture.asset('assets/svg/common/habit_practice_plant.svg', width: 150.w);
   }
 }
