@@ -25,6 +25,7 @@ import {
   PaywallNewUser,
   PaywallProductRef,
   PaywallProductVariant,
+  PaywallGiftCampaign,
   PaywallSaleEvent,
   PaywallSaleStrategy,
 } from "../../types/interface/paywall-config.interface";
@@ -93,6 +94,20 @@ export interface SaleEventDraft {
   compactProducts: ProductRefDraft[];
 }
 
+export interface GiftCampaignDraft {
+  enabled: boolean;
+  campaignId: string;
+  startAtUtc: string;
+  endAtUtc: string;
+  /** Kept as text like every numeric draft field; validated on publish. */
+  discountPercent: string;
+  appliesToDefaultUser: boolean;
+  appliesToNewUser: boolean;
+  popupContent: LocalizedContentDraft;
+  sheetContent: LocalizedContentDraft;
+  products: ProductRefDraft[];
+}
+
 export type EntryPointVariantsDraft = Record<
   PaywallEntryPoint,
   PaywallProductVariant
@@ -112,6 +127,8 @@ export interface ConfigDraft {
   defaultUser: DefaultUserDraft;
   newUser: NewUserDraft;
   saleEvent: SaleEventDraft;
+  giftCampaign: GiftCampaignDraft;
+  showCredibilityBlock: boolean;
 }
 
 // ---------------------------------------------------------------------
@@ -184,6 +201,20 @@ export const defaultDraft = (): ConfigDraft => ({
     products: [],
     compactProducts: [],
   },
+  giftCampaign: {
+    enabled: false,
+    campaignId: "",
+    startAtUtc: "",
+    endAtUtc: "",
+    discountPercent: "33",
+    appliesToDefaultUser: true,
+    appliesToNewUser: false,
+    popupContent: emptyLocalizedContent(),
+    sheetContent: emptyLocalizedContent(),
+    products: [],
+  },
+  // SHOWN by default, matching the app build that introduced the strip.
+  showCredibilityBlock: true,
 });
 
 // ---------------------------------------------------------------------
@@ -325,6 +356,26 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
       config.saleStrategy?.saleEvent?.compactProducts ?? []
     ).map(toProductRefDraft),
   },
+  giftCampaign: {
+    enabled: Boolean(config.giftCampaign?.enabled),
+    campaignId: config.giftCampaign?.campaignId ?? "",
+    startAtUtc: toDateTimeInput(config.giftCampaign?.startAtUtc),
+    endAtUtc: toDateTimeInput(config.giftCampaign?.endAtUtc),
+    discountPercent:
+      config.giftCampaign?.discountPercent != null
+        ? String(config.giftCampaign.discountPercent)
+        : "33",
+    appliesToDefaultUser: hasAudience(
+      config.giftCampaign?.appliesTo,
+      "defaultUser"
+    ),
+    appliesToNewUser: hasAudience(config.giftCampaign?.appliesTo, "newUser"),
+    popupContent: toLocalizedContentDraft(config.giftCampaign?.popupContent),
+    sheetContent: toLocalizedContentDraft(config.giftCampaign?.sheetContent),
+    products: (config.giftCampaign?.products ?? []).map(toProductRefDraft),
+  },
+  // Absent reads as SHOWN — the behaviour of the app build that introduced it.
+  showCredibilityBlock: config.showCredibilityBlock !== false,
 });
 
 // ---------------------------------------------------------------------
@@ -461,6 +512,31 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     ])
   );
 
+  const giftPopupEmpty = isLocalizedContentEmpty(draft.giftCampaign.popupContent);
+  const giftSheetEmpty = isLocalizedContentEmpty(draft.giftCampaign.sheetContent);
+  const giftAppliesTo: PaywallAudienceSegment[] = [];
+  if (draft.giftCampaign.appliesToDefaultUser) giftAppliesTo.push("defaultUser");
+  if (draft.giftCampaign.appliesToNewUser) giftAppliesTo.push("newUser");
+  const giftCampaign: PaywallGiftCampaign = {
+    enabled: draft.giftCampaign.enabled,
+    campaignId: draft.giftCampaign.campaignId.trim() || undefined,
+    startAtUtc: fromDateTimeInput(draft.giftCampaign.startAtUtc),
+    endAtUtc: fromDateTimeInput(draft.giftCampaign.endAtUtc),
+    discountPercent: draft.giftCampaign.discountPercent.trim()
+      ? Number(draft.giftCampaign.discountPercent)
+      : undefined,
+    appliesTo: giftAppliesTo,
+    popupContent: giftPopupEmpty
+      ? undefined
+      : fromLocalizedContentDraft(draft.giftCampaign.popupContent),
+    sheetContent: giftSheetEmpty
+      ? undefined
+      : fromLocalizedContentDraft(draft.giftCampaign.sheetContent),
+    products: draft.giftCampaign.products.length
+      ? draft.giftCampaign.products.map(fromProductRefDraft)
+      : undefined,
+  };
+
   return {
     schemaVersion: Number(draft.schemaVersion || 1),
     enableLessonLock: draft.enableLessonLock,
@@ -469,6 +545,10 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     inLessonPaywall,
     entryPointVariants,
     saleStrategy,
+    giftCampaign,
+    // Stored explicitly rather than only-when-false, so the JSON states the
+    // intent and reading it never requires knowing the client default.
+    showCredibilityBlock: draft.showCredibilityBlock,
   };
 };
 
@@ -669,6 +749,51 @@ export const validateDraft = (
     if (!draft.saleEvent.appliesToDefaultUser && !draft.saleEvent.appliesToNewUser) {
       errors["saleStrategy.saleEvent.appliesTo"] =
         "saleStrategy.saleEvent.appliesTo phải chọn ít nhất 1 đối tượng khi bật sự kiện sale";
+    }
+  }
+
+  // giftCampaign — same rules as saleEvent (the client drops a campaign with a
+  // broken window or no products), plus the display-only percent bounds.
+  if (draft.giftCampaign.enabled) {
+    validateProductsNonEmpty(
+      draft.giftCampaign.products,
+      "giftCampaign.products",
+      productsByPlatform,
+      errors
+    );
+
+    const startAt = draft.giftCampaign.startAtUtc
+      ? new Date(draft.giftCampaign.startAtUtc).getTime()
+      : NaN;
+    const endAt = draft.giftCampaign.endAtUtc
+      ? new Date(draft.giftCampaign.endAtUtc).getTime()
+      : NaN;
+    if (Number.isNaN(startAt)) {
+      errors["giftCampaign.startAtUtc"] =
+        "giftCampaign.startAtUtc là bắt buộc khi bật gift campaign";
+    }
+    if (Number.isNaN(endAt)) {
+      errors["giftCampaign.endAtUtc"] =
+        "giftCampaign.endAtUtc là bắt buộc khi bật gift campaign (sheet đếm ngược về mốc này)";
+    }
+    if (!Number.isNaN(startAt) && !Number.isNaN(endAt) && startAt >= endAt) {
+      errors["giftCampaign.endAtUtc"] =
+        "giftCampaign.endAtUtc phải sau startAtUtc";
+    }
+
+    const percentText = draft.giftCampaign.discountPercent.trim();
+    const percent = Number(percentText);
+    if (percentText && (!Number.isInteger(percent) || percent < 1 || percent > 99)) {
+      errors["giftCampaign.discountPercent"] =
+        "giftCampaign.discountPercent phải là số nguyên 1-99";
+    }
+
+    if (
+      !draft.giftCampaign.appliesToDefaultUser &&
+      !draft.giftCampaign.appliesToNewUser
+    ) {
+      errors["giftCampaign.appliesTo"] =
+        "giftCampaign.appliesTo phải chọn ít nhất 1 đối tượng khi bật gift campaign";
     }
   }
 

@@ -58,6 +58,17 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
           />
         </div>
 
+        <div className="rounded-xl border border-slate-100 bg-slate-50/60 px-3.5 py-3">
+          <ToggleSwitch
+            checked={draft.showCredibilityBlock}
+            onChange={(checked) => onChange({ showCredibilityBlock: checked })}
+            label="Khối uy tín trên paywall"
+            description="Dải nguyệt quế “Built on brain science” + đánh giá 5/5 dưới bảng giá. Tắt nếu tuyên bố này không phù hợp thị trường."
+            disabled={disabled}
+            fullWidth
+          />
+        </div>
+
         <label className="flex flex-col gap-1 text-xs text-slate-700 max-w-[200px]">
           <span className="font-medium">
             Số bài học miễn phí

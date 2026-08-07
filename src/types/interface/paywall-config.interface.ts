@@ -92,6 +92,32 @@ export interface PaywallSaleStrategy {
   saleEvent: PaywallSaleEvent;
 }
 
+/**
+ * The two-step gift offer: a popup ("A special gift for you!") that opens a
+ * bottom sheet headlined with `discountPercent` and a Claim Offer CTA.
+ *
+ * NOT part of `saleStrategy`: a sale event restyles the paywall the reader is
+ * already on, while this interrupts with two surfaces of its own, on its own
+ * schedule — the client drops an enabled campaign with no products, so the
+ * Claim button can never point at nothing.
+ */
+export interface PaywallGiftCampaign {
+  enabled: boolean;
+  campaignId?: string;
+  startAtUtc?: string;
+  /** Campaign deadline AND the sheet countdown's source — one field, no drift. */
+  endAtUtc?: string;
+  /** Headline "N% OFF" only; the real price is the store product. 1-99. */
+  discountPercent?: number;
+  appliesTo?: PaywallAudienceSegment[];
+  /** Copy for the popup step (heading only is read today). */
+  popupContent?: PaywallLocalizedContent;
+  /** Copy for the bottom-sheet step. */
+  sheetContent?: PaywallLocalizedContent;
+  /** SKU the Claim Offer button purchases. */
+  products?: PaywallProductRef[];
+}
+
 export interface PaywallAutoOpen {
   enabled: boolean;
   sessionRolloutPercent: number;
@@ -164,6 +190,10 @@ export interface PaywallConfig {
   inLessonPaywall?: PaywallInLesson;
   entryPointVariants?: PaywallEntryPointVariants;
   saleStrategy: PaywallSaleStrategy;
+  /** Optional so every version published before the campaign existed stays valid. */
+  giftCampaign?: PaywallGiftCampaign;
+  /** Laurel + store-rating strip under the plans. Absent means SHOWN. */
+  showCredibilityBlock?: boolean;
 }
 
 // Mirrors meup-api dto/paywall-config-response.dto.ts. MySQL is now the
