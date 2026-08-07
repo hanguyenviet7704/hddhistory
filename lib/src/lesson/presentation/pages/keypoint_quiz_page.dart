@@ -292,12 +292,24 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
               isEnabled: true,
               onPressed: () {
                 AppHaptic.select();
+                // The lesson session truly ends here — same hygiene as the
+                // completion page's own exit.
+                unawaited(AppDI.injector.get<LiveActivityService>().end());
+                unawaited(cancelLiveActivityReturnNudge());
                 // `.go` FIRST: it only swaps the go_router pages underneath and
                 // leaves this imperative route mounted, so `context` is still
                 // live for it. Popping first would dispose this page and hand
                 // `.go` a defunct context.
                 CourseRoadmapRoute().go(context);
-                Navigator.of(context).popUntil((route) => route.settings is Page);
+                // Pop only on the NEXT frame: the router applies the page swap
+                // on its own build, so popping in the same tick reveals the
+                // lesson-complete page for the frames in between — a flash of a
+                // screen the reader already left. One frame later the roadmap
+                // is what's underneath, and the pop lands straight on it.
+                final navigator = Navigator.of(context);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  navigator.popUntil((route) => route.settings is Page);
+                });
               },
             ),
           ],
