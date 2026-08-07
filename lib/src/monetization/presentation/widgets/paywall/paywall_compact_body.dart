@@ -101,6 +101,26 @@ class _PaywallCompactBody extends StatelessWidget {
                 ),
               ),
             ],
+            if (discount > 0)
+              Builder(builder: (context) {
+                // Config wins, bundled copy is the floor. Only rendered while a
+                // sale gives the warning something true to warn about.
+                final remote = AppDI.injector.get<IapCubit>().resolvedPaywallConfig.compactUrgencyLine.text;
+                return Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: AppText(
+                    remote.isEmpty ? l10n.monetization.compactUrgencyLine : remote,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: AppStyle.text12.copyWith(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF8F8AB9),
+                      height: 1.4,
+                    ),
+                  ),
+                );
+              }),
             if (endAtUtc != null) ...[
               14.verticalSpace,
               _CountdownRow(endAtUtc: endAtUtc),

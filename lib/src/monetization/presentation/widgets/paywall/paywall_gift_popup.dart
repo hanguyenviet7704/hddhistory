@@ -28,7 +28,9 @@ class PaywallGiftPopup extends StatelessWidget {
   Widget build(BuildContext context) {
     // The one configurable line of this popup. Empty config falls back to the
     // bundled copy; the CTA below stays hardcoded per the spec.
-    final remoteTitle = context.read<IapCubit>().resolvedPaywallConfig.giftCampaign?.title.text ?? '';
+    // Via DI, NOT context.read: this dialog mounts on the root navigator,
+    // above any BlocProvider — context.read threw 38 times on the sim.
+    final remoteTitle = AppDI.injector.get<IapCubit>().resolvedPaywallConfig.giftCampaign?.title.text ?? '';
     final title = remoteTitle.isEmpty ? l10n.monetization.giftPopupTitle : remoteTitle;
 
     return Dialog(

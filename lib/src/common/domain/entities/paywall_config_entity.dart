@@ -39,6 +39,10 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     /// hiding a marketing claim is the change that has to be asked for.
     @Default(true) bool showCredibilityBlock,
 
+    /// The compact sheet's urgency line ("You will never see this again…").
+    /// Empty falls back to the bundled copy; shown only while a sale runs.
+    @Default(BaseMultiLanguage()) BaseMultiLanguage compactUrgencyLine,
+
     /// Remote "What people say" cards. Empty means the config carries none and
     /// the app's bundled reviews render instead.
     @Default(<PaywallReviewEntity>[]) List<PaywallReviewEntity> reviews,
@@ -271,6 +275,7 @@ class _PaywallConfigParser {
         // Absent reads as SHOWN, matching the build that introduced the strip.
         showCredibilityBlock: decoded['showCredibilityBlock'] is bool ? decoded['showCredibilityBlock'] as bool : true,
         reviews: _reviews(decoded['reviews']),
+        compactUrgencyLine: _flatLine(decoded['compactPaywall'] is Map<String, dynamic> ? (decoded['compactPaywall'] as Map<String, dynamic>)['urgencyLine'] : null),
       );
     } catch (_) {
       return const PaywallConfigEntity();
@@ -432,6 +437,19 @@ class _PaywallConfigParser {
       );
     }
     return reviews;
+  }
+
+  /// A flat per-locale string map ({en:…, vi:…}) — the shape PaywallGiftTitleDto
+  /// and compactPaywall.urgencyLine use, unlike the nested content objects.
+  static BaseMultiLanguage _flatLine(Object? value) {
+    if (value is! Map<String, dynamic>) return const BaseMultiLanguage();
+    return BaseMultiLanguage(
+      en: _stringValue(value['en']),
+      vi: _stringValue(value['vi']),
+      zh: _stringValue(value['zh']),
+      ja: _stringValue(value['ja']),
+      ko: _stringValue(value['ko']),
+    );
   }
 
   static BaseMultiLanguage _multiLanguage(Map<String, Map<String, dynamic>> localeMaps, String key) {
