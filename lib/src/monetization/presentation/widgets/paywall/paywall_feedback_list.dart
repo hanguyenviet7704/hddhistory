@@ -5,12 +5,14 @@ class FeedbackContent {
   final String title;
   final String description;
   final int stars;
+  final String avatarUrl;
 
   const FeedbackContent({
     required this.userName,
     required this.title,
     required this.description,
     required this.stars,
+    this.avatarUrl = '',
   });
 }
 
@@ -22,7 +24,23 @@ class PaywallFeedbackList extends StatelessWidget {
     this.onFirstScroll,
   });
 
-  List<FeedbackContent> get _feedbacks {
+  /// Remote cards from the paywall config win; the bundled three are the
+  /// floor so the carousel never renders empty on old configs.
+  List<FeedbackContent> _resolveFeedbacks(BuildContext context) {
+    final remote = context.read<IapCubit>().resolvedPaywallConfig.reviews;
+    if (remote.isNotEmpty) {
+      return [
+        for (final review in remote)
+          FeedbackContent(
+            userName: review.name,
+            title: review.title.text,
+            description: review.body.text,
+            stars: review.rating,
+            avatarUrl: review.avatarUrl,
+          ),
+      ];
+    }
+
     final monetizationTexts = l10n.monetization;
 
     return [
@@ -49,7 +67,8 @@ class PaywallFeedbackList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_feedbacks.isEmpty) return const SizedBox.shrink();
+    final feedbacks = _resolveFeedbacks(context);
+    if (feedbacks.isEmpty) return const SizedBox.shrink();
 
     bool hasTriggeredScroll = false;
 
@@ -69,9 +88,9 @@ class PaywallFeedbackList extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           clipBehavior: Clip.none,
-          itemCount: _feedbacks.length,
+          itemCount: feedbacks.length,
           separatorBuilder: (_, _) => 16.horizontalSpace,
-          itemBuilder: (context, index) => _FeedbackCard(feedback: _feedbacks[index]),
+          itemBuilder: (context, index) => _FeedbackCard(feedback: feedbacks[index]),
         ),
       ),
     );
@@ -105,16 +124,26 @@ class _FeedbackCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppText(
-                feedback.userName,
-                style: AppStyle.text12.copyWith(
-                  color: AppCustomColor.textTertiary,
-                  fontWeight: FontWeight.w600,
-                  height: 1.75,
+              _ReviewerAvatar(name: feedback.userName, avatarUrl: feedback.avatarUrl),
+              10.horizontalSpace,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      feedback.userName,
+                      maxLines: 1,
+                      style: AppStyle.text12.copyWith(
+                        color: AppCustomColor.textTertiary,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                    2.verticalSpace,
+                    _StarRow(stars: feedback.stars),
+                  ],
                 ),
               ),
-              const Spacer(),
-              _StarRow(stars: feedback.stars),
             ],
           ),
           12.verticalSpace,
@@ -157,14 +186,58 @@ class _StarRow extends StatelessWidget {
       children: List.generate(5, (index) {
         final isFilled = index < stars;
         return Padding(
-          padding: EdgeInsets.only(left: index == 0 ? 0 : 4.w),
+          padding: EdgeInsets.only(left: index == 0 ? 0 : 3.w),
           child: FaIcon(
             FontAwesomeIcons.solidStar,
-            size: 16.w,
+            size: 12.w,
             color: isFilled ? const Color(0xFF4B44CA) : AppCustomColor.feedbackStarInactive,
           ),
         );
       }),
+    );
+  }
+}
+
+/// The reviewer's avatar. A remote image when the config supplies one, else an
+/// initial-letter disc — the bundled reviews ship no artwork, and a broken URL
+/// downgrades to the same disc instead of a gray error box.
+class _ReviewerAvatar extends StatelessWidget {
+  final String name;
+  final String avatarUrl;
+
+  const _ReviewerAvatar({required this.name, required this.avatarUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = 36.w;
+    final placeholder = Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: Color(0xFFEDEAFD),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: AppText(
+          name.isEmpty ? '?' : name.characters.first.toUpperCase(),
+          style: AppStyle.text14.copyWith(
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF4B44CA),
+          ),
+        ),
+      ),
+    );
+
+    if (avatarUrl.isEmpty) return placeholder;
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: avatarUrl,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        placeholder: (_, _) => placeholder,
+        errorWidget: (_, _, _) => placeholder,
+      ),
     );
   }
 }

@@ -37,6 +37,10 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     /// configs published before the switch existed keep the build's behaviour;
     /// hiding a marketing claim is the change that has to be asked for.
     @Default(true) bool showCredibilityBlock,
+
+    /// Remote "What people say" cards. Empty means the config carries none and
+    /// the app's bundled reviews render instead.
+    @Default(<PaywallReviewEntity>[]) List<PaywallReviewEntity> reviews,
   }) = _PaywallConfigEntity;
 
   factory PaywallConfigEntity.fromRawConfig(String rawConfig) => _PaywallConfigParser.parse(rawConfig);
@@ -222,6 +226,21 @@ abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
   factory PaywallGiftCampaignEntity.fromJson(Map<String, dynamic> json) => _$PaywallGiftCampaignEntityFromJson(json);
 }
 
+/// One card of the paywall's review carousel. Name and avatar are shown as-is
+/// in every locale; only [title] and [body] are localized.
+@freezed
+abstract class PaywallReviewEntity with _$PaywallReviewEntity {
+  const factory PaywallReviewEntity({
+    @Default('') String name,
+    @Default('') String avatarUrl,
+    @Default(5) int rating,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage body,
+  }) = _PaywallReviewEntity;
+
+  factory PaywallReviewEntity.fromJson(Map<String, dynamic> json) => _$PaywallReviewEntityFromJson(json);
+}
+
 class _PaywallConfigParser {
   static const _locales = ['en', 'vi', 'zh', 'ja', 'ko'];
 
@@ -263,6 +282,7 @@ class _PaywallConfigParser {
         giftCampaign: _giftCampaign(decoded['giftCampaign']),
         // Absent reads as SHOWN, matching the build that introduced the strip.
         showCredibilityBlock: decoded['showCredibilityBlock'] is bool ? decoded['showCredibilityBlock'] as bool : true,
+        reviews: _reviews(decoded['reviews']),
       );
     } catch (_) {
       return const PaywallConfigEntity();
@@ -393,6 +413,37 @@ class _PaywallConfigParser {
         googleProductId: _stringValue(item['googleProductId']),
       );
     }).toList();
+  }
+
+  /// A card with no readable text in ANY locale is dropped — it would render
+  /// as an empty white rectangle in the carousel. Everything else is kept as
+  /// published; the widget's locale fallback handles partial translations.
+  static List<PaywallReviewEntity> _reviews(Object? value) {
+    if (value is! List) return const [];
+    final reviews = <PaywallReviewEntity>[];
+    for (final raw in value) {
+      if (raw is! Map<String, dynamic>) continue;
+      final content = raw['content'];
+      final localeMaps = {
+        for (final locale in _locales)
+          locale: content is Map<String, dynamic> && content[locale] is Map<String, dynamic> ? content[locale] as Map<String, dynamic> : const <String, dynamic>{},
+      };
+      final title = _multiLanguage(localeMaps, 'title');
+      final body = _multiLanguage(localeMaps, 'body');
+      if (title.text.isEmpty && body.text.isEmpty) continue;
+
+      final rating = _intValue(raw['rating'], fallback: 5);
+      reviews.add(
+        PaywallReviewEntity(
+          name: raw['name'] is String ? raw['name'] as String : '',
+          avatarUrl: raw['avatarUrl'] is String ? raw['avatarUrl'] as String : '',
+          rating: rating < 1 || rating > 5 ? 5 : rating,
+          title: title,
+          body: body,
+        ),
+      );
+    }
+    return reviews;
   }
 
   static BaseMultiLanguage _multiLanguage(Map<String, Map<String, dynamic>> localeMaps, String key) {
