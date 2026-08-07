@@ -50,29 +50,46 @@ class PaywallSuccessPurchasePopup extends StatelessWidget {
                   style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.55),
                 ),
                 24.verticalSpace,
-                Container(
-                  width: double.infinity,
-                  height: 54.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF554FF0),
-                    borderRadius: BorderRadius.circular(1000.r),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        AppHaptic.success();
-                        AppService.instance.appTrackingService.trackPaywallSuccessPopupClick();
-                        Navigator.of(context).maybePop();
-                      },
+                // Sized to its label (with a floor) rather than edge to edge —
+                // the design keeps this dialog's CTA compact so the card reads
+                // as a note, not another paywall.
+                ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: 200.w),
+                  child: Container(
+                    height: 54.h,
+                    padding: EdgeInsets.symmetric(horizontal: 34.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF554FF0),
                       borderRadius: BorderRadius.circular(1000.r),
-                      child: Center(
-                        child: AppText(
-                          l10n.monetization.successCta,
-                          style: AppStyle.text16.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.5,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF554FF0).withValues(alpha: 0.3),
+                          blurRadius: 26,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          AppHaptic.success();
+                          AppService.instance.appTrackingService.trackPaywallSuccessPopupClick();
+                          Navigator.of(context).maybePop();
+                        },
+                        borderRadius: BorderRadius.circular(1000.r),
+                        // widthFactor pins the Center to its label; a bare
+                        // Center expands to every width it is offered, which
+                        // would stretch this back to a full-width bar.
+                        child: Center(
+                          widthFactor: 1,
+                          child: AppText(
+                            l10n.monetization.successCta,
+                            style: AppStyle.text16.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              height: 1.5,
+                            ),
                           ),
                         ),
                       ),

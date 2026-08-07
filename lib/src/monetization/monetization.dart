@@ -58,6 +58,8 @@ part 'presentation/widgets/paywall/paywall_bottom_purchase_bar.dart';
 part 'presentation/widgets/paywall/paywall_countdown_strip.dart';
 part 'presentation/widgets/paywall/paywall_dots_indicator.dart';
 part 'presentation/widgets/paywall/paywall_feedback_list.dart';
+part 'presentation/widgets/paywall/paywall_gift_popup.dart';
+part 'presentation/widgets/paywall/paywall_gift_sheet.dart';
 part 'presentation/widgets/paywall/paywall_highlight_package_info.dart';
 part 'presentation/widgets/paywall/paywall_inline_plans.dart';
 part 'presentation/widgets/paywall/paywall_legal_links.dart';

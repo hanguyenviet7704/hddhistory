@@ -6,6 +6,12 @@ benefit3Desc: 一歩ずつ成長しよう
 benefit3Title: 進捗を記録
 emptyProductsDesc: しばらくしてからもう一度お試しください。
 emptyProductsTitle: 利用できるプランがありません
+giftPopupCta: "開く"
+giftPopupTitle: "あなたへの特別なギフト！"
+giftSheetBadge: "特別オファー"
+giftSheetCta: "オファーを受け取る"
+giftSheetDiscount: "$percent% OFF"
+giftSheetEndsIn: "終了まで"
 keyFeaturesTitle: 主な機能
 loadingPlans: プランを読み込み中…
 manageAutoRenew: 自動更新

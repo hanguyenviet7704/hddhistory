@@ -6,6 +6,12 @@ benefit3Desc: 一步步持续成长
 benefit3Title: 追踪你的进度
 emptyProductsDesc: 请稍后再试。
 emptyProductsTitle: 暂无可用方案
+giftPopupCta: "打开"
+giftPopupTitle: "送你一份特别礼物！"
+giftSheetBadge: "特别优惠"
+giftSheetCta: "领取优惠"
+giftSheetDiscount: "立减 $percent%"
+giftSheetEndsIn: "截止倒计时"
 keyFeaturesTitle: 核心功能
 loadingPlans: 正在加载方案…
 manageAutoRenew: 自动续订

@@ -6,6 +6,12 @@ benefit3Desc: and grow step by step
 benefit3Title: Track your progress
 emptyProductsDesc: Please try again in a moment.
 emptyProductsTitle: No plans available
+giftPopupCta: "Open"
+giftPopupTitle: "A special gift for you!"
+giftSheetBadge: "Special offer"
+giftSheetCta: "Claim Offer"
+giftSheetDiscount: "$percent% OFF"
+giftSheetEndsIn: "Ends in"
 keyFeaturesTitle: Key features
 loadingPlans: Loading plans…
 manageAutoRenew: Auto-renew

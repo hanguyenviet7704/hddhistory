@@ -6,6 +6,12 @@ benefit3Desc: và tiến bộ từng bước
 benefit3Title: Theo dõi tiến độ
 emptyProductsDesc: Vui lòng thử lại sau ít phút.
 emptyProductsTitle: Chưa có gói khả dụng
+giftPopupCta: "Mở quà"
+giftPopupTitle: "Một món quà đặc biệt dành cho bạn!"
+giftSheetBadge: "Ưu đãi đặc biệt"
+giftSheetCta: "Nhận ưu đãi"
+giftSheetDiscount: "GIẢM $percent%"
+giftSheetEndsIn: "Kết thúc sau"
 keyFeaturesTitle: Tính năng chính
 loadingPlans: Đang tải gói…
 manageAutoRenew: Tự động gia hạn

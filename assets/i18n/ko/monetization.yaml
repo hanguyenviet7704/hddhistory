@@ -6,6 +6,12 @@ benefit3Desc: 한 걸음씩 성장하세요
 benefit3Title: 진행 상황 추적
 emptyProductsDesc: 잠시 후 다시 시도해 주세요.
 emptyProductsTitle: 사용 가능한 플랜이 없습니다
+giftPopupCta: "열기"
+giftPopupTitle: "당신을 위한 특별한 선물!"
+giftSheetBadge: "특별 혜택"
+giftSheetCta: "혜택 받기"
+giftSheetDiscount: "$percent% 할인"
+giftSheetEndsIn: "종료까지"
 keyFeaturesTitle: 주요 기능
 loadingPlans: 플랜 불러오는 중…
 manageAutoRenew: 자동 갱신

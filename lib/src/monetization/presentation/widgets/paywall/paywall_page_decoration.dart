@@ -142,8 +142,13 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
           ),
           PaywallPromoCode(state: widget.state),
           32.verticalSpace,
-          const _PaywallCredibilityBlock(),
-          30.verticalSpace,
+          // Config-gated: a claim about MIT and Harvard may not hold in every
+          // market. Absent from the config parses to true (the behaviour of the
+          // build that introduced the strip).
+          if (context.read<IapCubit>().resolvedPaywallConfig.showCredibilityBlock) ...[
+            const _PaywallCredibilityBlock(),
+            30.verticalSpace,
+          ],
           PaywallFeedbackList(onFirstScroll: _handleInfoSwipe),
           30.verticalSpace,
           GestureDetector(
