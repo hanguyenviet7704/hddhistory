@@ -16,6 +16,7 @@ part 'manual/base_url.dart';
 part 'manual/cache_key.dart';
 part 'manual/common_key.dart';
 part 'manual/endpoint.dart';
+part 'manual/feature_toggles.dart';
 part 'manual/env.dart';
 part 'manual/in_app_key.dart';
 part 'manual/injector_key.dart';

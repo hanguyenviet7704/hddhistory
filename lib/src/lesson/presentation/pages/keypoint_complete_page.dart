@@ -100,10 +100,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     syncHomeSelectionForLessonFlowCourse(courseId);
 
     // Only the moment the course badge finishes still routes through the
-    // badge celebration; every other completion lands on the roadmap.
+    // badge celebration; every other completion lands on the roadmap. With
+    // achievements hidden app-wide (kAchievementsEnabled), the celebration is
+    // off too — celebrating a badge the app pretends not to have would be the
+    // one place it leaks back in.
     _navigatedAway = true;
     final page = AppDI.injector.get<PageCubit>();
-    final isBadgeComplete = _isCourseLevelBadgeComplete();
+    final isBadgeComplete = kAchievementsEnabled && _isCourseLevelBadgeComplete();
     final destinationRouteName = isBadgeComplete ? RouteNamed.badgeProgress : RouteNamed.courseRoadmap;
 
     if (isBadgeComplete) {

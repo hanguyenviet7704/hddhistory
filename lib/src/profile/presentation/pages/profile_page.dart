@@ -626,12 +626,19 @@ class _AchievementsAndProgressSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionHeaderRow(
-              title: context.l10n.setting.achievementsTitle,
-              trailingLabel: context.l10n.setting.settingProfileAchievementsSeeAll,
-              onTrailingTap: () => _openAchievements(context),
-            ),
-            14.verticalSpace,
+            // Achievements hidden app-wide (see kAchievementsEnabled). This
+            // header + summary card were the only entry into the achievements
+            // pages, so gating them here retires that whole surface. Learning
+            // Progress below shares the cubit, so the loader/error treatment
+            // stays either way.
+            if (kAchievementsEnabled) ...[
+              _SectionHeaderRow(
+                title: context.l10n.setting.achievementsTitle,
+                trailingLabel: context.l10n.setting.settingProfileAchievementsSeeAll,
+                onTrailingTap: () => _openAchievements(context),
+              ),
+              14.verticalSpace,
+            ],
             if (isLoading)
               const _InlineSectionLoader()
             else if (isFailure)
@@ -639,7 +646,7 @@ class _AchievementsAndProgressSection extends StatelessWidget {
                 message: state.errorMessage,
                 onRetry: () => context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses(),
               )
-            else
+            else if (kAchievementsEnabled)
               _AchievementsSummaryCard(achievenments: state.achievenments),
             if (!isLoading && !isFailure) _LearningProgressSection(achievenments: state.achievenments),
           ],
