@@ -1,9 +1,11 @@
 import React from "react";
 import { ExclamationTriangleIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
+import GiftTitleEditor from "../../../components/paywall-config/GiftTitleEditor";
 import ProductRefsEditor from "../../../components/paywall-config/ProductRefsEditor";
 import { PAYWALL_ENTRY_POINTS } from "../../../types/interface/paywall-config.interface";
 import {
   EntryPointVariantsDraft,
+  LocalizedLineDraft,
   ProductRefDraft,
   ProductsByPlatform,
 } from "../paywallConfigDraft";
@@ -17,6 +19,8 @@ interface CompactPaywallSectionProps {
   onChangeDefaultUserCompactProducts: (next: ProductRefDraft[]) => void;
   saleEventCompactProducts: ProductRefDraft[];
   onChangeSaleEventCompactProducts: (next: ProductRefDraft[]) => void;
+  urgencyLine: LocalizedLineDraft;
+  onChangeUrgencyLine: (next: LocalizedLineDraft) => void;
   disabled?: boolean;
   fieldErrors: Record<string, string>;
   productsByPlatform: ProductsByPlatform | null;
@@ -38,6 +42,8 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
   compactCounts,
   defaultUserCompactProducts,
   onChangeDefaultUserCompactProducts,
+  urgencyLine,
+  onChangeUrgencyLine,
   saleEventCompactProducts,
   onChangeSaleEventCompactProducts,
   disabled = false,
@@ -113,6 +119,23 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
         Người dùng mới: mỗi rule theo impression có danh sách rút gọn riêng —
         chỉnh trực tiếp trong từng rule ở section "Người dùng mới".
       </p>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-slate-700">Dòng cảnh báo (urgency)</span>
+        <p className="text-[11px] text-slate-500">
+          Hiện dưới headline "N% OFF", chỉ khi đang có Sự kiện sale. Để trống
+          dùng copy built-in: "You will never see this again if you exit".
+        </p>
+        <GiftTitleEditor
+          value={urgencyLine}
+          onChange={onChangeUrgencyLine}
+          disabled={disabled}
+          idPrefix="compact-urgency"
+        />
+        {fieldErrors["compactPaywall.urgencyLine.en"] ? (
+          <p className="text-[11px] text-red-600">{fieldErrors["compactPaywall.urgencyLine.en"]}</p>
+        ) : null}
+      </div>
     </SectionCard>
   );
 };

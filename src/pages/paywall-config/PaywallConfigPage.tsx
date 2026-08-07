@@ -425,6 +425,10 @@ export default function PaywallConfigPage() {
             onChangeSaleEventCompactProducts={(compactProducts) =>
               patchDraft({ saleEvent: { ...draft.saleEvent, compactProducts } })
             }
+            urgencyLine={draft.compactPaywall.urgencyLine}
+            onChangeUrgencyLine={(urgencyLine) =>
+              patchDraft({ compactPaywall: { ...draft.compactPaywall, urgencyLine } })
+            }
             disabled={disabled}
             fieldErrors={fieldErrors}
             productsByPlatform={productsByPlatform}

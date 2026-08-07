@@ -26,7 +26,8 @@ import {
   PaywallProductRef,
   PaywallProductVariant,
   PaywallGiftCampaign,
-  PaywallGiftTitle,
+  PaywallCompactPaywall,
+  PaywallLocalizedLine,
   PaywallReview,
   PaywallReviewContent,
   PaywallReviewLocaleContent,
@@ -99,11 +100,16 @@ export interface SaleEventDraft {
 }
 
 /** One string per locale; `en` is the only one the backend requires non-absent. */
-export type GiftTitleDraft = Record<PaywallLocale, string>;
+export type LocalizedLineDraft = Record<PaywallLocale, string>;
 
 export interface GiftCampaignDraft {
   enabled: boolean;
-  title: GiftTitleDraft;
+  title: LocalizedLineDraft;
+}
+
+/** Copy owned by the compact paywall itself; SKUs stay per-strategy. */
+export interface CompactPaywallDraft {
+  urgencyLine: LocalizedLineDraft;
 }
 
 export type EntryPointVariantsDraft = Record<
@@ -142,6 +148,7 @@ export interface ConfigDraft {
   newUser: NewUserDraft;
   saleEvent: SaleEventDraft;
   giftCampaign: GiftCampaignDraft;
+  compactPaywall: CompactPaywallDraft;
   showCredibilityBlock: boolean;
   reviews: ReviewDraft[];
 }
@@ -175,8 +182,8 @@ export const emptyImpressionRule = (): ImpressionRuleDraft => ({
   compactProducts: [],
 });
 
-export const emptyGiftTitle = (): GiftTitleDraft =>
-  Object.fromEntries(PAYWALL_CONFIG_LOCALES.map((locale) => [locale, ""])) as GiftTitleDraft;
+export const emptyLocalizedLine = (): LocalizedLineDraft =>
+  Object.fromEntries(PAYWALL_CONFIG_LOCALES.map((locale) => [locale, ""])) as LocalizedLineDraft;
 
 export const emptyReviewContent = (): ReviewContentDraft => ({
   title: "",
@@ -239,7 +246,10 @@ export const defaultDraft = (): ConfigDraft => ({
   },
   giftCampaign: {
     enabled: false,
-    title: emptyGiftTitle(),
+    title: emptyLocalizedLine(),
+  },
+  compactPaywall: {
+    urgencyLine: emptyLocalizedLine(),
   },
   // SHOWN by default, matching the app build that introduced the strip.
   showCredibilityBlock: true,
@@ -273,10 +283,10 @@ const toProductRefDraft = (ref: PaywallProductRef): ProductRefDraft => ({
   googleProductId: ref.googleProductId ?? "",
 });
 
-const toGiftTitleDraft = (title?: PaywallGiftTitle): GiftTitleDraft =>
+const toLocalizedLineDraft = (title?: PaywallLocalizedLine): LocalizedLineDraft =>
   Object.fromEntries(
     PAYWALL_CONFIG_LOCALES.map((locale) => [locale, title?.[locale] ?? ""])
-  ) as GiftTitleDraft;
+  ) as LocalizedLineDraft;
 
 const toDateTimeInput = (value?: string): string => {
   if (!value) return "";
@@ -416,7 +426,10 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   },
   giftCampaign: {
     enabled: Boolean(config.giftCampaign?.enabled),
-    title: toGiftTitleDraft(config.giftCampaign?.title),
+    title: toLocalizedLineDraft(config.giftCampaign?.title),
+  },
+  compactPaywall: {
+    urgencyLine: toLocalizedLineDraft(config.compactPaywall?.urgencyLine),
   },
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
   showCredibilityBlock: config.showCredibilityBlock !== false,
@@ -517,13 +530,13 @@ const fromReviewDraft = (review: ReviewDraft): PaywallReview => ({
   content: fromReviewLocalizedContentDraft(review.content),
 });
 
-export const isGiftTitleEmpty = (title: GiftTitleDraft): boolean =>
+export const isLocalizedLineEmpty = (title: LocalizedLineDraft): boolean =>
   PAYWALL_CONFIG_LOCALES.every((locale) => !title[locale].trim());
 
 /** Omitted entirely when every locale is blank -- absent means the app's bundled copy. */
-const fromGiftTitleDraft = (title: GiftTitleDraft): PaywallGiftTitle | undefined => {
-  if (isGiftTitleEmpty(title)) return undefined;
-  const result = { en: title.en.trim() } as PaywallGiftTitle;
+const fromLocalizedLineDraft = (title: LocalizedLineDraft): PaywallLocalizedLine | undefined => {
+  if (isLocalizedLineEmpty(title)) return undefined;
+  const result = { en: title.en.trim() } as PaywallLocalizedLine;
   PAYWALL_CONFIG_LOCALES.forEach((locale) => {
     if (locale === "en") return;
     if (title[locale].trim()) {
@@ -610,8 +623,12 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
 
   const giftCampaign: PaywallGiftCampaign = {
     enabled: draft.giftCampaign.enabled,
-    title: fromGiftTitleDraft(draft.giftCampaign.title),
+    title: fromLocalizedLineDraft(draft.giftCampaign.title),
   };
+
+  // Trống toàn bộ → không gửi field, giữ nguyên tắc field-sau-v1 optional.
+  const urgencyLine = fromLocalizedLineDraft(draft.compactPaywall.urgencyLine);
+  const compactPaywall: PaywallCompactPaywall | undefined = urgencyLine ? { urgencyLine } : undefined;
 
   // Omitted entirely when empty rather than sent as `[]`: both mean "use the
   // app's bundled reviews" to the client, but omitting keeps the stored JSON
@@ -627,6 +644,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     entryPointVariants,
     saleStrategy,
     giftCampaign,
+    ...(compactPaywall ? { compactPaywall } : {}),
     // Stored explicitly rather than only-when-false, so the JSON states the
     // intent and reading it never requires knowing the client default.
     showCredibilityBlock: draft.showCredibilityBlock,
@@ -834,11 +852,17 @@ export const validateDraft = (
     }
   }
 
+  // compactPaywall.urgencyLine — same rule as the gift title: entirely
+  // optional, but once any locale is filled EN must be too (API fallback).
+  if (!isLocalizedLineEmpty(draft.compactPaywall.urgencyLine) && !draft.compactPaywall.urgencyLine.en.trim()) {
+    errors["compactPaywall.urgencyLine.en"] = "Đã điền locale khác thì bắt buộc có tiếng Anh (locale fallback).";
+  }
+
   // giftCampaign — the popup's title is entirely optional (absent uses the
   // app's bundled copy), but the backend's `en` field is a plain required
   // string, not optional: sending some other locale filled in with `en`
   // blank would publish a title object whose i18n fallback is empty text.
-  if (!isGiftTitleEmpty(draft.giftCampaign.title) && !draft.giftCampaign.title.en.trim()) {
+  if (!isLocalizedLineEmpty(draft.giftCampaign.title) && !draft.giftCampaign.title.en.trim()) {
     errors["giftCampaign.title.en"] =
       "giftCampaign.title.en là bắt buộc khi đã điền tiêu đề cho ít nhất 1 ngôn ngữ";
   }

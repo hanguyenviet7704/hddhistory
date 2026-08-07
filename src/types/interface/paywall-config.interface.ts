@@ -92,8 +92,14 @@ export interface PaywallSaleStrategy {
   saleEvent: PaywallSaleEvent;
 }
 
-/** Same locale contract as `PaywallLocalizedContent`: en required, rest optional. */
-export type PaywallGiftTitle = {
+/**
+ * One free-text line, per locale, with the same contract as
+ * `PaywallLocalizedContent`: en required, rest optional. Shared by the two
+ * single-line spots on the paywall (the gift popup's title, the compact
+ * sheet's urgency line) that don't need the full subheading/heading/benefits
+ * shape.
+ */
+export type PaywallLocalizedLine = {
   en: string;
 } & Partial<Record<Exclude<PaywallLocale, "en">, string>>;
 
@@ -101,7 +107,7 @@ export type PaywallGiftTitle = {
  * The gift popup: its only job is to open the COMPACT paywall on a schedule
  * hardcoded in the app (first habit on day 0, first open of each day 1-7,
  * premium users skipped). Everything the reader sees after the tap belongs to
- * the compact paywall's own config (see `PaywallEntryPointVariants` /
+ * the compact paywall's own config (see `PaywallCompactPaywall` /
  * `compactProducts` below) — the ONLY thing configurable here is the popup's
  * title line; absent falls back to the app's bundled copy ("A special gift
  * for you!"). The CTA label ("Open") is hardcoded too.
@@ -109,7 +115,22 @@ export type PaywallGiftTitle = {
 export interface PaywallGiftCampaign {
   enabled: boolean;
   /** Popup title per locale. Absent uses the app's bundled copy. */
-  title?: PaywallGiftTitle;
+  title?: PaywallLocalizedLine;
+}
+
+/**
+ * Config owned by the compact paywall itself (the "33% OFF"-style one-plan
+ * sheet). SKUs stay per-strategy (`compactProducts`) and the discount/
+ * countdown come from the sale event that is currently winning — this only
+ * carries copy that belongs to the sheet itself.
+ */
+export interface PaywallCompactPaywall {
+  /**
+   * Line under the discount headline. Absent uses the app's bundled copy
+   * ("You will never see this again if you exit"); shown only while a sale
+   * event is running.
+   */
+  urgencyLine?: PaywallLocalizedLine;
 }
 
 /** One locale's worth of one review card's text (already in that locale). */
@@ -209,6 +230,8 @@ export interface PaywallConfig {
   inLessonPaywall?: PaywallInLesson;
   entryPointVariants?: PaywallEntryPointVariants;
   saleStrategy: PaywallSaleStrategy;
+  /** Optional so every version published before this section existed stays valid. */
+  compactPaywall?: PaywallCompactPaywall;
   /** Optional so every version published before the campaign existed stays valid. */
   giftCampaign?: PaywallGiftCampaign;
   /** Laurel + store-rating strip under the plans. Absent means SHOWN. */

@@ -5,11 +5,11 @@ import {
   PAYWALL_CONFIG_LOCALE_LABELS,
   PaywallLocale,
 } from "../../types/interface/paywall-config.interface";
-import { GiftTitleDraft } from "../../pages/paywall-config/paywallConfigDraft";
+import { LocalizedLineDraft } from "../../pages/paywall-config/paywallConfigDraft";
 
 interface GiftTitleEditorProps {
-  value: GiftTitleDraft;
-  onChange: (next: GiftTitleDraft) => void;
+  value: LocalizedLineDraft;
+  onChange: (next: LocalizedLineDraft) => void;
   disabled?: boolean;
   idPrefix: string;
 }
