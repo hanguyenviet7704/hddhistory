@@ -291,6 +291,33 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
     prevKp = kp;
   }
   const ws = XLSX.utils.aoa_to_sheet(aoa);
+  // A habit is shared by every keypoint that suggests it, so the file is one
+  // row per (habit × keypoint) — on dev that is 974 rows standing in for 24
+  // habits, one of them repeated 167 times. Nothing can flatten that without
+  // losing the mapping the import needs, so make it navigable instead:
+  // autofilter to pull one habit or one course out of the pile, and widths so
+  // the id and title columns are readable without dragging every border.
+  // (Freeze panes would help too, but xlsx 0.18 community cannot write them.)
+  ws["!autofilter"] = {
+    ref: XLSX.utils.encode_range({
+      s: { r: 0, c: 0 },
+      e: { r: 0, c: header.length - 1 },
+    }),
+  };
+  ws["!cols"] = [
+    { wch: 26 }, // ID
+    { wch: 26 }, // Course ID
+    { wch: 34 }, // Course Title
+    { wch: 12 }, // Keypoint #
+    { wch: 34 }, // Keypoint title (VI)
+    { wch: 8 }, // Habit #
+    { wch: 40 }, // Image
+    { wch: 46 }, // VI
+    { wch: 46 }, // EN
+    { wch: 30 }, // ZH
+    { wch: 30 }, // JA
+    { wch: 30 }, // KO
+  ];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Habit");
   triggerDownload(wb, "habits.xlsx");

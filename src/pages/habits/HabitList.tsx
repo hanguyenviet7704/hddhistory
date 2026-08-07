@@ -94,6 +94,17 @@ const HabitList: React.FC = () => {
   // Collapsed-by-default accordion groups; a keypoint id is in the set when the
   // user has expanded it. An active search force-expands everything so matches
   // are never hidden behind a collapsed header.
+  /**
+   * Flat by default, grouped on request.
+   *
+   * Grouping is by KEYPOINT, and a habit is suggested by many keypoints — on
+   * dev that is 327 groups standing in for 24 habits, every one of them
+   * collapsed. The table then opened on a wall of keypoint titles with four
+   * empty columns under it and no habit in sight. Flat answers "what habits do
+   * we have" in one screen; the grouping still answers "what does this keypoint
+   * suggest", which is a different question and now an opt-in.
+   */
+  const [groupByKeypoint, setGroupByKeypoint] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const toggleGroup = (id: string) => {
     setExpandedGroups((prev) => {
@@ -366,6 +377,79 @@ const HabitList: React.FC = () => {
     }
   };
 
+  /**
+   * One habit row, shared by both views so they cannot drift apart.
+   *
+   * The picture leads the row: with a catalog of a couple of dozen habits, the
+   * question an editor actually has in front of this table is "which ones still
+   * have no image", and that reads off a column of thumbnails at a glance.
+   */
+  const renderHabitRow = (habit: IHabit, rowKey: string) => (
+    <TableRow key={rowKey} hover selected={selectedIds.includes(habit._id)}>
+      <TableCell padding="checkbox">
+        <Checkbox
+          checked={selectedIds.includes(habit._id)}
+          onChange={() => toggleOne(habit._id)}
+          inputProps={{ "aria-label": "Select habit" }}
+        />
+      </TableCell>
+      <TableCell>
+        {habit.image ? (
+          <img
+            src={habit.image}
+            alt=""
+            className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+          />
+        ) : (
+          <div
+            className="h-10 w-10 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-[10px] text-gray-400"
+            title="No image — the app falls back to the skillset logo"
+          >
+            none
+          </div>
+        )}
+      </TableCell>
+      <TableCell>{getTranslationValue(habit.title, lang) || "—"}</TableCell>
+      <TableCell>
+        {skillsetNameById.get(habit.skillsetId) || "Unknown skillset"}
+      </TableCell>
+      <TableCell>
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
+            statusPillClasses[habit.status]
+          }`}
+        >
+          {statusLabels[habit.status]}
+        </span>
+      </TableCell>
+      <TableCell>{habit.order}</TableCell>
+      <TableCell align="right">
+        <button
+          aria-label="Manage practices"
+          title="Practices"
+          onClick={() => setPracticeHabit(habit)}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <PlayCircleIcon className="h-5 w-5 text-emerald-600" />
+        </button>
+        <button
+          aria-label="Edit habit"
+          onClick={() => openEditModal(habit)}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <PencilIcon className="h-5 w-5 text-blue-600" />
+        </button>
+        <button
+          aria-label="Delete habit"
+          onClick={() => openDeleteConfirm(habit)}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <TrashIcon className="h-5 w-5 text-red-600" />
+        </button>
+      </TableCell>
+    </TableRow>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}
@@ -435,6 +519,19 @@ const HabitList: React.FC = () => {
               <option value={HabitStatus.DRAFT}>Draft</option>
               <option value={HabitStatus.PUBLISHED}>Published</option>
             </select>
+            <select
+              value={groupByKeypoint ? "keypoint" : "flat"}
+              onChange={(e) => setGroupByKeypoint(e.target.value === "keypoint")}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              aria-label="View mode"
+            >
+              <option value="flat">
+                All habits ({filteredHabits.length})
+              </option>
+              <option value="keypoint">
+                By keypoint ({habitGroups.length} groups)
+              </option>
+            </select>
             <ExportImportButtons
               label="habits"
               onExport={async () => {
@@ -501,6 +598,7 @@ const HabitList: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -513,7 +611,7 @@ const HabitList: React.FC = () => {
               <TableBody>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 5 }).map((__, j) => (
+                    {Array.from({ length: 6 }).map((__, j) => (
                       <TableCell key={j}>
                         <Skeleton variant="text" />
                       </TableCell>
@@ -578,6 +676,7 @@ const HabitList: React.FC = () => {
                       inputProps={{ "aria-label": "Select all visible habits" }}
                     />
                   </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Skillset</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -588,7 +687,12 @@ const HabitList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {habitGroups.map((group) => {
+                {!groupByKeypoint &&
+                  filteredHabits.map((habit) =>
+                    renderHabitRow(habit, habit._id),
+                  )}
+                {groupByKeypoint &&
+                  habitGroups.map((group) => {
                   const open =
                     !!search.trim() || expandedGroups.has(group.keypointId);
                   return (
@@ -599,7 +703,7 @@ const HabitList: React.FC = () => {
                       sx={{ cursor: "pointer" }}
                     >
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         sx={{
                           backgroundColor: "grey.100",
                           fontWeight: 700,
@@ -626,62 +730,9 @@ const HabitList: React.FC = () => {
                       </TableCell>
                     </TableRow>
                     {open &&
-                      group.items.map((habit) => (
-                      <TableRow
-                        key={`${group.keypointId}-${habit._id}`}
-                        hover
-                        selected={selectedIds.includes(habit._id)}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={selectedIds.includes(habit._id)}
-                            onChange={() => toggleOne(habit._id)}
-                            inputProps={{ "aria-label": "Select habit" }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {getTranslationValue(habit.title, lang) || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {skillsetNameById.get(habit.skillsetId) ||
-                            "Unknown skillset"}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-block ${
-                              statusPillClasses[habit.status]
-                            }`}
-                          >
-                            {statusLabels[habit.status]}
-                          </span>
-                        </TableCell>
-                        <TableCell>{habit.order}</TableCell>
-                        <TableCell align="right">
-                          <button
-                            aria-label="Manage practices"
-                            title="Practices"
-                            onClick={() => setPracticeHabit(habit)}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                          >
-                            <PlayCircleIcon className="h-5 w-5 text-emerald-600" />
-                          </button>
-                          <button
-                            aria-label="Edit habit"
-                            onClick={() => openEditModal(habit)}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                          >
-                            <PencilIcon className="h-5 w-5 text-blue-600" />
-                          </button>
-                          <button
-                            aria-label="Delete habit"
-                            onClick={() => openDeleteConfirm(habit)}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                          >
-                            <TrashIcon className="h-5 w-5 text-red-600" />
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                      group.items.map((habit) =>
+                        renderHabitRow(habit, `${group.keypointId}-${habit._id}`),
+                      )}
                   </React.Fragment>
                   );
                 })}
