@@ -19,23 +19,19 @@ class _PurchaseButton extends StatelessWidget {
       opacity: enabled ? 1 : 0.58,
       child: Container(
         width: double.infinity,
-        height: 58.h,
+        height: 64.h,
         decoration: BoxDecoration(
-          // Design: linear-gradient(135deg, #6C63FF, #554FF0).
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppCustomColor.paywallCtaGradientStart,
-              AppCustomColor.brandPrimary,
-            ],
-          ),
+          // Premium design: solid #5A52F0, not the old gradient. The HTML also
+          // carries `inset 0 -3px rgba(0,0,0,.12)` — Flutter's BoxShadow cannot
+          // inset, and a 3px inner shelf under a solid fill is not worth a
+          // Stack, so only the outer shadow is kept.
+          color: const Color(0xFF5A52F0),
           borderRadius: BorderRadius.circular(1000.r),
           boxShadow: [
             BoxShadow(
-              color: AppCustomColor.brandPrimary.withValues(alpha: 0.35),
-              blurRadius: 26,
-              offset: const Offset(0, 12),
+              color: const Color(0xFF5A52F0).withValues(alpha: 0.4),
+              blurRadius: 34,
+              offset: const Offset(0, 16),
             ),
           ],
         ),
@@ -69,8 +65,9 @@ class _PurchaseButton extends StatelessWidget {
                         // total (e.g. "1.199.000đ") without clipping.
                         enableFitScaleDown: true,
                         style: AppStyle.text16.copyWith(
-                          fontSize: 17.sp,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.18,
                           color: Colors.white,
                           height: 1.4,
                         ),

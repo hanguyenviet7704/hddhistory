@@ -98,32 +98,54 @@ class _CountdownStripState extends State<_CountdownStrip> {
       );
     }
 
+    // Design's LIMITED OFFER card: bolt + label on the left, light timer chips
+    // on the right, on a translucent white card — not the old centred pill,
+    // which read as decoration rather than as a deadline.
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+      margin: EdgeInsets.only(bottom: 18.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite.withValues(alpha: 0.42),
-        borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(color: AppCustomColor.backgroundWhite.withValues(alpha: 0.65)),
+        color: Colors.white.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFD9D5F6)),
       ),
-      child: AppText(
-        '${countdown.hours}:${countdown.minutes}:${countdown.seconds}',
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        style: AppStyle.text12.copyWith(
-          color: AppCustomColor.textBrand,
-          fontWeight: FontWeight.w700,
-          height: 1.5,
-        ),
+      child: Row(
+        children: [
+          Icon(Icons.bolt_rounded, size: 15.w, color: const Color(0xFF6E67D8)),
+          6.horizontalSpace,
+          Expanded(
+            child: AppText(
+              l10n.monetization.saleCountdownLabel.toUpperCase(),
+              maxLines: 1,
+              style: AppStyle.text12.copyWith(
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.69,
+                color: const Color(0xFF6E67D8),
+              ),
+            ),
+          ),
+          8.horizontalSpace,
+          _CountdownSegment(value: countdown.hours, light: true),
+          _CountdownColon(light: true),
+          _CountdownSegment(value: countdown.minutes, light: true),
+          _CountdownColon(light: true),
+          _CountdownSegment(value: countdown.seconds, light: true),
+        ],
       ),
     );
   }
 }
 
+/// One timer cell. `light` is the design's full-width strip (lavender chip,
+/// dark digits); the default dark chip stays for the compact strip inside the
+/// purchase bar, which sits on a white card and needs the contrast.
 class _CountdownSegment extends StatelessWidget {
   final String value;
+  final bool light;
 
-  const _CountdownSegment({required this.value});
+  const _CountdownSegment({required this.value, this.light = false});
 
   @override
   Widget build(BuildContext context) {
@@ -131,16 +153,17 @@ class _CountdownSegment extends StatelessWidget {
       constraints: BoxConstraints(minWidth: 27.w),
       padding: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF4B44CA),
-        borderRadius: BorderRadius.circular(8.r),
+        color: light ? const Color(0xFFEDEAFD) : const Color(0xFF4B44CA),
+        borderRadius: BorderRadius.circular(light ? 7.r : 8.r),
       ),
       child: AppText(
         value,
         textAlign: TextAlign.center,
         maxLines: 1,
         style: AppStyle.text14.copyWith(
-          color: AppCustomColor.backgroundWhite,
-          fontWeight: FontWeight.w700,
+          fontSize: light ? 12.5.sp : null,
+          color: light ? const Color(0xFF3A3355) : AppCustomColor.backgroundWhite,
+          fontWeight: light ? FontWeight.w800 : FontWeight.w700,
           height: 1.75,
         ),
       ),
@@ -149,6 +172,10 @@ class _CountdownSegment extends StatelessWidget {
 }
 
 class _CountdownColon extends StatelessWidget {
+  final bool light;
+
+  const _CountdownColon({this.light = false});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -157,8 +184,9 @@ class _CountdownColon extends StatelessWidget {
         ':',
         maxLines: 1,
         style: AppStyle.text14.copyWith(
-          color: AppCustomColor.backgroundWhite,
-          fontWeight: FontWeight.w700,
+          fontSize: light ? 12.sp : null,
+          color: light ? const Color(0xFFA8A2D6) : AppCustomColor.backgroundWhite,
+          fontWeight: light ? FontWeight.w800 : FontWeight.w700,
           height: 1.4,
         ),
       ),
