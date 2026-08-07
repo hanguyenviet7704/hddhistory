@@ -212,32 +212,23 @@ class _PaywallPageState extends State<PaywallPage> {
               }
 
               _maybeShowGiftCampaign(state);
-              return Stack(
-                children: [
-                  Positioned.fill(
-                    child: PaywallPageDecoration(
-                      state: state,
-                      bottomPadding: PaywallBottomPurchaseBar.totalReservedHeight(context, state),
-                      onClose: _handleClose,
-                      showCloseButton: _isCloseButtonVisible,
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: PaywallBottomPurchaseBar(
-                      state: state,
-                      onPurchase: () {
-                        final product = state.selectedProduct;
-                        AppService.instance.appTrackingService.trackPremiumPurchase(
-                          productId: product.productId,
-                          price: product.price,
-                        );
-                        context.read<IapCubit>().purchaseProduct();
-                      },
-                      onRetry: () => context.read<IapCubit>().loadIapProducts(forceRetry: true),
-                    ),
-                  ),
-                ],
+              // The CTA rides inside the scroll flow now (design), so no
+              // sticky bar and no reserved height — just breathing room under
+              // the legal links.
+              return PaywallPageDecoration(
+                state: state,
+                bottomPadding: 24.h + MediaQuery.paddingOf(context).bottom,
+                onClose: _handleClose,
+                showCloseButton: _isCloseButtonVisible,
+                onPurchase: () {
+                  final product = state.selectedProduct;
+                  AppService.instance.appTrackingService.trackPremiumPurchase(
+                    productId: product.productId,
+                    price: product.price,
+                  );
+                  context.read<IapCubit>().purchaseProduct();
+                },
+                onRetry: () => context.read<IapCubit>().loadIapProducts(forceRetry: true),
               );
             },
           ),

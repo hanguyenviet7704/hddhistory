@@ -5,6 +5,8 @@ class PaywallPageDecoration extends StatefulWidget {
   final double bottomPadding;
   final Future<void> Function() onClose;
   final bool showCloseButton;
+  final VoidCallback onPurchase;
+  final VoidCallback onRetry;
 
   const PaywallPageDecoration({
     super.key,
@@ -12,6 +14,8 @@ class PaywallPageDecoration extends StatefulWidget {
     required this.bottomPadding,
     required this.onClose,
     required this.showCloseButton,
+    required this.onPurchase,
+    required this.onRetry,
   });
 
   @override
@@ -141,6 +145,15 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             onPlanTap: _handlePlanTap,
           ),
           PaywallPromoCode(state: widget.state),
+          // The CTA lives IN the scroll flow, per the design — not in a sticky
+          // bottom bar. The reader passes benefits and prices on the way to it,
+          // and the trust strip follows right after as the closing argument.
+          26.verticalSpace,
+          _InlinePurchaseSection(
+            state: widget.state,
+            onPurchase: widget.onPurchase,
+            onRetry: widget.onRetry,
+          ),
           32.verticalSpace,
           // Config-gated: a claim about MIT and Harvard may not hold in every
           // market. Absent from the config parses to true (the behaviour of the
@@ -294,4 +307,58 @@ class _PaywallCredibilityBlock extends StatelessWidget {
     height: 44.w,
     fit: BoxFit.contain,
   );
+}
+
+/// The purchase CTA inside the scroll flow — the sticky bottom bar's job,
+/// relocated per the design. Same contract as the bar: the button carries the
+/// selected plan's total, flips to Retry when the catalogue failed to load,
+/// and the renewal caption stays under it because the price a subscription
+/// renews at is not information a design pass gets to drop.
+class _InlinePurchaseSection extends StatelessWidget {
+  final IapState state;
+  final VoidCallback onPurchase;
+  final VoidCallback onRetry;
+
+  const _InlinePurchaseSection({
+    required this.state,
+    required this.onPurchase,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasProducts = state.iapProducts.isNotEmpty;
+    final isBusy = state.status == MonetizationStatus.loading || state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring;
+    final isFailure = state.status == MonetizationStatus.failure && !hasProducts;
+
+    IapProductEntity? selected;
+    for (final product in state.iapProducts) {
+      if (product.id == state.selectedProductId) selected = product;
+    }
+    selected ??= state.iapProducts.firstOrNull;
+
+    final price = selected?.price ?? '';
+    final label = isFailure
+        ? l10n.monetization.retry
+        : price.isEmpty
+            ? l10n.monetization.paywallCtaUpgrade
+            : l10n.monetization.paywallCtaUpgradePrice(price: price);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _PurchaseButton(
+          label: label,
+          busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
+          enabled: !isBusy && (hasProducts || isFailure),
+          onTap: isFailure ? onRetry : onPurchase,
+        ),
+        16.verticalSpace,
+        _SubscriptionCaption(
+          product: selected,
+          fallback: hasProducts ? l10n.monetization.paywallHighlightSubtitle : l10n.monetization.emptyProductsDesc,
+        ),
+      ],
+    );
+  }
 }
