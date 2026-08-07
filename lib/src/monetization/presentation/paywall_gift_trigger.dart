@@ -63,14 +63,6 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   final campaign = iapCubit.resolvedPaywallConfig.giftCampaign;
   if (campaign == null) return;
 
-  // Both bounds required — an open-ended discount is a price change, not a
-  // campaign (same rule the server enforces on publish).
-  final start = DateTime.tryParse(campaign.startAtUtc ?? '');
-  final end = DateTime.tryParse(campaign.endAtUtc ?? '');
-  final now = DateTime.now().toUtc();
-  if (start == null || end == null) return;
-  if (now.isBefore(start.toUtc()) || now.isAfter(end.toUtc())) return;
-
   // An unloaded profile reads as non-premium; showing an upsell to someone who
   // already paid is worse than skipping a day, so wait for a real answer.
   final user = AppDI.injector.get<ProfileCubit>().state.user;

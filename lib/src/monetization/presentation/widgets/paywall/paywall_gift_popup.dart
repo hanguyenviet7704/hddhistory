@@ -26,9 +26,10 @@ class PaywallGiftPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Copy is deliberately hardcoded (spec marks it "cứng") — the campaign
-    // config carries schedule only, never text.
-    final title = l10n.monetization.giftPopupTitle;
+    // The one configurable line of this popup. Empty config falls back to the
+    // bundled copy; the CTA below stays hardcoded per the spec.
+    final remoteTitle = context.read<IapCubit>().resolvedPaywallConfig.giftCampaign?.title.text ?? '';
+    final title = remoteTitle.isEmpty ? l10n.monetization.giftPopupTitle : remoteTitle;
 
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),

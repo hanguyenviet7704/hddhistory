@@ -202,20 +202,14 @@ enum PaywallAudienceSegment {
   newUser,
 }
 
-/// The gift popup's schedule. The popup's copy is hardcoded (spec: "cứng"),
-/// and it opens the compact paywall — so all a campaign carries is its window
-/// and [discountPercent], the headline number the compact sheet shows.
+/// The gift popup. It opens the compact paywall on a schedule coded in the
+/// app (day 0 + days 1-7), so all the config carries is the switch and an
+/// optional title; empty title falls back to the app's bundled copy.
 @freezed
 abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
   const factory PaywallGiftCampaignEntity({
     @Default(false) bool enabled,
-    String? campaignId,
-    String? startAtUtc,
-
-    /// Campaign deadline AND the sheet's countdown source — one field, so the
-    /// timer can never outlive the offer it is counting down to.
-    String? endAtUtc,
-    @Default(0) int discountPercent,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
   }) = _PaywallGiftCampaignEntity;
 
   factory PaywallGiftCampaignEntity.fromJson(Map<String, dynamic> json) => _$PaywallGiftCampaignEntityFromJson(json);
@@ -240,19 +234,24 @@ class _PaywallConfigParser {
   static const _locales = ['en', 'vi', 'zh', 'ja', 'ko'];
 
   /// Absent, malformed, or switched off all parse to null so the caller has
-  /// one thing to check. The campaign carries no copy and no products — the
-  /// popup's text is hardcoded and the surface it opens is the compact
-  /// paywall, which sells its own strategy's SKUs.
+  /// one thing to check. `title` is a flat per-locale map (not the nested
+  /// content shape) — see PaywallGiftTitleDto on the API side.
   static PaywallGiftCampaignEntity? _giftCampaign(Object? value) {
     if (value is! Map<String, dynamic>) return null;
     if (!_boolValue(value['enabled'])) return null;
 
+    final title = value['title'];
     return PaywallGiftCampaignEntity(
       enabled: true,
-      campaignId: value['campaignId'] is String ? value['campaignId'] as String : null,
-      startAtUtc: value['startAtUtc'] is String ? value['startAtUtc'] as String : null,
-      endAtUtc: value['endAtUtc'] is String ? value['endAtUtc'] as String : null,
-      discountPercent: _intValue(value['discountPercent']),
+      title: title is Map<String, dynamic>
+          ? BaseMultiLanguage(
+              en: _stringValue(title['en']),
+              vi: _stringValue(title['vi']),
+              zh: _stringValue(title['zh']),
+              ja: _stringValue(title['ja']),
+              ko: _stringValue(title['ko']),
+            )
+          : const BaseMultiLanguage(),
     );
   }
 

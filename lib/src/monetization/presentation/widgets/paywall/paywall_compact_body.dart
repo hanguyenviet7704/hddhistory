@@ -3,11 +3,10 @@ part of '../../../monetization.dart';
 /// The compact-variant paywall — what an entry point configured "Rút gọn" in
 /// the admin renders instead of the full page.
 ///
-/// Same design language as the gift sheet (badge, N% OFF, countdown, artwork,
-/// price, one CTA). The plan is the compact SKU the resolver already picked;
-/// discount and deadline prefer the live sale event and fall back to the gift
-/// campaign config. Neither running → badge, plan and CTA only; urgency is
-/// never invented client-side.
+/// Badge, N% OFF, countdown, artwork, price, one CTA. The plan is the compact
+/// SKU the resolver already picked; discount and deadline come from the live
+/// sale event only. No sale → badge, plan and CTA; urgency is never invented
+/// client-side.
 ///
 /// Still a full route (the callers just push PaywallPage), so close pops the
 /// route exactly like the full variant — only the body is sheet-shaped.
@@ -48,16 +47,12 @@ class _PaywallCompactBody extends StatelessWidget {
       });
     }
 
-    // Discount and deadline prefer the live sale event, then the gift
-    // campaign: the user's ruling is that this sheet IS the compact paywall,
-    // so the gift config is its natural source of urgency. Neither running →
-    // neither shown; the client still never invents an offer.
-    final gift = context.read<IapCubit>().resolvedPaywallConfig.giftCampaign;
-    final saleDiscount = product != null && product.salePercent > 0 && product.salePercent < 100 ? product.salePercent.round() : 0;
-    final discount = saleDiscount > 0 ? saleDiscount : (gift?.discountPercent ?? 0);
-    // Strategy carries a DateTime, the gift entity a raw ISO string — unify
-    // here so the countdown row has one type to work with.
-    final DateTime? endAtUtc = strategy?.hasSaleCountdown == true ? strategy?.endAtUtc : DateTime.tryParse(gift?.endAtUtc ?? '');
+    // Discount and deadline come from the live sale event and nowhere else —
+    // the gift config carries no numbers (it is just the popup's switch and
+    // title). No sale running → no headline, no countdown; the client never
+    // invents an offer.
+    final discount = product != null && product.salePercent > 0 && product.salePercent < 100 ? product.salePercent.round() : 0;
+    final DateTime? endAtUtc = strategy?.hasSaleCountdown == true ? strategy?.endAtUtc : null;
 
     return Container(
       margin: EdgeInsets.only(top: 68.h),
