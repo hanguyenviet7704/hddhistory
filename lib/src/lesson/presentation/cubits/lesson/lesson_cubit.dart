@@ -302,7 +302,26 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           _theoryCubit.reset();
           _exerciseCubit.reset();
         }
-        emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
+        emit(
+          state.copyWith(
+            status: LessonStatus.success,
+            pageData: pageData,
+            // Follow-up pages merge in BEHIND the reader — snapping the index
+            // back to the first item would yank a mid-read session.
+            currentLearningItemIndex: isInit ? 0 : state.currentLearningItemIndex,
+          ),
+        );
+        // The deck derives clip numbering, the narratable-clip set and the
+        // takeaway recap from the FULL item list, so fetch the remaining pages
+        // right away: with the default take=10, any keypoint holding more
+        // items than one page left its tail — the takeaway included —
+        // permanently unloaded, which killed the recap card's tap-to-read on
+        // exactly the bigger keypoints (2026-08-07). Item counts per keypoint
+        // are small, so this is at most another request or two.
+        if (!pageData.isLastPage) {
+          loadAllLearningItems(keypointId: keypointId);
+        }
+        if (!isInit) return;
         if (pageData.items.isEmpty) return;
         // A keypoint may OPEN on an exercise item (old content orders exist) —
         // skip to the first readable one, exactly as nextLearningItem does
