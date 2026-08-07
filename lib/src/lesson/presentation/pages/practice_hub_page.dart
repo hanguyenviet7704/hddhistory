@@ -65,6 +65,11 @@ class PracticeHubPage extends StatelessWidget {
                   ),
                 ),
                 22.verticalSpace,
+                // A keypoint with no playable questions shows Quiz as "Coming
+                // soon" like the other two modes (user call, 2026-08-07) — a
+                // tappable row opening onto an empty deck would be a dead end
+                // dressed as an option, and hiding it entirely made the hub
+                // look broken.
                 _modeCard(
                   context,
                   tint: AppCustomColor.brandPrimary50,
@@ -72,10 +77,12 @@ class PracticeHubPage extends StatelessWidget {
                   iconColor: AppCustomColor.brandPrimary,
                   title: lesson.practiceModeQuizTitle,
                   subtitle: lesson.practiceModeQuizSubtitle,
-                  onTap: () {
-                    AppHaptic.select();
-                    KeypointQuizPage.push(context, title: title, questions: questions);
-                  },
+                  onTap: questions.isEmpty
+                      ? null
+                      : () {
+                          AppHaptic.select();
+                          KeypointQuizPage.push(context, title: title, questions: questions);
+                        },
                 ),
                 14.verticalSpace,
                 _modeCard(
