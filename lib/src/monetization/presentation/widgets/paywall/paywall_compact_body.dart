@@ -4,11 +4,10 @@ part of '../../../monetization.dart';
 /// the admin renders instead of the full page.
 ///
 /// Same design language as the gift sheet (badge, N% OFF, countdown, artwork,
-/// price, one CTA) but driven by the RESOLVED STRATEGY, not a gift campaign:
-/// the plan is the compact SKU the resolver already picked, the headline is
-/// that product's own salePercent, and the countdown appears only while a sale
-/// event is running. No sale → badge, plan and CTA only; urgency is never
-/// invented client-side.
+/// price, one CTA). The plan is the compact SKU the resolver already picked;
+/// discount and deadline prefer the live sale event and fall back to the gift
+/// campaign config. Neither running → badge, plan and CTA only; urgency is
+/// never invented client-side.
 ///
 /// Still a full route (the callers just push PaywallPage), so close pops the
 /// route exactly like the full variant — only the body is sheet-shaped.
@@ -26,121 +25,141 @@ class _PaywallCompactBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strategy = state.resolvedPaywallStrategy;
-    final product = state.selectedProduct;
-    final hasProduct = product.price.isNotEmpty;
-    final discount = product.salePercent > 0 && product.salePercent < 100 ? product.salePercent.round() : 0;
-    final endAtUtc = strategy?.hasSaleCountdown == true ? strategy?.endAtUtc : null;
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        margin: EdgeInsets.only(top: 68.h),
-        padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 30.h),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: _CloseButton(onTap: () => unawaited(onClose())),
+    // NOT `state.selectedProduct`: selectedProductId is chosen when the FULL
+    // list loads, and the compact list usually doesn't contain that id — the
+    // getter then answers with an empty entity, which is how this sheet first
+    // shipped with no price row and a permanently disabled CTA.
+    IapProductEntity? selected;
+    for (final candidate in state.iapProducts) {
+      if (candidate.id == state.selectedProductId) selected = candidate;
+    }
+    selected ??= state.iapProducts.firstOrNull;
+    final product = selected;
+    final hasProduct = product != null && product.price.isNotEmpty;
+
+    // Discount and deadline prefer the live sale event, then the gift
+    // campaign: the user's ruling is that this sheet IS the compact paywall,
+    // so the gift config is its natural source of urgency. Neither running →
+    // neither shown; the client still never invents an offer.
+    final gift = context.read<IapCubit>().resolvedPaywallConfig.giftCampaign;
+    final saleDiscount = product != null && product.salePercent > 0 && product.salePercent < 100 ? product.salePercent.round() : 0;
+    final discount = saleDiscount > 0 ? saleDiscount : (gift?.discountPercent ?? 0);
+    // Strategy carries a DateTime, the gift entity a raw ISO string — unify
+    // here so the countdown row has one type to work with.
+    final DateTime? endAtUtc = strategy?.hasSaleCountdown == true ? strategy?.endAtUtc : DateTime.tryParse(gift?.endAtUtc ?? '');
+
+    return Container(
+      margin: EdgeInsets.only(top: 68.h),
+      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 30.h),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: _CloseButton(onTap: () => unawaited(onClose())),
+            ),
+            12.verticalSpace,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 5.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDEAFD),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              12.verticalSpace,
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 5.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEDEAFD),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: AppText(
-                  l10n.monetization.giftSheetBadge.toUpperCase(),
-                  style: AppStyle.text12.copyWith(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    color: const Color(0xFF4B44CA),
-                  ),
+              child: AppText(
+                l10n.monetization.giftSheetBadge.toUpperCase(),
+                style: AppStyle.text12.copyWith(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                  color: const Color(0xFF4B44CA),
                 ),
               ),
-              if (discount > 0) ...[
-                14.verticalSpace,
-                AppText(
-                  l10n.monetization.giftSheetDiscount(percent: discount),
-                  textAlign: TextAlign.center,
-                  style: AppStyle.textBold24.copyWith(
-                    fontSize: 56.sp,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -2.6,
-                    color: const Color(0xFF4B44CA),
-                    height: 1.1,
-                  ),
+            ),
+            if (discount > 0) ...[
+              14.verticalSpace,
+              AppText(
+                l10n.monetization.giftSheetDiscount(percent: discount),
+                textAlign: TextAlign.center,
+                style: AppStyle.textBold24.copyWith(
+                  fontSize: 56.sp,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -2.6,
+                  color: const Color(0xFF4B44CA),
+                  height: 1.1,
                 ),
-              ],
-              if (endAtUtc != null) ...[
-                14.verticalSpace,
-                _CountdownRow(endAtUtc: endAtUtc),
-              ],
-              Padding(
-                padding: EdgeInsets.only(top: 20.h, bottom: 8.h),
+              ),
+            ],
+            if (endAtUtc != null) ...[
+              14.verticalSpace,
+              _CountdownRow(endAtUtc: endAtUtc),
+            ],
+            // The artwork owns the leftover middle of the sheet (design:
+            // the price row flexes, box sits large in the center) — an
+            // Expanded, so the sheet always fills from 68px down instead of
+            // shrink-wrapping and floating mid-screen.
+            Expanded(
+              child: Center(
                 child: ExcludeSemantics(
                   child: Transform.rotate(
                     angle: -16 * math.pi / 180,
                     child: SvgPicture.asset(
                       AppAsset.svg.app.pwGift,
-                      width: 190.w,
+                      width: 250.w,
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
               ),
-              if (hasProduct) ...[
-                14.verticalSpace,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    if (product.hasCompareAtPrice) ...[
-                      AppText(
-                        product.compareAtPrice,
-                        style: AppStyle.text16.copyWith(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFA8A2C6),
-                          decoration: TextDecoration.lineThrough,
-                          decorationColor: const Color(0xFFA8A2C6),
-                        ),
-                      ),
-                      10.horizontalSpace,
-                    ],
+            ),
+            if (hasProduct) ...[
+              14.verticalSpace,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  if (product.hasCompareAtPrice) ...[
                     AppText(
-                      product.price,
-                      style: AppStyle.textBold24.copyWith(
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        color: AppCustomColor.textBrand,
+                      product.compareAtPrice,
+                      style: AppStyle.text16.copyWith(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFA8A2C6),
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: const Color(0xFFA8A2C6),
                       ),
                     ),
+                    10.horizontalSpace,
                   ],
-                ),
-              ],
-              26.verticalSpace,
-              _PurchaseButton(
-                label: l10n.monetization.giftSheetCta,
-                busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
-                enabled: hasProduct,
-                onTap: onPurchase,
+                  AppText(
+                    product.price,
+                    style: AppStyle.textBold24.copyWith(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: AppCustomColor.textBrand,
+                    ),
+                  ),
+                ],
               ),
-              14.verticalSpace,
-              const PaywallLegalLinks(),
             ],
-          ),
+            26.verticalSpace,
+            _PurchaseButton(
+              label: l10n.monetization.giftSheetCta,
+              busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
+              enabled: hasProduct,
+              onTap: onPurchase,
+            ),
+            14.verticalSpace,
+            const PaywallLegalLinks(),
+          ],
         ),
       ),
     );
