@@ -52,6 +52,7 @@ import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
 import GeneralSection from "./components/GeneralSection";
 import GiftCampaignSection from "./components/GiftCampaignSection";
 import NewUserSection from "./components/NewUserSection";
+import ReviewsSection from "./components/ReviewsSection";
 import SaleEventSection from "./components/SaleEventSection";
 import VersionHistoryDrawer from "./components/VersionHistoryDrawer";
 import VersionInfoPanel from "./components/VersionInfoPanel";
@@ -445,6 +446,13 @@ export default function PaywallConfigPage() {
             productsLoading={productsLoading}
             productsError={productsError}
             onRefreshProducts={refetchProducts}
+          />
+
+          <ReviewsSection
+            value={draft.reviews}
+            onChange={(reviews) => patchDraft({ reviews })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
           />
         </>
       ) : null}

@@ -26,6 +26,9 @@ import {
   PaywallProductRef,
   PaywallProductVariant,
   PaywallGiftCampaign,
+  PaywallReview,
+  PaywallReviewContent,
+  PaywallReviewLocaleContent,
   PaywallSaleEvent,
   PaywallSaleStrategy,
 } from "../../types/interface/paywall-config.interface";
@@ -113,6 +116,22 @@ export type EntryPointVariantsDraft = Record<
   PaywallProductVariant
 >;
 
+export interface ReviewContentDraft {
+  title: string;
+  body: string;
+}
+
+export type ReviewLocalizedContentDraft = Record<PaywallLocale, ReviewContentDraft>;
+
+export interface ReviewDraft {
+  _localId: string;
+  name: string;
+  avatarUrl: string;
+  /** Kept as text like every numeric draft field; "5" when absent, matching the backend default. */
+  rating: string;
+  content: ReviewLocalizedContentDraft;
+}
+
 export interface ConfigDraft {
   schemaVersion: string;
   enableLessonLock: boolean;
@@ -129,6 +148,7 @@ export interface ConfigDraft {
   saleEvent: SaleEventDraft;
   giftCampaign: GiftCampaignDraft;
   showCredibilityBlock: boolean;
+  reviews: ReviewDraft[];
 }
 
 // ---------------------------------------------------------------------
@@ -158,6 +178,24 @@ export const emptyImpressionRule = (): ImpressionRuleDraft => ({
   content: emptyLocalizedContent(),
   products: [],
   compactProducts: [],
+});
+
+export const emptyReviewContent = (): ReviewContentDraft => ({
+  title: "",
+  body: "",
+});
+
+export const emptyReviewLocalizedContent = (): ReviewLocalizedContentDraft =>
+  Object.fromEntries(
+    PAYWALL_CONFIG_LOCALES.map((locale) => [locale, emptyReviewContent()])
+  ) as ReviewLocalizedContentDraft;
+
+export const emptyReview = (): ReviewDraft => ({
+  _localId: nextLocalId(),
+  name: "",
+  avatarUrl: "",
+  rating: "5",
+  content: emptyReviewLocalizedContent(),
 });
 
 /**
@@ -215,6 +253,8 @@ export const defaultDraft = (): ConfigDraft => ({
   },
   // SHOWN by default, matching the app build that introduced the strip.
   showCredibilityBlock: true,
+  // Empty by default: the app falls back to its 3 bundled reviews.
+  reviews: [],
 });
 
 // ---------------------------------------------------------------------
@@ -282,6 +322,29 @@ const toEntryPointVariantsDraft = (
       variants?.[entryPoint] === "compact" ? "compact" : "full",
     ])
   ) as EntryPointVariantsDraft;
+
+const toReviewContentDraft = (content?: PaywallReviewLocaleContent): ReviewContentDraft => ({
+  title: content?.title ?? "",
+  body: content?.body ?? "",
+});
+
+const toReviewLocalizedContentDraft = (
+  content?: PaywallReviewContent
+): ReviewLocalizedContentDraft =>
+  Object.fromEntries(
+    PAYWALL_CONFIG_LOCALES.map((locale) => [
+      locale,
+      toReviewContentDraft(content?.[locale]),
+    ])
+  ) as ReviewLocalizedContentDraft;
+
+const toReviewDraft = (review: PaywallReview): ReviewDraft => ({
+  _localId: nextLocalId(),
+  name: review.name ?? "",
+  avatarUrl: review.avatarUrl ?? "",
+  rating: review.rating != null ? String(review.rating) : "5",
+  content: toReviewLocalizedContentDraft(review.content),
+});
 
 export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   schemaVersion: String(config.schemaVersion ?? 1),
@@ -376,6 +439,7 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   },
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
   showCredibilityBlock: config.showCredibilityBlock !== false,
+  reviews: (config.reviews ?? []).map(toReviewDraft),
 });
 
 // ---------------------------------------------------------------------
@@ -389,6 +453,13 @@ export const isLocaleContentEmpty = (content: LocaleContentDraft): boolean =>
 
 export const isLocalizedContentEmpty = (content: LocalizedContentDraft): boolean =>
   PAYWALL_CONFIG_LOCALES.every((locale) => isLocaleContentEmpty(content[locale]));
+
+export const isReviewContentEmpty = (content: ReviewContentDraft): boolean =>
+  !content.title.trim() && !content.body.trim();
+
+export const isReviewLocalizedContentEmpty = (
+  content: ReviewLocalizedContentDraft
+): boolean => PAYWALL_CONFIG_LOCALES.every((locale) => isReviewContentEmpty(content[locale]));
 
 const fromLocaleContentDraft = (content: LocaleContentDraft): PaywallLocaleContent => {
   const result: PaywallLocaleContent = {};
@@ -436,6 +507,34 @@ const fromCompactProductsDraft = (
   rows: ProductRefDraft[]
 ): PaywallProductRef[] | undefined =>
   rows.length ? rows.map(fromProductRefDraft) : undefined;
+
+const fromReviewContentDraft = (content: ReviewContentDraft): PaywallReviewLocaleContent => {
+  const result: PaywallReviewLocaleContent = {};
+  if (content.title.trim()) result.title = content.title.trim();
+  if (content.body.trim()) result.body = content.body.trim();
+  return result;
+};
+
+/** Always includes `en`; other locales only if they have any content. */
+const fromReviewLocalizedContentDraft = (
+  content: ReviewLocalizedContentDraft
+): PaywallReviewContent => {
+  const result = { en: fromReviewContentDraft(content.en) } as PaywallReviewContent;
+  PAYWALL_CONFIG_LOCALES.forEach((locale) => {
+    if (locale === "en") return;
+    if (!isReviewContentEmpty(content[locale])) {
+      (result as any)[locale] = fromReviewContentDraft(content[locale]);
+    }
+  });
+  return result;
+};
+
+const fromReviewDraft = (review: ReviewDraft): PaywallReview => ({
+  name: review.name.trim(),
+  avatarUrl: review.avatarUrl.trim() || undefined,
+  rating: review.rating.trim() ? Number(review.rating) : undefined,
+  content: fromReviewLocalizedContentDraft(review.content),
+});
 
 const fromAudienceFlags = (draft: SaleEventDraft): PaywallAudienceSegment[] => {
   const appliesTo: PaywallAudienceSegment[] = [];
@@ -537,6 +636,11 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
       : undefined,
   };
 
+  // Omitted entirely when empty rather than sent as `[]`: both mean "use the
+  // app's bundled reviews" to the client, but omitting keeps the stored JSON
+  // free of a key that asserts nothing.
+  const reviews = draft.reviews.length ? draft.reviews.map(fromReviewDraft) : undefined;
+
   return {
     schemaVersion: Number(draft.schemaVersion || 1),
     enableLessonLock: draft.enableLessonLock,
@@ -549,6 +653,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     // Stored explicitly rather than only-when-false, so the JSON states the
     // intent and reading it never requires knowing the client default.
     showCredibilityBlock: draft.showCredibilityBlock,
+    reviews,
   };
 };
 
@@ -796,6 +901,22 @@ export const validateDraft = (
         "giftCampaign.appliesTo phải chọn ít nhất 1 đối tượng khi bật gift campaign";
     }
   }
+
+  // reviews — purely client-side rules (the backend itself only requires
+  // `name` and the `content.en` object to exist, not that it be non-empty):
+  // a nameless card or one with no English copy at all would still round-trip
+  // and publish, but would render broken/blank on every locale that falls
+  // back to `en`.
+  draft.reviews.forEach((review, index) => {
+    const prefix = `reviews[${index}]`;
+    if (!review.name.trim()) {
+      errors[`${prefix}.name`] = `${prefix}.name là bắt buộc`;
+    }
+    if (isReviewContentEmpty(review.content.en)) {
+      errors[`${prefix}.content.en`] =
+        `${prefix}.content.en: cần ít nhất tiêu đề hoặc nội dung tiếng Anh`;
+    }
+  });
 
   return errors;
 };

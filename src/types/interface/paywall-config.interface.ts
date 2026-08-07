@@ -118,6 +118,31 @@ export interface PaywallGiftCampaign {
   products?: PaywallProductRef[];
 }
 
+/** One locale's worth of one review card's text (already in that locale). */
+export interface PaywallReviewLocaleContent {
+  title?: string;
+  body?: string;
+}
+
+/** Same locale contract as `PaywallLocalizedContent`: en required, rest optional. */
+export type PaywallReviewContent = {
+  en: PaywallReviewLocaleContent;
+} & Partial<Record<Exclude<PaywallLocale, "en">, PaywallReviewLocaleContent>>;
+
+/**
+ * One card of the paywall's "What people say" carousel. Name and avatar are
+ * shown as-is in every locale (a reviewer's name is not translated); only the
+ * card's text is per-locale.
+ */
+export interface PaywallReview {
+  name: string;
+  /** Absolute image URL. Absent renders an initial-letter placeholder. */
+  avatarUrl?: string;
+  /** 1-5 stars. Absent means 5. */
+  rating?: number;
+  content: PaywallReviewContent;
+}
+
 export interface PaywallAutoOpen {
   enabled: boolean;
   sessionRolloutPercent: number;
@@ -194,6 +219,8 @@ export interface PaywallConfig {
   giftCampaign?: PaywallGiftCampaign;
   /** Laurel + store-rating strip under the plans. Absent means SHOWN. */
   showCredibilityBlock?: boolean;
+  /** The "What people say" carousel. Absent falls back to the app's bundled reviews. */
+  reviews?: PaywallReview[];
 }
 
 // Mirrors meup-api dto/paywall-config-response.dto.ts. MySQL is now the
