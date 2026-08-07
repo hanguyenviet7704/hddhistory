@@ -105,6 +105,68 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
       ..setUser(auth.user)
       ..loadUser();
     setTrackingUser();
+    unawaited(_persistAuthSession(auth));
+  }
+
+  /// Mirrors the session into secure storage — see [LocalStoreKey.authSession].
+  ///
+  /// Fire-and-forget on purpose: a write that fails must not hold up sign-in.
+  /// The worst case is the reader signing in again after a reinstall, which is
+  /// exactly where they were before this existed.
+  Future<void> _persistAuthSession(AuthEntity auth) async {
+    if (auth.token.refreshToken.isEmpty) return;
+    try {
+      await AppDI.injector.get<ILocalStoreService>().setMap(
+            key: LocalStoreKey.authSession,
+            value: auth.toJson(),
+          );
+    } catch (error) {
+      LogDev.warning('[UserCubit] Could not persist auth session: $error');
+    }
+  }
+
+  /// Puts the mirrored session back when the hydrated state has none.
+  ///
+  /// Runs once at startup, before the splash decides where to send the reader.
+  /// Two situations reach it: a reinstall on iOS, where the Keychain outlived
+  /// the app; and any occasion where the hydrated box was lost or unreadable
+  /// while secure storage was not.
+  ///
+  /// The restored access token may well be expired — that is fine and expected.
+  /// The first request 401s, the interceptor refreshes with the restored refresh
+  /// token, and the device row it is checked against is keyed by a deviceId that
+  /// survives a reinstall too. A refresh token the server no longer recognises
+  /// ends in the same sign-in screen the reader would have seen anyway.
+  Future<void> restoreAuthSessionIfNeeded() async {
+    if (state.accessToken.isNotEmpty) return;
+
+    try {
+      final stored = await AppDI.injector.get<ILocalStoreService>().getMap(
+            key: LocalStoreKey.authSession,
+          );
+      if (stored.isEmpty) return;
+
+      final auth = AuthEntity.fromJson(stored);
+      if (auth.token.refreshToken.isEmpty || auth.user.id.isEmpty) return;
+
+      AppGlobalValue.accessToken = auth.token.accessToken;
+      AppGlobalValue.refreshToken = auth.token.refreshToken;
+      setAuth(auth);
+      LogDev.info('[UserCubit] Restored session for ${auth.user.id} from secure storage');
+    } catch (error) {
+      // A blob written by an older shape is not worth crashing the launch over;
+      // drop it and let the reader sign in.
+      LogDev.warning('[UserCubit] Could not restore auth session: $error');
+      await _clearAuthSession();
+    }
+  }
+
+  Future<void> _clearAuthSession() async {
+    try {
+      await AppDI.injector.get<ILocalStoreService>().remove(key: LocalStoreKey.authSession);
+    } catch (error) {
+      LogDev.warning('[UserCubit] Could not clear auth session: $error');
+    }
   }
 
   void setTrackingUser() {
@@ -133,6 +195,10 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
         onboardingPathOrder: onboardingPathOrder,
       ),
     );
+    // The mirror goes with the session it mirrors. Leaving it behind would let
+    // the next launch restore the very session that was just torn down — a
+    // sign-out that undoes itself.
+    await _clearAuthSession();
     if (previousUserId.isNotEmpty) {
       await _clearLearningStreakCacheForUser(previousUserId);
     }

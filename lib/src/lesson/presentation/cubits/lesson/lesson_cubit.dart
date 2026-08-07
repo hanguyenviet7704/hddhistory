@@ -69,8 +69,12 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     final items = state.pageData.items;
     var index = from;
     while (index < items.length) {
-      final type = items[index].type;
-      if (type == LearningItemType.theory || type == LearningItemType.video) return index;
+      final item = items[index];
+      // The takeaway summary is read on the recap flip card, not as its own
+      // stop in the flow — skipping it here is what makes finishing the last
+      // real theory card complete the keypoint (revealing the recap card).
+      final isReadableTheory = item.type == LearningItemType.theory && !item.isTakeawaySummary;
+      if (isReadableTheory || item.type == LearningItemType.video) return index;
       index++;
     }
     return index;

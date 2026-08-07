@@ -13,9 +13,12 @@ part of '../../../lesson.dart';
 /// for Continue here, which hands over to the lesson-complete screen — where
 /// the practice entry lives ("Practice now" → [PracticeHubPage]).
 ///
-/// The recap text is the keypoint's `description`. A keypoint without one keeps
-/// the quote card but loses the flip and its hint — a card that flips to
-/// nothing teaches the reader the gesture is a lie.
+/// The recap text is the keypoint's authored takeaway — the "Take This With
+/// You" summary theory item ([TakeawaySummaryItemX]), which no longer renders
+/// as a deck card precisely because it lives here. Keypoints without one fall
+/// back to `description`; with neither, the quote card keeps its front but
+/// loses the flip and its hint — a card that flips to nothing teaches the
+/// reader the gesture is a lie.
 ///
 /// The explicit completion call below is a fallback for the one path where
 /// nothing else would have triggered completion: a keypoint with no content at
@@ -71,7 +74,14 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     final keypointTitle = keypoint.title.text.isNotEmpty ? keypoint.title.text : courseLessonState.selectedLesson.title.text;
     final lessonTitle = courseLessonState.selectedLesson.title.text;
     final imageUrl = keypoint.image.isNotEmpty ? keypoint.image : courseLessonState.selectedLesson.image;
-    final recapText = keypoint.description.text.trim();
+    final takeawayText = context
+        .watch<LessonCubit>()
+        .state
+        .pageData
+        .items
+        .map((item) => item.takeawaySummaryText)
+        .firstWhere((text) => text.isNotEmpty, orElse: () => '');
+    final recapText = takeawayText.isNotEmpty ? takeawayText : keypoint.description.text.trim();
     final hasRecap = recapText.isNotEmpty;
 
     return Padding(

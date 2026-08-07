@@ -16,4 +16,12 @@ class LocalStoreKey {
   // Pending tracking events waiting to be flushed to meup-api. Persisted so a
   // kill / offline stretch doesn't lose the behaviour trail.
   static const String trackingEventQueue = "TRACKING_EVENT_QUEUE";
+  // A mirror of the signed-in session, kept outside hydrated_bloc.
+  //
+  // On iOS this store is the Keychain, which OUTLIVES deleting the app — the
+  // same property `deviceTokenUID` above already relies on — so a reinstall can
+  // pick the session back up instead of asking the reader to sign in again.
+  // Android's encrypted preferences go with the app, so there it buys resilience
+  // against a lost hydrated box but nothing across an uninstall.
+  static const String authSession = "AUTH_SESSION";
 }

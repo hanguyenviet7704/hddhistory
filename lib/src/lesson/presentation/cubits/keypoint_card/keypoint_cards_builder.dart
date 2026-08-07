@@ -1,5 +1,31 @@
 part of '../../../lesson.dart';
 
+/// The keypoint's takeaway/summary theory item — authored as "Take This With
+/// You" / "Bỏ túi ngay": a theory with exactly ONE document whose first block
+/// is a caption, seeded alongside the main reading (titles carry a "(2)"
+/// suffix, but the SHAPE is the contract, not the title).
+///
+/// It no longer contributes a card of its own: its bullets are the back face
+/// of the deck's terminal recap flip card ([KeypointDoneCard]), so rendering it
+/// as a card too would show the reader the same summary twice in a row.
+extension TakeawaySummaryItemX on LearningItemEntity {
+  bool get isTakeawaySummary =>
+      type == LearningItemType.theory &&
+      documents.length == 1 &&
+      documents.first.document.isNotEmpty &&
+      documents.first.document.first.type == ContentDocumentType.caption;
+
+  /// The takeaway's text blocks, joined — the recap card's body. Empty when
+  /// this is not a takeaway item.
+  String get takeawaySummaryText => !isTakeawaySummary
+      ? ''
+      : documents.first.document
+            .where((block) => block.type == ContentDocumentType.text)
+            .map((block) => block.data.content.text.trim())
+            .where((text) => text.isNotEmpty)
+            .join('\n\n');
+}
+
 /// Builds the card list for one keypoint from its learning items.
 ///
 /// Pure on purpose — no cubit, no DI, no [LessonState]. This is the piece with
@@ -88,6 +114,16 @@ class KeypointCardsBuilder {
         continue;
       }
 
+      // The takeaway summary is content, but not a card — it IS the recap flip
+      // card's back face. Its clip slots must still be skipped over exactly
+      // like the exercise clips above: the backend dubs every theory item, so
+      // the takeaway's documents occupy positions in the clip numbering whether
+      // or not anything on screen renders them.
+      if (item.isTakeawaySummary) {
+        clipPosition += item.documents.length;
+        continue;
+      }
+
       final unitCount = item.documents.length;
       if (unitCount == 0) continue;
 
@@ -120,8 +156,13 @@ class KeypointCardsBuilder {
     var narratablePosition = 0;
     for (final item in items) {
       if (item.type == LearningItemType.theory) {
-        for (var i = 0; i < item.documents.length; i++) {
-          narratableClips.add(narratablePosition + i);
+        // The takeaway's clips advance the position but are NOT narratable:
+        // there is no card on screen for them, so the background queue reading
+        // one aloud would narrate a card the deck no longer has.
+        if (!item.isTakeawaySummary) {
+          for (var i = 0; i < item.documents.length; i++) {
+            narratableClips.add(narratablePosition + i);
+          }
         }
         narratablePosition += item.documents.length;
       } else if (item.type == LearningItemType.exercise && !item.isPlayingSubQuestions) {

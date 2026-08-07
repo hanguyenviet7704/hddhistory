@@ -89,6 +89,12 @@ class AppService {
       HydrateBlocService.instance.initialize(),
       Firebase.initializeApp(options: F.firebaseOptions),
     ]);
+
+    // After the hydrated store is up, before anything reads the session: hand
+    // back a session the hydrated box no longer has but secure storage does.
+    // Must finish before `runApp`, because the splash decides authenticated vs
+    // not from `UserCubit` the moment it builds.
+    await AppDI.injector.get<UserCubit>().restoreAuthSessionIfNeeded();
     NotificationService.initialize(
       NotificationCoreConfig(
         onTokenChanged: (state) {
