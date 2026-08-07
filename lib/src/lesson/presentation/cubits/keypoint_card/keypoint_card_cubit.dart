@@ -665,6 +665,12 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     final cueIndex = _takeawayLearningItemId == null
         ? null
         : _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
+    // The reader already tapped the recap open and the voice is reading it —
+    // a re-park (any rebuild re-pointing narration at this card) must not
+    // pause the very thing the tap started.
+    if (cueIndex != null && cueIndex == _audioCubit.state.activeCueIndex && _audioCubit.state.isPlaying) {
+      return;
+    }
     if (cueIndex != null) {
       _loadedClipCardIndex = index;
       _recapGateCueIndex = cueIndex;
@@ -893,7 +899,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // instead. The pip-bar leak is stale `@lazySingleton` TheoryCubit /
     // ExerciseCubit indices read back by [_liveIndexForCurrentItem] during the
     // entry burst, and it has to be fixed at that source, not here.
-    final nextFurthestIndex = completionJustTriggered ? built.doneCardIndex : built.liveCardIndex;
+    // Once the keypoint is COMPLETED the done card stays unlocked. Keying this
+    // on completionJustTriggered alone unlocked it for exactly one rebuild:
+    // the next lesson emit recomputed furthest from the live edge, yanking the
+    // bound — and, through wasFollowingEdge below, the reader's view — from
+    // the recap card back onto the last real card, over and over ("lướt bị
+    // nhảy lại card trước", 2026-08-07). Every bounce also re-parked narration,
+    // pausing the recap the reader had just tapped to hear.
+    final isKeypointCompleted = lessonState.completionOrigin != LessonCompletionOrigin.none;
+    final nextFurthestIndex = isKeypointCompleted ? built.doneCardIndex : built.liveCardIndex;
 
     // Opening a keypoint always lands on its FIRST card, never where the reader
     // left off. Position inside a keypoint is deliberately not restored (product
