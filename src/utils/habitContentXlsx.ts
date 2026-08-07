@@ -32,6 +32,15 @@ export interface HabitRow {
   keypoint: number;
   habitIndex: number;
   keypointTitleVi?: string;
+  /**
+   * The habit's own picture, absolute CDN url. Blank means the app falls back
+   * to the skillset logo.
+   *
+   * A habit repeats across every keypoint that suggests it, so the same url
+   * repeats down the column. The server takes the first non-empty one it sees
+   * per habit rather than the first cell, so filling it once is enough.
+   */
+  image?: string;
   title: MultiLang;
 }
 
@@ -248,6 +257,7 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
     "Keypoint #",
     "Keypoint title (VI)",
     "Habit #",
+    "Image",
     "VI",
     "EN",
     "ZH",
@@ -270,6 +280,7 @@ export function downloadHabitXlsx(rows: HabitRow[]) {
       kp === prevKp && sameCourse ? "" : kp,
       r.keypointTitleVi ?? "",
       r.habitIndex,
+      r.image ?? "",
       r.title.vi ?? "",
       r.title.en ?? "",
       r.title.zh ?? "",
@@ -298,6 +309,9 @@ export async function parseHabitXlsx(
   const cCourse = colOf("course title");
   const cKp = colOf("keypoint #");
   const cHabit = colOf("habit #");
+  // Optional so a sheet written before the column existed still imports — it
+  // just leaves every habit without a picture.
+  const cImage = colOf("image");
   requireColumns(sheetName, header, {
     "Course ID": cCourseId,
     "Keypoint #": cKp,
@@ -371,10 +385,12 @@ export async function parseHabitXlsx(
       return;
     }
     const id = cId >= 0 ? str(raw[cId]) : "";
+    const imageCell = cImage >= 0 ? str(raw[cImage]) : "";
     out.push({
       ...(id ? { id } : {}),
       courseId,
       course,
+      image: imageCell,
       section: parseInt(m[1], 10),
       keypoint: parseInt(m[2], 10),
       habitIndex,

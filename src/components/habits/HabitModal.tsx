@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
+import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { IHabit, HabitPayload } from "../../types/interface/habit.interface";
 import { HabitStatus } from "../../types/enum/habit.enum";
 import { ISkillset } from "../../types/interface/skillset.interface";
@@ -77,6 +78,7 @@ export default function HabitModal({
   const [title, setTitle] = useState<ITranslation>({});
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
+  const [image, setImage] = useState("");
   const [defaultReminderTime, setDefaultReminderTime] = useState("");
   const [orderValue, setOrderValue] = useState("0");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -125,6 +127,7 @@ export default function HabitModal({
       setTitle(initial.title ?? {});
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
+      setImage(initial.image ?? "");
       setDefaultReminderTime(initial.defaultReminderTime ?? "");
       setOrderValue(
         initial.order !== undefined && initial.order !== null
@@ -136,6 +139,7 @@ export default function HabitModal({
       setTitle({});
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
+      setImage("");
       setDefaultReminderTime("");
       setOrderValue("0");
       setSelectedKeypointIds([]);
@@ -331,6 +335,9 @@ export default function HabitModal({
       skillsetId,
       status,
       keypointIds: selectedKeypointIds,
+      // Always sent, blank included: clearing the upload has to actually remove
+      // the picture, and an omitted key would leave the old one in place.
+      image: image.trim(),
       ...(defaultReminderTime && { defaultReminderTime }),
       ...(trimmedOrder !== "" && { order: Number(trimmedOrder) }),
     };
@@ -413,6 +420,25 @@ export default function HabitModal({
               <MenuItem value={HabitStatus.DRAFT}>Draft</MenuItem>
               <MenuItem value={HabitStatus.PUBLISHED}>Published</MenuItem>
             </TextField>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Habit image
+              </label>
+              <CloudflareFileUpload
+                initialUrl={image || ""}
+                onUrlChange={(url) => setImage(url)}
+                label=""
+                uploadPayload={{
+                  prefix: "",
+                  folder: "habits",
+                }}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional. Leave empty and the app keeps showing the skillset
+                logo.
+              </p>
+            </div>
 
             <TextField
               label="Default reminder time"

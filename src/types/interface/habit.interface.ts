@@ -6,6 +6,11 @@ export interface IHabit {
   title: ITranslation;
   skillsetId: string;
   status: HabitStatus;
+  /**
+   * The habit's own picture, an absolute CDN url. Empty means the app keeps
+   * showing the skillset's logo, which is what every habit did before.
+   */
+  image?: string;
   defaultReminderTime?: string;
   order: number;
   // Keypoints this habit can be suggested in (many-to-many, PRD v2.0 §9.2). A
@@ -20,6 +25,7 @@ export interface HabitPayload {
   title: ITranslation;
   skillsetId: string;
   status?: HabitStatus;
+  image?: string;
   defaultReminderTime?: string;
   order?: number;
   keypointIds?: string[];
