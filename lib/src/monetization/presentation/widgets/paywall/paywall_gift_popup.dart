@@ -12,30 +12,23 @@ part of '../../../monetization.dart';
 /// off that answer rather than this widget pushing it, so the two steps stay
 /// independently testable.
 class PaywallGiftPopup extends StatelessWidget {
-  final PaywallGiftCampaignEntity campaign;
+  const PaywallGiftPopup({super.key});
 
-  const PaywallGiftPopup({super.key, required this.campaign});
-
-  static Future<bool> show(
-    BuildContext context, {
-    required PaywallGiftCampaignEntity campaign,
-  }) async {
+  static Future<bool> show(BuildContext context) async {
     final opened = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
       barrierColor: AppCustomColor.bottomSheetScrim,
-      builder: (_) => PaywallGiftPopup(campaign: campaign),
+      builder: (_) => const PaywallGiftPopup(),
     );
     return opened ?? false;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Remote copy wins when the campaign supplies it; the bundled string is the
-    // floor so a campaign published with an empty heading still reads as a gift
-    // rather than as a blank card with a button.
-    final heading = campaign.popupContent.heading.text;
-    final title = heading.isEmpty ? l10n.monetization.giftPopupTitle : heading;
+    // Copy is deliberately hardcoded (spec marks it "cứng") — the campaign
+    // config carries schedule only, never text.
+    final title = l10n.monetization.giftPopupTitle;
 
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),

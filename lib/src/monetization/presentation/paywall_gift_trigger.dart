@@ -80,7 +80,7 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   final shouldShow = dayZeroEvent ? await schedule.claimDayZero() : await schedule.claimDailyOpen();
   if (!shouldShow || !context.mounted) return;
 
-  final opened = await PaywallGiftPopup.show(context, campaign: campaign);
+  final opened = await PaywallGiftPopup.show(context);
   if (!opened || !context.mounted) return;
 
   iapCubit.markPaywallForcedCompact();
