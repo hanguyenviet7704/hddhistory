@@ -268,17 +268,28 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                         children: [
                           const _LessonCompleteIllustration(),
                           24.verticalSpace,
-                          AppText(
-                            context.l10n.lesson.lessonCompleteTitle,
-                            textAlign: TextAlign.center,
-                            // Design 34/800, -0.01em.
-                            style: TextStyle(
-                              fontFamily: AppFont.mulish,
-                              fontSize: 34.sp,
-                              fontWeight: FontWeight.w800,
-                              height: 1.2,
-                              letterSpacing: 34 * -0.01,
-                              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                          // Design: `muRise .45s ease .3s both` — the .3s delay is the
+                          // leading dead zone of the Interval.
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: 1),
+                            duration: const Duration(milliseconds: 750),
+                            curve: const Interval(0.4, 1, curve: Curves.easeOut),
+                            builder: (context, t, child) => Opacity(
+                              opacity: t,
+                              child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
+                            ),
+                            child: AppText(
+                              context.l10n.lesson.lessonCompleteTitle,
+                              textAlign: TextAlign.center,
+                              // Design 34/800, -0.01em.
+                              style: TextStyle(
+                                fontFamily: AppFont.mulish,
+                                fontSize: 34.sp,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                                letterSpacing: 34 * -0.01,
+                                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                              ),
                             ),
                           ),
                         ],
@@ -354,10 +365,15 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 }
 
-/// The design's illustration: two stacked report cards, a drawn check disc and
-/// two sparkles (design `showComplete`'s inline SVG, its staged CSS keyframes
-/// collapsed into one pop-in + a slow float — the per-element choreography
-/// belongs to a prototype, not a production page a reader sees for seconds).
+/// The design's illustration with its full choreography (`showComplete`'s
+/// inline SVG + keyframes): the main report card rises in, the back card
+/// follows, the two text bars grow out to the right, the check disc pops with
+/// an overshoot, the tick DRAWS itself, and the two sparkles twinkle forever —
+/// all while the whole block floats gently. Delays and durations are the
+/// design's own (.1/.25/.5/.62/.74/1.0s on a shared clock).
+///
+/// Laid out in the SVG's 267×120 viewBox coordinates inside a [FittedBox], so
+/// every x/y below is the design file's number verbatim.
 class _LessonCompleteIllustration extends StatefulWidget {
   const _LessonCompleteIllustration();
 
@@ -365,47 +381,200 @@ class _LessonCompleteIllustration extends StatefulWidget {
   State<_LessonCompleteIllustration> createState() => _LessonCompleteIllustrationState();
 }
 
-class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration> with SingleTickerProviderStateMixin {
-  /// The design's `muFloat 4s ease-in-out infinite` — a gentle ±4px bob.
-  late final AnimationController _float = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 4),
-  )..repeat(reverse: true);
+class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration> with TickerProviderStateMixin {
+  /// One clock for the staged entry; element delays become [Interval]s on it.
+  static const _introMs = 1450;
+  late final AnimationController _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: _introMs))..forward();
 
-  static const String _svg = '''
-<svg viewBox="0 0 267 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="61.1621" y="63.1577" width="177.608" height="48" rx="12" fill="#EBEAFD" opacity="0.6"/>
-  <rect x="33.9336" y="1" width="232.066" height="90.2105" rx="11" fill="#EBEAFD" stroke="white" stroke-width="2"/>
-  <rect x="57.9336" y="20.5" width="55" height="12" rx="6" fill="#D6CAFD"/>
-  <rect x="57.9336" y="40.5" width="120" height="12" rx="6" fill="#D6CAFD" opacity="0.4"/>
-  <circle cx="32.93" cy="41.28" r="18.82" fill="#4B44CA"/>
-  <path d="M25.4355 40.9344L30.6628 46.2832L40.4355 36.2832" stroke="white" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="4.66754" cy="20.9449" r="2.44489" fill="#C7C5FA"/>
-  <path d="M10.1645 7.85788L11.6958 2.49857C11.9058 1.76362 12.9473 1.76362 13.1573 2.49857L14.6885 7.85788L20.0478 9.38911C20.7828 9.59909 20.7828 10.6406 20.0478 10.8506L14.6885 12.3819L13.1573 17.7412C12.9473 18.4761 11.9058 18.4761 11.6958 17.7412L10.1645 12.3819L4.79114 10.8686C4.05477 10.6612 4.05168 9.61848 4.78682 9.40675L10.1645 7.85788Z" fill="#C7C5FA"/>
-</svg>
-''';
+  /// `muFloat 4s ease-in-out infinite` — a gentle bob of the whole block.
+  late final AnimationController _float = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat(reverse: true);
+
+  /// `muTwinkle` — the two sparkles pulse on different periods (2.4s / 2.8s)
+  /// so they never sync up.
+  late final AnimationController _twinkleA = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
+  late final AnimationController _twinkleB = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat(reverse: true);
+
+  /// Design delay/duration in ms → an eased slice of the intro clock.
+  Animation<double> _stage(int delayMs, int durationMs, [Curve curve = Curves.easeOut]) {
+    return CurvedAnimation(parent: _intro, curve: Interval(delayMs / _introMs, (delayMs + durationMs) / _introMs, curve: curve));
+  }
 
   @override
   void dispose() {
+    _intro.dispose();
     _float.dispose();
+    _twinkleA.dispose();
+    _twinkleB.dispose();
     super.dispose();
+  }
+
+  /// `muRise`: fade in while drifting up into place.
+  Widget _rise(Animation<double> t, Widget child) {
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(opacity: t.value, child: Transform.translate(offset: Offset(0, 12 * (1 - t.value)), child: child)),
+      child: child,
+    );
+  }
+
+  /// `muSlideRight`: grow out of the left edge (the design pins the
+  /// transform-origin to the bar's own x).
+  Widget _slideRight(Animation<double> t, Widget child) {
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(opacity: t.value, child: Transform.scale(scaleX: t.value, alignment: Alignment.centerLeft, child: child)),
+      child: child,
+    );
+  }
+
+  /// `muPop`: scale in with the design's overshoot (cubic-bezier(.2,.9,.3,1.4)).
+  Widget _pop(Animation<double> t, Widget child) {
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(opacity: t.value.clamp(0, 1), child: Transform.scale(scale: t.value, child: child)),
+      child: child,
+    );
+  }
+
+  /// `muTwinkle`: opacity + scale pulse.
+  Widget _twinkle(AnimationController controller, Widget child) {
+    final t = CurvedAnimation(parent: controller, curve: Curves.easeInOut);
+    return AnimatedBuilder(
+      animation: t,
+      builder: (context, child) => Opacity(opacity: 0.25 + 0.75 * t.value, child: Transform.scale(scale: 0.7 + 0.3 * t.value, child: child)),
+      child: child,
+    );
+  }
+
+  Widget _roundedRect({required double width, required double height, required double radius, required Color color}) {
+    return Container(width: width, height: height, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(radius)));
   }
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.9, end: 1),
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOutBack,
-      builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
-      child: AnimatedBuilder(
-        animation: _float,
-        builder: (context, child) => Transform.translate(
-          offset: Offset(0, -4.h * _float.value),
-          child: child,
+    return AnimatedBuilder(
+      animation: _float,
+      builder: (context, child) => Transform.translate(offset: Offset(0, -3.h * _float.value), child: child),
+      child: SizedBox(
+        width: 290.w,
+        child: FittedBox(
+          child: SizedBox(
+            width: 267,
+            height: 122,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Back report card (rises second).
+                Positioned(
+                  left: 61.16,
+                  top: 63.16,
+                  child: _rise(_stage(250, 500), _roundedRect(width: 177.61, height: 48, radius: 12, color: const Color(0x99EBEAFD))),
+                ),
+                // Main report card (first in).
+                Positioned(
+                  left: 33.93,
+                  top: 1,
+                  child: _rise(
+                    _stage(100, 500),
+                    Container(
+                      width: 232.07,
+                      height: 90.21,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEBEAFD),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(color: AppCustomColor.backgroundWhite, width: 2),
+                      ),
+                    ),
+                  ),
+                ),
+                // The two text bars grow out to the right, staggered.
+                Positioned(left: 57.93, top: 20.5, child: _slideRight(_stage(500, 450), _roundedRect(width: 55, height: 12, radius: 6, color: const Color(0xFFD6CAFD)))),
+                Positioned(left: 57.93, top: 40.5, child: _slideRight(_stage(620, 450), _roundedRect(width: 120, height: 12, radius: 6, color: const Color(0x66D6CAFD)))),
+                // Check disc pops with overshoot, then the tick draws itself.
+                Positioned(
+                  left: 32.93 - 18.82,
+                  top: 41.28 - 18.82,
+                  child: _pop(
+                    _stage(740, 500, Curves.easeOutBack),
+                    Container(width: 18.82 * 2, height: 18.82 * 2, decoration: const BoxDecoration(color: Color(0xFF4B44CA), shape: BoxShape.circle)),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  child: CustomPaint(size: const Size(267, 122), painter: _DrawnCheckPainter(progress: _stage(1000, 450))),
+                ),
+                // Sparkles.
+                Positioned(
+                  left: 4.67 - 2.44,
+                  top: 20.94 - 2.44,
+                  child: _twinkle(_twinkleA, Container(width: 4.89, height: 4.89, decoration: const BoxDecoration(color: Color(0xFFC7C5FA), shape: BoxShape.circle))),
+                ),
+                Positioned(
+                  left: 4,
+                  top: 1.7,
+                  child: _twinkle(_twinkleB, CustomPaint(size: const Size(16.7, 16.7), painter: const _SparklePainter())),
+                ),
+              ],
+            ),
+          ),
         ),
-        child: SvgPicture.string(_svg, width: 290.w),
       ),
     );
   }
+}
+
+/// The tick inside the check disc, revealed along its own length — the design's
+/// `muDraw` (`stroke-dasharray: 30` animated to offset 0). Painted in the same
+/// 267×120 canvas so the path coordinates are the SVG's verbatim.
+class _DrawnCheckPainter extends CustomPainter {
+  const _DrawnCheckPainter({required this.progress}) : super(repaint: progress);
+
+  final Animation<double> progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress.value <= 0) return;
+    final path = ui.Path()
+      ..moveTo(25.44, 40.93)
+      ..lineTo(30.66, 46.28)
+      ..lineTo(40.44, 36.28);
+    final paint = Paint()
+      ..color = AppCustomColor.backgroundWhite
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.67
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    for (final metric in path.computeMetrics()) {
+      canvas.drawPath(metric.extractPath(0, metric.length * progress.value), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DrawnCheckPainter oldDelegate) => false;
+}
+
+/// The four-point sparkle star, drawn as a concave diamond in its own local
+/// box (the SVG path's bounding box).
+class _SparklePainter extends CustomPainter {
+  const _SparklePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r = size.width / 2;
+    const pinch = 0.16;
+    final path = ui.Path()
+      ..moveTo(cx, cy - r)
+      ..quadraticBezierTo(cx + r * pinch, cy - r * pinch, cx + r, cy)
+      ..quadraticBezierTo(cx + r * pinch, cy + r * pinch, cx, cy + r)
+      ..quadraticBezierTo(cx - r * pinch, cy + r * pinch, cx - r, cy)
+      ..quadraticBezierTo(cx - r * pinch, cy - r * pinch, cx, cy - r)
+      ..close();
+    canvas.drawPath(path, Paint()..color = const Color(0xFFC7C5FA));
+  }
+
+  @override
+  bool shouldRepaint(_SparklePainter oldDelegate) => false;
 }
