@@ -258,7 +258,21 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
             ),
             child: Row(
               children: [
-                HabitDomainIcon(skillsetId: habit.skillsetId, size: 34),
+                // Design ("Add a habit"): every row carries the SAME green
+                // sprout tile — the habit-as-plant motif — not the skillset
+                // logo the Habit tab uses. Uniform on purpose: this list is
+                // "habits this lesson builds", and per-row domain logos read
+                // as three different apps.
+                Container(
+                  width: 34.w,
+                  height: 34.w,
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.kpResultCorrectSurface,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(Icons.spa_rounded, size: 19.w, color: AppCustomColor.successGreen),
+                ),
                 12.horizontalSpace,
                 Expanded(
                   child: AppText(
