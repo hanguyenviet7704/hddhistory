@@ -68,11 +68,13 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   void _toggleFlip(bool hasRecap) {
     if (!hasRecap || _flip.isAnimating) return;
     AppHaptic.select();
-    _flip.isCompleted || _flip.value > 0.5 ? _flip.reverse() : _flip.forward();
-    // The in-app listening flow pauses on arriving at this card and waits for
-    // exactly this tap — resume so the takeaway is read out. No-op when
-    // nothing was gated.
-    context.read<KeypointCardCubit>().resumeRecapNarrationIfGated();
+    final flippingForward = !(_flip.isCompleted || _flip.value > 0.5);
+    flippingForward ? _flip.forward() : _flip.reverse();
+    // The in-app listening flow parks the voice on arriving at this card and
+    // waits for exactly this tap — OPENING the recap reads it out. Closing it
+    // back to the quote face stays quiet, and so does flipping when nothing
+    // was gated.
+    if (flippingForward) context.read<KeypointCardCubit>().resumeRecapNarrationIfGated();
   }
 
   /// Narration is reading THIS card's text (the takeaway clip) once, so show
@@ -106,11 +108,15 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     final recapText = takeawayText.isNotEmpty ? takeawayText : keypoint.description.text.trim();
     final hasRecap = recapText.isNotEmpty;
 
-    // Narration reads the takeaway clip while this card is the viewed one →
-    // flip to the face being read.
+    // Narration reads the takeaway itself while this card is the viewed one →
+    // flip to the face being read. Keyed on the takeaway CUE, not on "audio is
+    // playing": swiping ahead onto this card mid-listen must not flip it out
+    // of the reader's hands. (The audio-cubit watch is what makes this line
+    // re-evaluate as playback state changes.)
+    context.watch<LessonAudioCubit>();
     final deckState = context.watch<KeypointCardCubit>().state;
     final isViewedCard = deckState.cards.isNotEmpty && deckState.viewedCardIndex == deckState.cards.length - 1;
-    final isNarrating = context.watch<LessonAudioCubit>().state.isPlaying;
+    final isNarrating = context.read<KeypointCardCubit>().isNarratingRecap;
     _maybeAutoFlip(hasRecap: hasRecap, isViewed: isViewedCard, isNarrating: isNarrating);
 
     return Padding(

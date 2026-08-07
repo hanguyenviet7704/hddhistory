@@ -271,6 +271,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (_audioCubit.isMergedMode) {
       if (index < 0 || index >= state.cards.length) return;
       final descriptor = state.cards[index];
+      if (descriptor.isDone) {
+        _parkNarrationAtRecap(index);
+        return;
+      }
       if (!descriptor.isTheory) return;
       final cueIndex = _audioCubit.cueForCard(
         learningItemId: descriptor.learningItemId,
@@ -635,15 +639,48 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     _pushAllowedThroughCue();
   }
 
-  /// The reader opened the recap flip card after the in-app gate above paused
-  /// the voice on its cue — resume, so the takeaway is read to the face now
-  /// showing. A no-op unless narration really is parked on the takeaway's cue:
-  /// flipping the card around while nothing was gated stays silent.
+  /// In-app arrival on the recap card PARKS the voice: paused, seeked to the
+  /// takeaway's cue, gate armed — however the reader got here (their own
+  /// swipe, a pip tap, or the voice turning the page). The tap that opens the
+  /// card is what reads it ([resumeRecapNarrationIfGated]). Readers with no
+  /// audio session keep their silence: the gate never arms, tapping only
+  /// flips.
+  ///
+  /// pause() BEFORE the seek — `playCue(autoplay: false)` alone only moves the
+  /// position, and a playing player would read the takeaway straight through
+  /// the gate from its new position.
+  void _parkNarrationAtRecap(int index) {
+    if (_takeawayLearningItemId == null) return;
+    if (!_audioCubit.state.hasStartedSession) return;
+    final cueIndex = _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
+    if (cueIndex == null) return;
+    _loadedClipCardIndex = index;
+    _recapGateCueIndex = cueIndex;
+    unawaited(() async {
+      if (_audioCubit.state.isPlaying) await _audioCubit.pause();
+      if (_audioCubit.state.activeCueIndex != cueIndex) {
+        await _audioCubit.playCue(cueIndex, autoplay: false);
+      }
+    }());
+  }
+
+  /// The reader opened the recap flip card after the gate parked the voice —
+  /// read the takeaway from its start, to the face now showing. A no-op unless
+  /// the gate is armed and the player silent: flipping the card around in any
+  /// other situation stays quiet.
   void resumeRecapNarrationIfGated() {
     if (_recapGateCueIndex < 0 || _audioCubit.state.isPlaying) return;
+    unawaited(_audioCubit.playCue(_recapGateCueIndex, autoplay: true));
+  }
+
+  /// The voice is actively reading the takeaway right now — what the recap
+  /// card's auto-flip keys on. Deliberately NOT "audio is playing": a reader
+  /// swiping ahead onto the recap while an earlier card is still being read
+  /// must not have the card flipped out of their hands.
+  bool get isNarratingRecap {
+    if (_takeawayLearningItemId == null || !_audioCubit.isMergedMode || !_audioCubit.state.isPlaying) return false;
     final cue = _audioCubit.timeline?.cueAt(_audioCubit.state.activeCueIndex);
-    final parkedOnTakeaway = cue != null && _takeawayLearningItemId != null && cue.learningItemId == _takeawayLearningItemId;
-    if (parkedOnTakeaway) unawaited(_audioCubit.play());
+    return cue != null && cue.learningItemId == _takeawayLearningItemId;
   }
 
   /// Moves the view onto the card with this identity, revealing it first when
