@@ -99,6 +99,11 @@ class _AdoptHabitPageState extends State<AdoptHabitPage> {
 
     switch (result) {
       case AdoptHabitResult.success:
+        // Day zero of the gift schedule: the first habit ever adopted may show
+        // the gift popup, and it must run BEFORE the pop — afterwards this
+        // context is defunct and the popup would silently never appear.
+        await maybeShowGiftPopup(context, dayZeroEvent: true);
+        if (!mounted) return;
         Navigator.of(context).pop(true);
       case AdoptHabitResult.slotFull:
         await SlotFullUpgradeSheet.show(context, pendingHabit: _selectedHabit);

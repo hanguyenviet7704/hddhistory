@@ -124,7 +124,16 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   void resetPaywallEntryPoint() {
     setPaywallEntryPoint(PaywallEntryPoint.other);
+    _paywallForcedCompact = false;
   }
+
+  // The gift popup always opens the ABBREVIATED paywall (spec sheet), no
+  // matter how the entry-point table configures the route it lands on. Reset
+  // together with the entry point (PaywallPage.dispose), so the flag can never
+  // leak into a later, ordinary paywall open.
+  bool _paywallForcedCompact = false;
+  bool get paywallForcedCompact => _paywallForcedCompact;
+  void markPaywallForcedCompact() => _paywallForcedCompact = true;
 
   @visibleForTesting
   void debugSetAutoOpenRolloutBucket(int bucket) {

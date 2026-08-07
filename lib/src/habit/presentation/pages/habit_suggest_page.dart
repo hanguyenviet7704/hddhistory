@@ -122,6 +122,11 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
 
     if (!mounted) return;
     setState(() => _submittingHabitId = null);
+    if (result == AdoptHabitResult.success) {
+      // Day zero of the gift schedule (see adopt_habit_page for the paired
+      // hook). This page stays on screen, so post-frame is safe here.
+      scheduleGiftPopupCheck(context, dayZeroEvent: true);
+    }
 
     HabitTracking.startAdd(
       courseId: widget.sourceCourseId,

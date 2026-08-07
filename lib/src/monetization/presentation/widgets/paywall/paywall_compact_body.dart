@@ -38,6 +38,16 @@ class _PaywallCompactBody extends StatelessWidget {
     final product = selected;
     final hasProduct = product != null && product.price.isNotEmpty;
 
+    // Converge the cubit's selection onto the plan this sheet actually shows.
+    // The purchase path buys `selectedProductId`, and without this the Claim
+    // button would charge the FULL list's selection at a different price than
+    // the one on screen.
+    if (product != null && product.id != state.selectedProductId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.read<IapCubit>().setSelectedProductId(product.id);
+      });
+    }
+
     // Discount and deadline prefer the live sale event, then the gift
     // campaign: the user's ruling is that this sheet IS the compact paywall,
     // so the gift config is its natural source of urgency. Neither running →

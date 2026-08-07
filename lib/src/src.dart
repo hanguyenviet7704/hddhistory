@@ -11,6 +11,7 @@ export 'in_app_survey/in_app_survey.dart';
 export 'learning_streak/learning_streak.dart';
 export 'lesson/lesson.dart';
 export 'monetization/monetization.dart';
+export 'monetization/presentation/paywall_gift_trigger.dart';
 export 'onboard/onboard.dart';
 export 'onboard_v2/onboard_v2.dart';
 export 'onboarding/onboarding.dart';

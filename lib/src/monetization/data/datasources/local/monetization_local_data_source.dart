@@ -35,6 +35,18 @@ abstract class MonetizationLocalDataSource {
   Future<int> getNewUserPaywallImpressionCount();
 
   Future<void> setNewUserPaywallImpressionCount(int count);
+
+  /// Epoch ms of the gift schedule's day zero (the first habit adoption).
+  /// Null until that event happens — see the spec sheet's gift-popup rules.
+  Future<int?> getGiftDayZeroEpochMs();
+
+  Future<void> setGiftDayZeroEpochMs(int epochMs);
+
+  /// Local calendar day (`y-m-d`) the gift popup last showed — the once-per-day
+  /// cap for the Days 1–7 window.
+  Future<String> getGiftLastShownDay();
+
+  Future<void> setGiftLastShownDay(String day);
 }
 
 @LazySingleton(as: MonetizationLocalDataSource)
@@ -143,6 +155,47 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
       await _localStoreService.setString(key: _newUserPaywallImpressionKey, value: safeCount.toString());
     } catch (_) {
       // Ignore local behavioral counter failures.
+    }
+  }
+
+  static const String _giftDayZeroKey = 'monetization_gift_day_zero_ms';
+  static const String _giftLastShownKey = 'monetization_gift_last_shown_day';
+
+  @override
+  Future<int?> getGiftDayZeroEpochMs() async {
+    try {
+      final value = await _localStoreService.getString(key: _giftDayZeroKey);
+      return int.tryParse(value);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> setGiftDayZeroEpochMs(int epochMs) async {
+    try {
+      await _localStoreService.setString(key: _giftDayZeroKey, value: epochMs.toString());
+    } catch (_) {
+      // Same contract as the impression counter: a storage failure must never
+      // break the flow it gates — worst case the popup shows again.
+    }
+  }
+
+  @override
+  Future<String> getGiftLastShownDay() async {
+    try {
+      return await _localStoreService.getString(key: _giftLastShownKey);
+    } catch (_) {
+      return '';
+    }
+  }
+
+  @override
+  Future<void> setGiftLastShownDay(String day) async {
+    try {
+      await _localStoreService.setString(key: _giftLastShownKey, value: day);
+    } catch (_) {
+      // See setGiftDayZeroEpochMs.
     }
   }
 }

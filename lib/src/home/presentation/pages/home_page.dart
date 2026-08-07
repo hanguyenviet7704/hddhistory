@@ -61,6 +61,9 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       // after a fresh install) instead of showing a blank Home until the user
       // pull-to-refreshes or restarts the app. No-op when data is present.
       unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
+      // Gift popup: first app-open of each day in the days 1-7 window (spec
+      // sheet). Post-frame + all gating inside; a no-op on most opens.
+      scheduleGiftPopupCheck(context, dayZeroEvent: false);
       // Same recovery for the "Continue learning" my-courses list — it can
       // fail independently of skillsets since both load inside the same
       // Future.wait.
