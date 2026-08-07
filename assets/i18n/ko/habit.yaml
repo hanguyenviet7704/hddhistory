@@ -141,3 +141,5 @@ habitSuggestAdded: 추가됨
 practiceGrowTitle: 습관이 자라고 있어요!
 practiceGrowBubble: 충분히 반복하면 일상이 됩니다
 practiceGrowLoop: ${days}일 루프
+habitReadMoreTitle: 더 알아보기
+habitReadMoreSubtitle: 이 습관을 뒷받침하는 코스

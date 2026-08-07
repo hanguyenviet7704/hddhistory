@@ -16,6 +16,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   final GetCachedHabitScreenUseCase _getCachedHabitScreenUseCase;
   final GetHabitPracticesUseCase _getHabitPracticesUseCase;
   final SubmitPracticeAttemptUseCase _submitPracticeAttemptUseCase;
+  final GetHabitCoursesUseCase _getHabitCoursesUseCase;
 
   HabitCubit(
     this._getHabitsUseCase,
@@ -30,6 +31,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     this._getCachedHabitScreenUseCase,
     this._getHabitPracticesUseCase,
     this._submitPracticeAttemptUseCase,
+    this._getHabitCoursesUseCase,
   ) : super(HabitState.initial());
 
   Future<void>? _ensureInFlight;
@@ -311,6 +313,15 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
   /// Published practices for a library habit. Returns empty on failure so the
   /// picker simply offers journal only — the same thing it shows for a habit
   /// with no authored content, which is the common case today.
+  /// Courses that teach this habit's keypoints — the detail sheet's "Read
+  /// more on this" rail. Empty on failure: the rail simply doesn't render,
+  /// the sheet's own content is unaffected.
+  Future<List<HabitCourseEntity>> loadHabitCourses(String habitId) async {
+    if (habitId.isEmpty) return const [];
+    final result = await _getHabitCoursesUseCase(habitId).run();
+    return result.fold((_) => const [], (courses) => courses);
+  }
+
   Future<List<HabitPracticeEntity>> loadPractices(String habitId) async {
     if (habitId.isEmpty) return const [];
     final result = await _getHabitPracticesUseCase(habitId).run();

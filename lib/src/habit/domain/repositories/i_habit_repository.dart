@@ -49,6 +49,10 @@ abstract class IHabitRepository {
 
   TaskEither<AppException, List<HabitCheckinEntity>> getCheckins(String id);
 
+  /// Published courses teaching this habit's keypoints — the detail sheet's
+  /// "Read more on this" rail, most-relevant course first.
+  TaskEither<AppException, List<HabitCourseEntity>> getHabitCourses(String habitId);
+
 
   /// Published practices for a library habit, content hydrated.
   TaskEither<AppException, List<HabitPracticeEntity>> getHabitPractices(String habitId);

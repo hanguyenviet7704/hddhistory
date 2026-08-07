@@ -141,3 +141,5 @@ habitSuggestAdded: 已添加
 practiceGrowTitle: 习惯正在生长！
 practiceGrowBubble: 重复得够多，它就成了日常
 practiceGrowLoop: 已循环 ${days} 天
+habitReadMoreTitle: 延伸阅读
+habitReadMoreSubtitle: 支持这个习惯的课程

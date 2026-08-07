@@ -142,3 +142,5 @@ habitSuggestAdded: Added
 practiceGrowTitle: Habit is growing!
 practiceGrowBubble: Repeat it enough, it becomes everyday life
 practiceGrowLoop: ${days} days loop
+habitReadMoreTitle: Read more on this
+habitReadMoreSubtitle: Courses that support this habit

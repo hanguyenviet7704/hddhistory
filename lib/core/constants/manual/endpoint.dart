@@ -143,6 +143,9 @@ mixin AppEndpoint {
   static const String userHabitsCheckIn = '/api/v1/user-habits/{id}/check-in';
   static const String userHabitsCheckins = '/api/v1/user-habits/{id}/checkins';
   // Published practices for one habit, content hydrated from learning_item.
+  /// Published courses teaching a habit's keypoints — the habit detail's
+  /// "Read more on this" rail.
+  static const String habitCourses = '/api/v1/habits/{id}/courses';
   static const String habitPractices = '/api/v1/habit-practices';
   // Finishing a practice ALSO files the day's check-in server-side — do not
   // post to userHabitsCheckIn as well, or the two writes race on the same

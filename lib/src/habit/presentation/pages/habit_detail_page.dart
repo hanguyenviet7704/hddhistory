@@ -47,6 +47,10 @@ class HabitDetailPage extends StatefulWidget {
 class _HabitDetailPageState extends State<HabitDetailPage> {
   List<HabitCheckinEntity>? _checkins;
 
+  /// "Read more on this": the courses teaching this habit's keypoints. Loaded
+  /// alongside the diary; empty (failure included) simply renders no rail.
+  List<HabitCourseEntity> _courses = const [];
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +58,13 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
   }
 
   Future<void> _load() async {
-    final checkins = await context.read<HabitCubit>().getCheckins(widget.userHabit.id);
+    final cubit = context.read<HabitCubit>();
+    unawaited(
+      cubit.loadHabitCourses(widget.userHabit.habitId).then((courses) {
+        if (mounted) setState(() => _courses = courses);
+      }),
+    );
+    final checkins = await cubit.getCheckins(widget.userHabit.id);
     if (!mounted) return;
     setState(() => _checkins = checkins);
     HabitTracking.detailScrView(widget.userHabit, completionRate: _completionRate, currentLoops: widget.userHabit.currentStreak);
@@ -134,6 +144,10 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
                       ),
                       16.verticalSpace,
                       _DiarySection(entries: diary),
+                      if (_courses.isNotEmpty) ...[
+                        16.verticalSpace,
+                        _ReadMoreSection(courses: _courses),
+                      ],
                     ],
                   ),
                 ),
@@ -683,6 +697,128 @@ class _DiarySection extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// "Read more on this" (design "5 · Habit" → Habit overview): the courses
+/// whose keypoints teach this habit, as a horizontal rail of course cards.
+/// Tapping one opens its roadmap through the same selection flow My Courses
+/// uses — the sheet closes first so the roadmap isn't revealed underneath it.
+class _ReadMoreSection extends StatelessWidget {
+  final List<HabitCourseEntity> courses;
+  const _ReadMoreSection({required this.courses});
+
+  void _openCourse(BuildContext context, HabitCourseEntity course) {
+    AppHaptic.select();
+    final homeCubit = AppDI.injector.get<HomeCubit>();
+    final skillsets = homeCubit.state.skillsets;
+    final resolved = skillsets.resolveCourseByCourseId(course.id);
+    if (resolved.id.isEmpty) return;
+    final skillset = skillsets.where((s) => s.id == course.skillsetId).firstOrNull ?? skillsets.where((s) => s.courses.any((c) => c.id == course.id)).firstOrNull;
+    if (skillset == null) return;
+
+    Navigator.of(context, rootNavigator: true).pop();
+    final shellContext = AppConfig.instance.context;
+    if (shellContext == null) return;
+    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('habit_detail');
+    homeCubit
+      ..selectSkillset(skillset)
+      ..selectCourse(resolved);
+    CourseRoadmapRoute().go(shellContext);
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 0, 16.h),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.circular(_kHabitCardRadius.r),
+        boxShadow: _kHabitCardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            context.l10n.habit.habitReadMoreTitle,
+            style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+          ),
+          4.verticalSpace,
+          AppText(
+            context.l10n.habit.habitReadMoreSubtitle,
+            style: AppStyle.text12.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.brandPrimary),
+          ),
+          14.verticalSpace,
+          SizedBox(
+            height: 172.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(right: 16.w),
+              itemCount: courses.length,
+              separatorBuilder: (_, __) => 12.horizontalSpace,
+              itemBuilder: (context, index) => _courseCard(context, courses[index]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _courseCard(BuildContext context, HabitCourseEntity course) {
+    return Semantics(
+      button: true,
+      label: course.title.text,
+      child: GestureDetector(
+        onTap: () => _openCourse(context, course),
+        child: SizedBox(
+          width: 132.w,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14.r),
+                child: Container(
+                  height: 92.h,
+                  width: double.infinity,
+                  color: AppCustomColor.brandPrimary50,
+                  child: course.image.isEmpty
+                      ? Icon(Icons.menu_book_rounded, size: 30.w, color: AppCustomColor.brandPrimary)
+                      : CachedNetworkImage(
+                          imageUrl: course.image,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 30.w, color: AppCustomColor.brandPrimary),
+                        ),
+                ),
+              ),
+              8.verticalSpace,
+              AppText(
+                course.title.text,
+                maxLines: 2,
+                style: AppStyle.text13.copyWith(fontWeight: FontWeight.w700, height: 1.35, color: AppCustomColor.textPrimary),
+              ),
+              if (course.author.isNotEmpty) ...[
+                4.verticalSpace,
+                Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 12.w, color: AppCustomColor.textTertiary),
+                    4.horizontalSpace,
+                    Expanded(
+                      child: AppText(
+                        course.author,
+                        maxLines: 1,
+                        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

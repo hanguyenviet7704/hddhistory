@@ -178,6 +178,15 @@ class HabitRepository with RestfulRequestHandlerMixin implements IHabitRepositor
   }
 
   @override
+  TaskEither<AppException, List<HabitCourseEntity>> getHabitCourses(String habitId) {
+    return callApiWithTransform<List<HabitCourseModel>, List<HabitCourseEntity>>(
+      apiCall: () => _api.getHabitCourses(habitId),
+      transform: (models) => models.map((model) => model.toEntity()).toList(),
+      defaultValue: const [],
+    );
+  }
+
+  @override
   TaskEither<AppException, List<HabitPracticeEntity>> getHabitPractices(String habitId) {
     return callApiWithTransform<List<HabitPracticeModel>, List<HabitPracticeEntity>>(
       apiCall: () => _api.getHabitPractices(habitId),

@@ -141,3 +141,5 @@ habitSuggestAdded: 追加済み
 practiceGrowTitle: 習慣が育っています！
 practiceGrowBubble: 繰り返すほど、毎日の暮らしになる
 practiceGrowLoop: ${days}日ループ
+habitReadMoreTitle: もっと読む
+habitReadMoreSubtitle: この習慣を支えるコース
