@@ -307,7 +307,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       // window must not restart the previous card off the not-yet-updated
       // flag. The tap gate is the only way sound returns.
       final effectivelyPlaying = audioState.isPlaying && !_recapMutePending;
-      final autoplay = startAt != null || effectivelyPlaying || audioState.hasCompletedPlayback || movingForward;
+      // The completed-playback carry exists so the NEXT page keeps talking
+      // when a card's clip ran to its end. It stays raised until another clip
+      // loads — so after the RECAP (the terminal cue) finished, it turned any
+      // later backward swipe into an autoplay that read the whole previous
+      // card unasked (2026-08-07). Forward is its only meaning.
+      final carriesCompletion = audioState.hasCompletedPlayback && index > previousNarratedIndex;
+      final autoplay = startAt != null || effectivelyPlaying || carriesCompletion || movingForward;
       unawaited(_audioCubit.playCue(cueIndex, autoplay: autoplay, offset: startAt));
       return;
     }
