@@ -116,6 +116,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
     Stream<RemoteMessage>? openedRemoteMessages,
     FirebasePushTransportInitialMessageGetter? initialMessageGetter,
     FirebasePushTransportTokenGetter? tokenGetter,
+    FirebasePushTransportApnsTokenGetter? apnsTokenGetter,
     Stream<String>? tokenRefreshEvents,
     FirebasePushTransportNotificationSettingsGetter? notificationSettingsGetter,
     FirebasePushTransportPermissionRequester? permissionRequester,
@@ -125,6 +126,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
        _openedMessageStream = openedRemoteMessages,
        _getInitialMessage = initialMessageGetter,
        _getToken = tokenGetter,
+       _getApnsToken = apnsTokenGetter,
        _tokenRefreshStream = tokenRefreshEvents,
        _getNotificationSettings = notificationSettingsGetter,
        _requestPermission = permissionRequester;
@@ -135,6 +137,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
   final Stream<RemoteMessage>? _openedMessageStream;
   final FirebasePushTransportInitialMessageGetter? _getInitialMessage;
   final FirebasePushTransportTokenGetter? _getToken;
+  final FirebasePushTransportApnsTokenGetter? _getApnsToken;
   final Stream<String>? _tokenRefreshStream;
   final FirebasePushTransportNotificationSettingsGetter? _getNotificationSettings;
   final FirebasePushTransportPermissionRequester? _requestPermission;
@@ -176,9 +179,42 @@ class FirebasePushTransportService implements NotificationPushTransport {
 
   @override
   Future<String?> getToken() async {
-    final token = await (_getToken ?? _defaultFirebasePushTransportGetToken)();
-    LogDev.data('[FirebasePushTransportService] \r\ngetToken: hasToken=${token?.isNotEmpty ?? false} \r\ntoken=$token');
-    return token;
+    // iOS: FirebaseMessaging.getToken() throws [firebase_messaging/apns-token-not-set]
+    // when APNs hasn't delivered its token yet — which is the normal state on a
+    // cold start, so this was firing for essentially every iOS user (109/201 in
+    // Crashlytics, 2026-08-07). Returning null instead is safe: the refresh
+    // stream is bound right after the initial sync, so the FCM token still
+    // reaches NotificationTokenService via onTokenRefresh once APNs lands.
+    if (Platform.isIOS && !await _waitForApnsToken()) {
+      LogDev.warning('[FirebasePushTransportService] getToken skipped: APNs token not ready yet');
+      return null;
+    }
+
+    try {
+      final token = await (_getToken ?? _defaultFirebasePushTransportGetToken)();
+      LogDev.data('[FirebasePushTransportService] \r\ngetToken: hasToken=${token?.isNotEmpty ?? false} \r\ntoken=$token');
+      return token;
+    } on FirebaseException catch (error) {
+      // The pre-check can still race APNs registration; this specific code is
+      // an expected transient, not an error worth a non-fatal.
+      if (error.code == 'apns-token-not-set') {
+        LogDev.warning('[FirebasePushTransportService] getToken skipped: ${error.code}');
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  /// True once APNs has produced its token, polling briefly (~1.5s worst case)
+  /// so a cold start where registration is merely in flight still resolves.
+  Future<bool> _waitForApnsToken() async {
+    final getApnsToken = _getApnsToken ?? _defaultFirebasePushTransportGetApnsToken;
+    for (var attempt = 0; attempt < 4; attempt++) {
+      if (attempt > 0) await Future<void>.delayed(const Duration(milliseconds: 500));
+      final apnsToken = await getApnsToken();
+      if (apnsToken != null && apnsToken.isNotEmpty) return true;
+    }
+    return false;
   }
 
   @override
