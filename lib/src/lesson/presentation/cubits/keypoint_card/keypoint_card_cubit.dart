@@ -650,6 +650,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// position, and a playing player would read the takeaway straight through
   /// the gate from its new position.
   void _parkNarrationAtRecap(int index) {
+    // TEMP-DEBUG(recap-gate): remove once the tap-to-read flow is confirmed.
+    LogDev.warning(
+      '[RecapGate] park idx=$index session=${_audioCubit.state.hasStartedSession} '
+      'takeaway=$_takeawayLearningItemId playing=${_audioCubit.state.isPlaying} activeCue=${_audioCubit.state.activeCueIndex}',
+    );
     if (!_audioCubit.state.hasStartedSession) return;
 
     // Arriving on the terminal card ALWAYS silences the voice, even when the
@@ -664,6 +669,8 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       _loadedClipCardIndex = index;
       _recapGateCueIndex = cueIndex;
     }
+    // TEMP-DEBUG(recap-gate): remove once the tap-to-read flow is confirmed.
+    LogDev.warning('[RecapGate] parked cue=$cueIndex gate=$_recapGateCueIndex');
     unawaited(() async {
       if (_audioCubit.state.isPlaying) await _audioCubit.pause();
       if (cueIndex != null && _audioCubit.state.activeCueIndex != cueIndex) {
@@ -677,6 +684,8 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// the gate is armed and the player silent: flipping the card around in any
   /// other situation stays quiet.
   void resumeRecapNarrationIfGated() {
+    // TEMP-DEBUG(recap-gate): remove once the tap-to-read flow is confirmed.
+    LogDev.warning('[RecapGate] resume gate=$_recapGateCueIndex playing=${_audioCubit.state.isPlaying}');
     if (_recapGateCueIndex < 0 || _audioCubit.state.isPlaying) return;
     unawaited(_audioCubit.playCue(_recapGateCueIndex, autoplay: true));
   }

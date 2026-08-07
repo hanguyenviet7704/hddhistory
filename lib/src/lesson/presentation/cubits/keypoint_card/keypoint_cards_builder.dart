@@ -88,11 +88,31 @@ class KeypointCardsBuilder {
     // order the backend dubbed them — so it keeps advancing past the revealed
     // edge and must not be derived from the (growing) card list.
     var clipPosition = 0;
+
     // The takeaway's dubbed clips belong to the DONE card (its back face is
-    // the takeaway text), so remember where they live in the numbering.
+    // the takeaway text). Located in a pass over ALL items, NOT inside the
+    // card walk below: that walk breaks at the live edge, and the takeaway
+    // sits past the last readable item — inside the walk it was simply never
+    // reached, so the done card never got its clips (recap tap-to-read dead,
+    // 2026-08-07). Position accounting mirrors the walk's exactly.
     String? takeawayItemId;
     var takeawayClipStart = -1;
     var takeawayClipCount = 0;
+    {
+      var position = 0;
+      for (final item in items) {
+        if (item.type == LearningItemType.theory) {
+          if (takeawayItemId == null && item.isTakeawaySummary) {
+            takeawayItemId = item.id;
+            takeawayClipStart = position;
+            takeawayClipCount = item.documents.length;
+          }
+          position += item.documents.length;
+        } else if (item.type == LearningItemType.exercise && !item.isPlayingSubQuestions) {
+          position += item.questions.length;
+        }
+      }
+    }
     for (var itemIndex = 0; itemIndex < items.length; itemIndex++) {
       final item = items[itemIndex];
       final isCurrentItem = itemIndex == currentLearningItemIndex;
