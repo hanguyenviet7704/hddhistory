@@ -706,6 +706,72 @@ class _DiarySection extends StatelessWidget {
 /// whose keypoints teach this habit, as a horizontal rail of course cards.
 /// Tapping one opens its roadmap through the same selection flow My Courses
 /// uses — the sheet closes first so the roadmap isn't revealed underneath it.
+/// The white "N% complete" pill the design overlays on a rail card's artwork.
+///
+/// The rail only carries a course id, so progress is read from what Home and
+/// ProgressCubit already hold rather than asked of the habit endpoint — the
+/// same two sources the My Courses and Explore cards read.
+///
+/// Deliberately narrower than [CourseProgressChip]'s inline cousin in the course
+/// feature: this renders ONLY the in-progress state. A course the reader has not
+/// started, or has finished, shows no pill at all, because on a "read more"
+/// suggestion rail the pill is there to say "you were partway through this", and
+/// a "0%" badge on every unstarted suggestion is noise. Hidden too when the
+/// course is not in Home's data, which is the case before Home has loaded.
+class _CourseBadgeChip extends StatelessWidget {
+  final String courseId;
+  const _CourseBadgeChip({required this.courseId});
+
+  @override
+  Widget build(BuildContext context) {
+    final skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
+    final course = skillsets.resolveCourseByCourseId(courseId);
+    final total = course.numberOfLesson;
+    if (course.id.isEmpty || total <= 0) return const SizedBox.shrink();
+
+    final userProgress = context
+        .watch<ProgressCubit>()
+        .state
+        .userProgresses
+        .where((p) => p.courseId == courseId)
+        .firstOrNull;
+    final completed = userProgress?.lessonsResult.where((r) => r.passed).length ?? 0;
+    final percent = (completed / total * 100).toInt();
+    if (percent <= 0 || completed >= total) return const SizedBox.shrink();
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(6.w, 4.h, 9.w, 4.h),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.circular(99.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 13.w,
+            height: 13.w,
+            child: CircularProgressIndicator(
+              value: completed / total,
+              strokeWidth: 2.w,
+              backgroundColor: AppCustomColor.borderDefault,
+              valueColor: AlwaysStoppedAnimation(AppCustomColor.brandPrimary),
+            ),
+          ),
+          4.horizontalSpace,
+          AppText(
+            context.l10n.allcourse.progressPercent(percent: '$percent'),
+            style: AppStyle.text10.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppCustomColor.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ReadMoreSection extends StatelessWidget {
   final List<HabitCourseEntity> courses;
   const _ReadMoreSection({required this.courses});
@@ -750,11 +816,14 @@ class _ReadMoreSection extends StatelessWidget {
           4.verticalSpace,
           AppText(
             context.l10n.habit.habitReadMoreSubtitle,
-            style: AppStyle.text12.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.brandPrimary),
+            // Muted, not brand: in the design this line is a caption under the
+            // heading, and brand ink read as a tappable link it never was.
+            style: AppStyle.text14.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textTertiary),
           ),
-          14.verticalSpace,
+          16.verticalSpace,
           SizedBox(
-            height: 172.h,
+            // Square artwork (132) + title block + meta line.
+            height: 212.h,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.only(right: 16.w),
@@ -780,41 +849,52 @@ class _ReadMoreSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(14.r),
-                child: Container(
-                  height: 92.h,
-                  width: double.infinity,
-                  color: AppCustomColor.brandPrimary50,
-                  child: course.image.isEmpty
-                      ? Icon(Icons.menu_book_rounded, size: 30.w, color: AppCustomColor.brandPrimary)
-                      : CachedNetworkImage(
-                          imageUrl: course.image,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 30.w, color: AppCustomColor.brandPrimary),
+                borderRadius: BorderRadius.circular(16.r),
+                child: SizedBox(
+                  // Square in the design, where it was 132x92 here — the crop
+                  // was cutting the top off every course illustration.
+                  height: 132.w,
+                  width: 132.w,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          color: AppCustomColor.brandPrimary50,
+                          child: course.image.isEmpty
+                              ? Icon(Icons.menu_book_rounded, size: 30.w, color: AppCustomColor.brandPrimary)
+                              : CachedNetworkImage(
+                                  imageUrl: course.image,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Icon(Icons.menu_book_rounded, size: 30.w, color: AppCustomColor.brandPrimary),
+                                ),
                         ),
+                      ),
+                      Positioned(top: 10.r, left: 10.r, child: _CourseBadgeChip(courseId: course.id)),
+                      if ((course.viewCount ?? 0) > 0)
+                        Positioned(
+                          right: 9.r,
+                          bottom: 9.r,
+                          child: CourseViewsChip(count: course.viewCount!),
+                        ),
+                    ],
+                  ),
                 ),
               ),
               8.verticalSpace,
-              AppText(
-                course.title.text,
-                maxLines: 2,
-                style: AppStyle.text13.copyWith(fontWeight: FontWeight.w700, height: 1.35, color: AppCustomColor.textPrimary),
+              // Fixed height for the title block so the meta lines of adjacent
+              // cards sit on one baseline whether a title wraps to one line or
+              // two — the design's `min-height:36px`.
+              SizedBox(
+                height: 36.h,
+                child: AppText(
+                  course.title.text,
+                  maxLines: 2,
+                  style: AppStyle.text13.copyWith(fontWeight: FontWeight.w600, height: 1.35, color: AppCustomColor.textPrimary),
+                ),
               ),
               if (course.author.isNotEmpty) ...[
-                4.verticalSpace,
-                Row(
-                  children: [
-                    Icon(Icons.edit_outlined, size: 12.w, color: AppCustomColor.textTertiary),
-                    4.horizontalSpace,
-                    Expanded(
-                      child: AppText(
-                        course.author,
-                        maxLines: 1,
-                        style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary),
-                      ),
-                    ),
-                  ],
-                ),
+                6.verticalSpace,
+                CourseAuthorLine(author: course.author),
               ],
             ],
           ),

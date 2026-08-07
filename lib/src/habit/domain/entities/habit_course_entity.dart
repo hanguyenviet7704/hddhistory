@@ -9,6 +9,9 @@ abstract class HabitCourseEntity with _$HabitCourseEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default('') String image,
     @Default('') String author,
+    /// Curated reach figure. Null when the admin left it blank; the card hides
+    /// the chip for null and for zero alike.
+    int? viewCount,
     @Default('') String skillsetId,
   }) = _HabitCourseEntity;
 
