@@ -668,7 +668,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// position, and a playing player would read the takeaway straight through
   /// the gate from its new position.
   void _parkNarrationAtRecap(int index) {
-    if (!_audioCubit.state.hasStartedSession) return;
+    // Deliberately NOT gated on hasStartedSession: the gate must arm for
+    // silent readers too — tapping the recap open reads it aloud whether or
+    // not a listening session ever ran ("lật thẻ phải tự phát tiếng",
+    // 2026-08-07). playCue handles the no-session case by initialising the
+    // player itself when the tap comes.
 
     // Arriving on the terminal card ALWAYS silences the voice, even when the
     // takeaway has no cue to park on (a keypoint dubbed before its takeaway
@@ -692,7 +696,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     unawaited(() async {
       try {
         if (_audioCubit.state.isPlaying) await _audioCubit.pause();
-        if (cueIndex != null && _audioCubit.state.activeCueIndex != cueIndex) {
+        // Silent seek only within a RUNNING session. Without one it would
+        // initialise the player — surfacing lock-screen now-playing controls
+        // for a reader who never asked for audio; the tap's own playCue does
+        // that initialisation at the moment sound is actually wanted.
+        if (cueIndex != null && _audioCubit.state.hasStartedSession && _audioCubit.state.activeCueIndex != cueIndex) {
           await _audioCubit.playCue(cueIndex, autoplay: false);
         }
       } finally {
