@@ -276,6 +276,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// it). Loading at the position beats loading at zero and seeking after —
   /// the latter is audible as the keypoint restarting before it jumps.
   Future<void> enterAudioMode({bool autoplay = true, Duration? startAt}) async {
+    // Entering listen mode is an explicit ask for sound — any pinned silence
+    // is over.
+    if (autoplay) _pausedByUser = false;
     if (!state.hasUsableSource) {
       emit(
         state.copyWith(
@@ -321,6 +324,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// Points the merged file at [cueIndex] (+[offset] inside it). The deck's
   /// merged-mode replacement for [loadCard] — a seek, never a source reload.
   Future<void> playCue(int cueIndex, {bool autoplay = false, Duration? offset}) async {
+    if (autoplay) _pausedByUser = false;
     final timeline = _timeline;
     final cue = timeline?.cueAt(cueIndex);
     if (timeline == null || cue == null || cue.durMs <= 0) return;
@@ -438,7 +442,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     );
   }
 
+  /// True when the CURRENT silence is the reader's own doing (the pause
+  /// button) — as opposed to a system pause (the recap gate, an overlay, a
+  /// mode switch). Forward-swipe autoplay ("mở loa lên luôn", 2026-08-04)
+  /// consults this: a reader who explicitly asked for silence keeps it as they
+  /// move through cards, until they press play themselves.
+  bool _pausedByUser = false;
+  bool get pausedByUser => _pausedByUser;
+
   Future<void> play() async {
+    _pausedByUser = false;
     if (!state.hasStartedSession) {
       await enterAudioMode();
       return;
@@ -455,7 +468,11 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     }
   }
 
-  Future<void> pause() async {
+  /// [byUser] defaults to false so every system caller (gates, overlays, mode
+  /// switches) stays a *soft* pause; only the reader's own pause button passes
+  /// true and pins the silence.
+  Future<void> pause({bool byUser = false}) async {
+    if (byUser) _pausedByUser = true;
     // Asking for silence also withdraws any pending "play when the load lands"
     // intent — otherwise pausing during the ~5s fetch is ignored and the clip
     // starts talking the moment it is ready.

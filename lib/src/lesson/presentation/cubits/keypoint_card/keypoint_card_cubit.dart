@@ -301,7 +301,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       // the way. Requires a started session so a silent read-mode entry
       // never starts speaking by itself; backward swipes keep the old carry
       // rule.
-      final movingForward = audioState.hasStartedSession && index > previousNarratedIndex;
+      // A reader who pressed pause themselves keeps their silence as they move
+      // through cards — forward movement is only a listening intent while the
+      // session hasn't been explicitly silenced.
+      final movingForward = audioState.hasStartedSession && index > previousNarratedIndex && !_audioCubit.pausedByUser;
       // `isPlaying` is stale while the recap park's pause is in flight — the
       // reader just muted on the recap card; a swipe back landing in that
       // window must not restart the previous card off the not-yet-updated

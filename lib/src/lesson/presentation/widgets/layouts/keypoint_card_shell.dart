@@ -983,7 +983,9 @@ class _KeypointNarrationToggleState extends State<KeypointNarrationToggle> {
       if (trackingData != null) {
         AppService.instance.appTrackingService.trackKeypointAudioPauseClick(trackingData, audioPosition: audioState.positionSeconds);
       }
-      await audioCubit.pause();
+      // The reader's OWN pause — pins the silence, so forward swipes stop
+      // auto-restarting narration until they press play again.
+      await audioCubit.pause(byUser: true);
       return;
     }
 
