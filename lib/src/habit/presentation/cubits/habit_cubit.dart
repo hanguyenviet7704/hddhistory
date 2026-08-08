@@ -106,6 +106,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
             freeActiveSlots: cached.freeActiveSlots,
           ),
         );
+        unawaited(cancelStaleHabitReminders(cached.habits));
       }
     }
 
@@ -139,6 +140,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
             errorMessage: null,
           ),
         );
+        unawaited(cancelStaleHabitReminders(screen.habits));
       },
     );
   }
@@ -224,7 +226,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
         AppHaptic.success();
         emit(state.copyWith(userHabits: [...state.userHabits, userHabit]));
         unawaited(loadSummary());
-        unawaited(scheduleHabitReminder(userHabit));
         return AdoptHabitResult.success;
       },
     );
@@ -243,11 +244,7 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
       (updated) {
         _replaceUserHabit(updated);
         unawaited(loadSummary());
-        if (active) {
-          unawaited(scheduleHabitReminder(updated));
-        } else {
-          unawaited(cancelHabitReminder(userHabitId));
-        }
+        unawaited(cancelHabitReminder(userHabitId));
         return AdoptHabitResult.success;
       },
     );
