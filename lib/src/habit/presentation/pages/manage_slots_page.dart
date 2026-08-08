@@ -84,6 +84,11 @@ class _ManageSlotsPageState extends State<ManageSlotsPage> {
       case AdoptHabitResult.success:
         final goToHabit = await HabitAddedPopup.showUpgraded(context);
         if (!mounted) return;
+        // Day zero of the gift schedule, same as the other adoption surfaces.
+        // BEFORE the pops below: afterwards this context is defunct and the
+        // popup would silently never appear.
+        await maybeShowGiftPopup(context, dayZeroEvent: true);
+        if (!mounted) return;
         // SlotFullUpgradeSheet already pops itself before opening this sheet
         // (see slot_full_upgrade_sheet.dart), so the page that hit the slot
         // cap (AdoptHabitPage/UpgradeHabitPage) sits directly beneath this

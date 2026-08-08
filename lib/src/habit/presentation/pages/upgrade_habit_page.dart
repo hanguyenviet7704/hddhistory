@@ -46,6 +46,11 @@ class _UpgradeHabitPageState extends State<UpgradeHabitPage> {
       case AdoptHabitResult.success:
         await HabitAddedPopup.showUpgraded(context);
         if (!mounted) return;
+        // Day zero of the gift schedule, same as the other adoption surfaces.
+        // BEFORE the pop: afterwards this context is defunct and the popup
+        // would silently never appear.
+        await maybeShowGiftPopup(context, dayZeroEvent: true);
+        if (!mounted) return;
         Navigator.of(context).pop();
       case AdoptHabitResult.slotFull:
         await SlotFullUpgradeSheet.show(context, pendingHabit: widget.newHabit);

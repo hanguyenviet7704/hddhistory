@@ -60,6 +60,7 @@ part 'presentation/widgets/paywall/paywall_countdown_strip.dart';
 part 'presentation/widgets/paywall/paywall_dots_indicator.dart';
 part 'presentation/widgets/paywall/paywall_feedback_list.dart';
 part 'presentation/widgets/paywall/paywall_gift_popup.dart';
+part 'presentation/widgets/paywall/gift_popup_host.dart';
 part 'presentation/widgets/paywall/paywall_gift_sheet.dart';
 part 'presentation/widgets/paywall/paywall_highlight_package_info.dart';
 part 'presentation/widgets/paywall/paywall_inline_plans.dart';

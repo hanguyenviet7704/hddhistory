@@ -19,20 +19,24 @@ class GiftPopupSchedule {
 
   static const int windowDays = 7;
 
-  /// Day-zero claim: true exactly once, at the first habit adoption ever seen
-  /// on this install. Also stamps today as shown, so the day-1 open (tomorrow)
-  /// is the next legal slot rather than a second popup the same evening.
-  Future<bool> claimDayZero() async {
-    if (await _local.getGiftDayZeroEpochMs() != null) return false;
-    final now = DateTime.now();
-    await _local.setGiftDayZeroEpochMs(now.millisecondsSinceEpoch);
-    await _local.setGiftLastShownDay(_dayKey(now));
-    return true;
-  }
+  /// Asking and spending are separate on purpose.
+  ///
+  /// They used to be one "claim" call that wrote the mark and returned true, so
+  /// anything that stopped the popup AFTER that point — a modal already on
+  /// screen, a context torn down between the check and the show — burned the
+  /// slot anyway. For the daily window that costs a day; for day zero, which
+  /// happens once per install, it costs the trigger entirely. The streak popup
+  /// makes the same distinction and says why in `StreakPopupHost`.
+  ///
+  /// So: `canShow*` only reads, `mark*Shown` only writes, and the caller writes
+  /// exactly when the popup really went up.
 
-  /// Daily claim for the days 1–7 window. True at most once per local
-  /// calendar day, and only when day zero has happened.
-  Future<bool> claimDailyOpen() async {
+  /// True until the first habit adoption ever seen on this install.
+  Future<bool> canShowDayZero() async => await _local.getGiftDayZeroEpochMs() == null;
+
+  /// True at most once per local calendar day inside the days 1–7 window, and
+  /// only after day zero has happened.
+  Future<bool> canShowDailyOpen() async {
     final epochMs = await _local.getGiftDayZeroEpochMs();
     if (epochMs == null) return false;
 
@@ -41,11 +45,18 @@ class GiftPopupSchedule {
     final elapsedDays = DateTime(now.year, now.month, now.day).difference(DateTime(dayZero.year, dayZero.month, dayZero.day)).inDays;
     if (elapsedDays < 1 || elapsedDays > windowDays) return false;
 
-    final today = _dayKey(now);
-    if (await _local.getGiftLastShownDay() == today) return false;
-    await _local.setGiftLastShownDay(today);
-    return true;
+    return await _local.getGiftLastShownDay() != _dayKey(now);
   }
+
+  /// Stamps day zero AND today, so the day-1 open (tomorrow) is the next legal
+  /// slot rather than a second popup the same evening.
+  Future<void> markDayZeroShown() async {
+    final now = DateTime.now();
+    await _local.setGiftDayZeroEpochMs(now.millisecondsSinceEpoch);
+    await _local.setGiftLastShownDay(_dayKey(now));
+  }
+
+  Future<void> markDailyOpenShown() async => _local.setGiftLastShownDay(_dayKey(DateTime.now()));
 
   String _dayKey(DateTime d) => '${d.year}-${d.month}-${d.day}';
 }
@@ -69,8 +80,21 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   if (user.id.isEmpty || user.isPremium) return;
 
   final schedule = AppDI.injector.get<GiftPopupSchedule>();
-  final shouldShow = dayZeroEvent ? await schedule.claimDayZero() : await schedule.claimDailyOpen();
-  if (!shouldShow || !context.mounted) return;
+  final canShow = dayZeroEvent ? await schedule.canShowDayZero() : await schedule.canShowDailyOpen();
+  if (!canShow || !context.mounted) return;
+
+  // Never cover a sheet or dialog the reader is already dealing with. The slot
+  // is deliberately NOT spent here, so the popup still gets its turn on the next
+  // resume — same rule, and same reasoning, as the streak toast.
+  if (LearningStreakModalGuard.hasBlockingModal(context)) return;
+
+  // Spent only now that the popup is actually going up.
+  if (dayZeroEvent) {
+    await schedule.markDayZeroShown();
+  } else {
+    await schedule.markDailyOpenShown();
+  }
+  if (!context.mounted) return;
 
   final opened = await PaywallGiftPopup.show(context);
   if (!opened || !context.mounted) return;

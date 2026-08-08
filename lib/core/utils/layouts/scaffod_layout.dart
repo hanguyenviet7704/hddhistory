@@ -81,10 +81,15 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // (study_theme) paints behind every tab that opts in with a
             // transparent Scaffold; seamless across tab switches (single host).
             // StreakPopupHost wraps the shell (not Home) so the daily
-            // time counter keeps running across every tab.
+            // time counter keeps running across every tab. GiftPopupHost is on
+            // the shell for the same reason, plus one of its own: it watches for
+            // app RESUME, which is how the days 1-7 gift popup reaches a reader
+            // who left MeUp in the background rather than cold-starting it.
             Positioned.fill(
-              child: StreakPopupHost(
-                child: ThemedBackground(child: widget.navigationShell),
+              child: GiftPopupHost(
+                child: StreakPopupHost(
+                  child: ThemedBackground(child: widget.navigationShell),
+                ),
               ),
             ),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
