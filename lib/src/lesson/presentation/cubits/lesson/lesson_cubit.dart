@@ -67,13 +67,14 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   /// reading alone. Returns `items.length` when nothing readable remains.
   int _nextReadableIndex(int from) {
     final items = state.pageData.items;
+    // The takeaway summary is read on the recap flip card, not as its own
+    // stop in the flow — skipping it here is what makes finishing the last
+    // real theory card complete the keypoint (revealing the recap card).
+    final takeaway = resolveTakeawaySummary(items);
     var index = from;
     while (index < items.length) {
       final item = items[index];
-      // The takeaway summary is read on the recap flip card, not as its own
-      // stop in the flow — skipping it here is what makes finishing the last
-      // real theory card complete the keypoint (revealing the recap card).
-      final isReadableTheory = item.type == LearningItemType.theory && !item.isTakeawaySummary;
+      final isReadableTheory = item.type == LearningItemType.theory && !takeaway.hiddenItemIndexes.contains(index);
       if (isReadableTheory || item.type == LearningItemType.video) return index;
       index++;
     }

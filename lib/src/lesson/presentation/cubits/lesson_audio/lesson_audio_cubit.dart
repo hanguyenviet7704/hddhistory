@@ -327,7 +327,15 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     if (autoplay) _pausedByUser = false;
     final timeline = _timeline;
     final cue = timeline?.cueAt(cueIndex);
-    if (timeline == null || cue == null || cue.durMs <= 0) return;
+    if (timeline == null || cue == null || cue.durMs <= 0) {
+      if (autoplay) {
+        LogDev.warning(
+          '[RecapGate] playCue($cueIndex) refused: timeline=${timeline != null} '
+          'cue=${cue != null} durMs=${cue?.durMs}',
+        );
+      }
+      return;
+    }
 
     final target = Duration(milliseconds: cue.startMs + (offset?.inMilliseconds ?? 0));
     if (!state.hasStartedSession) {

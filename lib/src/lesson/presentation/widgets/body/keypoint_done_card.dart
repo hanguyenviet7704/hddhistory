@@ -49,7 +49,16 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    AppHaptic.celebrate();
+    // The PageView disposes this State when the card scrolls far enough away;
+    // a recap the reader already opened must come back OPEN, without replaying
+    // the flip (and without the celebrate haptic firing again).
+    final alreadyOpened = context.read<KeypointCardCubit>().recapFlipOpened;
+    if (alreadyOpened) {
+      _flip.value = 1;
+      _autoFlipped = true;
+    } else {
+      AppHaptic.celebrate();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final lessonCubit = context.read<LessonCubit>();
@@ -70,6 +79,9 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     AppHaptic.select();
     final flippingForward = !(_flip.isCompleted || _flip.value > 0.5);
     flippingForward ? _flip.forward() : _flip.reverse();
+    // The open/closed face survives this State (see initState) — a reader who
+    // closed it back to the quote gets the quote back too.
+    context.read<KeypointCardCubit>().recapFlipOpened = flippingForward;
     // The in-app listening flow parks the voice on arriving at this card and
     // waits for exactly this tap — OPENING the recap reads it out. Closing it
     // back to the quote face stays quiet, and so does flipping when nothing
@@ -88,6 +100,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _flip.isAnimating || _flip.value > 0) return;
       _flip.forward();
+      context.read<KeypointCardCubit>().recapFlipOpened = true;
     });
   }
 
@@ -98,13 +111,9 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     final keypointTitle = keypoint.title.text.isNotEmpty ? keypoint.title.text : courseLessonState.selectedLesson.title.text;
     final lessonTitle = courseLessonState.selectedLesson.title.text;
     final imageUrl = keypoint.image.isNotEmpty ? keypoint.image : courseLessonState.selectedLesson.image;
-    final takeawayText = context
-        .watch<LessonCubit>()
-        .state
-        .pageData
-        .items
-        .map((item) => item.takeawaySummaryText)
-        .firstWhere((text) => text.isNotEmpty, orElse: () => '');
+    final lessonItems = context.watch<LessonCubit>().state.pageData.items;
+    final takeaway = resolveTakeawaySummary(lessonItems);
+    final takeawayText = takeaway.exists ? lessonItems[takeaway.itemIndex].takeawaySummaryText : '';
     final recapText = takeawayText.isNotEmpty ? takeawayText : keypoint.description.text.trim();
     final hasRecap = recapText.isNotEmpty;
 

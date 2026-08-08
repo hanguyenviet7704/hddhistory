@@ -192,6 +192,10 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
                           _dragDy = 0;
                           _dragMode = null;
                           _isDragging = true;
+                          // The finger owns the controller from here — any
+                          // snap still in flight is abandoned, so its target
+                          // must not suppress the follow that settles later.
+                          _snapTargetPage = null;
                         },
                         onPointerMove: (event) => _handleDragUpdate(event.delta.dy, state, liveDescriptor),
                         onPointerCancel: (_) {
@@ -624,21 +628,29 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     AppDI.injector.get<ExerciseCubit>().nextQuestion();
   }
 
+  /// Page an `animateToPage` from [_followViewedCardIndex] is currently flying
+  /// toward, or null. Mid-flight the controller's `page` reads every value the
+  /// animation crosses — and a viewport-height change re-maps it entirely — so
+  /// rebuilds landing in that window must neither restart the animation nor
+  /// mistake the transient reading for a far jump and snap the deck backwards
+  /// ("nhảy ngược về card cũ rồi mới đến card cuối", 2026-08-08).
+  int? _snapTargetPage;
+
   void _followViewedCardIndex(KeypointCardState state) {
     // Mid-drag the finger owns the controller (see `_handleDragUpdate`); an
     // animation started from here would fight it.
     if (_isDragging) return;
     if (!_pageController.hasClients) return;
     final targetPage = state.viewedCardIndex;
-    if (_pageController.page?.round() == targetPage) return;
-
-    final isDoneReveal = state.cards.isNotEmpty && state.cards[targetPage].isDone;
-    if (isDoneReveal) {
-      // Completion has already fired (or is about to) — no time for an
-      // animation before the route transition covers this screen.
-      _pageController.jumpToPage(targetPage);
+    if (_pageController.page?.round() == targetPage) {
+      _snapTargetPage = null;
       return;
     }
+    // Already flying exactly there — let it land.
+    if (_snapTargetPage == targetPage) return;
+
+    // The done card is the recap flip card the reader stays on, so arriving
+    // there animates like any other neighbour move — no instant jump.
 
     // Only a genuine neighbour move is animated. A larger gap is not the reader
     // travelling — it is the controller having lost its place: `page` is
@@ -648,15 +660,21 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     // visibly through cards nobody asked for; jumping restores the page silently.
     final currentPage = _pageController.page?.round();
     if (currentPage != null && (currentPage - targetPage).abs() > 1) {
+      _snapTargetPage = null;
       _pageController.jumpToPage(targetPage);
       return;
     }
 
-    _pageController.animateToPage(
-      targetPage,
-      duration: _snapDuration,
-      curve: _snapCurve,
-    );
+    _snapTargetPage = targetPage;
+    _pageController
+        .animateToPage(
+          targetPage,
+          duration: _snapDuration,
+          curve: _snapCurve,
+        )
+        .whenComplete(() {
+          if (_snapTargetPage == targetPage) _snapTargetPage = null;
+        });
   }
 
   /// The exercise body for the live quiz card, built only to ask it questions

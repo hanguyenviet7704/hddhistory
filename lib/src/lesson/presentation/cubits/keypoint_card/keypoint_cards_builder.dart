@@ -8,22 +8,77 @@ part of '../../../lesson.dart';
 /// It no longer contributes a card of its own: its bullets are the back face
 /// of the deck's terminal recap flip card ([KeypointDoneCard]), so rendering it
 /// as a card too would show the reader the same summary twice in a row.
-extension TakeawaySummaryItemX on LearningItemEntity {
-  bool get isTakeawaySummary =>
-      type == LearningItemType.theory &&
-      documents.length == 1 &&
-      documents.first.document.isNotEmpty &&
-      documents.first.document.first.type == ContentDocumentType.caption;
+/// The keypoint's takeaway/summary material, resolved from [items] by
+/// POSITION, not by content sniffing. Authoring styles vary and keep changing
+/// (a "Bỏ túi ngay" caption block, a "🔑 KEY TAKEAWAY" text line, tomorrow
+/// something else), so the contract is structural: the reading deck is the
+/// run of theories carrying more than one page, and whatever single-page
+/// theories TRAIL the last of those are summary material. They fold into the
+/// recap flip card instead of appearing as cards of their own; the last of
+/// them that actually carries text is THE takeaway — the recap's back face
+/// and the clip narration reads on the recap card.
+///
+/// A keypoint whose every theory is single-page resolves to none: folding
+/// them away would leave nothing to read, so they stay ordinary cards.
+class TakeawaySummary {
+  const TakeawaySummary.none() : itemIndex = -1, hiddenItemIndexes = const {};
+  const TakeawaySummary({required this.itemIndex, required this.hiddenItemIndexes});
 
-  /// The takeaway's text blocks, joined — the recap card's body. Empty when
-  /// this is not a takeaway item.
-  String get takeawaySummaryText => !isTakeawaySummary
-      ? ''
-      : documents.first.document
-            .where((block) => block.type == ContentDocumentType.text)
-            .map((block) => block.data.content.text.trim())
-            .where((text) => text.isNotEmpty)
-            .join('\n\n');
+  /// Index into the item list of THE takeaway, -1 when the keypoint has none.
+  final int itemIndex;
+
+  /// Item indexes folded into the recap — the whole trailing single-page run,
+  /// which absorbs duplicated takeaway seeds instead of rendering the spare
+  /// copy as a card.
+  final Set<int> hiddenItemIndexes;
+
+  bool get exists => itemIndex >= 0;
+}
+
+TakeawaySummary resolveTakeawaySummary(List<LearningItemEntity> items) {
+  final theoryIndexes = <int>[];
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].type == LearningItemType.theory) theoryIndexes.add(i);
+  }
+  final trailing = <int>[];
+  for (final i in theoryIndexes.reversed) {
+    if (items[i].documents.length != 1) break;
+    trailing.add(i);
+  }
+  if (trailing.isEmpty || trailing.length == theoryIndexes.length) return const TakeawaySummary.none();
+  // Reverse order — the keypoint's very last theory first, so the takeaway is
+  // the LAST trailing item that has text to show.
+  for (final i in trailing) {
+    if (items[i].takeawaySummaryText.isNotEmpty) {
+      return TakeawaySummary(itemIndex: i, hiddenItemIndexes: trailing.toSet());
+    }
+  }
+  return const TakeawaySummary.none();
+}
+
+extension TakeawaySummaryItemX on LearningItemEntity {
+  /// This item's text blocks flattened for the recap card's back face. NOT a
+  /// takeaway test — whether an item is the takeaway is positional
+  /// ([resolveTakeawaySummary]); any single-page theory answers here.
+  String get takeawaySummaryText {
+    if (documents.isEmpty) return '';
+    final joined = documents.first.document
+        .where((block) => block.type == ContentDocumentType.text)
+        .map((block) => block.data.content.text.trim())
+        .where((text) => text.isNotEmpty)
+        .join('\n\n');
+    // Some authored variants embed their own heading line ("🔑 KEY TAKEAWAY")
+    // and inline HTML in the block; the card draws its own heading, so drop
+    // the marker line and flatten the tags. A no-op for plain bullet lines.
+    final text = joined
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'<[^>]*>'), '');
+    final lines = text.split('\n').map((line) => line.trim()).toList();
+    while (lines.isNotEmpty && (lines.first.isEmpty || lines.first.startsWith('🔑'))) {
+      lines.removeAt(0);
+    }
+    return lines.join('\n').trim();
+  }
 }
 
 /// Builds the card list for one keypoint from its learning items.
@@ -95,14 +150,16 @@ class KeypointCardsBuilder {
     // sits past the last readable item — inside the walk it was simply never
     // reached, so the done card never got its clips (recap tap-to-read dead,
     // 2026-08-07). Position accounting mirrors the walk's exactly.
+    final takeaway = resolveTakeawaySummary(items);
     String? takeawayItemId;
     var takeawayClipStart = -1;
     var takeawayClipCount = 0;
     {
       var position = 0;
-      for (final item in items) {
+      for (var i = 0; i < items.length; i++) {
+        final item = items[i];
         if (item.type == LearningItemType.theory) {
-          if (takeawayItemId == null && item.isTakeawaySummary) {
+          if (i == takeaway.itemIndex) {
             takeawayItemId = item.id;
             takeawayClipStart = position;
             takeawayClipCount = item.documents.length;
@@ -143,11 +200,10 @@ class KeypointCardsBuilder {
       // recap flip card's back face, and its dubbed clips are re-pointed at
       // the done card after the walk (so narration reads it and the deck
       // follows onto the recap, exactly like every other card). Here it only
-      // has to keep its slots in the clip numbering.
-      if (item.isTakeawaySummary) {
-        takeawayItemId = item.id;
-        takeawayClipStart = clipPosition;
-        takeawayClipCount = item.documents.length;
+      // has to keep its slots in the clip numbering — the anchor itself was
+      // resolved in the pre-pass above, so a duplicated summary seed can't
+      // re-point it.
+      if (takeaway.hiddenItemIndexes.contains(itemIndex)) {
         clipPosition += item.documents.length;
         continue;
       }

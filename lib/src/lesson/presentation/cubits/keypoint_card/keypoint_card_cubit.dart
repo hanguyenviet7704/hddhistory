@@ -97,6 +97,21 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// fought over.
   int _recapGateCueIndex = -1;
 
+  /// True once the reader's tap ([resumeRecapNarrationIfGated]) started the
+  /// takeaway read — the ONLY playback allowed through an armed gate. A stray
+  /// play (fired for a card swiped through, landing after the park's seek)
+  /// plays the very same takeaway cue and is indistinguishable by position
+  /// alone: without this flag it read the recap AND auto-flipped the card as
+  /// if the reader had tapped ("bug tự động tap luôn", 2026-08-08).
+  bool _recapTapResumed = false;
+
+  /// The reader already opened the recap flip card (tap or auto-flip) on THIS
+  /// keypoint. The PageView disposes the done card's State once it scrolls far
+  /// enough away, so the flip must live here: re-mounting restores the open
+  /// face instantly instead of resetting to the quote front ("đã tab rồi thì
+  /// vuốt lên vuốt xuống không được quay cái card cuối lại", 2026-08-08).
+  bool recapFlipOpened = false;
+
   /// True while the recap park's pause is still in flight. The pause is async,
   /// so a card move landing inside that window still reads `isPlaying == true`
   /// off the audio state and would autoplay the card it lands on — the reader
@@ -373,6 +388,36 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // [_ensureNarrationOnViewedCard]) — this is the other half of that.
     _ensureNarrationOnViewedCard();
 
+    // Parked on the recap, only the takeaway may sound in-app. The park's
+    // pause races every play already in flight — a fast swipe THROUGH the
+    // near-last card fires that card's autoplay, and its play() lands AFTER
+    // the park's pause, reading a card nobody is on ("vẫn đọc card gần cuối
+    // nếu vuốt nhanh", 2026-08-08). Ordering can't win a race that starts
+    // before the park exists, so the invariant re-asserts itself here: any
+    // audible playback that is not the takeaway cue while the gate holds the
+    // done card is a leak — silence it and re-park.
+    final isTapStartedRecapRead = audioState.activeCueIndex == _recapGateCueIndex && _recapTapResumed;
+    if (_recapGateCueIndex >= 0 &&
+        !_isBackgrounded &&
+        audioState.isPlaying &&
+        _audioCubit.isMergedMode &&
+        state.cards.isNotEmpty &&
+        state.viewedCardIndex == state.cards.length - 1 &&
+        !isTapStartedRecapRead) {
+      _recapMutePending = true;
+      unawaited(() async {
+        try {
+          await _audioCubit.pause();
+          if (_audioCubit.state.activeCueIndex != _recapGateCueIndex && _audioCubit.state.hasStartedSession) {
+            await _audioCubit.playCue(_recapGateCueIndex, autoplay: false);
+          }
+        } finally {
+          _recapMutePending = false;
+        }
+      }());
+      return;
+    }
+
     // Merged mode: the file plays THROUGH open boundaries without stopping,
     // so "the voice moved on" arrives as a cue change, not a completion.
     if (_audioCubit.isMergedMode && audioState.activeCueIndex >= 0 && audioState.activeCueIndex != _lastSeenCueIndex) {
@@ -566,7 +611,17 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     final capCue = cap == null ? null : _cueBoundForCardCap(cap);
 
     int? gateCue;
-    if (!_isBackgrounded && !_theoryCubit.state.canContinue) {
+    // The canContinue gate protects the LIVE EDGE only — once the keypoint is
+    // completed there is no edge left to protect, and keeping the bound armed
+    // fights the recap park: the park seeks PAST the bound (the takeaway cue
+    // sits on the done card, which [_lastAudibleCueUpTo] never counts), the
+    // tick clamp yanks the voice back to the last real card, its completion
+    // pushes the view forward again — an infinite 10↔11 bounce re-reading the
+    // near-last card aloud ("nhảy ngược về và đọc card gần cuối", 2026-08-08,
+    // caught in the [DeckDbg] trail). Post-completion the only in-app hold is
+    // the recap park's own pause.
+    final isKeypointCompleted = _lessonCubit.state.completionOrigin != LessonCompletionOrigin.none;
+    if (!_isBackgrounded && !isKeypointCompleted && !_theoryCubit.state.canContinue) {
       gateCue = _lastAudibleCueUpTo(state.furthestCardIndex);
     }
 
@@ -654,7 +709,16 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         _recapGateCueIndex = cueIndex;
         unawaited(_audioCubit.pause());
       }
-      if (cardIndex != state.viewedCardIndex && !isBackground) viewCard(cardIndex);
+      // The park's pause+seek are async: a position tick from BEFORE the seek
+      // can land after it and report the PREVIOUS cue as active for one emit.
+      // While the armed gate holds the view on the done card, a backward
+      // cue-follow can only be that phantom — the recap is a terminal stop;
+      // narration never walks the view off it. Following it re-read the
+      // near-last card aloud ("nhảy ngược về và đọc card gần cuối",
+      // 2026-08-08 [DeckDbg] trail: viewCard(9)→viewCard(10) between parks).
+      final doneIndex = state.cards.length - 1;
+      final phantomBackstep = _recapGateCueIndex >= 0 && state.viewedCardIndex == doneIndex && cardIndex < doneIndex;
+      if (cardIndex != state.viewedCardIndex && !isBackground && !phantomBackstep) viewCard(cardIndex);
       if (cardIndex == state.viewedCardIndex) _loadedClipCardIndex = cardIndex;
     }
     _pushAllowedThroughCue();
@@ -685,12 +749,21 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     final cueIndex = _takeawayLearningItemId == null
         ? null
         : _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
+    LogDev.warning(
+      '[RecapGate] park idx=$index cue=$cueIndex takeaway=$_takeawayLearningItemId '
+      'session=${_audioCubit.state.hasStartedSession} playing=${_audioCubit.state.isPlaying} '
+      'activeCue=${_audioCubit.state.activeCueIndex}',
+    );
     // The reader already tapped the recap open and the voice is reading it —
     // a re-park (any rebuild re-pointing narration at this card) must not
-    // pause the very thing the tap started.
-    if (cueIndex != null && cueIndex == _audioCubit.state.activeCueIndex && _audioCubit.state.isPlaying) {
+    // pause the very thing the tap started. `_recapTapResumed` is what proves
+    // the tap: a stray autoplay landing after the park's seek plays this very
+    // cue too, and without the flag this branch waved it through as the
+    // reader's own listening.
+    if (cueIndex != null && cueIndex == _audioCubit.state.activeCueIndex && _audioCubit.state.isPlaying && _recapTapResumed) {
       return;
     }
+    _recapTapResumed = false;
     if (cueIndex != null) {
       _loadedClipCardIndex = index;
       _recapGateCueIndex = cueIndex;
@@ -717,7 +790,9 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// the gate is armed and the player silent: flipping the card around in any
   /// other situation stays quiet.
   void resumeRecapNarrationIfGated() {
+    LogDev.warning('[RecapGate] resume gate=$_recapGateCueIndex playing=${_audioCubit.state.isPlaying}');
     if (_recapGateCueIndex < 0 || _audioCubit.state.isPlaying) return;
+    _recapTapResumed = true;
     unawaited(_audioCubit.playCue(_recapGateCueIndex, autoplay: true));
   }
 
@@ -728,7 +803,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   bool get isNarratingRecap {
     if (_takeawayLearningItemId == null || !_audioCubit.isMergedMode || !_audioCubit.state.isPlaying) return false;
     final cue = _audioCubit.timeline?.cueAt(_audioCubit.state.activeCueIndex);
-    return cue != null && cue.learningItemId == _takeawayLearningItemId;
+    if (cue == null || cue.learningItemId != _takeawayLearningItemId) return false;
+    // An armed gate means the recap is waiting for the reader's tap — a stray
+    // play sounding at this cue is a leak being silenced, not narration, and
+    // treating it as such auto-flipped the card ("tự động tap", 2026-08-08).
+    return _recapGateCueIndex < 0 || _recapTapResumed;
   }
 
   /// Moves the view onto the card with this identity, revealing it first when
@@ -828,7 +907,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         // skips it), so the live edge is never parked ON it — jumpToCard below
         // still lands the view on the recap card, and the done card's own
         // completion fallback files the keypoint.
-        if (itemIndex >= 0 && voiceIsAhead && !items[itemIndex].isTakeawaySummary) {
+        if (itemIndex >= 0 && voiceIsAhead && !resolveTakeawaySummary(items).hiddenItemIndexes.contains(itemIndex)) {
           _lessonCubit.jumpToItem(itemIndex);
           _lessonCubit.setCurrentLearningItem(items[itemIndex]);
           _theoryCubit.jumpToDocument(cue.documentIndex);
@@ -891,7 +970,12 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       revealToCard: _revealToCardTarget,
     );
     _cardToClip = built.cardToClip;
-    if (_takeawayLearningItemId != built.takeawayLearningItemId) _recapGateCueIndex = -1;
+    if (_takeawayLearningItemId != built.takeawayLearningItemId) {
+      _recapGateCueIndex = -1;
+      // A different takeaway means a different keypoint's recap — its flip
+      // state must not leak onto the new card.
+      recapFlipOpened = false;
+    }
     _takeawayLearningItemId = built.takeawayLearningItemId;
     // Tell the player which clips belong to the reading flow at all, so the
     // background queue never reads an exercise question's clip aloud.

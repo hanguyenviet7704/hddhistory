@@ -110,7 +110,11 @@ class PracticeHubPage extends StatelessWidget {
     );
   }
 
-  /// Design: 36px circle, `rgba(13,18,28,.06)`, thin X.
+  /// The design's `rgba(13,18,28,.06)` circle reads on the design's flat light
+  /// page, but this page sits on [ThemedBackground] — over a photo it
+  /// disappears ("dấu x mờ"). The keypoint header solved exactly this with
+  /// [KeypointHeaderButtonChrome] (white .9 circle, dark icon), so the X wears
+  /// the same chrome as the screen the reader just came from.
   Widget _closeButton(BuildContext context) {
     return Semantics(
       button: true,
@@ -120,15 +124,9 @@ class PracticeHubPage extends StatelessWidget {
           AppHaptic.select();
           Navigator.of(context).pop();
         },
-        child: Container(
-          width: 36.w,
-          height: 36.w,
-          decoration: BoxDecoration(
-            color: AppCustomColor.textPrimary.withValues(alpha: 0.06),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Icon(Icons.close, size: 18.w, color: AppCustomColor.kpOptionText),
+        behavior: HitTestBehavior.opaque,
+        child: KeypointHeaderButtonChrome(
+          child: Icon(Icons.close, size: 18.w, color: KeypointHeaderChrome.icon),
         ),
       ),
     );

@@ -44,7 +44,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     });
   }
 
-  Future<void> _handlePrimaryCta(CourseLessonState lessonState) async {
+  /// [continueToNext] separates the two ways off this screen: Skip CONTINUES
+  /// the flow into the next keypoint, the X is an exit and always leaves for
+  /// the roadmap.
+  Future<void> _handlePrimaryCta(CourseLessonState lessonState, {required bool continueToNext}) async {
     if (_isHandlingPrimaryCta) return;
     setState(() => _isHandlingPrimaryCta = true);
 
@@ -57,7 +60,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         }
       }
 
-      await _navigateAfterCompletion(lessonState);
+      await _navigateAfterCompletion(lessonState, continueToNext: continueToNext);
     } finally {
       if (mounted) {
         setState(() => _isHandlingPrimaryCta = false);
@@ -79,7 +82,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     return progress.isCompleted || progress.progress >= 1;
   }
 
-  Future<void> _navigateAfterCompletion(CourseLessonState lessonState) async {
+  Future<void> _navigateAfterCompletion(CourseLessonState lessonState, {bool continueToNext = false}) async {
     // Leaving here ends the keypoint session — whichever branch we route to
     // next (badge, roadmap), the lesson is no longer open, so the Live
     // Activity must end. Done first so it ends on every path.
@@ -107,6 +110,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     _navigatedAway = true;
     final page = AppDI.injector.get<PageCubit>();
     final isBadgeComplete = kAchievementsEnabled && _isCourseLevelBadgeComplete();
+
+    // "Skip" CONTINUES the flow — straight into this lesson's next keypoint.
+    // Finishing the lesson's LAST keypoint leaves for the roadmap below.
+    if (continueToNext && !isBadgeComplete && _startNextKeypoint(lessonState)) return;
     final destinationRouteName = isBadgeComplete ? RouteNamed.badgeProgress : RouteNamed.courseRoadmap;
 
     if (isBadgeComplete) {
@@ -120,6 +127,32 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     Future.delayed(const Duration(milliseconds: 100), () {
       page.setCurrentRouteName(destinationRouteName);
     });
+  }
+
+  /// Opens the next keypoint of THIS lesson. Returns false when the just
+  /// completed keypoint was the lesson's last — leaving the lesson is the
+  /// roadmap's moment, so the caller's fallback routes there.
+  bool _startNextKeypoint(CourseLessonState lessonState) {
+    final roadmapCubit = context.read<CourseRoadmapCubit>();
+    final roadmapState = roadmapCubit.state;
+
+    final lesson = lessonState.selectedLesson;
+    final keypoints = lesson.keypoints;
+    final currentIndex = keypoints.indexWhere((keypoint) => keypoint.id == lessonState.resolvedCurrentKeypoint.id);
+    if (currentIndex < 0 || currentIndex + 1 >= keypoints.length) return false;
+    final next = keypoints[currentIndex + 1];
+    if (next.id.isEmpty) return false;
+
+    startKeypointLesson(
+      lessonCubit: AppDI.injector.get<LessonCubit>(),
+      courseLessonCubit: context.read<CourseLessonCubit>(),
+      roadmapCubit: roadmapCubit,
+      navContext: context,
+      lesson: lesson,
+      keypoint: next,
+      courseLevel: roadmapState.currentCourseLevel,
+    );
+    return true;
   }
 
   void _openPractice(BuildContext context, CourseLessonState lessonState) {
@@ -168,23 +201,20 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // The design's X leaves for the roadmap — same act as skipping,
-                  // so it runs the same flow (streak gate + habit suggestion
-                  // included) rather than a second, quieter exit path.
+                  // The design's X leaves for the roadmap — an EXIT, unlike
+                  // Skip, which continues into the next keypoint. It still
+                  // runs the same completion flow rather than a second,
+                  // quieter exit path.
+                  // Same chrome as the keypoint header's buttons: the design's
+                  // 6%-dark circle vanishes over a ThemedBackground photo.
                   Semantics(
                     button: true,
                     label: context.l10n.common.close,
                     child: GestureDetector(
-                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState),
-                      child: Container(
-                        width: 36.w,
-                        height: 36.w,
-                        decoration: BoxDecoration(
-                          color: AppCustomColor.textPrimary.withValues(alpha: 0.06),
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(Icons.close, size: 18.w, color: AppCustomColor.kpOptionText),
+                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: false),
+                      behavior: HitTestBehavior.opaque,
+                      child: KeypointHeaderButtonChrome(
+                        child: Icon(Icons.close, size: 18.w, color: KeypointHeaderChrome.icon),
                       ),
                     ),
                   ),
@@ -255,7 +285,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                   Semantics(
                     button: true,
                     child: GestureDetector(
-                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState),
+                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
                       behavior: HitTestBehavior.opaque,
                       child: Container(
                         height: 44.h,
