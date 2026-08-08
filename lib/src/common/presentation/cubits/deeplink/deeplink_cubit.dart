@@ -249,6 +249,23 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     final deeplink = (raw['deeplink'] ?? '').toString().trim();
     if (deeplink.isEmpty) return false;
 
+    // Only the server's scheduled pushes carry `type` (the NotificationType) —
+    // the local return nudge also has a `deeplink` key but no type, so this
+    // both attributes the tap and keeps the nudge out of the count. Fired
+    // BEFORE the switch on purpose: a destination this build can't route yet
+    // (e.g. `explore`) is still a tap worth counting.
+    final notiType = (raw['type'] ?? '').toString().trim();
+    final courseId = (raw['courseId'] ?? '').toString().trim();
+    if (notiType.isNotEmpty) {
+      unawaited(
+        AppService.instance.appTrackingService.trackEvent(TrackingKey.notiTap, parameters: {
+          'noti_type': notiType,
+          'deeplink': deeplink,
+          if (courseId.isNotEmpty) 'course_id': courseId,
+        }).catchError((_) {}),
+      );
+    }
+
     final navContext = AppConfig.instance.context;
     if (navContext == null) {
       LogDev.warning('Ignoring scheduled notification tap: no navigator context');
@@ -264,7 +281,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         // Same resume the Live Activity card uses: hand the keypoint to the
         // roadmap and let it open the lesson once course data can resolve it.
         openCourseRoadmapFromLiveActivity(
-          (raw['courseId'] ?? '').toString().trim(),
+          courseId,
           keypointId: (raw['keypointId'] ?? '').toString().trim(),
         );
         return true;
@@ -275,7 +292,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         return true;
 
       case 'new_course':
-        _openNewCourseRoadmap(navContext, (raw['courseId'] ?? '').toString().trim());
+        _openNewCourseRoadmap(navContext, courseId);
         return true;
 
       default:

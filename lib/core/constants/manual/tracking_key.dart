@@ -519,6 +519,15 @@ mixin TrackingKey {
   static const String liveResumeTap = 'live_resume_tap';
   static const String liveNudgeTap = 'live_nudge_tap';
 
+  //* Scheduled push notification events
+  // Tap on one of the server's scheduled pushes (daily_remind /
+  // progress_finish / progress_start / new_course / habit_tracking).
+  // Params: noti_type (the server NotificationType), deeplink (destination,
+  // tracked even when this build can't route it yet), course_id when carried.
+  // `notification_open` is a Firebase-reserved auto-event name — can't be
+  // logged manually, hence the custom name.
+  static const String notiTap = 'noti_tap';
+
   //* Subscription events
   static const String subscriptionRenewed = 'subscription_renewed';
   static const String subscriptionCancelled = 'subscription_cancelled';
