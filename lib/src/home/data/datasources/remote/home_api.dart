@@ -13,4 +13,7 @@ abstract class HomeApi {
   Future<BaseResponse<List<SuggestedCourseModel>>> getSuggestCourses(
     @Query('limit') int limit,
   );
+
+  @GET(AppEndpoint.homeBanner)
+  Future<BaseResponse<HomeBannerModel>> getHomeBanner();
 }

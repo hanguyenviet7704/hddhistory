@@ -113,6 +113,9 @@ mixin AppEndpoint {
   static const String coursesUserProgressSuggestCourses = '/api/v1/courses-user-progress/suggest-courses';
   static const String coursesUserProgressCompletedLevelAdditionalContentRequest = '/api/v1/courses-user-progress/completed-level/additional-content-request';
 
+  //* Home Banner API
+  static const String homeBanner = '/api/v1/home-banner';
+
   //* Courses Output Practice API
   static const String coursesOutputPracticeConversations = '/api/v1/courses-output-practice-conversations';
   static const String coursesOutputPracticeSectionConversations = '/api/v1/courses-output-practice-conversations/section/{sectionId}';

@@ -189,6 +189,11 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                               const _NewTodaySection(),
                               28.verticalSpace,
 
+                              // ── Admin-configured promo banner ────────────────
+                              // Collapses to zero height (spacing included) when
+                              // disabled/empty — see HomeBannerCard.
+                              const HomeBannerCard(),
+
                               // ── Jump back in (in-progress courses) ───────────
                               BlocBuilder<ProgressCubit, ProgressState>(
                                 // Only myCoursesPageData drives this section — see the

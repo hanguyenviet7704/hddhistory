@@ -41,6 +41,15 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
   }
 
   @override
+  TaskEither<AppException, HomeBannerEntity> getHomeBanner() {
+    return callApiWithTransform<HomeBannerModel, HomeBannerEntity>(
+      apiCall: () => _homeApi.getHomeBanner(),
+      transform: (model) => model.toEntity(),
+      defaultValue: const HomeBannerEntity(),
+    );
+  }
+
+  @override
   TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(
     PageBreakRequest<SkillsetFilterRequest> request,
   ) {

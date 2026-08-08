@@ -7,4 +7,5 @@ abstract class IHomeRepository {
   TaskEither<AppException, SkillsetEntity> getSkillset(String id);
   TaskEither<AppException, QuoteEntity> getRandomQuote();
   TaskEither<AppException, List<SuggestedCourseEntity>> getSuggestCourses(int limit);
+  TaskEither<AppException, HomeBannerEntity> getHomeBanner();
 }

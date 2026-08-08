@@ -12,6 +12,11 @@ abstract class HomeState with _$HomeState {
     String? errorMessage,
     @Default(null) QuoteEntity? quote,
     @Default([]) List<SuggestedCourseEntity> suggestedCourses,
+    // Admin-configurable promo banner between "New today" and "Jump back in".
+    // Null until the first fetch resolves; a fetch failure leaves it null
+    // (see [HomeCubit.loadHomeBanner]) rather than surfacing an error, so the
+    // section just stays collapsed instead of blocking the rest of Home.
+    @Default(null) HomeBannerEntity? homeBanner,
     // Optional-update header banner on Home. Session-only (default false;
     // set by [HomeCubit.checkOptionalUpdate], cleared by dismiss/update).
     @Default(false) bool showUpdateBanner,

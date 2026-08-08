@@ -6,12 +6,14 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   final GetSkillsetUseCase _getUseCase;
   final GetRandomQuoteUseCase _getRandomQuoteUseCase;
   final GetSuggestCoursesUseCase _getSuggestCoursesUseCase;
+  final GetHomeBannerUseCase _getHomeBannerUseCase;
 
   HomeCubit(
     this._getAllUseCase,
     this._getUseCase,
     this._getRandomQuoteUseCase,
     this._getSuggestCoursesUseCase,
+    this._getHomeBannerUseCase,
   ) : super(HomeState.initial());
 
   bool _isInitialized = false;
@@ -83,6 +85,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
       loadAllSkillsets(isInit: true),
       loadRandomQuote(),
       loadSuggestCourses(),
+      loadHomeBanner(),
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
       AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
@@ -113,6 +116,17 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
         ),
       ),
       onSuccess: (quote) => emit(state.copyWith(quote: quote)),
+    );
+  }
+
+  /// Best-effort: the banner is decorative, so a failed fetch keeps
+  /// `homeBanner` null (section stays collapsed) and never sets errorMessage —
+  /// a promo slot must not surface an error over the rest of Home.
+  Future<void> loadHomeBanner() async {
+    await runUseCase<HomeBannerEntity>(
+      usecase: () => _getHomeBannerUseCase(),
+      onFailure: (_) {},
+      onSuccess: (banner) => emit(state.copyWith(homeBanner: banner)),
     );
   }
 
