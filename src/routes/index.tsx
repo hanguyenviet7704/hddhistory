@@ -34,6 +34,7 @@ import HabitCheckinList from "../pages/habit-checkins/HabitCheckinList";
 import HabitCheckinDetail from "../pages/habit-checkins/HabitCheckinDetail";
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
 import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
+import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
@@ -85,6 +86,7 @@ export default function AppRouter() {
               <Route path="study-themes" element={<StudyThemeList />} />
               <Route path="download-links" element={<DownloadLinkList />} />
               <Route path="streak-config" element={<StreakConfigPage />} />
+              <Route path="home-banner" element={<HomeBannerPage />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />

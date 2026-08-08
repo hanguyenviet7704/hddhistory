@@ -29,6 +29,7 @@ import {
   LinkIcon,
   ClipboardDocumentCheckIcon,
   FireIcon as StreakIcon,
+  MegaphoneIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -100,6 +101,7 @@ const menuGroups = [
       { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
       { name: "Link tải app", icon: LinkIcon, path: "/download-links" },
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
+      { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
       { name: "Thông báo định kỳ", icon: BellAlertIcon, path: "/notifications" },
       { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
     ],
