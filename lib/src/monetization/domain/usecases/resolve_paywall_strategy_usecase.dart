@@ -35,7 +35,10 @@ class ResolvePaywallStrategyUsecase {
 
     final segment = _segmentFor(params.installTime, params.nowUtc, saleStrategy.newUser.windowDays);
     final event = saleStrategy.saleEvent;
-    if (_isActiveEvent(event, segment, params.nowUtc)) {
+    // Sale events restyle the FULL paywall only (spec owner's ruling). The
+    // compact sheet carries its own numbers in `compactPaywall`, so a compact
+    // entry point resolves straight to the audience strategy even mid-sale.
+    if (variant != PaywallProductVariant.compact && _isActiveEvent(event, segment, params.nowUtc)) {
       return _fromProducts(
         strategyType: ResolvedPaywallStrategyType.saleEvent,
         segment: segment,

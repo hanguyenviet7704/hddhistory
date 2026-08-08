@@ -39,8 +39,16 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     /// hiding a marketing claim is the change that has to be asked for.
     @Default(true) bool showCredibilityBlock,
 
+    /// The compact sheet's own headline number ("N% OFF"). Display only — the
+    /// charge is the compact SKU's price. Sale events never touch this sheet.
+    @Default(0) int compactDiscountPercent,
+
+    /// The compact sheet countdown's deadline (ISO). Absent or past → no
+    /// countdown.
+    String? compactEndAtUtc,
+
     /// The compact sheet's urgency line ("You will never see this again…").
-    /// Empty falls back to the bundled copy; shown only while a sale runs.
+    /// Empty falls back to the bundled copy; shown with the discount headline.
     @Default(BaseMultiLanguage()) BaseMultiLanguage compactUrgencyLine,
 
     /// Remote "What people say" cards. Empty means the config carries none and
@@ -275,6 +283,10 @@ class _PaywallConfigParser {
         // Absent reads as SHOWN, matching the build that introduced the strip.
         showCredibilityBlock: decoded['showCredibilityBlock'] is bool ? decoded['showCredibilityBlock'] as bool : true,
         reviews: _reviews(decoded['reviews']),
+        compactDiscountPercent: decoded['compactPaywall'] is Map<String, dynamic> ? _intValue((decoded['compactPaywall'] as Map<String, dynamic>)['discountPercent']) : 0,
+        compactEndAtUtc: decoded['compactPaywall'] is Map<String, dynamic> && (decoded['compactPaywall'] as Map<String, dynamic>)['endAtUtc'] is String
+            ? (decoded['compactPaywall'] as Map<String, dynamic>)['endAtUtc'] as String
+            : null,
         compactUrgencyLine: _flatLine(decoded['compactPaywall'] is Map<String, dynamic> ? (decoded['compactPaywall'] as Map<String, dynamic>)['urgencyLine'] : null),
       );
     } catch (_) {

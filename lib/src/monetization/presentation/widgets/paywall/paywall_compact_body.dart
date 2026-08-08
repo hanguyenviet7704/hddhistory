@@ -23,8 +23,6 @@ class _PaywallCompactBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strategy = state.resolvedPaywallStrategy;
-
     // NOT `state.selectedProduct`: selectedProductId is chosen when the FULL
     // list loads, and the compact list usually doesn't contain that id — the
     // getter then answers with an empty entity, which is how this sheet first
@@ -47,12 +45,12 @@ class _PaywallCompactBody extends StatelessWidget {
       });
     }
 
-    // Discount and deadline come from the live sale event and nowhere else —
-    // the gift config carries no numbers (it is just the popup's switch and
-    // title). No sale running → no headline, no countdown; the client never
-    // invents an offer.
-    final discount = product != null && product.salePercent > 0 && product.salePercent < 100 ? product.salePercent.round() : 0;
-    final DateTime? endAtUtc = strategy?.hasSaleCountdown == true ? strategy?.endAtUtc : null;
+    // Discount and deadline belong to the compact config itself — sale events
+    // are full-paywall-only, so nothing here reads the resolved sale state.
+    final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
+    final discount = config.compactDiscountPercent > 0 && config.compactDiscountPercent < 100 ? config.compactDiscountPercent : 0;
+    final deadline = DateTime.tryParse(config.compactEndAtUtc ?? '');
+    final DateTime? endAtUtc = deadline != null && deadline.isAfter(DateTime.now().toUtc()) ? deadline : null;
 
     return Container(
       margin: EdgeInsets.only(top: 68.h),
