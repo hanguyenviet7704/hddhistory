@@ -116,6 +116,12 @@ export interface PaywallGiftCampaign {
   enabled: boolean;
   /** Popup title per locale. Absent uses the app's bundled copy. */
   title?: PaywallLocalizedLine;
+  /** Days after day zero the daily-open popup keeps running. Absent = 7. */
+  windowDays?: number;
+  /** Show when the reader adopts their first habit (day 0). Absent = on. */
+  triggerOnFirstHabit?: boolean;
+  /** Show on the first app open of each day in the window. Absent = on. */
+  triggerOnDailyOpen?: boolean;
 }
 
 /**

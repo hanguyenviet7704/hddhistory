@@ -105,6 +105,10 @@ export type LocalizedLineDraft = Record<PaywallLocale, string>;
 export interface GiftCampaignDraft {
   enabled: boolean;
   title: LocalizedLineDraft;
+  /** Chuỗi để bind input; rỗng = không gửi, app dùng mặc định 7. */
+  windowDays: string;
+  triggerOnFirstHabit: boolean;
+  triggerOnDailyOpen: boolean;
 }
 
 /** Copy owned by the compact paywall itself; SKUs stay per-strategy. */
@@ -250,6 +254,9 @@ export const defaultDraft = (): ConfigDraft => ({
   giftCampaign: {
     enabled: false,
     title: emptyLocalizedLine(),
+    windowDays: "",
+    triggerOnFirstHabit: true,
+    triggerOnDailyOpen: true,
   },
   compactPaywall: {
     discountPercent: "",
@@ -432,6 +439,11 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   giftCampaign: {
     enabled: Boolean(config.giftCampaign?.enabled),
     title: toLocalizedLineDraft(config.giftCampaign?.title),
+    windowDays: config.giftCampaign?.windowDays != null ? String(config.giftCampaign.windowDays) : "",
+    // Absent reads as ON, matching the app's parser and every build that
+    // shipped before these toggles existed.
+    triggerOnFirstHabit: config.giftCampaign?.triggerOnFirstHabit !== false,
+    triggerOnDailyOpen: config.giftCampaign?.triggerOnDailyOpen !== false,
   },
   compactPaywall: {
     discountPercent: config.compactPaywall?.discountPercent != null ? String(config.compactPaywall.discountPercent) : "",
@@ -628,9 +640,17 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     ])
   );
 
+  const giftWindowDays = draft.giftCampaign.windowDays.trim()
+    ? Number(draft.giftCampaign.windowDays)
+    : undefined;
   const giftCampaign: PaywallGiftCampaign = {
     enabled: draft.giftCampaign.enabled,
     title: fromLocalizedLineDraft(draft.giftCampaign.title),
+    // Blank = don't send, so the app keeps its built-in 7 rather than being
+    // pinned to a number nobody chose.
+    ...(giftWindowDays != null ? { windowDays: giftWindowDays } : {}),
+    triggerOnFirstHabit: draft.giftCampaign.triggerOnFirstHabit,
+    triggerOnDailyOpen: draft.giftCampaign.triggerOnDailyOpen,
   };
 
   // Trống toàn bộ → không gửi field, giữ nguyên tắc field-sau-v1 optional.
@@ -889,6 +909,18 @@ export const validateDraft = (
   if (!isLocalizedLineEmpty(draft.giftCampaign.title) && !draft.giftCampaign.title.en.trim()) {
     errors["giftCampaign.title.en"] =
       "giftCampaign.title.en là bắt buộc khi đã điền tiêu đề cho ít nhất 1 ngôn ngữ";
+  }
+
+  // Blank is legal here (unlike saleStrategy.newUser.windowDays, which gates a
+  // whole audience): it means "don't send the field", and the app falls back to
+  // its built-in 7. Only a value that IS typed has to be in the range the DTO
+  // accepts, so a rejected save is caught here instead of by a 400.
+  if (draft.giftCampaign.windowDays.trim()) {
+    const giftWindow = Number(draft.giftCampaign.windowDays);
+    if (!Number.isInteger(giftWindow) || giftWindow < 1 || giftWindow > 30) {
+      errors["giftCampaign.windowDays"] =
+        "Số ngày phải là số nguyên từ 1 đến 30, hoặc để trống để dùng mặc định 7";
+    }
   }
 
   // reviews — purely client-side rules (the backend itself only requires
