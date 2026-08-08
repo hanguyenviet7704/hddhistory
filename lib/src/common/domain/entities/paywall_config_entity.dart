@@ -222,6 +222,17 @@ abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
   const factory PaywallGiftCampaignEntity({
     @Default(false) bool enabled,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+
+    /// How many days after day zero the daily-open popup keeps running. The
+    /// default is the number this used to hardcode, so a config written before
+    /// the field existed behaves exactly as before.
+    @Default(7) int windowDays,
+
+    /// The two triggers, switchable independently — a run can want the day-0
+    /// moment without the daily reminder, or the reverse. Both default ON,
+    /// which is what the app did before they existed.
+    @Default(true) bool triggerOnFirstHabit,
+    @Default(true) bool triggerOnDailyOpen,
   }) = _PaywallGiftCampaignEntity;
 
   factory PaywallGiftCampaignEntity.fromJson(Map<String, dynamic> json) => _$PaywallGiftCampaignEntityFromJson(json);
@@ -253,8 +264,18 @@ class _PaywallConfigParser {
     if (!_boolValue(value['enabled'])) return null;
 
     final title = value['title'];
+    // Out of range, wrong type or absent all fall back to 7 rather than
+    // disabling the window: a bad number in config must not silently switch a
+    // running campaign off.
+    final rawWindow = value['windowDays'];
+    final windowDays = rawWindow is int && rawWindow >= 1 && rawWindow <= 30 ? rawWindow : 7;
     return PaywallGiftCampaignEntity(
       enabled: true,
+      windowDays: windowDays,
+      // Absent reads as ON, matching every build that shipped before the
+      // toggles existed.
+      triggerOnFirstHabit: value['triggerOnFirstHabit'] is bool ? value['triggerOnFirstHabit'] as bool : true,
+      triggerOnDailyOpen: value['triggerOnDailyOpen'] is bool ? value['triggerOnDailyOpen'] as bool : true,
       title: title is Map<String, dynamic>
           ? BaseMultiLanguage(
               en: _stringValue(title['en']),

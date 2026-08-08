@@ -17,7 +17,11 @@ class GiftPopupSchedule {
 
   GiftPopupSchedule(this._local);
 
-  static const int windowDays = 7;
+  /// Used when no campaign config is in hand. The window itself is admin
+  /// config now ([PaywallGiftCampaignEntity.windowDays]) — it lived here as a
+  /// constant, which made "run it for five days this month" a code change, a
+  /// release and a store review for a purely marketing number.
+  static const int defaultWindowDays = 7;
 
   /// Asking and spending are separate on purpose.
   ///
@@ -36,7 +40,7 @@ class GiftPopupSchedule {
 
   /// True at most once per local calendar day inside the days 1–7 window, and
   /// only after day zero has happened.
-  Future<bool> canShowDailyOpen() async {
+  Future<bool> canShowDailyOpen({int windowDays = defaultWindowDays}) async {
     final epochMs = await _local.getGiftDayZeroEpochMs();
     if (epochMs == null) return false;
 
@@ -74,13 +78,20 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   final campaign = iapCubit.resolvedPaywallConfig.giftCampaign;
   if (campaign == null) return;
 
+  // Each trigger has its own switch, so a run can keep the day-0 moment without
+  // the daily reminder, or the reverse, without switching the campaign off.
+  final triggerEnabled = dayZeroEvent ? campaign.triggerOnFirstHabit : campaign.triggerOnDailyOpen;
+  if (!triggerEnabled) return;
+
   // An unloaded profile reads as non-premium; showing an upsell to someone who
   // already paid is worse than skipping a day, so wait for a real answer.
   final user = AppDI.injector.get<ProfileCubit>().state.user;
   if (user.id.isEmpty || user.isPremium) return;
 
   final schedule = AppDI.injector.get<GiftPopupSchedule>();
-  final canShow = dayZeroEvent ? await schedule.canShowDayZero() : await schedule.canShowDailyOpen();
+  final canShow = dayZeroEvent
+      ? await schedule.canShowDayZero()
+      : await schedule.canShowDailyOpen(windowDays: campaign.windowDays);
   if (!canShow || !context.mounted) return;
 
   // Never cover a sheet or dialog the reader is already dealing with. The slot
