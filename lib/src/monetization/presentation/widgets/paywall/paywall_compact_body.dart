@@ -126,15 +126,17 @@ class _PaywallCompactBody extends StatelessWidget {
             // The artwork owns the leftover middle of the sheet (design:
             // the price row flexes, box sits large in the center) — an
             // Expanded, so the sheet always fills from 68px down instead of
-            // shrink-wrapping and floating mid-screen.
+            // shrink-wrapping and floating mid-screen. The open-box PNG is the
+            // design's own asset (pulled from the design project), rotated
+            // -16° exactly as its HTML does.
             Expanded(
               child: Center(
                 child: ExcludeSemantics(
                   child: Transform.rotate(
                     angle: -16 * math.pi / 180,
-                    child: SvgPicture.asset(
-                      AppAsset.svg.app.pwGift,
-                      width: 250.w,
+                    child: Image.asset(
+                      AppAsset.images.app.pwGiftOpen.path,
+                      width: 280.w,
                       fit: BoxFit.contain,
                     ),
                   ),

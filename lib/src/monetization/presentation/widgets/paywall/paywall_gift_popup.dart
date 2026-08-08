@@ -49,14 +49,17 @@ class PaywallGiftPopup extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
           children: [
-            // Overhangs the card by design — a negative top margin rather than a
-            // Stack, so the column below keeps laying out from the artwork's
-            // real bottom edge and the title never collides with it.
-            Transform.translate(
-              offset: Offset(0, -48.h),
+            // Same overhang pattern as PaywallSuccessPurchasePopup: the design
+            // pulls the artwork up 96 of its ~166px, so most of the box floats
+            // ABOVE the card. Transform.translate only repaints (layout keeps
+            // the hole), and a negative-height SizedBox is not a thing — a
+            // Stack with clip none is the way Flutter says margin-top:-96.
+            Positioned(
+              top: -96.h,
               child: ExcludeSemantics(
                 child: SvgPicture.asset(
                   AppAsset.svg.app.pwGift,
@@ -65,58 +68,62 @@ class PaywallGiftPopup extends StatelessWidget {
                 ),
               ),
             ),
-            // Claws back the space the overhang borrowed, so the gap under the
-            // artwork is the design's 18 rather than 18 minus the offset.
-            (18 - 48).h.verticalSpace,
-            AppText(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              style: AppStyle.text20.copyWith(
-                fontSize: 21.sp,
-                fontWeight: FontWeight.w600,
-                color: AppCustomColor.textBrand,
-                height: 1.3,
-              ),
-            ),
-            22.verticalSpace,
-            SizedBox(
-              width: double.infinity,
-              height: 56.h,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5A52F0),
-                  borderRadius: BorderRadius.circular(1000.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF5A52F0).withValues(alpha: 0.34),
-                      blurRadius: 28,
-                      offset: const Offset(0, 14),
-                    ),
-                  ],
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Room for the artwork's in-card half (~70) + the design's 18 gap.
+                SizedBox(height: 88.h),
+                AppText(
+                  title,
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  style: AppStyle.text20.copyWith(
+                    fontSize: 21.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppCustomColor.textBrand,
+                    height: 1.3,
+                  ),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(1000.r),
-                    onTap: () {
-                      AppHaptic.success();
-                      Navigator.of(context).pop(true);
-                    },
-                    child: Center(
-                      child: AppText(
-                        l10n.monetization.giftPopupCta,
-                        style: AppStyle.text16.copyWith(
-                          fontSize: 17.sp,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.5,
+                22.verticalSpace,
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5A52F0),
+                      borderRadius: BorderRadius.circular(1000.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF5A52F0).withValues(alpha: 0.34),
+                          blurRadius: 28,
+                          offset: const Offset(0, 14),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(1000.r),
+                        onTap: () {
+                          AppHaptic.success();
+                          Navigator.of(context).pop(true);
+                        },
+                        child: Center(
+                          child: AppText(
+                            l10n.monetization.giftPopupCta,
+                            style: AppStyle.text16.copyWith(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.5,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
