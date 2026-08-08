@@ -73,7 +73,12 @@ class PaywallFeedbackList extends StatelessWidget {
     bool hasTriggeredScroll = false;
 
     return SizedBox(
-      height: 195.h,
+      // Tall enough for the five description lines the card asks for, measured
+      // rather than eyeballed: 40 padding + 36 reviewer row + 12 + a two-line
+      // title at 49 + 8 + five 21pt lines = 250. At the previous 195 only two
+      // lines fitted, so three were cut off mid-glyph — a review trimmed to two
+      // lines says too little to be worth a carousel.
+      height: 250.h,
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           if (hasTriggeredScroll || notification.metrics.axis != Axis.horizontal || notification.metrics.pixels <= 0) {
@@ -157,15 +162,33 @@ class _FeedbackCard extends StatelessWidget {
             ),
           ),
           8.verticalSpace,
+          // Line count is measured, not guessed. It used to ask for 5 lines
+          // inside an Expanded that — after the 20pt padding, the reviewer row,
+          // a two-line title and the gaps — has room for about two in a 195pt
+          // card. `TextOverflow.ellipsis` keys off maxLines, NOT off the height
+          // it is squeezed into, so the surplus was CLIPPED instead: the last
+          // visible line came out sliced through the middle of its glyphs with
+          // no "…" to show anything was missing.
+          //
+          // Deriving maxLines from the constraints keeps the ellipsis on the
+          // last line that genuinely fits, and keeps doing so when the card
+          // height, the font scale or a longer locale moves the arithmetic.
           Expanded(
-            child: AppText(
-              feedback.description,
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-              style: AppStyle.text12.copyWith(
-                color: AppCustomColor.textSecondary,
-                height: 1.75,
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final style = AppStyle.text12.copyWith(
+                  color: AppCustomColor.textSecondary,
+                  height: 1.75,
+                );
+                final lineHeight = (style.fontSize ?? 12.sp) * (style.height ?? 1);
+                final fits = lineHeight <= 0 ? 1 : (constraints.maxHeight / lineHeight).floor();
+                return AppText(
+                  feedback.description,
+                  maxLines: fits.clamp(1, 5),
+                  overflow: TextOverflow.ellipsis,
+                  style: style,
+                );
+              },
             ),
           ),
         ],
