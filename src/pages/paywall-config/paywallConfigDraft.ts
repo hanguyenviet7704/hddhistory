@@ -109,6 +109,9 @@ export interface GiftCampaignDraft {
 
 /** Copy owned by the compact paywall itself; SKUs stay per-strategy. */
 export interface CompactPaywallDraft {
+  /** Chuỗi để bind input; rỗng = không gửi. */
+  discountPercent: string;
+  endAtUtc: string;
   urgencyLine: LocalizedLineDraft;
 }
 
@@ -249,6 +252,8 @@ export const defaultDraft = (): ConfigDraft => ({
     title: emptyLocalizedLine(),
   },
   compactPaywall: {
+    discountPercent: "",
+    endAtUtc: "",
     urgencyLine: emptyLocalizedLine(),
   },
   // SHOWN by default, matching the app build that introduced the strip.
@@ -429,6 +434,8 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     title: toLocalizedLineDraft(config.giftCampaign?.title),
   },
   compactPaywall: {
+    discountPercent: config.compactPaywall?.discountPercent != null ? String(config.compactPaywall.discountPercent) : "",
+    endAtUtc: toDateTimeInput(config.compactPaywall?.endAtUtc),
     urgencyLine: toLocalizedLineDraft(config.compactPaywall?.urgencyLine),
   },
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
@@ -628,7 +635,16 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
 
   // Trống toàn bộ → không gửi field, giữ nguyên tắc field-sau-v1 optional.
   const urgencyLine = fromLocalizedLineDraft(draft.compactPaywall.urgencyLine);
-  const compactPaywall: PaywallCompactPaywall | undefined = urgencyLine ? { urgencyLine } : undefined;
+  const compactDiscount = draft.compactPaywall.discountPercent.trim() ? Number(draft.compactPaywall.discountPercent) : undefined;
+  const compactEndAt = fromDateTimeInput(draft.compactPaywall.endAtUtc);
+  const compactPaywall: PaywallCompactPaywall | undefined =
+    urgencyLine || compactDiscount != null || compactEndAt
+      ? {
+          ...(compactDiscount != null ? { discountPercent: compactDiscount } : {}),
+          ...(compactEndAt ? { endAtUtc: compactEndAt } : {}),
+          ...(urgencyLine ? { urgencyLine } : {}),
+        }
+      : undefined;
 
   // Omitted entirely when empty rather than sent as `[]`: both mean "use the
   // app's bundled reviews" to the client, but omitting keeps the stored JSON
@@ -849,6 +865,14 @@ export const validateDraft = (
     if (!draft.saleEvent.appliesToDefaultUser && !draft.saleEvent.appliesToNewUser) {
       errors["saleStrategy.saleEvent.appliesTo"] =
         "saleStrategy.saleEvent.appliesTo phải chọn ít nhất 1 đối tượng khi bật sự kiện sale";
+    }
+  }
+
+  // compactPaywall — % hiển thị phải là số nguyên 1-99 nếu điền.
+  if (draft.compactPaywall.discountPercent.trim()) {
+    const pct = Number(draft.compactPaywall.discountPercent);
+    if (!Number.isInteger(pct) || pct < 1 || pct > 99) {
+      errors["compactPaywall.discountPercent"] = "Phải là số nguyên 1–99.";
     }
   }
 

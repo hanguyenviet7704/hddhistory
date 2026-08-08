@@ -4,8 +4,8 @@ import GiftTitleEditor from "../../../components/paywall-config/GiftTitleEditor"
 import ProductRefsEditor from "../../../components/paywall-config/ProductRefsEditor";
 import { PAYWALL_ENTRY_POINTS } from "../../../types/interface/paywall-config.interface";
 import {
+  CompactPaywallDraft,
   EntryPointVariantsDraft,
-  LocalizedLineDraft,
   ProductRefDraft,
   ProductsByPlatform,
 } from "../paywallConfigDraft";
@@ -17,10 +17,8 @@ interface CompactPaywallSectionProps {
   compactCounts: Record<"defaultUser" | "newUser" | "saleEvent", number>;
   defaultUserCompactProducts: ProductRefDraft[];
   onChangeDefaultUserCompactProducts: (next: ProductRefDraft[]) => void;
-  saleEventCompactProducts: ProductRefDraft[];
-  onChangeSaleEventCompactProducts: (next: ProductRefDraft[]) => void;
-  urgencyLine: LocalizedLineDraft;
-  onChangeUrgencyLine: (next: LocalizedLineDraft) => void;
+  value: CompactPaywallDraft;
+  onChange: (next: CompactPaywallDraft) => void;
   disabled?: boolean;
   fieldErrors: Record<string, string>;
   productsByPlatform: ProductsByPlatform | null;
@@ -42,10 +40,8 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
   compactCounts,
   defaultUserCompactProducts,
   onChangeDefaultUserCompactProducts,
-  urgencyLine,
-  onChangeUrgencyLine,
-  saleEventCompactProducts,
-  onChangeSaleEventCompactProducts,
+  value,
+  onChange,
   disabled = false,
   fieldErrors,
   productsByPlatform,
@@ -61,7 +57,6 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
     [
       ["defaultUser", "Người dùng mặc định"],
       ["newUser", "Người dùng mới"],
-      ["saleEvent", "Sự kiện sale"],
     ] as const
   ).filter(([key]) => compactCounts[key] === 0);
 
@@ -69,7 +64,7 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
     <SectionCard
       title="Paywall rút gọn"
       description={
-        'Bản một-gói kiểu "33% OFF" mở ra ở các điểm đặt "Rút gọn" và từ popup quà. Gói hiển thị lấy từ danh sách rút gọn của chiến lược đang thắng; % giảm và đồng hồ đếm ngược lấy từ Sự kiện sale đang chạy.'
+        'Bản một-gói kiểu "33% OFF" mở ra ở các điểm đặt "Rút gọn" và từ popup quà. Toàn bộ số má của sheet — % giảm, hạn đếm ngược, dòng cảnh báo — config ngay tại đây. Sự kiện sale KHÔNG ảnh hưởng bản này (chỉ dành cho paywall đầy đủ).'
       }
       icon={RectangleStackIcon}
     >
@@ -88,25 +83,10 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
       <ProductRefsEditor
         fieldPrefix="saleStrategy.defaultUser.compactProducts"
         title="Gói cho Người dùng mặc định"
-        hint="Hiện ở các điểm mở paywall đặt 'rút gọn' khi không có sự kiện sale nào đang thắng. Để trống thì dùng danh sách đầy đủ của Người dùng mặc định."
+        hint="Gói duy nhất sheet rút gọn hiển thị. Để trống thì dùng danh sách đầy đủ của chiến lược đang thắng."
         emptyHint="Để trống — dùng danh sách đầy đủ của Người dùng mặc định."
         value={defaultUserCompactProducts}
         onChange={onChangeDefaultUserCompactProducts}
-        disabled={disabled}
-        fieldErrors={fieldErrors}
-        productsByPlatform={productsByPlatform}
-        productsLoading={productsLoading}
-        productsError={productsError}
-        onRefreshProducts={onRefreshProducts}
-      />
-
-      <ProductRefsEditor
-        fieldPrefix="saleStrategy.saleEvent.compactProducts"
-        title="Gói khi có Sự kiện sale"
-        hint="Hiện ở các điểm 'rút gọn' trong lúc Sự kiện sale đang chạy. Để trống thì dùng danh sách đầy đủ của Sự kiện sale."
-        emptyHint="Để trống — dùng danh sách đầy đủ của Sự kiện sale."
-        value={saleEventCompactProducts}
-        onChange={onChangeSaleEventCompactProducts}
         disabled={disabled}
         fieldErrors={fieldErrors}
         productsByPlatform={productsByPlatform}
@@ -120,15 +100,47 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
         chỉnh trực tiếp trong từng rule ở section "Người dùng mới".
       </p>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Giảm giá (%)</span>
+          <input
+            value={value.discountPercent}
+            onChange={(e) => onChange({ ...value, discountPercent: e.target.value })}
+            placeholder="33"
+            disabled={disabled}
+            className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+              fieldErrors["compactPaywall.discountPercent"] ? "border-red-300" : "border-slate-200"
+            }`}
+          />
+          <span className="text-[11px] text-slate-500">
+            Chỉ là con số hiển thị "N% OFF" — giá thu thật là giá của gói bên trên.
+          </span>
+          {fieldErrors["compactPaywall.discountPercent"] && (
+            <span className="text-[11px] text-red-600">{fieldErrors["compactPaywall.discountPercent"]}</span>
+          )}
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Đếm ngược đến (UTC)</span>
+          <input
+            type="datetime-local"
+            value={value.endAtUtc}
+            onChange={(e) => onChange({ ...value, endAtUtc: e.target.value })}
+            disabled={disabled}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+          />
+          <span className="text-[11px] text-slate-500">Để trống hoặc qua hạn thì ẩn đồng hồ.</span>
+        </label>
+      </div>
+
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium text-slate-700">Dòng cảnh báo (urgency)</span>
         <p className="text-[11px] text-slate-500">
-          Hiện dưới headline "N% OFF", chỉ khi đang có Sự kiện sale. Để trống
-          dùng copy built-in: "You will never see this again if you exit".
+          Hiện dưới headline "N% OFF" (cần điền % ở trên). Để trống dùng copy
+          built-in: "You will never see this again if you exit".
         </p>
         <GiftTitleEditor
-          value={urgencyLine}
-          onChange={onChangeUrgencyLine}
+          value={value.urgencyLine}
+          onChange={(urgencyLine) => onChange({ ...value, urgencyLine })}
           disabled={disabled}
           idPrefix="compact-urgency"
         />
