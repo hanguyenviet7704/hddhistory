@@ -71,6 +71,7 @@ part 'presentation/pages/habit_detail_page.dart';
 
 //* Presentation Layer - Helpers
 part 'presentation/helpers/habit_tracking.dart';
+part 'presentation/helpers/habit_modal_route.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/habit_added_popup.dart';

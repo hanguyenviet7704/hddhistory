@@ -45,8 +45,8 @@ class HabitQuizPage extends StatefulWidget {
     required HabitPracticeEntity practice,
   }) {
     return Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
+      habitModalRoute(
+        BlocProvider.value(
           value: AppDI.injector.get<HabitCubit>(),
           child: HabitQuizPage(userHabit: userHabit, practice: practice),
         ),

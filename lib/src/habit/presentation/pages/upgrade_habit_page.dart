@@ -14,8 +14,8 @@ class UpgradeHabitPage extends StatefulWidget {
   /// HabitCubit provider isn't in scope — re-provide the singleton.
   static Future<void> push(BuildContext context, {required UserHabitEntity currentHabit, required HabitEntity newHabit}) {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
+      habitModalRoute(
+        BlocProvider.value(
           value: AppDI.injector.get<HabitCubit>(),
           child: UpgradeHabitPage(currentHabit: currentHabit, newHabit: newHabit),
         ),

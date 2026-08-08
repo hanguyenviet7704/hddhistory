@@ -54,8 +54,8 @@ class JournalCheckInPage extends StatefulWidget {
   /// Resolves to `true` when a check-in was filed, so the caller can refresh.
   static Future<bool?> push(BuildContext context, {required UserHabitEntity userHabit}) {
     return Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
+      habitModalRoute(
+        BlocProvider.value(
           value: AppDI.injector.get<HabitCubit>(),
           child: JournalCheckInPage(userHabit: userHabit),
         ),
