@@ -121,18 +121,6 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
             />
             <span>Người dùng mặc định</span>
           </label>
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={value.appliesToNewUser}
-              onChange={(e) =>
-                onChange({ ...value, appliesToNewUser: e.target.checked })
-              }
-              disabled={disabled}
-              className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-            />
-            <span>Người dùng mới</span>
-          </label>
         </div>
         <span className="text-[11px] text-slate-500">
           Không chọn đối tượng nào thì chiến dịch không hiện với ai cả.

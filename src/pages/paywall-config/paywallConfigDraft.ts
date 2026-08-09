@@ -18,11 +18,9 @@ import {
   PaywallDefaultUser,
   PaywallEntryPoint,
   PaywallEntryPointVariants,
-  PaywallImpressionRule,
   PaywallLocale,
   PaywallLocaleContent,
   PaywallLocalizedContent,
-  PaywallNewUser,
   PaywallProductRef,
   PaywallProductVariant,
   PaywallGiftCampaign,
@@ -79,13 +77,6 @@ export interface ImpressionRuleDraft {
   compactProducts: ProductRefDraft[];
 }
 
-export interface NewUserDraft {
-  enabled: boolean;
-  windowDays: string;
-  content: LocalizedContentDraft;
-  impressionRules: ImpressionRuleDraft[];
-}
-
 export interface SaleEventDraft {
   enabled: boolean;
   campaignId: string;
@@ -93,7 +84,6 @@ export interface SaleEventDraft {
   endAtUtc: string;
   /** One flag per audience — the wire shape is an enum array, not free text. */
   appliesToDefaultUser: boolean;
-  appliesToNewUser: boolean;
   content: LocalizedContentDraft;
   products: ProductRefDraft[];
   compactProducts: ProductRefDraft[];
@@ -115,9 +105,6 @@ export interface GiftCampaignDraft {
 export interface CompactPaywallDraft {
   /** Chuỗi để bind input; rỗng = không gửi. */
   discountPercent: string;
-  endAtUtc: string;
-  /** Chuỗi để bind input; rỗng = không gửi, app dùng mặc định 24h. */
-  countdownHours: string;
   urgencyLine: LocalizedLineDraft;
 }
 
@@ -154,7 +141,6 @@ export interface ConfigDraft {
   inLessonAfterCards: string;
   entryPointVariants: EntryPointVariantsDraft;
   defaultUser: DefaultUserDraft;
-  newUser: NewUserDraft;
   saleEvent: SaleEventDraft;
   giftCampaign: GiftCampaignDraft;
   compactPaywall: CompactPaywallDraft;
@@ -236,19 +222,12 @@ export const defaultDraft = (): ConfigDraft => ({
     products: [],
     compactProducts: [],
   },
-  newUser: {
-    enabled: false,
-    windowDays: "",
-    content: emptyLocalizedContent(),
-    impressionRules: [],
-  },
   saleEvent: {
     enabled: false,
     campaignId: "",
     startAtUtc: "",
     endAtUtc: "",
     appliesToDefaultUser: true,
-    appliesToNewUser: true,
     content: emptyLocalizedContent(),
     products: [],
     compactProducts: [],
@@ -262,8 +241,6 @@ export const defaultDraft = (): ConfigDraft => ({
   },
   compactPaywall: {
     discountPercent: "",
-    endAtUtc: "",
-    countdownHours: "",
     urgencyLine: emptyLocalizedLine(),
   },
   // SHOWN by default, matching the app build that introduced the strip.
@@ -398,23 +375,6 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
       config.saleStrategy?.defaultUser?.compactProducts ?? []
     ).map(toProductRefDraft),
   },
-  newUser: {
-    enabled: Boolean(config.saleStrategy?.newUser?.enabled),
-    windowDays:
-      config.saleStrategy?.newUser?.windowDays != null
-        ? String(config.saleStrategy.newUser.windowDays)
-        : "",
-    content: toLocalizedContentDraft(config.saleStrategy?.newUser?.content),
-    impressionRules: (config.saleStrategy?.newUser?.impressionRules ?? []).map(
-      (rule): ImpressionRuleDraft => ({
-        _localId: nextLocalId(),
-        fromImpression: String(rule.fromImpression ?? ""),
-        content: toLocalizedContentDraft(rule.content),
-        products: (rule.products ?? []).map(toProductRefDraft),
-        compactProducts: (rule.compactProducts ?? []).map(toProductRefDraft),
-      })
-    ),
-  },
   saleEvent: {
     enabled: Boolean(config.saleStrategy?.saleEvent?.enabled),
     campaignId: config.saleStrategy?.saleEvent?.campaignId ?? "",
@@ -426,10 +386,6 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     appliesToDefaultUser: hasAudience(
       config.saleStrategy?.saleEvent?.appliesTo,
       "defaultUser"
-    ),
-    appliesToNewUser: hasAudience(
-      config.saleStrategy?.saleEvent?.appliesTo,
-      "newUser"
     ),
     content: toLocalizedContentDraft(config.saleStrategy?.saleEvent?.content),
     products: (config.saleStrategy?.saleEvent?.products ?? []).map(
@@ -450,8 +406,6 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   },
   compactPaywall: {
     discountPercent: config.compactPaywall?.discountPercent != null ? String(config.compactPaywall.discountPercent) : "",
-    endAtUtc: toDateTimeInput(config.compactPaywall?.endAtUtc),
-    countdownHours: config.compactPaywall?.countdownHours != null ? String(config.compactPaywall.countdownHours) : "",
     urgencyLine: toLocalizedLineDraft(config.compactPaywall?.urgencyLine),
   },
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
@@ -572,7 +526,6 @@ const fromLocalizedLineDraft = (title: LocalizedLineDraft): PaywallLocalizedLine
 const fromAudienceFlags = (draft: SaleEventDraft): PaywallAudienceSegment[] => {
   const appliesTo: PaywallAudienceSegment[] = [];
   if (draft.appliesToDefaultUser) appliesTo.push("defaultUser");
-  if (draft.appliesToNewUser) appliesTo.push("newUser");
   return appliesTo;
 };
 
@@ -581,25 +534,6 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     content: fromLocalizedContentDraft(draft.defaultUser.content),
     products: draft.defaultUser.products.map(fromProductRefDraft),
     compactProducts: fromCompactProductsDraft(draft.defaultUser.compactProducts),
-  };
-
-  const newUserContentEmpty = isLocalizedContentEmpty(draft.newUser.content);
-  const newUser: PaywallNewUser = {
-    enabled: draft.newUser.enabled,
-    windowDays: draft.newUser.windowDays.trim()
-      ? Number(draft.newUser.windowDays)
-      : undefined,
-    content: newUserContentEmpty
-      ? undefined
-      : fromLocalizedContentDraft(draft.newUser.content),
-    impressionRules: draft.newUser.impressionRules.map(
-      (rule): PaywallImpressionRule => ({
-        fromImpression: Number(rule.fromImpression),
-        content: fromLocalizedContentDraft(rule.content),
-        products: rule.products.map(fromProductRefDraft),
-        compactProducts: fromCompactProductsDraft(rule.compactProducts),
-      })
-    ),
   };
 
   const saleEventContentEmpty = isLocalizedContentEmpty(draft.saleEvent.content);
@@ -618,7 +552,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     compactProducts: fromCompactProductsDraft(draft.saleEvent.compactProducts),
   };
 
-  const saleStrategy: PaywallSaleStrategy = { defaultUser, newUser, saleEvent };
+  const saleStrategy: PaywallSaleStrategy = { defaultUser, saleEvent };
 
   const autoOpen: PaywallAutoOpen = {
     enabled: draft.autoOpenEnabled,
@@ -660,18 +594,13 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
   // Trống toàn bộ → không gửi field, giữ nguyên tắc field-sau-v1 optional.
   const urgencyLine = fromLocalizedLineDraft(draft.compactPaywall.urgencyLine);
   const compactDiscount = draft.compactPaywall.discountPercent.trim() ? Number(draft.compactPaywall.discountPercent) : undefined;
-  const compactEndAt = fromDateTimeInput(draft.compactPaywall.endAtUtc);
-  const compactCountdownHours = draft.compactPaywall.countdownHours.trim()
-    ? Number(draft.compactPaywall.countdownHours)
-    : undefined;
+  // The sheet's countdown is a fixed 24h window owned by the app — no hours
+  // field, no shared deadline. Only the headline discount and its urgency line
+  // are still authored here.
   const compactPaywall: PaywallCompactPaywall | undefined =
-    urgencyLine || compactDiscount != null || compactEndAt || compactCountdownHours != null
+    urgencyLine || compactDiscount != null
       ? {
           ...(compactDiscount != null ? { discountPercent: compactDiscount } : {}),
-          ...(compactEndAt ? { endAtUtc: compactEndAt } : {}),
-          // 0 is meaningful ("turn the rolling window off"), so it must not be
-          // dropped the way a blank string is.
-          ...(compactCountdownHours != null ? { countdownHours: compactCountdownHours } : {}),
           ...(urgencyLine ? { urgencyLine } : {}),
         }
       : undefined;
@@ -810,51 +739,6 @@ export const validateDraft = (
     errors
   );
 
-  // newUser
-  if (draft.newUser.enabled && draft.newUser.impressionRules.length === 0) {
-    errors["saleStrategy.newUser.impressionRules"] =
-      "saleStrategy.newUser.impressionRules: phải có ít nhất 1 rule khi bật người dùng mới";
-  }
-  // Without a window nobody is ever in the new-user segment, so every rule
-  // below would be dead config.
-  if (draft.newUser.enabled) {
-    const windowDays = Number(draft.newUser.windowDays);
-    if (
-      !draft.newUser.windowDays.trim() ||
-      !Number.isInteger(windowDays) ||
-      windowDays < 1
-    ) {
-      errors["saleStrategy.newUser.windowDays"] =
-        "saleStrategy.newUser.windowDays phải là số nguyên >= 1 khi bật người dùng mới (0 hoặc để trống nghĩa là không ai nằm trong cửa sổ này)";
-    }
-  }
-  draft.newUser.impressionRules.forEach((rule, index) => {
-    const prefix = `saleStrategy.newUser.impressionRules[${index}]`;
-    const fromImpression = Number(rule.fromImpression);
-    if (
-      !rule.fromImpression.trim() ||
-      !Number.isInteger(fromImpression) ||
-      fromImpression < 1
-    ) {
-      errors[`${prefix}.fromImpression`] = `${prefix}.fromImpression phải là số nguyên >= 1`;
-    }
-    if (isLocalizedContentEmpty(rule.content)) {
-      errors[`${prefix}.content`] = `${prefix}.content là bắt buộc`;
-    }
-    validateProductsNonEmpty(
-      rule.products,
-      `${prefix}.products`,
-      productsByPlatform,
-      errors
-    );
-    validateOptionalProducts(
-      rule.compactProducts,
-      `${prefix}.compactProducts`,
-      productsByPlatform,
-      errors
-    );
-  });
-
   // saleEvent
   if (draft.saleEvent.enabled) {
     validateProductsNonEmpty(
@@ -892,7 +776,7 @@ export const validateDraft = (
         "saleStrategy.saleEvent.endAtUtc phải sau startAtUtc (nếu không client bỏ cả chiến dịch)";
     }
 
-    if (!draft.saleEvent.appliesToDefaultUser && !draft.saleEvent.appliesToNewUser) {
+    if (!draft.saleEvent.appliesToDefaultUser) {
       errors["saleStrategy.saleEvent.appliesTo"] =
         "saleStrategy.saleEvent.appliesTo phải chọn ít nhất 1 đối tượng khi bật sự kiện sale";
     }
@@ -903,16 +787,6 @@ export const validateDraft = (
     const pct = Number(draft.compactPaywall.discountPercent);
     if (!Number.isInteger(pct) || pct < 1 || pct > 99) {
       errors["compactPaywall.discountPercent"] = "Phải là số nguyên 1–99.";
-    }
-  }
-
-  // 0 is legal and meaningful ("turn the rolling window off"), so only a typed
-  // value out of range is an error. Blank means "don't send", app uses 24.
-  if (draft.compactPaywall.countdownHours.trim()) {
-    const hours = Number(draft.compactPaywall.countdownHours);
-    if (!Number.isInteger(hours) || hours < 0 || hours > 168) {
-      errors["compactPaywall.countdownHours"] =
-        "Số giờ phải là số nguyên từ 0 đến 168, hoặc để trống để dùng mặc định 24";
     }
   }
 

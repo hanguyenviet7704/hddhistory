@@ -14,7 +14,7 @@ interface EntryPointVariantsSectionProps {
   onChange: (next: EntryPointVariantsDraft) => void;
   disabled?: boolean;
   /** Which strategies actually have a reduced list to show. */
-  compactCounts: Record<"defaultUser" | "newUser" | "saleEvent", number>;
+  compactCounts: Record<"defaultUser" | "saleEvent", number>;
 }
 
 const VARIANT_LABELS: Record<PaywallProductVariant, string> = {
@@ -47,7 +47,6 @@ const EntryPointVariantsSection: React.FC<EntryPointVariantsSectionProps> = ({
   const strategiesWithoutCompact = (
     [
       ["defaultUser", "Người dùng mặc định"],
-      ["newUser", "Người dùng mới"],
       ["saleEvent", "Sự kiện sale"],
     ] as const
   ).filter(([key]) => compactCounts[key] === 0);

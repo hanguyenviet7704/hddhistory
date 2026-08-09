@@ -52,7 +52,6 @@ import DefaultUserSection from "./components/DefaultUserSection";
 import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
 import GeneralSection from "./components/GeneralSection";
 import GiftCampaignSection from "./components/GiftCampaignSection";
-import NewUserSection from "./components/NewUserSection";
 import ReviewsSection from "./components/ReviewsSection";
 import SaleEventSection from "./components/SaleEventSection";
 import VersionHistoryDrawer from "./components/VersionHistoryDrawer";
@@ -261,11 +260,6 @@ export default function PaywallConfigPage() {
   const compactCounts = useMemo(
     () => ({
       defaultUser: draft?.defaultUser.compactProducts.length ?? 0,
-      newUser:
-        draft?.newUser.impressionRules.reduce(
-          (total, rule) => total + rule.compactProducts.length,
-          0
-        ) ?? 0,
       saleEvent: draft?.saleEvent.compactProducts.length ?? 0,
     }),
     [draft]
@@ -434,17 +428,6 @@ export default function PaywallConfigPage() {
           <DefaultUserSection
             value={draft.defaultUser}
             onChange={(defaultUser) => patchDraft({ defaultUser })}
-            disabled={disabled}
-            fieldErrors={fieldErrors}
-            productsByPlatform={productsByPlatform}
-            productsLoading={productsLoading}
-            productsError={productsError}
-            onRefreshProducts={refetchProducts}
-          />
-
-          <NewUserSection
-            value={draft.newUser}
-            onChange={(newUser) => patchDraft({ newUser })}
             disabled={disabled}
             fieldErrors={fieldErrors}
             productsByPlatform={productsByPlatform}

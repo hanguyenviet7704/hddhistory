@@ -56,21 +56,6 @@ export interface PaywallDefaultUser {
   compactProducts?: PaywallProductRef[];
 }
 
-export interface PaywallImpressionRule {
-  fromImpression: number;
-  content: PaywallLocalizedContent;
-  products: PaywallProductRef[];
-  compactProducts?: PaywallProductRef[];
-}
-
-export interface PaywallNewUser {
-  enabled: boolean;
-  /** Required >= 1 by the backend when `enabled`: 0 puts every user in the default segment. */
-  windowDays?: number;
-  content?: PaywallLocalizedContent;
-  impressionRules: PaywallImpressionRule[];
-}
-
 export interface PaywallSaleEvent {
   enabled: boolean;
   campaignId?: string;
@@ -88,7 +73,6 @@ export interface PaywallSaleEvent {
 
 export interface PaywallSaleStrategy {
   defaultUser: PaywallDefaultUser;
-  newUser: PaywallNewUser;
   saleEvent: PaywallSaleEvent;
 }
 
@@ -133,16 +117,6 @@ export interface PaywallGiftCampaign {
 export interface PaywallCompactPaywall {
   /** Headline "N% OFF" — display only; the charge is the compact SKU's price. */
   discountPercent?: number;
-  /**
-   * A deadline shared by every reader (ISO). Only consulted when
-   * countdownHours is 0. Absent or past hides the countdown.
-   */
-  endAtUtc?: string;
-  /**
-   * Length of the PER-READER countdown, in hours, from the first time that
-   * reader saw the sheet. Absent = 24. Send 0 to fall back to endAtUtc.
-   */
-  countdownHours?: number;
   /**
    * Line under the discount headline. Absent uses the app's bundled copy
    * ("You will never see this again if you exit"); shown only while a sale
