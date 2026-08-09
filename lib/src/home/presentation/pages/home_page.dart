@@ -805,7 +805,13 @@ class _RecommendedHeader extends StatelessWidget {
                 context.l10n.home.homeRecommendedSeeAll,
                 style: AppStyle.textBold12.copyWith(
                   fontSize: 13.sp,
-                  color: AppCustomColor.brandPrimary,
+                  // Drawn straight onto the study background, so it needs the
+                  // accent lift the heading beside it already gets: the stock
+                  // deep purple sinks into a dark photo and the link went
+                  // unreadable. `studyThemeAccentOnBg` rather than
+                  // `studyThemeOnBg` — this has to stay recognisably a link,
+                  // not turn into the same white as the title next to it.
+                  color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
                 ),
               ),
             ),
