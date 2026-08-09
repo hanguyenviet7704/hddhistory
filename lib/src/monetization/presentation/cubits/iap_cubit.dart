@@ -315,7 +315,22 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     required String loadingSignature,
     required int generation,
   }) async {
-    emit(state.copyWith(status: MonetizationStatus.loading, errorMessage: null, paywallStrategySignature: loadingSignature));
+    // The strategy goes into state HERE, not when the store answers. Which
+    // paywall this is — full page or compact sheet — is decided synchronously
+    // from the config and the entry point; it never depends on the fetch. Held
+    // back until the products landed, the page spent the whole fetch drawing
+    // the PREVIOUS open's variant and then snapped to this one, which read as
+    // the paywall flickering between rút gọn and đầy đủ (2026-08-09). The
+    // prices below it still arrive late; the layout no longer does.
+    emit(
+      state.copyWith(
+        status: MonetizationStatus.loading,
+        errorMessage: null,
+        paywallStrategySignature: loadingSignature,
+        resolvedPaywallStrategy: resolvedStrategy,
+        paywallContent: resolvedStrategy.content,
+      ),
+    );
     final result = await _getPackagesUsecase.call(GetPackagesParams(platform: platform, selectedProductIds: state.applyVoucherSwap(resolvedStrategy.productIds))).run();
     return result.match(
       (error) {
