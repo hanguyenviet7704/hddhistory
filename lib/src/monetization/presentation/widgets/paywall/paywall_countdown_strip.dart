@@ -118,6 +118,10 @@ class _CountdownStripState extends State<_CountdownStrip> {
             child: AppText(
               l10n.monetization.saleCountdownLabel.toUpperCase(),
               maxLines: 1,
+              // Locale-proof: vi/ja run long against the fixed-width timer
+              // chips, and a clipped "ƯU ĐÃI GIỚI HẠN THỜI G…" reads worse
+              // than the same words a point smaller.
+              enableFitScaleDown: true,
               style: AppStyle.text12.copyWith(
                 fontSize: 11.5.sp,
                 fontWeight: FontWeight.w800,
