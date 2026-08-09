@@ -19,6 +19,15 @@ part of '../../../lesson.dart';
 class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
   final just_audio.AudioPlayer _player = just_audio.AudioPlayer();
 
+  /// Fired when the OS transport (lock screen / Control Center / headphone
+  /// button) — not the app — pauses or plays. The overrides below are the only
+  /// path those buttons take, while the app itself calls [pauseFromApp]/
+  /// [playFromApp]; that split is what lets the cubit treat an OS pause as the
+  /// reader's own silence (`pausedByUser`) without every internal soft pause
+  /// (gates, overlays, source switches) pinning it too.
+  void Function()? onOsPause;
+  void Function()? onOsPlay;
+
   LessonAudioHandler() {
     _player.playbackEventStream.listen(
       _broadcastState,
@@ -149,10 +158,21 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
   // here is safely converted into an error reply by audio_service's platform
   // channel dispatch rather than crashing the app.
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() {
+    onOsPlay?.call();
+    return _player.play();
+  }
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() {
+    onOsPause?.call();
+    return _player.pause();
+  }
+
+  /// The app's own transport — no OS-intent callbacks.
+  Future<void> playFromApp() => _player.play();
+
+  Future<void> pauseFromApp() => _player.pause();
 
   @override
   Future<void> seek(Duration position) => _player.seek(position);

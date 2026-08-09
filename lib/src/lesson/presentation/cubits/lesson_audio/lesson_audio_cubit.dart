@@ -1,7 +1,16 @@
 part of '../../../lesson.dart';
 
 class LessonAudioCubit extends Cubit<LessonAudioState> {
-  LessonAudioCubit() : super(LessonAudioState.initial());
+  LessonAudioCubit() : super(LessonAudioState.initial()) {
+    // The OS transport is the reader's own hand: a lock-screen/Control-Center
+    // pause pins silence exactly like the in-app pause button ("chủ động tắt
+    // âm" — without this, the recap flip and forward-swipe autoplay restarted
+    // narration the reader had just switched off, 2026-08-09). OS play is the
+    // symmetric consent and lifts the pin. Internal soft pauses (gates,
+    // overlays, source switches) go through pauseFromApp and never touch it.
+    _handler.onOsPause = () => _pausedByUser = true;
+    _handler.onOsPlay = () => _pausedByUser = false;
+  }
 
   /// Background playback + OS media controls (lock-screen/Control Center/
   /// Android notification) for this player live in the app-lifetime
@@ -467,7 +476,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     if (!state.isReady) return;
 
     try {
-      await _handler.play();
+      await _handler.playFromApp();
       if (!isClosed) {
         emit(state.copyWith(isPlaying: true, hasCompletedPlayback: false));
       }
@@ -486,7 +495,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // starts talking the moment it is ready.
     _playWhenReady = false;
     try {
-      await _handler.pause();
+      await _handler.pauseFromApp();
       _persistResumeNow();
       if (!isClosed) {
         emit(state.copyWith(isPlaying: false));
@@ -656,7 +665,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         // points narration at the new card's clip — so the voice carries on
         // through the keypoint, screen locked or not, without this cubit
         // second-guessing the deck it cannot see.
-        await _handler.pause();
+        await _handler.pauseFromApp();
         if (isClosed) return;
         emit(
           state.copyWith(
@@ -764,7 +773,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       // so parking there made every later position read report the gated-away
       // card as active. 50ms of replay on resume is inaudible.
       final holdMs = (timeline.endMsOf(boundCue) - 50).clamp(0, 1 << 62);
-      unawaited(_handler.pause());
+      unawaited(_handler.pauseFromApp());
       unawaited(_handler.seek(Duration(milliseconds: holdMs)));
       final heldCueIndex = timeline.cueIndexAtMs(holdMs);
       final heldCue = timeline.cueAt(heldCueIndex);
