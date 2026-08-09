@@ -120,7 +120,30 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
           )}
         </label>
         <label className="flex flex-col gap-1 text-xs text-slate-700">
-          <span className="font-medium">Đếm ngược đến (UTC)</span>
+          <span className="font-medium">Đếm ngược (giờ, riêng từng user)</span>
+          <input
+            type="number"
+            min={0}
+            max={168}
+            value={value.countdownHours}
+            onChange={(e) => onChange({ ...value, countdownHours: e.target.value })}
+            disabled={disabled}
+            placeholder="24"
+            className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+              fieldErrors["compactPaywall.countdownHours"] ? "border-red-300" : "border-slate-200"
+            }`}
+          />
+          <span className="text-[11px] text-slate-500">
+            Đếm từ lần đầu CHÍNH user đó nhìn thấy sheet, nên ai cũng được trọn
+            khung giờ. Để trống dùng mặc định 24. Hết giờ thì chu kỳ bắt đầu
+            lại. Đặt 0 để tắt và quay về dùng mốc tuyệt đối bên dưới.
+          </span>
+          {fieldErrors["compactPaywall.countdownHours"] && (
+            <span className="text-[11px] text-red-600">{fieldErrors["compactPaywall.countdownHours"]}</span>
+          )}
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Đếm ngược đến (UTC) — mốc chung</span>
           <input
             type="datetime-local"
             value={value.endAtUtc}
@@ -128,7 +151,10 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
             disabled={disabled}
             className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
           />
-          <span className="text-[11px] text-slate-500">Để trống hoặc qua hạn thì ẩn đồng hồ.</span>
+          <span className="text-[11px] text-slate-500">
+            Một mốc duy nhất cho mọi user. Chỉ có tác dụng khi ô giờ ở trên đặt
+            là 0. Để trống hoặc qua hạn thì ẩn đồng hồ.
+          </span>
         </label>
       </div>
 

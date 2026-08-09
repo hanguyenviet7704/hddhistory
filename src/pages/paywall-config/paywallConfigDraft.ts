@@ -116,6 +116,8 @@ export interface CompactPaywallDraft {
   /** Chuỗi để bind input; rỗng = không gửi. */
   discountPercent: string;
   endAtUtc: string;
+  /** Chuỗi để bind input; rỗng = không gửi, app dùng mặc định 24h. */
+  countdownHours: string;
   urgencyLine: LocalizedLineDraft;
 }
 
@@ -261,6 +263,7 @@ export const defaultDraft = (): ConfigDraft => ({
   compactPaywall: {
     discountPercent: "",
     endAtUtc: "",
+    countdownHours: "",
     urgencyLine: emptyLocalizedLine(),
   },
   // SHOWN by default, matching the app build that introduced the strip.
@@ -448,6 +451,7 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   compactPaywall: {
     discountPercent: config.compactPaywall?.discountPercent != null ? String(config.compactPaywall.discountPercent) : "",
     endAtUtc: toDateTimeInput(config.compactPaywall?.endAtUtc),
+    countdownHours: config.compactPaywall?.countdownHours != null ? String(config.compactPaywall.countdownHours) : "",
     urgencyLine: toLocalizedLineDraft(config.compactPaywall?.urgencyLine),
   },
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
@@ -657,11 +661,17 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
   const urgencyLine = fromLocalizedLineDraft(draft.compactPaywall.urgencyLine);
   const compactDiscount = draft.compactPaywall.discountPercent.trim() ? Number(draft.compactPaywall.discountPercent) : undefined;
   const compactEndAt = fromDateTimeInput(draft.compactPaywall.endAtUtc);
+  const compactCountdownHours = draft.compactPaywall.countdownHours.trim()
+    ? Number(draft.compactPaywall.countdownHours)
+    : undefined;
   const compactPaywall: PaywallCompactPaywall | undefined =
-    urgencyLine || compactDiscount != null || compactEndAt
+    urgencyLine || compactDiscount != null || compactEndAt || compactCountdownHours != null
       ? {
           ...(compactDiscount != null ? { discountPercent: compactDiscount } : {}),
           ...(compactEndAt ? { endAtUtc: compactEndAt } : {}),
+          // 0 is meaningful ("turn the rolling window off"), so it must not be
+          // dropped the way a blank string is.
+          ...(compactCountdownHours != null ? { countdownHours: compactCountdownHours } : {}),
           ...(urgencyLine ? { urgencyLine } : {}),
         }
       : undefined;
@@ -893,6 +903,16 @@ export const validateDraft = (
     const pct = Number(draft.compactPaywall.discountPercent);
     if (!Number.isInteger(pct) || pct < 1 || pct > 99) {
       errors["compactPaywall.discountPercent"] = "Phải là số nguyên 1–99.";
+    }
+  }
+
+  // 0 is legal and meaningful ("turn the rolling window off"), so only a typed
+  // value out of range is an error. Blank means "don't send", app uses 24.
+  if (draft.compactPaywall.countdownHours.trim()) {
+    const hours = Number(draft.compactPaywall.countdownHours);
+    if (!Number.isInteger(hours) || hours < 0 || hours > 168) {
+      errors["compactPaywall.countdownHours"] =
+        "Số giờ phải là số nguyên từ 0 đến 168, hoặc để trống để dùng mặc định 24";
     }
   }
 

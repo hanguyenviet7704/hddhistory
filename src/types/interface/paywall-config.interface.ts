@@ -133,8 +133,16 @@ export interface PaywallGiftCampaign {
 export interface PaywallCompactPaywall {
   /** Headline "N% OFF" — display only; the charge is the compact SKU's price. */
   discountPercent?: number;
-  /** The sheet countdown's deadline (ISO). Absent or past hides the countdown. */
+  /**
+   * A deadline shared by every reader (ISO). Only consulted when
+   * countdownHours is 0. Absent or past hides the countdown.
+   */
   endAtUtc?: string;
+  /**
+   * Length of the PER-READER countdown, in hours, from the first time that
+   * reader saw the sheet. Absent = 24. Send 0 to fall back to endAtUtc.
+   */
+  countdownHours?: number;
   /**
    * Line under the discount headline. Absent uses the app's bundled copy
    * ("You will never see this again if you exit"); shown only while a sale
