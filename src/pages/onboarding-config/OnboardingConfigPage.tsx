@@ -23,9 +23,11 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
+  FormControlLabel,
   IconButton,
   Paper,
   Skeleton,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -111,6 +113,7 @@ interface ConfigDraft {
   notif: OnboardingNotifConfig;
   pick: OnboardingPickConfig;
   theme: OnboardingThemeConfig;
+  showPaywallAfterOnboarding: boolean;
 }
 
 const ml = (value?: OnboardingMultilang): OnboardingMultilang => ({
@@ -223,6 +226,7 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
     ctaLabel: ml(config?.theme?.ctaLabel),
     helper: ml(config?.theme?.helper),
   },
+  showPaywallAfterOnboarding: config?.showPaywallAfterOnboarding ?? false,
 });
 
 // Draft → save payload. `order` is derived from list position here, not
@@ -275,6 +279,7 @@ const buildPayload = (draft: ConfigDraft): OnboardingConfigPayload => ({
   notif: draft.notif,
   pick: draft.pick,
   theme: draft.theme,
+  showPaywallAfterOnboarding: draft.showPaywallAfterOnboarding,
 });
 
 // Minimal shape guard for an imported onboarding-config.json — the file only
@@ -1776,6 +1781,52 @@ export default function OnboardingConfigPage() {
                   onChange={(v) => updateTheme((t) => ({ ...t, helper: v }))}
                 />
               </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Paywall (after onboarding) */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Paywall
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block" }}
+                >
+                  Show the full paywall right after onboarding completes.
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={draft.showPaywallAfterOnboarding}
+                    onChange={(e) =>
+                      setDraft((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              showPaywallAfterOnboarding: e.target.checked,
+                            }
+                          : prev
+                      )
+                    }
+                  />
+                }
+                label="Show paywall after onboarding"
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 0.5 }}
+              >
+                Opens on top of the screen onboarding hands off to. Premium
+                accounts never see it.
+              </Typography>
             </AccordionDetails>
           </Accordion>
         </>

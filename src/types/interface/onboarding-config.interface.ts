@@ -171,6 +171,8 @@ export interface OnboardingConfig {
   notif: OnboardingNotifConfig;
   pick: OnboardingPickConfig;
   theme: OnboardingThemeConfig;
+  /** Show the FULL paywall right after onboarding completes. */
+  showPaywallAfterOnboarding?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
