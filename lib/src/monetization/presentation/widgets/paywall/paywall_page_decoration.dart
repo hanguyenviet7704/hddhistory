@@ -310,10 +310,12 @@ class _PaywallCredibilityBlock extends StatelessWidget {
 }
 
 /// The purchase CTA inside the scroll flow — the sticky bottom bar's job,
-/// relocated per the design. Same contract as the bar: the button carries the
-/// selected plan's total, flips to Retry when the catalogue failed to load,
-/// and the renewal caption stays under it because the price a subscription
-/// renews at is not information a design pass gets to drop.
+/// relocated per the design. Flips to Retry when the catalogue failed to load.
+///
+/// Carries NO price of its own, unlike the bar it replaced. The total and the
+/// per-month renewal line are still on screen — on the plan cards immediately
+/// above, which is where the reader chooses between them — so this drops a
+/// repetition, not the disclosure.
 class _InlinePurchaseSection extends StatelessWidget {
   final IapState state;
   final VoidCallback onPurchase;
@@ -331,34 +333,17 @@ class _InlinePurchaseSection extends StatelessWidget {
     final isBusy = state.status == MonetizationStatus.loading || state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring;
     final isFailure = state.status == MonetizationStatus.failure && !hasProducts;
 
-    IapProductEntity? selected;
-    for (final product in state.iapProducts) {
-      if (product.id == state.selectedProductId) selected = product;
-    }
-    selected ??= state.iapProducts.firstOrNull;
+    // Design `6b · Premium` carries a bare "Upgrade to Premium" — the total and
+    // the per-month renewal line both sit on the plan cards directly above,
+    // where the reader picks. Repeating them on the button and again in a
+    // caption underneath said the same number three times in one glance.
+    final label = isFailure ? l10n.monetization.retry : l10n.monetization.paywallCtaUpgrade;
 
-    final price = selected?.price ?? '';
-    final label = isFailure
-        ? l10n.monetization.retry
-        : price.isEmpty
-            ? l10n.monetization.paywallCtaUpgrade
-            : l10n.monetization.paywallCtaUpgradePrice(price: price);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _PurchaseButton(
-          label: label,
-          busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
-          enabled: !isBusy && (hasProducts || isFailure),
-          onTap: isFailure ? onRetry : onPurchase,
-        ),
-        16.verticalSpace,
-        _SubscriptionCaption(
-          product: selected,
-          fallback: hasProducts ? l10n.monetization.paywallHighlightSubtitle : l10n.monetization.emptyProductsDesc,
-        ),
-      ],
+    return _PurchaseButton(
+      label: label,
+      busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
+      enabled: !isBusy && (hasProducts || isFailure),
+      onTap: isFailure ? onRetry : onPurchase,
     );
   }
 }
