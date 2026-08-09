@@ -43,17 +43,6 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     /// charge is the compact SKU's price. Sale events never touch this sheet.
     @Default(0) int compactDiscountPercent,
 
-    /// The compact sheet countdown's deadline (ISO) — ONE instant shared by
-    /// every reader. Absent or past → no countdown. Only consulted when
-    /// [compactCountdownHours] is 0, since a rolling per-reader window and a
-    /// fixed campaign end are two different offers.
-    String? compactEndAtUtc,
-
-    /// Length of the compact sheet's per-reader countdown, in hours, measured
-    /// from the first time THAT reader saw the sheet. 0 turns the rolling
-    /// window off and hands the clock back to [compactEndAtUtc].
-    @Default(24) int compactCountdownHours,
-
     /// The compact sheet's urgency line ("You will never see this again…").
     /// Empty falls back to the bundled copy; shown with the discount headline.
     @Default(BaseMultiLanguage()) BaseMultiLanguage compactUrgencyLine,
@@ -121,7 +110,6 @@ abstract class PaywallInLessonEntity with _$PaywallInLessonEntity {
 abstract class PaywallSaleStrategyEntity with _$PaywallSaleStrategyEntity {
   const factory PaywallSaleStrategyEntity({
     @Default(PaywallDefaultUserStrategyEntity()) PaywallDefaultUserStrategyEntity defaultUser,
-    @Default(PaywallNewUserStrategyEntity()) PaywallNewUserStrategyEntity newUser,
     PaywallSaleEventStrategyEntity? saleEvent,
   }) = _PaywallSaleStrategyEntity;
 
@@ -141,30 +129,6 @@ abstract class PaywallDefaultUserStrategyEntity with _$PaywallDefaultUserStrateg
   }) = _PaywallDefaultUserStrategyEntity;
 
   factory PaywallDefaultUserStrategyEntity.fromJson(Map<String, dynamic> json) => _$PaywallDefaultUserStrategyEntityFromJson(json);
-}
-
-@freezed
-abstract class PaywallNewUserStrategyEntity with _$PaywallNewUserStrategyEntity {
-  const factory PaywallNewUserStrategyEntity({
-    @Default(false) bool enabled,
-    @Default(0) int windowDays,
-    @Default(PaywallContentEntity()) PaywallContentEntity content,
-    @Default([]) List<PaywallImpressionRuleEntity> impressionRules,
-  }) = _PaywallNewUserStrategyEntity;
-
-  factory PaywallNewUserStrategyEntity.fromJson(Map<String, dynamic> json) => _$PaywallNewUserStrategyEntityFromJson(json);
-}
-
-@freezed
-abstract class PaywallImpressionRuleEntity with _$PaywallImpressionRuleEntity {
-  const factory PaywallImpressionRuleEntity({
-    @Default(0) int fromImpression,
-    @Default(PaywallContentEntity()) PaywallContentEntity content,
-    @Default([]) List<PaywallProductReferenceEntity> products,
-    @Default([]) List<PaywallProductReferenceEntity> compactProducts,
-  }) = _PaywallImpressionRuleEntity;
-
-  factory PaywallImpressionRuleEntity.fromJson(Map<String, dynamic> json) => _$PaywallImpressionRuleEntityFromJson(json);
 }
 
 @freezed
@@ -265,15 +229,6 @@ class _PaywallConfigParser {
 
   /// Absent, malformed, or switched off all parse to null so the caller has
   /// one thing to check. `title` is a flat per-locale map (not the nested
-  /// content shape) — see PaywallGiftTitleDto on the API side.
-  /// 0 is meaningful — "no rolling window, use `endAtUtc`" — so it survives,
-  /// while anything absent, mistyped or absurd falls back to the default day.
-  static int _compactCountdownHours(Object? value) {
-    if (value is! int) return 24;
-    if (value == 0) return 0;
-    return value < 1 || value > 168 ? 24 : value;
-  }
-
   static PaywallGiftCampaignEntity? _giftCampaign(Object? value) {
     if (value is! Map<String, dynamic>) return null;
     if (!_boolValue(value['enabled'])) return null;
@@ -320,16 +275,6 @@ class _PaywallConfigParser {
         showCredibilityBlock: decoded['showCredibilityBlock'] is bool ? decoded['showCredibilityBlock'] as bool : true,
         reviews: _reviews(decoded['reviews']),
         compactDiscountPercent: decoded['compactPaywall'] is Map<String, dynamic> ? _intValue((decoded['compactPaywall'] as Map<String, dynamic>)['discountPercent']) : 0,
-        compactEndAtUtc: decoded['compactPaywall'] is Map<String, dynamic> && (decoded['compactPaywall'] as Map<String, dynamic>)['endAtUtc'] is String
-            ? (decoded['compactPaywall'] as Map<String, dynamic>)['endAtUtc'] as String
-            : null,
-        // Absent reads as 24, not as "off": the rolling window is the default
-        // behaviour now, and a config written before this field existed should
-        // get it rather than silently keeping the old shared-deadline clock.
-        // Out of range clamps rather than disabling, for the same reason.
-        compactCountdownHours: decoded['compactPaywall'] is Map<String, dynamic>
-            ? _compactCountdownHours((decoded['compactPaywall'] as Map<String, dynamic>)['countdownHours'])
-            : 24,
         compactUrgencyLine: _flatLine(decoded['compactPaywall'] is Map<String, dynamic> ? (decoded['compactPaywall'] as Map<String, dynamic>)['urgencyLine'] : null),
       );
     } catch (_) {
@@ -380,7 +325,6 @@ class _PaywallConfigParser {
     if (value is! Map<String, dynamic>) return null;
     return PaywallSaleStrategyEntity(
       defaultUser: _defaultUser(value['defaultUser']),
-      newUser: _newUser(value['newUser']),
       saleEvent: _saleEvent(value['saleEvent']),
     );
   }
@@ -388,27 +332,6 @@ class _PaywallConfigParser {
   static PaywallDefaultUserStrategyEntity _defaultUser(Object? value) {
     if (value is! Map<String, dynamic>) return const PaywallDefaultUserStrategyEntity();
     return PaywallDefaultUserStrategyEntity(
-      content: _content(value['content']),
-      products: _products(value['products']),
-      compactProducts: _products(value['compactProducts']),
-    );
-  }
-
-  static PaywallNewUserStrategyEntity _newUser(Object? value) {
-    if (value is! Map<String, dynamic>) return const PaywallNewUserStrategyEntity();
-    final rules = value['impressionRules'];
-    return PaywallNewUserStrategyEntity(
-      enabled: _boolValue(value['enabled']),
-      windowDays: _intValue(value['windowDays']),
-      content: _content(value['content']),
-      impressionRules: rules is List ? rules.map(_impressionRule).toList() : const [],
-    );
-  }
-
-  static PaywallImpressionRuleEntity _impressionRule(Object? value) {
-    if (value is! Map<String, dynamic>) return const PaywallImpressionRuleEntity();
-    return PaywallImpressionRuleEntity(
-      fromImpression: _intValue(value['fromImpression']),
       content: _content(value['content']),
       products: _products(value['products']),
       compactProducts: _products(value['compactProducts']),

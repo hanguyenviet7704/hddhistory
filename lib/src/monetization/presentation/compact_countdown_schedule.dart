@@ -10,6 +10,11 @@ part of '../monetization.dart';
 /// Anchored instead on the first time THIS reader saw the sheet, so each one
 /// gets the full window from the moment they were offered it.
 ///
+/// The window is a fixed 24 hours and no longer configurable: the hours field
+/// and the shared `endAtUtc` deadline were both removed from the admin and the
+/// API (2026-08-09) after a stale shared deadline had the sheet counting down
+/// 69 hours. One rule, owned here, is the whole contract now.
+///
 /// ## The cycle restarts, and that is a deliberate product decision
 ///
 /// When the window has lapsed, the next open stamps a fresh anchor and the
@@ -28,26 +33,23 @@ class CompactCountdownSchedule {
 
   CompactCountdownSchedule(this._local);
 
-  /// Falls back to a day when config says nothing.
-  static const int defaultHours = 24;
+  /// Every reader gets the same length of window.
+  static const Duration window = Duration(hours: 24);
 
   /// The instant this reader's current window closes, stamping a new anchor
-  /// when there isn't a live one. Returns null only for a nonsensical
-  /// `hours`, where a countdown would be meaningless.
-  Future<DateTime?> resolveDeadline({int hours = defaultHours}) async {
-    if (hours <= 0) return null;
-
+  /// when there isn't a live one.
+  Future<DateTime> resolveDeadline() async {
     final now = DateTime.now().toUtc();
     final stored = await _local.getCompactCountdownAnchorEpochMs();
 
     if (stored != null) {
-      final deadline = DateTime.fromMillisecondsSinceEpoch(stored, isUtc: true).add(Duration(hours: hours));
+      final deadline = DateTime.fromMillisecondsSinceEpoch(stored, isUtc: true).add(window);
       // Still inside the window: keep counting toward the SAME instant, so
       // reopening the sheet does not quietly hand out extra time.
       if (deadline.isAfter(now)) return deadline;
     }
 
     await _local.setCompactCountdownAnchorEpochMs(now.millisecondsSinceEpoch);
-    return now.add(Duration(hours: hours));
+    return now.add(window);
   }
 }

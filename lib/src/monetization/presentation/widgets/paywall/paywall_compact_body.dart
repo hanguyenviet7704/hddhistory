@@ -55,14 +55,10 @@ class _PaywallCompactBody extends StatelessWidget {
     // are full-paywall-only, so nothing here reads the resolved sale state.
     final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
     final discount = config.compactDiscountPercent > 0 && config.compactDiscountPercent < 100 ? config.compactDiscountPercent : 0;
-    // The per-reader rolling countdown wins when config asks for one: it gives
-    // everybody the same window measured from when THEY were shown the offer.
-    // `endAtUtc` stays as the escape hatch for a genuine campaign that ends at
-    // one instant for the whole user base — set `countdownHours` to 0 to get
-    // that behaviour back.
-    final fixed = DateTime.tryParse(config.compactEndAtUtc ?? '');
-    final DateTime? fixedEndAt = fixed != null && fixed.isAfter(DateTime.now().toUtc()) ? fixed : null;
-    final DateTime? endAtUtc = countdownEndAt ?? fixedEndAt;
+    // One clock, always: the per-reader 24h window (CompactCountdownSchedule).
+    // The shared `endAtUtc` deadline it used to fall back to is gone — a stale
+    // one had this sheet advertising 69 hours.
+    final DateTime? endAtUtc = countdownEndAt;
 
     return Container(
       // Flush to the ceiling ("kéo cao lên sát trần", 2026-08-09): the page's
@@ -194,7 +190,12 @@ class _PaywallCompactBody extends StatelessWidget {
             _PurchaseButton(
               label: l10n.monetization.giftSheetCta,
               busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
-              enabled: hasProduct,
+              // Disabled while a load is in flight: this sheet now renders from
+              // the first frame, so `iapProducts` can still be the PREVIOUS
+              // strategy's list for as long as the store takes to answer. The
+              // price row shows that stale plan for a moment; a tap must not be
+              // able to CHARGE it.
+              enabled: hasProduct && state.status != MonetizationStatus.loading,
               onTap: onPurchase,
             ),
             14.verticalSpace,

@@ -49,10 +49,7 @@ class _PaywallPageState extends State<PaywallPage> {
   }
 
   Future<void> _resolveCompactCountdown() async {
-    final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
-    final endAt = await AppDI.injector.get<CompactCountdownSchedule>().resolveDeadline(
-      hours: config.compactCountdownHours,
-    );
+    final endAt = await AppDI.injector.get<CompactCountdownSchedule>().resolveDeadline();
     if (!mounted) return;
     setState(() => _compactCountdownEndAt = endAt);
   }

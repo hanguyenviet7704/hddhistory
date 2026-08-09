@@ -35,21 +35,40 @@ void main() {
       expect(resolve().signature, google.signature);
     });
 
-    test('Given a new-user strategy in the config, When resolved, Then it is ignored and default user wins', () {
-      // The new-user segment was removed (2026-08-08). A config that still
-      // carries the block — every stored config does — must resolve exactly as
-      // if it did not.
-      final config = _config.copyWith(
-        saleStrategy: _config.saleStrategy!.copyWith(
-          newUser: _config.saleStrategy!.newUser.copyWith(enabled: true),
-        ),
-      );
+    test('Given raw config that still carries a newUser block, When parsed and resolved, Then it is ignored', () {
+      // The new-user segment was removed (2026-08-08). Stored configs written
+      // before that still carry the block, so parsing must drop it silently
+      // rather than letting it steer anything.
+      final config = PaywallConfigEntity.fromRawConfig(jsonEncode({
+        'schemaVersion': 2,
+        'saleStrategy': {
+          'defaultUser': {
+            'content': {'en': {'heading': 'Head'}},
+            'products': [
+              {'appleProductId': 'apple-default-1', 'googleProductId': 'google-default-1'},
+            ],
+          },
+          'newUser': {
+            'enabled': true,
+            'windowDays': 7,
+            'impressionRules': [
+              {
+                'fromImpression': 1,
+                'content': {'en': {'heading': 'Rule one'}},
+                'products': [
+                  {'appleProductId': 'apple-new-1', 'googleProductId': 'google-new-1'},
+                ],
+              },
+            ],
+          },
+        },
+      }));
 
       final result = resolve(config: config);
 
       expect(result.strategyType, ResolvedPaywallStrategyType.defaultUser);
       expect(result.segment, ResolvedPaywallSegment.defaultUser);
-      expect(result.productIds, ['google-default-1', 'google-default-2']);
+      expect(result.productIds, ['google-default-1']);
     });
   });
 
@@ -135,27 +154,31 @@ void main() {
       }
     });
 
-    test('Given an active sale event and a compact entry point, When resolved, Then the campaign still reaches the reader', () {
+    test('Given an active sale event and a compact entry point, When resolved, Then the sheet keeps its own offer', () {
+      // Sale events restyle the FULL paywall only (spec owner's ruling in
+      // 9ad35881): the compact sheet carries its own discount and its own
+      // fixed 24h clock, so a campaign must not reach in and change it. These
+      // two cases asserted the opposite until now — they predate that ruling
+      // and had been failing ever since.
       final result = resolve(
         config: _compactConfig(onSaleEvent: true),
         nowUtc: DateTime.utc(2026, 6, 25),
         entryPoint: PaywallEntryPoint.inLesson,
       );
 
-      expect(result.strategyType, ResolvedPaywallStrategyType.saleEvent);
-      expect(result.campaignId, 'summer');
+      expect(result.strategyType, ResolvedPaywallStrategyType.defaultUser);
       expect(result.variant, PaywallProductVariant.compact);
-      expect(result.productIds, ['google-event-compact']);
+      expect(result.productIds, ['google-default-compact']);
     });
 
-    test('Given an active sale event and a compact entry point, When resolved, Then the countdown is kept', () {
+    test('Given an active sale event and a compact entry point, When resolved, Then no sale countdown is carried', () {
       final result = resolve(
         config: _compactConfig(onSaleEvent: true),
         nowUtc: DateTime.utc(2026, 6, 25),
         entryPoint: PaywallEntryPoint.inLesson,
       );
 
-      expect(result.hasSaleCountdown, isTrue);
+      expect(result.hasSaleCountdown, isFalse);
     });
 
     test('Given the same strategy on two entry points, When resolved, Then the signatures differ', () {
@@ -247,19 +270,6 @@ PaywallConfigEntity _compactConfig({
               PaywallProductReferenceEntity(appleProductId: 'apple-default-compact', googleProductId: 'google-default-compact'),
             ],
       ),
-      newUser: strategy.newUser.copyWith(
-        impressionRules: [
-          for (final rule in strategy.newUser.impressionRules)
-            rule.copyWith(
-              compactProducts: [
-                PaywallProductReferenceEntity(
-                  appleProductId: 'apple-new-${rule.fromImpression}-compact',
-                  googleProductId: 'google-new-${rule.fromImpression}-compact',
-                ),
-              ],
-            ),
-        ],
-      ),
       saleEvent: strategy.saleEvent?.copyWith(
         compactProducts: const [
           PaywallProductReferenceEntity(appleProductId: 'apple-event-compact', googleProductId: 'google-event-compact'),
@@ -279,35 +289,6 @@ const _config = PaywallConfigEntity(
         PaywallProductReferenceEntity(appleProductId: 'apple-default-2', googleProductId: 'google-default-2'),
       ],
     ),
-    newUser: PaywallNewUserStrategyEntity(
-      enabled: true,
-      windowDays: 7,
-      content: PaywallContentEntity(
-        benefits: [
-          PaywallBenefitEntity(
-            icon: BaseMultiLanguage(en: 'icon'),
-            title: BaseMultiLanguage(en: 'benefit'),
-          ),
-        ],
-      ),
-      impressionRules: [
-        PaywallImpressionRuleEntity(
-          fromImpression: 3,
-          content: PaywallContentEntity(heading: BaseMultiLanguage(en: 'Rule three')),
-          products: [PaywallProductReferenceEntity(appleProductId: 'apple-new-3', googleProductId: 'google-new-3')],
-        ),
-        PaywallImpressionRuleEntity(
-          fromImpression: 1,
-          content: PaywallContentEntity(heading: BaseMultiLanguage(en: 'Rule one')),
-          products: [PaywallProductReferenceEntity(appleProductId: 'apple-new-1', googleProductId: 'google-new-1')],
-        ),
-        PaywallImpressionRuleEntity(
-          fromImpression: 2,
-          content: PaywallContentEntity(heading: BaseMultiLanguage(en: 'Rule two')),
-          products: [PaywallProductReferenceEntity(appleProductId: 'apple-new-2', googleProductId: 'google-new-2')],
-        ),
-      ],
-    ),
   ),
 );
 
@@ -319,7 +300,7 @@ PaywallConfigEntity _eventConfig() {
         campaignId: 'summer',
         startAtUtc: DateTime.utc(2026, 6, 20),
         endAtUtc: DateTime.utc(2026, 6, 30, 23, 59, 59),
-        appliesTo: const [PaywallAudienceSegment.defaultUser, PaywallAudienceSegment.newUser],
+        appliesTo: const [PaywallAudienceSegment.defaultUser],
         content: _content,
         products: const [
           PaywallProductReferenceEntity(appleProductId: 'apple-event', googleProductId: 'google-event'),
@@ -328,3 +309,4 @@ PaywallConfigEntity _eventConfig() {
     ),
   );
 }
+

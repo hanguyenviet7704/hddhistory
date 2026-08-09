@@ -23,9 +23,6 @@ void main() {
         ['meup_premium_annual', 'meup_premium_quarterly'],
       );
 
-      final newUser = config.saleStrategy!.newUser;
-      expect(newUser.impressionRules.map((rule) => rule.fromImpression), [1, 2, 3]);
-      expect(newUser.content.benefits.first.icon.en, 'https://cdn.example.com/paywall/open-book.png');
       expect(config.saleStrategy!.saleEvent?.campaignId, 'summer_sale_2026');
     });
 
@@ -105,8 +102,6 @@ void main() {
 
       expect(config.autoOpen.enabled, isFalse);
       expect(config.autoOpen.sessionRolloutPercent, 0);
-      expect(config.saleStrategy!.newUser.windowDays, 0);
-      expect(config.saleStrategy!.newUser.impressionRules.first.fromImpression, 0);
     });
 
     test('Given an invalid optional event window, When parsed, Then skips the event and retains base strategies', () {
@@ -200,7 +195,6 @@ void main() {
       final strategy = config.saleStrategy!;
 
       expect(strategy.defaultUser.compactProducts, isEmpty);
-      expect(strategy.newUser.impressionRules.every((rule) => rule.compactProducts.isEmpty), isTrue);
     });
   });
 }
