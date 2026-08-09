@@ -138,6 +138,7 @@ habitSuggestTitle: 添加一个，获得每日练习提醒
 habitSuggestSubtitle: 这节课帮助你养成这些习惯
 habitSuggestAdd: 添加
 habitSuggestAdded: 已添加
+habitSuggestAddedToast: 已将习惯加入你的列表
 practiceGrowTitle: 习惯正在生长！
 practiceGrowBubble: 重复得够多，它就成了日常
 practiceGrowLoop: 已循环 ${days} 天

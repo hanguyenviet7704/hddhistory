@@ -138,6 +138,7 @@ habitSuggestTitle: 1つ追加して毎日の練習リマインダーを受け取
 habitSuggestSubtitle: このレッスンはこれらの習慣づくりに役立ちます
 habitSuggestAdd: 追加
 habitSuggestAdded: 追加済み
+habitSuggestAddedToast: 習慣をリストに追加しました
 practiceGrowTitle: 習慣が育っています！
 practiceGrowBubble: 繰り返すほど、毎日の暮らしになる
 practiceGrowLoop: ${days}日ループ

@@ -72,6 +72,19 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
   /// other row ignores taps, so two quick taps can't fire two writes.
   String? _submittingHabitId;
 
+  /// Design `shfToast`: "Habit added to your list" fades in under the list
+  /// after a successful add, then fades back out on its own.
+  bool _showAddedToast = false;
+  Timer? _addedToastTimer;
+
+  void _flashAddedToast() {
+    _addedToastTimer?.cancel();
+    setState(() => _showAddedToast = true);
+    _addedToastTimer = Timer(const Duration(milliseconds: 2200), () {
+      if (mounted) setState(() => _showAddedToast = false);
+    });
+  }
+
   UserHabitEntity? _adoptedRowFor(HabitEntity habit) {
     for (final userHabit in context.read<HabitCubit>().state.userHabits) {
       if (userHabit.habitId == habit.id) return userHabit;
@@ -86,6 +99,12 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
       _ensureNavHidden();
       HabitTracking.startScrView(courseId: widget.sourceCourseId);
     });
+  }
+
+  @override
+  void dispose() {
+    _addedToastTimer?.cancel();
+    super.dispose();
   }
 
   /// Same floating-nav discipline as [AdoptHabitPage] — see the note there:
@@ -138,6 +157,7 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     switch (result) {
       case AdoptHabitResult.success:
         AppHaptic.success();
+        _flashAddedToast();
       case AdoptHabitResult.slotFull:
         await SlotFullUpgradeSheet.show(context, pendingHabit: habit);
       case AdoptHabitResult.failure:
@@ -196,24 +216,34 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
                         child: Column(
                           children: [
                             28.verticalSpace,
-                            SvgPicture.asset(AppAsset.svg.common.habitEmptyIllustration, width: 118.w),
-                            18.verticalSpace,
+                            // Design `illus-full-slots` at 196w — the slot-box
+                            // art the slot-full sheet also uses, not the dashed
+                            // "empty" variant this page first shipped with.
+                            SvgPicture.asset(AppAsset.svg.common.habitSlotFullIllustration, width: 196.w),
+                            20.verticalSpace,
                             AppText(
                               context.l10n.habit.habitSuggestTitle,
                               textAlign: TextAlign.center,
                               maxLines: 3,
-                              style: AppStyle.text20.copyWith(
-                                fontWeight: FontWeight.w800,
+                              // Design 24/700, lh 1.3.
+                              style: TextStyle(
+                                fontFamily: AppFont.mulish,
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.w700,
                                 height: 1.3,
                                 color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                               ),
                             ),
-                            8.verticalSpace,
+                            14.verticalSpace,
                             AppText(
                               context.l10n.habit.habitSuggestSubtitle,
                               textAlign: TextAlign.center,
-                              style: AppStyle.text12.copyWith(
-                                fontWeight: FontWeight.w700,
+                              // Design 13.5/600.
+                              style: TextStyle(
+                                fontFamily: AppFont.mulish,
+                                fontSize: 13.5.sp,
+                                fontWeight: FontWeight.w600,
+                                height: 1.5,
                                 color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
                               ),
                             ),
@@ -222,6 +252,44 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
                               _habitRow(context, habit),
                               10.verticalSpace,
                             ],
+                            // Design `shfToast`: a dark confirmation pill fades
+                            // in under the list after an add. The slot is
+                            // always reserved so its appearance never shifts
+                            // the rows above it.
+                            SizedBox(
+                              height: 44.h,
+                              child: Center(
+                                child: AnimatedOpacity(
+                                  opacity: _showAddedToast ? 1 : 0,
+                                  duration: const Duration(milliseconds: 250),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0D121C),
+                                      borderRadius: BorderRadius.circular(99.r),
+                                      boxShadow: const [BoxShadow(color: Color(0x380D121C), blurRadius: 20, offset: Offset(0, 8))],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.check_rounded, size: 14.w, color: const Color(0xFF6FE0A5)),
+                                        8.horizontalSpace,
+                                        AppText(
+                                          context.l10n.habit.habitSuggestAddedToast,
+                                          // Design 12.5/700.
+                                          style: TextStyle(
+                                            fontFamily: AppFont.mulish,
+                                            fontSize: 12.5.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppCustomColor.textWhite,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -256,10 +324,13 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     );
   }
 
-  /// One suggested habit (design row): white card, domain icon, title, and the
-  /// add-state chip. The whole row is the tap target — the chip alone is too
-  /// small a thumb target for the row's single action. Add is the only action:
-  /// an adopted habit's row is done ("Đã thêm"), whatever its check-in state.
+  /// One suggested habit (design "Start first habit" row): white card with a
+  /// hairline border, the shared sprout tile, the title, and a round "+" add
+  /// button ("Added" chip once adopted). The whole row stays the tap target —
+  /// the 34px button alone is too small a thumb target for the row's single
+  /// action. Every row carries the SAME sprout tile deliberately (design
+  /// `habit-plant.svg` on `#E9F6EC`): this list offers new habits to grow, and
+  /// per-habit domain icons here read as three different apps in a column.
   Widget _habitRow(BuildContext context, HabitEntity habit) {
     final isAdded = _adoptedRowFor(habit) != null;
     final isSubmitting = _submittingHabitId == habit.id;
@@ -269,39 +340,46 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
       label: habit.title.text,
       child: Material(
         color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(18.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(18.r),
           onTap: isAdded ? null : () => _adopt(habit),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [BoxShadow(color: const Color(0x14141828), blurRadius: 18, offset: const Offset(0, 6))],
+              borderRadius: BorderRadius.circular(18.r),
+              // Design: 1px hairline, green-tinted once adopted.
+              border: Border.all(color: isAdded ? const Color(0xFFCBEBD6) : const Color(0xFFE3E8EF)),
             ),
             child: Row(
               children: [
-                // Each row now carries the habit's OWN picture, at the design's
-                // 34/r10 rather than the 8 the Habit tab uses.
-                //
-                // This list used to force one uniform green sprout on every
-                // row, because the alternative then was the SKILLSET logo and
-                // three domain logos in a row read as three different apps.
-                // A per-habit picture is not that: it identifies the habit
-                // itself, which is what the row is offering. A habit with no
-                // picture still lands on a sprout tile, so a half-filled
-                // catalog degrades to the old look rather than to a hole.
-                HabitDomainIcon(skillsetId: habit.skillsetId, imageUrl: habit.image, size: 34, radius: 10),
-                12.horizontalSpace,
+                Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9F6EC),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(AppAsset.svg.common.habitAddedPlant, width: 30.w, height: 30.w),
+                ),
+                14.horizontalSpace,
                 Expanded(
                   child: AppText(
                     habit.title.text,
                     maxLines: 2,
-                    style: AppStyle.text13.copyWith(fontWeight: FontWeight.w600, height: 1.4, color: AppCustomColor.textPrimary),
+                    // Design 15/600, lh 1.4.
+                    style: TextStyle(
+                      fontFamily: AppFont.mulish,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                      color: AppCustomColor.textPrimary,
+                    ),
                   ),
                 ),
                 10.horizontalSpace,
-                _stateChip(context, isAdded: isAdded, isSubmitting: isSubmitting),
+                _addButton(context, isAdded: isAdded, isSubmitting: isSubmitting),
               ],
             ),
           ),
@@ -310,28 +388,50 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     );
   }
 
-  Widget _stateChip(BuildContext context, {required bool isAdded, required bool isSubmitting}) {
+  /// Design's add affordance: a solid round "+" (34px, brand blue) that turns
+  /// into the light-green "Added" chip once adopted; a spinner in the same
+  /// footprint while the write is in flight.
+  Widget _addButton(BuildContext context, {required bool isAdded, required bool isSubmitting}) {
     if (isSubmitting) {
-      return SizedBox(width: 16.w, height: 16.w, child: const CircularProgressIndicator(strokeWidth: 2, color: AppCustomColor.brandPrimary));
+      return SizedBox(
+        width: 34.w,
+        height: 34.w,
+        child: Center(
+          child: SizedBox(
+            width: 16.w,
+            height: 16.w,
+            child: const CircularProgressIndicator(strokeWidth: 2, color: AppCustomColor.brandPrimary),
+          ),
+        ),
+      );
+    }
+    if (isAdded) {
+      return Container(
+        height: 26.h,
+        padding: EdgeInsets.symmetric(horizontal: 11.w),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE9F6EC),
+          borderRadius: BorderRadius.circular(99.r),
+        ),
+        child: AppText(
+          context.l10n.habit.habitSuggestAdded,
+          // Design 11.5/700 on #2E9E77.
+          style: TextStyle(
+            fontFamily: AppFont.mulish,
+            fontSize: 11.5.sp,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+            color: const Color(0xFF2E9E77),
+          ),
+        ),
+      );
     }
     return Container(
-      height: 24.h,
-      padding: EdgeInsets.symmetric(horizontal: 10.w),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: isAdded ? AppCustomColor.kpResultCorrectSurface : AppCustomColor.brandPrimary50,
-        borderRadius: BorderRadius.circular(99.r),
-      ),
-      child: AppText(
-        isAdded ? context.l10n.habit.habitSuggestAdded : context.l10n.habit.habitSuggestAdd,
-        // Design 11.5/700 — the app scale has no 11.5.
-        style: TextStyle(
-          fontFamily: AppFont.mulish,
-          fontSize: 11.5.sp,
-          fontWeight: FontWeight.w700,
-          color: isAdded ? AppCustomColor.successGreen : AppCustomColor.brandPrimary,
-        ),
-      ),
+      width: 34.w,
+      height: 34.w,
+      decoration: const BoxDecoration(color: AppCustomColor.brandPrimary, shape: BoxShape.circle),
+      child: Icon(Icons.add_rounded, size: 20.w, color: AppCustomColor.textWhite),
     );
   }
 }

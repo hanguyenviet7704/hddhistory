@@ -139,6 +139,7 @@ habitSuggestTitle: Add one to get daily practice reminders
 habitSuggestSubtitle: This lesson helps you build these habits
 habitSuggestAdd: Add
 habitSuggestAdded: Added
+habitSuggestAddedToast: Habit added to your list
 practiceGrowTitle: Habit is growing!
 practiceGrowBubble: Repeat it enough, it becomes everyday life
 practiceGrowLoop: ${days} days loop
