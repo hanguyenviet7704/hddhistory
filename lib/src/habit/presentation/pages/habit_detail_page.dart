@@ -785,7 +785,11 @@ class _ReadMoreSection extends StatelessWidget {
     final skillset = skillsets.where((s) => s.id == course.skillsetId).firstOrNull ?? skillsets.where((s) => s.courses.any((c) => c.id == course.id)).firstOrNull;
     if (skillset == null) return;
 
-    Navigator.of(context, rootNavigator: true).pop();
+    // The detail sheet lives on the Habit TAB's navigator
+    // ([HabitDetailPage.show] doesn't use the root navigator) — popping the
+    // ROOT navigator here popped the shell itself and left a blank white
+    // screen ("bấm ra màn trắng", 2026-08-08).
+    Navigator.of(context).pop();
     final shellContext = AppConfig.instance.context;
     if (shellContext == null) return;
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('habit_detail');
