@@ -46,6 +46,7 @@ part 'domain/usecases/verify_usecase.dart';
 part 'monetization.freezed.dart';
 part 'monetization.g.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
+part 'presentation/compact_countdown_schedule.dart';
 part 'presentation/cubits/iap_cubit.dart';
 part 'presentation/cubits/iap_state.dart';
 //* Presentation Layer - Pages

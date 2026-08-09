@@ -47,6 +47,14 @@ abstract class MonetizationLocalDataSource {
   Future<String> getGiftLastShownDay();
 
   Future<void> setGiftLastShownDay(String day);
+
+  /// Epoch ms this reader first saw the compact paywall in the CURRENT
+  /// countdown cycle. The sheet's clock runs `countdownHours` from here, so
+  /// everyone gets the full offer window from the moment it was shown to them
+  /// rather than racing one deadline shared by the whole user base.
+  Future<int?> getCompactCountdownAnchorEpochMs();
+
+  Future<void> setCompactCountdownAnchorEpochMs(int epochMs);
 }
 
 @LazySingleton(as: MonetizationLocalDataSource)
@@ -160,6 +168,7 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
 
   static const String _giftDayZeroKey = 'monetization_gift_day_zero_ms';
   static const String _giftLastShownKey = 'monetization_gift_last_shown_day';
+  static const String _compactCountdownAnchorKey = 'monetization_compact_countdown_anchor_ms';
 
   @override
   Future<int?> getGiftDayZeroEpochMs() async {
@@ -196,6 +205,26 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
       await _localStoreService.setString(key: _giftLastShownKey, value: day);
     } catch (_) {
       // See setGiftDayZeroEpochMs.
+    }
+  }
+
+  @override
+  Future<int?> getCompactCountdownAnchorEpochMs() async {
+    try {
+      return int.tryParse(await _localStoreService.getString(key: _compactCountdownAnchorKey));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> setCompactCountdownAnchorEpochMs(int epochMs) async {
+    try {
+      await _localStoreService.setString(key: _compactCountdownAnchorKey, value: epochMs.toString());
+    } catch (_) {
+      // See setGiftDayZeroEpochMs: a storage failure must not break the sheet.
+      // Worst case the clock restarts, which is the same thing it does at the
+      // end of a cycle anyway.
     }
   }
 }

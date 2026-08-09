@@ -27,9 +27,16 @@ class _PaywallPageState extends State<PaywallPage> {
   late bool _isCloseButtonVisible;
   Timer? _closeButtonTimer;
 
+  /// The compact sheet's countdown deadline, per reader. Resolved here rather
+  /// than in the sheet because it needs storage (an async read) and the sheet
+  /// builds synchronously; null until it lands, which simply renders no clock
+  /// for that first frame.
+  DateTime? _compactCountdownEndAt;
+
   @override
   void initState() {
     super.initState();
+    unawaited(_resolveCompactCountdown());
 
     _isCloseButtonVisible = !shouldDelayPaywallCloseButton();
     if (!_isCloseButtonVisible) {
@@ -39,6 +46,15 @@ class _PaywallPageState extends State<PaywallPage> {
     final cubit = context.read<IapCubit>();
     cubit.init();
     cubit.loadIapProducts();
+  }
+
+  Future<void> _resolveCompactCountdown() async {
+    final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
+    final endAt = await AppDI.injector.get<CompactCountdownSchedule>().resolveDeadline(
+      hours: config.compactCountdownHours,
+    );
+    if (!mounted) return;
+    setState(() => _compactCountdownEndAt = endAt);
   }
 
   void _trackValidRender(IapState state) {
@@ -130,6 +146,7 @@ class _PaywallPageState extends State<PaywallPage> {
               if (state.resolvedPaywallStrategy?.variant == PaywallProductVariant.compact || context.read<IapCubit>().paywallForcedCompact) {
                 return _PaywallCompactBody(
                   state: state,
+                  countdownEndAt: _compactCountdownEndAt,
                   onClose: _handleClose,
                   onPurchase: () {
                     final product = state.selectedProduct;

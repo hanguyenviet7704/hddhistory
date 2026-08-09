@@ -15,10 +15,16 @@ class _PaywallCompactBody extends StatelessWidget {
   final Future<void> Function() onClose;
   final VoidCallback onPurchase;
 
+  /// Per-reader deadline from [CompactCountdownSchedule], resolved by the page
+  /// because it needs an async storage read. Null while that is still in
+  /// flight, or when config has switched the rolling countdown off.
+  final DateTime? countdownEndAt;
+
   const _PaywallCompactBody({
     required this.state,
     required this.onClose,
     required this.onPurchase,
+    this.countdownEndAt,
   });
 
   @override
@@ -49,8 +55,14 @@ class _PaywallCompactBody extends StatelessWidget {
     // are full-paywall-only, so nothing here reads the resolved sale state.
     final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
     final discount = config.compactDiscountPercent > 0 && config.compactDiscountPercent < 100 ? config.compactDiscountPercent : 0;
-    final deadline = DateTime.tryParse(config.compactEndAtUtc ?? '');
-    final DateTime? endAtUtc = deadline != null && deadline.isAfter(DateTime.now().toUtc()) ? deadline : null;
+    // The per-reader rolling countdown wins when config asks for one: it gives
+    // everybody the same window measured from when THEY were shown the offer.
+    // `endAtUtc` stays as the escape hatch for a genuine campaign that ends at
+    // one instant for the whole user base — set `countdownHours` to 0 to get
+    // that behaviour back.
+    final fixed = DateTime.tryParse(config.compactEndAtUtc ?? '');
+    final DateTime? fixedEndAt = fixed != null && fixed.isAfter(DateTime.now().toUtc()) ? fixed : null;
+    final DateTime? endAtUtc = countdownEndAt ?? fixedEndAt;
 
     return Container(
       margin: EdgeInsets.only(top: 68.h),
