@@ -164,17 +164,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     // purchaseProduct();
   }
 
-  Future<void> recordPaywallRenderedImpression() async {
-    final strategy = state.resolvedPaywallStrategy;
-    if (strategy == null || !strategy.isValid || state.iapProducts.isEmpty) return;
-    if (strategy.segment != ResolvedPaywallSegment.newUser) return;
-
-    final currentCount = await _iapRepository.getNewUserPaywallImpressionCount();
-    final renderedCount = strategy.impressionNumber ?? currentCount + 1;
-    if (renderedCount <= currentCount) return;
-    await _iapRepository.setNewUserPaywallImpressionCount(renderedCount);
-  }
-
   Future<bool> prepareAutoOpenPaywall({
     required String userId,
     required String accessToken,
@@ -265,14 +254,11 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     unawaited(prefetchPaywallConfig());
 
     final platform = PaymentPlatform.fromDevicePlatform;
-    final storedImpressionCount = await _iapRepository.getNewUserPaywallImpressionCount();
     final resolvedStrategy = _resolvePaywallStrategyUsecase(
       ResolvePaywallStrategyParams(
         config: resolvedPaywallConfig,
         platform: platform,
         nowUtc: DateTime.now().toUtc(),
-        installTime: _installTime,
-        storedImpressionCount: storedImpressionCount,
         // Entry point is always set before the paywall is pushed (and before
         // this load, in the auto-open path), so it is current by the time the
         // strategy resolves.
@@ -380,14 +366,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   bool _isCurrentLoad(String signature, int generation) {
     return state.paywallStrategySignature == signature && _loadIapProductsSignature == signature && _loadIapProductsGeneration == generation;
-  }
-
-  DateTime? get _installTime {
-    try {
-      return (_packageInfoService.packageInfo as dynamic).installTime as DateTime?;
-    } catch (_) {
-      return null;
-    }
   }
 
   IapProductEntity _defaultSelectedProduct(List<IapProductEntity> products) {

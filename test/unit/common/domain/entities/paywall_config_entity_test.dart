@@ -137,8 +137,6 @@ void main() {
           config: config,
           platform: PaymentPlatform.google,
           nowUtc: DateTime.utc(2026, 7, 10),
-          installTime: null,
-          storedImpressionCount: 0,
         ),
       );
 

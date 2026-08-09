@@ -232,7 +232,6 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
   List<IapProductEntity> products = const [];
   List<List<IapProductEntity>> queuedProducts = const [];
   int getProductsCalls = 0;
-  int impressionCount = 0;
   Duration? delay;
   // Simulates "no live API data and no cache yet" by default, so
   // IapCubit.resolvedPaywallConfig keeps deferring to the injected
@@ -270,9 +269,6 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
   }
 
   @override
-  Future<int> getNewUserPaywallImpressionCount() async => impressionCount;
-
-  @override
   Future<List<String>> loadProcessedTransactionIds() async => [];
 
   @override
@@ -280,9 +276,6 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
 
   @override
   TaskEither<AppException, IapVerifyEntity> restore() => TaskEither.right(const IapVerifyEntity());
-
-  @override
-  Future<void> setNewUserPaywallImpressionCount(int count) async => impressionCount = count;
 
   @override
   TaskEither<AppException, IapVerifyEntity> verify(VerifyParams params) => TaskEither.right(const IapVerifyEntity());

@@ -63,7 +63,6 @@ MonetizationRepository _buildRepository({
     _NoopMonetizationApi(),
     _NoopIapService(),
     _NoopUserSubscriptionLocalDataSource(),
-    _NoopMonetizationLocalDataSource(),
     api,
     cache,
   );
@@ -148,30 +147,4 @@ class _NoopUserSubscriptionLocalDataSource implements UserSubscriptionLocalDataS
 
   @override
   Future<void> clearCache() async {}
-}
-
-class _NoopMonetizationLocalDataSource implements MonetizationLocalDataSource {
-  @override
-  Future<void> cacheIapProduct(IapProductModel model) async {}
-
-  @override
-  Future<void> cacheIapProducts(List<IapProductModel> models) async {}
-
-  @override
-  Future<void> clearCache() async {}
-
-  @override
-  Future<void> deleteCachedIapProduct(String id) async {}
-
-  @override
-  Future<IapProductModel?> getCachedIapProduct(String id) async => null;
-
-  @override
-  Future<List<IapProductModel>> getCachedIapProducts() async => [];
-
-  @override
-  Future<int> getNewUserPaywallImpressionCount() async => 0;
-
-  @override
-  Future<void> setNewUserPaywallImpressionCount(int count) async {}
 }

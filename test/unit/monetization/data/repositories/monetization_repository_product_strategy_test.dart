@@ -16,7 +16,6 @@ void main() {
         api,
         iap,
         _FakeUserSubscriptionLocalDataSource(),
-        _FakeMonetizationLocalDataSource(),
         _FakePaywallConfigApi(),
         _FakePaywallConfigLocalDataSource(),
       );
@@ -47,7 +46,6 @@ void main() {
         ]),
         _FakeIapService([_store('annual')]),
         _FakeUserSubscriptionLocalDataSource(),
-        _FakeMonetizationLocalDataSource(),
         _FakePaywallConfigApi(),
         _FakePaywallConfigLocalDataSource(),
       );
@@ -57,7 +55,6 @@ void main() {
         ]),
         _FakeIapService([_store('annual')]),
         _FakeUserSubscriptionLocalDataSource(),
-        _FakeMonetizationLocalDataSource(),
         _FakePaywallConfigApi(),
         _FakePaywallConfigLocalDataSource(),
       );
@@ -177,34 +174,6 @@ class _FakeUserSubscriptionLocalDataSource implements UserSubscriptionLocalDataS
 
   @override
   Future<void> clearCache() async {}
-}
-
-class _FakeMonetizationLocalDataSource implements MonetizationLocalDataSource {
-  int impressionCount = 0;
-
-  @override
-  Future<void> cacheIapProduct(IapProductModel model) async {}
-
-  @override
-  Future<void> cacheIapProducts(List<IapProductModel> models) async {}
-
-  @override
-  Future<void> clearCache() async {}
-
-  @override
-  Future<void> deleteCachedIapProduct(String id) async {}
-
-  @override
-  Future<IapProductModel?> getCachedIapProduct(String id) async => null;
-
-  @override
-  Future<List<IapProductModel>> getCachedIapProducts() async => [];
-
-  @override
-  Future<int> getNewUserPaywallImpressionCount() async => impressionCount;
-
-  @override
-  Future<void> setNewUserPaywallImpressionCount(int count) async => impressionCount = count;
 }
 
 class _FakePaywallConfigApi implements PaywallConfigApi {

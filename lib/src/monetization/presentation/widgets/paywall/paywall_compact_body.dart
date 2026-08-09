@@ -65,7 +65,10 @@ class _PaywallCompactBody extends StatelessWidget {
     final DateTime? endAtUtc = countdownEndAt ?? fixedEndAt;
 
     return Container(
-      margin: EdgeInsets.only(top: 68.h),
+      // Flush to the ceiling ("kéo cao lên sát trần", 2026-08-09): the page's
+      // SafeArea already clears the notch, so this sliver of gradient is all
+      // that stays visible above the sheet's rounded corners.
+      margin: EdgeInsets.only(top: 10.h),
       padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 30.h),
       width: double.infinity,
       decoration: BoxDecoration(

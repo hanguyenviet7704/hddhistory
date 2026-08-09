@@ -111,7 +111,6 @@ PaywallConfigEntity _configWithProducts(List<String> productIds) {
 class _FakeMonetizationRepository implements IMonetizationRepository {
   List<IapProductEntity> products = const [];
   int getProductsCalls = 0;
-  int impressionCount = 0;
 
   PaywallConfigEntity? nextConfig;
   bool shouldFail = false;
@@ -153,9 +152,6 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
   }
 
   @override
-  Future<int> getNewUserPaywallImpressionCount() async => impressionCount;
-
-  @override
   Future<List<String>> loadProcessedTransactionIds() async => [];
 
   @override
@@ -163,9 +159,6 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
 
   @override
   TaskEither<AppException, IapVerifyEntity> restore() => TaskEither.right(const IapVerifyEntity());
-
-  @override
-  Future<void> setNewUserPaywallImpressionCount(int count) async => impressionCount = count;
 
   @override
   TaskEither<AppException, IapVerifyEntity> verify(VerifyParams params) => TaskEither.right(const IapVerifyEntity());

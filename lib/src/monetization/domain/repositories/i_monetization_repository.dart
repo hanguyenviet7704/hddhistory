@@ -15,7 +15,5 @@ abstract class IMonetizationRepository {
   TaskEither<AppException, PaywallConfigEntity> getPaywallConfig();
   Future<List<String>> loadProcessedTransactionIds();
   Future<void> cacheProcessedTransactionIds(List<String> ids);
-  Future<int> getNewUserPaywallImpressionCount();
-  Future<void> setNewUserPaywallImpressionCount(int count);
   void dispose();
 }

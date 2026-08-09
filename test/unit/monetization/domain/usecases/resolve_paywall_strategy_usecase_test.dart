@@ -8,8 +8,6 @@ void main() {
   ResolvedPaywallStrategyEntity resolve({
     PaywallConfigEntity config = _config,
     PaymentPlatform platform = PaymentPlatform.google,
-    DateTime? installTime,
-    int storedImpressionCount = 0,
     DateTime? nowUtc,
     PaywallEntryPoint entryPoint = PaywallEntryPoint.other,
   }) {
@@ -18,15 +16,13 @@ void main() {
         config: config,
         platform: platform,
         nowUtc: nowUtc ?? now,
-        installTime: installTime,
-        storedImpressionCount: storedImpressionCount,
         entryPoint: entryPoint,
       ),
     );
   }
 
   group('ResolvePaywallStrategyUsecase base strategy', () {
-    test('Given unknown install time, When resolved, Then selects default user and platform product order', () {
+    test('Given any reader, When resolved, Then selects default user and platform product order', () {
       final google = resolve();
       final apple = resolve(platform: PaymentPlatform.apple);
 
@@ -39,70 +35,25 @@ void main() {
       expect(resolve().signature, google.signature);
     });
 
-    test('Given D0 and D6 installs, When window is seven days, Then selects new-user strategy', () {
-      for (final installTime in [DateTime(2026, 6, 18, 23), DateTime(2026, 6, 12, 1)]) {
-        final result = resolve(installTime: installTime);
-
-        expect(result.segment, ResolvedPaywallSegment.newUser);
-        expect(result.strategyType, ResolvedPaywallStrategyType.newUser);
-      }
-    });
-
-    test('Given D7, future, or null install time, When resolved, Then selects default user', () {
-      for (final installTime in <DateTime?>[DateTime(2026, 6, 11), DateTime(2026, 6, 19), null]) {
-        expect(resolve(installTime: installTime).segment, ResolvedPaywallSegment.defaultUser);
-      }
-    });
-
-    test('Given disabled new-user strategy, When a new user resolves, Then falls back to default user', () {
+    test('Given a new-user strategy in the config, When resolved, Then it is ignored and default user wins', () {
+      // The new-user segment was removed (2026-08-08). A config that still
+      // carries the block — every stored config does — must resolve exactly as
+      // if it did not.
       final config = _config.copyWith(
         saleStrategy: _config.saleStrategy!.copyWith(
-          newUser: _config.saleStrategy!.newUser.copyWith(enabled: false),
+          newUser: _config.saleStrategy!.newUser.copyWith(enabled: true),
         ),
       );
 
-      final result = resolve(config: config, installTime: now);
+      final result = resolve(config: config);
 
       expect(result.strategyType, ResolvedPaywallStrategyType.defaultUser);
-      expect(result.segment, ResolvedPaywallSegment.newUser);
+      expect(result.segment, ResolvedPaywallSegment.defaultUser);
+      expect(result.productIds, ['google-default-1', 'google-default-2']);
     });
   });
 
-  group('ResolvePaywallStrategyUsecase impression rules', () {
-    test('Given unordered rules, When resolving impressions one, two, and three-plus, Then highest eligible threshold wins', () {
-      final first = resolve(installTime: now, storedImpressionCount: 0);
-      final second = resolve(installTime: now, storedImpressionCount: 1);
-      final later = resolve(installTime: now, storedImpressionCount: 9);
-
-      expect((first.impressionNumber, first.ruleThreshold), (1, 1));
-      expect(first.productIds, ['google-new-1']);
-      expect((second.impressionNumber, second.ruleThreshold), (2, 2));
-      expect(second.productIds, ['google-new-2']);
-      expect((later.impressionNumber, later.ruleThreshold), (10, 3));
-      expect(later.productIds, ['google-new-3']);
-      expect(later.content.heading.en, 'Rule three');
-      expect(later.content.benefits, _config.saleStrategy!.newUser.content.benefits);
-      expect(_config.saleStrategy!.newUser.impressionRules.first.fromImpression, 3);
-    });
-
-    test('Given no matched rule, When resolving a new user, Then returns invalid rather than broadening scope', () {
-      final config = _config.copyWith(
-        saleStrategy: _config.saleStrategy!.copyWith(
-          newUser: _config.saleStrategy!.newUser.copyWith(
-            impressionRules: [
-              _config.saleStrategy!.newUser.impressionRules.first.copyWith(fromImpression: 2),
-            ],
-          ),
-        ),
-      );
-
-      final result = resolve(config: config, installTime: now);
-
-      expect(result.isValid, isFalse);
-      expect(result.strategyType, ResolvedPaywallStrategyType.invalid);
-      expect(result.productIds, isEmpty);
-    });
-
+  group('ResolvePaywallStrategyUsecase product IDs', () {
     test('Given blank or duplicate selected platform IDs, When resolved, Then returns invalid', () {
       for (final products in [
         const [PaywallProductReferenceEntity(appleProductId: 'apple', googleProductId: '')],
@@ -134,17 +85,22 @@ void main() {
       }
     });
 
-    test('Given an active event for another segment, When resolved, Then base strategy wins', () {
-      final event = _eventConfig().saleStrategy!.saleEvent!;
-      final config = _eventConfig().copyWith(
-        saleStrategy: _eventConfig().saleStrategy!.copyWith(
-          saleEvent: event.copyWith(appliesTo: [PaywallAudienceSegment.newUser]),
-        ),
-      );
+    test('Given an event aimed at any audience, When in window, Then it still wins', () {
+      // `appliesTo` no longer gates anything: with one audience left, its only
+      // remaining effect was to hide a correctly configured campaign from
+      // everybody — which is exactly what happened on dev (2026-08-08).
+      for (final audience in PaywallAudienceSegment.values) {
+        final event = _eventConfig().saleStrategy!.saleEvent!;
+        final config = _eventConfig().copyWith(
+          saleStrategy: _eventConfig().saleStrategy!.copyWith(
+            saleEvent: event.copyWith(appliesTo: [audience]),
+          ),
+        );
 
-      final result = resolve(config: config, nowUtc: DateTime.utc(2026, 6, 25));
+        final result = resolve(config: config, nowUtc: DateTime.utc(2026, 6, 25));
 
-      expect(result.strategyType, ResolvedPaywallStrategyType.defaultUser);
+        expect(result.strategyType, ResolvedPaywallStrategyType.saleEvent);
+      }
     });
   });
 
@@ -177,19 +133,6 @@ void main() {
         expect(result.variant, PaywallProductVariant.full);
         expect(result.productIds, ['google-default-1', 'google-default-2']);
       }
-    });
-
-    test('Given a compact entry point and a new user, When resolved, Then uses the matched rule reduced list', () {
-      final result = resolve(
-        config: _compactConfig(),
-        installTime: DateTime(2026, 6, 18),
-        storedImpressionCount: 1,
-        entryPoint: PaywallEntryPoint.inLesson,
-      );
-
-      expect(result.strategyType, ResolvedPaywallStrategyType.newUser);
-      expect(result.variant, PaywallProductVariant.compact);
-      expect(result.productIds, ['google-new-2-compact']);
     });
 
     test('Given an active sale event and a compact entry point, When resolved, Then the campaign still reaches the reader', () {

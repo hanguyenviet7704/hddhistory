@@ -62,10 +62,6 @@ class _PaywallPageState extends State<PaywallPage> {
     if (state.status != MonetizationStatus.success || state.iapProducts.isEmpty) return;
 
     _hasTrackedView = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      context.read<IapCubit>().recordPaywallRenderedImpression();
-    });
     AppService.instance.appTrackingService.trackPremiumScrView();
   }
 

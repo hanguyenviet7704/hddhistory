@@ -32,10 +32,6 @@ abstract class MonetizationLocalDataSource {
   /// Clear all cached data
   Future<void> clearCache();
 
-  Future<int> getNewUserPaywallImpressionCount();
-
-  Future<void> setNewUserPaywallImpressionCount(int count);
-
   /// Epoch ms of the gift schedule's day zero (the first habit adoption).
   /// Null until that event happens — see the spec sheet's gift-popup rules.
   Future<int?> getGiftDayZeroEpochMs();
@@ -61,7 +57,6 @@ abstract class MonetizationLocalDataSource {
 class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
   static const String _cacheKey = 'monetization_cache';
   static const String _cacheListKey = 'monetization_list_cache';
-  static const String _newUserPaywallImpressionKey = 'monetization_new_user_paywall_impressions';
 
   final ILocalStoreService _localStoreService;
 
@@ -142,27 +137,6 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
       // To clear everything, you could track all keys or implement prefix-based deletion
     } catch (e) {
       // Handle error silently or log
-    }
-  }
-
-  @override
-  Future<int> getNewUserPaywallImpressionCount() async {
-    try {
-      final value = await _localStoreService.getString(key: _newUserPaywallImpressionKey);
-      final count = int.tryParse(value) ?? 0;
-      return count < 0 ? 0 : count;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  @override
-  Future<void> setNewUserPaywallImpressionCount(int count) async {
-    try {
-      final safeCount = count < 0 ? 0 : count;
-      await _localStoreService.setString(key: _newUserPaywallImpressionKey, value: safeCount.toString());
-    } catch (_) {
-      // Ignore local behavioral counter failures.
     }
   }
 

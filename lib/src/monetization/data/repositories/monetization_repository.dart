@@ -5,7 +5,6 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   final MonetizationApi _monetizationApi;
   final IIapService _iapService;
   final UserSubscriptionLocalDataSource _userSubscriptionLocalDataSource;
-  final MonetizationLocalDataSource _monetizationLocalDataSource;
   final PaywallConfigApi _paywallConfigApi;
   final PaywallConfigLocalDataSource _paywallConfigLocalDataSource;
   late final StreamSubscription<List<PurchaseDetails>> _subscription;
@@ -15,7 +14,6 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
     this._monetizationApi,
     this._iapService,
     this._userSubscriptionLocalDataSource,
-    this._monetizationLocalDataSource,
     this._paywallConfigApi,
     this._paywallConfigLocalDataSource,
   ) {
@@ -204,12 +202,6 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       LogDev.warning('Failed to cache processed transaction ids: $e');
     }
   }
-
-  @override
-  Future<int> getNewUserPaywallImpressionCount() => _monetizationLocalDataSource.getNewUserPaywallImpressionCount();
-
-  @override
-  Future<void> setNewUserPaywallImpressionCount(int count) => _monetizationLocalDataSource.setNewUserPaywallImpressionCount(count);
 
   @override
   void dispose() {
