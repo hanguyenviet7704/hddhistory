@@ -94,6 +94,24 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   /// reader who flips back to the quote mid-listen is not fought over it.
   bool _autoFlipped = false;
 
+  /// The listened-through keypoint has already been carried onward, so the
+  /// signal (which stays true until the next clip loads) cannot fire twice.
+  bool _autoContinued = false;
+
+  /// A keypoint heard to its end needs no Continue tap: background listening
+  /// reads straight through the recap gate, so a reader coming back to the app
+  /// would otherwise find a finished keypoint still asking to be dismissed by
+  /// hand. Hands over to the very same [_continue] the button runs — habit
+  /// suggestions when there are any, the lesson-complete screen otherwise.
+  void _maybeAutoContinue({required bool isViewed}) {
+    if (_autoContinued || _isContinuing || !isViewed) return;
+    if (!context.read<KeypointCardCubit>().narrationFinishedKeypoint) return;
+    _autoContinued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_continue());
+    });
+  }
+
   void _maybeAutoFlip({required bool hasRecap, required bool isViewed, required bool isNarrating}) {
     if (_autoFlipped || !hasRecap || !isViewed || !isNarrating) return;
     _autoFlipped = true;
@@ -127,6 +145,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     final isViewedCard = deckState.cards.isNotEmpty && deckState.viewedCardIndex == deckState.cards.length - 1;
     final isNarrating = context.read<KeypointCardCubit>().isNarratingRecap;
     _maybeAutoFlip(hasRecap: hasRecap, isViewed: isViewedCard, isNarrating: isNarrating);
+    _maybeAutoContinue(isViewed: isViewedCard);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.w),

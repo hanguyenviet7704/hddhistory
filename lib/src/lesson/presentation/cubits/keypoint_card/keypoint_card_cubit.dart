@@ -544,6 +544,36 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     return !(lifecycle == null || lifecycle == AppLifecycleState.resumed || lifecycle == AppLifecycleState.inactive);
   }
 
+  /// The voice has read this keypoint all the way to its last audible cue —
+  /// the takeaway included — so there is nothing left to hear.
+  ///
+  /// What the done card's auto-continue keys on. Background listening reads
+  /// straight through the recap gate (only the foreground park waits for a
+  /// tap), so a reader who listened away from the app comes back to a finished
+  /// keypoint still asking them to press Continue ("nghe ngoài nền khi vào lại
+  /// ... cần hoàn thành luôn", 2026-08-08). Follows the same product line as
+  /// auto-completing on the final theory card: hearing the keypoint out IS
+  /// finishing it.
+  ///
+  /// `hasCompletedPlayback` alone would not do — it survives until the next
+  /// load, and it is also what a legacy per-clip end raises. Pinning it to the
+  /// LAST audible cue is what makes this mean "the whole keypoint", and keeps a
+  /// stale flag from firing on the next keypoint's recap card. Backgrounded it
+  /// stays false: navigation belongs to a screen the reader is looking at.
+  bool get narrationFinishedKeypoint {
+    if (!_audioCubit.isMergedMode || _isBackgrounded) return false;
+    final audioState = _audioCubit.state;
+    if (!audioState.hasCompletedPlayback) return false;
+    final timeline = _audioCubit.timeline;
+    final lastAudible = timeline?.lastAudibleCueIndex ?? -1;
+    if (lastAudible < 0 || audioState.activeCueIndex < lastAudible) return false;
+    // The timeline must be THIS keypoint's. Entering the next keypoint carries
+    // the previous session's flags for the beat before its own source loads,
+    // and a keypoint whose only card is the done card would act on them.
+    final lastCue = timeline?.cueAt(lastAudible);
+    return lastCue != null && _lessonCubit.state.pageData.items.any((item) => item.id == lastCue.learningItemId);
+  }
+
   /// Cue bound for the paywall CARD cap, computed over the keypoint's FULL
   /// card walk (straight from the lesson items) — never from the
   /// incrementally built deck. At entry only card 0 exists, and bounding by
@@ -787,11 +817,23 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
   /// The reader opened the recap flip card after the gate parked the voice —
   /// read the takeaway from its start, to the face now showing. A no-op unless
-  /// the gate is armed and the player silent: flipping the card around in any
-  /// other situation stays quiet.
+  /// the gate is armed, the player silent, and that silence is the PARK's
+  /// rather than the reader's: flipping the card around in any other situation
+  /// stays quiet.
   void resumeRecapNarrationIfGated() {
-    LogDev.warning('[RecapGate] resume gate=$_recapGateCueIndex playing=${_audioCubit.state.isPlaying}');
+    LogDev.warning(
+      '[RecapGate] resume gate=$_recapGateCueIndex playing=${_audioCubit.state.isPlaying} '
+      'pausedByUser=${_audioCubit.pausedByUser} session=${_audioCubit.state.hasStartedSession}',
+    );
     if (_recapGateCueIndex < 0 || _audioCubit.state.isPlaying) return;
+    // An armed gate is not on its own a reason to make sound: the park arms it
+    // on arriving at the done card whether or not the reader is listening. Only
+    // a parked LISTENING flow may be resumed by the tap — silence the reader
+    // asked for outranks the gate, exactly as it does for forward-swipe
+    // autoplay ("mở loa lên luôn"), and with no session at all the playCue
+    // below would initialise the player and start talking (lock-screen controls
+    // and all) for someone who never turned narration on.
+    if (_audioCubit.pausedByUser || !_audioCubit.state.hasStartedSession) return;
     _recapTapResumed = true;
     unawaited(_audioCubit.playCue(_recapGateCueIndex, autoplay: true));
   }
