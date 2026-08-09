@@ -793,6 +793,21 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (cueIndex != null && cueIndex == _audioCubit.state.activeCueIndex && _audioCubit.state.isPlaying && _recapTapResumed) {
       return;
     }
+    // A recap the reader ALREADY opened comes back TALKING, not parked. The
+    // park's contract is "sound returns on the flip" — but a re-arrival finds
+    // the card still open (the flip survives in `recapFlipOpened`), so the
+    // only tap left CLOSES it and the gate becomes unreachable: swipe up, swipe
+    // back down, and the takeaway is dead ("card cuối lại bị tắt", 2026-08-09).
+    // The flip that satisfied the gate the first time still counts; same
+    // guards as the tap itself — a reader's own pause outranks it, and no
+    // session never starts one.
+    if (cueIndex != null && recapFlipOpened && _audioCubit.state.hasStartedSession && !_audioCubit.pausedByUser) {
+      _loadedClipCardIndex = index;
+      _recapGateCueIndex = cueIndex;
+      _recapTapResumed = true;
+      unawaited(_audioCubit.playCue(cueIndex, autoplay: true));
+      return;
+    }
     _recapTapResumed = false;
     if (cueIndex != null) {
       _loadedClipCardIndex = index;
