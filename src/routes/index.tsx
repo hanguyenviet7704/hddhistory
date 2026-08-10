@@ -32,6 +32,8 @@ import SkillsetList from "../pages/skillsets/skillsetList";
 import HabitList from "../pages/habits/HabitList";
 import HabitCheckinList from "../pages/habit-checkins/HabitCheckinList";
 import HabitCheckinDetail from "../pages/habit-checkins/HabitCheckinDetail";
+import LearningImportList from "../pages/learning-imports/LearningImportList";
+import LearningImportDetail from "../pages/learning-imports/LearningImportDetail";
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
 import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
@@ -76,6 +78,12 @@ export default function AppRouter() {
               <Route
                 path="habit-checkins/user/:userId"
                 element={<HabitCheckinDetail />}
+              />
+
+              <Route path="learning-imports" element={<LearningImportList />} />
+              <Route
+                path="learning-imports/:jobId"
+                element={<LearningImportDetail />}
               />
 
               <Route
