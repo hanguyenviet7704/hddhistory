@@ -96,9 +96,26 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   bool get hasQueuedNext => _queuedTail.isNotEmpty;
 
   /// Whether the merged file the player is reading RIGHT NOW belongs to
-  /// [keypointId] — what tells `LessonPage` to adopt a hopped-into keypoint
-  /// instead of configuring (and thereby reloading) it.
+  /// [keypointId].
   bool isPlayingKeypoint(String keypointId) => keypointId.isNotEmpty && state.keypointId == keypointId && state.hasStartedSession;
+
+  /// Keypoint the QUEUE walked into — playing without this cubit ever having
+  /// loaded it. Cleared the moment a load takes the player somewhere else.
+  String _hoppedKeypointId = '';
+
+  /// Whether [keypointId] is playing because the chain hopped into it. The ONLY
+  /// case where `LessonPage` must adopt the refreshed entity instead of
+  /// configuring it.
+  ///
+  /// Deliberately NOT "is this keypoint playing" (which [isPlayingKeypoint]
+  /// answers): entering a keypoint normally starts a session from the ROADMAP
+  /// stub, which carries only the legacy whole-keypoint `audio.url` — no cue map
+  /// and no per-card clips. The merged file arrives seconds later on the full
+  /// lesson payload, as a refresh for the SAME keypoint, and that refresh must
+  /// reach [configure]. Gating the page's adopt branch on "playing" swallowed it
+  /// and left merged mode OFF for every keypoint (caught on device 2026-08-10:
+  /// the deck fell back to `loadCard` per-card clips everywhere).
+  bool isQueueHoppedKeypoint(String keypointId) => keypointId.isNotEmpty && _hoppedKeypointId == keypointId && state.keypointId == keypointId;
 
   /// Queues [keypoint]'s merged narration behind the one playing, so the voice
   /// carries on into it without a load at the boundary.
@@ -186,6 +203,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   void _adoptQueuedNarration(QueuedKeypointNarration queued) {
     final leftKeypointId = state.keypointId;
+    _hoppedKeypointId = queued.keypointId;
     _timeline = queued.timeline;
     // A different keypoint's clip universe. The deck supplies a fresh set once
     // its learning items land (`LessonPage._syncAudioKeypoint`'s adopt branch);
@@ -874,9 +892,11 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // tick is a starting point, not a crossing — see [_previousTickCue].
     _previousTickCue = -1;
     // A load replaces the whole playlist, so any chain queued behind the old
-    // source is gone with it.
+    // source is gone with it — including the "this keypoint came from the queue"
+    // mark: from here on the player is reading a source this cubit loaded.
     _queuedTail.clear();
     _playedSlot = 0;
+    _hoppedKeypointId = '';
 
     emit(
       state.copyWith(

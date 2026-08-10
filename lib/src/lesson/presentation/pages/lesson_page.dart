@@ -220,7 +220,12 @@ class _LessonPageState extends State<LessonPage> {
     // the entity and stop: `configure` would reset the player and reload the
     // very source that is playing, which is the boundary hiccup the queue exists
     // to avoid, and `enterAudioMode` would restart the keypoint from the top.
-    if (_lessonAudioCubit.isPlayingKeypoint(keypoint.id)) {
+    //
+    // Strictly the QUEUE-hopped keypoint, never merely "the keypoint playing":
+    // an ordinary entry starts on the roadmap stub's legacy file and gets the
+    // merged one as a same-keypoint refresh, which must reach `configure` (see
+    // [LessonAudioCubit.isQueueHoppedKeypoint]).
+    if (_lessonAudioCubit.isQueueHoppedKeypoint(keypoint.id)) {
       _lessonAudioCubit.adoptQueuedKeypoint(keypoint);
       await _lessonAudioCubit.setSpeed(AppDI.injector.get<KeypointDisplayCubit>().state.readingSpeed);
       _audioSyncedKeypointId = keypoint.id;

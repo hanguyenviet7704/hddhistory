@@ -194,6 +194,42 @@ void main() {
       expect(cubit.cueForCard(learningItemId: 'kp-1-item', documentIndex: 1), isNull);
     });
 
+    test('a same-keypoint refresh still upgrades a legacy session to merged mode', () async {
+      // The regression that made the chain look broken on device (2026-08-10):
+      // entry configures from the ROADMAP stub, which carries only the legacy
+      // whole-keypoint url, and the merged file arrives seconds later as a
+      // refresh for the SAME keypoint. Treating "this keypoint is playing" as
+      // "the queue hopped into it" swallowed that refresh and left merged mode
+      // off for every keypoint in the app.
+      final stub = KeypointEntity(
+        id: 'kp-1',
+        title: BaseMultiLanguage(en: 'Title kp-1'),
+        audio: KeypointAudioEntity(url: BaseMultiLanguage(en: 'https://cdn.test/legacy-kp-1.mp3')),
+      );
+      final cubit = await startedOn(stub);
+
+      expect(cubit.isMergedMode, isFalse, reason: 'the stub has no cue map');
+      expect(cubit.isPlayingKeypoint('kp-1'), isTrue);
+      expect(cubit.isQueueHoppedKeypoint('kp-1'), isFalse, reason: 'nothing hopped — this session was loaded here');
+
+      await cubit.configure(keypoint('kp-1'));
+
+      expect(cubit.isMergedMode, isTrue);
+      expect(cubit.cueForCard(learningItemId: 'kp-1-item', documentIndex: 1), 1);
+    });
+
+    test('marks a hopped-into keypoint as coming from the queue', () async {
+      final cubit = await startedOn(keypoint('kp-1'));
+      await cubit.appendKeypoint(keypoint('kp-2'));
+
+      final hop = expectLater(cubit.keypointHops, emits((from: 'kp-1', to: 'kp-2')));
+      handler.moveToSlot(1);
+      await hop;
+
+      expect(cubit.isQueueHoppedKeypoint('kp-2'), isTrue);
+      expect(cubit.isQueueHoppedKeypoint('kp-1'), isFalse);
+    });
+
     test('refuses to queue a keypoint twice, or one with no merged dub', () async {
       final cubit = await startedOn(keypoint('kp-1'));
 
