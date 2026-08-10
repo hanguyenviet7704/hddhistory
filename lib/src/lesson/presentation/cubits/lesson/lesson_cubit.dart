@@ -284,7 +284,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       usecase: () => _getAllLearningItemUseCase(pageRequest),
       currentPageData: state.pageData,
       isInit: isInit,
-      buildLoadingState: () => state.copyWith(status: LessonStatus.loading),
+      // A fresh keypoint entry must not inherit the previous run's completion:
+      // this cubit is a @lazySingleton, and the leftover completionOrigin made
+      // the deck unlock its terminal card on the entry skeleton ("card thứ 2
+      // mà đã giao diện card cuối", 2026-08-09). Reset at load START so no
+      // entry rebuild ever sees the stale flag.
+      buildLoadingState: () => state.copyWith(
+        status: LessonStatus.loading,
+        completionOrigin: isInit ? LessonCompletionOrigin.none : state.completionOrigin,
+      ),
       onFailure: (error) {
         emit(state.copyWith(status: LessonStatus.failure, errorMessage: error));
       },

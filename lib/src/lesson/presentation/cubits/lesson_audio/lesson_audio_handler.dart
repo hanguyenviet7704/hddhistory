@@ -99,10 +99,17 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
     mediaItem.add(item);
 
     final uri = Uri.parse(url);
-    final duration = await _player.setAudioSource(
-      cacheToDisk
-          ? just_audio.LockCachingAudioSource(uri, tag: item)
-          : just_audio.AudioSource.uri(uri, tag: item),
+    // A one-item PLAYLIST, not a bare source: position/duration/seek are all
+    // per-item in `just_audio`, so with a single item this behaves exactly like
+    // `setAudioSource` did — but the playlist can later be APPENDED to while it
+    // plays (see [appendItem]), which is what lets narration carry on into the
+    // next keypoint with no Dart at the boundary.
+    final duration = await _player.setAudioSources(
+      [
+        cacheToDisk
+            ? just_audio.LockCachingAudioSource(uri, tag: item)
+            : just_audio.AudioSource.uri(uri, tag: item),
+      ],
       initialPosition: initialPosition,
     );
 
@@ -148,6 +155,67 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     return duration;
+  }
+
+  /// Which queue slot is playing, as a stream — the ONLY signal that the player
+  /// has walked out of one keypoint's merged file and into the next one's.
+  Stream<int?> get currentIndexStream => _player.currentIndexStream;
+
+  /// Appends [url] to the LIVE playlist without touching what is playing.
+  ///
+  /// The whole mechanism behind listening across keypoints: the next keypoint's
+  /// merged file is handed to the platform player while the current one is still
+  /// being read, so the boundary is walked natively — no Dart runs at the hop,
+  /// which is the one thing an app the OS has put in the background cannot
+  /// promise (the same reason [pauseForSourceSwitch] exists instead of a
+  /// load-at-the-boundary chain).
+  ///
+  /// Cached to disk for the same reason [loadItem]'s merged path is: the file is
+  /// re-read by every resume and lock-screen seek, and the CDN serves it with no
+  /// edge cache.
+  Future<void> appendItem({
+    required String url,
+    required String id,
+    required String title,
+    required String artUri,
+    Duration? duration,
+  }) async {
+    final art = artUri.isNotEmpty ? Uri.tryParse(artUri) : null;
+    await _player.addAudioSource(
+      just_audio.LockCachingAudioSource(
+        Uri.parse(url),
+        tag: MediaItem(id: id, title: title, artUri: art, duration: duration),
+      ),
+    );
+  }
+
+  /// Removes every slot AFTER the one playing — the queued-but-unheard tail.
+  ///
+  /// Disarming the chain: back on screen (the deck owns narration again), or the
+  /// reader pressed pause on the lock screen. Deliberately leaves the current
+  /// item alone, so the keypoint being read finishes normally.
+  Future<void> dropTailAfterCurrent() async {
+    final current = _player.currentIndex ?? 0;
+    for (var index = _player.audioSources.length - 1; index > current; index--) {
+      await _player.removeAudioSourceAt(index);
+    }
+  }
+
+  /// Republishes the now-playing metadata after the queue moved into a new
+  /// keypoint, so the lock screen names the keypoint being read rather than the
+  /// one the session started on.
+  ///
+  /// [duration] comes from the cue map rather than the player: the platform has
+  /// only just started the new item, so its own duration is not known yet — and a
+  /// [MediaItem] with none leaves the lock-screen scrubber without a total.
+  void publishMediaItem({
+    required String id,
+    required String title,
+    required String artUri,
+    Duration? duration,
+  }) {
+    final art = artUri.isNotEmpty ? Uri.tryParse(artUri) : null;
+    mediaItem.add(MediaItem(id: id, title: title, artUri: art, duration: duration));
   }
 
   // play/pause/seek/setSpeed deliberately do NOT swallow errors: when called

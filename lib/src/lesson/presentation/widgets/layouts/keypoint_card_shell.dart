@@ -1010,6 +1010,10 @@ class _KeypointNarrationToggleState extends State<KeypointNarrationToggle> {
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointAudioPlayClick(trackingData);
     }
+    // Parked on the recap card: the play button goes through the tap gate,
+    // or the leak guard reads its playback as a stray autoplay and silences
+    // it right back — the last card could never be un-muted otherwise.
+    if (context.read<KeypointCardCubit>().resumeRecapFromPlayControl()) return;
     await audioCubit.enterAudioMode();
   }
 }

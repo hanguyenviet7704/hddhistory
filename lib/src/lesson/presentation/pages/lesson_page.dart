@@ -27,6 +27,13 @@ class _LessonPageState extends State<LessonPage> {
   late final LessonCubit _lessonCubit;
   late final LessonAudioCubit _lessonAudioCubit;
 
+  /// Carries background listening across keypoint boundaries. Lives here because
+  /// this is the one place that holds both the route's [LessonAudioCubit] and the
+  /// [CourseLessonCubit] whose keypoint list the chain walks — and because the
+  /// keypoint switch it performs comes straight back through
+  /// [_syncAudioKeypoint].
+  late final ListenChainController _listenChain;
+
   /// Applies reading-speed changes to the player. The speed control now lives
   /// as an inline stepper inside [KeypointSettingsSheet], which is a modal
   /// route and therefore sits OUTSIDE this page's provider scope — it can only
@@ -35,6 +42,10 @@ class _LessonPageState extends State<LessonPage> {
   StreamSubscription<KeypointDisplayState>? _readingSpeedSubscription;
 
   bool _hasSyncedFirstKeypoint = false;
+
+  /// Keypoint id the audio autoplay decision last ran for — a same-id re-sync
+  /// (entity refresh) must not re-enter audio mode (see [_syncAudioKeypoint]).
+  String _audioSyncedKeypointId = '';
   // Keypoint whose "đang nghe dở" bookmark has already been applied (or ruled
   // out) this session — the lesson emits `success` more than once and the
   // jump must not re-fire over a deck the reader is already driving.
@@ -56,6 +67,11 @@ class _LessonPageState extends State<LessonPage> {
     super.initState();
     _lessonCubit = context.read<LessonCubit>();
     _lessonAudioCubit = context.read<LessonAudioCubit>();
+    _listenChain = ListenChainController(
+      audioCubit: _lessonAudioCubit,
+      lessonCubit: _lessonCubit,
+      courseLessonCubit: context.read<CourseLessonCubit>(),
+    );
     _reviewBodyBuilder = const LessonReviewBodyBuilder();
     _bodyFactory = LessonBodyFactory(
       onAnswerChecked: _handleAnswerChecked,
@@ -93,6 +109,7 @@ class _LessonPageState extends State<LessonPage> {
 
   @override
   void dispose() {
+    _listenChain.dispose();
     unawaited(_resumeGuard?.cancel());
     unawaited(_readingSpeedSubscription?.cancel());
     // Leaving the lesson: the ambience comes back if the reader had it on, and
@@ -197,11 +214,55 @@ class _LessonPageState extends State<LessonPage> {
   }
 
   Future<void> _syncAudioKeypoint(KeypointEntity keypoint) async {
+    // The listening chain has already walked the player into this keypoint (its
+    // merged file is mid-sentence right now) and this sync is the APP catching
+    // up — `ListenChainController` switched `CourseLessonCubit` onto it. Adopt
+    // the entity and stop: `configure` would reset the player and reload the
+    // very source that is playing, which is the boundary hiccup the queue exists
+    // to avoid, and `enterAudioMode` would restart the keypoint from the top.
+    if (_lessonAudioCubit.isPlayingKeypoint(keypoint.id)) {
+      _lessonAudioCubit.adoptQueuedKeypoint(keypoint);
+      await _lessonAudioCubit.setSpeed(AppDI.injector.get<KeypointDisplayCubit>().state.readingSpeed);
+      _audioSyncedKeypointId = keypoint.id;
+      _hasSyncedFirstKeypoint = true;
+      return;
+    }
+
     await _lessonAudioCubit.configure(keypoint);
+
+    // TEMP-DEBUG(mute): remove with [MuteDbg] once first-keypoint autoplay is
+    // confirmed settled.
+    LogDev.warning(
+      '[MuteDbg] syncAudio kp=${keypoint.id} usable=${keypoint.hasUsableAudio} '
+      'syncedId=$_audioSyncedKeypointId first=${!_hasSyncedFirstKeypoint} '
+      'autoplayOnEntry=${widget.autoplayOnEntry}',
+    );
 
     if (!keypoint.hasUsableAudio) return;
 
     await _lessonAudioCubit.setSpeed(AppDI.injector.get<KeypointDisplayCubit>().state.readingSpeed);
+
+    // The sync listener fires on entity INEQUALITY, and the keypoint entity
+    // refreshes mid-run (progress write on completion, lesson refetch) without
+    // the keypoint actually changing. A re-sync over a RUNNING (or
+    // user-silenced) session must stop HERE: falling through to enterAudioMode
+    // wiped the reader's pinned mute and restarted narration on a screen they
+    // had silenced — invisibly when the recap gate's leak guard swallowed the
+    // sound, so the very next flip tap talked ("chủ động tắt thì tap card
+    // cuối tự bật tiếng", 2026-08-09 [MuteDbg]).
+    //
+    // A re-sync with NO session running is the opposite case: the entry's own
+    // autoplay never materialized (the deck's cue seek can interrupt the first
+    // load, which resets the session), and this refresh is the retry that used
+    // to rescue it — a hard id-gate here left a directly-opened keypoint
+    // silent ("bấm trực tiếp vào 1 keypoint thì không tự động bật audio",
+    // 2026-08-09). configure()/setSpeed above always run: a refresh may carry
+    // a new dub.
+    final audioState = _lessonAudioCubit.state;
+    if (keypoint.id == _audioSyncedKeypointId && (audioState.hasStartedSession || _lessonAudioCubit.pausedByUser)) {
+      return;
+    }
+    _audioSyncedKeypointId = keypoint.id;
 
     final isFirstKeypointSynced = !_hasSyncedFirstKeypoint;
     _hasSyncedFirstKeypoint = true;

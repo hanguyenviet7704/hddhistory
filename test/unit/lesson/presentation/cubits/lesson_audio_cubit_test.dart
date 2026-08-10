@@ -78,6 +78,24 @@ void main() {
       expect(cubit.narratingClipIndex, isNull);
     });
 
+    test('a same-keypoint entity refresh keeps a pending listen intent', () async {
+      final cubit = LessonAudioCubit();
+      addTearDown(cubit.close);
+
+      await cubit.configure(_audioKeypoint());
+      // Entry's enterAudioMode registered the intent; its load is in flight.
+      cubit.debugPlayWhenReady = true;
+
+      // The full lesson payload lands over the roadmap stub: same keypoint,
+      // different source. The reset must carry the intent across.
+      await cubit.configure(_audioKeypoint(url: 'https://audio.example/merged.mp3'));
+      expect(cubit.debugPlayWhenReady, isTrue);
+
+      // A different keypoint starts from silence, as always.
+      await cubit.configure(_audioKeypoint(id: 'keypoint-2', url: 'https://audio.example/other.mp3'));
+      expect(cubit.debugPlayWhenReady, isFalse);
+    });
+
     test('has nothing to read on from when the keypoint has no per-card clips', () async {
       final cubit = LessonAudioCubit();
       addTearDown(cubit.close);
@@ -92,12 +110,12 @@ void main() {
   });
 }
 
-KeypointEntity _audioKeypoint() {
-  return const KeypointEntity(
-    id: 'keypoint-1',
-    title: BaseMultiLanguage(en: 'Greetings'),
+KeypointEntity _audioKeypoint({String id = 'keypoint-1', String url = 'https://audio.example/track.mp3'}) {
+  return KeypointEntity(
+    id: id,
+    title: const BaseMultiLanguage(en: 'Greetings'),
     audio: KeypointAudioEntity(
-      url: BaseMultiLanguage(en: 'https://audio.example/track.mp3'),
+      url: BaseMultiLanguage(en: url),
     ),
   );
 }

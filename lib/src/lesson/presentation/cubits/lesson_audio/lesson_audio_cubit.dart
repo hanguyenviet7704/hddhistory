@@ -8,8 +8,15 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // narration the reader had just switched off, 2026-08-09). OS play is the
     // symmetric consent and lifts the pin. Internal soft pauses (gates,
     // overlays, source switches) go through pauseFromApp and never touch it.
-    _handler.onOsPause = () => _pausedByUser = true;
-    _handler.onOsPlay = () => _pausedByUser = false;
+    _handler.onOsPause = () {
+      _setPausedByUser(true, 'os pause');
+      // Pausing on the lock screen ends the listening session, so it also ends
+      // the chain: nothing more is read after the keypoint in flight until the
+      // reader presses play again (product call, 2026-08-10). Re-arming on play
+      // belongs to [ListenChainController], which knows what may come next.
+      unawaited(dropQueuedTail());
+    };
+    _handler.onOsPlay = () => _setPausedByUser(false, 'os play');
   }
 
   /// Background playback + OS media controls (lock-screen/Control Center/
@@ -23,6 +30,13 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   // When the user asks to listen while the source is still (pre)loading, play
   // as soon as it becomes ready instead of dropping the intent.
   bool _playWhenReady = false;
+
+  /// Test seam for the pending listen intent: every real path that arms it
+  /// ends in player I/O, which a unit test cannot host.
+  @visibleForTesting
+  bool get debugPlayWhenReady => _playWhenReady;
+  @visibleForTesting
+  set debugPlayWhenReady(bool value) => _playWhenReady = value;
 
   /// Bumped by every [_initializePlayer] call, so a load that has been
   /// SUPERSEDED can tell and stay quiet.
@@ -39,6 +53,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<just_audio.PlayerState>? _playerStateSubscription;
   StreamSubscription<just_audio.ProcessingState>? _processingStateSubscription;
+  StreamSubscription<int?>? _slotSubscription;
 
   /// Per-CARD narration clips for the configured keypoint, in card order (see
   /// [KeypointAudioEntity.segments]). Empty for keypoints dubbed before per-card
@@ -54,6 +69,194 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   MergedNarrationTimeline? get timeline => _timeline;
 
   bool get isMergedMode => _timeline != null;
+
+  /// Keypoints appended to the LIVE playlist but not reached yet, in queue
+  /// order — background listening's chain across keypoints (see
+  /// [appendKeypoint]). Empty in every other case, which is what leaves every
+  /// single-keypoint path below exactly as it was.
+  final List<QueuedKeypointNarration> _queuedTail = [];
+
+  /// Queue slot the player is on, as far as this cubit has accounted for it.
+  /// Seeded from the player AFTER each load (never from a stream replay — see
+  /// [_initializePlayer]).
+  int _playedSlot = 0;
+
+  final StreamController<({String from, String to})> _keypointHops = StreamController<({String from, String to})>.broadcast();
+
+  /// Fires when the QUEUE walks out of one keypoint's merged file and into the
+  /// next — the chain's signal that the voice has left the keypoint the app is
+  /// showing. Never fires for an ordinary keypoint switch; that one goes through
+  /// [configure].
+  ///
+  /// Carries the keypoint LEFT as well as the one entered: progress belongs to
+  /// the former, and by the time a listener runs this cubit's state already
+  /// names the latter.
+  Stream<({String from, String to})> get keypointHops => _keypointHops.stream;
+
+  bool get hasQueuedNext => _queuedTail.isNotEmpty;
+
+  /// Whether the merged file the player is reading RIGHT NOW belongs to
+  /// [keypointId] — what tells `LessonPage` to adopt a hopped-into keypoint
+  /// instead of configuring (and thereby reloading) it.
+  bool isPlayingKeypoint(String keypointId) => keypointId.isNotEmpty && state.keypointId == keypointId && state.hasStartedSession;
+
+  /// Queues [keypoint]'s merged narration behind the one playing, so the voice
+  /// carries on into it without a load at the boundary.
+  ///
+  /// Merged mode only, and only over a live session: the per-card path has no
+  /// cue map to make sense of a second keypoint, and a queue appended to a
+  /// player that never loaded anything would play out of order.
+  ///
+  /// Returns false when there is nothing to queue — the caller ([
+  /// ListenChainController]) treats that as "the chain ends with this keypoint".
+  Future<bool> appendKeypoint(KeypointEntity keypoint) async {
+    if (!isMergedMode || !state.isReady) return false;
+    if (keypoint.id.isEmpty || keypoint.id == state.keypointId) return false;
+    if (_queuedTail.any((queued) => queued.keypointId == keypoint.id)) return false;
+    final merged = keypoint.resolvedMergedAudio;
+    if (merged == null || !merged.isUsable) return false;
+
+    final title = keypoint.title.text;
+    try {
+      await _handler.appendItem(
+        url: merged.url,
+        id: keypoint.id,
+        title: title,
+        artUri: keypoint.image,
+        duration: _mergedDuration(merged),
+      );
+    } catch (error, stackTrace) {
+      // A tail that cannot be queued is not a failure of the run that IS
+      // playing — the reader loses the chain, not the keypoint they are hearing.
+      // Reported, never surfaced as a player failure.
+      AppService.instance.appTrackingService.trackError(
+        error,
+        stackTrace: stackTrace,
+        errorType: 'LessonAudioCubit.appendKeypoint',
+        context: {'keypoint_id': keypoint.id},
+      );
+      return false;
+    }
+
+    _queuedTail.add(
+      QueuedKeypointNarration(
+        keypointId: keypoint.id,
+        title: title,
+        imageUrl: keypoint.image,
+        url: merged.url,
+        timeline: MergedNarrationTimeline(merged),
+      ),
+    );
+    return true;
+  }
+
+  /// Drops the queued-but-unheard tail, leaving the keypoint in flight to finish
+  /// normally. Disarming the chain — back on screen, or the reader paused.
+  Future<void> dropQueuedTail() async {
+    if (_queuedTail.isEmpty) return;
+    _queuedTail.clear();
+    try {
+      await _handler.dropTailAfterCurrent();
+    } catch (_) {
+      // The tail is bookkeeping either way: it is already gone from this cubit,
+      // and a slot the platform refuses to drop is one the chain no longer
+      // follows (no timeline for it) — it would end the run, not misread it.
+    }
+  }
+
+  /// The player walked into a new queue slot: the voice is now inside the NEXT
+  /// keypoint's file. Nothing loaded, nothing paused — the platform did it — so
+  /// this is pure bookkeeping plus the hop signal the chain acts on.
+  void _onSlotChanged(int? slot) {
+    if (slot == null || slot <= _playedSlot) return;
+    // Nothing queued to walk into: either the LEGACY per-card queue is playing
+    // (its slots are clips, not keypoints — see [playRestOfKeypoint]) or this is
+    // a value replayed from a playlist that has since been replaced.
+    // Deliberately does not advance `_playedSlot`: a stale slot recorded here
+    // would read as "already accounted for" and swallow the first real hop.
+    if (_queuedTail.isEmpty) return;
+    // One step per slot: a queue is only ever appended to one keypoint ahead, so
+    // this normally runs exactly once, but a slot jump must never desync the FIFO.
+    while (_playedSlot < slot && _queuedTail.isNotEmpty) {
+      _playedSlot++;
+      _adoptQueuedNarration(_queuedTail.removeAt(0));
+    }
+    _playedSlot = slot;
+  }
+
+  void _adoptQueuedNarration(QueuedKeypointNarration queued) {
+    final leftKeypointId = state.keypointId;
+    _timeline = queued.timeline;
+    // A different keypoint's clip universe. The deck supplies a fresh set once
+    // its learning items land (`LessonPage._syncAudioKeypoint`'s adopt branch);
+    // nothing may be inherited from the keypoint just left.
+    _cardClips = const [];
+    _narratableClips = null;
+    _activeClipIndex = -1;
+    _isAheadOfDeck = false;
+    _queueClipIndexes = const [];
+    // The deck of the keypoint just left owned the old bound; this keypoint has
+    // no deck yet, and the reader is off screen (the only way to get here), where
+    // narration reads straight through by product call.
+    _allowedThroughCue = unboundedCue;
+    // Fresh file: the first tick is a starting point, not a boundary crossing.
+    _previousTickCue = -1;
+    _lastResumePersistMs = -1;
+
+    final cueIndex = queued.timeline.cueIndexAtMs(0);
+    final cue = queued.timeline.cueAt(cueIndex);
+    emit(
+      state.copyWith(
+        keypointId: queued.keypointId,
+        sourceUrl: queued.url,
+        title: queued.title,
+        imageUrl: queued.imageUrl,
+        isMergedMode: true,
+        status: LessonAudioLoadStatus.ready,
+        hasStartedSession: true,
+        hasCompletedPlayback: false,
+        isPlaying: true,
+        activeCueIndex: cueIndex,
+        positionSeconds: 0,
+        durationSeconds: cue == null ? 0 : (cue.durMs / 1000).round().clamp(0, 359999),
+        errorMessage: null,
+      ),
+    );
+    _handler.publishMediaItem(
+      id: queued.keypointId,
+      title: queued.title,
+      artUri: queued.imageUrl,
+      duration: _mergedDuration(queued.timeline.merged),
+    );
+    _keypointHops.add((from: leftKeypointId, to: queued.keypointId));
+  }
+
+  /// Whole-file length from the cue map, or null when the backend shipped none
+  /// (older merges) — the lock screen then simply shows no total.
+  Duration? _mergedDuration(MergedKeypointAudioEntity merged) => merged.durationMs > 0 ? Duration(milliseconds: merged.durationMs) : null;
+
+  /// The deck's copy of the keypoint the queue hopped into has landed: take its
+  /// per-card clips and metadata WITHOUT touching the player.
+  ///
+  /// The merged file for this keypoint is already playing; configuring it would
+  /// reload the very source that is mid-sentence, which is the hiccup the queue
+  /// exists to avoid.
+  void adoptQueuedKeypoint(KeypointEntity keypoint) {
+    if (!isPlayingKeypoint(keypoint.id)) return;
+    _cardClips = keypoint.resolvedAudioSegments;
+    final title = keypoint.title.text;
+    final nextTitle = title.isEmpty ? state.title : title;
+    final nextImage = keypoint.image.isEmpty ? state.imageUrl : keypoint.image;
+    if (nextTitle == state.title && nextImage == state.imageUrl) return;
+    emit(state.copyWith(title: nextTitle, imageUrl: nextImage));
+    final merged = keypoint.resolvedMergedAudio;
+    _handler.publishMediaItem(
+      id: keypoint.id,
+      title: nextTitle,
+      artUri: nextImage,
+      duration: merged == null ? null : _mergedDuration(merged),
+    );
+  }
 
   /// "No bound" sentinel for [_allowedThroughCue] — any real cue index is
   /// smaller.
@@ -236,6 +439,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // A different keypoint's clip list — the old index means nothing in it.
     _activeClipIndex = -1;
     _isAheadOfDeck = false;
+    // Any chain queued behind the previous keypoint belongs to a run that is
+    // over: the load below replaces the whole playlist, so the tail would name
+    // slots that no longer exist.
+    _queuedTail.clear();
     // Merged-first: one file for the whole keypoint when the backend has it,
     // else first card's clip when dubbed per card, else the legacy single file.
     final mergedAudio = keypoint.resolvedMergedAudio;
@@ -255,7 +462,23 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return;
     }
 
-    _playWhenReady = false;
+    // TEMP-DEBUG(mute)
+    LogDev.warning(
+      '[MuteDbg] configure RESET kp=${keypoint.id} sameId=${state.keypointId == keypoint.id} playWhenReady=$_playWhenReady '
+      'merged=${mergedAudio != null} rawMergedLangs=${keypoint.audio?.merged?.keys.toList()} segs=${_cardClips.length}',
+    );
+    // A refreshed entity for the SAME keypoint — the full lesson payload
+    // landing over the roadmap stub, typically swapping the source to the
+    // merged file — must not eat a listen intent already pending for it. The
+    // entry's enterAudioMode registered the intent while its load was in
+    // flight; wiping it here left a directly-opened keypoint silent, and the
+    // page-level re-sync retry couldn't rescue it because the deck's own
+    // silent re-point had already flipped hasStartedSession back on ("bấm
+    // trực tiếp vào 1 keypoint thì không tự động bật audio", 2026-08-09
+    // [MuteDbg]). A DIFFERENT keypoint starts from silence, as always. The
+    // pinned-mute invariant is untouched: the carried intent is still honoured
+    // through [play], which refuses under `_pausedByUser`.
+    _playWhenReady = _playWhenReady && state.keypointId == keypoint.id;
     await _resetHandlerForNewKeypoint();
 
     emit(
@@ -286,8 +509,17 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// the latter is audible as the keypoint restarting before it jumps.
   Future<void> enterAudioMode({bool autoplay = true, Duration? startAt}) async {
     // Entering listen mode is an explicit ask for sound — any pinned silence
-    // is over.
-    if (autoplay) _pausedByUser = false;
+    // is over. Callers must therefore be genuine asks: the header play tap,
+    // retry, and a NEW keypoint's standing autoplay. A same-keypoint re-sync
+    // is not one (see LessonPage._syncAudioKeypoint), which used to funnel
+    // through here on every entity refresh and silently wipe the reader's
+    // mute ("tap card cuối tự bật tiếng", 2026-08-09 [MuteDbg]).
+    if (autoplay) _setPausedByUser(false, 'enterAudioMode');
+    // TEMP-DEBUG(mute)
+    LogDev.warning(
+      '[MuteDbg] enterAudioMode autoplay=$autoplay status=${state.status} usable=${state.hasUsableSource} '
+      'session=${state.hasStartedSession} ready=${state.isReady} playWhenReady=$_playWhenReady',
+    );
     if (!state.hasUsableSource) {
       emit(
         state.copyWith(
@@ -332,8 +564,12 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   /// Points the merged file at [cueIndex] (+[offset] inside it). The deck's
   /// merged-mode replacement for [loadCard] — a seek, never a source reload.
-  Future<void> playCue(int cueIndex, {bool autoplay = false, Duration? offset}) async {
-    if (autoplay) _pausedByUser = false;
+  ///
+  /// [byUser] follows [play]'s contract: only the reader's own control lifts a
+  /// pinned mute; a system autoplay while pinned seeks silently (the play
+  /// inside is refused).
+  Future<void> playCue(int cueIndex, {bool autoplay = false, Duration? offset, bool byUser = false}) async {
+    if (autoplay && byUser) _setPausedByUser(false, 'playCue(byUser: true)');
     final timeline = _timeline;
     final cue = timeline?.cueAt(cueIndex);
     if (timeline == null || cue == null || cue.durMs <= 0) {
@@ -348,8 +584,21 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
     final target = Duration(milliseconds: cue.startMs + (offset?.inMilliseconds ?? 0));
     if (!state.hasStartedSession) {
-      _playWhenReady = autoplay;
+      // RAISE the intent, never lower it — same lesson as [loadCard]'s
+      // re-point branch: entry calls arrive with autoplay:false while
+      // enterAudioMode's pending `true` is what the load must honour.
+      _playWhenReady = _playWhenReady || autoplay;
       await _initializePlayer(startAt: target);
+      return;
+    }
+    // A load in flight: seeking just_audio mid-load THROWS PlayerInterrupted
+    // out of that load, which resets the session to "never started" and drops
+    // the pending play intent — the silent-entry bug ("bấm trực tiếp vào 1
+    // keypoint thì không tự động bật audio", 2026-08-09). Leave the load
+    // alone; the deck re-points narration on every card change anyway, and an
+    // entry load already targets the entry cue.
+    if (!state.isReady) {
+      _playWhenReady = _playWhenReady || autoplay;
       return;
     }
     try {
@@ -417,6 +666,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return true;
     }
 
+    // TEMP-DEBUG(mute)
+    LogDev.warning('[MuteDbg] loadCard($cardIndex) autoplay=$autoplay playWhenReady=$_playWhenReady');
     _playWhenReady = autoplay;
     await _resetHandlerForNewKeypoint();
     emit(
@@ -467,8 +718,30 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   bool _pausedByUser = false;
   bool get pausedByUser => _pausedByUser;
 
-  Future<void> play() async {
-    _pausedByUser = false;
+  /// Every transition of the pin goes through here so the trail shows WHO
+  /// lifted a mute ("tap card cuối tự bật tiếng" was a wiped flag, 2026-08-09
+  /// — the wiper was invisible without this).
+  // TEMP-DEBUG(mute): remove once the pinned-silence invariant is confirmed.
+  void _setPausedByUser(bool value, String reason) {
+    if (_pausedByUser == value) return;
+    _pausedByUser = value;
+    LogDev.warning('[MuteDbg] pausedByUser=$value ($reason)');
+  }
+
+  /// [byUser] marks the reader's own play control (header headphone, recap
+  /// play-through) — the ONLY thing that lifts a pinned mute. Every system
+  /// caller (autoplay carries, gate resumes, load-completion intents) leaves
+  /// the pin alone and is REFUSED while it holds: a reader who asked for
+  /// silence keeps it until they press play themselves, no matter which
+  /// heuristic upstream decided sound was wanted ("fix triệt để", 2026-08-09).
+  Future<void> play({bool byUser = false}) async {
+    if (byUser) _setPausedByUser(false, 'play(byUser: true)');
+    // TEMP-DEBUG(mute)
+    LogDev.warning(
+      '[MuteDbg] play byUser=$byUser pinned=$_pausedByUser session=${state.hasStartedSession} ready=${state.isReady}\n'
+      'caller: ${StackTrace.current.toString().split('\n').skip(1).take(3).join(' | ')}',
+    );
+    if (_pausedByUser) return;
     if (!state.hasStartedSession) {
       await enterAudioMode();
       return;
@@ -489,7 +762,9 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// switches) stays a *soft* pause; only the reader's own pause button passes
   /// true and pins the silence.
   Future<void> pause({bool byUser = false}) async {
-    if (byUser) _pausedByUser = true;
+    if (byUser) _setPausedByUser(true, 'pause(byUser: true)');
+    // TEMP-DEBUG(mute)
+    LogDev.warning('[MuteDbg] pause byUser=$byUser playing=${state.isPlaying} playWhenReady=$_playWhenReady');
     // Asking for silence also withdraws any pending "play when the load lands"
     // intent — otherwise pausing during the ~5s fetch is ignored and the clip
     // starts talking the moment it is ready.
@@ -572,6 +847,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   }
 
   Future<void> resetSession() async {
+    // TEMP-DEBUG(mute)
+    LogDev.warning('[MuteDbg] resetSession playWhenReady=$_playWhenReady');
     final status = state.hasUsableSource ? LessonAudioLoadStatus.initial : LessonAudioLoadStatus.unavailable;
     _playWhenReady = false;
     await _resetHandlerForNewKeypoint();
@@ -596,6 +873,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // Fresh source (possibly opened deep into the file by a resume): the first
     // tick is a starting point, not a crossing — see [_previousTickCue].
     _previousTickCue = -1;
+    // A load replaces the whole playlist, so any chain queued behind the old
+    // source is gone with it.
+    _queuedTail.clear();
+    _playedSlot = 0;
 
     emit(
       state.copyWith(
@@ -704,6 +985,20 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
       emit(state.copyWith(status: LessonAudioLoadStatus.ready));
 
+      // Subscribed only AFTER the load, and seeded from the player rather than
+      // from the stream: `just_audio`'s streams replay their latest value, and
+      // the replay here can still be the PREVIOUS playlist's slot. Seeding
+      // `_playedSlot` from a replayed 1 would then swallow the first real hop
+      // (`slot <= _playedSlot`) — the chain would go silent at the very boundary
+      // it exists for.
+      _playedSlot = _handler.currentIndex ?? 0;
+      _slotSubscription = _handler.currentIndexStream.listen((slot) {
+        if (isClosed || generation != _loadGeneration) return;
+        _onSlotChanged(slot);
+      });
+
+      // TEMP-DEBUG(mute)
+      LogDev.warning('[MuteDbg] load ready playWhenReady=$_playWhenReady pinned=$_pausedByUser');
       // Honor a play intent registered while (pre)loading.
       if (_playWhenReady) {
         _playWhenReady = false;
@@ -724,6 +1019,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       // driving it now, and pausing would silence THEM. Just fall back to
       // "never started" so a later tap loads this clip again from scratch.
       if (error is just_audio.PlayerInterruptedException) {
+        // TEMP-DEBUG(mute)
+        LogDev.warning('[MuteDbg] load interrupted (superseded) playWhenReady=$_playWhenReady');
         emit(
           state.copyWith(
             status: LessonAudioLoadStatus.initial,
@@ -865,16 +1162,19 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     await _durationSubscription?.cancel();
     await _playerStateSubscription?.cancel();
     await _processingStateSubscription?.cancel();
+    await _slotSubscription?.cancel();
 
     _positionSubscription = null;
     _durationSubscription = null;
     _playerStateSubscription = null;
     _processingStateSubscription = null;
+    _slotSubscription = null;
   }
 
   @override
   Future<void> close() async {
     await _cancelSubscriptions();
+    await _keypointHops.close();
     // Leaving Listen mode: stop playback and clear the media item so the
     // lock-screen/notification controls disappear. The handler's player is
     // app-lifetime and shared across lesson sessions — it must NOT be
