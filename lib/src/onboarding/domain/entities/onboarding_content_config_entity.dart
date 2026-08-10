@@ -26,5 +26,9 @@ abstract class OnboardingContentConfigEntity with _$OnboardingContentConfigEntit
     @Default(OnboardingNotifConfigEntity()) OnboardingNotifConfigEntity notif,
     @Default(OnboardingPickConfigEntity()) OnboardingPickConfigEntity pick,
     @Default(OnboardingThemeConfigEntity()) OnboardingThemeConfigEntity theme,
+
+    /// Show the FULL paywall right after onboarding completes (admin toggle
+    /// on the Onboarding Config page). Off when unset/unseeded.
+    @Default(false) bool showPaywallAfterOnboarding,
   }) = _OnboardingContentConfigEntity;
 }

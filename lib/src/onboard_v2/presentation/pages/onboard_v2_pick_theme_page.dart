@@ -198,10 +198,26 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
           break;
       }
       userCubit.setIsUserPassOnboarding(false);
+      _maybeShowPostOnboardingPaywall(onboardCubit.state.showPaywallAfterOnboarding);
     } catch (error) {
       LogDev.warning('[OnboardV2PickThemePage] route dispatch failed: $error');
       if (mounted) setState(() => _isNavigating = false);
     }
+  }
+
+  /// Admin Onboarding Config toggle: the FULL paywall opens ON TOP of the
+  /// destination the handoff just routed to, one frame later — so closing it
+  /// lands the brand-new user exactly where onboarding meant to leave them.
+  /// Premium accounts (a returning subscriber re-onboarding) are skipped.
+  void _maybeShowPostOnboardingPaywall(bool enabled) {
+    if (!enabled) return;
+    if (AppDI.injector.get<ProfileCubit>().state.user.isPremium) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final shellContext = AppConfig.instance.context;
+      if (shellContext == null || !shellContext.mounted) return;
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.onboarding);
+      unawaited(const PaywallRoute().push(shellContext));
+    });
   }
 }
 

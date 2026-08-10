@@ -98,6 +98,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         state.copyWith(
           onboardStatus: OnboardV2AsyncStatus.success,
           onboardData: OnboardV2ConfigMapper.toOnboardEntity(config),
+          showPaywallAfterOnboarding: config.showPaywallAfterOnboarding,
         ),
       ),
     );

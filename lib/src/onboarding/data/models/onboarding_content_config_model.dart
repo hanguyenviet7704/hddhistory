@@ -12,6 +12,7 @@ abstract class OnboardingContentConfigModel with _$OnboardingContentConfigModel 
     @Default(OnboardingNotifConfigModel()) OnboardingNotifConfigModel notif,
     @Default(OnboardingPickConfigModel()) OnboardingPickConfigModel pick,
     @Default(OnboardingThemeConfigModel()) OnboardingThemeConfigModel theme,
+    @Default(false) bool showPaywallAfterOnboarding,
   }) = _OnboardingContentConfigModel;
 
   factory OnboardingContentConfigModel.fromJson(Map<String, dynamic> json) => _$OnboardingContentConfigModelFromJson(json);
@@ -28,5 +29,6 @@ extension OnboardingContentConfigModelExtension on OnboardingContentConfigModel 
     notif: notif.toEntity(),
     pick: pick.toEntity(),
     theme: theme.toEntity(),
+    showPaywallAfterOnboarding: showPaywallAfterOnboarding,
   );
 }

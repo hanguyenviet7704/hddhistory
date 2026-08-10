@@ -27,6 +27,10 @@ abstract class OnboardV2State with _$OnboardV2State {
     @Default(OnboardV2CourseStatus.initial) OnboardV2CourseStatus courseStatus,
     @Default(OnboardV2NavigationStatus.initial) OnboardV2NavigationStatus navigationStatus,
     @Default(OnboardEntity()) OnboardEntity onboardData,
+
+    /// Admin Onboarding Config toggle: open the FULL paywall right after the
+    /// onboarding handoff routes into the app.
+    @Default(false) bool showPaywallAfterOnboarding,
     @Default('') String name,
     OnboardOptionEntity? selectedAge,
     @Default([]) List<OnboardingPath> selectedPaths,
