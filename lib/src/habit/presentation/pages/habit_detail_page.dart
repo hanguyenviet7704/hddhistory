@@ -9,6 +9,10 @@ const String _kHabitCurrentLoop = 'assets/svg/common/habit_current_loop.svg';
 /// on all of them, noticeably rounder than the app's default 16/20 cards.
 const double _kHabitCardRadius = 24;
 
+/// One quiz practice session deals this many random questions from the pool of
+/// every studied keypoint's exercises (spec, 2026-08-08).
+const int _kQuizQuestionCount = 5;
+
 /// The design's card lift: `0 6px 20px rgba(13,18,28,.05)`. Without it the cards
 /// read as flat panels painted on the grey page instead of sitting above it.
 List<BoxShadow> get _kHabitCardShadow => [
@@ -284,14 +288,31 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
     if (choice == PracticeChoice.journal) {
       saved = await JournalCheckInPage.push(context, userHabit: widget.userHabit);
     } else {
-      final playable = practices.where((practice) => practice.isPlayable).firstOrNull;
+      final playable = practices.where((practice) => practice.isPlayable).toList();
       // Only reachable if the sheet offered quiz, which requires a playable
       // practice — but resolve defensively rather than with a throwing `first`.
-      if (playable == null) return;
+      if (playable.isEmpty) return;
+      // Spec (2026-08-08): one practice session = a random hand of
+      // [_kQuizQuestionCount] questions dealt across EVERY practice the API
+      // returned — which it already scopes to the keypoints this user has
+      // finished studying. Fewer available than the hand size just plays them
+      // all, shuffled.
+      final pool = playable.expand((practice) => practice.playableQuestions).toList()..shuffle();
+      final hand = pool.take(_kQuizQuestionCount).toList();
+      // Which keypoint dealt each question — the dev build tags quiz cards
+      // with it so a mixed hand is verifiable at a glance.
+      final keypointByQuestionId = <int, String>{
+        for (final practice in playable)
+          for (final question in practice.playableQuestions) question.id: practice.keypointTitle.text,
+      };
       saved = await HabitQuizPage.push(
         context,
         userHabit: widget.userHabit,
-        practice: playable,
+        // The deal spans several learning items; the attempt files under the
+        // first one — scoring/check-in only need the habit, not the item.
+        practice: playable.first,
+        questionsOverride: hand,
+        keypointByQuestionId: keypointByQuestionId,
       );
       // The design's payoff screen ("3 · Practice complete" — Habit is
       // growing!) follows EVERY completed practice; the journal path pushes it
@@ -729,12 +750,17 @@ class _CourseBadgeChip extends StatelessWidget {
     final total = course.numberOfLesson;
     if (course.id.isEmpty || total <= 0) return const SizedBox.shrink();
 
-    final userProgress = context
-        .watch<ProgressCubit>()
-        .state
-        .userProgresses
-        .where((p) => p.courseId == courseId)
-        .firstOrNull;
+    // Resolved from DI like HomeCubit above — this page is reachable from
+    // routes with no ProgressCubit provider in scope (context.watch threw
+    // ProviderNotFound on every build there, 2026-08-09 log flood).
+    return BlocBuilder<ProgressCubit, ProgressState>(
+      bloc: AppDI.injector.get<ProgressCubit>(),
+      builder: (context, progressState) => _buildChip(context, progressState, total),
+    );
+  }
+
+  Widget _buildChip(BuildContext context, ProgressState progressState, int total) {
+    final userProgress = progressState.userProgresses.where((p) => p.courseId == courseId).firstOrNull;
     final completed = userProgress?.lessonsResult.where((r) => r.passed).length ?? 0;
     final percent = (completed / total * 100).toInt();
     if (percent <= 0 || completed >= total) return const SizedBox.shrink();

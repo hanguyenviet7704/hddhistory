@@ -16,6 +16,9 @@ abstract class HabitPracticeModel with _$HabitPracticeModel {
     // with it. `QuestionModel` carries `unknownEnumValue` and maps
     // `(type, form)` onto the entity's dragAndDrop / arrangeTheSequence values.
     LearningItemModel? learningItem,
+    // The keypoint this practice's item teaches — the session deals questions
+    // across keypoints, and quiz cards are tagged with their source.
+    BaseMultiLanguage? keypointTitle,
   }) = _HabitPracticeModel;
 
   factory HabitPracticeModel.fromJson(Map<String, dynamic> json) => _$HabitPracticeModelFromJson(json);
@@ -31,5 +34,6 @@ extension HabitPracticeModelX on HabitPracticeModel {
     order: this.order,
     method: HabitCheckinMethodEntity.fromApi(method),
     learningItem: learningItem?.toEntity(),
+    keypointTitle: keypointTitle ?? const BaseMultiLanguage(),
   );
 }

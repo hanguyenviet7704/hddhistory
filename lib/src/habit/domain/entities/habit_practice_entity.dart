@@ -33,6 +33,10 @@ abstract class HabitPracticeEntity with _$HabitPracticeEntity {
     /// Null when the API dropped the row because its content was deleted; the
     /// API filters those out, so this being null means something unexpected.
     LearningItemEntity? learningItem,
+
+    /// The keypoint this practice's item teaches — quiz cards dealt across
+    /// several keypoints are tagged with it.
+    @Default(BaseMultiLanguage()) BaseMultiLanguage keypointTitle,
   }) = _HabitPracticeEntity;
 }
 

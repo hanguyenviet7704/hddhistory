@@ -34,7 +34,24 @@ class HabitQuizPage extends StatefulWidget {
   final UserHabitEntity userHabit;
   final HabitPracticeEntity practice;
 
-  const HabitQuizPage({super.key, required this.userHabit, required this.practice});
+  /// The session's question set when the caller assembled one itself — the
+  /// habit flow deals a random hand ACROSS every studied keypoint's practices
+  /// (see `_openPractice`), which no single [practice] row carries. Null plays
+  /// [practice]'s own questions unchanged. The attempt still files under
+  /// [practice] — the deal has no learning-item identity of its own.
+  final List<QuestionEntity>? questionsOverride;
+
+  /// question id → source keypoint title. DEV builds tag each card with it so
+  /// a hand mixed across keypoints is verifiable at a glance; prod ignores it.
+  final Map<int, String> keypointByQuestionId;
+
+  const HabitQuizPage({
+    super.key,
+    required this.userHabit,
+    required this.practice,
+    this.questionsOverride,
+    this.keypointByQuestionId = const {},
+  });
 
   /// Pushed imperatively rather than through a typed go_router route because it
   /// carries entities, and the repo has no `$extra` typed routes to follow.
@@ -43,12 +60,19 @@ class HabitQuizPage extends StatefulWidget {
     BuildContext context, {
     required UserHabitEntity userHabit,
     required HabitPracticeEntity practice,
+    List<QuestionEntity>? questionsOverride,
+    Map<int, String> keypointByQuestionId = const {},
   }) {
     return Navigator.of(context).push<bool>(
       habitModalRoute(
         BlocProvider.value(
           value: AppDI.injector.get<HabitCubit>(),
-          child: HabitQuizPage(userHabit: userHabit, practice: practice),
+          child: HabitQuizPage(
+            userHabit: userHabit,
+            practice: practice,
+            questionsOverride: questionsOverride,
+            keypointByQuestionId: keypointByQuestionId,
+          ),
         ),
       ),
     );
@@ -73,7 +97,7 @@ class _HabitQuizPageState extends State<HabitQuizPage> {
   @override
   void initState() {
     super.initState();
-    _answers = widget.practice.playableQuestions.map(QuizCardAnswer.new).toList();
+    _answers = (widget.questionsOverride ?? widget.practice.playableQuestions).map(QuizCardAnswer.new).toList();
   }
 
   @override
@@ -180,11 +204,42 @@ class _HabitQuizPageState extends State<HabitQuizPage> {
                     child: QuizDeckCardSurface(
                       child: page >= _answers.length
                           ? _doneContent(context)
-                          : QuizQuestionCard(
-                              answer: _answers[page],
-                              reorderKeyPrefix: 'habit-arrange-$page',
-                              onChanged: () => setState(() {}),
-                              onCheck: () => _check(page),
+                          : Column(
+                              children: [
+                                // DEV-only test marker ("lúc test cho dễ",
+                                // 2026-08-09): which keypoint dealt this
+                                // question. Never rendered on stg/prod.
+                                if (F.appFlavor == Flavor.dev)
+                                  Builder(builder: (context) {
+                                    final source = widget.keypointByQuestionId[_answers[page].question.id] ?? '';
+                                    if (source.isEmpty) return const SizedBox.shrink();
+                                    return Container(
+                                      width: double.infinity,
+                                      margin: EdgeInsets.only(bottom: 8.h),
+                                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFF3D6),
+                                        borderRadius: BorderRadius.circular(8.r),
+                                      ),
+                                      child: AppText(
+                                        'KP: $source',
+                                        maxLines: 2,
+                                        style: AppStyle.text12.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF8A6D1A),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                Expanded(
+                                  child: QuizQuestionCard(
+                                    answer: _answers[page],
+                                    reorderKeyPrefix: 'habit-arrange-$page',
+                                    onChanged: () => setState(() {}),
+                                    onCheck: () => _check(page),
+                                  ),
+                                ),
+                              ],
                             ),
                     ),
                   ),
