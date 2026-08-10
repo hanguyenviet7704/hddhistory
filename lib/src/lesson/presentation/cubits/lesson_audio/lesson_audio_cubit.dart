@@ -480,11 +480,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return;
     }
 
-    // TEMP-DEBUG(mute)
-    LogDev.warning(
-      '[MuteDbg] configure RESET kp=${keypoint.id} sameId=${state.keypointId == keypoint.id} playWhenReady=$_playWhenReady '
-      'merged=${mergedAudio != null} rawMergedLangs=${keypoint.audio?.merged?.keys.toList()} segs=${_cardClips.length}',
-    );
     // A refreshed entity for the SAME keypoint — the full lesson payload
     // landing over the roadmap stub, typically swapping the source to the
     // merged file — must not eat a listen intent already pending for it. The
@@ -533,11 +528,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // through here on every entity refresh and silently wipe the reader's
     // mute ("tap card cuối tự bật tiếng", 2026-08-09 [MuteDbg]).
     if (autoplay) _setPausedByUser(false, 'enterAudioMode');
-    // TEMP-DEBUG(mute)
-    LogDev.warning(
-      '[MuteDbg] enterAudioMode autoplay=$autoplay status=${state.status} usable=${state.hasUsableSource} '
-      'session=${state.hasStartedSession} ready=${state.isReady} playWhenReady=$_playWhenReady',
-    );
     if (!state.hasUsableSource) {
       emit(
         state.copyWith(
@@ -684,8 +674,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       return true;
     }
 
-    // TEMP-DEBUG(mute)
-    LogDev.warning('[MuteDbg] loadCard($cardIndex) autoplay=$autoplay playWhenReady=$_playWhenReady');
     _playWhenReady = autoplay;
     await _resetHandlerForNewKeypoint();
     emit(
@@ -743,7 +731,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   void _setPausedByUser(bool value, String reason) {
     if (_pausedByUser == value) return;
     _pausedByUser = value;
-    LogDev.warning('[MuteDbg] pausedByUser=$value ($reason)');
   }
 
   /// [byUser] marks the reader's own play control (header headphone, recap
@@ -754,11 +741,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// heuristic upstream decided sound was wanted ("fix triệt để", 2026-08-09).
   Future<void> play({bool byUser = false}) async {
     if (byUser) _setPausedByUser(false, 'play(byUser: true)');
-    // TEMP-DEBUG(mute)
-    LogDev.warning(
-      '[MuteDbg] play byUser=$byUser pinned=$_pausedByUser session=${state.hasStartedSession} ready=${state.isReady}\n'
-      'caller: ${StackTrace.current.toString().split('\n').skip(1).take(3).join(' | ')}',
-    );
     if (_pausedByUser) return;
     if (!state.hasStartedSession) {
       await enterAudioMode();
@@ -781,8 +763,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// true and pins the silence.
   Future<void> pause({bool byUser = false}) async {
     if (byUser) _setPausedByUser(true, 'pause(byUser: true)');
-    // TEMP-DEBUG(mute)
-    LogDev.warning('[MuteDbg] pause byUser=$byUser playing=${state.isPlaying} playWhenReady=$_playWhenReady');
     // Asking for silence also withdraws any pending "play when the load lands"
     // intent — otherwise pausing during the ~5s fetch is ignored and the clip
     // starts talking the moment it is ready.
@@ -865,8 +845,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   }
 
   Future<void> resetSession() async {
-    // TEMP-DEBUG(mute)
-    LogDev.warning('[MuteDbg] resetSession playWhenReady=$_playWhenReady');
     final status = state.hasUsableSource ? LessonAudioLoadStatus.initial : LessonAudioLoadStatus.unavailable;
     _playWhenReady = false;
     await _resetHandlerForNewKeypoint();
@@ -1017,8 +995,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         _onSlotChanged(slot);
       });
 
-      // TEMP-DEBUG(mute)
-      LogDev.warning('[MuteDbg] load ready playWhenReady=$_playWhenReady pinned=$_pausedByUser');
       // Honor a play intent registered while (pre)loading.
       if (_playWhenReady) {
         _playWhenReady = false;
@@ -1039,8 +1015,6 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       // driving it now, and pausing would silence THEM. Just fall back to
       // "never started" so a later tap loads this clip again from scratch.
       if (error is just_audio.PlayerInterruptedException) {
-        // TEMP-DEBUG(mute)
-        LogDev.warning('[MuteDbg] load interrupted (superseded) playWhenReady=$_playWhenReady');
         emit(
           state.copyWith(
             status: LessonAudioLoadStatus.initial,

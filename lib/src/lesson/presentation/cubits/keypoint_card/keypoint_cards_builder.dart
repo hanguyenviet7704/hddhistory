@@ -151,10 +151,6 @@ class KeypointCardsBuilder {
     // reached, so the done card never got its clips (recap tap-to-read dead,
     // 2026-08-07). Position accounting mirrors the walk's exactly.
     final takeaway = resolveTakeawaySummary(items);
-    // ignore: avoid_print — chẩn đoán tạm cho "takeaway=null" (2026-08-09), gỡ sau.
-    print('[RecapGate] resolve items=${items.length} '
-        'types=${items.map((i) => '${i.type.name}:${i.documents.length}').join(',')} '
-        'takeawayIdx=${takeaway.itemIndex} hidden=${takeaway.hiddenItemIndexes}');
     String? takeawayItemId;
     var takeawayClipStart = -1;
     var takeawayClipCount = 0;

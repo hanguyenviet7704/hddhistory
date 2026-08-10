@@ -237,11 +237,6 @@ class _LessonPageState extends State<LessonPage> {
 
     // TEMP-DEBUG(mute): remove with [MuteDbg] once first-keypoint autoplay is
     // confirmed settled.
-    LogDev.warning(
-      '[MuteDbg] syncAudio kp=${keypoint.id} usable=${keypoint.hasUsableAudio} '
-      'syncedId=$_audioSyncedKeypointId first=${!_hasSyncedFirstKeypoint} '
-      'autoplayOnEntry=${widget.autoplayOnEntry}',
-    );
 
     if (!keypoint.hasUsableAudio) return;
 

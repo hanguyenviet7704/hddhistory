@@ -284,7 +284,6 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (index < 0 || index >= state.cards.length) return;
     // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
     // both confirmed settled.
-    LogDev.warning('[DeckDbg] viewCard($index) from=${state.viewedCardIndex} pinWas=$_entryPinActive cap=$cap startAt=$startAt');
     // A deliberate move off the entry card — swipe, pip tap, the voice turning
     // the page, or the return-from-background jump. From here on the deck is
     // being driven, so it may follow the live edge again (see [_entryPinActive]).
@@ -1203,11 +1202,6 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
     // both confirmed settled.
-    LogDev.warning(
-      '[DeckDbg] rebuild pin=$_entryPinActive cap=$cap cards=${built.cards.length} live=${built.liveCardIndex} '
-      'furthest=${state.furthestCardIndex}→$nextFurthestIndex viewed=$previousViewedIndex→$nextViewedIndex '
-      'followEdge=$wasFollowingEdge completion=$completionJustTriggered itemIdx=${lessonState.currentLearningItemIndex}',
-    );
 
     emit(
       state.copyWith(
