@@ -25,6 +25,43 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     if (shouldMarkDailyWarmUpOnboardingDate) {
       unawaited(_markDailyWarmUpOnboardingCompletedDate());
     }
+    // Completing onboarding must OUTLIVE this install. Google/Apple accounts
+    // already do (their login paths mark the server), but a guest completed
+    // onboarding with only this local flag — a reinstall wiped it and re-ran
+    // onboarding ("tài khoản guest bị chạy lại onboarding", 2026-08-09). Two
+    // durable copies fix the two reinstall paths:
+    //  - the Keychain session mirror (iOS survives uninstall) gets a user
+    //    with isOnboarded, so the restored session skips onboarding offline;
+    //  - the server flag covers Android, where secure storage is wiped and
+    //    the guest comes back via its device-derived identity instead.
+    if (!isUserPassOnboarding) {
+      unawaited(_persistOnboardingCompleted());
+    }
+  }
+
+  Future<void> _persistOnboardingCompleted() async {
+    final user = state.user;
+    if (user.id.isEmpty || user.isOnboarded) return;
+
+    final auth = state.auth.copyWith(user: user.copyWith(isOnboarded: true));
+    emit(state.copyWith(auth: auth));
+    await _persistAuthSession(auth);
+
+    try {
+      final result = await AppDI.injector.get<UpdateUserUseCase>()({
+        'id': user.id,
+        'isOnboarded': true,
+      }).run();
+      result.fold(
+        (failure) => LogDev.warning('[UserCubit] could not mark isOnboarded on server: ${failure.displayMessage}'),
+        (_) {},
+      );
+    } catch (error) {
+      // Best-effort: the Keychain mirror above already covers the common iOS
+      // reinstall; the server mark retries naturally on the next completion
+      // path (e.g. a later login).
+      LogDev.warning('[UserCubit] could not mark isOnboarded on server: $error');
+    }
   }
 
   /// Records the order the user tapped categories (Path — Feel/Think/Work/

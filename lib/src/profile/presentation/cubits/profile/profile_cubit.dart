@@ -67,6 +67,16 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProfileStatus.success, user: item));
+        // Self-heal the onboarding flag from the server's answer: a restored
+        // session (reinstall) may carry a Keychain blob written BEFORE the
+        // user finished onboarding, whose stale `isOnboarded: false` re-ran
+        // onboarding for guests. The fresh /users/me is the truth.
+        if (item.isOnboarded) {
+          final userCubit = AppDI.injector.get<UserCubit>();
+          if (userCubit.state.isUserPassOnboarding) {
+            userCubit.setIsUserPassOnboarding(false);
+          }
+        }
         loadUserIapSubscriptions();
       },
     );
