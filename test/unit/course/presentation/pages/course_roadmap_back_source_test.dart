@@ -30,6 +30,13 @@ void main() {
       });
     }
 
+    test('shows a back button for the habit detail rail', () {
+      // "Đọc thêm" inside the habit detail sheet pops the sheet and .go()s to
+      // the roadmap — the sheet is gone and the roadmap is its branch's root,
+      // so without this the user is stranded exactly as 'home_new_today' was.
+      expect(roadmapShowsBackButton('habit_detail'), isTrue);
+    });
+
     test('shows NO back button for the Courses-tab default', () {
       // Reaching the roadmap by tapping its own tab (or returning from roleplay)
       // has nothing behind it — a back button there would be a dead end.
@@ -40,11 +47,14 @@ void main() {
       expect(roadmapShowsBackButton(''), isFalse);
     });
 
-    test('keeps the Home and Explore sets disjoint', () {
-      // A source in both sets would make the back destination ambiguous:
-      // _backFromRoadmap checks the Home set first, so an overlap would silently
-      // send an Explore-opened roadmap back to Home instead.
+    test('keeps the Home, Explore and Habit sets disjoint', () {
+      // A source in two sets would make the back destination ambiguous:
+      // _backFromRoadmap checks them in order, so an overlap would silently send
+      // the user to whichever set is tested first rather than where they came
+      // from.
       expect(roadmapHomeSources.intersection(roadmapExploreSources), isEmpty);
+      expect(roadmapHabitSources.intersection(roadmapHomeSources), isEmpty);
+      expect(roadmapHabitSources.intersection(roadmapExploreSources), isEmpty);
     });
   });
 }

@@ -40,11 +40,26 @@ const roadmapHomeSources = {
   'onboarding',
 };
 
+/// Roadmap-source values that mean the user opened this roadmap from the Habit
+/// tab — today only the "Đọc thêm" rail inside a habit's detail sheet. Back
+/// returns to the Habit tab (see `_backFromRoadmap`).
+///
+/// That rail pops the sheet before it navigates, so there is nothing left to
+/// come back to on its own: without a registration here the tap ends on a
+/// roadmap with no way out, which is how it shipped.
+///
+/// Back lands on the Habit tab, NOT on the reopened detail sheet — restoring
+/// the sheet would mean carrying the [UserHabitEntity] through the roadmap, and
+/// the tracker row it was opened from is right there on the tab.
+@visibleForTesting
+const roadmapHabitSources = {'habit_detail'};
+
 /// Whether the roadmap renders its back button for [source]. Kept pure and
 /// top-level so the source→back-button contract is testable without standing up
 /// the whole roadmap widget tree.
 @visibleForTesting
-bool roadmapShowsBackButton(String source) => roadmapExploreSources.contains(source) || roadmapHomeSources.contains(source);
+bool roadmapShowsBackButton(String source) =>
+    roadmapExploreSources.contains(source) || roadmapHomeSources.contains(source) || roadmapHabitSources.contains(source);
 
 class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
@@ -76,6 +91,15 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       page.setCurrentIndex(0); // Home branch
       HomeRoute().go(context);
       page.setCurrentRouteName(RouteNamed.home);
+      return;
+    }
+    // Opened from a habit's "Đọc thêm" rail — the sheet was popped on the way
+    // out, so return to the Habit tab it belonged to.
+    if (roadmapHabitSources.contains(source)) {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(4); // Habit branch
+      const HabitRoute().go(context);
+      page.setCurrentRouteName(RouteNamed.habit);
       return;
     }
     // "View more" opened the full one-skillset grid (SkillsetCoursesRoute, a
