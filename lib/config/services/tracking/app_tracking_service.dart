@@ -276,21 +276,26 @@ final class AppTrackingService extends ITrackingService {
         // the spec's `guest` source; the same auto-open for a signed-in user is
         // `system`.
         return _isPaywallUserAnonymous() ? 'guest' : 'system';
+      case PaywallEntryPoint.onboarding:
+        // Post-onboarding paywall (admin Onboarding Config toggle) — almost
+        // always a brand-new guest, so it reports like the auto-open shown to
+        // one.
+        return _isPaywallUserAnonymous() ? 'guest' : 'system';
       case PaywallEntryPoint.inLesson:
         // Reported as `roadmap`: the spec's source set has no in-lesson value,
         // and this gate fires on a course keypoint, so it belongs with the other
         // course-content entry rather than the catch-all `system`.
         return 'roadmap';
-      case PaywallEntryPoint.manageSubscription:
-      case PaywallEntryPoint.other:
-        return 'system';
-    }
-  }
       case PaywallEntryPoint.learningImport:
         // "Create a lesson" in My lessons. Reported as `system`: the spec's
         // source set has no value for it, and unlike the roadmap and habit
         // gates it is not attached to catalogue content.
         return 'system';
+      case PaywallEntryPoint.manageSubscription:
+      case PaywallEntryPoint.other:
+        return 'system';
+    }
+  }
 
   /// Whether the current user is an anonymous guest — used to tag the auto-open
   /// paywall's source as `guest` vs `system`.

@@ -23,6 +23,10 @@ enum PaywallEntryPoint {
   /// Distinct from [profile] so the funnel can tell "came for the import
   /// feature" apart from "wandered into settings".
   learningImport,
+
+  /// Opened right after the onboarding handoff (admin Onboarding Config
+  /// toggle `showPaywallAfterOnboarding`).
+  onboarding,
   other,
 }
 
