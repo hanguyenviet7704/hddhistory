@@ -1,0 +1,59 @@
+# Entry point (Profile row) + list screen
+myLessonsTitle: My lessons
+myLessonsSubtitle: Lessons you made from your own material
+emptyTitle: Nothing here yet
+emptyBody: Turn a PDF or a YouTube video into a lesson you can read right here.
+createButton: Create a lesson
+deleteConfirmTitle: Delete this lesson?
+deleteConfirmBody: This cannot be undone.
+deleteConfirmAction: Delete
+cancel: Cancel
+readingProgress: ${percent}% read
+minutesRead: ${minutes} min
+quotaRemaining: ${remaining} of ${limit} left this month
+quotaResets: Resets on ${date}
+
+# Import sheet — step 1, source
+sourceStepTitle: What do you want to learn from?
+sourcePdfTitle: Upload a PDF
+sourcePdfBody: A textbook, an article, lecture notes
+sourceYoutubeTitle: Paste a YouTube link
+sourceYoutubeBody: A lecture or a tutorial with captions
+youtubeHint: https://youtube.com/watch?v=...
+youtubeInvalid: That does not look like a YouTube link.
+pdfPickFailed: Could not read that file. Try another one.
+
+# Import sheet — step 2, language
+languageStepTitle: What language should the lesson be in?
+languageStepBody: The lesson is written in this language whatever language your material is in.
+
+# Import sheet — step 3, confirm
+confirmStepTitle: Ready to go
+confirmSource: Source
+confirmLanguage: Language
+confirmStart: Create lesson
+uploading: Uploading your file…
+
+# Waiting screen
+workingTitle: Making your lesson
+workingLeaveHint: You can leave this screen — it keeps going.
+stageFetching: Reading your material…
+stageGenerating: Writing the lesson…
+stageValidating: Checking it over…
+stageSaving: Almost done…
+
+# Errors, one sentence per cause
+errorPdfUnreadable: We could not read that PDF. Try a different file.
+errorPdfTooLarge: That document is too big. Try one under 300 pages.
+errorYoutubeNoTranscript: That video has no captions, so there is nothing to read. Try another video.
+errorYoutubeUnavailable: That video cannot be opened. It may be private or deleted.
+errorYoutubeTooLong: That video is too long. Try one under 3 hours.
+errorContentTooShort: There is not enough in this material to build a lesson.
+errorAiTimeout: This took too long. Please try again.
+errorAiFailed: Something went wrong while writing the lesson. Please try again.
+errorInterrupted: This got interrupted. Try again — it did not use one of your credits.
+errorGeneric: Something went wrong. Please try again.
+errorNotPremium: Creating lessons from your own material is a Premium feature.
+errorQuotaExceeded: You have used all your lessons this month.
+errorJobRunning: You already have a lesson being made. Wait for it to finish.
+retry: Try again

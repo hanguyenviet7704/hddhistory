@@ -1,0 +1,59 @@
+# Entry point (Profile row) + list screen
+myLessonsTitle: マイレッスン
+myLessonsSubtitle: 自分の資料から作ったレッスン
+emptyTitle: まだ何もありません
+emptyBody: PDF や YouTube の動画を、その場で読めるレッスンに変えましょう。
+createButton: レッスンを作る
+deleteConfirmTitle: このレッスンを削除しますか？
+deleteConfirmBody: 元に戻すことはできません。
+deleteConfirmAction: 削除
+cancel: キャンセル
+readingProgress: ${percent}% 読了
+minutesRead: ${minutes} 分
+quotaRemaining: 今月は残り ${remaining}/${limit} 回
+quotaResets: ${date} にリセット
+
+# Import sheet — step 1, source
+sourceStepTitle: 何から学びますか？
+sourcePdfTitle: PDF をアップロード
+sourcePdfBody: 教科書、記事、講義ノート
+sourceYoutubeTitle: YouTube のリンクを貼る
+sourceYoutubeBody: 字幕のある講義やチュートリアル
+youtubeHint: https://youtube.com/watch?v=...
+youtubeInvalid: YouTube のリンクではないようです。
+pdfPickFailed: このファイルを読み取れませんでした。別のファイルをお試しください。
+
+# Import sheet — step 2, language
+languageStepTitle: レッスンは何語で書きますか？
+languageStepBody: 元の資料が何語であっても、レッスンはこの言語で書かれます。
+
+# Import sheet — step 3, confirm
+confirmStepTitle: 準備完了
+confirmSource: 元の資料
+confirmLanguage: 言語
+confirmStart: レッスンを作る
+uploading: ファイルをアップロード中…
+
+# Waiting screen
+workingTitle: レッスンを作成中
+workingLeaveHint: この画面を離れても処理は続きます。
+stageFetching: 資料を読み込み中…
+stageGenerating: レッスンを執筆中…
+stageValidating: 内容を確認中…
+stageSaving: もうすぐ完了…
+
+# Errors, one sentence per cause
+errorPdfUnreadable: この PDF を読み取れませんでした。別のファイルをお試しください。
+errorPdfTooLarge: 資料が大きすぎます。300 ページ以内のものをお試しください。
+errorYoutubeNoTranscript: この動画には字幕がないため読み取れません。別の動画をお試しください。
+errorYoutubeUnavailable: この動画は開けません。非公開または削除された可能性があります。
+errorYoutubeTooLong: 動画が長すぎます。3 時間以内のものをお試しください。
+errorContentTooShort: この資料はレッスンを作るには内容が足りません。
+errorAiTimeout: 時間がかかりすぎました。もう一度お試しください。
+errorAiFailed: レッスンの作成中に問題が発生しました。もう一度お試しください。
+errorInterrupted: 処理が中断されました。もう一度お試しください — 回数は消費されていません。
+errorGeneric: 問題が発生しました。もう一度お試しください。
+errorNotPremium: 自分の資料からレッスンを作る機能は Premium 限定です。
+errorQuotaExceeded: 今月のレッスン作成回数を使い切りました。
+errorJobRunning: 作成中のレッスンがあります。完了までお待ちください。
+retry: 再試行

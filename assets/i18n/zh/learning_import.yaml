@@ -1,0 +1,59 @@
+# Entry point (Profile row) + list screen
+myLessonsTitle: 我的课程
+myLessonsSubtitle: 用你自己的材料生成的课程
+emptyTitle: 还没有内容
+emptyBody: 把一份 PDF 或一个 YouTube 视频变成可以直接阅读的课程。
+createButton: 创建课程
+deleteConfirmTitle: 删除这节课？
+deleteConfirmBody: 删除后无法恢复。
+deleteConfirmAction: 删除
+cancel: 取消
+readingProgress: 已读 ${percent}%
+minutesRead: ${minutes} 分钟
+quotaRemaining: 本月还剩 ${remaining}/${limit} 次
+quotaResets: ${date} 重置
+
+# Import sheet — step 1, source
+sourceStepTitle: 你想从什么材料学习？
+sourcePdfTitle: 上传 PDF
+sourcePdfBody: 教材、文章、课堂笔记
+sourceYoutubeTitle: 粘贴 YouTube 链接
+sourceYoutubeBody: 带字幕的讲座或教程
+youtubeHint: https://youtube.com/watch?v=...
+youtubeInvalid: 这看起来不是 YouTube 链接。
+pdfPickFailed: 无法读取该文件，请换一个试试。
+
+# Import sheet — step 2, language
+languageStepTitle: 课程用哪种语言书写？
+languageStepBody: 无论原始材料是什么语言，课程都会用这种语言书写。
+
+# Import sheet — step 3, confirm
+confirmStepTitle: 准备就绪
+confirmSource: 来源
+confirmLanguage: 语言
+confirmStart: 创建课程
+uploading: 正在上传文件…
+
+# Waiting screen
+workingTitle: 正在生成课程
+workingLeaveHint: 你可以离开此页面，生成会继续进行。
+stageFetching: 正在读取材料…
+stageGenerating: 正在撰写课程…
+stageValidating: 正在检查…
+stageSaving: 就快好了…
+
+# Errors, one sentence per cause
+errorPdfUnreadable: 无法读取这份 PDF，请换一个文件试试。
+errorPdfTooLarge: 文档太大了，请使用 300 页以内的文件。
+errorYoutubeNoTranscript: 该视频没有字幕，无法读取内容，请换一个视频。
+errorYoutubeUnavailable: 无法打开该视频，它可能是私密的或已被删除。
+errorYoutubeTooLong: 视频太长了，请使用 3 小时以内的视频。
+errorContentTooShort: 这份材料的内容不足以生成一节课程。
+errorAiTimeout: 花费时间过长，请再试一次。
+errorAiFailed: 撰写课程时出了问题，请再试一次。
+errorInterrupted: 过程被中断了，请再试一次——本次没有消耗你的次数。
+errorGeneric: 出了点问题，请再试一次。
+errorNotPremium: 用自己的材料生成课程是 Premium 功能。
+errorQuotaExceeded: 本月的课程创建次数已用完。
+errorJobRunning: 已有一节课程正在生成，请等它完成。
+retry: 重试

@@ -213,6 +213,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       const _AchievementsAndProgressSection(),
                       30.verticalSpace,
                       const _LibrarySection(),
+                      14.verticalSpace,
+                      const _MyLessonsRow(),
                       30.verticalSpace,
                       const SupportSection(),
                     ],
@@ -1111,6 +1113,63 @@ class _LibrarySection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// My lessons — the user's own PDF / YouTube imports
+// ---------------------------------------------------------------------------
+
+/// Sits directly under the Library card and reuses its exact shape.
+///
+/// Lives in the profile library rather than in `learning_import` because the
+/// card styling here (`_poppins`, `_profileCardShadow`, `_profileMutedTextColor`)
+/// is private to this file — a row declared elsewhere would have to re-invent
+/// those and would drift the first time this section is restyled.
+class _MyLessonsRow extends StatelessWidget {
+  const _MyLessonsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final label = context.l10n.learningImport.myLessonsTitle;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: studyThemeCardColor(context),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: _profileCardShadow,
+      ),
+      child: Semantics(
+        button: true,
+        label: label,
+        child: GestureDetector(
+          key: const Key('profile-my-lessons-row'),
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            AppHaptic.select();
+            const MyLessonsRoute().push(context);
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: Row(
+              children: [
+                Icon(Icons.auto_stories_outlined, size: 26.w, color: AppCustomColor.brandPrimary),
+                14.horizontalSpace,
+                Expanded(
+                  child: AppText(
+                    label,
+                    style: _poppins(15, FontWeight.w600),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

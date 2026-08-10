@@ -18,6 +18,11 @@ enum PaywallEntryPoint {
   inLesson,
   habit,
   theme,
+
+  /// Tapped "Create a lesson" in My lessons (Profile → learning import).
+  /// Distinct from [profile] so the funnel can tell "came for the import
+  /// feature" apart from "wandered into settings".
+  learningImport,
   other,
 }
 

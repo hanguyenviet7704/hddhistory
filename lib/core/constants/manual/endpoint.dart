@@ -177,6 +177,15 @@ mixin AppEndpoint {
   static const String cloudflareList = '/api/v1/cloudflares';
   static const String cloudflareDelete = '/api/v1/cloudflares/{key}';
 
+  //* Learning Import API (user's own PDF / YouTube -> generated lesson)
+  // A PDF goes through cloudflareUpload first; only its object key is sent here.
+  static const String learningImports = '/api/v1/learning-imports';
+  static const String learningImportQuota = '/api/v1/learning-imports/quota';
+  static const String learningImportById = '/api/v1/learning-imports/{jobId}';
+  static const String userLessons = '/api/v1/user-lessons';
+  static const String userLessonById = '/api/v1/user-lessons/{id}';
+  static const String userLessonProgress = '/api/v1/user-lessons/{id}/progress';
+
   //* AI Services API
   static const String voiceFeedback = '/feedback';
   static const String voiceFeedbackStream = '/feedback-stream';

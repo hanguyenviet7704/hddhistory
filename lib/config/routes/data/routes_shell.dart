@@ -79,6 +79,13 @@ part of '../routes.dart';
           name: RouteNamed.profile,
           routes: [
             TypedGoRoute<ProfileInfoRoute>(path: RoutePath.profileInfo, name: RouteNamed.profileInfo),
+            TypedGoRoute<MyLessonsRoute>(
+              path: RoutePath.myLessons,
+              name: RouteNamed.myLessons,
+              routes: [
+                TypedGoRoute<LessonReaderRoute>(path: RoutePath.lessonReader, name: RouteNamed.lessonReader),
+              ],
+            ),
             TypedGoRoute<SettingRoute>(
               path: RoutePath.setting,
               name: RouteNamed.setting,

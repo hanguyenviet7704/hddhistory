@@ -1,0 +1,59 @@
+# Entry point (Profile row) + list screen
+myLessonsTitle: 내 레슨
+myLessonsSubtitle: 내 자료로 만든 레슨
+emptyTitle: 아직 아무것도 없어요
+emptyBody: PDF나 유튜브 영상을 바로 읽을 수 있는 레슨으로 바꿔 보세요.
+createButton: 레슨 만들기
+deleteConfirmTitle: 이 레슨을 삭제할까요?
+deleteConfirmBody: 되돌릴 수 없습니다.
+deleteConfirmAction: 삭제
+cancel: 취소
+readingProgress: ${percent}% 읽음
+minutesRead: ${minutes}분
+quotaRemaining: 이번 달 ${remaining}/${limit}회 남음
+quotaResets: ${date}에 초기화
+
+# Import sheet — step 1, source
+sourceStepTitle: 무엇으로 공부할까요?
+sourcePdfTitle: PDF 올리기
+sourcePdfBody: 교재, 기사, 강의 노트
+sourceYoutubeTitle: 유튜브 링크 붙여넣기
+sourceYoutubeBody: 자막이 있는 강의나 튜토리얼
+youtubeHint: https://youtube.com/watch?v=...
+youtubeInvalid: 유튜브 링크가 아닌 것 같아요.
+pdfPickFailed: 이 파일을 읽을 수 없습니다. 다른 파일로 시도해 보세요.
+
+# Import sheet — step 2, language
+languageStepTitle: 레슨을 어떤 언어로 쓸까요?
+languageStepBody: 원본 자료가 어떤 언어든, 레슨은 이 언어로 작성됩니다.
+
+# Import sheet — step 3, confirm
+confirmStepTitle: 준비 완료
+confirmSource: 출처
+confirmLanguage: 언어
+confirmStart: 레슨 만들기
+uploading: 파일 업로드 중…
+
+# Waiting screen
+workingTitle: 레슨을 만드는 중
+workingLeaveHint: 이 화면을 나가도 계속 진행됩니다.
+stageFetching: 자료를 읽는 중…
+stageGenerating: 레슨을 쓰는 중…
+stageValidating: 내용을 확인하는 중…
+stageSaving: 거의 다 됐어요…
+
+# Errors, one sentence per cause
+errorPdfUnreadable: 이 PDF를 읽을 수 없습니다. 다른 파일로 시도해 보세요.
+errorPdfTooLarge: 문서가 너무 큽니다. 300쪽 이하로 시도해 보세요.
+errorYoutubeNoTranscript: 이 영상에는 자막이 없어 읽을 내용이 없습니다. 다른 영상으로 시도해 보세요.
+errorYoutubeUnavailable: 이 영상을 열 수 없습니다. 비공개이거나 삭제되었을 수 있습니다.
+errorYoutubeTooLong: 영상이 너무 깁니다. 3시간 이하로 시도해 보세요.
+errorContentTooShort: 이 자료는 레슨을 만들기에 내용이 부족합니다.
+errorAiTimeout: 시간이 너무 오래 걸렸습니다. 다시 시도해 주세요.
+errorAiFailed: 레슨을 쓰는 중 문제가 발생했습니다. 다시 시도해 주세요.
+errorInterrupted: 진행이 중단되었습니다. 다시 시도해 주세요 — 횟수는 차감되지 않았습니다.
+errorGeneric: 문제가 발생했습니다. 다시 시도해 주세요.
+errorNotPremium: 내 자료로 레슨을 만드는 기능은 Premium 전용입니다.
+errorQuotaExceeded: 이번 달 레슨 생성 횟수를 모두 사용했습니다.
+errorJobRunning: 이미 만들고 있는 레슨이 있습니다. 완료될 때까지 기다려 주세요.
+retry: 다시 시도

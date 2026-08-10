@@ -286,6 +286,11 @@ final class AppTrackingService extends ITrackingService {
         return 'system';
     }
   }
+      case PaywallEntryPoint.learningImport:
+        // "Create a lesson" in My lessons. Reported as `system`: the spec's
+        // source set has no value for it, and unlike the roadmap and habit
+        // gates it is not attached to catalogue content.
+        return 'system';
 
   /// Whether the current user is an anonymous guest — used to tag the auto-open
   /// paywall's source as `guest` vs `system`.

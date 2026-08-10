@@ -84,6 +84,13 @@ mixin RoutePath {
   static const String userAchievementBottomSheet = 'user-achievement-bottom-sheet';
   static const String reportIssueSheet = 'report-issue-sheet';
 
+  //* Setting - Learning import (user's own PDF / YouTube -> generated lesson)
+  // Nested under /profile: these lessons are the user's own shelf, not
+  // catalogue content, so they belong behind the profile tab rather than in
+  // Home or the course roadmap.
+  static const String myLessons = 'my-lessons';
+  static const String lessonReader = 'lesson-reader/:lessonId';
+
   //* Habit
   static const String habit = '/habit';
   static const String dailyCheckIn = 'daily-check-in';
@@ -179,6 +186,10 @@ mixin RouteNamed {
   static const String profileDeleteDialog = 'Profile Delete Dialog';
   static const String userAchievementBottomSheet = 'User Achievement Bottom Sheet';
   static const String reportIssueSheet = 'Report Issue Sheet';
+
+  //* Setting - Learning import
+  static const String myLessons = 'My Lessons';
+  static const String lessonReader = 'Lesson Reader';
 
   //* Habit
   static const String habit = 'Habit';

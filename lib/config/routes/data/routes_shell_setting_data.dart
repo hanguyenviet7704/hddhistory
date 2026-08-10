@@ -102,3 +102,41 @@ class ManageSubscriptionRoute extends BaseTransitionRouteData with $ManageSubscr
     child: const UserSubcriptionPage(),
   );
 }
+
+/// The user's shelf of self-generated lessons, reached from a Profile row.
+///
+/// Both cubits are provided here rather than in the page: the import flow's
+/// polling outlives the sheet that started it (the user is explicitly allowed
+/// to walk away mid-generation), so its cubit must not be scoped to a widget.
+class MyLessonsRoute extends BaseTransitionRouteData with $MyLessonsRoute {
+  const MyLessonsRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<LearningImportCubit>()),
+    ],
+    child: const MyLessonsPage(),
+  );
+}
+
+class LessonReaderRoute extends BaseTransitionRouteData with $LessonReaderRoute {
+  const LessonReaderRoute(this.lessonId);
+
+  final String lessonId;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
+    ],
+    child: LessonReaderPage(lessonId: lessonId),
+  );
+}

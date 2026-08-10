@@ -1,0 +1,59 @@
+# Entry point (Profile row) + list screen
+myLessonsTitle: Bài học của tôi
+myLessonsSubtitle: Bài bạn tạo từ tài liệu của mình
+emptyTitle: Chưa có bài nào
+emptyBody: Biến một tệp PDF hoặc video YouTube thành bài học đọc ngay trong app.
+createButton: Tạo bài học
+deleteConfirmTitle: Xoá bài này?
+deleteConfirmBody: Không khôi phục lại được.
+deleteConfirmAction: Xoá
+cancel: Huỷ
+readingProgress: Đã đọc ${percent}%
+minutesRead: ${minutes} phút
+quotaRemaining: Còn ${remaining}/${limit} lượt tháng này
+quotaResets: Làm mới ngày ${date}
+
+# Import sheet — step 1, source
+sourceStepTitle: Bạn muốn học từ đâu?
+sourcePdfTitle: Tải lên tệp PDF
+sourcePdfBody: Giáo trình, bài báo, ghi chép bài giảng
+sourceYoutubeTitle: Dán link YouTube
+sourceYoutubeBody: Bài giảng hoặc hướng dẫn có phụ đề
+youtubeHint: https://youtube.com/watch?v=...
+youtubeInvalid: Đây không phải link YouTube hợp lệ.
+pdfPickFailed: Không đọc được tệp này. Thử tệp khác nhé.
+
+# Import sheet — step 2, language
+languageStepTitle: Bài học viết bằng ngôn ngữ nào?
+languageStepBody: Bài sẽ được viết bằng ngôn ngữ này, bất kể tài liệu gốc của bạn dùng tiếng gì.
+
+# Import sheet — step 3, confirm
+confirmStepTitle: Sẵn sàng
+confirmSource: Nguồn
+confirmLanguage: Ngôn ngữ
+confirmStart: Tạo bài học
+uploading: Đang tải tệp lên…
+
+# Waiting screen
+workingTitle: Đang tạo bài học
+workingLeaveHint: Bạn rời màn hình này được — quá trình vẫn chạy tiếp.
+stageFetching: Đang đọc tài liệu…
+stageGenerating: Đang soạn bài…
+stageValidating: Đang kiểm tra lại…
+stageSaving: Sắp xong…
+
+# Errors, one sentence per cause
+errorPdfUnreadable: Không đọc được nội dung tệp PDF này. Thử tệp khác nhé.
+errorPdfTooLarge: Tài liệu quá lớn. Thử tài liệu dưới 300 trang.
+errorYoutubeNoTranscript: Video này không có phụ đề nên không có gì để đọc. Thử video khác nhé.
+errorYoutubeUnavailable: Không mở được video này. Có thể video ở chế độ riêng tư hoặc đã bị xoá.
+errorYoutubeTooLong: Video quá dài. Thử video dưới 3 giờ.
+errorContentTooShort: Tài liệu này không đủ nội dung để soạn thành bài học.
+errorAiTimeout: Quá trình mất nhiều thời gian hơn dự kiến. Thử lại nhé.
+errorAiFailed: Có trục trặc khi soạn bài. Thử lại nhé.
+errorInterrupted: Quá trình bị gián đoạn. Thử lại nhé — lượt của bạn chưa bị trừ.
+errorGeneric: Có gì đó không ổn. Thử lại nhé.
+errorNotPremium: Tạo bài học từ tài liệu của bạn là tính năng Premium.
+errorQuotaExceeded: Bạn đã dùng hết lượt tạo bài trong tháng này.
+errorJobRunning: Bạn đang có một bài đang được tạo. Đợi xong rồi tạo tiếp nhé.
+retry: Thử lại
