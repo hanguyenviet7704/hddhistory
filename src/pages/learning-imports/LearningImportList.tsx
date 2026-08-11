@@ -13,6 +13,7 @@ import {
   LearningImportListQuery,
 } from "../../types/interface/learningImport.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
+import RunImportPanel from "./RunImportPanel";
 import {
   ERROR_LABELS,
   formatDateTime,
@@ -88,6 +89,26 @@ export default function LearningImportList() {
     fetchImports(page, debouncedSearch, statusFilter);
   }, [fetchImports, page, debouncedSearch, statusFilter]);
 
+  /**
+   * Poll only while something is actually running, and stop when nothing is.
+   *
+   * An unconditional timer would keep this page hitting the API all day on a
+   * screen somebody left open, for rows that cannot change. `queued` counts as
+   * running: a job sits there for the moment between being created and the
+   * runner picking it up.
+   */
+  const hasRunningJob = items.some(
+    (row) => row.status === "processing" || row.status === "queued",
+  );
+  useEffect(() => {
+    if (!hasRunningJob) return;
+    const timer = setInterval(
+      () => fetchImports(page, debouncedSearch, statusFilter),
+      3000,
+    );
+    return () => clearInterval(timer);
+  }, [hasRunningJob, fetchImports, page, debouncedSearch, statusFilter]);
+
   return (
     <div className="p-6">
       <div className="mb-6 flex items-start justify-between gap-4">
@@ -107,6 +128,10 @@ export default function LearningImportList() {
           Refresh
         </button>
       </div>
+
+      <RunImportPanel
+        onStarted={() => fetchImports(1, debouncedSearch, statusFilter)}
+      />
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="flex flex-wrap items-center gap-3 border-b border-gray-200 bg-gray-50 p-4">

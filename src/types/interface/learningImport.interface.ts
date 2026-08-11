@@ -82,3 +82,21 @@ export interface LearningImportListResponse {
   totalPages: number;
   currentPage: number;
 }
+
+/** Body for POST /learning-imports. Exactly one of fileKey / url is used. */
+export interface CreateLearningImportPayload {
+  sourceType: ImportSourceType;
+  /** R2 object key from POST /cloudflares/upload — NOT the public url. */
+  fileKey?: string;
+  fileName?: string;
+  url?: string;
+  outputLocale: string;
+}
+
+export interface ImportQuota {
+  limit: number;
+  used: number;
+  remaining: number;
+  resetsAt: string;
+  isPremium: boolean;
+}
