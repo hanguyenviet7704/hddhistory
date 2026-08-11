@@ -95,7 +95,14 @@ class ChangeBackgroundSheet extends StatelessWidget {
                           }),
                           14.verticalSpace,
                         ],
+                        // Uploading your own background is premium, like the PRO
+                        // presets: same gold ribbon, same paywall bounce.
                         _UploadBar(onTap: () {
+                          if (!userIsPremium) {
+                            AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.theme);
+                            const PaywallRoute().push(context);
+                            return;
+                          }
                           StudyThemeTracking.track(TrackingKey.themeChangeUpload);
                           _pickImage(context, cubit);
                         }),
@@ -188,6 +195,11 @@ class ChangeBackgroundSheet extends StatelessWidget {
 }
 
 /// Dashed "upload your own" bar at the top of the sheet (design item 9).
+///
+/// Carries the same PRO ribbon as a premium preset, and for the same reason: the
+/// bar is a paywalled entry point, not a free one. Shown to premium users too --
+/// the ribbon states what the FEATURE costs, not what the viewer owns, which is
+/// how the preset tiles already behave.
 class _UploadBar extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -201,23 +213,75 @@ class _UploadBar extends StatelessWidget {
       child: CustomPaint(
         painter: _DashedRoundedRectPainter(color: const Color(0xFFC7C9D4), radius: 16.r),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: const Color(0xFFFAFAFC),
             borderRadius: BorderRadius.circular(16.r),
           ),
-          child: Row(
+          // The ribbon is drawn past the right edge and relies on this clip to
+          // become a corner triangle.
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
             children: [
-              Icon(Icons.add_photo_alternate_outlined, size: 22.w, color: const Color(0xFF8A8CA0)),
-              12.horizontalSpace,
-              AppText(
-                context.l10n.studyTheme.uploadLabel,
-                style: AppStyle.textBold14.copyWith(color: const Color(0xFF8A8CA0)),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_photo_alternate_outlined, size: 22.w, color: const Color(0xFF8A8CA0)),
+                    12.horizontalSpace,
+                    AppText(
+                      context.l10n.studyTheme.uploadLabel,
+                      style: AppStyle.textBold14.copyWith(color: const Color(0xFF8A8CA0)),
+                    ),
+                  ],
+                ),
               ),
+              const Positioned.fill(child: _CornerRibbon(premium: true)),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The diagonal "PRO"/"FREE" flag in a card's top-right corner (design).
+///
+/// Positioned past the right edge on purpose -- it is the PARENT's clip that
+/// turns the rectangle into a corner triangle, so every user of this widget must
+/// clip. Shared by the preset tiles and the upload bar so the two badges cannot
+/// drift apart in colour or wording.
+class _CornerRibbon extends StatelessWidget {
+  final bool premium;
+
+  const _CornerRibbon({required this.premium});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 9.w,
+          right: -21.w,
+          child: Transform.rotate(
+            angle: 0.7853981634, // 45°
+            child: Container(
+              width: 72.w,
+              padding: EdgeInsets.symmetric(vertical: 3.h),
+              alignment: Alignment.center,
+              color: premium ? const Color(0xFFE0A32E) : const Color(0xFF554FF0),
+              child: Text(
+                premium ? 'PRO' : 'FREE',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -454,31 +518,10 @@ class _PresetTile extends StatelessWidget {
               Positioned.fill(
                 child: DCachedImage(url: _networkThumbUrl!, fit: BoxFit.cover),
               ),
-            // Diagonal corner ribbon (design): "PRO" (gold) for premium presets
-            // that open the paywall on tap, "FREE" (brand) otherwise. Clipped to
-            // the tile's rounded corner by the parent's antiAlias clip.
-            Positioned(
-              top: 9.w,
-              right: -21.w,
-              child: Transform.rotate(
-                angle: 0.7853981634, // 45°
-                child: Container(
-                  width: 72.w,
-                  padding: EdgeInsets.symmetric(vertical: 3.h),
-                  alignment: Alignment.center,
-                  color: preset.isPremium ? const Color(0xFFE0A32E) : const Color(0xFF554FF0),
-                  child: Text(
-                    preset.isPremium ? 'PRO' : 'FREE',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // "PRO" (gold) for premium presets that open the paywall on tap,
+            // "FREE" (brand) otherwise. Clipped to the tile's rounded corner by
+            // the parent's antiAlias clip.
+            Positioned.fill(child: _CornerRibbon(premium: preset.isPremium)),
             // Live (video) presets get a centred play badge over the poster so
             // they read as motion, not a static photo (design item 5).
             if (preset.mode == StudyThemeMode.video)
