@@ -31,6 +31,7 @@ import '../../config/routes/routes.dart';
 import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';
 import '../../src/common/common.dart';
+import '../../src/learning_import/learning_import.dart';
 import '../../src/learning_streak/learning_streak.dart';
 import '../../src/monetization/monetization.dart';
 import '../../src/study_theme/study_theme.dart';

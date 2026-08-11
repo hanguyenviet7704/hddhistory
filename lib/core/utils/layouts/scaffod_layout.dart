@@ -85,10 +85,16 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // the shell for the same reason, plus one of its own: it watches for
             // app RESUME, which is how the days 1-7 gift popup reaches a reader
             // who left MeUp in the background rather than cold-starting it.
+            // ImportDonePopupHost joins them for both reasons at once: it must
+            // survive tab switches, AND it watches RESUME — an import keeps
+            // running server-side while the app is suspended, so coming back is
+            // the moment to check whether the lesson is ready.
             Positioned.fill(
-              child: GiftPopupHost(
-                child: StreakPopupHost(
-                  child: ThemedBackground(child: widget.navigationShell),
+              child: ImportDonePopupHost(
+                child: GiftPopupHost(
+                  child: StreakPopupHost(
+                    child: ThemedBackground(child: widget.navigationShell),
+                  ),
                 ),
               ),
             ),

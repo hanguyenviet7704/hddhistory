@@ -97,10 +97,10 @@ class _ImportSourceSheetState extends State<_ImportSourceSheet> {
         final lessonId = state.finishedLessonId;
         if (lessonId == null || lessonId.isEmpty) return;
 
-        // Straight from "done" into the lesson: the user asked for a lesson,
-        // not for a completion notice they then have to dismiss.
+        // Close and let `ImportDonePopupHost` do the handover. It does not
+        // matter whether the reader stayed on this sheet or wandered off — one
+        // path announces a finished import, so there is no second path to rot.
         Navigator.of(context).pop();
-        LessonReaderRoute(lessonId).push(context);
       },
       child: SafeArea(
         top: false,

@@ -28,6 +28,30 @@ abstract class LessonSectionModel with _$LessonSectionModel {
 }
 
 @freezed
+abstract class UserLessonAudioCueModel with _$UserLessonAudioCueModel {
+  const factory UserLessonAudioCueModel({
+    @Default(0) int sectionIndex,
+    @Default(0) int startMs,
+    @Default(0) int durMs,
+  }) = _UserLessonAudioCueModel;
+
+  factory UserLessonAudioCueModel.fromJson(Map<String, dynamic> json) =>
+      _$UserLessonAudioCueModelFromJson(json);
+}
+
+@freezed
+abstract class UserLessonAudioModel with _$UserLessonAudioModel {
+  const factory UserLessonAudioModel({
+    @Default('') String url,
+    @Default(0) int durationMs,
+    @Default(<UserLessonAudioCueModel>[]) List<UserLessonAudioCueModel> cues,
+  }) = _UserLessonAudioModel;
+
+  factory UserLessonAudioModel.fromJson(Map<String, dynamic> json) =>
+      _$UserLessonAudioModelFromJson(json);
+}
+
+@freezed
 abstract class UserLessonModel with _$UserLessonModel {
   const factory UserLessonModel({
     @Default('') String id,
@@ -45,6 +69,12 @@ abstract class UserLessonModel with _$UserLessonModel {
     // Absent on the list endpoint by design (the API leaves the body out of the
     // card payload), so this defaults to empty rather than being nullable.
     @Default(<LessonSectionModel>[]) List<LessonSectionModel> sections,
+    // A status the server adds later must degrade to `none`, not throw and take
+    // the whole list response down with it.
+    @JsonKey(unknownEnumValue: UserLessonAudioStatusEntity.none)
+    @Default(UserLessonAudioStatusEntity.none)
+    UserLessonAudioStatusEntity audioStatus,
+    UserLessonAudioModel? audio,
   }) = _UserLessonModel;
 
   factory UserLessonModel.fromJson(Map<String, dynamic> json) =>
@@ -62,6 +92,22 @@ extension LessonSectionModelX on LessonSectionModel {
   );
 }
 
+extension UserLessonAudioCueModelX on UserLessonAudioCueModel {
+  UserLessonAudioCueEntity toEntity() => UserLessonAudioCueEntity(
+    sectionIndex: sectionIndex,
+    startMs: startMs,
+    durMs: durMs,
+  );
+}
+
+extension UserLessonAudioModelX on UserLessonAudioModel {
+  UserLessonAudioEntity toEntity() => UserLessonAudioEntity(
+    url: url,
+    durationMs: durationMs,
+    cues: cues.map((cue) => cue.toEntity()).toList(),
+  );
+}
+
 extension UserLessonModelX on UserLessonModel {
   UserLessonEntity toEntity() => UserLessonEntity(
     id: id,
@@ -75,5 +121,7 @@ extension UserLessonModelX on UserLessonModel {
     stopAtSectionIndex: stopAtSectionIndex,
     createdAt: DateTime.tryParse(createdAt ?? ''),
     sections: sections.map((section) => section.toEntity()).toList(),
+    audioStatus: audioStatus,
+    audio: audio?.toEntity(),
   );
 }

@@ -137,6 +137,20 @@ class LearningImportCubit extends Cubit<LearningImportState>
     );
   }
 
+  /// Ask the server where the current job stands, right now.
+  ///
+  /// Called on app resume by [ImportDonePopupHost]. The polling timer does not
+  /// survive the app being suspended, so on the way back the job this cubit
+  /// holds is exactly as stale as the moment the reader left — and if it
+  /// finished while they were away, nothing else would ever notice.
+  Future<void> refreshActiveJob() async {
+    final job = state.job;
+    if (job == null || !job.isRunning) return;
+
+    await _poll(job.id);
+    if (state.job?.isRunning ?? false) _startPolling(job.id);
+  }
+
   /// Called when the user comes back to a job started earlier — the flow they
   /// get by leaving the waiting screen and tapping the in-progress card.
   void watchJob(LearningImportJobEntity job) {

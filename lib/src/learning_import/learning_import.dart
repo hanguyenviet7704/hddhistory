@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:just_audio/just_audio.dart' as just_audio;
 import 'package:retrofit/retrofit.dart';
 
 //* Domain Layer - Entities
@@ -39,11 +40,16 @@ part 'presentation/cubits/learning_import_state.dart';
 part 'presentation/cubits/learning_import_cubit.dart';
 part 'presentation/cubits/user_lesson_state.dart';
 part 'presentation/cubits/user_lesson_cubit.dart';
+part 'presentation/cubits/user_lesson_audio_state.dart';
+part 'presentation/cubits/user_lesson_audio_cubit.dart';
 
 //* Presentation Layer - Pages + Sheets
 part 'presentation/pages/my_lessons_page.dart';
-part 'presentation/pages/lesson_reader_page.dart';
+part 'presentation/pages/lesson_deck_page.dart';
 part 'presentation/sheets/import_source_sheet.dart';
+
+//* Presentation Layer - Shell host
+part 'presentation/widgets/import_done_popup_host.dart';
 
 //* Parts for generated files
 part 'learning_import.freezed.dart';

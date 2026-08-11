@@ -57,3 +57,14 @@ errorNotPremium: 自分の資料からレッスンを作る機能は Premium 限
 errorQuotaExceeded: 今月のレッスン作成回数を使い切りました。
 errorJobRunning: 作成中のレッスンがあります。完了までお待ちください。
 retry: 再試行
+
+# Deck + narration
+listenLabel: 聴く
+dubbingHint: 音声を作成中…
+
+# "Your lesson is ready" popup (shell-level, fires wherever the reader is)
+donePopupTitle: レッスンの準備ができました
+donePopupBody: "${name} を読む準備ができました。"
+donePopupRead: 今すぐ読む
+donePopupLater: あとで
+failedPopupTitle: 完了できませんでした

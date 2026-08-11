@@ -57,3 +57,14 @@ errorNotPremium: 用自己的材料生成课程是 Premium 功能。
 errorQuotaExceeded: 本月的课程创建次数已用完。
 errorJobRunning: 已有一节课程正在生成，请等它完成。
 retry: 重试
+
+# Deck + narration
+listenLabel: 收听
+dubbingHint: 正在生成语音…
+
+# "Your lesson is ready" popup (shell-level, fires wherever the reader is)
+donePopupTitle: 课程已就绪
+donePopupBody: "${name} 可以开始阅读了。"
+donePopupRead: 立即阅读
+donePopupLater: 稍后
+failedPopupTitle: 没能完成

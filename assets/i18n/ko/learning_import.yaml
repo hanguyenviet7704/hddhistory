@@ -57,3 +57,14 @@ errorNotPremium: 내 자료로 레슨을 만드는 기능은 Premium 전용입�
 errorQuotaExceeded: 이번 달 레슨 생성 횟수를 모두 사용했습니다.
 errorJobRunning: 이미 만들고 있는 레슨이 있습니다. 완료될 때까지 기다려 주세요.
 retry: 다시 시도
+
+# Deck + narration
+listenLabel: 듣기
+dubbingHint: 음성을 만드는 중…
+
+# "Your lesson is ready" popup (shell-level, fires wherever the reader is)
+donePopupTitle: 레슨이 준비됐어요
+donePopupBody: "${name}을(를) 읽을 준비가 됐어요."
+donePopupRead: 지금 읽기
+donePopupLater: 나중에
+failedPopupTitle: 끝내지 못했어요

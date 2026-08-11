@@ -136,7 +136,11 @@ class LessonReaderRoute extends BaseTransitionRouteData with $LessonReaderRoute 
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
+      // Created per entry, not shared: it holds one lesson's cue map and stops
+      // the player on the way out. `close()` therefore has to run when the
+      // reader leaves, which a `.value` singleton would never do.
+      BlocProvider(create: (_) => AppDI.injector.get<UserLessonAudioCubit>()),
     ],
-    child: LessonReaderPage(lessonId: lessonId),
+    child: LessonDeckPage(lessonId: lessonId),
   );
 }
