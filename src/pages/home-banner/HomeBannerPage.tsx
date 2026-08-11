@@ -238,8 +238,8 @@ const HomeBannerPage: React.FC = () => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Chỉ hiện ở các quốc gia"
-                helperText="Để trống = hiện ở mọi quốc gia. Xác định theo IP người dùng; ai không xác định được vị trí sẽ KHÔNG thấy banner có giới hạn quốc gia."
+                label="Chỉ hiện với các thị trường"
+                helperText="Để trống = hiện với mọi người. Khớp theo BẤT KỲ tín hiệu nào: IP, region của máy, hoặc ngôn ngữ app (chọn VN thì người Việt ở nước ngoài vẫn thấy). Ai không khớp thị trường nào sẽ KHÔNG thấy banner có giới hạn."
               />
             )}
           />
