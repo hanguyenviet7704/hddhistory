@@ -7,6 +7,18 @@ export interface HomeBannerConfig {
   imageUrl: string;
   /** Where a tap lands: https:// URL or app deeplink. Empty = not tappable. */
   linkUrl: string;
+  /**
+   * ISO-3166 alpha-2 allow-list. EMPTY MEANS EVERYWHERE — that is what keeps
+   * existing banners showing unchanged after this field was added.
+   */
+  countries: string[];
+  /**
+   * Computed by the API for whoever asked, from their IP country. Useless to
+   * the admin panel — an operator sitting outside the target sees `false` for a
+   * perfectly live banner — which is exactly why `enabled` was left alone and
+   * this was added beside it. Read `enabled` + `countries` here, never this.
+   */
+  visible: boolean;
 }
 
 export const homeBannerService = {

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Autocomplete,
   Button,
   CircularProgress,
   FormControlLabel,
@@ -14,11 +15,16 @@ import {
   homeBannerService,
 } from "../../services/homeBannerService";
 import { useNotification } from "../../utils/hooks/useNotification";
+import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 
 const DEFAULTS: HomeBannerConfig = {
   enabled: false,
   imageUrl: "",
   linkUrl: "",
+  countries: [],
+  // Server-computed and irrelevant here; kept only so the form object matches
+  // the response type. Never read it on this page.
+  visible: false,
 };
 
 /**
@@ -46,6 +52,8 @@ const HomeBannerPage: React.FC = () => {
         enabled: d.enabled ?? DEFAULTS.enabled,
         imageUrl: d.imageUrl ?? DEFAULTS.imageUrl,
         linkUrl: d.linkUrl ?? DEFAULTS.linkUrl,
+        countries: d.countries ?? DEFAULTS.countries,
+        visible: d.visible ?? DEFAULTS.visible,
       });
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không tải được cấu hình");
@@ -201,6 +209,39 @@ const HomeBannerPage: React.FC = () => {
               setForm((p) => ({ ...p, linkUrl: e.target.value }))
             }
             helperText="URL https:// hoặc deeplink của app. Để trống thì banner chỉ hiển thị, không bấm được."
+          />
+
+          <div className="h-5" />
+
+          <Autocomplete
+            multiple
+            size="small"
+            options={COUNTRY_OPTIONS}
+            // Stored codes may include ones outside the curated list (added
+            // straight through the API, or from before an entry existed), so
+            // map through `countryLabel` rather than assuming a match.
+            value={form.countries.map(
+              (code) =>
+                COUNTRY_OPTIONS.find((c) => c.code === code) ?? {
+                  code,
+                  name: countryLabel(code),
+                },
+            )}
+            onChange={(_, selected) =>
+              setForm((p) => ({
+                ...p,
+                countries: selected.map((c) => c.code),
+              }))
+            }
+            isOptionEqualToValue={(a, b) => a.code === b.code}
+            getOptionLabel={(c) => `${c.name} (${c.code})`}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Chỉ hiện ở các quốc gia"
+                helperText="Để trống = hiện ở mọi quốc gia. Xác định theo IP người dùng; ai không xác định được vị trí sẽ KHÔNG thấy banner có giới hạn quốc gia."
+              />
+            )}
           />
 
           <div className="mt-6 flex items-center gap-3">
