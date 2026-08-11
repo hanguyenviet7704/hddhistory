@@ -41,7 +41,7 @@ class UserLessonCubit extends Cubit<UserLessonState>
   }
 
   /// Loads one lesson in full. Always refetched rather than reused from the
-  /// list, because the card in [pageData] has no sections.
+  /// list, because the card in [pageData] has no body.
   Future<void> openLesson(String id) => runUseCase<UserLessonEntity>(
     usecase: () => _getUserLessonUseCase(id),
     buildLoadingState: () =>
@@ -55,26 +55,48 @@ class UserLessonCubit extends Cubit<UserLessonState>
     ),
   );
 
-  /// Remember where the reader stopped.
+  /// The lesson behind a synthesised keypoint id, or null when that id belongs
+  /// to the catalogue — the question the reader's completion screen asks before
+  /// deciding where "next" goes.
+  UserLessonEntity? lessonForKeypoint(String keypointId) {
+    final lessonId = UserLessonCourseMapper.lessonIdOf(keypointId);
+    if (lessonId.isEmpty) return null;
+    final selected = state.selected;
+
+    return selected?.id == lessonId ? selected : null;
+  }
+
+  /// Remember where the reader stopped: which keypoint, and which card in it.
   ///
   /// Deliberately silent and un-awaited by callers: this fires as the reader
   /// leaves the screen, and neither a spinner nor an error toast belongs in
   /// that moment. Losing the write costs a bookmark, not a lesson.
-  void saveProgress({required String lessonId, required int sectionIndex}) {
+  void saveProgress({
+    required String lessonId,
+    required int keypointIndex,
+    required int sectionIndex,
+  }) {
     final selected = state.selected;
-    if (selected != null && selected.stopAtSectionIndex == sectionIndex) return;
+    final unchanged = selected != null &&
+        selected.stopAtKeypointIndex == keypointIndex &&
+        selected.stopAtSectionIndex == sectionIndex;
+    if (unchanged) return;
 
     // Optimistic: the card should show the new progress immediately even though
     // the write is in flight, because the user is looking at it right now.
     if (selected != null && selected.id == lessonId) {
       emit(state.copyWith(
-        selected: selected.copyWith(stopAtSectionIndex: sectionIndex),
+        selected: selected.copyWith(
+          stopAtKeypointIndex: keypointIndex,
+          stopAtSectionIndex: sectionIndex,
+        ),
       ));
     }
 
     _updateProgressUseCase(
       UpdateLessonProgressParams(
         lessonId: lessonId,
+        stopAtKeypointIndex: keypointIndex,
         stopAtSectionIndex: sectionIndex,
       ),
     ).run();

@@ -81,6 +81,7 @@ class LearningImportRepository
     return TaskEither.tryCatch(
       () async {
         await _api.updateProgress(params.lessonId, {
+          'stopAtKeypointIndex': params.stopAtKeypointIndex,
           'stopAtSectionIndex': params.stopAtSectionIndex,
         });
         return unit;

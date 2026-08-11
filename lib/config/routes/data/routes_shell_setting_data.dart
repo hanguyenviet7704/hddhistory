@@ -132,15 +132,13 @@ class LessonReaderRoute extends BaseTransitionRouteData with $LessonReaderRoute 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
 
+  /// Only [UserLessonCubit] is needed now. The route used to also create a
+  /// per-entry audio cubit for a reader this feature owned; the lesson is read
+  /// by the catalogue's own screen these days, and that screen brings its own
+  /// player (see `_buildLessonFlowPage`).
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
-      // Created per entry, not shared: it holds one lesson's cue map and stops
-      // the player on the way out. `close()` therefore has to run when the
-      // reader leaves, which a `.value` singleton would never do.
-      BlocProvider(create: (_) => AppDI.injector.get<UserLessonAudioCubit>()),
-    ],
-    child: LessonDeckPage(lessonId: lessonId),
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<UserLessonCubit>(),
+    child: UserLessonOpenerPage(lessonId: lessonId),
   );
 }

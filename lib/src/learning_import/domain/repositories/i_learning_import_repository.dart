@@ -26,10 +26,16 @@ class CreateLearningImportParams {
 
 class UpdateLessonProgressParams {
   final String lessonId;
+
+  /// Which keypoint the reader was in — where opening the lesson resumes.
+  final int stopAtKeypointIndex;
+
+  /// How far into that keypoint, as a card index RELATIVE to it.
   final int stopAtSectionIndex;
 
   const UpdateLessonProgressParams({
     required this.lessonId,
+    required this.stopAtKeypointIndex,
     required this.stopAtSectionIndex,
   });
 }

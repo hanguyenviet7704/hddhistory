@@ -35,6 +35,12 @@ class KeypointTrackingData {
     final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
     final lesson = courseLessonState.selectedLesson;
     if (lesson.id.isEmpty) return null;
+    // A lesson the user generated belongs to no course, and the course/skillset
+    // resolution below FALLS BACK to whatever the home screen last had — so
+    // every keypoint event from an imported lesson would be filed against an
+    // unrelated real course. No event is better than a wrong one; the import
+    // feature reports its own.
+    if (lesson.isImported) return null;
 
     final keypointId = courseLessonState.currentKeypointId;
     if (keypointId.isEmpty) return null;

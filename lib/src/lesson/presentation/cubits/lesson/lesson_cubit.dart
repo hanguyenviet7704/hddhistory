@@ -133,6 +133,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   }
 
   void _updateUserProgressKeypoint() {
+    // A generated lesson's keypoint ids are synthesised in the app and exist in
+    // no collection. Posting them to the catalogue's progress endpoint would
+    // write rows against keys nothing can ever resolve — and the reader's own
+    // bookmark (see `LessonPage._saveImportedProgress`) already records where
+    // these lessons got to.
+    if (AppDI.injector.get<CourseLessonCubit>().state.selectedLesson.isImported) {
+      return;
+    }
+
     UpdateUserProgressKeypointData keypointData = UpdateUserProgressKeypointData(
       keypointId: state.currentLearningItem.keypointId,
       averageScore: 0.0,
@@ -257,6 +266,54 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       ),
     );
     LessonRoute().go(AppConfig.instance.context!);
+  }
+
+  /// Open a keypoint whose learning items are already in hand.
+  ///
+  /// The sibling of [loadAllLearningItems] for content that has no rows behind
+  /// it: a lesson the user generated from their own material lives in its own
+  /// collection and is never served by `courses-learning-items`, so there is
+  /// nothing to fetch — but everything downstream of this cubit (the deck, the
+  /// theory cubit, narration, completion) works off `state.pageData` and cannot
+  /// tell where it came from.
+  ///
+  /// Mirrors the init half of [loadAllLearningItems] deliberately, including the
+  /// synchronous theory/exercise reset that keeps a previous keypoint's document
+  /// index from being read back as this one's progress. What it does NOT do is
+  /// the two things that only make sense against the catalogue: fetching each
+  /// item's detail (there is no endpoint to fetch it from — the items ARE the
+  /// detail) and starting a Live Activity (it needs a course to point at).
+  void loadLocalLearningItems(List<LearningItemEntity> items) {
+    _theoryCubit.reset();
+    _exerciseCubit.reset();
+
+    emit(
+      state.copyWith(
+        status: LessonStatus.success,
+        // One page holding everything: `isLastPage` needs currentPage > 0 and
+        // currentPage >= totalPages, or the deck would keep asking for more.
+        pageData: BasePageBreak<LearningItemEntity>(
+          items: items,
+          currentPage: 1,
+          totalPages: 1,
+          itemsPerPage: items.length,
+        ),
+        currentLearningItemIndex: 0,
+        completionOrigin: LessonCompletionOrigin.none,
+      ),
+    );
+
+    if (items.isEmpty) return;
+
+    // Same rule as the fetched path: a keypoint may open on a non-readable item,
+    // and falling back to 0 keeps an unreadable keypoint from indexing out of
+    // range — its deck builds no cards and the done card owns completion.
+    final firstIndex = _nextReadableIndex(0);
+    final first = firstIndex < items.length ? items[firstIndex] : items.first;
+    if (firstIndex < items.length && firstIndex != 0) {
+      emit(state.copyWith(currentLearningItemIndex: firstIndex));
+    }
+    setCurrentLearningItem(first);
   }
 
   void loadAllLearningItems({

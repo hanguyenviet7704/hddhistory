@@ -89,6 +89,21 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     unawaited(AppDI.injector.get<LiveActivityService>().end());
     unawaited(cancelLiveActivityReturnNudge());
 
+    // A generated lesson is on no roadmap and in no course, so the two
+    // catalogue destinations below are both wrong for it: the last keypoint
+    // ends by going back to where the lesson was opened from. Continue still
+    // walks to the next keypoint above — only the EXIT differs.
+    if (lessonState.selectedLesson.isImported) {
+      _navigatedAway = true;
+      if (continueToNext && _startNextKeypoint(lessonState)) return;
+      const MyLessonsRoute().go(context);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.myLessons);
+      });
+
+      return;
+    }
+
     // No habit prompt on this path any more: the habit step moved to WHERE THE
     // DESIGN puts it — between the recap flip card and this screen
     // ([HabitSuggestPage], pushed by [KeypointDoneCard]'s Continue). Prompting
@@ -142,6 +157,22 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     if (currentIndex < 0 || currentIndex + 1 >= keypoints.length) return false;
     final next = keypoints[currentIndex + 1];
     if (next.id.isEmpty) return false;
+
+    // A generated lesson walks the same keypoint list but cannot be re-entered
+    // through the catalogue: its items are held in memory, not served.
+    if (lesson.isImported) {
+      final userLesson = AppDI.injector.get<UserLessonCubit>().lessonForKeypoint(next.id);
+      if (userLesson == null) return false;
+
+      startImportedKeypointLesson(
+        lessonCubit: AppDI.injector.get<LessonCubit>(),
+        courseLessonCubit: context.read<CourseLessonCubit>(),
+        navContext: context,
+        userLesson: userLesson,
+        keypointIndex: currentIndex + 1,
+      );
+      return true;
+    }
 
     startKeypointLesson(
       lessonCubit: AppDI.injector.get<LessonCubit>(),

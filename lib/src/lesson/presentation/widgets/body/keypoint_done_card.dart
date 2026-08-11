@@ -432,6 +432,15 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
       final lessonCubit = context.read<LessonCubit>();
       final keypointId = context.read<CourseLessonCubit>().state.currentKeypointId;
 
+      // Habit suggestions are AUTHORED against a catalogue keypoint. A generated
+      // one has none by construction, so the lookup below could only ever come
+      // back empty — skip straight on rather than spend a request proving it.
+      if (context.read<CourseLessonCubit>().state.selectedLesson.isImported) {
+        lessonCubit.openKeypointComplete();
+
+        return;
+      }
+
       final habitCubit = AppDI.injector.get<HabitCubit>();
       await habitCubit.ensureLoaded();
       if (!mounted) return;

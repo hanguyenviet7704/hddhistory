@@ -49,3 +49,42 @@ void startKeypointLesson({
     ..setCurrentCourseLevel(courseLevel)
     ..setCurrentLesson(lesson);
 }
+
+/// Opens a keypoint of a lesson the user GENERATED — the same sequence as
+/// [startKeypointLesson], minus the three steps that need a catalogue.
+///
+/// Kept beside its sibling rather than folded into it with a flag, because what
+/// differs is not a variation on the flow but the absence of the things the flow
+/// normally talks to:
+///
+/// - items are handed over rather than fetched (nothing serves them);
+/// - `loadLesson` is skipped (there is no lesson row to refresh FROM — calling
+///   it would 404 and blank `selectedLesson` out from under the reader);
+/// - the roadmap is left alone (a generated lesson is on no roadmap, and writing
+///   to it would move the highlight on the user's real course).
+///
+/// Everything after this point is the ordinary reader: same route, same deck,
+/// same narration, same completion screen.
+void startImportedKeypointLesson({
+  required LessonCubit lessonCubit,
+  required CourseLessonCubit courseLessonCubit,
+  required BuildContext navContext,
+  required UserLessonEntity userLesson,
+  required int keypointIndex,
+}) {
+  final lesson = UserLessonCourseMapper.toLesson(userLesson);
+  if (lesson.id.isEmpty || keypointIndex >= lesson.keypoints.length) return;
+
+  final keypoint = lesson.keypoints[keypointIndex];
+
+  lessonCubit
+    ..reset()
+    ..loadLocalLearningItems(
+      UserLessonCourseMapper.learningItemsOf(userLesson, keypointIndex),
+    );
+  courseLessonCubit
+    ..setSelectedLesson(lesson)
+    ..setCurrentKeypointId(keypoint.id);
+
+  const LessonRoute().go(navContext);
+}

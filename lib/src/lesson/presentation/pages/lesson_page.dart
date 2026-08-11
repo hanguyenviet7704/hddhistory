@@ -190,7 +190,10 @@ class _LessonPageState extends State<LessonPage> {
         // ListView's "scrolled a new item into view" signal.
         BlocListener<KeypointCardCubit, KeypointCardState>(
           listenWhen: (previous, current) => previous.viewedCardIndex != current.viewedCardIndex,
-          listener: (context, state) => _trackCurrentLearningItemScroll(),
+          listener: (context, state) {
+            _trackCurrentLearningItemScroll();
+            _saveImportedProgress(state.viewedCardIndex);
+          },
         ),
       ],
       child: LessonShellLayout(
@@ -359,6 +362,27 @@ class _LessonPageState extends State<LessonPage> {
     if (lessonState.currentLearningItem.type != LearningItemType.exercise) return;
     isCorrect ? AppHaptic.success() : AppHaptic.error();
     context.read<LessonCubit>().markPendingAdvance();
+  }
+
+  /// Bookmark a GENERATED lesson as the reader moves through it.
+  ///
+  /// A no-op for catalogue content, which records progress server-side through
+  /// its own endpoints — this is the one thing a generated lesson has to do for
+  /// itself, because it lives in a collection those endpoints know nothing
+  /// about. Fire-and-forget by design: losing the write costs a bookmark.
+  void _saveImportedProgress(int cardIndex) {
+    final lesson = context.read<CourseLessonCubit>().state.selectedLesson;
+    if (!lesson.isImported) return;
+
+    final keypointId = context.read<CourseLessonCubit>().state.currentKeypointId;
+    final keypointIndex = UserLessonCourseMapper.keypointIndexOf(keypointId);
+    if (keypointIndex < 0) return;
+
+    AppDI.injector.get<UserLessonCubit>().saveProgress(
+      lessonId: UserLessonCourseMapper.lessonIdOf(keypointId),
+      keypointIndex: keypointIndex,
+      sectionIndex: cardIndex,
+    );
   }
 
   void _trackCurrentLearningItemScroll() {

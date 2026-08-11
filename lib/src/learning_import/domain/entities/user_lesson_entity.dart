@@ -18,12 +18,26 @@ abstract class LessonBlockEntity with _$LessonBlockEntity {
   }) = _LessonBlockEntity;
 }
 
+/// One card in the reader.
 @freezed
 abstract class LessonSectionEntity with _$LessonSectionEntity {
   const factory LessonSectionEntity({
     @Default('') String title,
     @Default(<LessonBlockEntity>[]) List<LessonBlockEntity> blocks,
   }) = _LessonSectionEntity;
+}
+
+/// A group of cards read as one sitting — the same unit a catalogue keypoint is.
+///
+/// This is what lets an imported lesson enter the catalogue's own reader rather
+/// than a parallel one: [UserLessonCourseMapper] turns each of these into a
+/// [KeypointEntity], so `LessonPage` cannot tell the two apart.
+@freezed
+abstract class LessonKeypointEntity with _$LessonKeypointEntity {
+  const factory LessonKeypointEntity({
+    @Default('') String title,
+    @Default(<LessonSectionEntity>[]) List<LessonSectionEntity> sections,
+  }) = _LessonKeypointEntity;
 }
 
 /// Whether a lesson has narration yet.
@@ -45,69 +59,62 @@ enum UserLessonAudioStatusEntity {
   failed,
 }
 
-/// Where one card's narration sits inside the merged file.
+/// Where one card's narration sits inside its KEYPOINT's file.
 ///
-/// Keyed by section index alone: one section renders as exactly one card, so a
-/// single number addresses the section, the card and the cue at once. The
-/// catalogue's cue needs `(learningItemId, documentIndex)` because a keypoint is
-/// assembled from authored learning items; a generated lesson is not.
+/// `cardIndex` is relative to the keypoint, because the file it indexes into is
+/// per keypoint. The catalogue's cue instead carries
+/// `(learningItemId, documentIndex)`, since a catalogue keypoint is assembled
+/// from authored learning items; [UserLessonCourseMapper] synthesises that pair
+/// from this one when it builds the reader's entities.
 @freezed
 abstract class UserLessonAudioCueEntity with _$UserLessonAudioCueEntity {
   const factory UserLessonAudioCueEntity({
-    @Default(0) int sectionIndex,
+    @Default(0) int cardIndex,
     @Default(0) int startMs,
     @Default(0) int durMs,
   }) = _UserLessonAudioCueEntity;
 }
 
+/// One keypoint's narration: its own file, its own cue map.
 @freezed
-abstract class UserLessonAudioEntity with _$UserLessonAudioEntity {
-  const factory UserLessonAudioEntity({
+abstract class UserLessonKeypointAudioEntity
+    with _$UserLessonKeypointAudioEntity {
+  const factory UserLessonKeypointAudioEntity({
+    @Default(0) int keypointIndex,
     @Default('') String url,
     @Default(0) int durationMs,
     @Default(<UserLessonAudioCueEntity>[]) List<UserLessonAudioCueEntity> cues,
+  }) = _UserLessonKeypointAudioEntity;
+}
+
+@freezed
+abstract class UserLessonAudioEntity with _$UserLessonAudioEntity {
+  const factory UserLessonAudioEntity({
+    @Default(<UserLessonKeypointAudioEntity>[])
+    List<UserLessonKeypointAudioEntity> keypoints,
   }) = _UserLessonAudioEntity;
 }
 
 extension UserLessonAudioEntityX on UserLessonAudioEntity {
-  bool get isPlayable => url.isNotEmpty && cues.isNotEmpty;
+  bool get isPlayable =>
+      keypoints.any((keypoint) => keypoint.url.isNotEmpty && keypoint.cues.isNotEmpty);
 
-  /// Which card the voice is currently reading.
-  ///
-  /// Returns the LAST cue that has started, not the one whose range contains the
-  /// position: a silent section has a zero-length cue, and a containment test
-  /// would never match it, leaving the deck stuck on the previous card while the
-  /// voice moved on.
-  int cardAt(Duration position) {
-    final ms = position.inMilliseconds;
-    var index = 0;
-    for (final cue in cues) {
-      if (cue.startMs <= ms) {
-        index = cue.sectionIndex;
-      } else {
-        break;
-      }
+  /// Narration for one keypoint, or null when that keypoint was never dubbed —
+  /// a keypoint whose every card was silent produces no file at all.
+  UserLessonKeypointAudioEntity? forKeypoint(int index) {
+    for (final keypoint in keypoints) {
+      if (keypoint.keypointIndex == index) return keypoint;
     }
 
-    return index;
-  }
-
-  Duration startOfCard(int sectionIndex) {
-    for (final cue in cues) {
-      if (cue.sectionIndex == sectionIndex) {
-        return Duration(milliseconds: cue.startMs);
-      }
-    }
-
-    return Duration.zero;
+    return null;
   }
 }
 
 /// A lesson the user generated from their own material.
 ///
-/// The list screen gets these WITHOUT [sections] (the API leaves the body out of
-/// the list response — a page of ten lessons would otherwise ship ~50k words to
-/// draw ten cards), so treat an empty `sections` on a card as "not loaded yet",
+/// The list screen gets these WITHOUT [keypoints] (the API leaves the body out
+/// of the list response — a page of ten lessons would otherwise ship ~50k words
+/// to draw ten cards), so treat empty `keypoints` on a card as "not loaded yet",
 /// not as "empty lesson".
 @freezed
 abstract class UserLessonEntity with _$UserLessonEntity {
@@ -123,15 +130,16 @@ abstract class UserLessonEntity with _$UserLessonEntity {
     @Default(0) int wordCount,
     @Default(0) int estimatedMinutes,
 
-    /// How far the reader got, as a section index.
-    ///
-    /// Still a section index even though the reader is one continuous scroll:
-    /// the app reports the topmost visible section when it leaves, and restoring
-    /// to a section boundary survives a re-render or a font-size change, which a
-    /// raw scroll offset would not.
+    /// Which keypoint the reader was last in — where opening the lesson resumes,
+    /// the same way tapping a course lesson does.
+    @Default(0) int stopAtKeypointIndex,
+
+    /// How far into that keypoint, as a card index RELATIVE to it. A card
+    /// boundary rather than a scroll offset: it survives a re-render or a
+    /// font-size change, which a raw offset would not.
     @Default(0) int stopAtSectionIndex,
     DateTime? createdAt,
-    @Default(<LessonSectionEntity>[]) List<LessonSectionEntity> sections,
+    @Default(<LessonKeypointEntity>[]) List<LessonKeypointEntity> keypoints,
 
     /// Narration state. Present on both the list card and the detail, so the
     /// card can draw a headphone badge without fetching the body.
@@ -144,7 +152,12 @@ abstract class UserLessonEntity with _$UserLessonEntity {
 }
 
 extension UserLessonEntityX on UserLessonEntity {
-  bool get hasBody => sections.isNotEmpty;
+  bool get hasBody => keypoints.isNotEmpty;
+
+  /// Every card in the lesson, keypoint boundaries ignored. For counting and
+  /// progress only — the reader always works a keypoint at a time.
+  int get cardCount =>
+      keypoints.fold(0, (total, keypoint) => total + keypoint.sections.length);
 
   /// Whether the headphone control should appear at all.
   bool get canListen =>
@@ -157,12 +170,21 @@ extension UserLessonEntityX on UserLessonEntity {
 
   /// Reading progress as a 0-100 int, for the card's label.
   ///
-  /// Section-granular by nature, so a lesson opened but not finished reads as
-  /// e.g. "20% read" rather than anything finer. Good enough to answer "did I
-  /// start this?", which is all the card is asking.
+  /// Measured in KEYPOINTS, not cards, and read off the list response — which
+  /// carries no body, so a card-level percentage is not available there anyway.
+  /// Keypoint-granular is also the honest unit: a keypoint is what the reader
+  /// finishes, so "1 of 4" is what they actually did.
   int get readPercent {
-    if (sections.isEmpty || stopAtSectionIndex <= 0) return 0;
+    if (keypointCount <= 0 || stopAtKeypointIndex <= 0) return 0;
 
-    return ((stopAtSectionIndex / sections.length) * 100).clamp(0, 100).round();
+    return ((stopAtKeypointIndex / keypointCount) * 100).clamp(0, 100).round();
   }
+
+  /// How many keypoints this lesson has.
+  ///
+  /// Falls back to `stopAtKeypointIndex + 1` on the LIST card, where the body is
+  /// absent: without it every card would report 0% forever. The detail response
+  /// carries the real list and overrides this.
+  int get keypointCount =>
+      keypoints.isNotEmpty ? keypoints.length : stopAtKeypointIndex + 1;
 }

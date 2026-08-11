@@ -10,7 +10,6 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:just_audio/just_audio.dart' as just_audio;
 import 'package:retrofit/retrofit.dart';
 
 //* Domain Layer - Entities
@@ -24,6 +23,9 @@ part 'data/models/user_lesson_model.dart';
 part 'data/models/import_quota_model.dart';
 part 'data/datasources/remote/learning_import_api.dart';
 part 'data/repositories/learning_import_repository.dart';
+
+//* Domain Layer - Mappers
+part 'domain/mappers/user_lesson_course_mapper.dart';
 
 //* Domain Layer - Repository interface, Use cases
 part 'domain/repositories/i_learning_import_repository.dart';
@@ -40,12 +42,10 @@ part 'presentation/cubits/learning_import_state.dart';
 part 'presentation/cubits/learning_import_cubit.dart';
 part 'presentation/cubits/user_lesson_state.dart';
 part 'presentation/cubits/user_lesson_cubit.dart';
-part 'presentation/cubits/user_lesson_audio_state.dart';
-part 'presentation/cubits/user_lesson_audio_cubit.dart';
 
 //* Presentation Layer - Pages + Sheets
 part 'presentation/pages/my_lessons_page.dart';
-part 'presentation/pages/lesson_deck_page.dart';
+part 'presentation/pages/user_lesson_opener_page.dart';
 part 'presentation/sheets/import_source_sheet.dart';
 
 //* Presentation Layer - Shell host
