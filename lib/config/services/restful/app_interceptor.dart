@@ -48,6 +48,14 @@ class AppInterceptor extends BaseInterceptor {
     // under the previous day. Read per request so travel and DST need no
     // handling of their own.
     options.headers['x-timezone-offset'] = DateTime.now().timeZoneOffset.inMinutes.toString();
+    // The device's own region, as a FALLBACK for country targeting (the Home
+    // banner today). The API prefers Cloudflare's `cf-ipcountry`, which is the
+    // real IP location and is not client-controlled; this only decides
+    // anything when a request never went through Cloudflare, i.e. local
+    // development. Empty when the platform reports no region, and the API
+    // treats an unusable value exactly as it treats a missing one.
+    final region = PlatformDispatcher.instance.locale.countryCode ?? '';
+    if (region.isNotEmpty) options.headers['x-device-country'] = region;
   }
 
   @override
