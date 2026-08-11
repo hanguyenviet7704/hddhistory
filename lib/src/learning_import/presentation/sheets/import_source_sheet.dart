@@ -102,32 +102,67 @@ class _ImportSourceSheetState extends State<_ImportSourceSheet> {
         // path announces a finished import, so there is no second path to rot.
         Navigator.of(context).pop();
       },
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: AppCustomColor.borderDefault,
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
-                ),
+      // Lift the whole sheet by the keyboard height. Without this the keyboard
+      // simply draws over the sheet: on the source step it covered everything
+      // below the title, and the title itself was clipped mid-line. Same
+      // treatment `report_issue_sheet` uses.
+      child: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: GestureDetector(
+          // Tapping anywhere off the field puts the keyboard away. Without it
+          // the only way out of the URL field was the sheet's own drag handle,
+          // which the keyboard was covering.
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: SafeArea(
+            top: false,
+            child: ConstrainedBox(
+              // The language step is five radio rows plus a button; with a
+              // keyboard up on a small phone that is taller than what is left of
+              // the screen. Capped and scrollable rather than overflowing.
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.85,
               ),
-              20.verticalSpace,
-              switch (_step) {
-                _ImportStep.source => _buildSourceStep(),
-                _ImportStep.language => _buildLanguageStep(),
-                _ImportStep.confirm => _buildConfirmStep(),
-                _ImportStep.working => const _WorkingView(),
-              },
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  12.verticalSpace,
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: AppCustomColor.borderDefault,
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  20.verticalSpace,
+                  Flexible(
+                    child: SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+                      child: switch (_step) {
+                        _ImportStep.source => _buildSourceStep(),
+                        _ImportStep.language => _buildLanguageStep(),
+                        _ImportStep.confirm => _buildConfirmStep(),
+                        _ImportStep.working => _WorkingView(
+                  onRetry: () {
+                    context.read<LearningImportCubit>().reset();
+                    setState(() {
+                      _step = _ImportStep.source;
+                      _inlineError = null;
+                    });
+                  },
+                ),
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -167,15 +202,28 @@ class _ImportSourceSheetState extends State<_ImportSourceSheet> {
               borderRadius: BorderRadius.circular(12.r),
             ),
           ),
+          // Clear the complaint as soon as they start fixing it, rather than
+          // leaving "not a valid link" under a field they have already edited.
+          onChanged: (_) {
+            if (_inlineError != null) setState(() => _inlineError = null);
+          },
           onSubmitted: (_) => _submitUrl(),
         ),
         16.verticalSpace,
-        DButton(
-          text: context.l10n.common.kContinue,
-          backgroundColor: AppCustomColor.brandPrimary,
-          size: Size(double.infinity, 52.h),
-          style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-          onPressed: _submitUrl,
+        // Dead until there is a link to continue WITH. This button only ever
+        // meant "use the YouTube link" -- the PDF tile advances on its own --
+        // so someone heading for the PDF path used to tap it and get told their
+        // (empty) link was invalid.
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _urlController,
+          builder: (context, value, _) => DButton(
+            text: context.l10n.common.kContinue,
+            backgroundColor: AppCustomColor.brandPrimary,
+            disabledBackgroundColor: AppCustomColor.borderDefault,
+            size: Size(double.infinity, 52.h),
+            style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+            onPressed: value.text.trim().isEmpty ? null : _submitUrl,
+          ),
         ),
       ],
     );
@@ -248,18 +296,23 @@ class _ImportSourceSheetState extends State<_ImportSourceSheet> {
                   .firstWhere((option) => option.code == _locale)
                   .label,
             ),
-            12.verticalSpace,
             // Credits shown before they commit, not after — being told "hết
-            // lượt" at the moment you press Create is the worst place to learn it.
-            AppText(
-              l10n.quotaRemaining(
-                remaining: state.quota.remaining,
-                limit: state.quota.limit,
+            // lượt" at the moment you press Create is the worst place to learn
+            // it. Hidden entirely when the quota fetch failed, because the
+            // state still holds its zeroed default and would otherwise read as
+            // a confident "0/0 left" to someone who has plenty.
+            if (state.quota.limit > 0) ...[
+              12.verticalSpace,
+              AppText(
+                l10n.quotaRemaining(
+                  remaining: state.quota.remaining,
+                  limit: state.quota.limit,
+                ),
+                style: AppStyle.text12.copyWith(
+                  color: AppCustomColor.textSecondary,
+                ),
               ),
-              style: AppStyle.text12.copyWith(
-                color: AppCustomColor.textSecondary,
-              ),
-            ),
+            ],
             20.verticalSpace,
             DButton(
               text: l10n.confirmStart,
@@ -279,7 +332,11 @@ class _ImportSourceSheetState extends State<_ImportSourceSheet> {
 
 /// Progress while the job runs, and the failure state when it does not.
 class _WorkingView extends StatelessWidget {
-  const _WorkingView();
+  const _WorkingView({required this.onRetry});
+
+  /// Back to step one, in this same sheet. Popping instead — which is what this
+  /// used to do — made a button labelled "try again" close everything.
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -294,6 +351,7 @@ class _WorkingView extends StatelessWidget {
               job!.status == ImportJobStatusEntity.interrupted;
 
           return _FailureView(
+            onRetry: onRetry,
             message: isInterrupted
                 ? l10n.errorInterrupted
                 : learningImportErrorText(context, state.errorCode),
@@ -302,6 +360,7 @@ class _WorkingView extends StatelessWidget {
 
         if (state.status == LearningImportStatus.failure) {
           return _FailureView(
+            onRetry: onRetry,
             message: state.errorMessage ?? l10n.errorGeneric,
           );
         }
@@ -354,9 +413,10 @@ class _WorkingView extends StatelessWidget {
 }
 
 class _FailureView extends StatelessWidget {
-  const _FailureView({required this.message});
+  const _FailureView({required this.message, required this.onRetry});
 
   final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -382,10 +442,7 @@ class _FailureView extends StatelessWidget {
           backgroundColor: AppCustomColor.brandPrimary,
           size: Size(double.infinity, 52.h),
           style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-          onPressed: () {
-            context.read<LearningImportCubit>().reset();
-            Navigator.of(context).pop();
-          },
+          onPressed: onRetry,
         ),
         8.verticalSpace,
       ],
