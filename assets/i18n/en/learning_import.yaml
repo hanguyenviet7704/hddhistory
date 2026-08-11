@@ -47,7 +47,7 @@ errorPdfUnreadable: We could not read that PDF. Try a different file.
 errorPdfTooLarge: That document is too big. Try one under 300 pages.
 errorYoutubeNoTranscript: That video has no captions, so there is nothing to read. Try another video.
 errorYoutubeUnavailable: That video cannot be opened. It may be private or deleted.
-errorYoutubeTooLong: That video is too long. Try one under 3 hours.
+errorYoutubeTooLong: That video is too long. Try one under 30 minutes.
 errorContentTooShort: There is not enough in this material to build a lesson.
 errorAiTimeout: This took too long. Please try again.
 errorAiFailed: Something went wrong while writing the lesson. Please try again.

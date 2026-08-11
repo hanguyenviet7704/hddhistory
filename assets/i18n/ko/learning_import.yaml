@@ -47,7 +47,7 @@ errorPdfUnreadable: 이 PDF를 읽을 수 없습니다. 다른 파일로 시도�
 errorPdfTooLarge: 문서가 너무 큽니다. 300쪽 이하로 시도해 보세요.
 errorYoutubeNoTranscript: 이 영상에는 자막이 없어 읽을 내용이 없습니다. 다른 영상으로 시도해 보세요.
 errorYoutubeUnavailable: 이 영상을 열 수 없습니다. 비공개이거나 삭제되었을 수 있습니다.
-errorYoutubeTooLong: 영상이 너무 깁니다. 3시간 이하로 시도해 보세요.
+errorYoutubeTooLong: 영상이 너무 깁니다. 30분 이내로 시도해 보세요.
 errorContentTooShort: 이 자료는 레슨을 만들기에 내용이 부족합니다.
 errorAiTimeout: 시간이 너무 오래 걸렸습니다. 다시 시도해 주세요.
 errorAiFailed: 레슨을 쓰는 중 문제가 발생했습니다. 다시 시도해 주세요.

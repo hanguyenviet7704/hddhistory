@@ -47,7 +47,7 @@ errorPdfUnreadable: 无法读取这份 PDF，请换一个文件试试。
 errorPdfTooLarge: 文档太大了，请使用 300 页以内的文件。
 errorYoutubeNoTranscript: 该视频没有字幕，无法读取内容，请换一个视频。
 errorYoutubeUnavailable: 无法打开该视频，它可能是私密的或已被删除。
-errorYoutubeTooLong: 视频太长了，请使用 3 小时以内的视频。
+errorYoutubeTooLong: 视频太长了，请使用 30 分钟以内的视频。
 errorContentTooShort: 这份材料的内容不足以生成一节课程。
 errorAiTimeout: 花费时间过长，请再试一次。
 errorAiFailed: 撰写课程时出了问题，请再试一次。
