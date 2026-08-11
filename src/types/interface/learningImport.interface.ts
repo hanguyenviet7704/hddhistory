@@ -49,9 +49,20 @@ export interface ILessonBlock {
   text: string;
 }
 
+/** One card in the reader. Named "section" from when a lesson was a flat list. */
 export interface ILessonSection {
   title: string;
   blocks: ILessonBlock[];
+}
+
+/**
+ * A group of cards the learner finishes in one sitting — the same unit a
+ * catalogue keypoint is. How many a lesson has is the model's call, so the admin
+ * shows the division rather than assuming a number.
+ */
+export interface ILessonKeypoint {
+  title: string;
+  sections: ILessonSection[];
 }
 
 export interface ILearningImportDetail extends ILearningImportRow {
@@ -65,7 +76,7 @@ export interface ILearningImportDetail extends ILearningImportRow {
     description: string;
     wordCount: number;
     estimatedMinutes: number;
-    sections: ILessonSection[];
+    keypoints: ILessonKeypoint[];
   } | null;
 }
 

@@ -172,8 +172,13 @@ export default function LearningImportDetail() {
           </h2>
           {lesson && (
             <span className="text-xs text-gray-500">
-              {lesson.sections.length} sections · {lesson.wordCount} words ·{" "}
-              {lesson.estimatedMinutes} min read
+              {lesson.keypoints.length} keypoints ·{" "}
+              {lesson.keypoints.reduce(
+                (total, keypoint) => total + keypoint.sections.length,
+                0,
+              )}{" "}
+              cards · {lesson.wordCount} words · {lesson.estimatedMinutes} min
+              read
             </span>
           )}
         </div>
@@ -191,35 +196,56 @@ export default function LearningImportDetail() {
               <p className="mt-1 text-sm text-gray-600">{lesson.description}</p>
             )}
 
-            {lesson.sections.map((section, sectionIndex) => (
+            {/*
+              Nested to match what the learner actually gets: a keypoint is one
+              sitting, and reviewing a generated lesson means judging whether the
+              DIVISION is sane, not only the prose. A flat list of cards hides
+              exactly the thing worth checking.
+            */}
+            {lesson.keypoints.map((keypoint, keypointIndex) => (
               <section
-                key={sectionIndex}
-                className="mt-8 border-t border-gray-100 pt-6 first:border-0"
+                key={keypointIndex}
+                className="mt-8 border-t border-gray-200 pt-6 first:border-0"
               >
-                <div className="text-xs uppercase tracking-wide text-gray-400">
-                  Section {sectionIndex + 1}
+                <div className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
+                  Keypoint {keypointIndex + 1} · {keypoint.sections.length}{" "}
+                  cards
                 </div>
-                <h4 className="mt-1 text-lg font-semibold text-gray-900">
-                  {section.title}
+                <h4 className="mt-1 text-lg font-bold text-gray-900">
+                  {keypoint.title}
                 </h4>
 
-                {section.blocks.map((block, blockIndex) =>
-                  block.type === "heading" ? (
-                    <h5
-                      key={blockIndex}
-                      className="mt-4 font-semibold text-gray-800"
-                    >
-                      {block.text}
+                {keypoint.sections.map((section, sectionIndex) => (
+                  <div
+                    key={sectionIndex}
+                    className="mt-5 border-l-2 border-gray-100 pl-4"
+                  >
+                    <div className="text-xs uppercase tracking-wide text-gray-400">
+                      Card {sectionIndex + 1}
+                    </div>
+                    <h5 className="mt-1 font-semibold text-gray-900">
+                      {section.title}
                     </h5>
-                  ) : (
-                    <p
-                      key={blockIndex}
-                      className="mt-3 leading-relaxed text-gray-700"
-                    >
-                      {block.text}
-                    </p>
-                  ),
-                )}
+
+                    {section.blocks.map((block, blockIndex) =>
+                      block.type === "heading" ? (
+                        <h6
+                          key={blockIndex}
+                          className="mt-4 font-semibold text-gray-800"
+                        >
+                          {block.text}
+                        </h6>
+                      ) : (
+                        <p
+                          key={blockIndex}
+                          className="mt-3 leading-relaxed text-gray-700"
+                        >
+                          {block.text}
+                        </p>
+                      ),
+                    )}
+                  </div>
+                ))}
               </section>
             ))}
           </div>
