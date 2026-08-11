@@ -325,12 +325,17 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
   }
 
   /// One suggested habit (design "Start first habit" row): white card with a
-  /// hairline border, the shared sprout tile, the title, and a round "+" add
-  /// button ("Added" chip once adopted). The whole row stays the tap target —
-  /// the 34px button alone is too small a thumb target for the row's single
-  /// action. Every row carries the SAME sprout tile deliberately (design
-  /// `habit-plant.svg` on `#E9F6EC`): this list offers new habits to grow, and
-  /// per-habit domain icons here read as three different apps in a column.
+  /// hairline border, the habit's picture, the title, and a round "+" add button
+  /// ("Added" chip once adopted). The whole row stays the tap target — the 34px
+  /// button alone is too small a thumb target for the row's single action.
+  ///
+  /// The tile shows the habit's OWN picture, like every other habit surface
+  /// ([HabitDomainIcon]). It once forced one uniform sprout on every row, back
+  /// when the only alternative was the SKILLSET logo and three domain logos in a
+  /// column read as three different apps; 37db4917 overturned that once habits
+  /// carried their own pictures, and the design rewrite here re-pinned the
+  /// sprout by accident. A habit with no picture still lands on the design's
+  /// sprout tile ([_sproutTile]), so a half-filled catalog looks unchanged.
   Widget _habitRow(BuildContext context, HabitEntity habit) {
     final isAdded = _adoptedRowFor(habit) != null;
     final isSubmitting = _submittingHabitId == habit.id;
@@ -353,15 +358,12 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE9F6EC),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  alignment: Alignment.center,
-                  child: SvgPicture.asset(AppAsset.svg.common.habitAddedPlant, width: 30.w, height: 30.w),
+                HabitDomainIcon(
+                  skillsetId: habit.skillsetId,
+                  imageUrl: habit.image,
+                  size: 44,
+                  radius: 12,
+                  fallback: _sproutTile(),
                 ),
                 14.horizontalSpace,
                 Expanded(
@@ -385,6 +387,21 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
           ),
         ),
       ),
+    );
+  }
+
+  /// The design's placeholder tile (`habit-plant.svg` on `#E9F6EC`), shown for a
+  /// habit that has no picture of its own and inherits none from its skillset.
+  Widget _sproutTile() {
+    return Container(
+      width: 44.w,
+      height: 44.w,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE9F6EC),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      alignment: Alignment.center,
+      child: SvgPicture.asset(AppAsset.svg.common.habitAddedPlant, width: 30.w, height: 30.w),
     );
   }
 

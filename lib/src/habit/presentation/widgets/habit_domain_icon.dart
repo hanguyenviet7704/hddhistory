@@ -22,12 +22,19 @@ class HabitDomainIcon extends StatelessWidget {
   /// design draws at 10.
   final double radius;
 
+  /// Replaces the neutral last-resort tile (see [build]) where a screen's
+  /// design specifies its own placeholder — the habit-suggest rows draw a green
+  /// sprout tile there. Only the LAST tier changes: a habit that has a picture,
+  /// or inherits its skillset's, still shows that picture.
+  final Widget? fallback;
+
   const HabitDomainIcon({
     super.key,
     required this.skillsetId,
     this.imageUrl = '',
     this.size = 28,
     this.radius = 8,
+    this.fallback,
   });
 
   @override
@@ -37,17 +44,18 @@ class HabitDomainIcon extends StatelessWidget {
         ? ownImage
         : (AppDI.injector.get<HomeCubit>().state.skillsets.where((s) => s.id == skillsetId).firstOrNull?.image ?? '').trim();
     // Permanent fallback (no image / load error): a neutral tile with the
-    // domain glyph.
-    final fallback = Container(
-      width: size.w,
-      height: size.w,
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundBrandSoft,
-        borderRadius: BorderRadius.circular(radius.r),
-      ),
-      alignment: Alignment.center,
-      child: Icon(Icons.spa_rounded, size: (size * 0.55).w, color: AppCustomColor.streakActive),
-    );
+    // domain glyph, unless the caller supplied its own.
+    final fallback = this.fallback ??
+        Container(
+          width: size.w,
+          height: size.w,
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundBrandSoft,
+            borderRadius: BorderRadius.circular(radius.r),
+          ),
+          alignment: Alignment.center,
+          child: Icon(Icons.spa_rounded, size: (size * 0.55).w, color: AppCustomColor.streakActive),
+        );
     if (image.isEmpty) return fallback;
 
     // Shown ONLY while the skillset image is loading — a plain, ICON-LESS tile
