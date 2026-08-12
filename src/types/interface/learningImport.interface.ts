@@ -110,4 +110,35 @@ export interface ImportQuota {
   remaining: number;
   resetsAt: string;
   isPremium: boolean;
+  /** What the premium allowance would be — the number the app's upsell quotes. */
+  premiumLimit?: number;
+  /** The feature switch, folded into this call so the app learns both at once. */
+  enabled?: boolean;
+  disabledNote?: string;
+}
+
+/** What the import feature has actually done. GET /admin/learning-imports/stats. */
+export interface ILearningImportStats {
+  totalJobs: number;
+  jobsLast7Days: number;
+  completedJobs: number;
+  failedJobs: number;
+  runningJobs: number;
+  /** Completed / (completed + failed). Unfinished jobs are excluded — they are
+   *  not evidence either way. */
+  successRate: number;
+  uniqueUsers: number;
+  /** Estimated, not billed — the runner's own cost figure. */
+  totalCostVnd: number;
+  averageCostVnd: number;
+  totalLessons: number;
+  byStatus: { status: string; count: number }[];
+  bySource: { sourceType: string; count: number }[];
+  topErrors: { code: string; count: number }[];
+}
+
+/** GET/PUT /admin/learning-imports/config. */
+export interface ILearningImportConfig {
+  enabled: boolean;
+  disabledNote: string;
 }

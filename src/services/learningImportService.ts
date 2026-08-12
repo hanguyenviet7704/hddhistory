@@ -1,5 +1,7 @@
 import {
   CreateLearningImportPayload,
+  ILearningImportConfig,
+  ILearningImportStats,
   ILearningImportDetail,
   ILearningImportRow,
   ImportQuota,
@@ -50,6 +52,27 @@ export const learningImportService = {
 
   async getQuota(): Promise<ImportQuota> {
     const res = await axiosClient.get("/learning-imports/quota");
+    return res.data?.data ?? res.data;
+  },
+
+  async getStats(): Promise<ILearningImportStats> {
+    const res = await axiosClient.get("/admin/learning-imports/stats");
+    return res.data?.data ?? res.data;
+  },
+
+  async getConfig(): Promise<ILearningImportConfig> {
+    const res = await axiosClient.get("/admin/learning-imports/config");
+    return res.data?.data ?? res.data;
+  },
+
+  /**
+   * Turning this off closes the CREATE path only — lessons already generated
+   * stay readable and running jobs finish.
+   */
+  async updateConfig(
+    payload: Partial<ILearningImportConfig>,
+  ): Promise<ILearningImportConfig> {
+    const res = await axiosClient.put("/admin/learning-imports/config", payload);
     return res.data?.data ?? res.data;
   },
 };

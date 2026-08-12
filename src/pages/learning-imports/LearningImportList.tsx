@@ -13,6 +13,7 @@ import {
   LearningImportListQuery,
 } from "../../types/interface/learningImport.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
+import ImportStatsPanel from "./ImportStatsPanel";
 import RunImportPanel from "./RunImportPanel";
 import {
   ERROR_LABELS,
@@ -128,6 +129,8 @@ export default function LearningImportList() {
           Refresh
         </button>
       </div>
+
+      <ImportStatsPanel />
 
       <RunImportPanel
         onStarted={() => fetchImports(1, debouncedSearch, statusFilter)}
