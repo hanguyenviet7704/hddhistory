@@ -43,14 +43,20 @@ class _HomeBannerCarousel extends StatefulWidget {
 }
 
 class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
-  /// Slow enough to read a promo image, fast enough that a reader scrolling past
-  /// Home sees more than the first one.
-  static const Duration _autoAdvanceInterval = Duration(seconds: 5);
+  /// 2.5s per slide (user call, 2026-08-12): a promo image is read at a glance,
+  /// and Home is a screen people pass through — at 5s a reader who scrolls by
+  /// only ever saw the first slide.
+  ///
+  /// Measured from the END of the previous animation, not its start: the timer is
+  /// restarted in [_advance]'s completion rather than being periodic, so every
+  /// slide gets the full dwell instead of 2.5s minus the 450ms it spent moving.
+  static const Duration _autoAdvanceInterval = Duration(milliseconds: 2500);
   static const Duration _autoAdvanceAnimation = Duration(milliseconds: 450);
 
   final PageController _pageController = PageController();
   Timer? _autoAdvanceTimer;
   int _currentIndex = 0;
+  bool _isStoppedByReader = false;
 
   bool get _isCarousel => widget.slides.length > 1;
 
@@ -79,8 +85,8 @@ class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
 
   void _restartAutoAdvance() {
     _autoAdvanceTimer?.cancel();
-    if (!_isCarousel) return;
-    _autoAdvanceTimer = Timer.periodic(_autoAdvanceInterval, (_) => _advance());
+    if (!_isCarousel || _isStoppedByReader) return;
+    _autoAdvanceTimer = Timer(_autoAdvanceInterval, _advance);
   }
 
   /// Stops the carousel moving on its own for the rest of this Home visit.
@@ -89,18 +95,24 @@ class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
   /// yanking the page out from under their thumb — and having touched it, they
   /// already know it can be swiped, which is the only thing auto-advance was
   /// there to tell them.
-  void _stopAutoAdvance() => _autoAdvanceTimer?.cancel();
+  ///
+  /// A latch, not just a cancelled timer: the touch can land WHILE a slide is
+  /// animating, and that animation's completion is what schedules the next one.
+  void _stopAutoAdvance() {
+    _isStoppedByReader = true;
+    _autoAdvanceTimer?.cancel();
+  }
 
-  void _advance() {
+  Future<void> _advance() async {
     if (!mounted || !_pageController.hasClients) return;
     final next = (_currentIndex + 1) % widget.slides.length;
-    unawaited(
-      _pageController.animateToPage(
-        next,
-        duration: _autoAdvanceAnimation,
-        curve: Curves.easeOutCubic,
-      ),
+    await _pageController.animateToPage(
+      next,
+      duration: _autoAdvanceAnimation,
+      curve: Curves.easeOutCubic,
     );
+    if (!mounted) return;
+    _restartAutoAdvance();
   }
 
   void _openSlide(HomeBannerSlideEntity slide) {
