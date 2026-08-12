@@ -43,6 +43,13 @@ enum ImportJobStageEntity {
   validating,
   @JsonValue('saving')
   saving,
+
+  /// Narration, which the server now runs BEFORE it reports the job complete —
+  /// so "your lesson is ready" means readable and listenable. It has its own
+  /// deadline server-side: past it the job completes anyway and the audio
+  /// lands late.
+  @JsonValue('dubbing')
+  dubbing,
   @JsonValue('unknown')
   unknown,
 }

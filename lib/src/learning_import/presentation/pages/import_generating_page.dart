@@ -142,6 +142,7 @@ class _ImportGeneratingPageState extends State<ImportGeneratingPage>
       ImportJobStageEntity.generating => l10n.stageGenerating,
       ImportJobStageEntity.validating => l10n.stageValidating,
       ImportJobStageEntity.saving => l10n.stageSaving,
+      ImportJobStageEntity.dubbing => l10n.stageDubbing,
       // No stage yet (or one this build does not know): say the thing that is
       // true regardless — they can walk away.
       _ => l10n.workingLeaveHint,

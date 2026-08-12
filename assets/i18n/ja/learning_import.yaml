@@ -1,5 +1,5 @@
 # Entry point (Profile row) + list screen
-myLessonsTitle: マイレッスン
+myLessonsTitle: 作ったレッスン
 myLessonsSubtitle: 自分の資料から作ったレッスン
 emptyTitle: まだ何もありません
 emptyBody: PDF や YouTube の動画を、その場で読めるレッスンに変えましょう。
@@ -8,7 +8,7 @@ deleteConfirmTitle: このレッスンを削除しますか？
 deleteConfirmBody: 元に戻すことはできません。
 deleteConfirmAction: 削除
 cancel: キャンセル
-readingProgress: ${percent}% 読了
+readingProgress: ${percent}% 完了
 minutesRead: ${minutes} 分
 quotaRemaining: 今週は残り ${remaining}/${limit} 回
 quotaResets: ${date} に戻ります
@@ -41,6 +41,7 @@ stageFetching: 資料を読み込み中…
 stageGenerating: レッスンを執筆中…
 stageValidating: 内容を確認中…
 stageSaving: もうすぐ完了…
+stageDubbing: ナレーションを録音中…
 
 # Errors, one sentence per cause
 errorPdfUnreadable: この PDF を読み取れませんでした。別のファイルをお試しください。
@@ -118,10 +119,11 @@ guideHint: どこかをタップして続ける
 
 # Roadmap of a generated lesson
 roadmapSectionTitle: あなたのコンテンツから
-roadmapSectionSubtitle: 取り込んだ内容から 2 つのステップにまとめました
-roadmapReadNode(param=count):
-  one: 大事なポイント、1 つ
-  other: 大事なポイント、${count} つ
-roadmapPracticeNode: 自分の言葉で言い直す
+roadmapSectionSubtitle(param=count):
+  one: 取り込んだ内容から 1 つのキーポイント
+  other: 取り込んだ内容から ${count} つのキーポイント
 roadmapStartCta: レッスンを始める
 roadmapContinueCta: つづきから
+roadmapStepsProgress: ${completed}/${total} キーポイント
+statusNotStarted: 未開始
+statusCreating: 作成中…

@@ -1,5 +1,5 @@
 # Entry point (Profile row) + list screen
-myLessonsTitle: 내 레슨
+myLessonsTitle: 내가 만든 레슨
 myLessonsSubtitle: 내 자료로 만든 레슨
 emptyTitle: 아직 아무것도 없어요
 emptyBody: PDF나 유튜브 영상을 바로 읽을 수 있는 레슨으로 바꿔 보세요.
@@ -8,7 +8,7 @@ deleteConfirmTitle: 이 레슨을 삭제할까요?
 deleteConfirmBody: 되돌릴 수 없습니다.
 deleteConfirmAction: 삭제
 cancel: 취소
-readingProgress: ${percent}% 읽음
+readingProgress: ${percent}% 완료
 minutesRead: ${minutes}분
 quotaRemaining: 이번 주 ${remaining}/${limit}회 남음
 quotaResets: ${date}에 다시 채워져요
@@ -41,6 +41,7 @@ stageFetching: 자료를 읽는 중…
 stageGenerating: 레슨을 쓰는 중…
 stageValidating: 내용을 확인하는 중…
 stageSaving: 거의 다 됐어요…
+stageDubbing: 내레이션 녹음 중…
 
 # Errors, one sentence per cause
 errorPdfUnreadable: 이 PDF를 읽을 수 없습니다. 다른 파일로 시도해 보세요.
@@ -118,10 +119,11 @@ guideHint: 아무 곳이나 탭하면 계속
 
 # Roadmap of a generated lesson
 roadmapSectionTitle: 내 콘텐츠에서
-roadmapSectionSubtitle: 가져온 내용에서 두 단계를 뽑았어요
-roadmapReadNode(param=count):
-  one: 핵심 포인트 1개
-  other: 핵심 포인트 ${count}개
-roadmapPracticeNode: 내 말로 다시 말해보기
+roadmapSectionSubtitle(param=count):
+  one: 가져온 내용에서 핵심 포인트 1개
+  other: 가져온 내용에서 핵심 포인트 ${count}개
 roadmapStartCta: 레슨 시작
 roadmapContinueCta: 이어서 하기
+roadmapStepsProgress: ${completed}/${total} 포인트
+statusNotStarted: 시작 전
+statusCreating: 만드는 중…

@@ -22,44 +22,17 @@ class UserLessonRoadmapPage extends StatefulWidget {
 }
 
 class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
-  /// Whether a practice conversation already exists for this lesson.
-  ///
-  /// Page state rather than cubit state: the roadmap is the only screen that
-  /// asks, the answer is one bool, and the alternative is a field on
-  /// [UserLessonState] that every other consumer would have to ignore.
-  bool _practiceStarted = false;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(context.read<UserLessonCubit>().openLesson(widget.lessonId));
-      unawaited(_loadPracticeState());
     });
   }
 
-  /// Silent on failure, and that is the point: the practice node is drawn either
-  /// way, and a dropped request should cost a tick mark, not the screen.
-  Future<void> _loadPracticeState() async {
-    final result = await AppDI.injector
-        .get<GetOutputPracticeConversationUseCase>()
-        .call(UserLessonCourseMapper.practiceSectionId(widget.lessonId))
-        .run();
-
-    if (!mounted) return;
-
-    result.fold(
-      (_) => null,
-      (conversation) {
-        if (!conversation.hasConversation) return;
-        setState(() => _practiceStarted = true);
-      },
-    );
-  }
-
-  /// Into the deck, at the card they stopped on.
-  void _openReader(UserLessonEntity lesson) {
+  /// Into the deck, at [keypointIndex].
+  void _openReader(UserLessonEntity lesson, int keypointIndex) {
     if (lesson.keypoints.isEmpty) return;
 
     startImportedKeypointLesson(
@@ -67,21 +40,8 @@ class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
       courseLessonCubit: AppDI.injector.get<CourseLessonCubit>(),
       navContext: context,
       userLesson: lesson,
-      keypointIndex: lesson.stopAtKeypointIndex.clamp(
-        0,
-        lesson.keypoints.length - 1,
-      ),
+      keypointIndex: keypointIndex.clamp(0, lesson.keypoints.length - 1),
     );
-  }
-
-  /// Into the practice chat, keyed by this lesson rather than a roadmap node.
-  /// The server recognises the prefix and builds the AI's brief from the lesson
-  /// itself — see `UserLessonPracticeService` on the API side.
-  void _openPractice() {
-    AppHaptic.select();
-    OutputPracticeRoute(
-      sectionId: UserLessonCourseMapper.practiceSectionId(widget.lessonId),
-    ).push(context);
   }
 
   @override
@@ -102,16 +62,16 @@ class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
             if (lesson == null || lesson.id != widget.lessonId) {
               return SafeBody(
                 child: state.status == UserLessonStatus.failure
-                    ? _RoadmapError(message: context.l10n.learningImport.errorGeneric)
+                    ? _RoadmapError(
+                        message: context.l10n.learningImport.errorGeneric,
+                      )
                     : const Center(child: CircularProgressIndicator()),
               );
             }
 
             return _RoadmapBody(
               lesson: lesson,
-              practiceStarted: _practiceStarted,
-              onOpenReader: () => _openReader(lesson),
-              onOpenPractice: _openPractice,
+              onOpenKeypoint: (index) => _openReader(lesson, index),
             );
           },
         ),
@@ -143,28 +103,28 @@ class _RoadmapError extends StatelessWidget {
 }
 
 class _RoadmapBody extends StatelessWidget {
-  const _RoadmapBody({
-    required this.lesson,
-    required this.practiceStarted,
-    required this.onOpenReader,
-    required this.onOpenPractice,
-  });
+  const _RoadmapBody({required this.lesson, required this.onOpenKeypoint});
 
   final UserLessonEntity lesson;
-  final bool practiceStarted;
-  final VoidCallback onOpenReader;
-  final VoidCallback onOpenPractice;
+  final ValueChanged<int> onOpenKeypoint;
 
-  /// Read through to the end of the last keypoint. Both indexes are checked:
-  /// resuming at the final keypoint is not the same as having finished it.
-  bool get _readDone {
+  /// Where the reader currently stands, as a keypoint index.
+  ///
+  /// Everything before it is done, it is the one in progress, everything after
+  /// is locked -- the catalogue's rule, applied to the only unit a generated
+  /// lesson has. `stopAtKeypointIndex` is where opening the lesson resumes, so
+  /// it IS that boundary; the section check moves it past the end once the last
+  /// card of the last keypoint has been seen.
+  int get _currentIndex {
     final keypoints = lesson.keypoints;
-    if (keypoints.isEmpty) return false;
+    if (keypoints.isEmpty) return 0;
 
-    final lastKeypoint = keypoints.length - 1;
-    if (lesson.stopAtKeypointIndex < lastKeypoint) return false;
+    final last = keypoints.length - 1;
+    final finished =
+        lesson.stopAtKeypointIndex >= last &&
+        lesson.stopAtSectionIndex >= keypoints.last.sections.length - 1;
 
-    return lesson.stopAtSectionIndex >= keypoints.last.sections.length - 1;
+    return finished ? keypoints.length : lesson.stopAtKeypointIndex;
   }
 
   bool get _readStarted =>
@@ -173,81 +133,153 @@ class _RoadmapBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.learningImport;
-    final done = (_readDone ? 1 : 0) + (practiceStarted ? 1 : 0);
+    final keypoints = lesson.keypoints;
+    final current = _currentIndex;
 
     return Stack(
       children: [
         SafeBody(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-              24.w,
-              0,
-              24.w,
-              // Clear of the floating CTA, which is not part of the scroll.
-              floatingNavBarHeight(context) + 120.h,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _RoadmapHeader(),
-                Center(
-                  child: AppText(
-                    lesson.title,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.textBold24.copyWith(
-                      fontSize: 23.sp,
-                      height: 1.3,
-                      color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-                    ),
-                    maxLines: 3,
+          // Header OUTSIDE the scroll, the way the catalogue roadmap builds its
+          // own: a back arrow that scrolls away leaves the screen with no
+          // navigation at all once you are two nodes down.
+          child: Column(
+            children: [
+              const _RoadmapHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    24.w,
+                    0,
+                    24.w,
+                    // Clear of the floating CTA and the nav bar, neither of which is
+                    // part of the scroll.
+                    floatingNavBarHeight(context) + 120.h,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _CoverArtwork(),
+                      Center(
+                        child: AppText(
+                          lesson.title,
+                          textAlign: TextAlign.center,
+                          style: AppStyle.text20.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: studyThemeOnBg(
+                              context,
+                              AppCustomColor.textPrimary,
+                            ),
+                          ),
+                          maxLines: 3,
+                        ),
+                      ),
+                      20.verticalSpace,
+                      _ProgressStrip(
+                        label: _sourceLabel(context, lesson.sourceType),
+                        done: current.clamp(0, keypoints.length),
+                        total: keypoints.length,
+                      ),
+                      26.verticalSpace,
+                      _SectionCard(
+                        title: l10n.roadmapSectionTitle,
+                        subtitle: l10n.roadmapSectionSubtitle(
+                          count: keypoints.length,
+                        ),
+                      ),
+                      20.verticalSpace,
+                      for (final (index, keypoint) in keypoints.indexed)
+                        _RoadmapNode(
+                          title: keypoint.title,
+                          marker: AppAsset.images.app.roadmapKeypointActive,
+                          artwork:
+                              kMockUserLessonCovers[index %
+                                  kMockUserLessonCovers.length],
+                          state: switch (index) {
+                            _ when index < current => _NodeState.done,
+                            _ when index == current => _NodeState.inProgress,
+                            _ => _NodeState.locked,
+                          },
+                          isFirst: index == 0,
+                          isLast: index == keypoints.length - 1,
+                          onTap: () => onOpenKeypoint(index),
+                        ),
+                    ],
                   ),
                 ),
-                12.verticalSpace,
-                _ProgressStrip(done: done, total: 2),
-                26.verticalSpace,
-                _SectionCard(
-                  title: l10n.roadmapSectionTitle,
-                  subtitle: l10n.roadmapSectionSubtitle,
-                ),
-                20.verticalSpace,
-                _RoadmapNode(
-                  title: l10n.roadmapReadNode(count: lesson.keypointCount),
-                  icon: Icons.menu_book_rounded,
-                  tint: const Color(0xFFEEEDFB),
-                  iconColor: AppCustomColor.brandPrimary,
-                  state: _readDone
-                      ? _NodeState.done
-                      : (_readStarted ? _NodeState.inProgress : _NodeState.open),
-                  hasConnector: true,
-                  onTap: onOpenReader,
-                ),
-                _RoadmapNode(
-                  title: l10n.roadmapPracticeNode,
-                  icon: Icons.forum_rounded,
-                  tint: const Color(0xFFE7F3EE),
-                  iconColor: const Color(0xFF3AA07E),
-                  state: practiceStarted ? _NodeState.done : _NodeState.open,
-                  hasConnector: false,
-                  onTap: onOpenPractice,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+        // Decorative fade behind the CTA, IgnorePointer so it never blocks a
+        // tap on the node beneath. Theme-aware for the reason the catalogue
+        // spells out: a solid white slab glares over a custom study background.
         Positioned(
           left: 0,
           right: 0,
-          bottom: floatingNavBarHeight(context) + 24.h,
-          child: Center(
-            child: _StartCta(
-              label: _readStarted ? l10n.roadmapContinueCta : l10n.roadmapStartCta,
-              onTap: onOpenReader,
+          bottom: 0,
+          child: IgnorePointer(
+            child: Container(
+              height: 200.h,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    _fadeColor(context).withValues(alpha: 0),
+                    _fadeColor(context),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
+        // No CTA once the lesson is finished. "Continue" with nothing left to
+        // continue is a button that lies; rereading is still one tap away on
+        // any node.
+        if (!lesson.isCompleted)
+          Positioned(
+            left: 20.w,
+            right: 20.w,
+            // The nav bar's ACTUAL height, which varies with the device's
+            // safe-area inset, rather than a flat guess.
+            bottom: floatingNavBarHeight(context) + 8.h,
+            child: Center(
+              child: _StartCta(
+                label: _readStarted
+                    ? l10n.roadmapContinueCta
+                    : l10n.roadmapStartCta,
+                // Resumes where they stopped, which is the node drawn as
+                // current.
+                onTap: () => onOpenKeypoint(
+                  current.clamp(0, (keypoints.length - 1).clamp(0, 1 << 30)),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
+}
+
+/// End colour of the bottom CTA fade: solid white on the stock background, a
+/// theme-aware scrim over a custom one. Mirrors `_roadmapFadeColor` in
+/// `course_roadmap_page`.
+Color _fadeColor(BuildContext context) {
+  if (!studyThemeHasCustomBg(context)) return AppCustomColor.backgroundWhite;
+
+  return studyThemeIsDarkBg(context)
+      ? const Color(0xB3000000)
+      : AppCustomColor.backgroundWhite.op(0.65);
+}
+
+/// Where the material came from, for the strip's left slot. Not localised on
+/// purpose — "YouTube" and "PDF" are the same word everywhere MeUp ships.
+String _sourceLabel(BuildContext context, ImportSourceTypeEntity source) {
+  return switch (source) {
+    ImportSourceTypeEntity.youtube => 'YOUTUBE',
+    ImportSourceTypeEntity.pdf => 'PDF',
+    _ => context.l10n.learningImport.roadmapSectionTitle.toUpperCase(),
+  };
 }
 
 class _RoadmapHeader extends StatelessWidget {
@@ -255,72 +287,139 @@ class _RoadmapHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 42.h,
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Semantics(
-          button: true,
-          label: context.l10n.common.back,
-          child: GestureDetector(
-            onTap: () {
-              AppHaptic.select();
-              Navigator.of(context).maybePop();
-            },
-            behavior: HitTestBehavior.opaque,
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 22.w,
-              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+    // Same two affordances, same insets, as the catalogue roadmap's header:
+    // back on the left, change-background on the right. Two roadmaps that sit
+    // one tap apart should not be arranged differently.
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Semantics(
+            button: true,
+            label: context.l10n.common.back,
+            child: IconButton(
+              key: const Key('user-lesson-roadmap-back'),
+              padding: EdgeInsets.only(left: 12.w),
+              constraints: const BoxConstraints(),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 20.w,
+                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+              ),
+              onPressed: () {
+                AppHaptic.select();
+                Navigator.of(context).maybePop();
+              },
             ),
           ),
         ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 12.w),
+            child: const ChangeBackgroundButton(
+              key: Key('user-lesson-roadmap-change-theme'),
+              size: 40,
+              source: 'user_lesson_roadmap',
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CoverArtwork extends StatelessWidget {
+  const _CoverArtwork();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 120.w,
+        height: 120.w,
+        margin: EdgeInsets.only(bottom: 24.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F0FD),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 28.r),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.asset(kMockUserLessonCourseCover, fit: BoxFit.cover),
       ),
     );
   }
 }
 
-/// The 120pt bar and its "1/2" — the catalogue roadmap's own header strip,
-/// minus the LEVEL label a generated lesson has no levels to fill.
+/// Source label, bar, count — the catalogue roadmap's header strip, with the
+/// LEVEL slot filled by where the material came from. A generated lesson has no
+/// levels, but it does have a provenance, and that is the one fact about it the
+/// catalogue's courses cannot state.
 class _ProgressStrip extends StatelessWidget {
-  const _ProgressStrip({required this.done, required this.total});
+  const _ProgressStrip({
+    required this.label,
+    required this.done,
+    required this.total,
+  });
 
+  final String label;
   final int done;
   final int total;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 120.w,
-          height: 8.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE3E8EF),
-            borderRadius: BorderRadius.circular(99.r),
+    final muted = studyThemeOnBg(context, AppCustomColor.textTertiary);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      child: Row(
+        children: [
+          AppText(
+            label,
+            style: AppStyle.textBold10.copyWith(color: muted),
+            maxLines: 1,
           ),
-          alignment: Alignment.centerLeft,
-          child: FractionallySizedBox(
-            widthFactor: total == 0 ? 0 : (done / total).clamp(0, 1),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 12.w),
+            width: 4.w,
+            height: 4.w,
+            decoration: const ShapeDecoration(
+              color: Color(0xFFAAB7CC),
+              shape: OvalBorder(),
+            ),
+          ),
+          Expanded(
             child: Container(
+              height: 9.h,
               decoration: BoxDecoration(
-                color: AppCustomColor.brandPrimary,
-                borderRadius: BorderRadius.circular(99.r),
+                color: const Color(0xFFE3E8EF),
+                borderRadius: BorderRadius.circular(18.r),
+              ),
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: total == 0 ? 0 : (done / total).clamp(0, 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4B44CA),
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-        10.horizontalSpace,
-        AppText(
-          '$done/$total',
-          style: AppStyle.textBold12.copyWith(
-            fontSize: 11.sp,
-            letterSpacing: 0.44,
-            color: AppCustomColor.textTertiary,
+          12.horizontalSpace,
+          AppText(
+            context.l10n.learningImport
+                .roadmapStepsProgress(completed: done, total: total)
+                .toUpperCase(),
+            style: AppStyle.textBold10.copyWith(color: muted),
+            maxLines: 1,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -370,104 +469,127 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-enum _NodeState { open, inProgress, done }
+enum _NodeState { inProgress, done, locked }
 
-/// One step: the node marker on the left, the card beside it, and the dashed
-/// line down to whatever comes next.
+/// One step, drawn the way the catalogue roadmap draws one.
+///
+/// Every number here is copied from `RoadmapNodeIndicator`, `LessonKeypointCard`
+/// and `RoadmapNodeTimeline` rather than eyeballed from the comp: 54pt marker
+/// with a 2pt state border, 88pt thumbnail at radius 15, 4pt card padding at
+/// radius 16, the same dashed 2pt connector in `borderSecondary`. A lesson the
+/// reader made should look like a lesson, and "looks about right" is what makes
+/// two screens in the same app feel like two apps.
 class _RoadmapNode extends StatelessWidget {
   const _RoadmapNode({
     required this.title,
-    required this.icon,
-    required this.tint,
-    required this.iconColor,
+    required this.marker,
+    required this.artwork,
     required this.state,
-    required this.hasConnector,
+    required this.isFirst,
+    required this.isLast,
     required this.onTap,
   });
 
   final String title;
-  final IconData icon;
-  final Color tint;
-  final Color iconColor;
+
+  /// The glyph inside the marker circle — the catalogue's own roadmap icons.
+  final AssetGenImage marker;
+
+  /// **MOCK** — see [mockUserLessonCover]. The catalogue puts the lesson's real
+  /// cover here; a generated lesson has none.
+  final String artwork;
+
   final _NodeState state;
-  final bool hasConnector;
+  final bool isFirst;
+  final bool isLast;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 54.w,
-            child: Column(
-              children: [
-                _NodeMarker(state: state),
-                if (hasConnector)
-                  Expanded(
-                    child: Center(
-                      child: Container(width: 2.w, color: const Color(0xFFD3D9E4)),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          16.horizontalSpace,
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: hasConnector ? 20.h : 0),
-              child: _NodeCard(
-                title: title,
-                icon: icon,
-                tint: tint,
-                iconColor: iconColor,
-                onTap: onTap,
-              ),
-            ),
-          ),
-        ],
+    const dashed = LineStyle(
+      color: AppCustomColor.borderSecondary,
+      thickness: 2,
+      dashLength: 4,
+      dashSpacing: 2,
+      isDashed: true,
+    );
+
+    return TimelineTile(
+      isFirst: isFirst,
+      isLast: isLast,
+      alignment: TimelineAlign.start,
+      indicatorStyle: IndicatorStyle(
+        width: 54.w,
+        height: 54.w,
+        padding: EdgeInsets.zero,
+        indicator: _NodeMarker(state: state, marker: marker),
+      ),
+      beforeLineStyle: dashed,
+      afterLineStyle: dashed,
+      endChild: Padding(
+        padding: EdgeInsets.only(left: 16.w, top: 10.h, bottom: 10.h),
+        child: _NodeCard(
+          title: title,
+          artwork: artwork,
+          state: state,
+          // A locked step is not tappable, the same way a locked lesson is not.
+          // Greying it and then opening it anyway would teach the reader that
+          // the lock means nothing.
+          onTap: state == _NodeState.locked ? null : onTap,
+        ),
       ),
     );
   }
 }
 
+/// The glyph disc and its state ring, with a lock pinned to it when the step is
+/// not reachable yet.
 class _NodeMarker extends StatelessWidget {
-  const _NodeMarker({required this.state});
+  const _NodeMarker({required this.state, required this.marker});
 
   final _NodeState state;
+  final AssetGenImage marker;
+
+  Color get _borderColor => switch (state) {
+    _NodeState.inProgress => AppCustomColor.borderBrand,
+    _NodeState.done => AppCustomColor.brandPrimary50,
+    _NodeState.locked => AppCustomColor.neutral100,
+  };
 
   @override
   Widget build(BuildContext context) {
-    final done = state == _NodeState.done;
-    final started = state == _NodeState.inProgress;
-
-    return Container(
-      width: 54.w,
-      height: 54.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: done ? AppCustomColor.brandPrimary : AppCustomColor.backgroundWhite,
-        border: Border.all(
-          color: done || started
-              ? AppCustomColor.brandPrimary
-              : AppCustomColor.borderDefault,
-          width: 2,
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        Container(
+          width: 54.w,
+          height: 54.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _borderColor, width: 2.w),
+          ),
+          child: marker.image(fit: BoxFit.contain),
         ),
-      ),
-      alignment: Alignment.center,
-      child: done
-          ? Icon(Icons.check_rounded, size: 26.w, color: Colors.white)
-          : Container(
-              width: 14.w,
-              height: 14.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: started
-                    ? AppCustomColor.brandPrimary
-                    : AppCustomColor.borderDefault,
+        if (state == _NodeState.locked)
+          Container(
+            width: 22.w,
+            height: 22.w,
+            padding: EdgeInsets.all(5.w),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: AppCustomColor.neutral100,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignOutside,
+                  color: Colors.white,
+                ),
+                borderRadius: BorderRadius.circular(40),
               ),
             ),
+            child: Image.asset(AppAsset.icons.common.lock.path),
+          ),
+      ],
     );
   }
 }
@@ -475,64 +597,117 @@ class _NodeMarker extends StatelessWidget {
 class _NodeCard extends StatelessWidget {
   const _NodeCard({
     required this.title,
-    required this.icon,
-    required this.tint,
-    required this.iconColor,
+    required this.artwork,
+    required this.state,
     required this.onTap,
   });
 
   final String title;
-  final IconData icon;
-  final Color tint;
-  final Color iconColor;
-  final VoidCallback onTap;
+  final String artwork;
+  final _NodeState state;
+  final VoidCallback? onTap;
+
+  /// Grayscale, lifted verbatim from `_RoadmapCardThumbnail` so a locked step
+  /// here and a locked lesson there fade by exactly the same amount.
+  static const _grayscale = ColorFilter.matrix([
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ]);
 
   @override
   Widget build(BuildContext context) {
+    final isLocked = state == _NodeState.locked;
+    final isActive = state == _NodeState.inProgress;
+
     return Semantics(
       button: true,
+      enabled: !isLocked,
       label: title,
       child: GestureDetector(
-        onTap: () {
-          AppHaptic.select();
-          onTap();
-        },
+        onTap: onTap == null
+            ? null
+            : () {
+                AppHaptic.select();
+                onTap!();
+              },
         child: Container(
-          padding: EdgeInsets.all(12.w),
+          padding: EdgeInsets.all(4.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: AppCustomColor.borderSecondary),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0x14252525),
-                blurRadius: 12.r,
-                offset: Offset(0, 4.h),
-              ),
-            ],
+            color: isLocked
+                ? AppCustomColor.backgroundGray
+                : studyThemeCardColor(context),
+            borderRadius: BorderRadius.circular(16.r),
+            border: isLocked
+                ? null
+                : Border.all(
+                    color: isActive
+                        ? AppCustomColor.brandPrimary
+                        : AppCustomColor.neutral300,
+                    width: isActive ? 2.w : 1.w,
+                  ),
           ),
           child: Row(
             children: [
-              Container(
-                width: 66.w,
-                height: 66.w,
-                decoration: BoxDecoration(
-                  color: tint,
-                  borderRadius: BorderRadius.circular(15.r),
-                ),
-                alignment: Alignment.center,
-                child: Icon(icon, size: 30.w, color: iconColor),
-              ),
-              13.horizontalSpace,
-              Expanded(
-                child: AppText(
-                  title,
-                  style: AppStyle.text14.copyWith(
-                    fontWeight: FontWeight.w600,
-                    height: 1.3,
-                    color: AppCustomColor.textPrimary,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15.r),
+                child: SizedBox(
+                  width: 88.w,
+                  height: 88.w,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColorFiltered(
+                        colorFilter: isLocked
+                            ? _grayscale
+                            : const ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.color,
+                              ),
+                        child: Image.asset(artwork, fit: BoxFit.cover),
+                      ),
+                      if (isLocked)
+                        Center(
+                          child: Container(
+                            width: 24.w,
+                            height: 24.w,
+                            decoration: const BoxDecoration(
+                              color: AppCustomColor.neutral100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Semantics(
+                              label: context
+                                  .l10n
+                                  .courseroadmap
+                                  .lockedSemanticLabel,
+                              child: Icon(
+                                Icons.lock_rounded,
+                                color: AppCustomColor.textTertiary,
+                                size: 14.w,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  maxLines: 3,
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(12.w),
+                  child: AppText(
+                    title,
+                    style: AppStyle.text14.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                      color: isLocked
+                          ? AppCustomColor.textTertiary
+                          : AppCustomColor.textPrimary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],
@@ -551,38 +726,28 @@ class _StartCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `CourseRoadmapFloatingButton` itself cannot be reused — it reads its label
+    // off CourseRoadmapCubit and WarmUpCubit, neither of which this route
+    // provides — so this is its body, verbatim.
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
-        onTap: () {
+      child: AppButton.primary(
+        key: const Key('user-lesson-roadmap-floating-button'),
+        onPressed: () {
           AppHaptic.select();
           onTap();
         },
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 34.w, vertical: 16.h),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF6C63FF), Color(0xFF554FF0)],
-            ),
-            borderRadius: BorderRadius.circular(99.r),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0x66554FF0),
-                blurRadius: 30.r,
-                offset: Offset(0, 14.h),
-              ),
-            ],
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        borderRadius: BorderRadius.circular(1000.r),
+        child: AppText(
+          label,
+          style: AppStyle.textBold16.copyWith(
+            color: AppCustomColor.textWhite,
+            height: 1.5,
           ),
-          child: AppText(
-            label,
-            style: AppStyle.textBold16.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
         ),
       ),
     );

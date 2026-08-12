@@ -31,6 +31,7 @@ abstract class LessonSectionModel with _$LessonSectionModel {
 abstract class LessonKeypointModel with _$LessonKeypointModel {
   const factory LessonKeypointModel({
     @Default('') String title,
+    @Default('') String takeaway,
     @Default(<LessonSectionModel>[]) List<LessonSectionModel> sections,
   }) = _LessonKeypointModel;
 
@@ -101,6 +102,7 @@ abstract class UserLessonModel with _$UserLessonModel {
     @Default(0) int estimatedMinutes,
     @Default(0) int stopAtKeypointIndex,
     @Default(0) int stopAtSectionIndex,
+    String? completedAt,
     String? createdAt,
     // Absent on the list endpoint by design (the API leaves the body out of the
     // card payload), so this defaults to empty rather than being nullable.
@@ -139,6 +141,7 @@ extension LessonSectionModelX on LessonSectionModel {
 extension LessonKeypointModelX on LessonKeypointModel {
   LessonKeypointEntity toEntity() => LessonKeypointEntity(
     title: title,
+    takeaway: takeaway,
     sections: sections.map((section) => section.toEntity()).toList(),
   );
 }
@@ -201,6 +204,7 @@ extension UserLessonModelX on UserLessonModel {
     estimatedMinutes: estimatedMinutes,
     stopAtKeypointIndex: stopAtKeypointIndex,
     stopAtSectionIndex: stopAtSectionIndex,
+    completedAt: DateTime.tryParse(completedAt ?? ''),
     createdAt: DateTime.tryParse(createdAt ?? ''),
     keypoints: _resolvedKeypoints,
     audioStatus: audioStatus,

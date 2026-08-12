@@ -99,26 +99,6 @@ abstract final class UserLessonCourseMapper {
     return id.split(idMarker).first;
   }
 
-  /// What this lesson calls itself to the output-practice endpoint.
-  ///
-  /// A different marker from [idMarker] on purpose: that one is internal to the
-  /// reader, this one crosses the wire. The server splits on the same prefix
-  /// (`UserLessonPracticeService.SECTION_PREFIX`) to decide whether a section is
-  /// a catalogue roadmap node or a generated lesson it must build a prompt for —
-  /// so the two strings have to stay in step.
-  static String practiceSectionId(String lessonId) =>
-      '$practiceSectionPrefix$lessonId';
-
-  static const String practiceSectionPrefix = 'user-lesson:';
-
-  /// The generated lesson behind a practice section id, or '' for a catalogue
-  /// roadmap node. What the practice screen asks before deciding where its close
-  /// button goes.
-  static String practiceLessonIdOf(String sectionId) =>
-      sectionId.startsWith(practiceSectionPrefix)
-      ? sectionId.substring(practiceSectionPrefix.length)
-      : '';
-
   static KeypointEntity _toKeypoint(
     UserLessonEntity lesson,
     LessonKeypointEntity keypoint,
@@ -127,6 +107,10 @@ abstract final class UserLessonCourseMapper {
     return KeypointEntity(
       id: _keypointId(lesson.id, index),
       title: _multi(lesson.outputLocale, keypoint.title),
+      // The recap card that ends a keypoint flips to `description` when the
+      // keypoint has no authored takeaway item — and a generated one never has
+      // one. Leaving this empty is what made that card refuse to flip.
+      description: _multi(lesson.outputLocale, keypoint.takeaway),
       index: index,
       audio: _toAudio(lesson, index),
     );

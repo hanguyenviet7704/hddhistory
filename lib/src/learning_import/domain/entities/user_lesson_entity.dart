@@ -36,6 +36,16 @@ abstract class LessonSectionEntity with _$LessonSectionEntity {
 abstract class LessonKeypointEntity with _$LessonKeypointEntity {
   const factory LessonKeypointEntity({
     @Default('') String title,
+
+    /// What the reader should leave this keypoint with — the BACK FACE of the
+    /// recap card that ends it.
+    ///
+    /// A catalogue keypoint gets this from an authored "Take This With You"
+    /// theory item, which a generated lesson has none of; `KeypointDoneCard`
+    /// then falls back to `KeypointEntity.description`, which the mapper used to
+    /// leave empty. The result was a recap card with nothing behind it, so it
+    /// did not flip at all. Generated per keypoint by the model now.
+    @Default('') String takeaway,
     @Default(<LessonSectionEntity>[]) List<LessonSectionEntity> sections,
   }) = _LessonKeypointEntity;
 }
@@ -138,6 +148,15 @@ abstract class UserLessonEntity with _$UserLessonEntity {
     /// boundary rather than a scroll offset: it survives a re-render or a
     /// font-size change, which a raw offset would not.
     @Default(0) int stopAtSectionIndex,
+
+    /// When the reader reached the last card of the last keypoint, or null.
+    ///
+    /// Server-derived: only it holds the body, and the list response omits the
+    /// keypoints — so this is the ONLY thing on a list card that can say the
+    /// lesson is finished. Without it the card was stuck at
+    /// `stopAtKeypointIndex / keypointCount`, which for a four-keypoint lesson
+    /// read 75% forever.
+    DateTime? completedAt,
     DateTime? createdAt,
     @Default(<LessonKeypointEntity>[]) List<LessonKeypointEntity> keypoints,
 
@@ -175,10 +194,14 @@ extension UserLessonEntityX on UserLessonEntity {
   /// Keypoint-granular is also the honest unit: a keypoint is what the reader
   /// finishes, so "1 of 4" is what they actually did.
   int get readPercent {
+    if (isCompleted) return 100;
     if (keypointCount <= 0 || stopAtKeypointIndex <= 0) return 0;
 
     return ((stopAtKeypointIndex / keypointCount) * 100).clamp(0, 100).round();
   }
+
+  /// Read to the end. See [completedAt].
+  bool get isCompleted => completedAt != null;
 
   /// How many keypoints this lesson has.
   ///

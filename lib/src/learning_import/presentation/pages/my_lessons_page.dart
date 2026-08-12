@@ -60,26 +60,51 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
                     return RefreshIndicator(
                       onRefresh: () =>
                           context.read<UserLessonCubit>().loadLessons(),
-                      child: ListView.separated(
-                        padding: EdgeInsets.fromLTRB(
-                          20.w,
-                          8.h,
-                          20.w,
-                          floatingNavBarHeight(context) + 20.h,
-                        ),
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: BouncingScrollPhysics(),
-                        ),
-                        itemCount: state.pageData.items.length,
-                        separatorBuilder: (_, _) => 12.verticalSpace,
-                        itemBuilder: (context, index) {
-                          final lesson = state.pageData.items[index];
+                      child: BlocBuilder<LearningImportCubit, LearningImportState>(
+                        buildWhen: (previous, current) =>
+                            previous.job?.id != current.job?.id ||
+                            previous.job?.percent != current.job?.percent,
+                        builder: (context, importState) {
+                          // A run in flight has no lesson row yet — the list
+                          // endpoint only knows about finished ones. Without
+                          // this the shelf looks unchanged for the minutes a
+                          // generation takes, which reads as nothing happened.
+                          final job = importState.job;
+                          final isRunning = job?.isRunning ?? false;
+                          final extra = isRunning ? 1 : 0;
 
-                          return _LessonCard(
-                            lesson: lesson,
-                            onTap: () =>
-                                LessonReaderRoute(lesson.id).push(context),
-                            onDelete: () => _confirmDelete(context, lesson),
+                          return ListView.separated(
+                            padding: EdgeInsets.fromLTRB(
+                              20.w,
+                              8.h,
+                              20.w,
+                              floatingNavBarHeight(context) + 20.h,
+                            ),
+                            physics: const AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
+                            ),
+                            itemCount: state.pageData.items.length + extra,
+                            separatorBuilder: (_, _) => 12.verticalSpace,
+                            itemBuilder: (context, index) {
+                              if (isRunning && index == 0) {
+                                return _GeneratingCard(
+                                  title: job!.sourceLabel.isNotEmpty
+                                      ? job.sourceLabel
+                                      : context.l10n.learningImport.generatingTitle,
+                                  percent: job.percent,
+                                );
+                              }
+
+                              final lesson =
+                                  state.pageData.items[index - extra];
+
+                              return _LessonCard(
+                                lesson: lesson,
+                                onTap: () =>
+                                    LessonReaderRoute(lesson.id).push(context),
+                                onDelete: () => _confirmDelete(context, lesson),
+                              );
+                            },
                           );
                         },
                       ),
@@ -210,6 +235,12 @@ class _MyLessonsEmpty extends StatelessWidget {
   }
 }
 
+/// One made lesson: cover, title, and where the reader is in it.
+///
+/// Cover on the left rather than a source glyph, because that is what makes a
+/// shelf scannable — a column of identical PDF icons is a list you read word by
+/// word. The picture is a stand-in (see [mockUserLessonCover]); the progress
+/// line under the title is real.
 class _LessonCard extends StatelessWidget {
   const _LessonCard({
     required this.lesson,
@@ -225,6 +256,8 @@ class _LessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n.learningImport;
     final percent = lesson.readPercent;
+    final done = lesson.isCompleted;
+    final started = percent > 0;
 
     return Semantics(
       button: true,
@@ -237,80 +270,173 @@ class _LessonCard extends StatelessWidget {
           onTap();
         },
         child: Container(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: const Color(0xFFEEF1F6), width: 1.5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    lesson.sourceType == ImportSourceTypeEntity.youtube
-                        ? Icons.smart_display_outlined
-                        : Icons.picture_as_pdf_outlined,
-                    size: 22.w,
-                    color: AppCustomColor.brandPrimary,
-                  ),
-                  12.horizontalSpace,
-                  Expanded(
-                    child: AppText(
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15.r),
+                child: Image.asset(
+                  mockUserLessonCover(lesson.id),
+                  width: 78.w,
+                  height: 78.w,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              14.horizontalSpace,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
                       lesson.title,
                       maxLines: 2,
-                      style: AppStyle.textBold16,
-                    ),
-                  ),
-                  GestureDetector(
-                    key: Key('my-lesson-delete-${lesson.id}'),
-                    onTap: onDelete,
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 8.w),
-                      child: Icon(
-                        Icons.more_horiz_rounded,
-                        size: 20.w,
-                        color: AppCustomColor.textSecondary,
+                      style: AppStyle.text16.copyWith(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              if (lesson.sourceLabel.isNotEmpty) ...[
-                6.verticalSpace,
-                AppText(
-                  lesson.sourceLabel,
-                  maxLines: 1,
-                  style: AppStyle.text12.copyWith(
-                    color: AppCustomColor.textSecondary,
-                  ),
-                ),
-              ],
-              12.verticalSpace,
-              Row(
-                children: [
-                  AppText(
-                    l10n.minutesRead(minutes: lesson.estimatedMinutes),
-                    style: AppStyle.text12.copyWith(
-                      color: AppCustomColor.textSecondary,
-                    ),
-                  ),
-                  if (percent > 0) ...[
-                    12.horizontalSpace,
-                    AppText(
-                      l10n.readingProgress(percent: percent),
-                      style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.brandPrimary,
-                      ),
+                    8.verticalSpace,
+                    Row(
+                      children: [
+                        Icon(
+                          done
+                              ? Icons.check_circle_rounded
+                              : (started
+                                    ? Icons.incomplete_circle_rounded
+                                    : Icons.circle_outlined),
+                          size: 16.w,
+                          color: started
+                              ? AppCustomColor.brandPrimary
+                              : AppCustomColor.textTertiary,
+                        ),
+                        7.horizontalSpace,
+                        AppText(
+                          started
+                              ? l10n.readingProgress(percent: percent)
+                              : l10n.statusNotStarted,
+                          style: AppStyle.textBold12.copyWith(
+                            fontSize: 13.sp,
+                            color: started
+                                ? AppCustomColor.brandPrimary
+                                : AppCustomColor.textTertiary,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ],
+                ),
+              ),
+              // Not in the design, kept anyway: deleting a lesson is the only
+              // destructive thing the reader owns here, and the comp simply did
+              // not draw a way to do it.
+              GestureDetector(
+                key: Key('my-lesson-delete-${lesson.id}'),
+                onTap: onDelete,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: EdgeInsets.only(left: 8.w),
+                  child: Icon(
+                    Icons.more_horiz_rounded,
+                    size: 20.w,
+                    color: AppCustomColor.textTertiary,
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The lesson being generated right now, at the top of the shelf.
+///
+/// Same row shape as a finished one so the list does not jump when it lands,
+/// but with the document mark instead of a cover — there is no lesson yet to
+/// have a picture of — and a bar where the progress line goes.
+class _GeneratingCard extends StatelessWidget {
+  const _GeneratingCard({required this.title, required this.percent});
+
+  final String title;
+  final int percent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: studyThemeCardColor(context),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFEEF1F6), width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 78.w,
+            height: 78.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEEDFB),
+              borderRadius: BorderRadius.circular(15.r),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.description_outlined,
+              size: 30.w,
+              color: AppCustomColor.brandPrimary,
+            ),
+          ),
+          14.horizontalSpace,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  title,
+                  maxLines: 2,
+                  style: AppStyle.text16.copyWith(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+                8.verticalSpace,
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(99.r),
+                        child: LinearProgressIndicator(
+                          value: percent / 100,
+                          minHeight: 6.h,
+                          backgroundColor: const Color(0xFFEDF0F5),
+                          valueColor: const AlwaysStoppedAnimation(
+                            AppCustomColor.brandPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    9.horizontalSpace,
+                    AppText(
+                      context.l10n.learningImport.statusCreating,
+                      style: AppStyle.textBold12.copyWith(
+                        color: AppCustomColor.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

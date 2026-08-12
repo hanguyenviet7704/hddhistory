@@ -1,5 +1,5 @@
 # Entry point (Profile row) + list screen
-myLessonsTitle: My lessons
+myLessonsTitle: My Creations
 myLessonsSubtitle: Lessons you made from your own material
 emptyTitle: Nothing here yet
 emptyBody: Turn a PDF or a YouTube video into a lesson you can read right here.
@@ -8,7 +8,7 @@ deleteConfirmTitle: Delete this lesson?
 deleteConfirmBody: This cannot be undone.
 deleteConfirmAction: Delete
 cancel: Cancel
-readingProgress: ${percent}% read
+readingProgress: ${percent}% complete
 minutesRead: ${minutes} min
 quotaRemaining: ${remaining} of ${limit} left this week
 quotaResets: Back on ${date}
@@ -41,6 +41,7 @@ stageFetching: Reading your material…
 stageGenerating: Writing the lesson…
 stageValidating: Checking it over…
 stageSaving: Almost done…
+stageDubbing: Recording the narration…
 
 # Errors, one sentence per cause
 errorPdfUnreadable: We could not read that PDF. Try a different file.
@@ -118,10 +119,11 @@ guideHint: Tap anywhere to continue
 
 # Roadmap of a generated lesson
 roadmapSectionTitle: From your content
-roadmapSectionSubtitle: Two steps we pulled out of what you imported
-roadmapReadNode(param=count):
-  one: The big ideas, in 1 keypoint
-  other: The big ideas, in ${count} keypoints
-roadmapPracticeNode: Say it back in your own words
+roadmapSectionSubtitle(param=count):
+  one: One keypoint pulled out of what you imported
+  other: ${count} keypoints pulled out of what you imported
 roadmapStartCta: Start lesson
 roadmapContinueCta: Continue
+roadmapStepsProgress: ${completed}/${total} keypoints
+statusNotStarted: Not started
+statusCreating: Creating…

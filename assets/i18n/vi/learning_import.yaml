@@ -1,5 +1,5 @@
 # Entry point (Profile row) + list screen
-myLessonsTitle: Bài học của tôi
+myLessonsTitle: Bài tôi tạo
 myLessonsSubtitle: Bài bạn tạo từ tài liệu của mình
 emptyTitle: Chưa có bài nào
 emptyBody: Biến một tệp PDF hoặc video YouTube thành bài học đọc ngay trong app.
@@ -8,7 +8,7 @@ deleteConfirmTitle: Xoá bài này?
 deleteConfirmBody: Không khôi phục lại được.
 deleteConfirmAction: Xoá
 cancel: Huỷ
-readingProgress: Đã đọc ${percent}%
+readingProgress: Hoàn thành ${percent}%
 minutesRead: ${minutes} phút
 quotaRemaining: Còn ${remaining}/${limit} lượt tuần này
 quotaResets: Có lại vào ${date}
@@ -41,6 +41,7 @@ stageFetching: Đang đọc tài liệu…
 stageGenerating: Đang soạn bài…
 stageValidating: Đang kiểm tra lại…
 stageSaving: Sắp xong…
+stageDubbing: Đang lồng tiếng…
 
 # Errors, one sentence per cause
 errorPdfUnreadable: Không đọc được nội dung tệp PDF này. Thử tệp khác nhé.
@@ -118,10 +119,11 @@ guideHint: Chạm vào đâu cũng được để tiếp tục
 
 # Roadmap of a generated lesson
 roadmapSectionTitle: Từ nội dung của bạn
-roadmapSectionSubtitle: Hai bước rút ra từ nội dung bạn vừa đưa vào
-roadmapReadNode(param=count):
-  one: Ý chính, gói trong 1 keypoint
-  other: Ý chính, gói trong ${count} keypoint
-roadmapPracticeNode: Nói lại bằng lời của bạn
+roadmapSectionSubtitle(param=count):
+  one: Một keypoint rút ra từ nội dung bạn vừa đưa vào
+  other: ${count} keypoint rút ra từ nội dung bạn vừa đưa vào
 roadmapStartCta: Bắt đầu học
 roadmapContinueCta: Học tiếp
+roadmapStepsProgress: ${completed}/${total} keypoint
+statusNotStarted: Chưa bắt đầu
+statusCreating: Đang tạo…

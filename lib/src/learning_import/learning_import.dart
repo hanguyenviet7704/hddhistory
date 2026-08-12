@@ -12,6 +12,8 @@ import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
+// Same dashed connector the catalogue roadmap draws — see UserLessonRoadmapPage.
+import 'package:timeline_tile_plus/timeline_tile_plus.dart';
 
 //* Domain Layer - Entities
 part 'domain/entities/learning_import_job_entity.dart';
@@ -54,6 +56,7 @@ part 'presentation/pages/import_generating_page.dart';
 part 'presentation/widgets/import_done_popup_host.dart';
 part 'presentation/widgets/import_progress_toast.dart';
 part 'presentation/widgets/import_ticket_popups.dart';
+part 'presentation/widgets/mock_lesson_artwork.dart';
 
 //* Parts for generated files
 part 'learning_import.freezed.dart';

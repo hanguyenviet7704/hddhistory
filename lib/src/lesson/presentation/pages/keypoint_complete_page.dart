@@ -303,60 +303,50 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                   // Practice now → the hub. Deliberately NOT gated on the keypoint
                   // having questions: the hub also carries the coming-soon modes,
                   // and Quiz itself guards an empty deck.
-                  Semantics(
-                    button: true,
-                    child: Material(
-                      color: AppCustomColor.brandPrimary,
-                      borderRadius: BorderRadius.circular(999.r),
-                      child: InkWell(
+                  //
+                  // Absent for a GENERATED lesson: the hub's practice is built
+                  // from authored exercises, and an imported lesson has none, so
+                  // the button would open a mode with nothing in it. Continuing
+                  // becomes the primary action instead of a text link, because
+                  // with the practice gone it is the only one.
+                  if (!lessonState.selectedLesson.isImported) ...[
+                    Semantics(
+                      button: true,
+                      child: Material(
+                        color: AppCustomColor.brandPrimary,
                         borderRadius: BorderRadius.circular(999.r),
-                        onTap: () => _openPractice(context, lessonState),
-                        child: Container(
-                          height: 56.h,
-                          alignment: Alignment.center,
-                          child: AppText(
-                            context.l10n.lesson.lessonCompletePracticeNow,
-                            style: AppStyle.text16.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppCustomColor.textWhite,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(999.r),
+                          onTap: () => _openPractice(context, lessonState),
+                          child: Container(
+                            height: 56.h,
+                            alignment: Alignment.center,
+                            child: AppText(
+                              context.l10n.lesson.lessonCompletePracticeNow,
+                              style: AppStyle.text16.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppCustomColor.textWhite,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  10.verticalSpace,
+                    10.verticalSpace,
+                  ],
                   // Skip kicks off async work (streak gate + habit-suggestion
                   // fetch) before navigating — show a spinner so the button isn't
                   // a dead tap for that beat.
                   Semantics(
                     button: true,
-                    child: GestureDetector(
+                    child: _ContinueCta(
+                      // Filled and full-width when it stands alone; the quiet
+                      // text link only makes sense as the second choice under
+                      // "Practice now". And "Skip to next lesson" is the wrong
+                      // words with nothing to skip.
+                      isPrimary: lessonState.selectedLesson.isImported,
+                      isBusy: _isHandlingPrimaryCta,
                       onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        height: 44.h,
-                        alignment: Alignment.center,
-                        child: _isHandlingPrimaryCta
-                            ? SizedBox(
-                                width: 18.w,
-                                height: 18.w,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: studyThemeOnBg(context, AppCustomColor.brandPrimary),
-                                ),
-                              )
-                            : AppText(
-                                context.l10n.lesson.lessonCompleteSkip,
-                                // Design 15/600 — the app scale has no 15.
-                                style: TextStyle(
-                                  fontFamily: AppFont.mulish,
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: studyThemeOnBg(context, AppCustomColor.brandPrimary),
-                                ),
-                              ),
-                      ),
                     ),
                   ),
                 ],
@@ -364,6 +354,74 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// "Continue" — a text link under Practice, a filled button when it is alone.
+///
+/// One widget rather than two branches at the call site because the two forms
+/// share everything that matters: the same action, the same async gate (the
+/// tap kicks off a streak check and a habit-suggestion fetch before it can
+/// navigate), and the same spinner so neither reads as a dead tap for that beat.
+class _ContinueCta extends StatelessWidget {
+  const _ContinueCta({
+    required this.isPrimary,
+    required this.isBusy,
+    required this.onTap,
+  });
+
+  final bool isPrimary;
+  final bool isBusy;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final brand = studyThemeOnBg(context, AppCustomColor.brandPrimary);
+
+    final label = isBusy
+        ? SizedBox(
+            width: 18.w,
+            height: 18.w,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: isPrimary ? AppCustomColor.textWhite : brand,
+            ),
+          )
+        : AppText(
+            isPrimary
+                ? context.l10n.common.kContinue
+                : context.l10n.lesson.lessonCompleteSkip,
+            style: isPrimary
+                ? AppStyle.text16.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppCustomColor.textWhite,
+                  )
+                // Design 15/600 — the app scale has no 15.
+                : TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: brand,
+                  ),
+          );
+
+    if (!isPrimary) {
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(height: 44.h, alignment: Alignment.center, child: label),
+      );
+    }
+
+    return Material(
+      color: AppCustomColor.brandPrimary,
+      borderRadius: BorderRadius.circular(999.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999.r),
+        onTap: onTap,
+        child: Container(height: 56.h, alignment: Alignment.center, child: label),
       ),
     );
   }

@@ -1,5 +1,5 @@
 # Entry point (Profile row) + list screen
-myLessonsTitle: 我的课程
+myLessonsTitle: 我的创作
 myLessonsSubtitle: 用你自己的材料生成的课程
 emptyTitle: 还没有内容
 emptyBody: 把一份 PDF 或一个 YouTube 视频变成可以直接阅读的课程。
@@ -8,7 +8,7 @@ deleteConfirmTitle: 删除这节课？
 deleteConfirmBody: 删除后无法恢复。
 deleteConfirmAction: 删除
 cancel: 取消
-readingProgress: 已读 ${percent}%
+readingProgress: 完成 ${percent}%
 minutesRead: ${minutes} 分钟
 quotaRemaining: 本周还剩 ${remaining}/${limit} 次
 quotaResets: ${date} 恢复
@@ -41,6 +41,7 @@ stageFetching: 正在读取材料…
 stageGenerating: 正在撰写课程…
 stageValidating: 正在检查…
 stageSaving: 就快好了…
+stageDubbing: 正在配音…
 
 # Errors, one sentence per cause
 errorPdfUnreadable: 无法读取这份 PDF，请换一个文件试试。
@@ -118,10 +119,11 @@ guideHint: 点击任意位置继续
 
 # Roadmap of a generated lesson
 roadmapSectionTitle: 来自你的内容
-roadmapSectionSubtitle: 我们从你导入的内容里整理出两个步骤
-roadmapReadNode(param=count):
-  one: 核心要点，共 1 个
-  other: 核心要点，共 ${count} 个
-roadmapPracticeNode: 用你自己的话说一遍
+roadmapSectionSubtitle(param=count):
+  one: 从你导入的内容里整理出 1 个要点
+  other: 从你导入的内容里整理出 ${count} 个要点
 roadmapStartCta: 开始学习
 roadmapContinueCta: 继续
+roadmapStepsProgress: ${completed}/${total} 要点
+statusNotStarted: 未开始
+statusCreating: 正在创建…

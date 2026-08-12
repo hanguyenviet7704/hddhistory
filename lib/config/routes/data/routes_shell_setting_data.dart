@@ -129,8 +129,15 @@ class LessonReaderRoute extends BaseTransitionRouteData with $LessonReaderRoute 
 
   final String lessonId;
 
+  /// A plain fade — neither a right-hand push nor a zoom.
+  ///
+  /// This screen is arrived at from four places (the progress toast, the done
+  /// popup, the generating screen, the shelf) and left by two more, none of
+  /// which is a forward step in a flow. A slide says "deeper in", and `scale`
+  /// — the catalogue roadmap's choice — reads as the screen zooming up at you.
+  /// A fade says the thing it should: you are looking at it now.
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
 
   /// Lands on the lesson's ROADMAP, not in the deck. It used to hand straight
   /// off to the reader, which left a generated lesson with no page of its own —
