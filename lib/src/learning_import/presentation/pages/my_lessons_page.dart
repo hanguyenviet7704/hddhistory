@@ -176,6 +176,20 @@ class _MyLessonsHeader extends StatelessWidget {
 
   final String title;
 
+  /// Pop, then name the page underneath.
+  ///
+  /// `didPop` reports the route below, and a shell branch's root sometimes
+  /// arrives unnamed — which reads as "not a primary route" and leaves Profile
+  /// without its floating nav. Asserting the name here is the pattern
+  /// `LessonPage._ensureLessonRouteName` already uses for its own case; doing it
+  /// centrally instead (resolving every blank to the active branch) put the nav
+  /// on top of the lesson reader, which is worse.
+  void _back(BuildContext context) {
+    final pageCubit = AppDI.injector.get<PageCubit>();
+    Navigator.of(context).maybePop();
+    pageCubit.setCurrentRouteName(RouteNamed.profile);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -183,7 +197,7 @@ class _MyLessonsHeader extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: () => _back(context),
             icon: Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 20.w,

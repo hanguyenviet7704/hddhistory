@@ -21,19 +21,18 @@ class PageCubit extends Cubit<PageState> {
 
   /// Track the route the reader is standing on.
   ///
-  /// An EMPTY name is not stored. `didPop` reports the route underneath, and
-  /// that route is sometimes unnamed — a shell branch re-entered by `.go()`
-  /// rather than pushed, a page built outside the typed-route tree. Storing the
-  /// blank made `isPrimaryRoute` false on a tab the reader was plainly standing
-  /// on, and the floating nav vanished with no way to get it back short of
-  /// re-entering the tab. Resolving to the active branch's own root is both
-  /// truer and self-healing.
+  /// An empty name is stored AS empty, and that is deliberate. It was briefly
+  /// resolved to the active branch's root instead, to stop the floating nav
+  /// vanishing on a tab after a sub-page was popped — and that broke far more
+  /// than it fixed: an unnamed route is also what a dismissed overlay reports,
+  /// so the nav appeared over the lesson reader and over habit detail, on top of
+  /// their own dialogs. Blank means "not a primary route", and hiding the nav is
+  /// the safe direction to fail in. Pages that need the name restored on the way
+  /// out say so themselves — see `LessonPage._ensureLessonRouteName` and the
+  /// back handlers in My Creations and the user-lesson roadmap.
   void setCurrentRouteName(String routeName) {
-    final resolved = routeName.isNotEmpty
-        ? routeName
-        : (_routeNameForTabIndex(state.currentIndex) ?? routeName);
-    final currentIndex = _tabIndexForRouteName(resolved) ?? state.currentIndex;
-    emit(state.copyWith(currentRouteName: resolved, currentIndex: currentIndex));
+    final currentIndex = _tabIndexForRouteName(routeName) ?? state.currentIndex;
+    emit(state.copyWith(currentRouteName: routeName, currentIndex: currentIndex));
   }
 
   void handleShellRouteNavigation(int index, StatefulNavigationShell navigationShell) {
@@ -104,24 +103,6 @@ class PageCubit extends Cubit<PageState> {
   int? _normalizeTabIndex(int index) {
     if (index < 0 || index > 4) return null;
     return index;
-  }
-
-  /// The inverse of [_tabIndexForRouteName] — which branch root a tab shows.
-  String? _routeNameForTabIndex(int index) {
-    switch (index) {
-      case 0:
-        return RouteNamed.home;
-      case 1:
-        return RouteNamed.courseRoadmap;
-      case 2:
-        return RouteNamed.profile;
-      case 3:
-        return RouteNamed.course;
-      case 4:
-        return RouteNamed.habit;
-      default:
-        return null;
-    }
   }
 
   int? _tabIndexForRouteName(String routeName) {

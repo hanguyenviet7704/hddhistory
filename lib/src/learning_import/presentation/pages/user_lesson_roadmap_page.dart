@@ -310,6 +310,11 @@ class _RoadmapHeader extends StatelessWidget {
               onPressed: () {
                 AppHaptic.select();
                 Navigator.of(context).maybePop();
+                // The page underneath is My Creations, and the pop can report it
+                // unnamed — see the note on `_MyLessonsHeader._back`.
+                AppDI.injector.get<PageCubit>().setCurrentRouteName(
+                  RouteNamed.myLessons,
+                );
               },
             ),
           ),
