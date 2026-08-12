@@ -1,60 +1,101 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  Autocomplete,
   Button,
   CircularProgress,
   FormControlLabel,
   Paper,
   Switch,
-  TextField,
 } from "@mui/material";
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Plus } from "lucide-react";
 
-import { cloudflareService } from "../../services/cloudflareR2Service";
+import SortableItem from "../../components/common/SortableItem";
+import HomeBannerSlideCard from "../../components/home-banner/HomeBannerSlideCard";
 import {
   HomeBannerConfig,
+  HomeBannerSlide,
   homeBannerService,
 } from "../../services/homeBannerService";
 import { useNotification } from "../../utils/hooks/useNotification";
-import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 
-const DEFAULTS: HomeBannerConfig = {
-  enabled: false,
+/** Same cap the API enforces (`@ArrayMaxSize(10)`) — fail here, not on Save. */
+const MAX_SLIDES = 10;
+
+const emptySlide = (): HomeBannerSlide => ({
   imageUrl: "",
   linkUrl: "",
   countries: [],
-  // Server-computed and irrelevant here; kept only so the form object matches
-  // the response type. Never read it on this page.
-  visible: false,
-};
+  enabled: true,
+});
 
 /**
- * Banner khuyến mãi trên màn Home của app (design "2 · Home"): một ảnh
- * full-width nằm giữa "Khóa học mới hôm nay" và "Jump back in". Ảnh, link và
- * bật/tắt đều là config nên chạy chiến dịch không cần phát hành bản app mới.
+ * A slide row needs a stable key for drag-and-drop, and slides have no id (their
+ * position IS their identity — see the schema). So the editor keeps a local one
+ * that never leaves this page.
+ */
+type EditableSlide = HomeBannerSlide & { uid: string };
+
+let uidCounter = 0;
+const withUid = (slide: HomeBannerSlide): EditableSlide => ({
+  ...slide,
+  uid: `slide-${++uidCounter}`,
+});
+
+/**
+ * Carousel khuyến mãi trên màn Home của app (design "2 · Home"): dải ảnh
+ * full-width nằm giữa "Khóa học mới hôm nay" và "Jump back in". Ảnh, link, thị
+ * trường và bật/tắt đều là config nên chạy chiến dịch không cần phát hành app.
  */
 const HomeBannerPage: React.FC = () => {
   const { showSuccess, showError } = useNotification();
 
-  const [form, setForm] = useState<HomeBannerConfig>(DEFAULTS);
+  const [enabled, setEnabled] = useState(false);
+  const [slides, setSlides] = useState<EditableSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingCount, setUploadingCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await homeBannerService.get();
-      const d = res?.data ?? {};
-      setForm({
-        enabled: d.enabled ?? DEFAULTS.enabled,
-        imageUrl: d.imageUrl ?? DEFAULTS.imageUrl,
-        linkUrl: d.linkUrl ?? DEFAULTS.linkUrl,
-        countries: d.countries ?? DEFAULTS.countries,
-        visible: d.visible ?? DEFAULTS.visible,
-      });
+      const d = (res?.data ?? {}) as Partial<HomeBannerConfig>;
+      setEnabled(d.enabled ?? false);
+      // A config saved before the carousel existed has no `slides` and one
+      // banner: seed it as slide 1 so the campaign already staged is not lost
+      // and the first Save writes it into the new shape. Mirrors
+      // `resolveConfiguredSlides` on the server.
+      const stored = d.slides?.length
+        ? d.slides
+        : d.imageUrl
+          ? [
+              {
+                imageUrl: d.imageUrl,
+                linkUrl: d.linkUrl ?? "",
+                countries: d.countries ?? [],
+                enabled: true,
+              },
+            ]
+          : [];
+      setSlides(stored.map(withUid));
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không tải được cấu hình");
     } finally {
@@ -69,7 +110,11 @@ const HomeBannerPage: React.FC = () => {
   const save = async () => {
     setSaving(true);
     try {
-      await homeBannerService.update(form);
+      await homeBannerService.update({
+        enabled,
+        // uid is editor-local and must not reach the API.
+        slides: slides.map(({ uid, ...slide }) => slide),
+      });
       showSuccess("Đã lưu cấu hình");
     } catch (err: any) {
       showError(err?.response?.data?.message ?? "Lưu thất bại");
@@ -78,36 +123,36 @@ const HomeBannerPage: React.FC = () => {
     }
   };
 
-  const uploadImage = async (file: File) => {
-    setUploading(true);
-    try {
-      const res = await cloudflareService.upload(file, {
-        prefix: "",
-        folder: "home-banner",
-      });
-      const url = res?.data?.data?.url;
-      if (!url) throw new Error("Không nhận được URL ảnh");
-      setForm((p) => ({ ...p, imageUrl: url }));
-      showSuccess("Đã tải ảnh lên — bấm Lưu để áp dụng");
-    } catch (e: any) {
-      console.error(e);
-      showError(
-        e?.response?.data?.message || "Tải ảnh thất bại, vui lòng thử lại.",
-      );
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+  const patchSlide = (uid: string, patch: Partial<HomeBannerSlide>) =>
+    setSlides((prev) =>
+      prev.map((slide) => (slide.uid === uid ? { ...slide, ...patch } : slide)),
+    );
+
+  const removeSlide = (uid: string) =>
+    setSlides((prev) => prev.filter((slide) => slide.uid !== uid));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setSlides((prev) => {
+      const from = prev.findIndex((s) => s.uid === active.id);
+      const to = prev.findIndex((s) => s.uid === over.id);
+      if (from < 0 || to < 0) return prev;
+      return arrayMove(prev, from, to);
+    });
   };
+
+  const busy = saving || uploadingCount > 0;
+  const shownCount = slides.filter((s) => s.enabled && s.imageUrl).length;
 
   return (
     <div className="p-6">
       <header className="mb-5">
         <h1 className="text-xl font-semibold">Banner Home</h1>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Banner ảnh full-width trên màn Home của app, nằm giữa khối "Khóa học
-          mới hôm nay" và "Jump back in". Có thể chuẩn bị sẵn ảnh + link rồi mới
-          bật công tắc khi chiến dịch bắt đầu.
+          Carousel ảnh full-width trên màn Home của app, nằm giữa khối "Khóa học
+          mới hôm nay" và "Jump back in". Nhiều slide thì app tự chạy 5 giây một
+          slide và hiện dots; một slide thì đứng yên như banner thường.
         </p>
       </header>
 
@@ -126,141 +171,87 @@ const HomeBannerPage: React.FC = () => {
           <FormControlLabel
             control={
               <Switch
-                checked={form.enabled}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, enabled: e.target.checked }))
-                }
+                checked={enabled}
+                onChange={(e) => setEnabled(e.target.checked)}
               />
             }
             label="Hiện banner trên app"
           />
           <p className="mb-5 mt-1 text-xs text-gray-500">
-            Tắt là banner biến mất khỏi app ngay (app cache tối đa 60 giây),
-            không cần phát hành bản mới. Chưa có ảnh thì app cũng tự ẩn banner.
+            Tắt là cả khu banner biến mất khỏi app ngay (app cache tối đa 60
+            giây), không cần phát hành bản mới. Mỗi slide còn có công tắc riêng
+            để chuẩn bị trước chiến dịch.
           </p>
 
-          {/* Preview đúng tỉ lệ khung banner trong app: 390 × 78, bo góc 18 */}
-          <p className="mb-2 text-sm font-medium text-gray-700">Ảnh banner</p>
-          <div
-            className="mb-2 w-full overflow-hidden bg-gray-100"
-            style={{ aspectRatio: "390 / 78", borderRadius: 18 }}
-          >
-            {form.imageUrl ? (
-              <img
-                src={form.imageUrl}
-                alt="Banner preview"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-gray-400">
-                Chưa có ảnh — banner sẽ không hiện trên app
-              </div>
-            )}
+          <div className="mb-2 flex items-baseline justify-between">
+            <p className="text-sm font-medium text-gray-700">
+              Slide ({slides.length}/{MAX_SLIDES})
+            </p>
+            <p className="text-xs text-gray-500">
+              {shownCount === 0
+                ? "Chưa slide nào hiện được"
+                : `${shownCount} slide sẽ hiện — kéo để đổi thứ tự`}
+            </p>
           </div>
-          <div className="mb-4 flex items-center gap-3">
-            <Button
-              variant="outlined"
-              size="small"
-              component="label"
-              disabled={uploading}
+
+          {slides.length === 0 ? (
+            <p className="mb-4 rounded border border-dashed border-gray-300 px-3 py-6 text-center text-sm text-gray-500">
+              Chưa có slide nào. Thêm slide rồi tải ảnh lên.
+            </p>
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              {uploading ? "Đang tải..." : "Tải ảnh lên"}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) uploadImage(file);
-                }}
-              />
-            </Button>
-            {form.imageUrl && (
-              <Button
-                size="small"
-                color="error"
-                onClick={() => setForm((p) => ({ ...p, imageUrl: "" }))}
+              <SortableContext
+                items={slides.map((s) => s.uid)}
+                strategy={verticalListSortingStrategy}
               >
-                Gỡ ảnh
-              </Button>
-            )}
-          </div>
+                <div className="mb-4 flex flex-col gap-3">
+                  {slides.map((slide, index) => (
+                    <SortableItem key={slide.uid} id={slide.uid}>
+                      <HomeBannerSlideCard
+                        slide={slide}
+                        position={index + 1}
+                        onChange={(patch) => patchSlide(slide.uid, patch)}
+                        onRemove={() => removeSlide(slide.uid)}
+                        onUploadingChange={(uploading) =>
+                          setUploadingCount((n) => n + (uploading ? 1 : -1))
+                        }
+                        onError={showError}
+                        onSuccess={showSuccess}
+                      />
+                    </SortableItem>
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
 
-          <TextField
-            label="URL ảnh"
+          <Button
             size="small"
-            fullWidth
-            value={form.imageUrl}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, imageUrl: e.target.value }))
-            }
-            helperText="Tự điền sau khi tải ảnh lên, hoặc dán URL ảnh có sẵn."
-          />
-
-          <div className="h-5" />
-
-          <TextField
-            label="Link khi bấm vào banner"
-            size="small"
-            fullWidth
-            value={form.linkUrl}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, linkUrl: e.target.value }))
-            }
-            helperText="URL https:// hoặc deeplink của app. Để trống thì banner chỉ hiển thị, không bấm được."
-          />
-
-          <div className="h-5" />
-
-          <Autocomplete
-            multiple
-            size="small"
-            options={COUNTRY_OPTIONS}
-            // Stored codes may include ones outside the curated list (added
-            // straight through the API, or from before an entry existed), so
-            // map through `countryLabel` rather than assuming a match.
-            value={form.countries.map(
-              (code) =>
-                COUNTRY_OPTIONS.find((c) => c.code === code) ?? {
-                  code,
-                  name: countryLabel(code),
-                },
-            )}
-            onChange={(_, selected) =>
-              setForm((p) => ({
-                ...p,
-                countries: selected.map((c) => c.code),
-              }))
-            }
-            isOptionEqualToValue={(a, b) => a.code === b.code}
-            getOptionLabel={(c) => `${c.name} (${c.code})`}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Chỉ hiện với các thị trường"
-                helperText="Để trống = hiện với mọi người. Khớp theo BẤT KỲ tín hiệu nào: IP, region của máy, hoặc ngôn ngữ app (chọn VN thì người Việt ở nước ngoài vẫn thấy). Ai không khớp thị trường nào sẽ KHÔNG thấy banner có giới hạn."
-              />
-            )}
-          />
+            startIcon={<Plus className="h-4 w-4" />}
+            disabled={slides.length >= MAX_SLIDES}
+            onClick={() => setSlides((prev) => [...prev, withUid(emptySlide())])}
+          >
+            Thêm slide
+          </Button>
 
           <div className="mt-6 flex items-center gap-3">
-            <Button
-              variant="contained"
-              onClick={save}
-              disabled={saving || uploading}
-            >
+            <Button variant="contained" onClick={save} disabled={busy}>
               {saving ? "Đang lưu..." : "Lưu"}
             </Button>
-            <Button onClick={load} disabled={saving || uploading}>
+            <Button onClick={load} disabled={busy}>
               Khôi phục
             </Button>
           </div>
 
           <p className="mt-5 border-t pt-4 text-xs leading-relaxed text-gray-500">
-            App chỉ hiện banner khi <strong>đã bật</strong> và{" "}
-            <strong>có ảnh</strong>. Ảnh hiển thị cao 78pt, bo góc 18 — nên dùng
-            ảnh tỉ lệ ~5:1 (ví dụ 1170 × 234) để không bị crop lệch.
+            App chỉ hiện một slide khi <strong>công tắc tổng đang bật</strong>,{" "}
+            <strong>slide đang bật</strong> và <strong>có ảnh</strong>. Ảnh hiển
+            thị cao 78pt, bo góc 18 — nên dùng ảnh tỉ lệ ~5:1 (ví dụ 1170 × 234)
+            để không bị crop lệch.
           </p>
         </Paper>
       )}

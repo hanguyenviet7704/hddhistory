@@ -1,5 +1,21 @@
 import axiosClient from "./axiosClient";
 
+/** One slide of the Home carousel. Position in the array is the display order. */
+export interface HomeBannerSlide {
+  /** Slide image URL (R2 upload). A slide with no image is never shown. */
+  imageUrl: string;
+  /** Tap destination: https:// URL or deeplink. Empty = not tappable. */
+  linkUrl: string;
+  /**
+   * Per-slide market allow-list. EMPTY MEANS EVERY MARKET. Matched against the
+   * viewer's resolved markets (IP, device region, app language), so one config
+   * can carry a VN slide and a JP slide and each viewer only sees their own.
+   */
+  countries: string[];
+  /** Per-slide switch — false keeps image and link staged without showing it. */
+  enabled: boolean;
+}
+
 export interface HomeBannerConfig {
   /** Kill switch — false hides the banner in the app without a release. */
   enabled: boolean;
@@ -19,11 +35,20 @@ export interface HomeBannerConfig {
    * this was added beside it. Read `enabled` + `countries` here, never this.
    */
   visible: boolean;
+  /** The carousel, in display order. */
+  slides: HomeBannerSlide[];
 }
 
 export const homeBannerService = {
+  /**
+   * The config exactly as stored.
+   *
+   * `/home-banner/config`, NOT the `/home-banner` the app reads: that one filters
+   * slides to the caller's own markets, so opening this page from Vietnam would
+   * show a Japan-only slide as simply absent — indistinguishable from lost.
+   */
   async get() {
-    const res = await axiosClient.get("/home-banner");
+    const res = await axiosClient.get("/home-banner/config");
     return res.data;
   },
 
