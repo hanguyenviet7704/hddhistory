@@ -142,10 +142,15 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
         // Drop the previous keypoint's cap immediately rather than waiting for the
         // new answer: carrying it over would bound the new deck by the old
         // keypoint's wall, and the reader would hit a lock nobody set for it.
-        setState(() {
-          _accessKeypointId = '';
-          _serverCardCap = null;
-        });
+        //
+        // A plain assignment, NOT setState: nothing in this widget's build reads
+        // the cap — it travels through `KeypointCardCubit.setPaywallCardCap`. A
+        // rebuild here re-runs the LayoutBuilder the PageView lives in, which
+        // re-maps `page` from pixels and makes `_followViewedCardIndex` see a
+        // large gap; that is a silent jumpToPage, i.e. the deck lurching
+        // ("khựng nhảy", 2026-08-12).
+        _accessKeypointId = '';
+        _serverCardCap = null;
         _syncPaywallCap();
         unawaited(_loadKeypointAccess());
       },
@@ -442,10 +447,10 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     // The keypoint may have changed while this was in flight.
     if (_currentKeypointId != keypointId) return;
 
-    setState(() {
-      _accessKeypointId = keypointId;
-      _serverCardCap = access.cardCap;
-    });
+    // No setState — see the keypoint-change listener: the cap is cubit state, and
+    // rebuilding this subtree lurches the PageView.
+    _accessKeypointId = keypointId;
+    _serverCardCap = access.cardCap;
     _syncPaywallCap();
   }
 
@@ -472,10 +477,8 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       }
       if (_currentKeypointId != keypointId) return;
 
-      setState(() {
-        _accessKeypointId = keypointId;
-        _serverCardCap = claim.cardCap;
-      });
+      _accessKeypointId = keypointId;
+      _serverCardCap = claim.cardCap;
       _syncPaywallCap();
       // Finish the move they asked for. `viewCard` re-clamps against the cap we
       // just lifted, so this cannot overshoot.
