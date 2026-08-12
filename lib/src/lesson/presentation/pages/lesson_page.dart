@@ -27,11 +27,11 @@ class _LessonPageState extends State<LessonPage> {
   late final LessonCubit _lessonCubit;
   late final LessonAudioCubit _lessonAudioCubit;
 
-  /// Carries background listening across keypoint boundaries. Lives here because
-  /// this is the one place that holds both the route's [LessonAudioCubit] and the
-  /// [CourseLessonCubit] whose keypoint list the chain walks — and because the
-  /// keypoint switch it performs comes straight back through
-  /// [_syncAudioKeypoint].
+  /// Carries background listening down the roadmap, across keypoint and lesson
+  /// boundaries. Lives here because this is the one place that holds both the
+  /// route's [LessonAudioCubit] and the [CourseLessonCubit] the chain moves onto
+  /// each next keypoint — and because the switch it performs comes straight back
+  /// through [_syncAudioKeypoint].
   late final ListenChainController _listenChain;
 
   /// Applies reading-speed changes to the player. The speed control now lives

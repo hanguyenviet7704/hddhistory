@@ -14,9 +14,29 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
   void setCurrentKeypointId(String id) => emit(state.copyWith(currentKeypointId: id));
   void setSelectedLesson(LessonEntity lesson) {
     if (lesson.id.isEmpty) return;
-    final wasCompletedBefore = lesson.roadmapProgress == ProcessEnum.done || lesson.progess == ProcessEnum.done;
-    emit(state.copyWith(selectedLesson: lesson, wasLessonCompletedBefore: wasCompletedBefore));
+    emit(state.copyWith(selectedLesson: lesson, wasLessonCompletedBefore: _wasCompletedBefore(lesson)));
   }
+
+  /// Moves onto [keypointId] of [lesson] in a SINGLE emission.
+  ///
+  /// For crossing a lesson boundary without the app ever observing the
+  /// in-between state: with `selectedLesson` already swapped but
+  /// `currentKeypointId` still naming a keypoint of the lesson just left,
+  /// `resolvedCurrentKeypoint` falls back to the new lesson's FIRST keypoint —
+  /// and `LessonPage` would sync narration against a keypoint nobody is reading.
+  /// Used by the background listening chain (see [ListenChainController]).
+  void enterLesson({required LessonEntity lesson, required String keypointId}) {
+    if (lesson.id.isEmpty || keypointId.isEmpty) return;
+    emit(
+      state.copyWith(
+        selectedLesson: lesson,
+        currentKeypointId: keypointId,
+        wasLessonCompletedBefore: _wasCompletedBefore(lesson),
+      ),
+    );
+  }
+
+  bool _wasCompletedBefore(LessonEntity lesson) => lesson.roadmapProgress == ProcessEnum.done || lesson.progess == ProcessEnum.done;
 
   void loadLesson(String id) async {
     String requestId = id;
@@ -35,6 +55,17 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
         emit(state.copyWith(status: CourseLessonStatus.failure, errorMessage: error));
       },
       onSuccess: (lesson) {
+        // The reader can have moved onto ANOTHER lesson while this refresh was in
+        // flight — `ProgressCubit` fires one after every keypoint write, and the
+        // background listening chain crosses lesson boundaries on its own
+        // ([ListenChainController]). Landing it then would drag `selectedLesson`
+        // back to the lesson just left, `resolvedCurrentKeypoint` would fall back
+        // to ITS first keypoint, and `LessonPage` would reload and re-read a
+        // keypoint the listener heard long ago.
+        if (state.selectedLesson.id.isNotEmpty && state.selectedLesson.id != requestId) {
+          LogDev.warning('CourseLessonCubit: dropping the refresh of $requestId — ${state.selectedLesson.id} is open now');
+          return;
+        }
         emit(state.copyWith(status: CourseLessonStatus.success, selectedLesson: lesson));
         checkAndFinishOptionalKeypoints();
       },
