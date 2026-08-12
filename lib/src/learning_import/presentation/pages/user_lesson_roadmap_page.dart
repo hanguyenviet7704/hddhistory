@@ -110,11 +110,14 @@ class _RoadmapBody extends StatelessWidget {
 
   /// Where the reader currently stands, as a keypoint index.
   ///
-  /// Everything before it is done, it is the one in progress, everything after
-  /// is locked -- the catalogue's rule, applied to the only unit a generated
-  /// lesson has. `stopAtKeypointIndex` is where opening the lesson resumes, so
-  /// it IS that boundary; the section check moves it past the end once the last
-  /// card of the last keypoint has been seen.
+  /// Everything before it reads as done and it is the one in progress. Everything
+  /// after is `available`, NOT locked: the catalogue gates the next keypoint behind
+  /// the last because a course is an authored sequence, but this lesson came from
+  /// the reader's own material, so there is nothing to unlock.
+  ///
+  /// `stopAtKeypointIndex` is where opening the lesson resumes, so it IS that
+  /// boundary; the section check moves it past the end once the last card of the
+  /// last keypoint has been seen.
   int get _currentIndex {
     final keypoints = lesson.keypoints;
     if (keypoints.isEmpty) return 0;
@@ -194,10 +197,19 @@ class _RoadmapBody extends StatelessWidget {
                           artwork:
                               kMockUserLessonCovers[index %
                                   kMockUserLessonCovers.length],
+                          // NOTHING here is ever locked (product call,
+                          // 2026-08-12). The catalogue gates a later keypoint
+                          // behind the one before it because the course is an
+                          // authored sequence; this lesson was generated from
+                          // material the reader supplied minutes ago, so locking
+                          // them out of their own keypoint 2 gates them from their
+                          // own content. `_NodeState.locked` stays in the enum —
+                          // the node widget is a copy of the catalogue's and keeps
+                          // its vocabulary — but this page never produces it.
                           state: switch (index) {
                             _ when index < current => _NodeState.done,
                             _ when index == current => _NodeState.inProgress,
-                            _ => _NodeState.locked,
+                            _ => _NodeState.available,
                           },
                           isFirst: index == 0,
                           isLast: index == keypoints.length - 1,
@@ -474,7 +486,12 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-enum _NodeState { inProgress, done, locked }
+/// `available` = not started, not locked: readable right now.
+///
+/// The catalogue's node has no such state because there everything ahead of the
+/// reader IS locked. A generated lesson has no locked step at all, so it needs a
+/// way to draw "ahead of you, and yours to open".
+enum _NodeState { inProgress, done, available, locked }
 
 /// One step, drawn the way the catalogue roadmap draws one.
 ///
@@ -557,7 +574,9 @@ class _NodeMarker extends StatelessWidget {
 
   Color get _borderColor => switch (state) {
     _NodeState.inProgress => AppCustomColor.borderBrand,
-    _NodeState.done => AppCustomColor.brandPrimary50,
+    // Same quiet ring as a finished step: it is neither where the reader is nor
+    // out of reach, and only the ACTIVE step should draw the eye.
+    _NodeState.done || _NodeState.available => AppCustomColor.brandPrimary50,
     _NodeState.locked => AppCustomColor.neutral100,
   };
 

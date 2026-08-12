@@ -1005,9 +1005,17 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       // không vuốt được tiếp", 2026-08-04). Background listening reads
       // through gates by product call — so coming back treats what was heard
       // as reached.
-      // Not resolvable yet (the chain hopped into a keypoint whose items are
-      // still loading): stay armed and let the next rebuild land it.
-      _pendingVoiceFollow = !_followVoiceNow();
+      // Arm the retry ONLY when there is a real voice position we could not place
+      // yet — the chain hopped into a keypoint whose items are still loading.
+      //
+      // NOT merely "the follow did not move the deck": with no session started
+      // `activeCueIndex` is -1 and there is no cue at all, so every resume before
+      // playback armed a flag that then fired on the NEXT rebuild — i.e. on the
+      // reader's next swipe — and jumped the deck to wherever the voice had got
+      // to, usually the last card ("lướt qua card 3 phát chạy đến card cuối",
+      // 2026-08-12).
+      final voicePosition = _audioCubit.timeline?.cueAt(_audioCubit.state.activeCueIndex);
+      _pendingVoiceFollow = voicePosition != null && !_followVoiceNow();
       return;
     }
 
@@ -1221,8 +1229,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // hopped into it while the app was away) gets its follow now that they exist.
     // It lands the view itself, so the ordinary "point narration at the page"
     // step below would only fight it.
-    final followedVoice = _pendingVoiceFollow && !_isBackgrounded && _followVoiceNow();
-    if (followedVoice) _pendingVoiceFollow = false;
+    final owedFollow = _pendingVoiceFollow && !_isBackgrounded;
+    final followedVoice = owedFollow && _followVoiceNow();
+    // ONE SHOT, and only while the retry can still be needed: the flag exists for
+    // a resume that beat this keypoint's items, so the moment items exist it has
+    // either landed or had nothing to land. Leaving it armed past that turned every
+    // later rebuild — every swipe — into "jump to wherever the voice is".
+    if (owedFollow && lessonState.pageData.items.isNotEmpty) _pendingVoiceFollow = false;
     // Every card change takes narration with it, so the voice is always reading
     // the page on screen.
     if (!followedVoice) _ensureNarrationOnViewedCard();
