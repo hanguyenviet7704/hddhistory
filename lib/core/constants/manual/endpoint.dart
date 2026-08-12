@@ -124,6 +124,15 @@ mixin AppEndpoint {
   /// "I tapped it" — retires the popup for this user and this campaign.
   static const String homePopupClick = '/api/v1/home-popup/click';
 
+  /// How much of a keypoint this reader may read — the free tier's daily quota.
+  /// Server-owned: it depends on what this user has already read today, which no
+  /// client can know.
+  static const String keypointAccessById = '/api/v1/keypoint-access/{keypointId}';
+
+  /// Spends today's free ticket on a keypoint. Called when the reader tries to
+  /// move past the lock, so opening a keypoint and leaving costs nothing.
+  static const String keypointAccessClaim = '/api/v1/keypoint-access/{keypointId}/claim';
+
   //* Courses Output Practice API
   static const String coursesOutputPracticeConversations = '/api/v1/courses-output-practice-conversations';
   static const String coursesOutputPracticeSectionConversations = '/api/v1/courses-output-practice-conversations/section/{sectionId}';

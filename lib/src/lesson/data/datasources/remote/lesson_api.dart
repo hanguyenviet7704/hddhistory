@@ -13,4 +13,14 @@ abstract class LessonApi {
 
   @GET(AppEndpoint.coursesLearningItemsById)
   Future<BaseResponse<LearningItemModel>> getLearningItem(@Path('id') String id);
+
+  @GET(AppEndpoint.keypointAccessById)
+  Future<BaseResponse<KeypointAccessModel>> getKeypointAccess(
+    @Path('keypointId') String keypointId,
+  );
+
+  @POST(AppEndpoint.keypointAccessClaim)
+  Future<BaseResponse<KeypointClaimModel>> claimKeypointAccess(
+    @Path('keypointId') String keypointId,
+  );
 }

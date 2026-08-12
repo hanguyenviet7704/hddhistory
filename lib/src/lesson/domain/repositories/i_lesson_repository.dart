@@ -8,4 +8,10 @@ abstract class ILessonRepository {
   TaskEither<AppException, VoiceFeedbackEntity> sendVoiceFeedback(VoiceFeedbackRequest request);
   TaskEither<AppException, ResponseBody> sendVoiceFeedbackStream(VoiceFeedbackRequest request);
   TaskEither<AppException, VoiceScoreEntity> sendScoreRecord(Map<String, dynamic> params);
+
+  /// How much of [keypointId] this reader may read — the free tier's daily quota.
+  TaskEither<AppException, KeypointAccessEntity> getKeypointAccess(String keypointId);
+
+  /// Spends today's free ticket on [keypointId].
+  TaskEither<AppException, KeypointClaimEntity> claimKeypointAccess(String keypointId);
 }

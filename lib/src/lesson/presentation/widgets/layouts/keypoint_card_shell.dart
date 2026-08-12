@@ -114,7 +114,14 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     // Post-frame, not here: the wall is read off `CourseRoadmapCubit` /
     // `CourseLessonCubit` / `ProfileCubit`, and it races the narration that
     // starts reading the moment this page mounts.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncPaywallCap());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncPaywallCap();
+      // And ask the server what the daily quota says. Deliberately after the
+      // config-driven sync above rather than instead of it: the reader gets a
+      // wall-free first frame either way, and if this call fails the old rule
+      // still answers.
+      unawaited(_loadKeypointAccess());
+    });
   }
 
   @override
@@ -126,6 +133,27 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
 
   @override
   Widget build(BuildContext context) {
+    // The keypoint can change under this widget without the route changing — the
+    // listening chain hops keypoints in place, and the lesson's own re-entry does
+    // too. The quota answer belongs to ONE keypoint, so it has to be re-asked.
+    return BlocListener<CourseLessonCubit, CourseLessonState>(
+      listenWhen: (previous, current) => previous.currentKeypointId != current.currentKeypointId,
+      listener: (context, state) {
+        // Drop the previous keypoint's cap immediately rather than waiting for the
+        // new answer: carrying it over would bound the new deck by the old
+        // keypoint's wall, and the reader would hit a lock nobody set for it.
+        setState(() {
+          _accessKeypointId = '';
+          _serverCardCap = null;
+        });
+        _syncPaywallCap();
+        unawaited(_loadKeypointAccess());
+      },
+      child: _buildDeck(context),
+    );
+  }
+
+  Widget _buildDeck(BuildContext context) {
     return BlocConsumer<KeypointCardCubit, KeypointCardState>(
       listenWhen: (previous, current) => previous.viewedCardIndex != current.viewedCardIndex,
       listener: (context, state) {
@@ -346,8 +374,28 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     return cap;
   }
 
+  /// The cap the SERVER decided for this keypoint, or null for no limit.
+  ///
+  /// Null until [_loadKeypointAccess] answers, which is also the safe direction: a
+  /// wall that has not been established yet must not lock anything away.
+  int? _serverCardCap;
+
+  /// Keypoint [_serverCardCap] belongs to — a stale cap from the keypoint before
+  /// would bound the wrong deck (the listening chain switches keypoints in place).
+  String _accessKeypointId = '';
+
+  /// Guards against two claims in flight from one impatient reader.
+  bool _claimInFlight = false;
+
   int? _inLessonPaywallCap() {
     if (_inLessonPaywallGateBroken) return null;
+
+    // The free tier's daily quota (server-owned) REPLACES the position-based
+    // in-lesson wall — the two ask different questions and running both leaves a
+    // lock nobody can explain (see plans/260812-daily-keypoint-quota). The old
+    // rule stays reachable via config for a rollback.
+    if (_serverQuotaApplies) return _serverCardCap;
+
     try {
       final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig.inLessonPaywall;
       if (!config.enabled) return null;
@@ -358,6 +406,82 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       _inLessonPaywallGateBroken = true;
       LogDev.error('inLessonPaywall gate failed; leaving this keypoint ungated: $error\n$stackTrace');
       return null;
+    }
+  }
+
+  /// Whether the daily quota has spoken for the keypoint on screen.
+  ///
+  /// Keyed on the keypoint id, not on a bool: the answer for the PREVIOUS keypoint
+  /// must never bound this one.
+  bool get _serverQuotaApplies => _accessKeypointId.isNotEmpty && _accessKeypointId == _currentKeypointId;
+
+  String get _currentKeypointId {
+    try {
+      return AppDI.injector.get<CourseLessonCubit>().state.currentKeypointId;
+    } catch (_) {
+      return '';
+    }
+  }
+
+  /// Asks the server how much of this keypoint the reader may read.
+  ///
+  /// Runs on entry and whenever the keypoint changes under us. A failure leaves
+  /// `_serverCardCap` null and `_accessKeypointId` unset, so the old config-driven
+  /// path answers instead — never a wall invented by the client.
+  Future<void> _loadKeypointAccess() async {
+    final keypointId = _currentKeypointId;
+    if (keypointId.isEmpty) return;
+
+    final result = await AppDI.injector.get<GetKeypointAccessUseCase>().call(keypointId).run();
+    if (!mounted) return;
+
+    final access = result.getRight().toNullable();
+    // `unknown` is what a failed call and an older API both produce; neither is a
+    // decision, so leave the quota out of it.
+    if (access == null || access.reason == KeypointAccessReason.unknown) return;
+    // The keypoint may have changed while this was in flight.
+    if (_currentKeypointId != keypointId) return;
+
+    setState(() {
+      _accessKeypointId = keypointId;
+      _serverCardCap = access.cardCap;
+    });
+    _syncPaywallCap();
+  }
+
+  /// Spends today's free ticket on this keypoint, then lets the reader through.
+  ///
+  /// Called when they try to move past the lock — not on entry — so opening a
+  /// keypoint and leaving costs nothing (product call, 2026-08-12). Granted lifts
+  /// the cap and completes the move they asked for, so it takes ONE swipe rather
+  /// than making them swipe again into a wall that has just been removed.
+  Future<void> _claimThenAdvance(int target) async {
+    if (_claimInFlight) return;
+    final keypointId = _currentKeypointId;
+    if (keypointId.isEmpty) return;
+
+    _claimInFlight = true;
+    try {
+      final result = await AppDI.injector.get<ClaimKeypointAccessUseCase>().call(keypointId).run();
+      if (!mounted) return;
+      final claim = result.getRight().toNullable();
+
+      if (claim == null || !claim.granted) {
+        await _openInLessonPaywall();
+        return;
+      }
+      if (_currentKeypointId != keypointId) return;
+
+      setState(() {
+        _accessKeypointId = keypointId;
+        _serverCardCap = claim.cardCap;
+      });
+      _syncPaywallCap();
+      // Finish the move they asked for. `viewCard` re-clamps against the cap we
+      // just lifted, so this cannot overshoot.
+      if (mounted) context.read<KeypointCardCubit>().viewCard(target);
+    } finally {
+      _claimInFlight = false;
     }
   }
 
@@ -372,6 +496,18 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     if (target <= state.viewedCardIndex) return false;
     final cap = _syncPaywallCap();
     if (cap == null || target <= cap) return false;
+
+    // Under the daily quota the wall is not final until the ticket has been asked
+    // for: spending it is exactly what "moving past the lock" means. Claim, then
+    // either complete the move or raise the paywall — one gesture either way.
+    if (_serverQuotaApplies) {
+      unawaited(_claimThenAdvance(target));
+      // Still blocked for THIS frame: the answer is a network call away, and
+      // letting the deck move now would show the card before we know they may
+      // have it.
+      return true;
+    }
+
     unawaited(_openInLessonPaywall());
     return true;
   }
