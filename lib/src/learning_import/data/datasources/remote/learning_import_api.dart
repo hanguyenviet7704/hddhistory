@@ -37,6 +37,11 @@ abstract class LearningImportApi {
     @Body() Map<String, dynamic> body,
   );
 
+  /// Records "I want more content on this lesson". Nothing is generated; see the
+  /// endpoint's own docs.
+  @POST(AppEndpoint.userLessonAdditionalContentRequest)
+  Future<void> requestAdditionalContent(@Path('id') String id);
+
   @DELETE(AppEndpoint.userLessonById)
   Future<void> deleteUserLesson(@Path('id') String id);
 }

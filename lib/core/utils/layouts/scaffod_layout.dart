@@ -102,13 +102,25 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // a run the reader minimised is still running while they read
             // something else, and going quiet about it is what the toast exists
             // to stop.
-            BlocSelector<PageCubit, PageState, bool>(
-              selector: (state) => state.isPrimaryRoute,
-              builder: (context, isPrimary) => ImportProgressToast(
-                bottomInset: isPrimary
-                    ? floatingNavBarHeight(context) + 10.h
-                    : MediaQuery.paddingOf(context).bottom + 18.h,
+            BlocSelector<PageCubit, PageState, ({bool isPrimary, bool shownInline})>(
+              selector: (state) => (
+                isPrimary: state.isPrimaryRoute,
+                // My Creations carries the same run as a row in its own list, so
+                // a toast there would repeat the screen back to itself — and sit
+                // on top of that screen's create bar while doing it. The
+                // generating screen IS the run, full-size — a minimised copy of
+                // the thing you are looking at ("cục loading ở dưới không cần
+                // hiện ở màn này", 2026-08-12).
+                shownInline: state.currentRouteName == RouteNamed.myLessons ||
+                    state.currentRouteName == RouteNamed.importGenerating,
               ),
+              builder: (context, placement) => placement.shownInline
+                  ? const SizedBox.shrink()
+                  : ImportProgressToast(
+                      bottomInset: placement.isPrimary
+                          ? floatingNavBarHeight(context) + 10.h
+                          : MediaQuery.paddingOf(context).bottom + 18.h,
+                    ),
             ),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(

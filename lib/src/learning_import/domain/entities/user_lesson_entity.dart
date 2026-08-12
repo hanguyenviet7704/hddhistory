@@ -157,6 +157,11 @@ abstract class UserLessonEntity with _$UserLessonEntity {
     /// `stopAtKeypointIndex / keypointCount`, which for a four-keypoint lesson
     /// read 75% forever.
     DateTime? completedAt,
+
+    /// When the reader asked for more content on this lesson, from the panel at
+    /// the end of its roadmap. Null until they do — and it is the SERVER's copy,
+    /// so the answer survives a reinstall and cannot be re-asked on a new device.
+    DateTime? additionalContentRequestedAt,
     DateTime? createdAt,
     @Default(<LessonKeypointEntity>[]) List<LessonKeypointEntity> keypoints,
 
@@ -202,6 +207,9 @@ extension UserLessonEntityX on UserLessonEntity {
 
   /// Read to the end. See [completedAt].
   bool get isCompleted => completedAt != null;
+
+  /// Whether the "want more of this?" panel has already been answered with yes.
+  bool get hasRequestedMoreContent => additionalContentRequestedAt != null;
 
   /// How many keypoints this lesson has.
   ///

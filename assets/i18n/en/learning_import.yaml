@@ -10,7 +10,7 @@ deleteConfirmAction: Delete
 cancel: Cancel
 readingProgress: ${percent}% complete
 minutesRead: ${minutes} min
-quotaRemaining: ${remaining} of ${limit} left this week
+quotaRemaining: ${remaining} of ${limit} imports left
 quotaResets: Back on ${date}
 
 # Import sheet — step 1, source

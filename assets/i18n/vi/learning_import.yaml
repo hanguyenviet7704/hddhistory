@@ -10,7 +10,7 @@ deleteConfirmAction: Xoá
 cancel: Huỷ
 readingProgress: Hoàn thành ${percent}%
 minutesRead: ${minutes} phút
-quotaRemaining: Còn ${remaining}/${limit} lượt tuần này
+quotaRemaining: Còn ${remaining}/${limit} lượt
 quotaResets: Có lại vào ${date}
 
 # Import sheet — step 1, source

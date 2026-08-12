@@ -81,8 +81,50 @@ abstract final class UserLessonCourseMapper {
             _toDocument(lesson.outputLocale, section, index),
         ],
       ),
+      if (hasTakeawayItem(keypoint))
+        LearningItemEntity(
+          id: _takeawayItemId(lesson.id, keypointIndex),
+          keypointId: _keypointId(lesson.id, keypointIndex),
+          type: LearningItemType.theory,
+          index: 1,
+          title: _multi(lesson.outputLocale, keypoint.title),
+          // ONE document, ONE text block, and both halves of that matter:
+          // `resolveTakeawaySummary` folds a TRAILING SINGLE-PAGE theory into the
+          // recap flip card, and `takeawaySummaryText` reads `text` blocks only —
+          // a title block here would leave the recap resolving to nothing.
+          documents: [
+            DocumentEntity(
+              id: 0,
+              document: [
+                ContentDocumentEntity(
+                  id: 0,
+                  type: ContentDocumentType.text,
+                  data: DocumentDataEntity(
+                    content: _multi(lesson.outputLocale, keypoint.takeaway),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
     ];
   }
+
+  /// Whether this keypoint's takeaway becomes a learning item of its own.
+  ///
+  /// It exists to make the recap flip card READ ALOUD: the deck hands a trailing
+  /// single-page theory's dubbed clips to that card
+  /// ([KeypointCardsBuilder.build]), so a takeaway with no item of its own is a
+  /// recap card narration stops one card short of.
+  ///
+  /// Withheld when the keypoint has a single card, and that is not a nicety:
+  /// `resolveTakeawaySummary` folds nothing when EVERY theory in the keypoint is
+  /// single-page (folding them all would leave no deck to read), so the takeaway
+  /// item would come back as an ordinary extra card showing the same text the
+  /// recap already flips to. One silent recap beats a duplicated card.
+  @visibleForTesting
+  static bool hasTakeawayItem(LessonKeypointEntity keypoint) =>
+      keypoint.takeaway.trim().isNotEmpty && keypoint.sections.length > 1;
 
   /// Index of the keypoint a synthesised id belongs to, or -1 for any id this
   /// mapper did not mint.
@@ -137,7 +179,12 @@ abstract final class UserLessonCourseMapper {
     final audio = lesson.audio?.forKeypoint(index);
     if (audio == null || audio.url.isEmpty) return null;
 
+    final keypoint = lesson.keypoints[index];
+    final cardCount = keypoint.sections.length;
     final itemId = _itemId(lesson.id, index);
+    final takeawayItemId = hasTakeawayItem(keypoint)
+        ? _takeawayItemId(lesson.id, index)
+        : null;
 
     return KeypointAudioEntity(
       url: _multi(lesson.outputLocale, audio.url),
@@ -150,12 +197,29 @@ abstract final class UserLessonCourseMapper {
           durationMs: audio.durationMs,
           cues: [
             for (final cue in audio.cues)
-              MergedAudioCueEntity(
-                learningItemId: itemId,
-                documentIndex: cue.cardIndex,
-                startMs: cue.startMs,
-                durMs: cue.durMs,
-              ),
+              // The server dubs the takeaway as one more clip after the cards, so
+              // its cue arrives at cardIndex == cardCount — one past the last
+              // card. It belongs to the takeaway ITEM, whose clips the deck hands
+              // to the recap card; pointing it at the cards item would address a
+              // document that does not exist.
+              if (cue.cardIndex < cardCount)
+                MergedAudioCueEntity(
+                  learningItemId: itemId,
+                  documentIndex: cue.cardIndex,
+                  startMs: cue.startMs,
+                  durMs: cue.durMs,
+                )
+              // Dropped, not remapped, when this keypoint has no takeaway item
+              // (see [hasTakeawayItem]): a cue no card can claim would send the
+              // reveal logic looking for a card that was never built. The audio
+              // still plays to the end of the file, it just leads nothing.
+              else if (takeawayItemId != null && cue.cardIndex == cardCount)
+                MergedAudioCueEntity(
+                  learningItemId: takeawayItemId,
+                  documentIndex: 0,
+                  startMs: cue.startMs,
+                  durMs: cue.durMs,
+                ),
           ],
         ),
       },
@@ -200,6 +264,11 @@ abstract final class UserLessonCourseMapper {
   /// item id is traceable back to its keypoint by eye in a log line.
   static String _itemId(String lessonId, int index) =>
       '$lessonId$idMarker${index}i';
+
+  /// The takeaway item's id — the cards item's, with a `t`, so the two are
+  /// distinct without inventing a second id shape.
+  static String _takeawayItemId(String lessonId, int index) =>
+      '$lessonId$idMarker${index}it';
 
   /// A generated lesson exists in exactly ONE language, so only that slot is
   /// filled. `BaseMultiLanguage.text` falls back through every other locale, so

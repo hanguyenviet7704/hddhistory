@@ -7,6 +7,17 @@ part of '../../learning_import.dart';
 /// visibly behind reality and the screen feel stuck.
 const _kPollInterval = Duration(seconds: 3);
 
+/// The run this device is watching, remembered across launches.
+///
+/// Generation takes minutes and the reader is explicitly invited to walk away —
+/// including by killing the app. The job keeps running on the server either way,
+/// but without its id on disk the next launch starts with `state.job == null`
+/// and the app goes silent about it: no toast, no progress row on the shelf, and
+/// [ImportDonePopupHost] never says it finished — the very thing that host's own
+/// doc comment promises ("kills MeUp and comes back ten minutes later must still
+/// be told"). Cleared the moment a poll sees the job reach a terminal state.
+const String _kActiveImportJobKey = 'learning_import.active_job';
+
 /// Owns the create-and-wait half of the feature.
 ///
 /// The polling loop lives here rather than in the waiting screen on purpose:
@@ -21,6 +32,11 @@ class LearningImportCubit extends Cubit<LearningImportState>
   final UploadCubit _uploadCubit;
 
   Timer? _pollTimer;
+
+  /// Resolved on use rather than injected: this cubit's constructor is generated
+  /// into the DI graph, and the store is a lazy singleton anyway (same pattern as
+  /// [UserCubit]).
+  ILocalStoreService get _store => AppDI.injector.get<ILocalStoreService>();
 
   LearningImportCubit(
     this._createImportUseCase,
@@ -110,6 +126,9 @@ class LearningImportCubit extends Cubit<LearningImportState>
         )),
         onSuccess: (job) {
           emit(state.copyWith(status: LearningImportStatus.success, job: job, toastDismissed: false));
+          // Written before the first poll, not after: the app can be killed
+          // during the very first seconds of a run too.
+          unawaited(_store.setString(key: _kActiveImportJobKey, value: job.id));
           _startPolling(job.id);
         },
       );
@@ -132,23 +151,45 @@ class LearningImportCubit extends Cubit<LearningImportState>
         if (!job.isRunning) {
           _pollTimer?.cancel();
           _pollTimer = null;
+          // Terminal: there is nothing left to come back to, so stop carrying
+          // the id into the next launch.
+          unawaited(_store.remove(key: _kActiveImportJobKey));
         }
       },
     );
   }
 
-  /// Ask the server where the current job stands, right now.
+  /// Ask the server where the watched job stands, right now.
   ///
-  /// Called on app resume by [ImportDonePopupHost]. The polling timer does not
-  /// survive the app being suspended, so on the way back the job this cubit
-  /// holds is exactly as stale as the moment the reader left — and if it
-  /// finished while they were away, nothing else would ever notice.
+  /// Called by [ImportDonePopupHost] on mount and on every app resume. Two gaps,
+  /// one answer: the polling timer does not survive the app being suspended, so
+  /// on the way back the job this cubit holds is as stale as the moment the
+  /// reader left — and it does not survive the app being KILLED at all, in which
+  /// case there is no job in memory either and the id comes off disk
+  /// ([_kActiveImportJobKey]).
   Future<void> refreshActiveJob() async {
-    final job = state.job;
-    if (job == null || !job.isRunning) return;
+    final watched = state.job;
+    // Already finished and already dealt with — re-asking would only resurrect
+    // an announcement the reader has had.
+    if (watched != null && !watched.isRunning) return;
 
-    await _poll(job.id);
-    if (state.job?.isRunning ?? false) _startPolling(job.id);
+    final jobId = watched?.id ?? await _store.getString(key: _kActiveImportJobKey);
+    if (jobId.isEmpty) return;
+
+    final wasRestoredFromDisk = watched == null;
+    await _poll(jobId);
+
+    if (state.job?.isRunning ?? false) {
+      _startPolling(jobId);
+      return;
+    }
+
+    // A run from a previous launch that had already finished. The done popup is
+    // what tells them, so don't ALSO raise the shell's toast for the same event
+    // one dialog later.
+    if (wasRestoredFromDisk && state.job != null) {
+      emit(state.copyWith(toastDismissed: true));
+    }
   }
 
   /// Called when the user comes back to a job started earlier — the flow they

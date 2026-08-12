@@ -3,20 +3,24 @@ part of '../../learning_import.dart';
 const _kLessonsPageSize = 20;
 
 /// Owns the lessons the user already has: the list, the reader, and the two
-/// writes against them (bookmark, delete).
+/// writes against them (the reading bookmark, and "I want more of this").
+///
+/// No delete: the shelf is read-only by product call (2026-08-12). The endpoint
+/// and its use case still exist (`DeleteUserLessonUseCase`) — nothing in the app
+/// calls them.
 @lazySingleton
 class UserLessonCubit extends Cubit<UserLessonState>
     with CubitUseCaseHandlerMixin<UserLessonState> {
   final GetUserLessonsUseCase _getUserLessonsUseCase;
   final GetUserLessonUseCase _getUserLessonUseCase;
   final UpdateUserLessonProgressUseCase _updateProgressUseCase;
-  final DeleteUserLessonUseCase _deleteUserLessonUseCase;
+  final RequestUserLessonAdditionalContentUseCase _requestAdditionalContentUseCase;
 
   UserLessonCubit(
     this._getUserLessonsUseCase,
     this._getUserLessonUseCase,
     this._updateProgressUseCase,
-    this._deleteUserLessonUseCase,
+    this._requestAdditionalContentUseCase,
   ) : super(UserLessonState.initial());
 
   Future<void> loadLessons({bool isInit = true}) async {
@@ -54,6 +58,36 @@ class UserLessonCubit extends Cubit<UserLessonState>
       state.copyWith(status: UserLessonStatus.success, selected: lesson),
     ),
   );
+
+  /// Records "I want more content on this lesson", and reflects it locally the
+  /// moment it lands.
+  ///
+  /// The selected lesson is patched rather than refetched: the answer is one
+  /// timestamp, the panel only needs to know it exists, and re-reading the whole
+  /// body (every keypoint, every card) to learn a date would rebuild the roadmap
+  /// under the reader mid-tap. Failure leaves the panel unanswered — the wish was
+  /// not recorded, so claiming otherwise would be a lie the next entry corrects.
+  Future<void> requestAdditionalContent() async {
+    final lesson = state.selected;
+    if (lesson == null || lesson.id.isEmpty) return;
+    if (lesson.hasRequestedMoreContent) return;
+
+    await runUseCaseVoid(
+      usecase: () => _requestAdditionalContentUseCase(lesson.id),
+      onFailure: (error) => emit(state.copyWith(errorMessage: error)),
+      onSuccess: () {
+        final current = state.selected;
+        if (current?.id != lesson.id) return;
+        emit(
+          state.copyWith(
+            selected: current!.copyWith(
+              additionalContentRequestedAt: DateTime.now(),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   /// The lesson behind a synthesised keypoint id, or null when that id belongs
   /// to the catalogue — the question the reader's completion screen asks before
@@ -101,13 +135,4 @@ class UserLessonCubit extends Cubit<UserLessonState>
       ),
     ).run();
   }
-
-  Future<void> deleteLesson(String id) => runUseCaseVoid(
-    usecase: () => _deleteUserLessonUseCase(id),
-    onFailure: (error) => emit(state.copyWith(errorMessage: error)),
-    // Reload rather than filtering locally: a page whose item count shrank can
-    // need a different set of pages, and re-asking is cheaper than getting that
-    // arithmetic subtly wrong.
-    onSuccess: () => loadLessons(),
-  );
 }

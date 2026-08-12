@@ -5,6 +5,11 @@ part of '../../learning_import.dart';
 /// Reached from a row in Profile. Deliberately a plain list rather than a
 /// roadmap: these lessons have no ordering, no prerequisites and no progression
 /// — they are a shelf, not a course.
+///
+/// Read-only, by product call (2026-08-12): no delete, and no create bar either.
+/// Making a lesson starts from the Explore header's button
+/// (`course_header.dart` → `ImportLessonRoute`); this screen is where they are
+/// kept, not where they are made.
 class MyLessonsPage extends StatefulWidget {
   const MyLessonsPage({super.key});
 
@@ -19,22 +24,9 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
     // Refetched on every entry rather than cached: a lesson may have finished
     // generating while the user was elsewhere in the app.
     context.read<UserLessonCubit>().loadLessons();
-    // Same read the Explore button relies on — it also carries the feature
-    // switch, which decides whether the create bar belongs on screen.
-    unawaited(context.read<LearningImportCubit>().loadQuota());
-  }
-
-  Future<void> _startImport() async {
-    final cubit = context.read<LearningImportCubit>();
-
-    // No premium gate on the way IN any more. A free reader gets one ticket a
-    // week, so the paywall belongs where the ticket runs out — on the import
-    // screen itself, next to the count — not in front of the door. Sending them
-    // to the paywall from here would also be a promise the server no longer
-    // makes: it stopped refusing non-subscribers outright.
-    cubit.reset();
-    await const ImportLessonRoute().push(context);
-    if (mounted) context.read<UserLessonCubit>().loadLessons();
+    // Quota is NOT fetched here any more: it existed for the create bar's
+    // feature switch, and the bar is gone. The import screen reads it for
+    // itself, next to the credit count that actually needs it.
   }
 
   @override
@@ -45,150 +37,115 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
       backgroundColor:
           studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       body: ThemedBackground(
-        child: SafeBody(
-          child: Column(
-            children: [
-              _MyLessonsHeader(title: l10n.myLessonsTitle),
-              Expanded(
-                child: BlocBuilder<UserLessonCubit, UserLessonState>(
-                  builder: (context, state) {
-                    if (state.isLoading && state.pageData.items.isEmpty) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+        child: BlocListener<LearningImportCubit, LearningImportState>(
+          // The run just ended. Its lesson exists on the server now but not in
+          // the page this screen fetched on entry, so the card vanishes and
+          // nothing takes its place — the shelf would be missing the very lesson
+          // the reader watched being made. Ask the list again.
+          listenWhen: (previous, current) =>
+              (previous.job?.isRunning ?? false) &&
+              !(current.job?.isRunning ?? false),
+          listener: (context, _) =>
+              unawaited(context.read<UserLessonCubit>().loadLessons()),
+          child: SafeBody(
+            child: Column(
+              children: [
+                _MyLessonsHeader(title: l10n.myLessonsTitle),
+                Expanded(
+                  // The run in flight is read FIRST, outside the lesson list.
+                  //
+                  // A running job has no lesson row yet — the list endpoint only
+                  // knows about finished ones — so the shelf is built from two
+                  // sources and the empty/loading branches below may only speak for
+                  // one of them. They used to be checked first, which meant a
+                  // reader's FIRST import spent its several minutes looking at
+                  // "Chưa có bài nào": nothing on the screen they had just been
+                  // sent to said a lesson was being made.
+                  child: BlocBuilder<LearningImportCubit, LearningImportState>(
+                    buildWhen: (previous, current) =>
+                        previous.job?.id != current.job?.id ||
+                        previous.job?.percent != current.job?.percent ||
+                        (previous.job?.isRunning ?? false) !=
+                            (current.job?.isRunning ?? false),
+                    builder: (context, importState) {
+                      final job = importState.job;
+                      final isRunning = job?.isRunning ?? false;
+                      final extra = isRunning ? 1 : 0;
 
-                    if (state.isEmpty) {
-                      return _MyLessonsEmpty(onCreate: _startImport);
-                    }
-
-                    return RefreshIndicator(
-                      onRefresh: () =>
-                          context.read<UserLessonCubit>().loadLessons(),
-                      child: BlocBuilder<LearningImportCubit, LearningImportState>(
-                        buildWhen: (previous, current) =>
-                            previous.job?.id != current.job?.id ||
-                            previous.job?.percent != current.job?.percent,
-                        builder: (context, importState) {
-                          // A run in flight has no lesson row yet — the list
-                          // endpoint only knows about finished ones. Without
-                          // this the shelf looks unchanged for the minutes a
-                          // generation takes, which reads as nothing happened.
-                          final job = importState.job;
-                          final isRunning = job?.isRunning ?? false;
-                          final extra = isRunning ? 1 : 0;
-
-                          return ListView.separated(
-                            padding: EdgeInsets.fromLTRB(
-                              20.w,
-                              8.h,
-                              20.w,
-                              floatingNavBarHeight(context) + 20.h,
-                            ),
-                            physics: const AlwaysScrollableScrollPhysics(
-                              parent: BouncingScrollPhysics(),
-                            ),
-                            itemCount: state.pageData.items.length + extra,
-                            separatorBuilder: (_, _) => 12.verticalSpace,
-                            itemBuilder: (context, index) {
-                              if (isRunning && index == 0) {
-                                return _GeneratingCard(
-                                  title: job!.sourceLabel.isNotEmpty
-                                      ? job.sourceLabel
-                                      : context.l10n.learningImport.generatingTitle,
-                                  percent: job.percent,
-                                );
-                              }
-
-                              final lesson =
-                                  state.pageData.items[index - extra];
-
-                              return _LessonCard(
-                                lesson: lesson,
-                                onTap: () =>
-                                    LessonReaderRoute(lesson.id).push(context),
-                                onDelete: () => _confirmDelete(context, lesson),
+                      return BlocBuilder<UserLessonCubit, UserLessonState>(
+                        builder: (context, state) {
+                          // Nothing generating: the shelf is only as good as the
+                          // list, so a spinner and an empty state are honest.
+                          if (!isRunning) {
+                            if (state.isLoading && state.pageData.items.isEmpty) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
                               );
-                            },
+                            }
+
+                            if (state.isEmpty) {
+                              return const _MyLessonsEmpty();
+                            }
+                          }
+
+                          return RefreshIndicator(
+                            onRefresh: () =>
+                                context.read<UserLessonCubit>().loadLessons(),
+                            child: ListView.separated(
+                              padding: EdgeInsets.fromLTRB(
+                                20.w,
+                                8.h,
+                                20.w,
+                                floatingNavBarHeight(context) + 20.h,
+                              ),
+                              physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics(),
+                              ),
+                              itemCount: state.pageData.items.length + extra,
+                              separatorBuilder: (_, _) => 12.verticalSpace,
+                              itemBuilder: (context, index) {
+                                if (isRunning && index == 0) {
+                                  return _GeneratingCard(
+                                    title: job!.sourceLabel.isNotEmpty
+                                        ? job.sourceLabel
+                                        : context
+                                              .l10n
+                                              .learningImport
+                                              .generatingTitle,
+                                    percent: job.percent,
+                                  );
+                                }
+
+                                final lesson =
+                                    state.pageData.items[index - extra];
+
+                                return _LessonCard(
+                                  lesson: lesson,
+                                  onTap: () =>
+                                      LessonReaderRoute(lesson.id).push(context),
+                                );
+                              },
+                            ),
                           );
                         },
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              // The shelf still lists everything; only making a new one is
-              // closed, so the bar goes and the list stays.
-              BlocBuilder<LearningImportCubit, LearningImportState>(
-                buildWhen: (previous, current) =>
-                    previous.quota.enabled != current.quota.enabled ||
-                    previous.quota.isKnown != current.quota.isKnown,
-                builder: (context, importState) =>
-                    importState.quota.isFeatureOff
-                    ? const SizedBox.shrink()
-                    : _CreateLessonBar(
-                        label: l10n.createButton,
-                        onPressed: _startImport,
-                      ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    UserLessonEntity lesson,
-  ) async {
-    final l10n = context.l10n.learningImport;
-    final cubit = context.read<UserLessonCubit>();
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppCustomColor.backgroundWhite,
-        title: AppText(l10n.deleteConfirmTitle, style: AppStyle.textBold16),
-        content: AppText(l10n.deleteConfirmBody, style: AppStyle.text14),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: AppText(l10n.cancel, style: AppStyle.text14),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: AppText(
-              l10n.deleteConfirmAction,
-              style: AppStyle.textBold16.copyWith(
-                color: AppCustomColor.backgroundError,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) cubit.deleteLesson(lesson.id);
-  }
 }
 
 class _MyLessonsHeader extends StatelessWidget {
   const _MyLessonsHeader({required this.title});
 
   final String title;
-
-  /// Pop, then name the page underneath.
-  ///
-  /// `didPop` reports the route below, and a shell branch's root sometimes
-  /// arrives unnamed — which reads as "not a primary route" and leaves Profile
-  /// without its floating nav. Asserting the name here is the pattern
-  /// `LessonPage._ensureLessonRouteName` already uses for its own case; doing it
-  /// centrally instead (resolving every blank to the active branch) put the nav
-  /// on top of the lesson reader, which is worse.
-  void _back(BuildContext context) {
-    final pageCubit = AppDI.injector.get<PageCubit>();
-    Navigator.of(context).maybePop();
-    pageCubit.setCurrentRouteName(RouteNamed.profile);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +154,13 @@ class _MyLessonsHeader extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => _back(context),
+            // A plain pop: `didPop` names the page underneath (Profile) by
+            // itself, so there is nothing to assert here — the nav bar going
+            // missing on Profile after reading a generated lesson was the
+            // lesson reader reclaiming its own name from a backgrounded branch,
+            // not a blank name from this pop. See `canAssertOwnRouteName` and
+            // `user_lesson_roadmap_nav_test.dart`.
+            onPressed: () => Navigator.of(context).maybePop(),
             icon: Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 20.w,
@@ -219,46 +182,61 @@ class _MyLessonsHeader extends StatelessWidget {
 }
 
 class _MyLessonsEmpty extends StatelessWidget {
-  const _MyLessonsEmpty({required this.onCreate});
-
-  final VoidCallback onCreate;
+  const _MyLessonsEmpty();
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.learningImport;
+    // Over a custom study background this block gets a card of its own (below),
+    // so its ink is the ordinary dark card ink either way — never light-on-photo.
+    // Light ink was the previous answer and it fails on a BRIGHT patch of a photo
+    // exactly as dark ink fails on a dark one: three lines of centred text on a
+    // forest, with nothing behind them, has no contrast to rely on.
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.auto_stories_outlined,
+          size: 56.w,
+          color: studyThemeCardMuted(context, AppCustomColor.textSecondary),
+        ),
+        20.verticalSpace,
+        AppText(
+          l10n.emptyTitle,
+          textAlign: TextAlign.center,
+          style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+        ),
+        8.verticalSpace,
+        // An empty state that explains the feature, not a blank panel: this
+        // is the first thing a user sees here and it has to answer "what is
+        // this for?" on its own.
+        AppText(
+          l10n.emptyBody,
+          textAlign: TextAlign.center,
+          maxLines: 4,
+          style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+        ),
+      ],
+    );
+
+    // No card on the stock theme: there the page background IS a flat light
+    // surface, and a white panel on light gray would be a box drawn around
+    // nothing.
+    if (!studyThemeHasCustomBg(context)) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 40.w),
+          child: content,
+        ),
+      );
+    }
 
     return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 40.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.auto_stories_outlined,
-              size: 56.w,
-              color: studyThemeCardMuted(context, AppCustomColor.textSecondary),
-            ),
-            20.verticalSpace,
-            AppText(
-              l10n.emptyTitle,
-              textAlign: TextAlign.center,
-              style: AppStyle.textBold16.copyWith(
-                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-              ),
-            ),
-            8.verticalSpace,
-            // An empty state that explains the feature, not a blank panel: this
-            // is the first thing a user sees here and it has to answer "what is
-            // this for?" on its own.
-            AppText(
-              l10n.emptyBody,
-              textAlign: TextAlign.center,
-              maxLines: 4,
-              style: AppStyle.text14.copyWith(
-                color: studyThemeOnBg(context, AppCustomColor.textSecondary),
-              ),
-            ),
-          ],
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: ThemedGlassCard(
+          padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 28.h),
+          child: content,
         ),
       ),
     );
@@ -275,12 +253,10 @@ class _LessonCard extends StatelessWidget {
   const _LessonCard({
     required this.lesson,
     required this.onTap,
-    required this.onDelete,
   });
 
   final UserLessonEntity lesson;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -361,22 +337,6 @@ class _LessonCard extends StatelessWidget {
                       ],
                     ),
                   ],
-                ),
-              ),
-              // Not in the design, kept anyway: deleting a lesson is the only
-              // destructive thing the reader owns here, and the comp simply did
-              // not draw a way to do it.
-              GestureDetector(
-                key: Key('my-lesson-delete-${lesson.id}'),
-                onTap: onDelete,
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 8.w),
-                  child: Icon(
-                    Icons.more_horiz_rounded,
-                    size: 20.w,
-                    color: AppCustomColor.textTertiary,
-                  ),
                 ),
               ),
             ],
@@ -467,34 +427,6 @@ class _GeneratingCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CreateLessonBar extends StatelessWidget {
-  const _CreateLessonBar({required this.label, required this.onPressed});
-
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        20.w,
-        16.h,
-        20.w,
-        16.h + MediaQuery.paddingOf(context).bottom,
-      ),
-      color: AppCustomColor.backgroundWhite,
-      child: DButton(
-        text: label,
-        backgroundColor: AppCustomColor.brandPrimary,
-        size: Size(double.infinity, 54.h),
-        style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
-        onPressed: onPressed,
       ),
     );
   }

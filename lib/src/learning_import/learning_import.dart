@@ -39,6 +39,7 @@ part 'domain/usecases/get_user_lessons_usecase.dart';
 part 'domain/usecases/get_user_lesson_usecase.dart';
 part 'domain/usecases/update_user_lesson_progress_usecase.dart';
 part 'domain/usecases/delete_user_lesson_usecase.dart';
+part 'domain/usecases/request_user_lesson_additional_content_usecase.dart';
 
 //* Presentation Layer - Cubits + States
 part 'presentation/cubits/learning_import_state.dart';
@@ -55,8 +56,8 @@ part 'presentation/pages/import_generating_page.dart';
 //* Presentation Layer - Shell host
 part 'presentation/widgets/import_done_popup_host.dart';
 part 'presentation/widgets/import_progress_toast.dart';
-part 'presentation/widgets/import_ticket_popups.dart';
 part 'presentation/widgets/mock_lesson_artwork.dart';
+part 'presentation/widgets/user_lesson_additional_content_panel.dart';
 
 //* Parts for generated files
 part 'learning_import.freezed.dart';

@@ -10,7 +10,7 @@ deleteConfirmAction: 削除
 cancel: キャンセル
 readingProgress: ${percent}% 完了
 minutesRead: ${minutes} 分
-quotaRemaining: 今週は残り ${remaining}/${limit} 回
+quotaRemaining: 残り ${remaining}/${limit} 回
 quotaResets: ${date} に戻ります
 
 # Import sheet — step 1, source

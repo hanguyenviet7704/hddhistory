@@ -64,5 +64,9 @@ abstract class ILearningImportRepository {
     UpdateLessonProgressParams params,
   );
 
+  /// Records "I want more content on this lesson". The server generates nothing
+  /// off the back of it — see the endpoint's own docs.
+  TaskEither<AppException, Unit> requestAdditionalContent(String id);
+
   TaskEither<AppException, Unit> deleteUserLesson(String id);
 }

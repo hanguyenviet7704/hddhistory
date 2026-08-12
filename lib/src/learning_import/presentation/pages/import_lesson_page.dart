@@ -65,21 +65,34 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
     });
   }
 
-  /// The ticket pill, and the two answers it can give.
+  /// The ticket pill's `+`: straight to the paywall.
   ///
-  /// The upsell is reserved for the one case where it is the useful answer: a
-  /// reader with no ticket and no subscription. Anyone still holding one gets
-  /// the balance popup instead — selling Premium to someone who has not spent
-  /// what they already have reads as a paywall, not an offer — and so does a
-  /// subscriber at zero, for whom the only fact that helps is the refill day.
-  void _openTicketPopup() {
-    final quota = context.read<LearningImportCubit>().state.quota;
+  /// There is no explainer popup in front of it any more (product call,
+  /// 2026-08-12). A free reader has exactly one ticket, ever — the only thing a
+  /// popup could add is a sentence between them and the offer, and the pill only
+  /// carries a `+` for readers who have something to buy (see [_CreditsPill]).
+  void _openUpgrade() {
     AppHaptic.select();
+    AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
+      PaywallEntryPoint.learningImport,
+    );
+    unawaited(const PaywallRoute().push(context));
+  }
 
-    unawaited(
-      !quota.canImport && !quota.isPremium
-          ? showImportOutOfTicketsPopup(context, quota: quota)
-          : showImportTicketInfoPopup(context, quota: quota),
+  /// A subscriber who has spent the week's allowance. Nothing to sell and nothing
+  /// to explain — just the day it comes back, where they pressed.
+  ///
+  /// The refill day is NAMED, not dated ('EEEE'): the window is a calendar week,
+  /// so the answer is always a weekday and "on Monday" is what a reader repeats
+  /// back.
+  void _tellPremiumToWait(ImportQuotaEntity quota) {
+    final resetsAt = quota.resetsAt;
+    DMessage.showSnackBar(
+      message: l10n.learningImport.ticketNoteBalance(
+        count: 0,
+        limit: quota.limit,
+        date: resetsAt == null ? '' : resetsAt.toLocal().parseString('EEEE'),
+      ),
     );
   }
 
@@ -93,11 +106,12 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
     if (quota.isFeatureOff) return;
 
     // Spending a ticket the reader does not have is a request that comes back
-    // rejected — the popup says the same thing the server would, without the
-    // round trip or the raw error line. Skipped when the allowance was never
-    // read (see `isKnown`): there the server stays the judge.
+    // rejected, so it is answered here instead — the paywall for a free reader
+    // who has used their one import, the refill day for a subscriber mid-week.
+    // Skipped when the allowance was never read (see `isKnown`): there the
+    // server stays the judge.
     if (quota.isKnown && !quota.canImport) {
-      _openTicketPopup();
+      quota.isPremium ? _tellPremiumToWait(quota) : _openUpgrade();
       return;
     }
 
@@ -147,7 +161,7 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
             bottom: false,
             child: Column(
               children: [
-                _Header(quota: state.quota, onTicketTap: _openTicketPopup),
+                _Header(quota: state.quota, onUpgradeTap: _openUpgrade),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 40.h),
@@ -177,9 +191,6 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
                         24.verticalSpace,
                         if (state.quota.isFeatureOff) ...[
                           _FeatureOffNote(note: state.quota.disabledNote),
-                          18.verticalSpace,
-                        ] else if (state.quota.isKnown) ...[
-                          _TicketNote(quota: state.quota),
                           18.verticalSpace,
                         ],
                         _SourcePicker(
@@ -247,10 +258,10 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
 
 /// Close button on the left, credits on the right.
 class _Header extends StatelessWidget {
-  const _Header({required this.quota, required this.onTicketTap});
+  const _Header({required this.quota, required this.onUpgradeTap});
 
   final ImportQuotaEntity quota;
-  final VoidCallback onTicketTap;
+  final VoidCallback onUpgradeTap;
 
   @override
   Widget build(BuildContext context) {
@@ -277,7 +288,7 @@ class _Header extends StatelessWidget {
           const Spacer(),
           // Hidden until the allowance is actually known — a pill reading "0"
           // because the request dropped is a lie about the reader's account.
-          if (quota.isKnown) _CreditsPill(quota: quota, onTap: onTicketTap),
+          if (quota.isKnown) _CreditsPill(quota: quota, onUpgradeTap: onUpgradeTap),
         ],
       ),
     );
@@ -354,88 +365,31 @@ class _FeatureOffNote extends StatelessWidget {
 /// costs. It sits ABOVE the source picker deliberately: the design puts the
 /// constraint before the work, so nobody picks a file, pastes a link and only
 /// then learns they cannot spend anything.
-class _TicketNote extends StatelessWidget {
-  const _TicketNote({required this.quota});
-
-  final ImportQuotaEntity quota;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n.learningImport;
-    final resetsAt = quota.resetsAt;
-
-    // Premium states the balance and nothing else — there is nothing left to
-    // sell them. A free reader gets the same count plus what a subscription
-    // would make it, which is the design's line and the only place this feature
-    // is advertised on its own screen.
-    final text = quota.isPremium
-        ? l10n.ticketNoteBalance(
-            count: quota.remaining,
-            limit: quota.limit,
-            // Only read in the zero case, where the refill day IS the message.
-            // Empty rather than a guess when the server sent no date.
-            date: resetsAt == null ? '' : importTicketResetShort(resetsAt),
-          )
-        : l10n.ticketNoteFree(
-            count: quota.remaining,
-            premiumLimit: quota.premiumLimit,
-          );
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF6F5FF),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE4E1FA)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.confirmation_number_outlined,
-            size: 20.w,
-            color: AppCustomColor.brandPrimary,
-          ),
-          11.horizontalSpace,
-          Expanded(
-            child: AppText(
-              text,
-              style: AppStyle.text12.copyWith(
-                fontSize: 13.sp,
-                height: 1.45,
-                color: AppCustomColor.textSecondary,
-              ),
-              maxLines: 3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// How many lessons are left this month, and a way to get more.
+/// The balance, and — for anyone who can still buy more — the way to get it.
 ///
-/// Reads as a ticket stub on purpose: the allowance is the real constraint on
-/// this feature (every run costs money), so it belongs on screen before the user
-/// spends one, not in a toast after they run out.
+/// The `+` and the tap belong to non-subscribers only. A subscriber has nothing
+/// to add: on their pill the `+` was a button that opened a popup restating a
+/// number already printed next to it, so both are gone and the pill is a label.
 class _CreditsPill extends StatelessWidget {
-  const _CreditsPill({required this.quota, required this.onTap});
+  const _CreditsPill({required this.quota, required this.onUpgradeTap});
 
   final ImportQuotaEntity quota;
-  final VoidCallback onTap;
+  final VoidCallback onUpgradeTap;
+
+  bool get _canUpgrade => !quota.isPremium;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: true,
+      button: _canUpgrade,
       label: context.l10n.learningImport.quotaRemaining(
         remaining: quota.remaining,
         limit: quota.limit,
       ),
       child: GestureDetector(
-        onTap: onTap,
+        onTap: _canUpgrade ? onUpgradeTap : null,
         child: Container(
-          padding: EdgeInsets.fromLTRB(13.w, 6.h, 6.w, 6.h),
+          padding: EdgeInsets.fromLTRB(13.w, 6.h, _canUpgrade ? 6.w : 13.w, 6.h),
           decoration: BoxDecoration(
             color: const Color(0xFFEEEDFB),
             borderRadius: BorderRadius.circular(99.r),
@@ -457,17 +411,19 @@ class _CreditsPill extends StatelessWidget {
                   color: AppCustomColor.brandPrimary,
                 ),
               ),
-              8.horizontalSpace,
-              Container(
-                width: 24.w,
-                height: 24.w,
-                decoration: const BoxDecoration(
-                  color: AppCustomColor.brandPrimary,
-                  shape: BoxShape.circle,
+              if (_canUpgrade) ...[
+                8.horizontalSpace,
+                Container(
+                  width: 24.w,
+                  height: 24.w,
+                  decoration: const BoxDecoration(
+                    color: AppCustomColor.brandPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(Icons.add_rounded, size: 14.w, color: Colors.white),
                 ),
-                alignment: Alignment.center,
-                child: Icon(Icons.add_rounded, size: 14.w, color: Colors.white),
-              ),
+              ],
             ],
           ),
         ),

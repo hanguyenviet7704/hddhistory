@@ -50,6 +50,8 @@ class _FakeImportRepository implements ILearningImportRepository {
       TaskEither.right(unit);
 
   @override
+  TaskEither<AppException, Unit> requestAdditionalContent(String id) => TaskEither.right(unit);
+  @override
   TaskEither<AppException, Unit> deleteUserLesson(String id) =>
       TaskEither.right(unit);
 }

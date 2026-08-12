@@ -10,7 +10,7 @@ deleteConfirmAction: 删除
 cancel: 取消
 readingProgress: 完成 ${percent}%
 minutesRead: ${minutes} 分钟
-quotaRemaining: 本周还剩 ${remaining}/${limit} 次
+quotaRemaining: 还剩 ${remaining}/${limit} 次
 quotaResets: ${date} 恢复
 
 # Import sheet — step 1, source

@@ -96,6 +96,19 @@ class LearningImportRepository
   }
 
   @override
+  TaskEither<AppException, Unit> requestAdditionalContent(String id) {
+    return TaskEither.tryCatch(
+      () async {
+        await _api.requestAdditionalContent(id);
+        return unit;
+      },
+      (error, stackTrace) => error is DioException
+          ? AppException.fromDioException(error)
+          : AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
   TaskEither<AppException, Unit> deleteUserLesson(String id) {
     return TaskEither.tryCatch(
       () async {

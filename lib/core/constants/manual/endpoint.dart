@@ -202,6 +202,8 @@ mixin AppEndpoint {
   static const String userLessons = '/api/v1/user-lessons';
   static const String userLessonById = '/api/v1/user-lessons/{id}';
   static const String userLessonProgress = '/api/v1/user-lessons/{id}/progress';
+  static const String userLessonAdditionalContentRequest =
+      '/api/v1/user-lessons/{id}/additional-content-request';
 
   //* AI Services API
   static const String voiceFeedback = '/feedback';

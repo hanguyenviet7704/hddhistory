@@ -39,7 +39,11 @@ class _ImportDonePopupHostState extends State<ImportDonePopupHost>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_check()));
+    // Refresh on mount too, not just on resume: a launch is the one moment the
+    // cubit holds no job at all, so this is where a run started before the app
+    // was killed gets picked back up — for this popup, for the shell toast, and
+    // for the progress row on the shelf.
+    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_refreshThenCheck()));
   }
 
   @override
@@ -54,12 +58,12 @@ class _ImportDonePopupHostState extends State<ImportDonePopupHost>
 
     // Refresh first, then look: the cubit's timer died when the app went away,
     // so without this the job it holds is as stale as the moment we left.
-    unawaited(
-      AppDI.injector
-          .get<LearningImportCubit>()
-          .refreshActiveJob()
-          .then((_) => _check()),
-    );
+    unawaited(_refreshThenCheck());
+  }
+
+  Future<void> _refreshThenCheck() async {
+    await AppDI.injector.get<LearningImportCubit>().refreshActiveJob();
+    await _check();
   }
 
   Future<void> _check() async {

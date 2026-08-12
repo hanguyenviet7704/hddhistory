@@ -103,6 +103,7 @@ abstract class UserLessonModel with _$UserLessonModel {
     @Default(0) int stopAtKeypointIndex,
     @Default(0) int stopAtSectionIndex,
     String? completedAt,
+    String? additionalContentRequestedAt,
     String? createdAt,
     // Absent on the list endpoint by design (the API leaves the body out of the
     // card payload), so this defaults to empty rather than being nullable.
@@ -205,6 +206,9 @@ extension UserLessonModelX on UserLessonModel {
     stopAtKeypointIndex: stopAtKeypointIndex,
     stopAtSectionIndex: stopAtSectionIndex,
     completedAt: DateTime.tryParse(completedAt ?? ''),
+    additionalContentRequestedAt: DateTime.tryParse(
+      additionalContentRequestedAt ?? '',
+    ),
     createdAt: DateTime.tryParse(createdAt ?? ''),
     keypoints: _resolvedKeypoints,
     audioStatus: audioStatus,

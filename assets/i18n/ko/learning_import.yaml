@@ -10,7 +10,7 @@ deleteConfirmAction: 삭제
 cancel: 취소
 readingProgress: ${percent}% 완료
 minutesRead: ${minutes}분
-quotaRemaining: 이번 주 ${remaining}/${limit}회 남음
+quotaRemaining: ${remaining}/${limit}회 남음
 quotaResets: ${date}에 다시 채워져요
 
 # Import sheet — step 1, source

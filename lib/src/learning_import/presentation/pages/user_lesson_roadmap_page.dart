@@ -203,6 +203,14 @@ class _RoadmapBody extends StatelessWidget {
                           isLast: index == keypoints.length - 1,
                           onTap: () => onOpenKeypoint(index),
                         ),
+                      // End of the road: the catalogue asks the same question
+                      // when a level runs out of content, and a generated lesson
+                      // that has been read to the end is in exactly that
+                      // position. Only then — see the panel's own doc.
+                      if (lesson.isCompleted) ...[
+                        8.verticalSpace,
+                        UserLessonAdditionalContentPanel(lesson: lesson),
+                      ],
                     ],
                   ),
                 ),
@@ -307,14 +315,17 @@ class _RoadmapHeader extends StatelessWidget {
                 size: 20.w,
                 color: studyThemeOnBg(context, AppCustomColor.textPrimary),
               ),
+              // No route-name assert on the way out. This screen is arrived at
+              // from four places, so the page underneath is My Creations only
+              // sometimes (Profile when a popup/toast opened it, an Explore page
+              // when the import screen did) — naming it My Creations was a guess
+              // that was wrong more often than right. The pop's own `didPop`
+              // reports the real page underneath a moment later either way; see
+              // `user_lesson_roadmap_nav_test.dart`, which pins that for all
+              // four entry paths.
               onPressed: () {
                 AppHaptic.select();
                 Navigator.of(context).maybePop();
-                // The page underneath is My Creations, and the pop can report it
-                // unnamed — see the note on `_MyLessonsHeader._back`.
-                AppDI.injector.get<PageCubit>().setCurrentRouteName(
-                  RouteNamed.myLessons,
-                );
               },
             ),
           ),
