@@ -37,6 +37,7 @@ import LearningImportDetail from "../pages/learning-imports/LearningImportDetail
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
 import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
+import HomePopupPage from "../pages/home-popup/HomePopupPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
@@ -95,6 +96,7 @@ export default function AppRouter() {
               <Route path="download-links" element={<DownloadLinkList />} />
               <Route path="streak-config" element={<StreakConfigPage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
+              <Route path="home-popup" element={<HomePopupPage />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />

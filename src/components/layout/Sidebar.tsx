@@ -102,6 +102,7 @@ const menuGroups = [
       { name: "Link tải app", icon: LinkIcon, path: "/download-links" },
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
       { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
+      { name: "Popup Home", icon: MegaphoneIcon, path: "/home-popup" },
       // Read-only: what users imported (PDF / YouTube) and the lesson the model
       // wrote back. Named to match its page title rather than the Vietnamese
       // labels around it, so nav and heading agree.
