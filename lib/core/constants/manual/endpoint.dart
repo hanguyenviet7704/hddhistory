@@ -116,6 +116,14 @@ mixin AppEndpoint {
   //* Home Banner API
   static const String homeBanner = '/api/v1/home-banner';
 
+  /// Admin-configured promo popup on Home. Unlike the banner this one is NOT
+  /// public server-side: the response depends on whether THIS user has already
+  /// tapped the campaign.
+  static const String homePopup = '/api/v1/home-popup';
+
+  /// "I tapped it" — retires the popup for this user and this campaign.
+  static const String homePopupClick = '/api/v1/home-popup/click';
+
   //* Courses Output Practice API
   static const String coursesOutputPracticeConversations = '/api/v1/courses-output-practice-conversations';
   static const String coursesOutputPracticeSectionConversations = '/api/v1/courses-output-practice-conversations/section/{sectionId}';

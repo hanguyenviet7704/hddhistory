@@ -50,6 +50,24 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
   }
 
   @override
+  TaskEither<AppException, HomePopupEntity> getHomePopup() {
+    return callApiWithTransform<HomePopupModel, HomePopupEntity>(
+      apiCall: () => _homeApi.getHomePopup(),
+      transform: (model) => model.toEntity(),
+      defaultValue: const HomePopupEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, bool> markHomePopupClicked(String campaignKey) {
+    return callApiWithTransform<HomePopupClickResultModel, bool>(
+      apiCall: () => _homeApi.markHomePopupClicked({'campaignKey': campaignKey}),
+      transform: (model) => model.recorded,
+      defaultValue: false,
+    );
+  }
+
+  @override
   TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(
     PageBreakRequest<SkillsetFilterRequest> request,
   ) {

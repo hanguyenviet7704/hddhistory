@@ -16,4 +16,12 @@ abstract class HomeApi {
 
   @GET(AppEndpoint.homeBanner)
   Future<BaseResponse<HomeBannerModel>> getHomeBanner();
+
+  @GET(AppEndpoint.homePopup)
+  Future<BaseResponse<HomePopupModel>> getHomePopup();
+
+  @POST(AppEndpoint.homePopupClick)
+  Future<BaseResponse<HomePopupClickResultModel>> markHomePopupClicked(
+    @Body() Map<String, dynamic> body,
+  );
 }

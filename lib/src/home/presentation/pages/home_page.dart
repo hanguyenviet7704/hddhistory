@@ -135,7 +135,12 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       child: BlocListener<InAppSurveyCubit, InAppSurveyState>(
         listenWhen: (previous, current) => previous.isEntryVisible != current.isEntryVisible,
         listener: (context, state) => _handleSurveyStateChanged(state),
-        child: Scaffold(
+        // Raises the admin-configured promo popup once per app session, after
+        // Home has painted. Wraps the Scaffold rather than sitting inside it so
+        // the dialog is a sibling of the page content, not a descendant of the
+        // scroll view it interrupts.
+        child: HomePromoPopupHost(
+          child: Scaffold(
           key: const Key('home-page'),
           // Transparent only when a custom study background is active (so it
           // shows through); otherwise the stock flat lavender is preserved.
@@ -264,6 +269,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                 ),
               ],
             ),
+          ),
           ),
         ),
       ),
