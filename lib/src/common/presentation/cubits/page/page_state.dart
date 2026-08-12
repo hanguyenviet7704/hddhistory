@@ -18,19 +18,24 @@ extension PageStateX on PageState {
 
   /// Routes that keep the floating nav pill on screen.
   ///
-  /// A roadmap is a place you stand, not a thing you are in the middle of — so
-  /// both roadmaps belong here and the reading surfaces (lesson, roleplay, warm-up)
-  /// do not. [RouteNamed.lessonReader] is the GENERATED lesson's roadmap, the
-  /// counterpart of [RouteNamed.courseRoadmap]; it was already laid out for a
-  /// visible pill (its scroll padding and floating CTA both measure
-  /// `floatingNavBarHeight`), it was just never named here, so the nav vanished
-  /// the moment a reader opened one of their own lessons.
+  /// A place you STAND belongs here; a thing you are in the middle of does not —
+  /// so both roadmaps and the shelf that lists your own lessons keep the pill,
+  /// while the reading surfaces (lesson, roleplay, warm-up, the import form) take
+  /// the screen.
+  ///
+  /// [RouteNamed.lessonReader] is the GENERATED lesson's roadmap, the counterpart
+  /// of [RouteNamed.courseRoadmap], and [RouteNamed.myLessons] is its shelf. Both
+  /// were already laid out for a visible pill — their scroll padding (and the
+  /// roadmap's floating CTA) measure `floatingNavBarHeight` — and were simply
+  /// never named here, so the nav vanished the moment a reader stepped into their
+  /// own lessons and there was no way back to another tab except the back arrow.
   List<String> get primaryRouteNames {
     return [
       RouteNamed.shellRoute,
       RouteNamed.home,
       RouteNamed.course,
       RouteNamed.courseRoadmap,
+      RouteNamed.myLessons,
       RouteNamed.lessonReader,
       RouteNamed.profile,
       RouteNamed.habit,
