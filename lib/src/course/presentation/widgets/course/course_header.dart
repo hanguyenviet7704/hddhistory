@@ -4,6 +4,17 @@ part of '../../../course.dart';
 /// whatever rect this key resolves to, so the two cannot drift apart.
 final GlobalKey _importButtonKey = GlobalKey();
 
+/// The import button's glyph, verbatim from the design (`4 · Explore` header): a
+/// page with a folded corner and an arrow pointing INTO it.
+///
+/// Inlined rather than bundled, for the same reason Profile inlines its Library
+/// icons — it matches 1:1 with no asset rebuild. It replaces
+/// `Icons.file_upload_outlined`, which draws a tray with an arrow leaving it:
+/// the wrong shape (no document) and the wrong direction (out, not in) for a
+/// button whose job is "bring your own material in".
+const String _kImportDocSvg =
+    '''<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 3.5H7.5A2.5 2.5 0 005 6v12a2.5 2.5 0 002.5 2.5h9A2.5 2.5 0 0019 18V8.5L14 3.5z" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.75 3.75V9h5" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 11.5v5" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round"/><path d="M9.75 14.25L12 16.5l2.25-2.25" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>''';
+
 /// Explore's top bar: a search field, and beside it the import affordance.
 class CourseHeader extends StatelessWidget {
   const CourseHeader({super.key});
@@ -76,11 +87,7 @@ class _ImportButton extends StatelessWidget {
             border: Border.all(color: AppCustomColor.borderDefault, width: 2),
           ),
           alignment: Alignment.center,
-          child: Icon(
-            Icons.file_upload_outlined,
-            size: 24.w,
-            color: AppCustomColor.textTertiary,
-          ),
+          child: SvgPicture.string(_kImportDocSvg, width: 22.w, height: 22.w),
         ),
       ),
     );
