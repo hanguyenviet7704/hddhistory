@@ -17,6 +17,16 @@ class _PaywallBenefitRow extends StatelessWidget {
 
   const _PaywallBenefitRow({required this.text});
 
+  /// The design's own check, verbatim (`6b · Premium` → benefits list).
+  ///
+  /// `Icons.check_rounded` was close enough to pass a glance and wrong in all
+  /// three ways that matter at this size: a thinner stroke, a Material glyph whose
+  /// arms sit at different angles, and the wrong ink (it was drawn in the heading
+  /// navy `#110751` where the design uses brand purple). A 4-wide stroke is the
+  /// whole character of this mark — it is the only bold thing in the column.
+  static const String _checkSvg =
+      '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4.5 4.5L19 7" stroke="#4B44CA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>''';
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -26,11 +36,7 @@ class _PaywallBenefitRow extends StatelessWidget {
           width: 22.w,
           height: 22.w,
           child: Center(
-            child: Icon(
-              Icons.check_rounded,
-              size: 20.w,
-              color: AppCustomColor.textBrand,
-            ),
+            child: SvgPicture.string(_checkSvg, width: 20.w, height: 20.w),
           ),
         ),
         14.horizontalSpace,
