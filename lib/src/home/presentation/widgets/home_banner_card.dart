@@ -179,8 +179,6 @@ class _HomeBannerDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return ExcludeSemantics(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -193,7 +191,11 @@ class _HomeBannerDots extends StatelessWidget {
               width: index == activeIndex ? 16.w : 6.w,
               height: 6.h,
               decoration: BoxDecoration(
-                color: index == activeIndex ? colorScheme.primary : colorScheme.outlineVariant,
+                // Match the Jump-back-in carousel dots: brand purple, not the
+                // Material scheme's coral primary.
+                color: index == activeIndex
+                    ? AppCustomColor.brandPrimary
+                    : AppCustomColor.brandPrimary.withValues(alpha: 0.20),
                 borderRadius: BorderRadius.circular(3.r),
               ),
             ),
