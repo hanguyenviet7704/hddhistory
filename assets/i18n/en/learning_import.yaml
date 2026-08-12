@@ -100,16 +100,16 @@ ticketNoteFree(param=count):
   one: 1 ticket left this week. Premium gives you ${premiumLimit} every week.
   other: ${count} tickets left this week. Premium gives you ${premiumLimit} every week.
 ticketInfoTitle(param=count):
-  zero: No tickets left
+  zero: 0 tickets left
   one: 1 ticket left
   other: ${count} tickets left
-ticketInfoBody: Each ticket creates one lesson from a YouTube link or a PDF.
-ticketInfoReset(param=count):
-  one: Back to 1 ticket on ${date}.
-  other: Back to ${count} tickets on ${date}.
+ticketInfoBody: Each ticket creates one lesson from a YouTube video or a PDF.
+ticketInfoReset(param=days):
+  one: Your ${count} tickets reset in 1 day.
+  other: Your ${count} tickets reset in ${days} days.
 ticketInfoCta: Got it
 noTicketTitle: You're out of tickets
-noTicketBody: Premium gives you ${premiumLimit} tickets every week to keep making your own lessons.
+noTicketBody: Premium gives you ${premiumLimit} tickets every week to keep creating your own lessons.
 noTicketCta: Go Premium
 noTicketDismiss: Not now
 

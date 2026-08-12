@@ -100,13 +100,13 @@ ticketNoteFree(param=count):
   one: Còn 1 lượt tuần này. Premium cho bạn ${premiumLimit} lượt mỗi tuần.
   other: Còn ${count} lượt tuần này. Premium cho bạn ${premiumLimit} lượt mỗi tuần.
 ticketInfoTitle(param=count):
-  zero: Đã hết lượt
+  zero: Còn 0 lượt
   one: Còn 1 lượt
   other: Còn ${count} lượt
-ticketInfoBody: Mỗi lượt tạo một bài học từ link YouTube hoặc file PDF.
-ticketInfoReset(param=count):
-  one: Có lại 1 lượt vào ${date}.
-  other: Có lại ${count} lượt vào ${date}.
+ticketInfoBody: Mỗi lượt tạo một bài học từ video YouTube hoặc file PDF.
+ticketInfoReset(param=days):
+  one: ${count} lượt sẽ có lại sau 1 ngày.
+  other: ${count} lượt sẽ có lại sau ${days} ngày.
 ticketInfoCta: Đã hiểu
 noTicketTitle: Bạn đã hết lượt
 noTicketBody: Premium cho bạn ${premiumLimit} lượt mỗi tuần để tiếp tục tự tạo bài học.

@@ -100,13 +100,13 @@ ticketNoteFree(param=count):
   one: 이번 주 1장 남았어요. Premium은 매주 ${premiumLimit}장을 드려요.
   other: 이번 주 ${count}장 남았어요. Premium은 매주 ${premiumLimit}장을 드려요.
 ticketInfoTitle(param=count):
-  zero: 남은 티켓 없음
+  zero: 0장 남음
   one: 1장 남음
   other: ${count}장 남음
-ticketInfoBody: 티켓 한 장으로 YouTube 링크나 PDF 하나를 레슨으로 만들어요.
-ticketInfoReset(param=count):
-  one: ${date}에 1장으로 돌아와요.
-  other: ${date}에 ${count}장으로 돌아와요.
+ticketInfoBody: 티켓 한 장으로 YouTube 영상이나 PDF 하나를 레슨으로 만들어요.
+ticketInfoReset(param=days):
+  one: ${count}장은 1일 후에 돌아와요.
+  other: ${count}장은 ${days}일 후에 돌아와요.
 ticketInfoCta: 알겠어요
 noTicketTitle: 티켓을 다 썼어요
 noTicketBody: Premium은 매주 ${premiumLimit}장을 드려서 계속 나만의 레슨을 만들 수 있어요.

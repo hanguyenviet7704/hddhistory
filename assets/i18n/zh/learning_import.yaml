@@ -100,13 +100,13 @@ ticketNoteFree(param=count):
   one: 本周还剩 1 次。Premium 每周给你 ${premiumLimit} 次。
   other: 本周还剩 ${count} 次。Premium 每周给你 ${premiumLimit} 次。
 ticketInfoTitle(param=count):
-  zero: 次数已用完
+  zero: 还剩 0 次
   one: 还剩 1 次
   other: 还剩 ${count} 次
-ticketInfoBody: 每一次可以把一个 YouTube 链接或一个 PDF 变成一门课程。
-ticketInfoReset(param=count):
-  one: ${date} 恢复到 1 次。
-  other: ${date} 恢复到 ${count} 次。
+ticketInfoBody: 每一次可以把一个 YouTube 视频或一个 PDF 变成一门课程。
+ticketInfoReset(param=days):
+  one: ${count} 次将在 1 天后恢复。
+  other: ${count} 次将在 ${days} 天后恢复。
 ticketInfoCta: 知道了
 noTicketTitle: 你的次数用完了
 noTicketBody: Premium 每周给你 ${premiumLimit} 次，可以继续制作自己的课程。

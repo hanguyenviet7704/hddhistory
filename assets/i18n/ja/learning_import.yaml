@@ -100,13 +100,13 @@ ticketNoteFree(param=count):
   one: 今週は残り 1 枚。Premium なら毎週 ${premiumLimit} 枚です。
   other: 今週は残り ${count} 枚。Premium なら毎週 ${premiumLimit} 枚です。
 ticketInfoTitle(param=count):
-  zero: チケットがありません
+  zero: 残り 0 枚
   one: 残り 1 枚
   other: 残り ${count} 枚
-ticketInfoBody: チケット 1 枚で、YouTube のリンクか PDF から 1 つのレッスンを作れます。
-ticketInfoReset(param=count):
-  one: ${date} に 1 枚へ戻ります。
-  other: ${date} に ${count} 枚へ戻ります。
+ticketInfoBody: チケット 1 枚で、YouTube の動画か PDF から 1 つのレッスンを作れます。
+ticketInfoReset(param=days):
+  one: ${count} 枚は 1 日後に戻ります。
+  other: ${count} 枚は ${days} 日後に戻ります。
 ticketInfoCta: わかりました
 noTicketTitle: チケットを使い切りました
 noTicketBody: Premium なら毎週 ${premiumLimit} 枚。自分のレッスンを作り続けられます。

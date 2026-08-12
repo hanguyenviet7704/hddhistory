@@ -65,18 +65,32 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
     });
   }
 
-  /// The ticket pill's `+`: straight to the paywall.
-  ///
-  /// There is no explainer popup in front of it any more (product call,
-  /// 2026-08-12). A free reader has exactly one ticket, ever — the only thing a
-  /// popup could add is a sentence between them and the offer, and the pill only
-  /// carries a `+` for readers who have something to buy (see [_CreditsPill]).
+  /// Straight to the paywall — the Create button's answer for a free reader
+  /// whose one ticket is spent (the popups below are the PILL's answer).
   void _openUpgrade() {
     AppHaptic.select();
     AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
       PaywallEntryPoint.learningImport,
     );
     unawaited(const PaywallRoute().push(context));
+  }
+
+  /// The ticket pill, tapped: the popup that matches the reader's tier (design
+  /// `4 · Explore` — "popup số ticket & reset" / "popup số ticket").
+  ///
+  /// Supersedes the straight-to-paywall pill (product call, 2026-08-12, then
+  /// re-decided the same day with the design): both tiers get the count said
+  /// out loud — including "0 tickets left" — a free reader gets the Premium
+  /// pitch under it, a subscriber gets the reset countdown and nothing sold.
+  void _showTicketPopup() {
+    AppHaptic.select();
+    final quota = context.read<LearningImportCubit>().state.quota;
+    if (!quota.isKnown) return;
+    if (quota.isPremium) {
+      unawaited(showImportTicketInfoPopup(context, quota: quota));
+    } else {
+      unawaited(showImportTicketUpsellPopup(context, quota: quota));
+    }
   }
 
   /// A subscriber who has spent the week's allowance. Nothing to sell and nothing
@@ -161,7 +175,7 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
             bottom: false,
             child: Column(
               children: [
-                _Header(quota: state.quota, onUpgradeTap: _openUpgrade),
+                _Header(quota: state.quota, onPillTap: _showTicketPopup),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 40.h),
@@ -258,10 +272,10 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
 
 /// Close button on the left, credits on the right.
 class _Header extends StatelessWidget {
-  const _Header({required this.quota, required this.onUpgradeTap});
+  const _Header({required this.quota, required this.onPillTap});
 
   final ImportQuotaEntity quota;
-  final VoidCallback onUpgradeTap;
+  final VoidCallback onPillTap;
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +302,7 @@ class _Header extends StatelessWidget {
           const Spacer(),
           // Hidden until the allowance is actually known — a pill reading "0"
           // because the request dropped is a lie about the reader's account.
-          if (quota.isKnown) _CreditsPill(quota: quota, onUpgradeTap: onUpgradeTap),
+          if (quota.isKnown) _CreditsPill(quota: quota, onTap: onPillTap),
         ],
       ),
     );
@@ -365,29 +379,29 @@ class _FeatureOffNote extends StatelessWidget {
 /// costs. It sits ABOVE the source picker deliberately: the design puts the
 /// constraint before the work, so nobody picks a file, pastes a link and only
 /// then learns they cannot spend anything.
-/// The balance, and — for anyone who can still buy more — the way to get it.
-///
-/// The `+` and the tap belong to non-subscribers only. A subscriber has nothing
-/// to add: on their pill the `+` was a button that opened a popup restating a
-/// number already printed next to it, so both are gone and the pill is a label.
+/// The balance, tappable for everyone — the popup behind it differs by tier
+/// (see `_showTicketPopup`), the affordance does not. The `+` badge stays a
+/// non-subscriber mark: it is the "there is more to have" sign, and a
+/// subscriber's popup sells nothing.
 class _CreditsPill extends StatelessWidget {
-  const _CreditsPill({required this.quota, required this.onUpgradeTap});
+  const _CreditsPill({required this.quota, required this.onTap});
 
   final ImportQuotaEntity quota;
-  final VoidCallback onUpgradeTap;
+  final VoidCallback onTap;
 
   bool get _canUpgrade => !quota.isPremium;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: _canUpgrade,
+      button: true,
       label: context.l10n.learningImport.quotaRemaining(
         remaining: quota.remaining,
         limit: quota.limit,
       ),
       child: GestureDetector(
-        onTap: _canUpgrade ? onUpgradeTap : null,
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: Container(
           padding: EdgeInsets.fromLTRB(13.w, 6.h, _canUpgrade ? 6.w : 13.w, 6.h),
           decoration: BoxDecoration(
