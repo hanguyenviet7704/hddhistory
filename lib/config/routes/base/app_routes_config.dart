@@ -146,6 +146,254 @@ class RouteTransitionConfig {
   );
 }
 
+/// The app's transitions, in one place.
+///
+/// Lifted out of [BaseTransitionRouteData] unchanged so an IMPERATIVE push can
+/// wear the same animation as a typed route — see [appPageRoute]. A page pushed
+/// with a plain `MaterialPageRoute` slides in from the right on iOS, which is
+/// the platform's transition, not this app's, and the reader notices the one
+/// screen that moves differently from every other.
+Widget buildRouteTransition(
+  RouteTransitionConfig config,
+  Animation<double> animation,
+  Widget child, {
+  /// The typed-route path passes its own overridable builder; an imperative push
+  /// has none, so [RouteTransitionType.custom] falls back to a fade.
+  Widget Function(Animation<double> animation, Widget child)? onCustom,
+}) {
+  final curvedAnimation = CurvedAnimation(
+    parent: animation,
+    curve: config.curve,
+  );
+
+  switch (config.type) {
+    case RouteTransitionType.fade:
+      return FadeTransition(
+        opacity: curvedAnimation,
+        child: child,
+      );
+
+    case RouteTransitionType.slide:
+      final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: slideEffect.startOffset,
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: child,
+      );
+
+    case RouteTransitionType.scale:
+      return ScaleTransition(
+        scale: Tween<double>(
+          begin: config.minScale ?? 0.85,
+          end: 1.0,
+        ).animate(curvedAnimation),
+        alignment: config.scaleAlignment ?? Alignment.center,
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.rotation:
+      return RotationTransition(
+        turns: Tween<double>(
+          begin: config.rotationAngle ?? 0.5,
+          end: 0.0,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.fadeThrough:
+      // Material Design fade through pattern
+      return FadeTransition(
+        opacity:
+            Tween<double>(
+              begin: 0.0,
+              end: 1.0,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
+              ),
+            ),
+        child: child,
+      );
+
+    case RouteTransitionType.sharedAxisX:
+      // Material Design shared axis horizontal
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.3, 0.0),
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.sharedAxisY:
+      // Material Design shared axis vertical
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.0, 0.3),
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.sharedAxisZ:
+      // Material Design shared axis depth (scale with fade)
+      return ScaleTransition(
+        scale: Tween<double>(
+          begin: 0.8,
+          end: 1.0,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.zoom:
+      // Zoom in/out animation
+      final scale = TweenSequence<double>([
+        TweenSequenceItem(
+          tween: Tween<double>(
+            begin: config.minScale ?? 0.8,
+            end: config.maxScale ?? 1.1,
+          ).chain(CurveTween(curve: Curves.easeIn)),
+          weight: 50,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(
+            begin: config.maxScale ?? 1.1,
+            end: 1.0,
+          ).chain(CurveTween(curve: Curves.easeOut)),
+          weight: 50,
+        ),
+      ]);
+
+      return ScaleTransition(
+        scale: scale.animate(animation),
+        alignment: config.scaleAlignment ?? Alignment.center,
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.slideScale:
+      // Combined slide and scale effect
+      final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: slideEffect.startOffset,
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: ScaleTransition(
+          scale: Tween<double>(
+            begin: config.minScale ?? 0.9,
+            end: 1.0,
+          ).animate(curvedAnimation),
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.fadeSlide:
+      // Smooth fade with slight slide
+      final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
+      final offset = slideEffect.startOffset * 0.3; // Reduced slide distance
+
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: offset,
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: child,
+        ),
+      );
+
+    case RouteTransitionType.flip:
+      // 3D flip animation
+      final axis = config.flipAxis ?? Axis.horizontal;
+      final isHorizontal = axis == Axis.horizontal;
+
+      return AnimatedBuilder(
+        animation: curvedAnimation,
+        builder: (context, child) {
+          final value = curvedAnimation.value;
+          final angle = (1 - value) * 3.14159; // PI radians
+
+          return Transform(
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, config.perspectiveValue ?? 0.003)
+              ..rotateY(isHorizontal ? angle : 0)
+              ..rotateX(isHorizontal ? 0 : angle),
+            alignment: Alignment.center,
+            child: value < 0.5 ? Opacity(opacity: 1 - (value * 2), child: child) : Opacity(opacity: (value - 0.5) * 2, child: child),
+          );
+        },
+        child: child,
+      );
+
+    case RouteTransitionType.size:
+      // Size transition (growing effect)
+      return Align(
+        alignment: config.scaleAlignment ?? Alignment.center,
+        child: SizeTransition(
+          sizeFactor: curvedAnimation,
+          axis: Axis.vertical,
+          alignment: Alignment(0.0, -1.0),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        ),
+      );
+
+    case RouteTransitionType.custom:
+      return onCustom == null
+          ? FadeTransition(opacity: curvedAnimation, child: child)
+          : onCustom(curvedAnimation, child);
+  }
+}
+
+/// A page pushed IMPERATIVELY — a root push that sits ABOVE the shell — wearing
+/// the app's own transition.
+///
+/// The typed routes get theirs from [BaseTransitionRouteData]; a screen opened
+/// with `Navigator.push` has no route data to carry one, and reaching for
+/// `MaterialPageRoute` there is how "Khóa học của tôi" ended up sliding in from
+/// the right while its neighbours in the same Profile list scaled up.
+///
+/// Deliberately UNNAMED: the root observer feeds `route.settings.name` to the
+/// screen-view tracker and to `PageCubit.currentRouteName`, so naming it here
+/// would start emitting an analytics event that never existed and write a route
+/// name nothing else knows about.
+PageRoute<T> appPageRoute<T>({
+  required WidgetBuilder builder,
+  RouteTransitionConfig config = RouteTransitionConfig.scale,
+}) {
+  return PageRouteBuilder<T>(
+    pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+    transitionDuration: config.duration,
+    reverseTransitionDuration: config.duration,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        buildRouteTransition(config, animation, child),
+  );
+}
+
 abstract class BaseTransitionRouteData extends GoRouteData {
   const BaseTransitionRouteData();
 
@@ -165,214 +413,13 @@ abstract class BaseTransitionRouteData extends GoRouteData {
     );
   }
 
-  Widget _buildTransition(Animation<double> animation, Widget child) {
-    final config = transitionConfig;
-    final curvedAnimation = CurvedAnimation(
-      parent: animation,
-      curve: config.curve,
-    );
-
-    switch (config.type) {
-      case RouteTransitionType.fade:
-        return FadeTransition(
-          opacity: curvedAnimation,
-          child: child,
-        );
-
-      case RouteTransitionType.slide:
-        final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: slideEffect.startOffset,
-            end: Offset.zero,
-          ).animate(curvedAnimation),
-          child: child,
-        );
-
-      case RouteTransitionType.scale:
-        return ScaleTransition(
-          scale: Tween<double>(
-            begin: config.minScale ?? 0.85,
-            end: 1.0,
-          ).animate(curvedAnimation),
-          alignment: config.scaleAlignment ?? Alignment.center,
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.rotation:
-        return RotationTransition(
-          turns: Tween<double>(
-            begin: config.rotationAngle ?? 0.5,
-            end: 0.0,
-          ).animate(curvedAnimation),
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.fadeThrough:
-        // Material Design fade through pattern
-        return FadeTransition(
-          opacity:
-              Tween<double>(
-                begin: 0.0,
-                end: 1.0,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
-                ),
-              ),
-          child: child,
-        );
-
-      case RouteTransitionType.sharedAxisX:
-        // Material Design shared axis horizontal
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.3, 0.0),
-            end: Offset.zero,
-          ).animate(curvedAnimation),
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.sharedAxisY:
-        // Material Design shared axis vertical
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.0, 0.3),
-            end: Offset.zero,
-          ).animate(curvedAnimation),
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.sharedAxisZ:
-        // Material Design shared axis depth (scale with fade)
-        return ScaleTransition(
-          scale: Tween<double>(
-            begin: 0.8,
-            end: 1.0,
-          ).animate(curvedAnimation),
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.zoom:
-        // Zoom in/out animation
-        final scale = TweenSequence<double>([
-          TweenSequenceItem(
-            tween: Tween<double>(
-              begin: config.minScale ?? 0.8,
-              end: config.maxScale ?? 1.1,
-            ).chain(CurveTween(curve: Curves.easeIn)),
-            weight: 50,
-          ),
-          TweenSequenceItem(
-            tween: Tween<double>(
-              begin: config.maxScale ?? 1.1,
-              end: 1.0,
-            ).chain(CurveTween(curve: Curves.easeOut)),
-            weight: 50,
-          ),
-        ]);
-
-        return ScaleTransition(
-          scale: scale.animate(animation),
-          alignment: config.scaleAlignment ?? Alignment.center,
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.slideScale:
-        // Combined slide and scale effect
-        final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: slideEffect.startOffset,
-            end: Offset.zero,
-          ).animate(curvedAnimation),
-          child: ScaleTransition(
-            scale: Tween<double>(
-              begin: config.minScale ?? 0.9,
-              end: 1.0,
-            ).animate(curvedAnimation),
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.fadeSlide:
-        // Smooth fade with slight slide
-        final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
-        final offset = slideEffect.startOffset * 0.3; // Reduced slide distance
-
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: offset,
-            end: Offset.zero,
-          ).animate(curvedAnimation),
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
-        );
-
-      case RouteTransitionType.flip:
-        // 3D flip animation
-        final axis = config.flipAxis ?? Axis.horizontal;
-        final isHorizontal = axis == Axis.horizontal;
-
-        return AnimatedBuilder(
-          animation: curvedAnimation,
-          builder: (context, child) {
-            final value = curvedAnimation.value;
-            final angle = (1 - value) * 3.14159; // PI radians
-
-            return Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, config.perspectiveValue ?? 0.003)
-                ..rotateY(isHorizontal ? angle : 0)
-                ..rotateX(isHorizontal ? 0 : angle),
-              alignment: Alignment.center,
-              child: value < 0.5 ? Opacity(opacity: 1 - (value * 2), child: child) : Opacity(opacity: (value - 0.5) * 2, child: child),
-            );
-          },
-          child: child,
-        );
-
-      case RouteTransitionType.size:
-        // Size transition (growing effect)
-        return Align(
-          alignment: config.scaleAlignment ?? Alignment.center,
-          child: SizeTransition(
-            sizeFactor: curvedAnimation,
-            axis: Axis.vertical,
-            alignment: Alignment(0.0, -1.0),
-            child: FadeTransition(
-              opacity: curvedAnimation,
-              child: child,
-            ),
-          ),
-        );
-
-      case RouteTransitionType.custom:
-        // Override buildCustomTransition for completely custom transitions
-        return buildCustomTransition(curvedAnimation, child);
-    }
-  }
+  Widget _buildTransition(Animation<double> animation, Widget child) =>
+      buildRouteTransition(
+        transitionConfig,
+        animation,
+        child,
+        onCustom: buildCustomTransition,
+      );
 
   /// Override this method to provide completely custom transitions
   Widget buildCustomTransition(Animation<double> animation, Widget child) {

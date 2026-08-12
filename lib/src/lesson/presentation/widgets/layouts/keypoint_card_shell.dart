@@ -170,8 +170,19 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
         // landing beyond the wall. It only raises the paywall and deliberately
         // does NOT drag the view back: correcting the index from inside this
         // listener is what read as a stutter.
+        //
+        // NOT on the locked card, and this is the one condition the other two
+        // gates could not express: the locked card sits at `cap + 1` by design
+        // (both quota paths call `viewCard(cap + 1)` to land on it), so "past the
+        // cap" is TRUE the moment the reader arrives at the wall. That raised the
+        // 34%-off paywall on top of the card whose whole job is to explain the
+        // wall and offer Premium itself — two answers to one gesture, stacked.
+        // Asking the descriptor rather than `_quotaLockedCardWanted` keeps it
+        // true for any other path that lands there.
         final cap = _syncPaywallCap();
-        if (cap != null && state.viewedCardIndex > cap) unawaited(_openInLessonPaywall());
+        if (cap != null && state.viewedCardIndex > cap && !state.viewedCard.isLocked) {
+          unawaited(_openInLessonPaywall());
+        }
       },
       builder: (context, state) {
         if (state.cards.isEmpty) return const SizedBox.shrink();
