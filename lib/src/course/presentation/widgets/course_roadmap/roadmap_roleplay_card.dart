@@ -58,6 +58,8 @@ class RoadmapLessonCard extends StatelessWidget {
                 children: [
                   _RoadmapCardThumbnail(
                     imageUrl: lesson.roadmapDisplayImage,
+                    seed: lesson.id,
+                    label: lesson.title.text,
                     isLocked: isLockedVisual,
                   ),
                   Expanded(
@@ -93,6 +95,13 @@ class _RoadmapCardThumbnail extends StatelessWidget {
   final String imageUrl;
   final bool isLocked;
 
+  /// Identity the stand-in cover is derived from when [imageUrl] is empty —
+  /// a keypoint or lesson id. See [CoverArt].
+  final String seed;
+
+  /// Supplies the stand-in's initial.
+  final String label;
+
   static const _grayscaleMatrix = ColorFilter.matrix([
     0.2126, 0.7152, 0.0722, 0, 0,
     0.2126, 0.7152, 0.0722, 0, 0,
@@ -102,6 +111,8 @@ class _RoadmapCardThumbnail extends StatelessWidget {
 
   const _RoadmapCardThumbnail({
     required this.imageUrl,
+    required this.seed,
+    this.label = '',
     this.isLocked = false,
   });
 
@@ -119,18 +130,14 @@ class _RoadmapCardThumbnail extends StatelessWidget {
               colorFilter: isLocked
                   ? _grayscaleMatrix
                   : const ColorFilter.mode(Colors.transparent, BlendMode.color),
-              child: imageUrl.isNotEmpty
-                  ? DCachedImage(
-                      url: imageUrl,
-                      width: 88.w,
-                      height: 88.w,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      width: 88.w,
-                      height: 88.w,
-                      color: AppCustomColor.neutral100,
-                    ),
+              // A keypoint without artwork used to leave a flat grey square,
+              // which reads as a failed image rather than as one that has not
+              // been uploaded yet.
+              child: CoverArt(
+                url: imageUrl,
+                seed: seed,
+                label: label,
+              ),
             ),
             if (isLocked)
               Center(

@@ -48,13 +48,14 @@ class CourseListTile extends StatelessWidget {
           child: Row(
             children: [
               // Thumbnail
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.r),
-                child: CacheNetworkGraphic(
+              SizedBox(
+                width: 64.w,
+                height: 64.w,
+                child: CoverArt(
                   url: course.image,
-                  width: 64.w,
-                  height: 64.w,
-                  fit: BoxFit.cover,
+                  seed: course.id,
+                  label: course.title.text,
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
               12.horizontalSpace,

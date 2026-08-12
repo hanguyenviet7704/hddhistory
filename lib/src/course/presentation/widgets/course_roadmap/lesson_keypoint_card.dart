@@ -62,6 +62,8 @@ class LessonKeypointCard extends StatelessWidget {
                 children: [
                   _RoadmapCardThumbnail(
                     imageUrl: _thumbnailUrl,
+                    seed: _keypoint.id.isNotEmpty ? _keypoint.id : lesson.id,
+                    label: _keypoint.title.text,
                     isLocked: isLockedVisual,
                   ),
                   Expanded(

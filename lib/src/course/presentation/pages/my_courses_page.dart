@@ -19,9 +19,15 @@ class MyCoursesPage extends StatefulWidget {
   /// Shared by Profile's Library row (`_openMyCourses`) and the course
   /// roadmap's back button (when the user drilled in from here) so both open
   /// it identically.
+  ///
+  /// [appPageRoute], not `MaterialPageRoute`: this screen is opened from the same
+  /// Profile list as "Bài tôi tạo" and "Thông tin cá nhân", which are typed
+  /// routes and scale up ([RouteTransitionConfig.scale]). A MaterialPageRoute
+  /// slides in from the right on iOS, so this was the one row in that list that
+  /// opened differently from the rest.
   static Future<void> open(BuildContext context) {
     return Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
+      appPageRoute<void>(
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),

@@ -281,13 +281,14 @@ class _SearchCourseCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: CacheNetworkGraphic(
+              SizedBox(
+                width: 100.w,
+                height: 100.w,
+                child: CoverArt(
                   url: course.image,
-                  width: 100.w,
-                  height: 100.w,
-                  fit: BoxFit.cover,
+                  seed: course.id,
+                  label: course.title.text,
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
               12.horizontalSpace,

@@ -4,27 +4,43 @@ part of '../../../course.dart';
 /// A "View more" button is shown when a skillset has more courses than this.
 const int _kMaxCoursesPerSection = 5;
 
-/// Course-card thumbnail height (square-ish hero image).
-double get _kCourseThumbHeight => 160.w;
+/// Corner radius of a cover tile. 18 in the redesign, up from 12 — the softer
+/// corner is what makes a borderless tile still read as a card.
+double get _kCoverRadius => 18.r;
 
-/// Title always reserves exactly two lines (Body/Default/Bold 14 × line-height
-/// 1.4) so every card is the same height — rows align and the gap between rows
-/// is uniform regardless of title length.
-double get _kCourseTitleHeight => (14 * 1.4 * 2).sp;
+/// Gap between the cover and the title, and between title and author.
+double get _kCoverToTitleGap => 8.h;
+double get _kTitleToAuthorGap => 6.h;
+
+/// The title reserves exactly two lines (13 × 1.35) so every card is the same
+/// height — rows align and the gap between them is uniform regardless of title
+/// length.
+double get _kCourseTitleHeight => (13 * 1.35 * 2).sp;
 
 /// One author line under the title (icon 12 / text 11.5 with 1.4 leading).
 /// Reserved on every card — even author-less ones — so grid rows stay aligned.
 double get _kCourseAuthorHeight => (11.5 * 1.4).sp;
 
-/// Exact height of a [_CourseGridCard] = thumbnail + 12 gap + 2-line title
-/// + 4 gap + author line. Used as the grid cell extent so there is NO leftover
-/// slack and the visible row gap equals exactly the configured spacing.
-double get _kCourseCardExtent =>
-    _kCourseThumbHeight + 12.h + _kCourseTitleHeight + 4.h + _kCourseAuthorHeight;
+/// Height of everything BELOW the cover. The cover itself is square and sized
+/// from the column width, so a cell's total height is this plus that width —
+/// which is why the grid lays cells out by natural height rather than by a
+/// fixed extent.
+double get _kCourseCaptionHeight =>
+    _kCoverToTitleGap + _kCourseTitleHeight + _kTitleToAuthorGap + _kCourseAuthorHeight;
 
-/// Inter-row / inter-column gaps for the course grids (Figma redline).
-double get _kCourseGridRowGap => 24.h; // Spacing/600 (vertical)
-double get _kCourseGridColGap => 20.w; // horizontal rhythm (matches page margin)
+/// Inter-row / inter-column gaps for the course grids (redesign redline:
+/// `gap: 20px 14px`).
+double get _kCourseGridRowGap => 20.h;
+double get _kCourseGridColGap => 14.w;
+
+/// Height of one cell in a two-column grid [gridWidth] wide.
+///
+/// Has to be measured rather than fixed: the cover is SQUARE, so its height is
+/// the column width, which depends on the device. `childAspectRatio` cannot
+/// express this either — the caption below the cover is a fixed number of lines,
+/// so the cell's ratio changes with screen width.
+double courseGridCellExtent(double gridWidth) =>
+    (gridWidth - _kCourseGridColGap) / 2 + _kCourseCaptionHeight;
 
 /// Resolves the lesson-progress numbers for [course].
 ///
@@ -211,26 +227,32 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           if (myCourses.isEmpty) {
             return const CourseEmptyState();
           }
-          return GridView.builder(
-            padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: _kCourseGridColGap,
-              mainAxisSpacing: _kCourseGridRowGap,
-              // Exact card height (no slack) so the row gap is exactly 24.
-              mainAxisExtent: _kCourseCardExtent,
-            ),
-            itemCount: myCourses.length,
-            itemBuilder: (context, index) {
-              final course = myCourses[index];
-              final info = _myCourseProgress(course);
-              return _CourseGridCard(
-                key: ValueKey(course.id),
-                course: course,
-                completedLessons: info.completedLessons,
-                totalLessons: info.totalLessons,
-                isSelected: homeState.isSelectedCourse(course.id),
-                onTap: () => _onTapMyCourse(context, skillsets, course),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final gridWidth = constraints.maxWidth - 40.w;
+              return GridView.builder(
+                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: _kCourseGridColGap,
+                  mainAxisSpacing: _kCourseGridRowGap,
+                  // Exact card height (no slack) so the visible row gap is
+                  // exactly _kCourseGridRowGap.
+                  mainAxisExtent: courseGridCellExtent(gridWidth),
+                ),
+                itemCount: myCourses.length,
+                itemBuilder: (context, index) {
+                  final course = myCourses[index];
+                  final info = _myCourseProgress(course);
+                  return _CourseGridCard(
+                    key: ValueKey(course.id),
+                    course: course,
+                    completedLessons: info.completedLessons,
+                    totalLessons: info.totalLessons,
+                    isSelected: homeState.isSelectedCourse(course.id),
+                    onTap: () => _onTapMyCourse(context, skillsets, course),
+                  );
+                },
               );
             },
           );
@@ -464,12 +486,12 @@ class _CourseSection extends StatelessWidget {
           skillset.title.text,
           style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
-        12.verticalSpace,
+        14.verticalSpace,
         // Manual 2-column grid (not GridView.count): cells size to their own
         // height so there is no aspect-ratio slack — the vertical gap is exactly
-        // _kCourseGridRowGap (Figma Spacing/600 = 24).
+        // _kCourseGridRowGap.
         _buildGrid(gridChildren),
-        if (showBottomSpacing) 24.verticalSpace,
+        if (showBottomSpacing) 30.verticalSpace,
       ],
     );
   }
@@ -534,52 +556,50 @@ class _ViewMoreGridCard extends StatelessWidget {
           );
           SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
         },
-        // Align the card to the top of the cell and size it to the same height
-        // as a course thumbnail (160.w), so it sits as a square card in the
-        // thumbnail row instead of stretching down the whole cell. Matches the
-        // Figma layout (node 10907:22199).
+        // Square like a cover, and borderless like one — in the redesign this
+        // tile sits in the grid as a peer of the course cards, not as a button
+        // bolted onto the end of them.
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              height: 160.w,
-              alignment: Alignment.center,
-              // Figma node 10907:22199 — soft brand card: background/brand-2
-              // (#E0DEFD), 2px border/brand (#C7C5FA), 12px radius.
-              decoration: BoxDecoration(
-                border: Border.all(color: AppCustomColor.brandPrimary200, width: 2),
-                borderRadius: BorderRadius.circular(12.r),
-                color: const Color(0xFFE0DEFD),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 8.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Both lines share Body/Small/SemiB — Mulish SemiBold 12/1.75,
-                  // brand/primary-text (#362F82), centered.
-                  AppText(
-                    context.l10n.allcourse.viewMore,
-                    style: AppStyle.text12.copyWith(
-                      fontWeight: FontWeight.w600,
-                      height: 1.75,
-                      color: AppCustomColor.brandPrimary700,
+            AspectRatio(
+              aspectRatio: 1,
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(_kCoverRadius),
+                  color: const Color(0xFFE7E5FD),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AppText(
+                      context.l10n.allcourse.viewMore,
+                      style: AppStyle.text16.copyWith(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                        color: const Color(0xFF4B44CA),
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                  ),
-                  AppText(
-                    skillset.title.text,
-                    style: AppStyle.text12.copyWith(
-                      fontWeight: FontWeight.w600,
-                      height: 1.75,
-                      color: AppCustomColor.brandPrimary700,
+                    6.verticalSpace,
+                    AppText(
+                      skillset.title.text,
+                      style: AppStyle.text12.copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                        color: const Color(0xFF6B63D6),
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -607,20 +627,22 @@ class _CourseGridSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return sk.Skeletonizer(
       enabled: true,
-      child: GridView.builder(
-        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: _kCourseGridColGap,
-          mainAxisSpacing: _kCourseGridRowGap,
-          mainAxisExtent: _kCourseCardExtent,
-        ),
-        itemCount: _kSkeletonCardCount,
-        itemBuilder: (context, index) => _CourseGridCard(
-          course: _kSkeletonCourse,
-          onTap: () {},
+      child: LayoutBuilder(
+        builder: (context, constraints) => GridView.builder(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: _kCourseGridColGap,
+            mainAxisSpacing: _kCourseGridRowGap,
+            mainAxisExtent: courseGridCellExtent(constraints.maxWidth - 40.w),
+          ),
+          itemCount: _kSkeletonCardCount,
+          itemBuilder: (context, index) => _CourseGridCard(
+            course: _kSkeletonCourse,
+            onTap: () {},
+          ),
         ),
       ),
     );
@@ -658,67 +680,66 @@ class _CourseGridCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 160.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.r),
-                // Light hairline border so each card reads as separated from the
-                // background, matching the design; brand border when selected.
-                border: isSelected
-                    ? Border.all(color: AppCustomColor.brandPrimary, width: 2)
-                    : Border.all(color: AppCustomColor.borderSecondary, width: 1),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x14000000),
-                    blurRadius: 3,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CacheNetworkGraphic(
-                      url: course.image,
-                      fit: BoxFit.cover,
-                    ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      child: _GridCourseBadge(
-                        course: course,
-                        completedLessons: completedLessons,
-                        totalLessons: totalLessons,
+            // Square, borderless, no shadow — the redesign lets the artwork be
+            // the card. The only outline left is the selection ring, drawn
+            // INSIDE via a foreground border so picking a course cannot nudge
+            // the grid's geometry.
+            AspectRatio(
+              aspectRatio: 1,
+              child: Container(
+                foregroundDecoration: isSelected
+                    ? BoxDecoration(
+                        border: Border.all(color: AppCustomColor.brandPrimary, width: 2),
+                        borderRadius: BorderRadius.circular(_kCoverRadius),
+                      )
+                    : null,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(_kCoverRadius),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CoverArt(
+                        url: course.image,
+                        seed: course.id,
+                        label: course.title.text,
                       ),
-                    ),
-                    if ((course.viewCount ?? 0) > 0)
                       Positioned(
-                        right: 9.r,
-                        bottom: 9.r,
-                        child: CourseViewsChip(count: course.viewCount!),
+                        top: 10.r,
+                        left: 10.r,
+                        child: _GridCourseBadge(
+                          course: course,
+                          completedLessons: completedLessons,
+                          totalLessons: totalLessons,
+                        ),
                       ),
-                  ],
+                      if ((course.viewCount ?? 0) > 0)
+                        Positioned(
+                          right: 9.r,
+                          bottom: 9.r,
+                          child: CourseViewsChip(count: course.viewCount!),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            12.verticalSpace,
+            SizedBox(height: _kCoverToTitleGap),
             // Fixed 2-line height so every card is the same height.
             SizedBox(
               height: _kCourseTitleHeight,
               width: double.infinity,
               child: AppText(
                 course.title.text,
-                style: AppStyle.textBold14.copyWith(
+                style: AppStyle.text13.copyWith(
                   color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-                  height: 1.4,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            4.verticalSpace,
+            SizedBox(height: _kTitleToAuthorGap),
             // Fixed-height author slot (kept even when blank) so grid rows
             // stay aligned — same trick as the 2-line title above.
             SizedBox(
@@ -760,7 +781,7 @@ class _GridCourseBadge extends StatelessWidget {
     // A coming-soon course is never enrolled, so it wins over everything.
     if (course.isComingSoonNow) {
       return _WhiteGridBadge(
-        icon: Icon(Icons.access_time_filled_rounded, size: 20.w, color: AppCustomColor.brandPrimary),
+        icon: Icon(Icons.access_time_filled_rounded, size: 14.w, color: AppCustomColor.brandPrimary),
         label: context.l10n.allcourse.comingSoonLabel,
         textColor: AppCustomColor.brandPrimary,
       );
@@ -778,7 +799,7 @@ class _GridCourseBadge extends StatelessWidget {
       // State 5 — Complete (green check circle + green text).
       if (completed >= total) {
         return _WhiteGridBadge(
-          icon: Icon(Icons.check_circle_rounded, size: 20.w, color: _kBadgeGreen),
+          icon: Icon(Icons.check_circle_rounded, size: 14.w, color: _kBadgeGreen),
           label: context.l10n.allcourse.progressCompleted,
           textColor: _kBadgeGreen,
         );
@@ -792,12 +813,12 @@ class _GridCourseBadge extends StatelessWidget {
         // render a smaller ring inside it — the full-slot ring read as too big
         // next to the label.
         icon: SizedBox(
-          width: 20.w,
-          height: 20.w,
+          width: 14.w,
+          height: 14.w,
           child: Center(
             child: SizedBox(
-              width: 15.w,
-              height: 15.w,
+              width: 12.w,
+              height: 12.w,
               child: CircularProgressIndicator(
                 value: completed / total,
                 strokeWidth: 2,
@@ -815,7 +836,7 @@ class _GridCourseBadge extends StatelessWidget {
     // New course (green sparkle + green text) — only for not-enrolled courses.
     if (course.isNewNow) {
       return _WhiteGridBadge(
-        icon: Icon(Icons.auto_awesome_rounded, size: 20.w, color: _kBadgeGreen),
+        icon: Icon(Icons.auto_awesome_rounded, size: 14.w, color: _kBadgeGreen),
         label: context.l10n.allcourse.newCourseLabel,
         textColor: _kBadgeGreen,
       );
@@ -832,13 +853,13 @@ class _GridCourseBadge extends StatelessWidget {
         // 20px box — keeps the badge height aligned with the other states while
         // the visible book matches the design.
         icon: SizedBox(
-          width: 20.w,
-          height: 20.w,
+          width: 14.w,
+          height: 14.w,
           child: Center(
             child: SvgPicture.asset(
               AppAsset.svg.app.icBookSolid,
-              width: 14.w,
-              height: 14.w,
+              width: 12.w,
+              height: 12.w,
             ),
           ),
         ),
@@ -868,13 +889,14 @@ class _WhiteGridBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A free-floating pill inset from the corner, not the corner tab it used to
+    // be: the redesign detaches the badge from the cover's edge so the artwork
+    // reads whole behind it.
     return Container(
-      padding: EdgeInsets.fromLTRB(8.w, 4.h, 8.w, 6.h),
+      padding: EdgeInsets.fromLTRB(6.w, 4.h, 9.w, 4.h),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.only(
-          bottomRight: Radius.circular(12.r),
-        ),
+        borderRadius: BorderRadius.circular(99.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -885,8 +907,9 @@ class _WhiteGridBadge extends StatelessWidget {
           ],
           AppText(
             label,
-            style: AppStyle.textBold12.copyWith(
+            style: AppStyle.text10.copyWith(
               color: textColor,
+              fontWeight: FontWeight.w700,
               height: 1.0,
             ),
           ),

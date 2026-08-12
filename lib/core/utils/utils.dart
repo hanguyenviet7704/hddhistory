@@ -47,6 +47,7 @@ part 'button/button.dart';
 part 'button/cta_button.dart';
 part 'button/gradient_button.dart';
 part 'images/cache_network_graphic.dart';
+part 'images/cover_art.dart';
 //* Export all images files
 part 'images/cache_image.dart';
 part 'images/cache_lottie.dart';
