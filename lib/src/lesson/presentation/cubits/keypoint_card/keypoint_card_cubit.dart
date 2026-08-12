@@ -97,6 +97,18 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// card), which no descriptor-identity lookup can discover on its own.
   String? _takeawayLearningItemId;
 
+  /// Cue the deck last pointed narration at and is still waiting to hear back
+  /// from, or null.
+  ///
+  /// A `playCue` seek is asynchronous: a position tick emitted BEFORE it lands
+  /// arrives after, reporting the cue the voice was on a moment ago. Following
+  /// that tick is what raced the deck to the end of the keypoint the instant a
+  /// paywall cap was lifted — the file was open deep past the deck (a resume
+  /// bookmark, which `_onMergedTick` deliberately does not clamp), so one stale
+  /// tick sent [_onMergedCueChanged]'s catch-up walk through every remaining card
+  /// ("lướt được 3 phát chạy xuống cuối", 2026-08-12).
+  int? _awaitingSeekToCue;
+
   /// Cue index the in-app recap gate last paused on — guards the pause to one
   /// firing per arrival, so the reader's own play/pause on that card is never
   /// fought over.
@@ -282,6 +294,8 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
+    // TEMP-TRACE(deck)
+    LogDev.warning('[DeckTrace] viewCard($index) from=${state.viewedCardIndex} cards=${state.cards.length} cap=$_paywallCardCap');
     // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
     // both confirmed settled.
     // A deliberate move off the entry card — swipe, pip tap, the voice turning
@@ -359,6 +373,10 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       // card cuối vẫn bị bật lại âm thanh", 2026-08-09).
       final carriesCompletion = audioState.hasCompletedPlayback && index > previousNarratedIndex && !_audioCubit.pausedByUser;
       final autoplay = startAt != null || effectivelyPlaying || carriesCompletion || movingForward;
+      // The seek is async, and a position tick from BEFORE it can land after it.
+      // Remember where we asked the voice to go so such a tick can be told apart
+      // from the voice genuinely being somewhere else — see [_onMergedCueChanged].
+      _awaitingSeekToCue = cueIndex;
       unawaited(_audioCubit.playCue(cueIndex, autoplay: autoplay, offset: startAt));
       return;
     }
@@ -727,8 +745,20 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       return -1;
     }
 
+    // A tick from before our own seek. Tolerant by one cue rather than exact:
+    // ticks are coarse and the voice may already have crossed into the next cue by
+    // the time one is emitted, and an exact match could wait forever and stop the
+    // deck following the voice at all.
+    final awaiting = _awaitingSeekToCue;
+    if (awaiting != null) {
+      if ((cueIndex - awaiting).abs() > 1) return;
+      _awaitingSeekToCue = null;
+    }
+
     final isBackground = _isBackgrounded;
     var cardIndex = cardIndexForCue();
+    // TEMP-TRACE(deck)
+    LogDev.warning('[DeckTrace] cueChanged($cueIndex) cardForCue=$cardIndex viewed=${state.viewedCardIndex} bg=$isBackground');
 
     // Cue past the built deck (true live edge). Foreground with an open gate:
     // advance for real — this is where lesson progress moves (the per-clip
@@ -749,6 +779,8 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         if (after == before) break; // refused (gate/end) — stop pushing
         cardIndex = cardIndexForCue();
       }
+      // TEMP-TRACE(deck)
+      LogDev.warning('[DeckTrace] cueWalk done cardIndex=$cardIndex guardUsed');
       if (cardIndex < 0 && !isAtPaywallWall) {
         // The gate refused (a choice still owed): the voice reads ON — audio
         // never auto-stops mid-listen (user call, 2026-08-04) — so reveal the
@@ -1113,6 +1145,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     if (switchedKeypoint) {
       _builtForKeypointId = builtKeypointId;
       _lastSeenCueIndex = -1;
+      _awaitingSeekToCue = null;
       _loadedClipCardIndex = -1;
       _completionHandled = false;
       _revealToCardTarget = null;
