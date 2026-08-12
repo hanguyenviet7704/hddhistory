@@ -19,9 +19,21 @@ class PageCubit extends Cubit<PageState> {
   void setIsPassSplashScreen(bool isPassSplashScreen) => emit(state.copyWith(isPassSplashScreen: isPassSplashScreen));
   void requestHomeBranchResetOnNextSelection() => _shouldResetHomeBranchOnNextSelection = true;
 
+  /// Track the route the reader is standing on.
+  ///
+  /// An EMPTY name is not stored. `didPop` reports the route underneath, and
+  /// that route is sometimes unnamed — a shell branch re-entered by `.go()`
+  /// rather than pushed, a page built outside the typed-route tree. Storing the
+  /// blank made `isPrimaryRoute` false on a tab the reader was plainly standing
+  /// on, and the floating nav vanished with no way to get it back short of
+  /// re-entering the tab. Resolving to the active branch's own root is both
+  /// truer and self-healing.
   void setCurrentRouteName(String routeName) {
-    final currentIndex = _tabIndexForRouteName(routeName) ?? state.currentIndex;
-    emit(state.copyWith(currentRouteName: routeName, currentIndex: currentIndex));
+    final resolved = routeName.isNotEmpty
+        ? routeName
+        : (_routeNameForTabIndex(state.currentIndex) ?? routeName);
+    final currentIndex = _tabIndexForRouteName(resolved) ?? state.currentIndex;
+    emit(state.copyWith(currentRouteName: resolved, currentIndex: currentIndex));
   }
 
   void handleShellRouteNavigation(int index, StatefulNavigationShell navigationShell) {
@@ -92,6 +104,24 @@ class PageCubit extends Cubit<PageState> {
   int? _normalizeTabIndex(int index) {
     if (index < 0 || index > 4) return null;
     return index;
+  }
+
+  /// The inverse of [_tabIndexForRouteName] — which branch root a tab shows.
+  String? _routeNameForTabIndex(int index) {
+    switch (index) {
+      case 0:
+        return RouteNamed.home;
+      case 1:
+        return RouteNamed.courseRoadmap;
+      case 2:
+        return RouteNamed.profile;
+      case 3:
+        return RouteNamed.course;
+      case 4:
+        return RouteNamed.habit;
+      default:
+        return null;
+    }
   }
 
   int? _tabIndexForRouteName(String routeName) {
