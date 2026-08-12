@@ -294,10 +294,6 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
-    // TEMP-TRACE(deck)
-    LogDev.warning('[DeckTrace] viewCard($index) from=${state.viewedCardIndex} cards=${state.cards.length} cap=$_paywallCardCap');
-    // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
-    // both confirmed settled.
     // A deliberate move off the entry card — swipe, pip tap, the voice turning
     // the page, or the return-from-background jump. From here on the deck is
     // being driven, so it may follow the live edge again (see [_entryPinActive]).
@@ -757,8 +753,6 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     final isBackground = _isBackgrounded;
     var cardIndex = cardIndexForCue();
-    // TEMP-TRACE(deck)
-    LogDev.warning('[DeckTrace] cueChanged($cueIndex) cardForCue=$cardIndex viewed=${state.viewedCardIndex} bg=$isBackground');
 
     // Cue past the built deck (true live edge). Foreground with an open gate:
     // advance for real — this is where lesson progress moves (the per-clip
@@ -779,8 +773,6 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
         if (after == before) break; // refused (gate/end) — stop pushing
         cardIndex = cardIndexForCue();
       }
-      // TEMP-TRACE(deck)
-      LogDev.warning('[DeckTrace] cueWalk done cardIndex=$cardIndex guardUsed');
       if (cardIndex < 0 && !isAtPaywallWall) {
         // The gate refused (a choice still owed): the voice reads ON — audio
         // never auto-stops mid-listen (user call, 2026-08-04) — so reveal the

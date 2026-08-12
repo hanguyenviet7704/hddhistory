@@ -375,8 +375,6 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// the wall for the reader.
   int? _syncPaywallCap() {
     final cap = _inLessonPaywallCap();
-    // TEMP-TRACE(deck)
-    LogDev.warning('[DeckTrace] syncCap=$cap serverCap=$_serverCardCap quotaApplies=$_serverQuotaApplies imported=$_isImportedLesson');
     if (mounted) context.read<KeypointCardCubit>().setPaywallCardCap(cap);
     return cap;
   }
@@ -498,8 +496,6 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       if (!mounted) return;
       final claim = result.getRight().toNullable();
 
-      // TEMP-TRACE(deck)
-      LogDev.warning('[DeckTrace] claim granted=${claim?.granted} cap=${claim?.cardCap} reason=${claim?.reason}');
       if (claim == null || !claim.granted) {
         await _openInLessonPaywall();
         return;
