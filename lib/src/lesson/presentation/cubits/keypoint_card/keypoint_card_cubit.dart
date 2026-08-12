@@ -341,7 +341,19 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       if (_isBackgrounded) return;
       final descriptor = state.cards[index];
       if (descriptor.isDone) {
-        _parkNarrationAtRecap(index);
+        // Only when the deck can genuinely SHOW the recap — the same rule
+        // [_onMergedCueChanged]'s cardIndexForCue states. Mid-build the done
+        // card is the deck's LAST card long before the reading flow reaches it,
+        // so a forward swipe off the live edge lands here for one rebuild while
+        // the next theory card is still being built. Parking on that landing
+        // seeked the file to the recap cue — and that phantom tick walked the
+        // lesson to completion and threw the reader onto the quote card
+        // ("lướt 2 card đầu đến card thứ 3 bị nhảy", trace 2026-08-12:
+        // [RecapGate] park idx=2 cue=12 with furthest=1). It also muted a
+        // listener mid-read even when the takeaway cue was unknown. The real
+        // arrival — voice or reader actually reaching the recap — always comes
+        // with the bound already raised.
+        if (state.revealBound >= index) _parkNarrationAtRecap(index);
         return;
       }
       if (!descriptor.isTheory) return;
@@ -778,7 +790,13 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // stream listener runs a microtask later, hence the direct _rebuildCards.
     // Backgrounded: leave the deck alone; the return path reveals to wherever
     // the voice got (didChangeAppLifecycleState → jumpToCard).
-    if (cardIndex < 0 && !isBackground) {
+    // A cue with no card may drive the lesson forward ONLY while the player is
+    // audibly reading — that is what this follow is for ("the audio kept playing
+    // through the boundary"). Paused, such a cue can only be a seek landing
+    // (a park, a claim, a stale tick), and letting it run the advance loop is
+    // how a phantom completed a whole keypoint and filed its progress
+    // (trace 2026-08-12: cue(12) playing=false → cueWalk → done=true).
+    if (cardIndex < 0 && !isBackground && _audioCubit.state.isPlaying) {
       // The walk MOVES THE LIVE EDGE, and the deck follows the edge whenever the
       // reader is standing on it ([_rebuildCards]'s `wasFollowingEdge`) — so
       // without this pin every step of the walk drags the view one card along,
@@ -1252,7 +1270,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // `wasFollowingEdge` is trivially true (view 0 == edge 0) and would carry the
     // view along with it. It is released by the first [viewCard], i.e. the moment
     // the reader — or the voice — actually moves the deck.
-    final restoredViewedIndex = completionJustTriggered
+    // The completion jump also respects the walk's suspension: a keypoint that
+    // completes DURING the catch-up walk gets its view landed by the walk's own
+    // viewCard once it knows where — a jump from here would be the very slam the
+    // suspension exists to stop.
+    final restoredViewedIndex = completionJustTriggered && !_edgeFollowSuspended
         ? nextFurthestIndex
         : _entryPinActive
         ? 0

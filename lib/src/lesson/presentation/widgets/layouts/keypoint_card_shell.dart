@@ -151,6 +151,7 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
         // ("khựng nhảy", 2026-08-12).
         _accessKeypointId = '';
         _serverCardCap = null;
+        _accessReason = KeypointAccessReason.unknown;
         _syncPaywallCap();
         unawaited(_loadKeypointAccess());
       },
@@ -389,6 +390,15 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// would bound the wrong deck (the listening chain switches keypoints in place).
   String _accessKeypointId = '';
 
+  /// Why the server capped (or didn't cap) this keypoint — what
+  /// [_loadKeypointAccess] was told, updated by each claim.
+  ///
+  /// `ticketAvailable` is the one that changes behaviour: it is the server saying
+  /// "a claim here would succeed", which is what lets the unlocking swipe go
+  /// through as ONE ordinary swipe instead of block → wait on the network → jump
+  /// ("cú vuốt không hoàn hảo", 2026-08-12).
+  KeypointAccessReason _accessReason = KeypointAccessReason.unknown;
+
   /// Guards against two claims in flight from one impatient reader.
   bool _claimInFlight = false;
 
@@ -476,6 +486,7 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     // rebuilding this subtree lurches the PageView.
     _accessKeypointId = keypointId;
     _serverCardCap = access.cardCap;
+    _accessReason = access.reason;
     _syncPaywallCap();
   }
 
@@ -497,6 +508,9 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       final claim = result.getRight().toNullable();
 
       if (claim == null || !claim.granted) {
+        if (claim != null && _currentKeypointId == keypointId) {
+          _accessReason = claim.reason;
+        }
         await _openInLessonPaywall();
         return;
       }
@@ -504,10 +518,49 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
 
       _accessKeypointId = keypointId;
       _serverCardCap = claim.cardCap;
+      _accessReason = claim.reason;
       _syncPaywallCap();
       // Finish the move they asked for. `viewCard` re-clamps against the cap we
       // just lifted, so this cannot overshoot.
       if (mounted) context.read<KeypointCardCubit>().viewCard(target);
+    } finally {
+      _claimInFlight = false;
+    }
+  }
+
+  /// Settles the ticket for a swipe that was already let through on the strength
+  /// of `ticket_available`.
+  ///
+  /// The gesture is long finished when this answers, so the happy path changes
+  /// nothing visible. Only a lost race — another device spent the ticket between
+  /// our read and this claim — puts the wall back, pulls the reader behind it,
+  /// and says why. A claim that ERRORS leaves the keypoint open: this feature
+  /// fails open everywhere (a wall that cannot be evaluated must not lock
+  /// content away), and yanking a card the reader is already looking at over a
+  /// timeout would be the worst of both.
+  Future<void> _settleOptimisticClaim() async {
+    if (_claimInFlight) return;
+    final keypointId = _currentKeypointId;
+    if (keypointId.isEmpty) return;
+
+    _claimInFlight = true;
+    try {
+      final result = await AppDI.injector.get<ClaimKeypointAccessUseCase>().call(keypointId).run();
+      if (!mounted) return;
+      final claim = result.getRight().toNullable();
+      if (claim == null) return;
+      if (_currentKeypointId != keypointId) return;
+
+      _accessKeypointId = keypointId;
+      _serverCardCap = claim.cardCap;
+      _accessReason = claim.reason;
+      final cap = _syncPaywallCap();
+
+      if (claim.granted) return;
+      if (cap != null && mounted) {
+        context.read<KeypointCardCubit>().viewCard(cap);
+      }
+      await _openInLessonPaywall();
     } finally {
       _claimInFlight = false;
     }
@@ -526,13 +579,32 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     if (cap == null || target <= cap) return false;
 
     // Under the daily quota the wall is not final until the ticket has been asked
-    // for: spending it is exactly what "moving past the lock" means. Claim, then
-    // either complete the move or raise the paywall — one gesture either way.
+    // for: spending it is exactly what "moving past the lock" means.
     if (_serverQuotaApplies) {
-      unawaited(_claimThenAdvance(target));
-      // Still blocked for THIS frame: the answer is a network call away, and
+      // The server already said a claim here would succeed (`ticket_available`,
+      // read on entry) — so trust it and let the gesture COMPLETE as an ordinary
+      // swipe, settling the ticket behind it. Blocking first and jumping after
+      // the network answered was the visible stutter on the unlocking swipe
+      // ("cú vuốt không hoàn hảo mà lại bị nhảy", 2026-08-12); the deny race
+      // (another device spent the ticket since we read) is rare enough to pay
+      // for with a snap-back when it actually happens.
+      //
+      // One shot: the reason is consumed here and re-established only by the
+      // claim's answer, so a claim that errors out cannot re-arm free passage
+      // on every later swipe.
+      if (_accessReason == KeypointAccessReason.ticketAvailable && !_claimInFlight) {
+        _accessReason = KeypointAccessReason.unknown;
+        _serverCardCap = null;
+        _syncPaywallCap();
+        unawaited(_settleOptimisticClaim());
+        return false;
+      }
+      // No unspent ticket on record (spent, stale, or never read): claim first,
+      // then either complete the move or raise the paywall — one gesture either
+      // way. Still blocked for THIS frame: the answer is a network call away, and
       // letting the deck move now would show the card before we know they may
       // have it.
+      unawaited(_claimThenAdvance(target));
       return true;
     }
 
