@@ -137,7 +137,7 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
           listener: (context, state) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted || _hasExited) return;
-              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+              if (!canAssertOwnRouteName(context)) return;
               _ensureBadgeProgressRouteName();
             });
           },

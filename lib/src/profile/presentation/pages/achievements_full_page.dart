@@ -17,7 +17,10 @@ class AchievementsFullPage extends StatefulWidget {
   /// read it from at the roadmap.
   static Future<void> open(BuildContext context) {
     return Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
+      // [appPageRoute] so this opens like the rest of Profile — see the note on
+      // `MyCoursesPage.open`; the two are the only root-pushed pages on that
+      // screen and they must not differ from the typed routes beside them.
+      appPageRoute<void>(
         builder: (_) => BlocProvider.value(
           value: AppDI.injector.get<AchievenmentProgressCubit>(),
           child: const AchievementsFullPage(),

@@ -20,15 +20,14 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   /// name, un-hiding the nav over this page — so assert our own name on mount
   /// and reclaim it whenever a primary name lands while we're on screen.
   ///
-  /// Only claim while this page is actually FOREGROUND: this page lingers on its
-  /// branch navigator after the user opens a course (a branch switch, not a
-  /// pop), so it stays `isCurrent` even while backgrounded. go_router wraps the
-  /// inactive branch in `TickerMode(enabled: false)`, so a false there means
-  /// we're backgrounded and must NOT steal the visible branch's route name.
+  /// Only claim while this page is actually FOREGROUND — see
+  /// [canAssertOwnRouteName]: this page lingers on its branch navigator after the
+  /// user opens a course (a branch switch, not a pop), so it stays `isCurrent`
+  /// even while backgrounded, and claiming from there would steal the visible
+  /// branch's route name.
   void _ensureRouteName() {
     if (!mounted) return;
-    if (!TickerMode.valuesOf(context).enabled) return;
-    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    if (!canAssertOwnRouteName(context)) return;
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.skillsetCourses);
   }
 
@@ -151,8 +150,13 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
                         crossAxisCount: 2,
                         crossAxisSpacing: _kCourseGridColGap,
                         mainAxisSpacing: _kCourseGridRowGap,
-                        // Exact card height (no slack) so the row gap is exactly 24.
-                        mainAxisExtent: _kCourseCardExtent,
+                        // Exact card height (no slack) so the visible row gap is
+                        // exactly _kCourseGridRowGap. Measured from the screen
+                        // width because the cover is square — see
+                        // [courseGridCellExtent].
+                        mainAxisExtent: courseGridCellExtent(
+                          MediaQuery.sizeOf(context).width - 40.w,
+                        ),
                       ),
                       itemCount: sorted.length,
                       itemBuilder: (context, index) {

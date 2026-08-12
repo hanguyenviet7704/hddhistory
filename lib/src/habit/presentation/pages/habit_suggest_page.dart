@@ -195,7 +195,7 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
       listener: (context, _) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+          if (!canAssertOwnRouteName(context)) return;
           _ensureNavHidden();
         });
       },

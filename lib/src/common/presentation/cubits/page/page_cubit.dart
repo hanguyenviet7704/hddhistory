@@ -124,6 +124,38 @@ class PageCubit extends Cubit<PageState> {
 
 }
 
+/// Whether a full-screen page may (re-)assert its OWN route name over whatever
+/// the route observer last wrote.
+///
+/// [isRouteCurrent] — the page is still the top route of its own navigator.
+/// [isBranchOnScreen] — the shell branch it lives in is the one being displayed.
+///
+/// Both are required, and the second is the one that keeps being forgotten. A
+/// page inside a shell branch is NOT popped when the reader moves to a DIFFERENT
+/// branch — `StatefulShellRoute.indexedStack` keeps every branch alive — so
+/// `isCurrent` stays true while the page sits offscreen. A page that reclaims on
+/// that alone steals the VISIBLE branch's route name, and because the stolen
+/// name is non-primary the shell's floating nav vanishes on a tab the reader is
+/// plainly standing on, with no way to get it back (reported for a generated
+/// lesson: read it, leave its roadmap, land on Profile with no nav — the reader
+/// page was still `isCurrent` in the backgrounded course branch and took the
+/// name back the moment `Profile` landed).
+@visibleForTesting
+bool shouldAssertOwnRouteName({
+  required bool isRouteCurrent,
+  required bool isBranchOnScreen,
+}) => isRouteCurrent && isBranchOnScreen;
+
+/// [shouldAssertOwnRouteName] answered from the page's own context.
+///
+/// go_router wraps an inactive branch in `TickerMode(enabled: false)` (see
+/// `_IndexedStackedRouteBranchContainer`), which is the cheapest truthful answer
+/// to "is my branch the one on screen?" — no shell lookup, no mirrored state.
+bool canAssertOwnRouteName(BuildContext context) => shouldAssertOwnRouteName(
+  isRouteCurrent: ModalRoute.of(context)?.isCurrent ?? false,
+  isBranchOnScreen: TickerMode.valuesOf(context).enabled,
+);
+
 /// Whether a bottom-nav tab tap should be ignored as a no-op.
 ///
 /// Compares the tapped branch against the shell's ACTUAL active branch
