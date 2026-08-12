@@ -292,6 +292,7 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
                                       isPreview: index > state.furthestCardIndex,
                                       bodyFactory: widget.bodyFactory,
                                       onAnswerChecked: widget.onAnswerChecked,
+                                      onGoPremium: _openInLessonPaywall,
                                     ),
                                   ),
                                 ),
@@ -376,9 +377,21 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// the wall for the reader.
   int? _syncPaywallCap() {
     final cap = _inLessonPaywallCap();
-    if (mounted) context.read<KeypointCardCubit>().setPaywallCardCap(cap);
+    if (mounted) {
+      context.read<KeypointCardCubit>().setPaywallCardCap(cap, quotaLockedCard: _quotaLockedCardWanted);
+    }
     return cap;
   }
+
+  /// Whether the wall should render as the "free lesson done for today" card
+  /// (design `3 · Learning` → Keypoint — locked card) instead of a snap-back.
+  ///
+  /// Only for a SPENT quota: with an unspent ticket the crossing claims and
+  /// passes (see [_blockedByInLessonPaywall]), and the legacy position rule
+  /// keeps its paywall-on-swipe. `quotaSpent` is also what a lost optimistic
+  /// race resolves to, so the wall the reader is pulled back behind is this
+  /// same card.
+  bool get _quotaLockedCardWanted => _serverQuotaApplies && _accessReason == KeypointAccessReason.quotaSpent;
 
   /// The cap the SERVER decided for this keypoint, or null for no limit.
   ///
@@ -510,6 +523,14 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       if (claim == null || !claim.granted) {
         if (claim != null && _currentKeypointId == keypointId) {
           _accessReason = claim.reason;
+          // A denied claim usually resolves the reason to quotaSpent, and the
+          // wall then stands as the locked card: sync so it appears, land on
+          // it, and let its own Go Premium do the selling.
+          final cap = _syncPaywallCap();
+          if (_quotaLockedCardWanted) {
+            if (cap != null && mounted) context.read<KeypointCardCubit>().viewCard(cap + 1);
+            return;
+          }
         }
         await _openInLessonPaywall();
         return;
@@ -557,10 +578,15 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       final cap = _syncPaywallCap();
 
       if (claim.granted) return;
+      // Pulled back BEHIND the wall — onto the locked card itself when it
+      // renders (viewCard clamps to it), so the reader is told why instead of
+      // being yanked to a content card with no explanation.
       if (cap != null && mounted) {
-        context.read<KeypointCardCubit>().viewCard(cap);
+        context.read<KeypointCardCubit>().viewCard(cap + 1);
       }
-      await _openInLessonPaywall();
+      // The locked card carries its own Go Premium — raising the paywall over
+      // it would stack two answers to one gesture.
+      if (!_quotaLockedCardWanted) await _openInLessonPaywall();
     } finally {
       _claimInFlight = false;
     }
@@ -599,11 +625,15 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
         unawaited(_settleOptimisticClaim());
         return false;
       }
-      // No unspent ticket on record (spent, stale, or never read): claim first,
-      // then either complete the move or raise the paywall — one gesture either
-      // way. Still blocked for THIS frame: the answer is a network call away, and
-      // letting the deck move now would show the card before we know they may
-      // have it.
+      // Quota spent: the wall renders as its own card (the "free lesson done
+      // for today" screen) sitting right where this swipe is headed, so nothing
+      // here blocks or claims — landing on the wall IS the gesture completing.
+      // The deck's own clamp keeps anything past it unreachable.
+      if (_quotaLockedCardWanted) return false;
+      // No decision on record (stale or never read): claim first, then either
+      // complete the move or raise the paywall — one gesture either way. Still
+      // blocked for THIS frame: the answer is a network call away, and letting
+      // the deck move now would show the card before we know they may have it.
       unawaited(_claimThenAdvance(target));
       return true;
     }
@@ -1018,6 +1048,7 @@ class _KeypointCardPage extends StatelessWidget {
     required this.isPreview,
     required this.bodyFactory,
     required this.onAnswerChecked,
+    required this.onGoPremium,
   });
 
   final int cardIndex;
@@ -1031,6 +1062,10 @@ class _KeypointCardPage extends StatelessWidget {
   final LessonBodyFactory bodyFactory;
   final ValueChanged<bool> onAnswerChecked;
 
+  /// The locked card's CTA — the shell's own in-lesson paywall opener, so the
+  /// card sells through exactly the flow the old snap-back paywall used.
+  final VoidCallback onGoPremium;
+
   @override
   Widget build(BuildContext context) {
     // Padding is small on purpose: it doubles as the gap to the next card, and
@@ -1039,6 +1074,8 @@ class _KeypointCardPage extends StatelessWidget {
     final padding = EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h);
     final Widget card = descriptor.isDone
         ? const KeypointDoneCard()
+        : descriptor.isLocked
+        ? KeypointLockedCard(onGoPremium: onGoPremium)
         : descriptor.isTheory
         ? TheoryCardBody(
             cardIndex: cardIndex,

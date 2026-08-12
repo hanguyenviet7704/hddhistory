@@ -139,6 +139,7 @@ part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
 part 'presentation/widgets/body/cues_placement_lesson_body.dart';
 part 'presentation/widgets/body/drag_and_drop_lesson_body.dart';
 part 'presentation/widgets/body/keypoint_done_card.dart';
+part 'presentation/widgets/body/keypoint_locked_card.dart';
 part 'presentation/widgets/body/mark_stress_word_lesson_body.dart';
 part 'presentation/widgets/body/multiple_choice_lesson_body.dart';
 part 'presentation/widgets/body/quiz_card_body.dart';

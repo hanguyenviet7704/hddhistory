@@ -277,8 +277,25 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// This cubit only enforces it — it deliberately knows nothing about paywalls.
   int? _paywallCardCap;
 
-  // ignore: use_setters_to_change_properties
-  void setPaywallCardCap(int? cap) => _paywallCardCap = cap;
+  /// Whether the wall renders as a card of its own (the daily quota's
+  /// "free lesson done for today" screen) sitting at `cap + 1`. The reader may
+  /// swipe ONTO it — it is the wall's face, not content past the wall — while
+  /// the voice and the lesson's live edge stay bounded by [_paywallCardCap].
+  bool _showQuotaLockedCard = false;
+
+  void setPaywallCardCap(int? cap, {bool quotaLockedCard = false}) {
+    final showLocked = quotaLockedCard && cap != null;
+    final changed = cap != _paywallCardCap || showLocked != _showQuotaLockedCard;
+    _paywallCardCap = cap;
+    _showQuotaLockedCard = showLocked;
+    // The locked card changes the card LIST, and the access answer that flips it
+    // arrives after the deck was built — so a change here must rebuild rather
+    // than wait for the next lesson emit (which may never come while the reader
+    // just stares at a capped deck).
+    if (changed && state.status == KeypointCardStatus.ready) {
+      _rebuildCards(_lessonCubit.state);
+    }
+  }
 
   /// Whether the view already sits on the last card the paywall allows, so
   /// revealing another one would hand over paid content.
@@ -303,8 +320,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // tap, the voice turning the page, and the return-from-background jump —
     // and only the swipe goes through the widget that knows about the paywall.
     // Walling that one alone left the other three walking straight past it.
+    // The locked card sits one past the cap and is the one thing there the view
+    // may land on — it IS the wall's face.
     final cap = _paywallCardCap;
-    if (cap != null && index > cap) index = cap;
+    final maxViewable = cap == null ? null : (_showQuotaLockedCard ? cap + 1 : cap);
+    if (maxViewable != null && index > maxViewable) index = maxViewable;
 
     if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
@@ -1237,8 +1257,27 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       _revealToCardTarget = null;
     }
 
+    // The daily-quota wall as a card: once the deck's content has REACHED the
+    // cap, everything past it — including the done card, whose very mount files
+    // a completion — is replaced by the single locked card. Before the content
+    // reaches the cap the deck stays untouched, or the wall would show up a
+    // card early and page mode would fight the live-edge advance for the free
+    // cards still unread. Content past the cap can exist (a keypoint half-read
+    // on an earlier day re-locks today: only COMPLETED keypoints stay free), and
+    // is cut for the same reason narration is bounded — it is what the ticket
+    // buys.
+    final wallCap = _paywallCardCap;
+    final lockedCardShown = _showQuotaLockedCard && wallCap != null && built.liveCardIndex >= wallCap;
+    final cards = lockedCardShown
+        ? [
+            ...built.cards.where((c) => !c.isDone).take(wallCap + 1),
+            const KeypointCardDescriptor.locked(),
+          ]
+        : built.cards;
+    final lockedCardIndex = lockedCardShown ? cards.length - 1 : -1;
+
     final wasFollowingEdge = state.viewedCardIndex == state.furthestCardIndex && !_edgeFollowSuspended;
-    final previousViewedIndex = state.viewedCardIndex.clamp(0, built.cards.length - 1);
+    final previousViewedIndex = state.viewedCardIndex.clamp(0, cards.length - 1);
 
     // Do NOT clamp this to the pinned view. `furthestCardIndex` is what the
     // `PageView` is sized from (`itemCount: furthestCardIndex + 1`), so holding
@@ -1259,7 +1298,16 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // raw lesson flag) is what keeps a STALE completion from a previous run
     // out of a fresh entry — see [_keypointCompletedThisRun].
     final isKeypointCompleted = _keypointCompletedThisRun;
-    final nextFurthestIndex = isKeypointCompleted ? built.doneCardIndex : built.liveCardIndex;
+    // A locked deck's furthest IS the locked card: reachability is what makes
+    // the wall swipe-able as an ordinary page (`itemCount` and the pip bar both
+    // derive from it). The lesson's real progress stays where it is — the voice
+    // and the live-edge advance are both bounded by [_paywallCardCap], so
+    // nothing reads this as "the reader got further".
+    final nextFurthestIndex = lockedCardShown
+        ? lockedCardIndex
+        : isKeypointCompleted
+        ? built.doneCardIndex
+        : built.liveCardIndex;
 
     // Opening a keypoint always lands on its FIRST card, never where the reader
     // left off. Position inside a keypoint is deliberately not restored (product
@@ -1283,9 +1331,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // The paywall wall clamps the restored position too. Without this, a reader
     // who got past the wall before it existed would be handed straight back to
     // where they were, every time they re-entered — this emit does not go through
-    // [viewCard], so its cap does not cover it.
+    // [viewCard], so its cap does not cover it. With the locked card shown, the
+    // card itself is the one allowed place past the cap (same rule as viewCard).
     final cap = _paywallCardCap;
-    final nextViewedIndex = cap != null && restoredViewedIndex > cap ? cap : restoredViewedIndex;
+    final maxRestorable = cap == null ? null : (lockedCardShown ? lockedCardIndex : cap);
+    final nextViewedIndex = maxRestorable != null && restoredViewedIndex > maxRestorable ? maxRestorable : restoredViewedIndex;
 
     // TEMP-TRACE(deck2)
     if (nextViewedIndex != previousViewedIndex || nextFurthestIndex != state.furthestCardIndex) {
@@ -1299,11 +1349,14 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     emit(
       state.copyWith(
         status: KeypointCardStatus.ready,
-        cards: built.cards,
+        cards: cards,
         furthestCardIndex: nextFurthestIndex,
-        narrationRevealIndex: built.revealCardIndex,
+        // Bounded by the truncated deck: `revealBound` sizes the PageView, so a
+        // reveal index pointing past the locked card would build pages the card
+        // list no longer has.
+        narrationRevealIndex: lockedCardShown ? math.min(built.revealCardIndex, lockedCardIndex) : built.revealCardIndex,
         viewedCardIndex: nextViewedIndex,
-        isLiveCardAnswered: _isCardAnswered(built.cards, nextFurthestIndex),
+        isLiveCardAnswered: _isCardAnswered(cards, nextFurthestIndex),
       ),
     );
 

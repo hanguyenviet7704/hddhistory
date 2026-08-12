@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-enum KeypointCardKind { theory, quiz, done }
+enum KeypointCardKind { theory, quiz, done, locked }
 
 /// One card in the unified keypoint swipe screen — either a theory content
 /// block (one [DocumentEntity], the same granularity [TheoryCubit] already
@@ -31,6 +31,16 @@ class KeypointCardDescriptor {
       documentIndex = -1,
       questionIndex = -1;
 
+  /// The daily-quota wall, rendered as a card of its own: the reader swipes onto
+  /// it like any page and finds the "free lesson done for today" screen
+  /// (design: `_Keypoint Swipe Lab` → `c.isLocked`). It names no content —
+  /// nothing behind it exists client-side until a ticket unlocks the keypoint.
+  const KeypointCardDescriptor.locked()
+    : kind = KeypointCardKind.locked,
+      learningItemId = '',
+      documentIndex = -1,
+      questionIndex = -1;
+
   final KeypointCardKind kind;
   final String learningItemId;
   final int documentIndex;
@@ -39,6 +49,7 @@ class KeypointCardDescriptor {
   bool get isTheory => kind == KeypointCardKind.theory;
   bool get isQuiz => kind == KeypointCardKind.quiz;
   bool get isDone => kind == KeypointCardKind.done;
+  bool get isLocked => kind == KeypointCardKind.locked;
 
   @override
   bool operator ==(Object other) {
