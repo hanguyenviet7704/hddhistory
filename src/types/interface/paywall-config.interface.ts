@@ -160,6 +160,25 @@ export interface PaywallAutoOpen {
  * onto the next one. Optional on the wire: versions published before this gate
  * existed simply have no such key.
  */
+/**
+ * Free-tier daily reading quota: one keypoint a day, read in full; every other
+ * keypoint that day stops at `afterCards`.
+ *
+ * REPLACES `inLessonPaywall` rather than joining it — the two ask different
+ * questions (where a keypoint sits in the course vs how much the reader has read
+ * today) and running both leaves a lock nobody can explain.
+ *
+ * Unlike every other block here it is NOT enforceable on the client: it depends on
+ * the reader's own history, so the server decides and the app is told the cap.
+ */
+export interface PaywallDailyKeypointQuota {
+  enabled: boolean;
+  /** Keypoints readable in full per day. 1 in the design. */
+  freeKeypointsPerDay?: number;
+  /** Card the lock stands at once the ticket is spent. 3 = two cards readable. */
+  afterCards?: number;
+}
+
 export interface PaywallInLesson {
   enabled: boolean;
   /**
@@ -220,6 +239,8 @@ export interface PaywallConfig {
   lessonLock?: number;
   autoOpen: PaywallAutoOpen;
   inLessonPaywall?: PaywallInLesson;
+  /** Optional so every version published before this gate existed stays valid. */
+  dailyKeypointQuota?: PaywallDailyKeypointQuota;
   entryPointVariants?: PaywallEntryPointVariants;
   saleStrategy: PaywallSaleStrategy;
   /** Optional so every version published before this section existed stays valid. */

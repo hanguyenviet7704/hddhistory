@@ -170,6 +170,68 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
       </SectionCard>
 
       <SectionCard
+        title="Khoá theo lượt ngày"
+        description="Mỗi user chưa premium đọc miễn phí 1 keypoint mỗi ngày; các keypoint khác trong ngày khoá từ thẻ 3. Hôm sau lại có lượt mới."
+        icon={BookOpenIcon}
+        headerRight={
+          <ToggleSwitch
+            checked={draft.dailyQuotaEnabled}
+            onChange={(checked) => onChange({ dailyQuotaEnabled: checked })}
+            label="Bật"
+            disabled={disabled}
+          />
+        }
+      >
+        <div className="flex flex-wrap gap-4">
+          <label className="flex flex-col gap-1 text-xs text-slate-700 w-44">
+            <span className="font-medium">Số keypoint free mỗi ngày</span>
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={draft.dailyQuotaFreeKeypointsPerDay}
+              onChange={(e) =>
+                onChange({ dailyQuotaFreeKeypointsPerDay: e.target.value })
+              }
+              disabled={disabled || !draft.dailyQuotaEnabled}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+            />
+            <span className="text-[11px] text-slate-500">
+              Số keypoint được đọc <b>trọn vẹn</b> mỗi ngày. Lượt chỉ bị tiêu khi
+              user đi qua thẻ khoá — mở keypoint rồi thoát không mất gì, và đọc lại
+              bài đã hoàn thành hôm trước cũng không tính.
+            </span>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-slate-700 w-44">
+            <span className="font-medium">Khoá từ thẻ thứ</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={draft.dailyQuotaAfterCards}
+              onChange={(e) => onChange({ dailyQuotaAfterCards: e.target.value })}
+              disabled={disabled || !draft.dailyQuotaEnabled}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+            />
+            <span className="text-[11px] text-slate-500">
+              3 = đọc được 2 thẻ đầu rồi gặp paywall ở thẻ 3.
+            </span>
+          </label>
+        </div>
+        <p className="mt-3 rounded bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800">
+          Luật này <b>thay</b> "Mở paywall trong bài học" bên dưới — bật cả hai thì
+          cái nào chặn trước sẽ thắng, và user gặp một cái khoá khó đoán (cùng là bài
+          đầu tiên trong ngày mà bài này đọc hết được, bài kia chỉ 2 thẻ vì nó nằm
+          thứ 5 trong khoá). Bật cái này thì tắt cái kia.
+        </p>
+        <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+          Khác mọi mục khác ở trang này: luật này do <b>server</b> cưỡng chế, vì nó
+          phụ thuộc vào việc user đã đọc gì hôm nay — app chỉ được cho biết kết quả.
+          "Ngày" tính theo múi giờ của chính user.
+        </p>
+      </SectionCard>
+
+      <SectionCard
         title="Mở paywall trong bài học"
         description="Mở paywall ngay khi user cuộn qua thẻ đầu tiên của một keypoint."
         icon={BookOpenIcon}

@@ -12,6 +12,7 @@ import {
   PAYWALL_ENTRY_POINTS,
   PaywallAudienceSegment,
   PaywallAutoOpen,
+  PaywallDailyKeypointQuota,
   PaywallInLesson,
   PaywallBenefit,
   PaywallConfig,
@@ -139,6 +140,9 @@ export interface ConfigDraft {
   inLessonEnabled: boolean;
   inLessonKeypointOrdinal: string;
   inLessonAfterCards: string;
+  dailyQuotaEnabled: boolean;
+  dailyQuotaFreeKeypointsPerDay: string;
+  dailyQuotaAfterCards: string;
   entryPointVariants: EntryPointVariantsDraft;
   defaultUser: DefaultUserDraft;
   saleEvent: SaleEventDraft;
@@ -216,6 +220,10 @@ export const defaultDraft = (): ConfigDraft => ({
   inLessonEnabled: false,
   inLessonKeypointOrdinal: "2",
   inLessonAfterCards: "1",
+  dailyQuotaEnabled: false,
+  // Defaults are the design intent: one keypoint a day, locked at card 3.
+  dailyQuotaFreeKeypointsPerDay: "1",
+  dailyQuotaAfterCards: "3",
   entryPointVariants: defaultEntryPointVariants(),
   defaultUser: {
     content: emptyLocalizedContent(),
@@ -365,6 +373,15 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     config.inLessonPaywall?.afterCards != null
       ? String(config.inLessonPaywall.afterCards)
       : "1",
+  dailyQuotaEnabled: Boolean(config.dailyKeypointQuota?.enabled),
+  dailyQuotaFreeKeypointsPerDay:
+    config.dailyKeypointQuota?.freeKeypointsPerDay != null
+      ? String(config.dailyKeypointQuota.freeKeypointsPerDay)
+      : "1",
+  dailyQuotaAfterCards:
+    config.dailyKeypointQuota?.afterCards != null
+      ? String(config.dailyKeypointQuota.afterCards)
+      : "3",
   entryPointVariants: toEntryPointVariantsDraft(config.entryPointVariants),
   defaultUser: {
     content: toLocalizedContentDraft(config.saleStrategy?.defaultUser?.content),
@@ -559,6 +576,12 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     sessionRolloutPercent: Number(draft.autoOpenPercent || 0),
   };
 
+  const dailyKeypointQuota: PaywallDailyKeypointQuota = {
+    enabled: draft.dailyQuotaEnabled,
+    freeKeypointsPerDay: Number(draft.dailyQuotaFreeKeypointsPerDay || 0),
+    afterCards: Number(draft.dailyQuotaAfterCards || 3),
+  };
+
   const inLessonPaywall: PaywallInLesson = {
     enabled: draft.inLessonEnabled,
     keypointOrdinal: Number(draft.inLessonKeypointOrdinal || 0),
@@ -616,6 +639,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     lessonLock,
     autoOpen,
     inLessonPaywall,
+    dailyKeypointQuota,
     entryPointVariants,
     saleStrategy,
     giftCampaign,
