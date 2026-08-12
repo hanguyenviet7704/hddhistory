@@ -1322,11 +1322,23 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // completes DURING the catch-up walk gets its view landed by the walk's own
     // viewCard once it knows where — a jump from here would be the very slam the
     // suspension exists to stop.
+    // The edge-follow may carry the view UP TO the last free card, never onto
+    // the locked card itself. `furthestCardIndex` has to point at the locked
+    // card so it exists as a page — but a reader riding the live edge who
+    // advances the last free card must LAND on that card, not get thrown one
+    // further onto the wall ("lướt được card 1 2 mà đã ra card khoá rồi",
+    // 2026-08-12: the follow skipped the last free card entirely). Stepping
+    // onto the wall is the reader's own swipe, always.
+    // (A reader ALREADY standing on the wall stays there — the clamp is only for
+    // the follow that would move them onto it, not off it.)
+    final edgeFollowTarget = lockedCardShown && previousViewedIndex < lockedCardIndex
+        ? math.min(nextFurthestIndex, lockedCardIndex - 1)
+        : nextFurthestIndex;
     final restoredViewedIndex = completionJustTriggered && !_edgeFollowSuspended
         ? nextFurthestIndex
         : _entryPinActive
         ? 0
-        : (wasFollowingEdge ? nextFurthestIndex : previousViewedIndex);
+        : (wasFollowingEdge ? edgeFollowTarget : previousViewedIndex);
 
     // The paywall wall clamps the restored position too. Without this, a reader
     // who got past the wall before it existed would be handed straight back to
