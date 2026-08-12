@@ -138,23 +138,15 @@ class _LessonPageState extends State<LessonPage> {
         // Any overlay dismissed above this page (nav guide, report sheet, exit
         // flow…) makes the route observer write the UNDERLYING route's name — a
         // primary one (courseRoadmap) — which un-hides the floating nav over the
-        // lesson's CTA. As long as the lesson is still the page on screen, take
+        // lesson's CTA. As long as the lesson is still the current route, take
         // the name back (mirrors keypoint_complete_page).
-        //
-        // [canAssertOwnRouteName] and not `isCurrent` alone: quitting a GENERATED
-        // lesson leaves this page for another shell BRANCH
-        // (`LessonReaderRoute().go()` → the lesson's own roadmap under Profile),
-        // and a branch page is never popped on a branch switch — so this page
-        // stays mounted and `isCurrent` offscreen. Without the branch check it
-        // reclaimed `lesson` the moment `Profile` landed and killed the floating
-        // nav on the Profile tab.
         BlocListener<PageCubit, PageState>(
           bloc: AppDI.injector.get<PageCubit>(),
           listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.isPrimaryRoute,
           listener: (context, state) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              if (!canAssertOwnRouteName(context)) return;
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
               _ensureLessonRouteName();
             });
           },

@@ -226,10 +226,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
           listener: (context, state) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              // Not `isCurrent` alone — this page stays `isCurrent` in its own
-              // background branch after a cross-branch move ([_navigatedAway]
-              // covers the moves we make ourselves; this covers the rest).
-              if (!canAssertOwnRouteName(context)) return;
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
               _ensureKeypointCompleteRouteName();
             });
           },
