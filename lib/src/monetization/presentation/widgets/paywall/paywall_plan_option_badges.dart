@@ -1,6 +1,6 @@
 part of '../../../monetization.dart';
 
-/// 22px ring with an 11px inner dot when selected, per the paywall design.
+/// 19px ring with an 11px inner dot when selected, per the paywall design.
 class _RadioIndicator extends StatelessWidget {
   final bool selected;
 
@@ -9,8 +9,8 @@ class _RadioIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 22.w,
-      height: 22.w,
+      width: 19.w,
+      height: 19.w,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -50,6 +50,7 @@ class _DiscountPill extends StatelessWidget {
       child: AppText(
         label,
         style: AppStyle.text12.copyWith(
+          fontSize: 12.sp,
           color: AppCustomColor.paywallPromoLabel,
           fontWeight: FontWeight.w800,
           height: 1.2,
@@ -67,10 +68,10 @@ class _BestDealBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: AppCustomColor.paywallBestDeal,
-        borderRadius: BorderRadius.circular(9.r),
+        borderRadius: BorderRadius.circular(7.r),
       ),
       child: AppText(
         label,

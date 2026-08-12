@@ -110,17 +110,19 @@ class _FeedbackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 305.w,
+      width: 270.w,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppCustomColor.borderDefault),
+        // Design: a soft lift, no outline. The 1px border it used to carry
+        // fought the shadow on the tinted paywall background and made the card
+        // read as an input field.
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+            color: const Color(0xFF252525).withValues(alpha: 0.06),
+            blurRadius: 30,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -138,9 +140,10 @@ class _FeedbackCard extends StatelessWidget {
                     AppText(
                       feedback.userName,
                       maxLines: 1,
-                      style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.textTertiary,
-                        fontWeight: FontWeight.w600,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppStyle.text14.copyWith(
+                        color: const Color(0xFF1A1147),
+                        fontWeight: FontWeight.w700,
                         height: 1.4,
                       ),
                     ),
@@ -155,10 +158,11 @@ class _FeedbackCard extends StatelessWidget {
           AppText(
             feedback.title,
             maxLines: 2,
-            style: AppStyle.text14.copyWith(
-              color: AppCustomColor.textPrimary,
+            style: AppStyle.text16.copyWith(
+              fontSize: 17.sp,
+              color: const Color(0xFF1A1147),
               fontWeight: FontWeight.w700,
-              height: 1.75,
+              height: 1.35,
             ),
           ),
           8.verticalSpace,
@@ -176,9 +180,10 @@ class _FeedbackCard extends StatelessWidget {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final style = AppStyle.text12.copyWith(
-                  color: AppCustomColor.textSecondary,
-                  height: 1.75,
+                final style = AppStyle.text14.copyWith(
+                  color: const Color(0xFF6E6A85),
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
                 );
                 final lineHeight = (style.fontSize ?? 12.sp) * (style.height ?? 1);
                 final fits = lineHeight <= 0 ? 1 : (constraints.maxHeight / lineHeight).floor();
@@ -213,7 +218,7 @@ class _StarRow extends StatelessWidget {
           child: FaIcon(
             FontAwesomeIcons.solidStar,
             size: 12.w,
-            color: isFilled ? const Color(0xFF4B44CA) : AppCustomColor.feedbackStarInactive,
+            color: isFilled ? AppCustomColor.brandPrimary : AppCustomColor.feedbackStarInactive,
           ),
         );
       }),
@@ -232,7 +237,7 @@ class _ReviewerAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = 36.w;
+    final size = 38.w;
     final placeholder = Container(
       width: size,
       height: size,

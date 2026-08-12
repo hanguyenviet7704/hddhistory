@@ -103,11 +103,11 @@ class _CountdownStripState extends State<_CountdownStrip> {
     // which read as decoration rather than as a deadline.
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.only(bottom: 18.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      margin: EdgeInsets.only(bottom: 9.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: const Color(0xFFD9D5F6)),
       ),
       child: Row(

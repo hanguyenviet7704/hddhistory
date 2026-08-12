@@ -6,11 +6,16 @@ class _PurchaseButton extends StatelessWidget {
   final bool enabled;
   final VoidCallback onTap;
 
+  /// 54 on the full page, 60 on the compact sheet — the design sizes the CTA to
+  /// how much else is competing with it on the surface.
+  final double? height;
+
   const _PurchaseButton({
     required this.label,
     required this.busy,
     required this.enabled,
     required this.onTap,
+    this.height,
   });
 
   @override
@@ -19,7 +24,7 @@ class _PurchaseButton extends StatelessWidget {
       opacity: enabled ? 1 : 0.58,
       child: Container(
         width: double.infinity,
-        height: 64.h,
+        height: height ?? 54.h,
         decoration: BoxDecoration(
           // Premium design: solid #5A52F0, not the old gradient. The HTML also
           // carries `inset 0 -3px rgba(0,0,0,.12)` — Flutter's BoxShadow cannot

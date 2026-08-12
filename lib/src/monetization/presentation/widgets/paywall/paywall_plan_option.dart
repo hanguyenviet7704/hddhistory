@@ -25,13 +25,15 @@ class PaywallPlanOption extends StatelessWidget {
                   AppHaptic.select();
                   onTap!();
                 },
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(16.r),
           child: Container(
-            constraints: BoxConstraints(minHeight: 84.h),
-            padding: EdgeInsets.all(16.w),
+            // Design `6b · Premium`: a 9/16 card, not the 84-tall block this
+            // used to be. Two of these plus the offer strip have to sit between
+            // the benefits and the CTA without pushing the button off-screen.
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
             decoration: BoxDecoration(
               color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFF2F1FE),
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: selected ? const Color(0xFF4B44CA) : AppCustomColor.borderDefault,
                 width: selected ? 2 : 1,
@@ -55,16 +57,18 @@ class PaywallPlanOption extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _RadioIndicator(selected: selected),
-                      8.horizontalSpace,
+                      14.horizontalSpace,
                       Flexible(
                         child: AppText(
                           _planTitle.toUpperCase(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppStyle.text12.copyWith(
-                            color: AppCustomColor.textSecondary,
-                            fontWeight: FontWeight.w700,
-                            height: 1.75,
+                          style: AppStyle.text14.copyWith(
+                            fontSize: 15.sp,
+                            color: AppCustomColor.textBrand,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.15,
+                            height: 1.3,
                           ),
                         ),
                       ),
@@ -84,15 +88,19 @@ class PaywallPlanOption extends StatelessWidget {
                       _displayPrice,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      // One price colour for both states, per the design: the
+                      // radio and the border say which plan is picked, and
+                      // greying the other one's price made it read as
+                      // unavailable rather than unselected.
                       style: AppStyle.text20.copyWith(
-                        fontSize: 24.sp,
+                        fontSize: 19.sp,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.3,
-                        color: selected ? AppCustomColor.textBrand : AppCustomColor.textTertiary,
+                        color: AppCustomColor.textBrand,
                         height: 1.25,
                       ),
                     ),
-                    4.verticalSpace,
+                    2.verticalSpace,
                     if (_showOriginalPrice)
                       Semantics(
                         label: l10n.monetization.paywallOriginalPriceLabel(price: product.compareAtPrice),
@@ -102,14 +110,20 @@ class PaywallPlanOption extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppStyle.text12.copyWith(
-                            color: const Color(0xFF95A7C2),
+                            fontSize: 12.5.sp,
+                            color: const Color(0xFFB3AECB),
                             fontWeight: FontWeight.w700,
                             decoration: TextDecoration.lineThrough,
-                            height: 1.75,
+                            decorationColor: const Color(0xFFB3AECB),
+                            height: 1.3,
                           ),
                         ),
                       )
-                    else
+                    // The design's second line is the struck-through original
+                    // only. A per-period line is kept when it says something the
+                    // price above doesn't — the monthly plan's would repeat the
+                    // same number back at the reader.
+                    else if (_hasDistinctPeriodPrice)
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -170,6 +184,8 @@ class PaywallPlanOption extends StatelessWidget {
   String get _displayPeriodPrice => product.pricePerPeriodString.isEmpty ? _displayPrice : product.pricePerPeriodString;
 
   bool get _showDiscountPill => product.hasDiscount;
+
+  bool get _hasDistinctPeriodPrice => product.pricePerPeriodString.isNotEmpty && product.pricePerPeriodString != _displayPrice;
 
   /// The struck-through price is the live store price of the SKU configured in
   /// admin ("Giá gốc so sánh"), so it replaces the per-period line rather than

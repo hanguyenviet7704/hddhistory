@@ -1,42 +1,58 @@
 part of '../../../monetization.dart';
 
-class PaywallTopBar extends StatelessWidget {
-  final VoidCallback? onClose;
-  final bool showCloseButton;
+/// The paywall's dismiss affordance: a translucent white disc floating over the
+/// scroll at the top right, as the design draws it.
+///
+/// It used to be the right-hand cell of a three-cell header row, which pushed
+/// the `MeUp PREMIUM` lockup off the screen's centre line (it was centred in the
+/// space LEFT OVER beside the button, not on the screen). Floating it takes the
+/// button out of the flow entirely, so the lockup centres on the page.
+///
+/// The tap target is 44 while the disc is 34 — the disc is the drawing, the
+/// padding around it is what a thumb actually hits.
+class _PaywallCloseButton extends StatelessWidget {
+  final VoidCallback onTap;
 
-  const PaywallTopBar({
-    super.key,
-    this.onClose,
-    this.showCloseButton = true,
-  });
+  const _PaywallCloseButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(width: 36.w, height: 36.w),
-        const PremiumPill(),
-        showCloseButton
-            ? InkWell(
-                onTap: onClose == null
-                    ? null
-                    : () {
-                        AppHaptic.select();
-                        onClose!();
-                      },
-                child: SizedBox(
-                  width: 36.w,
-                  height: 36.w,
-                  child: Icon(
-                    Icons.close_rounded,
-                    color: AppCustomColor.textTertiary,
-                    size: 22.w,
+    return Semantics(
+      button: true,
+      label: l10n.common.close,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: SizedBox(
+          width: 44.w,
+          height: 44.w,
+          child: Center(
+            child: Container(
+              width: 34.w,
+              height: 34.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.72),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppCustomColor.textBrand.withValues(alpha: 0.12),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-              )
-            : SizedBox(width: 36.w, height: 36.w),
-      ],
+                ],
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: const Color(0xFF6B659B),
+                size: 19.w,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

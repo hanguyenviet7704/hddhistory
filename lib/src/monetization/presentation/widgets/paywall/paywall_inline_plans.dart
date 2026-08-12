@@ -18,7 +18,7 @@ class _PaywallInlinePlans extends StatelessWidget {
     return Column(
       children: [
         for (var index = 0; index < state.iapProducts.length; index++) ...[
-          if (index > 0) 12.verticalSpace,
+          if (index > 0) 8.verticalSpace,
           PaywallPlanOption(
             product: state.iapProducts[index],
             selected: state.iapProducts[index].id == state.selectedProductId,
@@ -38,9 +38,9 @@ class _InlinePlanLoading extends StatelessWidget {
     return Column(
       children: [
         for (var index = 0; index < 2; index++) ...[
-          if (index > 0) 12.verticalSpace,
+          if (index > 0) 8.verticalSpace,
           Container(
-            height: 84.h,
+            height: 62.h,
             decoration: BoxDecoration(
               color: const Color(0xFFF2F1FE),
               borderRadius: BorderRadius.circular(16.r),

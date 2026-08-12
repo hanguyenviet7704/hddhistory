@@ -75,28 +75,42 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
     final subheading = _fallbackText(content.subheading.text, l10n.monetization.paywallHeroSubtitle);
     final benefits = content.benefits.where((benefit) => benefit.title.text.isNotEmpty).toList();
 
+    // Design `6b · Premium`: the close button does NOT sit in a header row with
+    // the wordmark — it floats over the scroll, top-right, so the `MeUp PREMIUM`
+    // lockup is centred on the screen rather than on the space left beside it.
+    return Stack(
+      children: [
+        _buildScroll(heading, subheading, benefits),
+        if (widget.showCloseButton)
+          Positioned(
+            top: 4.h,
+            right: 20.w,
+            child: _PaywallCloseButton(onTap: () => unawaited(widget.onClose())),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildScroll(String heading, String subheading, List<PaywallBenefitEntity> benefits) {
     return SingleChildScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, widget.bottomPadding),
+      padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, widget.bottomPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PaywallTopBar(
-            showCloseButton: widget.showCloseButton,
-            onClose: () => unawaited(widget.onClose()),
-          ),
-          10.verticalSpace,
+          const PremiumPill(),
+          6.verticalSpace,
           // Floating hero illustration. Decorative only — excluded from semantics
           // so the reader lands straight on the heading.
           ExcludeSemantics(
             child: SvgPicture.asset(
               AppAsset.svg.app.pwHeaderGraphic,
-              width: 260.w,
+              width: 290.w,
               fit: BoxFit.contain,
             ),
           ),
-          18.verticalSpace,
+          14.verticalSpace,
           // Heading first, then the subheading beneath it. This used to be the
           // other way round, which put the smallest, faintest text at the top of
           // the screen and buried the promise under it.
@@ -105,36 +119,44 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             textAlign: TextAlign.center,
             maxLines: 4,
             style: AppStyle.textBold24.copyWith(
-              fontSize: 30.sp,
+              fontSize: 21.sp,
               color: AppCustomColor.textBrand,
-              height: 1.18,
-              letterSpacing: -0.7,
+              height: 1.2,
+              letterSpacing: -0.4,
             ),
           ),
-          6.verticalSpace,
+          2.verticalSpace,
           AppText(
             subheading,
             textAlign: TextAlign.center,
             maxLines: 3,
             style: AppStyle.text14.copyWith(
-              fontSize: 17.sp,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF8F8AB9),
               height: 1.4,
             ),
           ),
-          30.verticalSpace,
+          22.verticalSpace,
           // Benefits sit ABOVE the plans: the reader has to know what they get
-          // before a price means anything.
-          if (benefits.isEmpty)
-            ..._defaultBenefits()
-          else
-            for (var index = 0; index < benefits.length; index++)
-              Padding(
-                padding: EdgeInsets.only(top: index == 0 ? 0 : 8.h),
-                child: _PaywallBenefitRow(text: benefits[index].title.text),
-              ),
-          30.verticalSpace,
+          // before a price means anything. Indented 12 from the card edges, per
+          // the design — the check marks hang inside the text block rather than
+          // lining up with the plan cards below.
+          Padding(
+            padding: EdgeInsets.only(left: 12.w),
+            child: Column(
+              children: [
+                if (benefits.isEmpty)
+                  ..._defaultBenefits()
+                else
+                  for (var index = 0; index < benefits.length; index++)
+                    Padding(
+                      padding: EdgeInsets.only(top: index == 0 ? 0 : 4.h),
+                      child: _PaywallBenefitRow(text: benefits[index].title.text),
+                    ),
+              ],
+            ),
+          ),
+          22.verticalSpace,
           // Full-width countdown, directly above the plans it discounts. The
           // compact copy inside the purchase bar stays — that one follows the
           // button, this one gives the offer its own line. Renders nothing when
@@ -148,7 +170,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
           // The CTA lives IN the scroll flow, per the design — not in a sticky
           // bottom bar. The reader passes benefits and prices on the way to it,
           // and the trust strip follows right after as the closing argument.
-          26.verticalSpace,
+          16.verticalSpace,
           _InlinePurchaseSection(
             state: widget.state,
             onPurchase: widget.onPurchase,
@@ -160,10 +182,30 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
           // build that introduced the strip).
           if (context.read<IapCubit>().resolvedPaywallConfig.showCredibilityBlock) ...[
             const _PaywallCredibilityBlock(),
-            30.verticalSpace,
+            6.verticalSpace,
           ],
+          // "What people say about MeUp" — the carousel below is unlabelled
+          // otherwise, and the design gives the section its own heading.
+          32.verticalSpace,
+          AppText(
+            l10n.monetization.paywallReviewsHeading,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: AppStyle.text16.copyWith(
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.2,
+              color: AppCustomColor.textBrand,
+              height: 1.3,
+            ),
+          ),
+          16.verticalSpace,
           PaywallFeedbackList(onFirstScroll: _handleInfoSwipe),
           30.verticalSpace,
+          // Legal first, restore last — the design's closing order. Restore is
+          // the one ACTION of the three, so it sits nearest the thumb.
+          const PaywallLegalLinks(),
+          14.verticalSpace,
           GestureDetector(
             onTap: _isRestoring ? null : _handleRestore,
             child: Row(
@@ -173,11 +215,9 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
                   SizedBox(
                     width: 14.w,
                     height: 14.w,
-                    child: CircularProgressIndicator(
+                    child: const CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppCustomColor.textBrand.withValues(alpha: 0.45),
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppCustomColor.paywallCtaCaption),
                     ),
                   ),
                   8.horizontalSpace,
@@ -186,16 +226,14 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
                   l10n.monetization.restore,
                   textAlign: TextAlign.center,
                   style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textBrand.withValues(alpha: 0.45),
+                    color: AppCustomColor.paywallCtaCaption,
                     fontWeight: FontWeight.w500,
-                    height: 1.75,
+                    height: 1.4,
                   ),
                 ),
               ],
             ),
           ),
-          14.verticalSpace,
-          const PaywallLegalLinks(),
           50.verticalSpace,
         ],
       ),
@@ -281,7 +319,7 @@ class _PaywallCredibilityBlock extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (var i = 0; i < 5; i++)
-                Icon(Icons.star_rounded, size: 20.w, color: const Color(0xFFF9C51A)),
+                Icon(Icons.star_rounded, size: 24.w, color: const Color(0xFFF9C51A)),
             ],
           ),
         ),

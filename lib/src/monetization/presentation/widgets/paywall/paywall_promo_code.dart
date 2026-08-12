@@ -35,8 +35,7 @@ class PaywallPromoCode extends StatelessWidget {
   }
 }
 
-/// "Have a promo code?" — deliberately quieter than the plan cards (14/w600,
-/// not 15/w700): it must be findable without competing with the price choice.
+/// "Have a promo code?" — 15/w700 with the tag glyph, as the design draws it.
 class _PromoTrigger extends StatelessWidget {
   const _PromoTrigger({required this.onTap});
 
@@ -45,7 +44,7 @@ class _PromoTrigger extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 12.h),
+      padding: EdgeInsets.only(top: 10.h),
       child: Center(
         child: Semantics(
           button: true,
@@ -64,14 +63,15 @@ class _PromoTrigger extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.local_offer_outlined,
-                    size: 16.w,
+                    size: 17.w,
                     color: AppCustomColor.paywallPromoLink,
                   ),
                   8.horizontalSpace,
                   AppText(
                     l10n.monetization.promoCodeCta,
                     style: AppStyle.text14.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
                       color: AppCustomColor.paywallPromoLink,
                     ),
                   ),

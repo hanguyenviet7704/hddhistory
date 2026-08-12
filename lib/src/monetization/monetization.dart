@@ -73,7 +73,7 @@ part 'presentation/widgets/paywall/paywall_promo_code.dart';
 part 'presentation/widgets/paywall/paywall_promo_code_sheet.dart';
 part 'presentation/widgets/paywall/paywall_purchase_button.dart';
 part 'presentation/widgets/paywall/paywall_success_purchase_popup.dart';
-part 'presentation/widgets/paywall/paywall_top_bar.dart';
+part 'presentation/widgets/paywall/paywall_header.dart';
 part 'presentation/widgets/user_subcription/user_subscription_active_card.dart';
 part 'presentation/widgets/user_subcription/user_subscription_empty_state.dart';
 part 'presentation/widgets/user_subcription/user_subscription_header.dart';

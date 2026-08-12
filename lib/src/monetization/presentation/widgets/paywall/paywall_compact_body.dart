@@ -102,11 +102,11 @@ class _PaywallCompactBody extends StatelessWidget {
                 l10n.monetization.giftSheetDiscount(percent: discount),
                 textAlign: TextAlign.center,
                 style: AppStyle.textBold24.copyWith(
-                  fontSize: 56.sp,
+                  fontSize: 64.sp,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -2.6,
                   color: const Color(0xFF4B44CA),
-                  height: 1.1,
+                  height: 1.05,
                 ),
               ),
             ],
@@ -174,13 +174,31 @@ class _PaywallCompactBody extends StatelessWidget {
                     ),
                     10.horizontalSpace,
                   ],
-                  AppText(
-                    product.price,
-                    style: AppStyle.textBold24.copyWith(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: AppCustomColor.textBrand,
+                  // Price and period read as ONE lockup in the design
+                  // (`199.000đ/month`), so the suffix rides inside the same
+                  // text rather than as a sibling that can wrap away from it.
+                  Text.rich(
+                    TextSpan(
+                      text: product.price,
+                      style: AppStyle.textBold24.copyWith(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        color: AppCustomColor.textBrand,
+                        height: 1,
+                      ),
+                      children: [
+                        if (_periodSuffix(product).isNotEmpty)
+                          TextSpan(
+                            text: '/${_periodSuffix(product)}',
+                            style: AppStyle.text16.copyWith(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF8F8AB9),
+                              height: 1,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
@@ -188,6 +206,7 @@ class _PaywallCompactBody extends StatelessWidget {
             ],
             26.verticalSpace,
             _PurchaseButton(
+              height: 60.h,
               label: l10n.monetization.giftSheetCta,
               busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
               // Disabled while a load is in flight: this sheet now renders from
@@ -199,10 +218,22 @@ class _PaywallCompactBody extends StatelessWidget {
               onTap: onPurchase,
             ),
             14.verticalSpace,
-            const PaywallLegalLinks(),
+            PaywallLegalLinks(
+              compact: true,
+              onRestore: () => context.read<IapCubit>().restorePurchases(),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  /// `per month` → `month`: the store hands the period back as a phrase, the
+  /// design prints only the unit after the slash.
+  String _periodSuffix(IapProductEntity product) {
+    final label = product.periodLabel.trim();
+    if (label.isEmpty) return '';
+    if (label.toLowerCase().startsWith('per ')) return label.substring(4);
+    return label;
   }
 }
