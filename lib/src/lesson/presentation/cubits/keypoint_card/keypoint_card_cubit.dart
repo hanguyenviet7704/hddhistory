@@ -109,6 +109,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   /// ("lướt được 3 phát chạy xuống cuối", 2026-08-12).
   int? _awaitingSeekToCue;
 
+  // TEMP-TRACE(deck2): timestamped so a JUMP can be told apart from the voice
+  // genuinely reading its way there. Remove once the deck is confirmed settled.
+  static final Stopwatch _traceClock = Stopwatch()..start();
+  void _trace(String message) => LogDev.warning('[Deck2] +${_traceClock.elapsedMilliseconds}ms $message');
+
   /// Cue index the in-app recap gate last paused on — guards the pause to one
   /// firing per arrival, so the reader's own play/pause on that card is never
   /// fought over.
@@ -161,6 +166,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
   ///
   /// Cleared by [viewCard] and by [releaseEntryPin].
   bool _entryPinActive = true;
+
+  /// While set, a rebuild leaves the reader's view where it is even if they were
+  /// standing on the live edge.
+  ///
+  /// The edge-follow is how the VOICE turns the page, and it is right for one
+  /// rebuild at a time. It is wrong for a burst: [_onMergedCueChanged]'s catch-up
+  /// walk rebuilds once per document it advances, and each of those would move the
+  /// view again — a run of cards flicking past instead of one page turn.
+  bool _edgeFollowSuspended = false;
 
   /// Releases the entry pin for a deliberate forward move that does NOT go
   /// through [viewCard].
@@ -294,6 +308,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     if (index == state.viewedCardIndex && startAt == null) return;
     if (index < 0 || index >= state.cards.length) return;
+    _trace('viewCard($index) from=${state.viewedCardIndex} cards=${state.cards.length} cap=$_paywallCardCap');
     // A deliberate move off the entry card — swipe, pip tap, the voice turning
     // the page, or the return-from-background jump. From here on the deck is
     // being driven, so it may follow the live edge again (see [_entryPinActive]).
@@ -753,6 +768,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
 
     final isBackground = _isBackgrounded;
     var cardIndex = cardIndexForCue();
+    _trace('cue($cueIndex) cardForCue=$cardIndex viewed=${state.viewedCardIndex} furthest=${state.furthestCardIndex} playing=${_audioCubit.state.isPlaying}');
 
     // Cue past the built deck (true live edge). Foreground with an open gate:
     // advance for real — this is where lesson progress moves (the per-clip
@@ -763,24 +779,39 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // Backgrounded: leave the deck alone; the return path reveals to wherever
     // the voice got (didChangeAppLifecycleState → jumpToCard).
     if (cardIndex < 0 && !isBackground) {
-      var guard = 0;
-      while (cardIndex < 0 && guard++ < 50) {
-        if (isAtPaywallWall || !_theoryCubit.state.canContinue) break;
-        final before = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
-        _theoryCubit.nextDocument();
-        _rebuildCards(_lessonCubit.state);
-        final after = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
-        if (after == before) break; // refused (gate/end) — stop pushing
-        cardIndex = cardIndexForCue();
-      }
-      if (cardIndex < 0 && !isAtPaywallWall) {
-        // The gate refused (a choice still owed): the voice reads ON — audio
-        // never auto-stops mid-listen (user call, 2026-08-04) — so reveal the
-        // card it entered and follow read-only. Progress stays behind: the
-        // reveal is not progress, exactly like the background read-ahead.
-        _revealToCardTarget = (learningItemId: cue.learningItemId, documentIndex: cue.documentIndex);
-        _rebuildCards(_lessonCubit.state);
-        cardIndex = cardIndexForCue();
+      // The walk MOVES THE LIVE EDGE, and the deck follows the edge whenever the
+      // reader is standing on it ([_rebuildCards]'s `wasFollowingEdge`) — so
+      // without this pin every step of the walk drags the view one card along,
+      // and the reader watches the deck run to the end of the keypoint in a few
+      // milliseconds ("nhảy phát xuống card cuối", trace 2026-08-12: three
+      // rebuilds inside 5ms taking the view 9→10→11→12, and the walk then ended
+      // up finding no card at all). The walk exists to BUILD cards, not to
+      // relocate the reader; the single [viewCard] below is the only move it may
+      // make, and only once it knows where.
+      _edgeFollowSuspended = true;
+      try {
+        var guard = 0;
+        while (cardIndex < 0 && guard++ < 50) {
+          if (isAtPaywallWall || !_theoryCubit.state.canContinue) break;
+          final before = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
+          _theoryCubit.nextDocument();
+          _rebuildCards(_lessonCubit.state);
+          final after = (_lessonCubit.state.currentLearningItemIndex, _theoryCubit.state.currentDocumentIndex);
+          if (after == before) break; // refused (gate/end) — stop pushing
+          cardIndex = cardIndexForCue();
+        }
+        _trace('cueWalk steps=${guard - 1} cardIndex=$cardIndex');
+        if (cardIndex < 0 && !isAtPaywallWall) {
+          // The gate refused (a choice still owed): the voice reads ON — audio
+          // never auto-stops mid-listen (user call, 2026-08-04) — so reveal the
+          // card it entered and follow read-only. Progress stays behind: the
+          // reveal is not progress, exactly like the background read-ahead.
+          _revealToCardTarget = (learningItemId: cue.learningItemId, documentIndex: cue.documentIndex);
+          _rebuildCards(_lessonCubit.state);
+          cardIndex = cardIndexForCue();
+        }
+      } finally {
+        _edgeFollowSuspended = false;
       }
     }
 
@@ -1092,6 +1123,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       _lessonCubit.setCurrentLearningItem(items[itemIndex]);
       _theoryCubit.jumpToDocument(cue.documentIndex);
     }
+    _trace('followVoice cue=${_audioCubit.state.activeCueIndex} item=$itemIndex doc=${cue.documentIndex} ahead=$voiceIsAhead');
     jumpToCard(learningItemId: cue.learningItemId, documentIndex: cue.documentIndex);
     return true;
   }
@@ -1187,7 +1219,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       _revealToCardTarget = null;
     }
 
-    final wasFollowingEdge = state.viewedCardIndex == state.furthestCardIndex;
+    final wasFollowingEdge = state.viewedCardIndex == state.furthestCardIndex && !_edgeFollowSuspended;
     final previousViewedIndex = state.viewedCardIndex.clamp(0, built.cards.length - 1);
 
     // Do NOT clamp this to the pinned view. `furthestCardIndex` is what the
@@ -1233,8 +1265,14 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     final cap = _paywallCardCap;
     final nextViewedIndex = cap != null && restoredViewedIndex > cap ? cap : restoredViewedIndex;
 
-    // TEMP-DEBUG(deck): remove once the entry position and the paywall wall are
-    // both confirmed settled.
+    // TEMP-TRACE(deck2)
+    if (nextViewedIndex != previousViewedIndex || nextFurthestIndex != state.furthestCardIndex) {
+      _trace(
+        'rebuild view=$previousViewedIndex→$nextViewedIndex furthest=${state.furthestCardIndex}→$nextFurthestIndex '
+        'live=${built.liveCardIndex} reveal=${built.revealCardIndex} cards=${built.cards.length} '
+        'edge=$wasFollowingEdge pin=$_entryPinActive pendingFollow=$_pendingVoiceFollow done=$isKeypointCompleted cap=$cap',
+      );
+    }
 
     emit(
       state.copyWith(
