@@ -1,12 +1,31 @@
 part of '../../home.dart';
 
 @freezed
+abstract class HomeBannerSlideModel with _$HomeBannerSlideModel {
+  const factory HomeBannerSlideModel({
+    @Default('') String imageUrl,
+    @Default('') String linkUrl,
+  }) = _HomeBannerSlideModel;
+
+  factory HomeBannerSlideModel.fromJson(Map<String, dynamic> json) => _$HomeBannerSlideModelFromJson(json);
+}
+
+extension HomeBannerSlideModelX on HomeBannerSlideModel {
+  HomeBannerSlideEntity toEntity() => HomeBannerSlideEntity(imageUrl: imageUrl, linkUrl: linkUrl);
+}
+
+@freezed
 abstract class HomeBannerModel with _$HomeBannerModel {
   const factory HomeBannerModel({
     @Default(false) bool enabled,
     @Default('') String imageUrl,
     @Default('') String linkUrl,
     @Default(<String>[]) List<String> countries,
+    // The carousel, already filtered to this viewer's markets and in display
+    // order. Empty from an API that predates it — see
+    // [HomeBannerEntityX.effectiveSlides], which then falls back to the single
+    // banner so the rollout order is not load-bearing in either direction.
+    @Default(<HomeBannerSlideModel>[]) List<HomeBannerSlideModel> slides,
     // NULLABLE on purpose, so "the server did not send this" is distinguishable
     // from "the server said hide". An API that predates country targeting sends
     // nothing here; defaulting that to false would blank every banner in the
@@ -24,5 +43,6 @@ extension HomeBannerModelX on HomeBannerModel {
         linkUrl: linkUrl,
         countries: countries,
         visible: visible,
+        slides: slides.map((slide) => slide.toEntity()).toList(),
       );
 }

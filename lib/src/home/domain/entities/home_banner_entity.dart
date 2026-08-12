@@ -1,5 +1,18 @@
 part of '../../home.dart';
 
+/// One slide of the Home carousel, as the server decided this reader should see
+/// it. No targeting fields: the filtering already happened server-side, which is
+/// what makes the dots honest — one dot per slide the app was actually given.
+@freezed
+abstract class HomeBannerSlideEntity with _$HomeBannerSlideEntity {
+  const factory HomeBannerSlideEntity({
+    @Default('') String imageUrl,
+    @Default('') String linkUrl,
+  }) = _HomeBannerSlideEntity;
+
+  factory HomeBannerSlideEntity.fromJson(Map<String, dynamic> json) => _$HomeBannerSlideEntityFromJson(json);
+}
+
 @freezed
 abstract class HomeBannerEntity with _$HomeBannerEntity {
   const factory HomeBannerEntity({
@@ -18,6 +31,10 @@ abstract class HomeBannerEntity with _$HomeBannerEntity {
     /// Null means the API is older than country targeting and said nothing —
     /// see [isVisible], which falls back to [enabled] then.
     bool? visible,
+
+    /// The carousel for this reader, in display order. Empty from an API older
+    /// than the carousel — see [HomeBannerEntityX.effectiveSlides].
+    @Default(<HomeBannerSlideEntity>[]) List<HomeBannerSlideEntity> slides,
   }) = _HomeBannerEntity;
 
   factory HomeBannerEntity.fromJson(Map<String, dynamic> json) => _$HomeBannerEntityFromJson(json);
@@ -37,5 +54,21 @@ extension HomeBannerEntityX on HomeBannerEntity {
   ///
   /// The image check stays: a banner can be live with nothing uploaded yet, and
   /// Home collapses the section rather than render an empty card.
-  bool get isVisible => (visible ?? enabled) && imageUrl.isNotEmpty;
+  bool get isVisible => (visible ?? enabled) && effectiveSlides.isNotEmpty;
+
+  /// What the carousel actually renders.
+  ///
+  /// Falls back to the single-banner fields when [slides] is empty, so a build
+  /// of this app running against an API that predates the carousel still shows
+  /// the one banner instead of collapsing the slot. The mirror on the server
+  /// covers the opposite skew (old app, new API), and between them the rollout
+  /// order stops being load-bearing.
+  ///
+  /// Slides with no image are dropped — the server already does this, so this is
+  /// belt and braces for the legacy path.
+  List<HomeBannerSlideEntity> get effectiveSlides {
+    final resolved = slides.isNotEmpty ? slides : [HomeBannerSlideEntity(imageUrl: imageUrl, linkUrl: linkUrl)];
+
+    return resolved.where((slide) => slide.imageUrl.isNotEmpty).toList();
+  }
 }
