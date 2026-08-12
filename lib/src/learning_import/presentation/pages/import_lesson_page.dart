@@ -380,16 +380,14 @@ class _FeatureOffNote extends StatelessWidget {
 /// constraint before the work, so nobody picks a file, pastes a link and only
 /// then learns they cannot spend anything.
 /// The balance, tappable for everyone — the popup behind it differs by tier
-/// (see `_showTicketPopup`), the affordance does not. The `+` badge stays a
-/// non-subscriber mark: it is the "there is more to have" sign, and a
-/// subscriber's popup sells nothing.
+/// (see `_showTicketPopup`), the affordance does not. The `+` badge is part of
+/// that affordance and shows for BOTH tiers (design `4 · Explore` draws it on
+/// the premium frame too): it marks "this pill opens something", not "buy".
 class _CreditsPill extends StatelessWidget {
   const _CreditsPill({required this.quota, required this.onTap});
 
   final ImportQuotaEntity quota;
   final VoidCallback onTap;
-
-  bool get _canUpgrade => !quota.isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -403,7 +401,7 @@ class _CreditsPill extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          padding: EdgeInsets.fromLTRB(13.w, 6.h, _canUpgrade ? 6.w : 13.w, 6.h),
+          padding: EdgeInsets.fromLTRB(13.w, 6.h, 6.w, 6.h),
           decoration: BoxDecoration(
             color: const Color(0xFFEEEDFB),
             borderRadius: BorderRadius.circular(99.r),
@@ -425,19 +423,17 @@ class _CreditsPill extends StatelessWidget {
                   color: AppCustomColor.brandPrimary,
                 ),
               ),
-              if (_canUpgrade) ...[
-                8.horizontalSpace,
-                Container(
-                  width: 24.w,
-                  height: 24.w,
-                  decoration: const BoxDecoration(
-                    color: AppCustomColor.brandPrimary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(Icons.add_rounded, size: 14.w, color: Colors.white),
+              8.horizontalSpace,
+              Container(
+                width: 24.w,
+                height: 24.w,
+                decoration: const BoxDecoration(
+                  color: AppCustomColor.brandPrimary,
+                  shape: BoxShape.circle,
                 ),
-              ],
+                alignment: Alignment.center,
+                child: Icon(Icons.add_rounded, size: 14.w, color: Colors.white),
+              ),
             ],
           ),
         ),
