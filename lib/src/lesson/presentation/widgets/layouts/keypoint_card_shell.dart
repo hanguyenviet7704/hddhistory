@@ -395,6 +395,19 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   int? _inLessonPaywallCap() {
     if (_inLessonPaywallGateBroken) return null;
 
+    // NO paywall of any kind inside a lesson the reader made themselves. Both
+    // rules here meter the catalogue: the daily quota rations how much NEW
+    // published content a free reader gets, and the position rule counts a
+    // keypoint's place in an authored course. A lesson generated from a PDF the
+    // reader uploaded five minutes ago is neither — walling it off charges them
+    // for their own material.
+    //
+    // The fifth guard of this kind (see `keypoint_complete_page`, `lesson_cubit`,
+    // `keypoint_done_card`, `lesson_page`): a generated lesson is SHAPED like a
+    // catalogue one so the reader gets the real reading screen, which means every
+    // catalogue side effect has to be told apart deliberately.
+    if (_isImportedLesson) return null;
+
     // The free tier's daily quota (server-owned) REPLACES the position-based
     // in-lesson wall — the two ask different questions and running both leaves a
     // lock nobody can explain (see plans/260812-daily-keypoint-quota). The old
@@ -420,6 +433,15 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// must never bound this one.
   bool get _serverQuotaApplies => _accessKeypointId.isNotEmpty && _accessKeypointId == _currentKeypointId;
 
+  /// A lesson the reader generated from their own material — never metered.
+  bool get _isImportedLesson {
+    try {
+      return AppDI.injector.get<CourseLessonCubit>().state.selectedLesson.isImported;
+    } catch (_) {
+      return false;
+    }
+  }
+
   String get _currentKeypointId {
     try {
       return AppDI.injector.get<CourseLessonCubit>().state.currentKeypointId;
@@ -434,6 +456,9 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// `_serverCardCap` null and `_accessKeypointId` unset, so the old config-driven
   /// path answers instead — never a wall invented by the client.
   Future<void> _loadKeypointAccess() async {
+    // Nothing to ask: the quota meters the catalogue, and this keypoint's id is a
+    // client-side synthesis that names no catalogue keypoint at all.
+    if (_isImportedLesson) return;
     final keypointId = _currentKeypointId;
     if (keypointId.isEmpty) return;
 
