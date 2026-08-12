@@ -10,8 +10,8 @@ deleteConfirmAction: 삭제
 cancel: 취소
 readingProgress: ${percent}% 읽음
 minutesRead: ${minutes}분
-quotaRemaining: 이번 달 ${remaining}/${limit}회 남음
-quotaResets: ${date}에 초기화
+quotaRemaining: 이번 주 ${remaining}/${limit}회 남음
+quotaResets: ${date}에 다시 채워져요
 
 # Import sheet — step 1, source
 sourceStepTitle: 무엇으로 공부할까요?
@@ -54,7 +54,7 @@ errorAiFailed: 레슨을 쓰는 중 문제가 발생했습니다. 다시 시도�
 errorInterrupted: 진행이 중단되었습니다. 다시 시도해 주세요 — 횟수는 차감되지 않았습니다.
 errorGeneric: 문제가 발생했습니다. 다시 시도해 주세요.
 errorNotPremium: 내 자료로 레슨을 만드는 기능은 Premium 전용입니다.
-errorQuotaExceeded: 이번 달 레슨 생성 횟수를 모두 사용했습니다.
+errorQuotaExceeded: 이번 주 레슨 생성 횟수를 모두 사용했습니다.
 errorJobRunning: 이미 만들고 있는 레슨이 있습니다. 완료될 때까지 기다려 주세요.
 retry: 다시 시도
 
@@ -68,3 +68,60 @@ donePopupBody: "${name}을(를) 읽을 준비가 됐어요."
 donePopupRead: 지금 읽기
 donePopupLater: 나중에
 failedPopupTitle: 끝내지 못했어요
+
+# Import screen (full-page redesign)
+makeTitle: 나만의 레슨 만들기
+makeSubtitle: 좋아하는 어떤 콘텐츠로든 - 저장한 영상, 읽고 있는 책, 수업 필기.
+sourceYoutube: YouTube
+sourcePdf: PDF
+pasteLinkHint: YouTube 링크 붙여넣기
+choosePdf: PDF 고르기
+choosePdfHint: 최대 ${size} MB
+generateCta: 레슨 만들기
+howItWorks: 이렇게 만들어져요
+howStep1: YouTube 링크를 붙여넣거나 PDF를 고르세요.
+howStep2: 핵심 포인트와 짧은 연습으로 나눠 드려요.
+howStep3: "'내 코스'에서 바로 학습할 수 있어요."
+generatingTitle: 레슨을 만드는 중
+generatingPercent: ${percent}%
+minimize: 최소화
+toastTitle: 레슨을 만드는 중
+toastDone: 레슨이 준비됐어요
+toastView: 보기
+
+# Tickets — the allowance, said out loud before it is spent
+ticketNoteBalance(param=count):
+  zero: 이번 주 티켓을 다 썼어요. ${date}에 ${limit}장으로 돌아와요.
+  one: 이번 주 1장 남았어요.
+  other: 이번 주 ${count}장 남았어요.
+ticketNoteFree(param=count):
+  zero: 이번 주 티켓을 다 썼어요. Premium은 매주 ${premiumLimit}장을 드려요.
+  one: 이번 주 1장 남았어요. Premium은 매주 ${premiumLimit}장을 드려요.
+  other: 이번 주 ${count}장 남았어요. Premium은 매주 ${premiumLimit}장을 드려요.
+ticketInfoTitle(param=count):
+  zero: 남은 티켓 없음
+  one: 1장 남음
+  other: ${count}장 남음
+ticketInfoBody: 티켓 한 장으로 YouTube 링크나 PDF 하나를 레슨으로 만들어요.
+ticketInfoReset(param=count):
+  one: ${date}에 1장으로 돌아와요.
+  other: ${date}에 ${count}장으로 돌아와요.
+ticketInfoCta: 알겠어요
+noTicketTitle: 티켓을 다 썼어요
+noTicketBody: Premium은 매주 ${premiumLimit}장을 드려서 계속 나만의 레슨을 만들 수 있어요.
+noTicketCta: Premium 시작하기
+noTicketDismiss: 나중에
+
+# Explore focus guide — shown once, over the import button
+guideBody: YouTube 영상이나 PDF를 나만의 레슨으로 바꿔 보세요.
+guideHint: 아무 곳이나 탭하면 계속
+
+# Roadmap of a generated lesson
+roadmapSectionTitle: 내 콘텐츠에서
+roadmapSectionSubtitle: 가져온 내용에서 두 단계를 뽑았어요
+roadmapReadNode(param=count):
+  one: 핵심 포인트 1개
+  other: 핵심 포인트 ${count}개
+roadmapPracticeNode: 내 말로 다시 말해보기
+roadmapStartCta: 레슨 시작
+roadmapContinueCta: 이어서 하기

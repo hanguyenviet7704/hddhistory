@@ -106,6 +106,18 @@ part of '../routes.dart';
         TypedGoRoute<CourseRoute>(
           path: RoutePath.course,
           name: RouteNamed.course,
+          routes: [
+            TypedGoRoute<ImportLessonRoute>(
+              path: RoutePath.importLesson,
+              name: RouteNamed.importLesson,
+              routes: [
+                TypedGoRoute<ImportGeneratingRoute>(
+                  path: RoutePath.importGenerating,
+                  name: RouteNamed.importGenerating,
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     ),

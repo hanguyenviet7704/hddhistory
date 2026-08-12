@@ -10,8 +10,8 @@ deleteConfirmAction: Xoá
 cancel: Huỷ
 readingProgress: Đã đọc ${percent}%
 minutesRead: ${minutes} phút
-quotaRemaining: Còn ${remaining}/${limit} lượt tháng này
-quotaResets: Làm mới ngày ${date}
+quotaRemaining: Còn ${remaining}/${limit} lượt tuần này
+quotaResets: Có lại vào ${date}
 
 # Import sheet — step 1, source
 sourceStepTitle: Bạn muốn học từ đâu?
@@ -54,7 +54,7 @@ errorAiFailed: Có trục trặc khi soạn bài. Thử lại nhé.
 errorInterrupted: Quá trình bị gián đoạn. Thử lại nhé — lượt của bạn chưa bị trừ.
 errorGeneric: Có gì đó không ổn. Thử lại nhé.
 errorNotPremium: Tạo bài học từ tài liệu của bạn là tính năng Premium.
-errorQuotaExceeded: Bạn đã dùng hết lượt tạo bài trong tháng này.
+errorQuotaExceeded: Bạn đã dùng hết lượt tạo bài trong tuần này.
 errorJobRunning: Bạn đang có một bài đang được tạo. Đợi xong rồi tạo tiếp nhé.
 retry: Thử lại
 
@@ -68,3 +68,60 @@ donePopupBody: "${name} đã sẵn sàng để đọc."
 donePopupRead: Đọc ngay
 donePopupLater: Để sau
 failedPopupTitle: Chưa tạo xong được
+
+# Import screen (full-page redesign)
+makeTitle: Tự tạo bài học của bạn
+makeSubtitle: Từ bất cứ nội dung nào bạn thích - một video đã lưu, cuốn sách đang đọc, ghi chép trên lớp.
+sourceYoutube: YouTube
+sourcePdf: PDF
+pasteLinkHint: Dán link YouTube
+choosePdf: Chọn một file PDF
+choosePdfHint: Tối đa ${size} MB
+generateCta: Tạo bài học
+howItWorks: Cách hoạt động
+howStep1: Dán link YouTube hoặc chọn một file PDF.
+howStep2: Chúng tôi chia thành keypoint và bài luyện ngắn.
+howStep3: Tìm lại trong Khoá của tôi, sẵn sàng để học.
+generatingTitle: Đang tạo bài học
+generatingPercent: ${percent}%
+minimize: Thu gọn
+toastTitle: Đang tạo bài học
+toastDone: Bài học đã sẵn sàng
+toastView: Xem
+
+# Tickets — the allowance, said out loud before it is spent
+ticketNoteBalance(param=count):
+  zero: Hết lượt tuần này. Có lại ${limit} lượt vào ${date}.
+  one: Còn 1 lượt tuần này.
+  other: Còn ${count} lượt tuần này.
+ticketNoteFree(param=count):
+  zero: Hết lượt tuần này. Premium cho bạn ${premiumLimit} lượt mỗi tuần.
+  one: Còn 1 lượt tuần này. Premium cho bạn ${premiumLimit} lượt mỗi tuần.
+  other: Còn ${count} lượt tuần này. Premium cho bạn ${premiumLimit} lượt mỗi tuần.
+ticketInfoTitle(param=count):
+  zero: Đã hết lượt
+  one: Còn 1 lượt
+  other: Còn ${count} lượt
+ticketInfoBody: Mỗi lượt tạo một bài học từ link YouTube hoặc file PDF.
+ticketInfoReset(param=count):
+  one: Có lại 1 lượt vào ${date}.
+  other: Có lại ${count} lượt vào ${date}.
+ticketInfoCta: Đã hiểu
+noTicketTitle: Bạn đã hết lượt
+noTicketBody: Premium cho bạn ${premiumLimit} lượt mỗi tuần để tiếp tục tự tạo bài học.
+noTicketCta: Nâng cấp Premium
+noTicketDismiss: Để sau
+
+# Explore focus guide — shown once, over the import button
+guideBody: Biến một video YouTube hoặc file PDF thành bài học của riêng bạn.
+guideHint: Chạm vào đâu cũng được để tiếp tục
+
+# Roadmap of a generated lesson
+roadmapSectionTitle: Từ nội dung của bạn
+roadmapSectionSubtitle: Hai bước rút ra từ nội dung bạn vừa đưa vào
+roadmapReadNode(param=count):
+  one: Ý chính, gói trong 1 keypoint
+  other: Ý chính, gói trong ${count} keypoint
+roadmapPracticeNode: Nói lại bằng lời của bạn
+roadmapStartCta: Bắt đầu học
+roadmapContinueCta: Học tiếp

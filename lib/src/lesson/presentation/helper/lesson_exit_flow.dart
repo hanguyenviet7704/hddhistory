@@ -60,11 +60,19 @@ class LessonExitFlow {
     final entry = learningItem.type == LearningItemType.roleplay ? FeedbackEntry.roleplay : FeedbackEntry.keypoint;
     _markIncompleteFeedbackPrompt(context, entry);
 
-    // A lesson the user generated is on no roadmap — quitting it returns to the
-    // shelf it was opened from. Checked before the roadmap branch below, which
-    // would otherwise land them in a course they were not studying.
-    if (AppDI.injector.get<CourseLessonCubit>().state.selectedLesson.isImported) {
-      const MyLessonsRoute().go(context);
+    // A lesson the user generated has a roadmap of its own — quitting it lands
+    // there, the same way quitting a catalogue lesson lands on its course.
+    // Checked before the roadmap branch below, which reads catalogue ids and
+    // would otherwise drop them into a course they were not studying.
+    final selectedLesson =
+        AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    if (selectedLesson.isImported) {
+      final userLessonId = UserLessonCourseMapper.lessonIdOf(selectedLesson.id);
+      if (userLessonId.isEmpty) {
+        const MyLessonsRoute().go(context);
+      } else {
+        LessonReaderRoute(userLessonId).go(context);
+      }
 
       return;
     }

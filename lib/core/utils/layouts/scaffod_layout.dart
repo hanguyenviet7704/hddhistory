@@ -98,6 +98,18 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
                 ),
               ),
             ),
+            // The minimised import, above the nav bar. Shown on sub-routes too:
+            // a run the reader minimised is still running while they read
+            // something else, and going quiet about it is what the toast exists
+            // to stop.
+            BlocSelector<PageCubit, PageState, bool>(
+              selector: (state) => state.isPrimaryRoute,
+              builder: (context, isPrimary) => ImportProgressToast(
+                bottomInset: isPrimary
+                    ? floatingNavBarHeight(context) + 10.h
+                    : MediaQuery.paddingOf(context).bottom + 18.h,
+              ),
+            ),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(
               selector: (state) => state.isPrimaryRoute,

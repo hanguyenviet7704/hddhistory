@@ -65,6 +65,20 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
       );
     }
     context.read<OutputPracticeSocketCubit>().disconnect();
+
+    // A practice hung off a lesson the reader GENERATED belongs to no catalogue
+    // course, so the roadmap below is somebody else's — whichever course the
+    // roadmap cubit happens to hold. Those sessions go back to the lesson's own
+    // roadmap, which is where they were started from.
+    final userLessonId = UserLessonCourseMapper.practiceLessonIdOf(
+      widget.sectionId,
+    );
+    if (userLessonId.isNotEmpty) {
+      LessonReaderRoute(userLessonId).go(context);
+
+      return;
+    }
+
     CourseRoadmapRoute().go(context);
   }
 

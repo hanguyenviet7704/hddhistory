@@ -7,6 +7,7 @@ import 'package:meup/meup.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -45,11 +46,14 @@ part 'presentation/cubits/user_lesson_cubit.dart';
 
 //* Presentation Layer - Pages + Sheets
 part 'presentation/pages/my_lessons_page.dart';
-part 'presentation/pages/user_lesson_opener_page.dart';
-part 'presentation/sheets/import_source_sheet.dart';
+part 'presentation/pages/user_lesson_roadmap_page.dart';
+part 'presentation/pages/import_lesson_page.dart';
+part 'presentation/pages/import_generating_page.dart';
 
 //* Presentation Layer - Shell host
 part 'presentation/widgets/import_done_popup_host.dart';
+part 'presentation/widgets/import_progress_toast.dart';
+part 'presentation/widgets/import_ticket_popups.dart';
 
 //* Parts for generated files
 part 'learning_import.freezed.dart';

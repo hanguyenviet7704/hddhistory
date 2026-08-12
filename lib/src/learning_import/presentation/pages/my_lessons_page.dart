@@ -23,19 +23,14 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
 
   Future<void> _startImport() async {
     final cubit = context.read<LearningImportCubit>();
-    final isPremium =
-        AppDI.injector.get<ProfileCubit>().state.user.isPremium;
 
-    if (!isPremium) {
-      AppDI.injector
-          .get<IapCubit>()
-          .setPaywallEntryPoint(PaywallEntryPoint.learningImport);
-      const PaywallRoute().push(context);
-      return;
-    }
-
+    // No premium gate on the way IN any more. A free reader gets one ticket a
+    // week, so the paywall belongs where the ticket runs out — on the import
+    // screen itself, next to the count — not in front of the door. Sending them
+    // to the paywall from here would also be a promise the server no longer
+    // makes: it stopped refusing non-subscribers outright.
     cubit.reset();
-    await showImportSourceSheet(context);
+    await const ImportLessonRoute().push(context);
     if (mounted) context.read<UserLessonCubit>().loadLessons();
   }
 

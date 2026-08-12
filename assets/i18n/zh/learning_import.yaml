@@ -10,8 +10,8 @@ deleteConfirmAction: 删除
 cancel: 取消
 readingProgress: 已读 ${percent}%
 minutesRead: ${minutes} 分钟
-quotaRemaining: 本月还剩 ${remaining}/${limit} 次
-quotaResets: ${date} 重置
+quotaRemaining: 本周还剩 ${remaining}/${limit} 次
+quotaResets: ${date} 恢复
 
 # Import sheet — step 1, source
 sourceStepTitle: 你想从什么材料学习？
@@ -54,7 +54,7 @@ errorAiFailed: 撰写课程时出了问题，请再试一次。
 errorInterrupted: 过程被中断了，请再试一次——本次没有消耗你的次数。
 errorGeneric: 出了点问题，请再试一次。
 errorNotPremium: 用自己的材料生成课程是 Premium 功能。
-errorQuotaExceeded: 本月的课程创建次数已用完。
+errorQuotaExceeded: 本周的课程创建次数已用完。
 errorJobRunning: 已有一节课程正在生成，请等它完成。
 retry: 重试
 
@@ -68,3 +68,60 @@ donePopupBody: "${name} 可以开始阅读了。"
 donePopupRead: 立即阅读
 donePopupLater: 稍后
 failedPopupTitle: 没能完成
+
+# Import screen (full-page redesign)
+makeTitle: 制作你自己的课程
+makeSubtitle: 用任何你喜欢的内容 - 收藏的视频、正在读的书、课堂笔记。
+sourceYoutube: YouTube
+sourcePdf: PDF
+pasteLinkHint: 粘贴 YouTube 链接
+choosePdf: 选择一个 PDF
+choosePdfHint: 最大 ${size} MB
+generateCta: 生成课程
+howItWorks: 运作方式
+howStep1: 粘贴 YouTube 链接或选择一个 PDF。
+howStep2: 我们会拆成要点和简短练习。
+howStep3: 在「我的课程」里找到它，随时开始学。
+generatingTitle: 正在创建课程
+generatingPercent: ${percent}%
+minimize: 收起
+toastTitle: 正在创建课程
+toastDone: 课程已就绪
+toastView: 查看
+
+# Tickets — the allowance, said out loud before it is spent
+ticketNoteBalance(param=count):
+  zero: 本周次数已用完，${date} 恢复 ${limit} 次。
+  one: 本周还剩 1 次。
+  other: 本周还剩 ${count} 次。
+ticketNoteFree(param=count):
+  zero: 本周次数已用完。Premium 每周给你 ${premiumLimit} 次。
+  one: 本周还剩 1 次。Premium 每周给你 ${premiumLimit} 次。
+  other: 本周还剩 ${count} 次。Premium 每周给你 ${premiumLimit} 次。
+ticketInfoTitle(param=count):
+  zero: 次数已用完
+  one: 还剩 1 次
+  other: 还剩 ${count} 次
+ticketInfoBody: 每一次可以把一个 YouTube 链接或一个 PDF 变成一门课程。
+ticketInfoReset(param=count):
+  one: ${date} 恢复到 1 次。
+  other: ${date} 恢复到 ${count} 次。
+ticketInfoCta: 知道了
+noTicketTitle: 你的次数用完了
+noTicketBody: Premium 每周给你 ${premiumLimit} 次，可以继续制作自己的课程。
+noTicketCta: 升级 Premium
+noTicketDismiss: 以后再说
+
+# Explore focus guide — shown once, over the import button
+guideBody: 把一个 YouTube 视频或一个 PDF 变成你自己的课程。
+guideHint: 点击任意位置继续
+
+# Roadmap of a generated lesson
+roadmapSectionTitle: 来自你的内容
+roadmapSectionSubtitle: 我们从你导入的内容里整理出两个步骤
+roadmapReadNode(param=count):
+  one: 核心要点，共 1 个
+  other: 核心要点，共 ${count} 个
+roadmapPracticeNode: 用你自己的话说一遍
+roadmapStartCta: 开始学习
+roadmapContinueCta: 继续

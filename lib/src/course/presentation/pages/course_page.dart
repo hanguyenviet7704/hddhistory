@@ -92,6 +92,9 @@ class _CoursePageState extends State<CoursePage> {
               ],
             ),
           ),
+          // Above the tab's own content and outside the SafeArea column so the
+          // scrim covers the whole screen, status bar included.
+          const ImportFocusGuide(),
         ],
       ),
     );
@@ -262,23 +265,24 @@ class _ExploreChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  /// Widget rendered inside the 32×32 icon box. Null for "My courses".
+  /// Widget rendered inside the icon box. Null for a label-only chip.
   final Widget? icon;
 
-  static const double _iconBoxSize = 32;
-  static const double _radius = 52;
+  /// Redesign redline: 38-tall pill, 22px glyph, 13px label. The chip shrank
+  /// from 40/24/14 — a shorter bar leaves the first row of covers visible above
+  /// the fold, which is what the row of chips is meant to be navigating.
+  static const double _iconBoxSize = 22;
+  static const double _radius = 99;
 
   EdgeInsetsGeometry get _padding {
     if (icon == null) {
-      // No icon (My courses): symmetric horizontal
-      return EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h);
+      return EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h);
     }
-    // Chips with icon: pl 8, pr 12
     return EdgeInsetsDirectional.only(
       start: 8.w,
       end: 12.w,
-      top: 4.h,
-      bottom: 4.h,
+      top: 8.h,
+      bottom: 8.h,
     );
   }
 
@@ -321,7 +325,7 @@ class _ExploreChip extends StatelessWidget {
               ],
               Text(
                 label,
-                style: AppStyle.text14.copyWith(
+                style: AppStyle.text13.copyWith(
                   color: labelColor,
                   fontWeight: fontWeight,
                 ),
@@ -350,8 +354,8 @@ class _SkillsetIcon extends StatelessWidget {
     return Center(
       child: CacheNetworkGraphic(
         url: imageUrl,
-        width: 24.w,
-        height: 24.w,
+        width: 22.w,
+        height: 22.w,
         fit: BoxFit.contain,
       ),
     );

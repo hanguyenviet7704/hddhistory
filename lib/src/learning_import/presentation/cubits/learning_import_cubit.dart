@@ -109,7 +109,7 @@ class LearningImportCubit extends Cubit<LearningImportState>
           errorMessage: error,
         )),
         onSuccess: (job) {
-          emit(state.copyWith(status: LearningImportStatus.success, job: job));
+          emit(state.copyWith(status: LearningImportStatus.success, job: job, toastDismissed: false));
           _startPolling(job.id);
         },
       );
@@ -153,6 +153,10 @@ class LearningImportCubit extends Cubit<LearningImportState>
 
   /// Called when the user comes back to a job started earlier — the flow they
   /// get by leaving the waiting screen and tapping the in-progress card.
+  /// Hide the shell's progress toast for the rest of this run. Cleared when a
+  /// new run starts (see [_create]) so the next import announces itself.
+  void dismissToast() => emit(state.copyWith(toastDismissed: true));
+
   void watchJob(LearningImportJobEntity job) {
     emit(state.copyWith(job: job, status: LearningImportStatus.success));
     if (job.isRunning) _startPolling(job.id);

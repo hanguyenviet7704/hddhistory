@@ -24,6 +24,11 @@ abstract class LearningImportState with _$LearningImportState {
     /// The UI turns this into a localized sentence; see [learningImportErrorText].
     String? errorCode,
     String? errorMessage,
+
+    /// The reader closed the progress toast. Sticky for the run: a toast they
+    /// dismissed must not come back on the next percent tick, which is what a
+    /// plain "is it running" check would do.
+    @Default(false) bool toastDismissed,
   }) = _LearningImportState;
 
   factory LearningImportState.initial() => const LearningImportState();

@@ -132,6 +132,11 @@ class LessonReaderRoute extends BaseTransitionRouteData with $LessonReaderRoute 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
 
+  /// Lands on the lesson's ROADMAP, not in the deck. It used to hand straight
+  /// off to the reader, which left a generated lesson with no page of its own —
+  /// nothing to come back to, nowhere to hang practice off. The roadmap's CTA
+  /// does what this route used to do on arrival.
+  ///
   /// Only [UserLessonCubit] is needed now. The route used to also create a
   /// per-entry audio cubit for a reader this feature owned; the lesson is read
   /// by the catalogue's own screen these days, and that screen brings its own
@@ -139,6 +144,45 @@ class LessonReaderRoute extends BaseTransitionRouteData with $LessonReaderRoute 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
     value: AppDI.injector.get<UserLessonCubit>(),
-    child: UserLessonOpenerPage(lessonId: lessonId),
+    child: UserLessonRoadmapPage(lessonId: lessonId),
+  );
+}
+
+/// "Make your own lesson" — reached from the Import pill on Explore.
+///
+/// Both cubits are provided here rather than in the page: the import flow's
+/// polling outlives the screen that started it (the user is explicitly allowed
+/// to walk away mid-generation), so its cubit must not be scoped to a widget.
+class ImportLessonRoute extends BaseTransitionRouteData with $ImportLessonRoute {
+  const ImportLessonRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<LearningImportCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
+    ],
+    child: const ImportLessonPage(),
+  );
+}
+
+/// The wait. Its own route so minimising is an ordinary pop rather than a
+/// state flag the form screen has to carry.
+class ImportGeneratingRoute extends BaseTransitionRouteData with $ImportGeneratingRoute {
+  const ImportGeneratingRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<LearningImportCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
+    ],
+    child: const ImportGeneratingPage(),
   );
 }

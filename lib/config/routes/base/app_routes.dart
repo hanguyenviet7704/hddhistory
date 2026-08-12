@@ -90,6 +90,8 @@ mixin RoutePath {
   // Home or the course roadmap.
   static const String myLessons = 'my-lessons';
   static const String lessonReader = 'lesson-reader/:lessonId';
+  static const String importLesson = 'import-lesson';
+  static const String importGenerating = 'import-generating';
 
   //* Habit
   static const String habit = '/habit';
@@ -190,6 +192,8 @@ mixin RouteNamed {
   //* Setting - Learning import
   static const String myLessons = 'My Lessons';
   static const String lessonReader = 'Lesson Reader';
+  static const String importLesson = 'Import Lesson';
+  static const String importGenerating = 'Import Generating';
 
   //* Habit
   static const String habit = 'Habit';

@@ -10,8 +10,8 @@ deleteConfirmAction: 削除
 cancel: キャンセル
 readingProgress: ${percent}% 読了
 minutesRead: ${minutes} 分
-quotaRemaining: 今月は残り ${remaining}/${limit} 回
-quotaResets: ${date} にリセット
+quotaRemaining: 今週は残り ${remaining}/${limit} 回
+quotaResets: ${date} に戻ります
 
 # Import sheet — step 1, source
 sourceStepTitle: 何から学びますか？
@@ -54,7 +54,7 @@ errorAiFailed: レッスンの作成中に問題が発生しました。もう�
 errorInterrupted: 処理が中断されました。もう一度お試しください — 回数は消費されていません。
 errorGeneric: 問題が発生しました。もう一度お試しください。
 errorNotPremium: 自分の資料からレッスンを作る機能は Premium 限定です。
-errorQuotaExceeded: 今月のレッスン作成回数を使い切りました。
+errorQuotaExceeded: 今週のレッスン作成回数を使い切りました。
 errorJobRunning: 作成中のレッスンがあります。完了までお待ちください。
 retry: 再試行
 
@@ -68,3 +68,60 @@ donePopupBody: "${name} を読む準備ができました。"
 donePopupRead: 今すぐ読む
 donePopupLater: あとで
 failedPopupTitle: 完了できませんでした
+
+# Import screen (full-page redesign)
+makeTitle: 自分だけのレッスンを作る
+makeSubtitle: 好きなコンテンツから - 保存した動画、読んでいる本、授業のノート。
+sourceYoutube: YouTube
+sourcePdf: PDF
+pasteLinkHint: YouTube のリンクを貼り付け
+choosePdf: PDF を選ぶ
+choosePdfHint: 最大 ${size} MB
+generateCta: レッスンを作成
+howItWorks: 使い方
+howStep1: YouTube のリンクを貼るか、PDF を選びます。
+howStep2: キーポイントと短い練習に分けます。
+howStep3: 「マイコース」から、すぐ学べます。
+generatingTitle: レッスンを作成中
+generatingPercent: ${percent}%
+minimize: 最小化
+toastTitle: レッスンを作成中
+toastDone: レッスンができました
+toastView: 見る
+
+# Tickets — the allowance, said out loud before it is spent
+ticketNoteBalance(param=count):
+  zero: 今週のチケットはありません。${date} に ${limit} 枚に戻ります。
+  one: 今週は残り 1 枚。
+  other: 今週は残り ${count} 枚。
+ticketNoteFree(param=count):
+  zero: 今週のチケットはありません。Premium なら毎週 ${premiumLimit} 枚です。
+  one: 今週は残り 1 枚。Premium なら毎週 ${premiumLimit} 枚です。
+  other: 今週は残り ${count} 枚。Premium なら毎週 ${premiumLimit} 枚です。
+ticketInfoTitle(param=count):
+  zero: チケットがありません
+  one: 残り 1 枚
+  other: 残り ${count} 枚
+ticketInfoBody: チケット 1 枚で、YouTube のリンクか PDF から 1 つのレッスンを作れます。
+ticketInfoReset(param=count):
+  one: ${date} に 1 枚へ戻ります。
+  other: ${date} に ${count} 枚へ戻ります。
+ticketInfoCta: わかりました
+noTicketTitle: チケットを使い切りました
+noTicketBody: Premium なら毎週 ${premiumLimit} 枚。自分のレッスンを作り続けられます。
+noTicketCta: Premium にする
+noTicketDismiss: あとで
+
+# Explore focus guide — shown once, over the import button
+guideBody: YouTube の動画や PDF を、自分だけのレッスンに変えられます。
+guideHint: どこかをタップして続ける
+
+# Roadmap of a generated lesson
+roadmapSectionTitle: あなたのコンテンツから
+roadmapSectionSubtitle: 取り込んだ内容から 2 つのステップにまとめました
+roadmapReadNode(param=count):
+  one: 大事なポイント、1 つ
+  other: 大事なポイント、${count} つ
+roadmapPracticeNode: 自分の言葉で言い直す
+roadmapStartCta: レッスンを始める
+roadmapContinueCta: つづきから

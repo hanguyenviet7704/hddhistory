@@ -206,6 +206,7 @@ mixin TrackingKey {
   static const String exploreSearchClearClick = 'explore_search_clear_click';
   static const String exploreSearchResultView = 'explore_search_result_view';
   static const String exploreSearchNoresultView = 'explore_search_noresult_view';
+  static const String exploreImportClick = 'explore_import_click';
 
   //* Course events
   static const String popupLearningIntroScrView = 'popup_learning_intro_scr_view';

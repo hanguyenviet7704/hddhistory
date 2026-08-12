@@ -89,16 +89,32 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     unawaited(AppDI.injector.get<LiveActivityService>().end());
     unawaited(cancelLiveActivityReturnNudge());
 
-    // A generated lesson is on no roadmap and in no course, so the two
-    // catalogue destinations below are both wrong for it: the last keypoint
-    // ends by going back to where the lesson was opened from. Continue still
-    // walks to the next keypoint above — only the EXIT differs.
+    // A generated lesson is in no course, so the catalogue destinations below
+    // are both wrong for it: the last keypoint ends on the lesson's OWN roadmap,
+    // which is also where it was opened from. Continue still walks to the next
+    // keypoint above — only the EXIT differs.
     if (lessonState.selectedLesson.isImported) {
       _navigatedAway = true;
       if (continueToNext && _startNextKeypoint(lessonState)) return;
-      const MyLessonsRoute().go(context);
+
+      final userLessonId = UserLessonCourseMapper.lessonIdOf(
+        lessonState.selectedLesson.id,
+      );
+
+      // Falls back to the shelf when the id cannot be read back out — better a
+      // list of lessons than a roadmap route with an empty id.
+      if (userLessonId.isEmpty) {
+        const MyLessonsRoute().go(context);
+        Future.delayed(const Duration(milliseconds: 100), () {
+          AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.myLessons);
+        });
+
+        return;
+      }
+
+      LessonReaderRoute(userLessonId).go(context);
       Future.delayed(const Duration(milliseconds: 100), () {
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.myLessons);
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.lessonReader);
       });
 
       return;
