@@ -9,6 +9,10 @@ abstract class ImportQuotaModel with _$ImportQuotaModel {
     String? resetsAt,
     @Default(false) bool isPremium,
     @Default(0) int premiumLimit,
+    // Defaults to TRUE: an older server that does not send the switch has no
+    // switch, and treating silence as "off" would hide a working feature.
+    @Default(true) bool enabled,
+    @Default('') String disabledNote,
   }) = _ImportQuotaModel;
 
   factory ImportQuotaModel.fromJson(Map<String, dynamic> json) =>
@@ -26,5 +30,7 @@ extension ImportQuotaModelX on ImportQuotaModel {
     // line grammatical ("Premium gives you N every week") instead of quoting a
     // zero, and on a premium reader the two are the same number anyway.
     premiumLimit: premiumLimit > 0 ? premiumLimit : limit,
+    enabled: enabled,
+    disabledNote: disabledNote,
   );
 }

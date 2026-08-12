@@ -19,6 +19,9 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
     // Refetched on every entry rather than cached: a lesson may have finished
     // generating while the user was elsewhere in the app.
     context.read<UserLessonCubit>().loadLessons();
+    // Same read the Explore button relies on — it also carries the feature
+    // switch, which decides whether the create bar belongs on screen.
+    unawaited(context.read<LearningImportCubit>().loadQuota());
   }
 
   Future<void> _startImport() async {
@@ -112,7 +115,20 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
                   },
                 ),
               ),
-              _CreateLessonBar(label: l10n.createButton, onPressed: _startImport),
+              // The shelf still lists everything; only making a new one is
+              // closed, so the bar goes and the list stays.
+              BlocBuilder<LearningImportCubit, LearningImportState>(
+                buildWhen: (previous, current) =>
+                    previous.quota.enabled != current.quota.enabled ||
+                    previous.quota.isKnown != current.quota.isKnown,
+                builder: (context, importState) =>
+                    importState.quota.isFeatureOff
+                    ? const SizedBox.shrink()
+                    : _CreateLessonBar(
+                        label: l10n.createButton,
+                        onPressed: _startImport,
+                      ),
+              ),
             ],
           ),
         ),

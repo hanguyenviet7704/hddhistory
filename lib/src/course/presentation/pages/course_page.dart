@@ -18,6 +18,11 @@ class _CoursePageState extends State<CoursePage> {
     // install) instead of showing an empty grid until app restart. No-op
     // when data is present.
     unawaited(AppDI.injector.get<HomeCubit>().ensureHomeDataLoaded());
+    // The import button on this screen is drawn from the quota's `enabled`
+    // flag, and nothing else on Explore fetches it. One silent GET here is what
+    // lets the button disappear when the feature is switched off, instead of
+    // waiting for the reader to tap it and be refused.
+    unawaited(AppDI.injector.get<LearningImportCubit>().loadQuota());
     WidgetsBinding.instance.addPostFrameCallback((_) => _tryOpenPaywallAutoOpen());
   }
 

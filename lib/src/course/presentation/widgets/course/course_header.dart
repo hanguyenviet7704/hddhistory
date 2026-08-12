@@ -24,7 +24,18 @@ class CourseHeader extends StatelessWidget {
               // for mid-search.
               if (!state.isSearchActive) ...[
                 10.horizontalSpace,
-                const _ImportButton(),
+                // Gone entirely while the feature is switched off. A button that
+                // opens a screen whose only message is "not right now" is worse
+                // than no button: it reads as broken rather than as paused.
+                BlocBuilder<LearningImportCubit, LearningImportState>(
+                  bloc: AppDI.injector.get<LearningImportCubit>(),
+                  buildWhen: (previous, current) =>
+                      previous.quota.enabled != current.quota.enabled ||
+                      previous.quota.isKnown != current.quota.isKnown,
+                  builder: (context, importState) => importState.quota.isFeatureOff
+                      ? const SizedBox.shrink()
+                      : const _ImportButton(),
+                ),
               ],
             ],
           );

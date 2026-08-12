@@ -127,3 +127,5 @@ roadmapContinueCta: つづきから
 roadmapStepsProgress: ${completed}/${total} キーポイント
 statusNotStarted: 未開始
 statusCreating: 作成中…
+featureOffTitle: レッスン作成は一時停止中
+featureOffBody: いまはオフになっています。作ったレッスンはそのまま残っていて、新しく作ることだけができません。

@@ -127,3 +127,5 @@ roadmapContinueCta: Học tiếp
 roadmapStepsProgress: ${completed}/${total} keypoint
 statusNotStarted: Chưa bắt đầu
 statusCreating: Đang tạo…
+featureOffTitle: Tạm dừng tạo bài học
+featureOffBody: Tính năng đang tắt một lát. Bài học của bạn vẫn còn nguyên, chỉ là chưa tạo mới được thôi.

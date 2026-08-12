@@ -127,3 +127,5 @@ roadmapContinueCta: Continue
 roadmapStepsProgress: ${completed}/${total} keypoints
 statusNotStarted: Not started
 statusCreating: Creating…
+featureOffTitle: Making lessons is paused
+featureOffBody: This is switched off for a moment. Your lessons are still here — you just cannot make a new one yet.

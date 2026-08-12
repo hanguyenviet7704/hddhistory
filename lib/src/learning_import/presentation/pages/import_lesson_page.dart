@@ -87,6 +87,11 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
     final cubit = context.read<LearningImportCubit>();
     final quota = cubit.state.quota;
 
+    // Switched off. Nothing to buy and nothing to wait for, so neither ticket
+    // popup fits — the note above the form already says it, and the button
+    // simply does not fire.
+    if (quota.isFeatureOff) return;
+
     // Spending a ticket the reader does not have is a request that comes back
     // rejected — the popup says the same thing the server would, without the
     // round trip or the raw error line. Skipped when the allowance was never
@@ -170,7 +175,10 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
                           maxLines: 4,
                         ),
                         24.verticalSpace,
-                        if (state.quota.isKnown) ...[
+                        if (state.quota.isFeatureOff) ...[
+                          _FeatureOffNote(note: state.quota.disabledNote),
+                          18.verticalSpace,
+                        ] else if (state.quota.isKnown) ...[
                           _TicketNote(quota: state.quota),
                           18.verticalSpace,
                         ],
@@ -215,7 +223,9 @@ class _ImportLessonPageState extends State<ImportLessonPage> {
                         26.verticalSpace,
                         Center(
                           child: _GenerateButton(
-                            enabled: _canGenerate && !state.isBusy,
+                            enabled: _canGenerate &&
+                                !state.isBusy &&
+                                !state.quota.isFeatureOff,
                             busy: state.isBusy,
                             onTap: _generate,
                           ),
@@ -268,6 +278,69 @@ class _Header extends StatelessWidget {
           // Hidden until the allowance is actually known — a pill reading "0"
           // because the request dropped is a lie about the reader's account.
           if (quota.isKnown) _CreditsPill(quota: quota, onTap: onTicketTap),
+        ],
+      ),
+    );
+  }
+}
+
+/// Why the form will not run, in the admin's own words when there are any.
+///
+/// Amber rather than red: nothing is broken and nobody did anything wrong. The
+/// server's note wins when it exists — it is the only place that can say WHY —
+/// and the app's own line covers the case where the admin left it empty, in the
+/// reader's language rather than the admin's.
+class _FeatureOffNote extends StatelessWidget {
+  const _FeatureOffNote({required this.note});
+
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.learningImport;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E6),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFF5E2B0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.pause_circle_outline_rounded,
+            size: 20.w,
+            color: const Color(0xFFB77B08),
+          ),
+          11.horizontalSpace,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  l10n.featureOffTitle,
+                  style: AppStyle.textBold14.copyWith(
+                    fontSize: 13.5.sp,
+                    color: const Color(0xFF8A5D00),
+                  ),
+                  maxLines: 2,
+                ),
+                4.verticalSpace,
+                AppText(
+                  note.trim().isNotEmpty ? note.trim() : l10n.featureOffBody,
+                  style: AppStyle.text12.copyWith(
+                    fontSize: 13.sp,
+                    height: 1.45,
+                    color: const Color(0xFF8A5D00),
+                  ),
+                  maxLines: 4,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

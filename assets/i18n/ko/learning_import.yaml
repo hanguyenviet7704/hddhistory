@@ -127,3 +127,5 @@ roadmapContinueCta: 이어서 하기
 roadmapStepsProgress: ${completed}/${total} 포인트
 statusNotStarted: 시작 전
 statusCreating: 만드는 중…
+featureOffTitle: 레슨 만들기 잠시 중단
+featureOffBody: 지금은 꺼져 있어요. 만든 레슨은 그대로 있고, 새로 만드는 것만 잠시 안 돼요.

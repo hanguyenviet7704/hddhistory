@@ -127,3 +127,5 @@ roadmapContinueCta: 继续
 roadmapStepsProgress: ${completed}/${total} 要点
 statusNotStarted: 未开始
 statusCreating: 正在创建…
+featureOffTitle: 课程创建已暂停
+featureOffBody: 此功能暂时关闭。你的课程都还在，只是暂时无法新建。

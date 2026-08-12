@@ -23,6 +23,18 @@ abstract class ImportQuotaEntity with _$ImportQuotaEntity {
     /// line quotes. Server-sent rather than hardcoded so the copy cannot drift
     /// away from `LEARNING_IMPORT_CONFIG.quotaPerWeek`.
     @Default(0) int premiumLimit,
+
+    /// The admin's switch. False means the server refuses to START an import —
+    /// lessons already made are unaffected, which is why nothing else in the
+    /// feature reads this.
+    ///
+    /// Defaults to true so a server that predates the switch, or a quota read
+    /// that never landed, leaves the feature exactly as it was.
+    @Default(true) bool enabled,
+
+    /// Optional sentence the admin typed. Empty falls back to the app's own
+    /// localized line — a note in Vietnamese reaches a reader in Korea as noise.
+    @Default('') String disabledNote,
   }) = _ImportQuotaEntity;
 }
 
@@ -33,7 +45,12 @@ extension ImportQuotaEntityX on ImportQuotaEntity {
   /// refusing readers without a subscription and started giving them a smaller
   /// weekly allowance, so that older rule would have the app blocking an import
   /// the API was ready to run.
-  bool get canImport => remaining > 0;
+  bool get canImport => enabled && remaining > 0;
+
+  /// Off by the admin's decision rather than by anything the reader did.
+  /// Checked separately from [canImport] because the two need different
+  /// sentences: "come back Monday" is a lie when the feature is closed.
+  bool get isFeatureOff => isKnown && !enabled;
 
   /// Whether the server has actually told us the allowance yet.
   ///
