@@ -48,7 +48,8 @@ errorPdfUnreadable: この PDF を読み取れませんでした。別のファ�
 errorPdfTooLarge: 資料が大きすぎます。300 ページ以内のものをお試しください。
 errorYoutubeNoTranscript: この動画には字幕がないため読み取れません。別の動画をお試しください。
 errorYoutubeUnavailable: この動画は開けません。非公開または削除された可能性があります。
-errorYoutubeTooLong: 動画が長すぎます。30 分以内のものをお試しください。
+errorYoutubeTooLong: 動画が長すぎます。3 時間以内のものをお試しください。
+errorYoutubeTooShort: 動画が短すぎます。レッスンに十分な内容になるよう、10 分より長い動画を選んでください。
 errorContentTooShort: この資料はレッスンを作るには内容が足りません。
 errorAiTimeout: 時間がかかりすぎました。もう一度お試しください。
 errorAiFailed: レッスンの作成中に問題が発生しました。もう一度お試しください。

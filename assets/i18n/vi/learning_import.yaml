@@ -48,7 +48,8 @@ errorPdfUnreadable: Không đọc được nội dung tệp PDF này. Thử tệ
 errorPdfTooLarge: Tài liệu quá lớn. Thử tài liệu dưới 300 trang.
 errorYoutubeNoTranscript: Video này không có phụ đề nên không có gì để đọc. Thử video khác nhé.
 errorYoutubeUnavailable: Không mở được video này. Có thể video ở chế độ riêng tư hoặc đã bị xoá.
-errorYoutubeTooLong: Video quá dài. Thử video dưới 30 phút.
+errorYoutubeTooLong: Video quá dài. Thử video dưới 3 tiếng.
+errorYoutubeTooShort: Video quá ngắn. Chọn video dài hơn 10 phút để đủ nội dung cho một bài học.
 errorContentTooShort: Tài liệu này không đủ nội dung để soạn thành bài học.
 errorAiTimeout: Quá trình mất nhiều thời gian hơn dự kiến. Thử lại nhé.
 errorAiFailed: Có trục trặc khi soạn bài. Thử lại nhé.

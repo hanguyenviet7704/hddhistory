@@ -229,6 +229,8 @@ String learningImportErrorText(BuildContext context, String? code) {
       return l10n.errorYoutubeUnavailable;
     case 'YOUTUBE_TOO_LONG':
       return l10n.errorYoutubeTooLong;
+    case 'YOUTUBE_TOO_SHORT':
+      return l10n.errorYoutubeTooShort;
     case 'CONTENT_TOO_SHORT':
       return l10n.errorContentTooShort;
     case 'AI_TIMEOUT':
