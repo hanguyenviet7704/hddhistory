@@ -53,7 +53,7 @@ part 'presentation/widgets/got_ideas_banner.dart';
 part 'presentation/widgets/home_banner_card.dart';
 part 'presentation/widgets/home_promo_popup_host.dart';
 part 'presentation/widgets/home_header.dart';
-part 'presentation/widgets/home_quote_card.dart';
+part 'presentation/widgets/home_hero.dart';
 part 'presentation/widgets/home_widget_debug_payload_builder.dart';
 part 'presentation/widgets/section_header.dart';
 part 'presentation/widgets/skillset_card.dart';

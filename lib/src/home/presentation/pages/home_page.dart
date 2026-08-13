@@ -145,22 +145,25 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
           // Transparent only when a custom study background is active (so it
           // shows through); otherwise the stock flat lavender is preserved.
           backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFEFEEF9)),
-          body: SafeBody(
-            // Optional-update header is pinned ABOVE the scroll so it stays
-            // fixed while Home content scrolls under it. Shown only when a
-            // newer, non-forced version exists and the user hasn't dismissed
-            // it this session (see HomeCubit.checkOptionalUpdate).
-            child: Column(
+          // NO SafeBody here, unlike every other tab: the design runs the purple
+          // hero panel behind the status bar, so the top inset is paid inside
+          // the panel instead (see HomeHero). The update banner, when it shows,
+          // takes that inset itself and tells the panel to skip it.
+          body: BlocSelector<HomeCubit, HomeState, bool>(
+            selector: (state) => state.showUpdateBanner,
+            builder: (context, showUpdateBanner) => Column(
               children: [
-                BlocSelector<HomeCubit, HomeState, bool>(
-                  selector: (state) => state.showUpdateBanner,
-                  builder: (context, showUpdateBanner) {
-                    if (!showUpdateBanner) return const SizedBox.shrink();
-                    return UpdateHeader(
+                // Optional-update header is pinned ABOVE the scroll so it stays
+                // fixed while Home content scrolls under it. Shown only when a
+                // newer, non-forced version exists and the user hasn't dismissed
+                // it this session (see HomeCubit.checkOptionalUpdate).
+                if (showUpdateBanner)
+                  SafeArea(
+                    bottom: false,
+                    child: UpdateHeader(
                       onDismiss: () => context.read<HomeCubit>().dismissUpdateBanner(),
-                    );
-                  },
-                ),
+                    ),
+                  ),
                 Expanded(
                   child: Stack(
                     children: [
@@ -178,23 +181,15 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                           // Each section owns its own horizontal padding (20) so the
                           // "Jump back in" / "Recommended" horizontal strips can bleed
                           // to the screen edge; only vertical padding lives here.
-                          padding: EdgeInsets.only(top: 8.h),
+                          padding: EdgeInsets.zero,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // ── Greeting ──────────────────────────────────────
-                              const _HomeGreeting(),
-                              18.verticalSpace,
-
-                              // ── Motivation quote ─────────────────────────────
-                              // Sits directly under the greeting per the design:
-                              // it is the first thing read on opening the app.
-                              const HomeQuoteCard(),
-                              22.verticalSpace,
-
-                              // ── New today (one big course) ───────────────────
-                              const _NewTodaySection(),
-                              28.verticalSpace,
+                              // ── Hero: greeting + quote + today's new course ──
+                              // One purple panel with the course card lifted out
+                              // of its bottom edge (design "2 · Home").
+                              HomeHero(hasUpdateHeader: showUpdateBanner),
+                              20.verticalSpace,
 
                               // ── Admin-configured promo banner ────────────────
                               // Collapses to zero height (spacing included) when
@@ -304,79 +299,6 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
 // ───────────────────────────────────────────────────────────────────────────
 // Greeting
 // ───────────────────────────────────────────────────────────────────────────
-
-/// Header row: the greeting is the page's only title (design "2 · Home"), with
-/// the streak count and the change-background affordance trailing it.
-class _HomeGreeting extends StatelessWidget {
-  const _HomeGreeting();
-
-  /// The streak chip switches to the Profile tab (user call, 2026-08-05).
-  ///
-  /// It used to push the streak-detail popup. Profile's own streak card is now
-  /// where the week is read, so the chip hands over to that page instead of
-  /// stacking a second streak surface on top of Home. No re-entrancy guard is
-  /// needed any more either: switching a branch is idempotent, where the old
-  /// `push` would stack a duplicate route on a double tap.
-  ///
-  /// Sets the branch index AND the route name. Entering an already-built branch
-  /// through a raw `.go()` fires no didPush, so PageCubit's mirror — which the
-  /// floating nav reads to decide which tab is lit — would otherwise stay on
-  /// Home (see the comment on `PageCubit.onTapTab`).
-  void _openProfile(BuildContext context, int currentStreak) {
-    AppService.instance.appTrackingService.trackHomeStreakChipClick(currentStreak: currentStreak);
-
-    final page = context.read<PageCubit>();
-    page.setCurrentIndex(2); // Setting/Profile branch
-    ProfileRoute().go(context);
-    page.setCurrentRouteName(RouteNamed.profile);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentStreak = context.select((LearningStreakCubit cubit) => cubit.state.selectedItem.currentStreak);
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: BlocSelector<ProfileCubit, ProfileState, String>(
-        selector: (state) => state.user.name,
-        builder: (context, username) {
-          final firstName = username.trim().split(' ').first;
-          final prefix = context.l10n.home.homeGreetingPrefix;
-          final greeting = firstName.isEmpty ? '$prefix!' : '$prefix, $firstName!';
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                // One line, no secondary question beneath it: the design promotes
-                // the greeting itself to the page title.
-                child: AppText(
-                  greeting,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: AppFont.mulish,
-                    fontSize: 21.sp,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-                  ),
-                ),
-              ),
-              12.horizontalSpace,
-              StreakHomeChip(
-                currentStreak: currentStreak,
-                onTap: () => _openProfile(context, currentStreak),
-              ),
-              12.horizontalSpace,
-              // Design item 2 — "Change background" affordance in the header.
-              const ChangeBackgroundButton(source: 'home', size: 28, iconRatio: 19 / 28),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
 
 // ───────────────────────────────────────────────────────────────────────────
 // Jump back in — horizontal in-progress course cards + page dots
@@ -926,146 +848,134 @@ void _openSuggestedCourse(
 /// API/cache carry no `createdAt`; those fall back to the previous behavior,
 /// a calendar-day-seeded pick (stable within the day, no mid-scroll
 /// reshuffle), rather than a blank card.
-class _NewTodaySection extends StatelessWidget {
-  const _NewTodaySection();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
-      selector: (state) => state.suggestedCourses,
-      builder: (context, courses) {
-        if (courses.isEmpty) return const SizedBox.shrink();
-
-        SuggestedCourseEntity? newest;
-        for (final course in courses) {
-          final createdAt = course.createdAt;
-          if (createdAt == null) continue;
-          if (newest == null || createdAt.isAfter(newest.createdAt!)) {
-            newest = course;
-          }
-        }
-
-        final now = DateTime.now();
-        final dayIndex = DateTime(now.year, now.month, now.day).difference(DateTime(2020)).inDays % courses.length;
-
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: _NewTodayCard(course: newest ?? courses[dayIndex]),
-        );
-      },
-    );
-  }
-}
-
 class _NewTodayCard extends StatelessWidget {
   final SuggestedCourseEntity course;
 
   const _NewTodayCard({required this.course});
 
+  /// The card keeps the design's plain WHITE fill even over a custom study
+  /// background, where every other Home card turns translucent: it is the one
+  /// surface lifted onto the purple header, and a see-through panel there would
+  /// read as part of the header instead of as a card sitting on it.
+  static const List<BoxShadow> _shadow = [
+    BoxShadow(color: Color(0x2914103C), blurRadius: 34, offset: Offset(0, 16)),
+  ];
+
+  /// The image carries a shadow of its own (design), which is what lifts it off
+  /// the white card behind it.
+  static const List<BoxShadow> _imageShadow = [
+    BoxShadow(color: Color(0x470B082D), blurRadius: 22, offset: Offset(0, 10)),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    // The card content sits INSIDE a themed card, so its ink uses the card
-    // helpers (textPrimary / studyThemeCardMuted), not the on-background ones.
-    final metaColor = studyThemeCardMuted(context, AppCustomColor.textSecondary);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Left-aligned section heading, per the design.
-        AppText(
-          context.l10n.home.homeNewTodayLabel,
-          style: TextStyle(
-            fontFamily: AppFont.mulish,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+    return Semantics(
+      button: true,
+      label: course.title.text,
+      child: GestureDetector(
+        key: const Key('home-new-today-card'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          _openSuggestedCourse(context, course, source: 'home_new_today');
+        },
+        child: Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundWhite,
+            borderRadius: BorderRadius.circular(22.r),
+            boxShadow: _shadow,
           ),
-        ),
-        16.verticalSpace,
-        Semantics(
-          button: true,
-          label: course.title.text,
-          child: GestureDetector(
-            key: const Key('home-new-today-card'),
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _openSuggestedCourse(context, course, source: 'home_new_today'),
-            child: ThemedGlassCard(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
-              radius: 20,
-              child: Column(
-                children: [
-                  Container(
-                    width: 170.r,
-                    height: 170.r,
-                    decoration: BoxDecoration(
-                      color: AppCustomColor.brandPrimary50,
-                      borderRadius: BorderRadius.circular(18.r),
-                      border: Border.all(color: AppCustomColor.textPrimary.withValues(alpha: 0.08)),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: CacheNetworkGraphic(
-                            url: course.image,
-                            fit: BoxFit.cover,
-                            borderRadius: BorderRadius.circular(18.r),
-                          ),
-                        ),
-                        if (course.isNewNow)
-                          Positioned(
-                            top: 10.r,
-                            left: 10.r,
-                            child: Container(
-                              padding: EdgeInsets.fromLTRB(6.w, 4.h, 9.w, 4.h),
-                              decoration: BoxDecoration(
-                                color: AppCustomColor.backgroundWhite,
-                                borderRadius: BorderRadius.circular(99.r),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.auto_awesome_rounded, size: 12.r, color: const Color(0xFF2B604E)),
-                                  4.horizontalSpace,
-                                  AppText(
-                                    context.l10n.home.homeRecommendedNewCourse,
-                                    style: AppStyle.text10.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF2B604E),
-                                    ),
-                                  ),
-                                ],
-                              ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Square and full width of the card: the artwork is the reason
+              // this section is a big card and not another list row.
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE7EAF1),
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: _imageShadow,
+                ),
+                clipBehavior: Clip.antiAlias,
+                // 8:7, which is what the design MOCKUP draws — its CSS declares
+                // `aspect-ratio:1/1` but the canvas renderer ignores that and
+                // falls back to the artwork's own ratio, so a square here stood
+                // ~35pt taller than the picture and pushed "Jump back in" off
+                // the first screen ("tỷ lệ sai với thiết kế", 2026-08-13).
+                // FIXED either way: admin uploads arbitrary artwork, and letting
+                // the image decide its own height would move every section below.
+                child: AspectRatio(
+                  aspectRatio: 8 / 7,
+                  child: CacheNetworkGraphic(url: course.image, fit: BoxFit.cover),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(4.w, 12.h, 4.w, 2.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // The eyebrow says what the removed section heading
+                          // used to — from inside the card, so the card can sit
+                          // on the header with no title floating above it.
+                          AppText(
+                            context.l10n.home.homeNewTodayLabel.toUpperCase(),
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: AppFont.mulish,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.11 * 10.sp,
+                              color: AppCustomColor.brandPrimary,
                             ),
                           ),
-                      ],
+                          5.verticalSpace,
+                          AppText(
+                            course.title.text,
+                            maxLines: 3,
+                            style: TextStyle(
+                              fontFamily: AppFont.mulish,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w800,
+                              height: 1.25,
+                              color: AppCustomColor.textPrimary,
+                            ),
+                          ),
+                          4.verticalSpace,
+                          // Author + reach, both configured per course in admin.
+                          _NewTodayMetaRow(course: course, color: const Color(0xFF7C8AA4)),
+                        ],
+                      ),
                     ),
-                  ),
-                  12.verticalSpace,
-                  AppText(
-                    course.title.text,
-                    maxLines: 3,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppFont.mulish,
-                      fontSize: 19.sp,
-                      fontWeight: FontWeight.w800,
-                      height: 1.25,
-                      color: AppCustomColor.textPrimary,
+                    12.horizontalSpace,
+                    Container(
+                      width: 36.r,
+                      height: 36.r,
+                      decoration: BoxDecoration(
+                        color: AppCustomColor.brandPrimary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppCustomColor.brandPrimary.withValues(alpha: 0.35),
+                            blurRadius: 16.r,
+                            offset: Offset(0, 8.h),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(Icons.chevron_right_rounded, size: 22.r, color: AppCustomColor.textWhite),
                     ),
-                  ),
-                  6.verticalSpace,
-                  // Author + reach, both configured per course in admin. Each
-                  // half is dropped when unset rather than crediting nobody or
-                  // claiming zero reach; with neither set the row falls back to
-                  // the lesson count so the card never ends on a bare title.
-                  _NewTodayMetaRow(course: course, color: metaColor),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -1105,11 +1015,12 @@ class _NewTodayMetaRow extends StatelessWidget {
       );
     }
 
+    // Left-aligned, like the eyebrow and title it sits under (the card's text
+    // block is one left-aligned column in the design).
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (int i = 0; i < parts.length; i++) ...[
-          if (i > 0) 14.horizontalSpace,
+          if (i > 0) 12.horizontalSpace,
           parts[i],
         ],
       ],
@@ -1130,11 +1041,16 @@ class _NewTodayMetaItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14.r, color: color),
-        5.horizontalSpace,
+        Icon(icon, size: 13.r, color: color),
+        4.horizontalSpace,
         AppText(
           label,
-          style: AppStyle.text12.copyWith(fontWeight: FontWeight.w500, color: color),
+          style: TextStyle(
+            fontFamily: AppFont.mulish,
+            fontSize: 11.5.sp,
+            fontWeight: FontWeight.w500,
+            color: color,
+          ),
         ),
       ],
     );
