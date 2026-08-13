@@ -128,5 +128,8 @@ roadmapContinueCta: Học tiếp
 roadmapStepsProgress: ${completed}/${total} keypoint
 statusNotStarted: Chưa bắt đầu
 statusCreating: Đang tạo…
+nextGeneratingTitle: Phần tiếp theo đang được tạo
+nextGeneratingBody: Keypoint sau cùng lời đọc đang được hoàn thiện. Bạn sẽ quay về lộ trình — node tự mở khi sẵn sàng, thường chỉ một lát thôi.
+nextGeneratingCta: Về lộ trình
 featureOffTitle: Tạm dừng tạo bài học
 featureOffBody: Tính năng đang tắt một lát. Bài học của bạn vẫn còn nguyên, chỉ là chưa tạo mới được thôi.

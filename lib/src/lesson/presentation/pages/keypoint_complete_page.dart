@@ -97,6 +97,15 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
       _navigatedAway = true;
       if (continueToNext && _startNextKeypoint(lessonState)) return;
 
+      // Continue was tapped but the NEXT part of the plan is not ready (still
+      // being written, or still waiting on its narration). Say so — a button
+      // that silently drops the reader on the roadmap reads as broken — then
+      // exit to the roadmap below, whose "Đang tạo…" nodes unlock themselves.
+      if (continueToNext && mounted && _nextKeypointStillGenerating(lessonState)) {
+        await NextKeypointGeneratingPopup.show(context);
+        if (!mounted) return;
+      }
+
       final userLessonId = UserLessonCourseMapper.lessonIdOf(
         lessonState.selectedLesson.id,
       );
@@ -158,6 +167,27 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     Future.delayed(const Duration(milliseconds: 100), () {
       page.setCurrentRouteName(destinationRouteName);
     });
+  }
+
+  /// Whether Continue failed because the PLAN promises a next keypoint the
+  /// server has not finished (text or narration) — as opposed to the lesson
+  /// being genuinely read to the end. Decides the "đang tạo" popup.
+  bool _nextKeypointStillGenerating(CourseLessonState lessonState) {
+    final userLesson = AppDI.injector
+        .get<UserLessonCubit>()
+        .lessonForKeypoint(lessonState.resolvedCurrentKeypoint.id);
+    if (userLesson == null) return false;
+
+    final keypoints = lessonState.selectedLesson.keypoints;
+    final currentIndex = keypoints.indexWhere(
+      (keypoint) => keypoint.id == lessonState.resolvedCurrentKeypoint.id,
+    );
+    if (currentIndex < 0) return false;
+
+    final nextIndex = currentIndex + 1;
+
+    return nextIndex < userLesson.plannedKeypointCount &&
+        !userLesson.keypointReady(nextIndex);
   }
 
   /// Opens the next keypoint of THIS lesson. Returns false when the just

@@ -311,33 +311,59 @@ class _LessonCard extends StatelessWidget {
                       ),
                     ),
                     8.verticalSpace,
-                    Row(
-                      children: [
-                        Icon(
-                          done
-                              ? Icons.check_circle_rounded
-                              : (started
-                                    ? Icons.incomplete_circle_rounded
-                                    : Icons.circle_outlined),
-                          size: 16.w,
-                          color: started
-                              ? AppCustomColor.brandPrimary
-                              : AppCustomColor.textTertiary,
-                        ),
-                        7.horizontalSpace,
-                        AppText(
-                          started
-                              ? l10n.readingProgress(percent: percent)
-                              : l10n.statusNotStarted,
-                          style: AppStyle.textBold12.copyWith(
-                            fontSize: 13.sp,
-                            color: started
-                                ? AppCustomColor.brandPrimary
-                                : AppCustomColor.textTertiary,
+                    // A lesson the server is still writing announces itself as
+                    // such — a spinner where the progress icon goes. It is
+                    // already readable (the roadmap gates per keypoint), so the
+                    // card stays tappable; this line just explains why it may
+                    // look short.
+                    lesson.isContentPartial
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 14.w,
+                                height: 14.w,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.w,
+                                  color: AppCustomColor.brandPrimary,
+                                ),
+                              ),
+                              9.horizontalSpace,
+                              AppText(
+                                l10n.statusCreating,
+                                style: AppStyle.textBold12.copyWith(
+                                  fontSize: 13.sp,
+                                  color: AppCustomColor.brandPrimary,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Icon(
+                                done
+                                    ? Icons.check_circle_rounded
+                                    : (started
+                                          ? Icons.incomplete_circle_rounded
+                                          : Icons.circle_outlined),
+                                size: 16.w,
+                                color: started
+                                    ? AppCustomColor.brandPrimary
+                                    : AppCustomColor.textTertiary,
+                              ),
+                              7.horizontalSpace,
+                              AppText(
+                                started
+                                    ? l10n.readingProgress(percent: percent)
+                                    : l10n.statusNotStarted,
+                                style: AppStyle.textBold12.copyWith(
+                                  fontSize: 13.sp,
+                                  color: started
+                                      ? AppCustomColor.brandPrimary
+                                      : AppCustomColor.textTertiary,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),

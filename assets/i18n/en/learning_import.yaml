@@ -128,5 +128,8 @@ roadmapContinueCta: Continue
 roadmapStepsProgress: ${completed}/${total} keypoints
 statusNotStarted: Not started
 statusCreating: Creating…
+nextGeneratingTitle: The next part is still being made
+nextGeneratingBody: The next keypoint and its narration are being finished. You'll head back to the roadmap — the node unlocks by itself, usually in a moment.
+nextGeneratingCta: Back to roadmap
 featureOffTitle: Making lessons is paused
 featureOffBody: This is switched off for a moment. Your lessons are still here — you just cannot make a new one yet.

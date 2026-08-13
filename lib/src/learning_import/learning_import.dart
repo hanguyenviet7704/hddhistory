@@ -58,6 +58,7 @@ part 'presentation/widgets/import_done_popup_host.dart';
 part 'presentation/widgets/import_progress_toast.dart';
 part 'presentation/widgets/import_ticket_popups.dart';
 part 'presentation/widgets/mock_lesson_artwork.dart';
+part 'presentation/widgets/next_keypoint_generating_popup.dart';
 part 'presentation/widgets/user_lesson_additional_content_panel.dart';
 
 //* Parts for generated files
