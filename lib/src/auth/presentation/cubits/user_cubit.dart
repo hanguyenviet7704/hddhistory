@@ -64,6 +64,25 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     }
   }
 
+  /// Write-through from [ProfileCubit] after a successful profile update
+  /// (rename / avatar change). This cubit's copy of the identity
+  /// (`state.auth.user`) is hydrated independently of ProfileCubit's, so
+  /// without this mirror the edit survives on the Profile side but reverts
+  /// wherever the auth-side copy is read after a restart — the same staleness
+  /// class as [_persistOnboardingCompleted] above.
+  void applyProfileEdit({String? name, String? avatar}) {
+    final user = state.user;
+    if (user.id.isEmpty) return;
+    final auth = state.auth.copyWith(
+      user: user.copyWith(
+        name: name ?? user.name,
+        avatar: avatar ?? user.avatar,
+      ),
+    );
+    emit(state.copyWith(auth: auth));
+    unawaited(_persistAuthSession(auth));
+  }
+
   /// Records the order the user tapped categories (Path — Feel/Think/Work/
   /// Connect/Learn/Explore Better) during onboarding, so the Explore tab can
   /// show them in that same order instead of the backend's default sort.

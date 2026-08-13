@@ -5,6 +5,7 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   final GetUserUseCase _getUseCase;
   final UpdateUserUseCase _updateUseCase;
   final GetUserIapSubscriptionsUseCase _getUserIapSubscriptionsUseCase;
+  final UploadCubit _uploadCubit;
 
   Future<void>? _ensureInFlight;
 
@@ -12,6 +13,7 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
     this._getUseCase,
     this._updateUseCase,
     this._getUserIapSubscriptionsUseCase,
+    this._uploadCubit,
   ) : super(ProfileState.initial());
 
   /// Pinned so an obfuscated release build cannot rename the key this
@@ -103,12 +105,14 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
 
   void updateUser(UserEntity entity) async {
     if (entity.id.isEmpty) return;
-    if (entity.name == state.user.name) return;
 
-    Map<String, dynamic> params = {
-      'id': entity.id,
-      'name': entity.name,
-    };
+    // Only the fields that actually changed go in the payload — the endpoint
+    // is a partial update, and sending an unchanged name alongside a new
+    // avatar (or vice versa) buys nothing.
+    final Map<String, dynamic> params = {'id': entity.id};
+    if (entity.name != state.user.name) params['name'] = entity.name;
+    if (entity.avatar != state.user.avatar) params['avatar'] = entity.avatar;
+    if (params.length == 1) return;
 
     await runUseCase<UserEntity>(
       usecase: () => _updateUseCase(params),
@@ -118,7 +122,43 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
       },
       onSuccess: (updatedItem) {
         emit(state.copyWith(status: ProfileStatus.success));
+        // UserCubit holds an independently-hydrated copy of this identity
+        // (state.auth.user); mirror the edit or it reverts there after a
+        // restart. Same seeding relationship as [ensureProfileLoaded].
+        AppDI.injector.get<UserCubit>().applyProfileEdit(
+              name: params['name'] as String?,
+              avatar: params['avatar'] as String?,
+            );
         loadUser();
+      },
+    );
+  }
+
+  /// Change the avatar: upload the picked image, then save its URL on the
+  /// account through the ordinary [updateUser] path.
+  ///
+  /// One user action, two requests. The object key is unique per upload on
+  /// purpose: avatars render through URL-keyed image caches, so overwriting a
+  /// fixed per-user key would keep serving the stale picture everywhere the
+  /// old URL is already cached.
+  Future<void> updateAvatar(File file) async {
+    final user = state.user;
+    if (user.id.isEmpty) return;
+
+    emit(state.copyWith(status: ProfileStatus.loading));
+
+    final String name = file.path.split('/').last;
+    final String ext = name.contains('.') ? name.split('.').last : 'jpg';
+    _uploadCubit.uploadFile(
+      UploadFileParams(
+        file: MultipartFile.fromFileSync(file.path),
+        key: 'user_avatar/${user.id}-${DateTime.now().millisecondsSinceEpoch}.$ext',
+        prefix: '',
+        folder: '',
+      ),
+      onSuccess: (result) => updateUser(user.copyWith(avatar: result.url)),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProfileStatus.failure, errorMessage: error));
       },
     );
   }

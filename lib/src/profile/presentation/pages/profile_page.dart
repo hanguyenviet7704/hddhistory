@@ -279,11 +279,26 @@ class _ProfileIdentityHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppText(
-                      _resolveName(user, context),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: AppText(
+                            _resolveName(user, context),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+                          ),
+                        ),
+                        // Design `6 · Profile`: the pencil beside the name is
+                        // the sole way into the edit screen from this tab.
+                        // Guests get it too — a guest account has a real id on
+                        // the server, so rename/avatar save the same way; only
+                        // account DELETION stays login-gated (the edit screen
+                        // hides that button for guests itself).
+                        8.horizontalSpace,
+                        const _ProfileEditButton(),
+                      ],
                     ),
                     4.verticalSpace,
                     AppText(
@@ -341,17 +356,64 @@ class _ProfileIdentityHeader extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Edit-profile entry: 26px pencil disc, per design `6 · Profile`
+// ---------------------------------------------------------------------------
+
+class _ProfileEditButton extends StatelessWidget {
+  const _ProfileEditButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: context.l10n.setting.settingEditProfileButton,
+      child: GestureDetector(
+        key: const Key('profile-edit-button'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          ProfileInfoRoute().go(context);
+        },
+        child: Container(
+          width: 26.w,
+          height: 26.w,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppCustomColor.profileEditPencilBg,
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            Icons.edit_outlined,
+            size: 14.w,
+            color: AppCustomColor.brandPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Avatar: network image with ClipOval, or initial-letter fallback
 // ---------------------------------------------------------------------------
 
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar({required this.user});
+  const _ProfileAvatar({
+    required this.user,
+    this.dimension = 52,
+    this.initialFontSize = 20,
+  });
 
   final UserEntity user;
 
+  /// Logical size before scaling — the identity header uses the default;
+  /// the edit screen renders the same widget larger.
+  final double dimension;
+  final double initialFontSize;
+
   @override
   Widget build(BuildContext context) {
-    final double size = 52.w;
+    final double size = dimension.w;
 
     if (user.avatar.trim().isNotEmpty) {
       return SizedBox(
@@ -379,7 +441,7 @@ class _ProfileAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initial,
-        style: _poppins(20, FontWeight.w700, color: AppCustomColor.backgroundWhite),
+        style: _poppins(initialFontSize, FontWeight.w700, color: AppCustomColor.backgroundWhite),
       ),
     );
   }

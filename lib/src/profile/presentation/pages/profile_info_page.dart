@@ -150,6 +150,12 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                           padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 24.h),
                           physics: const BouncingScrollPhysics(),
                           children: [
+                            // Design `6 · Profile` scopes this screen as
+                            // "Edit profile (name + avatar)". The avatar saves
+                            // by itself on pick — it does not wait for the
+                            // Edit/Done cycle the name field uses.
+                            Center(child: _AvatarEditor(user: user)),
+                            SizedBox(height: 28.h),
                             isEditing
                                 ? _EditableSection(
                                     controller: _nameController,
@@ -176,6 +182,182 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                 ],
               );
             },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The avatar with a camera badge; tapping anywhere on it opens the
+/// source sheet. Reuses [_ProfileAvatar] (same library) at edit-screen size so
+/// the photo/initial fallback logic stays in one place.
+class _AvatarEditor extends StatelessWidget {
+  const _AvatarEditor({required this.user});
+
+  final UserEntity user;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: context.l10n.setting.settingProfileChangePhoto,
+      child: GestureDetector(
+        key: const Key('profile-avatar-editor'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          _AvatarSourceSheet.show(context);
+        },
+        child: SizedBox(
+          width: 96.w,
+          height: 96.w,
+          child: Stack(
+            children: [
+              _ProfileAvatar(user: user, dimension: 96, initialFontSize: 36),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 30.w,
+                  height: 30.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppCustomColor.brandPrimary,
+                    border: Border.all(
+                      color: AppCustomColor.backgroundWhite,
+                      width: 2.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.photo_camera_outlined,
+                    size: 15.w,
+                    color: AppCustomColor.backgroundWhite,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Camera-or-library chooser. Resolves [ProfileCubit] through DI rather than
+/// context.read: a modal sheet lives on the root navigator, above the route's
+/// providers (the gift-popup crash was this exact mistake).
+class _AvatarSourceSheet extends StatelessWidget {
+  const _AvatarSourceSheet();
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppCustomColor.backgroundWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (_) => const _AvatarSourceSheet(),
+    );
+  }
+
+  Future<void> _pick(BuildContext context, ImageSource source) async {
+    final XFile? picked;
+    try {
+      // Downscaled on pick, mirroring the study-theme background picker: the
+      // upload endpoint has no image-size cap of its own, and an avatar never
+      // needs more than this.
+      picked = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 88,
+      );
+    } catch (error) {
+      // Camera/photos permission refused at the OS level. The system dialog
+      // has already told the user; nothing useful to add here.
+      LogDev.warning('[AvatarEditor] pick failed: $error');
+      return;
+    }
+    if (picked == null) return;
+    unawaited(AppDI.injector.get<ProfileCubit>().updateAvatar(File(picked.path)));
+    if (context.mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.setting;
+    final double bottomPadding = MediaQuery.paddingOf(context).bottom;
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, bottomPadding > 0 ? 0 : 16.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText(
+              l10n.settingProfileChangePhoto,
+              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+            ),
+            SizedBox(height: 8.h),
+            _AvatarSourceOption(
+              key: const Key('avatar-source-camera'),
+              icon: Icons.photo_camera_outlined,
+              label: l10n.settingProfileTakePhoto,
+              onTap: () => _pick(context, ImageSource.camera),
+            ),
+            _AvatarSourceOption(
+              key: const Key('avatar-source-library'),
+              icon: Icons.photo_outlined,
+              label: l10n.settingProfileChooseFromLibrary,
+              onTap: () => _pick(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarSourceOption extends StatelessWidget {
+  const _AvatarSourceOption({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 14.h),
+          child: Row(
+            children: [
+              Icon(icon, size: 22.w, color: AppCustomColor.textSecondary),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: AppText(
+                  label,
+                  style: AppStyle.text16.copyWith(color: AppCustomColor.textPrimary),
+                ),
+              ),
+            ],
           ),
         ),
       ),
