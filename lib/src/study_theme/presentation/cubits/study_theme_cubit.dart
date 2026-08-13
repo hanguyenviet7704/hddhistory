@@ -98,17 +98,50 @@ class StudyThemeCubit extends HydratedCubit<StudyThemeState> with CubitUseCaseHa
     ));
   }
 
-  /// Copies the picked photo into app documents under a single fixed name
-  /// (overwriting any previous upload) so its path stays valid across restarts.
-  /// Returns null on any failure so the caller keeps the transient file.
+  /// Copies the picked photo into app documents under a name UNIQUE to this
+  /// upload, so its path stays valid across restarts. Returns null on any
+  /// failure so the caller keeps the transient file.
+  ///
+  /// Unique, not one fixed name — that fixed name was the whole bug. A
+  /// `FileImage`'s identity IS its path, so the second photo landing on the same
+  /// path meant `Image` compared the new provider EQUAL to the one already on
+  /// screen (so it never re-resolved) and `ImageCache` still held the first
+  /// photo's bitmap under that key. The background only changed after a
+  /// kill+relaunch, which is the one thing that empties that cache ("ảnh đầu thì
+  /// không sao ảnh thứ 2 mới bị", 2026-08-13).
   Future<File?> _persistUploadCopy(File src) async {
     try {
       final dir = await getApplicationDocumentsDirectory();
       final dotIndex = src.path.lastIndexOf('.');
       final ext = dotIndex >= 0 ? src.path.substring(dotIndex) : '.img';
-      return await src.copy('${dir.path}/study_theme_upload$ext');
+      final copy = await src.copy('${dir.path}/$_uploadCopyPrefix${DateTime.now().millisecondsSinceEpoch}$ext');
+      await _pruneUploadCopies(dir, keep: copy.path);
+      return copy;
     } catch (_) {
       return null;
+    }
+  }
+
+  static const String _uploadCopyPrefix = 'study_theme_upload';
+
+  /// Deletes every earlier upload copy — including the pre-fix fixed-name one —
+  /// so unique names cannot pile up in app documents.
+  ///
+  /// Safe to run here: the state still points at the picker's TRANSIENT file at
+  /// this moment (see [selectUploadedImage]), never at the copy being removed.
+  /// Each one is evicted from the image cache on the way out, which is what frees
+  /// the stale bitmap the old name used to strand there.
+  Future<void> _pruneUploadCopies(Directory dir, {required String keep}) async {
+    try {
+      for (final entity in dir.listSync()) {
+        if (entity is! File) continue;
+        if (entity.path == keep) continue;
+        if (!entity.uri.pathSegments.last.startsWith(_uploadCopyPrefix)) continue;
+        await FileImage(entity).evict();
+        await entity.delete();
+      }
+    } catch (_) {
+      // Best effort: a copy left behind costs disk, never correctness.
     }
   }
 
