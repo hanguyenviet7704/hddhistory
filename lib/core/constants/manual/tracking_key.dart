@@ -306,6 +306,22 @@ mixin TrackingKey {
   static const String completionStreakSuccessView = 'completion_streak_success_view';
   static const String completionStreakSuccessCommitClick = 'completion_streak_success_commit_click';
 
+  //* Sheet tab "new" (2026-08): keypoint recap/locked, complete-screen split,
+  //* practice hub + practice quiz. Names must match the sheet exactly.
+  static const String keypointRecapTap = 'keypoint_recap_tap';
+  static const String keypointLockedScrView = 'keypoint_locked_scr_view';
+  static const String keypointLockedPremiumClick = 'keypoint_locked_premium_click';
+  static const String keypointPracticeClick = 'keypoint_practice_click';
+  static const String keypointCompleteExit = 'keypoint_complete_exit';
+  static const String keypointCompleteSkip = 'keypoint_complete_skip';
+  static const String practiceHubScrView = 'practice_hub_scr_view';
+  static const String practiceModeSelect = 'practice_mode_select';
+  static const String practiceHubExit = 'practice_hub_exit';
+  static const String pracQuizScrView = 'prac_quiz_scr_view';
+  static const String pracQuizCheckClick = 'prac_quiz_check_click';
+  static const String pracQuizCompleteScrView = 'prac_quiz_complete_scr_view';
+  static const String pracQuizExit = 'prac_quiz_exit';
+
   //* Learning (roadmap/warmup/keypoint report) events
   static const String roadmapBack = 'roadmap_back';
   static const String roadmapSuggestContent = 'roadmap_suggest_content';
@@ -434,7 +450,8 @@ mixin TrackingKey {
   static const String premiumScroll = 'premium_scroll';
   static const String premiumInforSwipe = 'premium_infor_swipe';
   static const String premiumRestoreClick = 'paywall_restore_click';
-  static const String premiumPurchase = 'paywall_subscribe_click';
+  // Sheet tab "new" (2026-08): renamed from paywall_subscribe_click.
+  static const String premiumPurchase = 'paywall_upgrade_click';
   static const String premiumScrExit = 'paywall_close_click';
   static const String premiumAllpackPick = 'paywall_plan_click';
   // Spec renames (Achievement badges): value aligned to profile_badge_*.
@@ -450,6 +467,13 @@ mixin TrackingKey {
   static const String paywallExitClick = 'paywall_exit_click';
   static const String paywallStartPremiumClick = 'paywall_start_premium_click';
   static const String paywallStorePopupDismiss = 'paywall_store_popup_dismiss';
+
+  //* Sheet tab "new" (2026-08): gift popup + 33%-off compact sheet.
+  static const String paywallGiftScrView = 'paywall_gift_scr_view';
+  static const String paywallGiftOpenClick = 'paywall_gift_open_click';
+  static const String paywallOfferScrView = 'paywall_offer_scr_view';
+  static const String paywallOfferClaimClick = 'paywall_offer_claim_click';
+  static const String paywallOfferCloseClick = 'paywall_offer_close_click';
 
   //* Habit events
   static const String habitScrView = 'habit_scr_view';

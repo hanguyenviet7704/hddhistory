@@ -255,10 +255,11 @@ final class AppTrackingService extends ITrackingService {
     }
   }
 
-  /// Maps the paywall entry point to the PAYWALL spec `source` set
-  /// {profile_banner, habit_slot, roadmap, system, theme}. There is no `theme`
-  /// entry point in [PaywallEntryPoint] today, so `theme` is never emitted;
-  /// any unmapped entry falls through to `system`.
+  /// Maps the paywall entry point to the sheet's `source` set. The "new" tab
+  /// (2026-08) renamed the values this emits: `profile_banner` → `upgrade`,
+  /// `theme` → `theme_locked`, and the daily-quota locked card now has its own
+  /// `keypoint_locked` instead of riding along as `roadmap`. Entry points the
+  /// sheet doesn't enumerate keep their old values; unmapped falls to `system`.
   @visibleForTesting
   String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
     switch (entryPoint) {
@@ -267,10 +268,12 @@ final class AppTrackingService extends ITrackingService {
       case PaywallEntryPoint.habit:
         return 'habit_slot';
       case PaywallEntryPoint.theme:
-        return 'theme';
+        return 'theme_locked';
+      case PaywallEntryPoint.keypointLocked:
+        return 'keypoint_locked';
       case PaywallEntryPoint.settingPre:
       case PaywallEntryPoint.profile:
-        return 'profile_banner';
+        return 'upgrade';
       case PaywallEntryPoint.autoOpen:
         // The auto-open paywall shown to a brand-new GUEST (anonymous) user is
         // the spec's `guest` source; the same auto-open for a signed-in user is
@@ -310,7 +313,15 @@ final class AppTrackingService extends ITrackingService {
   Map<String, dynamic> _courseParamsForPaywall() {
     try {
       final iapCubit = AppDI.injector.get<IapCubit>();
-      if (iapCubit.paywallEntryPoint != PaywallEntryPoint.courseRoadmap) return {};
+      // Every course-attached entry point ships its params — the shell stores
+      // CourseTrackingData for the in-lesson and locked-card gates too, and
+      // the sheet asks for course_id/course_name on paywall_scr_view.
+      const courseAttached = {
+        PaywallEntryPoint.courseRoadmap,
+        PaywallEntryPoint.inLesson,
+        PaywallEntryPoint.keypointLocked,
+      };
+      if (!courseAttached.contains(iapCubit.paywallEntryPoint)) return {};
       final trackingData = iapCubit.paywallCourseTrackingData;
       if (trackingData == null) return {};
       final skillset = trackingData.skillset;

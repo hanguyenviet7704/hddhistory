@@ -122,6 +122,7 @@ part 'presentation/helper/no_correct_answer_document_group_resolver.dart';
 part 'presentation/helper/progress_payload_mapper.dart';
 part 'presentation/helper/question_payload_access.dart';
 part 'presentation/helper/lesson_result_overlay_helper.dart';
+part 'presentation/helper/lesson_tracking.dart';
 //* Presentation Layer - Models
 part 'presentation/models/lesson_mode.dart';
 //* Presentation Layer - Pages

@@ -23,6 +23,9 @@ class PracticeHubPage extends StatelessWidget {
     required String title,
     required List<QuestionEntity> questions,
   }) {
+    // View tracked here rather than in an initState: the page is stateless and
+    // this static is its single entry point.
+    LessonTracking.practiceHubScrView();
     return Navigator.of(context).push<void>(
       MaterialPageRoute(builder: (_) => PracticeHubPage(title: title, questions: questions)),
     );
@@ -81,6 +84,7 @@ class PracticeHubPage extends StatelessWidget {
                       ? null
                       : () {
                           AppHaptic.select();
+                          LessonTracking.practiceModeSelect(mode: 'quiz');
                           KeypointQuizPage.push(context, title: title, questions: questions);
                         },
                 ),
@@ -122,6 +126,7 @@ class PracticeHubPage extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           AppHaptic.select();
+          LessonTracking.practiceHubExit();
           Navigator.of(context).pop();
         },
         behavior: HitTestBehavior.opaque,

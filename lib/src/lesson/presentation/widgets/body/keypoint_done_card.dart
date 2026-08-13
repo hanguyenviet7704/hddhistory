@@ -78,6 +78,11 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     if (!hasRecap || _flip.isAnimating) return;
     AppHaptic.select();
     final flippingForward = !(_flip.isCompleted || _flip.value > 0.5);
+    // Forward only: opening the recap is the action the sheet counts; flipping
+    // back to the quote is not. The narration-driven auto-flip
+    // ([_maybeAutoFlip]) doesn't pass through here, so it stays untracked —
+    // this is a TAP event.
+    if (flippingForward) LessonTracking.recapTap();
     flippingForward ? _flip.forward() : _flip.reverse();
     // The open/closed face survives this State (see initState) — a reader who
     // closed it back to the quote gets the quote back too.

@@ -37,15 +37,19 @@ void main() {
   group('paywall close delay contract', () {
     test('delays close button for all paywall entries', () {
       expect(shouldDelayPaywallCloseButton(), isTrue);
-      expect(paywallCloseButtonDelay, const Duration(seconds: 5));
+      // 2s since 98d539bc (2026-07-16); this pin still said the original 5s
+      // and had been failing quietly ever since. Change the constant → change
+      // this line CONSCIOUSLY: the delay is a product decision, not a tuning.
+      expect(paywallCloseButtonDelay, const Duration(seconds: 2));
     });
   });
 
   group('resolvePremiumTrackingSource', () {
     final trackingService = AppTrackingService(NoOpTrackingService());
 
-    // Values aligned to the tracking sheet's paywall `source` vocabulary
-    // (profile_banner / habit_slot / roadmap / system / theme).
+    // Values aligned to the tracking sheet's paywall `source` vocabulary —
+    // tab "new" (2026-08) renamed profile_banner → upgrade and theme →
+    // theme_locked, and gave the quota locked card its own keypoint_locked.
     test('returns system for automatic paywall entry', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.autoOpen),
@@ -67,14 +71,25 @@ void main() {
       );
     });
 
-    test('maps profile / settingPre entries to profile_banner', () {
+    test('maps profile / settingPre entries to upgrade', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.profile),
-        'profile_banner',
+        'upgrade',
       );
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.settingPre),
-        'profile_banner',
+        'upgrade',
+      );
+    });
+
+    test('maps the theme and quota locked-card entries to their locked names', () {
+      expect(
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.theme),
+        'theme_locked',
+      );
+      expect(
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.keypointLocked),
+        'keypoint_locked',
       );
     });
 

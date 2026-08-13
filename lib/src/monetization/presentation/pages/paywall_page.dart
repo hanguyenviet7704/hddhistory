@@ -54,11 +54,35 @@ class _PaywallPageState extends State<PaywallPage> {
     setState(() => _compactCountdownEndAt = endAt);
   }
 
+  /// Whether this open renders the compact 33%-off sheet — the same condition
+  /// the builder branches on.
+  bool get _isCompactVariant {
+    final cubit = AppDI.injector.get<IapCubit>();
+    return cubit.state.resolvedPaywallStrategy?.variant == PaywallProductVariant.compact || cubit.paywallForcedCompact;
+  }
+
+  /// The plan the compact sheet actually shows — id-match-then-first, the same
+  /// resolution [_PaywallCompactBody] uses (`state.selectedProduct` answers for
+  /// the FULL list and can be empty/wrong here).
+  IapProductEntity? _compactProduct(IapState state) {
+    for (final candidate in state.iapProducts) {
+      if (candidate.id == state.selectedProductId) return candidate;
+    }
+    return state.iapProducts.firstOrNull;
+  }
+
   void _trackValidRender(IapState state) {
     if (_hasTrackedView) return;
     if (state.status != MonetizationStatus.success || state.iapProducts.isEmpty) return;
 
     _hasTrackedView = true;
+    // The sheet's "new" tab treats the compact sheet as its own screen
+    // ("33% off bottom sheet"): it reports paywall_offer_scr_view, not
+    // paywall_scr_view.
+    if (_isCompactVariant) {
+      PaywallTracking.offerScrView(productId: _compactProduct(state)?.productId ?? '');
+      return;
+    }
     AppService.instance.appTrackingService.trackPremiumScrView();
   }
 
@@ -70,7 +94,14 @@ class _PaywallPageState extends State<PaywallPage> {
   }
 
   Future<void> _handleClose() async {
-    AppService.instance.appTrackingService.trackPremiumScrExit();
+    // Same screen split as the view event: the compact sheet's X is
+    // paywall_offer_close_click ("never see again"), the full page's is
+    // paywall_close_click.
+    if (_isCompactVariant) {
+      PaywallTracking.offerCloseClick();
+    } else {
+      AppService.instance.appTrackingService.trackPremiumScrExit();
+    }
     if (!mounted) return;
     context.pop();
   }
@@ -142,11 +173,12 @@ class _PaywallPageState extends State<PaywallPage> {
                   countdownEndAt: _compactCountdownEndAt,
                   onClose: _handleClose,
                   onPurchase: () {
-                    final product = state.selectedProduct;
-                    AppService.instance.appTrackingService.trackPremiumPurchase(
-                      productId: product.productId,
-                      price: product.price,
-                    );
+                    // The sheet's CTA is paywall_offer_claim_click, and the
+                    // SKU it reports is the one the sheet resolved for itself
+                    // — `state.selectedProduct` answers for the FULL list and
+                    // could name a different plan for one frame.
+                    final product = _compactProduct(state);
+                    PaywallTracking.offerClaimClick(productId: product?.productId ?? '');
                     context.read<IapCubit>().purchaseProduct();
                   },
                 );

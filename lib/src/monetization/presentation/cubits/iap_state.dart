@@ -16,6 +16,12 @@ enum PaywallEntryPoint {
   /// Opened mid-keypoint by the `inLessonPaywall` gate, when the reader swipes
   /// off the first card.
   inLesson,
+
+  /// Opened from the daily-quota locked card's "Go Premium" CTA. Distinct from
+  /// [inLesson] because the sheet's `source` set names it (`keypoint_locked`)
+  /// — the funnel must tell "hit the free-limit wall" apart from the swipe
+  /// gate.
+  keypointLocked,
   habit,
   theme,
 

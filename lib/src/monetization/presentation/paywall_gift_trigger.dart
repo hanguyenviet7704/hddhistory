@@ -107,8 +107,15 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   }
   if (!context.mounted) return;
 
+  // The sheet's gift_trigger vocabulary — the bool is the trigger, so both
+  // gift events are reported here where it is in scope, not inside the popup
+  // (which never learns why it was shown).
+  final giftTrigger = dayZeroEvent ? 'add_first_habit' : 'app_first_open_d1_d7';
+  PaywallTracking.giftScrView(trigger: giftTrigger);
+
   final opened = await PaywallGiftPopup.show(context);
   if (!opened || !context.mounted) return;
+  PaywallTracking.giftOpenClick(trigger: giftTrigger);
 
   iapCubit.markPaywallForcedCompact();
   await const PaywallRoute().push(context);

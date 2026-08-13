@@ -47,10 +47,15 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
   int _index = 0;
   int _furthest = 0;
 
+  /// The summary card's view is reported once per quiz run, however many
+  /// times the reader swipes back and forth over it.
+  bool _completeViewTracked = false;
+
   @override
   void initState() {
     super.initState();
     _answers = widget.questions.where(QuizCardAnswer.isPlayableQuestion).map(QuizCardAnswer.new).toList();
+    LessonTracking.pracQuizScrView();
   }
 
   @override
@@ -73,10 +78,23 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
   int get _correctCount => _answers.where((answer) => answer.isCorrect).length;
 
   void _onPageChanged(int page) {
+    if (page >= _answers.length && !_completeViewTracked) {
+      _completeViewTracked = true;
+      LessonTracking.pracQuizCompleteScrView();
+    }
     setState(() {
       _index = page;
       if (page > _furthest) _furthest = page;
     });
+  }
+
+  /// The sheet's question_type vocabulary for [answer]'s question. `single`
+  /// covers every non-multi choice.
+  String _questionTypeOf(QuizCardAnswer answer) {
+    if (answer.isMultiChoice) return 'multiple';
+    if (answer.isTextGap) return 'text_gap';
+    if (answer.isArrange) return 'arrange';
+    return 'single';
   }
 
   void _check(int index) {
@@ -86,6 +104,10 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
       // Grading reveals the next card; the reader still has to swipe to it.
       _furthest = math.max(_furthest, _furthestAllowed);
     });
+    LessonTracking.pracQuizCheckClick(
+      questionType: _questionTypeOf(_answers[index]),
+      isCorrect: _answers[index].isCorrect,
+    );
     KeypointExerciseAction.trackResultViewed();
   }
 
@@ -153,6 +175,10 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
           child: GestureDetector(
             onTap: () {
               AppHaptic.select();
+              // "Thoát giữa chừng" only: the X tapped while ON the summary
+              // card is a completion, already reported by
+              // prac_quiz_complete_scr_view, not a mid-quiz abandon.
+              if (_index < _answers.length) LessonTracking.pracQuizExit();
               Navigator.of(context).pop();
             },
             behavior: HitTestBehavior.opaque,
