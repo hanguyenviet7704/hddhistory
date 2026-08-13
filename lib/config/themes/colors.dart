@@ -121,8 +121,22 @@ mixin AppCustomColor {
   // `#9AA4B2` == textMuted, heading `#0D121C` == textPrimary, arrange badges
   // `#41AE8C`/`#E34646` == successGreen/errorRed.
   static const Color kpBodyText = Color(0xFF3D3D46);
-  static const Color kpOptionBorder = Color(0xFFEEF1F6);
+  // Answer-option chrome, straight from `_Keypoint Swipe Lab` (the design file
+  // that owns BOTH practice decks and the reading deck's exercise cards). The
+  // resting border used to be #EEF1F6 — the same near-white as the card it sits
+  // on, so an untouched option read as a flat block of text rather than as
+  // something you tap.
+  static const Color kpOptionBorder = Color(0xFFD5DBE6);
+  // Body ink shared by the verdict's explanation and the arrange/gap rows.
   static const Color kpOptionText = Color(0xFF3A4250);
+  // The choice option's own label sits a shade darker than that body ink — the
+  // design separates the two, and reusing one token for both is how the
+  // explanation nearly got dragged along with this fix.
+  static const Color kpOptionLabel = Color(0xFF2B3242);
+  // Picked, before grading: a lilac wash + darker ink. The card carried the
+  // brand border alone, which at 2px is easy to miss on a small option.
+  static const Color kpOptionSelectedSurface = Color(0xFFF3F2FE);
+  static const Color kpOptionSelectedText = Color(0xFF2B2A6B);
   static const Color kpCorrectSurface = Color(0xFFEAF9F1);
   static const Color kpCorrectBorder = Color(0xFF35B37E);
   static const Color kpCorrectText = Color(0xFF1F8A5B);
@@ -133,8 +147,8 @@ mixin AppCustomColor {
   static const Color kpMissedSurface = Color(0xFFEEF1F6);
   static const Color kpMissedBorder = Color(0xFF2E3648);
   static const Color kpMissedBadge = Color(0xFF8B96AB);
-  static const Color kpDimText = Color(0xFFB4BDCB);
-  static const Color kpDimBorder = Color(0xFFF2F4F8);
+  static const Color kpDimText = Color(0xFFA6AFBE);
+  static const Color kpDimBorder = Color(0xFFE4E8EF);
   static const Color kpCheckDisabled = Color(0xFFC3C0F2);
   static const Color kpArrangeText = Color(0xFF2B3242);
   static const Color kpArrangeHandle = Color(0xFFC3C9D6);

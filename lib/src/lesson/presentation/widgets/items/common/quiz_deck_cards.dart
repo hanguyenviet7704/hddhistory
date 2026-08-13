@@ -55,9 +55,13 @@ class QuizQuestionCard extends StatelessWidget {
           AppText(
             _displayQuestionText,
             maxLines: 8,
-            style: AppStyle.text18.copyWith(
-              fontWeight: FontWeight.w700,
-              height: 1.35,
+            // Design 15.5/800 — heavier and SMALLER than the 18/700 this used to
+            // draw. A question is a lead-in, not a headline: at 18 it took two
+            // lines where the design takes one, and pushed the options down.
+            style: AppStyle.text16.copyWith(
+              fontSize: 15.5.sp,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
               color: AppCustomColor.textPrimary,
             ),
           ),
@@ -97,7 +101,8 @@ class QuizQuestionCard extends StatelessWidget {
     return Column(
       children: [
         for (var i = 0; i < options.length; i++) ...[
-          if (i > 0) 10.verticalSpace,
+          // Design gap between options.
+          if (i > 0) 8.verticalSpace,
           ChoiceAnswerCard(
             option: OptionEntity(value: options[i].value, isCorrect: options[i].isCorrect),
             isMultiChoice: answer.isMultiChoice,
@@ -205,6 +210,19 @@ class QuizQuestionCard extends StatelessWidget {
           hasChecked: true,
           isCorrect: answer.isCorrect,
           explanationText: answer.question.explanationText,
+          // Gap filling is the one type whose right answer cannot be read off
+          // the card: a wrong choice leaves the correct OPTION highlighted, but
+          // a wrong sentence just empties its slots. The design answers that with
+          // a strip above the verdict, printing the sentence with the right words
+          // in it — the lesson's own reading deck has had it all along
+          // (`drag_and_drop_lesson_body`); this deck was showing the verdict with
+          // no answer in it.
+          correctAnswer: answer.isTextGap
+              ? GapFillCorrectAnswerPanel(
+                  targetArea: answer.targetArea,
+                  correctAnswers: answer.correctGapWords,
+                )
+              : null,
         ),
         12.verticalSpace,
         Center(

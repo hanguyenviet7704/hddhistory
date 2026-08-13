@@ -25,6 +25,10 @@ class ChoiceAnswerCard extends StatelessWidget {
       AnswerState.correct => AppCustomColor.kpCorrectSurface,
       AnswerState.incorrect => AppCustomColor.kpWrongSurface,
       AnswerState.correctNotSelected => AppCustomColor.kpMissedSurface,
+      // A picked option is TINTED, not just outlined (design). The 2px brand
+      // border alone had to carry the whole "this is my answer" signal on a row
+      // barely taller than its text.
+      AnswerState.selected => AppCustomColor.kpOptionSelectedSurface,
       _ => AppCustomColor.backgroundWhite,
     };
   }
@@ -56,7 +60,8 @@ class ChoiceAnswerCard extends StatelessWidget {
   Color get textColor {
     return switch (state) {
       AnswerState.disabled => AppCustomColor.kpDimText,
-      _ => AppCustomColor.kpOptionText,
+      AnswerState.selected => AppCustomColor.kpOptionSelectedText,
+      _ => AppCustomColor.kpOptionLabel,
     };
   }
 
@@ -77,11 +82,22 @@ class ChoiceAnswerCard extends StatelessWidget {
       onTap: state == AnswerState.disabled ? null : onTap,
       child: Container(
         alignment: Alignment.centerLeft,
-        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 14.h),
+        // Design geometry: 13/10 padding in a 13 radius, with a shadow so soft it
+        // reads as lift rather than as a second border. The card was 15/14 in a 16
+        // radius, which cost a whole option's worth of height on a four-option
+        // question — the reason the Check pill could end up under the fold.
+        padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor, width: borderWidth),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(13.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF252525).withValues(alpha: 0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -90,14 +106,15 @@ class ChoiceAnswerCard extends StatelessWidget {
                 option.value.text,
                 maxLines: 10,
                 style: AppStyle.text14.copyWith(
+                  fontSize: 13.5.sp,
                   color: textColor,
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                  height: 1.35,
                 ),
               ),
             ),
             if (trailing != null) ...[
-              12.horizontalSpace,
+              10.horizontalSpace,
               trailing,
             ],
           ],

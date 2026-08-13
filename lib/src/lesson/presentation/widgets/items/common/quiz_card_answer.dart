@@ -178,6 +178,10 @@ class QuizCardAnswer {
 
   List<String> get _correctOrder => answers.map((answer) => answer.correctAnswer.text).toList();
 
+  /// The gap-fill answer key, in slot order — what the design prints back in the
+  /// "Correct answer" strip after a wrong attempt.
+  List<String> get correctGapWords => _correctOrder;
+
   ArrangeAnswerState arrangeStateFor(int index) {
     if (!hasChecked) return ArrangeAnswerState.normal;
     final correct = _correctOrder;
