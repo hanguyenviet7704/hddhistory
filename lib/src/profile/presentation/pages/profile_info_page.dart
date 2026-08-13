@@ -60,34 +60,8 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
     profileCubit.updateUser(user.copyWith(name: newName));
   }
 
-  void _handleDeleteAccount(UserEntity user) {
-    AppService.instance.appTrackingService.trackSettingProfileDeleteClick();
-    if (user.id.isEmpty) {
-      DMessage.showMessage(
-        message: context.l10n.setting.settingProfileDesstructiveButton,
-        type: MessageType.error,
-      );
-      return;
-    }
-    ProfileDeleteDialog.show(
-      context,
-      onConfirm: () async {
-        // Awaitable delete that returns the real outcome. The previous
-        // `add()` + `stream.firstWhere(success|failure)` could HANG forever
-        // (the handler early-returns without emitting when the bloc is
-        // already loading) or match an unrelated auth op. On success the bloc
-        // navigates to Register via _onResetAuth, so we must NOT pop/navigate
-        // here (the old context.back() double-navigated); the dialog's own
-        // mounted-guarded pop is a no-op once the route is replaced.
-        await context.read<AuthBloc>().deleteAccountPermanently(user.id);
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final double bottomPadding = MediaQuery.paddingOf(context).bottom;
-
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
@@ -112,22 +86,6 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                     type: MessageType.error,
                     message: state.errorMessage ?? 'Something went wrong',
                   );
-                }
-              },
-            ),
-            // Same blocking-overlay convention as above, for the delete-account
-            // request dispatched from _handleDeleteAccount — the confirm
-            // dialog already shows its own button spinner while awaiting the
-            // outcome, but EasyLoading additionally blocks stray taps on the
-            // page underneath for the whole round trip (the error toast on
-            // failure is already shown by AuthBloc._onDeletePermanentUser).
-            BlocListener<AuthBloc, AuthState>(
-              listenWhen: (previous, current) => previous.status != current.status,
-              listener: (context, state) {
-                if (state.status == AuthStatus.loading) {
-                  EasyLoading.show();
-                } else {
-                  EasyLoading.dismiss();
                 }
               },
             ),
@@ -168,17 +126,13 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                       },
                     ),
                   ),
-                  if (!isEditing)
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h + bottomPadding),
-                      child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
-                        selector: (state) => state.user,
-                        builder: (context, user) {
-                          if (user.anonymous) return const SizedBox.shrink();
-                          return ProfileDeleteButton(onTap: () => _handleDeleteAccount(user));
-                        },
-                      ),
-                    ),
+                  // No delete-account button here any more (product call,
+                  // 2026-08-13). Only the ENTRY POINT is gone: the confirm
+                  // dialog, `AuthBloc.deleteAccountPermanently` and the API
+                  // behind it are untouched, so restoring it is one widget.
+                  // Worth knowing before a store submission — App Store
+                  // guideline 5.1.1(v) requires an in-app way to delete an
+                  // account for any app that lets you create one.
                 ],
               );
             },
