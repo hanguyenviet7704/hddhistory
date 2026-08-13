@@ -19,9 +19,10 @@ UserLessonKeypointAudioEntity _audio(int index) => UserLessonKeypointAudioEntity
 
 void main() {
   group('keypointReady', () {
-    test('a written keypoint with its narration is ready', () {
+    test('while PARTIAL, a keypoint opens only once its narration lands', () {
       final lesson = UserLessonEntity(
         keypoints: [_keypoint('A'), _keypoint('B')],
+        contentStatus: UserLessonContentStatusEntity.partial,
         audioStatus: UserLessonAudioStatusEntity.ready,
         audio: UserLessonAudioEntity(keypoints: [_audio(0)]),
       );
@@ -33,13 +34,33 @@ void main() {
       expect(lesson.keypointReady(2), isFalse);
     });
 
-    test('the audio gate lifts when narration is never coming', () {
+    test(
+      'a COMPLETE lesson never gates on audio — old-pipeline holes are permanent',
+      () {
+        // The reported bug: an old lesson whose dub died after keypoint 0 wore
+        // "Đang tạo…" spinners forever on nodes nothing would ever fill.
+        final lesson = UserLessonEntity(
+          keypoints: [_keypoint('A'), _keypoint('B'), _keypoint('C')],
+          contentStatus: UserLessonContentStatusEntity.complete,
+          audioStatus: UserLessonAudioStatusEntity.ready,
+          audio: UserLessonAudioEntity(keypoints: [_audio(0)]),
+        );
+
+        expect(lesson.keypointReady(1), isTrue);
+        expect(lesson.keypointReady(2), isTrue);
+        // Unwritten stays unopenable regardless.
+        expect(lesson.keypointReady(3), isFalse);
+      },
+    );
+
+    test('while PARTIAL, the audio gate lifts when narration is never coming', () {
       for (final status in [
         UserLessonAudioStatusEntity.failed,
         UserLessonAudioStatusEntity.none,
       ]) {
         final lesson = UserLessonEntity(
           keypoints: [_keypoint('A')],
+          contentStatus: UserLessonContentStatusEntity.partial,
           audioStatus: status,
         );
 
@@ -53,9 +74,10 @@ void main() {
       }
     });
 
-    test('processing holds every undubbed keypoint back', () {
+    test('while PARTIAL, processing holds every undubbed keypoint back', () {
       final lesson = UserLessonEntity(
         keypoints: [_keypoint('A')],
+        contentStatus: UserLessonContentStatusEntity.partial,
         audioStatus: UserLessonAudioStatusEntity.processing,
       );
 
@@ -104,16 +126,20 @@ void main() {
       expect(lesson.isStillMaterializing, isTrue);
     });
 
-    test('true when complete but a keypoint still awaits narration', () {
-      final lesson = UserLessonEntity(
-        keypoints: [_keypoint('A'), _keypoint('B')],
-        contentStatus: UserLessonContentStatusEntity.complete,
-        audioStatus: UserLessonAudioStatusEntity.ready,
-        audio: UserLessonAudioEntity(keypoints: [_audio(0)]),
-      );
+    test(
+      'false when complete even with narration holes — polling a server that '
+      'will never fill them is a battery drain, not hope',
+      () {
+        final lesson = UserLessonEntity(
+          keypoints: [_keypoint('A'), _keypoint('B')],
+          contentStatus: UserLessonContentStatusEntity.complete,
+          audioStatus: UserLessonAudioStatusEntity.ready,
+          audio: UserLessonAudioEntity(keypoints: [_audio(0)]),
+        );
 
-      expect(lesson.isStillMaterializing, isTrue);
-    });
+        expect(lesson.isStillMaterializing, isFalse);
+      },
+    );
 
     test('false once everything is written and dubbed — the poll stops', () {
       final lesson = UserLessonEntity(

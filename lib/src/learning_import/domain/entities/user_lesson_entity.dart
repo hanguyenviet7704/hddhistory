@@ -272,15 +272,21 @@ extension UserLessonEntityX on UserLessonEntity {
     return '';
   }
 
-  /// Whether keypoint [index] can be OPENED: its text exists, and the narration
-  /// the pipeline is going to give it has arrived.
+  /// Whether keypoint [index] can be OPENED: its text exists, and — while the
+  /// progressive pipeline is still mid-flight — the narration it owes has
+  /// arrived.
   ///
-  /// The audio gate applies only while audio is still expected. `failed` is the
-  /// server's "no narration is ever coming" (no narrator for the locale), and
-  /// `none` is a lesson from before dubbing existed — holding either hostage to
-  /// audio that will never arrive would lock them shut forever.
+  /// The audio gate applies ONLY while [contentStatus] is partial, because that
+  /// is the only time "no audio yet" reliably means "audio is coming". A
+  /// COMPLETE lesson with holes in its narration is the OLD pipeline's damage
+  /// (dub died partway, nothing on that server will ever retry) — gating on it
+  /// dressed permanently-silent keypoints up as "Đang tạo…" forever, spinner
+  /// and all (reported 2026-08-13, pre-deploy api-dev). Those open as ordinary
+  /// silent keypoints, which the reader has always handled. Same reasoning for
+  /// `failed`/`none` within the partial window: nothing is coming, don't wait.
   bool keypointReady(int index) {
     if (index < 0 || index >= keypoints.length) return false;
+    if (!isContentPartial) return true;
 
     switch (audioStatus) {
       case UserLessonAudioStatusEntity.failed:
@@ -294,15 +300,8 @@ extension UserLessonEntityX on UserLessonEntity {
     }
   }
 
-  /// Whether the roadmap still has anything to wait for: keypoints unwritten,
-  /// or written ones whose narration has not landed. Drives the refetch loop.
-  bool get isStillMaterializing {
-    if (isContentPartial) return true;
-
-    for (var index = 0; index < keypoints.length; index++) {
-      if (!keypointReady(index)) return true;
-    }
-
-    return false;
-  }
+  /// Whether the roadmap still has anything to wait for. Drives the refetch
+  /// loop — and therefore MUST go false the moment the body is complete, or a
+  /// lesson with permanent narration holes polls the API forever.
+  bool get isStillMaterializing => isContentPartial;
 }
