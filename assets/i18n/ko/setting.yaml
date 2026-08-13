@@ -62,6 +62,9 @@ settingProfileDestructiveYesButton: 삭제하겠습니다
 settingProfileDoneEditButton: 완료
 settingProfileEmailLabel: 이메일
 settingProfileFullnameLabel: 이름
+settingProfileChangePhoto: 프로필 사진 변경
+settingProfileTakePhoto: 사진 촬영
+settingProfileChooseFromLibrary: 라이브러리에서 선택
 settingProfileLabel: 프로필
 settingRowLanguage: 언어
 settingRowNoti: 알림

@@ -138,6 +138,15 @@ class QuizCardAnswer {
 
   //* --- Text gap ---
 
+  /// The leftmost gap with nothing in it, or null when the sentence is full —
+  /// where a tapped word goes.
+  int? get firstEmptySlot {
+    for (var i = 0; i < dropZoneCount; i++) {
+      if (placedWords[i] == null) return i;
+    }
+    return null;
+  }
+
   void placeWord(int index, String word, int? fromIndex) {
     if (hasChecked) return;
     if (fromIndex != null) {

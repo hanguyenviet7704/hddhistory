@@ -62,7 +62,6 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                       ],
                       KeypointExerciseInstruction(
                         text: context.l10n.exercise.exerciseSequenceInstruction,
-                        accent: KeypointExerciseAccent.green,
                       ),
                       ReorderableListView.builder(
                         shrinkWrap: true,

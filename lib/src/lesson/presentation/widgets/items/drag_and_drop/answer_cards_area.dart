@@ -11,10 +11,19 @@ class AnswerCardsArea extends StatelessWidget {
   final List<String> availableWords;
   final Function(String word, int fromIndex) onWordReturnedFromSlot;
 
+  /// Tap a word to drop it in the next empty gap — the design's own instruction
+  /// ("Tap the words to fill the blanks"), and the interaction most readers try
+  /// first. Dragging still works; this is the shorter path to the same place,
+  /// which matters most for the readers a long press-and-drag is hardest for.
+  ///
+  /// Null disables tapping (a graded card, where the answer is fixed).
+  final ValueChanged<String>? onWordTapped;
+
   const AnswerCardsArea({
     super.key,
     required this.availableWords,
     required this.onWordReturnedFromSlot,
+    this.onWordTapped,
   });
 
   @override
@@ -58,7 +67,19 @@ class AnswerCardsArea extends StatelessWidget {
                   ),
                 ),
                 childWhenDragging: AnswerCard(word: word, isInvisible: true),
-                child: AnswerCard(word: word),
+                child: onWordTapped == null
+                    ? AnswerCard(word: word)
+                    : GestureDetector(
+                        // Opaque, not the chip's own hit box: the chip is a
+                        // bordered card with padding, and a tap landing on that
+                        // padding is still a tap on the word.
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          AppHaptic.select();
+                          onWordTapped!(word);
+                        },
+                        child: AnswerCard(word: word),
+                      ),
               );
             }).toList(),
           ),

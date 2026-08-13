@@ -60,6 +60,9 @@ settingProfileDestructiveYesButton: 削除して問題ありません
 settingProfileDoneEditButton: 完了
 settingProfileEmailLabel: メールアドレス
 settingProfileFullnameLabel: 氏名
+settingProfileChangePhoto: プロフィール写真を変更
+settingProfileTakePhoto: 写真を撮る
+settingProfileChooseFromLibrary: ライブラリから選択
 settingProfileLabel: プロフィール
 settingRowLanguage: 言語
 settingRowNoti: 通知

@@ -33,6 +33,15 @@ extension DragAndDropStateExtension on DragAndDropState {
   }
 
   /// Get the number of drop zones based on answer count
+  /// The leftmost gap with nothing in it, or null when the sentence is full —
+  /// where a TAPPED word goes (dragging names its own gap).
+  int? get firstEmptySlot {
+    for (var i = 0; i < dropZoneCount; i++) {
+      if (placedWords[i] == null) return i;
+    }
+    return null;
+  }
+
   int get dropZoneCount {
     final answerCount = runtimeAnswers.length;
     if (answerCount == 0) return 0;

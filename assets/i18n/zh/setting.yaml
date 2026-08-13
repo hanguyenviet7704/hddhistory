@@ -60,6 +60,9 @@ settingProfileDestructiveYesButton: 我确定要删除
 settingProfileDoneEditButton: 完成
 settingProfileEmailLabel: 邮箱
 settingProfileFullnameLabel: 姓名
+settingProfileChangePhoto: 更换头像
+settingProfileTakePhoto: 拍照
+settingProfileChooseFromLibrary: 从相册选择
 settingProfileLabel: 个人资料
 settingRowLanguage: 语言
 settingRowNoti: 通知

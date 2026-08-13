@@ -91,6 +91,8 @@ mixin AppCustomColor {
   static const Color streakActive = Color(0xFF4B44CA);
   static const Color streakTextMuted = Color(0xFF5F6F86);
   static const Color roleplayIntroDotInactive = Color(0xFFF2F1FE);
+  // Design `6 · Profile`: the pencil disc beside the name on the identity header.
+  static const Color profileEditPencilBg = Color(0xFFE8E7FA);
   static const Color feedbackGradientMid = Color(0xFF7667F3);
   static const Color feedbackGradientEnd = Color(0xFF5E5ACB);
   static const Color feedbackStarActive = Color(0xFFF7C52B);

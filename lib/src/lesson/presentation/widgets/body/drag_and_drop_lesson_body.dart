@@ -74,17 +74,29 @@ class DragAndDropLessonBody extends LessonBodyWidget {
                           context.read<DragAndDropCubit>().removeWord(index);
                         },
                         getSlotState: (index) => state.getSlotState(index),
+                        onSlotTapped: state.hasChecked
+                            ? null
+                            : (index) => context.read<DragAndDropCubit>().removeWord(index),
                       ),
                       18.verticalSpace,
                       KeypointExerciseInstruction(
                         text: context.l10n.exercise.exerciseGapFillingInstruction,
-                        accent: KeypointExerciseAccent.violet,
                       ),
                       AnswerCardsArea(
                         availableWords: state.availableWords,
                         onWordReturnedFromSlot: (word, fromIndex) {
                           context.read<DragAndDropCubit>().removeWord(fromIndex);
                         },
+                        // Same rule as the practice deck: the tapped word lands
+                        // in the first empty gap, and a full sentence ignores
+                        // the tap rather than overwriting a placed answer.
+                        onWordTapped: state.hasChecked
+                            ? null
+                            : (word) {
+                                final slot = state.firstEmptySlot;
+                                if (slot == null) return;
+                                context.read<DragAndDropCubit>().placeWord(slot, word, null);
+                              },
                       ),
                     ],
                   ),

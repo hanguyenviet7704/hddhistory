@@ -69,6 +69,9 @@ settingProfileDestructiveYesButton: I’m sure about deletion
 settingProfileDoneEditButton: Done
 settingProfileEmailLabel: Email
 settingProfileFullnameLabel: Full name
+settingProfileChangePhoto: Change profile photo
+settingProfileTakePhoto: Take photo
+settingProfileChooseFromLibrary: Choose from library
 settingProfileLabel: Profile
 settingProfileLearningProgressSection: Learning Progress
 settingProfileLibrarySection: Library

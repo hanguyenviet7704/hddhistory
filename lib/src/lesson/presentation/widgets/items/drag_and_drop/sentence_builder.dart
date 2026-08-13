@@ -13,6 +13,10 @@ class SentenceBuilder extends StatelessWidget {
   final Function(int index) onWordRemoved;
   final SlotState Function(int index) getSlotState;
 
+  /// Tapping a filled gap empties it (see [BlankSlot.onTapFilled]). Null on a
+  /// graded card.
+  final ValueChanged<int>? onSlotTapped;
+
   const SentenceBuilder({
     super.key,
     required this.placedWords,
@@ -21,6 +25,7 @@ class SentenceBuilder extends StatelessWidget {
     required this.onWordPlaced,
     required this.onWordRemoved,
     required this.getSlotState,
+    this.onSlotTapped,
   });
 
   List<Widget> _buildSentenceWidgets() {
@@ -58,6 +63,7 @@ class SentenceBuilder extends StatelessWidget {
             onWordRemoved: (word, fromIndex) => onWordRemoved(fromIndex),
             onDragCancelled: null,
             slotState: getSlotState(i),
+            onTapFilled: onSlotTapped == null ? null : () => onSlotTapped!(i),
           ),
         );
       }

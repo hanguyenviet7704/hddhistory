@@ -66,7 +66,7 @@ class QuizQuestionCard extends StatelessWidget {
             ),
           ),
         4.verticalSpace,
-        KeypointExerciseInstruction(text: _instruction(context), accent: _accent),
+        KeypointExerciseInstruction(text: _instruction(context)),
         // Expanded, not Flexible: the design puts a `flex:1` spacer BETWEEN the
         // answer area and the action, so the pill sits at the card's BOTTOM.
         Expanded(child: SingleChildScrollView(child: _answerArea(context))),
@@ -76,18 +76,12 @@ class QuizQuestionCard extends StatelessWidget {
     );
   }
 
-  /// Per-type instruction line and its tint. The design tags each card violet for
-  /// the pick-one / gap shapes and green for the pick-many / ordering shapes, so
-  /// a reader can tell what kind of question they landed on before reading a word.
+  /// Per-type instruction line. One colour for all of them — see
+  /// [KeypointExerciseInstruction].
   String _instruction(BuildContext context) {
     if (answer.isTextGap) return context.l10n.exercise.exerciseGapFillingInstruction;
     if (answer.isArrange) return context.l10n.exercise.exerciseSequenceInstruction;
     return answer.isMultiChoice ? context.l10n.exercise.exerciseSelectManyInstruction : context.l10n.exercise.exerciseSelectOneInstruction;
-  }
-
-  KeypointExerciseAccent get _accent {
-    final isGreen = answer.isMultiChoice || answer.isArrange;
-    return isGreen ? KeypointExerciseAccent.green : KeypointExerciseAccent.violet;
   }
 
   Widget _answerArea(BuildContext context) {
@@ -129,6 +123,10 @@ class QuizQuestionCard extends StatelessWidget {
             placedWords: answer.placedWords,
             targetArea: answer.targetArea,
             answerCount: answer.dropZoneCount,
+            onSlotTapped: (index) {
+              answer.removeWord(index);
+              onChanged();
+            },
             onWordPlaced: (index, word, fromIndex) {
               answer.placeWord(index, word, fromIndex);
               onChanged();
@@ -144,6 +142,16 @@ class QuizQuestionCard extends StatelessWidget {
             availableWords: answer.availableWords,
             onWordReturnedFromSlot: (word, fromIndex) {
               answer.removeWord(fromIndex);
+              onChanged();
+            },
+            // Tap fills the FIRST empty gap, left to right — the reading order,
+            // and the only order that needs no second gesture to say "this gap".
+            // A tap with every gap already full is a no-op rather than a silent
+            // overwrite of an answer the reader placed deliberately.
+            onWordTapped: (word) {
+              final slot = answer.firstEmptySlot;
+              if (slot == null) return;
+              answer.placeWord(slot, word, null);
               onChanged();
             },
           ),

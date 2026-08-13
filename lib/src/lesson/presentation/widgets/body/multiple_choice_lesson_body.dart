@@ -58,7 +58,6 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
                       ],
                       KeypointExerciseInstruction(
                         text: context.l10n.exercise.exerciseMultiChoicesInstruction,
-                        accent: KeypointExerciseAccent.green,
                       ),
                       ListView.separated(
                         shrinkWrap: true,

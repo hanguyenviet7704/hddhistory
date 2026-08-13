@@ -8,6 +8,11 @@ class BlankSlot extends StatelessWidget {
   final Function(String word, int index)? onDragCancelled;
   final SlotState slotState;
 
+  /// Tap a FILLED slot to send its word back to the bank — the undo half of
+  /// tap-to-fill. Without it a tapped-in word could only be removed by dragging,
+  /// which is the gesture tap exists to avoid. Null while the card is graded.
+  final VoidCallback? onTapFilled;
+
   const BlankSlot({
     super.key,
     required this.index,
@@ -16,6 +21,7 @@ class BlankSlot extends StatelessWidget {
     required this.onWordRemoved,
     this.onDragCancelled,
     this.slotState = SlotState.normal,
+    this.onTapFilled,
   });
 
   @override
@@ -55,7 +61,16 @@ class BlankSlot extends StatelessWidget {
                 onDragCancelled!(word, index);
               }
             },
-            child: FilledSlot(word: word, state: slotState),
+            child: onTapFilled == null
+                ? FilledSlot(word: word, state: slotState)
+                : GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      AppHaptic.select();
+                      onTapFilled!();
+                    },
+                    child: FilledSlot(word: word, state: slotState),
+                  ),
           );
         }
 

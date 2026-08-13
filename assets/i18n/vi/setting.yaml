@@ -68,6 +68,9 @@ settingProfileDestructiveYesButton: Tôi chắc chắn muốn xóa
 settingProfileDoneEditButton: Xong
 settingProfileEmailLabel: Email
 settingProfileFullnameLabel: Họ tên
+settingProfileChangePhoto: Đổi ảnh đại diện
+settingProfileTakePhoto: Chụp ảnh
+settingProfileChooseFromLibrary: Chọn từ thư viện
 settingProfileLabel: Hồ sơ
 settingProfileLearningProgressSection: Tiến độ học tập
 settingProfileLibrarySection: Thư viện

@@ -182,35 +182,32 @@ class KeypointCheckAnswerButton extends StatelessWidget {
 
 /// The one-line "how to answer this" hint under an exercise question.
 ///
-/// The design tints it per exercise type — violet for the pick-one shapes,
-/// green for the pick-many / ordering shapes — so a reader swiping through a
-/// deck can tell what kind of question they landed on before reading a word.
+/// ONE colour for every exercise type — brand violet, 12.5/600, exactly as the
+/// design draws it on all four question shapes (`_Keypoint Swipe Lab`). It used
+/// to tint green for the pick-many / ordering shapes on the theory that the hue
+/// told a swiping reader what kind of question they had landed on; the design
+/// does not do that, and the hint says the same thing in words directly above the
+/// options anyway.
 class KeypointExerciseInstruction extends StatelessWidget {
-  const KeypointExerciseInstruction({
-    super.key,
-    required this.text,
-    required this.accent,
-  });
+  const KeypointExerciseInstruction({super.key, required this.text});
 
   final String text;
-  final KeypointExerciseAccent accent;
 
   @override
   Widget build(BuildContext context) {
     return AppText(
       text,
-      margin: EdgeInsets.only(bottom: 14.h),
+      margin: EdgeInsets.only(bottom: 10.h),
       maxLines: 3,
       style: AppStyle.text13.copyWith(
+        fontSize: 12.5.sp,
         fontWeight: FontWeight.w600,
         height: 1.4,
-        color: accent == KeypointExerciseAccent.violet ? AppCustomColor.kpAccentViolet : AppCustomColor.kpAccentGreen,
+        color: AppCustomColor.brandPrimary,
       ),
     );
   }
 }
-
-enum KeypointExerciseAccent { violet, green }
 
 /// Trailing check / cross chip on a graded answer option. [muted] is the
 /// design's third variant: a correct option the reader did NOT pick, marked so
@@ -233,19 +230,21 @@ class KeypointOptionBadge extends StatelessWidget {
         ? AppCustomColor.kpCorrectBorder
         : AppCustomColor.kpWrongBorder;
 
-    return Container(
-      width: 21.w,
-      height: 21.w,
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(6.r),
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        isCorrect ? Icons.check_rounded : Icons.close_rounded,
-        size: 14.sp,
-        color: AppCustomColor.textWhite,
-      ),
+    // The design's own glyph, drawn as SVG rather than composed from Material
+    // icons: `check_rounded` and `close_rounded` sit on different optical grids
+    // and neither matches the tick's long tail. 18px box, corner radius scaled
+    // from the design's rx:7 on a 24 viewBox.
+    final fill = _hex(background);
+    final mark = isCorrect
+        ? '<path d="M6.375 11.7384L10.2955 15.75L17.625 8.25" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        : '<path d="M15.3295 16L7.99998 8.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.32953 16L15.6591 8.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+
+    return SvgPicture.string(
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="7" fill="$fill"/>$mark</svg>',
+      width: 18.w,
+      height: 18.w,
     );
   }
+
+  static String _hex(Color color) => '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 }

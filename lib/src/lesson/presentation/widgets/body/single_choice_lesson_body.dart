@@ -104,7 +104,6 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
                 ],
                 KeypointExerciseInstruction(
                   text: instructionText,
-                  accent: KeypointExerciseAccent.violet,
                 ),
                 ListView.separated(
                   shrinkWrap: true,
