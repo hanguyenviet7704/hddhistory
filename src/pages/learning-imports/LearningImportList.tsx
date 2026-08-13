@@ -13,6 +13,7 @@ import {
   LearningImportListQuery,
 } from "../../types/interface/learningImport.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
+import CoverPoolPanel from "./CoverPoolPanel";
 import ImportStatsPanel from "./ImportStatsPanel";
 import RunImportPanel from "./RunImportPanel";
 import {
@@ -135,6 +136,8 @@ export default function LearningImportList() {
       <RunImportPanel
         onStarted={() => fetchImports(1, debouncedSearch, statusFilter)}
       />
+
+      <CoverPoolPanel />
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="flex flex-wrap items-center gap-3 border-b border-gray-200 bg-gray-50 p-4">

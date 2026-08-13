@@ -141,4 +141,12 @@ export interface ILearningImportStats {
 export interface ILearningImportConfig {
   enabled: boolean;
   disabledNote: string;
+  /**
+   * Admin-curated pool of LESSON cover images (R2 urls). A lesson is dealt one
+   * at creation and keeps it — pool edits only affect lessons born after them.
+   * Separate from the keypoint pool on purpose: different kind of picture.
+   */
+  courseCoverUrls: string[];
+  /** Pool for the roadmap's keypoint-node thumbnails. Same lifecycle rules. */
+  keypointImageUrls: string[];
 }
