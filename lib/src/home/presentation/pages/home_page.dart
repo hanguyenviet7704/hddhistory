@@ -37,6 +37,39 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDailyWarmUpMixin {
+  /// How far the reader has dragged the page past its own top, in pixels.
+  ///
+  /// Home's hero panel starts at y=0 with nothing painted behind it, so a
+  /// pull-to-refresh drag slides it down and opens a strip of bare Scaffold —
+  /// which is TRANSPARENT under a custom study theme, so the background photo
+  /// showed through above the purple ("kéo bị hở"). The strip is filled with
+  /// the hero's own gradient, sized from this.
+  ///
+  /// Measured rather than assumed a fixed height: a static strip behind the
+  /// scroll view would keep painting purple once the reader scrolls DOWN, where
+  /// the page is deliberately see-through onto the study background.
+  final ValueNotifier<double> _pullGap = ValueNotifier<double>(0);
+
+  bool _handlePullGap(ScrollNotification notification) {
+    // depth 0 is this page's own vertical scroll view. Home's horizontal strips
+    // ("Học tiếp nào", "Gợi ý cho bạn") bubble their notifications through here
+    // too, and their offsets have nothing to do with the gap.
+    if (notification.depth != 0) return false;
+    final metrics = notification.metrics;
+    if (metrics.axis != Axis.vertical) return false;
+
+    final gap = (metrics.minScrollExtent - metrics.pixels).clamp(0.0, double.infinity);
+    if (gap != _pullGap.value) _pullGap.value = gap;
+
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _pullGap.dispose();
+    super.dispose();
+  }
+
   void _trackHomeScrView() {
     AppService.instance.appTrackingService.trackHomeScrView();
   }
@@ -141,130 +174,150 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         // scroll view it interrupts.
         child: HomePromoPopupHost(
           child: Scaffold(
-          key: const Key('home-page'),
-          // Transparent only when a custom study background is active (so it
-          // shows through); otherwise the stock flat lavender is preserved.
-          backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFEFEEF9)),
-          // NO SafeBody here, unlike every other tab: the design runs the purple
-          // hero panel behind the status bar, so the top inset is paid inside
-          // the panel instead (see HomeHero). The update banner, when it shows,
-          // takes that inset itself and tells the panel to skip it.
-          body: BlocSelector<HomeCubit, HomeState, bool>(
-            selector: (state) => state.showUpdateBanner,
-            builder: (context, showUpdateBanner) => Column(
-              children: [
-                // Optional-update header is pinned ABOVE the scroll so it stays
-                // fixed while Home content scrolls under it. Shown only when a
-                // newer, non-forced version exists and the user hasn't dismissed
-                // it this session (see HomeCubit.checkOptionalUpdate).
-                if (showUpdateBanner)
-                  SafeArea(
-                    bottom: false,
-                    child: UpdateHeader(
-                      onDismiss: () => context.read<HomeCubit>().dismissUpdateBanner(),
+            key: const Key('home-page'),
+            // Transparent only when a custom study background is active (so it
+            // shows through); otherwise the stock flat lavender is preserved.
+            backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFEFEEF9)),
+            // NO SafeBody here, unlike every other tab: the design runs the purple
+            // hero panel behind the status bar, so the top inset is paid inside
+            // the panel instead (see HomeHero). The update banner, when it shows,
+            // takes that inset itself and tells the panel to skip it.
+            body: BlocSelector<HomeCubit, HomeState, bool>(
+              selector: (state) => state.showUpdateBanner,
+              builder: (context, showUpdateBanner) => Column(
+                children: [
+                  // Optional-update header is pinned ABOVE the scroll so it stays
+                  // fixed while Home content scrolls under it. Shown only when a
+                  // newer, non-forced version exists and the user hasn't dismissed
+                  // it this session (see HomeCubit.checkOptionalUpdate).
+                  if (showUpdateBanner)
+                    SafeArea(
+                      bottom: false,
+                      child: UpdateHeader(
+                        onDismiss: () => context.read<HomeCubit>().dismissUpdateBanner(),
+                      ),
                     ),
-                  ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<HomeCubit>().initializeData(isInit: true, force: true);
-                          await _prefetchLearningStreak();
-                          final didOpenPaywall = await _tryOpenPaywallAutoOpen();
-                          if (didOpenPaywall) return;
-                          final didOpenWarmUp = await _tryOpenDailyWarmUp();
-                          if (!didOpenWarmUp) await _loadInAppSurveyConfig();
-                        },
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          // Each section owns its own horizontal padding (20) so the
-                          // "Jump back in" / "Recommended" horizontal strips can bleed
-                          // to the screen edge; only vertical padding lives here.
-                          padding: EdgeInsets.zero,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // ── Hero: greeting + quote + today's new course ──
-                              // One purple panel with the course card lifted out
-                              // of its bottom edge (design "2 · Home").
-                              HomeHero(hasUpdateHeader: showUpdateBanner),
-                              20.verticalSpace,
-
-                              // ── Admin-configured promo banner ────────────────
-                              // Collapses to zero height (spacing included) when
-                              // disabled/empty — see HomeBannerCard.
-                              const HomeBannerCard(),
-
-                              // ── Jump back in (in-progress courses) ───────────
-                              BlocBuilder<ProgressCubit, ProgressState>(
-                                // Only myCoursesPageData drives this section — see the
-                                // original buildWhen note: ProgressCubit also emits on
-                                // frequent mid-lesson progress updates we don't need here.
-                                buildWhen: (previous, current) => previous.myCoursesPageData != current.myCoursesPageData,
-                                builder: (context, state) {
-                                  // Only surface courses with something left to
-                                  // continue — a 100%-complete course drops out.
-                                  final inProgress = state.myCourses.where((c) => c.completionPercentage < 100).toList();
-                                  if (inProgress.isEmpty) return const SizedBox.shrink();
-                                  return Padding(
-                                    padding: EdgeInsets.only(bottom: 28.h),
-                                    child: _JumpBackInSection(courses: inProgress),
-                                  );
-                                },
-                              ),
-
-                              // ── Quick tiles: Explore · Today's habit ─────────
-                              const _HomeQuickTiles(),
-                              28.verticalSpace,
-
-                              // ── Recommended ──────────────────────────────────
-                              _RecommendedSection(
-                                onSeeAll: () {
-                                  HomeTracking.track(TrackingKey.homeRcmSeeallClick);
-                                  context.read<CourseCubit>()
-                                    ..setAllCourseSource('home_recommend_view')
-                                    ..resetExploreToAll();
-                                  // Switch to the Explore shell branch (index 3).
-                                  context.read<PageCubit>().setCurrentIndex(3);
-                                  CourseRoute().go(context);
-                                },
-                              ),
-
-                              // ── Got ideas? feedback banner ───────────────────
-                              GotIdeasBanner(onTap: _openInAppSurveyDialog),
-
-                              // Bottom padding — clear the floating nav bar and, when
-                              // showing, the habit reminder card that floats above it
-                              // (see the Positioned below), otherwise the banner stays
-                              // clipped under those overlays.
-                              BlocBuilder<HabitCubit, HabitState>(
-                                bloc: AppDI.injector.get<HabitCubit>(),
-                                buildWhen: (previous, current) => previous.showHomeReminder != current.showHomeReminder,
-                                builder: (context, state) {
-                                  final extra = state.showHomeReminder ? 8.h + 80.h + 16.h : 16.h;
-                                  return SizedBox(height: floatingNavBarHeight(context) + extra);
-                                },
-                              ),
-                            ],
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        // The hero's gradient, continued into the pull-to-refresh
+                        // gap. Behind the scroll view and exactly as tall as the
+                        // drag, so at rest (and on any downward scroll) it has
+                        // zero height and the page stays see-through onto the
+                        // study background — see [_pullGap].
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: _pullGap,
+                            builder: (context, gap, _) => SizedBox(
+                              height: gap,
+                              child: const DecoratedBox(decoration: BoxDecoration(gradient: _kHeroGradient)),
+                            ),
                           ),
                         ),
-                      ),
+                        NotificationListener<ScrollNotification>(
+                          onNotification: _handlePullGap,
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              context.read<HomeCubit>().initializeData(isInit: true, force: true);
+                              await _prefetchLearningStreak();
+                              final didOpenPaywall = await _tryOpenPaywallAutoOpen();
+                              if (didOpenPaywall) return;
+                              final didOpenWarmUp = await _tryOpenDailyWarmUp();
+                              if (!didOpenWarmUp) await _loadInAppSurveyConfig();
+                            },
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              // Each section owns its own horizontal padding (20) so the
+                              // "Jump back in" / "Recommended" horizontal strips can bleed
+                              // to the screen edge; only vertical padding lives here.
+                              padding: EdgeInsets.zero,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // ── Hero: greeting + quote + today's new course ──
+                                  // One purple panel with the course card lifted out
+                                  // of its bottom edge (design "2 · Home").
+                                  HomeHero(hasUpdateHeader: showUpdateBanner),
+                                  20.verticalSpace,
 
-                      // Habit check-in reminder — floats above the bottom nav
-                      // (PRD §9.4). Renders nothing when there's nothing to check in.
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: floatingNavBarHeight(context) + 8.h,
-                        child: const HomeHabitReminderCard(),
-                      ),
-                    ],
+                                  // ── Admin-configured promo banner ────────────────
+                                  // Collapses to zero height (spacing included) when
+                                  // disabled/empty — see HomeBannerCard.
+                                  const HomeBannerCard(),
+
+                                  // ── Jump back in (in-progress courses) ───────────
+                                  BlocBuilder<ProgressCubit, ProgressState>(
+                                    // Only myCoursesPageData drives this section — see the
+                                    // original buildWhen note: ProgressCubit also emits on
+                                    // frequent mid-lesson progress updates we don't need here.
+                                    buildWhen: (previous, current) => previous.myCoursesPageData != current.myCoursesPageData,
+                                    builder: (context, state) {
+                                      // Only surface courses with something left to
+                                      // continue — a 100%-complete course drops out.
+                                      final inProgress = state.myCourses.where((c) => c.completionPercentage < 100).toList();
+                                      if (inProgress.isEmpty) return const SizedBox.shrink();
+                                      return Padding(
+                                        padding: EdgeInsets.only(bottom: 28.h),
+                                        child: _JumpBackInSection(courses: inProgress),
+                                      );
+                                    },
+                                  ),
+
+                                  // ── Quick tiles: Explore · Today's habit ─────────
+                                  const _HomeQuickTiles(),
+                                  28.verticalSpace,
+
+                                  // ── Recommended ──────────────────────────────────
+                                  _RecommendedSection(
+                                    onSeeAll: () {
+                                      HomeTracking.track(TrackingKey.homeRcmSeeallClick);
+                                      context.read<CourseCubit>()
+                                        ..setAllCourseSource('home_recommend_view')
+                                        ..resetExploreToAll();
+                                      // Switch to the Explore shell branch (index 3).
+                                      context.read<PageCubit>().setCurrentIndex(3);
+                                      CourseRoute().go(context);
+                                    },
+                                  ),
+
+                                  // ── Got ideas? feedback banner ───────────────────
+                                  GotIdeasBanner(onTap: _openInAppSurveyDialog),
+
+                                  // Bottom padding — clear the floating nav bar and, when
+                                  // showing, the habit reminder card that floats above it
+                                  // (see the Positioned below), otherwise the banner stays
+                                  // clipped under those overlays.
+                                  BlocBuilder<HabitCubit, HabitState>(
+                                    bloc: AppDI.injector.get<HabitCubit>(),
+                                    buildWhen: (previous, current) => previous.showHomeReminder != current.showHomeReminder,
+                                    builder: (context, state) {
+                                      final extra = state.showHomeReminder ? 8.h + 80.h + 16.h : 16.h;
+                                      return SizedBox(height: floatingNavBarHeight(context) + extra);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Habit check-in reminder — floats above the bottom nav
+                        // (PRD §9.4). Renders nothing when there's nothing to check in.
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: floatingNavBarHeight(context) + 8.h,
+                          child: const HomeHabitReminderCard(),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ),
