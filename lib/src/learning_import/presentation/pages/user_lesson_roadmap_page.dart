@@ -205,7 +205,7 @@ class _RoadmapBody extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _CoverArtwork(),
+                      _CoverArtwork(lesson: lesson),
                       Center(
                         child: AppText(
                           lesson.title,
@@ -238,9 +238,7 @@ class _RoadmapBody extends StatelessWidget {
                         _RoadmapNode(
                           title: lesson.plannedTitleAt(index),
                           marker: AppAsset.images.app.roadmapKeypointActive,
-                          artwork:
-                              kMockUserLessonCovers[index %
-                                  kMockUserLessonCovers.length],
+                          artwork: userLessonKeypointArt(lesson, index),
                           // "Not ready" outranks progress: a keypoint the
                           // background phase has not delivered (text, or the
                           // narration it is owed) is a promise, not a step —
@@ -404,7 +402,9 @@ class _RoadmapHeader extends StatelessWidget {
 }
 
 class _CoverArtwork extends StatelessWidget {
-  const _CoverArtwork();
+  const _CoverArtwork({required this.lesson});
+
+  final UserLessonEntity lesson;
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +421,14 @@ class _CoverArtwork extends StatelessWidget {
           ],
         ),
         clipBehavior: Clip.antiAlias,
-        child: Image.asset(kMockUserLessonCourseCover, fit: BoxFit.cover),
+        // The admin-pool cover the server dealt this lesson, or the bundled
+        // stand-in for lessons from before the pool existed.
+        child: DCachedImage(
+          url: lesson.coverUrl.isNotEmpty
+              ? lesson.coverUrl
+              : kMockUserLessonCourseCover,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -571,8 +578,9 @@ class _RoadmapNode extends StatelessWidget {
   /// The glyph inside the marker circle — the catalogue's own roadmap icons.
   final AssetGenImage marker;
 
-  /// **MOCK** — see [mockUserLessonCover]. The catalogue puts the lesson's real
-  /// cover here; a generated lesson has none.
+  /// The node's thumbnail: the server-dealt pool image when the keypoint has
+  /// one, else the bundled fallback — see [userLessonKeypointArt]. May be an
+  /// http url or an asset path; the card renders both via [DCachedImage].
   final String artwork;
 
   final _NodeState state;
@@ -772,7 +780,9 @@ class _NodeCard extends StatelessWidget {
                                 Colors.transparent,
                                 BlendMode.color,
                               ),
-                        child: Image.asset(artwork, fit: BoxFit.cover),
+                        // Admin-pool url or bundled asset path — DCachedImage
+                        // renders both (see userLessonKeypointArt).
+                        child: DCachedImage(url: artwork, fit: BoxFit.cover),
                       ),
                       if (isLocked)
                         Center(

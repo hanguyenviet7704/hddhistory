@@ -286,8 +286,10 @@ class _LessonCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(15.r),
-                child: Image.asset(
-                  mockUserLessonCover(lesson.id),
+                // The admin-pool cover when the server dealt one; the bundled
+                // mock otherwise. DCachedImage renders either kind of path.
+                child: DCachedImage(
+                  url: userLessonCoverArt(lesson),
                   width: 78.w,
                   height: 78.w,
                   fit: BoxFit.cover,

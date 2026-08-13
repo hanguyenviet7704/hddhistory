@@ -32,6 +32,7 @@ abstract class LessonKeypointModel with _$LessonKeypointModel {
   const factory LessonKeypointModel({
     @Default('') String title,
     @Default('') String takeaway,
+    @Default('') String coverUrl,
     @Default(<LessonSectionModel>[]) List<LessonSectionModel> sections,
   }) = _LessonKeypointModel;
 
@@ -98,6 +99,7 @@ abstract class UserLessonModel with _$UserLessonModel {
     @Default(ImportSourceTypeEntity.unknown)
     ImportSourceTypeEntity sourceType,
     @Default('') String sourceLabel,
+    @Default('') String coverUrl,
     @Default(0) int wordCount,
     @Default(0) int estimatedMinutes,
     @Default(0) int stopAtKeypointIndex,
@@ -149,6 +151,7 @@ extension LessonKeypointModelX on LessonKeypointModel {
   LessonKeypointEntity toEntity() => LessonKeypointEntity(
     title: title,
     takeaway: takeaway,
+    coverUrl: coverUrl,
     sections: sections.map((section) => section.toEntity()).toList(),
   );
 }
@@ -207,6 +210,7 @@ extension UserLessonModelX on UserLessonModel {
     outputLocale: outputLocale,
     sourceType: sourceType,
     sourceLabel: sourceLabel,
+    coverUrl: coverUrl,
     wordCount: wordCount,
     estimatedMinutes: estimatedMinutes,
     stopAtKeypointIndex: stopAtKeypointIndex,

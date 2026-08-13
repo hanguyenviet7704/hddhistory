@@ -1,23 +1,15 @@
 part of '../../learning_import.dart';
 
-/// **MOCK ARTWORK — TEMPORARY. Delete this file when covers become real.**
+/// **FALLBACK ARTWORK** — the pictures a generated lesson shows when the server
+/// dealt it none.
 ///
-/// A generated lesson has no picture. The import job produces text; nothing in
-/// the pipeline draws, picks or fetches an image, and `user_lessons` has no
-/// field to keep one in. Left as-is, every surface that shows these lessons —
-/// the My Creations list, the lesson's roadmap — was a column of titles next to
-/// empty squares, visibly poorer than the catalogue screens they are modelled
-/// on, for a reason that has nothing to do with the lesson's quality.
-///
-/// So these are stand-ins: real course artwork, bundled, assigned by id. They
-/// are **not** the lesson's own art and will show the same handful of pictures
-/// across unrelated lessons.
-///
-/// Two honest ways out, either of which makes this file go away:
-/// 1. generate a cover during the import job and store it on `user_lessons`, or
-/// 2. use the seeded stand-in tile the course grid draws (`CoverArt`), which
-///    derives a stable colour and initial from an id and never pretends to be
-///    a photograph of anything.
+/// Covers are real now (2026-08-13): the API deals every new lesson a
+/// `coverUrl` (and each keypoint a node thumbnail) from admin-uploaded pools —
+/// see the "Kho ảnh bài tự tạo" panel on the admin's User-imports page. These
+/// bundled assets remain for the two cases the pool cannot cover: lessons
+/// created before it existed, and a pool the admin has emptied. So this file
+/// stays, demoted from stand-in to safety net; [userLessonCoverArt] and
+/// [userLessonKeypointArt] are the only places that decide which kind wins.
 
 /// The roadmap header's cover.
 const String kMockUserLessonCourseCover =
@@ -41,4 +33,22 @@ String mockUserLessonCover(String id) {
   final hash = id.codeUnits.fold<int>(0, (sum, unit) => (sum + unit) & 0xFFFF);
 
   return kMockUserLessonCovers[hash % kMockUserLessonCovers.length];
+}
+
+/// The lesson's REAL cover when the server dealt one from the admin pool,
+/// else the bundled mock. The result feeds [DCachedImage], which renders
+/// http urls and asset paths alike — so a caller never branches on which
+/// kind it got.
+String userLessonCoverArt(UserLessonEntity lesson) =>
+    lesson.coverUrl.isNotEmpty ? lesson.coverUrl : mockUserLessonCover(lesson.id);
+
+/// Keypoint node [index]'s art: the server-dealt thumbnail when the keypoint
+/// exists and carries one, else the mock rotation the roadmap always drew.
+String userLessonKeypointArt(UserLessonEntity lesson, int index) {
+  if (index < lesson.keypoints.length) {
+    final coverUrl = lesson.keypoints[index].coverUrl;
+    if (coverUrl.isNotEmpty) return coverUrl;
+  }
+
+  return kMockUserLessonCovers[index % kMockUserLessonCovers.length];
 }

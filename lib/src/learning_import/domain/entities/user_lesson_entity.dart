@@ -37,6 +37,10 @@ abstract class LessonKeypointEntity with _$LessonKeypointEntity {
   const factory LessonKeypointEntity({
     @Default('') String title,
 
+    /// Node thumbnail dealt server-side from the admin's keypoint-image pool.
+    /// Empty (old lessons, empty pool) falls back to the bundled mock art.
+    @Default('') String coverUrl,
+
     /// What the reader should leave this keypoint with — the BACK FACE of the
     /// recap card that ends it.
     ///
@@ -153,6 +157,10 @@ abstract class UserLessonEntity with _$UserLessonEntity {
 
     /// Filename or video title, shown under the title on the card.
     @Default('') String sourceLabel,
+
+    /// The lesson's cover, dealt server-side from the admin pool at creation.
+    /// Empty (old lessons, empty pool) falls back to the bundled mock art.
+    @Default('') String coverUrl,
     @Default(0) int wordCount,
     @Default(0) int estimatedMinutes,
 
