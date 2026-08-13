@@ -214,6 +214,116 @@ void main() {
     });
   });
 
+  group('re-entering the generated-lesson deck', () {
+    // Why `startImportedKeypointLesson` must CLAIM `RouteNamed.lesson` itself
+    // (the way keypoint_complete_page claims its exit destinations): quitting a
+    // generated lesson mid-keypoint leaves for another BRANCH, so the deck
+    // route is never popped off the course branch. Coming back to it is then a
+    // cross-branch `go` whose target the branch ALREADY shows — go_router just
+    // re-activates the branch and no navigator observer fires at all, so the
+    // roadmap's PRIMARY route name stays tracked and the floating nav pill
+    // sits on top of the deck ("ở phần học AI gen thì bị nav che").
+    late List<String> events;
+    late GoRouter router;
+
+    GoRouter buildRouter() => GoRouter(
+      initialLocation: '/profile/my-lessons/lesson-reader/abc',
+      observers: [_Recorder('root', events)],
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => shell,
+          branches: [
+            StatefulShellBranch(
+              observers: [_Recorder('setting', events)],
+              routes: [
+                GoRoute(
+                  path: '/profile',
+                  name: RouteNamed.profile,
+                  pageBuilder: (context, state) => _labelPage(state, 'PROFILE'),
+                  routes: [
+                    GoRoute(
+                      path: 'my-lessons',
+                      name: RouteNamed.myLessons,
+                      pageBuilder: (context, state) => _labelPage(state, 'MY CREATIONS'),
+                      routes: [
+                        GoRoute(
+                          path: 'lesson-reader/:lessonId',
+                          name: RouteNamed.lessonReader,
+                          pageBuilder: (context, state) => _labelPage(state, 'ROADMAP'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              observers: [_Recorder('course', events)],
+              routes: [
+                GoRoute(
+                  path: '/course-roadmap',
+                  name: RouteNamed.courseRoadmap,
+                  pageBuilder: (context, state) => _labelPage(state, 'COURSE ROADMAP'),
+                  routes: [
+                    GoRoute(
+                      path: 'lesson',
+                      name: RouteNamed.lesson,
+                      pageBuilder: (context, state) => _labelPage(state, 'DECK'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    setUp(() {
+      events = <String>[];
+      router = buildRouter();
+    });
+
+    tearDown(() => router.dispose());
+
+    Future<void> show(WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the FIRST entry is announced — didPush carries the deck name', (tester) async {
+      await show(tester);
+      events.clear();
+
+      router.go('/course-roadmap/lesson');
+      await tester.pumpAndSettle();
+
+      expect(find.text('DECK'), findsOneWidget);
+      expect(events, contains('course didPush ${RouteNamed.lesson}'));
+    });
+
+    testWidgets('re-entry after a mid-keypoint quit is SILENT — no observer event anywhere', (tester) async {
+      await show(tester);
+      router.go('/course-roadmap/lesson');
+      await tester.pumpAndSettle();
+      // Quit mid-keypoint (lesson_exit_flow): a cross-branch go — the deck
+      // stays top of the course branch, nothing is popped.
+      router.go('/profile/my-lessons/lesson-reader/abc');
+      await tester.pumpAndSettle();
+      events.clear();
+
+      // Tap the keypoint again on the lesson's roadmap.
+      router.go('/course-roadmap/lesson');
+      await tester.pumpAndSettle();
+
+      expect(find.text('DECK'), findsOneWidget);
+      // No didPush/didPop/didRemove fires on ANY navigator: the route observer
+      // cannot correct PageCubit.currentRouteName, so the entry sequence has to
+      // set it itself or the nav pill stays over the deck.
+      expect(events, isEmpty);
+    });
+  });
+
   group('shouldAssertOwnRouteName', () {
     test('claims only when the page is current AND its branch is on screen', () {
       expect(shouldAssertOwnRouteName(isRouteCurrent: true, isBranchOnScreen: true), isTrue);

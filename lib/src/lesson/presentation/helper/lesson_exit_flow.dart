@@ -68,11 +68,22 @@ class LessonExitFlow {
         AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
     if (selectedLesson.isImported) {
       final userLessonId = UserLessonCourseMapper.lessonIdOf(selectedLesson.id);
+      final destinationRouteName = userLessonId.isEmpty ? RouteNamed.myLessons : RouteNamed.lessonReader;
       if (userLessonId.isEmpty) {
         const MyLessonsRoute().go(context);
       } else {
         LessonReaderRoute(userLessonId).go(context);
       }
+
+      // Claim the destination's name, as keypoint_complete_page does on the
+      // same exits: this cross-branch `go` usually re-activates a setting
+      // branch whose stack ALREADY ends at the destination, which fires no
+      // navigator event — the nav pill on the roadmap only survived because
+      // the quit popup's pop happened to leave the root shell's (primary)
+      // name behind.
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(destinationRouteName);
+      });
 
       return;
     }

@@ -87,4 +87,15 @@ void startImportedKeypointLesson({
     ..setCurrentKeypointId(keypoint.id);
 
   const LessonRoute().go(navContext);
+
+  // Claim the deck's route name — the observer can't be relied on to. This
+  // `go` crosses INTO the course branch from the lesson's own roadmap, and a
+  // quit mid-keypoint leaves the deck route stranded on top of that branch (a
+  // branch page is never popped on a branch switch). Re-activating a branch
+  // whose stack already matches the target fires NO navigator event (pinned in
+  // user_lesson_roadmap_nav_test.dart), so the roadmap's PRIMARY name would
+  // stay tracked and the floating nav pill would sit over the deck.
+  Future.delayed(const Duration(milliseconds: 100), () {
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.lesson);
+  });
 }
