@@ -85,25 +85,17 @@ void main() {
     test('returns onboarding entry when authenticated user has not finished onboarding', () {
       final destination = resolveAuthenticatedSplashDestination(
         needsOnboarding: true,
-        hasRoadmap: false,
       );
 
       expect(destination, SplashAuthenticatedDestination.onboardingEntry);
     });
 
-    test('returns course when authenticated onboarded user has no roadmap', () {
+    /// Home even with no course to jump back into. The roadmap used to decide
+    /// this and sent every guest to the Explore grid on every launch, because a
+    /// guest never has a roadmap (product call, 2026-08-13).
+    test('returns home for an onboarded user, roadmap or not', () {
       final destination = resolveAuthenticatedSplashDestination(
         needsOnboarding: false,
-        hasRoadmap: false,
-      );
-
-      expect(destination, SplashAuthenticatedDestination.course);
-    });
-
-    test('returns home when authenticated onboarded user has roadmap', () {
-      final destination = resolveAuthenticatedSplashDestination(
-        needsOnboarding: false,
-        hasRoadmap: true,
       );
 
       expect(destination, SplashAuthenticatedDestination.home);

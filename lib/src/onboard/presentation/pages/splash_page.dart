@@ -179,15 +179,11 @@ class _SplashPageState extends State<SplashPage> {
   void _routeAuthenticatedEntry() {
     final destination = resolveAuthenticatedSplashDestination(
       needsOnboarding: context.read<UserCubit>().state.isUserPassOnboarding,
-      hasRoadmap: AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id.isNotEmpty,
     );
 
     switch (destination) {
       case SplashAuthenticatedDestination.onboardingEntry:
         _goOnboardingEntryByFlowConfig();
-        return;
-      case SplashAuthenticatedDestination.course:
-        CourseRoute().go(context);
         return;
       case SplashAuthenticatedDestination.home:
         HomeRoute().go(context);
@@ -321,7 +317,6 @@ bool shouldSkipOnboardingByRemoteConfig(OnboardingConfigEntity config) {
 
 enum SplashAuthenticatedDestination {
   onboardingEntry,
-  course,
   home,
 }
 
@@ -343,14 +338,23 @@ SplashUnauthenticatedDestination resolveUnauthenticatedSplashEntryDestination({
   return SplashUnauthenticatedDestination.onboardingFlow;
 }
 
+/// Where an ORDINARY launch lands — a launch that already has a token.
+///
+/// Home, always. The only fork left is onboarding, which owns its own routing and
+/// is untouched by this (as are the unauthenticated entry flows above:
+/// register/notification-gate/course-entry all still go where they went).
+///
+/// It used to send a reader with an EMPTY roadmap to Explore instead, on the
+/// theory that someone with no course should be picking one. But that is the
+/// state a guest is in on every single launch, so the app opened on a browse grid
+/// rather than on the screen carrying their streak, their day and their "jump
+/// back in" (product call, 2026-08-13). Explore stays one nav tap away.
 @visibleForTesting
 SplashAuthenticatedDestination resolveAuthenticatedSplashDestination({
   required bool needsOnboarding,
-  required bool hasRoadmap,
 }) {
   if (needsOnboarding) return SplashAuthenticatedDestination.onboardingEntry;
-  if (hasRoadmap) return SplashAuthenticatedDestination.home;
-  return SplashAuthenticatedDestination.course;
+  return SplashAuthenticatedDestination.home;
 }
 
 @visibleForTesting
