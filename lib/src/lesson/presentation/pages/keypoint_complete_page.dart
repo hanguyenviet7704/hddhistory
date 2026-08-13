@@ -179,6 +179,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     if (lesson.isImported) {
       final userLesson = AppDI.injector.get<UserLessonCubit>().lessonForKeypoint(next.id);
       if (userLesson == null) return false;
+      // The next keypoint may exist as TEXT while the background phase still
+      // owes it narration (progressive import). Not ready = fall through to the
+      // lesson's own roadmap, which shows it as "Đang tạo…" and refetches.
+      if (!userLesson.keypointReady(currentIndex + 1)) return false;
 
       startImportedKeypointLesson(
         lessonCubit: AppDI.injector.get<LessonCubit>(),

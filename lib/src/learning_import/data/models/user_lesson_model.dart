@@ -122,6 +122,12 @@ abstract class UserLessonModel with _$UserLessonModel {
     @Default(UserLessonAudioStatusEntity.none)
     UserLessonAudioStatusEntity audioStatus,
     UserLessonAudioModel? audio,
+    // `complete` when absent: only the progressive pipeline sends this, and
+    // everything before it was generated whole.
+    @JsonKey(unknownEnumValue: UserLessonContentStatusEntity.complete)
+    @Default(UserLessonContentStatusEntity.complete)
+    UserLessonContentStatusEntity contentStatus,
+    @Default(<String>[]) List<String> plannedKeypointTitles,
   }) = _UserLessonModel;
 
   factory UserLessonModel.fromJson(Map<String, dynamic> json) =>
@@ -213,6 +219,8 @@ extension UserLessonModelX on UserLessonModel {
     keypoints: _resolvedKeypoints,
     audioStatus: audioStatus,
     audio: audio?.toEntity(),
+    contentStatus: contentStatus,
+    plannedKeypointTitles: plannedKeypointTitles,
   );
 
   /// The body, whichever era the server is from.

@@ -69,6 +69,22 @@ enum UserLessonAudioStatusEntity {
   failed,
 }
 
+/// Whether the lesson BODY is all there yet.
+///
+/// Generation is two-phase since the progressive pipeline: the import job
+/// completes once the FIRST keypoint is readable and listenable, and the rest
+/// of the outline is written server-side behind the reader's back. [partial] is
+/// that window — the roadmap keeps refetching while it sees it, and draws the
+/// not-yet-written keypoints as "đang tạo" nodes from [UserLessonEntity.plannedKeypointTitles].
+///
+/// Lessons that predate the pipeline arrive as [complete].
+enum UserLessonContentStatusEntity {
+  @JsonValue('partial')
+  partial,
+  @JsonValue('complete')
+  complete,
+}
+
 /// Where one card's narration sits inside its KEYPOINT's file.
 ///
 /// `cardIndex` is relative to the keypoint, because the file it indexes into is
@@ -172,6 +188,15 @@ abstract class UserLessonEntity with _$UserLessonEntity {
 
     /// The merged narration. Detail only — the list endpoint never sends it.
     UserLessonAudioEntity? audio,
+
+    /// Whether the body is all there yet. See [UserLessonContentStatusEntity].
+    @Default(UserLessonContentStatusEntity.complete)
+    UserLessonContentStatusEntity contentStatus,
+
+    /// The committed outline, by keypoint title, first one included. Detail
+    /// only. While [contentStatus] is partial this is LONGER than [keypoints] —
+    /// the tail names the nodes still being written.
+    @Default(<String>[]) List<String> plannedKeypointTitles,
   }) = _UserLessonEntity;
 }
 
@@ -218,4 +243,58 @@ extension UserLessonEntityX on UserLessonEntity {
   /// carries the real list and overrides this.
   int get keypointCount =>
       keypoints.isNotEmpty ? keypoints.length : stopAtKeypointIndex + 1;
+
+  /// The background phase is still writing keypoints.
+  bool get isContentPartial =>
+      contentStatus == UserLessonContentStatusEntity.partial;
+
+  /// How many nodes the roadmap draws: the committed plan, or the body when it
+  /// is somehow longer (a plan is a promise; the body is the fact).
+  int get plannedKeypointCount => plannedKeypointTitles.length > keypoints.length
+      ? plannedKeypointTitles.length
+      : keypoints.length;
+
+  /// The title for roadmap node [index], written or merely planned.
+  String plannedTitleAt(int index) {
+    if (index < keypoints.length) return keypoints[index].title;
+    if (index < plannedKeypointTitles.length) {
+      return plannedKeypointTitles[index];
+    }
+
+    return '';
+  }
+
+  /// Whether keypoint [index] can be OPENED: its text exists, and the narration
+  /// the pipeline is going to give it has arrived.
+  ///
+  /// The audio gate applies only while audio is still expected. `failed` is the
+  /// server's "no narration is ever coming" (no narrator for the locale), and
+  /// `none` is a lesson from before dubbing existed — holding either hostage to
+  /// audio that will never arrive would lock them shut forever.
+  bool keypointReady(int index) {
+    if (index < 0 || index >= keypoints.length) return false;
+
+    switch (audioStatus) {
+      case UserLessonAudioStatusEntity.failed:
+      case UserLessonAudioStatusEntity.none:
+        return true;
+      case UserLessonAudioStatusEntity.processing:
+      case UserLessonAudioStatusEntity.ready:
+        final entry = audio?.forKeypoint(index);
+
+        return entry != null && entry.url.isNotEmpty;
+    }
+  }
+
+  /// Whether the roadmap still has anything to wait for: keypoints unwritten,
+  /// or written ones whose narration has not landed. Drives the refetch loop.
+  bool get isStillMaterializing {
+    if (isContentPartial) return true;
+
+    for (var index = 0; index < keypoints.length; index++) {
+      if (!keypointReady(index)) return true;
+    }
+
+    return false;
+  }
 }

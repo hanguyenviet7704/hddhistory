@@ -22,6 +22,11 @@ class UserLessonRoadmapPage extends StatefulWidget {
 }
 
 class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
+  /// Refetches the lesson while the server is still writing/dubbing it, so the
+  /// "Đang tạo…" nodes flip to real ones without the reader doing anything.
+  /// Only alive while there is something to wait for — see [_syncRefreshTimer].
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
@@ -31,16 +36,51 @@ class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
     });
   }
 
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Keep the poll alive exactly while the lesson is still materializing.
+  ///
+  /// 8 seconds: one keypoint takes tens of seconds to write and dub, so this is
+  /// tight enough that a node flips soon after it is ready and loose enough
+  /// that a lesson left open on this screen costs a handful of list-price GETs
+  /// a minute, not a stampede.
+  void _syncRefreshTimer(UserLessonEntity? lesson) {
+    final wants =
+        lesson != null &&
+        lesson.id == widget.lessonId &&
+        lesson.isStillMaterializing;
+
+    if (wants && _refreshTimer == null) {
+      _refreshTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+        if (!mounted) return;
+        unawaited(context.read<UserLessonCubit>().openLesson(widget.lessonId));
+      });
+    } else if (!wants && _refreshTimer != null) {
+      _refreshTimer?.cancel();
+      _refreshTimer = null;
+    }
+  }
+
   /// Into the deck, at [keypointIndex].
   void _openReader(UserLessonEntity lesson, int keypointIndex) {
     if (lesson.keypoints.isEmpty) return;
+
+    final index = keypointIndex.clamp(0, lesson.keypoints.length - 1);
+    // A node that is still being written (or dubbed) is drawn un-tappable, but
+    // the CTA and stale taps can still race a refetch — refuse here too, or the
+    // reader lands in a keypoint whose narration does not exist yet.
+    if (!lesson.keypointReady(index)) return;
 
     startImportedKeypointLesson(
       lessonCubit: AppDI.injector.get<LessonCubit>(),
       courseLessonCubit: AppDI.injector.get<CourseLessonCubit>(),
       navContext: context,
       userLesson: lesson,
-      keypointIndex: keypointIndex.clamp(0, lesson.keypoints.length - 1),
+      keypointIndex: index,
     );
   }
 
@@ -52,7 +92,10 @@ class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
         AppCustomColor.backgroundWhite,
       ),
       body: ThemedBackground(
-        child: BlocBuilder<UserLessonCubit, UserLessonState>(
+        child: BlocConsumer<UserLessonCubit, UserLessonState>(
+          listenWhen: (previous, current) =>
+              previous.selected != current.selected,
+          listener: (context, state) => _syncRefreshTimer(state.selected),
           buildWhen: (previous, current) =>
               previous.status != current.status ||
               previous.selected != current.selected,
@@ -135,6 +178,10 @@ class _RoadmapBody extends StatelessWidget {
     final l10n = context.l10n.learningImport;
     final keypoints = lesson.keypoints;
     final current = _currentIndex;
+    // Nodes are drawn from the PLAN, not the body: a lesson still being written
+    // shows its whole table of contents, with the unwritten tail as "Đang tạo…"
+    // nodes. For a finished lesson the two counts are the same number.
+    final totalNodes = lesson.plannedKeypointCount;
 
     return Stack(
       children: [
@@ -176,31 +223,38 @@ class _RoadmapBody extends StatelessWidget {
                       20.verticalSpace,
                       _ProgressStrip(
                         label: _sourceLabel(context, lesson.sourceType),
-                        done: current.clamp(0, keypoints.length),
-                        total: keypoints.length,
+                        done: current.clamp(0, totalNodes),
+                        total: totalNodes,
                       ),
                       26.verticalSpace,
                       _SectionCard(
                         title: l10n.roadmapSectionTitle,
                         subtitle: l10n.roadmapSectionSubtitle(
-                          count: keypoints.length,
+                          count: totalNodes,
                         ),
                       ),
                       20.verticalSpace,
-                      for (final (index, keypoint) in keypoints.indexed)
+                      for (var index = 0; index < totalNodes; index++)
                         _RoadmapNode(
-                          title: keypoint.title,
+                          title: lesson.plannedTitleAt(index),
                           marker: AppAsset.images.app.roadmapKeypointActive,
                           artwork:
                               kMockUserLessonCovers[index %
                                   kMockUserLessonCovers.length],
-                          state: switch (index) {
-                            _ when index < current => _NodeState.done,
-                            _ when index == current => _NodeState.inProgress,
-                            _ => _NodeState.locked,
-                          },
+                          // "Not ready" outranks progress: a keypoint the
+                          // background phase has not delivered (text, or the
+                          // narration it is owed) is a promise, not a step —
+                          // whatever the resume index says.
+                          state: !lesson.keypointReady(index)
+                              ? _NodeState.generating
+                              : switch (index) {
+                                  _ when index < current => _NodeState.done,
+                                  _ when index == current =>
+                                    _NodeState.inProgress,
+                                  _ => _NodeState.locked,
+                                },
                           isFirst: index == 0,
-                          isLast: index == keypoints.length - 1,
+                          isLast: index == totalNodes - 1,
                           onTap: () => onOpenKeypoint(index),
                         ),
                       // End of the road: the catalogue asks the same question
@@ -243,7 +297,9 @@ class _RoadmapBody extends StatelessWidget {
         ),
         // No CTA once the lesson is finished. "Continue" with nothing left to
         // continue is a button that lies; rereading is still one tap away on
-        // any node.
+        // any node. And no LIVE CTA while the node it would resume into is
+        // still being written or dubbed — a quiet "Đang tạo…" pill says why the
+        // button is not there instead of leaving a hole.
         if (!lesson.isCompleted)
           Positioned(
             left: 20.w,
@@ -252,16 +308,17 @@ class _RoadmapBody extends StatelessWidget {
             // safe-area inset, rather than a flat guess.
             bottom: floatingNavBarHeight(context) + 8.h,
             child: Center(
-              child: _StartCta(
-                label: _readStarted
-                    ? l10n.roadmapContinueCta
-                    : l10n.roadmapStartCta,
-                // Resumes where they stopped, which is the node drawn as
-                // current.
-                onTap: () => onOpenKeypoint(
-                  current.clamp(0, (keypoints.length - 1).clamp(0, 1 << 30)),
-                ),
-              ),
+              child:
+                  current < keypoints.length && lesson.keypointReady(current)
+                  ? _StartCta(
+                      label: _readStarted
+                          ? l10n.roadmapContinueCta
+                          : l10n.roadmapStartCta,
+                      // Resumes where they stopped, which is the node drawn as
+                      // current.
+                      onTap: () => onOpenKeypoint(current),
+                    )
+                  : _GeneratingCta(label: l10n.statusCreating),
             ),
           ),
       ],
@@ -485,7 +542,10 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-enum _NodeState { inProgress, done, locked }
+// [generating] is a locked node that explains itself: the keypoint is still
+// being written (or waiting on its narration) server-side, and will unlock on a
+// refetch without the reader doing anything.
+enum _NodeState { inProgress, done, locked, generating }
 
 /// One step, drawn the way the catalogue roadmap draws one.
 ///
@@ -550,8 +610,11 @@ class _RoadmapNode extends StatelessWidget {
           state: state,
           // A locked step is not tappable, the same way a locked lesson is not.
           // Greying it and then opening it anyway would teach the reader that
-          // the lock means nothing.
-          onTap: state == _NodeState.locked ? null : onTap,
+          // the lock means nothing. A generating step even less so — there is
+          // nothing behind it to open yet.
+          onTap: state == _NodeState.locked || state == _NodeState.generating
+              ? null
+              : onTap,
         ),
       ),
     );
@@ -570,6 +633,7 @@ class _NodeMarker extends StatelessWidget {
     _NodeState.inProgress => AppCustomColor.borderBrand,
     _NodeState.done => AppCustomColor.brandPrimary50,
     _NodeState.locked => AppCustomColor.neutral100,
+    _NodeState.generating => AppCustomColor.neutral100,
   };
 
   @override
@@ -586,6 +650,30 @@ class _NodeMarker extends StatelessWidget {
           ),
           child: marker.image(fit: BoxFit.contain),
         ),
+        // A spinner where the locked node pins its padlock: same slot, same
+        // size, so the two "not yet" states read as siblings — one waiting on
+        // the reader, one waiting on the server.
+        if (state == _NodeState.generating)
+          Container(
+            width: 22.w,
+            height: 22.w,
+            padding: EdgeInsets.all(4.w),
+            decoration: ShapeDecoration(
+              color: AppCustomColor.neutral100,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignOutside,
+                  color: Colors.white,
+                ),
+                borderRadius: BorderRadius.circular(40),
+              ),
+            ),
+            child: CircularProgressIndicator(
+              strokeWidth: 2.w,
+              color: AppCustomColor.textTertiary,
+            ),
+          ),
         if (state == _NodeState.locked)
           Container(
             width: 22.w,
@@ -634,7 +722,10 @@ class _NodeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLocked = state == _NodeState.locked;
+    // Generating shares the locked node's whole grey treatment — it IS a lock,
+    // held by the server instead of the reader — plus a caption saying so.
+    final isLocked =
+        state == _NodeState.locked || state == _NodeState.generating;
     final isActive = state == _NodeState.inProgress;
 
     return Semantics(
@@ -712,22 +803,85 @@ class _NodeCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(12.w),
-                  child: AppText(
-                    title,
-                    style: AppStyle.text14.copyWith(
-                      fontWeight: FontWeight.w600,
-                      height: 1.4,
-                      color: isLocked
-                          ? AppCustomColor.textTertiary
-                          : AppCustomColor.textPrimary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        title,
+                        style: AppStyle.text14.copyWith(
+                          fontWeight: FontWeight.w600,
+                          height: 1.4,
+                          color: isLocked
+                              ? AppCustomColor.textTertiary
+                              : AppCustomColor.textPrimary,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (state == _NodeState.generating) ...[
+                        4.verticalSpace,
+                        AppText(
+                          context.l10n.learningImport.statusCreating,
+                          style: AppStyle.text12.copyWith(
+                            color: AppCustomColor.textTertiary,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The CTA's stand-in while the keypoint it would open is still being made:
+/// same pill, same place, visibly inert. A spinner instead of a dead primary
+/// button, because a primary button that ignores taps reads as broken.
+class _GeneratingCta extends StatelessWidget {
+  const _GeneratingCta({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        decoration: ShapeDecoration(
+          color: AppCustomColor.neutral100,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(1000.r),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 16.w,
+              height: 16.w,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.w,
+                color: AppCustomColor.textTertiary,
+              ),
+            ),
+            8.horizontalSpace,
+            AppText(
+              label,
+              style: AppStyle.textBold16.copyWith(
+                color: AppCustomColor.textTertiary,
+                height: 1.5,
+              ),
+              maxLines: 1,
+            ),
+          ],
         ),
       ),
     );
