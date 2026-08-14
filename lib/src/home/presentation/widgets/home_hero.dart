@@ -310,7 +310,14 @@ class _HeroAvatarButton extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           alignment: Alignment.center,
           child: avatarUrl.isNotEmpty
-              ? CacheNetworkGraphic(url: avatarUrl, width: 30.r, height: 30.r, fit: BoxFit.cover)
+              // ClipOval on the image itself, not just the Container's
+              // decoration clip: at this small size the decoration clip left
+              // the photo's corners peeking out past the ring (4 white wedges,
+              // seen on-device 2026-08-14) — the same pattern
+              // _SettingProfileAvatar uses, which renders clean.
+              ? ClipOval(
+                  child: CacheNetworkGraphic(url: avatarUrl, width: 30.r, height: 30.r, fit: BoxFit.cover),
+                )
               : Text(
                   initial,
                   style: TextStyle(
