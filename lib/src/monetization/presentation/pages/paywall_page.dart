@@ -58,7 +58,9 @@ class _PaywallPageState extends State<PaywallPage> {
   /// the builder branches on.
   bool get _isCompactVariant {
     final cubit = AppDI.injector.get<IapCubit>();
-    return cubit.state.resolvedPaywallStrategy?.variant == PaywallProductVariant.compact || cubit.paywallForcedCompact;
+    final override = cubit.paywallVariantOverride;
+    if (override != null) return override == PaywallProductVariant.compact;
+    return cubit.state.resolvedPaywallStrategy?.variant == PaywallProductVariant.compact;
   }
 
   /// The plan the compact sheet actually shows — id-match-then-first, the same
@@ -167,7 +169,7 @@ class _PaywallPageState extends State<PaywallPage> {
               // the sheet-style single-plan paywall, not the full page with a
               // shorter list. The gift popup is skipped here — two sheets
               // stacked on one entry point would fight for the same gesture.
-              if (state.resolvedPaywallStrategy?.variant == PaywallProductVariant.compact || context.read<IapCubit>().paywallForcedCompact) {
+              if (_isCompactVariant) {
                 return _PaywallCompactBody(
                   state: state,
                   countdownEndAt: _compactCountdownEndAt,

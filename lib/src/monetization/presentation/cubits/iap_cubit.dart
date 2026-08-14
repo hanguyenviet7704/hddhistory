@@ -124,16 +124,18 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   void resetPaywallEntryPoint() {
     setPaywallEntryPoint(PaywallEntryPoint.other);
-    _paywallForcedCompact = false;
+    _paywallVariantOverride = null;
   }
 
-  // The gift popup always opens the ABBREVIATED paywall (spec sheet), no
-  // matter how the entry-point table configures the route it lands on. Reset
-  // together with the entry point (PaywallPage.dispose), so the flag can never
-  // leak into a later, ordinary paywall open.
-  bool _paywallForcedCompact = false;
-  bool get paywallForcedCompact => _paywallForcedCompact;
-  void markPaywallForcedCompact() => _paywallForcedCompact = true;
+  // A caller that KNOWS which surface it wants, overriding the entry-point
+  // table: the gift popup always opens the ABBREVIATED paywall (spec sheet),
+  // and an admin deeplink can name either variant outright
+  // (`meup://paywall?variant=full|compact`). Reset together with the entry
+  // point (PaywallPage.dispose), so the override can never leak into a later,
+  // ordinary paywall open.
+  PaywallProductVariant? _paywallVariantOverride;
+  PaywallProductVariant? get paywallVariantOverride => _paywallVariantOverride;
+  void forcePaywallVariant(PaywallProductVariant variant) => _paywallVariantOverride = variant;
 
   @visibleForTesting
   void debugSetAutoOpenRolloutBucket(int bucket) {

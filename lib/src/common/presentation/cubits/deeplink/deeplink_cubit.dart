@@ -128,13 +128,26 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
       // the tap to the paywall. Pushed over wherever the reader is (the link is
       // an offer, not a relocation), with the generic entry point: which
       // campaign sent them is the banner's own tracking's business.
+      //
+      // `?variant=full` / `?variant=compact` lets the LINK name the surface
+      // outright, overriding the admin entry-point table — a campaign banner
+      // and its landing look are then one decision made in one place. No (or an
+      // unrecognised) variant falls back to the table, exactly like the plain
+      // link, so an older admin entry keeps meaning what it meant.
       case RoutePath.paywall:
         final navContext = AppConfig.instance.context;
         if (navContext == null) {
           LogDev.warning('Ignoring paywall deeplink because navigator context is unavailable');
           return false;
         }
-        AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+        final iapCubit = AppDI.injector.get<IapCubit>();
+        iapCubit.setPaywallEntryPoint(PaywallEntryPoint.other);
+        switch (_serviceRouteQuery['variant']?.trim().toLowerCase()) {
+          case 'full':
+            iapCubit.forcePaywallVariant(PaywallProductVariant.full);
+          case 'compact':
+            iapCubit.forcePaywallVariant(PaywallProductVariant.compact);
+        }
         unawaited(const PaywallRoute().push(navContext));
         return true;
       default:

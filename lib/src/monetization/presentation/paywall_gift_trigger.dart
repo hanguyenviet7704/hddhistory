@@ -117,7 +117,7 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   if (!opened || !context.mounted) return;
   PaywallTracking.giftOpenClick(trigger: giftTrigger);
 
-  iapCubit.markPaywallForcedCompact();
+  iapCubit.forcePaywallVariant(PaywallProductVariant.compact);
   await const PaywallRoute().push(context);
 }
 
