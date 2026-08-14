@@ -27,4 +27,14 @@ export const paywallConfigService = {
     const res = await axiosClient.post(`/paywall-config/restore/${version}`);
     return res.data;
   },
+
+  /**
+   * Read-only order stats for one LogicSale, keyed by its stable attribution
+   * id. On demand only (a refresh button on the row) — never fetched for the
+   * whole `logicSales` list at once.
+   */
+  async getLogicSaleStats(id: string) {
+    const res = await axiosClient.get(`/paywall-config/logic-sales/${id}/stats`);
+    return res.data;
+  },
 };

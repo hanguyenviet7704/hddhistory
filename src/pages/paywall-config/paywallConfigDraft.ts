@@ -20,6 +20,7 @@ import {
   PaywallEntryPoint,
   PaywallEntryPointVariants,
   PaywallLocale,
+  PaywallLogicSale,
   PaywallLocaleContent,
   PaywallLocalizedContent,
   PaywallProductRef,
@@ -36,6 +37,16 @@ import {
 
 let localIdCounter = 0;
 export const nextLocalId = () => `local-${++localIdCounter}`;
+
+const randomBase36Chars = (length: number): string =>
+  Array.from({ length }, () => Math.floor(Math.random() * 36).toString(36)).join("");
+
+/**
+ * `id` is the STABLE attribution key purchases are counted by — generated
+ * once, client-side, when a LogicSale row is added, and never reused even
+ * after that row is later removed.
+ */
+export const generateLogicSaleId = (): string => `ls-${randomBase36Chars(8)}`;
 
 export interface ProductOption {
   id: string;
@@ -130,6 +141,27 @@ export interface ReviewDraft {
   content: ReviewLocalizedContentDraft;
 }
 
+export interface LogicSaleDraft {
+  _localId: string;
+  /** Attribution key. Generated once when the row is added (see `generateLogicSaleId`); read-only afterward. */
+  id: string;
+  name: string;
+  enabled: boolean;
+  segmentIds: string[];
+  products: ProductRefDraft[];
+  /** Chuỗi để bind input; rỗng = không gửi. */
+  priority: string;
+  /**
+   * ISO string or `null` (open bound) — unlike the other campaign windows on
+   * this page, converted to/from a `datetime-local` input at the component
+   * boundary via `src/utils/promoCampaignForm.ts`, matching the Home
+   * banner/popup campaign editors this row is closest to.
+   */
+  startAtUtc: string | null;
+  endAtUtc: string | null;
+  countdown: boolean;
+}
+
 export interface ConfigDraft {
   schemaVersion: string;
   enableLessonLock: boolean;
@@ -150,6 +182,7 @@ export interface ConfigDraft {
   compactPaywall: CompactPaywallDraft;
   showCredibilityBlock: boolean;
   reviews: ReviewDraft[];
+  logicSales: LogicSaleDraft[];
 }
 
 // ---------------------------------------------------------------------
@@ -200,6 +233,19 @@ export const emptyReview = (): ReviewDraft => ({
   avatarUrl: "",
   rating: "5",
   content: emptyReviewLocalizedContent(),
+});
+
+export const emptyLogicSale = (): LogicSaleDraft => ({
+  _localId: nextLocalId(),
+  id: generateLogicSaleId(),
+  name: "",
+  enabled: false,
+  segmentIds: [],
+  products: [],
+  priority: "",
+  startAtUtc: null,
+  endAtUtc: null,
+  countdown: false,
 });
 
 /**
@@ -255,6 +301,8 @@ export const defaultDraft = (): ConfigDraft => ({
   showCredibilityBlock: true,
   // Empty by default: the app falls back to its 3 bundled reviews.
   reviews: [],
+  // Empty by default: no merchandising rule is layered on the base strategy.
+  logicSales: [],
 });
 
 // ---------------------------------------------------------------------
@@ -351,6 +399,22 @@ const toReviewDraft = (review: PaywallReview): ReviewDraft => ({
   content: toReviewLocalizedContentDraft(review.content),
 });
 
+const toLogicSaleDraft = (row: PaywallLogicSale): LogicSaleDraft => ({
+  _localId: nextLocalId(),
+  // Carried through as-is — this is the id already generated (client-side,
+  // in an earlier session) or assigned server-side when the row was first
+  // published, never regenerated on load.
+  id: row.id,
+  name: row.name ?? "",
+  enabled: Boolean(row.enabled),
+  segmentIds: row.segmentIds ?? [],
+  products: (row.products ?? []).map(toProductRefDraft),
+  priority: row.priority != null ? String(row.priority) : "",
+  startAtUtc: row.startAtUtc ?? null,
+  endAtUtc: row.endAtUtc ?? null,
+  countdown: Boolean(row.countdown),
+});
+
 export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   schemaVersion: String(config.schemaVersion ?? 1),
   enableLessonLock: Boolean(config.enableLessonLock),
@@ -428,6 +492,9 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   // Absent reads as SHOWN — the behaviour of the app build that introduced it.
   showCredibilityBlock: config.showCredibilityBlock !== false,
   reviews: (config.reviews ?? []).map(toReviewDraft),
+  // Absent (every version published before this section existed) reads as
+  // an empty list — no merchandising rule is layered on the base strategy.
+  logicSales: (config.logicSales ?? []).map(toLogicSaleDraft),
 });
 
 // ---------------------------------------------------------------------
@@ -522,6 +589,23 @@ const fromReviewDraft = (review: ReviewDraft): PaywallReview => ({
   avatarUrl: review.avatarUrl.trim() || undefined,
   rating: review.rating.trim() ? Number(review.rating) : undefined,
   content: fromReviewLocalizedContentDraft(review.content),
+});
+
+const fromLogicSaleDraft = (row: LogicSaleDraft): PaywallLogicSale => ({
+  id: row.id,
+  name: row.name.trim(),
+  // Stored explicitly rather than only-when-true, same reasoning as every
+  // other campaign switch on this page: the JSON should state the intent.
+  enabled: row.enabled,
+  segmentIds: row.segmentIds.length ? row.segmentIds : undefined,
+  // Omitted entirely when empty, same idiom as `compactProducts`/`reviews`
+  // above — an empty list still means "staged, never served" to the app
+  // whether the key is present-and-empty or absent.
+  products: row.products.length ? row.products.map(fromProductRefDraft) : undefined,
+  priority: row.priority.trim() ? Number(row.priority) : undefined,
+  startAtUtc: row.startAtUtc ?? undefined,
+  endAtUtc: row.endAtUtc ?? undefined,
+  countdown: row.countdown,
 });
 
 export const isLocalizedLineEmpty = (title: LocalizedLineDraft): boolean =>
@@ -633,6 +717,14 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
   // free of a key that asserts nothing.
   const reviews = draft.reviews.length ? draft.reviews.map(fromReviewDraft) : undefined;
 
+  // Same rule: an old version that never had `logicSales` and a version that
+  // has it but emptied the list should both publish as "absent" — round-trip
+  // stays byte-compatible instead of injecting `logicSales: []` into configs
+  // that never carried the key.
+  const logicSales = draft.logicSales.length
+    ? draft.logicSales.map(fromLogicSaleDraft)
+    : undefined;
+
   return {
     schemaVersion: Number(draft.schemaVersion || 1),
     enableLessonLock: draft.enableLessonLock,
@@ -648,6 +740,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     // intent and reading it never requires knowing the client default.
     showCredibilityBlock: draft.showCredibilityBlock,
     reviews,
+    logicSales,
   };
 };
 
@@ -855,6 +948,44 @@ export const validateDraft = (
       errors[`${prefix}.content.en`] =
         `${prefix}.content.en: cần ít nhất tiêu đề hoặc nội dung tiếng Anh`;
     }
+  });
+
+  // logicSales — mirrors the backend's publish-time checks (parseable window,
+  // end after start, `countdown: true` requires `endAtUtc`) plus the UI-only
+  // cap: the add button already stops at 20, this only catches a config that
+  // arrived over that some other way (direct API edit, restored version).
+  if (draft.logicSales.length > 20) {
+    errors.logicSales = "logicSales: tối đa 20 mục";
+  }
+  draft.logicSales.forEach((row, index) => {
+    const prefix = `logicSales[${index}]`;
+    if (!row.name.trim()) {
+      errors[`${prefix}.name`] = `${prefix}.name là bắt buộc`;
+    }
+    if (row.priority.trim() && !Number.isInteger(Number(row.priority))) {
+      errors[`${prefix}.priority`] = `${prefix}.priority phải là số nguyên`;
+    }
+    const startAt = row.startAtUtc ? new Date(row.startAtUtc).getTime() : NaN;
+    const endAt = row.endAtUtc ? new Date(row.endAtUtc).getTime() : NaN;
+    if (row.startAtUtc && Number.isNaN(startAt)) {
+      errors[`${prefix}.startAtUtc`] = `${prefix}.startAtUtc không hợp lệ`;
+    }
+    if (row.endAtUtc && Number.isNaN(endAt)) {
+      errors[`${prefix}.endAtUtc`] = `${prefix}.endAtUtc không hợp lệ`;
+    }
+    if (
+      row.startAtUtc &&
+      row.endAtUtc &&
+      !Number.isNaN(startAt) &&
+      !Number.isNaN(endAt) &&
+      startAt >= endAt
+    ) {
+      errors[`${prefix}.endAtUtc`] = `${prefix}.endAtUtc phải sau startAtUtc`;
+    }
+    if (row.countdown && !row.endAtUtc) {
+      errors[`${prefix}.countdown`] = `${prefix}.countdown cần có endAtUtc`;
+    }
+    validateOptionalProducts(row.products, `${prefix}.products`, productsByPlatform, errors);
   });
 
   return errors;

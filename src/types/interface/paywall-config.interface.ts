@@ -226,6 +226,51 @@ export type PaywallEntryPointVariants = Partial<
   Record<PaywallEntryPoint, PaywallProductVariant>
 >;
 
+/**
+ * A merchandising rule layered on top of the base sale strategy: independently
+ * scheduled, targeted at a segment, and carrying its own SKU list that
+ * overrides the winning strategy's plan list while it applies. `id` is the
+ * STABLE attribution key purchases are counted by — generated once client-side
+ * when the row is created, never reused even after the row is removed.
+ */
+export interface PaywallLogicSale {
+  id: string;
+  name: string;
+  enabled: boolean;
+  /** Empty/absent = every user. ANY match, same contract as the promo campaigns' segmentIds. */
+  segmentIds?: string[];
+  /**
+   * Plans offered while this rule applies, overriding the strategy's SKU list
+   * on the app's full paywall. Empty/absent = staged, never served.
+   */
+  products?: PaywallProductRef[];
+  /** Higher wins when several LogicSales apply at once; ties keep list order. */
+  priority?: number;
+  startAtUtc?: string;
+  endAtUtc?: string;
+  /** Show a countdown to `endAtUtc` on the paywall. Requires `endAtUtc` to be set. */
+  countdown?: boolean;
+}
+
+/** One row of `GET /paywall-config/logic-sales/:id/stats` — never sum across rows, currencies don't add up. */
+export interface PaywallLogicSaleStatsByProduct {
+  productId: string;
+  /** null when no order has settled a currency for this product yet. */
+  currency: string | null;
+  orders: number;
+  paidRevenue: number;
+  refundedRevenue: number;
+  netRevenue: number;
+}
+
+/** GET /paywall-config/logic-sales/:id/stats response — read-only, fetched on demand. */
+export interface PaywallLogicSaleStats {
+  id: string;
+  totalOrders: number;
+  /** Empty = no orders yet for this logic sale. */
+  byProduct: PaywallLogicSaleStatsByProduct[];
+}
+
 export interface PaywallConfig {
   schemaVersion: number;
   enableLessonLock: boolean;
@@ -251,6 +296,11 @@ export interface PaywallConfig {
   showCredibilityBlock?: boolean;
   /** The "What people say" carousel. Absent falls back to the app's bundled reviews. */
   reviews?: PaywallReview[];
+  /**
+   * Merchandising rules layered on the base sale strategy, max 20. Optional so
+   * every version published before this existed stays valid.
+   */
+  logicSales?: PaywallLogicSale[];
 }
 
 // Mirrors meup-api dto/paywall-config-response.dto.ts. MySQL is now the

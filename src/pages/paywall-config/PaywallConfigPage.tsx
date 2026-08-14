@@ -52,6 +52,7 @@ import DefaultUserSection from "./components/DefaultUserSection";
 import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
 import GeneralSection from "./components/GeneralSection";
 import GiftCampaignSection from "./components/GiftCampaignSection";
+import LogicSalesSection from "./components/LogicSalesSection";
 import ReviewsSection from "./components/ReviewsSection";
 import SaleEventSection from "./components/SaleEventSection";
 import VersionHistoryDrawer from "./components/VersionHistoryDrawer";
@@ -439,6 +440,17 @@ export default function PaywallConfigPage() {
           <SaleEventSection
             value={draft.saleEvent}
             onChange={(saleEvent) => patchDraft({ saleEvent })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={refetchProducts}
+          />
+
+          <LogicSalesSection
+            value={draft.logicSales}
+            onChange={(logicSales) => patchDraft({ logicSales })}
             disabled={disabled}
             fieldErrors={fieldErrors}
             productsByPlatform={productsByPlatform}
