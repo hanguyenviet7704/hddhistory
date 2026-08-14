@@ -108,6 +108,57 @@ void main() {
     });
   });
 
+  group('DeeplinkTarget.tryParse', () {
+    test('parses the canonical /open/<key> web link', () {
+      final target = DeeplinkTarget.tryParse(
+        Uri.parse('https://meup.training/open/paywall?variant=full&c=tet-2027'),
+      );
+
+      expect(target?.destination, DeeplinkDestination.paywall);
+      expect(target?.params['variant'], 'full');
+      expect(target?.campaign, 'tet-2027');
+    });
+
+    test('parses the in-app meup://open/<key> form', () {
+      final target = DeeplinkTarget.tryParse(Uri.parse('meup://open/course-roadmap?courseId=c1'));
+
+      expect(target?.destination, DeeplinkDestination.courseRoadmap);
+      expect(target?.params['courseId'], 'c1');
+    });
+
+    test('keeps the legacy prefix-less forms working', () {
+      expect(DeeplinkTarget.tryParse(Uri.parse('meup://paywall'))?.destination, DeeplinkDestination.paywall);
+      expect(DeeplinkTarget.tryParse(Uri.parse('meup://'))?.destination, DeeplinkDestination.home);
+      expect(DeeplinkTarget.tryParse(Uri.parse('https://meup.training/'))?.destination, DeeplinkDestination.home);
+      expect(DeeplinkTarget.tryParse(Uri.parse('meup://open'))?.destination, DeeplinkDestination.home);
+    });
+
+    test('reports an unknown key instead of dropping it', () {
+      final target = DeeplinkTarget.tryParse(Uri.parse('meup://open/does-not-exist'));
+
+      expect(target?.destination, isNull);
+      expect(target?.rawKey, 'does-not-exist');
+    });
+
+    test('leaves home-widget and live-activity links to their own handlers', () {
+      expect(
+        DeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?source=home_widget&widgetType=suggest_course')),
+        isNull,
+      );
+      expect(
+        DeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?courseId=c1&source=live_activity')),
+        isNull,
+      );
+    });
+
+    test('exposes every destination key exactly once', () {
+      final values = DeeplinkDestination.values.map((destination) => destination.value).toList();
+
+      expect(values.toSet().length, values.length);
+      expect(values.length, 16);
+    });
+  });
+
   group('DeeplinkCubit.initialLink', () {
     late _FakeDeepLinkService service;
     late DeeplinkCubit cubit;

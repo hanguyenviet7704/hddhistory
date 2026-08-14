@@ -16,6 +16,7 @@ import 'package:injectable/injectable.dart';
 part 'domain/entities/app_function_entity.dart';
 part 'domain/entities/app_version_config_entity.dart';
 part 'domain/entities/course_config_entity.dart';
+part 'domain/entities/deeplink_target.dart';
 part 'domain/entities/onboarding_config_entity.dart';
 part 'domain/entities/paywall_config_entity.dart';
 
