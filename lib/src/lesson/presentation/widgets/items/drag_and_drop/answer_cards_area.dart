@@ -8,6 +8,13 @@ part of '../../../../lesson.dart';
 /// a gap, and it tints faintly while such a drag is in flight so the target is
 /// still discoverable without a permanent frame.
 class AnswerCardsArea extends StatelessWidget {
+  /// Every word of the question, in authored order — INCLUDING the ones already
+  /// placed in the sentence. A placed word keeps its spot in the bank as a gray
+  /// ghost chip (design `p.placed`), so the bank never reflows under the
+  /// reader's finger and "where did my word come from" stays answerable
+  /// ("thiếu các ô trống khi đã chọn từ", 2026-08-13).
+  final List<String> pool;
+
   final List<String> availableWords;
   final Function(String word, int fromIndex) onWordReturnedFromSlot;
 
@@ -21,6 +28,7 @@ class AnswerCardsArea extends StatelessWidget {
 
   const AnswerCardsArea({
     super.key,
+    required this.pool,
     required this.availableWords,
     required this.onWordReturnedFromSlot,
     this.onWordTapped,
@@ -53,36 +61,45 @@ class AnswerCardsArea extends StatelessWidget {
             runSpacing: 10.h,
             // Design centres the bank under the sentence panel.
             alignment: WrapAlignment.center,
-            children: availableWords.map((word) {
-              return Draggable<Map<String, dynamic>>(
-                data: {'word': word, 'fromIndex': null},
-                // Keeps the card deck out of this gesture — see
-                // [KeypointDeckDragLock].
-                onDragStarted: KeypointDeckDragLock.begin,
-                onDragEnd: (_) => KeypointDeckDragLock.end(),
-                feedback: Material(
-                  color: Colors.transparent,
-                  child: Opacity(
-                    opacity: 0.9,
-                    child: AnswerCard(word: word, isDragging: true),
+            // The pool in authored order; each word still in the bank renders
+            // as a live chip and consumes one occurrence of itself (duplicates
+            // stay distinct), each word placed in the sentence leaves a ghost.
+            children: () {
+              final remaining = List<String>.from(availableWords);
+              return pool.map<Widget>((word) {
+                if (!remaining.remove(word)) {
+                  return AnswerCard(word: word, isInvisible: true);
+                }
+                return Draggable<Map<String, dynamic>>(
+                  data: {'word': word, 'fromIndex': null},
+                  // Keeps the card deck out of this gesture — see
+                  // [KeypointDeckDragLock].
+                  onDragStarted: KeypointDeckDragLock.begin,
+                  onDragEnd: (_) => KeypointDeckDragLock.end(),
+                  feedback: Material(
+                    color: Colors.transparent,
+                    child: Opacity(
+                      opacity: 0.9,
+                      child: AnswerCard(word: word, isDragging: true),
+                    ),
                   ),
-                ),
-                childWhenDragging: AnswerCard(word: word, isInvisible: true),
-                child: onWordTapped == null
-                    ? AnswerCard(word: word)
-                    : GestureDetector(
-                        // Opaque, not the chip's own hit box: the chip is a
-                        // bordered card with padding, and a tap landing on that
-                        // padding is still a tap on the word.
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          AppHaptic.select();
-                          onWordTapped!(word);
-                        },
-                        child: AnswerCard(word: word),
-                      ),
-              );
-            }).toList(),
+                  childWhenDragging: AnswerCard(word: word, isInvisible: true),
+                  child: onWordTapped == null
+                      ? AnswerCard(word: word)
+                      : GestureDetector(
+                          // Opaque, not the chip's own hit box: the chip is a
+                          // bordered card with padding, and a tap landing on that
+                          // padding is still a tap on the word.
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            AppHaptic.select();
+                            onWordTapped!(word);
+                          },
+                          child: AnswerCard(word: word),
+                        ),
+                );
+              }).toList();
+            }(),
           ),
         );
       },

@@ -20,10 +20,11 @@ class QuizCardAnswer {
   QuizCardAnswer(this.question) {
     // Word bank / draggable rows start as the authored option order, same as
     // `DragAndDropCubit.setQuestion` / `ArrangeTheSequenceCubit.setQuestion`.
-    availableWords = questionRuntimeOptions(question)
+    wordPool = questionRuntimeOptions(question)
         .map((option) => option.labelText)
         .where((text) => text.isNotEmpty)
-        .toList();
+        .toList(growable: false);
+    availableWords = List<String>.from(wordPool);
     arrangeItems = List<OptionEntity>.from(questionRuntimeOptions(question));
   }
 
@@ -36,7 +37,10 @@ class QuizCardAnswer {
   final Set<int> selected = {};
 
   /// Text gap: slot index → the word dropped in it, and what is left in the bank.
+  /// [wordPool] is the authored full list — the bank's stable skeleton, so a
+  /// placed word can keep its spot as a ghost chip (see AnswerCardsArea.pool).
   final Map<int, String> placedWords = {};
+  late final List<String> wordPool;
   late List<String> availableWords;
 
   /// Arrange the sequence: the rows in their current order.

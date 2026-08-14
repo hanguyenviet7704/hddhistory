@@ -83,6 +83,10 @@ class DragAndDropLessonBody extends LessonBodyWidget {
                         text: context.l10n.exercise.exerciseGapFillingInstruction,
                       ),
                       AnswerCardsArea(
+                        // Authored order, duplicates included — the bank's
+                        // stable skeleton; `availableWords` says which of these
+                        // are still live (see AnswerCardsArea.pool).
+                        pool: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
                         availableWords: state.availableWords,
                         onWordReturnedFromSlot: (word, fromIndex) {
                           context.read<DragAndDropCubit>().removeWord(fromIndex);

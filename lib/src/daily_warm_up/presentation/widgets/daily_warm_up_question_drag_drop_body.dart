@@ -49,6 +49,7 @@ class DailyWarmUpDragDropBody extends StatelessWidget {
         ),
         12.verticalSpace,
         AnswerCardsArea(
+          pool: options.map((option) => option.labelText).toList(growable: false),
           availableWords: availableWords,
           onWordReturnedFromSlot: (_, fromIndex) => onRemovePlacedOption(fromIndex),
         ),

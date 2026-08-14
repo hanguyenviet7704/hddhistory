@@ -139,6 +139,7 @@ class QuizQuestionCard extends StatelessWidget {
           ),
           18.verticalSpace,
           AnswerCardsArea(
+            pool: answer.wordPool,
             availableWords: answer.availableWords,
             onWordReturnedFromSlot: (word, fromIndex) {
               answer.removeWord(fromIndex);
