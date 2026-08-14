@@ -239,6 +239,46 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         _trackDeeplinkOpen(target, resolved: false, reason: 'entity_not_found');
         return true;
 
+      // Không có đường mở thẳng một lesson: `LessonRoute` không nhận id, nội
+      // dung bài do CourseLessonCubit giữ và roadmap là màn nạp dữ liệu course.
+      // Nên đi đúng cơ chế mà Live Activity đã dùng: giao keypoint cho roadmap
+      // và để nó mở bài khi đã resolve được id.
+      //
+      // Bài bị khoá/chưa mua thì roadmap tự xử theo gate sẵn có. Deeplink là
+      // đường đi, không phải chìa khoá.
+      case DeeplinkDestination.lesson:
+        final lessonCourseId = target.params['courseId']?.trim() ?? '';
+        if (lessonCourseId.isEmpty) {
+          HomeRoute().go(navContext);
+          _trackDeeplinkOpen(target, resolved: false, reason: 'missing_param');
+          return true;
+        }
+
+        final keypointId = target.params['keypointId']?.trim() ?? '';
+        final roadmapCubit = AppDI.injector.get<CourseRoadmapCubit>();
+        if (keypointId.isNotEmpty) roadmapCubit.setPendingResumeKeypointId(keypointId);
+
+        if (!_openCourseRoadmap(navContext, lessonCourseId, deeplinkRoadmapSource)) {
+          // Không có roadmap để đứng thì cũng không có ai tiêu thụ yêu cầu này.
+          roadmapCubit.clearPendingResumeKeypointId();
+          HomeRoute().go(navContext);
+          _trackDeeplinkOpen(target, resolved: false, reason: 'entity_not_found');
+        }
+        return true;
+
+      case DeeplinkDestination.skillsetCourses:
+        final skillsetId = target.params['skillsetId']?.trim() ?? '';
+        if (skillsetId.isEmpty) {
+          HomeRoute().go(navContext);
+          _trackDeeplinkOpen(target, resolved: false, reason: 'missing_param');
+          return true;
+        }
+        // Claim branch 1 trước, rồi push trang con: cú push trong branch có
+        // didPush nên trang con tự nhận tên của mình qua route observer.
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+        SkillsetCoursesRoute(skillsetId: skillsetId).go(navContext);
+        return true;
+
       default:
         LogDev.warning('Destination not wired yet: ${destination.value}');
         return false;
