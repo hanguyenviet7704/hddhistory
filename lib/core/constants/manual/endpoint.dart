@@ -116,6 +116,14 @@ mixin AppEndpoint {
   //* Home Banner API
   static const String homeBanner = '/api/v1/home-banner';
 
+  /// "A banner slide was shown" — fire-and-forget impression, keyed by the
+  /// slide's `campaignKey`.
+  static const String homeBannerImpression = '/api/v1/home-banner/impression';
+
+  /// "A banner slide was tapped" — fire-and-forget click, keyed by the
+  /// slide's `campaignKey`.
+  static const String homeBannerClick = '/api/v1/home-banner/click';
+
   /// Admin-configured promo popup on Home. Unlike the banner this one is NOT
   /// public server-side: the response depends on whether THIS user has already
   /// tapped the campaign.
@@ -123,6 +131,10 @@ mixin AppEndpoint {
 
   /// "I tapped it" — retires the popup for this user and this campaign.
   static const String homePopupClick = '/api/v1/home-popup/click';
+
+  /// "The popup was shown" — fire-and-forget impression, mirrors
+  /// [homePopupClick].
+  static const String homePopupImpression = '/api/v1/home-popup/impression';
 
   /// How much of a keypoint this reader may read — the free tier's daily quota.
   /// Server-owned: it depends on what this user has already read today, which no

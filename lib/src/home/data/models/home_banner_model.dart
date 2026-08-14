@@ -5,13 +5,17 @@ abstract class HomeBannerSlideModel with _$HomeBannerSlideModel {
   const factory HomeBannerSlideModel({
     @Default('') String imageUrl,
     @Default('') String linkUrl,
+    // 16-hex content hash of the creative, used to key impression/click
+    // tracking. Defaults to '' for a server predating this field, which
+    // tracking treats as "skip" rather than firing with a blank key.
+    @Default('') String campaignKey,
   }) = _HomeBannerSlideModel;
 
   factory HomeBannerSlideModel.fromJson(Map<String, dynamic> json) => _$HomeBannerSlideModelFromJson(json);
 }
 
 extension HomeBannerSlideModelX on HomeBannerSlideModel {
-  HomeBannerSlideEntity toEntity() => HomeBannerSlideEntity(imageUrl: imageUrl, linkUrl: linkUrl);
+  HomeBannerSlideEntity toEntity() => HomeBannerSlideEntity(imageUrl: imageUrl, linkUrl: linkUrl, campaignKey: campaignKey);
 }
 
 @freezed

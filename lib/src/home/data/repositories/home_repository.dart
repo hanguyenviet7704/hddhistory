@@ -49,6 +49,30 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
     );
   }
 
+  /// Fire-and-forget: errors must never surface a toast over the rest of
+  /// Home, so `enableErrorMessages` is off — unlike the click-reply methods
+  /// below, whose failure the reader never sees either way, but which
+  /// predate this convention.
+  @override
+  TaskEither<AppException, bool> markHomeBannerImpression(String campaignKey) {
+    return callApiWithTransform<HomeTrackingResultModel, bool>(
+      apiCall: () => _homeApi.markHomeBannerImpression({'campaignKey': campaignKey}),
+      transform: (model) => model.recorded,
+      defaultValue: false,
+      enableErrorMessages: false,
+    );
+  }
+
+  @override
+  TaskEither<AppException, bool> markHomeBannerClick(String campaignKey) {
+    return callApiWithTransform<HomeTrackingResultModel, bool>(
+      apiCall: () => _homeApi.markHomeBannerClick({'campaignKey': campaignKey}),
+      transform: (model) => model.recorded,
+      defaultValue: false,
+      enableErrorMessages: false,
+    );
+  }
+
   @override
   TaskEither<AppException, HomePopupEntity> getHomePopup() {
     return callApiWithTransform<HomePopupModel, HomePopupEntity>(
@@ -64,6 +88,16 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
       apiCall: () => _homeApi.markHomePopupClicked({'campaignKey': campaignKey}),
       transform: (model) => model.recorded,
       defaultValue: false,
+    );
+  }
+
+  @override
+  TaskEither<AppException, bool> markHomePopupImpression(String campaignKey) {
+    return callApiWithTransform<HomeTrackingResultModel, bool>(
+      apiCall: () => _homeApi.markHomePopupImpression({'campaignKey': campaignKey}),
+      transform: (model) => model.recorded,
+      defaultValue: false,
+      enableErrorMessages: false,
     );
   }
 

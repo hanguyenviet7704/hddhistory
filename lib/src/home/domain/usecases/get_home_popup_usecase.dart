@@ -20,3 +20,15 @@ class MarkHomePopupClickedUseCase {
   /// popup coming back next session, where tapping again retries it.
   TaskEither<AppException, bool> call(String campaignKey) => _repository.markHomePopupClicked(campaignKey);
 }
+
+@lazySingleton
+class MarkHomePopupImpressionUseCase {
+  final IHomeRepository _repository;
+
+  MarkHomePopupImpressionUseCase(this._repository);
+
+  /// Fired once per campaign per app session, when the popup is actually
+  /// shown — see [HomeCubit.trackPopupImpression] for the dedupe. Mirrors
+  /// [MarkHomePopupClickedUseCase] but for the impression side.
+  TaskEither<AppException, bool> call(String campaignKey) => _repository.markHomePopupImpression(campaignKey);
+}

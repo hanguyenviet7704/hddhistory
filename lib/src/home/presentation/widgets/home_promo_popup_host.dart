@@ -51,6 +51,9 @@ class _HomePromoPopupHostState extends State<HomePromoPopupHost> {
     // Latched BEFORE showing, not after: awaiting the dialog would leave the door
     // open for a second Home rebuild to raise a second copy.
     HomePromoPopupHost._shownThisSession = true;
+    // Fire the impression right as the popup is raised, not after it closes —
+    // "shown" is this call, not whatever the reader does with it afterwards.
+    AppDI.injector.get<HomeCubit>().trackPopupImpression(popup.campaignKey);
     await _HomePromoPopupDialog.show(context, popup);
   }
 

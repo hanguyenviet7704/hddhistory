@@ -64,6 +64,11 @@ class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
   void initState() {
     super.initState();
     _restartAutoAdvance();
+    // The initial slide is visible the moment this carousel first paints —
+    // report it exactly like every later page change does.
+    if (widget.slides.isNotEmpty) {
+      AppDI.injector.get<HomeCubit>().trackBannerImpression(widget.slides.first.campaignKey);
+    }
   }
 
   @override
@@ -118,6 +123,7 @@ class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
   void _openSlide(HomeBannerSlideEntity slide) {
     if (slide.linkUrl.isEmpty) return;
     AppHaptic.select();
+    AppDI.injector.get<HomeCubit>().trackBannerClick(slide.campaignKey);
     unawaited(openConfiguredLink(slide.linkUrl));
   }
 
@@ -139,7 +145,10 @@ class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
               controller: _pageController,
               itemCount: slides.length,
               physics: _isCarousel ? null : const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) => setState(() => _currentIndex = index),
+              onPageChanged: (index) {
+                setState(() => _currentIndex = index);
+                AppDI.injector.get<HomeCubit>().trackBannerImpression(slides[index].campaignKey);
+              },
               itemBuilder: (context, index) {
                 final slide = slides[index];
                 return Semantics(

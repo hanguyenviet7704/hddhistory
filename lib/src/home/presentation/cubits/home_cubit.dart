@@ -7,6 +7,9 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   final GetRandomQuoteUseCase _getRandomQuoteUseCase;
   final GetSuggestCoursesUseCase _getSuggestCoursesUseCase;
   final GetHomeBannerUseCase _getHomeBannerUseCase;
+  final MarkHomeBannerImpressionUseCase _markHomeBannerImpressionUseCase;
+  final MarkHomeBannerClickUseCase _markHomeBannerClickUseCase;
+  final MarkHomePopupImpressionUseCase _markHomePopupImpressionUseCase;
 
   HomeCubit(
     this._getAllUseCase,
@@ -14,6 +17,9 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     this._getRandomQuoteUseCase,
     this._getSuggestCoursesUseCase,
     this._getHomeBannerUseCase,
+    this._markHomeBannerImpressionUseCase,
+    this._markHomeBannerClickUseCase,
+    this._markHomePopupImpressionUseCase,
   ) : super(HomeState.initial());
 
   bool _isInitialized = false;
@@ -127,6 +133,59 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
       usecase: () => _getHomeBannerUseCase(),
       onFailure: (_) {},
       onSuccess: (banner) => emit(state.copyWith(homeBanner: banner)),
+    );
+  }
+
+  /// Campaign keys already reported as an impression this app session — for
+  /// the banner carousel and the promo popup respectively. In-memory and
+  /// per-[HomeCubit] instance ON PURPOSE: [HomeCubit] is itself a
+  /// `@lazySingleton`, so this dies with the process exactly like
+  /// [HomePromoPopupHost._shownThisSession] does, and swiping the carousel
+  /// back and forth (or the popup somehow raising twice) must not re-report
+  /// the same campaign.
+  final Set<String> _trackedBannerImpressionKeys = {};
+  final Set<String> _trackedPopupImpressionKeys = {};
+
+  /// Records that a banner carousel slide was actually shown to the reader —
+  /// the initial slide on first build, then each new slide the carousel
+  /// scrolls to. Skips silently when [campaignKey] is empty (a server build
+  /// predating the field) or already reported this session.
+  void trackBannerImpression(String campaignKey) {
+    if (campaignKey.isEmpty || !_trackedBannerImpressionKeys.add(campaignKey)) return;
+    _fireTrackingCall(() => _markHomeBannerImpressionUseCase(campaignKey), label: 'home_banner_impression');
+  }
+
+  /// Records a tap on a banner carousel slide, alongside the existing
+  /// link-opening behaviour. Every tap is a real click, so unlike the
+  /// impression this is not deduplicated. Skips silently when [campaignKey]
+  /// is empty.
+  void trackBannerClick(String campaignKey) {
+    if (campaignKey.isEmpty) return;
+    _fireTrackingCall(() => _markHomeBannerClickUseCase(campaignKey), label: 'home_banner_click');
+  }
+
+  /// Records that the promo popup was actually shown. [HomePromoPopupHost]
+  /// already limits the popup itself to once per app session; this guards
+  /// the same campaign key being reported twice regardless. Skips silently
+  /// when [campaignKey] is empty.
+  void trackPopupImpression(String campaignKey) {
+    if (campaignKey.isEmpty || !_trackedPopupImpressionKeys.add(campaignKey)) return;
+    _fireTrackingCall(() => _markHomePopupImpressionUseCase(campaignKey), label: 'home_popup_impression');
+  }
+
+  /// Shared fire-and-forget shape for the three tracking calls above: never
+  /// awaited by the caller, never emits state (nothing on Home should
+  /// rebuild because a tracking beacon landed), and a failure only ever
+  /// reaches a debug log line — the repository layer already keeps it off
+  /// the UI (`enableErrorMessages: false`).
+  void _fireTrackingCall(TaskEither<AppException, bool> Function() usecase, {required String label}) {
+    unawaited(
+      usecase().run().then(
+        (result) => result.fold(
+          (error) => LogDev.error('$label failed: ${error.message}'),
+          (_) => null,
+        ),
+      ),
     );
   }
 

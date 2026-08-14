@@ -8,6 +8,12 @@ abstract class HomeBannerSlideEntity with _$HomeBannerSlideEntity {
   const factory HomeBannerSlideEntity({
     @Default('') String imageUrl,
     @Default('') String linkUrl,
+
+    /// Identity of this slide's creative, echoed back to
+    /// impression/click tracking. Empty for the legacy single-banner
+    /// fallback (see [HomeBannerEntityX.effectiveSlides]) and for a server
+    /// older than the field — [HomeCubit] skips tracking in that case.
+    @Default('') String campaignKey,
   }) = _HomeBannerSlideEntity;
 
   factory HomeBannerSlideEntity.fromJson(Map<String, dynamic> json) => _$HomeBannerSlideEntityFromJson(json);
