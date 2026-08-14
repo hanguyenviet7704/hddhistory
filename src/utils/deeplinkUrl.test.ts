@@ -17,15 +17,10 @@ describe("buildDeeplinkUrl", () => {
     );
   });
 
-  it("gắn tham số và nhãn campaign", () => {
+  it("gắn tham số của màn", () => {
     expect(
-      buildDeeplinkUrl(
-        DEEPLINK_WEB_BASE,
-        "paywall",
-        { variant: "full" },
-        "tet-2027"
-      )
-    ).toBe("https://meup.training/open/paywall?variant=full&c=tet-2027");
+      buildDeeplinkUrl(DEEPLINK_WEB_BASE, "paywall", { variant: "full" })
+    ).toBe("https://meup.training/open/paywall?variant=full");
   });
 
   it("bỏ tham số rỗng thay vì gửi khoá trống", () => {
@@ -34,9 +29,45 @@ describe("buildDeeplinkUrl", () => {
     ).toBe("https://meup.training/open/course-roadmap");
   });
 
-  it("encode giá trị có ký tự đặc biệt", () => {
-    expect(buildDeeplinkUrl(DEEPLINK_WEB_BASE, "paywall", {}, "hè & thu")).toBe(
-      "https://meup.training/open/paywall?c=h%C3%A8%20%26%20thu"
+  it("gắn UTM vào link web, giữ thứ tự source→medium→campaign→content→term", () => {
+    expect(
+      buildDeeplinkUrl(
+        DEEPLINK_WEB_BASE,
+        "paywall",
+        {},
+        {
+          source: "zalo",
+          medium: "push",
+          campaign: "tet-2027",
+          content: "banner-a",
+          term: "hoc_tieng_anh",
+        }
+      )
+    ).toBe(
+      "https://meup.training/open/paywall?utm_source=zalo&utm_medium=push&utm_campaign=tet-2027&utm_content=banner-a&utm_term=hoc_tieng_anh"
     );
+  });
+
+  it("KHÔNG gắn UTM vào link meup:// — người dùng đã ở trong app, không có kênh nào để quy", () => {
+    expect(
+      buildDeeplinkUrl(
+        DEEPLINK_APP_BASE,
+        "paywall",
+        { variant: "full" },
+        { source: "zalo", campaign: "tet-2027" }
+      )
+    ).toBe("meup://open/paywall?variant=full");
+  });
+
+  it("bỏ UTM rỗng", () => {
+    expect(
+      buildDeeplinkUrl(DEEPLINK_WEB_BASE, "habit", {}, { source: "  ", medium: "" })
+    ).toBe("https://meup.training/open/habit");
+  });
+
+  it("encode giá trị có ký tự đặc biệt", () => {
+    expect(
+      buildDeeplinkUrl(DEEPLINK_WEB_BASE, "paywall", {}, { campaign: "hè & thu" })
+    ).toBe("https://meup.training/open/paywall?utm_campaign=h%C3%A8%20%26%20thu");
   });
 });

@@ -10,10 +10,12 @@ import {
   MenuItem,
   Paper,
   Select,
+  Tab,
+  Tabs,
   TextField,
   Tooltip,
 } from "@mui/material";
-import { Copy } from "lucide-react";
+import { Copy, HelpCircle } from "lucide-react";
 
 import { courseService } from "../../services/courseService";
 import { deeplinkService } from "../../services/deeplinkService";
@@ -28,6 +30,7 @@ import { ITranslation } from "../../utils/translate";
 import {
   DEEPLINK_APP_BASE,
   DEEPLINK_WEB_BASE,
+  DeeplinkUtm,
   buildDeeplinkUrl,
 } from "../../utils/deeplinkUrl";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -40,7 +43,7 @@ interface Option {
 const labelOf = (title?: ITranslation): string =>
   title?.vi || title?.en || "(chưa có tên)";
 
-/** Nhãn tiếng Việt cho từng tham số, để marketer không phải đọc tên khoá. */
+/** Nhãn tiếng Việt cho tham số, để marketer không phải đọc tên khoá. */
 const PARAM_LABELS: Record<string, string> = {
   courseId: "Khoá học",
   keypointId: "Keypoint (bài cụ thể)",
@@ -51,6 +54,55 @@ const PARAM_LABELS: Record<string, string> = {
 const paramLabel = (param: IDeeplinkParam): string =>
   PARAM_LABELS[param.name] ?? param.name;
 
+/**
+ * Preset UTM. Cố tình để ở admin, KHÔNG lấy từ API như danh mục màn: đây là
+ * phân loại kênh marketing, app không đọc và không route theo nó, nên nó không
+ * phải hợp đồng giữa các stack. Thêm một kênh mới chỉ cần sửa file này.
+ *
+ * `utm_campaign` / `utm_content` / `utm_term` để nhập tay chứ không dropdown:
+ * tên chiến dịch là mới mỗi lần, một danh sách preset sẽ cũ ngay tuần sau.
+ */
+const UTM_SOURCES = [
+  "facebook",
+  "instagram",
+  "zalo",
+  "tiktok",
+  "telegram",
+  "youtube",
+  "google",
+  "email",
+  "sms",
+  "qr",
+];
+
+const UTM_MEDIUMS = [
+  "cpc",
+  "paid_social",
+  "organic_social",
+  "push",
+  "email",
+  "sms",
+  "referral",
+  "qr",
+  "banner",
+];
+
+const NOT_USED = "";
+
+/** Nhãn + dấu (?) kèm tooltip, dùng lại cho mọi field và mọi ô kết quả. */
+function LabelWithHelp({ text, help }: { text: string; help: string }) {
+  return (
+    <span className="flex items-center gap-1">
+      {text}
+      <Tooltip title={help} arrow>
+        <span className="flex cursor-help items-center text-gray-400">
+          <HelpCircle size={14} aria-label={`Giải thích: ${text}`} />
+        </span>
+      </Tooltip>
+    </span>
+  );
+}
+
 export default function DeeplinkGenerator() {
   const { showSuccess, showError } = useNotification();
 
@@ -60,7 +112,8 @@ export default function DeeplinkGenerator() {
 
   const [selectedKey, setSelectedKey] = useState("");
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
-  const [campaign, setCampaign] = useState("");
+  const [utm, setUtm] = useState<DeeplinkUtm>({});
+  const [tab, setTab] = useState(0);
 
   const [courses, setCourses] = useState<Option[]>([]);
   const [skillsets, setSkillsets] = useState<Option[]>([]);
@@ -244,13 +297,13 @@ export default function DeeplinkGenerator() {
     [selected, paramValues]
   );
 
-  const canCopy = Boolean(selected) && missingRequired.length === 0;
+  const isReady = Boolean(selected) && missingRequired.length === 0;
 
   const webUrl = selected
-    ? buildDeeplinkUrl(DEEPLINK_WEB_BASE, selected.key, paramValues, campaign)
+    ? buildDeeplinkUrl(DEEPLINK_WEB_BASE, selected.key, paramValues, utm)
     : "";
   const appUrl = selected
-    ? buildDeeplinkUrl(DEEPLINK_APP_BASE, selected.key, paramValues, campaign)
+    ? buildDeeplinkUrl(DEEPLINK_APP_BASE, selected.key, paramValues)
     : "";
 
   const groups = useMemo<[string, IDeeplinkDestination[]][]>(() => {
@@ -266,15 +319,11 @@ export default function DeeplinkGenerator() {
     return Array.from(byGroup.entries());
   }, [destinations]);
 
-  const quickPicks = useMemo(
-    () => destinations.filter((destination) => destination.params.length === 0),
-    [destinations]
-  );
-
   const copy = async (value: string) => {
+    if (!value) return;
     try {
       await navigator.clipboard.writeText(value);
-      showSuccess("Đã copy link");
+      showSuccess("Đã copy");
     } catch (error) {
       console.error("Clipboard write failed", error);
       showError("Không copy được — bôi đen rồi copy tay nhé");
@@ -283,6 +332,9 @@ export default function DeeplinkGenerator() {
 
   const setParam = (name: string, value: string) =>
     setParamValues((previous) => ({ ...previous, [name]: value }));
+
+  const setUtmField = (field: keyof DeeplinkUtm, value: string) =>
+    setUtm((previous) => ({ ...previous, [field]: value }));
 
   const renderParamField = (param: IDeeplinkParam) => {
     const value = paramValues[param.name] ?? "";
@@ -365,7 +417,7 @@ export default function DeeplinkGenerator() {
             value={value}
             onChange={(e) => setParam(param.name, e.target.value)}
           >
-            {!param.required && <MenuItem value="">(không chọn)</MenuItem>}
+            {!param.required && <MenuItem value="">— Không dùng —</MenuItem>}
             {options.length === 0 && (
               <MenuItem value="" disabled>
                 {isLoadingOptions ? "Đang tải…" : emptyHint}
@@ -385,47 +437,74 @@ export default function DeeplinkGenerator() {
     );
   };
 
-  const renderUrlRow = (label: string, url: string, hint: string) => (
-    <div className="mb-4">
-      <div className="flex items-start gap-2">
-        <TextField
-          fullWidth
+  const renderUtmSelect = (
+    field: keyof DeeplinkUtm,
+    label: string,
+    help: string,
+    options: string[]
+  ) => (
+    <FormControl fullWidth size="small">
+      <InputLabel id={`utm-${field}`} shrink>
+        {label}
+      </InputLabel>
+      <Select
+        labelId={`utm-${field}`}
+        label={label}
+        notched
+        displayEmpty
+        value={utm[field] ?? NOT_USED}
+        onChange={(e) => setUtmField(field, e.target.value)}
+      >
+        <MenuItem value={NOT_USED}>— Không dùng —</MenuItem>
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+      <p className="mt-1 text-xs text-gray-500">{help}</p>
+    </FormControl>
+  );
+
+  /** Ô kết quả: tiêu đề + (?) + nút Copy ở hàng tiêu đề, giá trị mono bên dưới. */
+  const renderResultBox = (
+    title: string,
+    help: string,
+    value: string,
+    hint: string
+  ) => (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div className="text-sm font-semibold">
+          <LabelWithHelp text={title} help={help} />
+        </div>
+        <Button
           size="small"
-          label={label}
-          value={url}
-          InputProps={{ readOnly: true }}
-        />
-        <Tooltip title={canCopy ? `Copy ${label}` : "Còn thiếu thông tin"}>
-          <span>
-            <IconButton
-              aria-label={`Copy ${label}`}
-              disabled={!canCopy || !url}
-              onClick={() => copy(url)}
-            >
-              <Copy size={18} />
-            </IconButton>
-          </span>
-        </Tooltip>
+          variant="outlined"
+          startIcon={<Copy size={14} />}
+          disabled={!isReady || !value}
+          onClick={() => copy(value)}
+        >
+          Copy
+        </Button>
       </div>
-      <p className="mt-1 text-xs text-gray-500">{hint}</p>
+      <p className="break-all font-mono text-sm text-gray-800">
+        {isReady ? value : "— chọn màn hình (và điền ô bắt buộc) để sinh link —"}
+      </p>
+      <p className="mt-2 text-xs text-gray-500">{hint}</p>
+    </div>
+  );
+
+  const sectionTitle = (title: string, desc: string) => (
+    <div className="mb-4">
+      <h2 className="text-base font-semibold">{title}</h2>
+      <p className="mt-1 text-sm text-gray-500">{desc}</p>
     </div>
   );
 
   return (
     <div className="p-6">
-      <header className="mb-5">
-        <h1 className="text-xl font-semibold">Link vào màn</h1>
-        <p className="mt-1 max-w-3xl text-sm text-gray-500">
-          Sinh link dẫn thẳng vào một màn trong app — dán vào push notification,
-          vào ô link của Banner/Popup Home, vào bài Zalo/Facebook, hay email gửi
-          riêng. Người <strong>đã cài app</strong> bấm link web sẽ mở app đúng
-          màn; người <strong>chưa cài</strong> được đưa ra store (mở app lần đầu
-          vẫn phải qua onboarding, không vào thẳng màn được).
-          <br />
-          Đây không phải trang <strong>Link tải app</strong> — trang đó dùng cho
-          link tải kèm thống kê lượt bấm.
-        </p>
-      </header>
+      <h1 className="mb-5 text-2xl font-semibold">Link Builder</h1>
 
       {isLoadingCatalog ? (
         <div className="flex justify-center py-16">
@@ -443,48 +522,24 @@ export default function DeeplinkGenerator() {
           {catalogError}
         </Alert>
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Màn phổ biến: các màn không cần tham số, copy một nhát là xong. */}
-          <Paper className="p-4">
-            <h2 className="mb-1 text-base font-semibold">Màn phổ biến</h2>
-            <p className="mb-3 text-sm text-gray-500">
-              Không cần chọn gì thêm — bấm copy là dùng được.
-            </p>
-            <div className="divide-y">
-              {quickPicks.map((destination) => (
-                <div
-                  key={destination.key}
-                  className="flex items-center justify-between gap-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">
-                      {destination.label}
-                    </div>
-                    <div className="truncate font-mono text-xs text-gray-500">
-                      {`${DEEPLINK_WEB_BASE}/${destination.key}`}
-                    </div>
-                  </div>
-                  <IconButton
-                    aria-label={`Copy link ${destination.label}`}
-                    onClick={() =>
-                      copy(`${DEEPLINK_WEB_BASE}/${destination.key}`)
-                    }
-                  >
-                    <Copy size={18} />
-                  </IconButton>
-                </div>
-              ))}
-            </div>
-          </Paper>
+        <Paper variant="outlined" className="p-6">
+          {/* ── Chọn đích đến ─────────────────────────────────────────────── */}
+          <section>
+            {sectionTitle(
+              "Chọn đích đến",
+              "Chọn màn hình cần dẫn tới — các ô bên cạnh hiện theo màn đã chọn."
+            )}
 
-          <Paper className="p-4">
-            <h2 className="mb-3 text-base font-semibold">Sinh link</h2>
-
-            <FormControl fullWidth size="small" className="mb-4">
-              <InputLabel id="destination-label">Màn đích</InputLabel>
+            <FormControl fullWidth size="small">
+              <InputLabel id="destination-label">
+                <LabelWithHelp
+                  text="Màn hình"
+                  help="Khoá trong ngoặc là thứ đi vào link. Đổi tên màn trong app không làm chết link đã phát ra, vì link mang khoá này chứ không mang đường dẫn."
+                />
+              </InputLabel>
               <Select
                 labelId="destination-label"
-                label="Màn đích"
+                label="Màn hình"
                 value={selectedKey}
                 onChange={(e) => handleSelectDestination(e.target.value)}
               >
@@ -492,58 +547,177 @@ export default function DeeplinkGenerator() {
                   <ListSubheader key={`group-${group}`}>{group}</ListSubheader>,
                   ...items.map((destination) => (
                     <MenuItem key={destination.key} value={destination.key}>
-                      {destination.label}
+                      {`${destination.label} (${destination.key})`}
                     </MenuItem>
                   )),
                 ])}
               </Select>
             </FormControl>
 
-            {!selected ? (
-              <p className="py-6 text-center text-sm text-gray-500">
-                Chọn một màn đích để sinh link.
-              </p>
-            ) : (
+            {selected && (
               <>
-                {selected.note && (
-                  <Alert severity="info" className="mb-4">
-                    {selected.note}
+                {selected.params.length > 0 && (
+                  <div className="mt-4 grid grid-cols-1 gap-x-4 md:grid-cols-2">
+                    {selected.params.map(renderParamField)}
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-col gap-2">
+                  {selected.note && (
+                    <Alert severity="info">{selected.note}</Alert>
+                  )}
+                  <Alert severity="warning">
+                    {`Chỉ hoạt động trên bản app build ≥ ${selected.minAppBuild}. Người dùng bản cũ hơn sẽ về Trang chủ.`}
                   </Alert>
-                )}
-
-                <Alert severity="warning" className="mb-4">
-                  {`Chỉ hoạt động trên bản app build ≥ ${selected.minAppBuild}. Người dùng bản cũ hơn sẽ về Trang chủ.`}
-                </Alert>
-
-                <div className="mb-2 flex flex-col gap-1">
-                  {selected.params.map(renderParamField)}
                 </div>
-
-                <TextField
-                  fullWidth
-                  size="small"
-                  className="mb-4"
-                  label="Nhãn campaign (tuỳ chọn)"
-                  placeholder="tet-2027"
-                  value={campaign}
-                  helperText="Chỉ dùng để đo trong Analytics, không ảnh hưởng màn đích."
-                  onChange={(e) => setCampaign(e.target.value)}
-                />
-
-                {renderUrlRow(
-                  "Link web",
-                  webUrl,
-                  "Dán vào push, Zalo/Facebook, email, QR."
-                )}
-                {renderUrlRow(
-                  "Link trong app",
-                  appUrl,
-                  "Dán vào ô link của Banner Home / Popup Home."
-                )}
               </>
             )}
-          </Paper>
-        </div>
+          </section>
+
+          <hr className="my-6 border-gray-200" />
+
+          {/* ── Gắn UTM ──────────────────────────────────────────────────── */}
+          <section>
+            {sectionTitle(
+              "Gắn UTM (tuỳ chọn)",
+              "Để biết người dùng đến từ kênh nào. Bỏ trống hết thì link giữ nguyên như trước. UTM chỉ gắn vào Link URL (web→app)."
+            )}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+              {renderUtmSelect(
+                "source",
+                "Nguồn (utm_source)",
+                "Kênh cụ thể: zalo, facebook, tiktok…",
+                UTM_SOURCES
+              )}
+              {renderUtmSelect(
+                "medium",
+                "Hình thức (utm_medium)",
+                "Loại kênh: push, cpc, email, qr…",
+                UTM_MEDIUMS
+              )}
+              <TextField
+                fullWidth
+                size="small"
+                label="Chiến dịch (utm_campaign)"
+                placeholder="VD: tet-2027"
+                value={utm.campaign ?? ""}
+                helperText="Nhập tay — tên chiến dịch mới mỗi lần."
+                onChange={(e) => setUtmField("campaign", e.target.value)}
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Nội dung (utm_content)"
+                placeholder="VD: banner-a"
+                value={utm.content ?? ""}
+                helperText="Phân biệt hai mẫu cùng chiến dịch."
+                onChange={(e) => setUtmField("content", e.target.value)}
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Từ khoá (utm_term)"
+                placeholder="VD: hoc_tieng_anh"
+                value={utm.term ?? ""}
+                helperText="Từ khoá quảng cáo, nếu có."
+                onChange={(e) => setUtmField("term", e.target.value)}
+              />
+            </div>
+          </section>
+
+          <hr className="my-6 border-gray-200" />
+
+          {/* ── Kết quả ──────────────────────────────────────────────────── */}
+          <section>
+            {sectionTitle(
+              "Kết quả",
+              "Tự cập nhật khi bạn chọn/nhập. Bấm Copy trên tiêu đề mỗi ô để sao chép."
+            )}
+
+            <Tabs
+              value={tab}
+              onChange={(_, next) => setTab(next)}
+              variant="scrollable"
+              scrollButtons="auto"
+              className="mb-4 border-b border-gray-200"
+            >
+              <Tab label="Link & Link rút gọn" />
+              <Tab label="Notification" />
+              <Tab label="Popup" />
+              <Tab label="Banner" />
+            </Tabs>
+
+            {tab === 0 && (
+              <div className="flex flex-col gap-4">
+                {renderResultBox(
+                  "Link URL (web→app)",
+                  "Người ĐÃ cài app bấm vào sẽ mở app đúng màn. Người CHƯA cài được đưa ra store — mở app lần đầu vẫn phải qua onboarding, không vào thẳng màn được.",
+                  webUrl,
+                  "Dán vào push (OneSignal), bài Zalo/Facebook, email, QR."
+                )}
+
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div className="text-sm font-semibold">
+                      <LabelWithHelp
+                        text="Link rút gọn"
+                        help="Cần phần server của giai đoạn 2: một slug lưu trong DB mang đích, cộng endpoint để app hỏi slug đó nghĩa là gì."
+                      />
+                    </div>
+                    <Button size="small" variant="contained" color="warning" disabled>
+                      Tạo link rút gọn
+                    </Button>
+                  </div>
+                  <Alert severity="info" className="mt-1">
+                    Chưa làm được ở bản này. Link ngắn dạng <code>/s/abc123</code>{" "}
+                    cần server lưu slug kèm đích, và vì{" "}
+                    <code>apple-app-site-association</code> khai{" "}
+                    <code>paths: ["*"]</code> nên app sẽ bắt luôn cả{" "}
+                    <code>/s/…</code> mà không hiểu nó là gì → rơi về Trang chủ.
+                    Dùng Link URL ở trên; cần link ngắn để in QR thì nói để làm
+                    giai đoạn 2 (kèm thống kê lượt bấm + đổi được đích sau khi in).
+                  </Alert>
+                </div>
+              </div>
+            )}
+
+            {tab === 1 && (
+              <div className="flex flex-col gap-4">
+                {renderResultBox(
+                  "Link cho push ngoài (OneSignal…)",
+                  "Công cụ push ngoài mở URL, nên dùng bản https. Người nhận đã cài app nên link mở thẳng màn.",
+                  webUrl,
+                  "Dán vào ô Launch URL / deep link của công cụ push."
+                )}
+                <Alert severity="warning">
+                  Trang <strong>Thông báo định kỳ</strong> của Meup{" "}
+                  <strong>không</strong> nhận URL — nó chọn đích bằng danh sách có
+                  sẵn (<code>home</code>, <code>resume_lesson</code>,{" "}
+                  <code>habit_tracker</code>, <code>new_course</code>,{" "}
+                  <code>explore</code>). Link ở đây là để dán vào công cụ push
+                  bên ngoài.
+                </Alert>
+              </div>
+            )}
+
+            {tab === 2 &&
+              renderResultBox(
+                "Link cho Popup Home",
+                "Popup nằm trong app nên dùng scheme meup:// — mở thẳng màn, không phải đi vòng qua OS.",
+                appUrl,
+                "Dán vào ô link của Popup Home. UTM không gắn vào đây: người dùng đã ở trong app."
+              )}
+
+            {tab === 3 &&
+              renderResultBox(
+                "Link cho Banner Home",
+                "Banner nằm trong app nên dùng scheme meup:// — mở thẳng màn, không phải đi vòng qua OS.",
+                appUrl,
+                "Dán vào ô link của Banner Home. UTM không gắn vào đây: người dùng đã ở trong app."
+              )}
+          </section>
+        </Paper>
       )}
     </div>
   );

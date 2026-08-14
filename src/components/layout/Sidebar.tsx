@@ -102,9 +102,9 @@ const menuGroups = [
       { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
       { name: "Link tải app", icon: LinkIcon, path: "/download-links" },
       // Cạnh "Link tải app" là có chủ đích: hai việc khác nhau (link tải app vs
-      // link dẫn vào một màn) mà tên gần nhau thì thấy được khác biệt ngay tại
-      // chỗ chọn, khỏi vào sai trang.
-      { name: "Link vào màn", icon: LinkIcon, path: "/deeplinks" },
+      // link dẫn vào một màn trong app) mà tên gần nhau thì thấy được khác biệt
+      // ngay tại chỗ chọn, khỏi vào sai trang. Tên khớp tiêu đề trang.
+      { name: "Link Builder", icon: LinkIcon, path: "/deeplinks" },
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
       { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
       { name: "Popup Home", icon: MegaphoneIcon, path: "/home-popup" },
