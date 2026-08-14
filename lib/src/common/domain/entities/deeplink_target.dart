@@ -58,6 +58,7 @@ class DeeplinkTarget {
 
   static const String pathPrefix = 'open';
   static const String campaignQueryKey = 'c';
+  static const String utmCampaignQueryKey = 'utm_campaign';
   static const String _webHost = 'meup.training';
 
   /// Nguồn của những link mang analytics riêng — home widget và Live Activity
@@ -68,7 +69,18 @@ class DeeplinkTarget {
     LiveActivityDeeplink.sourceValue,
   };
 
-  String get campaign => params[campaignQueryKey]?.trim() ?? '';
+  /// Nhãn chiến dịch cho event tracking.
+  ///
+  /// `c=` trước, `utm_campaign=` sau. Trang Link Builder trong admin phát ra
+  /// `utm_campaign` (cùng một field vừa dùng cho quy kênh khi CHƯA cài app —
+  /// nó đi vào `referrer` của Play và sống qua lượt cài — vừa dùng cho event
+  /// khi ĐÃ cài); còn `c=` là dạng ngắn của những link phát ra trước đó và phải
+  /// tiếp tục chạy.
+  String get campaign {
+    final short = params[campaignQueryKey]?.trim() ?? '';
+    if (short.isNotEmpty) return short;
+    return params[utmCampaignQueryKey]?.trim() ?? '';
+  }
 
   Map<String, dynamic> get trackingParams => {
     'destination': destination?.value ?? rawKey,

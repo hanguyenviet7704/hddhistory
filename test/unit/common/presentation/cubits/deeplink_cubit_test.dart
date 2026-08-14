@@ -119,6 +119,20 @@ void main() {
       expect(target?.campaign, 'tet-2027');
     });
 
+    test('reads the campaign from utm_campaign when there is no short c=', () {
+      final utmOnly = DeeplinkTarget.tryParse(
+        Uri.parse('https://meup.training/open/paywall?utm_source=zalo&utm_campaign=tet-2027'),
+      );
+      // `c=` thắng khi có cả hai: link dạng ngắn là link phát ra trước đó.
+      final both = DeeplinkTarget.tryParse(
+        Uri.parse('https://meup.training/open/paywall?c=short&utm_campaign=tet-2027'),
+      );
+
+      expect(utmOnly?.campaign, 'tet-2027');
+      expect(both?.campaign, 'short');
+      expect(utmOnly?.trackingParams, containsPair('campaign', 'tet-2027'));
+    });
+
     test('parses the in-app meup://open/<key> form', () {
       final target = DeeplinkTarget.tryParse(Uri.parse('meup://open/course-roadmap?courseId=c1'));
 
