@@ -8,7 +8,6 @@ import { HomeBannerSlide } from "../../services/homeBannerService";
 import { SegmentOption } from "../../types/interface/segment.interface";
 import {
   fromInputDateTime,
-  LOCALE_OPTIONS,
   PromoCampaignStats,
   toInputDateTime,
 } from "../../utils/promoCampaignForm";
@@ -215,29 +214,6 @@ const HomeBannerSlideCard: React.FC<Props> = ({
       <Autocomplete
         multiple
         size="small"
-        options={LOCALE_OPTIONS}
-        value={(slide.locales ?? []).map(
-          (code) => LOCALE_OPTIONS.find((l) => l.code === code) ?? { code, label: code },
-        )}
-        onChange={(_, selected) =>
-          onChange({ locales: selected.map((l) => l.code) })
-        }
-        isOptionEqualToValue={(a, b) => a.code === b.code}
-        getOptionLabel={(l) => l.label}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Chỉ hiện với các ngôn ngữ"
-            helperText="Để trống = hiện với mọi ngôn ngữ app đang chạy."
-          />
-        )}
-      />
-
-      <div className="h-4" />
-
-      <Autocomplete
-        multiple
-        size="small"
         options={segments}
         value={(slide.segmentIds ?? []).map(
           (id) => segments.find((s) => s._id === id) ?? { _id: id, name: id },
@@ -258,19 +234,7 @@ const HomeBannerSlideCard: React.FC<Props> = ({
 
       <div className="h-4" />
 
-      <div className="grid grid-cols-3 gap-3">
-        <TextField
-          label="Priority"
-          type="number"
-          size="small"
-          value={slide.priority ?? 0}
-          onChange={(e) =>
-            onChange({
-              priority: e.target.value === "" ? 0 : Number(e.target.value),
-            })
-          }
-          helperText="Số cao hơn hiện trước."
-        />
+      <div className="grid grid-cols-2 gap-3">
         <TextField
           label="Bắt đầu"
           type="datetime-local"

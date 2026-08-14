@@ -8,7 +8,6 @@ import { HomePopupItem } from "../../services/homePopupService";
 import { SegmentOption } from "../../types/interface/segment.interface";
 import {
   fromInputDateTime,
-  LOCALE_OPTIONS,
   PromoCampaignStats,
   toInputDateTime,
 } from "../../utils/promoCampaignForm";
@@ -32,8 +31,9 @@ interface Props {
 
 /**
  * One campaign card of the Home popup editor: preview, image upload, link,
- * market/language targeting, schedule, priority, its own switch, and its
- * read-only performance strip.
+ * market/segment targeting, schedule, its own switch, and its read-only
+ * performance strip. (Language and priority stay server-side fields; the UI
+ * dropped them 2026-08-14 — user call.)
  *
  * Owns nothing but its file input — the campaign list lives in the page so
  * drag reordering and Save stay in one place (mirrors `HomeBannerSlideCard`).
@@ -209,29 +209,6 @@ const HomePopupCampaignCard: React.FC<Props> = ({
       <Autocomplete
         multiple
         size="small"
-        options={LOCALE_OPTIONS}
-        value={(item.locales ?? []).map(
-          (code) => LOCALE_OPTIONS.find((l) => l.code === code) ?? { code, label: code },
-        )}
-        onChange={(_, selected) =>
-          onChange({ locales: selected.map((l) => l.code) })
-        }
-        isOptionEqualToValue={(a, b) => a.code === b.code}
-        getOptionLabel={(l) => l.label}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Chỉ hiện với các ngôn ngữ"
-            helperText="Để trống = hiện với mọi ngôn ngữ app đang chạy."
-          />
-        )}
-      />
-
-      <div className="h-4" />
-
-      <Autocomplete
-        multiple
-        size="small"
         options={segments}
         value={(item.segmentIds ?? []).map(
           (id) => segments.find((s) => s._id === id) ?? { _id: id, name: id },
@@ -252,19 +229,7 @@ const HomePopupCampaignCard: React.FC<Props> = ({
 
       <div className="h-4" />
 
-      <div className="grid grid-cols-3 gap-3">
-        <TextField
-          label="Priority"
-          type="number"
-          size="small"
-          value={item.priority ?? 0}
-          onChange={(e) =>
-            onChange({
-              priority: e.target.value === "" ? 0 : Number(e.target.value),
-            })
-          }
-          helperText="Số cao hơn được ưu tiên hiện trước."
-        />
+      <div className="grid grid-cols-2 gap-3">
         <TextField
           label="Bắt đầu"
           type="datetime-local"
