@@ -173,8 +173,8 @@ void main() {
       service.dispose();
     });
 
-    test('returns false for unsupported initial links so splash can continue', () async {
-      service.initialUri = Uri.parse('https://meup.training/profile');
+    test('returns false for unknown destinations so splash can continue', () async {
+      service.initialUri = Uri.parse('https://meup.training/open/no-such-screen');
       cubit.setIsPassSplashScreen(true);
 
       final isHandled = await cubit.initialLink();

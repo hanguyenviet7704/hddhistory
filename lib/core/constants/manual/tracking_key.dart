@@ -553,6 +553,14 @@ mixin TrackingKey {
   // logged manually, hence the custom name.
   static const String notiTap = 'noti_tap';
 
+  // Mở app từ một link vào màn (`/open/<key>`). Đây là cách DUY NHẤT đếm được
+  // click của người ĐÃ cài app: Universal Link bị OS chặn và giao thẳng cho app,
+  // server không bao giờ thấy request đó — nên "đếm click server-side" cho
+  // deeplink chỉ đếm được người CHƯA cài.
+  // Params: destination (khoá đích, hoặc khoá thô khi bản app chưa hiểu),
+  // campaign (nhãn `?c=` nếu link có), resolved, reason khi không điều hướng.
+  static const String deeplinkOpen = 'deeplink_open';
+
   //* Subscription events
   static const String subscriptionRenewed = 'subscription_renewed';
   static const String subscriptionCancelled = 'subscription_cancelled';

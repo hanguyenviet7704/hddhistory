@@ -13,6 +13,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   String _pendingUriKey = '';
   String _lastHandledInitialUriKey = '';
   Map<String, String> _serviceRouteQuery = {};
+  DeeplinkTarget? _pendingTarget;
 
   void init() {
     _deepLinkService.uriStream.listen(
@@ -43,6 +44,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     _serviceRoutePath = '';
     _pendingUriKey = '';
     _serviceRouteQuery = {};
+    _pendingTarget = null;
   }
 
   bool setIsPassSplashScreen(bool isPassSplashScreen) {
@@ -97,7 +99,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   bool handleRoute() {
     if (!state.isPassSplashScreen || _serviceRoutePath.isEmpty) return false;
     _handleServiceRouteParam();
-    final isHandled = _handleLiveActivityRoute() || _handleShellRoute() || _handleNormalRoute();
+    final isHandled = _handleLiveActivityRoute() || _handleShellRoute() || _handleDestination();
     if (isHandled) {
       _lastHandledInitialUriKey = _pendingUriKey;
     }
@@ -114,16 +116,75 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     return _handleHomeWidgetRoute(target);
   }
 
-  bool _handleNormalRoute() {
-    switch (_serviceRoutePath) {
-      case RoutePath.home:
-        final navContext = AppConfig.instance.context;
-        if (navContext == null) {
-          LogDev.warning('Ignoring deeplink because navigator context is unavailable');
-          return false;
-        }
+  /// Điều hướng theo bảng đích. Chạy SAU live-activity và home-widget: hai
+  /// handler đó khoá theo `source=` và mang analytics riêng của chúng.
+  bool _handleDestination() {
+    final target = _pendingTarget;
+    if (target == null) return false;
+
+    // Deeplink không được vượt lên trước onboarding. Trả false để splash tự
+    // quyết đi đâu — nó dùng đúng giá trị này để biết deeplink có chiếm quyền
+    // điều hướng hay không (xem splash_page.dart `_initScreen`).
+    if (_shouldDeferForOnboarding()) {
+      LogDev.info('Deferring deeplink until onboarding finishes: ${target.rawKey}');
+      _trackDeeplinkOpen(target, resolved: false, reason: 'pre_auth_deferred');
+      return false;
+    }
+
+    final navContext = AppConfig.instance.context;
+    if (navContext == null) {
+      LogDev.warning('Ignoring deeplink because navigator context is unavailable');
+      _trackDeeplinkOpen(target, resolved: false, reason: 'missing_context');
+      return false;
+    }
+
+    final destination = target.destination;
+    if (destination == null) {
+      // Bản app cũ nhận một khoá mới. Về Home thì sai ít hơn là treo tại chỗ
+      // người dùng đang đứng — đó là hành vi cũ và không ai nhận ra nó hỏng.
+      LogDev.warning('Unknown deeplink destination: ${target.rawKey}');
+      _trackDeeplinkOpen(target, resolved: false, reason: 'unknown_destination');
+      HomeRoute().go(navContext);
+      return true;
+    }
+
+    final isHandled = _navigateToDestination(navContext, destination, target);
+    _trackDeeplinkOpen(target, resolved: isHandled, reason: isHandled ? '' : 'navigation_failed');
+    return isHandled;
+  }
+
+  /// True khi người dùng lẽ ra sẽ bị đưa vào auth/onboarding chứ không vào app.
+  ///
+  /// KHÔNG kiểm theo tên route: splash gọi `initialLink()` trong lúc còn đứng
+  /// TRÊN splash, nên một guard theo tên route sẽ chặn luôn mọi deeplink
+  /// cold-start — kể cả những cái đang chạy tốt hôm nay. Dùng lại đúng vị từ mà
+  /// splash dùng để quyết định vào Home hay vào onboarding.
+  ///
+  /// Lưu ý tên field bị đặt ngược: `isUserPassOnboarding == true` nghĩa là người
+  /// này CÒN PHẢI onboard (mặc định `true` cho máy vừa cài).
+  bool _shouldDeferForOnboarding() {
+    try {
+      final userState = AppDI.injector.get<UserCubit>().state;
+      return AppGlobalValue.accessToken.isEmpty || userState.isUserPassOnboarding;
+    } catch (error) {
+      // Không đọc được trạng thái user thì coi như chưa an toàn để điều hướng.
+      LogDev.warning('Could not read onboarding state for deeplink: $error');
+      return true;
+    }
+  }
+
+  /// Bảng đích: khoá công khai → màn trong app.
+  bool _navigateToDestination(
+    BuildContext navContext,
+    DeeplinkDestination destination,
+    DeeplinkTarget target,
+  ) {
+    switch (destination) {
+      case DeeplinkDestination.home:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
         HomeRoute().go(navContext);
         return true;
+
       // `meup://paywall` — what admin enters as a banner/popup linkUrl to send
       // the tap to the paywall. Pushed over wherever the reader is (the link is
       // an offer, not a relocation), with the generic entry point: which
@@ -134,15 +195,10 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
       // and its landing look are then one decision made in one place. No (or an
       // unrecognised) variant falls back to the table, exactly like the plain
       // link, so an older admin entry keeps meaning what it meant.
-      case RoutePath.paywall:
-        final navContext = AppConfig.instance.context;
-        if (navContext == null) {
-          LogDev.warning('Ignoring paywall deeplink because navigator context is unavailable');
-          return false;
-        }
+      case DeeplinkDestination.paywall:
         final iapCubit = AppDI.injector.get<IapCubit>();
         iapCubit.setPaywallEntryPoint(PaywallEntryPoint.other);
-        switch (_serviceRouteQuery['variant']?.trim().toLowerCase()) {
+        switch (target.params['variant']?.trim().toLowerCase()) {
           case 'full':
             iapCubit.forcePaywallVariant(PaywallProductVariant.full);
           case 'compact':
@@ -150,9 +206,24 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         }
         unawaited(const PaywallRoute().push(navContext));
         return true;
+
       default:
+        LogDev.warning('Destination not wired yet: ${destination.value}');
         return false;
     }
+  }
+
+  void _trackDeeplinkOpen(DeeplinkTarget target, {required bool resolved, String reason = ''}) {
+    unawaited(
+      AppService.instance.appTrackingService.trackEvent(
+        TrackingKey.deeplinkOpen,
+        parameters: {
+          ...target.trackingParams,
+          'resolved': resolved,
+          if (reason.isNotEmpty) 'reason': reason,
+        },
+      ).catchError((_) {}),
+    );
   }
 
   bool _handleHomeWidgetRoute(HomeWidgetDeeplinkTarget target) {
@@ -426,6 +497,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     _pendingUriKey = uri.toString();
     _serviceRoutePath = resolveDeeplinkRoutePath(uri);
     _serviceRouteQuery = queryParameters;
+    _pendingTarget = DeeplinkTarget.tryParse(uri);
     LogDev.one('ServiceRoute, pathValue: $path, query: $query, host: $host, fragment: $fragment, queryParameters: $_serviceRouteQuery');
     LogDev.one('ServiceRoute, pathValueSaved: $_serviceRoutePath, query: $_serviceRouteQuery');
   }
