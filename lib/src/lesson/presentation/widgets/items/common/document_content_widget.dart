@@ -2,10 +2,12 @@ part of '../../../../lesson.dart';
 
 /// Which typographic role a run of CMS copy is playing.
 ///
-/// The Keypoint v2 design sets reading copy and question stems apart
-/// deliberately: theory is long-form prose the reader controls the size of,
-/// while a question stem is a short, fixed, heavier line that has to stay
-/// legible next to its options.
+/// SAME sizes for both since 2026-08-13 ("các loại câu hỏi đồng nhất lại size
+/// chữ giống với theory" — the heavier 17/w700 stems made every question card
+/// shout next to the theory card before it). What still differs is the reading
+/// machinery: the Text-display sheet's font family and scale apply ONLY to
+/// theory — a question's copy stays fixed so its options and slots keep their
+/// measured layout.
 enum DocumentProse { theory, question }
 
 class DocumentContentWidget extends StatelessWidget {
@@ -34,33 +36,24 @@ class DocumentContentWidget extends StatelessWidget {
         display: display,
         scalable: !isQuestion,
         style: AppStyle.textBold18.copyWith(
-          fontSize: isQuestion ? 17.sp : null,
-          height: isQuestion ? 1.35 : null,
           color: AppCustomColor.textPrimary,
           fontFamily: isQuestion ? null : display.fontFamilyName,
           fontFamilyFallback: isQuestion ? null : display.fontFamilyFallback,
         ),
       ),
+      // Design body copy: 16px at rest, medium weight, generous leading — the
+      // reader scales the theory variant from here with the Text sheet.
       ContentDocumentType.text => _buildProse(
         maxLines: 50,
         display: display,
         scalable: !isQuestion,
-        style: isQuestion
-            ? AppStyle.text18.copyWith(
-                fontSize: 17.sp,
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-                color: AppCustomColor.textPrimary,
-              )
-            // Design body copy: 16px at rest, medium weight, generous leading —
-            // the reader scales it from here with the Text sheet.
-            : AppStyle.text16.copyWith(
-                fontWeight: FontWeight.w500,
-                height: 1.75,
-                color: AppCustomColor.kpBodyText,
-                fontFamily: display.fontFamilyName,
-                fontFamilyFallback: display.fontFamilyFallback,
-              ),
+        style: AppStyle.text16.copyWith(
+          fontWeight: FontWeight.w500,
+          height: 1.75,
+          color: AppCustomColor.kpBodyText,
+          fontFamily: isQuestion ? null : display.fontFamilyName,
+          fontFamilyFallback: isQuestion ? null : display.fontFamilyFallback,
+        ),
       ),
       ContentDocumentType.caption => _ChoiceDocumentTypeTag(label: content),
       _ => const SizedBox.shrink(),

@@ -41,11 +41,14 @@ class SentenceBuilder extends StatelessWidget {
             widgets.add(
               AppText(
                 word,
-                style: AppStyle.text18.copyWith(
-                  fontSize: 19.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppCustomColor.textPrimary,
-                  height: 1.3,
+                // Theory body's own size and weight ("đồng nhất size chữ giống
+                // theory", 2026-08-13) — the 19/w700 it replaced made this one
+                // card twice as loud as the prose card before it. The gaps stay
+                // findable because the slots are drawn chrome, not text.
+                style: AppStyle.text16.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppCustomColor.kpBodyText,
+                  height: 1.75,
                 ),
               ),
             );
@@ -76,8 +79,8 @@ class SentenceBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 6.w,
-      // The design's 2.1 line-height on a 19px sentence: enough air for a 34px
-      // slot to sit inline without the lines colliding.
+      // Enough air between runs for a 34px slot to sit inline with 16px text
+      // without the lines colliding.
       runSpacing: 10.h,
       alignment: WrapAlignment.start,
       crossAxisAlignment: WrapCrossAlignment.center,
