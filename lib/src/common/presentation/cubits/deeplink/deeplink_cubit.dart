@@ -9,6 +9,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
 
   StreamSubscription<Uri?>? _homeWidgetClickSubscription;
   StreamSubscription<NotificationInteraction>? _notificationInteractionSubscription;
+  StreamSubscription<PageState>? _onboardingExitSubscription;
   String _serviceRoutePath = '';
   String _pendingUriKey = '';
   String _lastHandledInitialUriKey = '';
@@ -106,6 +107,12 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     if (!isHandled) {
       LogDev.warning('Ignoring unsupported deeplink route: $_serviceRoutePath');
     }
+    // Chưa qua onboarding thì GIỮ link lại và chạy lại khi vào được app. Đây là
+    // lần duy nhất không reset: mọi lối ra khác đều đã dùng xong hoặc đã bỏ link.
+    if (!isHandled && _pendingTarget != null && _shouldDeferForOnboarding()) {
+      _ensureOnboardingWatch();
+      return false;
+    }
     resetServiceRouteData();
     return isHandled;
   }
@@ -170,6 +177,40 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
       // Không đọc được trạng thái user thì coi như chưa an toàn để điều hướng.
       LogDev.warning('Could not read onboarding state for deeplink: $error');
       return true;
+    }
+  }
+
+  /// Lắng `PageCubit` để chạy lại link đang treo khi người dùng đã thực sự vào
+  /// trong app.
+  ///
+  /// Lắng PAGE chứ không lắng USER là có chủ đích. `UserCubit` emit ngay khoảnh
+  /// khắc onboarding được đánh dấu xong — lúc đó người dùng vẫn còn đứng trên
+  /// màn onboarding và chính nó sắp `.go()` sang Home. Replay tại đó là đua với
+  /// cú `.go()` đó, và `.go()` thắng: paywall vừa `.push()` bị xoá khỏi stack,
+  /// link im lặng biến mất. `PageCubit` emit khi màn đích đã claim tên của nó,
+  /// tức là điều hướng của onboarding đã xong.
+  ///
+  /// Đăng ký LÚC CẦN chứ không trong `init()`: `DeeplinkCubit` được dựng rất
+  /// sớm và không có link treo thì cũng chẳng có gì để lắng.
+  void _ensureOnboardingWatch() {
+    if (_onboardingExitSubscription != null) return;
+    try {
+      _onboardingExitSubscription = AppDI.injector.get<PageCubit>().stream.listen(
+        (pageState) {
+          if (_pendingTarget == null) return;
+          // Cả hai điều kiện: hết lý do hoãn, VÀ app đã rời vùng pre-auth.
+          if (_shouldDeferForOnboarding()) return;
+          if (preAuthRouteNames.contains(pageState.currentRouteName)) return;
+
+          unawaited(_onboardingExitSubscription?.cancel());
+          _onboardingExitSubscription = null;
+          LogDev.info('Replaying deferred deeplink: ${_pendingTarget?.rawKey}');
+          handleRoute();
+        },
+        onError: (error, stackTrace) => LogDev.one('onboardingExit error: $error, stackTrace: $stackTrace'),
+      );
+    } catch (error) {
+      LogDev.warning('Could not watch onboarding exit for deferred deeplink: $error');
     }
   }
 
@@ -636,6 +677,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   Future<void> close() async {
     await _homeWidgetClickSubscription?.cancel();
     await _notificationInteractionSubscription?.cancel();
+    await _onboardingExitSubscription?.cancel();
     return super.close();
   }
 }
