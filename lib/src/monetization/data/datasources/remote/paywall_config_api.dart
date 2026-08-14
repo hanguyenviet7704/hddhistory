@@ -16,4 +16,10 @@ abstract class PaywallConfigApi {
 
   @GET(AppEndpoint.paywallConfigMobile)
   Future<BaseResponse<dynamic>> getPaywallConfig();
+
+  /// The per-user LogicSale campaign. Unlike [getPaywallConfig] this response
+  /// shape is small and stable, so it is deserialized straight into
+  /// [PaywallLogicSaleModel] rather than going through the raw-JSON parser.
+  @GET(AppEndpoint.paywallConfigLogicSale)
+  Future<BaseResponse<PaywallLogicSaleModel>> getLogicSale();
 }

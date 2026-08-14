@@ -66,6 +66,18 @@ abstract class IapState with _$IapState {
     @Default(false) bool isValidatingVoucher,
     @Default(VoucherRejectReason.unknown) VoucherRejectReason voucherRejectReason,
     @Default(false) bool hasVoucherFeedback,
+
+    /// Id of the LogicSale campaign that produced [iapProducts] for THIS load,
+    /// or empty when none is active. Carried into `VerifyParams.logicSaleId`
+    /// for a purchase started from this paywall session — see
+    /// IapCubit._verifyPurchase.
+    @Default('') String logicSaleId,
+
+    /// Device-local absolute deadline for the LogicSale countdown strip,
+    /// already translated from the server clock captured at fetch time (see
+    /// IapCubit._logicSaleLocalDeadline). Null hides the strip: no LogicSale,
+    /// its `countdown` flag was off, or its SKU override did not resolve.
+    DateTime? logicSaleCountdownEndAt,
   }) = _IapState;
 
   factory IapState.initial() => IapState();

@@ -15,6 +15,8 @@ giftSheetDiscount: "$percent% OFF"
 giftSheetEndsIn: "Ends in"
 keyFeaturesTitle: Key features
 loadingPlans: Loading plans…
+logicSaleCountdownLabel: Offer ends in
+logicSaleCountdownWithDays: ${days}d ${time}
 manageAutoRenew: Auto-renew
 manageAutoRenewOff: 'FALSE'
 manageAutoRenewOn: 'TRUE'

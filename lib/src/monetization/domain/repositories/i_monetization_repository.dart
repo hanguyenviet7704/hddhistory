@@ -13,6 +13,11 @@ abstract class IMonetizationRepository {
   /// [IapCubit.resolvedPaywallConfig]). Never shows a network error toast —
   /// a failed background refresh must stay silent.
   TaskEither<AppException, PaywallConfigEntity> getPaywallConfig();
+
+  /// The per-user LogicSale campaign — resolves to `Left` on any failure, no
+  /// caching or fallback chain (unlike [getPaywallConfig]): the caller treats
+  /// that identically to `active: false`. See IapCubit._resolveLogicSale.
+  TaskEither<AppException, PaywallLogicSaleEntity> getLogicSale();
   Future<List<String>> loadProcessedTransactionIds();
   Future<void> cacheProcessedTransactionIds(List<String> ids);
   void dispose();

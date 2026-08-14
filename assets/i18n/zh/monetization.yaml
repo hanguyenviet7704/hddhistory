@@ -15,6 +15,8 @@ giftSheetDiscount: "立减 $percent%"
 giftSheetEndsIn: "截止倒计时"
 keyFeaturesTitle: 核心功能
 loadingPlans: 正在加载方案…
+logicSaleCountdownLabel: 优惠还剩
+logicSaleCountdownWithDays: ${days}天 ${time}
 manageAutoRenew: 自动续订
 manageAutoRenewOff: 关闭
 manageAutoRenewOn: 开启

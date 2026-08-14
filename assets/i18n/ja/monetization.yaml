@@ -15,6 +15,8 @@ giftSheetDiscount: "$percent% OFF"
 giftSheetEndsIn: "終了まで"
 keyFeaturesTitle: 主な機能
 loadingPlans: プランを読み込み中…
+logicSaleCountdownLabel: オファー終了まで
+logicSaleCountdownWithDays: ${days}日 ${time}
 manageAutoRenew: 自動更新
 manageAutoRenewOff: 'FALSE'
 manageAutoRenewOn: 'TRUE'

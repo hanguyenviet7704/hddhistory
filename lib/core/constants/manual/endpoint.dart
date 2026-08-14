@@ -49,6 +49,11 @@ mixin AppEndpoint {
   //* Paywall Config API — backend CMS source of truth (Firebase Remote Config
   //* is kept as a fallback layer only). See IapCubit.resolvedPaywallConfig.
   static const String paywallConfigMobile = '/api/v1/paywall-config/mobile';
+
+  /// Per-user "LogicSale" campaign — public route, but the answer is
+  /// segment-targeted by decoding the auth header. See
+  /// IapCubit._resolveLogicSale.
+  static const String paywallConfigLogicSale = '/api/v1/paywall-config/logic-sale';
   static const String streakConfig = '/api/v1/streak-config';
 
   //* Onboardings API

@@ -10,12 +10,19 @@ class VerifyParams {
   /// it before recording — a stale code must never fail the purchase.
   final String voucherCode;
 
+  /// Attribution only — the server never lets this change the outcome. Set
+  /// only for a purchase started from this paywall session while its
+  /// LogicSale override was active; a restore never carries it (see
+  /// IapCubit._verifyPurchase).
+  final String logicSaleId;
+
   VerifyParams({
     required this.platform,
     this.productId = '',
     this.packageName = '',
     this.storeTransactionId = '',
     this.voucherCode = '',
+    this.logicSaleId = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -25,6 +32,7 @@ class VerifyParams {
       'packageName': packageName,
       'storeTransactionId': storeTransactionId,
       if (voucherCode.isNotEmpty) 'voucherCode': voucherCode,
+      if (logicSaleId.isNotEmpty) 'logicSaleId': logicSaleId,
     };
   }
 }

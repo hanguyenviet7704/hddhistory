@@ -79,6 +79,9 @@ class _FakePaywallConfigApi implements PaywallConfigApi {
     if (shouldThrow) throw Exception('network down');
     return BaseResponse(status: true, code: '200', data: response);
   }
+
+  @override
+  Future<BaseResponse<PaywallLogicSaleModel>> getLogicSale() async => const BaseResponse(data: PaywallLogicSaleModel());
 }
 
 class _FakePaywallConfigLocalDataSource implements PaywallConfigLocalDataSource {

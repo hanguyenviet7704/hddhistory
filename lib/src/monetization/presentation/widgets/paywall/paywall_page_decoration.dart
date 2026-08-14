@@ -162,6 +162,11 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
           // button, this one gives the offer its own line. Renders nothing when
           // no sale is running.
           _CountdownStrip(strategy: widget.state.resolvedPaywallStrategy),
+          // The LogicSale campaign's own countdown — a separate, per-user
+          // signal from `_CountdownStrip`'s CMS sale event (see
+          // IapState.logicSaleCountdownEndAt). Renders nothing on its own
+          // when no LogicSale is driving this load.
+          _LogicSaleCountdownStrip(endAt: widget.state.logicSaleCountdownEndAt),
           _PaywallInlinePlans(
             state: widget.state,
             onPlanTap: _handlePlanTap,

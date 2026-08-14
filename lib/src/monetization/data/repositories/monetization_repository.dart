@@ -183,6 +183,19 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
     );
   }
 
+  /// Never falls back to a cache — a stale LogicSale (wrong SKUs, wrong
+  /// deadline) is worse than showing none, unlike [getPaywallConfig] where a
+  /// stale value still beats Remote Config's coarser defaults.
+  @override
+  TaskEither<AppException, PaywallLogicSaleEntity> getLogicSale() {
+    return callApiWithTransform<PaywallLogicSaleModel, PaywallLogicSaleEntity>(
+      apiCall: () => _paywallConfigApi.getLogicSale(),
+      transform: (model) => model.toEntity(),
+      defaultValue: const PaywallLogicSaleEntity(),
+      enableErrorMessages: false,
+    );
+  }
+
   @override
   Future<List<String>> loadProcessedTransactionIds() async {
     try {

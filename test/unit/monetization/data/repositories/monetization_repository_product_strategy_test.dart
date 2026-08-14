@@ -179,6 +179,9 @@ class _FakeUserSubscriptionLocalDataSource implements UserSubscriptionLocalDataS
 class _FakePaywallConfigApi implements PaywallConfigApi {
   @override
   Future<BaseResponse<dynamic>> getPaywallConfig() async => const BaseResponse(data: <String, dynamic>{});
+
+  @override
+  Future<BaseResponse<PaywallLogicSaleModel>> getLogicSale() async => const BaseResponse(data: PaywallLogicSaleModel());
 }
 
 class _FakePaywallConfigLocalDataSource implements PaywallConfigLocalDataSource {

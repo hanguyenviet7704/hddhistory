@@ -35,6 +35,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final ValidateVoucherUsecase _validateVoucherUsecase;
   final IRemoteConfigService _remoteConfigService;
   final GetPaywallConfigUsecase _getPaywallConfigUsecase;
+  final GetPaywallLogicSaleUsecase _getPaywallLogicSaleUsecase;
 
   final IPackageInfoService _packageInfoService;
 
@@ -65,6 +66,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._validateVoucherUsecase,
     this._remoteConfigService,
     this._getPaywallConfigUsecase,
+    this._getPaywallLogicSaleUsecase,
     this._packageInfoService,
   ) : super(IapState.initial());
 
@@ -333,7 +335,20 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         paywallContent: resolvedStrategy.content,
       ),
     );
-    final result = await _getPackagesUsecase.call(GetPackagesParams(platform: platform, selectedProductIds: state.applyVoucherSwap(resolvedStrategy.productIds))).run();
+
+    // Fired alongside the store product fetch below, not before it: this is
+    // the same "fire and let the current load await it" shape as the store
+    // fetch itself, just for a second, independent signal. A failure or
+    // `active: false` answer resolves to null, so everything past this line
+    // behaves exactly as it did before LogicSale existed.
+    final logicSale = await _resolveLogicSale(resolvedStrategy);
+    if (!_isCurrentLoad(loadingSignature, generation)) return false;
+
+    final logicSaleProductIds = _logicSaleProductIds(logicSale, platform);
+    final usesLogicSale = logicSaleProductIds.isNotEmpty;
+    final productIds = usesLogicSale ? logicSaleProductIds : resolvedStrategy.productIds;
+
+    final result = await _getPackagesUsecase.call(GetPackagesParams(platform: platform, selectedProductIds: state.applyVoucherSwap(productIds))).run();
     return result.match(
       (error) {
         if (!_isCurrentLoad(loadingSignature, generation)) return false;
@@ -345,6 +360,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
             resolvedPaywallStrategy: resolvedStrategy,
             paywallContent: resolvedStrategy.content,
             errorMessage: error.toString(),
+            logicSaleId: '',
+            logicSaleCountdownEndAt: null,
           ),
         );
         return false;
@@ -360,6 +377,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
               resolvedPaywallStrategy: resolvedStrategy,
               paywallContent: resolvedStrategy.content,
               errorMessage: 'empty_products',
+              logicSaleId: '',
+              logicSaleCountdownEndAt: null,
             ),
           );
           return false;
@@ -374,6 +393,12 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
             paywallContent: resolvedStrategy.content,
             paywallStrategySignature: loadingSignature,
             errorMessage: null,
+            logicSaleId: usesLogicSale ? logicSale!.id : '',
+            // Tied to the override actually taking effect, not just `active:
+            // true` — a countdown over a product list that quietly fell back
+            // to the default plans would misrepresent what the clock is
+            // counting down to.
+            logicSaleCountdownEndAt: usesLogicSale && logicSale!.countdown ? _logicSaleLocalDeadline(logicSale) : null,
           ),
         );
         return true;
@@ -383,6 +408,47 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   bool _isCurrentLoad(String signature, int generation) {
     return state.paywallStrategySignature == signature && _loadIapProductsSignature == signature && _loadIapProductsGeneration == generation;
+  }
+
+  /// LogicSale never touches the compact 33%-off sheet — the same rule
+  /// `saleStrategy.saleEvent` follows (see `ResolvePaywallStrategyUsecase`).
+  Future<PaywallLogicSaleEntity?> _resolveLogicSale(ResolvedPaywallStrategyEntity resolvedStrategy) async {
+    if (resolvedStrategy.variant == PaywallProductVariant.compact) return null;
+    final result = await _getPaywallLogicSaleUsecase(unit).run();
+    return result.match((_) => null, (value) => value.active ? value : null);
+  }
+
+  /// Platform-appropriate SKU per reference, skipping any that is missing
+  /// the current platform's id entirely — unlike the sale-event resolver,
+  /// one bad reference here does not invalidate the whole list, it is simply
+  /// left out.
+  List<String> _logicSaleProductIds(PaywallLogicSaleEntity? logicSale, PaymentPlatform platform) {
+    if (logicSale == null) return const [];
+    final ids = <String>[];
+    for (final product in logicSale.products) {
+      final id = switch (platform) {
+        PaymentPlatform.apple => product.appleProductId,
+        PaymentPlatform.google || PaymentPlatform.unknown => product.googleProductId,
+      };
+      final trimmed = id.trim();
+      if (trimmed.isNotEmpty) ids.add(trimmed);
+    }
+    return ids;
+  }
+
+  /// Translates the campaign's server-clock deadline onto this device's own
+  /// clock, once, at fetch time: `remaining = endAtUtc - nowUtc` is measured
+  /// entirely on the server's numbers, then re-anchored to `DateTime.now()`
+  /// here so every later tick (see `_LogicSaleCountdownStrip`) only ever
+  /// diffs against the device's own clock instead of comparing it to the
+  /// server's directly.
+  DateTime? _logicSaleLocalDeadline(PaywallLogicSaleEntity logicSale) {
+    final endAtUtc = logicSale.endAtUtc;
+    final nowUtc = logicSale.nowUtc;
+    if (endAtUtc == null || nowUtc == null) return null;
+    final remaining = endAtUtc.difference(nowUtc);
+    if (remaining <= Duration.zero) return null;
+    return DateTime.now().toUtc().add(remaining);
   }
 
   IapProductEntity _defaultSelectedProduct(List<IapProductEntity> products) {
@@ -643,6 +709,12 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   Future<bool> _verifyPurchase(PurchaseDetails purchaseDetail, String transactionId) async {
     late VerifyParams params;
 
+    // Attribution only, and only for a purchase actually STARTED from this
+    // paywall session — never a restore, and never a passive receipt
+    // reconciliation that never went through purchaseProduct() in the first
+    // place (state.lastAction would be `none` there).
+    final logicSaleId = state.lastAction == PurchaseAction.purchase ? state.logicSaleId : '';
+
     if (Platform.isIOS) {
       params = VerifyParams(
         platform: PaymentPlatform.apple,
@@ -650,6 +722,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         packageName: _packageInfoService.packageName,
         storeTransactionId: transactionId,
         voucherCode: state.attributedVoucherCode,
+        logicSaleId: logicSaleId,
       );
     } else {
       final verificationData = purchaseDetail.verificationData;
@@ -659,6 +732,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         packageName: _packageInfoService.packageName,
         storeTransactionId: verificationData.serverVerificationData,
         voucherCode: state.attributedVoucherCode,
+        logicSaleId: logicSaleId,
       );
     }
 

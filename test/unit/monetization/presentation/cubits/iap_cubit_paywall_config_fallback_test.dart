@@ -89,6 +89,7 @@ IapCubit _newCubit(_FakeMonetizationRepository repository, _FakeRemoteConfigServ
     ValidateVoucherUsecase(repository),
     remoteConfig,
     GetPaywallConfigUsecase(repository),
+    GetPaywallLogicSaleUsecase(repository),
     _FakePackageInfoService(),
   );
 }
@@ -165,6 +166,9 @@ class _FakeMonetizationRepository implements IMonetizationRepository {
 
   @override
   TaskEither<AppException, VoucherValidationEntity> validateVoucher(ValidateVoucherParams params) => TaskEither.right(const VoucherValidationEntity());
+
+  @override
+  TaskEither<AppException, PaywallLogicSaleEntity> getLogicSale() => TaskEither.right(const PaywallLogicSaleEntity());
 }
 
 class _FakeIapService implements IIapService {
