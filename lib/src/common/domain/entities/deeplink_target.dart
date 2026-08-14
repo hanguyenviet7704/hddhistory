@@ -14,6 +14,7 @@ enum DeeplinkDestination {
   explore('explore'),
   habit('habit'),
   profile('profile'),
+  library('library'),
   courseRoadmap('course-roadmap'),
   lesson('lesson'),
   skillsetCourses('skillset-courses'),

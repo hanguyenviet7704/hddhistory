@@ -155,7 +155,7 @@ void main() {
       final values = DeeplinkDestination.values.map((destination) => destination.value).toList();
 
       expect(values.toSet().length, values.length);
-      expect(values.length, 16);
+      expect(values.length, 17);
     });
   });
 

@@ -270,6 +270,11 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         ProfileRoute().go(navContext);
         return true;
 
+      case DeeplinkDestination.library:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.library);
+        LibraryRoute().go(navContext);
+        return true;
+
       // `courseId` là tuỳ chọn: không truyền thì mở roadmap của course đang
       // chọn. Course không chọn được (đã unpublish sau khi link phát ra) thì về
       // Home — giống hệt nhánh `course_not_found` của luồng home widget.
