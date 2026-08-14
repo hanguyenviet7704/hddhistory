@@ -337,8 +337,12 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         DailyCheckInRoute().go(navContext);
         return true;
 
+      // Claim tên CỦA CHÍNH NÓ, không phải tên branch: `myLessons` đã chuyển từ
+      // branch Profile sang branch Library (xem routes_shell.dart) và
+      // `_tabIndexForRouteName` map thẳng `myLessons` → branch 5. Claim
+      // `RouteNamed.profile` ở đây sẽ sáng sai tab.
       case DeeplinkDestination.myLessons:
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.myLessons);
         MyLessonsRoute().go(navContext);
         return true;
 
