@@ -223,9 +223,11 @@ export default function LearningImportDetail() {
                     <div className="text-xs uppercase tracking-wide text-gray-400">
                       Card {sectionIndex + 1}
                     </div>
-                    <h5 className="mt-1 font-semibold text-gray-900">
-                      {section.title}
-                    </h5>
+                    {section.title && (
+                      <h5 className="mt-1 font-semibold text-gray-900">
+                        {section.title}
+                      </h5>
+                    )}
 
                     {section.blocks.map((block, blockIndex) =>
                       block.type === "heading" ? (
