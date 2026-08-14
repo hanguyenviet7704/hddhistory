@@ -30,6 +30,7 @@ import {
   ClipboardDocumentCheckIcon,
   FireIcon as StreakIcon,
   MegaphoneIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -107,6 +108,9 @@ const menuGroups = [
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
       { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
       { name: "Popup Home", icon: MegaphoneIcon, path: "/home-popup" },
+      // Audience groups that Banner Home / Popup Home target via `segmentIds`
+      // — kept right beside them so the relationship reads at a glance.
+      { name: "Phân khúc user", icon: UserGroupIcon, path: "/segments" },
       // Read-only: what users imported (PDF / YouTube) and the lesson the model
       // wrote back. Named to match its page title rather than the Vietnamese
       // labels around it, so nav and heading agree.

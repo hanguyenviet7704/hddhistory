@@ -28,6 +28,8 @@ import {
   HomePopupItem,
   homePopupService,
 } from "../../services/homePopupService";
+import { segmentService } from "../../services/segmentService";
+import { SegmentOption } from "../../types/interface/segment.interface";
 import { PromoCampaignStats } from "../../utils/promoCampaignForm";
 import { useNotification } from "../../utils/hooks/useNotification";
 
@@ -40,6 +42,7 @@ const emptyItem = (): HomePopupItem => ({
   linkUrl: "",
   countries: [],
   locales: [],
+  segmentIds: [],
   priority: 0,
   startAt: null,
   endAt: null,
@@ -78,10 +81,28 @@ const HomePopupPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  // Loaded once here and shared across every campaign card — not re-fetched per card.
+  const [segments, setSegments] = useState<SegmentOption[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await segmentService.list();
+        setSegments((res.data ?? []).map((s: { _id: string; name: string }) => ({
+          _id: s._id,
+          name: s.name,
+        })));
+      } catch (err) {
+        // Non-critical: targeting by segment just falls back to an empty
+        // picker, everything else on this page still works.
+        console.error("Failed to load segments", err);
+      }
+    })();
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -240,6 +261,7 @@ const HomePopupPage: React.FC = () => {
                         item={item}
                         position={index + 1}
                         stats={popupStats[index]}
+                        segments={segments}
                         onChange={(patch) => patchItem(item.uid, patch)}
                         onRemove={() => removeItem(item.uid)}
                         onUploadingChange={(uploading) =>

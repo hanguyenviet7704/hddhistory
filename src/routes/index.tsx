@@ -55,6 +55,7 @@ import OnboardingConfigPage from "../pages/onboarding-config/OnboardingConfigPag
 import ResetOnboardingPage from "../pages/users/ResetOnboardingPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import PaywallConfigPage from "../pages/paywall-config/PaywallConfigPage";
+import SegmentsPage from "../pages/segments/SegmentsPage";
 
 export default function AppRouter() {
   return (
@@ -99,6 +100,7 @@ export default function AppRouter() {
               <Route path="streak-config" element={<StreakConfigPage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />
+              <Route path="segments" element={<SegmentsPage />} />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />

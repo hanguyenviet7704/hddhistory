@@ -20,6 +20,12 @@ export interface HomeBannerSlide {
    * EVERY LANGUAGE. Matched against the `lang` header the app sends.
    */
   locales?: string[];
+  /**
+   * Audience segment allow-list (see `segmentService`). EMPTY MEANS EVERYONE.
+   * Matching ANY listed segment is enough — this is an OR across segments,
+   * separate from (and additional to) the countries/locales targeting above.
+   */
+  segmentIds?: string[];
   /** Higher shows first; ties keep this array's order (the drag order). */
   priority?: number;
   /** Campaign window start (server clock), ISO string. `null`/omitted = already started. */

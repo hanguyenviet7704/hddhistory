@@ -31,6 +31,12 @@ export interface HomePopupItem {
    * LANGUAGE. Matched against the `lang` header the app sends.
    */
   locales?: string[];
+  /**
+   * Audience segment allow-list (see `segmentService`). EMPTY MEANS EVERYONE.
+   * Matching ANY listed segment is enough — this is an OR across segments,
+   * separate from (and additional to) the countries/locales targeting above.
+   */
+  segmentIds?: string[];
   /** Higher wins when several campaigns target the same viewer and neither was tapped yet. */
   priority?: number;
   /** Campaign window start (server clock), ISO string. `null`/omitted = already started. */

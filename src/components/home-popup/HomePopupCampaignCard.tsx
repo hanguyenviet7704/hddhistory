@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 import { HomePopupItem } from "../../services/homePopupService";
+import { SegmentOption } from "../../types/interface/segment.interface";
 import {
   fromInputDateTime,
   LOCALE_OPTIONS,
@@ -19,6 +20,8 @@ interface Props {
   position: number;
   /** From `popupStats[index]` — undefined for a campaign added locally and never saved. */
   stats?: PromoCampaignStats;
+  /** Loaded ONCE by the page, shared across every campaign card. */
+  segments: SegmentOption[];
   onChange: (patch: Partial<HomePopupItem>) => void;
   onRemove: () => void;
   /** Lifted so the page can block Save while any campaign is still uploading. */
@@ -39,6 +42,7 @@ const HomePopupCampaignCard: React.FC<Props> = ({
   item,
   position,
   stats,
+  segments,
   onChange,
   onRemove,
   onUploadingChange,
@@ -219,6 +223,29 @@ const HomePopupCampaignCard: React.FC<Props> = ({
             {...params}
             label="Chỉ hiện với các ngôn ngữ"
             helperText="Để trống = hiện với mọi ngôn ngữ app đang chạy."
+          />
+        )}
+      />
+
+      <div className="h-4" />
+
+      <Autocomplete
+        multiple
+        size="small"
+        options={segments}
+        value={(item.segmentIds ?? []).map(
+          (id) => segments.find((s) => s._id === id) ?? { _id: id, name: id },
+        )}
+        onChange={(_, selected) =>
+          onChange({ segmentIds: selected.map((s) => s._id) })
+        }
+        isOptionEqualToValue={(a, b) => a._id === b._id}
+        getOptionLabel={(s) => s.name}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Chỉ hiện với các phân khúc user"
+            helperText="Bỏ trống = mọi người dùng. Khớp BẤT KỲ phân khúc nào được chọn."
           />
         )}
       />

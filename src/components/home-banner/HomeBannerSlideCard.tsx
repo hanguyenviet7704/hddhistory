@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 import { HomeBannerSlide } from "../../services/homeBannerService";
+import { SegmentOption } from "../../types/interface/segment.interface";
 import {
   fromInputDateTime,
   LOCALE_OPTIONS,
@@ -19,6 +20,8 @@ interface Props {
   position: number;
   /** From `slideStats[index]` — undefined for a slide added locally and never saved. */
   stats?: PromoCampaignStats;
+  /** Loaded ONCE by the page, shared across every slide card. */
+  segments: SegmentOption[];
   onChange: (patch: Partial<HomeBannerSlide>) => void;
   onRemove: () => void;
   /** Lifted so the page can block Save while any slide is still uploading. */
@@ -38,6 +41,7 @@ const HomeBannerSlideCard: React.FC<Props> = ({
   slide,
   position,
   stats,
+  segments,
   onChange,
   onRemove,
   onUploadingChange,
@@ -225,6 +229,29 @@ const HomeBannerSlideCard: React.FC<Props> = ({
             {...params}
             label="Chỉ hiện với các ngôn ngữ"
             helperText="Để trống = hiện với mọi ngôn ngữ app đang chạy."
+          />
+        )}
+      />
+
+      <div className="h-4" />
+
+      <Autocomplete
+        multiple
+        size="small"
+        options={segments}
+        value={(slide.segmentIds ?? []).map(
+          (id) => segments.find((s) => s._id === id) ?? { _id: id, name: id },
+        )}
+        onChange={(_, selected) =>
+          onChange({ segmentIds: selected.map((s) => s._id) })
+        }
+        isOptionEqualToValue={(a, b) => a._id === b._id}
+        getOptionLabel={(s) => s.name}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Chỉ hiện với các phân khúc user"
+            helperText="Bỏ trống = mọi người dùng. Khớp BẤT KỲ phân khúc nào được chọn."
           />
         )}
       />
