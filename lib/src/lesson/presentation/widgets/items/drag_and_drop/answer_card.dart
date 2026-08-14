@@ -17,8 +17,13 @@ class AnswerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isInvisible) {
+      // FIXED size, not min-constraints: a childless Container treats loose
+      // incoming constraints as "expand", so min-only ghosts stretched into
+      // full-width gray bars the moment they stood alone in the Wrap
+      // ("vẫn sai", 2026-08-13). The design ghost is a word-sized 80×34 box.
       return Container(
-        constraints: BoxConstraints(minWidth: 80.w, minHeight: 34.h),
+        width: 80.w,
+        height: 34.h,
         decoration: BoxDecoration(
           color: AppCustomColor.kpChipPlaceholder,
           borderRadius: BorderRadius.circular(9.r),
