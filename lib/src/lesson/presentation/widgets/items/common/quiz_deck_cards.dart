@@ -66,7 +66,11 @@ class QuizQuestionCard extends StatelessWidget {
             ),
           ),
         4.verticalSpace,
-        KeypointExerciseInstruction(text: _instruction(context)),
+        // Text-gap places its hint INSIDE the answer area — between the
+        // sentence panel and the word bank, where the design draws it (the
+        // words it talks about are the chips right under it). Every other type
+        // keeps the hint here, above its options, which is that design too.
+        if (!answer.isTextGap) KeypointExerciseInstruction(text: _instruction(context)),
         // Expanded, not Flexible: the design puts a `flex:1` spacer BETWEEN the
         // answer area and the action, so the pill sits at the card's BOTTOM.
         Expanded(child: SingleChildScrollView(child: _answerArea(context))),
@@ -138,6 +142,7 @@ class QuizQuestionCard extends StatelessWidget {
             getSlotState: answer.slotStateFor,
           ),
           18.verticalSpace,
+          KeypointExerciseInstruction(text: context.l10n.exercise.exerciseGapFillingInstruction),
           AnswerCardsArea(
             pool: answer.wordPool,
             availableWords: answer.availableWords,
