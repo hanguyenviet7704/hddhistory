@@ -279,9 +279,54 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         SkillsetCoursesRoute(skillsetId: skillsetId).go(navContext);
         return true;
 
-      default:
-        LogDev.warning('Destination not wired yet: ${destination.value}');
-        return false;
+      // Tám đích dưới đây lồng trong một tab. Mỗi cái claim tên của BRANCH nó
+      // nằm trong trước khi `.go()`; trang con tự nhận tên riêng khi push.
+      case DeeplinkDestination.dailyWarmUp:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
+        DailyWarmUpRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.learningStreak:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
+        HomeLearningStreakRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.dailyCheckIn:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+        DailyCheckInRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.myLessons:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
+        MyLessonsRoute().go(navContext);
+        return true;
+
+      // ImportLessonRoute khai trong routes_shell_setting_data.dart nhưng LẮP
+      // dưới branch Explore (xem routes_shell.dart) — nên claim tên Explore,
+      // không phải Profile.
+      case DeeplinkDestination.importLesson:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
+        ImportLessonRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.notificationSetting:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
+        NotificationRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.changeLanguage:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
+        ChangeLanguageRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.manageSubscription:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
+        ManageSubscriptionRoute().go(navContext);
+        return true;
+
+      // Không có `default:` là có chủ đích: thêm một khoá vào
+      // DeeplinkDestination mà quên nối ở đây sẽ thành lỗi biên dịch ngay, chứ
+      // không âm thầm trả false rồi sinh ra một link chết.
     }
   }
 
