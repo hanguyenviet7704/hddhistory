@@ -207,6 +207,38 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         unawaited(const PaywallRoute().push(navContext));
         return true;
 
+      // Đúng chuỗi mà một cú bấm tab "Khám phá" chạy (xem
+      // PageCubit.handleShellRouteNavigation case 3): mở Explore đã cuộn tới
+      // course đang học, không reset về đầu danh sách.
+      case DeeplinkDestination.explore:
+        final selectedSkillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
+        AppDI.injector.get<CourseCubit>()
+          ..setAllCourseSource(deeplinkRoadmapSource)
+          ..jumpToSkillset(selectedSkillsetIndex);
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
+        CourseRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.habit:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
+        HabitRoute().go(navContext);
+        return true;
+
+      case DeeplinkDestination.profile:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
+        ProfileRoute().go(navContext);
+        return true;
+
+      // `courseId` là tuỳ chọn: không truyền thì mở roadmap của course đang
+      // chọn. Course không chọn được (đã unpublish sau khi link phát ra) thì về
+      // Home — giống hệt nhánh `course_not_found` của luồng home widget.
+      case DeeplinkDestination.courseRoadmap:
+        final courseId = target.params['courseId']?.trim() ?? '';
+        if (_openCourseRoadmap(navContext, courseId, deeplinkRoadmapSource)) return true;
+        HomeRoute().go(navContext);
+        _trackDeeplinkOpen(target, resolved: false, reason: 'entity_not_found');
+        return true;
+
       default:
         LogDev.warning('Destination not wired yet: ${destination.value}');
         return false;
@@ -402,6 +434,11 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// to `remapRoadmapSource`, which buckets it into the generic explore source —
   /// correct, since this is not one of the home surfaces it distinguishes.
   static const String _newCourseRoadmapSource = 'notification_new_course';
+
+  /// Nhãn source cho roadmap/explore mở từ một link marketing. Không nằm trong
+  /// `remapRoadmapSource`, nên nó rơi vào nhóm explore chung — đúng, vì đây
+  /// không phải một trong các bề mặt Home mà hàm đó phân biệt.
+  static const String deeplinkRoadmapSource = 'deeplink';
 
   /// Opens the roadmap of the course a `new_course` notification announced,
   /// falling back to Home when the payload carries no course or the course can no
