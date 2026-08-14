@@ -5,11 +5,20 @@ import { Trash2 } from "lucide-react";
 import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 import { HomeBannerSlide } from "../../services/homeBannerService";
+import {
+  fromInputDateTime,
+  LOCALE_OPTIONS,
+  PromoCampaignStats,
+  toInputDateTime,
+} from "../../utils/promoCampaignForm";
+import PromoCampaignStatsStrip from "../common/PromoCampaignStatsStrip";
 
 interface Props {
   slide: HomeBannerSlide;
   /** 1-based, for the header only — the array position IS the display order. */
   position: number;
+  /** From `slideStats[index]` — undefined for a slide added locally and never saved. */
+  stats?: PromoCampaignStats;
   onChange: (patch: Partial<HomeBannerSlide>) => void;
   onRemove: () => void;
   /** Lifted so the page can block Save while any slide is still uploading. */
@@ -28,6 +37,7 @@ interface Props {
 const HomeBannerSlideCard: React.FC<Props> = ({
   slide,
   position,
+  stats,
   onChange,
   onRemove,
   onUploadingChange,
@@ -86,6 +96,17 @@ const HomeBannerSlideCard: React.FC<Props> = ({
           Xoá slide
         </Button>
       </div>
+
+      <TextField
+        label="Tên chiến dịch (nội bộ)"
+        size="small"
+        fullWidth
+        value={slide.name ?? ""}
+        onChange={(e) => onChange({ name: e.target.value })}
+        helperText="Chỉ để nhận diện trong danh sách này, không hiện trên app."
+      />
+
+      <div className="h-4" />
 
       {/* Preview đúng tỉ lệ khung banner trong app: 390 × 78, bo góc 18 */}
       <div
@@ -184,6 +205,66 @@ const HomeBannerSlideCard: React.FC<Props> = ({
           />
         )}
       />
+
+      <div className="h-4" />
+
+      <Autocomplete
+        multiple
+        size="small"
+        options={LOCALE_OPTIONS}
+        value={(slide.locales ?? []).map(
+          (code) => LOCALE_OPTIONS.find((l) => l.code === code) ?? { code, label: code },
+        )}
+        onChange={(_, selected) =>
+          onChange({ locales: selected.map((l) => l.code) })
+        }
+        isOptionEqualToValue={(a, b) => a.code === b.code}
+        getOptionLabel={(l) => l.label}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Chỉ hiện với các ngôn ngữ"
+            helperText="Để trống = hiện với mọi ngôn ngữ app đang chạy."
+          />
+        )}
+      />
+
+      <div className="h-4" />
+
+      <div className="grid grid-cols-3 gap-3">
+        <TextField
+          label="Priority"
+          type="number"
+          size="small"
+          value={slide.priority ?? 0}
+          onChange={(e) =>
+            onChange({
+              priority: e.target.value === "" ? 0 : Number(e.target.value),
+            })
+          }
+          helperText="Số cao hơn hiện trước."
+        />
+        <TextField
+          label="Bắt đầu"
+          type="datetime-local"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          value={toInputDateTime(slide.startAt)}
+          onChange={(e) => onChange({ startAt: fromInputDateTime(e.target.value) })}
+          helperText="Để trống = đã bắt đầu."
+        />
+        <TextField
+          label="Kết thúc"
+          type="datetime-local"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          value={toInputDateTime(slide.endAt)}
+          onChange={(e) => onChange({ endAt: fromInputDateTime(e.target.value) })}
+          helperText="Để trống = không hết hạn."
+        />
+      </div>
+
+      <PromoCampaignStatsStrip stats={stats} />
     </div>
   );
 };

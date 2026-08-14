@@ -28,15 +28,21 @@ import {
   HomeBannerSlide,
   homeBannerService,
 } from "../../services/homeBannerService";
+import { PromoCampaignStats } from "../../utils/promoCampaignForm";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 /** Same cap the API enforces (`@ArrayMaxSize(10)`) — fail here, not on Save. */
 const MAX_SLIDES = 10;
 
 const emptySlide = (): HomeBannerSlide => ({
+  name: "",
   imageUrl: "",
   linkUrl: "",
   countries: [],
+  locales: [],
+  priority: 0,
+  startAt: null,
+  endAt: null,
   enabled: true,
 });
 
@@ -63,6 +69,8 @@ const HomeBannerPage: React.FC = () => {
 
   const [enabled, setEnabled] = useState(false);
   const [slides, setSlides] = useState<EditableSlide[]>([]);
+  // Read-only, aligned by index with `slides` as loaded — never touched by edits.
+  const [slideStats, setSlideStats] = useState<PromoCampaignStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
@@ -88,14 +96,20 @@ const HomeBannerPage: React.FC = () => {
         : d.imageUrl
           ? [
               {
+                name: "",
                 imageUrl: d.imageUrl,
                 linkUrl: d.linkUrl ?? "",
                 countries: d.countries ?? [],
+                locales: [],
+                priority: 0,
+                startAt: null,
+                endAt: null,
                 enabled: true,
               },
             ]
           : [];
       setSlides(stored.map(withUid));
+      setSlideStats(d.slideStats ?? []);
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không tải được cấu hình");
     } finally {
@@ -214,6 +228,7 @@ const HomeBannerPage: React.FC = () => {
                       <HomeBannerSlideCard
                         slide={slide}
                         position={index + 1}
+                        stats={slideStats[index]}
                         onChange={(patch) => patchSlide(slide.uid, patch)}
                         onRemove={() => removeSlide(slide.uid)}
                         onUploadingChange={(uploading) =>
