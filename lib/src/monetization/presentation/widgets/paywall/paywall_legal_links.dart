@@ -44,27 +44,36 @@ class PaywallLegalLinks extends StatelessWidget {
       );
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    // Wrap, not Row: three Vietnamese labels don't fit one line on a 390-wide
+    // sheet (RIGHT OVERFLOWED BY 89 PIXELS) — English does, so the overflow only
+    // showed on vi. Each dot rides WITH the link before it, so a line break
+    // never opens with an orphaned separator.
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 2.h,
       children: [
-        if (onRestore != null) ...[
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              AppHaptic.select();
-              AppService.instance.appTrackingService.trackPremiumRestoreClick();
-              onRestore!();
-            },
-            child: AppText(
-              l10n.monetization.restore,
-              maxLines: 1,
-              style: _compactStyle,
-            ),
+        if (onRestore != null)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  AppHaptic.select();
+                  AppService.instance.appTrackingService.trackPremiumRestoreClick();
+                  onRestore!();
+                },
+                child: AppText(
+                  l10n.monetization.restore,
+                  maxLines: 1,
+                  style: _compactStyle,
+                ),
+              ),
+              _dot,
+            ],
           ),
-          _dot,
-        ],
-        terms,
-        _dot,
+        Row(mainAxisSize: MainAxisSize.min, children: [terms, _dot]),
         privacy,
       ],
     );
