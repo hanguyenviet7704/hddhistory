@@ -35,6 +35,7 @@ import HabitCheckinDetail from "../pages/habit-checkins/HabitCheckinDetail";
 import LearningImportList from "../pages/learning-imports/LearningImportList";
 import LearningImportDetail from "../pages/learning-imports/LearningImportDetail";
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
+import DeeplinkGenerator from "../pages/deeplinks/DeeplinkGenerator";
 import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
 import HomePopupPage from "../pages/home-popup/HomePopupPage";
@@ -94,6 +95,7 @@ export default function AppRouter() {
 
               <Route path="study-themes" element={<StudyThemeList />} />
               <Route path="download-links" element={<DownloadLinkList />} />
+              <Route path="deeplinks" element={<DeeplinkGenerator />} />
               <Route path="streak-config" element={<StreakConfigPage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />
