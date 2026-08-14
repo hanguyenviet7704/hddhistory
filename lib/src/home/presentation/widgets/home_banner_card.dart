@@ -118,7 +118,7 @@ class _HomeBannerCarouselState extends State<_HomeBannerCarousel> {
   void _openSlide(HomeBannerSlideEntity slide) {
     if (slide.linkUrl.isEmpty) return;
     AppHaptic.select();
-    slide.linkUrl.launchURL();
+    unawaited(openConfiguredLink(slide.linkUrl));
   }
 
   @override

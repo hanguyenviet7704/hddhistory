@@ -84,7 +84,7 @@ class _HomePromoPopupDialog extends StatelessWidget {
     // than the cost of failure here, which is the popup returning next session.
     unawaited(AppDI.injector.get<MarkHomePopupClickedUseCase>().call(popup.campaignKey).run());
     Navigator.of(context).pop();
-    if (popup.linkUrl.isNotEmpty) popup.linkUrl.launchURL();
+    if (popup.linkUrl.isNotEmpty) unawaited(openConfiguredLink(popup.linkUrl));
   }
 
   @override

@@ -124,6 +124,19 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         }
         HomeRoute().go(navContext);
         return true;
+      // `meup://paywall` — what admin enters as a banner/popup linkUrl to send
+      // the tap to the paywall. Pushed over wherever the reader is (the link is
+      // an offer, not a relocation), with the generic entry point: which
+      // campaign sent them is the banner's own tracking's business.
+      case RoutePath.paywall:
+        final navContext = AppConfig.instance.context;
+        if (navContext == null) {
+          LogDev.warning('Ignoring paywall deeplink because navigator context is unavailable');
+          return false;
+        }
+        AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+        unawaited(const PaywallRoute().push(navContext));
+        return true;
       default:
         return false;
     }
@@ -447,4 +460,25 @@ String normalizeDeeplinkPath(String path) {
   }
 
   return trimmedPath.startsWith('/') ? trimmedPath : '/$trimmedPath';
+}
+
+
+/// Opens an ADMIN-CONFIGURED link (home banner slide, promo popup): the app's
+/// own scheme routes inside the app through [DeeplinkCubit]'s table, anything
+/// else leaves for the browser/store via `launchURL`.
+///
+/// The in-app branch deliberately skips the OS round-trip. `launchURL` guards
+/// on `canLaunchUrl`, which for a custom scheme needs `meup` listed in iOS's
+/// `LSApplicationQueriesSchemes` — it is not, so a `meup://…` link died
+/// silently there; and even where it works, bouncing through the OS is a
+/// visible app-switch for a screen we can simply open.
+Future<void> openConfiguredLink(String url) async {
+  final trimmed = url.trim();
+  if (trimmed.isEmpty) return;
+  final uri = Uri.tryParse(trimmed);
+  if (uri != null && uri.scheme.toLowerCase() == 'meup') {
+    AppDI.injector.get<DeeplinkCubit>().navigationFromService(uri);
+    return;
+  }
+  await trimmed.launchURL();
 }
