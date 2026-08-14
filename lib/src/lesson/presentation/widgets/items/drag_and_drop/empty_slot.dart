@@ -24,7 +24,7 @@ class EmptySlot extends StatelessWidget {
         // stretched to the full card width and pushed the prose onto its own
         // lines. `dart analyze` cannot see this; it only shows up on screen.
         width: 96.w,
-        height: 34.h,
+        height: 30.h,
         decoration: BoxDecoration(
           color: isHighlighted ? AppCustomColor.brandPrimary.withValues(alpha: 0.08) : Colors.transparent,
           borderRadius: BorderRadius.circular(9.r),

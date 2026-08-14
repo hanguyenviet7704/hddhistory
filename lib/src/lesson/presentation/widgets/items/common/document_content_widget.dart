@@ -2,12 +2,15 @@ part of '../../../../lesson.dart';
 
 /// Which typographic role a run of CMS copy is playing.
 ///
-/// SAME sizes for both since 2026-08-13 ("các loại câu hỏi đồng nhất lại size
-/// chữ giống với theory" — the heavier 17/w700 stems made every question card
-/// shout next to the theory card before it). What still differs is the reading
-/// machinery: the Text-display sheet's font family and scale apply ONLY to
-/// theory — a question's copy stays fixed so its options and slots keep their
-/// measured layout.
+/// Sizes come straight from the design's quiz cards (`_Keypoint Swipe Lab`):
+/// intro copy 14.5/w500/1.65, stem 15.5/w800/1.4 — both a step SMALLER than
+/// theory prose, so a question reads as a compact task, not as more reading.
+/// (First unified TO theory sizes on 2026-08-13, which fixed the shouting
+/// 17-19px stems but overshot: next to the design the cards still read too
+/// large — "trông vẫn khác design lắm".) What differs beyond size is the
+/// reading machinery: the Text-display sheet's font family and scale apply
+/// ONLY to theory — a question's copy stays fixed so its options and slots
+/// keep their measured layout.
 enum DocumentProse { theory, question }
 
 class DocumentContentWidget extends StatelessWidget {
@@ -36,24 +39,35 @@ class DocumentContentWidget extends StatelessWidget {
         display: display,
         scalable: !isQuestion,
         style: AppStyle.textBold18.copyWith(
+          fontSize: isQuestion ? 15.5.sp : null,
+          fontWeight: isQuestion ? FontWeight.w800 : null,
+          height: isQuestion ? 1.4 : null,
           color: AppCustomColor.textPrimary,
           fontFamily: isQuestion ? null : display.fontFamilyName,
           fontFamilyFallback: isQuestion ? null : display.fontFamilyFallback,
         ),
       ),
-      // Design body copy: 16px at rest, medium weight, generous leading — the
-      // reader scales the theory variant from here with the Text sheet.
       ContentDocumentType.text => _buildProse(
         maxLines: 50,
         display: display,
         scalable: !isQuestion,
-        style: AppStyle.text16.copyWith(
-          fontWeight: FontWeight.w500,
-          height: 1.75,
-          color: AppCustomColor.kpBodyText,
-          fontFamily: isQuestion ? null : display.fontFamilyName,
-          fontFamilyFallback: isQuestion ? null : display.fontFamilyFallback,
-        ),
+        style: isQuestion
+            // Design quiz intro copy: `c.text` 14.5/w500/1.65.
+            ? AppStyle.text14.copyWith(
+                fontSize: 14.5.sp,
+                fontWeight: FontWeight.w500,
+                height: 1.65,
+                color: AppCustomColor.kpBodyText,
+              )
+            // Design body copy: 16px at rest, medium weight, generous leading —
+            // the reader scales it from here with the Text sheet.
+            : AppStyle.text16.copyWith(
+                fontWeight: FontWeight.w500,
+                height: 1.75,
+                color: AppCustomColor.kpBodyText,
+                fontFamily: display.fontFamilyName,
+                fontFamilyFallback: display.fontFamilyFallback,
+              ),
       ),
       ContentDocumentType.caption => _ChoiceDocumentTypeTag(label: content),
       _ => const SizedBox.shrink(),

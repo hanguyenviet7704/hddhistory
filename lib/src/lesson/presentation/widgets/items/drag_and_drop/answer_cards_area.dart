@@ -43,7 +43,7 @@ class AnswerCardsArea extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
           padding: EdgeInsets.all(8.w),
-          alignment: Alignment.centerLeft,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isDraggingFromSlot ? AppCustomColor.brandPrimary.withValues(alpha: 0.06) : Colors.transparent,
             borderRadius: BorderRadius.circular(16.r),
@@ -51,7 +51,8 @@ class AnswerCardsArea extends StatelessWidget {
           child: Wrap(
             spacing: 10.w,
             runSpacing: 10.h,
-            alignment: WrapAlignment.start,
+            // Design centres the bank under the sentence panel.
+            alignment: WrapAlignment.center,
             children: availableWords.map((word) {
               return Draggable<Map<String, dynamic>>(
                 data: {'word': word, 'fromIndex': null},

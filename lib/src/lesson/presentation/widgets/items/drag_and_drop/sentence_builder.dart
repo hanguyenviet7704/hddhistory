@@ -2,9 +2,13 @@ part of '../../../../lesson.dart';
 
 /// The gapped sentence on a text-gap-filling card.
 ///
-/// The Keypoint v2 design renders it as bare prose on the card — the white
-/// bordered panel it used to sit in is gone, since the card is already a panel
-/// and the inner frame only shrank the reading width.
+/// Rendered exactly as the design draws it (`_Keypoint Swipe Lab` → `c.isDnd`):
+/// centred 14.5/w600 prose inside a soft lavender panel — the panel is what
+/// marks "this is the sentence you are building" apart from the intro copy
+/// above it and the word bank below. (An earlier pass removed the panel as
+/// redundant chrome and left the sentence as 19px bare prose; side by side with
+/// the design that read as a different screen — "trông vẫn khác design lắm",
+/// 2026-08-13.)
 class SentenceBuilder extends StatelessWidget {
   final Map<int, String> placedWords;
   final String targetArea;
@@ -41,14 +45,12 @@ class SentenceBuilder extends StatelessWidget {
             widgets.add(
               AppText(
                 word,
-                // Theory body's own size and weight ("đồng nhất size chữ giống
-                // theory", 2026-08-13) — the 19/w700 it replaced made this one
-                // card twice as loud as the prose card before it. The gaps stay
-                // findable because the slots are drawn chrome, not text.
-                style: AppStyle.text16.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: AppCustomColor.kpBodyText,
-                  height: 1.75,
+                // Design: 14.5/w600, on the panel's own ink.
+                style: AppStyle.text14.copyWith(
+                  fontSize: 14.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppCustomColor.textPrimary,
+                  height: 1.4,
                 ),
               ),
             );
@@ -75,16 +77,30 @@ class SentenceBuilder extends StatelessWidget {
     return widgets;
   }
 
+  /// Design panel: `#FAF9FF` on a `1.5px #E9E6FA` border, radius 18,
+  /// padding 16 vertical / 14 horizontal.
+  static const Color _kPanelFill = Color(0xFFFAF9FF);
+  static const Color _kPanelBorder = Color(0xFFE9E6FA);
+
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 6.w,
-      // Enough air between runs for a 34px slot to sit inline with 16px text
-      // without the lines colliding.
-      runSpacing: 10.h,
-      alignment: WrapAlignment.start,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: _buildSentenceWidgets(),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: _kPanelFill,
+        border: Border.all(color: _kPanelBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(18.r),
+      ),
+      child: Wrap(
+        spacing: 6.w,
+        // Enough air between runs for an inline slot to sit next to 14.5px text
+        // without the lines colliding (design line-height 1.9 does the same job).
+        runSpacing: 10.h,
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: _buildSentenceWidgets(),
+      ),
     );
   }
 }

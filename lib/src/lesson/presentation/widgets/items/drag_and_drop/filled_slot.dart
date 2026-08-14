@@ -30,7 +30,8 @@ class FilledSlot extends StatelessWidget {
       // full width instead of hugging the word.
       child: Container(
         constraints: BoxConstraints(minWidth: 96.w),
-        height: 34.h,
+        // Design inline slot: 30 tall inside the sentence panel.
+        height: 30.h,
         padding: EdgeInsets.symmetric(horizontal: 12.w),
         decoration: BoxDecoration(
           color: _backgroundColor,
@@ -43,8 +44,8 @@ class FilledSlot extends StatelessWidget {
             AppText(
               word,
               style: AppStyle.text14.copyWith(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w700,
+                fontSize: 14.5.sp,
+                fontWeight: FontWeight.w600,
                 height: 1,
                 color: _textColor,
               ),

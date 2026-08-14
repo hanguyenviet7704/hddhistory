@@ -18,26 +18,28 @@ class AnswerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isInvisible) {
       return Container(
-        constraints: BoxConstraints(minWidth: 80.w, minHeight: 44.h),
+        constraints: BoxConstraints(minWidth: 80.w, minHeight: 34.h),
         decoration: BoxDecoration(
           color: AppCustomColor.kpChipPlaceholder,
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(9.r),
         ),
       );
     }
 
     // No `alignment` here — it would turn this into an Align that expands to
     // the word bank's full width, so every chip became a full-width row.
+    // Design word-bank chip: 34 tall, radius 9 — a word, not a button-sized
+    // card (min-HEIGHT rather than a fixed height so a long word may wrap).
     return Container(
-      constraints: BoxConstraints(minHeight: 44.h),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      constraints: BoxConstraints(minHeight: 34.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         border: Border.all(
           color: isDragging ? AppCustomColor.brandPrimary : AppCustomColor.kpOptionBorder,
           width: 1.5,
         ),
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(9.r),
         boxShadow: [
           BoxShadow(
             color: AppCustomColor.neutral01.withValues(alpha: isDragging ? 0.12 : 0.05),
@@ -52,7 +54,8 @@ class AnswerCard extends StatelessWidget {
           AppText(
             word,
             style: AppStyle.text14.copyWith(
-              fontWeight: FontWeight.w700,
+              fontSize: 14.5.sp,
+              fontWeight: FontWeight.w600,
               color: AppCustomColor.textPrimary,
               height: 1.2,
             ),
