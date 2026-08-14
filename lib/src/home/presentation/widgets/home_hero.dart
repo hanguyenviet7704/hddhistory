@@ -211,9 +211,11 @@ class _HeroGreetingRow extends StatelessWidget {
               onTap: () => _openProfile(context, currentStreak),
             ),
             12.horizontalSpace,
-            // Both trailing controls keep their near-white fill from the design,
-            // which is what makes them legible on the purple.
-            const ChangeBackgroundButton(source: 'home', size: 28, iconRatio: 19 / 28),
+            // The avatar replaces the change-background button (design updated
+            // 2026-08-14): theme now lives in Settings, and this slot is the
+            // face of the account — tapping it opens Profile, same as the
+            // streak chip.
+            _HeroAvatarButton(onTap: () => _openProfile(context, currentStreak)),
           ],
         );
       },
@@ -265,6 +267,61 @@ class _HeroQuote extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+
+/// The 30px account avatar on the purple header (design: `acctColor` disc with
+/// the initial, or the photo, inside a near-white ring). Opens Profile.
+class _HeroAvatarButton extends StatelessWidget {
+  const _HeroAvatarButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.select((ProfileCubit cubit) => cubit.state.user);
+    final avatarUrl = user.avatar.trim();
+    String ref = user.name.trim();
+    if (ref.isEmpty) ref = user.email.trim();
+    final initial = ref.isEmpty ? '?' : String.fromCharCode(ref.runes.first).toUpperCase();
+
+    return Semantics(
+      button: true,
+      label: context.l10n.setting.settingProfileLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: Container(
+          width: 30.r,
+          height: 30.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppCustomColor.brandPrimary700,
+            border: Border.all(color: AppCustomColor.textWhite.withValues(alpha: 0.95), width: 1.5),
+            boxShadow: [
+              BoxShadow(color: const Color(0x2E252525), blurRadius: 10.r, offset: Offset(0, 4.h)),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          alignment: Alignment.center,
+          child: avatarUrl.isNotEmpty
+              ? CacheNetworkGraphic(url: avatarUrl, width: 30.r, height: 30.r, fit: BoxFit.cover)
+              : Text(
+                  initial,
+                  style: TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppCustomColor.textWhite,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }

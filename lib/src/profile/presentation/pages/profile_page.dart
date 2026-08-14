@@ -196,10 +196,10 @@ class _ProfilePageState extends State<ProfilePage> {
         body: SafeBody(
           child: Column(
             children: [
-              // Identity row is the only "sticky" part of the design — it
-              // sits outside the scroll view so it never moves, while
-              // everything else (premium banner through Library) scrolls
-              // underneath it.
+              // Fixed chrome, outside the scroll view: the title bar (back ·
+              // Profile · gear) and the identity card under it — everything
+              // else (premium banner through Library) scrolls underneath.
+              const _ProfileHeaderBar(),
               const _ProfileIdentityHeader(),
               Expanded(
                 child: RefreshIndicator(
@@ -243,104 +243,169 @@ class _ProfilePageState extends State<ProfilePage> {
 // Identity header: avatar • name • email • settings gear (fixed, not scrolling)
 // ---------------------------------------------------------------------------
 
+/// Title bar: back · centred "Profile" · settings gear (design `6 · Profile`).
+///
+/// Profile is a SHELL BRANCH, so "back" cannot pop — it returns to the Home
+/// tab, which is where the avatar that opens this screen lives. Same
+/// index+route-name pair as every cross-branch move (see `_openProfile` on the
+/// Home hero for why `.go()` alone is not enough).
+class _ProfileHeaderBar extends StatelessWidget {
+  const _ProfileHeaderBar();
+
+  void _backToHome(BuildContext context) {
+    AppHaptic.select();
+    final page = context.read<PageCubit>();
+    page.setCurrentIndex(0);
+    HomeRoute().go(context);
+    page.setCurrentRouteName(RouteNamed.home);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = studyThemeOnBg(context, AppCustomColor.textPrimary);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 2.h),
+      child: SizedBox(
+        height: 44.h,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            AppText(
+              context.l10n.setting.settingProfileLabel,
+              style: _poppins(18, FontWeight.w700, color: ink),
+            ),
+            Row(
+              children: [
+                Semantics(
+                  button: true,
+                  label: context.l10n.common.back,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _backToHome(context),
+                    child: SizedBox(
+                      width: 44.w,
+                      height: 44.h,
+                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 22.w, color: ink),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Semantics(
+                  label: context.l10n.setting.settingTitle,
+                  button: true,
+                  child: GestureDetector(
+                    key: const Key('profile-settings-button'),
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      AppHaptic.select();
+                      AppService.instance.appTrackingService.trackProfileSettingsClick();
+                      SettingRoute().go(context);
+                    },
+                    child: Container(
+                      width: 44.w,
+                      height: 44.h,
+                      alignment: Alignment.center,
+                      child: SvgPicture.asset(
+                        AppAsset.svg.app.icSetting,
+                        width: 24.w,
+                        height: 24.w,
+                        colorFilter: ColorFilter.mode(
+                          studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The identity CLUSTER, in a white card under the title bar (design
+/// `6 · Profile`: avatar 72 · name 21 · email · an "Edit profile" pill).
+/// The pill replaces the old pencil-beside-the-name as the sole way into the
+/// edit screen — guests get it too (a guest account has a real id on the
+/// server, so rename/avatar save the same way; only account DELETION stays
+/// login-gated, which the edit screen enforces itself).
 class _ProfileIdentityHeader extends StatelessWidget {
   const _ProfileIdentityHeader();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 14.h),
+      padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 14.h),
       child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
         selector: (state) => state.user,
         builder: (context, user) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Guests can tap their avatar to open the login screen.
-              if (user.anonymous)
-                Semantics(
-                  button: true,
-                  label: context.l10n.auth.authLogIn,
-                  child: GestureDetector(
-                    key: const Key('profile-avatar-login-button'),
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      AppHaptic.select();
-                      const RegisterRoute().push(context);
-                    },
-                    child: _ProfileAvatar(user: user),
-                  ),
-                )
-              else
-                _ProfileAvatar(user: user),
-              14.horizontalSpace,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: AppText(
-                            _resolveName(user, context),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
-                          ),
+          return Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundWhite,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0x0F14143C),
+                  blurRadius: 24.r,
+                  offset: Offset(0, 8.h),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Guests can tap their avatar to open the login screen.
+                if (user.anonymous)
+                  Semantics(
+                    button: true,
+                    label: context.l10n.auth.authLogIn,
+                    child: GestureDetector(
+                      key: const Key('profile-avatar-login-button'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        AppHaptic.select();
+                        const RegisterRoute().push(context);
+                      },
+                      child: _ProfileAvatar(user: user, dimension: 72, initialFontSize: 30),
+                    ),
+                  )
+                else
+                  _ProfileAvatar(user: user, dimension: 72, initialFontSize: 30),
+                14.horizontalSpace,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText(
+                        _resolveName(user, context),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _poppins(21, FontWeight.w700, color: AppCustomColor.textPrimary),
+                      ),
+                      2.verticalSpace,
+                      AppText(
+                        _resolveEmail(user),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppStyle.text13.copyWith(
+                          color: _profileMutedTextColor,
+                          fontWeight: FontWeight.w500,
                         ),
-                        // Design `6 · Profile`: the pencil beside the name is
-                        // the sole way into the edit screen from this tab.
-                        // Guests get it too — a guest account has a real id on
-                        // the server, so rename/avatar save the same way; only
-                        // account DELETION stays login-gated (the edit screen
-                        // hides that button for guests itself).
-                        8.horizontalSpace,
-                        const _ProfileEditButton(),
-                      ],
-                    ),
-                    4.verticalSpace,
-                    AppText(
-                      _resolveEmail(user),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppStyle.text13.copyWith(
-                        color: studyThemeOnBg(context, _profileMutedTextColor),
-                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              14.horizontalSpace,
-              Semantics(
-                label: context.l10n.setting.settingTitle,
-                button: true,
-                child: GestureDetector(
-                  key: const Key('profile-settings-button'),
-                  onTap: () {
-                    AppHaptic.select();
-                    AppService.instance.appTrackingService.trackProfileSettingsClick();
-                    SettingRoute().go(context);
-                  },
-                  child: Container(
-                    width: 48.w,
-                    height: 48.w,
-                    alignment: Alignment.center,
-                    child: SvgPicture.asset(
-                      AppAsset.svg.app.icSetting,
-                      width: 24.w,
-                      height: 24.w,
-                      colorFilter: ColorFilter.mode(
-                        studyThemeOnBg(context, AppCustomColor.streakTextMuted),
-                        BlendMode.srcIn,
-                      ),
-                    ),
+                      8.verticalSpace,
+                      const _ProfileEditButton(),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -364,6 +429,8 @@ class _ProfileEditButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Design pill: #E8E7FA, 22 tall, pencil + label 10.5/700 — a labelled
+    // affordance where the bare pencil disc used to be.
     return Semantics(
       button: true,
       label: context.l10n.setting.settingEditProfileButton,
@@ -375,17 +442,27 @@ class _ProfileEditButton extends StatelessWidget {
           ProfileInfoRoute().go(context);
         },
         child: Container(
-          width: 26.w,
-          height: 26.w,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
+          height: 22.h,
+          padding: EdgeInsets.symmetric(horizontal: 9.w),
+          decoration: BoxDecoration(
             color: AppCustomColor.profileEditPencilBg,
+            borderRadius: BorderRadius.circular(99.r),
           ),
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.edit_outlined,
-            size: 14.w,
-            color: AppCustomColor.brandPrimary,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.edit_outlined, size: 11.w, color: AppCustomColor.brandPrimary),
+              4.horizontalSpace,
+              AppText(
+                context.l10n.setting.settingEditProfileButton,
+                style: TextStyle(
+                  fontFamily: AppFont.mulish,
+                  fontSize: 10.5.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppCustomColor.brandPrimary,
+                ),
+              ),
+            ],
           ),
         ),
       ),

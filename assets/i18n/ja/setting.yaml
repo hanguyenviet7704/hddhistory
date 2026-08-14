@@ -65,6 +65,7 @@ settingProfileTakePhoto: 写真を撮る
 settingProfileChooseFromLibrary: ライブラリから選択
 settingProfileLabel: プロフィール
 settingRowLanguage: 言語
+settingRowTheme: テーマ
 settingRowNoti: 通知
 settingRowRestorePurchase: 購入を復元
 settingRowUpgradePremium: サブスクリプションの管理

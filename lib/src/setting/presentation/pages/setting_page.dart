@@ -166,6 +166,22 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           const ChangeLanguageRoute().go(context);
                         },
                       ),
+                      // Theme moved HERE from Home's header (design `6 ·
+                      // Profile` → Settings): Home's slot now carries the
+                      // avatar, and a background you change once a month
+                      // belongs with the other once-a-month switches.
+                      BlocBuilder<StudyThemeCubit, StudyThemeState>(
+                        bloc: AppDI.injector.get<StudyThemeCubit>(),
+                        buildWhen: (previous, current) => previous.preset.id != current.preset.id,
+                        builder: (context, themeState) {
+                          return SettingOptionTile(
+                            iconAsset: AppAsset.svg.app.icChangeTheme,
+                            title: context.l10n.setting.settingRowTheme,
+                            trailingText: themeState.preset.name.trim().isEmpty ? 'Default' : themeState.preset.name,
+                            onTap: () => ChangeBackgroundSheet.show(context, source: 'settings'),
+                          );
+                        },
+                      ),
                       BlocBuilder<NotificationCubit, NotificationState>(
                         builder: (context, notificationState) {
                           return SettingSwitchTile(
