@@ -1,0 +1,17 @@
+navLabel: Thư viện
+title: Thư viện của tôi
+inProgressSection: Đang học
+myHistoryLink: Lịch sử học
+myHistoryTitle: Lịch sử học
+filterInProgress: Đang học
+filterFinished: Đã hoàn thành
+myCreationsTitle: Bài tôi tạo
+myCreationsSubtitle: Những bài học bạn tự tạo
+myCreationsCount(param=count):
+  other: ${count} bài học
+emptyInProgressTitle: Chưa có bài nào đang học
+emptyInProgressBody: Bắt đầu một khoá học, nó sẽ chờ bạn ở đây.
+emptyInProgressCta: Khám phá khoá học
+emptyHistoryInProgress: Hiện chưa có khoá học nào đang học.
+emptyHistoryFinished: Bạn chưa hoàn thành khoá học nào.
+loadFailed: Không tải được thư viện của bạn.

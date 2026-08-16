@@ -319,4 +319,43 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
     );
   }
+
+  /// The Library tab's list: every enrolled course, paginated.
+  ///
+  /// Same endpoint as [loadUserProgressMyCourses] but WITHOUT `recent` (which
+  /// the API caps at 3) and into [ProgressState.libraryPageData], so Home's
+  /// 3-card "Jump back in" strip keeps its own data. One fetch serves both
+  /// Library screens: the tab's "In progress" carousel and My history's two
+  /// filters are views over the same list.
+  Future<void> loadLibraryCourses({bool isInit = false}) async {
+    if (state.libraryStatus == ProgressStatus.loading) return;
+    if (!isInit && state.libraryPageData.isLastPage) return;
+
+    const filter = UserProgressMyCoursesUseCaseFilter(recent: false);
+    final PageBreakRequest pageRequest = isInit
+        ? PageBreakRequest(filter: filter)
+        : PageBreakRequest(page: state.libraryPageData.nextPage, filter: filter);
+
+    await runUseCasePageBreak<CourseEntity>(
+      usecase: () => _getUserProgressMyCoursesUseCase(pageRequest),
+      currentPageData: state.libraryPageData,
+      isInit: isInit,
+      buildLoadingState: () => state.copyWith(libraryStatus: ProgressStatus.loading, libraryErrorMessage: null),
+      onFailure: (error) {
+        emit(state.copyWith(libraryStatus: ProgressStatus.failure, libraryErrorMessage: error));
+      },
+      onSuccess: (pageData) {
+        emit(state.copyWith(libraryStatus: ProgressStatus.success, libraryPageData: pageData, libraryErrorMessage: null));
+      },
+    );
+  }
+
+  /// Fetch the Library list only when it has nothing to show and nothing is in
+  /// flight — the same self-heal shape as [ensureMyCoursesLoaded], so entering
+  /// the tab repeatedly doesn't refetch a list that is already on screen.
+  Future<void> ensureLibraryCoursesLoaded() async {
+    if (state.libraryStatus == ProgressStatus.loading) return;
+    if (state.libraryCourses.isNotEmpty) return;
+    await loadLibraryCourses(isInit: true);
+  }
 }

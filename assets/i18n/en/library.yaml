@@ -1,0 +1,18 @@
+navLabel: Library
+title: My Library
+inProgressSection: In progress
+myHistoryLink: My history
+myHistoryTitle: My history
+filterInProgress: In progress
+filterFinished: Finished
+myCreationsTitle: My Creations
+myCreationsSubtitle: Lessons you made yourself
+myCreationsCount(param=count):
+  one: ${count} lesson
+  other: ${count} lessons
+emptyInProgressTitle: Nothing on the go yet
+emptyInProgressBody: Start a course and it will wait for you here.
+emptyInProgressCta: Explore courses
+emptyHistoryInProgress: No course in progress right now.
+emptyHistoryFinished: You haven't finished a course yet.
+loadFailed: We couldn't load your library.

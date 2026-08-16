@@ -82,6 +82,9 @@ class PageCubit extends Cubit<PageState> {
       case 4:
         setCurrentRouteName(RouteNamed.habit);
         break;
+      case 5:
+        setCurrentRouteName(RouteNamed.library);
+        break;
     }
 
     _routeNavigationShell(index, navigationShell);
@@ -101,7 +104,7 @@ class PageCubit extends Cubit<PageState> {
   }
 
   int? _normalizeTabIndex(int index) {
-    if (index < 0 || index > 4) return null;
+    if (index < 0 || index > 5) return null;
     return index;
   }
 
@@ -117,6 +120,16 @@ class PageCubit extends Cubit<PageState> {
         return 3;
       case RouteNamed.habit:
         return 4;
+      // Every route that lives in the Library branch resolves to it, not just
+      // its root: My Creations and the generated-lesson roadmap are entered by
+      // a cross-branch `.go()` from the lesson flow, and that go fires no
+      // didPush in an already-built branch — so the name is the only signal
+      // that the shell has moved to branch 5.
+      case RouteNamed.library:
+      case RouteNamed.libraryHistory:
+      case RouteNamed.myLessons:
+      case RouteNamed.lessonReader:
+        return 5;
       default:
         return null;
     }

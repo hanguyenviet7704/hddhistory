@@ -1,0 +1,17 @@
+navLabel: 学习库
+title: 我的学习库
+inProgressSection: 进行中
+myHistoryLink: 学习记录
+myHistoryTitle: 学习记录
+filterInProgress: 进行中
+filterFinished: 已完成
+myCreationsTitle: 我的创作
+myCreationsSubtitle: 你自己创建的课程
+myCreationsCount(param=count):
+  other: ${count} 节课
+emptyInProgressTitle: 还没有进行中的课程
+emptyInProgressBody: 开始一门课程，它就会出现在这里。
+emptyInProgressCta: 探索课程
+emptyHistoryInProgress: 目前没有进行中的课程。
+emptyHistoryFinished: 你还没有完成任何课程。
+loadFailed: 无法加载你的学习库。

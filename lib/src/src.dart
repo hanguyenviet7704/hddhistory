@@ -10,6 +10,7 @@ export 'home/home.dart';
 export 'home_widget/home_widget.dart';
 export 'in_app_survey/in_app_survey.dart';
 export 'learning_streak/learning_streak.dart';
+export 'library/library.dart';
 export 'lesson/lesson.dart';
 export 'monetization/monetization.dart';
 export 'monetization/presentation/paywall_gift_trigger.dart';

@@ -76,7 +76,7 @@ class LessonExitFlow {
       }
 
       // Claim the destination's name, as keypoint_complete_page does on the
-      // same exits: this cross-branch `go` usually re-activates a setting
+      // same exits: this cross-branch `go` usually re-activates the LIBRARY
       // branch whose stack ALREADY ends at the destination, which fires no
       // navigator event — the nav pill on the roadmap only survived because
       // the quit popup's pop happened to leave the root shell's (primary)

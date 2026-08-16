@@ -1,0 +1,17 @@
+navLabel: 라이브러리
+title: 내 라이브러리
+inProgressSection: 학습 중
+myHistoryLink: 학습 기록
+myHistoryTitle: 학습 기록
+filterInProgress: 학습 중
+filterFinished: 완료
+myCreationsTitle: 내가 만든 레슨
+myCreationsSubtitle: 직접 만든 레슨
+myCreationsCount(param=count):
+  other: ${count}개 레슨
+emptyInProgressTitle: 아직 학습 중인 과정이 없어요
+emptyInProgressBody: 과정을 시작하면 여기에 표시됩니다.
+emptyInProgressCta: 과정 둘러보기
+emptyHistoryInProgress: 지금 학습 중인 과정이 없습니다.
+emptyHistoryFinished: 아직 완료한 과정이 없습니다.
+loadFailed: 라이브러리를 불러올 수 없습니다.

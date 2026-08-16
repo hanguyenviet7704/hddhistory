@@ -154,8 +154,9 @@ class _MyLessonsHeader extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            // A plain pop: `didPop` names the page underneath (Profile) by
-            // itself, so there is nothing to assert here — the nav bar going
+            // A plain pop: `didPop` names the page underneath (the Library tab,
+            // which pushed this one) by itself, so there is nothing to assert
+            // here — the nav bar going
             // missing on Profile after reading a generated lesson was the
             // lesson reader reclaiming its own name from a backgrounded branch,
             // not a blank name from this pop. See `canAssertOwnRouteName` and

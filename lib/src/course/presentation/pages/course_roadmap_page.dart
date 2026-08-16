@@ -54,12 +54,31 @@ const roadmapHomeSources = {
 @visibleForTesting
 const roadmapHabitSources = {'habit_detail'};
 
+/// Roadmap source for a course opened from the Library tab's "In progress"
+/// carousel. Named rather than a bare string because both sides have to agree:
+/// the Library sets it, [roadmapLibrarySources] reads it, and a typo would
+/// strand the reader on a roadmap with no way back.
+const String kRoadmapSourceLibrary = 'library';
+
+/// Roadmap source for a course opened from My history — kept apart from
+/// [kRoadmapSourceLibrary] so back returns to the history list the reader was
+/// actually reading, not the tab root a `.go()` would reset them to.
+const String kRoadmapSourceLibraryHistory = 'library_history';
+
+/// Roadmap-source values that mean the user opened this roadmap from the Library
+/// tab. Back returns to that tab (see `_backFromRoadmap`).
+@visibleForTesting
+const roadmapLibrarySources = {kRoadmapSourceLibrary, kRoadmapSourceLibraryHistory};
+
 /// Whether the roadmap renders its back button for [source]. Kept pure and
 /// top-level so the source→back-button contract is testable without standing up
 /// the whole roadmap widget tree.
 @visibleForTesting
 bool roadmapShowsBackButton(String source) =>
-    roadmapExploreSources.contains(source) || roadmapHomeSources.contains(source) || roadmapHabitSources.contains(source);
+    roadmapExploreSources.contains(source) ||
+    roadmapHomeSources.contains(source) ||
+    roadmapHabitSources.contains(source) ||
+    roadmapLibrarySources.contains(source);
 
 class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
@@ -100,6 +119,21 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       page.setCurrentIndex(4); // Habit branch
       const HabitRoute().go(context);
       page.setCurrentRouteName(RouteNamed.habit);
+      return;
+    }
+    // Opened from the Library tab — back returns to the exact Library screen it
+    // was opened from. `.go()` on the branch root would pop My history off, so
+    // the history list carries its own source and is navigated to by path.
+    if (roadmapLibrarySources.contains(source)) {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(kLibraryBranchIndex);
+      if (source == kRoadmapSourceLibraryHistory) {
+        const LibraryHistoryRoute().go(context);
+        page.setCurrentRouteName(RouteNamed.libraryHistory);
+      } else {
+        const LibraryRoute().go(context);
+        page.setCurrentRouteName(RouteNamed.library);
+      }
       return;
     }
     // "View more" opened the full one-skillset grid (SkillsetCoursesRoute, a

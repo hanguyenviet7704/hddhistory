@@ -1,0 +1,17 @@
+navLabel: ライブラリ
+title: マイライブラリ
+inProgressSection: 学習中
+myHistoryLink: 学習履歴
+myHistoryTitle: 学習履歴
+filterInProgress: 学習中
+filterFinished: 完了
+myCreationsTitle: 自作レッスン
+myCreationsSubtitle: あなたが作ったレッスン
+myCreationsCount(param=count):
+  other: ${count} レッスン
+emptyInProgressTitle: 学習中のコースはまだありません
+emptyInProgressBody: コースを始めると、ここに表示されます。
+emptyInProgressCta: コースを探す
+emptyHistoryInProgress: 現在、学習中のコースはありません。
+emptyHistoryFinished: まだ修了したコースはありません。
+loadFailed: ライブラリを読み込めませんでした。

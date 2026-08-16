@@ -22,6 +22,29 @@ void main() {
 
       cubit.setCurrentRouteName(RouteNamed.profile);
       expect(cubit.state.currentIndex, 2);
+
+      // Library is the branch appended last (index 5) and now holds the bottom
+      // bar's third slot; Profile keeps branch 2 but no longer has a tab.
+      cubit.setCurrentRouteName(RouteNamed.library);
+      expect(cubit.state.currentIndex, 5);
+    });
+
+    // My Creations and the generated-lesson roadmap moved into the Library
+    // branch with the tab. They are entered by a cross-branch `.go()` from the
+    // lesson flow, which fires no didPush in an already-built branch — so the
+    // route name is the only thing that can move the mirrored index, and it has
+    // to land on 5, not stay on whatever branch the reader came from.
+    test('maps the Library branch sub-routes to the Library tab', () {
+      cubit.setCurrentRouteName(RouteNamed.courseRoadmap);
+
+      cubit.setCurrentRouteName(RouteNamed.myLessons);
+      expect(cubit.state.currentIndex, 5);
+
+      cubit.setCurrentRouteName(RouteNamed.lessonReader);
+      expect(cubit.state.currentIndex, 5);
+
+      cubit.setCurrentRouteName(RouteNamed.libraryHistory);
+      expect(cubit.state.currentIndex, 5);
     });
 
     test('maps standalone course route to course tab for onboarding handoff', () {

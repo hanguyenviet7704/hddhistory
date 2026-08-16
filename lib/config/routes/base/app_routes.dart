@@ -84,10 +84,16 @@ mixin RoutePath {
   static const String userAchievementBottomSheet = 'user-achievement-bottom-sheet';
   static const String reportIssueSheet = 'report-issue-sheet';
 
-  //* Setting - Learning import (user's own PDF / YouTube -> generated lesson)
-  // Nested under /profile: these lessons are the user's own shelf, not
-  // catalogue content, so they belong behind the profile tab rather than in
-  // Home or the course roadmap.
+  //* Library
+  static const String library = '/library';
+  static const String libraryHistory = 'history';
+
+  //* Library - Learning import (user's own PDF / YouTube -> generated lesson)
+  // Nested under /library, not /profile: the shelf of your own lessons is one of
+  // the two things the Library tab is for (design `5b · Library`), and My
+  // Creations backs out to Library. It has to live in the SAME shell branch as
+  // the row that opens it — pushing a path from another branch renders it in
+  // that branch's navigator, which is off screen.
   static const String myLessons = 'my-lessons';
   static const String lessonReader = 'lesson-reader/:lessonId';
   static const String importLesson = 'import-lesson';
@@ -189,7 +195,11 @@ mixin RouteNamed {
   static const String userAchievementBottomSheet = 'User Achievement Bottom Sheet';
   static const String reportIssueSheet = 'Report Issue Sheet';
 
-  //* Setting - Learning import
+  //* Library
+  static const String library = 'Library';
+  static const String libraryHistory = 'Library History';
+
+  //* Library - Learning import
   static const String myLessons = 'My Lessons';
   static const String lessonReader = 'Lesson Reader';
   static const String importLesson = 'Import Lesson';

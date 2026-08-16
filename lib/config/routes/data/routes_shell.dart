@@ -79,13 +79,6 @@ part of '../routes.dart';
           name: RouteNamed.profile,
           routes: [
             TypedGoRoute<ProfileInfoRoute>(path: RoutePath.profileInfo, name: RouteNamed.profileInfo),
-            TypedGoRoute<MyLessonsRoute>(
-              path: RoutePath.myLessons,
-              name: RouteNamed.myLessons,
-              routes: [
-                TypedGoRoute<LessonReaderRoute>(path: RoutePath.lessonReader, name: RouteNamed.lessonReader),
-              ],
-            ),
             TypedGoRoute<SettingRoute>(
               path: RoutePath.setting,
               name: RouteNamed.setting,
@@ -132,6 +125,31 @@ part of '../routes.dart';
             TypedGoRoute<DailyCheckInRoute>(
               path: RoutePath.dailyCheckIn,
               name: RouteNamed.dailyCheckIn,
+            ),
+          ],
+        ),
+      ],
+    ),
+    //? Library branch — appended last so existing branch indices are unchanged;
+    //? this branch is index 5. My Creations (`myLessons`) moved here from the
+    //? Setting branch with the Library tab: the row that opens it now lives on
+    //? this branch, and a push must stay inside its own branch to be visible.
+    TypedStatefulShellBranch<LibraryShellBranchData>(
+      routes: [
+        TypedGoRoute<LibraryRoute>(
+          path: RoutePath.library,
+          name: RouteNamed.library,
+          routes: [
+            TypedGoRoute<LibraryHistoryRoute>(
+              path: RoutePath.libraryHistory,
+              name: RouteNamed.libraryHistory,
+            ),
+            TypedGoRoute<MyLessonsRoute>(
+              path: RoutePath.myLessons,
+              name: RouteNamed.myLessons,
+              routes: [
+                TypedGoRoute<LessonReaderRoute>(path: RoutePath.lessonReader, name: RouteNamed.lessonReader),
+              ],
             ),
           ],
         ),

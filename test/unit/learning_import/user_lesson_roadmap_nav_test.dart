@@ -14,8 +14,11 @@
 //    lesson reader (course branch) reclaimed `lesson` after the reader had moved
 //    to Profile and killed the nav bar there.
 //
-// The harness mirrors the real tree's shape rather than importing it: a stateful
-// shell whose Setting branch carries profile → my-lessons → lesson-reader, a
+// The harness mirrors the real tree's SHAPE rather than importing it — a nested
+// stack inside one shell branch, plus a second branch to cross into — so it is
+// unaffected by which branch actually owns the shelf (it moved from Setting to
+// Library with the Library tab). Its stand-in stack is profile → my-lessons →
+// lesson-reader, a
 // second branch to cross into, and the same page type the app builds
 // (`CustomTransitionPage` carrying `name: state.name`, see
 // `BaseTransitionRouteData.buildPage`).

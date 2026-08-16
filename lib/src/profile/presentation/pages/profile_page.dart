@@ -45,16 +45,6 @@ const List<Color> _profileCategoryTints = [
 
 /// Inlined design icons (verbatim from the design SVGs / markup) so they match
 /// 1:1 without an asset-bundle rebuild.
-const String _kMyCourseSvg =
-    '''<svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H9a2 2 0 0 1 2 2v13a1.5 1.5 0 0 0-1.5-1.5h-4A1.5 1.5 0 0 1 4 16V5.5Z" stroke="#4B44CA" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H15a2 2 0 0 0-2 2v13a1.5 1.5 0 0 1 1.5-1.5h4A1.5 1.5 0 0 0 20 16V5.5Z" stroke="#4B44CA" stroke-width="1.8" stroke-linejoin="round"/></svg>''';
-/// "My Creations" — a page with a folded corner and two lines of writing.
-///
-/// The row shipped with `Icons.auto_stories_outlined`, an open book: the same
-/// picture as My Course directly above it, so the Library read as two rows of the
-/// same thing. The design draws a DOCUMENT here — a lesson the reader wrote — and
-/// that contrast is the point.
-const String _kMyCreationsSvg =
-    '''<svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 3.5H7.5A2.5 2.5 0 0 0 5 6v12a2.5 2.5 0 0 0 2.5 2.5h9A2.5 2.5 0 0 0 19 18V8.5L14 3.5z" stroke="#4B44CA" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.75 3.75V9h5" stroke="#4B44CA" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 13.5h7M8.5 16.5h4.5" stroke="#4B44CA" stroke-width="1.8" stroke-linecap="round"/></svg>''';
 const String _kStreakGraySvg =
     '''<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.40039 19.4798C6.40039 25.6687 11.7915 28 16.9462 28C21.959 28 25.6004 23.1179 25.6004 18.7426C25.6004 12.1567 19.2634 3.77267 16.4733 4.00471C13.5413 4.32689 15.0073 10.8672 13.5413 11.1435C12.7373 11.3736 12.8792 8.50939 11.4605 8.28833C10.2782 8.10411 6.40039 11.6964 6.40039 19.4798Z" fill="#DDE3EB"></path><path d="M12.9023 21.2009C12.9023 23.094 14.6995 24.4395 16.4706 24.4395C18.1874 24.4395 19.3023 22.6378 19.3023 21.2009C19.3023 19.0381 17.3978 16.4395 16.1517 16.4395C14.7904 16.4395 12.9023 19.4312 12.9023 21.2009Z" fill="#AAB8CD"></path></svg>''';
 const String _kClockSvg =
@@ -86,20 +76,6 @@ void _openAchievements(BuildContext context) {
       ),
     ),
   );
-}
-
-/// Opens the "My course" library ([MyCoursesPage]) standalone. It normally
-/// lives nested under the Course tab's shell branch; pushing its go_router path
-/// from the Profile tab would switch the visible bottom-nav branch to Course as
-/// a side effect. Pushing it directly on the root navigator instead keeps the
-/// user on the Profile tab underneath and pops straight back to it.
-///
-/// Provides HomeCubit + CourseRoadmapCubit + ProgressCubit — the page reads
-/// skillsets/progress for its grouped enrolled-course sections and their
-/// completion %.
-void _openMyCourses(BuildContext context) {
-  AppService.instance.appTrackingService.trackProfileMycourseClick();
-  MyCoursesPage.open(context);
 }
 
 class ProfilePage extends StatefulWidget {
@@ -222,10 +198,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       30.verticalSpace,
                       const _AchievementsAndProgressSection(),
                       30.verticalSpace,
-                      const _LibrarySection(),
-                      14.verticalSpace,
-                      const _MyLessonsRow(),
-                      30.verticalSpace,
+                      // The Library section (My course) and the My Creations row
+                      // that used to sit here are gone: both are the Library
+                      // TAB's job now (design `5b · Library`, which took this
+                      // screen's slot in the bottom bar). Leaving them would be
+                      // two entry points to the same two lists.
                       const SupportSection(),
                     ],
                   ),
@@ -1199,124 +1176,6 @@ class _CategoryProgressBar extends StatelessWidget {
         child: FractionallySizedBox(
           widthFactor: clamped,
           child: Container(height: 6.h, color: AppCustomColor.brandPrimary),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Library — My Course row, opens the existing Change-Course page
-// ---------------------------------------------------------------------------
-
-class _LibrarySection extends StatelessWidget {
-  const _LibrarySection();
-
-  @override
-  Widget build(BuildContext context) {
-    final myCourseLabel = context.l10n.allcourse.allcourseMyCourse;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          context.l10n.setting.settingProfileLibrarySection,
-          style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
-        ),
-        14.verticalSpace,
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: studyThemeCardColor(context),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: _profileCardShadow,
-          ),
-          child: Semantics(
-            button: true,
-            label: myCourseLabel,
-            child: GestureDetector(
-              key: const Key('profile-library-my-course-row'),
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                AppHaptic.select();
-                _openMyCourses(context);
-              },
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                child: Row(
-                  children: [
-                    SvgPicture.string(_kMyCourseSvg, width: 26.w, height: 26.w),
-                    14.horizontalSpace,
-                    Expanded(
-                      child: AppText(
-                        myCourseLabel,
-                        style: _poppins(15, FontWeight.w600),
-                      ),
-                    ),
-                    Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// My lessons — the user's own PDF / YouTube imports
-// ---------------------------------------------------------------------------
-
-/// Sits directly under the Library card and reuses its exact shape.
-///
-/// Lives in the profile library rather than in `learning_import` because the
-/// card styling here (`_poppins`, `_profileCardShadow`, `_profileMutedTextColor`)
-/// is private to this file — a row declared elsewhere would have to re-invent
-/// those and would drift the first time this section is restyled.
-class _MyLessonsRow extends StatelessWidget {
-  const _MyLessonsRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final label = context.l10n.learningImport.myLessonsTitle;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: studyThemeCardColor(context),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: _profileCardShadow,
-      ),
-      child: Semantics(
-        button: true,
-        label: label,
-        child: GestureDetector(
-          key: const Key('profile-my-lessons-row'),
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            AppHaptic.select();
-            const MyLessonsRoute().push(context);
-          },
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: Row(
-              children: [
-                SvgPicture.string(_kMyCreationsSvg, width: 26.w, height: 26.w),
-                14.horizontalSpace,
-                Expanded(
-                  child: AppText(
-                    label,
-                    style: _poppins(15, FontWeight.w600),
-                  ),
-                ),
-                Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, _profileMutedTextColor)),
-              ],
-            ),
-          ),
         ),
       ),
     );

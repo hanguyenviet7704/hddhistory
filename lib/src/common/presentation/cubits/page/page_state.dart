@@ -39,6 +39,12 @@ extension PageStateX on PageState {
       RouteNamed.lessonReader,
       RouteNamed.profile,
       RouteNamed.habit,
+      RouteNamed.library,
+      // My history is a shelf you browse, not a step in a flow — same call as
+      // [RouteNamed.myLessons] beside it. It also has no tab of its own, so
+      // hiding the pill here would leave the back arrow as the only way out of
+      // the Library branch.
+      RouteNamed.libraryHistory,
     ];
   }
 }
