@@ -139,11 +139,22 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
+      // Transparent only when a custom study background is active.
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       body: CupertinoScaffold(
         topRadius: const Radius.circular(24),
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
-        body: SafePage(
+        // ThemedBackground sits INSIDE the CupertinoScaffold, not around it, and
+        // that is the whole trick: CupertinoScaffold always paints an opaque
+        // `Container(color: transitionBackgroundColor)` under its body, so the
+        // shell's background never showed through here no matter what colour the
+        // Scaffold above used — Settings was the one screen that ignored the
+        // reader's theme. Painting the background above that container fixes it
+        // while leaving `transitionBackgroundColor` (which also decides the
+        // status-bar style of sheets pushed from here, e.g. the theme picker
+        // itself) exactly as it was. No-ops on the default preset.
+        body: ThemedBackground(
+          child: SafePage(
           child: ListView(
             controller: _scrollController,
             padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 48.h),
@@ -293,6 +304,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
               ),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -366,14 +378,16 @@ class SettingHeader extends StatelessWidget {
           },
           child: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppCustomColor.textTertiary,
+            // Title bar sits on the page background, so it follows the study
+            // theme — light ink on a dark custom background.
+            color: studyThemeOnBg(context, AppCustomColor.textTertiary),
             size: 24.w,
           ),
         ),
         AppText(
           context.l10n.setting.settingTitle,
           style: AppStyle.textBold20.copyWith(
-            color: AppCustomColor.textPrimary,
+            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
             height: 1.5,
           ),
         ),

@@ -14,13 +14,16 @@ class SettingSectionCard extends StatelessWidget {
         Text(
           title,
           style: AppStyle.text14.copyWith(
-            color: AppCustomColor.textTertiary,
+            // Section labels ("Chung" / "Giới thiệu") sit directly on the page
+            // background, so they follow the study theme; everything inside the
+            // card below keeps its own dark ink.
+            color: studyThemeOnBg(context, AppCustomColor.textTertiary),
           ),
         ),
         SizedBox(height: 12.h),
         Container(
           decoration: BoxDecoration(
-            color: AppCustomColor.backgroundWhite,
+            color: studyThemeCardColor(context),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
@@ -144,7 +147,9 @@ class SettingOptionTile extends StatelessWidget {
                   Text(
                     trailing,
                     style: AppStyle.textBold14.copyWith(
-                      color: trailingTextColor ?? AppCustomColor.textTertiary,
+                      // Inside a glass card the pale tertiary slate loses
+                      // contrast against the background bleeding through.
+                      color: trailingTextColor ?? studyThemeCardMuted(context, AppCustomColor.textTertiary),
                     ),
                   ),
                 ],
