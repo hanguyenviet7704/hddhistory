@@ -15,3 +15,35 @@ emptyInProgressCta: 探索课程
 emptyHistoryInProgress: 目前没有进行中的课程。
 emptyHistoryFinished: 你还没有完成任何课程。
 loadFailed: 无法加载你的学习库。
+savedRowTitle: 已收藏
+savedRowSubtitle: 你收藏的课程
+savedTitle: 已收藏
+savedCount(param=count):
+  other: ${count} 门课程
+savedCardsRowTitle: 收藏的卡片
+savedCardsRowSubtitle: 你保留的要点回顾
+savedCardsTitle: 收藏的卡片
+savedCardsCount(param=count):
+  other: ${count} 张卡片
+filterUpNext: 待学习
+emptySavedUpNext: 还没有收藏。点击任意课程上的书签即可保存到这里。
+emptySavedInProgress: 收藏的课程中没有正在学习的。
+emptySavedFinished: 你还没有完成任何收藏的课程。
+emptySavedCards: 还没有卡片。在要点结束时点击书签，即可保存这段回顾。
+deckHint: 滑动查看下一张，点击翻面
+gridViewLabel: 网格视图
+deckViewLabel: 卡片堆视图
+shareLabel: 分享
+saveCardLabel: 收藏卡片
+unsaveCardLabel: 取消收藏
+courseOptionsLabel: 更多选项
+saveCourseLabel: 收藏这门课程
+unsaveCourseLabel: 取消收藏
+shareCourseLabel: 分享这门课程
+cardSavedToast: 已保存到你的卡片
+cardRemovedToast: 已取消收藏
+courseSavedToast: 已保存到学习库
+courseRemovedToast: 已取消收藏
+shareFailed: 暂时无法分享。
+shareCardMessage(param=title): 来自 MeUp 的一段好内容 - ${title}
+shareCourseMessage(param=title): 我正在 MeUp 学习 ${title}，一起来吧！

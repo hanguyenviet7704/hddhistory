@@ -102,6 +102,17 @@ mixin AppEndpoint {
   //* Courses Recently Viewed API
   static const String coursesRecentlyViewed = '/api/v1/courses-recently-viewed';
 
+  //* Saved API (Library → Saved / Saved cards)
+  static const String savedCourses = '/api/v1/saved-courses';
+
+  /// Ids only. Fills the bookmark's filled/hollow state everywhere a course is
+  /// shown, without an `isSaved` join on every catalogue payload.
+  static const String savedCourseIds = '/api/v1/saved-courses/ids';
+  static const String savedCourseById = '/api/v1/saved-courses/{courseId}';
+  static const String savedCards = '/api/v1/saved-cards';
+  static const String savedCardIds = '/api/v1/saved-cards/ids';
+  static const String savedCardById = '/api/v1/saved-cards/{keypointId}';
+
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';

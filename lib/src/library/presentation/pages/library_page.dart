@@ -49,12 +49,16 @@ class _LibraryPageState extends State<LibraryPage> {
     if (lessons.state.status == UserLessonStatus.initial) {
       unawaited(lessons.loadLessons());
     }
+    // Both Saved rows count off the id sets, and every bookmark elsewhere in
+    // the app reads the same two sets — this is the cheapest place to warm them.
+    unawaited(context.read<SavedCubit>().ensureIdsLoaded());
   }
 
   Future<void> _onRefresh() async {
     await Future.wait([
       context.read<ProgressCubit>().loadLibraryCourses(isInit: true),
       context.read<UserLessonCubit>().loadLessons(),
+      context.read<SavedCubit>().loadIds(),
     ]);
   }
 
@@ -84,6 +88,16 @@ class _LibraryPageState extends State<LibraryPage> {
   void _openMyCreations() {
     AppHaptic.select();
     const MyLessonsRoute().push(context);
+  }
+
+  void _openSavedCourses() {
+    AppHaptic.select();
+    const SavedCoursesRoute().push(context);
+  }
+
+  void _openSavedCards() {
+    AppHaptic.select();
+    const SavedCardsRoute().push(context);
   }
 
   /// Empty state → the Explore grid, same jump the Habit tab's empty state makes.
@@ -128,7 +142,15 @@ class _LibraryPageState extends State<LibraryPage> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, floatingNavBarHeight(context) + 20.h),
-                  child: _LibraryMyCreationsRow(onTap: _openMyCreations),
+                  child: Column(
+                    children: [
+                      _LibraryMyCreationsRow(onTap: _openMyCreations),
+                      12.verticalSpace,
+                      _LibrarySavedRow(onTap: _openSavedCourses),
+                      12.verticalSpace,
+                      _LibrarySavedCardsRow(onTap: _openSavedCards),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -266,8 +288,7 @@ class _LibraryInProgressStripState extends State<_LibraryInProgressStrip> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProgressCubit, ProgressState>(
-      buildWhen: (previous, current) =>
-          previous.libraryPageData != current.libraryPageData || previous.libraryStatus != current.libraryStatus,
+      buildWhen: (previous, current) => previous.libraryPageData != current.libraryPageData || previous.libraryStatus != current.libraryStatus,
       builder: (context, state) {
         if (state.isLibraryInitialLoading) {
           return SizedBox(
@@ -387,6 +408,84 @@ class _LibraryInProgressEmpty extends StatelessWidget {
   }
 }
 
+/// One shelf row at the foot of the Library — glyph · title · count · chevron.
+///
+/// Extracted when Saved and Saved cards joined My Creations: three copies of a
+/// card whose hairline, radius and ink all have to agree is three places for
+/// them to stop agreeing.
+class _LibraryShelfRow extends StatelessWidget {
+  const _LibraryShelfRow({
+    super.key,
+    required this.svg,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String svg;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: title,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: studyThemeCardColor(context),
+            border: Border.all(color: _kLibraryCardBorder, width: 1.5),
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          child: Row(
+            children: [
+              SvgPicture.string(svg, width: 27.w, height: 27.w),
+              16.horizontalSpace,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppFont.mulish,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w700,
+                        // Inside a card → dark ink, never studyThemeOnBg.
+                        color: AppCustomColor.textPrimary,
+                      ),
+                    ),
+                    2.verticalSpace,
+                    AppText(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppStyle.text13.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: studyThemeCardMuted(context, _kLibraryMutedText),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, AppCustomColor.textQuaternary)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The shelf of the reader's own generated lessons, with its count.
 class _LibraryMyCreationsRow extends StatelessWidget {
   const _LibraryMyCreationsRow({required this.onTap});
@@ -406,65 +505,73 @@ class _LibraryMyCreationsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = context.l10n.learningImport.myLessonsTitle;
-
     return BlocBuilder<UserLessonCubit, UserLessonState>(
       buildWhen: (previous, current) => previous.pageData != current.pageData || previous.status != current.status,
       builder: (context, state) {
-        return Semantics(
-          button: true,
-          label: title,
-          child: GestureDetector(
-            key: const Key('library-my-creations-row'),
-            behavior: HitTestBehavior.opaque,
-            onTap: onTap,
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                color: studyThemeCardColor(context),
-                border: Border.all(color: _kLibraryCardBorder, width: 1.5),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Row(
-                children: [
-                  SvgPicture.string(_kLibraryMyCreationsSvg, width: 27.w, height: 27.w),
-                  16.horizontalSpace,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppText(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: AppFont.mulish,
-                            fontSize: 17.sp,
-                            fontWeight: FontWeight.w700,
-                            // Inside a card → dark ink, never studyThemeOnBg.
-                            color: AppCustomColor.textPrimary,
-                          ),
-                        ),
-                        2.verticalSpace,
-                        AppText(
-                          _subtitle(context, state),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppStyle.text13.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: studyThemeCardMuted(context, _kLibraryMutedText),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right_rounded, size: 22.w, color: studyThemeCardMuted(context, AppCustomColor.textQuaternary)),
-                ],
-              ),
-            ),
-          ),
+        return _LibraryShelfRow(
+          key: const Key('library-my-creations-row'),
+          svg: _kLibraryMyCreationsSvg,
+          title: context.l10n.learningImport.myLessonsTitle,
+          subtitle: _subtitle(context, state),
+          onTap: onTap,
+        );
+      },
+    );
+  }
+}
+
+/// "Saved" — the courses the reader bookmarked (design `5b · Library`).
+///
+/// The count comes from the id set, not from the list: the ids are read on
+/// entry anyway (every bookmark in the app depends on them) and they are the
+/// WHOLE set, where the list is one page of it.
+class _LibrarySavedRow extends StatelessWidget {
+  const _LibrarySavedRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.library;
+
+    return BlocBuilder<SavedCubit, SavedState>(
+      buildWhen: (previous, current) => previous.courseIds.length != current.courseIds.length || previous.idsLoaded != current.idsLoaded,
+      builder: (context, state) {
+        return _LibraryShelfRow(
+          key: const Key('library-saved-row'),
+          svg: _savedSvg(_kSavedBookmarkSvg, stroke: AppCustomColor.brandPrimary),
+          title: l10n.savedRowTitle,
+          subtitle: state.idsLoaded ? l10n.savedCount(count: state.courseIds.length) : l10n.savedRowSubtitle,
+          onTap: onTap,
+        );
+      },
+    );
+  }
+}
+
+/// "Saved cards" — the recap cards kept from the end of a keypoint.
+class _LibrarySavedCardsRow extends StatelessWidget {
+  const _LibrarySavedCardsRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  /// Two cards fanned out, from the design's own markup for this row.
+  static const String _svg =
+      '''<svg width="27" height="27" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7.6" y="3.4" width="12.8" height="12.8" rx="3" transform="rotate(9 14 9.8)" stroke="#554FF0" stroke-width="1.8"/><rect x="3.4" y="7.8" width="12.8" height="12.8" rx="3" stroke="#554FF0" stroke-width="1.8"/></svg>''';
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.library;
+
+    return BlocBuilder<SavedCubit, SavedState>(
+      buildWhen: (previous, current) => previous.cardIds.length != current.cardIds.length || previous.idsLoaded != current.idsLoaded,
+      builder: (context, state) {
+        return _LibraryShelfRow(
+          key: const Key('library-saved-cards-row'),
+          svg: _svg,
+          title: l10n.savedCardsRowTitle,
+          subtitle: state.idsLoaded ? l10n.savedCardsCount(count: state.cardIds.length) : l10n.savedCardsRowSubtitle,
+          onTap: onTap,
         );
       },
     );

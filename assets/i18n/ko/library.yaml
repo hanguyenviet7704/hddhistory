@@ -15,3 +15,35 @@ emptyInProgressCta: 과정 둘러보기
 emptyHistoryInProgress: 지금 학습 중인 과정이 없습니다.
 emptyHistoryFinished: 아직 완료한 과정이 없습니다.
 loadFailed: 라이브러리를 불러올 수 없습니다.
+savedRowTitle: 저장됨
+savedRowSubtitle: 북마크한 과정
+savedTitle: 저장됨
+savedCount(param=count):
+  other: ${count}개 과정
+savedCardsRowTitle: 저장한 카드
+savedCardsRowSubtitle: 남겨 둔 요약
+savedCardsTitle: 저장한 카드
+savedCardsCount(param=count):
+  other: ${count}장
+filterUpNext: 다음에 볼 것
+emptySavedUpNext: 아직 저장한 항목이 없어요. 과정의 북마크를 누르면 여기에 보관됩니다.
+emptySavedInProgress: 저장한 과정 중 학습 중인 것이 없습니다.
+emptySavedFinished: 아직 완료한 저장 과정이 없습니다.
+emptySavedCards: 아직 카드가 없어요. 키포인트 끝에서 북마크를 누르면 요약을 보관합니다.
+deckHint: 밀어서 다음 카드, 눌러서 뒤집기
+gridViewLabel: 그리드 보기
+deckViewLabel: 카드 보기
+shareLabel: 공유
+saveCardLabel: 카드 저장
+unsaveCardLabel: 저장 해제
+courseOptionsLabel: 더 보기
+saveCourseLabel: 이 과정 저장
+unsaveCourseLabel: 저장 해제
+shareCourseLabel: 이 과정 공유
+cardSavedToast: 카드에 저장했어요
+cardRemovedToast: 저장을 해제했어요
+courseSavedToast: 라이브러리에 저장했어요
+courseRemovedToast: 저장을 해제했어요
+shareFailed: 지금은 공유할 수 없어요.
+shareCardMessage(param=title): MeUp 에서 건진 한 조각 - ${title}
+shareCourseMessage(param=title): MeUp 에서 ${title} 를 배우고 있어요. 같이 해요!

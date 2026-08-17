@@ -27,5 +27,6 @@ part 'manual/moderation_key.dart';
 part 'manual/network.dart';
 part 'manual/notification_key.dart';
 part 'manual/remote_config_key.dart';
+part 'manual/store_url.dart';
 part 'manual/tracking_key.dart';
 part 'manual/tracking_params.dart';

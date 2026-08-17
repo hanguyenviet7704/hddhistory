@@ -94,8 +94,7 @@ class _LibraryHistoryPageState extends State<LibraryHistoryPage> {
           ),
           Expanded(
             child: BlocBuilder<ProgressCubit, ProgressState>(
-              buildWhen: (previous, current) =>
-                  previous.libraryPageData != current.libraryPageData || previous.libraryStatus != current.libraryStatus,
+              buildWhen: (previous, current) => previous.libraryPageData != current.libraryPageData || previous.libraryStatus != current.libraryStatus,
               builder: (context, state) {
                 if (state.isLibraryInitialLoading) {
                   return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));

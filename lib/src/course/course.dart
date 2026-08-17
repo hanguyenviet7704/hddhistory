@@ -93,6 +93,7 @@ part 'presentation/widgets/course_roadmap/completed_level_additional_content_req
 part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_load_failure_state.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_header_card.dart';
+part 'presentation/widgets/course_roadmap/course_roadmap_options_button.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_floating_button.dart';
 part 'presentation/widgets/course_roadmap/in_progress_badge.dart';
 part 'presentation/widgets/course_roadmap/lesson_keypoint_card.dart';

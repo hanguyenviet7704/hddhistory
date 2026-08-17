@@ -35,6 +35,14 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   /// spinner and ignores taps for that beat.
   bool _isContinuing = false;
 
+  /// Wraps the flip card so Share can hand the reader a picture of the card
+  /// itself rather than a line of text about it.
+  final GlobalKey _shareBoundaryKey = GlobalKey();
+
+  /// "Saved to your cards" / "Removed", in the same 38-tall slot the actions
+  /// live in — the design keeps the answer next to the button that caused it.
+  final SavedToastController _toast = SavedToastController();
+
   /// 0 → front (quote), 1 → back (recap text). The design's
   /// `transition: transform .6s cubic-bezier(.2,.7,.25,1)`.
   late final AnimationController _flip = AnimationController(
@@ -59,6 +67,9 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     } else {
       AppHaptic.celebrate();
     }
+    // Without the id set, the bookmark would draw hollow on a card the reader
+    // already saved — and a second tap would then UNSAVE it.
+    unawaited(AppDI.injector.get<SavedCubit>().ensureIdsLoaded());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final lessonCubit = context.read<LessonCubit>();
@@ -71,7 +82,43 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   @override
   void dispose() {
     _flip.dispose();
+    _toast.dispose();
     super.dispose();
+  }
+
+  /// Shares the card as a picture. Captures whichever face is showing — a
+  /// reader who flipped to the recap and pressed share meant the recap.
+  Future<void> _share(String keypointTitle) async {
+    final ok = await shareSavedQuoteCard(
+      context,
+      boundaryKey: _shareBoundaryKey,
+      title: keypointTitle,
+    );
+    if (!mounted || ok) return;
+    _toast.show(context.l10n.library.shareFailed);
+  }
+
+  /// Keeps this card in Library → Saved cards.
+  ///
+  /// The recap text travels with the save: it is derived HERE from the lesson's
+  /// items ([resolveTakeawaySummary]) and the server has no way to re-derive it
+  /// — see [SavedCardEntity].
+  Future<void> _toggleSave({required String recapText}) async {
+    final lessonState = context.read<CourseLessonCubit>().state;
+    final keypointId = lessonState.currentKeypointId;
+    if (keypointId.isEmpty) return;
+
+    final l10n = context.l10n.library;
+    final saved = await AppDI.injector.get<SavedCubit>().toggleCard(
+      SaveCardParams(
+        keypointId: keypointId,
+        lessonId: lessonState.selectedLesson.id,
+        courseId: lessonState.selectedLesson.courseId,
+        recapText: recapText,
+      ),
+    );
+    if (!mounted) return;
+    _toast.show(saved ? l10n.cardSavedToast : l10n.cardRemovedToast);
   }
 
   void _toggleFlip(bool hasRecap) {
@@ -157,61 +204,152 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
       child: Column(
         children: [
           const Spacer(),
-          GestureDetector(
-            onTap: () => _toggleFlip(hasRecap),
-            child: AnimatedBuilder(
-              animation: _turn,
-              builder: (context, _) {
-                final angle = _turn.value * math.pi;
-                final showBack = angle > math.pi / 2;
-                return Transform(
-                  alignment: Alignment.center,
-                  // The slight perspective entry is what reads as a card turning
-                  // in space rather than squashing flat (design: perspective 1400).
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.0008)
-                    ..rotateY(angle),
-                  child: showBack
-                      // Pre-mirrored so the back face reads left-to-right once
-                      // the card has turned past its edge.
-                      ? Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()..rotateY(math.pi),
-                          child: _recapBack(context, keypointTitle: keypointTitle, recapText: recapText),
-                        )
-                      : _quoteFront(context, keypointTitle: keypointTitle, lessonTitle: lessonTitle, imageUrl: imageUrl),
-                );
-              },
-            ),
-          ),
-          if (hasRecap) ...[
-            16.verticalSpace,
-            // The design fades the hint with the front face — once flipped the
-            // reader knows the gesture, and the line under a text card is noise.
-            AnimatedBuilder(
-              animation: _turn,
-              builder: (context, child) => Opacity(opacity: (1 - _turn.value).clamp(0, 1), child: child),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.touch_app_outlined, size: 17.w, color: AppCustomColor.kpPeekHint),
-                  7.horizontalSpace,
-                  AppText(
-                    context.l10n.lesson.peekRecapHint,
-                    style: AppStyle.text13.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppCustomColor.kpPeekHint,
-                    ),
-                  ),
-                ],
+          // The share capture takes THIS subtree, so the boundary sits around
+          // the card and nothing else — the picture is the card, not the screen.
+          RepaintBoundary(
+            key: _shareBoundaryKey,
+            child: GestureDetector(
+              onTap: () => _toggleFlip(hasRecap),
+              child: AnimatedBuilder(
+                animation: _turn,
+                builder: (context, _) {
+                  final angle = _turn.value * math.pi;
+                  final showBack = angle > math.pi / 2;
+                  return Transform(
+                    alignment: Alignment.center,
+                    // The slight perspective entry is what reads as a card turning
+                    // in space rather than squashing flat (design: perspective 1400).
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.0008)
+                      ..rotateY(angle),
+                    child: showBack
+                        // Pre-mirrored so the back face reads left-to-right once
+                        // the card has turned past its edge.
+                        ? Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.identity()..rotateY(math.pi),
+                            child: _recapBack(context, keypointTitle: keypointTitle, recapText: recapText),
+                          )
+                        : _quoteFront(context, keypointTitle: keypointTitle, lessonTitle: lessonTitle, imageUrl: imageUrl),
+                  );
+                },
               ),
             ),
-          ],
+          ),
+          16.verticalSpace,
+          _hintAndActions(context, hasRecap: hasRecap, keypointTitle: keypointTitle, recapText: recapText),
           const Spacer(),
+          SavedToastHost(controller: _toast),
+          8.verticalSpace,
           _continueButton(context),
           12.verticalSpace,
         ],
       ),
+    );
+  }
+
+  /// One slot under the card holding two things that swap as it turns (design
+  /// `_MeUp App` → RECAP): "Tap to see the recap" on the front, Share + Save on
+  /// the back.
+  ///
+  /// They cross-fade in place rather than stacking vertically, which is what
+  /// keeps Continue from moving when the card flips.
+  ///
+  /// The slot is 44 tall, not the design's 38: a 38 disc is under the minimum
+  /// tap target, so the buttons carry a 44 gesture box around their drawn size
+  /// and the row has to be tall enough to hold it.
+  Widget _hintAndActions(
+    BuildContext context, {
+    required bool hasRecap,
+    required String keypointTitle,
+    required String recapText,
+  }) {
+    final actions = _recapActions(context, keypointTitle: keypointTitle, recapText: recapText);
+
+    // Nothing to flip TO — the card never turns, so the hint would be a lie and
+    // the cross-fade has nothing to fade between. Show the actions outright,
+    // rather than leaving a keypoint with no takeaway impossible to save.
+    if (!hasRecap)
+      return SizedBox(
+        height: 44.h,
+        child: Center(child: actions),
+      );
+
+    return SizedBox(
+      height: 44.h,
+      child: AnimatedBuilder(
+        animation: _turn,
+        builder: (context, _) {
+          final front = (1 - _turn.value).clamp(0.0, 1.0);
+          final back = _turn.value.clamp(0.0, 1.0);
+          final showingBack = _turn.value > 0.5;
+
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // IgnorePointer on the hidden face: a fully faded row still takes
+              // taps, and the invisible one sits exactly on top of the visible.
+              IgnorePointer(
+                ignoring: showingBack,
+                child: Opacity(
+                  opacity: front,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.touch_app_outlined, size: 17.w, color: AppCustomColor.kpPeekHint),
+                      7.horizontalSpace,
+                      AppText(
+                        context.l10n.lesson.peekRecapHint,
+                        style: AppStyle.text13.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppCustomColor.kpPeekHint,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              IgnorePointer(
+                ignoring: !showingBack,
+                child: Opacity(opacity: back, child: actions),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Share + Save, the design's two 38 discs.
+  Widget _recapActions(BuildContext context, {required String keypointTitle, required String recapText}) {
+    final l10n = context.l10n.library;
+    final keypointId = context.watch<CourseLessonCubit>().state.currentKeypointId;
+
+    return BlocBuilder<SavedCubit, SavedState>(
+      bloc: AppDI.injector.get<SavedCubit>(),
+      buildWhen: (previous, current) => previous.isCardSaved(keypointId) != current.isCardSaved(keypointId),
+      builder: (context, savedState) {
+        final isSaved = savedState.isCardSaved(keypointId);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SavedCardActionButton.share(
+              key: const Key('recap-card-share'),
+              semanticsLabel: l10n.shareLabel,
+              dropShadow: true,
+              onTap: () => unawaited(_share(keypointTitle)),
+            ),
+            10.horizontalSpace,
+            SavedCardActionButton.bookmark(
+              key: const Key('recap-card-bookmark'),
+              semanticsLabel: isSaved ? l10n.unsaveCardLabel : l10n.saveCardLabel,
+              isSaved: isSaved,
+              dropShadow: true,
+              onTap: () => unawaited(_toggleSave(recapText: recapText)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -247,7 +385,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
                 width: 92.w,
                 height: 118.h,
                 fit: BoxFit.contain,
-                errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                errorWidget: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           Padding(

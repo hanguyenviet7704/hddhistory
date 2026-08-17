@@ -15,3 +15,35 @@ emptyInProgressCta: コースを探す
 emptyHistoryInProgress: 現在、学習中のコースはありません。
 emptyHistoryFinished: まだ修了したコースはありません。
 loadFailed: ライブラリを読み込めませんでした。
+savedRowTitle: 保存済み
+savedRowSubtitle: ブックマークしたコース
+savedTitle: 保存済み
+savedCount(param=count):
+  other: ${count} コース
+savedCardsRowTitle: 保存したカード
+savedCardsRowSubtitle: 残しておいた振り返り
+savedCardsTitle: 保存したカード
+savedCardsCount(param=count):
+  other: ${count} 枚
+filterUpNext: これから
+emptySavedUpNext: まだ保存がありません。コースのブックマークをタップすると、ここに残ります。
+emptySavedInProgress: 保存したコースに学習中のものはありません。
+emptySavedFinished: 保存したコースをまだ修了していません。
+emptySavedCards: カードがまだありません。キーポイントの最後でブックマークをタップすると、振り返りを残せます。
+deckHint: スワイプで次のカード、タップで裏返す
+gridViewLabel: グリッド表示
+deckViewLabel: カード表示
+shareLabel: 共有
+saveCardLabel: カードを保存
+unsaveCardLabel: 保存を解除
+courseOptionsLabel: その他の操作
+saveCourseLabel: このコースを保存
+unsaveCourseLabel: 保存を解除
+shareCourseLabel: このコースを共有
+cardSavedToast: カードに保存しました
+cardRemovedToast: 保存を解除しました
+courseSavedToast: ライブラリに保存しました
+courseRemovedToast: 保存を解除しました
+shareFailed: 今は共有できませんでした。
+shareCardMessage(param=title): MeUp で見つけた残しておきたい一節 - ${title}
+shareCourseMessage(param=title): MeUp で ${title} を学んでいます。一緒にどうぞ！

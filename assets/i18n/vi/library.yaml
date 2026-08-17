@@ -15,3 +15,35 @@ emptyInProgressCta: Khám phá khoá học
 emptyHistoryInProgress: Hiện chưa có khoá học nào đang học.
 emptyHistoryFinished: Bạn chưa hoàn thành khoá học nào.
 loadFailed: Không tải được thư viện của bạn.
+savedRowTitle: Đã lưu
+savedRowSubtitle: Khoá học bạn đã đánh dấu
+savedTitle: Đã lưu
+savedCount(param=count):
+  other: ${count} khoá học
+savedCardsRowTitle: Thẻ đã lưu
+savedCardsRowSubtitle: Những phần tóm tắt bạn giữ lại
+savedCardsTitle: Thẻ đã lưu
+savedCardsCount(param=count):
+  other: ${count} thẻ
+filterUpNext: Sắp học
+emptySavedUpNext: Chưa lưu gì cả. Chạm vào dấu trang ở khoá học bất kỳ để giữ nó ở đây.
+emptySavedInProgress: Chưa có khoá học nào đã lưu đang học dở.
+emptySavedFinished: Bạn chưa hoàn thành khoá học nào đã lưu.
+emptySavedCards: Chưa có thẻ nào. Chạm dấu trang ở cuối một keypoint để giữ lại phần tóm tắt.
+deckHint: Vuốt để xem thẻ tiếp theo, chạm để lật
+gridViewLabel: Dạng lưới
+deckViewLabel: Dạng chồng thẻ
+shareLabel: Chia sẻ
+saveCardLabel: Lưu thẻ
+unsaveCardLabel: Bỏ khỏi mục đã lưu
+courseOptionsLabel: Tuỳ chọn khác
+saveCourseLabel: Lưu khoá học này
+unsaveCourseLabel: Bỏ khỏi mục đã lưu
+shareCourseLabel: Chia sẻ khoá học này
+cardSavedToast: Đã lưu vào thẻ của bạn
+cardRemovedToast: Đã bỏ khỏi mục đã lưu
+courseSavedToast: Đã lưu vào thư viện
+courseRemovedToast: Đã bỏ khỏi mục đã lưu
+shareFailed: Chưa chia sẻ được lúc này.
+shareCardMessage(param=title): Một điều đáng giữ lại, từ MeUp - ${title}
+shareCourseMessage(param=title): Mình đang học ${title} trên MeUp. Tham gia cùng nhé!

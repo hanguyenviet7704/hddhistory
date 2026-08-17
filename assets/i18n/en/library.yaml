@@ -16,3 +16,37 @@ emptyInProgressCta: Explore courses
 emptyHistoryInProgress: No course in progress right now.
 emptyHistoryFinished: You haven't finished a course yet.
 loadFailed: We couldn't load your library.
+savedRowTitle: Saved
+savedRowSubtitle: Courses you bookmarked
+savedTitle: Saved
+savedCount(param=count):
+  one: ${count} course
+  other: ${count} courses
+savedCardsRowTitle: Saved cards
+savedCardsRowSubtitle: Recaps you kept
+savedCardsTitle: Saved cards
+savedCardsCount(param=count):
+  one: ${count} card
+  other: ${count} cards
+filterUpNext: Up next
+emptySavedUpNext: Nothing saved yet. Tap the bookmark on any course to keep it here.
+emptySavedInProgress: None of your saved courses is in progress.
+emptySavedFinished: You haven't finished a saved course yet.
+emptySavedCards: No cards yet. Tap the bookmark at the end of a keypoint to keep its recap here.
+deckHint: Swipe for the next card, tap to flip
+gridViewLabel: Grid view
+deckViewLabel: Deck view
+shareLabel: Share
+saveCardLabel: Save card
+unsaveCardLabel: Remove from saved
+courseOptionsLabel: More options
+saveCourseLabel: Save this course
+unsaveCourseLabel: Remove from saved
+shareCourseLabel: Share this course
+cardSavedToast: Saved to your cards
+cardRemovedToast: Removed from saved
+courseSavedToast: Saved to your library
+courseRemovedToast: Removed from saved
+shareFailed: Couldn't share that just now.
+shareCardMessage(param=title): Worth keeping, from MeUp - ${title}
+shareCourseMessage(param=title): I'm learning ${title} on MeUp. Come join me!

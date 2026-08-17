@@ -506,19 +506,17 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                               );
                             },
                           ),
-                          // Change-theme affordance — the SAME circular button
-                          // + cb-theme glyph as Home, top-right of the roadmap
-                          // header. Moved here from the all-courses list (that
-                          // placement was redundant); its light circular chrome
-                          // stays readable over any custom background.
+                          // The design's single trailing control (`3 · Learning`
+                          // → Course detail): a `(...)` disc opening the course
+                          // options sheet. Change theme moved INSIDE that sheet
+                          // — it used to be its own circular button here, which
+                          // this replaces rather than sits beside.
                           Align(
                             alignment: Alignment.centerRight,
                             child: Padding(
                               padding: EdgeInsets.only(right: 12.w),
-                              child: const ChangeBackgroundButton(
-                                key: Key('roadmap-change-theme'),
-                                size: 40,
-                                source: 'roadmap',
+                              child: const CourseRoadmapOptionsButton(
+                                key: Key('roadmap-course-options'),
                               ),
                             ),
                           ),

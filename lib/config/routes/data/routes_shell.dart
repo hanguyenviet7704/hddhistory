@@ -144,6 +144,14 @@ part of '../routes.dart';
               path: RoutePath.libraryHistory,
               name: RouteNamed.libraryHistory,
             ),
+            TypedGoRoute<SavedCoursesRoute>(
+              path: RoutePath.savedCourses,
+              name: RouteNamed.savedCourses,
+            ),
+            TypedGoRoute<SavedCardsRoute>(
+              path: RoutePath.savedCards,
+              name: RouteNamed.savedCards,
+            ),
             TypedGoRoute<MyLessonsRoute>(
               path: RoutePath.myLessons,
               name: RouteNamed.myLessons,

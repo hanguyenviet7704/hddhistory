@@ -87,6 +87,8 @@ mixin RoutePath {
   //* Library
   static const String library = '/library';
   static const String libraryHistory = 'history';
+  static const String savedCourses = 'saved';
+  static const String savedCards = 'saved-cards';
 
   //* Library - Learning import (user's own PDF / YouTube -> generated lesson)
   // Nested under /library, not /profile: the shelf of your own lessons is one of
@@ -198,6 +200,8 @@ mixin RouteNamed {
   //* Library
   static const String library = 'Library';
   static const String libraryHistory = 'Library History';
+  static const String savedCourses = 'Saved Courses';
+  static const String savedCards = 'Saved Cards';
 
   //* Library - Learning import
   static const String myLessons = 'My Lessons';

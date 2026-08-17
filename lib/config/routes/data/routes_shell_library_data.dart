@@ -25,6 +25,7 @@ class LibraryRoute extends BaseTransitionRouteData with $LibraryRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
       BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<SavedCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
     ],
     child: const LibraryPage(),
@@ -48,6 +49,45 @@ class LibraryHistoryRoute extends BaseTransitionRouteData with $LibraryHistoryRo
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
     ],
     child: const LibraryHistoryPage(),
+  );
+}
+
+/// "Saved" — the courses the reader bookmarked, filtered Up next / In progress
+/// / Finished.
+///
+/// Same rise-from-the-bottom as My history: both are panels pulled up over the
+/// Library from a row in the middle of the tab.
+class SavedCoursesRoute extends BaseTransitionRouteData with $SavedCoursesRoute {
+  const SavedCoursesRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<SavedCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+    ],
+    child: const SavedCoursesPage(),
+  );
+}
+
+/// "Saved cards" — the recap cards kept from the end of a keypoint, as a grid
+/// or a deck.
+class SavedCardsRoute extends BaseTransitionRouteData with $SavedCardsRoute {
+  const SavedCardsRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<SavedCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+    ],
+    child: const SavedCardsPage(),
   );
 }
 
