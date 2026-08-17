@@ -13,10 +13,42 @@ class SavedCardsDeck extends StatefulWidget {
   State<SavedCardsDeck> createState() => _SavedCardsDeckState();
 }
 
-class _SavedCardsDeckState extends State<SavedCardsDeck> with SingleTickerProviderStateMixin {
+/// Past this fraction of the card's width, letting go sends the card on its way
+/// rather than springing it back.
+const double _kDeckCommitFraction = 0.35;
+
+/// A flick faster than this commits regardless of how far it travelled.
+const double _kDeckCommitVelocity = 600;
+
+/// How far the card has to travel for the stack behind it to finish rising —
+/// well short of the commit distance, so the next card is already coming
+/// forward while the reader is still deciding.
+const double _kDeckRiseFraction = 0.4;
+
+/// Resistance when dragging past the first or the last card. Not zero: a dead
+/// card reads as a frozen screen, a heavy one reads as the end of the deck.
+const double _kDeckOverrunDamping = 0.3;
+
+class _SavedCardsDeckState extends State<SavedCardsDeck> with TickerProviderStateMixin {
   final GlobalKey _shareBoundaryKey = GlobalKey();
 
   int _index = 0;
+
+  /// Live horizontal offset of the front card — the finger's, then the settle
+  /// animation's.
+  double _dragX = 0;
+
+  /// Card width as laid out this frame. The gesture handlers need it to size
+  /// their thresholds, and they run after build.
+  double _cardWidth = 1;
+
+  /// Where the current settle animation runs between, in [_dragX] units.
+  double _settleFrom = 0;
+  double _settleTarget = 0;
+
+  /// Index delta to apply once the outgoing card has left the screen. Zero
+  /// while springing back.
+  int _pendingStep = 0;
 
   late final AnimationController _flip = AnimationController(
     vsync: this,
@@ -27,13 +59,36 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with SingleTickerProvid
     curve: const Cubic(0.2, 0.7, 0.25, 1),
   );
 
+  /// Drives [_dragX] after the finger lifts. Unbounded so the spring can
+  /// overshoot past its target and bounce back instead of stopping dead.
+  late final AnimationController _settle = AnimationController.unbounded(vsync: this)..addListener(_onSettleTick);
+
+  static const SpringDescription _spring = SpringDescription(mass: 1, stiffness: 500, damping: 30);
+
   @override
   void dispose() {
     _flip.dispose();
+    _settle
+      ..removeListener(_onSettleTick)
+      ..dispose();
     super.dispose();
   }
 
   SavedCardEntity? get _card => _index < widget.cards.length ? widget.cards[_index] : null;
+
+  /// The card sitting immediately behind the front one — whichever way the
+  /// drag is heading. Dragging LEFT pulls the next card in, dragging RIGHT
+  /// brings the previous one back.
+  ///
+  /// At rest it resolves to the next card, which is invisible anyway (the front
+  /// card covers all but a 7px strip of it), so the swap on the first pixel of
+  /// a rightward drag is never seen.
+  SavedCardEntity? get _neighbourCard {
+    final offset = _dragX > 0 ? -1 : 1;
+    final index = _index + offset;
+    if (index < 0 || index >= widget.cards.length) return null;
+    return widget.cards[index];
+  }
 
   @override
   void didUpdateWidget(covariant SavedCardsDeck oldWidget) {
@@ -43,16 +98,97 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with SingleTickerProvid
     if (_index >= widget.cards.length && widget.cards.isNotEmpty) {
       setState(() => _index = widget.cards.length - 1);
     }
+    // The list changed under a card that was mid-flight: finish where it is
+    // rather than committing a step against indexes that have moved.
+    if (oldWidget.cards.length != widget.cards.length) _cancelSettle(resetOffset: true);
   }
 
-  void _step(int delta) {
-    final next = _index + delta;
-    if (next < 0 || next >= widget.cards.length) return;
+  // ------------------------------------------------------------------ drag
+
+  void _onDragStart(DragStartDetails details) {
+    // Catching a card mid-settle hands it straight back to the finger.
+    _cancelSettle();
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    final proposed = _dragX + details.delta.dx;
+    final atStart = _index == 0;
+    final atEnd = _index >= widget.cards.length - 1;
+    // Dragging right on the first card, or left on the last, has nowhere to go.
+    final overruns = (atStart && proposed > 0) || (atEnd && proposed < 0);
+
+    setState(() => _dragX += details.delta.dx * (overruns ? _kDeckOverrunDamping : 1));
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    if (_dragX == 0) return;
+
+    final velocity = details.primaryVelocity ?? 0;
+    final flicked = velocity.abs() > _kDeckCommitVelocity;
+    // A flick decides its own direction — the reader can drag one way, change
+    // their mind, and throw the card back the other.
+    final direction = flicked ? (velocity < 0 ? 1 : -1) : (_dragX < 0 ? 1 : -1);
+    final committed = flicked || _dragX.abs() > _cardWidth * _kDeckCommitFraction;
+    final canStep = direction > 0 ? _index < widget.cards.length - 1 : _index > 0;
+
+    if (committed && canStep) {
+      _flingOut(direction);
+    } else {
+      _springBack(velocity);
+    }
+  }
+
+  /// Sends the card the rest of the way off screen, then swaps in the next one.
+  void _flingOut(int direction) {
     AppHaptic.select();
-    setState(() => _index = next);
-    // Every card arrives face up: carrying the flip across would show the next
-    // card's recap before its quote, which is the wrong way round.
-    _flip.value = 0;
+    _pendingStep = direction;
+    _settleFrom = _dragX;
+    // Past the far edge of the frame, so nothing of the card is still visible
+    // when it is replaced.
+    _settleTarget = -direction * (MediaQuery.sizeOf(context).width + _cardWidth);
+    _settle
+      ..value = 0
+      ..animateTo(1, duration: const Duration(milliseconds: 220), curve: Curves.easeOutCubic);
+  }
+
+  void _springBack(double velocity) {
+    _pendingStep = 0;
+    _settleFrom = _dragX;
+    _settleTarget = 0;
+    // The spring runs 0 → 1 over the whole return trip, so the finger's
+    // velocity has to be expressed in the same units to carry through.
+    final normalized = _dragX == 0 ? 0.0 : -velocity / _dragX;
+    _settle
+      ..value = 0
+      ..animateWith(SpringSimulation(_spring, 0, 1, normalized));
+  }
+
+  void _onSettleTick() {
+    // Reached the far edge: the card is out of sight, so this is the one frame
+    // where the swap is invisible. Doing it any earlier — at the moment the
+    // gesture ends, as a snapping deck can — would show the card un-flip and
+    // change its title in mid-air.
+    if (_pendingStep != 0 && _settle.value >= 1) {
+      final next = _index + _pendingStep;
+      _pendingStep = 0;
+      _settle.stop();
+      setState(() {
+        _index = next;
+        _dragX = 0;
+      });
+      // Every card arrives face up: carrying the flip across would show the
+      // next card's recap before its quote, which is the wrong way round.
+      _flip.value = 0;
+      return;
+    }
+
+    setState(() => _dragX = ui.lerpDouble(_settleFrom, _settleTarget, _settle.value) ?? 0);
+  }
+
+  void _cancelSettle({bool resetOffset = false}) {
+    _settle.stop();
+    _pendingStep = 0;
+    if (resetOffset && _dragX != 0) setState(() => _dragX = 0);
   }
 
   void _toggleFlip() {
@@ -99,6 +235,8 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with SingleTickerProvid
       (cubit) => cubit.state.isCardSaved(card.keypointId),
     );
     final l10n = context.l10n.library;
+    _cardWidth = math.min(330.w, MediaQuery.sizeOf(context).width - 40.w);
+    final riseProgress = (_dragX.abs() / (_cardWidth * _kDeckRiseFraction)).clamp(0.0, 1.0);
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -109,15 +247,17 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with SingleTickerProvid
             onTap: _toggleFlip,
             // Sideways only: the page itself scrolls vertically, and claiming
             // the vertical axis here would trap the reader on the deck.
-            onHorizontalDragEnd: (details) {
-              final velocity = details.primaryVelocity ?? 0;
-              if (velocity.abs() < 120) return;
-              _step(velocity < 0 ? 1 : -1);
-            },
+            onHorizontalDragStart: _onDragStart,
+            onHorizontalDragUpdate: _onDragUpdate,
+            onHorizontalDragEnd: _onDragEnd,
             child: _DeckStack(
               shareBoundaryKey: _shareBoundaryKey,
               card: card,
+              nextCard: _neighbourCard,
               turn: _turn,
+              dragX: _dragX,
+              cardWidth: _cardWidth,
+              riseProgress: riseProgress,
             ),
           ),
           // The two paper layers below the card hang 16 past its foot; the pips
@@ -164,19 +304,41 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with SingleTickerProvid
 }
 
 /// The card and the two paper layers behind it.
+///
+/// As the front card is dragged away the two layers advance one step each
+/// ([riseProgress]), so the next card is visibly coming forward rather than the
+/// top one merely sliding off a static backdrop. That rise is most of what
+/// makes the stack read as a deck of paper.
 class _DeckStack extends StatelessWidget {
   const _DeckStack({
     required this.shareBoundaryKey,
     required this.card,
+    required this.nextCard,
     required this.turn,
+    required this.dragX,
+    required this.cardWidth,
+    required this.riseProgress,
   });
 
   final GlobalKey shareBoundaryKey;
   final SavedCardEntity card;
+
+  /// The card being pulled towards — whichever neighbour the drag is heading
+  /// for. Null at the ends of the deck, where nothing is behind.
+  final SavedCardEntity? nextCard;
   final Animation<double> turn;
+  final double dragX;
+  final double cardWidth;
+  final double riseProgress;
+
+  /// How far the card tilts at a full card-width of travel — a card pulled out
+  /// of a stack pivots, it does not track sideways like a scroll view.
+  static const double _maxTiltRadians = 0.12;
 
   @override
   Widget build(BuildContext context) {
+    final t = riseProgress;
+
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 330.w),
@@ -188,10 +350,10 @@ class _DeckStack extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Positioned(
-                left: 14.w,
-                right: 14.w,
-                top: 16.h,
-                bottom: -16.h,
+                left: ui.lerpDouble(14.w, 7.w, t),
+                right: ui.lerpDouble(14.w, 7.w, t),
+                top: ui.lerpDouble(16.h, 8.h, t),
+                bottom: ui.lerpDouble(-16.h, -8.h, t),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: const Color(0xFFEDEBF9),
@@ -200,28 +362,53 @@ class _DeckStack extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 7.w,
-                right: 7.w,
-                top: 8.h,
-                bottom: -8.h,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF6F5FD),
-                    borderRadius: BorderRadius.circular(27.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF141828).withValues(alpha: 0.06),
-                        blurRadius: 18.r,
-                        offset: Offset(0, 6.h),
+                left: ui.lerpDouble(7.w, 0, t),
+                right: ui.lerpDouble(7.w, 0, t),
+                top: ui.lerpDouble(8.h, 0, t),
+                bottom: ui.lerpDouble(-8.h, 0, t),
+                // The card the reader is pulling towards, drawn for real. A
+                // blank sheet here is what made the swipe feel like it led
+                // nowhere — half way across you were looking at an empty box.
+                // At rest this is hidden behind the front card save for a 7px
+                // strip of its own white margin, so the deck still reads as the
+                // design's plain stack until a drag starts.
+                child: nextCard == null
+                    ? DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F5FD),
+                          borderRadius: BorderRadius.circular(27.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF141828).withValues(alpha: 0.06),
+                              blurRadius: 18.r,
+                              offset: Offset(0, 6.h),
+                            ),
+                          ],
+                        ),
+                      )
+                    : SavedQuoteCard(
+                        // Keyed on the card so Flutter rebuilds rather than
+                        // reuses when the revealed neighbour flips from the one
+                        // ahead to the one behind mid-drag.
+                        key: ValueKey(nextCard!.keypointId),
+                        title: nextCard!.displayTitle,
+                        courseTitle: nextCard!.courseTitle.text,
+                        imageUrl: nextCard!.image,
                       ),
-                    ],
-                  ),
-                ),
               ),
               Positioned.fill(
-                child: RepaintBoundary(
-                  key: shareBoundaryKey,
-                  child: SavedFlipCard(card: card, turn: turn),
+                child: Transform.translate(
+                  offset: Offset(dragX, 0),
+                  child: Transform.rotate(
+                    angle: dragX / cardWidth * _maxTiltRadians,
+                    // The boundary sits UNDER the transforms on purpose: a share
+                    // capture reads the boundary's own subtree, so the picture
+                    // is the card square-on however it happens to be sitting.
+                    child: RepaintBoundary(
+                      key: shareBoundaryKey,
+                      child: SavedFlipCard(card: card, turn: turn),
+                    ),
+                  ),
                 ),
               ),
             ],
