@@ -105,3 +105,56 @@ export interface NotificationSummary {
   toDate: string
   byType: Record<string, Record<NotificationLogStatus, number>>;
 }
+
+// ---------------------------------------------------------------------------
+// Manual campaigns (thủ công theo segment)
+// ---------------------------------------------------------------------------
+
+export type NotificationCampaignSendMode = "now" | "local_hour";
+
+export type NotificationCampaignStatus =
+  | "draft"
+  | "queued"
+  | "sending"
+  | "sent"
+  | "cancelled"
+  | "failed";
+
+export interface NotificationCampaignCopy {
+  locale: string;
+  title: string;
+  body: string;
+}
+
+export interface NotificationCampaign {
+  _id: string;
+  name: string;
+  /** `{ locale: { title, body } }` as stored; the editor works on a list. */
+  copies: Record<string, { title: string; body: string }>;
+  deeplink: NotificationDeeplink;
+  segmentIds?: string[];
+  sendMode: NotificationCampaignSendMode;
+  localHour: number;
+  localMinute: number;
+  scheduledDate?: string | null;
+  status: NotificationCampaignStatus;
+  sentCount: number;
+  failedCount: number;
+  /** Reached but not sent to (no live token / already handled). */
+  skippedCount: number;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  lastError?: string | null;
+  createdAt?: string;
+}
+
+export interface NotificationCampaignSendRow {
+  userId: string;
+  status: string;
+  sentAt: string;
+  deviceCount: number;
+  successCount: number;
+  failureCount: number;
+  reason?: string | null;
+  locale?: string | null;
+}

@@ -1,4 +1,8 @@
 import {
+  NotificationCampaign,
+  NotificationCampaignCopy,
+  NotificationCampaignSendMode,
+  NotificationCampaignSendRow,
   NotificationLogPage,
   NotificationLogStatus,
   NotificationSummary,
@@ -119,6 +123,70 @@ export const notificationService = {
       reason?: string;
       conditionMet?: boolean;
       variantKey?: string;
+    }>(res.data);
+  },
+
+  // ------------------------------------------------------- manual campaigns
+
+  async listCampaigns(): Promise<NotificationCampaign[]> {
+    const res = await axiosClient.get("/notifications/campaigns");
+    return unwrapData<NotificationCampaign[]>(res.data);
+  },
+
+  /** How many push-reachable users the targeting would hit, before sending. */
+  async previewCampaign(segmentIds: string[]): Promise<{
+    reach: number;
+    targeted: boolean;
+  }> {
+    const res = await axiosClient.post("/notifications/campaigns/preview", {
+      segmentIds,
+    });
+    return unwrapData<{ reach: number; targeted: boolean }>(res.data);
+  },
+
+  async createCampaign(payload: {
+    name: string;
+    copies: NotificationCampaignCopy[];
+    deeplink: string;
+    segmentIds: string[];
+    sendMode: NotificationCampaignSendMode;
+    localHour?: number;
+    localMinute?: number;
+    scheduledDate?: string;
+  }): Promise<NotificationCampaign> {
+    const res = await axiosClient.post("/notifications/campaigns", payload);
+    return unwrapData<NotificationCampaign>(res.data);
+  },
+
+  async queueCampaign(id: string): Promise<NotificationCampaign> {
+    const res = await axiosClient.post(`/notifications/campaigns/${id}/queue`);
+    return unwrapData<NotificationCampaign>(res.data);
+  },
+
+  async cancelCampaign(id: string): Promise<NotificationCampaign> {
+    const res = await axiosClient.post(`/notifications/campaigns/${id}/cancel`);
+    return unwrapData<NotificationCampaign>(res.data);
+  },
+
+  async campaignSends(
+    id: string,
+    page = 1,
+    take = 20,
+  ): Promise<{
+    items: NotificationCampaignSendRow[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+  }> {
+    const res = await axiosClient.get(
+      `/notifications/campaigns/${id}/sends`,
+      { params: { page, take } },
+    );
+    return unwrapData<{
+      items: NotificationCampaignSendRow[];
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
     }>(res.data);
   },
 };

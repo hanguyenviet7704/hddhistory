@@ -12,6 +12,7 @@ import {
 
 import { Autocomplete, TextField } from "@mui/material";
 
+import NotificationCampaignSection from "./NotificationCampaignSection";
 import ToggleSwitch from "../../components/paywall-config/ToggleSwitch";
 import { segmentService } from "../../services/segmentService";
 import { SegmentOption } from "../../types/interface/segment.interface";
@@ -135,7 +136,7 @@ const variantPreview = (variant: VariantDraft): string =>
   variant.copies.find((copy) => copy.title.trim() !== "")?.title ?? "";
 
 const NotificationsPage: React.FC = () => {
-  const [tab, setTab] = useState<"content" | "monitor">("content");
+  const [tab, setTab] = useState<"content" | "campaign" | "monitor">("content");
 
   return (
     <div className="p-6 space-y-6">
@@ -157,6 +158,7 @@ const NotificationsPage: React.FC = () => {
         {(
           [
             ["content", "Nội dung & lịch"],
+            ["campaign", "Gửi thủ công"],
             ["monitor", "Theo dõi gửi"],
           ] as const
         ).map(([key, label]) => (
@@ -174,7 +176,9 @@ const NotificationsPage: React.FC = () => {
         ))}
       </nav>
 
-      {tab === "content" ? <ContentSection /> : <MonitorSection />}
+      {tab === "content" ? <ContentSection /> : null}
+      {tab === "campaign" ? <NotificationCampaignSection /> : null}
+      {tab === "monitor" ? <MonitorSection /> : null}
     </div>
   );
 };
