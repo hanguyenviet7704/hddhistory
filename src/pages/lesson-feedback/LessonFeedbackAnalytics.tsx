@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
@@ -23,6 +26,7 @@ import {
   RATING_COLORS,
   REASON_COLORS,
   TYPE_LABELS,
+  downloadXlsx,
   formatDateTime,
   formatNumber,
   presetRange,
@@ -40,7 +44,7 @@ const COMMENTS_PAGE_SIZE = 10;
  */
 export default function LessonFeedbackAnalytics() {
   const lang = useSelector((state: RootState) => state.lang.code);
-  const { showError } = useNotification();
+  const { showError, showSuccess } = useNotification();
 
   const [preset, setPreset] = useState<DatePreset>("30");
   const [range, setRange] = useState(() => presetRange(30));
@@ -51,6 +55,7 @@ export default function LessonFeedbackAnalytics() {
   const [comments, setComments] = useState<IUserFeedbackCommentPage | null>(null);
   const [commentPage, setCommentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const query = useCallback(
     () => ({
@@ -93,6 +98,22 @@ export default function LessonFeedbackAnalytics() {
     // refetch forever.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, commentPage]);
+
+  /** Exports exactly what the filters currently show, not the whole table. */
+  const onExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const file = await userFeedbackService.exportStatistics(query());
+      const stamp = preset === "all" ? "tat-ca" : `${range.startDate}_${range.endDate}`;
+      downloadXlsx(file, `lesson-feedback_${stamp}.xlsx`);
+      showSuccess("Xuất Excel thành công");
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Xuất Excel thất bại");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const onPresetChange = (value: DatePreset) => {
     setPreset(value);
@@ -173,6 +194,16 @@ export default function LessonFeedbackAnalytics() {
             <option value={FeedbackType.COMPLETE}>Chỉ hoàn thành</option>
             <option value={FeedbackType.INCOMPLETE}>Chỉ bỏ dở</option>
           </select>
+          <span className="h-5 w-px bg-slate-200" />
+          <button
+            type="button"
+            onClick={onExport}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4" />
+            {exporting ? "Đang xuất…" : "Xuất Excel"}
+          </button>
         </div>
       </header>
 

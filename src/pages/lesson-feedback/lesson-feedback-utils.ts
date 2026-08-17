@@ -70,3 +70,13 @@ export const presetRange = (days: number) => {
   start.setDate(start.getDate() - (days - 1));
   return { startDate: toInputDate(start), endDate: toInputDate(end) };
 };
+
+/** Hands the workbook to the browser as a download. */
+export const downloadXlsx = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+};

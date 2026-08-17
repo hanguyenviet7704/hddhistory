@@ -39,4 +39,13 @@ export const userFeedbackService = {
     });
     return unwrapData<IUserFeedbackCommentPage>(res.data);
   },
+
+  /** Same filters as the screen; the API answers with an .xlsx buffer. */
+  async exportStatistics(params: IUserFeedbackStatisticsQuery): Promise<Blob> {
+    const res = await axiosClient.get("/courses-feedback/statistics/export", {
+      params,
+      responseType: "blob",
+    });
+    return res.data;
+  },
 };
