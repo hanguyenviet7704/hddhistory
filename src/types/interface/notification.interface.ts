@@ -48,6 +48,11 @@ export interface NotificationTemplate {
   localMinute?: number;
   deeplink: NotificationDeeplink;
   /**
+   * Target segments (OR). Empty/absent = send to everybody, which is what every
+   * type did before targeting existed.
+   */
+  segmentIds?: string[];
+  /**
    * Legacy single wording, kept by the server in step with the first variant.
    * The page reads `variants` and only falls back here for a template saved
    * before variants existed.

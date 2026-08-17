@@ -35,6 +35,11 @@ export const notificationService = {
       localHour?: number;
       localMinute?: number;
       deeplink?: string;
+      /**
+       * Target segments (OR). `[]` clears targeting — the API only leaves
+       * targeting alone when the field is absent entirely.
+       */
+      segmentIds?: string[];
       /** Legacy single-wording form; ignored by the API when `variants` is sent. */
       copies?: { locale: string; title: string; body: string }[];
       /**

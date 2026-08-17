@@ -10,7 +10,11 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 
+import { Autocomplete, TextField } from "@mui/material";
+
 import ToggleSwitch from "../../components/paywall-config/ToggleSwitch";
+import { segmentService } from "../../services/segmentService";
+import { SegmentOption } from "../../types/interface/segment.interface";
 import {
   notificationService,
   NotificationLogQuery,
@@ -107,6 +111,7 @@ interface TemplateDraft {
   localHour: string;
   localMinute: string;
   deeplink: NotificationDeeplink;
+  segmentIds: string[];
   variants: VariantDraft[];
 }
 
@@ -205,6 +210,7 @@ const ContentSection: React.FC = () => {
               localHour: String(template.localHour ?? 0),
               localMinute: String(template.localMinute ?? 0),
               deeplink: template.deeplink,
+              segmentIds: template.segmentIds ?? [],
               variants: toVariantDrafts(template),
             },
           ])
@@ -229,6 +235,27 @@ const ContentSection: React.FC = () => {
       ...prev,
       [type]: { ...prev[type], variants: change(prev[type]?.variants ?? []) },
     }));
+
+  // Loaded once for the whole page and shared by every type's picker — the same
+  // shape Home banner / Home popup use for their own targeting.
+  const [segments, setSegments] = useState<SegmentOption[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await segmentService.list();
+        setSegments(
+          (res.data ?? []).map((s: { _id: string; name: string }) => ({
+            _id: s._id,
+            name: s.name,
+          })),
+        );
+      } catch {
+        // Targeting is optional: a failed segment list must not block editing
+        // wording or send times, so the picker just stays empty.
+      }
+    })();
+  }, []);
 
   const save = async (template: NotificationTemplate, enabled?: boolean) => {
     const draft = drafts[template.type];
@@ -258,6 +285,9 @@ const ContentSection: React.FC = () => {
         localHour: Number(draft?.localHour ?? template.localHour),
         localMinute: Number(draft?.localMinute ?? template.localMinute ?? 0),
         deeplink: draft?.deeplink ?? template.deeplink,
+        // Always sent, including as []: that empty array is how the screen
+        // clears targeting and goes back to everybody.
+        segmentIds: draft?.segmentIds ?? template.segmentIds ?? [],
         variants,
       });
       setMessage(
@@ -370,6 +400,38 @@ const ContentSection: React.FC = () => {
                     ))}
                   </select>
                 </label>
+                <div className="mt-2 max-w-xl">
+                  <Autocomplete
+                    multiple
+                    size="small"
+                    options={segments}
+                    value={(draft?.segmentIds ?? template.segmentIds ?? []).map(
+                      (id) =>
+                        segments.find((s) => s._id === id) ?? {
+                          _id: id,
+                          name: id,
+                        },
+                    )}
+                    onChange={(_, selected) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [template.type]: {
+                          ...prev[template.type],
+                          segmentIds: selected.map((s) => s._id),
+                        },
+                      }))
+                    }
+                    isOptionEqualToValue={(a, b) => a._id === b._id}
+                    getOptionLabel={(s) => s.name}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Chỉ gửi cho các phân khúc user"
+                        helperText="Bỏ trống = gửi cho mọi người. Khớp BẤT KỲ phân khúc nào được chọn. Nhớ bấm Lưu thay đổi."
+                      />
+                    )}
+                  />
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-xs text-slate-700">
