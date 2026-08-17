@@ -4,7 +4,10 @@ import { Link } from "react-router-dom";
 
 import { RootState } from "../../store";
 import { userHabitService } from "../../services/userHabitService";
-import { IHabitCheckinStatistics } from "../../types/interface/userHabit.interface";
+import {
+  IHabitCheckinStatistics,
+  IHabitDailyPoint,
+} from "../../types/interface/userHabit.interface";
 import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
 import {
@@ -91,7 +94,12 @@ export default function HabitCheckinStats() {
   };
 
   const m = data?.metrics;
-  const maxDaily = Math.max(1, ...(data?.daily || []).map((d) => d.checkins));
+  // Zero-filled timeline. The API only returns days that HAVE check-ins, so
+  // drawing its rows side by side silently deletes the quiet days from the axis
+  // and turns "26 of 30 days" into a solid streak. Filling the gaps is what
+  // makes the shape of the chart mean anything.
+  const series = buildSeries(data, preset === "all" ? undefined : range);
+  const maxDaily = Math.max(1, ...series.map((d) => d.checkins));
   const maxMethod = Math.max(
     1,
     ...(data?.methodDistribution || []).map((r) => r.count)
@@ -195,29 +203,48 @@ export default function HabitCheckinStats() {
 
           <Section
             title="Check-in theo ngày"
-            trailing={`${formatNumber(data?.daily.length)} ngày có hoạt động`}
+            trailing={`${formatNumber(data?.daily.length)} / ${formatNumber(
+              series.length
+            )} ngày có hoạt động · cao nhất ${formatNumber(maxDaily)} check-in/ngày`}
           >
-            {(data?.daily || []).length === 0 ? (
+            {series.length === 0 ? (
               <Empty />
             ) : (
-              // A bar per active day: the series is short (a month or two) and
-              // this avoids pulling a chart library into the admin for one view.
-              <div className="flex items-end gap-1 overflow-x-auto pb-2" style={{ height: 160 }}>
-                {(data?.daily || []).map((point) => (
-                  <div
-                    key={point.date}
-                    className="group flex h-full flex-none flex-col justify-end"
-                    style={{ width: 14 }}
-                    title={`${formatDateOnly(point.date)} · ${point.checkins} check-in · ${point.done} done · ${point.users} người`}
-                  >
+              // Plain divs, not a chart library: one bar per day over a window of
+              // weeks. Bars flex so a month fills the card instead of hugging the
+              // left edge, and a zero day renders as a visible gap.
+              <div>
+                <div className="flex items-end gap-px" style={{ height: 160 }}>
+                  {series.map((point) => (
                     <div
-                      className="rounded-t bg-indigo-500 transition group-hover:bg-indigo-700"
-                      style={{
-                        height: `${Math.max(3, (point.checkins / maxDaily) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                ))}
+                      key={point.date}
+                      className="group flex h-full flex-1 flex-col justify-end"
+                      style={{ minWidth: 3 }}
+                      title={`${formatDateOnly(point.date)} · ${point.checkins} check-in · ${point.done} done · ${point.users} người`}
+                    >
+                      <div
+                        className={`rounded-t transition ${
+                          point.checkins === 0
+                            ? "bg-slate-100"
+                            : "bg-indigo-500 group-hover:bg-indigo-700"
+                        }`}
+                        style={{
+                          // A zero day keeps a hairline so the gap is visibly a
+                          // day with nothing, not a rendering glitch.
+                          height:
+                            point.checkins === 0
+                              ? "2px"
+                              : `${Math.max(3, (point.checkins / maxDaily) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-2 flex justify-between text-xs text-slate-400">
+                  {axisTicks(series).map((tick, index) => (
+                    <span key={`${tick}-${index}`}>{tick}</span>
+                  ))}
+                </div>
               </div>
             )}
           </Section>
@@ -387,6 +414,58 @@ export default function HabitCheckinStats() {
     </div>
   );
 }
+
+/**
+ * Turns the API's sparse day rows into a continuous day-by-day series.
+ *
+ * Range comes from the filter when there is one. For "Tất cả" there is no
+ * window, so the series spans the first to the last day that actually has data
+ * — the honest bounds of what we know.
+ */
+const buildSeries = (
+  data: IHabitCheckinStatistics | null,
+  range?: { startDate: string; endDate: string }
+): IHabitDailyPoint[] => {
+  const rows = data?.daily || [];
+  if (rows.length === 0) return [];
+
+  const byDay = new Map<string, IHabitDailyPoint>();
+  for (const row of rows) byDay.set(row.date.slice(0, 10), row);
+
+  // Array.from, not a spread: this project's tsconfig targets pre-ES2015 and
+  // rejects iterating a Map's key iterator directly.
+  const keys = Array.from(byDay.keys()).sort();
+  const startKey = range?.startDate || keys[0];
+  const endKey = range?.endDate || keys[keys.length - 1];
+
+  const out: IHabitDailyPoint[] = [];
+  // UTC arithmetic: check-in dates are stored at UTC midnight, so stepping in
+  // local time would drift a day across a DST boundary and mis-align the bars.
+  const cursor = new Date(`${startKey}T00:00:00Z`);
+  const end = new Date(`${endKey}T00:00:00Z`);
+  // Guard against a filter with the bounds inverted or unparseable.
+  if (isNaN(cursor.getTime()) || isNaN(end.getTime()) || cursor > end) {
+    return keys.map((key) => byDay.get(key)!);
+  }
+  while (cursor <= end) {
+    const key = cursor.toISOString().slice(0, 10);
+    out.push(
+      byDay.get(key) ?? { date: key, checkins: 0, done: 0, users: 0 }
+    );
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return out;
+};
+
+/** Five evenly spaced date labels, so a tall bar can be placed without hovering. */
+const axisTicks = (series: IHabitDailyPoint[]) => {
+  if (series.length === 0) return [];
+  const wanted = Math.min(5, series.length);
+  const step = (series.length - 1) / Math.max(1, wanted - 1);
+  return Array.from({ length: wanted }, (_, index) =>
+    formatDateOnly(series[Math.round(index * step)].date)
+  );
+};
 
 const streakLabel = (from: number, isOverflow: boolean) => {
   if (isOverflow) return `${from}+ ngày`;
