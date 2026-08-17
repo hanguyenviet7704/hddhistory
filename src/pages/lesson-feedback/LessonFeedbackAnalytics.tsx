@@ -220,6 +220,10 @@ export default function LessonFeedbackAnalytics() {
             denominator="5"
             hint={`Nội dung ${metrics.averageContent.value ?? "-"} · Trải nghiệm ${
               metrics.averageExperience.value ?? "-"
+            }${
+              metrics.unrated?.value
+                ? ` · ${metrics.unrated.value} feedback chưa chấm điểm`
+                : ""
             }`}
           />
         </div>
@@ -235,11 +239,11 @@ export default function LessonFeedbackAnalytics() {
               {formatNumber(metrics?.incomplete.value ?? 0)} feedback bỏ dở
             </span>
           </div>
-          {overview.reasonDistribution.length === 0 ? (
+          {(overview.reasonDistribution || []).length === 0 ? (
             <p className="text-sm text-slate-500">Chưa có feedback bỏ dở trong khoảng này.</p>
           ) : (
             <div className="space-y-4">
-              {overview.reasonDistribution.map((item, index) => (
+              {(overview.reasonDistribution || []).map((item, index) => (
                 <div
                   key={item.reason}
                   className="grid grid-cols-[160px_1fr_110px] items-center gap-4"
@@ -268,7 +272,7 @@ export default function LessonFeedbackAnalytics() {
         </section>
       ) : null}
 
-      {overview && overview.ratingDistribution.length > 0 ? (
+      {overview && (overview.ratingDistribution || []).length > 0 ? (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
             <h2 className="text-base font-bold uppercase tracking-wide text-slate-900">
@@ -277,7 +281,7 @@ export default function LessonFeedbackAnalytics() {
             <span className="text-sm text-slate-400">{formatNumber(totalRatings)} feedback</span>
           </div>
           <div className="space-y-4">
-            {overview.ratingDistribution.map((item) => (
+            {(overview.ratingDistribution || []).map((item) => (
               <div key={item.rating} className="grid grid-cols-[80px_1fr_110px] items-center gap-4">
                 <span className="text-sm font-medium text-slate-600">{item.rating} sao</span>
                 <div className="h-2 rounded-full bg-stone-100">
@@ -308,7 +312,7 @@ export default function LessonFeedbackAnalytics() {
             </h2>
             <span className="text-sm text-slate-400">Top 20</span>
           </div>
-          {overview.topAbandoned.length === 0 ? (
+          {(overview.topAbandoned || []).length === 0 ? (
             <p className="text-sm text-slate-500">Chưa có dữ liệu.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -319,12 +323,12 @@ export default function LessonFeedbackAnalytics() {
                     <th className="py-2 pr-4">Bài học</th>
                     <th className="py-2 pr-4">Keypoint</th>
                     <th className="py-2 pr-4">Loại</th>
-                    <th className="py-2 pr-4">Lý do đã gặp</th>
+                    <th className="py-2 pr-4">Lý do phổ biến</th>
                     <th className="py-2 text-right">Số người</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {overview.topAbandoned.map((row: IUserFeedbackAbandonedRow, index) => (
+                  {(overview.topAbandoned || []).map((row: IUserFeedbackAbandonedRow, index) => (
                     <tr key={`${row.courseId}-${row.lessonId}-${row.keypointId ?? index}`}>
                       <td className="py-3 pr-4 text-slate-700">
                         {getTranslationValue(row.courseTitle, lang) || row.courseId}
@@ -337,7 +341,11 @@ export default function LessonFeedbackAnalytics() {
                       </td>
                       <td className="py-3 pr-4 text-slate-500">{ENTRY_LABELS[row.entry]}</td>
                       <td className="py-3 pr-4 text-slate-500">
-                        {row.reasons?.length ? row.reasons.map(reasonLabel).join(", ") : "-"}
+                        {row.topReasons?.length
+                          ? row.topReasons
+                              .map((r) => `${reasonLabel(r.reason)} (${r.count})`)
+                              .join(", ")
+                          : "-"}
                       </td>
                       <td className="py-3 text-right font-semibold text-slate-900">
                         {formatNumber(row.count)}

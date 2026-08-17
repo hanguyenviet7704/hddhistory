@@ -81,6 +81,8 @@ export interface IUserFeedbackAbandonedRow {
   keypointTitle?: ITranslation;
   count: number;
   reasons: IncompleteFeedbackReason[];
+  /** The reasons behind this row, most common first (max 3). */
+  topReasons: IUserFeedbackReasonSlice[];
 }
 
 export interface IUserFeedbackStatisticsOverview {
@@ -105,6 +107,8 @@ export interface IUserFeedbackStatisticsOverview {
     keypoint: IUserFeedbackMetric;
     roleplay: IUserFeedbackMetric;
     withComment: IUserFeedbackMetric;
+    /** Complete feedback with no star rating — the client sends 0 for those. */
+    unrated: IUserFeedbackMetric;
     averageOverall: IUserFeedbackMetric;
     averageContent: IUserFeedbackMetric;
     averageExperience: IUserFeedbackMetric;
