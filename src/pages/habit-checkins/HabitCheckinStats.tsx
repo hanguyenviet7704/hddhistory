@@ -190,7 +190,11 @@ export default function HabitCheckinStats() {
               label="Mood trung bình"
               value={m.averageMood.value}
               denominator="3"
-              hint="Chỉ tính check-in kiểu Journal"
+              // Counted by mood presence, not by method: `upsertDay` only writes
+              // the fields it is given, so a day journalled (mood saved) and then
+              // re-tapped keeps its mood while the method becomes `tap`. Real dev
+              // data has 35 moods against 31 journal rows for exactly that reason.
+              hint="Tính mọi check-in có ghi mood, không chỉ method Journal"
             />
             <StatCard
               label="Quiz"
@@ -275,9 +279,9 @@ export default function HabitCheckinStats() {
               )}
             </Section>
 
-            <Section title="Mood (Journal)">
+            <Section title="Mood đã ghi">
               {(data?.moodDistribution || []).length === 0 ? (
-                <Empty message="Chưa có check-in kiểu Journal trong khoảng này." />
+                <Empty message="Chưa có check-in nào ghi mood trong khoảng này." />
               ) : (
                 <div className="space-y-3">
                   {(data?.moodDistribution || []).map((row) => (
