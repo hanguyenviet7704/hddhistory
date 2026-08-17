@@ -42,16 +42,43 @@ export interface IRetentionByVersion {
   points: IRetentionPoint[];
 }
 
+export interface IRetentionByPlatform {
+  platform: string;
+  points: IRetentionPoint[];
+}
+
+/** Rolling-window activity: DAU / WAU / MAU and how sticky the base is. */
+export interface IActiveWindows {
+  dau: number;
+  wau: number;
+  mau: number;
+  mauAtStart: number;
+  stickiness: number | null;
+  dauDate: string;
+}
+
+export interface IDemographics {
+  byCountry: INameValue[];
+  byAge: INameValue[];
+  /** False = the field is not collected, which is not the same as "no data". */
+  hasCountryData: boolean;
+  hasAgeData: boolean;
+}
+
 export interface IUsersPage {
   range: IDashboardRange;
   compareRange: IDashboardRange | null;
   totals: IUserTotals;
   previousTotals: IUserTotals | null;
   daily: { date: string; active: number; new: number }[];
+  dailyByPlatform: { date: string; platform: string; users: number }[];
+  activeWindows: IActiveWindows;
   retention: IRetentionPoint[];
   retentionByAppVersion: IRetentionByVersion[];
+  retentionByPlatform: IRetentionByPlatform[];
   byPlatform: INameValue[];
   byAppVersion: INameValue[];
+  demographics: IDemographics;
 }
 
 export interface ISessionTotals {
@@ -77,6 +104,35 @@ export interface IDepthBucket {
   sessions: number;
 }
 
+/** Session length described by percentiles — a mean is meaningless here. */
+export interface ISessionDurations {
+  medianMs: number | null;
+  p25Ms: number | null;
+  p75Ms: number | null;
+  engagedMedianMs: number | null;
+  longSessionRate: number | null;
+  bounceRate: number | null;
+}
+
+export interface IWeekdayDuration {
+  /** 1 = Sunday … 7 = Saturday. */
+  weekday: number;
+  medianMs: number | null;
+  sessions: number;
+}
+
+export interface IVersionDuration {
+  appVersion: string;
+  medianMs: number | null;
+  sessions: number;
+}
+
+export interface IHeatmapCell {
+  weekday: number;
+  hour: number;
+  users: number;
+}
+
 export interface ISessionsPage {
   range: IDashboardRange;
   compareRange: IDashboardRange | null;
@@ -85,6 +141,13 @@ export interface ISessionsPage {
   daily: { date: string; sessions: number; engagedSessions: number }[];
   hourly: IHourPoint[];
   depthBuckets: IDepthBucket[];
+  durations: ISessionDurations;
+  byWeekday: IWeekdayDuration[];
+  byAppVersion: IVersionDuration[];
+  heatmap: {
+    all: IHeatmapCell[];
+    learning: IHeatmapCell[];
+  };
 }
 
 export interface IFunnelStep {
@@ -117,20 +180,69 @@ export interface ITopContentRow {
   events: number;
 }
 
+export interface ILearningMilestone {
+  key: string;
+  label: string;
+  event: string;
+  users: number;
+  events: number;
+  previousUsers: number | null;
+  passRate: number | null;
+  byPlatform: INameValue[];
+}
+
+export interface ICourseRanking {
+  key: string;
+  label: string;
+  hint: string;
+  event: string;
+  rows: ITopContentRow[];
+}
+
+export interface IAgeInterest {
+  age: string;
+  users: number;
+  interested: ITopContentRow[];
+  completed: ITopContentRow[];
+}
+
 export interface ILearningPage {
   range: IDashboardRange;
   compareRange: IDashboardRange | null;
-  milestones: {
-    key: string;
-    label: string;
-    event: string;
-    users: number;
-    events: number;
-    previousUsers: number | null;
-  }[];
+  milestones: ILearningMilestone[];
+  engagement: {
+    screenViews: number;
+    previousScreenViews: number | null;
+    keypointCompletions: number;
+    keypointCompletionUsers: number;
+  };
+  heroCourse: ITopContentRow | null;
   topCourses: ITopContentRow[];
   topSkills: ITopContentRow[];
+  courseRankings: ICourseRanking[];
+  byAge: IAgeInterest[];
   daily: { date: string; keypointCompleted: number; lessonCompleted: number }[];
+}
+
+/** One app version on the four session-depth measures. */
+export interface IVersionDepth {
+  appVersion: string;
+  sessions: number;
+  users: number;
+  sessionMedianMs: number | null;
+  lessonsPerSession: number | null;
+  completionRate: number | null;
+  sessionsPerUserPerDay: number | null;
+}
+
+export interface IVersionDepthDeltas {
+  sessionDurationPct: number | null;
+  lessonsPerSessionPct: number | null;
+  /** In percentage points: 67% → 80% is +0.13, shown as "+13 điểm". */
+  completionRatePoints: number | null;
+  sessionsPerUserPerDayPct: number | null;
+  from: string | null;
+  to: string | null;
 }
 
 export interface IOverviewPage {
@@ -156,4 +268,8 @@ export interface IOverviewPage {
     topSkill: ITopContentRow | null;
   };
   peakHours: IHourPoint[];
+  versionDepth: {
+    versions: IVersionDepth[];
+    deltas: IVersionDepthDeltas;
+  };
 }

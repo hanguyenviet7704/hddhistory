@@ -12,8 +12,10 @@ import {
 
 import DashboardShell from "../../components/dashboard/DashboardShell";
 import StatCard, { DeltaBadge } from "../../components/dashboard/StatCard";
+import VersionDepthChart from "../../components/dashboard/VersionDepthChart";
 import { labelForStep } from "../../components/dashboard/onboardingStepLabels";
 import {
+  formatDuration,
   formatHour,
   formatNumber,
   formatPercent,
@@ -103,6 +105,7 @@ const DashboardOverview: React.FC = () => {
       onReload={reload}
     >
       {data && (
+        <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <SectionCard
             title="Người dùng"
@@ -297,6 +300,79 @@ const DashboardOverview: React.FC = () => {
               </p>
             )}
           </SectionCard>
+        </div>
+
+        {data.versionDepth.versions.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              Gắn kết (Engagement)
+            </h2>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-900">
+                Độ sâu mỗi phiên học
+              </h3>
+              <p className="mt-0.5 text-xs text-gray-500">
+                Bốn thước đo mức độ học của người dùng, so giữa các bản app
+                {data.versionDepth.deltas.from && data.versionDepth.deltas.to
+                  ? ` · mũi tên là thay đổi từ ${data.versionDepth.deltas.from} tới ${data.versionDepth.deltas.to}`
+                  : ""}
+                .
+              </p>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <VersionDepthChart
+                  title="Thời lượng phiên"
+                  points={data.versionDepth.versions.map((row) => ({
+                    appVersion: row.appVersion,
+                    value: row.sessionMedianMs,
+                  }))}
+                  format={(value) => formatDuration(value)}
+                  delta={data.versionDepth.deltas.sessionDurationPct}
+                />
+                <VersionDepthChart
+                  title="Số bài hoàn thành / phiên"
+                  points={data.versionDepth.versions.map((row) => ({
+                    appVersion: row.appVersion,
+                    value: row.lessonsPerSession,
+                  }))}
+                  format={(value) =>
+                    value === null ? "—" : value.toFixed(2).replace(".", ",")
+                  }
+                  delta={data.versionDepth.deltas.lessonsPerSessionPct}
+                />
+                <VersionDepthChart
+                  title="Tỷ lệ người hoàn thành bài"
+                  points={data.versionDepth.versions.map((row) => ({
+                    appVersion: row.appVersion,
+                    value: row.completionRate,
+                  }))}
+                  format={(value) => formatPercent(value)}
+                  delta={data.versionDepth.deltas.completionRatePoints}
+                  deltaKind="points"
+                />
+                <VersionDepthChart
+                  title="Số phiên / người / ngày"
+                  points={data.versionDepth.versions.map((row) => ({
+                    appVersion: row.appVersion,
+                    value: row.sessionsPerUserPerDay,
+                  }))}
+                  format={(value) =>
+                    value === null ? "—" : value.toFixed(2).replace(".", ",")
+                  }
+                  delta={data.versionDepth.deltas.sessionsPerUserPerDayPct}
+                  // Fewer, longer visits is the goal here, so a fall alongside
+                  // rising duration is a good outcome, not a regression.
+                  invert
+                />
+              </div>
+              <p className="mt-4 border-t border-gray-100 pt-3 text-xs leading-relaxed text-gray-600">
+                Đọc bốn ô cùng lúc: thời lượng và số bài mỗi phiên tăng trong
+                khi số phiên mỗi người mỗi ngày giảm nghĩa là người dùng{" "}
+                <strong>vào ít lần hơn nhưng học sâu hơn</strong> — không phải
+                sa sút.
+              </p>
+            </div>
+          </section>
+        )}
         </div>
       )}
     </DashboardShell>
