@@ -12,8 +12,16 @@ import { UserHabitState } from "../../types/enum/habit.enum";
 import { IAdminUserHabitSummary } from "../../types/interface/userHabit.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { formatDateOnly } from "./habitCheckinLabels";
+import HabitCheckinStats from "./HabitCheckinStats";
 
 const DEFAULT_PAGE_SIZE = 10;
+
+type CheckinTab = "stats" | "users";
+
+const TABS: { value: CheckinTab; label: string }[] = [
+  { value: "stats", label: "Thống kê" },
+  { value: "users", label: "Theo người dùng" },
+];
 
 const STATE_OPTIONS: { value: UserHabitState | ""; label: string }[] = [
   { value: "", label: "All states" },
@@ -33,6 +41,9 @@ const STATE_OPTIONS: { value: UserHabitState | ""; label: string }[] = [
 export default function HabitCheckinList() {
   const { showError } = useNotification();
 
+  // Lands on the aggregate view: the per-user table is still one click away and
+  // stays mounted (hidden) so switching back keeps its page and search.
+  const [tab, setTab] = useState<CheckinTab>("stats");
   const [items, setItems] = useState<IAdminUserHabitSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [forbidden, setForbidden] = useState(false);
@@ -99,19 +110,46 @@ export default function HabitCheckinList() {
             quiz practices.
           </p>
         </div>
-        <button
-          onClick={() => fetchSummaries(page, debouncedSearch, stateFilter)}
-          disabled={loading}
-          className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          <ArrowPathIcon
-            className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </button>
+        {/* Only the per-user table is fetched imperatively; the stats tab
+            refetches whenever its own date filter changes. */}
+        {tab === "users" ? (
+          <button
+            onClick={() => fetchSummaries(page, debouncedSearch, stateFilter)}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <ArrowPathIcon
+              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
+        ) : null}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="mb-6 flex gap-2">
+        {TABS.map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            onClick={() => setTab(item.value)}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+              tab === item.value
+                ? "bg-indigo-600 text-white"
+                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "stats" ? <HabitCheckinStats /> : null}
+
+      <div
+        className={`overflow-hidden rounded-xl border border-gray-200 bg-white ${
+          tab === "users" ? "" : "hidden"
+        }`}
+      >
         <div className="flex flex-wrap items-center gap-3 border-b border-gray-200 bg-gray-50 p-4">
           <div className="relative min-w-[260px] flex-1">
             <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />

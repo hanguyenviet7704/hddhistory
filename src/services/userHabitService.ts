@@ -3,6 +3,8 @@ import {
   AdminUserHabitsQuery,
   AdminUserHabitsResponse,
   IAdminUserHabitDetail,
+  IHabitCheckinStatistics,
+  IHabitCheckinStatisticsQuery,
 } from "../types/interface/userHabit.interface";
 import axiosClient from "./axiosClient";
 
@@ -31,6 +33,19 @@ export const userHabitService = {
     params?: AdminUserHabitDetailQuery,
   ): Promise<IAdminUserHabitDetail> {
     const res = await axiosClient.get(`/user-habits/admin/users/${userId}`, {
+      params,
+    });
+    return res.data?.data ?? res.data;
+  },
+
+  /**
+   * Aggregate check-in usage for the "Thống kê" tab. Counts are real events —
+   * `habit_checkins` holds one row per habit per day.
+   */
+  async getCheckinStatistics(
+    params?: IHabitCheckinStatisticsQuery,
+  ): Promise<IHabitCheckinStatistics> {
+    const res = await axiosClient.get("/user-habits/admin/statistics/overview", {
       params,
     });
     return res.data?.data ?? res.data;

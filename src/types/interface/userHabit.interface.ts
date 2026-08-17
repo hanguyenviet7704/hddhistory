@@ -91,3 +91,88 @@ export interface AdminUserHabitsResponse {
   totalPages: number;
   currentPage: number;
 }
+
+// ---------------------------------------------------------------------------
+// Statistics ("Thống kê" tab)
+// ---------------------------------------------------------------------------
+
+/** `delta` is null when the window is open-ended — no previous period to compare. */
+export interface IHabitStatMetric {
+  value: number | null;
+  delta?: number | null;
+}
+
+export interface IHabitDailyPoint {
+  date: string;
+  checkins: number;
+  done: number;
+  users: number;
+}
+
+export interface IHabitMethodSlice {
+  method: HabitCheckinMethod;
+  count: number;
+  percent: number;
+}
+
+export interface IHabitMoodSlice {
+  mood: number;
+  count: number;
+  percent: number;
+}
+
+export interface IHabitTopRow {
+  habitId: string;
+  /** Null when the library entry was deleted — the row still counts real usage. */
+  title: ITranslation | null;
+  checkins: number;
+  done: number;
+  users: number;
+  doneRate: number;
+}
+
+export interface IHabitStreakBucket {
+  from: number;
+  isOverflow: boolean;
+  count: number;
+}
+
+export interface IHabitNoteRow {
+  userId: string;
+  habitId: string;
+  title: ITranslation | null;
+  date: string;
+  note: string;
+  mood?: number;
+  method?: HabitCheckinMethod;
+  score?: number;
+}
+
+export interface IHabitCheckinStatistics {
+  range: { startDate: string | null; endDate: string | null };
+  metrics: {
+    checkins: IHabitStatMetric;
+    users: IHabitStatMetric;
+    doneRate: IHabitStatMetric;
+    habitsTouched: IHabitStatMetric;
+    withNote: IHabitStatMetric;
+    averageMood: IHabitStatMetric;
+    quizCount: IHabitStatMetric;
+    averageQuizScore: IHabitStatMetric;
+    activeHabits: IHabitStatMetric;
+    draftHabits: IHabitStatMetric;
+    archivedHabits: IHabitStatMetric;
+    adoptedByUsers: IHabitStatMetric;
+  };
+  daily: IHabitDailyPoint[];
+  methodDistribution: IHabitMethodSlice[];
+  moodDistribution: IHabitMoodSlice[];
+  topHabits: IHabitTopRow[];
+  streakBuckets: IHabitStreakBucket[];
+  notes: IHabitNoteRow[];
+}
+
+export interface IHabitCheckinStatisticsQuery {
+  startDate?: string;
+  endDate?: string;
+}
