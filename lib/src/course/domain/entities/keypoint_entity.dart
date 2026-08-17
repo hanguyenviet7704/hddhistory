@@ -7,6 +7,11 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
+
+    /// Authored minutes for this keypoint. The roadmap's "N min left" is built
+    /// from these, NOT from the lesson-level estimate — content fills the
+    /// keypoint one and leaves the lesson's at zero.
+    @Default(0) int estimateCompleTimeNumber,
     KeypointAudioEntity? audio,
     @Default('') String image,
     @Default(0) int index,

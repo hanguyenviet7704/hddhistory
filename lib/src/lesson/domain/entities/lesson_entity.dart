@@ -108,6 +108,18 @@ extension LessonEntityExtension on LessonEntity {
 
   KeypointEntity get firstKeypoint => keypoints.isNotEmpty ? keypoints.first : KeypointEntity();
 
+  /// Authored minutes for ONE roadmap row.
+  ///
+  /// A roadmap row is a keypoint, not a lesson ([lessonsPerKeypoint] splits a
+  /// lesson into one row per keypoint), and the estimate content actually fills
+  /// is the keypoint's — every lesson-level `estimateCompleTimeNumber` on dev is
+  /// zero. The lesson value is still the fallback, for rows that are a whole
+  /// lesson in their own right (video, roleplay, output) and have no keypoint.
+  int get roadmapMinutes {
+    final keypointMinutes = firstKeypoint.estimateCompleTimeNumber;
+    return keypointMinutes > 0 ? keypointMinutes : estimateCompleTimeNumber;
+  }
+
   ProcessEnum get roadmapProgress {
     if (firstKeypoint.id.isEmpty) return progess;
     return firstKeypoint.progess;

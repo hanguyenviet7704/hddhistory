@@ -6,6 +6,11 @@ abstract class RoadmapEntity with _$RoadmapEntity {
     @Default('') String id,
     @Default('') String courseId,
     @Default([]) List<RoadmapLevelEntity> levels,
+
+    /// The course blurb for the roadmap header. Carried on the roadmap because
+    /// the course LIST payload deliberately omits `description` (5 languages,
+    /// ~30% of /skillsets, and no list surface renders it).
+    @Default(BaseMultiLanguage()) BaseMultiLanguage courseDescription,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _RoadmapEntity;
@@ -24,6 +29,36 @@ extension RoadmapEntityExtension on RoadmapEntity {
     }
     return lessons;
   }
+
+  /// Course-wide totals for the roadmap header (design `3 · Learning` → Course
+  /// detail). The per-level figures on [RoadmapLevelEntity] answer a different
+  /// question — the header speaks for the whole course, and a course can hold
+  /// more than one level.
+  int get totalLessonCount => levels.fold<int>(0, (sum, level) => sum + level.totalLessons);
+
+  int get completedLessonCount => levels.fold<int>(0, (sum, level) => sum + level.completedLessons);
+
+  double get courseProgress {
+    final total = totalLessonCount;
+    if (total == 0) return 0;
+    return (completedLessonCount / total).clamp(0.0, 1.0);
+  }
+
+  /// Minutes of unfinished material.
+  ///
+  /// Counts what is LEFT rather than the course total: the header sits above a
+  /// roadmap the reader is part-way down, and "48 min left" is the number that
+  /// tells them whether to start now.
+  ///
+  /// Sums [LessonEntity.roadmapMinutes] — the KEYPOINT's estimate — because a
+  /// roadmap row is a keypoint and that is the field content fills. Summing the
+  /// lesson-level estimate reads zero on every course.
+  int get minutesLeft => flatLessons.where((lesson) => lesson.roadmapProgress != ProcessEnum.done).fold<int>(0, (sum, lesson) => sum + lesson.roadmapMinutes);
+
+  /// Whether the estimate is worth printing. A finished course legitimately has
+  /// zero left, and a course whose lessons carry no estimate also sums to zero
+  /// — neither should render "0 min left", so the header drops the whole clause.
+  bool get hasMinutesLeft => minutesLeft > 0;
 
   int lockedLessonStartIndex(PaywallConfigEntity config) {
     if (!config.enableLessonLock) return -1;
@@ -205,8 +240,7 @@ extension RoadmapEntityExtension on RoadmapEntity {
 enum CompletedLevelAdditionalContentRequestPromptStatus {
   hidden,
   available,
-  requested
-  ;
+  requested;
 
   bool get isVisible => this != hidden;
   bool get isRequested => this == requested;

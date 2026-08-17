@@ -16,3 +16,6 @@ noRoadmapAvailable: No roadmap available
 startLearningButton: Start learning
 startLessonButton: Start lesson
 lockedSemanticLabel: Locked
+insideThisCourse: Inside this course
+minutesLeft(param=minutes): ${minutes} min left
+progressCount(param=completed, param2=total): ${completed}/${total}

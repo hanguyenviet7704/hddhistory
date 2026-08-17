@@ -6,6 +6,7 @@ abstract class RoadmapModel with _$RoadmapModel {
     @Default('') @JsonKey(name: '_id') String id,
     @Default('') String courseId,
     @Default([]) List<RoadmapLevelModel> levels,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage courseDescription,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _RoadmapModel;
@@ -18,6 +19,7 @@ extension RoadmapModelExtension on RoadmapModel {
     id: id,
     courseId: courseId,
     levels: levels.map((model) => model.toEntity()).toList(),
+    courseDescription: courseDescription,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

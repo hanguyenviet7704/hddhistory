@@ -17,3 +17,6 @@ startLearningButton: 학습 시작하기
 startLessonButton: 레슨 시작하기
 
 lockedSemanticLabel: 잠김
+insideThisCourse: 이 과정의 내용
+minutesLeft(param=minutes): ${minutes}분 남음
+progressCount(param=completed, param2=total): ${completed}/${total}

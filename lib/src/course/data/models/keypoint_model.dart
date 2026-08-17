@@ -7,6 +7,7 @@ abstract class KeypointModel with _$KeypointModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
+    @Default(0) int estimateCompleTimeNumber,
     @Default('') String image,
     @Default(0) int index,
     @JsonKey(unknownEnumValue: StrengthLevel.unknown) @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
@@ -27,8 +28,7 @@ enum StrengthLevel {
   @JsonValue('optional_practice')
   optionalPractice,
   @JsonValue('unknown')
-  unknown
-  ;
+  unknown;
 
   String get point => switch (this) {
     weakPoint => '0-50',
@@ -50,6 +50,7 @@ extension KeypointModelExtension on KeypointModel {
     id: id,
     title: title,
     estimateCompleTime: estimateCompleTime,
+    estimateCompleTimeNumber: estimateCompleTimeNumber,
     description: description,
     audio: audio?.toEntity(),
     image: image,

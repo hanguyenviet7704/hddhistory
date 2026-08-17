@@ -17,3 +17,6 @@ startLearningButton: 开始学习
 startLessonButton: 开始课程
 
 lockedSemanticLabel: 已锁定
+insideThisCourse: 课程内容
+minutesLeft(param=minutes): 还剩 ${minutes} 分钟
+progressCount(param=completed, param2=total): ${completed}/${total}

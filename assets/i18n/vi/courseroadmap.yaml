@@ -16,3 +16,6 @@ noRoadmapAvailable: Chưa có lộ trình
 startLearningButton: Bắt đầu học
 startLessonButton: Bắt đầu bài học
 lockedSemanticLabel: Khóa
+insideThisCourse: Trong khoá học này
+minutesLeft(param=minutes): còn ${minutes} phút
+progressCount(param=completed, param2=total): ${completed}/${total}

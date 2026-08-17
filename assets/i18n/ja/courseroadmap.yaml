@@ -17,3 +17,6 @@ startLearningButton: 学習を始める
 startLessonButton: レッスンを始める
 
 lockedSemanticLabel: ロック中
+insideThisCourse: このコースの内容
+minutesLeft(param=minutes): 残り ${minutes} 分
+progressCount(param=completed, param2=total): ${completed}/${total}

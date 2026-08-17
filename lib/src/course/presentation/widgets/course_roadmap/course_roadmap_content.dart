@@ -1,7 +1,15 @@
 part of '../../../course.dart';
 
 class CourseRoadmapContent extends StatefulWidget {
-  const CourseRoadmapContent({super.key});
+  const CourseRoadmapContent({super.key, this.headerTitleOpacity});
+
+  /// Driven as the big course title scrolls away, so the page's sticky header
+  /// can fade its own copy of the title in (design: `courseHdrTitleOpacity`).
+  ///
+  /// A notifier rather than state: the header is a sibling of this list, and
+  /// routing a per-frame scroll value through either widget's setState would
+  /// rebuild the whole roadmap on every pixel of scroll.
+  final ValueNotifier<double>? headerTitleOpacity;
 
   @override
   State<CourseRoadmapContent> createState() => _CourseRoadmapContentState();
@@ -9,10 +17,16 @@ class CourseRoadmapContent extends StatefulWidget {
 
 class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
   bool _isUserScrolling = false;
+
+  /// The big title in the course header — measured, not guessed at from a
+  /// scroll offset, because the header's height depends on whether the course
+  /// has artwork and on how many lines its title wraps to.
+  final GlobalKey _courseTitleKey = GlobalKey();
   // Anchors the "PHẦN" node (session) that holds the in-progress lesson, so we
   // can scroll it into view. A "PHẦN" is a node WITHIN a level (a level can hold
   // several), so we scroll to the node, not the level.
   final GlobalKey _currentLessonKey = GlobalKey();
+
   /// Request an auto-scroll on entering the roadmap via the nav tab (re-entry of
   /// an already-loaded course): do it now if levels are present. A first load or
   /// a course switch is handled by the load listener instead.
@@ -111,11 +125,41 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
     );
   }
 
+  /// Hands the sticky header its opacity: 0 while the big title is still fully
+  /// on screen, 1 once it has scrolled up behind the header bar, ramped over
+  /// the title's own height so the two never read as one title in two places.
+  void _updateHeaderTitleOpacity() {
+    final notifier = widget.headerTitleOpacity;
+    if (notifier == null) return;
+
+    final titleContext = _courseTitleKey.currentContext;
+    if (titleContext == null) {
+      // Scrolled far enough that the header block was recycled out of the tree
+      // — the title is long gone, so the sticky one belongs at full strength.
+      notifier.value = 1;
+      return;
+    }
+
+    final box = titleContext.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+
+    final top = box.localToGlobal(Offset.zero).dy;
+    // Where the sticky header bar ends — anything above this line is hidden
+    // behind it.
+    final headerBottom = MediaQuery.paddingOf(context).top + 58.h;
+    final travel = box.size.height;
+    if (travel <= 0) return;
+
+    final hidden = (headerBottom - top) / travel;
+    notifier.value = hidden.clamp(0.0, 1.0);
+  }
+
   bool _handleScrollNotification(
     ScrollNotification notification,
     RoadmapEntity roadmap,
   ) {
     if (notification.metrics.axis != Axis.vertical) return false;
+    _updateHeaderTitleOpacity();
     if (notification is ScrollStartNotification && notification.dragDetails != null) {
       _isUserScrolling = true;
       return false;
@@ -219,6 +263,8 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
                         final level = roadmap.levels[index];
                         return CourseLevelContent(
                           roadmapLevel: level,
+                          isFirstLevel: index == 0,
+                          courseTitleKey: index == 0 ? _courseTitleKey : null,
                           // Anchor + target for auto-scroll: the level holding
                           // the in-progress lesson keys its matching "PHẦN" node
                           // with [_currentLessonKey] (null lesson = not started).

@@ -75,15 +75,23 @@ const roadmapLibrarySources = {kRoadmapSourceLibrary, kRoadmapSourceLibraryHisto
 /// the whole roadmap widget tree.
 @visibleForTesting
 bool roadmapShowsBackButton(String source) =>
-    roadmapExploreSources.contains(source) ||
-    roadmapHomeSources.contains(source) ||
-    roadmapHabitSources.contains(source) ||
-    roadmapLibrarySources.contains(source);
+    roadmapExploreSources.contains(source) || roadmapHomeSources.contains(source) || roadmapHabitSources.contains(source) || roadmapLibrarySources.contains(source);
 
 class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
   String _lastTrackedCourseId = '';
   String _lastLoadedProgressCourseId = '';
+
+  /// Fades the sticky header's course title in as the big one scrolls away
+  /// (design `3 · Learning` → Course detail). Written by the roadmap list,
+  /// which is the only thing that knows where the big title has got to.
+  final ValueNotifier<double> _headerTitleOpacity = ValueNotifier<double>(0);
+
+  @override
+  void dispose() {
+    _headerTitleOpacity.dispose();
+    super.dispose();
+  }
 
   /// Returns to wherever the user opened this roadmap from.
   /// CourseCubit/PageCubit aren't provided above the roadmap tree, so resolve
@@ -506,6 +514,40 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                               );
                             },
                           ),
+                          // The course title, in the header bar. Hidden while
+                          // the big one is on screen and faded in as it scrolls
+                          // away, so the reader always knows which course they
+                          // are in without two titles competing at the top.
+                          // Inset clear of the back arrow and the (...) disc.
+                          Positioned(
+                            left: 34.w,
+                            right: 84.w,
+                            child: ValueListenableBuilder<double>(
+                              valueListenable: _headerTitleOpacity,
+                              builder: (context, opacity, child) => IgnorePointer(
+                                child: AnimatedOpacity(
+                                  opacity: opacity,
+                                  duration: const Duration(milliseconds: 180),
+                                  child: child,
+                                ),
+                              ),
+                              child: BlocSelector<HomeCubit, HomeState, String>(
+                                selector: (state) => state.courseName,
+                                builder: (context, courseName) => AppText(
+                                  courseName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: AppFont.mulish,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                    height: 26 / 14,
+                                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           // The design's single trailing control (`3 · Learning`
                           // → Course detail): a `(...)` disc opening the course
                           // options sheet. Change theme moved INSIDE that sheet
@@ -522,7 +564,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                           ),
                         ],
                       ),
-                      CourseRoadmapContent(),
+                      CourseRoadmapContent(headerTitleOpacity: _headerTitleOpacity),
                     ],
                   ),
                   // Sticky "Start lesson" CTA floating above the bottom nav bar.
