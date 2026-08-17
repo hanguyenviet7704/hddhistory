@@ -87,6 +87,11 @@ const menuGroups = [
     items: [
       { name: "Reported Issues", icon: ExclamationTriangleIcon, path: "/reports" },
       {
+        name: "Lesson Feedback",
+        icon: ChartBarIcon,
+        path: "/lesson-feedback",
+      },
+      {
         name: "Survey Feedback",
         icon: ChatBubbleLeftRightIcon,
         path: "/settings?tab=inAppSurvey",

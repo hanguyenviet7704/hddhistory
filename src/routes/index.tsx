@@ -48,6 +48,7 @@ import VideoDetail from "../pages/video/VideoDetail";
 import DriveUploadPage from "../pages/drive-upload/DriveUploadPage";
 import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
 import ReportList from "../pages/reports/ReportList";
+import LessonFeedbackAnalytics from "../pages/lesson-feedback/LessonFeedbackAnalytics";
 import ImageCompressionPage from "../pages/image-compression/ImageCompressionPage";
 import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
 import StudyThemeList from "../pages/study-themes/StudyThemeList";
@@ -152,6 +153,7 @@ export default function AppRouter() {
               />
 
               <Route path="reports" element={<ReportList />} />
+              <Route path="lesson-feedback" element={<LessonFeedbackAnalytics />} />
 
               <Route
                 path="image-compression"
