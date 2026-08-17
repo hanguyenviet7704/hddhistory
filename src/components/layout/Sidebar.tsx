@@ -31,6 +31,8 @@ import {
   FireIcon as StreakIcon,
   MegaphoneIcon,
   UserGroupIcon,
+  PresentationChartLineIcon,
+  DevicePhoneMobileIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -44,6 +46,29 @@ interface SidebarProps {
 // flat list still lives here — just organised by domain so the sidebar reads
 // like a grouped menu instead of one long list.
 const menuGroups = [
+  {
+    // Product health first: this is the page anyone opening the panel in the
+    // morning wants, and it is the only group that answers "how are we doing"
+    // rather than "what can I edit".
+    title: "Dashboard",
+    items: [
+      {
+        name: "Báo cáo tuần",
+        icon: PresentationChartLineIcon,
+        path: "/dashboard",
+        // Without this, "/dashboard" would also light up on
+        // "/dashboard/users" and two items would look selected at once.
+        exact: true,
+      },
+      { name: "Người dùng & Giữ chân", icon: UserGroupIcon, path: "/dashboard/users" },
+      { name: "Phiên & Tương tác", icon: DevicePhoneMobileIcon, path: "/dashboard/sessions" },
+      { name: "Funnel onboarding", icon: RocketLaunchIcon, path: "/dashboard/onboarding" },
+      { name: "Hành vi học", icon: BookOpenIcon, path: "/dashboard/learning" },
+      // Moved here from Operations: it is the same question as the rest of
+      // this group. The route is unchanged so saved links still work.
+      { name: "Tiến trình khoá", icon: ChartBarIcon, path: "/statistics" },
+    ],
+  },
   {
     title: "Content",
     items: [
@@ -101,7 +126,7 @@ const menuGroups = [
   {
     title: "Operations",
     items: [
-      { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
+      // "Statistics" now lives in the Dashboard group as "Tiến trình khoá".
       { name: "Payment", icon: CreditCardIcon, path: "/payment" },
       { name: "Cấu hình paywall", icon: RocketLaunchIcon, path: "/paywall-config" },
       { name: "Lồng tiếng", icon: SpeakerWaveIcon, path: "/voiceover" },
@@ -138,21 +163,36 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     setOpenGroups((prev) => ({ ...prev, [title]: !prev[title] }));
 
   // Hàm kiểm tra path có khớp với menu item hoặc các path con
-  const isActivePath = (path: string) => {
+  const isActivePath = (path: string, exact?: boolean) => {
     const currentPath = location.pathname;
     if (currentPath === path) return true;
+    // An `exact` item owns only its own path — "/dashboard" must not light up
+    // while "/dashboard/users" is open, or two items look selected at once.
+    if (exact) return false;
     // "/lesson" also matches "/lesson/123", "/lesson/edit"...
     if (currentPath.startsWith(path + "/")) return true;
     return false;
   };
 
-  const renderItem = (item: { name: string; icon: typeof BookOpenIcon; path: string }) => {
+  const renderItem = (item: {
+    name: string;
+    icon: typeof BookOpenIcon;
+    path: string;
+    exact?: boolean;
+  }) => {
     const Icon = item.icon;
-    const isActive = isActivePath(item.path);
+    const isActive = isActivePath(item.path, item.exact);
+    // Dashboard pages keep their period in the query string. Carrying it across
+    // means switching sections re-asks the same question of a different page,
+    // instead of silently snapping back to the default 7 days.
+    const isDashboardHop =
+      item.path.startsWith("/dashboard") &&
+      location.pathname.startsWith("/dashboard");
+    const to = isDashboardHop ? `${item.path}${location.search}` : item.path;
     return (
       <NavLink
         key={item.name}
-        to={item.path}
+        to={to}
         title={collapsed ? item.name : undefined}
         className={`
           flex items-center

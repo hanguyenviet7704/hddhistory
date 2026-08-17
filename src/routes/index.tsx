@@ -42,6 +42,11 @@ import HomePopupPage from "../pages/home-popup/HomePopupPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
+import DashboardOverview from "../pages/dashboard/DashboardOverview";
+import DashboardUsers from "../pages/dashboard/DashboardUsers";
+import DashboardSessions from "../pages/dashboard/DashboardSessions";
+import DashboardOnboarding from "../pages/dashboard/DashboardOnboarding";
+import DashboardLearning from "../pages/dashboard/DashboardLearning";
 import VideoList from "../pages/video/VideoList";
 import VideoCreate from "../pages/video/VideoCreate";
 import VideoDetail from "../pages/video/VideoDetail";
@@ -73,6 +78,17 @@ export default function AppRouter() {
             <Route path="/" element={<Layout />}>
               {/* Redirect from "/" to "/course" */}
               <Route index element={<Navigate to="/course" replace />} />
+
+              {/* Product dashboard — one route per sidebar entry, so each page
+                  fetches only the numbers it shows. */}
+              <Route path="dashboard" element={<DashboardOverview />} />
+              <Route path="dashboard/users" element={<DashboardUsers />} />
+              <Route path="dashboard/sessions" element={<DashboardSessions />} />
+              <Route
+                path="dashboard/onboarding"
+                element={<DashboardOnboarding />}
+              />
+              <Route path="dashboard/learning" element={<DashboardLearning />} />
 
               <Route path="skillset" element={<SkillsetList />} />
 
