@@ -80,6 +80,7 @@ export default function CourseModal({
   );
   // Thị trường được publish tới (ISO-3166 alpha-2). Rỗng = mọi nơi.
   const [countries, setCountries] = useState<string[]>([]);
+  const [countryQuery, setCountryQuery] = useState("");
 
   // State cho Skillset
   const [skillsetId, setSkillsetId] = useState("");
@@ -109,6 +110,7 @@ export default function CourseModal({
       setPrices(initial.prices ?? []);
       setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
       setCountries(initial.countries ?? []);
+      setCountryQuery("");
       setSkillsetId(initial.skillsetId ?? "");
       setSelectedSkillsetLabel("");
     } else {
@@ -125,6 +127,7 @@ export default function CourseModal({
       setPrices([]);
       setOnboardingSymptoms([]);
       setCountries([]);
+      setCountryQuery("");
       setSkillsetId("");
       setSkillsetQuery("");
       setSelectedSkillsetLabel("");
@@ -328,6 +331,22 @@ export default function CourseModal({
       prev.includes(code)
         ? prev.filter((country) => country !== code)
         : [...prev, code]
+    );
+  };
+
+  /**
+   * Chọn/bỏ chọn toàn bộ các mã ĐANG HIỂN THỊ, không phải toàn bộ danh sách.
+   *
+   * Có ô tìm kiếm thì nút này phải bám theo kết quả lọc — gõ "korea" rồi bấm
+   * "chọn tất cả" mà nó tick cả 29 nước là hành vi không ai muốn và rất dễ
+   * Save đè lên mà không nhận ra.
+   */
+  const handleToggleAllCountries = (codes: string[]) => {
+    const allSelected = codes.every((code) => countries.includes(code));
+    setCountries((prev) =>
+      allSelected
+        ? prev.filter((code) => !codes.includes(code))
+        : [...prev, ...codes.filter((code) => !prev.includes(code))]
     );
   };
 
@@ -669,57 +688,114 @@ export default function CourseModal({
                   tìm kiếm, Home, Explore); ai đã lưu hoặc đang học dở vẫn giữ
                   khoá học.
                 </p>
-                <div className="border border-gray-300 rounded-lg p-3 max-h-60 overflow-y-auto bg-white">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {COUNTRY_OPTIONS.map((country) => (
-                      <label
-                        key={country.code}
-                        className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={countries.includes(country.code)}
-                          onChange={() => handleToggleCountry(country.code)}
-                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span>
-                          {country.name} ({country.code})
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  {/* Mã đã lưu nhưng không có trong danh sách rút gọn (nhập
-                      thẳng qua API, hoặc có trước khi mục đó tồn tại) vẫn phải
-                      hiện ra — nếu không, mở modal rồi Save sẽ âm thầm xoá nó. */}
-                  {countries
+                {(() => {
+                  // Mã đã lưu nhưng không nằm trong danh sách rút gọn (nhập
+                  // thẳng qua API, hoặc có từ trước khi mục đó tồn tại) vẫn phải
+                  // hiện ra — nếu không, mở modal rồi Save sẽ âm thầm xoá nó.
+                  const extraOptions = countries
                     .filter(
                       (code) =>
                         !COUNTRY_OPTIONS.some((option) => option.code === code)
                     )
-                    .map((code) => (
-                      <label
-                        key={code}
-                        className="mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-                      >
+                    .map((code) => ({ code, name: countryLabel(code) }));
+
+                  const query = countryQuery.trim().toLowerCase();
+                  const visible = [...COUNTRY_OPTIONS, ...extraOptions].filter(
+                    (country) =>
+                      !query ||
+                      country.name.toLowerCase().includes(query) ||
+                      country.code.toLowerCase().includes(query)
+                  );
+                  const visibleCodes = visible.map((country) => country.code);
+                  const allVisibleSelected =
+                    visibleCodes.length > 0 &&
+                    visibleCodes.every((code) => countries.includes(code));
+
+                  return (
+                    <div className="border border-gray-300 rounded-lg bg-white">
+                      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2 rounded-t-lg">
                         <input
-                          type="checkbox"
-                          checked
-                          onChange={() => handleToggleCountry(code)}
-                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          type="text"
+                          value={countryQuery}
+                          onChange={(e) => setCountryQuery(e.target.value)}
+                          placeholder="Tìm nước hoặc mã (vd: Japan, JP)"
+                          className="flex-1 min-w-[10rem] px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                         />
-                        <span>{countryLabel(code)}</span>
-                      </label>
-                    ))}
-                  {countries.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setCountries([])}
-                      className="mt-3 text-sm font-medium text-gray-500 hover:text-gray-700"
-                    >
-                      Clear selection
-                    </button>
-                  )}
-                </div>
+                        <button
+                          type="button"
+                          disabled={visibleCodes.length === 0}
+                          onClick={() => handleToggleAllCountries(visibleCodes)}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800 disabled:text-gray-300"
+                        >
+                          {allVisibleSelected ? "Bỏ chọn" : "Chọn tất cả"}
+                          {query ? ` (${visibleCodes.length})` : ""}
+                        </button>
+                      </div>
+
+                      <div className="p-3 max-h-60 overflow-y-auto">
+                        {visible.length === 0 ? (
+                          <p className="text-sm text-gray-500 px-2 py-1.5">
+                            Không có nước nào khớp "{countryQuery.trim()}".
+                          </p>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {visible.map((country) => (
+                              <label
+                                key={country.code}
+                                className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={countries.includes(country.code)}
+                                  onChange={() =>
+                                    handleToggleCountry(country.code)
+                                  }
+                                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span>
+                                  {country.name} ({country.code})
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-3 py-2">
+                        <span className="text-xs text-gray-500">
+                          {countries.length === 0
+                            ? "Chưa chọn thị trường nào — publish mọi nơi."
+                            : `Đã chọn ${countries.length} thị trường.`}
+                        </span>
+                        {countries.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setCountries([])}
+                            className="text-sm font-medium text-gray-500 hover:text-gray-700"
+                          >
+                            Bỏ hết giới hạn
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Chọn hết danh sách KHÔNG bằng để trống, và khác biệt
+                          này vô hình nếu không nói ra: danh sách chỉ có các thị
+                          trường chính, nên tick hết vẫn ẩn course khỏi người ở
+                          Mỹ, Pháp, Brazil... Để trống mới là mọi nơi. */}
+                      {countries.length > 0 &&
+                        COUNTRY_OPTIONS.every((option) =>
+                          countries.includes(option.code)
+                        ) && (
+                          <p className="border-t border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 rounded-b-lg">
+                            Đang chọn hết danh sách — đây KHÔNG phải "mọi nơi".
+                            Course vẫn bị ẩn với người ngoài các thị trường này
+                            (Mỹ, châu Âu...). Muốn publish mọi nơi thì bấm "Bỏ
+                            hết giới hạn".
+                          </p>
+                        )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Prices */}
