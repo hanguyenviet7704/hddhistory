@@ -156,6 +156,17 @@ export interface PaywallAutoOpen {
 }
 
 /**
+ * Win-back: the reader closed the FULL paywall without buying and gets the
+ * compact discount sheet `delaySeconds` later, at most `maxPerSession` times per
+ * app session. Mirrors `PaywallWinBackDto` on the API.
+ */
+export interface PaywallWinBack {
+  enabled: boolean;
+  delaySeconds: number;
+  maxPerSession: number;
+}
+
+/**
  * Opens the paywall from inside a keypoint, when the reader swipes off card 1
  * onto the next one. Optional on the wire: versions published before this gate
  * existed simply have no such key.
@@ -283,6 +294,8 @@ export interface PaywallConfig {
    */
   lessonLock?: number;
   autoOpen: PaywallAutoOpen;
+  /** Optional so every version published before this gate existed stays valid. */
+  winBack?: PaywallWinBack;
   inLessonPaywall?: PaywallInLesson;
   /** Optional so every version published before this gate existed stays valid. */
   dailyKeypointQuota?: PaywallDailyKeypointQuota;

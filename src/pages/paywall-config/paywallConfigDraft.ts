@@ -12,6 +12,7 @@ import {
   PAYWALL_ENTRY_POINTS,
   PaywallAudienceSegment,
   PaywallAutoOpen,
+  PaywallWinBack,
   PaywallDailyKeypointQuota,
   PaywallInLesson,
   PaywallBenefit,
@@ -169,6 +170,9 @@ export interface ConfigDraft {
   lessonLockCount: string;
   autoOpenEnabled: boolean;
   autoOpenPercent: string;
+  winBackEnabled: boolean;
+  winBackDelaySeconds: string;
+  winBackMaxPerSession: string;
   inLessonEnabled: boolean;
   inLessonKeypointOrdinal: string;
   inLessonAfterCards: string;
@@ -263,6 +267,10 @@ export const defaultDraft = (): ConfigDraft => ({
   lessonLockCount: "",
   autoOpenEnabled: false,
   autoOpenPercent: "0",
+  winBackEnabled: false,
+  // Defaults are the spec: three seconds, once a session.
+  winBackDelaySeconds: "3",
+  winBackMaxPerSession: "1",
   inLessonEnabled: false,
   inLessonKeypointOrdinal: "2",
   inLessonAfterCards: "1",
@@ -420,6 +428,11 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
   enableLessonLock: Boolean(config.enableLessonLock),
   lessonLockCount:
     config.lessonLock != null ? String(config.lessonLock) : "",
+  winBackEnabled: Boolean(config.winBack?.enabled),
+  winBackDelaySeconds:
+    config.winBack?.delaySeconds == null ? "3" : String(config.winBack.delaySeconds),
+  winBackMaxPerSession:
+    config.winBack?.maxPerSession == null ? "1" : String(config.winBack.maxPerSession),
   autoOpenEnabled: Boolean(config.autoOpen?.enabled),
   autoOpenPercent:
     config.autoOpen?.sessionRolloutPercent != null
@@ -660,6 +673,17 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     sessionRolloutPercent: Number(draft.autoOpenPercent || 0),
   };
 
+  // Sent only when ON. Omitting the block for a disabled gate keeps published
+  // JSON free of dead campaigns, and the client reads a missing key as off —
+  // the same contract every gate added after v1 uses.
+  const winBack: PaywallWinBack | undefined = draft.winBackEnabled
+    ? {
+        enabled: true,
+        delaySeconds: Number(draft.winBackDelaySeconds || 3),
+        maxPerSession: Number(draft.winBackMaxPerSession || 1),
+      }
+    : undefined;
+
   const dailyKeypointQuota: PaywallDailyKeypointQuota = {
     enabled: draft.dailyQuotaEnabled,
     freeKeypointsPerDay: Number(draft.dailyQuotaFreeKeypointsPerDay || 0),
@@ -730,6 +754,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     enableLessonLock: draft.enableLessonLock,
     lessonLock,
     autoOpen,
+    winBack,
     inLessonPaywall,
     dailyKeypointQuota,
     entryPointVariants,
@@ -823,6 +848,39 @@ export const validateDraft = (
   ) {
     errors["autoOpen.sessionRolloutPercent"] =
       "autoOpen.sessionRolloutPercent là bắt buộc và phải là số từ 0 đến 100";
+  }
+
+  // Only meaningful when the gate is on; a disabled block is not sent at all.
+  if (draft.winBackEnabled) {
+    const delay = Number(draft.winBackDelaySeconds);
+    if (
+      draft.winBackDelaySeconds.trim() === "" ||
+      !Number.isInteger(delay) ||
+      delay < 0 ||
+      delay > 60
+    ) {
+      errors["winBack.delaySeconds"] =
+        "winBack.delaySeconds phải là số nguyên từ 0 đến 60";
+    }
+
+    const cap = Number(draft.winBackMaxPerSession);
+    if (
+      draft.winBackMaxPerSession.trim() === "" ||
+      !Number.isInteger(cap) ||
+      cap < 1 ||
+      cap > 5
+    ) {
+      errors["winBack.maxPerSession"] =
+        "winBack.maxPerSession phải là số nguyên từ 1 đến 5";
+    }
+
+    // Mirrors the server rule: the win-back sheet IS the compact paywall, and
+    // the compact paywall takes its single plan from defaultUser.compactProducts.
+    // Publishing without them would ship a sheet with no price and a dead CTA.
+    if (!draft.defaultUser.compactProducts.length) {
+      errors["winBack.enabled"] =
+        "Bật win-back cần có gói ở 'Gói rút gọn · Mặc định' — sheet win-back chính là paywall rút gọn";
+    }
   }
 
   // A missing count with the lock ON is what breaks: the client reads the

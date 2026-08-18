@@ -52,6 +52,7 @@ import DefaultUserSection from "./components/DefaultUserSection";
 import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
 import GeneralSection from "./components/GeneralSection";
 import GiftCampaignSection from "./components/GiftCampaignSection";
+import WinBackSection from "./components/WinBackSection";
 import LogicSalesSection from "./components/LogicSalesSection";
 import ReviewsSection from "./components/ReviewsSection";
 import SaleEventSection from "./components/SaleEventSection";
@@ -462,6 +463,23 @@ export default function PaywallConfigPage() {
           <GiftCampaignSection
             value={draft.giftCampaign}
             onChange={(giftCampaign) => patchDraft({ giftCampaign })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+          />
+
+          {/* Right after the gift campaign: both send the reader to the compact
+              sheet, so they read together. */}
+          <WinBackSection
+            enabled={draft.winBackEnabled}
+            delaySeconds={draft.winBackDelaySeconds}
+            maxPerSession={draft.winBackMaxPerSession}
+            onChange={(next) =>
+              patchDraft({
+                winBackEnabled: next.enabled,
+                winBackDelaySeconds: next.delaySeconds,
+                winBackMaxPerSession: next.maxPerSession,
+              })
+            }
             disabled={disabled}
             fieldErrors={fieldErrors}
           />
