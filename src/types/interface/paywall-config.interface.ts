@@ -17,11 +17,36 @@ export interface PaywallBenefit {
   title: string;
 }
 
+/**
+ * Thân paywall render cái gì giữa header và các thẻ gói.
+ *
+ * `benefits` = danh sách lợi ích đang chạy (design `6b · Premium` Version 1).
+ * `comparison` = bảng Miễn phí vs Premium (Version 2). Hai cái LOẠI TRỪ nhau,
+ * không cộng vào nhau — design gate chúng ở hai nhánh riêng, và hiện cả hai là
+ * nói cùng một chuyện hai lần trên một màn.
+ */
+export type PaywallBodyVariant = "benefits" | "comparison";
+
+/** Một dòng của bảng Miễn phí vs Premium. */
+export interface PaywallComparisonRow {
+  label: string;
+  free: string;
+  premium: string;
+  /**
+   * Ô Premium có hiện icon tick trước chữ hay không. Bỏ trống = CÓ, vì mọi dòng
+   * trong design đều có tick — dòng lưu thiếu field phải trông như design chứ
+   * không phải mất tick.
+   */
+  hasCheck?: boolean;
+}
+
 /** One locale's worth of paywall copy (already in that locale). */
 export interface PaywallLocaleContent {
   subheading?: string;
   heading?: string;
   benefits?: PaywallBenefit[];
+  /** Chỉ đọc khi `bodyVariant` là `comparison`. Rỗng thì app rơi về `benefits`. */
+  comparison?: PaywallComparisonRow[];
 }
 
 /** `en` is required (i18n fallback locale); the other 4 are optional. */
@@ -300,6 +325,15 @@ export interface PaywallConfig {
   /** Optional so every version published before this gate existed stays valid. */
   dailyKeypointQuota?: PaywallDailyKeypointQuota;
   entryPointVariants?: PaywallEntryPointVariants;
+
+  /**
+   * Thân paywall dùng layout nào (xem `PaywallBodyVariant`).
+   *
+   * Ở cấp config chứ không theo locale: đây là lựa chọn LAYOUT, một config mà
+   * tiếng Việt hiện bảng còn tiếng Anh hiện danh sách là lỗi chẳng ai yêu cầu.
+   * Bỏ trống = `benefits`, nên mọi version đã publish trước đó render y như cũ.
+   */
+  bodyVariant?: PaywallBodyVariant;
   saleStrategy: PaywallSaleStrategy;
   /** Optional so every version published before this section existed stays valid. */
   compactPaywall?: PaywallCompactPaywall;

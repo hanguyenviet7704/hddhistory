@@ -16,6 +16,8 @@ import {
   PaywallDailyKeypointQuota,
   PaywallInLesson,
   PaywallBenefit,
+  PaywallBodyVariant,
+  PaywallComparisonRow,
   PaywallConfig,
   PaywallDefaultUser,
   PaywallEntryPoint,
@@ -68,10 +70,17 @@ export interface BenefitDraft extends PaywallBenefit {
   _localId: string;
 }
 
+export interface ComparisonRowDraft extends PaywallComparisonRow {
+  _localId: string;
+  /** Không optional trong draft: checkbox cần một boolean xác định để điều khiển. */
+  hasCheck: boolean;
+}
+
 export interface LocaleContentDraft {
   subheading: string;
   heading: string;
   benefits: BenefitDraft[];
+  comparison: ComparisonRowDraft[];
 }
 
 export type LocalizedContentDraft = Record<PaywallLocale, LocaleContentDraft>;
@@ -180,6 +189,7 @@ export interface ConfigDraft {
   dailyQuotaFreeKeypointsPerDay: string;
   dailyQuotaAfterCards: string;
   entryPointVariants: EntryPointVariantsDraft;
+  bodyVariant: PaywallBodyVariant;
   defaultUser: DefaultUserDraft;
   saleEvent: SaleEventDraft;
   giftCampaign: GiftCampaignDraft;
@@ -197,6 +207,7 @@ export const emptyLocaleContent = (): LocaleContentDraft => ({
   subheading: "",
   heading: "",
   benefits: [],
+  comparison: [],
 });
 
 export const emptyLocalizedContent = (): LocalizedContentDraft =>
@@ -279,6 +290,9 @@ export const defaultDraft = (): ConfigDraft => ({
   dailyQuotaFreeKeypointsPerDay: "1",
   dailyQuotaAfterCards: "3",
   entryPointVariants: defaultEntryPointVariants(),
+  // `benefits` là hành vi đang chạy, nên nó là mặc định của một draft mới —
+  // mở trang lên rồi Đăng mà không sửa gì thì không được đổi layout paywall.
+  bodyVariant: "benefits",
   defaultUser: {
     content: emptyLocalizedContent(),
     products: [],
@@ -321,6 +335,14 @@ const toLocaleContentDraft = (content?: PaywallLocaleContent): LocaleContentDraf
   subheading: content?.subheading ?? "",
   heading: content?.heading ?? "",
   benefits: (content?.benefits ?? []).map((b) => ({ ...b, _localId: nextLocalId() })),
+  // `hasCheck ?? true` — dòng lưu thiếu field phải đọc lại là CÓ tick, khớp với
+  // cách app hiểu nó. Mặc định thành false ở đây sẽ âm thầm gỡ tick của mọi dòng
+  // ngay lần Đăng thay đổi kế tiếp.
+  comparison: (content?.comparison ?? []).map((row) => ({
+    ...row,
+    hasCheck: row.hasCheck ?? true,
+    _localId: nextLocalId(),
+  })),
 });
 
 const toLocalizedContentDraft = (
@@ -460,6 +482,7 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
       ? String(config.dailyKeypointQuota.afterCards)
       : "3",
   entryPointVariants: toEntryPointVariantsDraft(config.entryPointVariants),
+  bodyVariant: config.bodyVariant ?? "benefits",
   defaultUser: {
     content: toLocalizedContentDraft(config.saleStrategy?.defaultUser?.content),
     products: (config.saleStrategy?.defaultUser?.products ?? []).map(
@@ -517,7 +540,13 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
 export const isLocaleContentEmpty = (content: LocaleContentDraft): boolean =>
   !content.subheading.trim() &&
   !content.heading.trim() &&
-  content.benefits.every((b) => !b.icon.trim() && !b.title.trim());
+  content.benefits.every((b) => !b.icon.trim() && !b.title.trim()) &&
+  // `hasCheck` không tính: một dòng chỉ có checkbox mà không có chữ nào là dòng
+  // rỗng, và coi nó là "có nội dung" sẽ khiến locale đó bị gửi lên chỉ vì người
+  // ta bấm nhầm một ô.
+  content.comparison.every(
+    (row) => !row.label.trim() && !row.free.trim() && !row.premium.trim()
+  );
 
 export const isLocalizedContentEmpty = (content: LocalizedContentDraft): boolean =>
   PAYWALL_CONFIG_LOCALES.every((locale) => isLocaleContentEmpty(content[locale]));
@@ -537,6 +566,17 @@ const fromLocaleContentDraft = (content: LocaleContentDraft): PaywallLocaleConte
     .filter((b) => b.icon.trim() || b.title.trim())
     .map((b) => ({ icon: b.icon.trim(), title: b.title.trim() }));
   if (benefits.length) result.benefits = benefits;
+  // Bỏ dòng trắng hoàn toàn, giống benefits: người ta bấm "Thêm dòng" rồi đổi ý,
+  // và một dòng rỗng gửi lên sẽ thành một hàng trống trong bảng trên app.
+  const comparison = content.comparison
+    .filter((row) => row.label.trim() || row.free.trim() || row.premium.trim())
+    .map((row) => ({
+      label: row.label.trim(),
+      free: row.free.trim(),
+      premium: row.premium.trim(),
+      hasCheck: row.hasCheck,
+    }));
+  if (comparison.length) result.comparison = comparison;
   return result;
 };
 
@@ -758,6 +798,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     inLessonPaywall,
     dailyKeypointQuota,
     entryPointVariants,
+    bodyVariant: draft.bodyVariant,
     saleStrategy,
     giftCampaign,
     ...(compactPaywall ? { compactPaywall } : {}),

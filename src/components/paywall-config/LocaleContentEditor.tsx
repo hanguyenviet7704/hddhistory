@@ -12,6 +12,7 @@ import {
 } from "../../types/interface/paywall-config.interface";
 import {
   BenefitDraft,
+  ComparisonRowDraft,
   isLocaleContentEmpty,
   LocaleContentDraft,
   LocalizedContentDraft,
@@ -31,6 +32,16 @@ const emptyBenefit = (): BenefitDraft => ({
   _localId: nextLocalId(),
   icon: "",
   title: "",
+});
+
+// `hasCheck: true` — mọi dòng trong design đều có tick, nên dòng mới phải giống
+// design ngay lúc thêm chứ không bắt người ta bấm thêm một ô mới đúng.
+const emptyComparisonRow = (): ComparisonRowDraft => ({
+  _localId: nextLocalId(),
+  label: "",
+  free: "",
+  premium: "",
+  hasCheck: true,
 });
 
 const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
@@ -65,11 +76,34 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
     });
   };
 
+  const updateComparisonRow = (index: number, patch: Partial<ComparisonRowDraft>) => {
+    updateLocale(activeLocale, {
+      comparison: current.comparison.map((row, i) =>
+        i === index ? { ...row, ...patch } : row
+      ),
+    });
+  };
+
+  const addComparisonRow = () => {
+    updateLocale(activeLocale, {
+      comparison: [...current.comparison, emptyComparisonRow()],
+    });
+  };
+
+  const removeComparisonRow = (index: number) => {
+    updateLocale(activeLocale, {
+      comparison: current.comparison.filter((_, i) => i !== index),
+    });
+  };
+
   const copyFromEn = () => {
     updateLocale(activeLocale, {
       subheading: value.en.subheading,
       heading: value.en.heading,
       benefits: value.en.benefits.map((b) => ({ ...b, _localId: nextLocalId() })),
+      // Bảng phải đi cùng: thiếu dòng này thì "Copy từ EN" copy một nửa và để
+      // locale đó có tiêu đề tiếng Anh nhưng bảng rỗng.
+      comparison: value.en.comparison.map((row) => ({ ...row, _localId: nextLocalId() })),
     });
   };
 
@@ -212,6 +246,89 @@ const LocaleContentEditor: React.FC<LocaleContentEditorProps> = ({
           >
             <PlusIcon className="h-3.5 w-3.5" />
             Thêm lợi ích
+          </button>
+        </div>
+
+        <div className="space-y-2 border-t border-slate-100 pt-4">
+          <div>
+            <span className="text-xs font-medium text-slate-700">
+              Bảng so sánh (Miễn phí vs Premium)
+            </span>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Chỉ hiện khi "Thân paywall" đặt là <em>Bảng so sánh</em>. Để trống
+              thì app rơi về danh sách lợi ích ở trên, nên bật layout trước khi
+              nhập dữ liệu cũng không làm paywall trông như bị lỗi. Ba nhãn cột và
+              tiêu đề bảng nằm trong app (5 ngôn ngữ), không sửa ở đây.
+            </p>
+          </div>
+
+          {current.comparison.length === 0 ? (
+            <p className="text-xs text-slate-500">
+              Chưa có dòng nào cho ngôn ngữ này.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {current.comparison.map((row, index) => (
+                <div key={row._localId} className="flex items-start gap-2">
+                  <input
+                    value={row.label}
+                    onChange={(e) => updateComparisonRow(index, { label: e.target.value })}
+                    placeholder="Quyền lợi (vd: Bài học)"
+                    disabled={disabled}
+                    className="w-36 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+                  />
+                  <input
+                    value={row.free}
+                    onChange={(e) => updateComparisonRow(index, { free: e.target.value })}
+                    placeholder="Miễn phí (vd: 1 / ngày)"
+                    disabled={disabled}
+                    className="flex-1 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+                  />
+                  <input
+                    value={row.premium}
+                    onChange={(e) => updateComparisonRow(index, { premium: e.target.value })}
+                    placeholder="Premium (vd: Không giới hạn)"
+                    disabled={disabled}
+                    className="flex-1 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+                  />
+                  <label
+                    title="Hiện icon tick trước chữ ở cột Premium"
+                    className="inline-flex h-8 flex-shrink-0 items-center gap-1.5 px-1 text-xs text-slate-600"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={row.hasCheck}
+                      onChange={(e) =>
+                        updateComparisonRow(index, { hasCheck: e.target.checked })
+                      }
+                      disabled={disabled}
+                      className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                    />
+                    tick
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeComparisonRow(index)}
+                    disabled={disabled}
+                    aria-label="Xóa dòng so sánh"
+                    title="Xóa dòng so sánh"
+                    className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={addComparisonRow}
+            disabled={disabled}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-slate-300 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+            Thêm dòng so sánh
           </button>
         </div>
       </div>

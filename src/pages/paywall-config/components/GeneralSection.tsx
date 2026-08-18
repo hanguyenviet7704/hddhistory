@@ -6,6 +6,7 @@ import {
   LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import ToggleSwitch from "../../../components/paywall-config/ToggleSwitch";
+import { PaywallBodyVariant } from "../../../types/interface/paywall-config.interface";
 import { ConfigDraft } from "../paywallConfigDraft";
 import SectionCard from "./SectionCard";
 
@@ -107,6 +108,35 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
               <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0 mt-px" />
               0 nghĩa là khóa toàn bộ khóa học ngay từ bài đầu — user sẽ không mở
               được bài nào. Chỉ dùng nếu đó đúng là ý bạn.
+            </span>
+          )}
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-slate-700">Thân paywall</span>
+          <select
+            value={draft.bodyVariant}
+            onChange={(e) =>
+              onChange({ bodyVariant: e.target.value as PaywallBodyVariant })
+            }
+            disabled={disabled}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
+          >
+            <option value="benefits">Danh sách lợi ích</option>
+            <option value="comparison">Bảng so sánh (Miễn phí vs Premium)</option>
+          </select>
+          <span className="text-[11px] text-slate-500">
+            Chọn khối nằm giữa tiêu đề và các thẻ gói. Hai kiểu loại trừ nhau, không
+            hiện cùng lúc. Nội dung của mỗi kiểu nhập trong khối ngôn ngữ bên dưới
+            (Lợi ích / Bảng so sánh).
+          </span>
+          {/* Bật layout mà locale chưa có dòng nào thì app rơi về danh sách lợi
+              ích — nói ra ở đây để người ta không đi tìm cái bảng không xuất hiện. */}
+          {draft.bodyVariant === "comparison" && (
+            <span className="text-[11px] text-amber-700 flex items-start gap-1">
+              <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0 mt-px" />
+              Ngôn ngữ nào chưa nhập dòng so sánh nào thì app vẫn hiện danh sách lợi
+              ích của ngôn ngữ đó, không hiện bảng rỗng.
             </span>
           )}
         </label>
