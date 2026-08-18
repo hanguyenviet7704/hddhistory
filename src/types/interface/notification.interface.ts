@@ -100,10 +100,23 @@ export interface NotificationLogPage {
   currentPage: number;
 }
 
+/**
+ * `byType[type].clicks` là số lần CHẠM vào noti loại đó, đọc từ event `noti_tap`
+ * app bắn lên (`user_events`) — collection khác với chỗ ghi số gửi, join với nhau
+ * chỉ bằng loại noti. Nên nó chính xác theo khoảng ngày và mờ ở từng ngày lẻ:
+ * người nhận push 21:00 rồi chạm 8:00 sáng hôm sau sẽ tính vào ngày hôm sau.
+ * Chỉ có dữ liệu từ 2026-08-08 (bản app đầu tiên bắn event này) và event tự xoá
+ * sau 90 ngày.
+ */
 export interface NotificationSummary {
   fromDate: string;
   toDate: string
-  byType: Record<string, Record<NotificationLogStatus, number>>;
+  /** Môi trường app mà số CLICK được đếm trong đó (số gửi không có env). */
+  appEnv?: string;
+  byType: Record<
+    string,
+    Record<NotificationLogStatus, number> & { clicks?: number }
+  >;
 }
 
 // ---------------------------------------------------------------------------

@@ -91,6 +91,8 @@ export const notificationService = {
   async getSummary(range: {
     fromDate?: string;
     toDate?: string;
+    /** Chỉ ảnh hưởng số click. Bỏ trống thì API dùng `prod`. */
+    appEnv?: string;
   }): Promise<NotificationSummary> {
     const res = await axiosClient.get("/notifications/logs/summary", {
       params: range,

@@ -732,8 +732,16 @@ const TestSendBox: React.FC<{ templates: NotificationTemplate[] }> = ({
 // Theo dõi gửi
 // ---------------------------------------------------------------------------
 
+/**
+ * Môi trường app dùng để đếm click. Cùng danh sách trang Dashboard dùng, và
+ * `prod` mặc định vì đó là con số người ta thật sự muốn xem — nhưng phải cho đổi
+ * được, không thì mở panel dev sẽ thấy 0 click và tưởng là hỏng.
+ */
+const MONITOR_APP_ENVS = ["prod", "stg", "dev"] as const;
+
 const MonitorSection: React.FC = () => {
   const [query, setQuery] = useState<NotificationLogQuery>({ page: 1, take: 20 });
+  const [appEnv, setAppEnv] = useState<string>("prod");
   const [logs, setLogs] = useState<NotificationLog[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [summary, setSummary] = useState<NotificationSummary | null>(null);
@@ -749,6 +757,7 @@ const MonitorSection: React.FC = () => {
         notificationService.getSummary({
           fromDate: query.fromDate,
           toDate: query.toDate,
+          appEnv,
         }),
       ]);
       setLogs(page.items ?? []);
@@ -759,7 +768,7 @@ const MonitorSection: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [query, appEnv]);
 
   useEffect(() => {
     void load();
@@ -788,7 +797,7 @@ const MonitorSection: React.FC = () => {
               <p className="mt-1 text-xs text-slate-500">
                 {summary.fromDate} → {summary.toDate}
               </p>
-              <div className="mt-3 flex gap-4 text-sm">
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 <span className="text-emerald-700">
                   {counts.sent ?? 0} đã gửi
                 </span>
@@ -796,13 +805,47 @@ const MonitorSection: React.FC = () => {
                 <span className="text-slate-500">
                   {counts.skipped ?? 0} bỏ qua
                 </span>
+                <span
+                  className="font-medium text-sky-700"
+                  title="Số lần user chạm vào noti loại này, đếm theo THỜI ĐIỂM CHẠM (không quy về đúng lần gửi)."
+                >
+                  {counts.clicks ?? 0} click
+                </span>
               </div>
             </div>
           ))}
         </div>
       )}
 
+      {summary && (
+        <p className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs leading-relaxed text-sky-900">
+          <span className="font-semibold">Click đếm thế nào.</span> Lấy từ event
+          app bắn lên khi user chạm vào noti, nên đếm theo{" "}
+          <span className="font-semibold">thời điểm chạm</span>, không quy về đúng
+          lần gửi — nhận push 21:00 rồi chạm 8:00 sáng hôm sau thì tính vào ngày
+          hôm sau. Đọc theo tuần thì đúng, đọc từng ngày lẻ thì chỉ nên xem là xu
+          hướng. Chỉ có dữ liệu từ 08/08/2026 (bản app đầu tiên bắn event này) và
+          event tự xoá sau 90 ngày, nên khoảng ngày cũ hơn sẽ ra 0 click dù vẫn có
+          số gửi.
+        </p>
+      )}
+
       <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+        <label className="flex flex-col gap-1 text-xs text-slate-700">
+          <span className="font-medium">Môi trường (chỉ ảnh hưởng click)</span>
+          <select
+            value={appEnv}
+            onChange={(e) => setAppEnv(e.target.value)}
+            className="rounded-lg border border-slate-200 px-2 py-2 text-sm"
+          >
+            {MONITOR_APP_ENVS.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="flex flex-col gap-1 text-xs text-slate-700">
           <span className="font-medium">Loại</span>
           <select
