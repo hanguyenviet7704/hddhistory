@@ -5,7 +5,9 @@ import {
   TrashIcon,
   PlusIcon,
   SpeakerWaveIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/24/outline";
+import { countryLabel } from "../../config/countries";
 import { courseService } from "../../services/courseService";
 import VoiceoverStatusModal from "../../components/courses/VoiceoverStatusModal";
 import { ICourse, CoursePayload } from "../../types/interface/course.interface";
@@ -408,6 +410,27 @@ export default function CourseList() {
                             {course.numberOfLesson || 0} lessons
                           </span>
                         </div>
+
+                        {/* Giới hạn thị trường. Chỉ hiện khi CÓ giới hạn —
+                            course publish mọi nơi là mặc định và là đa số, thêm
+                            một chip "Mọi nơi" vào từng thẻ chỉ làm loãng danh
+                            sách. Nhưng khi đã giới hạn thì phải nhìn thấy được:
+                            targeting vô hình là thứ khiến người ta báo "app
+                            không thấy khoá học" mà không ai đoán ra tại sao. */}
+                        {!!course.countries?.length && (
+                          <div className="flex flex-wrap items-center gap-1 mb-3">
+                            <GlobeAltIcon className="w-4 h-4 text-amber-600" />
+                            {course.countries.map((code) => (
+                              <span
+                                key={code}
+                                title={countryLabel(code)}
+                                className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 border border-amber-200"
+                              >
+                                {code}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   );

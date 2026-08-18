@@ -13,6 +13,7 @@ import {
 } from "../../types/interface/course.interface";
 import { OnboardingSymptom } from "../../types/enum/common.enum";
 import { CourseStatus } from "../../types/enum/course.enum";
+import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,6 +78,8 @@ export default function CourseModal({
   const [symptomLabels, setSymptomLabels] = useState<Record<string, string>>(
     {}
   );
+  // Thị trường được publish tới (ISO-3166 alpha-2). Rỗng = mọi nơi.
+  const [countries, setCountries] = useState<string[]>([]);
 
   // State cho Skillset
   const [skillsetId, setSkillsetId] = useState("");
@@ -105,6 +108,7 @@ export default function CourseModal({
       setViewCount(initial.viewCount != null ? String(initial.viewCount) : "");
       setPrices(initial.prices ?? []);
       setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
+      setCountries(initial.countries ?? []);
       setSkillsetId(initial.skillsetId ?? "");
       setSelectedSkillsetLabel("");
     } else {
@@ -120,6 +124,7 @@ export default function CourseModal({
       setViewCount("");
       setPrices([]);
       setOnboardingSymptoms([]);
+      setCountries([]);
       setSkillsetId("");
       setSkillsetQuery("");
       setSelectedSkillsetLabel("");
@@ -242,6 +247,9 @@ export default function CourseModal({
       // nobody or claiming zero reach.
       author: author.trim() || null,
       viewCount: viewCount.trim() ? Number(viewCount) : null,
+      // Thị trường được publish tới. Gửi cả khi rỗng: rỗng nghĩa là "mọi nơi",
+      // nên bỏ trắng một course từng giới hạn PHẢI ghi được `[]` để bỏ giới hạn.
+      countries,
     };
 
     // Only include description if it has values
@@ -312,6 +320,14 @@ export default function CourseModal({
       prev.includes(value)
         ? prev.filter((symptom) => symptom !== value)
         : [...prev, value]
+    );
+  };
+
+  const handleToggleCountry = (code: string) => {
+    setCountries((prev) =>
+      prev.includes(code)
+        ? prev.filter((country) => country !== code)
+        : [...prev, code]
     );
   };
 
@@ -633,6 +649,71 @@ export default function CourseModal({
                     <button
                       type="button"
                       onClick={() => setOnboardingSymptoms([])}
+                      className="mt-3 text-sm font-medium text-gray-500 hover:text-gray-700"
+                    >
+                      Clear selection
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Thị trường được publish tới */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Chỉ publish cho các thị trường
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Để trống = publish mọi nơi. Khớp theo BẤT KỲ tín hiệu nào: IP,
+                  region của máy, hoặc ngôn ngữ app — chọn VN thì người Việt ở
+                  nước ngoài vẫn thấy. Chỉ ẩn khỏi các màn khám phá (danh sách,
+                  tìm kiếm, Home, Explore); ai đã lưu hoặc đang học dở vẫn giữ
+                  khoá học.
+                </p>
+                <div className="border border-gray-300 rounded-lg p-3 max-h-60 overflow-y-auto bg-white">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {COUNTRY_OPTIONS.map((country) => (
+                      <label
+                        key={country.code}
+                        className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={countries.includes(country.code)}
+                          onChange={() => handleToggleCountry(country.code)}
+                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span>
+                          {country.name} ({country.code})
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* Mã đã lưu nhưng không có trong danh sách rút gọn (nhập
+                      thẳng qua API, hoặc có trước khi mục đó tồn tại) vẫn phải
+                      hiện ra — nếu không, mở modal rồi Save sẽ âm thầm xoá nó. */}
+                  {countries
+                    .filter(
+                      (code) =>
+                        !COUNTRY_OPTIONS.some((option) => option.code === code)
+                    )
+                    .map((code) => (
+                      <label
+                        key={code}
+                        className="mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked
+                          onChange={() => handleToggleCountry(code)}
+                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span>{countryLabel(code)}</span>
+                      </label>
+                    ))}
+                  {countries.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setCountries([])}
                       className="mt-3 text-sm font-medium text-gray-500 hover:text-gray-700"
                     >
                       Clear selection

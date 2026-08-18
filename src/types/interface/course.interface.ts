@@ -31,6 +31,12 @@ export interface ICourse {
   author?: string | null;
   /** Curated reach figure on that card — raw number; the app shows "6.3k". */
   viewCount?: number | null;
+  /**
+   * Thị trường course được publish tới (ISO-3166 alpha-2, chữ hoa). Rỗng —
+   * mặc định — là publish mọi nơi. Chỉ ẩn course khỏi các màn KHÁM PHÁ ngoài
+   * các thị trường này; ai đã lưu hoặc đang học dở thì vẫn giữ.
+   */
+  countries?: string[];
 }
 
 export type CoursePayload = Omit<ICourse, "_id">;

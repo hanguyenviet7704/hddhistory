@@ -34,6 +34,20 @@ const createAxiosClient = (baseURL: string) => {
       const lang = store.getState().lang.code || LangCode.EN;
       config.headers["lang"] = lang;
 
+      // Tắt lọc theo thị trường cho MỌI request của panel.
+      //
+      // Course có thể được publish giới hạn theo quốc gia (`countries`), và các
+      // endpoint dùng chung với app sẽ lọc theo thị trường của người gọi. Nếu
+      // không có header này, một operator ở Việt Nam mở panel sẽ đơn giản là
+      // KHÔNG thấy course chỉ publish cho Nhật — không lỗi, không log, chỉ là
+      // thiếu. Đặt ở đây vì đây là chỗ duy nhất mọi request đều đi qua: 9 trang
+      // admin đọc danh sách course (Courses, Lessons, Roleplays, Output, Video,
+      // Habits, Reanchor reasons...), và trang nào tự nhớ thì trang đó sẽ quên.
+      //
+      // Không phải hàng rào bảo mật và không giả vờ là: nó quyết định course
+      // được QUẢNG BÁ ở đâu, không phải ai được mở.
+      config.headers["x-ignore-market-targeting"] = "1";
+
       return config;
     },
     (error: AxiosError) => {
