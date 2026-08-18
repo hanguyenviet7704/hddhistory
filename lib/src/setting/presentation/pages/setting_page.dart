@@ -273,35 +273,12 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           title: '[DEBUG] Xem Onboarding',
                           onTap: () => const OnboardV2Route().go(context),
                         ),
-                      if (!user.anonymous)
-                        BlocBuilder<AuthBloc, AuthState>(
-                          buildWhen: (previous, current) => previous.status != current.status,
-                          builder: (context, authState) {
-                            final bool isLoggingOut = authState.status == AuthStatus.loading;
-                            return SettingOptionTile(
-                              iconAsset: AppAsset.svg.app.icLogOut,
-                              title: context.l10n.setting.settingLogOut,
-                              titleColor: AppCustomColor.errorRed,
-                              iconColor: AppCustomColor.errorRed,
-                              iconBackgroundColor: AppCustomColor.errorRed.op(.08),
-                              showChevron: false,
-                              isLoading: isLoggingOut,
-                              onTap: () async {
-                                // Confirm first — logout instantly dropped the
-                                // session on a single tap before, with no undo.
-                                final authBloc = context.read<AuthBloc>();
-                                final confirmed = await _confirmLogout(context);
-                                if (!confirmed) return;
-                                AppService.instance.appTrackingService.trackSettingLogoutClick();
-                                authBloc.add(const AuthEvent.logout());
-                              },
-                            );
-                          },
-                        ),
                     ],
                   );
                 },
               ),
+              8.verticalSpace,
+              const _AccountSection(),
             ],
           ),
           ),
@@ -393,6 +370,107 @@ class SettingHeader extends StatelessWidget {
         ),
         SizedBox(width: 24.w),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Account actions — their own card at the bottom (design `Settings`)
+// ---------------------------------------------------------------------------
+
+/// Sign in for a guest; sign out + delete account once signed in.
+///
+/// Kept apart from the "Giới thiệu" card the sign-out row used to live in: these
+/// are the destructive/session actions, and the design separates them so a
+/// mis-tap next to "Điều khoản" is less likely.
+class _AccountSection extends StatelessWidget {
+  const _AccountSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+      selector: (state) => state.user,
+      builder: (context, user) {
+        // A guest has no session to end and nothing deletable behind a login,
+        // so the card collapses to the one action that applies.
+        if (user.anonymous) {
+          return SettingSectionCard(
+            children: [
+              SettingOptionTile(
+                key: const Key('setting-sign-in-row'),
+                iconWidget: Icon(
+                  Icons.login_rounded,
+                  size: 22.w,
+                  color: AppCustomColor.brandPrimary,
+                ),
+                title: context.l10n.auth.authLogIn,
+                titleColor: AppCustomColor.brandPrimary,
+                onTap: () {
+                  AppHaptic.select();
+                  const RegisterRoute().push(context);
+                },
+              ),
+            ],
+          );
+        }
+
+        return SettingSectionCard(
+          children: [
+            BlocBuilder<AuthBloc, AuthState>(
+              buildWhen: (previous, current) => previous.status != current.status,
+              builder: (context, authState) {
+                final bool isBusy = authState.status == AuthStatus.loading;
+                return SettingOptionTile(
+                  key: const Key('setting-sign-out-row'),
+                  iconAsset: AppAsset.svg.app.icLogOut,
+                  title: context.l10n.setting.settingLogOut,
+                  titleColor: AppCustomColor.errorRed,
+                  iconColor: AppCustomColor.errorRed,
+                  showChevron: false,
+                  isLoading: isBusy,
+                  onTap: () async {
+                    // Confirm first — logout instantly dropped the session on a
+                    // single tap before, with no undo.
+                    final authBloc = context.read<AuthBloc>();
+                    final confirmed = await _confirmLogout(context);
+                    if (!confirmed) return;
+                    AppService.instance.appTrackingService.trackSettingLogoutClick();
+                    authBloc.add(const AuthEvent.logout());
+                  },
+                );
+              },
+            ),
+            SettingOptionTile(
+              key: const Key('setting-delete-account-row'),
+              iconWidget: Icon(
+                Icons.delete_outline_rounded,
+                size: 22.w,
+                color: AppCustomColor.errorRed,
+              ),
+              title: context.l10n.setting.settingProfileDesstructiveButton,
+              titleColor: AppCustomColor.errorRed,
+              showChevron: false,
+              onTap: () {
+                AppHaptic.select();
+                final authBloc = context.read<AuthBloc>();
+                final userId = user.id;
+                // The dialog awaits this callback before dismissing, so a failed
+                // deletion stays on screen instead of looking like it worked.
+                // Dialog, event and API were all left in place when the entry
+                // point was removed in Aug 2026 — this only restores the way in
+                // (App Store 5.1.1(v) requires one).
+                ProfileDeleteDialog.show(
+                  context,
+                  onConfirm: () async {
+                    if (userId.isEmpty) return;
+                    authBloc.add(AuthEvent.deleteAccountPermanently(userId));
+                  },
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

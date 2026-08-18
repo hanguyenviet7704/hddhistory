@@ -1,9 +1,11 @@
 part of '../../../setting.dart';
 
 class SettingSectionCard extends StatelessWidget {
-  const SettingSectionCard({super.key, required this.title, required this.children});
+  const SettingSectionCard({super.key, this.title, required this.children});
 
-  final String title;
+  /// Null/empty renders the card with no header, which is what the account
+  /// card at the bottom of Settings needs (design `Settings`).
+  final String? title;
   final List<Widget> children;
 
   @override
@@ -11,16 +13,18 @@ class SettingSectionCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppStyle.text14.copyWith(
-            // Section labels ("Chung" / "Giới thiệu") sit directly on the page
-            // background, so they follow the study theme; everything inside the
-            // card below keeps its own dark ink.
-            color: studyThemeOnBg(context, AppCustomColor.textTertiary),
+        if ((title ?? '').isNotEmpty) ...[
+          Text(
+            title!,
+            style: AppStyle.text14.copyWith(
+              // Section labels ("Chung" / "Giới thiệu") sit directly on the page
+              // background, so they follow the study theme; everything inside the
+              // card below keeps its own dark ink.
+              color: studyThemeOnBg(context, AppCustomColor.textTertiary),
+            ),
           ),
-        ),
-        SizedBox(height: 12.h),
+          SizedBox(height: 12.h),
+        ],
         Container(
           decoration: BoxDecoration(
             color: studyThemeCardColor(context),
@@ -67,7 +71,8 @@ class _SettingDivider extends StatelessWidget {
 class SettingOptionTile extends StatelessWidget {
   const SettingOptionTile({
     super.key,
-    required this.iconAsset,
+    this.iconAsset,
+    this.iconWidget,
     required this.title,
     this.trailingText,
     this.onTap,
@@ -79,7 +84,12 @@ class SettingOptionTile extends StatelessWidget {
     this.isLoading = false,
   });
 
-  final String iconAsset;
+  /// One of [iconAsset] or [iconWidget] must be given.
+  final String? iconAsset;
+
+  /// Escape hatch for rows whose glyph is not in the SVG bundle (sign in,
+  /// delete account). Takes precedence over [iconAsset].
+  final Widget? iconWidget;
   final String title;
   final String? trailingText;
   final VoidCallback? onTap;
@@ -107,21 +117,24 @@ class SettingOptionTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              iconBackgroundColor != null
-                  ? _SettingIcon(
-                      asset: iconAsset,
-                      backgroundColor: iconBackgroundColor!,
-                      color: iconColor ?? AppCustomColor.iconPrimary,
-                    )
-                  : SvgPicture.asset(
-                      iconAsset,
-                      width: 24.w,
-                      height: 24.w,
-                      colorFilter: ColorFilter.mode(
-                        iconColor ?? AppCustomColor.iconPrimary,
-                        BlendMode.srcIn,
-                      ),
-                    ),
+              if (iconWidget != null)
+                SizedBox(width: 24.w, height: 24.w, child: Center(child: iconWidget))
+              else if (iconBackgroundColor != null)
+                _SettingIcon(
+                  asset: iconAsset!,
+                  backgroundColor: iconBackgroundColor!,
+                  color: iconColor ?? AppCustomColor.iconPrimary,
+                )
+              else
+                SvgPicture.asset(
+                  iconAsset!,
+                  width: 24.w,
+                  height: 24.w,
+                  colorFilter: ColorFilter.mode(
+                    iconColor ?? AppCustomColor.iconPrimary,
+                    BlendMode.srcIn,
+                  ),
+                ),
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
