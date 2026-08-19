@@ -44,6 +44,8 @@ part 'presentation/pages/saved_cards_page.dart';
 part 'presentation/pages/saved_courses_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course_options_sheet.dart';
+part 'presentation/widgets/course_share_sheet.dart';
+part 'presentation/widgets/course_story_card.dart';
 part 'presentation/widgets/library_course_card.dart';
 part 'presentation/widgets/saved_card_actions.dart';
 part 'presentation/widgets/saved_card_detail_overlay.dart';

@@ -101,10 +101,26 @@ class CourseOptionsSheet extends StatelessWidget {
             label: l10n.shareCourseLabel,
             svg: _savedSvg(_kSavedShareSvg, stroke: AppCustomColor.brandPrimary),
             onTap: () async {
-              // Close first: the share sheet is a platform surface and stacking
-              // it over ours leaves our sheet behind it on iOS.
+              // Close first: our own share sheet replaces this one rather
+              // than stacking, and the platform sheet it eventually opens
+              // would sit behind ours on iOS.
               Navigator.of(context).maybePop();
-              await shareSavedCourse(context, title: courseTitle);
+              final course = AppDI.injector.get<HomeCubit>().state.currentCourse;
+              if (!context.mounted) return;
+              // Only the roadmap's own course can be pictured — anywhere else
+              // the id would not match what HomeCubit is holding, so fall back
+              // to the text share rather than picture the wrong course.
+              if (course.id != courseId) {
+                await shareSavedCourse(context, title: courseTitle);
+                return;
+              }
+              await CourseShareSheet.show(
+                context,
+                courseId: courseId,
+                courseTitle: courseTitle,
+                courseDescription: _shareDescription(course),
+                coverUrl: course.image,
+              );
             },
           ),
           _CourseOptionRow(
@@ -123,6 +139,27 @@ class CourseOptionsSheet extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// The blurb printed on the story card.
+  ///
+  /// Read from the ROADMAP, not from the course: `/skillsets` deliberately
+  /// omits `description` (5 languages, ~30% of that payload, and no list
+  /// surface renders it), so `HomeCubit.currentCourse.description` is always
+  /// empty and the card shipped with a title and nothing under it. The roadmap
+  /// carries the blurb for exactly this reason and is already loaded — the
+  /// header two taps up prints the same string.
+  ///
+  /// The course value stays as the fallback in case a build starts sending it
+  /// again, and the id check keeps a stale roadmap from lending its blurb to a
+  /// different course.
+  String _shareDescription(CourseEntity course) {
+    final roadmap = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap;
+    if (roadmap.courseId == courseId) {
+      final blurb = roadmap.courseDescription.text.trim();
+      if (blurb.isNotEmpty) return blurb;
+    }
+    return course.description.text.trim();
   }
 }
 

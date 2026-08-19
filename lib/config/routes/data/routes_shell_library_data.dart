@@ -36,11 +36,11 @@ class LibraryRoute extends BaseTransitionRouteData with $LibraryRoute {
 class LibraryHistoryRoute extends BaseTransitionRouteData with $LibraryHistoryRoute {
   const LibraryHistoryRoute();
 
-  /// Rises from the bottom rather than zooming up: it opens from a text link in
-  /// the middle of the tab, and reads as a panel pulled up over the Library —
-  /// the same move Daily check-in and the import form make.
+  /// A fade, like every row of the Library tab. It opens from a text link in
+  /// the middle of the tab — you are looking at the list now, you did not walk
+  /// a step deeper to get to it.
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
@@ -55,13 +55,13 @@ class LibraryHistoryRoute extends BaseTransitionRouteData with $LibraryHistoryRo
 /// "Saved" — the courses the reader bookmarked, filtered Up next / In progress
 /// / Finished.
 ///
-/// Same rise-from-the-bottom as My history: both are panels pulled up over the
-/// Library from a row in the middle of the tab.
+/// Same fade as My history: both are lists opened from a row in the middle of
+/// the Library tab.
 class SavedCoursesRoute extends BaseTransitionRouteData with $SavedCoursesRoute {
   const SavedCoursesRoute();
 
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
@@ -78,8 +78,9 @@ class SavedCoursesRoute extends BaseTransitionRouteData with $SavedCoursesRoute 
 class SavedCardsRoute extends BaseTransitionRouteData with $SavedCardsRoute {
   const SavedCardsRoute();
 
+  /// Same fade as its two siblings.
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
@@ -99,8 +100,10 @@ class SavedCardsRoute extends BaseTransitionRouteData with $SavedCardsRoute {
 class MyLessonsRoute extends BaseTransitionRouteData with $MyLessonsRoute {
   const MyLessonsRoute();
 
+  /// Fades with the rest of the Library's rows. It used to zoom up, which made
+  /// one row of the same list arrive differently from the other three.
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(

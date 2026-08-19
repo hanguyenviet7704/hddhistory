@@ -4,7 +4,10 @@ abstract interface class IMediaService {
   Future<void> saveImageToGallery(Uint8List imageBytes);
   Future<Uint8List?> captureWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio});
   Future<Uint8List?> captureWidgetWithScreenshot(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 100), double? pixelRatio});
-  Future<Uint8List?> captureWidgetWithRepaintBoundary(GlobalKey globalKey, {double? pixelRatio});
+  /// [targetWidth] là chiều rộng PIXEL tối thiểu mà ảnh phải đạt, dùng khi kích
+  /// thước ảnh do bên NHẬN quy định chứ không do màn hình (canvas story của
+  /// Instagram/Facebook là 1080×1920). Bỏ trống thì giữ nguyên hành vi cũ.
+  Future<Uint8List?> captureWidgetWithRepaintBoundary(GlobalKey globalKey, {double? pixelRatio, double? targetWidth});
   Future<void> captureAndSaveWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio});
   Future<void> shareWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio, String fileName = 'share_image.png'});
   Future<void> shareImageFile(File imageFile, {String? shareText, Rect? sharePositionOrigin});
@@ -82,17 +85,32 @@ class MediaService implements IMediaService {
   }
 
   /// Capture a widget using Flutter's built-in RepaintBoundary
+  ///
+  /// [targetWidth] tồn tại vì device pixel ratio là con số ĐÚNG cho ảnh chụp
+  /// màn hình và SAI cho một canvas mà bên nhận quy định kích thước. Thẻ story
+  /// chỉ rộng ~230pt trên máy, nên ×3 ra ~690px trong khi Instagram cần 1080px
+  /// — composer phóng lên và ảnh mờ. Truyền targetWidth thì tỉ lệ được suy ra
+  /// từ chiều rộng thật của boundary, không phải từ mật độ điểm ảnh màn hình.
   @override
   Future<Uint8List?> captureWidgetWithRepaintBoundary(
     GlobalKey globalKey, {
     double? pixelRatio,
+    double? targetWidth,
   }) async {
     try {
       final RenderRepaintBoundary boundary = globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
 
-      final ui.Image image = await boundary.toImage(
-        pixelRatio: pixelRatio ?? WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio,
-      );
+      final double basePixelRatio =
+          pixelRatio ?? WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+      // Lấy giá trị LỚN HƠN, không phải gán thẳng: nếu boundary đã rộng hơn mức
+      // cần thì tỉ lệ suy ra sẽ nhỏ hơn base, và hạ nó xuống là tự làm ảnh tệ
+      // hơn hôm nay.
+      final double scaledPixelRatio =
+          (targetWidth != null && boundary.size.width > 0) ? targetWidth / boundary.size.width : 0;
+      final double effectivePixelRatio =
+          scaledPixelRatio > basePixelRatio ? scaledPixelRatio : basePixelRatio;
+
+      final ui.Image image = await boundary.toImage(pixelRatio: effectivePixelRatio);
 
       final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       return byteData?.buffer.asUint8List();

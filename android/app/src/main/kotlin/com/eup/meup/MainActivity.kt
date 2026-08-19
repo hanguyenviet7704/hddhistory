@@ -9,6 +9,7 @@ import io.flutter.embedding.engine.FlutterEngine
 // It extends FlutterActivity, so all existing Flutter behavior is preserved.
 class MainActivity: AudioServiceActivity() {
     private var liveActivityChannel: LiveActivityChannel? = null
+    private var storyShareChannel: StoryShareChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -19,5 +20,9 @@ class MainActivity: AudioServiceActivity() {
         // Lesson Live Update (Android 16+ promoted ongoing notification) — the
         // Android counterpart to the iOS Live Activity. No-op on older versions.
         liveActivityChannel = LiveActivityChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Instagram / Facebook story hand-off (see StoryShareChannel.swift for
+        // the iOS half — same channel name, pasteboard instead of an intent).
+        storyShareChannel = StoryShareChannel(this, flutterEngine.dartExecutor.binaryMessenger)
     }
 }

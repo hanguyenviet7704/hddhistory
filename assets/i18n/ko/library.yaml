@@ -40,6 +40,16 @@ courseOptionsLabel: 더 보기
 saveCourseLabel: 이 과정 저장
 unsaveCourseLabel: 저장 해제
 shareCourseLabel: 이 과정 공유
+shareSheetTitle: 공유
+shareCopyLink: 링크 복사
+shareInstagramStory: IG 스토리
+shareFacebookStory: FB 스토리
+shareMore: 더보기
+shareLinkCopiedShort: 복사됨
+shareLinkCopied: 링크를 복사했어요.
+shareStoryBadge: 이걸 배우는 중
+shareStoryFooter: MeUp · 실력을 키우세요
+shareOpenInApp: MeUp에서 열기
 cardSavedToast: 카드에 저장했어요
 cardRemovedToast: 저장을 해제했어요
 courseSavedToast: 라이브러리에 저장했어요

@@ -43,6 +43,16 @@ courseOptionsLabel: More options
 saveCourseLabel: Save this course
 unsaveCourseLabel: Remove from saved
 shareCourseLabel: Share this course
+shareSheetTitle: Share
+shareCopyLink: Copy link
+shareInstagramStory: IG Story
+shareFacebookStory: FB Story
+shareMore: More
+shareLinkCopiedShort: Copied
+shareLinkCopied: Link copied.
+shareStoryBadge: I'm learning this
+shareStoryFooter: MeUp · Up your skills
+shareOpenInApp: Open in MeUp
 cardSavedToast: Saved to your cards
 cardRemovedToast: Removed from saved
 courseSavedToast: Saved to your library

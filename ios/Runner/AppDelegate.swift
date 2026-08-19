@@ -5,6 +5,7 @@ import UIKit
 @objc class AppDelegate: FlutterAppDelegate {
   private var tikTokPlugin: TikTokPlugin?
   private var liveActivityChannel: LiveActivityChannel?
+  private var storyShareChannel: StoryShareChannel?
 
   override func application(
     _ application: UIApplication,
@@ -17,6 +18,7 @@ import UIKit
     if let controller = window?.rootViewController as? FlutterViewController {
       tikTokPlugin = TikTokPlugin(controller: controller)
       liveActivityChannel = LiveActivityChannel(messenger: controller.binaryMessenger)
+      storyShareChannel = StoryShareChannel(messenger: controller.binaryMessenger)
     } else {
       NSLog("[AppDelegate] ⚠️ FlutterViewController not found")
     }

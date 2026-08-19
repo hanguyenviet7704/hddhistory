@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scoped to the one cache subfolder StoryShareChannel writes into, so the
+     grant can never expose the rest of the app's cache. -->
+<paths>
+  <cache-path name="story_share" path="story_share/" />
+</paths>

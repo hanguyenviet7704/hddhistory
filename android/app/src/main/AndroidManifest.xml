@@ -123,6 +123,19 @@
         <data android:scheme="tiktok-7532723286929621000"/>
       </intent-filter>
     </activity>
+
+    <!-- Serves the story PNG to Instagram/Facebook as a content:// URI.
+         Its own authority rather than share_plus's, so this does not depend on
+         a plugin's internal naming. Paths are scoped in story_share_paths.xml. -->
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.storyshare"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/story_share_paths" />
+    </provider>
   </application>
   <queries>
     <intent>
@@ -142,6 +155,20 @@
     <!-- If your application checks for inAppBrowserView launch mode support -->
     <intent>
       <action android:name="android.support.customtabs.action.CustomTabsService"/>
+    </intent>
+  </queries>
+
+  <!-- Android 11+ package visibility. resolveActivity returns null for these
+       apps without an explicit query, which would make the Story buttons
+       report "not installed" on every device. -->
+  <queries>
+    <intent>
+      <action android:name="com.instagram.share.ADD_TO_STORY" />
+      <data android:mimeType="image/png" />
+    </intent>
+    <intent>
+      <action android:name="com.facebook.stories.ADD_TO_STORY" />
+      <data android:mimeType="image/png" />
     </intent>
   </queries>
 </manifest>

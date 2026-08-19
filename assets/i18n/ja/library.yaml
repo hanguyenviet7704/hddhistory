@@ -40,6 +40,16 @@ courseOptionsLabel: その他の操作
 saveCourseLabel: このコースを保存
 unsaveCourseLabel: 保存を解除
 shareCourseLabel: このコースを共有
+shareSheetTitle: シェア
+shareCopyLink: リンクをコピー
+shareInstagramStory: IGストーリー
+shareFacebookStory: FBストーリー
+shareMore: その他
+shareLinkCopiedShort: コピー済み
+shareLinkCopied: リンクをコピーしました。
+shareStoryBadge: これを学習中
+shareStoryFooter: MeUp · スキルを伸ばそう
+shareOpenInApp: MeUpで開く
 cardSavedToast: カードに保存しました
 cardRemovedToast: 保存を解除しました
 courseSavedToast: ライブラリに保存しました

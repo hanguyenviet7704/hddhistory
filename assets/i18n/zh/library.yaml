@@ -40,6 +40,16 @@ courseOptionsLabel: 更多选项
 saveCourseLabel: 收藏这门课程
 unsaveCourseLabel: 取消收藏
 shareCourseLabel: 分享这门课程
+shareSheetTitle: 分享
+shareCopyLink: 复制链接
+shareInstagramStory: IG 快拍
+shareFacebookStory: FB 限时动态
+shareMore: 更多
+shareLinkCopiedShort: 已复制
+shareLinkCopied: 已复制链接。
+shareStoryBadge: 我在学这个
+shareStoryFooter: MeUp · 提升你的技能
+shareOpenInApp: 在 MeUp 中打开
 cardSavedToast: 已保存到你的卡片
 cardRemovedToast: 已取消收藏
 courseSavedToast: 已保存到学习库

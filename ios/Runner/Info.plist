@@ -79,6 +79,11 @@
     <false/>
     <key>LSApplicationQueriesSchemes</key>
     <array>
+      <!-- Story hand-off targets. canOpenURL returns false for any scheme not
+           listed here, so omitting these makes the IG/FB Story buttons look
+           like the apps are never installed. -->
+      <string>instagram-stories</string>
+      <string>facebook-stories</string>
       <string>sms</string>
       <string>tel</string>
       <string>fb</string>
