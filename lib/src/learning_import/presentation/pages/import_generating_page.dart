@@ -50,8 +50,6 @@ class _ImportGeneratingPageState extends State<ImportGeneratingPage>
         }
       },
       builder: (context, state) {
-        final percent = state.job?.percent ?? 0;
-
         return Scaffold(
           backgroundColor: AppCustomColor.backgroundGray,
           body: SafeArea(
@@ -101,24 +99,9 @@ class _ImportGeneratingPageState extends State<ImportGeneratingPage>
                           maxLines: 3,
                         ),
                         30.verticalSpace,
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(99.r),
-                          child: LinearProgressIndicator(
-                            value: percent / 100,
-                            minHeight: 10.h,
-                            backgroundColor: const Color(0xFFEDF0F5),
-                            valueColor: const AlwaysStoppedAnimation(
-                              AppCustomColor.brandPrimary,
-                            ),
-                          ),
-                        ),
-                        12.verticalSpace,
-                        AppText(
-                          l10n.generatingPercent(percent: percent),
-                          style: AppStyle.textBold12.copyWith(
-                            fontSize: 13.sp,
-                            color: AppCustomColor.brandPrimary,
-                          ),
+                        ImportProgressBar(
+                          minHeight: 10.h,
+                          showLabel: true,
                         ),
                       ],
                     ),

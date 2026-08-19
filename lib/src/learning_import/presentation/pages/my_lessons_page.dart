@@ -112,7 +112,6 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
                                               .l10n
                                               .learningImport
                                               .generatingTitle,
-                                    percent: job.percent,
                                   );
                                 }
 
@@ -382,10 +381,9 @@ class _LessonCard extends StatelessWidget {
 /// but with the document mark instead of a cover — there is no lesson yet to
 /// have a picture of — and a bar where the progress line goes.
 class _GeneratingCard extends StatelessWidget {
-  const _GeneratingCard({required this.title, required this.percent});
+  const _GeneratingCard({required this.title});
 
   final String title;
-  final int percent;
 
   @override
   Widget build(BuildContext context) {
@@ -430,19 +428,7 @@ class _GeneratingCard extends StatelessWidget {
                 8.verticalSpace,
                 Row(
                   children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(99.r),
-                        child: LinearProgressIndicator(
-                          value: percent / 100,
-                          minHeight: 6.h,
-                          backgroundColor: const Color(0xFFEDF0F5),
-                          valueColor: const AlwaysStoppedAnimation(
-                            AppCustomColor.brandPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
+                    Expanded(child: ImportProgressBar(minHeight: 6.h)),
                     9.horizontalSpace,
                     AppText(
                       context.l10n.learningImport.statusCreating,

@@ -1,5 +1,8 @@
 library;
 
+//* Dart imports
+import 'dart:math' as math;
+
 //* Single project import
 // Also re-exports dart:async (Timer), modal_bottom_sheet, file_picker and
 // flutter_bloc — importing those directly here is flagged as redundant.
@@ -43,6 +46,7 @@ part 'domain/usecases/request_user_lesson_additional_content_usecase.dart';
 
 //* Presentation Layer - Cubits + States
 part 'presentation/cubits/learning_import_state.dart';
+part 'presentation/cubits/import_progress_creep.dart';
 part 'presentation/cubits/learning_import_cubit.dart';
 part 'presentation/cubits/user_lesson_state.dart';
 part 'presentation/cubits/user_lesson_cubit.dart';
@@ -55,6 +59,7 @@ part 'presentation/pages/import_generating_page.dart';
 
 //* Presentation Layer - Shell host
 part 'presentation/widgets/import_done_popup_host.dart';
+part 'presentation/widgets/import_progress_bar.dart';
 part 'presentation/widgets/import_progress_toast.dart';
 part 'presentation/widgets/import_ticket_popups.dart';
 part 'presentation/widgets/mock_lesson_artwork.dart';

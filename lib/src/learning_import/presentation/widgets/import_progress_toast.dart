@@ -54,7 +54,6 @@ class _ToastCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n.learningImport;
     final done = state.isFinished;
-    final percent = state.job?.percent ?? 0;
 
     return Material(
       color: Colors.transparent,
@@ -100,17 +99,7 @@ class _ToastCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   6.verticalSpace,
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(99.r),
-                    child: LinearProgressIndicator(
-                      value: done ? 1 : percent / 100,
-                      minHeight: 6.h,
-                      backgroundColor: const Color(0xFFEDF0F5),
-                      valueColor: const AlwaysStoppedAnimation(
-                        AppCustomColor.brandPrimary,
-                      ),
-                    ),
-                  ),
+                  ImportProgressBar(minHeight: 6.h),
                 ],
               ),
             ),

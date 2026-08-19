@@ -33,6 +33,10 @@ class LearningImportCubit extends Cubit<LearningImportState>
 
   Timer? _pollTimer;
 
+  /// What the progress bars draw. Owned here, not by either bar, because the
+  /// reader moves between them mid-job — see [ImportProgressCreep].
+  final ImportProgressCreep progress = ImportProgressCreep();
+
   /// Resolved on use rather than injected: this cubit's constructor is generated
   /// into the DI graph, and the store is a lazy singleton anyway (same pattern as
   /// [UserCubit]).
@@ -63,6 +67,7 @@ class LearningImportCubit extends Cubit<LearningImportState>
   void reset() {
     _pollTimer?.cancel();
     _pollTimer = null;
+    progress.restart();
     emit(LearningImportState.initial().copyWith(quota: state.quota));
   }
 
@@ -125,6 +130,9 @@ class LearningImportCubit extends Cubit<LearningImportState>
           errorMessage: error,
         )),
         onSuccess: (job) {
+          // A new run starts from empty, whatever the last one left behind.
+          progress.restart();
+          _feedProgress(job);
           emit(state.copyWith(status: LearningImportStatus.success, job: job, toastDismissed: false));
           // Written before the first poll, not after: the app can be killed
           // during the very first seconds of a run too.
@@ -146,6 +154,7 @@ class LearningImportCubit extends Cubit<LearningImportState>
       // again, and one flaky request must not look like a failed import.
       (_) => null,
       (job) {
+        _feedProgress(job);
         emit(state.copyWith(job: job, errorCode: job.errorCode));
 
         if (!job.isRunning) {
@@ -199,13 +208,25 @@ class LearningImportCubit extends Cubit<LearningImportState>
   void dismissToast() => emit(state.copyWith(toastDismissed: true));
 
   void watchJob(LearningImportJobEntity job) {
+    // Coming back to a job already in flight: the bar has no history to
+    // continue from, so it fills into the phase the job is already in rather
+    // than replaying the phases it missed.
+    progress.restart();
+    _feedProgress(job);
     emit(state.copyWith(job: job, status: LearningImportStatus.success));
     if (job.isRunning) _startPolling(job.id);
   }
 
+  /// Hand the bars the one thing they need off a job: which phase it is in.
+  void _feedProgress(LearningImportJobEntity job) => progress.onJob(
+    serverPercent: job.isDone ? 100 : job.percent,
+    isFailed: job.isFailed,
+  );
+
   @override
   Future<void> close() {
     _pollTimer?.cancel();
+    progress.dispose();
     return super.close();
   }
 }
