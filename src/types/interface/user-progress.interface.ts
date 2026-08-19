@@ -225,3 +225,26 @@ export interface ExportAllUserProgressResponse {
   finishedAt: Date;
   cooldownRemainingMs: number;
 }
+
+/** Một điểm dừng trong histogram drop-off (gộp toàn bộ user của một khoá). */
+export interface ICourseDropOffRow {
+  lessonId: string;
+  /** Null khi lesson đã bị xoá — user vẫn kẹt ở đó nên hàng vẫn được đếm. */
+  lessonTitle: ITranslation | null;
+  lessonType: string | null;
+  /** Null với lesson không có keypoint (video) — dừng ở mức lesson. */
+  keypointId: string | null;
+  keypointTitle: ITranslation | null;
+  count: number;
+}
+
+export interface ICourseDropOff {
+  courseId: string;
+  staleDays: number;
+  /** Tổng user có progress ở khoá này (mọi trạng thái). */
+  totalInProgress: number;
+  /** Số user tính là "dừng hẳn" theo staleDays — mẫu số của các %. */
+  totalStuck: number;
+  /** Đã xếp theo count giảm dần: chỗ mất nhiều người nhất đứng đầu. */
+  rows: ICourseDropOffRow[];
+}

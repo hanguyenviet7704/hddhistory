@@ -5,6 +5,7 @@ import {
   RemoveUserProgress,
   StatisticsUsersLearningCoursesQuery,
   UserProgressListQuery,
+  ICourseDropOff,
 } from "../types/interface/user-progress.interface";
 import axiosClient from "./axiosClient";
 
@@ -39,6 +40,22 @@ export const userProgressService = {
   async exportAllUserProgress(): Promise<ExportAllUserProgressResponse> {
     const res = await axiosClient.post(`/courses-user-progress/export`);
     return res.data;
+  },
+
+  /**
+   * Histogram điểm dừng của MỘT khoá học, gộp trên toàn bộ user — đọc từ
+   * `user_progress.stopAt` phía server, không phải từ event nào của app, nên
+   * phủ mọi user từ trước tới nay và không có TTL.
+   */
+  async getCourseDropOff(params: {
+    courseId: string;
+    /** Số ngày không hoạt động để tính là "dừng hẳn". 0 = đếm tất cả. */
+    staleDays?: number;
+  }): Promise<ICourseDropOff> {
+    const res = await axiosClient.get(`/courses-user-progress/drop-off`, {
+      params,
+    });
+    return res.data?.data ?? res.data;
   },
 
   async statisticsUsersLearningCourses(

@@ -12,6 +12,7 @@ import CourseDetail from "../pages/courses/CourseDetail";
 import KeypointList from "../pages/keypoints/KeypointList";
 import UserProgressSummaryList from "../pages/user-progress/UserProgressSummaryList";
 import UserProgressDetail from "../pages/user-progress/UserProgressDetail";
+import CourseDropOffPage from "../pages/user-progress/CourseDropOffPage";
 import TheoryList from "../pages/theories/TheoryList";
 import RoleplayList from "../pages/roleplays/RoleplayList";
 import RoleplayCreate from "../pages/roleplays/RoleplayCreate";
@@ -89,6 +90,7 @@ export default function AppRouter() {
                 element={<DashboardOnboarding />}
               />
               <Route path="dashboard/learning" element={<DashboardLearning />} />
+              <Route path="dashboard/drop-off" element={<CourseDropOffPage />} />
 
               <Route path="skillset" element={<SkillsetList />} />
 

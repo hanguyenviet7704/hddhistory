@@ -33,6 +33,7 @@ import {
   UserGroupIcon,
   PresentationChartLineIcon,
   DevicePhoneMobileIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -64,6 +65,9 @@ const menuGroups = [
       { name: "Phiên & Tương tác", icon: DevicePhoneMobileIcon, path: "/dashboard/sessions" },
       { name: "Funnel onboarding", icon: RocketLaunchIcon, path: "/dashboard/onboarding" },
       { name: "Hành vi học", icon: BookOpenIcon, path: "/dashboard/learning" },
+      // Gộp trên TOÀN BỘ user — khác trang User progress soi từng người. Trả
+      // lời câu hỏi biên tập: khoá nào đang làm rơi người học ở keypoint nào.
+      { name: "Điểm dừng khoá học", icon: MapPinIcon, path: "/dashboard/drop-off" },
       // Moved here from Operations: it is the same question as the rest of
       // this group. The route is unchanged so saved links still work.
       { name: "Tiến trình khoá", icon: ChartBarIcon, path: "/statistics" },
