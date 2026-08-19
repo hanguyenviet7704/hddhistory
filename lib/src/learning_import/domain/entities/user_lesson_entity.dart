@@ -212,6 +212,11 @@ abstract class UserLessonEntity with _$UserLessonEntity {
     /// the first frame instead of a stand-in that swaps when the keypoint
     /// lands. Empty on lessons generated before the server dealt these.
     @Default(<String>[]) List<String> plannedKeypointCoverUrls,
+
+    /// Whether the background still OWES this lesson narration — server-computed,
+    /// detail only. See [isDubbing] for why the app must not work this out for
+    /// itself from [contentStatus] or [audioStatus].
+    @Default(false) bool audioPending,
   }) = _UserLessonEntity;
 }
 
@@ -228,9 +233,20 @@ extension UserLessonEntityX on UserLessonEntity {
       audioStatus == UserLessonAudioStatusEntity.ready &&
       (audio?.isPlayable ?? false);
 
-  /// Narration is still being made. The card shows a quiet "đang tạo tiếng"
-  /// hint rather than a control that would do nothing.
-  bool get isDubbing => audioStatus == UserLessonAudioStatusEntity.processing;
+  /// Narration is still being made. The roadmap shows a quiet "Đang lồng tiếng…"
+  /// line rather than a silent keypoint that looks finished.
+  ///
+  /// [audioPending] is what makes this true for the case that actually matters,
+  /// and neither of the two obvious signals can stand in for it. [audioStatus]
+  /// turns `ready` at the FIRST playable keypoint by design, so it says the dub
+  /// is done while most of the lesson is still silent. And `contentStatus` —
+  /// which the roadmap used to gate on — completes far earlier than the audio:
+  /// measured on dev, text was complete at +13s and the last keypoint dubbed at
+  /// about +9min. Gating on it meant the screen stopped watching a quarter of a
+  /// minute into a nine-minute job, so the narration that eventually landed was
+  /// never picked up and the reader concluded the feature had no sound at all.
+  bool get isDubbing =>
+      audioPending || audioStatus == UserLessonAudioStatusEntity.processing;
 
   /// Reading progress as a 0-100 int, for the card's label.
   ///
@@ -291,6 +307,18 @@ extension UserLessonEntityX on UserLessonEntity {
   /// and all (reported 2026-08-13, pre-deploy api-dev). Those open as ordinary
   /// silent keypoints, which the reader has always handled. Same reasoning for
   /// `failed`/`none` within the partial window: nothing is coming, don't wait.
+  /// Whether keypoint [index] has a narration file yet.
+  ///
+  /// Deliberately NOT part of [keypointReady]: a written keypoint is readable
+  /// with or without sound, and the dub trails the text by minutes. Blocking the
+  /// node until its audio lands would lock a finished lesson for a quarter of an
+  /// hour to protect a control the reader may not even want.
+  bool hasNarration(int index) {
+    final entry = audio?.forKeypoint(index);
+
+    return entry != null && entry.url.isNotEmpty;
+  }
+
   bool keypointReady(int index) {
     if (index < 0 || index >= keypoints.length) return false;
     if (!isContentPartial) return true;
@@ -308,7 +336,18 @@ extension UserLessonEntityX on UserLessonEntity {
   }
 
   /// Whether the roadmap still has anything to wait for. Drives the refetch
-  /// loop — and therefore MUST go false the moment the body is complete, or a
-  /// lesson with permanent narration holes polls the API forever.
-  bool get isStillMaterializing => isContentPartial;
+  /// loop.
+  ///
+  /// Body OR narration: text completing is not the end of the job, it is barely
+  /// the start of it — the dub runs minutes past the last keypoint's text (dev:
+  /// +13s vs ~+9min). Tying this to [isContentPartial] alone is what made the
+  /// screen stop watching while three of four keypoints were still silent, and
+  /// no later refetch ever came.
+  ///
+  /// It still cannot poll forever, and it doesn't: [audioPending] is false unless
+  /// the server itself says the background owes narration, which it only does for
+  /// a lesson the completion sweep still has in scope. A pre-pipeline lesson with
+  /// permanent holes reports false and is left alone, which is the case the
+  /// content-only gate existed to protect.
+  bool get isStillMaterializing => isContentPartial || audioPending;
 }

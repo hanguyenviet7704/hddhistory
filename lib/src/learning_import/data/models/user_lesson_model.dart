@@ -131,6 +131,10 @@ abstract class UserLessonModel with _$UserLessonModel {
     UserLessonContentStatusEntity contentStatus,
     @Default(<String>[]) List<String> plannedKeypointTitles,
     @Default(<String>[]) List<String> plannedKeypointCoverUrls,
+    // Absent on the list response and on an API older than the field; false is
+    // the safe default — it means "nothing more is coming", which is exactly
+    // what a lesson outside the progressive pipeline should report.
+    @Default(false) bool audioPending,
   }) = _UserLessonModel;
 
   factory UserLessonModel.fromJson(Map<String, dynamic> json) =>
@@ -227,6 +231,7 @@ extension UserLessonModelX on UserLessonModel {
     contentStatus: contentStatus,
     plannedKeypointTitles: plannedKeypointTitles,
     plannedKeypointCoverUrls: plannedKeypointCoverUrls,
+    audioPending: audioPending,
   );
 
   /// The body, whichever era the server is from.

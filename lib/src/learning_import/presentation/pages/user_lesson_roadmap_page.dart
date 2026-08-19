@@ -42,27 +42,45 @@ class _UserLessonRoadmapPageState extends State<UserLessonRoadmapPage> {
     super.dispose();
   }
 
+  /// The interval currently armed, so a cadence change can be noticed.
+  Duration? _refreshEvery;
+
   /// Keep the poll alive exactly while the lesson is still materializing.
   ///
-  /// 8 seconds: one keypoint takes tens of seconds to write and dub, so this is
-  /// tight enough that a node flips soon after it is ready and loose enough
-  /// that a lesson left open on this screen costs a handful of list-price GETs
-  /// a minute, not a stampede.
+  /// Two cadences, because the two things being waited on move at completely
+  /// different speeds. Keypoint TEXT arrives every few seconds, so 8s keeps a
+  /// node flipping visible while costing a handful of GETs a minute. Narration
+  /// arrives on the order of MINUTES (dev: last keypoint at ~+9min), and polling
+  /// that at 8s would be ~70 requests to learn one thing — so once the body is
+  /// complete and only the dub is outstanding, back off to 30s.
+  static const Duration _writingInterval = Duration(seconds: 8);
+  static const Duration _dubbingInterval = Duration(seconds: 30);
+
   void _syncRefreshTimer(UserLessonEntity? lesson) {
     final wants =
         lesson != null &&
         lesson.id == widget.lessonId &&
         lesson.isStillMaterializing;
 
-    if (wants && _refreshTimer == null) {
-      _refreshTimer = Timer.periodic(const Duration(seconds: 8), (_) {
-        if (!mounted) return;
-        unawaited(context.read<UserLessonCubit>().openLesson(widget.lessonId));
-      });
-    } else if (!wants && _refreshTimer != null) {
+    if (!wants) {
       _refreshTimer?.cancel();
       _refreshTimer = null;
+      _refreshEvery = null;
+
+      return;
     }
+
+    final every = lesson.isContentPartial ? _writingInterval : _dubbingInterval;
+    // Already polling at the right cadence — leave the timer alone rather than
+    // restarting it, or a rebuild would keep pushing the next tick away.
+    if (_refreshTimer != null && _refreshEvery == every) return;
+
+    _refreshTimer?.cancel();
+    _refreshEvery = every;
+    _refreshTimer = Timer.periodic(every, (_) {
+      if (!mounted) return;
+      unawaited(context.read<UserLessonCubit>().openLesson(widget.lessonId));
+    });
   }
 
   /// Into the deck, at [keypointIndex].
@@ -254,6 +272,11 @@ class _RoadmapBody extends StatelessWidget {
                           isFirst: index == 0,
                           isLast: index == totalNodes - 1,
                           onTap: () => onOpenKeypoint(index),
+                          // Readable, but still owed its narration.
+                          dubPending:
+                              lesson.isDubbing &&
+                              lesson.keypointReady(index) &&
+                              !lesson.hasNarration(index),
                         ),
                       // End of the road: the catalogue asks the same question
                       // when a level runs out of content, and a generated lesson
@@ -571,6 +594,7 @@ class _RoadmapNode extends StatelessWidget {
     required this.isFirst,
     required this.isLast,
     required this.onTap,
+    this.dubPending = false,
   });
 
   final String title;
@@ -587,6 +611,14 @@ class _RoadmapNode extends StatelessWidget {
   final bool isFirst;
   final bool isLast;
   final VoidCallback onTap;
+
+  /// This keypoint is readable but its narration has not landed yet.
+  ///
+  /// Says so out loud rather than leaving the node looking finished: the dub
+  /// trails the text by minutes, and a keypoint that opens in silence with no
+  /// explanation is exactly what "tính năng này không có tiếng" is made of. The
+  /// node stays tappable — the lesson is readable now.
+  final bool dubPending;
 
   @override
   Widget build(BuildContext context) {
@@ -616,6 +648,7 @@ class _RoadmapNode extends StatelessWidget {
           title: title,
           artwork: artwork,
           state: state,
+          dubPending: dubPending,
           // A locked step is not tappable, the same way a locked lesson is not.
           // Greying it and then opening it anyway would teach the reader that
           // the lock means nothing. A generating step even less so — there is
@@ -712,12 +745,18 @@ class _NodeCard extends StatelessWidget {
     required this.artwork,
     required this.state,
     required this.onTap,
+    this.dubPending = false,
   });
 
   final String title;
   final String artwork;
   final _NodeState state;
   final VoidCallback? onTap;
+
+  /// Readable, narration still coming — see [_RoadmapNode.dubPending]. Only the
+  /// caption reacts to it: the card keeps its normal, un-greyed treatment
+  /// because the step really is open.
+  final bool dubPending;
 
   /// Grayscale, lifted verbatim from `_RoadmapCardThumbnail` so a locked step
   /// here and a locked lesson there fade by exactly the same amount.
@@ -829,10 +868,12 @@ class _NodeCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (state == _NodeState.generating) ...[
+                      if (state == _NodeState.generating || dubPending) ...[
                         4.verticalSpace,
                         AppText(
-                          context.l10n.learningImport.statusCreating,
+                          state == _NodeState.generating
+                              ? context.l10n.learningImport.statusCreating
+                              : context.l10n.learningImport.stageDubbing,
                           style: AppStyle.text12.copyWith(
                             color: AppCustomColor.textTertiary,
                           ),

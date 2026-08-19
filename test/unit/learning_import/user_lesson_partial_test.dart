@@ -127,8 +127,8 @@ void main() {
     });
 
     test(
-      'false when complete even with narration holes — polling a server that '
-      'will never fill them is a battery drain, not hope',
+      'false when complete with narration holes the server does NOT own — '
+      'polling a server that will never fill them is a battery drain, not hope',
       () {
         final lesson = UserLessonEntity(
           keypoints: [_keypoint('A'), _keypoint('B')],
@@ -138,6 +138,31 @@ void main() {
         );
 
         expect(lesson.isStillMaterializing, isFalse);
+      },
+    );
+
+    test(
+      'TRUE when complete but the server says narration is still owed — text '
+      'finishes minutes before the dub, and giving up at contentStatus is how '
+      'the reader ended up with a lesson that had no sound at all',
+      () {
+        final lesson = UserLessonEntity(
+          keypoints: [_keypoint('A'), _keypoint('B')],
+          contentStatus: UserLessonContentStatusEntity.complete,
+          // `ready` means ">= 1 keypoint playable", not "all dubbed" — which is
+          // exactly why it cannot be the signal.
+          audioStatus: UserLessonAudioStatusEntity.ready,
+          audio: UserLessonAudioEntity(keypoints: [_audio(0)]),
+          audioPending: true,
+        );
+
+        expect(lesson.isStillMaterializing, isTrue);
+        expect(lesson.isDubbing, isTrue);
+        // Readable NOW, sound later: the node must not lock for the minutes the
+        // dub takes.
+        expect(lesson.keypointReady(1), isTrue);
+        expect(lesson.hasNarration(0), isTrue);
+        expect(lesson.hasNarration(1), isFalse);
       },
     );
 
