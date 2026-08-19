@@ -16,7 +16,15 @@ class QueuedKeypointNarration {
     required this.imageUrl,
     required this.url,
     required this.timeline,
+    this.preludeSlots = 0,
   });
+
+  /// Số slot CHUYỂN TIẾP đứng trước file merged của keypoint này trong
+  /// playlist (khoảng ngắt + chime, và clip "Tiếp theo: <tên>" nếu có).
+  /// [LessonAudioCubit._onSlotChanged] phải tiêu hết số slot này rồi mới
+  /// adopt — mỗi entry không còn là đúng một slot nữa, và quên đếm prelude là
+  /// FIFO lệch: cue map của keypoint sau bị gán cho đoạn chime.
+  final int preludeSlots;
 
   final String keypointId;
   final String title;

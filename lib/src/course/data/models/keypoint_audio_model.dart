@@ -12,6 +12,9 @@ abstract class KeypointAudioModel with _$KeypointAudioModel {
     /// One merged theory-narration file per language — see
     /// [KeypointAudioEntity.merged].
     Map<String, MergedKeypointAudioModel>? merged,
+
+    /// Clip "Tiếp theo: <tên>" mỗi ngôn ngữ — see [KeypointAudioEntity.nextUp].
+    BaseMultiLanguage? nextUp,
   }) = _KeypointAudioModel;
 
   factory KeypointAudioModel.fromJson(Map<String, dynamic> json) => _$KeypointAudioModelFromJson(json);
@@ -46,6 +49,7 @@ extension KeypointAudioModelExtension on KeypointAudioModel {
     text: text,
     segments: segments,
     merged: merged?.map((lang, model) => MapEntry(lang, model.toEntity())),
+    nextUp: nextUp,
   );
 }
 

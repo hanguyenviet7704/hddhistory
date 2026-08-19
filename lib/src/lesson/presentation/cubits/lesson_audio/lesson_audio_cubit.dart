@@ -103,6 +103,17 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// loaded it. Cleared the moment a load takes the player somewhere else.
   String _hoppedKeypointId = '';
 
+  /// Chime vào bài đã kêu cho keypoint này chưa — reset ở [configure] (mỗi
+  /// keypoint kêu đúng một lần) và set sẵn true khi chain hop ([
+  /// _adoptQueuedNarration]): ở đó chime đã phát bằng slot playlist rồi, kêu
+  /// thêm lần nữa là hai tiếng chuông cho một bài.
+  bool _entryCuePlayed = false;
+
+  /// Số slot chuyển tiếp còn phải tiêu của ENTRY ĐẦU trong [_queuedTail]
+  /// trước khi adopt nó. -1 = chưa nạp từ entry (nạp lười trong
+  /// [_onSlotChanged] vì entry đầu thay đổi khi FIFO pop).
+  int _headPreludeRemaining = -1;
+
   /// Whether [keypointId] is playing because the chain hopped into it. The ONLY
   /// case where `LessonPage` must adopt the refreshed entity instead of
   /// configuring it.
@@ -134,7 +145,36 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     if (merged == null || !merged.isUsable) return false;
 
     final title = keypoint.title.text;
+    // Đoạn chuyển tiếp đứng TRƯỚC file merged, vẫn là playlist item để platform
+    // tự bước qua (không Dart nào ở ranh giới): khoảng ngắt + chime từ asset,
+    // rồi clip "Tiếp theo: <tên>" nếu keypoint đã có. Clip vắng thì chain vẫn
+    // nguyên vẹn — chỉ thiếu lời giới thiệu.
+    final nextUpUrl = keypoint.audio?.resolvedNextUpUrl ?? '';
+    var preludeSlots = 0;
     try {
+      await _handler.appendAssetItem(
+        assetPath: 'assets/audio/narration_gap.m4a',
+        id: '${keypoint.id}-gap',
+        title: title,
+        artUri: keypoint.image,
+      );
+      preludeSlots++;
+      await _handler.appendAssetItem(
+        assetPath: 'assets/audio/keypoint_chime.m4a',
+        id: '${keypoint.id}-chime',
+        title: title,
+        artUri: keypoint.image,
+      );
+      preludeSlots++;
+      if (nextUpUrl.isNotEmpty) {
+        await _handler.appendItem(
+          url: nextUpUrl,
+          id: '${keypoint.id}-nextup',
+          title: title,
+          artUri: keypoint.image,
+        );
+        preludeSlots++;
+      }
       await _handler.appendItem(
         url: merged.url,
         id: keypoint.id,
@@ -162,6 +202,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         imageUrl: keypoint.image,
         url: merged.url,
         timeline: MergedNarrationTimeline(merged),
+        preludeSlots: preludeSlots,
       ),
     );
     return true;
@@ -172,6 +213,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   Future<void> dropQueuedTail() async {
     if (_queuedTail.isEmpty) return;
     _queuedTail.clear();
+    _headPreludeRemaining = -1;
     try {
       await _handler.dropTailAfterCurrent();
     } catch (_) {
@@ -192,11 +234,22 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // Deliberately does not advance `_playedSlot`: a stale slot recorded here
     // would read as "already accounted for" and swallow the first real hop.
     if (_queuedTail.isEmpty) return;
-    // One step per slot: a queue is only ever appended to one keypoint ahead, so
-    // this normally runs exactly once, but a slot jump must never desync the FIFO.
+    // Mỗi entry giờ chiếm 1 + preludeSlots slot (ngắt, chime, giới thiệu, rồi
+    // file merged). Adopt CHỈ khi bước vào slot merged — trong các slot chuyển
+    // tiếp, state/cue map vẫn thuộc keypoint đang rời đi: adopt sớm là position
+    // của đoạn chime bị map vào cue map keypoint sau, và resume-persist ghi vị
+    // trí rác.
     while (_playedSlot < slot && _queuedTail.isNotEmpty) {
       _playedSlot++;
+      if (_headPreludeRemaining < 0) {
+        _headPreludeRemaining = _queuedTail.first.preludeSlots;
+      }
+      if (_headPreludeRemaining > 0) {
+        _headPreludeRemaining--;
+        continue;
+      }
       _adoptQueuedNarration(_queuedTail.removeAt(0));
+      _headPreludeRemaining = -1;
     }
     _playedSlot = slot;
   }
@@ -204,6 +257,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   void _adoptQueuedNarration(QueuedKeypointNarration queued) {
     final leftKeypointId = state.keypointId;
     _hoppedKeypointId = queued.keypointId;
+    // Chime của keypoint này đã phát bằng slot chuyển tiếp trong playlist.
+    _entryCuePlayed = true;
     _timeline = queued.timeline;
     // A different keypoint's clip universe. The deck supplies a fresh set once
     // its learning items land (`LessonPage._syncAudioKeypoint`'s adopt branch);
@@ -461,6 +516,8 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // over: the load below replaces the whole playlist, so the tail would name
     // slots that no longer exist.
     _queuedTail.clear();
+    _headPreludeRemaining = -1;
+    _entryCuePlayed = false;
     // Merged-first: one file for the whole keypoint when the backend has it,
     // else first card's clip when dubbed per card, else the legacy single file.
     final mergedAudio = keypoint.resolvedMergedAudio;
@@ -528,6 +585,16 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // through here on every entity refresh and silently wipe the reader's
     // mute ("tap card cuối tự bật tiếng", 2026-08-09 [MuteDbg]).
     if (autoplay) _setPausedByUser(false, 'enterAudioMode');
+    // Âm báo hiệu vào bài — "dạo đầu mỗi keypoint". Chỉ ở cú vào ĐẦU TIÊN
+    // (resume giữa chừng qua startAt không phải một sự bắt đầu), qua player
+    // phụ nên không đụng playlist/cue map của phiên chính. Fire-and-forget:
+    // narration không chờ chime, lời mở màn đè lên đuôi decay như intro
+    // podcast — thêm một tầng timing vào vùng này là mời lại đúng lớp bug
+    // "configure ăn mất _playWhenReady".
+    if (autoplay && startAt == null && !_entryCuePlayed) {
+      _entryCuePlayed = true;
+      unawaited(_handler.playEntryCue());
+    }
     if (!state.hasUsableSource) {
       emit(
         state.copyWith(

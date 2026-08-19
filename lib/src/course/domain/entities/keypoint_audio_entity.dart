@@ -18,6 +18,12 @@ abstract class KeypointAudioEntity with _$KeypointAudioEntity {
     /// until they are re-dubbed.
     Map<String, List<String>>? segments,
 
+    /// Câu giới thiệu "Tiếp theo: <tên keypoint>" đã TTS, mỗi ngôn ngữ một
+    /// clip — phát ở đoạn chuyển tiếp khi nghe nền tự nối sang keypoint này.
+    /// Absent trên keypoint chưa backfill: chain vẫn chạy, chỉ thiếu lời giới
+    /// thiệu (còn nguyên chime + khoảng ngắt).
+    BaseMultiLanguage? nextUp,
+
     /// The keypoint's THEORY narration as one concatenated file per language,
     /// with a cue map carrying card IDENTITY (learningItemId + documentIndex)
     /// — the backend's authoritative answer to "which second reads which
@@ -88,6 +94,12 @@ extension KeypointAudioEntityExtension on KeypointAudioEntity {
   /// The merged whole-keypoint narration for the active locale, or null when
   /// this keypoint has not been merged yet (then callers stay on the per-card
   /// path). Same locale fallback order as [resolvedSegments].
+  /// Clip "Tiếp theo: <tên>" cho locale đang dùng, '' khi chưa có.
+  /// `BaseMultiLanguage.text` đã mang đúng thứ tự ưu tiên + fallback locale —
+  /// một keypoint backfill một nửa vẫn giới thiệu được bằng ngôn ngữ khác,
+  /// còn hơn im lặng.
+  String get resolvedNextUpUrl => nextUp?.text ?? '';
+
   MergedKeypointAudioEntity? get resolvedMerged {
     final byLanguage = merged;
     if (byLanguage == null || byLanguage.isEmpty) return null;

@@ -25,6 +25,8 @@ class _ScriptedHandler extends Fake implements LessonAudioHandler {
 
   final List<String> appended = [];
   final List<Duration?> appendedDurations = [];
+  final List<String> appendedAssets = [];
+  int entryCues = 0;
   ({String id, String title, Duration? duration})? publishedItem;
   int dropTailCalls = 0;
   int slot = 0;
@@ -71,6 +73,23 @@ class _ScriptedHandler extends Fake implements LessonAudioHandler {
   }) async {
     appended.add(id);
     appendedDurations.add(duration);
+  }
+
+  @override
+  Future<void> appendAssetItem({
+    required String assetPath,
+    required String id,
+    required String title,
+    required String artUri,
+  }) async {
+    appended.add(id);
+    appendedDurations.add(null);
+    appendedAssets.add(assetPath);
+  }
+
+  @override
+  Future<void> playEntryCue() async {
+    entryCues++;
   }
 
   @override
@@ -157,10 +176,13 @@ void main() {
       final cubit = await startedOn(keypoint('kp-1'));
 
       expect(await cubit.appendKeypoint(keypoint('kp-2')), isTrue);
-      expect(handler.appended, ['kp-2']);
+      // Đoạn chuyển tiếp đứng trước file merged: ngắt + chime (asset), rồi
+      // merged. Keypoint test này chưa có clip "Tiếp theo" nên không có slot đó.
+      expect(handler.appended, ['kp-2-gap', 'kp-2-chime', 'kp-2']);
+      expect(handler.appendedAssets, ['assets/audio/narration_gap.m4a', 'assets/audio/keypoint_chime.m4a']);
       // The whole-file length rides along from the cue map, so the lock screen
       // keeps a scrubber total across the hop.
-      expect(handler.appendedDurations, [const Duration(milliseconds: 60000)]);
+      expect(handler.appendedDurations.last, const Duration(milliseconds: 60000));
       expect(cubit.hasQueuedNext, isTrue);
       // The keypoint playing is untouched — that is the whole point of appending
       // rather than switching sources.
@@ -172,7 +194,13 @@ void main() {
       await cubit.appendKeypoint(keypoint('kp-2'));
 
       final hop = expectLater(cubit.keypointHops, emits((from: 'kp-1', to: 'kp-2')));
+      // Slot 1-2 là ngắt + chime: đi qua chúng KHÔNG được adopt — cue map của
+      // kp-2 mà gán cho đoạn chime là position rác. Merged nằm ở slot 3.
       handler.moveToSlot(1);
+      handler.moveToSlot(2);
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.keypointId, 'kp-1', reason: 'prelude slots must not adopt');
+      handler.moveToSlot(3);
       await hop;
 
       expect(cubit.state.keypointId, 'kp-2');
@@ -223,7 +251,7 @@ void main() {
       await cubit.appendKeypoint(keypoint('kp-2'));
 
       final hop = expectLater(cubit.keypointHops, emits((from: 'kp-1', to: 'kp-2')));
-      handler.moveToSlot(1);
+      handler.moveToSlot(3);
       await hop;
 
       expect(cubit.isQueueHoppedKeypoint('kp-2'), isTrue);
@@ -237,7 +265,7 @@ void main() {
       expect(await cubit.appendKeypoint(keypoint('kp-2')), isFalse);
       expect(await cubit.appendKeypoint(keypoint('kp-1')), isFalse, reason: 'the keypoint playing is not its own successor');
       expect(await cubit.appendKeypoint(keypoint('kp-3', dubbed: false)), isFalse);
-      expect(handler.appended, ['kp-2']);
+      expect(handler.appended, ['kp-2-gap', 'kp-2-chime', 'kp-2']);
     });
 
     test('dropping the tail leaves the keypoint in flight alone', () async {

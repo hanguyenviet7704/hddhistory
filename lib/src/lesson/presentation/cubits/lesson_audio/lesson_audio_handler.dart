@@ -161,6 +161,45 @@ class LessonAudioHandler extends BaseAudioHandler with SeekHandler {
   /// has walked out of one keypoint's merged file and into the next one's.
   Stream<int?> get currentIndexStream => _player.currentIndexStream;
 
+  /// Player phụ CHỈ cho âm báo hiệu vào bài — tách khỏi [_player] để chime
+  /// không đụng vào playlist/position/cue map của phiên narration đang chạy
+  /// (mọi logic đồng bộ card đều đọc từ [_player], và một item chèn vào đó là
+  /// một slot làm lệch số học FIFO của chain). Lazy vì đa số phiên đọc-không-
+  /// nghe chẳng bao giờ cần nó.
+  just_audio.AudioPlayer? _cuePlayer;
+
+  /// Phát âm báo hiệu vào keypoint, fire-and-forget.
+  ///
+  /// Không await hết clip và không delay narration: chime có 0.25s dẫn im
+  /// lặng, đỉnh ở ~0.5s rồi tắt dần — lời đọc mở màn đè lên đuôi decay nghe
+  /// như intro podcast, còn bắt narration chờ chime là thêm một tầng timing
+  /// vào đúng vùng từng vỡ ("configure ăn mất _playWhenReady", 2026-08-09).
+  /// Nuốt mọi lỗi: một cái chime hỏng không được phép chạm vào phiên nghe.
+  Future<void> playEntryCue() async {
+    try {
+      final player = _cuePlayer ??= just_audio.AudioPlayer();
+      await player.setAsset('assets/audio/keypoint_chime.m4a');
+      unawaited(player.play());
+    } catch (_) {}
+  }
+
+  /// Appends a BUNDLED asset to the live playlist — the chain's gap + chime
+  /// slots. Same contract as [appendItem], minus caching (assets are local).
+  Future<void> appendAssetItem({
+    required String assetPath,
+    required String id,
+    required String title,
+    required String artUri,
+  }) async {
+    final art = artUri.isNotEmpty ? Uri.tryParse(artUri) : null;
+    await _player.addAudioSource(
+      just_audio.AudioSource.asset(
+        assetPath,
+        tag: MediaItem(id: id, title: title, artUri: art),
+      ),
+    );
+  }
+
   /// Appends [url] to the LIVE playlist without touching what is playing.
   ///
   /// The whole mechanism behind listening across keypoints: the next keypoint's
