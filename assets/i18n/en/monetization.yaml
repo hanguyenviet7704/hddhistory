@@ -13,6 +13,7 @@ giftSheetBadge: "Special offer"
 giftSheetCta: "Claim Offer"
 giftSheetDiscount: "$percent% OFF"
 giftSheetEndsIn: "Ends in"
+giftSheetSaving: "Save $percent% · just $perDay/day"
 keyFeaturesTitle: Key features
 loadingPlans: Loading plans…
 logicSaleCountdownLabel: Offer ends in
@@ -49,8 +50,18 @@ payNowCta: Subscribe now
 paymentFailToast: Payment failed. Please try again.
 paymentPendingToast: Payment is being processed. Please wait.
 paymentSuccessToast: Payment successful
+planPeriodWeek: week
+planPeriodMonth: month
+planPeriodQuarter: quarter
+planPeriodYear: year
 paywallBannerSubtitle: Learn from real-life RolePlay and practice with Scenario Branching
 paywallBannerTitle: Learn by Doing
+paywallCompareTitle: What you get
+paywallCompareBenefit: Benefit
+paywallCompareFree: Free
+paywallComparePremium: Premium
+paywallPricePerDay: ${price} /day
+paywallCtaTrustLine: Full access · Cancel anytime
 paywallCtaUpgrade: Upgrade to Premium
 paywallCtaUpgradePrice: Upgrade to Premium · ${price}
 paywallHeroEyebrow: Don’t just scroll.
@@ -122,3 +133,4 @@ successCta: Explore now
 successDescription: You’re premium now. Enjoy unlimited access.
 successTitle: Payment successful
 verificationFailToast: Verification failed. Please contact support if you were charged.
+planSavePercent: "Save $percent%"

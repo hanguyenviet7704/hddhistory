@@ -10,17 +10,18 @@ part of '../monetization.dart';
 /// Anchored instead on the first time THIS reader saw the sheet, so each one
 /// gets the full window from the moment they were offered it.
 ///
-/// The window is a fixed 24 hours and no longer configurable: the hours field
-/// and the shared `endAtUtc` deadline were both removed from the admin and the
-/// API (2026-08-09) after a stale shared deadline had the sheet counting down
-/// 69 hours. One rule, owned here, is the whole contract now.
+/// The window is a fixed 59 minutes (renders as 00:59:00, per the 2026-08-19
+/// spec) and no longer configurable: the hours field and the shared `endAtUtc`
+/// deadline were both removed from the admin and the API (2026-08-09) after a
+/// stale shared deadline had the sheet counting down 69 hours. One rule, owned
+/// here, is the whole contract now. It was 24 hours until 2026-08-19.
 ///
 /// ## The cycle restarts, and that is a deliberate product decision
 ///
 /// When the window has lapsed, the next open stamps a fresh anchor and the
 /// clock starts over rather than staying expired. That makes the deadline a
 /// recurring one, not a real one: a reader who comes back two days later is
-/// told they have 24 hours again.
+/// told the offer is about to lapse again.
 ///
 /// It was chosen knowingly, with the alternative — let it lapse and simply hide
 /// the clock, the way `endAtUtc` behaves — on the table. Two things follow, and
@@ -34,7 +35,7 @@ class CompactCountdownSchedule {
   CompactCountdownSchedule(this._local);
 
   /// Every reader gets the same length of window.
-  static const Duration window = Duration(hours: 24);
+  static const Duration window = Duration(minutes: 59);
 
   /// The instant this reader's current window closes, stamping a new anchor
   /// when there isn't a live one.

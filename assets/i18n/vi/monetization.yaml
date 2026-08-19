@@ -13,6 +13,7 @@ giftSheetBadge: "Ưu đãi đặc biệt"
 giftSheetCta: "Nhận ưu đãi"
 giftSheetDiscount: "GIẢM $percent%"
 giftSheetEndsIn: "Kết thúc sau"
+giftSheetSaving: "Tiết kiệm $percent% · chỉ còn $perDay/ngày"
 keyFeaturesTitle: Tính năng chính
 loadingPlans: Đang tải gói…
 logicSaleCountdownLabel: Ưu đãi kết thúc sau
@@ -50,8 +51,18 @@ payNowCta: Thanh toán ngay
 paymentFailToast: Thanh toán thất bại. Vui lòng thử lại.
 paymentPendingToast: Đang xử lý thanh toán. Vui lòng chờ.
 paymentSuccessToast: Thanh toán thành công
+planPeriodWeek: tuần
+planPeriodMonth: tháng
+planPeriodQuarter: quý
+planPeriodYear: năm
 paywallBannerSubtitle: Học từ role-play thực tế và luyện tập với kịch bản rẽ nhánh
 paywallBannerTitle: Học bằng thực hành
+paywallCompareTitle: Bạn sẽ nhận được gì
+paywallCompareBenefit: Quyền lợi
+paywallCompareFree: Miễn phí
+paywallComparePremium: Premium
+paywallPricePerDay: ${price} /ngày
+paywallCtaTrustLine: Truy cập toàn bộ · Huỷ bất cứ lúc nào
 paywallCtaUpgrade: Nâng cấp Premium
 paywallCtaUpgradePrice: Nâng cấp Premium · ${price}
 paywallHeroEyebrow: Đừng chỉ lướt mãi.
@@ -124,3 +135,4 @@ successDescription: Bạn đã là hội viên premium. Thoải mái trải nghi
 successTitle: Thanh toán thành công
 verificationFailToast: Xác thực thất bại. Vui lòng liên hệ hỗ trợ nếu bạn đã bị trừ
   tiền.
+planSavePercent: "Tiết kiệm $percent%"

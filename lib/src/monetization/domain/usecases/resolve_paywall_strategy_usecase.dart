@@ -9,11 +9,24 @@ class ResolvePaywallStrategyParams {
   /// strategy wins — only which of that strategy's SKU lists is rendered.
   final PaywallEntryPoint entryPoint;
 
+  /// A caller that named the surface outright (gift popup, win-back, an admin
+  /// deeplink's `?variant=`), overriding the entry-point table.
+  ///
+  /// It has to reach THIS far. Before, the override only changed what the page
+  /// DREW: the SKU list was still resolved from the table, so a forced compact
+  /// sheet queried the full list and then showed its first plan — the annual one
+  /// at an annual price under a "/month" suffix, with the configured compact SKU
+  /// never asked for. Which reads exactly like "the admin's compact config is
+  /// being ignored", and for `winBack` (a value the config has no row for, so the
+  /// table answers `full`) it happened every single time.
+  final PaywallProductVariant? variantOverride;
+
   const ResolvePaywallStrategyParams({
     required this.config,
     required this.platform,
     required this.nowUtc,
     this.entryPoint = PaywallEntryPoint.other,
+    this.variantOverride,
   });
 }
 
@@ -33,7 +46,7 @@ class ResolvePaywallStrategyUsecase {
 
     // Which strategy wins is decided exactly as before; the entry point only
     // narrows the winner's SKU list afterwards.
-    final variant = params.config.variantForEntryPoint(params.entryPoint.name);
+    final variant = params.variantOverride ?? params.config.variantForEntryPoint(params.entryPoint.name);
 
     final event = saleStrategy.saleEvent;
     // Sale events restyle the FULL paywall only (spec owner's ruling). The

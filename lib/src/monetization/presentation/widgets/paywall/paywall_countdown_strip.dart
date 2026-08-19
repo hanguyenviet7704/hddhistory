@@ -18,10 +18,16 @@ PaywallCountdownParts resolvePaywallCountdownParts(DateTime endAtUtc, DateTime n
   final remaining = endAtUtc.toUtc().difference(nowUtc.toUtc());
   final clamped = remaining.isNegative ? Duration.zero : remaining;
 
+  // CEIL to the second, not floor: the compact sheet stamps its deadline
+  // "now + 59min" and renders milliseconds later, so flooring opened the sheet
+  // on 00:58:59 — never the 00:59:00 the spec names. Ceiling shows the full
+  // window for its first second and still ticks once per second after.
+  final totalSeconds = (clamped.inMilliseconds + 999) ~/ 1000;
+
   return PaywallCountdownParts(
-    hours: clamped.inHours.toString().padLeft(2, '0'),
-    minutes: clamped.inMinutes.remainder(60).toString().padLeft(2, '0'),
-    seconds: clamped.inSeconds.remainder(60).toString().padLeft(2, '0'),
+    hours: (totalSeconds ~/ 3600).toString().padLeft(2, '0'),
+    minutes: ((totalSeconds % 3600) ~/ 60).toString().padLeft(2, '0'),
+    seconds: (totalSeconds % 60).toString().padLeft(2, '0'),
   );
 }
 

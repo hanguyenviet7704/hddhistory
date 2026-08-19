@@ -13,6 +13,7 @@ giftSheetBadge: "特别优惠"
 giftSheetCta: "领取优惠"
 giftSheetDiscount: "立减 $percent%"
 giftSheetEndsIn: "截止倒计时"
+giftSheetSaving: "省 $percent% · 每天仅 $perDay"
 keyFeaturesTitle: 核心功能
 loadingPlans: 正在加载方案…
 logicSaleCountdownLabel: 优惠还剩
@@ -49,8 +50,18 @@ payNowCta: 立即支付
 paymentFailToast: 支付失败，请重试。
 paymentPendingToast: 正在处理支付，请稍候。
 paymentSuccessToast: 支付成功
+planPeriodWeek: 周
+planPeriodMonth: 月
+planPeriodQuarter: 季
+planPeriodYear: 年
 paywallBannerSubtitle: 从真实角色扮演学习并用情景分支练习
 paywallBannerTitle: 通过实战学习
+paywallCompareTitle: 你将获得什么
+paywallCompareBenefit: 权益
+paywallCompareFree: 免费
+paywallComparePremium: Premium
+paywallPricePerDay: ${price} /天
+paywallCtaTrustLine: 完整权限 · 随时取消
 paywallCtaUpgrade: 升级高级版
 paywallCtaUpgradePrice: 升级高级版 · ${price}
 paywallHeroEyebrow: 别再只是滑过。
@@ -117,3 +128,4 @@ successCta: 立即体验
 successDescription: 您已成为高级会员，尽情使用。
 successTitle: 支付成功
 verificationFailToast: 验证失败。如果已扣款，请联系客服。
+planSavePercent: "省 $percent%"

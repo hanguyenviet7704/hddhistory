@@ -8,9 +8,11 @@ class _RadioIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Design `6b · Premium`: an 18 ring with a 9 dot. It shipped at 19/11,
+    // which made the radio the heaviest mark on the card.
     return Container(
-      width: 19.w,
-      height: 19.w,
+      width: 18.w,
+      height: 18.w,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -22,8 +24,8 @@ class _RadioIndicator extends StatelessWidget {
       ),
       child: selected
           ? Container(
-              width: 11.w,
-              height: 11.w,
+              width: 9.w,
+              height: 9.w,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppCustomColor.paywallPromoLabel,
@@ -42,16 +44,20 @@ class _DiscountPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      // Design `6b · Premium`: a YELLOW chip, not the lavender one it used to
+      // be. Literal hex rather than a theme token on purpose — this is the one
+      // warm accent on an otherwise violet screen, and the brand palette has no
+      // slot for it (same call as _kFacebookBrandBlue).
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
       decoration: BoxDecoration(
-        color: AppCustomColor.brandPrimary100,
+        color: const Color(0xFFF9D31A),
         borderRadius: BorderRadius.circular(99.r),
       ),
       child: AppText(
         label,
         style: AppStyle.text12.copyWith(
-          fontSize: 12.sp,
-          color: AppCustomColor.paywallPromoLabel,
+          fontSize: 9.sp,
+          color: const Color(0xFF4A2A17),
           fontWeight: FontWeight.w800,
           height: 1.2,
         ),

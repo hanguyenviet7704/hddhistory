@@ -34,9 +34,12 @@ class PaywallPlanOption extends StatelessWidget {
             decoration: BoxDecoration(
               color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFF2F1FE),
               borderRadius: BorderRadius.circular(16.r),
+              // Unselected keeps a VISIBLE lavender border (design): the old
+              // borderDefault (#EBF0F7) vanished against the card's #F2F1FE
+              // fill and the card read as borderless.
               border: Border.all(
-                color: selected ? const Color(0xFF4B44CA) : AppCustomColor.borderDefault,
-                width: selected ? 2 : 1,
+                color: selected ? const Color(0xFF4B44CA) : const Color(0xFFD9D5F6),
+                width: selected ? 2 : 1.5,
               ),
               boxShadow: selected
                   ? [
@@ -48,109 +51,155 @@ class PaywallPlanOption extends StatelessWidget {
                     ]
                   : null,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+            // Hai hàng, không phải một (design `6b · Premium`): hàng trên là
+            // tên gói + mức tiết kiệm và cái radio, hàng dưới là giá + giá gạch
+            // và giá/ngày. Layout một hàng cũ dồn tên, pill, giá và giá gạch vào
+            // cùng một dòng — trên máy hẹp thì hoặc tên bị cắt hoặc giá bị co.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Flexible(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _RadioIndicator(selected: selected),
-                      14.horizontalSpace,
-                      Flexible(
-                        child: AppText(
-                          _planTitle.toUpperCase(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppStyle.text14.copyWith(
-                            fontSize: 15.sp,
-                            color: AppCustomColor.textBrand,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.15,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                      if (_showDiscountPill) ...[
-                        8.horizontalSpace,
-                        _DiscountPill(label: '-${product.salePercent.toInt()}%'),
-                      ],
-                    ],
-                  ),
-                ),
-                12.horizontalSpace,
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    AppText(
-                      _displayPrice,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      // One price colour for both states, per the design: the
-                      // radio and the border say which plan is picked, and
-                      // greying the other one's price made it read as
-                      // unavailable rather than unselected.
-                      style: AppStyle.text20.copyWith(
-                        fontSize: 19.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.3,
-                        color: AppCustomColor.textBrand,
-                        height: 1.25,
-                      ),
-                    ),
-                    2.verticalSpace,
-                    if (_showOriginalPrice)
-                      Semantics(
-                        label: l10n.monetization.paywallOriginalPriceLabel(price: product.compareAtPrice),
-                        excludeSemantics: true,
-                        child: AppText(
-                          product.compareAtPrice,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppStyle.text12.copyWith(
-                            fontSize: 12.5.sp,
-                            color: const Color(0xFFB3AECB),
-                            fontWeight: FontWeight.w700,
-                            decoration: TextDecoration.lineThrough,
-                            decorationColor: const Color(0xFFB3AECB),
-                            height: 1.3,
-                          ),
-                        ),
-                      )
-                    // The design's second line is the struck-through original
-                    // only. A per-period line is kept when it says something the
-                    // price above doesn't — the monthly plan's would repeat the
-                    // same number back at the reader.
-                    else if (_hasDistinctPeriodPrice)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                    // `Expanded`, không phải `Flexible`: nhóm tên+pill phải CHIẾM
+                    // hết chỗ trống để đẩy radio ra mép phải như design. Với
+                    // Flexible thì cả ba co lại về bên trái và radio dính vào
+                    // pill — đúng cái đang sai trên bản 132.
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          AppText(
-                            _displayPeriodPrice,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppStyle.text12.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppCustomColor.textSecondary,
-                              height: 1.75,
+                          Flexible(
+                            // Scale down instead of ellipsizing: on narrow
+                            // screens the pill and the price are fixed-width, so
+                            // "HẰNG THÁNG" was truncated to "HẰNG THÁ…".
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: AppText(
+                                _planTitle.toUpperCase(),
+                                maxLines: 1,
+                                // Design: 14/w800, .02em. It shipped at 15 and
+                                // read heavier than the price under it.
+                                style: AppStyle.text14.copyWith(
+                                  color: AppCustomColor.textBrand,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.28,
+                                  height: 1.3,
+                                ),
+                              ),
                             ),
                           ),
-                          if (product.periodLabel.isNotEmpty) ...[
-                            4.horizontalSpace,
-                            AppText(
-                              '/${_periodUnit(product)}',
-                              maxLines: 1,
-                              style: AppStyle.text12.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: AppCustomColor.textTertiary,
-                                height: 1.75,
+                          if (_showDiscountPill) ...[
+                            9.horizontalSpace,
+                            _DiscountPill(
+                              label: context.l10n.monetization.planSavePercent(
+                                percent: product.salePercent.toInt(),
                               ),
                             ),
                           ],
                         ],
                       ),
+                    ),
+                    8.horizontalSpace,
+                    // Radio sang PHẢI theo design. Bên trái là nơi mắt bắt đầu
+                    // đọc, và ở đó nó cạnh tranh với tên gói — thứ thật sự phân
+                    // biệt hai thẻ.
+                    _RadioIndicator(selected: selected),
+                  ],
+                ),
+                2.verticalSpace,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Cụm giá chiếm chỗ trống để đẩy giá/ngày ra mép phải.
+                    //
+                    // KHÔNG ellipsis giá. Bản 136 cắt giá gạch thành "1.199.0…"
+                    // — một cái giá bị cắt còn tệ hơn không hiện: người đọc
+                    // không thể tự bù chữ số. Thay vào đó cả cụm nằm trong
+                    // FittedBox(scaleDown): khi chật, TOÀN BỘ cụm co lại vài
+                    // phần trăm và mọi chữ số vẫn còn — cùng cách hàng tiêu đề
+                    // xử "HẰNG THÁNG". FittedBox cũng tự chặn vẽ tràn, nên
+                    // không cần ClipRect: nội dung luôn được ép vào đúng khung.
+                    //
+                    // Bên trong FittedBox KHÔNG được có Flexible/Expanded —
+                    // FittedBox đo con ở bề rộng không giới hạn, và một flex
+                    // child trong Row không giới hạn là lỗi layout ngay khi
+                    // build.
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            AppText(
+                              _displayPrice,
+                              maxLines: 1,
+                              // One price colour for both states, per the design:
+                              // the radio and the border say which plan is picked,
+                              // and greying the other one's price made it read as
+                              // unavailable rather than unselected.
+                              // w700, not w800 — the design keeps the price one
+                              // step lighter than the plan name so the two rows
+                              // don't shout at the same volume.
+                              style: AppStyle.text20.copyWith(
+                                fontSize: 17.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.4,
+                                color: AppCustomColor.textBrand,
+                                height: 1.25,
+                              ),
+                            ),
+                            AppText(
+                              '/${_planPeriodLabel(product)}',
+                              maxLines: 1,
+                              style: AppStyle.text12.copyWith(
+                                fontSize: 12.5.sp,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFFA8A2C6),
+                                height: 1.6,
+                              ),
+                            ),
+                            if (_showOriginalPrice) ...[
+                              8.horizontalSpace,
+                              Semantics(
+                                label: l10n.monetization.paywallOriginalPriceLabel(price: product.compareAtPrice),
+                                excludeSemantics: true,
+                                child: AppText(
+                                  product.compareAtPrice,
+                                  maxLines: 1,
+                                  style: AppStyle.text12.copyWith(
+                                    fontSize: 12.5.sp,
+                                    color: const Color(0xFFA8A2C6),
+                                    fontWeight: FontWeight.w500,
+                                    decoration: TextDecoration.lineThrough,
+                                    decorationColor: const Color(0xFFA8A2C6),
+                                    height: 1.6,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Giá/ngày giữ cỡ tự nhiên bên phải — nó ngắn và cố định
+                    // dạng, còn cụm giá bên trái mới là bên co giãn.
+                    if (product.perDayPriceString.isNotEmpty) ...[
+                      8.horizontalSpace,
+                      AppText(
+                        l10n.monetization.paywallPricePerDay(price: product.perDayPriceString),
+                        maxLines: 1,
+                        style: AppStyle.text12.copyWith(
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFA8A2C6),
+                          height: 1.6,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -173,29 +222,35 @@ class PaywallPlanOption extends StatelessWidget {
     final idLower = product.productId.toLowerCase();
     if (idLower.contains('year') || idLower.contains('annual') || idLower.contains('1y')) return l10n.monetization.paywallPlanAnnual;
     if (idLower.contains('quarter') || idLower.contains('3m')) return l10n.monetization.paywallPlanQuarterly;
-    if (idLower.contains('month')|| idLower.contains('1m')) return l10n.monetization.paywallPlanMonthly;
-    if (idLower.contains('week')|| idLower.contains('1w')) return l10n.monetization.paywallPlanWeekly;
+    if (idLower.contains('month') || idLower.contains('1m')) return l10n.monetization.paywallPlanMonthly;
+    if (idLower.contains('week') || idLower.contains('1w')) return l10n.monetization.paywallPlanWeekly;
     if (idLower.contains('lifetime')) return l10n.monetization.paywallPlanLifetime;
     return _displayTitle;
   }
 
   String get _displayPrice => product.price.isEmpty ? product.pricePerPeriodString : product.price;
 
-  String get _displayPeriodPrice => product.pricePerPeriodString.isEmpty ? _displayPrice : product.pricePerPeriodString;
-
   bool get _showDiscountPill => product.hasDiscount;
 
-  bool get _hasDistinctPeriodPrice => product.pricePerPeriodString.isNotEmpty && product.pricePerPeriodString != _displayPrice;
-
   /// The struck-through price is the live store price of the SKU configured in
-  /// admin ("Giá gốc so sánh"), so it replaces the per-period line rather than
-  /// stacking with it. Hidden whenever that price cannot be trusted — see
+  /// admin ("Giá gốc so sánh"). It now sits INLINE after the price on the
+  /// design's second row, beside the per-day figure, rather than replacing a
+  /// per-period line — that fallback line is gone with the one-row layout.
+  /// Hidden whenever the compare-at price cannot be trusted — see
   /// [IapProductEntityX.hasCompareAtPrice].
   bool get _showOriginalPrice => product.hasCompareAtPrice;
 
-  String _periodUnit(IapProductEntity product) {
-    final label = product.periodLabel.trim();
-    if (label.toLowerCase().startsWith('per ')) return label.substring(4);
-    return label;
+  /// Đơn vị chu kỳ của gói cho hậu tố "/năm", "/tháng" (design `6b · Premium`).
+  ///
+  /// Thay cho `product.periodLabel` — nhãn đó là "mỗi tháng" kể cả với gói năm,
+  /// nên ghép với tổng giá năm sẽ in "959.000đ/mỗi tháng": sai sự thật, không chỉ
+  /// sai design.
+  String _planPeriodLabel(IapProductEntity product) {
+    return switch (product.planPeriod) {
+      IapPlanPeriod.week => l10n.monetization.planPeriodWeek,
+      IapPlanPeriod.month => l10n.monetization.planPeriodMonth,
+      IapPlanPeriod.quarter => l10n.monetization.planPeriodQuarter,
+      IapPlanPeriod.year => l10n.monetization.planPeriodYear,
+    };
   }
 }

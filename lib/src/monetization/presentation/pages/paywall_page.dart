@@ -24,6 +24,12 @@ class PaywallPage extends StatefulWidget {
 class _PaywallPageState extends State<PaywallPage> {
   bool _hasTrackedView = false;
   bool _isHandlingPurchaseSuccess = false;
+
+  /// Set once a purchase has been handled here, so [dispose] can tell "bought,
+  /// then closed" from "dismissed". Reading `isPremium` instead would be wrong:
+  /// the subscription refresh that flips it has not landed by the time this page
+  /// pops itself.
+  bool _didPurchase = false;
   late bool _isCloseButtonVisible;
   Timer? _closeButtonTimer;
 
@@ -82,7 +88,10 @@ class _PaywallPageState extends State<PaywallPage> {
     // ("33% off bottom sheet"): it reports paywall_offer_scr_view, not
     // paywall_scr_view.
     if (_isCompactVariant) {
-      PaywallTracking.offerScrView(productId: _compactProduct(state)?.productId ?? '');
+      PaywallTracking.offerScrView(
+        productId: _compactProduct(state)?.productId ?? '',
+        source: AppService.instance.appTrackingService.currentPaywallSource(),
+      );
       return;
     }
     AppService.instance.appTrackingService.trackPremiumScrView();
@@ -116,6 +125,7 @@ class _PaywallPageState extends State<PaywallPage> {
       AppService.instance.appTrackingService.trackPaywallSuccessPopupView(
         context.read<IapCubit>().state.selectedProductId,
       );
+      _didPurchase = true;
       await PaywallSuccessPurchasePopup.show(context);
       if (!mounted) return;
 
@@ -130,7 +140,15 @@ class _PaywallPageState extends State<PaywallPage> {
   @override
   void dispose() {
     _closeButtonTimer?.cancel();
-    AppDI.injector.get<IapCubit>().resetPaywallEntryPoint();
+    final iapCubit = AppDI.injector.get<IapCubit>();
+    // Armed BEFORE the entry point is reset: `armWinBack` reads the resolved
+    // config, and the reset also clears the variant override this page was
+    // rendered with. Order matters here.
+    iapCubit.armWinBack(
+      wasFullVariant: !_isCompactVariant,
+      didPurchase: _didPurchase,
+    );
+    iapCubit.resetPaywallEntryPoint();
     super.dispose();
   }
 

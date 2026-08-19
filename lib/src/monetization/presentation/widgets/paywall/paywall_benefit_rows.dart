@@ -39,7 +39,9 @@ class _PaywallBenefitRow extends StatelessWidget {
             child: SvgPicture.string(_checkSvg, width: 20.w, height: 20.w),
           ),
         ),
-        14.horizontalSpace,
+        // The design's row gap is 9, not the 14 this shipped with — at 14 the
+        // checks read as a separate column instead of anchoring their line.
+        9.horizontalSpace,
         Expanded(
           child: AppText(
             text,

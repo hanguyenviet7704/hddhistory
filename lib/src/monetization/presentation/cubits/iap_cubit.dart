@@ -117,6 +117,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     CourseTrackingData? trackingData,
   }) {
     _paywallEntryPoint = entryPoint;
+    // An explicit entry point always beats a source left behind by an earlier
+    // open — otherwise a gift-popup source could still be labelling the
+    // paywall someone reached from Profile three screens later.
+    _paywallSourceOverride = null;
     if (entryPoint == PaywallEntryPoint.courseRoadmap) {
       _paywallCourseTrackingData = trackingData;
     } else {
@@ -124,10 +128,61 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     }
   }
 
+  // ── Win-back ──────────────────────────────────────────────────────────────
+  // The reader closed the FULL paywall without buying; after a configured delay
+  // the gift popup follows (WinBackHost), and only accepting the gift opens the
+  // compact discount sheet. Timing and the per-session cap live here
+  // because the cubit outlives the page that arms them — a Timer owned by
+  // PaywallPage would be cancelled by its own dispose, which is the exact moment
+  // this has to start counting.
+
+  Timer? _winBackTimer;
+  int _winBackFiredThisSession = 0;
+
+  /// Arms the win-back, or does nothing when it is not due.
+  ///
+  /// [wasFullVariant] is the caller's: only the full paywall earns a compact
+  /// follow-up, and re-offering the compact sheet after the compact sheet is
+  /// just the same sheet twice. [didPurchase] is likewise the page's to know —
+  /// a successful purchase also pops the paywall, and the subscription refresh
+  /// that would make `isPremium` true has not landed by then.
+  void armWinBack({required bool wasFullVariant, required bool didPurchase}) {
+    final config = resolvedPaywallConfig.winBack;
+    if (!config.enabled || !wasFullVariant || didPurchase) return;
+    if (_winBackFiredThisSession >= config.maxPerSession) return;
+    // An armed timer means a previous close is still pending; letting a second
+    // one through would stack two sheets on one delay.
+    if (_winBackTimer?.isActive ?? false) return;
+
+    _winBackTimer = Timer(Duration(seconds: config.delaySeconds), () {
+      _winBackFiredThisSession++;
+      if (isClosed) return;
+      emit(state.copyWith(winBackDueTick: state.winBackDueTick + 1));
+    });
+  }
+
+  /// Drops a pending win-back. Called when the reader becomes premium by any
+  /// route while the timer runs — nothing should sell to someone who just paid.
+  void cancelWinBack() {
+    _winBackTimer?.cancel();
+    _winBackTimer = null;
+  }
+
   void resetPaywallEntryPoint() {
     setPaywallEntryPoint(PaywallEntryPoint.other);
     _paywallVariantOverride = null;
   }
+
+  /// The sheet's `source` value for a paywall opened by something that is a
+  /// MOMENT rather than a place, so no [PaywallEntryPoint] names it: the gift
+  /// popup's two triggers (`add_first_habit`, `app_first_open_d1_d7`).
+  ///
+  /// Wins over the entry-point mapping while set, and is cleared by
+  /// [setPaywallEntryPoint] / [resetPaywallEntryPoint] (PaywallPage.dispose) —
+  /// same leak rule as [forcePaywallVariant], which the same flow sets.
+  String? _paywallSourceOverride;
+  String? get paywallSourceOverride => _paywallSourceOverride;
+  void setPaywallSourceOverride(String source) => _paywallSourceOverride = source.isEmpty ? null : source;
 
   // A caller that KNOWS which surface it wants, overriding the entry-point
   // table: the gift popup always opens the ABBREVIATED paywall (spec sheet),
@@ -267,6 +322,9 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         // this load, in the auto-open path), so it is current by the time the
         // strategy resolves.
         entryPoint: _paywallEntryPoint,
+        // Whoever forced the surface also decides which SKU list is fetched —
+        // otherwise the sheet renders compact over the full list's plans.
+        variantOverride: _paywallVariantOverride,
       ),
     );
 
@@ -898,6 +956,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   @override
   Future<void> close() {
+    _winBackTimer?.cancel();
     _purchaseDetailSubscription?.cancel();
     return super.close();
   }

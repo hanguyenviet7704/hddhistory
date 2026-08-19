@@ -52,6 +52,19 @@ class _GiftPopupHostState extends State<GiftPopupHost> with WidgetsBindingObserv
     if (_busy || !mounted) return;
     _busy = true;
     try {
+      // On a cold start this check used to LOSE the race against the config
+      // fetch: post-frame runs long before the HTTP response lands, and the
+      // Remote Config fallback carries no `giftCampaign`, so the campaign read
+      // as OFF on every launch and the popup could only ever fire on a
+      // background→resume. When the resolved config has no campaign, wait for
+      // the real one (this shares the fetch app start already fired) before
+      // deciding.
+      final iapCubit = AppDI.injector.get<IapCubit>();
+      if (iapCubit.resolvedPaywallConfig.giftCampaign == null) {
+        await iapCubit.prefetchPaywallConfig();
+      }
+      if (!mounted) return;
+
       // Every gate — campaign configured, non-premium, inside the 1–7 window,
       // not already shown today, nothing else on screen — lives in here.
       await maybeShowGiftPopup(context, dayZeroEvent: false);

@@ -55,7 +55,7 @@ class _PaywallCompactBody extends StatelessWidget {
     // are full-paywall-only, so nothing here reads the resolved sale state.
     final config = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
     final discount = config.compactDiscountPercent > 0 && config.compactDiscountPercent < 100 ? config.compactDiscountPercent : 0;
-    // One clock, always: the per-reader 24h window (CompactCountdownSchedule).
+    // One clock, always: the per-reader 59-minute window (CompactCountdownSchedule).
     // The shared `endAtUtc` deadline it used to fall back to is gone — a stale
     // one had this sheet advertising 69 hours.
     final DateTime? endAtUtc = countdownEndAt;
@@ -116,7 +116,7 @@ class _PaywallCompactBody extends StatelessWidget {
                 // sale gives the warning something true to warn about.
                 final remote = AppDI.injector.get<IapCubit>().resolvedPaywallConfig.compactUrgencyLine.text;
                 return Padding(
-                  padding: EdgeInsets.only(top: 8.h),
+                  padding: EdgeInsets.only(top: 14.h),
                   child: AppText(
                     remote.isEmpty ? l10n.monetization.compactUrgencyLine : remote,
                     textAlign: TextAlign.center,
@@ -131,7 +131,10 @@ class _PaywallCompactBody extends StatelessWidget {
                 );
               }),
             if (endAtUtc != null) ...[
-              14.verticalSpace,
+              // The urgency line sits DOWN toward the clock ("hạ xuống 1 chút…
+              // gần Kết thúc sau", 2026-08-19): 14 above it, 10 below — it pairs
+              // with the deadline it warns about, not with the percentage.
+              10.verticalSpace,
               _CountdownRow(endAtUtc: endAtUtc),
             ],
             // The artwork owns the leftover middle of the sheet (design:
@@ -203,8 +206,31 @@ class _PaywallCompactBody extends StatelessWidget {
                   ),
                 ],
               ),
+              // The design's savings line, between the price and the CTA: it is
+              // what turns two numbers into an argument. Needs BOTH a configured
+              // discount and a per-day figure — `perDayPriceString` is empty when
+              // the store gave no raw price, and half a sentence
+              // ("Tiết kiệm 33% · chỉ còn /ngày") is worse than none.
+              if (discount > 0 && product.perDayPriceString.isNotEmpty) ...[
+                12.verticalSpace,
+                AppText(
+                  l10n.monetization.giftSheetSaving(
+                    percent: discount,
+                    perDay: product.perDayPriceString,
+                  ),
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text14.copyWith(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF4B44CA),
+                  ),
+                ),
+              ],
             ],
-            26.verticalSpace,
+            // 14, down from 26 ("đẩy xuống gần Nhận ưu đãi", 2026-08-19): the
+            // price cluster belongs to the button that charges it — the slack
+            // goes above, into the artwork's Expanded, not between them.
+            14.verticalSpace,
             _PurchaseButton(
               height: 60.h,
               label: l10n.monetization.giftSheetCta,

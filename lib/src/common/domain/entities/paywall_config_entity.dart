@@ -27,12 +27,22 @@ abstract class PaywallConfigEntity with _$PaywallConfigEntity {
     /// round. Missing keys read as [PaywallProductVariant.full] — see
     /// [PaywallConfigEntityX.variantForEntryPoint].
     @Default({}) Map<String, PaywallProductVariant> entryPointVariants,
+
+    /// Layout thân paywall (xem [PaywallBodyVariant]). Ở cấp config chứ không
+    /// theo locale: một config mà tiếng Việt hiện bảng còn tiếng Anh hiện danh
+    /// sách là lỗi. Mặc định `benefits` = hành vi đang chạy.
+    @Default(PaywallBodyVariant.benefits) PaywallBodyVariant bodyVariant,
     PaywallSaleStrategyEntity? saleStrategy,
 
     /// The gift popup's schedule (the popup itself opens the compact paywall).
     /// Null when no campaign is configured — every config published before it
     /// existed.
     PaywallGiftCampaignEntity? giftCampaign,
+
+    /// Win-back: closed the FULL paywall without buying → the compact sheet a
+    /// few seconds later. Defaults to disabled so every config published before
+    /// it existed behaves exactly as it did.
+    @Default(PaywallWinBackEntity()) PaywallWinBackEntity winBack,
 
     /// The laurel + store-rating strip under the plans. Defaults to SHOWN so
     /// configs published before the switch existed keep the build's behaviour;
@@ -78,6 +88,22 @@ abstract class PaywallAutoOpenEntity with _$PaywallAutoOpenEntity {
   }) = _PaywallAutoOpenEntity;
 
   factory PaywallAutoOpenEntity.fromJson(Map<String, dynamic> json) => _$PaywallAutoOpenEntityFromJson(json);
+}
+
+/// Win-back gate. See `PaywallWinBackDto` on the API for the authored shape.
+@freezed
+abstract class PaywallWinBackEntity with _$PaywallWinBackEntity {
+  const factory PaywallWinBackEntity({
+    @Default(false) bool enabled,
+
+    /// Seconds between the paywall closing and the compact sheet opening.
+    @Default(3) int delaySeconds,
+
+    /// How many times this may fire per app session.
+    @Default(1) int maxPerSession,
+  }) = _PaywallWinBackEntity;
+
+  factory PaywallWinBackEntity.fromJson(Map<String, dynamic> json) => _$PaywallWinBackEntityFromJson(json);
 }
 
 /// Opens the paywall from inside a keypoint, the moment the reader swipes off
@@ -147,15 +173,39 @@ abstract class PaywallSaleEventStrategyEntity with _$PaywallSaleEventStrategyEnt
   factory PaywallSaleEventStrategyEntity.fromJson(Map<String, dynamic> json) => _$PaywallSaleEventStrategyEntityFromJson(json);
 }
 
+/// Khối nằm giữa header và các thẻ gói trên paywall.
+///
+/// `benefits` là danh sách lợi ích đang chạy (design `6b · Premium` Version 1),
+/// `comparison` là bảng Miễn phí vs Premium (Version 2). Hai kiểu LOẠI TRỪ nhau
+/// — design gate chúng ở hai nhánh riêng, hiện cả hai là nói cùng một chuyện
+/// hai lần trên một màn.
+enum PaywallBodyVariant { benefits, comparison }
+
 @freezed
 abstract class PaywallContentEntity with _$PaywallContentEntity {
   const factory PaywallContentEntity({
     @Default(BaseMultiLanguage()) BaseMultiLanguage heading,
     @Default(BaseMultiLanguage()) BaseMultiLanguage subheading,
     @Default([]) List<PaywallBenefitEntity> benefits,
+    @Default([]) List<PaywallComparisonRowEntity> comparison,
   }) = _PaywallContentEntity;
 
   factory PaywallContentEntity.fromJson(Map<String, dynamic> json) => _$PaywallContentEntityFromJson(json);
+}
+
+/// Một dòng của bảng Miễn phí vs Premium.
+@freezed
+abstract class PaywallComparisonRowEntity with _$PaywallComparisonRowEntity {
+  const factory PaywallComparisonRowEntity({
+    @Default(BaseMultiLanguage()) BaseMultiLanguage label,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage free,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage premium,
+    /// Ô Premium có icon tick trước chữ hay không. Mặc định true vì mọi dòng
+    /// trong design đều có tick — dòng lưu thiếu field phải trông như design.
+    @Default(true) bool hasCheck,
+  }) = _PaywallComparisonRowEntity;
+
+  factory PaywallComparisonRowEntity.fromJson(Map<String, dynamic> json) => _$PaywallComparisonRowEntityFromJson(json);
 }
 
 @freezed
@@ -269,8 +319,10 @@ class _PaywallConfigParser {
         autoOpen: _autoOpen(decoded['autoOpen']),
         inLessonPaywall: _inLessonPaywall(decoded['inLessonPaywall']),
         entryPointVariants: _entryPointVariants(decoded['entryPointVariants']),
+        bodyVariant: _bodyVariant(decoded['bodyVariant']),
         saleStrategy: _saleStrategy(decoded['saleStrategy']),
         giftCampaign: _giftCampaign(decoded['giftCampaign']),
+        winBack: _winBack(decoded['winBack']),
         // Absent reads as SHOWN, matching the build that introduced the strip.
         showCredibilityBlock: decoded['showCredibilityBlock'] is bool ? decoded['showCredibilityBlock'] as bool : true,
         reviews: _reviews(decoded['reviews']),
@@ -288,6 +340,22 @@ class _PaywallConfigParser {
     final percent = _intValue(rawPercent);
     final enabled = _boolValue(value['enabled']) && rawPercent is int && percent >= 0 && percent <= 100;
     return PaywallAutoOpenEntity(enabled: enabled, sessionRolloutPercent: percent);
+  }
+
+  /// A missing key parses to disabled, like every gate added after v1.
+  ///
+  /// `delaySeconds` is clamped rather than rejected: the server already bounds
+  /// it 0..60, and a config that somehow carries 900 should still fire — three
+  /// seconds late is a worse bug than a minute late. `maxPerSession` floors at 1
+  /// because a stored 0 with `enabled: true` reads as "on but never fires",
+  /// which looks like a broken feature rather than a disabled one.
+  static PaywallWinBackEntity _winBack(Object? value) {
+    if (value is! Map<String, dynamic>) return const PaywallWinBackEntity();
+    return PaywallWinBackEntity(
+      enabled: _boolValue(value['enabled']),
+      delaySeconds: _intValue(value['delaySeconds'], fallback: 3).clamp(0, 60),
+      maxPerSession: _intValue(value['maxPerSession'], fallback: 1).clamp(1, 5),
+    );
   }
 
   /// A missing key (any version published before this gate existed) parses to
@@ -362,6 +430,7 @@ class _PaywallConfigParser {
       for (final locale in _locales) locale: value[locale] is Map<String, dynamic> ? value[locale] as Map<String, dynamic> : const <String, dynamic>{},
     };
     final maxBenefits = localeMaps.values.map((localeMap) => localeMap['benefits'] is List ? (localeMap['benefits'] as List).length : 0).fold<int>(0, max);
+    final maxComparison = localeMaps.values.map((localeMap) => localeMap['comparison'] is List ? (localeMap['comparison'] as List).length : 0).fold<int>(0, max);
     return PaywallContentEntity(
       heading: _multiLanguage(localeMaps, 'heading'),
       subheading: _multiLanguage(localeMaps, 'subheading'),
@@ -370,6 +439,15 @@ class _PaywallConfigParser {
           PaywallBenefitEntity(
             icon: _benefitMultiLanguage(localeMaps, index, 'icon'),
             title: _benefitMultiLanguage(localeMaps, index, 'title'),
+          ),
+      ],
+      comparison: [
+        for (var index = 0; index < maxComparison; index++)
+          PaywallComparisonRowEntity(
+            label: _rowMultiLanguage(localeMaps, 'comparison', index, 'label'),
+            free: _rowMultiLanguage(localeMaps, 'comparison', index, 'free'),
+            premium: _rowMultiLanguage(localeMaps, 'comparison', index, 'premium'),
+            hasCheck: _rowHasCheck(localeMaps, index),
           ),
       ],
     );
@@ -438,6 +516,60 @@ class _PaywallConfigParser {
       ja: _stringValue(localeMaps['ja']?[key]),
       ko: _stringValue(localeMaps['ko']?[key]),
     );
+  }
+
+  /// Ghép một field của dòng thứ [index] trong list [listKey] thành
+  /// [BaseMultiLanguage].
+  ///
+  /// Cùng thủ thuật index-per-locale mà [_benefitMultiLanguage] dùng, chỉ khác là
+  /// tên list truyền vào: config lưu MỖI locale một mảng riêng, còn app cần MỘT
+  /// mảng dòng mà mỗi ô là đa ngữ. Vị trí trong mảng là thứ duy nhất nối các
+  /// locale lại với nhau — nên thêm hay xoá một dòng ở một locale mà không làm ở
+  /// locale khác sẽ lệch nội dung, đúng như benefits đã vậy.
+  static BaseMultiLanguage _rowMultiLanguage(
+    Map<String, Map<String, dynamic>> localeMaps,
+    String listKey,
+    int index,
+    String key,
+  ) {
+    Object? valueFor(String locale) {
+      final rows = localeMaps[locale]?[listKey];
+      if (rows is! List || index >= rows.length) return null;
+      final row = rows[index];
+      return row is Map<String, dynamic> ? row[key] : null;
+    }
+
+    return BaseMultiLanguage(
+      en: _stringValue(valueFor('en')),
+      vi: _stringValue(valueFor('vi')),
+      zh: _stringValue(valueFor('zh')),
+      ja: _stringValue(valueFor('ja')),
+      ko: _stringValue(valueFor('ko')),
+    );
+  }
+
+  /// `hasCheck` của dòng thứ [index].
+  ///
+  /// Không đa ngữ được: nó là quyết định hiển thị, và một dòng có tick ở tiếng
+  /// Anh nhưng không có ở tiếng Việt là lỗi chứ không phải bản địa hoá. Đọc theo
+  /// thứ tự ưu tiên en → các locale còn lại, mặc định TRUE khi không locale nào
+  /// nói gì — vì mọi dòng trong design đều có tick.
+  static bool _rowHasCheck(Map<String, Map<String, dynamic>> localeMaps, int index) {
+    for (final locale in _locales) {
+      final rows = localeMaps[locale]?['comparison'];
+      if (rows is! List || index >= rows.length) continue;
+      final row = rows[index];
+      if (row is Map<String, dynamic> && row['hasCheck'] is bool) {
+        return row['hasCheck'] as bool;
+      }
+    }
+    return true;
+  }
+
+  static PaywallBodyVariant _bodyVariant(Object? value) {
+    // Giá trị lạ (bản app cũ hơn một variant mới thêm) rơi về benefits chứ không
+    // throw: paywall vẫn phải mở được, và benefits là thứ mọi bản đều render.
+    return value == 'comparison' ? PaywallBodyVariant.comparison : PaywallBodyVariant.benefits;
   }
 
   static BaseMultiLanguage _benefitMultiLanguage(Map<String, Map<String, dynamic>> localeMaps, int index, String key) {

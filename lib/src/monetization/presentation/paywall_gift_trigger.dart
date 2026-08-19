@@ -118,6 +118,11 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   PaywallTracking.giftOpenClick(trigger: giftTrigger);
 
   iapCubit.forcePaywallVariant(PaywallProductVariant.compact);
+  // The paywall this opens inherits the trigger as its `source`: no entry
+  // point names the gift popup, and the sheet's source set for the compact
+  // sheet and the success popup is exactly this vocabulary. Cleared with the
+  // variant override in PaywallPage.dispose.
+  iapCubit.setPaywallSourceOverride(giftTrigger);
   await const PaywallRoute().push(context);
 }
 

@@ -41,8 +41,13 @@ class PaywallTracking {
   }
 
   //* 33%-off compact sheet
-  static void offerScrView({required String productId}) {
-    track(TrackingKey.paywallOfferScrView, parameters: {'product_id': productId});
+  /// [source] is the sheet's paywall `source` vocabulary — the entry point
+  /// that opened this sheet, or one of the gift popup's triggers when it came
+  /// from there. Resolved by the tracking service so this event agrees with
+  /// `paywall_scr_view` and `paywall_success_popup_view` rather than inventing
+  /// a second mapping.
+  static void offerScrView({required String productId, required String source}) {
+    track(TrackingKey.paywallOfferScrView, parameters: {'product_id': productId, 'source': source});
   }
 
   static void offerClaimClick({required String productId}) {

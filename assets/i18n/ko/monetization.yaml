@@ -13,6 +13,7 @@ giftSheetBadge: "특별 혜택"
 giftSheetCta: "혜택 받기"
 giftSheetDiscount: "$percent% 할인"
 giftSheetEndsIn: "종료까지"
+giftSheetSaving: "$percent% 절약 · 하루 $perDay"
 keyFeaturesTitle: 주요 기능
 loadingPlans: 플랜 불러오는 중…
 logicSaleCountdownLabel: 혜택 종료까지
@@ -49,8 +50,18 @@ payNowCta: 지금 구독
 paymentFailToast: 결제에 실패했습니다. 다시 시도해 주세요.
 paymentPendingToast: 결제를 처리하고 있습니다. 잠시 기다려 주세요.
 paymentSuccessToast: 결제 완료
+planPeriodWeek: 주
+planPeriodMonth: 월
+planPeriodQuarter: 분기
+planPeriodYear: 년
 paywallBannerSubtitle: 실제 같은 롤플레이로 배우고 시나리오 분기로 연습하세요
 paywallBannerTitle: 직접 하면서 배우기
+paywallCompareTitle: 무엇을 얻나요
+paywallCompareBenefit: 혜택
+paywallCompareFree: 무료
+paywallComparePremium: Premium
+paywallPricePerDay: ${price} /일
+paywallCtaTrustLine: 전체 이용 · 언제든 해지
 paywallCtaUpgrade: 프리미엄으로 전환
 paywallCtaUpgradePrice: 프리미엄으로 전환 · ${price}
 paywallHeroEyebrow: 그냥 스크롤만 하지 마세요.
@@ -120,3 +131,4 @@ successCta: 지금 둘러보기
 successDescription: 이제 프리미엄 회원입니다. 무제한 이용을 즐겨보세요.
 successTitle: 결제 완료
 verificationFailToast: 인증에 실패했습니다. 결제가 되었다면 고객지원에 문의해 주세요.
+planSavePercent: "$percent% 절약"

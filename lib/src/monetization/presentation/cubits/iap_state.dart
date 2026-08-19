@@ -33,6 +33,21 @@ enum PaywallEntryPoint {
   /// Opened right after the onboarding handoff (admin Onboarding Config
   /// toggle `showPaywallAfterOnboarding`).
   onboarding,
+
+  /// Opened by the win-back gate: the reader closed the full paywall without
+  /// buying, and this is the compact sheet that follows. App-initiated, so it
+  /// reports as `system` rather than as anything the reader chose.
+  winBack,
+
+  /// Tapped the gold crown disc in the Home header. Its own value rather than
+  /// [other] so a config can one day give Home its own paywall variant, and so
+  /// this open never lands in the catch-all bucket. Its spec `source` collapses
+  /// to `upgrade` alongside [settingPre]/[profile] — the Home-specific count
+  /// comes from the `home_premium_click` event instead.
+  ///
+  /// No server config carries a `home` key yet — `variantForEntryPoint` falls
+  /// back to the FULL paywall, which is what this entry point wants anyway.
+  home,
   other,
 }
 
@@ -48,6 +63,13 @@ abstract class IapState with _$IapState {
     @Default('') String paywallStrategySignature,
     @Default(PurchaseAction.none) PurchaseAction lastAction,
     @Default(PurchaseOrigin.none) PurchaseOrigin lastOrigin,
+
+    /// Bumped when the win-back delay elapses and the compact sheet is due.
+    ///
+    /// A counter rather than a bool: two win-backs in one session would emit the
+    /// same `true` twice and a BlocListener comparing states would swallow the
+    /// second. Nothing reads the value itself — only that it changed.
+    @Default(0) int winBackDueTick,
     String? errorMessage,
     // Promo code. `appliedVoucherCode` is empty until the server validates a
     // code; the SKU swap it authorised is kept so the paywall can re-apply it
