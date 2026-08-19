@@ -18,13 +18,16 @@ interface WinBackSectionProps {
 
 /**
  * Win-back: the reader opened the FULL paywall, closed it without buying, and
- * gets the compact discount sheet a few seconds later.
+ * gets the GIFT POPUP a few seconds later — only accepting the gift opens the
+ * compact discount sheet. The popup step is deliberate: someone who just
+ * declined the paywall is offered a gesture, not the same sale again.
  *
- * The sheet itself is configured in "Paywall rút gọn" — this section only owns
- * WHEN it appears. Two things stay hardcoded in the app on purpose: it never
- * follows the compact sheet (that would be the same sheet twice), and a delay
- * that elapses while the app is in the background is dropped rather than queued,
- * so nobody comes back to MeUp and is met by a sales sheet.
+ * The popup's title comes from "Gift campaign", the sheet it opens from
+ * "Paywall rút gọn" — this section only owns WHEN the popup appears. Two things
+ * stay hardcoded in the app on purpose: it never follows the compact sheet
+ * (that would be the same sheet twice), and a delay that elapses while the app
+ * is in the background is dropped rather than queued, so nobody comes back to
+ * MeUp and is met by a sales pitch.
  */
 const WinBackSection: React.FC<WinBackSectionProps> = ({
   enabled,
@@ -67,7 +70,7 @@ const WinBackSection: React.FC<WinBackSectionProps> = ({
   return (
     <SectionCard
       title="Win-back (đã xem paywall nhưng chưa mua)"
-      description="Đóng paywall đầy đủ mà không mua ⇒ sau N giây hiện Paywall rút gọn. Nội dung sheet lấy từ mục 'Paywall rút gọn'. Không áp dụng khi vừa đóng chính sheet rút gọn, và bỏ qua nếu app đang ở nền lúc hết giờ."
+      description="Đóng paywall đầy đủ mà không mua ⇒ sau N giây hiện popup Gift campaign; bấm mở quà mới vào Paywall rút gọn. Tiêu đề popup lấy từ mục 'Gift campaign', nội dung sheet từ mục 'Paywall rút gọn'. Không áp dụng khi vừa đóng chính sheet rút gọn, và bỏ qua nếu app đang ở nền lúc hết giờ."
       icon={ArrowUturnLeftIcon}
       headerRight={
         <ToggleSwitch

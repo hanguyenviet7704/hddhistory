@@ -235,6 +235,16 @@ export interface PaywallInLesson {
 export const PAYWALL_ENTRY_POINTS = [
   "inLesson",
   "courseRoadmap",
+  // Added 2026-08-19: the app has had these three in `PaywallEntryPoint` for a
+  // while with no row here, so `variantForEntryPoint` never matched them and
+  // they rendered `full` no matter what was configured.
+  //
+  // `winBack` is deliberately absent: that flow forces its own surface in the
+  // app, which overrides this table, so a control here would do nothing.
+  "home",
+  "keypointLocked",
+  "learningImport",
+  "onboarding",
   "autoOpen",
   "profile",
   "settingPre",
@@ -248,6 +258,10 @@ export type PaywallEntryPoint = (typeof PAYWALL_ENTRY_POINTS)[number];
 export const PAYWALL_ENTRY_POINT_LABELS: Record<PaywallEntryPoint, string> = {
   inLesson: "Trong bài học (swipe qua thẻ keypoint)",
   courseRoadmap: "Roadmap khóa học (tap bài bị khóa)",
+  home: "Trang chủ · nút vương miện",
+  keypointLocked: "Hết lượt đọc trong ngày (thẻ khoá)",
+  learningImport: "Tạo bài học từ tài liệu",
+  onboarding: "Ngay sau onboarding",
   autoOpen: "Tự động bật (Home / Explore)",
   profile: "Trang cá nhân",
   settingPre: "Cài đặt · thẻ Premium",
