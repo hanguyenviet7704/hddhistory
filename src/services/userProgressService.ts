@@ -6,6 +6,7 @@ import {
   StatisticsUsersLearningCoursesQuery,
   UserProgressListQuery,
   ICourseDropOff,
+  IDropOffOverview,
 } from "../types/interface/user-progress.interface";
 import axiosClient from "./axiosClient";
 
@@ -47,6 +48,17 @@ export const userProgressService = {
    * `user_progress.stopAt` phía server, không phải từ event nào của app, nên
    * phủ mọi user từ trước tới nay và không có TTL.
    */
+  /** Mọi khoá kèm số user kẹt — danh sách + xếp hạng của trang Điểm dừng. */
+  async getDropOffOverview(params: {
+    staleDays?: number;
+  }): Promise<IDropOffOverview> {
+    const res = await axiosClient.get(
+      `/courses-user-progress/drop-off-overview`,
+      { params },
+    );
+    return res.data?.data ?? res.data;
+  },
+
   async getCourseDropOff(params: {
     courseId: string;
     /** Số ngày không hoạt động để tính là "dừng hẳn". 0 = đếm tất cả. */

@@ -245,6 +245,26 @@ export interface ICourseDropOff {
   totalInProgress: number;
   /** Số user tính là "dừng hẳn" theo staleDays — mẫu số của các %. */
   totalStuck: number;
+  /**
+   * Phân bố "kẹt bao lâu rồi" trên MỌI người đang dở (không lọc staleDays —
+   * đây là cái phân bố mà bộ lọc kia cắt ngang qua). Đủ mọi bucket kể cả 0.
+   */
+  staleness: { bucket: string; count: number }[];
   /** Đã xếp theo count giảm dần: chỗ mất nhiều người nhất đứng đầu. */
   rows: ICourseDropOffRow[];
+}
+
+/** Một khoá trong overview drop-off — cũng là bảng xếp hạng khoá rơi người. */
+export interface IDropOffOverviewCourse {
+  courseId: string;
+  /** Null khi khoá đã xoá hẳn — vẫn liệt kê vì user vẫn kẹt trong đó. */
+  title: ITranslation | null;
+  totalInProgress: number;
+  totalStuck: number;
+}
+
+export interface IDropOffOverview {
+  staleDays: number;
+  /** Đã xếp theo totalStuck giảm dần. */
+  courses: IDropOffOverviewCourse[];
 }
