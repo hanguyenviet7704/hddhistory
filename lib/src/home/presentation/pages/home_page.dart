@@ -550,7 +550,7 @@ class _JumpBackInCard extends StatelessWidget {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// Quick tiles: Explore 60+ topics · Today's habit
+// Quick tiles: Explore many courses · Today's habit
 // ───────────────────────────────────────────────────────────────────────────
 
 class _HomeQuickTiles extends StatelessWidget {

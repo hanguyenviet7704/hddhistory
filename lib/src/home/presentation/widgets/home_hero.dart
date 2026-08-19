@@ -179,10 +179,10 @@ class _HeroGreetingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentStreak = context.select((LearningStreakCubit cubit) => cubit.state.selectedItem.currentStreak);
 
-    return BlocSelector<ProfileCubit, ProfileState, String>(
-      selector: (state) => state.user.name,
-      builder: (context, username) {
-        final firstName = username.trim().split(' ').first;
+    return BlocSelector<ProfileCubit, ProfileState, ({String name, bool isPremium})>(
+      selector: (state) => (name: state.user.name, isPremium: state.user.isPremium),
+      builder: (context, profile) {
+        final firstName = profile.name.trim().split(' ').first;
         final prefix = context.l10n.home.homeGreetingPrefix;
         final greeting = firstName.isEmpty ? '$prefix!' : '$prefix, $firstName!';
 
@@ -206,6 +206,16 @@ class _HeroGreetingRow extends StatelessWidget {
               ),
             ),
             12.horizontalSpace,
+            // Premium crown, first in the trailing cluster (design `2 · Home`
+            // → `showHome`). Hidden once they subscribe — the same rule the
+            // Profile page's `_PremiumBanner` follows — so a paying reader is
+            // never sold to. Spacing stays on this row's 12 rhythm rather than
+            // the design's 7: the streak/avatar pair beside it already ships
+            // at 12, and a lone 7 here would read as a mistake.
+            if (!profile.isPremium) ...[
+              const HomePremiumChip(),
+              12.horizontalSpace,
+            ],
             StreakHomeChip(
               currentStreak: currentStreak,
               onTap: () => _openProfile(context, currentStreak),

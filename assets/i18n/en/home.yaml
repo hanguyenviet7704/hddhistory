@@ -13,12 +13,13 @@ homeGreetingTitle: What would you like to learn today, ${username}?
 homeMindQuestion: what's on your mind?
 homeJumpBackIn: Jump back in
 homeStreakEmptyPrompt: Finish a lesson to start your streak
-homeExploreTopics: Explore 60+ topics
+homeExploreTopics: Explore many courses
 homeExploreTopicsSub: Find your next course
 homeTodayHabit: Today's habit
 homeTodayHabitSub: Keep your routine going
 homeHomeButton: Home
 homeQuoteLabel: Quote of the day
+homePremiumLabel: Premium
 homeRecommendCourse: Start a new skill
 homeRecommended: Recommended
 homeRecommendedNewCourse: New course

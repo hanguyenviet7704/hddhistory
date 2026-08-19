@@ -40,11 +40,12 @@ inAppSurveySendFeedback: フィードバックを送信
 inAppSurveySendWithoutFeedback: フィードバックなしで送信
 
 homeQuoteLabel: 今日の名言
+homePremiumLabel: プレミアム
 homeRecommendedSeeAll: すべて見る
 homeMindQuestion: 今、何を考えていますか？
 homeJumpBackIn: 学習を再開
 homeStreakEmptyPrompt: レッスンを終えてストリークを始めよう
-homeExploreTopics: 60以上のトピックを探す
+homeExploreTopics: たくさんのコースを探す
 homeExploreTopicsSub: 次のコースを見つけよう
 homeTodayHabit: 今日の習慣
 homeTodayHabitSub: 習慣を続けよう

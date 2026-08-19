@@ -40,11 +40,12 @@ inAppSurveySendFeedback: 发送反馈
 inAppSurveySendWithoutFeedback: 不填反馈直接发送
 
 homeQuoteLabel: 今日金句
+homePremiumLabel: 会员
 homeRecommendedSeeAll: 查看全部
 homeMindQuestion: 在想些什么？
 homeJumpBackIn: 继续学习
 homeStreakEmptyPrompt: 完成一节课，开启你的连续记录
-homeExploreTopics: 探索 60+ 主题
+homeExploreTopics: 探索更多课程
 homeExploreTopicsSub: 找到你的下一门课程
 homeTodayHabit: 今日习惯
 homeTodayHabitSub: 保持你的日常节奏

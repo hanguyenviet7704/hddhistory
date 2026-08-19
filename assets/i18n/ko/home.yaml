@@ -40,11 +40,12 @@ inAppSurveySendFeedback: 피드백 보내기
 inAppSurveySendWithoutFeedback: 피드백 없이 보내기
 
 homeQuoteLabel: 오늘의 명언
+homePremiumLabel: 프리미엄
 homeRecommendedSeeAll: 전체 보기
 homeMindQuestion: 무슨 생각을 하고 있나요?
 homeJumpBackIn: 다시 시작하기
 homeStreakEmptyPrompt: 레슨을 완료하고 연속 학습을 시작하세요
-homeExploreTopics: 60개 이상의 주제 둘러보기
+homeExploreTopics: 다양한 코스 둘러보기
 homeExploreTopicsSub: 다음 코스를 찾아보세요
 homeTodayHabit: 오늘의 습관
 homeTodayHabitSub: 루틴을 계속 이어가세요

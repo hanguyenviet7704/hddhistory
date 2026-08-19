@@ -12,12 +12,13 @@ homeGreetingTitle: Hôm nay bạn muốn khám phá điều gì, ${username}?
 homeMindQuestion: Hôm nay bạn nghĩ gì thế?
 homeJumpBackIn: Học tiếp nào
 homeStreakEmptyPrompt: Hoàn thành một bài học để bắt đầu chuỗi
-homeExploreTopics: Khám phá 60+ chủ đề
+homeExploreTopics: Khám phá nhiều khóa học
 homeExploreTopicsSub: Tìm khóa học tiếp theo
 homeTodayHabit: Thói quen hôm nay
 homeTodayHabitSub: Duy trì thói quen của bạn
 homeHomeButton: Trang chủ
 homeQuoteLabel: Câu nói hôm nay
+homePremiumLabel: Premium
 homeRecommendCourse: Bắt đầu một kỹ năng mới
 homeRecommended: Gợi ý cho bạn
 homeRecommendedNewCourse: Khoá học mới
