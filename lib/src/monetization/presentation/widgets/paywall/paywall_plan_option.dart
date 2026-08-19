@@ -25,15 +25,15 @@ class PaywallPlanOption extends StatelessWidget {
                   AppHaptic.select();
                   onTap!();
                 },
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(18.r),
           child: Container(
-            // Design `6b · Premium`: a 9/16 card, not the 84-tall block this
-            // used to be. Two of these plus the offer strip have to sit between
-            // the benefits and the CTA without pushing the button off-screen.
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+            // Design `6b · Premium`: 15/18 padding — the card carries real air
+            // around its two rows ("design trông card nó to hơn", 2026-08-19).
+            // The page scrolls, so the extra height costs nothing below.
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 15.h),
             decoration: BoxDecoration(
               color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFF2F1FE),
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(18.r),
               // Unselected keeps a VISIBLE lavender border (design): the old
               // borderDefault (#EBF0F7) vanished against the card's #F2F1FE
               // fill and the card read as borderless.
@@ -108,7 +108,9 @@ class PaywallPlanOption extends StatelessWidget {
                     _RadioIndicator(selected: selected),
                   ],
                 ),
-                2.verticalSpace,
+                // 8 between the rows, per the design's margin-top on the
+                // price line — 2 made the card read as one squashed line pair.
+                8.verticalSpace,
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
