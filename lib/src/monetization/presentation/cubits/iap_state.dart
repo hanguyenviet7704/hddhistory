@@ -95,6 +95,13 @@ abstract class IapState with _$IapState {
     /// IapCubit._verifyPurchase.
     @Default('') String logicSaleId,
 
+    /// Body A/B assignment for THIS load, from the same `logic-sale` response
+    /// as [logicSaleId]. Decides which body the paywall renders (see
+    /// IapCubit.resolvedBodyVariant) and, when `inExperiment`, is stamped on
+    /// the paywall events and carried into `VerifyParams` so the readout can
+    /// count verified orders per arm.
+    @Default(PaywallBodyExperimentEntity()) PaywallBodyExperimentEntity bodyExperiment,
+
     /// Device-local absolute deadline for the LogicSale countdown strip,
     /// already translated from the server clock captured at fetch time (see
     /// IapCubit._logicSaleLocalDeadline). Null hides the strip: no LogicSale,

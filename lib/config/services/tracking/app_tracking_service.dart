@@ -249,6 +249,16 @@ final class AppTrackingService extends ITrackingService {
         if (strategy.campaignId.isNotEmpty) params['paywall_campaign_id'] = strategy.campaignId;
         if (strategy.impressionNumber != null) params['paywall_impression_number'] = strategy.impressionNumber;
       }
+      // Body A/B arm, on every paywall event so the funnel can be split by it
+      // (`paywall_scr_view` -> `paywall_plan_click` -> `paywall_upgrade_click`
+      // is what PaywallConfigService.bodyExperimentStats reads back). Stamped
+      // ONLY for a viewer the server counted in the run: an excluded viewer
+      // carrying an arm name would be a third treatment inside two buckets.
+      final experiment = cubit.state.bodyExperiment;
+      if (experiment.inExperiment && experiment.key.isNotEmpty) {
+        params['paywall_experiment_key'] = experiment.key;
+        params['paywall_body_variant'] = experiment.variant.name;
+      }
       return params;
     } catch (_) {
       return {};

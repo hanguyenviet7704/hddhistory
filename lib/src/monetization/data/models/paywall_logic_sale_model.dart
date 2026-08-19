@@ -15,6 +15,24 @@ abstract class PaywallLogicSaleProductModel with _$PaywallLogicSaleProductModel 
       _$PaywallLogicSaleProductModelFromJson(json);
 }
 
+/// The body A/B assignment the same response carries.
+///
+/// Rides on the logic-sale call rather than a request of its own: that call is
+/// already made when the paywall opens, is per-viewer and uncached, and its
+/// answer is already threaded into the purchase verify — the exact rail the
+/// assignment needs. See `PaywallConfigService.assignBodyVariant`.
+@freezed
+abstract class PaywallBodyExperimentModel with _$PaywallBodyExperimentModel {
+  const factory PaywallBodyExperimentModel({
+    @Default('') String key,
+    @Default('') String variant,
+    @Default(false) bool inExperiment,
+  }) = _PaywallBodyExperimentModel;
+
+  factory PaywallBodyExperimentModel.fromJson(Map<String, dynamic> json) =>
+      _$PaywallBodyExperimentModelFromJson(json);
+}
+
 /// Response of `GET /paywall-config/logic-sale`.
 @freezed
 abstract class PaywallLogicSaleModel with _$PaywallLogicSaleModel {
@@ -27,6 +45,7 @@ abstract class PaywallLogicSaleModel with _$PaywallLogicSaleModel {
     @Default(false) bool countdown,
     DateTime? startAtUtc,
     DateTime? endAtUtc,
+    PaywallBodyExperimentModel? experiment,
   }) = _PaywallLogicSaleModel;
 
   factory PaywallLogicSaleModel.fromJson(Map<String, dynamic> json) => _$PaywallLogicSaleModelFromJson(json);
@@ -49,5 +68,13 @@ extension PaywallLogicSaleModelExtension on PaywallLogicSaleModel {
     startAtUtc: startAtUtc,
     endAtUtc: endAtUtc,
     nowUtc: nowUtc,
+    experiment: PaywallBodyExperimentEntity(
+      key: experiment?.key ?? '',
+      // Unknown strings (a server that learns a third body before this build
+      // does) land on benefits: the arm we cannot render is not an arm we may
+      // silently report having shown.
+      variant: experiment?.variant == 'comparison' ? PaywallBodyVariant.comparison : PaywallBodyVariant.benefits,
+      inExperiment: experiment?.inExperiment ?? false,
+    ),
   );
 }

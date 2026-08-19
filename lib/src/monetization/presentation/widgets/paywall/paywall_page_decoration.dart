@@ -81,7 +81,9 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
     // có dòng. Thiếu điều kiện thứ hai thì bật layout trước lúc nhập dữ liệu sẽ
     // cho ra một paywall không có khối nào ở giữa — trông y như lỗi.
     final comparisonRows = content.comparison.where((row) => row.label.text.trim().isNotEmpty || row.free.text.trim().isNotEmpty || row.premium.text.trim().isNotEmpty).toList();
-    final showComparison = context.read<IapCubit>().resolvedPaywallConfig.bodyVariant == PaywallBodyVariant.comparison && comparisonRows.isNotEmpty;
+    // The A/B assignment when a run is on, the config's own choice otherwise —
+    // see IapCubit.resolvedBodyVariant.
+    final showComparison = context.read<IapCubit>().resolvedBodyVariant == PaywallBodyVariant.comparison && comparisonRows.isNotEmpty;
 
     // Design `6b · Premium`: the close button does NOT sit in a header row with
     // the wordmark — it floats over the scroll, top-right, so the `MeUp PREMIUM`

@@ -1,5 +1,25 @@
 part of '../../monetization.dart';
 
+/// Which paywall body THIS viewer was assigned, and whether the assignment
+/// counts towards the A/B run.
+///
+/// [inExperiment] false means "render [variant], but do not report an arm" —
+/// the server excludes viewers it cannot keep in a stable arm (no id) or whose
+/// locale has no comparison rows of its own, and reporting them would put a
+/// third treatment inside one of the two arms. An empty [key] means no run is
+/// configured at all.
+@freezed
+abstract class PaywallBodyExperimentEntity with _$PaywallBodyExperimentEntity {
+  const factory PaywallBodyExperimentEntity({
+    @Default('') String key,
+    @Default(PaywallBodyVariant.benefits) PaywallBodyVariant variant,
+    @Default(false) bool inExperiment,
+  }) = _PaywallBodyExperimentEntity;
+
+  factory PaywallBodyExperimentEntity.fromJson(Map<String, dynamic> json) =>
+      _$PaywallBodyExperimentEntityFromJson(json);
+}
+
 /// The "LogicSale" campaign — a per-user, segment-targeted limited-time offer
 /// resolved server-side (`GET /paywall-config/logic-sale`), independent of the
 /// CMS-authored `saleStrategy.saleEvent` [ResolvePaywallStrategyUsecase]
@@ -29,6 +49,11 @@ abstract class PaywallLogicSaleEntity with _$PaywallLogicSaleEntity {
     /// [endAtUtc] is measured against, so the client never has to trust its
     /// own wall clock for the absolute deadline.
     DateTime? nowUtc,
+
+    /// The body A/B assignment carried by the same response. Present even when
+    /// [active] is false — most of the time no campaign is running, and the
+    /// experiment still has to be resolved for that viewer.
+    @Default(PaywallBodyExperimentEntity()) PaywallBodyExperimentEntity experiment,
   }) = _PaywallLogicSaleEntity;
 
   factory PaywallLogicSaleEntity.fromJson(Map<String, dynamic> json) => _$PaywallLogicSaleEntityFromJson(json);

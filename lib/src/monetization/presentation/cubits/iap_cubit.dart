@@ -77,6 +77,16 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   /// this getter itself is always synchronous and always non-null.
   PaywallConfigEntity get resolvedPaywallConfig => _resolvedPaywallConfig ?? _remoteConfigService.paywallConfig;
 
+  /// Which body the paywall renders: the A/B assignment when a run is on for
+  /// this viewer, the config's own `bodyVariant` otherwise.
+  ///
+  /// The server has already applied every exclusion (no run, no stable id, a
+  /// locale without comparison rows) and answers with what to render, so this
+  /// is a straight read rather than a second copy of those rules — two places
+  /// deciding the same thing is how an arm ends up showing the other body.
+  PaywallBodyVariant get resolvedBodyVariant =>
+      state.bodyExperiment.key.isEmpty ? resolvedPaywallConfig.bodyVariant : state.bodyExperiment.variant;
+
   /// Refreshes [resolvedPaywallConfig] from the API in the background.
   ///
   /// Never blocks: callers should fire-and-forget this (see
@@ -399,8 +409,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     // fetch itself, just for a second, independent signal. A failure or
     // `active: false` answer resolves to null, so everything past this line
     // behaves exactly as it did before LogicSale existed.
-    final logicSale = await _resolveLogicSale(resolvedStrategy);
+    final logicSaleResponse = await _fetchLogicSaleResponse(resolvedStrategy);
     if (!_isCurrentLoad(loadingSignature, generation)) return false;
+
+    // A campaign only counts when the server says it is live; the assignment
+    // beside it is read either way.
+    final logicSale = (logicSaleResponse?.active ?? false) ? logicSaleResponse : null;
+    final bodyExperiment = logicSaleResponse?.experiment ?? const PaywallBodyExperimentEntity();
 
     final logicSaleProductIds = _logicSaleProductIds(logicSale, platform);
     final usesLogicSale = logicSaleProductIds.isNotEmpty;
@@ -420,6 +435,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
             errorMessage: error.toString(),
             logicSaleId: '',
             logicSaleCountdownEndAt: null,
+            bodyExperiment: bodyExperiment,
           ),
         );
         return false;
@@ -437,6 +453,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
               errorMessage: 'empty_products',
               logicSaleId: '',
               logicSaleCountdownEndAt: null,
+              bodyExperiment: bodyExperiment,
             ),
           );
           return false;
@@ -457,6 +474,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
             // to the default plans would misrepresent what the clock is
             // counting down to.
             logicSaleCountdownEndAt: usesLogicSale && logicSale!.countdown ? _logicSaleLocalDeadline(logicSale) : null,
+            bodyExperiment: bodyExperiment,
           ),
         );
         return true;
@@ -470,10 +488,17 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   /// LogicSale never touches the compact 33%-off sheet — the same rule
   /// `saleStrategy.saleEvent` follows (see `ResolvePaywallStrategyUsecase`).
-  Future<PaywallLogicSaleEntity?> _resolveLogicSale(ResolvedPaywallStrategyEntity resolvedStrategy) async {
+  /// The raw `logic-sale` answer — campaign AND body-experiment assignment.
+  ///
+  /// Kept whole rather than filtered on `active` the way it used to be: most
+  /// of the time no campaign is running, and the assignment on that same
+  /// response still decides which body this viewer sees. The compact sheet
+  /// skips the call entirely (it renders neither body), so a purchase made
+  /// only from it carries no arm — by design, not by accident.
+  Future<PaywallLogicSaleEntity?> _fetchLogicSaleResponse(ResolvedPaywallStrategyEntity resolvedStrategy) async {
     if (resolvedStrategy.variant == PaywallProductVariant.compact) return null;
     final result = await _getPaywallLogicSaleUsecase(unit).run();
-    return result.match((_) => null, (value) => value.active ? value : null);
+    return result.match((_) => null, (value) => value);
   }
 
   /// Platform-appropriate SKU per reference, skipping any that is missing
@@ -772,6 +797,12 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     // reconciliation that never went through purchaseProduct() in the first
     // place (state.lastAction would be `none` there).
     final logicSaleId = state.lastAction == PurchaseAction.purchase ? state.logicSaleId : '';
+    // Same gate as the LogicSale id, plus the server's own verdict: only a
+    // viewer it counted in the run may be attributed to an arm.
+    final experiment = state.bodyExperiment;
+    final inExperiment = state.lastAction == PurchaseAction.purchase && experiment.inExperiment && experiment.key.isNotEmpty;
+    final paywallExperimentKey = inExperiment ? experiment.key : '';
+    final paywallBodyVariant = inExperiment ? experiment.variant.name : '';
 
     if (Platform.isIOS) {
       params = VerifyParams(
@@ -781,6 +812,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         storeTransactionId: transactionId,
         voucherCode: state.attributedVoucherCode,
         logicSaleId: logicSaleId,
+        paywallExperimentKey: paywallExperimentKey,
+        paywallBodyVariant: paywallBodyVariant,
       );
     } else {
       final verificationData = purchaseDetail.verificationData;
@@ -791,6 +824,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         storeTransactionId: verificationData.serverVerificationData,
         voucherCode: state.attributedVoucherCode,
         logicSaleId: logicSaleId,
+        paywallExperimentKey: paywallExperimentKey,
+        paywallBodyVariant: paywallBodyVariant,
       );
     }
 

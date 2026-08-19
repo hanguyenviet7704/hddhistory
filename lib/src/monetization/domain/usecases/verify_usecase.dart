@@ -16,6 +16,13 @@ class VerifyParams {
   /// IapCubit._verifyPurchase).
   final String logicSaleId;
 
+  /// Attribution only, same contract as [logicSaleId]: the body A/B run and
+  /// the arm this buyer was assigned, sent only when the server actually put
+  /// them IN the run (see IapCubit._verifyPurchase). Excluded viewers send
+  /// nothing rather than a third value, so neither arm is inflated.
+  final String paywallExperimentKey;
+  final String paywallBodyVariant;
+
   VerifyParams({
     required this.platform,
     this.productId = '',
@@ -23,6 +30,8 @@ class VerifyParams {
     this.storeTransactionId = '',
     this.voucherCode = '',
     this.logicSaleId = '',
+    this.paywallExperimentKey = '',
+    this.paywallBodyVariant = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -33,6 +42,11 @@ class VerifyParams {
       'storeTransactionId': storeTransactionId,
       if (voucherCode.isNotEmpty) 'voucherCode': voucherCode,
       if (logicSaleId.isNotEmpty) 'logicSaleId': logicSaleId,
+      // Both halves or neither: an arm without its run key cannot be read back.
+      if (paywallExperimentKey.isNotEmpty && paywallBodyVariant.isNotEmpty) ...{
+        'paywallExperimentKey': paywallExperimentKey,
+        'paywallBodyVariant': paywallBodyVariant,
+      },
     };
   }
 }
