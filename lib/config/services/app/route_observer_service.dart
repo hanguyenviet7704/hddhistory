@@ -14,6 +14,12 @@ extension on Route<dynamic> {
 /// changed, un-hiding the shell's floating nav over its CTA. Only trust a
 /// didRemove signal when the removed route was the one actually being
 /// tracked as current (a real top-of-stack removal, e.g. Navigator.removeRoute).
+///
+/// `didPop` reuses this for the NAMED case, where the same reasoning holds. Its
+/// unnamed case cannot use it — an overlay has no name to compare — and is
+/// handled by [BaseRouterObserver._pagesUnderOverlays] instead. The
+/// "OnRemove" name is kept even though two callers share it: the test file pins
+/// it.
 bool shouldUpdateCurrentRouteOnRemove({
   required String removedRouteName,
   required String trackedCurrentRouteName,
@@ -24,9 +30,63 @@ class BaseRouterObserver extends NavigatorObserver {
   final PageCubit _pageCubit;
   BaseRouterObserver(this.observerName, this._pageCubit);
 
+  /// Page names that unnamed overlays are currently covering, innermost last.
+  ///
+  /// An unnamed route (dialog, bottom sheet, the saved-card detail overlay)
+  /// blanks the pointer on push, and that blanking is exactly what hides the
+  /// floating nav underneath it — 35-odd surfaces rely on it. But it also leaves
+  /// the pop with nothing to restore except `previousRoute`, and for an overlay
+  /// pushed on the ROOT navigator that is the SHELL, whose name is primary: the
+  /// nav came back over whatever non-primary page the reader was really on
+  /// ("lúc thì có nav lúc không" on Saved cards, 2026-08-18).
+  ///
+  /// A stack, not one field, so nested overlays each restore their own caller.
+  ///
+  /// STATIC, not per-instance, and that is the whole fix for "bấm ⋯ rồi thoát ra
+  /// là mất nav". There is one observer PER NAVIGATOR (root + one per shell
+  /// branch), but an overlay's push and its pop are not guaranteed to be seen by
+  /// the SAME one: the ⋯ sheet is pushed on the shell navigator (it passes no
+  /// `useRootNavigator`), while a close that goes through go_router's `pop`
+  /// reaches the ROOT navigator. The root observer then had an empty stack, so
+  /// the `isNotEmpty` guard below simply did nothing — and the pointer stayed on
+  /// the blank an overlay push writes, which is exactly what hides the nav. The
+  /// nav was not restored because nobody was left holding the name.
+  ///
+  /// Overlays nest in TIME, not per navigator, so one shared stack matches what
+  /// is actually on screen. Sharing it also means whichever observer sees the
+  /// pop can restore what whichever observer saw the push.
+  static final List<String> _pagesUnderOverlays = [];
+
+  /// Clears the shared overlay stack.
+  ///
+  /// Exists because the stack is `static`: no test constructs a real
+  /// [BaseRouterObserver] today, but the first one that does would inherit
+  /// whatever a previous test left behind, and debugging that from a failing
+  /// expectation is miserable.
+  @visibleForTesting
+  static void resetOverlayStackForTest() => _pagesUnderOverlays.clear();
+
+  /// The page name to restore when this overlay closes.
+  ///
+  /// Prefers the tracked pointer: for an overlay on the ROOT navigator
+  /// `previousRoute` is the SHELL, whose name is primary, and restoring that
+  /// showed the nav over a non-primary page (the bug this stack was built for).
+  /// Falls back to the navigator's own stack only when the pointer is blank —
+  /// nested overlays, where the outer one already blanked it. A name that shows
+  /// the nav on the wrong page is a smaller wrong than no nav at all.
+  String _pageUnderOverlay(Route<dynamic>? previousRoute) {
+    final tracked = _pageCubit.state.currentRouteName;
+    if (tracked.isNotEmpty) return tracked;
+
+    return previousRoute?.settings.name ?? '';
+  }
+
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     _log('didPush', route, previousRoute);
+    if ((route.settings.name ?? '').isEmpty) {
+      _pagesUnderOverlays.add(_pageUnderOverlay(previousRoute));
+    }
     onRouteChanged(route);
     onPushRoute(route);
   }
@@ -34,7 +94,23 @@ class BaseRouterObserver extends NavigatorObserver {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     _log('didPop', route, previousRoute);
-    onRouteChanged(previousRoute);
+    final poppedName = route.settings.name ?? '';
+    if (poppedName.isEmpty) {
+      // An overlay closing: hand the pointer back to the page it was covering,
+      // NOT to `previousRoute`. See [_pagesUnderOverlays].
+      final under = _pagesUnderOverlays.isNotEmpty ? _pagesUnderOverlays.removeLast() : '';
+      // Never hand back a BLANK. A blank pointer is what hides the floating nav,
+      // so restoring one on close leaves the uncovered page looking like it is
+      // still covered — nav gone, nothing in the logs. When the stack has nothing
+      // usable, fall back to the route physically underneath.
+      final restored = under.isNotEmpty ? under : (previousRoute?.settings.name ?? '');
+      if (restored.isNotEmpty) _pageCubit.setCurrentRouteName(restored);
+    } else if (shouldUpdateCurrentRouteOnRemove(
+      removedRouteName: poppedName,
+      trackedCurrentRouteName: _pageCubit.state.currentRouteName,
+    )) {
+      onRouteChanged(previousRoute);
+    }
     onPopRoute(route);
   }
 
@@ -46,6 +122,11 @@ class BaseRouterObserver extends NavigatorObserver {
       trackedCurrentRouteName: _pageCubit.state.currentRouteName,
     )) {
       onRouteChanged(previousRoute);
+    }
+    if ((route.settings.name ?? '').isEmpty && _pagesUnderOverlays.isNotEmpty) {
+      // Removed rather than popped — drop the entry so a later overlay does not
+      // restore a page name from a route that is long gone.
+      _pagesUnderOverlays.removeLast();
     }
     onRemoveRoute(route);
   }
