@@ -109,8 +109,7 @@ class _ImportFocusGuideState extends State<ImportFocusGuide> {
             tween: Tween<double>(begin: 0, end: 1),
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
-            builder: (context, value, child) =>
-                Opacity(opacity: value, child: child),
+            builder: (context, value, child) => Opacity(opacity: value, child: child),
             child: Stack(
               children: [
                 Positioned.fill(
@@ -205,10 +204,7 @@ class _SpotlightPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SpotlightPainter oldDelegate) =>
-      oldDelegate.hole != hole ||
-      oldDelegate.radius != radius ||
-      oldDelegate.unit != unit;
+  bool shouldRepaint(_SpotlightPainter oldDelegate) => oldDelegate.hole != hole || oldDelegate.radius != radius || oldDelegate.unit != unit;
 }
 
 class _GuideCard extends StatelessWidget {

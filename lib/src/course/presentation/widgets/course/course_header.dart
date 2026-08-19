@@ -24,8 +24,7 @@ class CourseHeader extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: BlocBuilder<CourseCubit, CourseState>(
-        buildWhen: (prev, curr) =>
-            prev.searchQuery != curr.searchQuery || prev.isSearchActive != curr.isSearchActive,
+        buildWhen: (prev, curr) => prev.searchQuery != curr.searchQuery || prev.isSearchActive != curr.isSearchActive,
         builder: (context, state) {
           return Row(
             children: [
@@ -40,12 +39,8 @@ class CourseHeader extends StatelessWidget {
                 // than no button: it reads as broken rather than as paused.
                 BlocBuilder<LearningImportCubit, LearningImportState>(
                   bloc: AppDI.injector.get<LearningImportCubit>(),
-                  buildWhen: (previous, current) =>
-                      previous.quota.enabled != current.quota.enabled ||
-                      previous.quota.isKnown != current.quota.isKnown,
-                  builder: (context, importState) => importState.quota.isFeatureOff
-                      ? const SizedBox.shrink()
-                      : const _ImportButton(),
+                  buildWhen: (previous, current) => previous.quota.enabled != current.quota.enabled || previous.quota.isKnown != current.quota.isKnown,
+                  builder: (context, importState) => importState.quota.isFeatureOff ? const SizedBox.shrink() : const _ImportButton(),
                 ),
               ],
             ],
@@ -118,19 +113,13 @@ class _SearchField extends StatelessWidget {
           bottom: 4.h,
         ),
         decoration: BoxDecoration(
-          color: state.isSearchActive
-              ? AppCustomColor.backgroundWhite
-              : AppCustomColor.backgroundGray,
+          color: state.isSearchActive ? AppCustomColor.backgroundWhite : AppCustomColor.backgroundGray,
           borderRadius: BorderRadius.circular(50.r),
           border: Border.all(
-            color: state.isSearchActive
-                ? AppCustomColor.brandPrimary.withValues(alpha: 0.6)
-                : AppCustomColor.borderDefault,
+            color: state.isSearchActive ? AppCustomColor.brandPrimary.withValues(alpha: 0.6) : AppCustomColor.borderDefault,
             width: 2,
           ),
-          boxShadow: state.isSearchActive
-              ? [const BoxShadow(color: Color(0xFFEBF0F7), blurRadius: 2)]
-              : null,
+          boxShadow: state.isSearchActive ? [const BoxShadow(color: Color(0xFFEBF0F7), blurRadius: 2)] : null,
         ),
         child: Row(
           children: [

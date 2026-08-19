@@ -25,8 +25,7 @@ double get _kCourseAuthorHeight => (11.5 * 1.4).sp;
 /// from the column width, so a cell's total height is this plus that width —
 /// which is why the grid lays cells out by natural height rather than by a
 /// fixed extent.
-double get _kCourseCaptionHeight =>
-    _kCoverToTitleGap + _kCourseTitleHeight + _kTitleToAuthorGap + _kCourseAuthorHeight;
+double get _kCourseCaptionHeight => _kCoverToTitleGap + _kCourseTitleHeight + _kTitleToAuthorGap + _kCourseAuthorHeight;
 
 /// Inter-row / inter-column gaps for the course grids (redesign redline:
 /// `gap: 20px 14px`).
@@ -39,8 +38,7 @@ double get _kCourseGridColGap => 14.w;
 /// the column width, which depends on the device. `childAspectRatio` cannot
 /// express this either — the caption below the cover is a fixed number of lines,
 /// so the cell's ratio changes with screen width.
-double courseGridCellExtent(double gridWidth) =>
-    (gridWidth - _kCourseGridColGap) / 2 + _kCourseCaptionHeight;
+double courseGridCellExtent(double gridWidth) => (gridWidth - _kCourseGridColGap) / 2 + _kCourseCaptionHeight;
 
 /// Resolves the lesson-progress numbers for [course].
 ///
@@ -55,17 +53,15 @@ double courseGridCellExtent(double gridWidth) =>
 ]) {
   final withProgress = progressById[course.id] ?? course;
   final passed = withProgress.numberOfLessonPassed;
-  final total = withProgress.numberOfLesson > 0
-      ? withProgress.numberOfLesson
-      : course.numberOfLesson;
+  final total = withProgress.numberOfLesson > 0 ? withProgress.numberOfLesson : course.numberOfLesson;
   return (passed: passed, total: total);
 }
 
 /// Builds the `courseId → course-with-progress` lookup from the ProgressCubit's
 /// "my courses" list (which carries `numberOfLessonPassed`).
 Map<String, CourseEntity> progressLookup(ProgressState progressState) => {
-      for (final c in progressState.myCourses) c.id: c,
-    };
+  for (final c in progressState.myCourses) c.id: c,
+};
 
 /// Sorts [courses] for display in the Explore screen.
 ///
@@ -206,95 +202,93 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
         }
       },
       child: BlocBuilder<HomeCubit, HomeState>(
-      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex || prev.status != curr.status,
-      builder: (context, homeState) {
-        final skillsets = homeState.skillsets;
-        if (skillsets.isEmpty) {
-          // Cold load (first open, no cached skillsets yet): show a grid
-          // skeleton instead of the "nothing to see" empty state, which is
-          // reserved for a confirmed-empty catalog (status == success).
-          final isColdLoading = homeState.status == HomeStatus.loading || homeState.status == HomeStatus.initial;
-          return isColdLoading ? const _CourseGridSkeleton() : const CourseEmptyState();
-        }
-        final progressState = context.watch<ProgressCubit>().state;
-        final exploreMode = context.select<CourseCubit, CourseExploreMode>(
-          (c) => c.state.exploreMode,
-        );
-
-        // "My courses" — a flat grid of the user's enrolled courses.
-        if (exploreMode == CourseExploreMode.myCourses) {
-          final myCourses = progressState.myCourses;
-          if (myCourses.isEmpty) {
-            return const CourseEmptyState();
+        buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex || prev.status != curr.status,
+        builder: (context, homeState) {
+          final skillsets = homeState.skillsets;
+          if (skillsets.isEmpty) {
+            // Cold load (first open, no cached skillsets yet): show a grid
+            // skeleton instead of the "nothing to see" empty state, which is
+            // reserved for a confirmed-empty catalog (status == success).
+            final isColdLoading = homeState.status == HomeStatus.loading || homeState.status == HomeStatus.initial;
+            return isColdLoading ? const _CourseGridSkeleton() : const CourseEmptyState();
           }
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final gridWidth = constraints.maxWidth - 40.w;
-              return GridView.builder(
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: _kCourseGridColGap,
-                  mainAxisSpacing: _kCourseGridRowGap,
-                  // Exact card height (no slack) so the visible row gap is
-                  // exactly _kCourseGridRowGap.
-                  mainAxisExtent: courseGridCellExtent(gridWidth),
-                ),
-                itemCount: myCourses.length,
-                itemBuilder: (context, index) {
-                  final course = myCourses[index];
-                  final info = _myCourseProgress(course);
-                  return _CourseGridCard(
-                    key: ValueKey(course.id),
-                    course: course,
-                    completedLessons: info.completedLessons,
-                    totalLessons: info.totalLessons,
-                    isSelected: homeState.isSelectedCourse(course.id),
-                    onTap: () => _onTapMyCourse(context, skillsets, course),
-                  );
-                },
-              );
-            },
+          final progressState = context.watch<ProgressCubit>().state;
+          final exploreMode = context.select<CourseCubit, CourseExploreMode>(
+            (c) => c.state.exploreMode,
           );
-        }
 
-        // "All courses" — every skillset stacked as a scrollspy section.
-        final initialIndex = _courseCubit.state.activeSkillsetIndex
-            .clamp(0, skillsets.length - 1);
-        return BlocListener<CourseCubit, CourseState>(
-          // A bumped nonce is a scroll request (chip tap / reset / deep-link).
-          listenWhen: (prev, curr) => prev.exploreScrollNonce != curr.exploreScrollNonce,
-          listener: (_, state) => _handleScrollRequest(state, skillsets.length),
-          child: NotificationListener<ScrollNotification>(
-            // Arm the scrollspy on the first user-initiated drag (programmatic
-            // scrolls have no dragDetails), so chips don't light on entry.
-            onNotification: (n) {
-              if (n is ScrollStartNotification && n.dragDetails != null) {
-                _spyArmed = true;
-              }
-              return false;
-            },
-            child: ScrollablePositionedList.builder(
-              itemScrollController: _scrollController,
-              itemPositionsListener: _positionsListener,
-              initialScrollIndex: initialIndex,
-              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
-              itemCount: skillsets.length,
-              itemBuilder: (context, index) {
-                final skillset = skillsets[index];
-                return _CourseSection(
-                  skillset: skillset,
-                  progressState: progressState,
-                  isSelected: (courseId) => homeState.isSelectedCourse(courseId),
-                  onTapCourse: (course, courseIndex) =>
-                      _onTapCourse(context, skillset, course, courseIndex),
-                  showBottomSpacing: index < skillsets.length - 1,
+          // "My courses" — a flat grid of the user's enrolled courses.
+          if (exploreMode == CourseExploreMode.myCourses) {
+            final myCourses = progressState.myCourses;
+            if (myCourses.isEmpty) {
+              return const CourseEmptyState();
+            }
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final gridWidth = constraints.maxWidth - 40.w;
+                return GridView.builder(
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: _kCourseGridColGap,
+                    mainAxisSpacing: _kCourseGridRowGap,
+                    // Exact card height (no slack) so the visible row gap is
+                    // exactly _kCourseGridRowGap.
+                    mainAxisExtent: courseGridCellExtent(gridWidth),
+                  ),
+                  itemCount: myCourses.length,
+                  itemBuilder: (context, index) {
+                    final course = myCourses[index];
+                    final info = _myCourseProgress(course);
+                    return _CourseGridCard(
+                      key: ValueKey(course.id),
+                      course: course,
+                      completedLessons: info.completedLessons,
+                      totalLessons: info.totalLessons,
+                      isSelected: homeState.isSelectedCourse(course.id),
+                      onTap: () => _onTapMyCourse(context, skillsets, course),
+                    );
+                  },
                 );
               },
+            );
+          }
+
+          // "All courses" — every skillset stacked as a scrollspy section.
+          final initialIndex = _courseCubit.state.activeSkillsetIndex.clamp(0, skillsets.length - 1);
+          return BlocListener<CourseCubit, CourseState>(
+            // A bumped nonce is a scroll request (chip tap / reset / deep-link).
+            listenWhen: (prev, curr) => prev.exploreScrollNonce != curr.exploreScrollNonce,
+            listener: (_, state) => _handleScrollRequest(state, skillsets.length),
+            child: NotificationListener<ScrollNotification>(
+              // Arm the scrollspy on the first user-initiated drag (programmatic
+              // scrolls have no dragDetails), so chips don't light on entry.
+              onNotification: (n) {
+                if (n is ScrollStartNotification && n.dragDetails != null) {
+                  _spyArmed = true;
+                }
+                return false;
+              },
+              child: ScrollablePositionedList.builder(
+                itemScrollController: _scrollController,
+                itemPositionsListener: _positionsListener,
+                initialScrollIndex: initialIndex,
+                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
+                itemCount: skillsets.length,
+                itemBuilder: (context, index) {
+                  final skillset = skillsets[index];
+                  return _CourseSection(
+                    skillset: skillset,
+                    progressState: progressState,
+                    isSelected: (courseId) => homeState.isSelectedCourse(courseId),
+                    onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
+                    showBottomSpacing: index < skillsets.length - 1,
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
       ),
     );
   }

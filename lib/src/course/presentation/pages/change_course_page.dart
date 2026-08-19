@@ -60,8 +60,7 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
           ),
           12.verticalSpace,
           Expanded(
-            child: BlocSelector<HomeCubit, HomeState,
-                ({HomeStatus status, List<CourseEntity> courses, List<SkillsetEntity> skillsets})>(
+            child: BlocSelector<HomeCubit, HomeState, ({HomeStatus status, List<CourseEntity> courses, List<SkillsetEntity> skillsets})>(
               selector: (s) => (
                 status: s.status,
                 courses: s.skillsets.expand((sk) => sk.coursesWithSkillset).toList(),
@@ -71,8 +70,7 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                 // Only block with a full spinner on a genuine cold load — never
                 // clobber an already-loaded course list (e.g. Home pull-to-refresh
                 // re-flipping status to loading while this page is open).
-                if ((snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) &&
-                    snap.skillsets.isEmpty) {
+                if ((snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) && snap.skillsets.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(color: AppCustomColor.brandPrimary),
                   );
@@ -85,17 +83,16 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                 final filtered = _selectedTabIndex == 0
                     ? snap.courses
                     : (_selectedTabIndex - 1 < snap.skillsets.length)
-                        ? snap.courses
-                            .where(
-                              (c) => c.skillset.id == snap.skillsets[_selectedTabIndex - 1].id,
-                            )
-                            .toList()
-                        : snap.courses;
+                    ? snap.courses
+                          .where(
+                            (c) => c.skillset.id == snap.skillsets[_selectedTabIndex - 1].id,
+                          )
+                          .toList()
+                    : snap.courses;
 
                 final currentCourseId = context.read<HomeCubit>().state.currentCourse.id;
 
                 if (filtered.isEmpty) return const CourseEmptyState();
-                
 
                 return ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),

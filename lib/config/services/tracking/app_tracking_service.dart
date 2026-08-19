@@ -240,7 +240,7 @@ final class AppTrackingService extends ITrackingService {
       final entryPoint = cubit.paywallEntryPoint;
       final strategy = cubit.state.resolvedPaywallStrategy;
       final params = <String, dynamic>{
-        'source': resolvePremiumTrackingSource(entryPoint),
+        'source': cubit.paywallSourceOverride ?? resolvePremiumTrackingSource(entryPoint),
         'paywall_auto_open': entryPoint == PaywallEntryPoint.autoOpen,
       };
       if (strategy != null && strategy.isValid) {
@@ -252,6 +252,24 @@ final class AppTrackingService extends ITrackingService {
       return params;
     } catch (_) {
       return {};
+    }
+  }
+
+  /// The sheet's `source` value for the paywall currently on screen — the
+  /// entry-point mapping below, unless the opener named a source no entry
+  /// point covers (the gift popup's `add_first_habit` /
+  /// `app_first_open_d1_d7`).
+  ///
+  /// Public because the events that are NOT routed through this service still
+  /// have to agree with it: [PaywallTracking] reports the compact sheet's own
+  /// screen event (`paywall_offer_scr_view`) and must stamp the same value.
+  @override
+  String currentPaywallSource() {
+    try {
+      final cubit = AppDI.injector.get<IapCubit>();
+      return cubit.paywallSourceOverride ?? resolvePremiumTrackingSource(cubit.paywallEntryPoint);
+    } catch (_) {
+      return '';
     }
   }
 
@@ -273,6 +291,11 @@ final class AppTrackingService extends ITrackingService {
         return 'keypoint_locked';
       case PaywallEntryPoint.settingPre:
       case PaywallEntryPoint.profile:
+      // The Home header's crown is the same deliberate "I want premium" tap as
+      // the Setting and Profile banners, so it joins their spec source rather
+      // than inventing a value the sheet's set doesn't have. Home opens stay
+      // separable through the `home_premium_click` event.
+      case PaywallEntryPoint.home:
         return 'upgrade';
       case PaywallEntryPoint.autoOpen:
         // The auto-open paywall shown to a brand-new GUEST (anonymous) user is
@@ -295,6 +318,10 @@ final class AppTrackingService extends ITrackingService {
         // gates it is not attached to catalogue content.
         return 'system';
       case PaywallEntryPoint.manageSubscription:
+      // Win-back is app-initiated, like autoOpen — the reader did not ask for
+      // this second sheet, so it belongs with `system`, not with the deliberate
+      // `upgrade` taps.
+      case PaywallEntryPoint.winBack:
       case PaywallEntryPoint.other:
         return 'system';
     }
@@ -712,6 +739,22 @@ final class AppTrackingService extends ITrackingService {
       parameters: {
         'current_streak': currentStreak,
       },
+    );
+  }
+
+  @override
+  Future<void> trackHomePremiumClick() async {
+    _appTrackingService.trackEvent(TrackingKey.homePremiumClick);
+  }
+
+  @override
+  Future<void> trackPaywallWinBackShown({required int delaySeconds}) async {
+    // The paywall's own `paywall_offer_scr_view` will also fire with source
+    // `system`; this one exists so the win-back can be counted apart from the
+    // auto-open that shares that source.
+    _appTrackingService.trackEvent(
+      TrackingKey.paywallWinBackShown,
+      parameters: {'delay_seconds': delaySeconds},
     );
   }
 
@@ -3184,6 +3227,12 @@ final class AppTrackingService extends ITrackingService {
       TrackingKey.paywallSuccessPopupView,
       parameters: {
         ..._optionalStringParam('product_id', productId),
+        // The sheet asks this popup for `source` too: the funnel's last step
+        // is worthless if it can't be cut by the entry point that started it
+        // (upgrade / keypoint_locked / theme_locked / the gift triggers). Fired
+        // from PaywallPage while the entry point is still live — the reset
+        // happens in its dispose.
+        ..._premiumParams(),
       },
     );
   }

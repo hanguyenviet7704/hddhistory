@@ -133,6 +133,8 @@ mixin TrackingKey {
   static const String homeTabSwitch = 'home_tab_switch';
   static const String homeSkillClick = 'home_skill_click';
   static const String homeStreakChipClick = 'home_streak_chip_click';
+  static const String homePremiumClick = 'home_premium_click';
+  static const String paywallWinBackShown = 'paywall_win_back_shown';
   static const String homeStreakPopupView = 'home_streak_popup_view';
   static const String homeStreakPopupClose = 'home_streak_popup_close';
   static const String inAppSurveyEntryView = 'in_app_survey_entry_view';

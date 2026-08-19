@@ -29,8 +29,7 @@ class LessonKeypointCard extends StatelessWidget {
         // Locked appearance mirrors the timeline indicator: a lesson that isn't
         // the active one and hasn't been started yet (or is paywall-locked)
         // shows the dimmed/grayscale "locked" card.
-        final isLockedVisual = !isActive &&
-            (isLocked || lesson.roadmapProgress == ProcessEnum.notStarted);
+        final isLockedVisual = !isActive && (isLocked || lesson.roadmapProgress == ProcessEnum.notStarted);
         return Semantics(
           button: true,
           label: _keypoint.title.text,
@@ -44,16 +43,12 @@ class LessonKeypointCard extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
-                color: isLockedVisual
-                    ? AppCustomColor.backgroundGray
-                    : studyThemeCardColor(context),
+                color: isLockedVisual ? AppCustomColor.backgroundGray : studyThemeCardColor(context),
                 borderRadius: BorderRadius.circular(16.r),
                 border: isLockedVisual
                     ? null
                     : Border.all(
-                        color: isActive
-                            ? AppCustomColor.brandPrimary
-                            : AppCustomColor.neutral300,
+                        color: isActive ? AppCustomColor.brandPrimary : AppCustomColor.neutral300,
                         width: isActive ? 2.w : 1.w,
                       ),
               ),
@@ -73,9 +68,7 @@ class LessonKeypointCard extends StatelessWidget {
                         _keypoint.title.text,
                         style: AppStyle.text14.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isLockedVisual
-                              ? AppCustomColor.textTertiary
-                              : AppCustomColor.textPrimary,
+                          color: isLockedVisual ? AppCustomColor.textTertiary : AppCustomColor.textPrimary,
                           height: 1.4,
                         ),
                         maxLines: 2,

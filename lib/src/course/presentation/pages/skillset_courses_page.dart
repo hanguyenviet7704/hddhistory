@@ -46,9 +46,9 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   void _trackCatlistScrView() {
     if (!mounted) return;
     final skillset = AppDI.injector.get<HomeCubit>().state.skillsets.firstWhere(
-          (s) => s.id == widget.skillsetId,
-          orElse: () => const SkillsetEntity(),
-        );
+      (s) => s.id == widget.skillsetId,
+      orElse: () => const SkillsetEntity(),
+    );
     if (skillset.id.isEmpty) return;
     ExploreTracking.track(
       TrackingKey.exploreCatlistScrView,

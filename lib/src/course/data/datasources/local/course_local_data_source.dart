@@ -49,9 +49,7 @@ class CourseLocalDataSourceImpl implements CourseLocalDataSource {
       if (data.isEmpty) return [];
 
       final List<dynamic> jsonList = data['items'] ?? [];
-      return jsonList
-          .map((json) => CourseModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return jsonList.map((json) => CourseModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }

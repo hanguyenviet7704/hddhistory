@@ -50,6 +50,10 @@ class LessonExitFlow {
 
   static void _handleQuit(BuildContext context) {
     final learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    // Read BEFORE the pop below: the cubit is created per lesson route and
+    // provided into that subtree, so once this popup and the lesson are gone
+    // there is nothing left to ask.
+    final wasWalled = _wasWalled(context);
     // Quitting mid-lesson ends the keypoint session → tear down the Live
     // Activity + its return-nudge (the persistent card only makes sense while a
     // lesson is actually open).
@@ -58,7 +62,15 @@ class LessonExitFlow {
     context.back();
 
     final entry = learningItem.type == LearningItemType.roleplay ? FeedbackEntry.roleplay : FeedbackEntry.keypoint;
-    _markIncompleteFeedbackPrompt(context, entry);
+    // Only ask people who CHOSE to leave. A reader stopped by the daily-quota
+    // locked card or the mid-lesson paywall gate ran out of content — they
+    // pressed the X because there was nothing left to read, not because they
+    // wanted out, and "why did you quit?" reads as blaming them for a wall we
+    // put there. Their answer would also poison the data the prompt exists to
+    // collect.
+    if (!wasWalled) {
+      _markIncompleteFeedbackPrompt(context, entry);
+    }
 
     // A lesson the user generated has a roadmap of its own — quitting it lands
     // there, the same way quitting a catalogue lesson lands on its course.
@@ -107,6 +119,20 @@ class LessonExitFlow {
 
     context.back();
     RoleplayIntroRoute().go(context);
+  }
+
+  /// Whether this lesson put a wall in front of the reader.
+  ///
+  /// Tolerates the cubit being absent rather than requiring callers to know:
+  /// [open] serves roleplay too, and a roleplay route has no [KeypointCardCubit]
+  /// in its tree — reading one there would throw where the honest answer is
+  /// simply "no wall", roleplay having no quota gate.
+  static bool _wasWalled(BuildContext context) {
+    try {
+      return context.read<KeypointCardCubit>().wasPaywallCapped;
+    } catch (_) {
+      return false;
+    }
   }
 
   static void _markIncompleteFeedbackPrompt(BuildContext context, FeedbackEntry entry) {

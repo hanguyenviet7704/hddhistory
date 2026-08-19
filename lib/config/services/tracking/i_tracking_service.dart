@@ -74,6 +74,8 @@ abstract interface class ITrackingService {
   Future<void> trackHomeTabSwitch(String tabType);
   Future<void> trackHomeSkillClick(SkillsetEntity skillset);
   Future<void> trackHomeStreakChipClick({required int currentStreak});
+  Future<void> trackHomePremiumClick();
+  Future<void> trackPaywallWinBackShown({required int delaySeconds});
   Future<void> trackHomeStreakPopupView({required int currentStreak});
   Future<void> trackHomeStreakPopupClose({required int currentStreak});
   Future<void> trackInAppSurveyEntryView({required String source});
@@ -635,6 +637,10 @@ abstract interface class ITrackingService {
   Future<void> trackPaywallTermsClick();
   Future<void> trackPaywallPrivacyClick();
   Future<void> trackPaywallSuccessPopupView(String productId);
+
+  /// The `source` value the paywall on screen reports, for the paywall events
+  /// this interface does not own (the compact sheet's, in [PaywallTracking]).
+  String currentPaywallSource();
   Future<void> trackPaywallSuccessPopupClick();
   Future<void> trackSettingBadgeClick(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeSlide(CourseTrackingData trackingData);

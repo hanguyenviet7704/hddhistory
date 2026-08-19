@@ -25,8 +25,7 @@ class RoadmapLessonCard extends StatelessWidget {
         // Locked appearance mirrors the timeline indicator: a lesson that isn't
         // the active one and hasn't been started yet (or is paywall-locked)
         // shows the dimmed/grayscale "locked" card.
-        final isLockedVisual = !isActive &&
-            (isLocked || lesson.roadmapProgress == ProcessEnum.notStarted);
+        final isLockedVisual = !isActive && (isLocked || lesson.roadmapProgress == ProcessEnum.notStarted);
         return Semantics(
           button: true,
           label: lesson.title.text,
@@ -40,16 +39,12 @@ class RoadmapLessonCard extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
-                color: isLockedVisual
-                    ? AppCustomColor.backgroundGray
-                    : studyThemeCardColor(context),
+                color: isLockedVisual ? AppCustomColor.backgroundGray : studyThemeCardColor(context),
                 borderRadius: BorderRadius.circular(16.r),
                 border: isLockedVisual
                     ? null
                     : Border.all(
-                        color: isActive
-                            ? AppCustomColor.brandPrimary
-                            : AppCustomColor.neutral300,
+                        color: isActive ? AppCustomColor.brandPrimary : AppCustomColor.neutral300,
                         width: isActive ? 2.w : 1.w,
                       ),
               ),
@@ -69,9 +64,7 @@ class RoadmapLessonCard extends StatelessWidget {
                         lesson.title.text,
                         style: AppStyle.text14.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isLockedVisual
-                              ? AppCustomColor.textTertiary
-                              : AppCustomColor.textPrimary,
+                          color: isLockedVisual ? AppCustomColor.textTertiary : AppCustomColor.textPrimary,
                           height: 1.4,
                         ),
                         maxLines: 2,
@@ -103,10 +96,26 @@ class _RoadmapCardThumbnail extends StatelessWidget {
   final String label;
 
   static const _grayscaleMatrix = ColorFilter.matrix([
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0,      0,      0,      1, 0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
   ]);
 
   const _RoadmapCardThumbnail({
@@ -127,9 +136,7 @@ class _RoadmapCardThumbnail extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             ColorFiltered(
-              colorFilter: isLocked
-                  ? _grayscaleMatrix
-                  : const ColorFilter.mode(Colors.transparent, BlendMode.color),
+              colorFilter: isLocked ? _grayscaleMatrix : const ColorFilter.mode(Colors.transparent, BlendMode.color),
               // A keypoint without artwork used to leave a flat grey square,
               // which reads as a failed image rather than as one that has not
               // been uploaded yet.

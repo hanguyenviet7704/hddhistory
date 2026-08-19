@@ -27,7 +27,6 @@ abstract class CourseEntity with _$CourseEntity {
   factory CourseEntity.fromJson(Map<String, dynamic> json) => _$CourseEntityFromJson(json);
 }
 
-
 extension CourseEntityExtension on CourseEntity {
   CourseEntity get withSkillset {
     List<SkillsetEntity> skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
@@ -39,8 +38,7 @@ extension CourseEntityExtension on CourseEntity {
   }
 
   /// Completion percentage (0–100) for "Continue learning" cards.
-  double get completionPercentage =>
-      numberOfLesson > 0 ? (numberOfLessonPassed / numberOfLesson * 100).clamp(0, 100) : 0;
+  double get completionPercentage => numberOfLesson > 0 ? (numberOfLessonPassed / numberOfLesson * 100).clamp(0, 100) : 0;
 
   String get trackingName => title.en;
 

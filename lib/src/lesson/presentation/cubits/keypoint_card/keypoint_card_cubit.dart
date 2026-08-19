@@ -297,6 +297,15 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     }
   }
 
+  /// Whether this keypoint was capped AT ALL — the daily-quota locked card or
+  /// the mid-lesson paywall gate cut the deck short at some point.
+  ///
+  /// Deliberately not [isAtPaywallWall]: that one means "standing on the wall
+  /// right now", so a reader who hit the wall, swiped back a card and then quit
+  /// would read as un-walled. What callers deciding whether the exit was the
+  /// reader's own choice need is whether a wall existed, not where they stopped.
+  bool get wasPaywallCapped => _paywallCardCap != null;
+
   /// Whether the view already sits on the last card the paywall allows, so
   /// revealing another one would hand over paid content.
   bool get isAtPaywallWall {

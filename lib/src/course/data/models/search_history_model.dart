@@ -7,6 +7,5 @@ abstract class SearchHistoryModel with _$SearchHistoryModel {
     DateTime? updatedAt,
   }) = _SearchHistoryModel;
 
-  factory SearchHistoryModel.fromJson(Map<String, dynamic> json) =>
-      _$SearchHistoryModelFromJson(json);
+  factory SearchHistoryModel.fromJson(Map<String, dynamic> json) => _$SearchHistoryModelFromJson(json);
 }

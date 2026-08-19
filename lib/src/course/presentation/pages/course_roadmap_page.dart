@@ -519,8 +519,12 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                           // away, so the reader always knows which course they
                           // are in without two titles competing at the top.
                           // Inset clear of the back arrow and the (...) disc.
+                          // The arrow ends at 32.w (12.w padding + 20.w icon),
+                          // so the title starts at 44.w — the same 12.w of air
+                          // the arrow gets from the screen edge. At 34.w it
+                          // read as glued to the chevron.
                           Positioned(
-                            left: 34.w,
+                            left: 44.w,
                             right: 84.w,
                             child: ValueListenableBuilder<double>(
                               valueListenable: _headerTitleOpacity,

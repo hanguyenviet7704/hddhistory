@@ -34,13 +34,9 @@ class CourseListTile extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: showBorder
               ? BoxDecoration(
-                  color: isSelected
-                      ? AppCustomColor.brandPrimary50
-                      : studyThemeCardColor(context),
+                  color: isSelected ? AppCustomColor.brandPrimary50 : studyThemeCardColor(context),
                   border: Border.all(
-                    color: isSelected
-                        ? AppCustomColor.brandPrimary
-                        : AppCustomColor.borderDefault,
+                    color: isSelected ? AppCustomColor.brandPrimary : AppCustomColor.borderDefault,
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 )
@@ -111,7 +107,11 @@ class _CourseProgressChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(width: 14.w, height: 14.w, child: Center(child: icon)),
+        SizedBox(
+          width: 14.w,
+          height: 14.w,
+          child: Center(child: icon),
+        ),
         4.horizontalSpace,
         Flexible(
           child: AppText(
@@ -138,8 +138,7 @@ class _CourseProgressChip extends StatelessWidget {
     }
 
     final progressState = context.watch<ProgressCubit>().state;
-    final userProgress = progressState.userProgresses
-        .firstWhereOrNull((p) => p.courseId == course.id);
+    final userProgress = progressState.userProgresses.firstWhereOrNull((p) => p.courseId == course.id);
 
     final completed = userProgress?.lessonsResult.where((r) => r.passed).length ?? 0;
     final total = course.numberOfLesson;

@@ -99,9 +99,14 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // the moment to check whether the lesson is ready.
             Positioned.fill(
               child: ImportDonePopupHost(
-                child: GiftPopupHost(
-                  child: StreakPopupHost(
-                    child: ThemedBackground(child: widget.navigationShell),
+                // WinBackHost sits here for the same reason as its neighbours:
+                // the paywall that arms it is gone before its delay elapses, so
+                // the opener has to outlive it.
+                child: WinBackHost(
+                  child: GiftPopupHost(
+                    child: StreakPopupHost(
+                      child: ThemedBackground(child: widget.navigationShell),
+                    ),
                   ),
                 ),
               ),

@@ -50,12 +50,14 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
     _searchDebounce?.cancel();
     _lastTrackedSearchQuery = null;
     searchController.clear();
-    emit(state.copyWith(
-      isSearchActive: false,
-      searchQuery: '',
-      courses: const [],
-      status: CourseStatus.initial,
-    ));
+    emit(
+      state.copyWith(
+        isSearchActive: false,
+        searchQuery: '',
+        courses: const [],
+        status: CourseStatus.initial,
+      ),
+    );
   }
 
   /// Backwards-compatible alias for fully exiting search.
@@ -127,11 +129,13 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
   /// scroll request — the list (which owns its scroll controller) listens for it.
   /// Used by chip taps and onboarding deep-links.
   void jumpToSkillset(int index) {
-    emit(state.copyWith(
-      exploreMode: CourseExploreMode.all,
-      activeSkillsetIndex: index,
-      exploreScrollNonce: state.exploreScrollNonce + 1,
-    ));
+    emit(
+      state.copyWith(
+        exploreMode: CourseExploreMode.all,
+        activeSkillsetIndex: index,
+        exploreScrollNonce: state.exploreScrollNonce + 1,
+      ),
+    );
   }
 
   /// Scrollspy callback — highlights the chip of the section at the viewport
@@ -146,11 +150,13 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
   /// Resets Explore to the default "all courses / out menu" state: all sections,
   /// no chip highlighted, scrolled to the top. Called on every Explore entry.
   void resetExploreToAll() {
-    emit(state.copyWith(
-      exploreMode: CourseExploreMode.all,
-      activeSkillsetIndex: -1,
-      exploreScrollNonce: state.exploreScrollNonce + 1,
-    ));
+    emit(
+      state.copyWith(
+        exploreMode: CourseExploreMode.all,
+        activeSkillsetIndex: -1,
+        exploreScrollNonce: state.exploreScrollNonce + 1,
+      ),
+    );
   }
 
   /// Loads the "Recent" list — recently-viewed courses (Figma search screen).

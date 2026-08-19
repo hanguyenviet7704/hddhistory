@@ -22,8 +22,7 @@ enum CourseLevel {
   @JsonValue('level 2')
   level2,
   @JsonValue('unknown')
-  unknown
-  ;
+  unknown;
 
   String get name => switch (this) {
     level1 => 'Level 1',

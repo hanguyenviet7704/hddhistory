@@ -125,8 +125,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
             // Only block with a full spinner on a genuine cold load — don't
             // replace an already-loaded list with a spinner when Home refreshes.
-            if ((homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) &&
-                homeState.skillsets.isEmpty) {
+            if ((homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) && homeState.skillsets.isEmpty) {
               return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
             }
 

@@ -195,8 +195,8 @@ class RoadmapNodeActionHelper {
       final itemState = lessonIsLocked
           ? 'locked'
           : lesson.roadmapProgress == ProcessEnum.done
-              ? 'done'
-              : 'current';
+          ? 'done'
+          : 'current';
       AppService.instance.appTrackingService.trackRoadmapItemClick(
         trackingData,
         itemType: lesson.type.trackingName,

@@ -121,9 +121,7 @@ class _CourseFilterTabBar extends StatelessWidget {
       buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
       builder: (context, homeState) {
         return BlocBuilder<CourseCubit, CourseState>(
-          buildWhen: (prev, curr) =>
-              prev.exploreMode != curr.exploreMode ||
-              prev.activeSkillsetIndex != curr.activeSkillsetIndex,
+          buildWhen: (prev, curr) => prev.exploreMode != curr.exploreMode || prev.activeSkillsetIndex != curr.activeSkillsetIndex,
           builder: (context, courseState) {
             // "My courses" chip removed (that view now lives only on Profile) —
             // chips are just the skillsets, mapped 0-based to the scrollspy's
@@ -198,9 +196,7 @@ class _ExploreChipBarState extends State<_ExploreChipBar> {
   void didUpdateWidget(covariant _ExploreChipBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncKeys();
-    if (widget.selectedIndex != oldWidget.selectedIndex &&
-        widget.selectedIndex >= 0 &&
-        widget.selectedIndex < _chipKeys.length) {
+    if (widget.selectedIndex != oldWidget.selectedIndex && widget.selectedIndex >= 0 && widget.selectedIndex < _chipKeys.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
     }
   }
@@ -240,9 +236,7 @@ class _ExploreChipBarState extends State<_ExploreChipBar> {
           return _ExploreChip(
             chipKey: _chipKeys[index],
             label: skillset.title.text,
-            icon: skillset.image.isNotEmpty
-                ? _SkillsetIcon(imageUrl: skillset.image)
-                : null,
+            icon: skillset.image.isNotEmpty ? _SkillsetIcon(imageUrl: skillset.image) : null,
             isSelected: widget.selectedIndex == index,
             onTap: () => widget.onChipTap(index),
           );
@@ -293,10 +287,8 @@ class _ExploreChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        isSelected ? AppCustomColor.backgroundBrandSoft : AppCustomColor.backgroundGray;
-    final labelColor =
-        isSelected ? AppCustomColor.streakActive : AppCustomColor.streakTextMuted;
+    final backgroundColor = isSelected ? AppCustomColor.backgroundBrandSoft : AppCustomColor.backgroundGray;
+    final labelColor = isSelected ? AppCustomColor.streakActive : AppCustomColor.streakTextMuted;
     final fontWeight = isSelected ? FontWeight.w700 : FontWeight.w600;
 
     return Semantics(

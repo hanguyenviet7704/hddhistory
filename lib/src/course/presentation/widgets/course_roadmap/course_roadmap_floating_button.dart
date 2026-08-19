@@ -26,7 +26,11 @@ class CourseRoadmapFloatingButton extends StatelessWidget {
       (cubit) => cubit.state.roadmap.isAllCurrentRoadmapContentCompleted,
     );
     if (isRoadmapCompleted && !hasWarmUpAvailable) return const SizedBox.shrink();
-    final labelText = label ?? (hasWarmUpAvailable ? context.l10n.warmUp.floatingCtaLabel : (hasProgress ? context.l10n.courseroadmap.continueLearningButton : context.l10n.courseroadmap.startLessonButton));
+    final labelText =
+        label ??
+        (hasWarmUpAvailable
+            ? context.l10n.warmUp.floatingCtaLabel
+            : (hasProgress ? context.l10n.courseroadmap.continueLearningButton : context.l10n.courseroadmap.startLessonButton));
     return Semantics(
       button: true,
       label: labelText,

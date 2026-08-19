@@ -45,13 +45,13 @@ class ExploreTracking {
 
   /// {skill_id, skill_name} for [skillset].
   static Map<String, dynamic> skillsetParams(SkillsetEntity skillset) => {
-        'skill_id': skillset.id,
-        'skill_name': skillset.trackingName,
-      };
+    'skill_id': skillset.id,
+    'skill_name': skillset.trackingName,
+  };
 
   /// {course_id, course_name} for [course].
   static Map<String, dynamic> courseParams(CourseEntity course) => {
-        'course_id': course.id,
-        'course_name': course.trackingName,
-      };
+    'course_id': course.id,
+    'course_name': course.trackingName,
+  };
 }
