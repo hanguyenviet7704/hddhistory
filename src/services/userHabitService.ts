@@ -50,4 +50,21 @@ export const userHabitService = {
     });
     return res.data?.data ?? res.data;
   },
+
+  /**
+   * The same window as the screen, as an .xlsx (rows + summary sheets).
+   *
+   * `responseType: "blob"` is required: this endpoint answers with binary and no
+   * `{ data }` envelope, so the default JSON handling would hand back a mangled
+   * string.
+   */
+  async exportCheckinStatistics(
+    params?: IHabitCheckinStatisticsQuery,
+  ): Promise<Blob> {
+    const res = await axiosClient.get("/user-habits/admin/statistics/export", {
+      params,
+      responseType: "blob",
+    });
+    return res.data;
+  },
 };

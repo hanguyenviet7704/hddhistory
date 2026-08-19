@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 import { RootState } from "../../store";
 import { userHabitService } from "../../services/userHabitService";
+// Reused rather than re-declared: one anchor-click download helper for both
+// export buttons in the panel means one place to fix if browsers change.
+import { downloadXlsx } from "../lesson-feedback/lesson-feedback-utils";
 import {
   IHabitCheckinStatistics,
   IHabitDailyPoint,
@@ -49,12 +53,13 @@ const MOOD_BAR_COLORS: Record<number, string> = {
  */
 export default function HabitCheckinStats() {
   const lang = useSelector((state: RootState) => state.lang.code);
-  const { showError } = useNotification();
+  const { showError, showSuccess } = useNotification();
 
   const [preset, setPreset] = useState<DatePreset>("30");
   const [range, setRange] = useState(() => presetRange(30));
   const [data, setData] = useState<IHabitCheckinStatistics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const query = useCallback(
     () =>
@@ -91,6 +96,23 @@ export default function HabitCheckinStats() {
   const onPresetChange = (value: DatePreset) => {
     setPreset(value);
     if (value === "30" || value === "60") setRange(presetRange(Number(value)));
+  };
+
+  /** Exports exactly the window on screen, not the whole collection. */
+  const onExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const file = await userHabitService.exportCheckinStatistics(query());
+      const stamp =
+        preset === "all" ? "tat-ca" : `${range.startDate}_${range.endDate}`;
+      downloadXlsx(file, `habit-checkins_${stamp}.xlsx`);
+      showSuccess("Xuất Excel thành công");
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Xuất Excel thất bại");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const m = data?.metrics;
@@ -144,6 +166,16 @@ export default function HabitCheckinStats() {
             />
           </>
         ) : null}
+        <span className="h-5 w-px bg-slate-200" />
+        <button
+          type="button"
+          onClick={onExport}
+          disabled={exporting}
+          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
+        >
+          <ArrowDownTrayIcon className="h-4 w-4" />
+          {exporting ? "Đang xuất…" : "Xuất Excel"}
+        </button>
       </div>
 
       {loading && !data ? (
