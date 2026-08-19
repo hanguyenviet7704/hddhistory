@@ -47,6 +47,7 @@ import {
   toDraft,
   validateDraft,
 } from "./paywallConfigDraft";
+import BodyExperimentStatsSection from "./components/BodyExperimentStatsSection";
 import CompactPaywallSection from "./components/CompactPaywallSection";
 import DefaultUserSection from "./components/DefaultUserSection";
 import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
@@ -401,6 +402,10 @@ export default function PaywallConfigPage() {
             onChange={patchDraft}
             disabled={disabled}
             fieldErrors={fieldErrors}
+          />
+
+          <BodyExperimentStatsSection
+            experimentKey={draft.bodyExperiment.key}
           />
 
           <EntryPointVariantsSection

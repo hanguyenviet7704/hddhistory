@@ -37,4 +37,20 @@ export const paywallConfigService = {
     const res = await axiosClient.get(`/paywall-config/logic-sales/${id}/stats`);
     return res.data;
   },
+
+  /**
+   * Kết quả A/B thân paywall của đợt đang cấu hình: phễu đếm theo NGƯỜI từ
+   * event của app, đơn + doanh thu từ purchase đã verify. Cửa sổ mặc định 30
+   * ngày gần nhất, appEnv mặc định `prod` (do server quyết).
+   */
+  async getBodyExperimentStats(params?: {
+    appEnv?: string;
+    from?: string;
+    to?: string;
+  }) {
+    const res = await axiosClient.get("/paywall-config/experiment/stats", {
+      params,
+    });
+    return res.data;
+  },
 };

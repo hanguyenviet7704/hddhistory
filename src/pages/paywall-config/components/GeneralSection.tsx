@@ -140,6 +140,122 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
             </span>
           )}
         </label>
+
+        {/* Nằm ngay dưới ô chọn thân paywall vì khi đợt test đang bật, chính nó
+            là thứ quyết định người dùng thấy gì — ô ở trên chỉ còn áp dụng cho
+            những người bị loại khỏi test. */}
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/60 p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-slate-700">
+              A/B test thân paywall
+            </span>
+            <ToggleSwitch
+              checked={draft.bodyExperiment.enabled}
+              onChange={(checked) =>
+                onChange({
+                  bodyExperiment: { ...draft.bodyExperiment, enabled: checked },
+                })
+              }
+              label="Bật"
+              disabled={disabled}
+            />
+          </div>
+
+          <label className="flex flex-col gap-1 text-xs text-slate-700">
+            <span className="font-medium">Mã đợt test (key)</span>
+            <input
+              type="text"
+              value={draft.bodyExperiment.key}
+              onChange={(e) =>
+                onChange({
+                  bodyExperiment: {
+                    ...draft.bodyExperiment,
+                    key: e.target.value,
+                  },
+                })
+              }
+              placeholder="paywall_body_2026_08"
+              disabled={disabled}
+              className={`rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+                fieldErrors["bodyExperiment.key"]
+                  ? "border-red-300"
+                  : "border-slate-200"
+              }`}
+            />
+            {fieldErrors["bodyExperiment.key"] && (
+              <span className="text-[11px] text-red-600">
+                {fieldErrors["bodyExperiment.key"]}
+              </span>
+            )}
+            <span className="text-[11px] text-slate-500">
+              Đợt mới phải đổi key. Dùng lại key cũ là trả mọi người về đúng nhánh
+              họ từng ở, và đơn hàng cũ sẽ lẫn vào kết quả đợt mới.
+            </span>
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-slate-700">
+            <span className="font-medium">Tỷ lệ vào nhánh Bảng so sánh</span>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={draft.bodyExperiment.comparisonPercent || "0"}
+                onChange={(e) =>
+                  onChange({
+                    bodyExperiment: {
+                      ...draft.bodyExperiment,
+                      comparisonPercent: e.target.value,
+                    },
+                  })
+                }
+                disabled={disabled}
+                className="flex-1 accent-teal-600"
+              />
+              <div className="relative w-20">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={draft.bodyExperiment.comparisonPercent}
+                  onChange={(e) =>
+                    onChange({
+                      bodyExperiment: {
+                        ...draft.bodyExperiment,
+                        comparisonPercent: e.target.value,
+                      },
+                    })
+                  }
+                  disabled={disabled}
+                  className={`w-full rounded-lg border px-2 py-1.5 pr-6 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50 ${
+                    fieldErrors["bodyExperiment.comparisonPercent"]
+                      ? "border-red-300"
+                      : "border-slate-200"
+                  }`}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none">
+                  %
+                </span>
+              </div>
+            </div>
+            <span className="text-[11px] text-slate-500">
+              Phần còn lại vào nhánh Danh sách lợi ích. Server chia theo hash của
+              user id nên một người luôn ở nguyên một nhánh.
+            </span>
+          </label>
+
+          {draft.bodyExperiment.enabled && (
+            <span className="text-[11px] text-amber-700 flex items-start gap-1">
+              <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0 mt-px" />
+              Đang chạy test: đừng đổi giá, đừng bật LogicSale/gift campaign và đừng
+              sửa nội dung paywall — mỗi lần đăng bản mới là một lần dữ liệu bị cắt.
+              Ngôn ngữ chưa có dòng so sánh sẽ bị loại khỏi test (không tính vào
+              nhánh nào) thay vì bị cho xem bảng tiếng Anh.
+            </span>
+          )}
+        </div>
       </SectionCard>
 
       <SectionCard

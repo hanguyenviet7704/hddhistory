@@ -321,6 +321,21 @@ export interface PaywallLogicSaleStats {
   byProduct: PaywallLogicSaleStatsByProduct[];
 }
 
+/**
+ * A/B test thân paywall: server chia người theo hash(key + userId) nên một
+ * người luôn ở cùng một nhánh, và nhánh đó được đóng dấu lên event + đơn hàng
+ * đã verify để đọc lại được.
+ *
+ * `key` đổi mỗi lần chạy đợt mới: dùng lại key cũ là trả mọi người về đúng
+ * nhánh họ từng ở, biến một thí nghiệm mới thành phần tiếp theo của cái cũ.
+ */
+export interface PaywallBodyExperiment {
+  key: string;
+  enabled: boolean;
+  /** Phần trăm người vào nhánh `comparison`; phần còn lại là `benefits`. */
+  comparisonPercent: number;
+}
+
 export interface PaywallConfig {
   schemaVersion: number;
   enableLessonLock: boolean;
@@ -348,6 +363,8 @@ export interface PaywallConfig {
    * Bỏ trống = `benefits`, nên mọi version đã publish trước đó render y như cũ.
    */
   bodyVariant?: PaywallBodyVariant;
+  /** A/B test giữa hai thân paywall. Bỏ trống hoặc tắt = `bodyVariant` quyết định cho tất cả. */
+  bodyExperiment?: PaywallBodyExperiment;
   saleStrategy: PaywallSaleStrategy;
   /** Optional so every version published before this section existed stays valid. */
   compactPaywall?: PaywallCompactPaywall;

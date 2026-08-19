@@ -16,6 +16,7 @@ import {
   PaywallDailyKeypointQuota,
   PaywallInLesson,
   PaywallBenefit,
+  PaywallBodyExperiment,
   PaywallBodyVariant,
   PaywallComparisonRow,
   PaywallConfig,
@@ -172,6 +173,16 @@ export interface LogicSaleDraft {
   countdown: boolean;
 }
 
+/**
+ * A/B test thân paywall. Số giữ dạng chuỗi như mọi ô nhập khác trong draft —
+ * ô đang xoá dở phải là "" chứ không phải NaN.
+ */
+export interface BodyExperimentDraft {
+  key: string;
+  enabled: boolean;
+  comparisonPercent: string;
+}
+
 export interface ConfigDraft {
   schemaVersion: string;
   enableLessonLock: boolean;
@@ -190,6 +201,7 @@ export interface ConfigDraft {
   dailyQuotaAfterCards: string;
   entryPointVariants: EntryPointVariantsDraft;
   bodyVariant: PaywallBodyVariant;
+  bodyExperiment: BodyExperimentDraft;
   defaultUser: DefaultUserDraft;
   saleEvent: SaleEventDraft;
   giftCampaign: GiftCampaignDraft;
@@ -293,6 +305,7 @@ export const defaultDraft = (): ConfigDraft => ({
   // `benefits` là hành vi đang chạy, nên nó là mặc định của một draft mới —
   // mở trang lên rồi Đăng mà không sửa gì thì không được đổi layout paywall.
   bodyVariant: "benefits",
+  bodyExperiment: { key: "", enabled: false, comparisonPercent: "50" },
   defaultUser: {
     content: emptyLocalizedContent(),
     products: [],
@@ -483,6 +496,14 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
       : "3",
   entryPointVariants: toEntryPointVariantsDraft(config.entryPointVariants),
   bodyVariant: config.bodyVariant ?? "benefits",
+  bodyExperiment: {
+    key: config.bodyExperiment?.key ?? "",
+    enabled: config.bodyExperiment?.enabled ?? false,
+    comparisonPercent:
+      config.bodyExperiment?.comparisonPercent != null
+        ? String(config.bodyExperiment.comparisonPercent)
+        : "50",
+  },
   defaultUser: {
     content: toLocalizedContentDraft(config.saleStrategy?.defaultUser?.content),
     products: (config.saleStrategy?.defaultUser?.products ?? []).map(
@@ -724,6 +745,18 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
       }
     : undefined;
 
+  // Gửi lên chỉ khi đợt test có key: khối rỗng chỉ làm bẩn config. Khi đã tắt
+  // vẫn giữ nguyên key — đơn hàng đã đóng dấu key đó, xoá đi là mất đường đọc
+  // lại kết quả.
+  const bodyExperiment: PaywallBodyExperiment | undefined = draft.bodyExperiment
+    .key.trim()
+    ? {
+        key: draft.bodyExperiment.key.trim(),
+        enabled: draft.bodyExperiment.enabled,
+        comparisonPercent: Number(draft.bodyExperiment.comparisonPercent || 0),
+      }
+    : undefined;
+
   const dailyKeypointQuota: PaywallDailyKeypointQuota = {
     enabled: draft.dailyQuotaEnabled,
     freeKeypointsPerDay: Number(draft.dailyQuotaFreeKeypointsPerDay || 0),
@@ -799,6 +832,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     dailyKeypointQuota,
     entryPointVariants,
     bodyVariant: draft.bodyVariant,
+    ...(bodyExperiment ? { bodyExperiment } : {}),
     saleStrategy,
     giftCampaign,
     ...(compactPaywall ? { compactPaywall } : {}),
