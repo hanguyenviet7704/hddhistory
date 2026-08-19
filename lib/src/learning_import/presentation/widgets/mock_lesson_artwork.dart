@@ -42,12 +42,28 @@ String mockUserLessonCover(String id) {
 String userLessonCoverArt(UserLessonEntity lesson) =>
     lesson.coverUrl.isNotEmpty ? lesson.coverUrl : mockUserLessonCover(lesson.id);
 
-/// Keypoint node [index]'s art: the server-dealt thumbnail when the keypoint
-/// exists and carries one, else the mock rotation the roadmap always drew.
+/// Keypoint node [index]'s art.
+///
+/// Order matters, and it is the whole point of this function: the written
+/// keypoint's own thumbnail first, then the url the server RESERVED for that
+/// node when it committed the outline, and only then the bundled rotation.
+///
+/// Without the middle step a node being generated drew a bundled picture and
+/// then swapped to the pool one the instant its keypoint landed — the reader
+/// watched the artwork change under them for no reason. The reserved url is
+/// the same one the keypoint will carry, so the node now shows its final
+/// picture from the first frame and the arrival of the text changes nothing
+/// visual. Old lessons carry no reserved list and fall through to the mocks,
+/// which is what they have always shown.
 String userLessonKeypointArt(UserLessonEntity lesson, int index) {
   if (index < lesson.keypoints.length) {
     final coverUrl = lesson.keypoints[index].coverUrl;
     if (coverUrl.isNotEmpty) return coverUrl;
+  }
+
+  if (index < lesson.plannedKeypointCoverUrls.length) {
+    final planned = lesson.plannedKeypointCoverUrls[index];
+    if (planned.isNotEmpty) return planned;
   }
 
   return kMockUserLessonCovers[index % kMockUserLessonCovers.length];

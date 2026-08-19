@@ -205,6 +205,13 @@ abstract class UserLessonEntity with _$UserLessonEntity {
     /// only. While [contentStatus] is partial this is LONGER than [keypoints] —
     /// the tail names the nodes still being written.
     @Default(<String>[]) List<String> plannedKeypointTitles,
+
+    /// Node artwork for that same outline — index i is the picture keypoint i
+    /// carries once written. Dealt server-side at the same moment as
+    /// [plannedKeypointTitles] so a roadmap node shows its FINAL picture from
+    /// the first frame instead of a stand-in that swaps when the keypoint
+    /// lands. Empty on lessons generated before the server dealt these.
+    @Default(<String>[]) List<String> plannedKeypointCoverUrls,
   }) = _UserLessonEntity;
 }
 

@@ -130,6 +130,7 @@ abstract class UserLessonModel with _$UserLessonModel {
     @Default(UserLessonContentStatusEntity.complete)
     UserLessonContentStatusEntity contentStatus,
     @Default(<String>[]) List<String> plannedKeypointTitles,
+    @Default(<String>[]) List<String> plannedKeypointCoverUrls,
   }) = _UserLessonModel;
 
   factory UserLessonModel.fromJson(Map<String, dynamic> json) =>
@@ -225,6 +226,7 @@ extension UserLessonModelX on UserLessonModel {
     audio: audio?.toEntity(),
     contentStatus: contentStatus,
     plannedKeypointTitles: plannedKeypointTitles,
+    plannedKeypointCoverUrls: plannedKeypointCoverUrls,
   );
 
   /// The body, whichever era the server is from.
