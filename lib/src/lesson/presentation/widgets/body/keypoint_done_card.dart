@@ -107,6 +107,9 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     final lessonState = context.read<CourseLessonCubit>().state;
     final keypointId = lessonState.currentKeypointId;
     if (keypointId.isEmpty) return;
+    // The button is hidden for these (see [_recapActions]); refuse here too so a
+    // future caller cannot re-introduce a row Saved cards can never resolve.
+    if (lessonState.selectedLesson.isImported) return;
 
     final l10n = context.l10n.library;
     final saved = await AppDI.injector.get<SavedCubit>().toggleCard(
@@ -321,9 +324,24 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   }
 
   /// Share + Save, the design's two 38 discs.
+  ///
+  /// Save is absent on a GENERATED lesson, and that is the fifth catalogue side
+  /// effect this reader has to hold back (next to the progress POST, the
+  /// tracking context, the exit destinations and the habit lookup). Saved cards
+  /// keys a bookmark by catalogue keypoint id and re-reads title/image from the
+  /// `keypoints` collection on every request — a generated keypoint has no row
+  /// there, so its synthesised `::user-lesson::` id resolves to nothing. The row
+  /// wrote fine and then never rendered; worse, before the repository learned to
+  /// drop uncastable ids it made Mongo throw and took the reader's ENTIRE Saved
+  /// cards screen down with it.
+  ///
+  /// Sharing is untouched — it renders the card locally and asks the server
+  /// nothing.
   Widget _recapActions(BuildContext context, {required String keypointTitle, required String recapText}) {
     final l10n = context.l10n.library;
-    final keypointId = context.watch<CourseLessonCubit>().state.currentKeypointId;
+    final lessonState = context.watch<CourseLessonCubit>().state;
+    final keypointId = lessonState.currentKeypointId;
+    final canSave = !lessonState.selectedLesson.isImported;
 
     return BlocBuilder<SavedCubit, SavedState>(
       bloc: AppDI.injector.get<SavedCubit>(),
@@ -339,14 +357,16 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
               dropShadow: true,
               onTap: () => unawaited(_share(keypointTitle)),
             ),
-            10.horizontalSpace,
-            SavedCardActionButton.bookmark(
-              key: const Key('recap-card-bookmark'),
-              semanticsLabel: isSaved ? l10n.unsaveCardLabel : l10n.saveCardLabel,
-              isSaved: isSaved,
-              dropShadow: true,
-              onTap: () => unawaited(_toggleSave(recapText: recapText)),
-            ),
+            if (canSave) ...[
+              10.horizontalSpace,
+              SavedCardActionButton.bookmark(
+                key: const Key('recap-card-bookmark'),
+                semanticsLabel: isSaved ? l10n.unsaveCardLabel : l10n.saveCardLabel,
+                isSaved: isSaved,
+                dropShadow: true,
+                onTap: () => unawaited(_toggleSave(recapText: recapText)),
+              ),
+            ],
           ],
         );
       },
