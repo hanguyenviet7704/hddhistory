@@ -104,7 +104,7 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
             _SectionLabel(text: context.l10n.studyJournal.sectionLessons),
             10.verticalSpace,
             for (final (index, course) in detail.courses.indexed) ...[
-              _CourseRow(course: course, index: index),
+              _CourseRow(course: course, index: index, onTap: () => _openCourse(course)),
               12.verticalSpace,
             ],
           ],
@@ -113,13 +113,75 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
             _SectionLabel(text: context.l10n.studyJournal.sectionHabits),
             10.verticalSpace,
             for (final habit in detail.habits) ...[
-              _HabitRow(habit: habit),
+              _HabitRow(habit: habit, onTap: () => _openHabit(habit)),
               12.verticalSpace,
             ],
           ],
         ],
       ),
     );
+  }
+
+  /// Course row → that course's roadmap.
+  ///
+  /// The journal only knows the course id, so the entity is fetched before
+  /// navigating: the roadmap is driven by HomeCubit's selected skillset+course
+  /// (same contract as Library's own open — see `library_page._openCourse`),
+  /// and a half-filled selection would land the user on somebody else's map.
+  Future<void> _openCourse(StudyJournalCourseEntity course) async {
+    if (course.courseId.isEmpty) return;
+    final navigator = Navigator.of(context);
+    final shellContext = navigator.context;
+
+    final result = await AppDI.injector.get<GetCourseUseCase>()(course.courseId).run();
+    if (!mounted) return;
+
+    result.match((_) => null, (entity) {
+      // Close the sheet FIRST: the roadmap is a shell branch, and pushing the
+      // tab change under an open modal leaves the sheet floating over it.
+      navigator.pop();
+      final resolved = entity.withSkillset;
+      AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kStudyJournalRoadmapSource);
+      AppDI.injector.get<HomeCubit>()
+        ..selectSkillset(resolved.skillset)
+        ..selectCourse(resolved);
+      CourseRoadmapRoute().go(shellContext);
+      // `.go()` into an already-built branch fires no didPush, so the observer
+      // would leave the nav state on Profile without this re-anchor.
+      shellContext.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+      return null;
+    });
+  }
+
+  /// Habit row → that habit's detail sheet.
+  ///
+  /// Detail needs the full [UserHabitEntity]; the journal carries only its id,
+  /// so it is looked up in the habit list and the list is loaded first when the
+  /// user has not opened the Habit tab this session.
+  Future<void> _openHabit(StudyJournalHabitEntity habit) async {
+    if (habit.userHabitId.isEmpty) return;
+    final navigator = Navigator.of(context);
+    final shellContext = navigator.context;
+    final habitCubit = AppDI.injector.get<HabitCubit>();
+
+    if (habitCubit.state.userHabits.isEmpty) {
+      await habitCubit.load(showLoading: false);
+    }
+    if (!mounted) return;
+
+    final match = habitCubit.state.userHabits
+        .where((item) => item.id == habit.userHabitId)
+        .firstOrNull;
+    // A habit deleted since that day has no detail to open; the row stays inert
+    // rather than opening an empty sheet about nothing.
+    if (match == null) return;
+
+    navigator.pop();
+    // `shellContext` is the navigator's own context, not this widget's: the
+    // sheet is popped a line above, so its element is gone by the time the
+    // detail sheet opens.
+    if (!shellContext.mounted) return;
+    await HabitDetailPage.show(shellContext, userHabit: match);
   }
 
   void _retry() {
@@ -245,10 +307,11 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _CourseRow extends StatelessWidget {
-  const _CourseRow({required this.course, required this.index});
+  const _CourseRow({required this.course, required this.index, required this.onTap});
 
   final StudyJournalCourseEntity course;
   final int index;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +321,16 @@ class _CourseRow extends StatelessWidget {
       if (course.minutes > 0) journal.minuteCount(count: course.minutes),
     ];
 
-    return Row(
+    return Semantics(
+      button: true,
+      label: course.title,
+      child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
+      child: Row(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12.r),
@@ -290,10 +362,17 @@ class _CourseRow extends StatelessWidget {
             ],
           ),
         ),
+        Icon(Icons.chevron_right_rounded, size: 20.sp, color: const Color(0xFFC2C7D2)),
       ],
+      ),
+      ),
     );
   }
 }
+
+/// `roadmapSource` this screen reports, so the roadmap's own analytics can tell
+/// a journal entry apart from Library and Home as an entry point.
+const String kStudyJournalRoadmapSource = 'study_journal';
 
 /// Keypoint artwork is authored with raw spaces in the path
 /// (`.../keypoints/What is Modern Art.png`), which Dio rejects as an invalid
@@ -330,13 +409,23 @@ class _LessonPlaceholder extends StatelessWidget {
 }
 
 class _HabitRow extends StatelessWidget {
-  const _HabitRow({required this.habit});
+  const _HabitRow({required this.habit, required this.onTap});
 
   final StudyJournalHabitEntity habit;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Semantics(
+      button: true,
+      label: habit.title,
+      child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        AppHaptic.select();
+        onTap();
+      },
+      child: Row(
       children: [
         // The habit's own library artwork, with the tick tile standing in only
         // when a habit has none — the row has to look like the habit it names,
@@ -360,7 +449,10 @@ class _HabitRow extends StatelessWidget {
         Expanded(
           child: AppText(habit.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
         ),
+        Icon(Icons.chevron_right_rounded, size: 20.sp, color: const Color(0xFFC2C7D2)),
       ],
+      ),
+      ),
     );
   }
 }
