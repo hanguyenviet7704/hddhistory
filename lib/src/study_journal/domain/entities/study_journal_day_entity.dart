@@ -1,22 +1,16 @@
 part of '../../study_journal.dart';
 
+/// One course the learner touched that day: how many keypoints of it they
+/// finished and how long those add up to.
 @freezed
-abstract class StudyJournalItemEntity with _$StudyJournalItemEntity {
-  const factory StudyJournalItemEntity({
+abstract class StudyJournalCourseEntity with _$StudyJournalCourseEntity {
+  const factory StudyJournalCourseEntity({
     @Default('') String courseId,
-    @Default('') String courseTitle,
-    @Default('') String image,
-    @Default('') String lessonId,
-    @Default('') String lessonTitle,
-    @Default('') String keypointId,
-
-    /// Headline of the row: the keypoint's title, or the lesson's when the
-    /// keypoint has none (resolved server-side so both never disagree).
     @Default('') String title,
+    @Default('') String image,
+    @Default(0) int lessons,
     @Default(0) int minutes,
-    @Default(false) bool passed,
-    DateTime? submittedAt,
-  }) = _StudyJournalItemEntity;
+  }) = _StudyJournalCourseEntity;
 }
 
 @freezed
@@ -25,6 +19,7 @@ abstract class StudyJournalHabitEntity with _$StudyJournalHabitEntity {
     @Default('') String userHabitId,
     @Default('') String habitId,
     @Default('') String title,
+    @Default('') String image,
     @Default('') String note,
   }) = _StudyJournalHabitEntity;
 }
@@ -33,13 +28,17 @@ abstract class StudyJournalHabitEntity with _$StudyJournalHabitEntity {
 abstract class StudyJournalDayDetailEntity with _$StudyJournalDayDetailEntity {
   const factory StudyJournalDayDetailEntity({
     required DateTime date,
+
+    /// Total keypoints finished that day — the same number the calendar square
+    /// shades by, so the header and the square it was opened from agree.
+    @Default(0) int lessons,
     @Default(0) int minutes,
-    @Default(<StudyJournalItemEntity>[]) List<StudyJournalItemEntity> lessons,
+    @Default(<StudyJournalCourseEntity>[]) List<StudyJournalCourseEntity> courses,
     @Default(<StudyJournalHabitEntity>[]) List<StudyJournalHabitEntity> habits,
   }) = _StudyJournalDayDetailEntity;
 }
 
 extension StudyJournalDayDetailEntityX on StudyJournalDayDetailEntity {
   /// A day with neither a lesson nor a habit — the design's "ngày nghỉ".
-  bool get isEmpty => lessons.isEmpty && habits.isEmpty;
+  bool get isEmpty => courses.isEmpty && habits.isEmpty;
 }

@@ -1,27 +1,17 @@
 part of '../../study_journal.dart';
 
-/// One keypoint the learner finished on the tapped day (the "BÀI HỌC" list).
+/// One COURSE the learner touched that day, with how much of it they did.
 @freezed
-abstract class StudyJournalItemModel with _$StudyJournalItemModel {
-  const factory StudyJournalItemModel({
+abstract class StudyJournalCourseModel with _$StudyJournalCourseModel {
+  const factory StudyJournalCourseModel({
     @Default('') String courseId,
-    @Default('') String courseTitle,
-    @Default('') String image,
-
-    /// The field an API older than the rename still sends. Read as a fallback
-    /// so an app that ships ahead of the server keeps showing artwork instead
-    /// of a tile for the whole gap between the two deploys.
-    @Default('') String courseImage,
-    @Default('') String lessonId,
-    @Default('') String lessonTitle,
-    @Default('') String keypointId,
     @Default('') String title,
+    @Default('') String image,
+    @Default(0) int lessons,
     @Default(0) int minutes,
-    @Default(false) bool passed,
-    DateTime? submittedAt,
-  }) = _StudyJournalItemModel;
+  }) = _StudyJournalCourseModel;
 
-  factory StudyJournalItemModel.fromJson(Map<String, dynamic> json) => _$StudyJournalItemModelFromJson(json);
+  factory StudyJournalCourseModel.fromJson(Map<String, dynamic> json) => _$StudyJournalCourseModelFromJson(json);
 }
 
 /// One habit ticked that day (the "THÓI QUEN ĐƯỢC LUYỆN TẬP" list).
@@ -31,6 +21,7 @@ abstract class StudyJournalHabitModel with _$StudyJournalHabitModel {
     @Default('') String userHabitId,
     @Default('') String habitId,
     @Default('') String title,
+    @Default('') String image,
     String? method,
     String? note,
   }) = _StudyJournalHabitModel;
@@ -56,7 +47,7 @@ abstract class StudyJournalDayDetailModel with _$StudyJournalDayDetailModel {
   const factory StudyJournalDayDetailModel({
     @Default('') String date,
     @Default(StudyJournalDaySummaryModel()) StudyJournalDaySummaryModel summary,
-    @Default(<StudyJournalItemModel>[]) List<StudyJournalItemModel> lessons,
+    @Default(<StudyJournalCourseModel>[]) List<StudyJournalCourseModel> courses,
     @Default(<StudyJournalHabitModel>[]) List<StudyJournalHabitModel> habits,
   }) = _StudyJournalDayDetailModel;
 
@@ -66,22 +57,16 @@ abstract class StudyJournalDayDetailModel with _$StudyJournalDayDetailModel {
 extension StudyJournalDayDetailModelX on StudyJournalDayDetailModel {
   StudyJournalDayDetailEntity toEntity() => StudyJournalDayDetailEntity(
     date: _parseDate(date) ?? DateTime.now(),
+    lessons: summary.lessons,
     minutes: summary.minutes,
-    lessons: lessons
+    courses: courses
         .map(
-          (item) => StudyJournalItemEntity(
+          (item) => StudyJournalCourseEntity(
             courseId: item.courseId,
-            courseTitle: item.courseTitle,
-            image: item.image.isNotEmpty ? item.image : item.courseImage,
-            lessonId: item.lessonId,
-            lessonTitle: item.lessonTitle,
-            keypointId: item.keypointId,
             title: item.title,
+            image: item.image,
+            lessons: item.lessons,
             minutes: item.minutes,
-            passed: item.passed,
-            // Server sends UTC; the sheet prints a clock time, so it has to be
-            // the learner's own clock or the row reads as the wrong hour.
-            submittedAt: item.submittedAt?.toLocal(),
           ),
         )
         .toList(),
@@ -91,6 +76,7 @@ extension StudyJournalDayDetailModelX on StudyJournalDayDetailModel {
             userHabitId: habit.userHabitId,
             habitId: habit.habitId,
             title: habit.title,
+            image: habit.image,
             note: habit.note ?? '',
           ),
         )

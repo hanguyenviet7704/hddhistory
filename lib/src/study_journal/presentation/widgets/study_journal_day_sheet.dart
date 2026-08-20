@@ -100,16 +100,16 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (detail.lessons.isNotEmpty) ...[
+          if (detail.courses.isNotEmpty) ...[
             _SectionLabel(text: context.l10n.studyJournal.sectionLessons),
             10.verticalSpace,
-            for (final (index, lesson) in detail.lessons.indexed) ...[
-              _LessonRow(item: lesson, index: index),
+            for (final (index, course) in detail.courses.indexed) ...[
+              _CourseRow(course: course, index: index),
               12.verticalSpace,
             ],
           ],
           if (detail.habits.isNotEmpty) ...[
-            if (detail.lessons.isNotEmpty) 8.verticalSpace,
+            if (detail.courses.isNotEmpty) 8.verticalSpace,
             _SectionLabel(text: context.l10n.studyJournal.sectionHabits),
             10.verticalSpace,
             for (final habit in detail.habits) ...[
@@ -209,9 +209,9 @@ class _Header extends StatelessWidget {
     // titled section right below, and counting them up here would say the same
     // thing twice while pushing the line past the close button on long dates.
     final parts = <String>[
-      if (data.lessons.isNotEmpty) journal.lessonCount(count: data.lessons.length),
+      if (data.lessons > 0) journal.lessonCount(count: data.lessons),
       if (data.minutes > 0) journal.minuteCount(count: data.minutes),
-      if (data.lessons.isEmpty && data.habits.isNotEmpty) journal.habitCount(count: data.habits.length),
+      if (data.lessons == 0 && data.habits.isNotEmpty) journal.habitCount(count: data.habits.length),
     ];
 
     return parts.join(' · ');
@@ -244,14 +244,20 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _LessonRow extends StatelessWidget {
-  const _LessonRow({required this.item, required this.index});
+class _CourseRow extends StatelessWidget {
+  const _CourseRow({required this.course, required this.index});
 
-  final StudyJournalItemEntity item;
+  final StudyJournalCourseEntity course;
   final int index;
 
   @override
   Widget build(BuildContext context) {
+    final journal = context.l10n.studyJournal;
+    final parts = <String>[
+      journal.lessonCount(count: course.lessons),
+      if (course.minutes > 0) journal.minuteCount(count: course.minutes),
+    ];
+
     return Row(
       children: [
         ClipRRect(
@@ -259,9 +265,9 @@ class _LessonRow extends StatelessWidget {
           child: SizedBox(
             width: 44.w,
             height: 44.w,
-            child: item.image.isNotEmpty
+            child: course.image.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: _safeImageUrl(item.image),
+                    imageUrl: _safeImageUrl(course.image),
                     fit: BoxFit.cover,
                     errorWidget: (_, _, _) => _LessonPlaceholder(seed: index),
                     placeholder: (_, _) => _LessonPlaceholder(seed: index),
@@ -274,15 +280,13 @@ class _LessonRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(item.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
-              if (item.courseTitle.isNotEmpty) ...[
-                3.verticalSpace,
-                AppText(
-                  item.courseTitle,
-                  maxLines: 1,
-                  style: _journalText(12, FontWeight.w500, color: const Color(0xFF7C8AA4)),
-                ),
-              ],
+              AppText(course.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
+              3.verticalSpace,
+              AppText(
+                parts.join(' · '),
+                maxLines: 1,
+                style: _journalText(12, FontWeight.w500, color: const Color(0xFF7C8AA4)),
+              ),
             ],
           ),
         ),
@@ -334,20 +338,42 @@ class _HabitRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 34.w,
-          height: 34.w,
-          decoration: BoxDecoration(
-            color: const Color(0xFFDFF3E8),
-            borderRadius: BorderRadius.circular(10.r),
+        // The habit's own library artwork, with the tick tile standing in only
+        // when a habit has none — the row has to look like the habit it names,
+        // not like a generic completed thing.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(11.r),
+          child: SizedBox(
+            width: 38.w,
+            height: 38.w,
+            child: habit.image.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: _safeImageUrl(habit.image),
+                    fit: BoxFit.cover,
+                    errorWidget: (_, _, _) => const _HabitCheckTile(),
+                    placeholder: (_, _) => const _HabitCheckTile(),
+                  )
+                : const _HabitCheckTile(),
           ),
-          child: Icon(Icons.check_rounded, size: 19.sp, color: const Color(0xFF2E9E76)),
         ),
         12.horizontalSpace,
         Expanded(
           child: AppText(habit.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
         ),
       ],
+    );
+  }
+}
+
+class _HabitCheckTile extends StatelessWidget {
+  const _HabitCheckTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFDFF3E8),
+      alignment: Alignment.center,
+      child: Icon(Icons.check_rounded, size: 19.sp, color: const Color(0xFF2E9E76)),
     );
   }
 }
