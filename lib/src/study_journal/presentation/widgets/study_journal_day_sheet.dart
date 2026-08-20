@@ -103,8 +103,8 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
           if (detail.lessons.isNotEmpty) ...[
             _SectionLabel(text: context.l10n.studyJournal.sectionLessons),
             10.verticalSpace,
-            for (final lesson in detail.lessons) ...[
-              _LessonRow(item: lesson),
+            for (final (index, lesson) in detail.lessons.indexed) ...[
+              _LessonRow(item: lesson, index: index),
               12.verticalSpace,
             ],
           ],
@@ -205,10 +205,13 @@ class _Header extends StatelessWidget {
     if (isLoading || data == null) return journal.dayLoading;
     if (data.isEmpty) return journal.dayRest;
 
+    // Lessons and minutes only, exactly as the design: the habits are their own
+    // titled section right below, and counting them up here would say the same
+    // thing twice while pushing the line past the close button on long dates.
     final parts = <String>[
       if (data.lessons.isNotEmpty) journal.lessonCount(count: data.lessons.length),
       if (data.minutes > 0) journal.minuteCount(count: data.minutes),
-      if (data.habits.isNotEmpty) journal.habitCount(count: data.habits.length),
+      if (data.lessons.isEmpty && data.habits.isNotEmpty) journal.habitCount(count: data.habits.length),
     ];
 
     return parts.join(' · ');
@@ -242,9 +245,10 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _LessonRow extends StatelessWidget {
-  const _LessonRow({required this.item});
+  const _LessonRow({required this.item, required this.index});
 
   final StudyJournalItemEntity item;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -255,14 +259,14 @@ class _LessonRow extends StatelessWidget {
           child: SizedBox(
             width: 44.w,
             height: 44.w,
-            child: item.courseImage.isNotEmpty
+            child: item.image.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: item.courseImage,
+                    imageUrl: _safeImageUrl(item.image),
                     fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => const _LessonPlaceholder(),
-                    placeholder: (_, _) => const _LessonPlaceholder(),
+                    errorWidget: (_, _, _) => _LessonPlaceholder(seed: index),
+                    placeholder: (_, _) => _LessonPlaceholder(seed: index),
                   )
-                : const _LessonPlaceholder(),
+                : _LessonPlaceholder(seed: index),
           ),
         ),
         12.horizontalSpace,
@@ -287,15 +291,36 @@ class _LessonRow extends StatelessWidget {
   }
 }
 
+/// Keypoint artwork is authored with raw spaces in the path
+/// (`.../keypoints/What is Modern Art.png`), which Dio rejects as an invalid
+/// URI — the row then falls back to a tile even though the image exists.
+/// Encoded here rather than in the endpoint so every such row is covered
+/// whatever the server happens to send.
+String _safeImageUrl(String url) => url.contains(' ') ? Uri.encodeFull(url) : url;
+
+/// Rotating pastel tints for rows whose course has no artwork, so a list
+/// missing images reads as several lessons rather than one repeated chip.
+const List<List<Color>> _kPlaceholderTints = [
+  [Color(0xFFECEAFB), Color(0xFF554FF0)],
+  [Color(0xFFFDEEE3), Color(0xFFD9803F)],
+  [Color(0xFFE4F6EE), Color(0xFF2E9E76)],
+  [Color(0xFFFCE7F0), Color(0xFFC94F86)],
+  [Color(0xFFE6F1FD), Color(0xFF3B7DD8)],
+];
+
 class _LessonPlaceholder extends StatelessWidget {
-  const _LessonPlaceholder();
+  const _LessonPlaceholder({this.seed = 0});
+
+  final int seed;
 
   @override
   Widget build(BuildContext context) {
+    final tint = _kPlaceholderTints[seed % _kPlaceholderTints.length];
+
     return Container(
-      color: const Color(0xFFECEAFB),
+      color: tint[0],
       alignment: Alignment.center,
-      child: Icon(Icons.menu_book_rounded, size: 20.sp, color: AppCustomColor.brandPrimary),
+      child: Icon(Icons.auto_stories_rounded, size: 20.sp, color: tint[1]),
     );
   }
 }

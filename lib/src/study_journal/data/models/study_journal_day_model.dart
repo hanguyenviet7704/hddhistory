@@ -6,7 +6,7 @@ abstract class StudyJournalItemModel with _$StudyJournalItemModel {
   const factory StudyJournalItemModel({
     @Default('') String courseId,
     @Default('') String courseTitle,
-    @Default('') String courseImage,
+    @Default('') String image,
     @Default('') String lessonId,
     @Default('') String lessonTitle,
     @Default('') String keypointId,
@@ -67,7 +67,7 @@ extension StudyJournalDayDetailModelX on StudyJournalDayDetailModel {
           (item) => StudyJournalItemEntity(
             courseId: item.courseId,
             courseTitle: item.courseTitle,
-            courseImage: item.courseImage,
+            image: item.image,
             lessonId: item.lessonId,
             lessonTitle: item.lessonTitle,
             keypointId: item.keypointId,

@@ -5,7 +5,7 @@ abstract class StudyJournalItemEntity with _$StudyJournalItemEntity {
   const factory StudyJournalItemEntity({
     @Default('') String courseId,
     @Default('') String courseTitle,
-    @Default('') String courseImage,
+    @Default('') String image,
     @Default('') String lessonId,
     @Default('') String lessonTitle,
     @Default('') String keypointId,
