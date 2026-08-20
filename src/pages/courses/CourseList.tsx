@@ -231,6 +231,25 @@ export default function CourseList() {
             >
               Template
             </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await courseService.exportExcel();
+                  const url = URL.createObjectURL(res.data);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "course-export.xlsx";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  showError("Export courses failed");
+                }
+              }}
+              className="inline-flex items-center gap-2 border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition text-sm"
+            >
+              Export
+            </button>
             <ExcelImportButton
               label="Import"
               fileName="course-import-result.xlsx"

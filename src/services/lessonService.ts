@@ -38,6 +38,12 @@ export const lessonService = {
     });
   },
 
+  async exportExcel() {
+    return axiosClient.get(`/courses-lessons/export`, {
+      responseType: "blob",
+    });
+  },
+
   async importExcel(file: File) {
     const formData = new FormData();
     formData.append("file", file);

@@ -264,6 +264,26 @@ const TheoryList: React.FC = () => {
             </div>
 
             <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await learningItemService.exportTheories();
+                  const url = URL.createObjectURL(res.data);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "theory-export.xlsx";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  showError("Export theories failed");
+                }
+              }}
+              className="inline-flex items-center gap-2 border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition text-sm"
+            >
+              Export
+            </button>
+
+            <button
               onClick={() => navigate("/theory/create")}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
             >

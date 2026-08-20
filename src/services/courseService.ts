@@ -43,6 +43,12 @@ export const courseService = {
     });
   },
 
+  async exportExcel() {
+    return axiosClient.get(`/courses/export`, {
+      responseType: "blob",
+    });
+  },
+
   async importExcel(file: File) {
     const formData = new FormData();
     formData.append("file", file);

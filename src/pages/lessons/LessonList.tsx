@@ -221,6 +221,25 @@ export default function LessonList() {
             >
               Template
             </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await lessonService.exportExcel();
+                  const url = URL.createObjectURL(res.data);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "lesson-export.xlsx";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  showError("Export lessons failed");
+                }
+              }}
+              className="inline-flex items-center gap-2 border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition text-sm"
+            >
+              Export
+            </button>
             <ExcelImportButton
               label="Import"
               fileName="lesson-import-result.xlsx"
