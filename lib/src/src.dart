@@ -19,6 +19,7 @@ export 'onboard_v2/onboard_v2.dart';
 export 'onboarding/onboarding.dart';
 export 'output_practice/output_practice.dart';
 export 'profile/profile.dart';
+export 'study_journal/study_journal.dart';
 export 'progress/progress.dart';
 export 'roleplay/roleplay.dart';
 export 'setting/setting.dart';

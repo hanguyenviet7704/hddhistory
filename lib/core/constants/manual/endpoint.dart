@@ -123,6 +123,8 @@ mixin AppEndpoint {
   static const String coursesUserProgressBadgeProgress = '/api/v1/courses-user-progress/badge-progress/{courseId}';
   static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
   static const String coursesUserProgressStreakCheckIn = '/api/v1/courses-user-progress/streak/check-in';
+  static const String coursesUserProgressStudyJournal = '/api/v1/courses-user-progress/study-journal';
+  static const String coursesUserProgressStudyJournalDay = '/api/v1/courses-user-progress/study-journal/day';
   static const String coursesUserProgressWidgetInProgress = '/api/v1/courses-user-progress/widget/in-progress';
   static const String coursesUserProgressWidgetSuggestCourse = '/api/v1/courses-user-progress/widget/suggest-course';
   static const String coursesQuotesRandom = '/api/v1/courses-quotes/random';

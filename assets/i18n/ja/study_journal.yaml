@@ -1,0 +1,30 @@
+sectionTitle: 学習ノート
+previousMonth: 前の月
+nextMonth: 次の月
+weekdays: 月, 火, 水, 木, 金, 土, 日
+weekdayNames: 月曜日, 火曜日, 水曜日, 木曜日, 金曜日, 土曜日, 日曜日
+monthName: ${month}月
+legendLess: 少ない
+legendMore: 多い
+tapHint: 日付をタップすると学習履歴を見られます
+daySemantics(param=count):
+  one: キーポイント${count}件を学習
+  other: キーポイント${count}件を学習
+dayFuture: ${day}日、これから
+dayTitle: "${weekday}、${month}月${day}日"
+sectionLessons: レッスン
+sectionHabits: 実践した習慣
+lessonCount(param=count):
+  one: ${count}レッスン
+  other: ${count}レッスン
+minuteCount(param=count):
+  one: ${count}分
+  other: ${count}分
+habitCount(param=count):
+  one: 習慣${count}件
+  other: 習慣${count}件
+dayRest: おやすみの日
+dayEmpty: この日の学習記録はありません。
+dayError: この日の記録を読み込めませんでした。
+dayLoading: 読み込み中…
+retry: 再試行

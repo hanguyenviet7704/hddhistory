@@ -196,6 +196,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       14.verticalSpace,
                       const _StatCardsRow(),
                       30.verticalSpace,
+                      // "Nhật ký học tập" — the month heat-map of study days
+                      // (design `6 · Profile`), directly under the progress
+                      // block it summarises and above the per-skill list.
+                      AppText(
+                        context.l10n.studyJournal.sectionTitle,
+                        style: _poppins(20, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+                      ),
+                      12.verticalSpace,
+                      const StudyJournalCalendar(),
+                      30.verticalSpace,
                       const _AchievementsAndProgressSection(),
                       30.verticalSpace,
                       // The Library section (My course) and the My Creations row

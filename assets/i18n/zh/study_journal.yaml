@@ -1,0 +1,30 @@
+sectionTitle: 学习日志
+previousMonth: 上个月
+nextMonth: 下个月
+weekdays: 一, 二, 三, 四, 五, 六, 日
+weekdayNames: 星期一, 星期二, 星期三, 星期四, 星期五, 星期六, 星期日
+monthName: ${month}月
+legendLess: 少
+legendMore: 多
+tapHint: 点击日期查看学习记录
+daySemantics(param=count):
+  one: 已学 ${count} 个知识点
+  other: 已学 ${count} 个知识点
+dayFuture: ${day} 日，尚未开始
+dayTitle: "${weekday}，${month}月${day}日"
+sectionLessons: 课程
+sectionHabits: 已练习的习惯
+lessonCount(param=count):
+  one: ${count} 节课
+  other: ${count} 节课
+minuteCount(param=count):
+  one: ${count} 分钟
+  other: ${count} 分钟
+habitCount(param=count):
+  one: ${count} 个习惯
+  other: ${count} 个习惯
+dayRest: 休息日
+dayEmpty: 这一天还没有学习记录。
+dayError: 无法加载这一天的记录。
+dayLoading: 加载中…
+retry: 重试

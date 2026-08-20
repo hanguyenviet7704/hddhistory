@@ -1,0 +1,30 @@
+sectionTitle: 학습 일지
+previousMonth: 지난달
+nextMonth: 다음 달
+weekdays: 월, 화, 수, 목, 금, 토, 일
+weekdayNames: 월요일, 화요일, 수요일, 목요일, 금요일, 토요일, 일요일
+monthName: ${month}월
+legendLess: 적음
+legendMore: 많음
+tapHint: 날짜를 누르면 학습 기록을 볼 수 있어요
+daySemantics(param=count):
+  one: 키포인트 ${count}개 학습
+  other: 키포인트 ${count}개 학습
+dayFuture: ${day}일, 아직 오지 않음
+dayTitle: "${weekday}, ${month}월 ${day}일"
+sectionLessons: 레슨
+sectionHabits: 실천한 습관
+lessonCount(param=count):
+  one: 레슨 ${count}개
+  other: 레슨 ${count}개
+minuteCount(param=count):
+  one: ${count}분
+  other: ${count}분
+habitCount(param=count):
+  one: 습관 ${count}개
+  other: 습관 ${count}개
+dayRest: 쉬어간 날
+dayEmpty: 이날은 학습 기록이 없어요.
+dayError: 이날 기록을 불러오지 못했어요.
+dayLoading: 불러오는 중…
+retry: 다시 시도
