@@ -7,6 +7,11 @@ abstract class StudyJournalItemModel with _$StudyJournalItemModel {
     @Default('') String courseId,
     @Default('') String courseTitle,
     @Default('') String image,
+
+    /// The field an API older than the rename still sends. Read as a fallback
+    /// so an app that ships ahead of the server keeps showing artwork instead
+    /// of a tile for the whole gap between the two deploys.
+    @Default('') String courseImage,
     @Default('') String lessonId,
     @Default('') String lessonTitle,
     @Default('') String keypointId,
@@ -67,7 +72,7 @@ extension StudyJournalDayDetailModelX on StudyJournalDayDetailModel {
           (item) => StudyJournalItemEntity(
             courseId: item.courseId,
             courseTitle: item.courseTitle,
-            image: item.image,
+            image: item.image.isNotEmpty ? item.image : item.courseImage,
             lessonId: item.lessonId,
             lessonTitle: item.lessonTitle,
             keypointId: item.keypointId,
