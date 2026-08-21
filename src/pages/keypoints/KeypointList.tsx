@@ -167,6 +167,26 @@ const KeypointList: React.FC = () => {
           />
 
           <button
+            type="button"
+            onClick={async () => {
+              try {
+                const res = await keypointService.exportExcel();
+                const url = URL.createObjectURL(res.data);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "keypoint-export.xlsx";
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch {
+                showError("Export keypoints failed");
+              }
+            }}
+            className="inline-flex items-center gap-2 border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition text-sm"
+          >
+            Export
+          </button>
+
+          <button
             onClick={() => {
               setSelected(null);
               setIsModalOpen(true);

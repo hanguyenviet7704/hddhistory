@@ -27,6 +27,12 @@ export const keypointService = {
     return axiosClient.delete(`/courses-keypoints/${id}`);
   },
 
+  async exportExcel() {
+    return axiosClient.get(`/courses-keypoints/export`, {
+      responseType: "blob",
+    });
+  },
+
   async importExcel(file: File) {
     const formData = new FormData();
     formData.append("file", file);
