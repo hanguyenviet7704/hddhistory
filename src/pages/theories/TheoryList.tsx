@@ -13,6 +13,7 @@ import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import AsyncExcelImportButton from "../../components/imports/AsyncExcelImportButton";
+import { downloadBlob } from "../../utils/downloadBlob";
 import { useNotification } from "../../utils/hooks/useNotification";
 import LearningItemConfirm from "../../components/learning-item/LearningItemConfirm";
 
@@ -268,12 +269,7 @@ const TheoryList: React.FC = () => {
               onClick={async () => {
                 try {
                   const res = await learningItemService.exportTheories();
-                  const url = URL.createObjectURL(res.data);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "theory-export.xlsx";
-                  a.click();
-                  URL.revokeObjectURL(url);
+                  downloadBlob(res.data, "theory-export.xlsx");
                 } catch {
                   showError("Export theories failed");
                 }

@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import ExcelImportButton from "../../components/imports/ExcelImportButton";
+import { downloadBlob } from "../../utils/downloadBlob";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 export default function LessonList() {
@@ -207,12 +208,7 @@ export default function LessonList() {
               onClick={async () => {
                 try {
                   const res = await lessonService.downloadTemplate();
-                  const url = URL.createObjectURL(res.data);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "lesson-import-template.xlsx";
-                  a.click();
-                  URL.revokeObjectURL(url);
+                  downloadBlob(res.data, "lesson-import-template.xlsx");
                 } catch {
                   showError("Download template failed");
                 }
@@ -226,12 +222,7 @@ export default function LessonList() {
               onClick={async () => {
                 try {
                   const res = await lessonService.exportExcel();
-                  const url = URL.createObjectURL(res.data);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "lesson-export.xlsx";
-                  a.click();
-                  URL.revokeObjectURL(url);
+                  downloadBlob(res.data, "lesson-export.xlsx");
                 } catch {
                   showError("Export lessons failed");
                 }

@@ -16,6 +16,7 @@ import { getTranslationValue } from "../../utils/translation";
 import { formatEstimateCompleteTimeLabel } from "../../utils/estimate-complete-time";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import ExcelImportButton from "../../components/imports/ExcelImportButton";
+import { downloadBlob } from "../../utils/downloadBlob";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 const KeypointList: React.FC = () => {
@@ -171,12 +172,7 @@ const KeypointList: React.FC = () => {
             onClick={async () => {
               try {
                 const res = await keypointService.exportExcel();
-                const url = URL.createObjectURL(res.data);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "keypoint-export.xlsx";
-                a.click();
-                URL.revokeObjectURL(url);
+                downloadBlob(res.data, "keypoint-export.xlsx");
               } catch {
                 showError("Export keypoints failed");
               }

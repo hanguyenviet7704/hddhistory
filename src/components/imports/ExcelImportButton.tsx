@@ -2,6 +2,8 @@ import { AxiosResponse } from "axios";
 import { UploadIcon } from "lucide-react";
 import React, { useRef, useState } from "react";
 
+import { downloadBlob } from "../../utils/downloadBlob";
+
 type ImportExcelHandler = (file: File) => Promise<AxiosResponse<Blob>>;
 
 interface ExcelImportButtonProps {
@@ -62,17 +64,6 @@ const ExcelImportButton: React.FC<ExcelImportButtonProps> = ({
     </>
   );
 };
-
-function downloadBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
 
 function resolveFileName(response: AxiosResponse<Blob>, fallback: string) {
   const disposition = response.headers["content-disposition"];
