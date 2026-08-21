@@ -10,7 +10,9 @@
 #      (fork-ts-checker), nên vẫn fail nếu code sai type. Lint là việc của CI/hook.
 #   3. Tắt source map (GENERATE_SOURCEMAP) — bước tốn RAM/CPU nhất khi Terser minify,
 #      hay làm build bị OOM-killed trong Docker khi host cạn RAM.
-#   4. Nâng heap Node để GC không thrash trên máy build nhiều RAM.
+#   4. KHÔNG set NODE_OPTIONS/max-old-space-size. Host build (188.166.208.109)
+#      hay ở load > 4 và ít RAM; nới heap ceiling làm V8 hoãn GC rồi tràn vào
+#      swap -> build bò, chậm hơn là nhanh hơn. Để Node tự chọn theo RAM thấy được.
 #
 # Build cục bộ:  DOCKER_BUILDKIT=1 docker build -t meup-admin .
 
@@ -30,8 +32,7 @@ COPY . .
 ENV GENERATE_SOURCEMAP=false \
     DISABLE_ESLINT_PLUGIN=true \
     INLINE_RUNTIME_CHUNK=false \
-    CI=false \
-    NODE_OPTIONS=--max-old-space-size=4096
+    CI=false
 
 RUN npm run build
 
