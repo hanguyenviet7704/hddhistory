@@ -6,6 +6,7 @@ import {
   PlusIcon,
   SpeakerWaveIcon,
   GlobeAltIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { countryLabel } from "../../config/countries";
 import { courseService } from "../../services/courseService";
@@ -113,6 +114,38 @@ export default function CourseList() {
     setSelectedCourse(null);
     setModalError(null);
     setIsModalOpen(true);
+  };
+
+  const [syncingDrive, setSyncingDrive] = useState(false);
+
+  const pushToDrive = async (course: ICourse) => {
+    try {
+      const res = await courseService.pushCourseToDrive(course._id);
+      showSuccess("Pushed course sheet to Drive");
+      if (res.webViewLink) window.open(res.webViewLink, "_blank");
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Push to Drive failed");
+    }
+  };
+
+  const syncDrive = async () => {
+    setSyncingDrive(true);
+    try {
+      const results = await courseService.syncFromDrive();
+      const errorCount = results.reduce((sum, r) => sum + r.errorCount, 0);
+      if (errorCount) {
+        showError(
+          `Drive sync: ${results.length} file(s), ${errorCount} error(s) — see the import_errors tab in the sheet`
+        );
+      } else {
+        showSuccess(`Drive sync: ${results.length} file(s), no errors`);
+      }
+      fetchCourses(searchTerm.trim(), 1, false);
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Drive sync failed");
+    } finally {
+      setSyncingDrive(false);
+    }
   };
 
   const openEdit = (c: ICourse) => {
@@ -241,6 +274,16 @@ export default function CourseList() {
             >
               Export
             </button>
+            <button
+              type="button"
+              disabled={syncingDrive}
+              onClick={syncDrive}
+              title="Pull every course sheet in the Drive folder through the importer"
+              className="inline-flex items-center gap-2 border border-emerald-600 text-emerald-700 hover:bg-emerald-50 disabled:border-emerald-300 disabled:text-emerald-300 px-3 py-2 rounded-lg transition text-sm"
+            >
+              <CloudArrowUpIcon className="h-4 w-4" />
+              {syncingDrive ? "Syncing..." : "Sync Drive"}
+            </button>
             <ExcelImportButton
               label="Import"
               fileName="course-import-result.xlsx"
@@ -328,6 +371,13 @@ export default function CourseList() {
 
                         {/* hover buttons */}
                         <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <button
+                            onClick={() => pushToDrive(course)}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                            title="Push this course's sheet to Google Drive"
+                          >
+                            <CloudArrowUpIcon className="h-5 w-5 text-emerald-600" />
+                          </button>
                           <button
                             onClick={() => setVoiceoverCourse(course)}
                             className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"

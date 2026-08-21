@@ -49,6 +49,45 @@ export const courseService = {
     });
   },
 
+  async exportCourseFull(courseId: string) {
+    return axiosClient.get(`/course-content-transfers/${courseId}/export`, {
+      responseType: "blob",
+    });
+  },
+
+  async downloadFullTemplate() {
+    return axiosClient.get(`/course-content-transfers/template`, {
+      responseType: "blob",
+    });
+  },
+
+  async importCourseContent(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axiosClient.post(`/course-content-transfers/import`, formData, {
+      responseType: "blob",
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
+  async pushCourseToDrive(courseId: string) {
+    const res = await axiosClient.post(
+      `/course-content-transfers/${courseId}/push-to-drive`
+    );
+    return res.data as { fileId: string; webViewLink?: string };
+  },
+
+  async syncFromDrive(fileId?: string) {
+    const res = await axiosClient.post(`/course-content-transfers/drive-sync`, {
+      fileId,
+    });
+    return res.data as Array<{
+      fileId: string;
+      fileName: string;
+      errorCount: number;
+    }>;
+  },
+
   async importExcel(file: File) {
     const formData = new FormData();
     formData.append("file", file);
