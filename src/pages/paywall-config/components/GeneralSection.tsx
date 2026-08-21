@@ -317,7 +317,7 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
 
       <SectionCard
         title="Khoá theo lượt ngày"
-        description="Mỗi user chưa premium đọc miễn phí 1 keypoint mỗi ngày; các keypoint khác trong ngày khoá từ thẻ 3. Hôm sau lại có lượt mới."
+        description="Mỗi user chưa premium học xong miễn phí 1 keypoint mỗi ngày; học hết keypoint đó mới tính 1 lượt, sau đó các keypoint khác trong ngày khoá từ thẻ 3. Hôm sau lại có lượt mới."
         icon={BookOpenIcon}
         headerRight={
           <ToggleSwitch
@@ -343,9 +343,10 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
             />
             <span className="text-[11px] text-slate-500">
-              Số keypoint được đọc <b>trọn vẹn</b> mỗi ngày. Lượt chỉ bị tiêu khi
-              user đi qua thẻ khoá — mở keypoint rồi thoát không mất gì, và đọc lại
-              bài đã hoàn thành hôm trước cũng không tính.
+              Số keypoint <b>học hết</b> mỗi ngày. Lượt chỉ bị tiêu khi user{" "}
+              <b>hoàn thành</b> keypoint — đọc dở rồi thoát không mất gì, và đọc lại
+              bài đã hoàn thành trước đó cũng không tính. Khi còn lượt thì mọi
+              keypoint đều mở trọn vẹn, hết lượt mới dựng khoá.
             </span>
           </label>
           <label className="flex flex-col gap-1 text-xs text-slate-700 w-44">
@@ -360,7 +361,8 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
             />
             <span className="text-[11px] text-slate-500">
-              3 = đọc được 2 thẻ đầu rồi gặp paywall ở thẻ 3.
+              3 = đọc được 2 thẻ đầu rồi gặp paywall ở thẻ 3. Chỉ áp dụng sau khi
+              user đã dùng hết lượt của ngày.
             </span>
           </label>
         </div>
@@ -372,8 +374,8 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
         </p>
         <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
           Khác mọi mục khác ở trang này: luật này do <b>server</b> cưỡng chế, vì nó
-          phụ thuộc vào việc user đã đọc gì hôm nay — app chỉ được cho biết kết quả.
-          "Ngày" tính theo múi giờ của chính user.
+          phụ thuộc vào việc user đã <b>học xong</b> gì hôm nay — app chỉ được cho
+          biết kết quả. "Ngày" tính theo múi giờ của chính user.
         </p>
       </SectionCard>
 

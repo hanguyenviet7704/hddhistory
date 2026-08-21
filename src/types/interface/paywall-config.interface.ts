@@ -209,9 +209,13 @@ export interface PaywallWinBack {
  */
 export interface PaywallDailyKeypointQuota {
   enabled: boolean;
-  /** Keypoints readable in full per day. 1 in the design. */
+  /** Keypoints the reader may FINISH per day. 1 in the design. */
   freeKeypointsPerDay?: number;
-  /** Card the lock stands at once the ticket is spent. 3 = two cards readable. */
+  /**
+   * Card the lock stands at once the day is used up. 3 = two cards readable.
+   * Before that nothing is capped — the day is charged by completing a keypoint
+   * (2026-08-21), not by walking past this card.
+   */
   afterCards?: number;
 }
 
