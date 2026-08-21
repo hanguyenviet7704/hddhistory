@@ -36,6 +36,8 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   progress_start: "2b. Progress start (không còn bài dở)",
   habit_tracking: "3. Habit tracking",
   new_course: "4. Khoá học mới",
+  weekly_recap_ready: "6a. Weekly recap (thứ 2, nhắc lần 1)",
+  weekly_recap_reminder: "6b. Weekly recap (thứ 2, nhắc lần 2)",
 };
 
 /**
@@ -46,6 +48,10 @@ const TYPE_HINTS: Partial<Record<NotificationType, string>> = {
   progress_finish: "Gửi cho user còn ít nhất 1 bài học dang dở.",
   progress_start:
     "Gửi cho user chưa bắt đầu bài nào, hoặc đã hoàn thành hết. Cùng khung giờ với 2a và loại trừ lẫn nhau.",
+  weekly_recap_ready:
+    "Chỉ gửi vào thứ 2 (theo giờ địa phương). Gửi cho tất cả user — recap tự sinh khi user mở.",
+  weekly_recap_reminder:
+    "Chỉ gửi vào thứ 2. Chỉ gửi cho user CHƯA MỞ recap tuần này (viewedAt còn trống; bấm \"Để sau\" vẫn tính là chưa mở).",
 };
 
 /** Display order, so the cards do not follow whatever order Mongo returns. */
@@ -63,6 +69,8 @@ const TYPE_VARIABLES: Record<NotificationType, string> = {
   progress_start: "{user_name}, {topic_name}",
   habit_tracking: "{user_name}",
   new_course: "{user_name}, {course_name}, {topic_name}",
+  weekly_recap_ready: "{user_name}",
+  weekly_recap_reminder: "{user_name}",
 };
 
 /** Every destination the API accepts, with what it opens in the app. */
@@ -72,6 +80,7 @@ const DEEPLINK_LABELS: Record<NotificationDeeplink, string> = {
   habit_tracker: "habit_tracker — Màn Thói quen",
   new_course: "new_course — Roadmap khoá mới",
   explore: "explore — Tab Khám phá (cần bản app mới)",
+  week_recap: "week_recap — Poster Hành trình tuần qua (cần bản app mới)",
 };
 
 const DEEPLINK_OPTIONS = Object.keys(

@@ -4,7 +4,9 @@ export type NotificationType =
   | "progress_finish"
   | "progress_start"
   | "habit_tracking"
-  | "new_course";
+  | "new_course"
+  | "weekly_recap_ready"
+  | "weekly_recap_reminder";
 
 export type NotificationLogStatus = "sent" | "failed" | "skipped";
 
@@ -18,7 +20,12 @@ export type NotificationDeeplink =
    * the value as unknown and does not navigate at all, so only pick this once the
    * release that handles it is live.
    */
-  | "explore";
+  | "explore"
+  /**
+   * The week-recap poster. Same caveat as `explore`: only app builds that ship
+   * the week-recap feature route it; older ones just open the app.
+   */
+  | "week_recap";
 
 export interface NotificationCopy {
   locale: string;
