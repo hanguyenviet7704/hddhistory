@@ -9,7 +9,10 @@ import {
   CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { countryLabel } from "../../config/countries";
-import { courseService } from "../../services/courseService";
+import {
+  courseService,
+  DriveSyncResult,
+} from "../../services/courseService";
 import VoiceoverStatusModal from "../../components/courses/VoiceoverStatusModal";
 import { ICourse, CoursePayload } from "../../types/interface/course.interface";
 import { CourseStatus } from "../../types/enum/course.enum";
@@ -117,6 +120,9 @@ export default function CourseList() {
   };
 
   const [syncingDrive, setSyncingDrive] = useState(false);
+  const [syncResults, setSyncResults] = useState<DriveSyncResult[] | null>(
+    null
+  );
 
   const pushToDrive = async (course: ICourse) => {
     try {
@@ -132,13 +138,12 @@ export default function CourseList() {
     setSyncingDrive(true);
     try {
       const results = await courseService.syncFromDrive();
-      const errorCount = results.reduce((sum, r) => sum + r.errorCount, 0);
-      if (errorCount) {
-        showError(
-          `Drive sync: ${results.length} file(s), ${errorCount} error(s) — see the import_errors tab in the sheet`
-        );
+      setSyncResults(results);
+      const failed = results.filter((r) => r.action === "failed").length;
+      if (failed) {
+        showError(`Drive sync: ${failed}/${results.length} file(s) failed`);
       } else {
-        showSuccess(`Drive sync: ${results.length} file(s), no errors`);
+        showSuccess(`Drive sync: ${results.length} file(s) OK`);
       }
       fetchCourses(searchTerm.trim(), 1, false);
     } catch (error: any) {
@@ -146,6 +151,19 @@ export default function CourseList() {
     } finally {
       setSyncingDrive(false);
     }
+  };
+
+  const describeSyncStats = (result: DriveSyncResult) => {
+    if (!result.stats) return "";
+    return Object.entries(result.stats)
+      .filter(([, s]) => s.created > 0 || s.updated > 0)
+      .map(
+        ([name, s]) =>
+          `${name}: ${s.created > 0 ? `+${s.created} mới` : ""}${
+            s.created > 0 && s.updated > 0 ? ", " : ""
+          }${s.updated > 0 ? `${s.updated} cập nhật` : ""}`
+      )
+      .join(" · ");
   };
 
   const openEdit = (c: ICourse) => {
@@ -551,6 +569,98 @@ export default function CourseList() {
         }
         onClose={() => setVoiceoverCourse(null)}
       />
+
+      {/* Drive sync results */}
+      {syncResults && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Kết quả Sync Drive ({syncResults.length} file)
+              </h2>
+              <button
+                onClick={() => setSyncResults(null)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                aria-label="Đóng"
+              >
+                ×
+              </button>
+            </div>
+            <div className="overflow-y-auto px-6 py-4">
+              {syncResults.length === 0 ? (
+                <p className="text-gray-500">
+                  Không có sheet nào trong folder để sync.
+                </p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-2 pr-3">Sheet</th>
+                      <th className="py-2 pr-3">Hành động</th>
+                      <th className="py-2">Chi tiết</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {syncResults.map((r) => (
+                      <tr key={r.fileId} className="border-b last:border-0 align-top">
+                        <td className="py-2 pr-3 font-medium text-gray-900">
+                          {r.fileName}
+                        </td>
+                        <td className="py-2 pr-3">
+                          {r.action === "created" && (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700">
+                              Tạo mới
+                            </span>
+                          )}
+                          {r.action === "updated" && (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                              Cập nhật
+                            </span>
+                          )}
+                          {r.action === "noop" && (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
+                              Không đổi
+                            </span>
+                          )}
+                          {r.action === "failed" && (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">
+                              Lỗi ({r.errorCount})
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 text-gray-600">
+                          {r.action === "failed" ? (
+                            <div className="space-y-1">
+                              {r.errors.slice(0, 3).map((e, i) => (
+                                <div key={i} className="text-red-600">
+                                  {e.sheet !== "drive"
+                                    ? `[${e.sheet}${e.row ? ` dòng ${e.row}` : ""}${
+                                        e.column ? ` · ${e.column}` : ""
+                                      }] `
+                                    : ""}
+                                  {e.message}
+                                </div>
+                              ))}
+                              {r.errors.length > 3 && (
+                                <div className="text-gray-400">
+                                  … và {r.errors.length - 3} lỗi nữa (xem tab
+                                  import_errors trong sheet)
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            describeSyncStats(r) || "—"
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

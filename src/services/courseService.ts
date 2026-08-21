@@ -5,6 +5,26 @@ import {
 } from "../types/interface/course.interface";
 import axiosClient from "./axiosClient";
 
+export interface DriveSyncEntityStats {
+  created: number;
+  updated: number;
+}
+
+export interface DriveSyncResult {
+  fileId: string;
+  fileName: string;
+  courseId?: string;
+  action: "created" | "updated" | "noop" | "failed";
+  stats?: Record<string, DriveSyncEntityStats>;
+  errorCount: number;
+  errors: Array<{
+    sheet: string;
+    row: number;
+    column?: string;
+    message: string;
+  }>;
+}
+
 export const courseService = {
   async getList(params?: Partial<CourseListQuery>) {
     const res = await axiosClient.get("/courses", { params });
@@ -81,11 +101,7 @@ export const courseService = {
     const res = await axiosClient.post(`/course-content-transfers/drive-sync`, {
       fileId,
     });
-    return res.data as Array<{
-      fileId: string;
-      fileName: string;
-      errorCount: number;
-    }>;
+    return res.data as DriveSyncResult[];
   },
 
   async importExcel(file: File) {
