@@ -28,3 +28,5 @@ dayEmpty: 这一天还没有学习记录。
 dayError: 无法加载这一天的记录。
 dayLoading: 加载中…
 retry: 重试
+dayEmptyTitle: 没有活动
+dayEmptyBody: 小小的休息日。重要的是你一直回来！

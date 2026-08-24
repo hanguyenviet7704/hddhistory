@@ -25,6 +25,7 @@ loadErrorTitle: 習慣を読み込めませんでした
 loadErrorRetryButton: 再試行
 
 # Adopt / Start first habit
+adoptProblemLabel: 問題
 adoptHeaderLabel: はじめる前に
 adoptChooseHabitLabel: 始める習慣を選ぶ
 adoptAddButton: 習慣を追加
@@ -46,16 +47,6 @@ checkInDoneButton: 完了
 checkInChangeHabit: 変更
 
 # Post-lesson summary + commitment
-summaryWeeklyReviewTitle: 週間レビュー
-summaryWorkingOnHabits: ${count} 個の習慣に取り組んでいます
-summaryCheckInRateLabel: 習慣チェックイン率
-summaryBestStreakLabel: 最長連続記録
-summaryBestStreakValue: ${days} 日
-summaryTotalLessonsLabel: レッスン合計
-summaryTotalCheckInsLabel: チェックイン合計
-summaryCommitmentQuestion: 今回はどこまで？
-summaryCommitmentStartButton: ${days} 日パックを始める
-summaryCommitmentMaybeLater: あとで
 
 # Edit / pause / remove
 editSheetTitle: 習慣
@@ -105,8 +96,6 @@ homeReminderSubtitle: この調子で続けましょう！
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: コースへ
 
-summaryBestHabitLabel: ベストな習慣
-summaryBestHabitLoop: ${days}日連続
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: 今日はどうでしたか？

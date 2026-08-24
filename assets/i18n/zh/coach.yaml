@@ -1,0 +1,105 @@
+sheetTitle: AI 教练
+bubbleSemantics: 打开 AI 教练
+failedTitle: 我们这边出了点问题。你说过的内容没有丢失。
+retry: 重试
+inputHint: 输入，或选一个示例…
+
+escapeLabel: 今天只记一行
+
+promptMood: 开始之前 —— 你今天感觉怎么样？
+promptMoodEnd: 结束之前 —— 现在感觉怎么样？
+promptPickNew: 你刚加了几个习惯。先聊哪一个？
+promptPickHabit: 今天想练哪个习惯？
+promptPersona: 今天希望我用什么方式说话？
+promptTime: 今天有多少时间？
+promptCheckin: 这几天有用到这个习惯的时候吗？
+promptPlan: 为下次定一个小小的约定吧。
+promptSchedule: 什么时候提醒你？
+promptLoop: 还有一个在等着。继续，还是就到这里？
+promptRating: 刚才这段怎么样？
+promptEnd: 接下来想做什么？
+promptJot: 好。今天就写一行，我不会再多问。
+promptSafety: 谢谢你说出来。我不希望你一个人扛着。
+promptTwoCols: 我用你自己的话整理成了草稿。把你觉得是真正问题的那行拖到右边，再写成一句话。
+promptIntent: 你说过要做这件事。有遇到那样的时刻吗？
+
+fallbackReply: 我听着呢。
+
+moodLow: 不太好
+moodMid: 一般
+moodHigh: 还不错
+
+personaFriend: 像朋友
+personaDirect: 直说
+personaGuide: 引导我
+
+scriptShort: 短 · 1 分钟以内
+scriptMedium: 中 · 3 分钟左右
+scriptLong: 长 · 慢慢来
+scriptPractice: 只练习，不聊天
+
+intentDone: 做到了
+intentMissed: 有机会但没做
+intentNone: 还没遇到那种场合
+
+checkinYes: 有
+checkinNo: 还没
+
+loopContinue: 继续说下一个
+loopStop: 就到这里
+
+planContextHint: 什么时候？例：开小组会时
+planActionHint: 做什么？例：说出我的想法
+planSave: 保存约定
+
+daysDaily: 每天
+daysWeekdays: 周一至周五
+daysWeekends: 周末
+reminderOn: 开启提醒
+reminderOff: 关闭提醒
+
+ratingUp: 挺好
+ratingDown: 不太好
+ratingSkip: 跳过
+
+endGoToCourse: 打开课程
+endKeepTalking: 继续聊
+endClose: 关闭
+
+twoColsLeftTitle: 发生了什么
+twoColsRightTitle: 我真正的问题
+twoColsHint: 点一下就能把这行移过去。草稿只用了你自己说过的话。
+twoColsEmpty: 还没有内容
+
+courseInviteTitle: 一门和你说的事情很近的课
+courseInviteCaption: 是邀请，不是诊断。跳过也没关系。
+
+safetyLabel: 安全出口
+safetyHotlineTitle: 现在就能倾诉的人
+safetyOpening: 谢谢你说出来。我不希望你一个人扛着。
+safetyBody: 如果你现在不安全，请联系你所在地区的紧急服务。如果有你信任的人，今天就告诉他。
+safetyNoHotline: 我们还没有你所在地区的求助热线。请联系当地紧急服务。
+safetyDisclaimer: 我是 AI，无法代替心理专业人士。
+
+# Header subtitle + control labels
+close: 关闭
+micListening: 正在听…
+micSemantics: 用说的代替打字
+planLabel: 约定 —— 用你的话
+scheduleLabel: 什么时候提醒你？
+ratingLabel: 刚才这段怎么样？
+stepMood: 开始之前
+stepPickHabit: 选择习惯
+stepPersona: 说话方式
+stepTime: 今天的时间
+stepTelling: 在听
+stepTwoCols: 真正的问题
+stepSituation: 一个小场景
+stepIntent: 上次的约定
+stepCheckin: 这周的习惯
+stepPlan: 下次的约定
+stepSchedule: 设置提醒
+stepLoop: 还有一个在等
+stepMoodEnd: 关闭之前
+stepRating: 你觉得如何
+stepJot: 今天的一行

@@ -1,0 +1,105 @@
+sheetTitle: AI Coach
+bubbleSemantics: Mở AI Coach
+failedTitle: Có lỗi ở phía mình. Những gì bạn nói không mất đi đâu cả.
+retry: Thử lại
+inputHint: Gõ, hoặc chọn một gợi ý…
+
+escapeLabel: Hôm nay chỉ ghi lại thôi
+
+promptMood: Trước khi bắt đầu — hôm nay bạn thấy thế nào?
+promptMoodEnd: Trước khi đóng — giờ bạn thấy thế nào?
+promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào trước?
+promptPickHabit: Bạn muốn tập habit nào hôm nay?
+promptPersona: Bạn muốn mình nói kiểu nào hôm nay?
+promptTime: Hôm nay bạn có bao nhiêu thời gian?
+promptCheckin: Mấy hôm nay habit này có dịp nào dùng tới không?
+promptPlan: Chốt một nhắc hẹn nhỏ cho lần tới nhé.
+promptSchedule: Nhắc bạn lúc nào?
+promptLoop: Còn một nhắc hẹn nữa. Nói tiếp hay dừng ở đây?
+promptRating: Lượt vừa rồi thế nào?
+promptEnd: Bạn muốn làm gì tiếp?
+promptJot: Được. Ghi một dòng cho hôm nay thôi, mình không hỏi gì thêm.
+promptSafety: Cảm ơn bạn đã nói ra điều này. Mình muốn bạn không phải ở một mình với nó.
+promptTwoCols: Mình gom lại thành nháp bằng đúng lời bạn. Kéo dòng nào là vấn đề thật của bạn sang phải, rồi viết lại một câu.
+promptIntent: Bạn nói sẽ làm điều này. Có dịp nào chưa?
+
+fallbackReply: Mình nghe rồi.
+
+moodLow: Không ổn
+moodMid: Bình thường
+moodHigh: Ổn
+
+personaFriend: Người bạn
+personaDirect: Người thẳng
+personaGuide: Người dẫn
+
+scriptShort: Ngắn · dưới 1 phút
+scriptMedium: Vừa · khoảng 3 phút
+scriptLong: Dài · thoải mái
+scriptPractice: Chỉ tập, không trò chuyện
+
+intentDone: Đã làm được
+intentMissed: Có dịp nhưng chưa làm
+intentNone: Không có tình huống nào
+
+checkinYes: Có
+checkinNo: Chưa
+
+loopContinue: Nói tiếp nhắc hẹn nữa
+loopStop: Dừng ở đây
+
+planContextHint: Khi nào? vd. khi họp nhóm
+planActionHint: Sẽ làm gì? vd. nói ra ý mình
+planSave: Lưu nhắc hẹn
+
+daysDaily: hằng ngày
+daysWeekdays: T2–T6
+daysWeekends: cuối tuần
+reminderOn: Bật nhắc
+reminderOff: Tắt nhắc
+
+ratingUp: Ổn
+ratingDown: Chưa ổn
+ratingSkip: Bỏ qua
+
+endGoToCourse: Mở khoá học
+endKeepTalking: Tiếp tục trò chuyện
+endClose: Đóng
+
+twoColsLeftTitle: Chuyện đã xảy ra
+twoColsRightTitle: Vấn đề thật của tôi
+twoColsHint: Chạm để kéo dòng sang bên kia. Mình chỉ dựng nháp bằng lời bạn đã kể.
+twoColsEmpty: Chưa có dòng nào
+
+courseInviteTitle: Một khoá gần với chuyện bạn kể
+courseInviteCaption: Lời mời, không phải chẩn đoán. Bỏ qua cũng được.
+
+safetyLabel: Đường thoát an toàn
+safetyHotlineTitle: Có người nghe bạn ngay lúc này
+safetyOpening: Cảm ơn bạn đã nói ra điều này. Mình muốn bạn không phải ở một mình với nó.
+safetyBody: Nếu bạn đang không an toàn, xin liên hệ cấp cứu tại nơi bạn ở. Nếu có một người bạn tin, hãy nói với họ hôm nay.
+safetyNoHotline: Mình chưa có số đường dây nóng cho khu vực của bạn. Xin liên hệ cấp cứu tại địa phương.
+safetyDisclaimer: Mình là AI, không thay thế được chuyên gia tâm lý.
+
+# Header subtitle + control labels
+close: Đóng
+micListening: Đang nghe…
+micSemantics: Nói thay vì gõ
+planLabel: Nhắc hẹn — chữ của bạn
+scheduleLabel: Nhắc bạn lúc nào?
+ratingLabel: Lượt vừa rồi thế nào?
+stepMood: trước khi bắt đầu
+stepPickHabit: chọn thói quen
+stepPersona: cách mình nói chuyện
+stepTime: thời gian hôm nay
+stepTelling: đang nghe
+stepTwoCols: vấn đề thật
+stepSituation: một tình huống ngắn
+stepIntent: nhắc hẹn hôm trước
+stepCheckin: thói quen tuần này
+stepPlan: nhắc hẹn cho lần tới
+stepSchedule: đặt lịch nhắc
+stepLoop: còn một nhắc hẹn nữa
+stepMoodEnd: trước khi đóng
+stepRating: bạn thấy sao
+stepJot: một dòng cho hôm nay

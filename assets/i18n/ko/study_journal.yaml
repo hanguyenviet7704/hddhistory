@@ -28,3 +28,5 @@ dayEmpty: 이날은 학습 기록이 없어요.
 dayError: 이날 기록을 불러오지 못했어요.
 dayLoading: 불러오는 중…
 retry: 다시 시도
+dayEmptyTitle: 활동 없음
+dayEmptyBody: 잠시 쉬어간 날이에요. 중요한 건 다시 돌아오는 거예요!

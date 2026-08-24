@@ -1,0 +1,105 @@
+sheetTitle: AIコーチ
+bubbleSemantics: AIコーチを開く
+failedTitle: こちら側で問題が起きました。話してくださった内容は失われていません。
+retry: もう一度
+inputHint: 入力するか、候補を選んでください…
+
+escapeLabel: 今日は記録だけにする
+
+promptMood: 始める前に — 今日はどんな気分ですか？
+promptMoodEnd: 閉じる前に — 今はどんな気分ですか？
+promptPickNew: 新しい習慣をいくつか追加しましたね。どれから話しますか？
+promptPickHabit: 今日はどの習慣に取り組みますか？
+promptPersona: 今日はどんな話し方がいいですか？
+promptTime: 今日はどのくらい時間がありますか？
+promptCheckin: ここ数日、この習慣を使う場面はありましたか？
+promptPlan: 次に向けて、小さな約束をひとつ決めましょう。
+promptSchedule: いつ知らせましょうか？
+promptLoop: もうひとつ残っています。続けますか、ここで終わりますか？
+promptRating: 今のやりとりはどうでしたか？
+promptEnd: 次はどうしますか？
+promptJot: わかりました。今日は一行だけ、それ以上は聞きません。
+promptSafety: 話してくれてありがとうございます。ひとりで抱えてほしくありません。
+promptTwoCols: あなたの言葉のまま下書きにしました。本当の問題だと思う行を右へ動かして、一文で書き直してください。
+promptIntent: そうすると言っていましたね。その場面はありましたか？
+
+fallbackReply: 聞いています。
+
+moodLow: よくない
+moodMid: ふつう
+moodHigh: いい
+
+personaFriend: 友だちのように
+personaDirect: はっきりと
+personaGuide: 導くように
+
+scriptShort: 短く · 1分以内
+scriptMedium: ふつう · 3分ほど
+scriptLong: 長め · ゆっくり
+scriptPractice: 練習だけ、話はしない
+
+intentDone: できた
+intentMissed: 場面はあったけどできなかった
+intentNone: 場面がなかった
+
+checkinYes: あった
+checkinNo: まだ
+
+loopContinue: 次の約束も話す
+loopStop: ここで終わる
+
+planContextHint: いつ？ 例：チーム会議のとき
+planActionHint: 何をする？ 例：自分の考えを言う
+planSave: 約束を保存
+
+daysDaily: 毎日
+daysWeekdays: 月〜金
+daysWeekends: 週末
+reminderOn: 知らせる
+reminderOff: 知らせない
+
+ratingUp: よかった
+ratingDown: よくなかった
+ratingSkip: スキップ
+
+endGoToCourse: コースを開く
+endKeepTalking: 話を続ける
+endClose: 閉じる
+
+twoColsLeftTitle: 起きたこと
+twoColsRightTitle: 本当の問題
+twoColsHint: 行をタップすると移動します。あなたが話したことだけで下書きしています。
+twoColsEmpty: まだありません
+
+courseInviteTitle: お話に近いコース
+courseInviteCaption: 診断ではなく、お誘いです。飛ばしても大丈夫です。
+
+safetyLabel: 安全な出口
+safetyHotlineTitle: 今すぐ話せる相手
+safetyOpening: 話してくれてありがとうございます。ひとりで抱えてほしくありません。
+safetyBody: 今あなたが安全でないなら、お住まいの地域の緊急窓口に連絡してください。信頼できる人がいるなら、今日その人に伝えてください。
+safetyNoHotline: お住まいの地域の相談窓口が登録されていません。地域の緊急窓口に連絡してください。
+safetyDisclaimer: 私はAIです。専門家の代わりにはなれません。
+
+# Header subtitle + control labels
+close: 閉じる
+micListening: 聞いています…
+micSemantics: 入力の代わりに話す
+planLabel: 約束 — あなたの言葉で
+scheduleLabel: いつ知らせましょうか？
+ratingLabel: 今のやりとりはどうでしたか？
+stepMood: 始める前に
+stepPickHabit: 習慣を選ぶ
+stepPersona: 話し方
+stepTime: 今日の時間
+stepTelling: 聞いています
+stepTwoCols: 本当の問題
+stepSituation: 短い場面
+stepIntent: 前回の約束
+stepCheckin: 今週の習慣
+stepPlan: 次への約束
+stepSchedule: 通知の設定
+stepLoop: もうひとつ残っています
+stepMoodEnd: 閉じる前に
+stepRating: ご感想
+stepJot: 今日の一行

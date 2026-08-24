@@ -47,16 +47,6 @@ checkInDoneButton: Done
 checkInChangeHabit: Change
 
 # Post-lesson summary + commitment
-summaryWeeklyReviewTitle: Weekly review
-summaryWorkingOnHabits: You're working on ${count} habit(s)
-summaryCheckInRateLabel: Habit check-in
-summaryBestStreakLabel: Best streak
-summaryBestStreakValue: ${days} days
-summaryTotalLessonsLabel: Total lessons
-summaryTotalCheckInsLabel: Total check-ins
-summaryCommitmentQuestion: How far this time?
-summaryCommitmentStartButton: Start ${days}-day pack
-summaryCommitmentMaybeLater: Maybe later
 
 # Edit / pause / remove
 editSheetTitle: Habit
@@ -106,8 +96,6 @@ homeReminderSubtitle: Keep the loop going!
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: Go to course
 
-summaryBestHabitLabel: Best habit
-summaryBestHabitLoop: ${days}-days loop
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: How did it go today?

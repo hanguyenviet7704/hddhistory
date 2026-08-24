@@ -420,7 +420,8 @@ class _ClosedComposerNote extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: isGuest ? () => communityRequireAccount(context, status) : null,
+      // Same reasoning as the feed banner: this strip IS the sign-in button.
+      onTap: isGuest ? _openCommunityAuth : null,
       behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,

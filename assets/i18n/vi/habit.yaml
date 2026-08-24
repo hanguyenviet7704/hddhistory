@@ -47,16 +47,6 @@ checkInDoneButton: Đã xong
 checkInChangeHabit: Đổi
 
 # Post-lesson summary + commitment
-summaryWeeklyReviewTitle: Tổng kết tuần
-summaryWorkingOnHabits: Bạn đang thực hiện ${count} thói quen
-summaryCheckInRateLabel: Điểm danh thói quen
-summaryBestStreakLabel: Chuỗi dài nhất
-summaryBestStreakValue: ${days} ngày
-summaryTotalLessonsLabel: Tổng số bài học
-summaryTotalCheckInsLabel: Tổng số lần điểm danh
-summaryCommitmentQuestion: Lần này bạn muốn thử bao lâu?
-summaryCommitmentStartButton: Bắt đầu gói ${days} ngày
-summaryCommitmentMaybeLater: Để sau
 
 # Edit / pause / remove
 editSheetTitle: Thói quen
@@ -106,8 +96,6 @@ homeReminderSubtitle: Giữ nhịp mỗi ngày!
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: Đến khóa học
 
-summaryBestHabitLabel: Thói quen tốt nhất
-summaryBestHabitLoop: Chuỗi ${days} ngày
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: Hôm nay thế nào?

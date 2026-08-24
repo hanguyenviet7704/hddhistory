@@ -361,7 +361,10 @@ class _CommunityFeedList extends StatelessWidget {
             children: [
               CommunityMutedBanner(
                 status: state.memberStatus,
-                onSignIn: () => communityRequireAccount(context, state.memberStatus),
+                // An explicit sign-in button goes straight there; showing the
+                // "you need to sign in" notice to someone who just tapped
+                // "Đăng nhập" would be telling them what they already said.
+                onSignIn: _openCommunityAuth,
               ),
               // Only on the following feed: it explains why this list is
               // shorter than "Tất cả", and offers the way to widen it.

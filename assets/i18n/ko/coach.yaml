@@ -1,0 +1,105 @@
+sheetTitle: AI 코치
+bubbleSemantics: AI 코치 열기
+failedTitle: 저희 쪽에서 문제가 생겼어요. 하신 말씀은 사라지지 않았습니다.
+retry: 다시 시도
+inputHint: 입력하거나 예시를 골라 주세요…
+
+escapeLabel: 오늘은 기록만 할래요
+
+promptMood: 시작하기 전에 — 오늘 기분은 어떠세요?
+promptMoodEnd: 닫기 전에 — 지금은 어떠세요?
+promptPickNew: 새 습관을 몇 개 추가하셨네요. 어떤 것부터 이야기할까요?
+promptPickHabit: 오늘은 어떤 습관을 연습해 볼까요?
+promptPersona: 오늘은 제가 어떻게 말하면 좋을까요?
+promptTime: 오늘은 시간이 얼마나 있으세요?
+promptCheckin: 요 며칠 이 습관을 쓸 일이 있었나요?
+promptPlan: 다음을 위해 작은 약속 하나만 정해요.
+promptSchedule: 언제 알려 드릴까요?
+promptLoop: 하나 더 남아 있어요. 계속할까요, 여기서 마칠까요?
+promptRating: 방금 대화는 어떠셨어요?
+promptEnd: 다음으로 무엇을 할까요?
+promptJot: 알겠어요. 오늘은 한 줄만, 더 묻지 않을게요.
+promptSafety: 말해 주셔서 고맙습니다. 혼자 감당하지 않으셨으면 해요.
+promptTwoCols: 하신 말씀 그대로 초안을 만들었어요. 진짜 문제라고 느끼는 줄을 오른쪽으로 옮기고, 한 문장으로 적어 보세요.
+promptIntent: 그렇게 하겠다고 하셨죠. 그런 순간이 있었나요?
+
+fallbackReply: 듣고 있어요.
+
+moodLow: 좋지 않아요
+moodMid: 보통이에요
+moodHigh: 괜찮아요
+
+personaFriend: 친구처럼
+personaDirect: 솔직하게
+personaGuide: 이끌어 주듯
+
+scriptShort: 짧게 · 1분 이내
+scriptMedium: 보통 · 3분쯤
+scriptLong: 길게 · 편하게
+scriptPractice: 대화 없이 연습만
+
+intentDone: 해냈어요
+intentMissed: 기회는 있었는데 못 했어요
+intentNone: 그런 상황이 없었어요
+
+checkinYes: 있었어요
+checkinNo: 아직요
+
+loopContinue: 다음 약속도 이야기하기
+loopStop: 여기서 마치기
+
+planContextHint: "언제? 예: 팀 회의 때"
+planActionHint: "무엇을? 예: 내 생각을 말하기"
+planSave: 약속 저장
+
+daysDaily: 매일
+daysWeekdays: 월–금
+daysWeekends: 주말
+reminderOn: 알림 켜기
+reminderOff: 알림 끄기
+
+ratingUp: 좋았어요
+ratingDown: 별로였어요
+ratingSkip: 건너뛰기
+
+endGoToCourse: 코스 열기
+endKeepTalking: 계속 이야기하기
+endClose: 닫기
+
+twoColsLeftTitle: 있었던 일
+twoColsRightTitle: 진짜 내 문제
+twoColsHint: 줄을 누르면 옮겨져요. 하신 말씀만으로 만든 초안이에요.
+twoColsEmpty: 아직 없어요
+
+courseInviteTitle: 방금 이야기와 가까운 코스
+courseInviteCaption: 진단이 아니라 제안이에요. 지나쳐도 괜찮아요.
+
+safetyLabel: 안전한 출구
+safetyHotlineTitle: 지금 바로 이야기할 수 있는 곳
+safetyOpening: 말해 주셔서 고맙습니다. 혼자 감당하지 않으셨으면 해요.
+safetyBody: 지금 안전하지 않다면 계신 지역의 응급 연락처로 연락해 주세요. 믿을 수 있는 사람이 있다면 오늘 이야기해 주세요.
+safetyNoHotline: 계신 지역의 상담 전화가 등록되어 있지 않습니다. 지역 응급 연락처로 연락해 주세요.
+safetyDisclaimer: 저는 AI예요. 전문가를 대신할 수 없습니다.
+
+# Header subtitle + control labels
+close: 닫기
+micListening: 듣고 있어요…
+micSemantics: 입력 대신 말하기
+planLabel: 약속 — 당신의 말로
+scheduleLabel: 언제 알려 드릴까요?
+ratingLabel: 방금 대화는 어떠셨어요?
+stepMood: 시작하기 전에
+stepPickHabit: 습관 고르기
+stepPersona: 말하는 방식
+stepTime: 오늘의 시간
+stepTelling: 듣는 중
+stepTwoCols: 진짜 문제
+stepSituation: 짧은 장면
+stepIntent: 지난 약속
+stepCheckin: 이번 주 습관
+stepPlan: 다음을 위한 약속
+stepSchedule: 알림 설정
+stepLoop: 하나 더 남았어요
+stepMoodEnd: 닫기 전에
+stepRating: 어떠셨나요
+stepJot: 오늘의 한 줄

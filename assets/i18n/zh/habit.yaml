@@ -25,6 +25,7 @@ loadErrorTitle: 无法加载你的习惯
 loadErrorRetryButton: 重试
 
 # Adopt / Start first habit
+adoptProblemLabel: 问题
 adoptHeaderLabel: 开始之前
 adoptChooseHabitLabel: 选择一个习惯开始
 adoptAddButton: 添加习惯
@@ -46,16 +47,6 @@ checkInDoneButton: 完成
 checkInChangeHabit: 更换
 
 # Post-lesson summary + commitment
-summaryWeeklyReviewTitle: 每周回顾
-summaryWorkingOnHabits: 你正在坚持 ${count} 个习惯
-summaryCheckInRateLabel: 习惯打卡率
-summaryBestStreakLabel: 最长连续
-summaryBestStreakValue: ${days} 天
-summaryTotalLessonsLabel: 课程总数
-summaryTotalCheckInsLabel: 打卡总次数
-summaryCommitmentQuestion: 这次坚持多久？
-summaryCommitmentStartButton: 开始 ${days} 天计划
-summaryCommitmentMaybeLater: 以后再说
 
 # Edit / pause / remove
 editSheetTitle: 习惯
@@ -105,8 +96,6 @@ homeReminderSubtitle: 保持连续打卡的节奏！
 # Tracker empty state (§9.5)
 emptyGoToCourseButton: 去看课程
 
-summaryBestHabitLabel: 最佳习惯
-summaryBestHabitLoop: ${days} 天连续
 
 # Journal check-in (design "5 · Habit" — Practice with a journal)
 journalTitle: 今天怎么样？

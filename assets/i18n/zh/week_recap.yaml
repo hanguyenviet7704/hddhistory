@@ -1,0 +1,44 @@
+bannerTitle: 上周回顾
+bannerSubtitle: 回看你过去 7 天的旅程
+bannerPillNew: 新
+notebookRowTitle: 旅程手账
+notebookRowSubtitle: 你走过的每一周
+notebookRowCount(param=count):
+  one: ${count} 周
+  other: ${count} 周
+notebookTitle: 旅程手账
+weekLabel: 第 ${number} 周
+posterTitle: ${name} 的这一周如何？
+mondayTitle: ${week} 已准备好
+mondayBody: 已保存到手账，随时都能回来看。
+mondayPrimary: 查看回顾
+mondaySecondary: 稍后
+lockedTitle: 这一周还在继续
+lockedBody: 每个周一，刚过去的一周都会为你整理好。
+lockedPrimary: 周一提醒我
+lockedSecondary: 查看往期回顾
+encouragementPerfect: 整整七天！每一天你都来了。这很了不起——保持这个节奏。
+encouragementStrong: 真是难忘的一周。7 天里你出现了 ${days} 天，没有放弃。保持这个节奏——你做得很好。
+encouragementSteady: 这一周你出现了 ${days} 天。不必完美，只要继续——而你做到了。
+encouragementGentle: 这一周你出现了 ${days} 天。重新开始比开始更难，而你还在这里。
+posterTitleWord: 第
+posterBadge: 成为更好的自己
+posterLessonsLabel: 本周所学
+posterQuote: "不必看清整段楼梯，只需迈出第一步。"
+statStreakLabel: 连续
+statHabitLabel: 习惯
+statLessonLabel: 课程
+statMinutesLabel: 分钟
+habitsHeading: 坚持的习惯：
+favouriteCourseLabel: 最喜欢的课程
+habitsClosingNote: 还有更多习惯，正一天天建立起来……
+shareDownload: 保存
+shareIgStory: IG 快拍
+shareFbStory: FB 快拍
+shareMore: 更多
+shareSaved: 已保存到相册
+shareFailed: 暂时无法分享。
+shareMessage: 这是我在 MeUp 的一周。
+archiveEmpty: 你的手账里还没有任何一周。
+loadFailed: 无法加载你的回顾。
+retry: 重试

@@ -1,0 +1,113 @@
+# AI Coach — every fixed line the sheet says.
+# Anything the model writes never passes through here; it arrives already in the
+# reader's language. See plans/260824-ai-coach-v2 in meup-api.
+sheetTitle: AI Coach
+bubbleSemantics: Open AI Coach
+failedTitle: Something went wrong on our side. Nothing you said was lost.
+retry: Try again
+inputHint: Type, or tap a suggestion…
+
+# ⑥ — a small line, never a big button.
+escapeLabel: Just log today, nothing more
+
+# Navigation prompts. The Coach's own words at steps answered with a tap.
+promptMood: Before we start — how are you feeling today?
+promptMoodEnd: Before you go — how are you feeling now?
+promptPickNew: You just added a couple of habits. Which one should we talk about first?
+promptPickHabit: Which habit do you want to work on today?
+promptPersona: How would you like me to speak today?
+promptTime: How much time do you have?
+promptCheckin: Has this habit come up at all in the last few days?
+promptPlan: Let's set one small reminder for next time.
+promptSchedule: When should I remind you?
+promptLoop: There's one more thing waiting. Keep going, or stop here?
+promptRating: How was that?
+promptEnd: What would you like to do next?
+promptJot: Alright. One line for today, and I won't ask anything else.
+promptSafety: Thank you for saying that. I don't want you to be alone with it.
+promptTwoCols: I've pulled out your own lines. Drag whichever one is the real problem to the right, then write it in a sentence.
+promptIntent: You said you'd do this. Has there been a moment yet?
+
+# Shown when the model could not answer. Deliberately empty of content — an
+# acknowledgement that claims to have understood something it never read is
+# worse than a plain one.
+fallbackReply: I hear you.
+
+moodLow: Not good
+moodMid: Okay
+moodHigh: Good
+
+personaFriend: A friend
+personaDirect: Straight with me
+personaGuide: A guide
+
+scriptShort: Short · under a minute
+scriptMedium: Medium · about 3 minutes
+scriptLong: Long · take your time
+scriptPractice: Just practise, no talking
+
+intentDone: I did it
+intentMissed: There was a moment, I didn't take it
+intentNone: No moment came up
+
+checkinYes: Yes
+checkinNo: Not yet
+
+loopContinue: Talk about the next one
+loopStop: Stop here
+
+planContextHint: When? e.g. in team meetings
+planActionHint: Do what? e.g. say what I think
+planSave: Save reminder
+
+daysDaily: every day
+daysWeekdays: Mon–Fri
+daysWeekends: weekends
+reminderOn: Remind me
+reminderOff: No reminder
+
+ratingUp: Good
+ratingDown: Not good
+ratingSkip: Skip
+
+endGoToCourse: Go to the course
+endKeepTalking: Keep talking
+endClose: Close
+
+twoColsLeftTitle: What happened
+twoColsRightTitle: My real problem
+twoColsHint: Tap a line to move it across. I only drafted these from what you told me.
+twoColsEmpty: Nothing here yet
+
+courseInviteTitle: A course close to what you described
+courseInviteCaption: An invitation, not a diagnosis. Skipping it is fine.
+
+safetyLabel: A way through
+safetyHotlineTitle: Someone to talk to right now
+safetyOpening: Thank you for saying that. I don't want you to be alone with it.
+safetyBody: If you are not safe right now, please contact your local emergency services. If there is someone you trust, tell them today.
+safetyNoHotline: We don't have a helpline listed for your region. Please contact your local emergency services.
+safetyDisclaimer: I'm an AI. I can't take the place of a mental health professional.
+
+# Header subtitle + control labels
+close: Close
+micListening: Listening…
+micSemantics: Speak instead of typing
+planLabel: A reminder — in your words
+scheduleLabel: When should I remind you?
+ratingLabel: How was that?
+stepMood: before we start
+stepPickHabit: choosing a habit
+stepPersona: how I should speak
+stepTime: how long you have
+stepTelling: listening
+stepTwoCols: the real problem
+stepSituation: a short scene
+stepIntent: yesterday’s reminder
+stepCheckin: this week’s habit
+stepPlan: a reminder for next time
+stepSchedule: setting the reminder
+stepLoop: one more waiting
+stepMoodEnd: before you go
+stepRating: your feedback
+stepJot: one line for today

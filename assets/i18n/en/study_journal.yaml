@@ -28,3 +28,5 @@ dayEmpty: Nothing studied on this day.
 dayError: Could not load this day.
 dayLoading: Loading…
 retry: Try again
+dayEmptyTitle: No activity
+dayEmptyBody: A small day off. What matters is that you keep coming back!

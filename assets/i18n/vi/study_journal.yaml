@@ -28,3 +28,5 @@ dayEmpty: Ngày này bạn chưa học gì.
 dayError: Không tải được ngày này.
 dayLoading: Đang tải…
 retry: Thử lại
+dayEmptyTitle: Không có hoạt động
+dayEmptyBody: Một ngày nghỉ nhỏ. Điều quan trọng là bạn luôn quay lại!
