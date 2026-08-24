@@ -38,6 +38,7 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   new_course: "4. Khoá học mới",
   weekly_recap_ready: "6a. Weekly recap (thứ 2, nhắc lần 1)",
   weekly_recap_reminder: "6b. Weekly recap (thứ 2, nhắc lần 2)",
+  coach_plan_reminder: "7. Nhắc hẹn AI Coach",
 };
 
 /**
@@ -52,6 +53,8 @@ const TYPE_HINTS: Partial<Record<NotificationType, string>> = {
     "Chỉ gửi vào thứ 2 (theo giờ địa phương). Gửi cho tất cả user — recap tự sinh khi user mở.",
   weekly_recap_reminder:
     "Chỉ gửi vào thứ 2. Chỉ gửi cho user CHƯA MỞ recap tuần này (viewedAt còn trống; bấm \"Để sau\" vẫn tính là chưa mở).",
+  coach_plan_reminder:
+    "Giờ gửi do CHÍNH USER chọn lúc chốt nhắc hẹn, nên ô \"giờ\" ở đây không có tác dụng. Nội dung là chữ của user điền vào khung câu bên dưới. Tối đa 1 lần/ngày; nhiều nhắc hẹn trùng giờ thì gộp thành một.",
 };
 
 /** Display order, so the cards do not follow whatever order Mongo returns. */
@@ -71,6 +74,8 @@ const TYPE_VARIABLES: Record<NotificationType, string> = {
   new_course: "{user_name}, {course_name}, {topic_name}",
   weekly_recap_ready: "{user_name}",
   weekly_recap_reminder: "{user_name}",
+  // The reader's own words, not a lookup. Nothing else in this table is.
+  coach_plan_reminder: "{context}, {action}",
 };
 
 /** Every destination the API accepts, with what it opens in the app. */
@@ -81,6 +86,7 @@ const DEEPLINK_LABELS: Record<NotificationDeeplink, string> = {
   new_course: "new_course — Roadmap khoá mới",
   explore: "explore — Tab Khám phá (cần bản app mới)",
   week_recap: "week_recap — Poster Hành trình tuần qua (cần bản app mới)",
+  coach: "coach — Sheet AI Coach (cần bản app mới)",
 };
 
 const DEEPLINK_OPTIONS = Object.keys(

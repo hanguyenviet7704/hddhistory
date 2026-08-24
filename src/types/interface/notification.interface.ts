@@ -6,7 +6,8 @@ export type NotificationType =
   | "habit_tracking"
   | "new_course"
   | "weekly_recap_ready"
-  | "weekly_recap_reminder";
+  | "weekly_recap_reminder"
+  | "coach_plan_reminder";
 
 export type NotificationLogStatus = "sent" | "failed" | "skipped";
 
@@ -25,7 +26,13 @@ export type NotificationDeeplink =
    * The week-recap poster. Same caveat as `explore`: only app builds that ship
    * the week-recap feature route it; older ones just open the app.
    */
-  | "week_recap";
+  | "week_recap"
+  /**
+   * The AI Coach sheet, opened on the commitment a ④ push is about. Same
+   * caveat again — an older build logs it and just opens the app, which is the
+   * right degradation here since the bubble is on Home anyway.
+   */
+  | "coach";
 
 export interface NotificationCopy {
   locale: string;
