@@ -125,9 +125,8 @@ class _CommunityHeader extends StatelessWidget {
               SizedBox(width: 8.w),
               const _NotificationBell(),
               SizedBox(width: 8.w),
-              BlocSelector<CommunityFeedCubit, CommunityFeedState, bool>(
-                selector: (state) => state.memberStatus.canPost,
-                builder: (context, canPost) => GestureDetector(
+              Builder(
+                builder: (context) => GestureDetector(
                   onTap: () async {
                     // Captured before the awaits: both the auth screen and the
                     // composer are full-screen pushes, so this context can be
@@ -146,18 +145,18 @@ class _CommunityHeader extends StatelessWidget {
                     width: 32.w,
                     height: 32.w,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(
+                    // Always live, never greyed: a guest tapping this is how
+                    // they reach the sign-in screen. A disabled-looking button
+                    // says "broken", which is the opposite of the invitation
+                    // this is meant to be.
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: canPost
-                          ? AppCustomColor.brandPrimary
-                          : AppCustomColor.buttonDisable,
+                      color: AppCustomColor.brandPrimary,
                     ),
                     child: Icon(
                       Icons.add,
                       size: 18.sp,
-                      color: canPost
-                          ? AppCustomColor.textWhite
-                          : AppCustomColor.communityMuted,
+                      color: AppCustomColor.textWhite,
                     ),
                   ),
                 ),
