@@ -66,6 +66,9 @@ class _CommunitySavedPageState extends State<CommunitySavedPage> {
   }
 
   Future<void> _toggleLike(CommunityPostEntity post) async {
+    if (!await communityRequireAccount(context, communityMemberStatus)) return;
+    if (!mounted) return;
+
     final active = !post.isLiked;
     _replacePost(
       post.copyWith(
@@ -174,10 +177,19 @@ class _CommunitySavedPageState extends State<CommunitySavedPage> {
                         context,
                         isMine: post.isMine,
                         onHide: () => _hide(post),
-                        onReport: () => showCommunityReportSheet(
-                          context,
-                          onSubmit: (reason) => _report(post, reason),
-                        ),
+                        onReport: () async {
+                          if (!await communityRequireAccount(
+                            context,
+                            communityMemberStatus,
+                          )) {
+                            return;
+                          }
+                          if (!context.mounted) return;
+                          showCommunityReportSheet(
+                            context,
+                            onSubmit: (reason) => _report(post, reason),
+                          );
+                        },
                         onDelete: () => _delete(post),
                       ),
                     ),

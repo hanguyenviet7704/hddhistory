@@ -30,6 +30,9 @@ part 'domain/usecases/community_comment_usecases.dart';
 part 'domain/usecases/community_moderation_usecases.dart';
 part 'domain/usecases/community_notification_usecases.dart';
 
+//* Presentation Layer - Guest gate
+part 'presentation/community_guest_gate.dart';
+
 //* Presentation Layer - Cubits
 part 'presentation/cubits/community_feed_state.dart';
 part 'presentation/cubits/community_feed_cubit.dart';

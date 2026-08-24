@@ -129,22 +129,16 @@ class _CommunityHeader extends StatelessWidget {
                 selector: (state) => state.memberStatus.canPost,
                 builder: (context, canPost) => GestureDetector(
                   onTap: () async {
-                    if (!canPost) {
-                      // The banner above the list already explains why; a tap
-                      // here just says it out loud rather than doing nothing.
-                      final status = context.read<CommunityFeedCubit>().state.memberStatus;
-                      DMessage.showMessage(
-                        message: status.requiresLogin
-                            ? context.l10n.community.guestBody
-                            : (status.reason ?? context.l10n.community.mutedBodyFallback),
-                        type: MessageType.info,
-                      );
-                      return;
-                    }
-
-                    // Captured before the await: the composer is a full screen
-                    // push, so this context can be gone by the time it returns.
+                    // Captured before the awaits: both the auth screen and the
+                    // composer are full-screen pushes, so this context can be
+                    // gone by the time either returns.
                     final cubit = context.read<CommunityFeedCubit>();
+                    final allowed = await communityRequireAccount(
+                      context,
+                      cubit.state.memberStatus,
+                    );
+                    if (!allowed || !context.mounted) return;
+
                     final created = await const CommunityComposeRoute().push<bool>(context);
                     if (created == true) await cubit.refresh();
                   },
@@ -355,7 +349,10 @@ class _CommunityFeedList extends StatelessWidget {
             controller: scrollController,
             padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, floatingNavBarHeight(context) + 24.h),
             children: [
-              CommunityMutedBanner(status: state.memberStatus),
+              CommunityMutedBanner(
+                status: state.memberStatus,
+                onSignIn: () => communityRequireAccount(context, state.memberStatus),
+              ),
               // Only on the following feed: it explains why this list is
               // shorter than "Tất cả", and offers the way to widen it.
               if (state.scope == CommunityFeedScope.following && !state.isFollowingNothing)
@@ -407,16 +404,28 @@ class _CommunityFeedList extends StatelessWidget {
                 (post) => CommunityPostCard(
                   post: post,
                   onOpen: () => _openPost(context, post),
-                  onLike: () => cubit.toggleReaction(post, CommunityReactionKind.like),
-                  onSave: () => cubit.toggleReaction(post, CommunityReactionKind.save),
+                  onLike: () => _gated(
+                    context,
+                    state.memberStatus,
+                    () => cubit.toggleReaction(post, CommunityReactionKind.like),
+                  ),
+                  onSave: () => _gated(
+                    context,
+                    state.memberStatus,
+                    () => cubit.toggleReaction(post, CommunityReactionKind.save),
+                  ),
                   onTopic: (topic) => CommunityTopicRoute(topicId: topic.id).push(context),
                   onMenu: () => showCommunityItemMenu(
                     context,
                     isMine: post.isMine,
                     onHide: () => cubit.hidePost(post),
-                    onReport: () => showCommunityReportSheet(
+                    onReport: () => _gated(
                       context,
-                      onSubmit: (reason) => cubit.reportPost(post, reason),
+                      state.memberStatus,
+                      () => showCommunityReportSheet(
+                        context,
+                        onSubmit: (reason) => cubit.reportPost(post, reason),
+                      ),
                     ),
                     onDelete: () async {
                       final deleted = await cubit.deleteOwnPost(post);
@@ -487,7 +496,11 @@ class _CommunityTopicsList extends StatelessWidget {
                   (topic) => CommunityTopicRow(
                     topic: topic,
                     onOpen: () => CommunityTopicRoute(topicId: topic.id).push(context),
-                    onToggleFollow: () => cubit.toggleTopicFollow(topic),
+                    onToggleFollow: () => _gated(
+                      context,
+                      state.memberStatus,
+                      () => cubit.toggleTopicFollow(topic),
+                    ),
                   ),
                 ),
                 SizedBox(height: 12.h),
@@ -582,4 +595,18 @@ class _CommunityMessage extends StatelessWidget {
       ),
     );
   }
+}
+
+
+/// Runs [action] only once the reader is allowed to write.
+///
+/// Wrapping the write rather than hiding the button: a guest should still see
+/// the heart and the follow chip — tapping is how they find out an account is
+/// needed, and hiding them would make the forum look read-only.
+Future<void> _gated(
+  BuildContext context,
+  CommunityMemberStatusEntity status,
+  void Function() action,
+) async {
+  if (await communityRequireAccount(context, status)) action();
 }

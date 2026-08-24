@@ -106,6 +106,8 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
   Future<void> _toggleFollow() async {
     final topic = _topic;
     if (topic == null) return;
+    if (!await communityRequireAccount(context, communityMemberStatus)) return;
+    if (!mounted) return;
 
     final follow = !topic.isFollowing;
     setState(
@@ -172,6 +174,9 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
     CommunityPostEntity post,
     CommunityReactionKind kind,
   ) async {
+    if (!await communityRequireAccount(context, communityMemberStatus)) return;
+    if (!mounted) return;
+
     final active = kind == CommunityReactionKind.like ? !post.isLiked : !post.isSaved;
     final optimistic = kind == CommunityReactionKind.like
         ? post.copyWith(
@@ -217,6 +222,11 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
               sort: _sort,
               onSort: _setSort,
               onCompose: () async {
+                if (!await communityRequireAccount(context, communityMemberStatus)) {
+                  return;
+                }
+                if (!context.mounted) return;
+
                 final created = await const CommunityComposeRoute().push<bool>(context);
                 if (created == true) await _load();
               },
@@ -272,7 +282,15 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
                                   if (!mounted) return;
                                   setState(() => _posts.removeWhere((item) => item.id == post.id));
                                 },
-                                onReport: () => showCommunityReportSheet(
+                                onReport: () async {
+                                  if (!await communityRequireAccount(
+                                    context,
+                                    communityMemberStatus,
+                                  )) {
+                                    return;
+                                  }
+                                  if (!context.mounted) return;
+                                  showCommunityReportSheet(
                                   context,
                                   onSubmit: (reason) async {
                                     final result = await AppDI.injector
@@ -284,7 +302,8 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
                                         .run();
                                     return result.isRight();
                                   },
-                                ),
+                                );
+                                },
                                 onDelete: () async {
                                   final result = await AppDI.injector
                                       .get<DeleteCommunityPostUseCase>()(post.id)

@@ -142,7 +142,11 @@ class _PostHeaderBlock extends StatelessWidget {
                   icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
                   count: post.likeCount,
                   isActive: post.isLiked,
-                  onTap: () => cubit.togglePostReaction(CommunityReactionKind.like),
+                  onTap: () => _gatedPost(
+                    context,
+                    cubit.state.memberStatus,
+                    () => cubit.togglePostReaction(CommunityReactionKind.like),
+                  ),
                 ),
                 SizedBox(width: 20.w),
                 // Not a button: this screen IS the comments, so the count is a
@@ -169,7 +173,11 @@ class _PostHeaderBlock extends StatelessWidget {
                   icon: post.isSaved ? Icons.bookmark : Icons.bookmark_border,
                   count: post.saveCount,
                   isActive: post.isSaved,
-                  onTap: () => cubit.togglePostReaction(CommunityReactionKind.save),
+                  onTap: () => _gatedPost(
+                    context,
+                    cubit.state.memberStatus,
+                    () => cubit.togglePostReaction(CommunityReactionKind.save),
+                  ),
                 ),
                 const Spacer(),
                 _IconTap(
@@ -189,12 +197,16 @@ class _PostHeaderBlock extends StatelessWidget {
                         );
                       }
                     },
-                    onReport: () => showCommunityReportSheet(
+                    onReport: () => _gatedPost(
                       context,
-                      onSubmit: (reason) => cubit.report(
-                        targetType: CommunityTargetType.post,
-                        targetId: post.id,
-                        reason: reason,
+                      cubit.state.memberStatus,
+                      () => showCommunityReportSheet(
+                        context,
+                        onSubmit: (reason) => cubit.report(
+                          targetType: CommunityTargetType.post,
+                          targetId: post.id,
+                          reason: reason,
+                        ),
                       ),
                     ),
                     onDelete: () async {
@@ -318,10 +330,18 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
         ...state.comments.map(
           (comment) => CommunityCommentTile(
             comment: comment,
-            onLike: () => cubit.toggleCommentLike(comment),
+            onLike: () => _gatedPost(
+              context,
+              state.memberStatus,
+              () => cubit.toggleCommentLike(comment),
+            ),
             onReply: () => cubit.startReply(comment),
             onMenu: () => _showCommentMenu(context, cubit, comment),
-            onReplyLike: cubit.toggleCommentLike,
+            onReplyLike: (reply) => _gatedPost(
+              context,
+              state.memberStatus,
+              () => cubit.toggleCommentLike(reply),
+            ),
             onReplyReply: (reply) => cubit.startReply(reply, parent: comment),
             onReplyMenu: (reply) => _showCommentMenu(context, cubit, reply),
           ),
@@ -344,12 +364,16 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
       context,
       isMine: comment.isMine,
       onHide: () => cubit.hideComment(comment),
-      onReport: () => showCommunityReportSheet(
+      onReport: () => _gatedPost(
         context,
-        onSubmit: (reason) => cubit.report(
-          targetType: CommunityTargetType.comment,
-          targetId: comment.id,
-          reason: reason,
+        cubit.state.memberStatus,
+        () => showCommunityReportSheet(
+          context,
+          onSubmit: (reason) => cubit.report(
+            targetType: CommunityTargetType.comment,
+            targetId: comment.id,
+            reason: reason,
+          ),
         ),
       ),
       onDelete: () => cubit.deleteComment(comment),
@@ -358,6 +382,10 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
 }
 
 /// What sits where the composer would be when this reader cannot write.
+///
+/// For a guest this is the way IN, not a dead end: the whole strip is tappable
+/// and opens the auth screen. A thread is exactly where someone decides they
+/// want to answer, so that is where signing in has to be one tap away.
 class _ClosedComposerNote extends StatelessWidget {
   const _ClosedComposerNote({required this.state});
 
@@ -367,10 +395,11 @@ class _ClosedComposerNote extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n.community;
     final status = state.memberStatus;
+    final isGuest = status.requiresLogin;
 
     final String message;
     if (!status.canPost) {
-      message = status.requiresLogin
+      message = isGuest
           ? l10n.guestBody
           : (status.reason?.trim().isNotEmpty == true
                 ? status.reason!
@@ -381,19 +410,42 @@ class _ClosedComposerNote extends StatelessWidget {
       message = l10n.commentsLocked;
     }
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 14.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        border: Border(top: BorderSide(color: AppCustomColor.borderDefault)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: AppText(
-          message,
-          style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
-          textAlign: TextAlign.center,
+    return GestureDetector(
+      onTap: isGuest ? () => communityRequireAccount(context, status) : null,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 14.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.backgroundWhite,
+          border: Border(top: BorderSide(color: AppCustomColor.borderDefault)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppText(
+                message,
+                style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                textAlign: TextAlign.center,
+              ),
+              if (isGuest) ...[
+                SizedBox(height: 10.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 9.h),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.brandPrimary,
+                    borderRadius: BorderRadius.circular(99.r),
+                  ),
+                  child: AppText(
+                    l10n.guestAction,
+                    style: AppStyle.textBold12.copyWith(color: AppCustomColor.textWhite),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -432,4 +484,18 @@ class _CommunityAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
+}
+
+
+/// Same gate as the feed's, for the screens driven by [CommunityPostCubit].
+///
+/// Replying is gated by the composer being replaced with a sign-in prompt; the
+/// hearts and the report menu still need this, because they stay visible and
+/// tappable for a guest — which is how they learn an account is needed.
+Future<void> _gatedPost(
+  BuildContext context,
+  CommunityMemberStatusEntity status,
+  void Function() action,
+) async {
+  if (await communityRequireAccount(context, status)) action();
 }
