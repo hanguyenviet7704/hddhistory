@@ -40,6 +40,10 @@ import DeeplinkGenerator from "../pages/deeplinks/DeeplinkGenerator";
 import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
 import HomePopupPage from "../pages/home-popup/HomePopupPage";
+import CommunityModerationPage from "../pages/community/CommunityModerationPage";
+import CommunitySanctionList from "../pages/community/CommunitySanctionList";
+import CommunityTopicList from "../pages/community/CommunityTopicList";
+import CommunityWeeklyPage from "../pages/community/CommunityWeeklyPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
@@ -120,6 +124,17 @@ export default function AppRouter() {
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />
               <Route path="segments" element={<SegmentsPage />} />
+
+              <Route
+                path="community/moderation"
+                element={<CommunityModerationPage />}
+              />
+              <Route path="community/topics" element={<CommunityTopicList />} />
+              <Route path="community/weekly" element={<CommunityWeeklyPage />} />
+              <Route
+                path="community/sanctions"
+                element={<CommunitySanctionList />}
+              />
 
               <Route path="course" element={<CourseList />} />
               <Route path="course/:courseId" element={<CourseDetail />} />

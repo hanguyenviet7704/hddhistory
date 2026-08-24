@@ -34,6 +34,10 @@ import {
   PresentationChartLineIcon,
   DevicePhoneMobileIcon,
   MapPinIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
+  HashtagIcon,
+  CalendarDaysIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -124,6 +128,30 @@ const menuGroups = [
         name: "Survey Feedback",
         icon: ChatBubbleLeftRightIcon,
         path: "/settings?tab=inAppSurvey",
+      },
+    ],
+  },
+  {
+    // The community forum. Moderation comes first because it is the only one of
+    // these with a queue: post-moderated content stays up until someone works
+    // through the reports.
+    title: "Community",
+    items: [
+      {
+        name: "Kiểm duyệt",
+        icon: ChatBubbleOvalLeftEllipsisIcon,
+        path: "/community/moderation",
+      },
+      { name: "Chủ đề", icon: HashtagIcon, path: "/community/topics" },
+      {
+        name: "Câu hỏi của tuần",
+        icon: CalendarDaysIcon,
+        path: "/community/weekly",
+      },
+      {
+        name: "Khoá quyền đăng",
+        icon: NoSymbolIcon,
+        path: "/community/sanctions",
       },
     ],
   },

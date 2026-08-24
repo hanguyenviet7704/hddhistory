@@ -1,0 +1,210 @@
+import {
+  CommunityContentStatus,
+  CommunityPostType,
+  CommunityReportStatus,
+  CommunityTargetType,
+  ICommunityAdminComment,
+  ICommunityAdminPost,
+  ICommunityOfficialPostPayload,
+  ICommunityReport,
+  ICommunitySanction,
+  ICommunityTopic,
+  ICommunityTopicPayload,
+  ICommunityWeeklyPayload,
+  IPagedResponse,
+} from "../types/interface/community.interface";
+import axiosClient from "./axiosClient";
+
+export interface CommunityPostQuery {
+  page?: number;
+  take?: number;
+  search?: string;
+  status?: CommunityContentStatus;
+  type?: CommunityPostType;
+  topicId?: string;
+  locale?: string;
+  authorId?: string;
+}
+
+export interface CommunityCommentQuery {
+  page?: number;
+  take?: number;
+  search?: string;
+  status?: CommunityContentStatus;
+  postId?: string;
+  authorId?: string;
+}
+
+export interface CommunityReportQuery {
+  page?: number;
+  take?: number;
+  status?: CommunityReportStatus;
+  targetType?: CommunityTargetType;
+}
+
+/**
+ * Community moderation endpoints.
+ *
+ * All of these are the `/community/admin/*` routes, which are role-guarded and
+ * — unlike the reader-facing ones — return hidden and deleted content. That is
+ * the point: a moderator has to see what was reported after it came down.
+ */
+export const communityService = {
+  // ------------------------------------------------------------------ topics
+  async getTopics(params: {
+    page?: number;
+    take?: number;
+    search?: string;
+    isActive?: boolean;
+  }) {
+    const res = await axiosClient.get("/community/admin/topics", { params });
+    return res.data?.data as IPagedResponse<ICommunityTopic>;
+  },
+
+  async createTopic(payload: ICommunityTopicPayload) {
+    const res = await axiosClient.post("/community/admin/topics", payload);
+    return res.data?.data as ICommunityTopic;
+  },
+
+  async updateTopic(id: string, payload: Partial<ICommunityTopicPayload>) {
+    const res = await axiosClient.patch(
+      `/community/admin/topics/${id}`,
+      payload
+    );
+    return res.data?.data as ICommunityTopic;
+  },
+
+  /**
+   * Deactivates the topic — it is never hard-deleted.
+   *
+   * Posts keep a topicId, so removing the row would leave every post in it
+   * rendering a chip with no label.
+   */
+  async deactivateTopic(id: string) {
+    const res = await axiosClient.delete(`/community/admin/topics/${id}`);
+    return res.data?.data as ICommunityTopic;
+  },
+
+  // ------------------------------------------------------------------- posts
+  async getPosts(params: CommunityPostQuery) {
+    const res = await axiosClient.get("/community/admin/posts", { params });
+    return res.data?.data as IPagedResponse<ICommunityAdminPost>;
+  },
+
+  /**
+   * Hide / restore / pin / lock comments on one post.
+   *
+   * Hiding also hides the post's whole comment thread, closes every pending
+   * report on it, and notifies the author with `hiddenReason` — so always pass
+   * a reason worth showing a person.
+   */
+  async moderatePost(
+    id: string,
+    payload: {
+      status?: CommunityContentStatus;
+      hiddenReason?: string;
+      isPinned?: boolean;
+      commentsLocked?: boolean;
+    }
+  ) {
+    const res = await axiosClient.patch(
+      `/community/admin/posts/${id}`,
+      payload
+    );
+    return res.data?.data;
+  },
+
+  /** Posts as "Đội ngũ MeUp" — one locale's feed at a time. */
+  async createOfficialPost(payload: ICommunityOfficialPostPayload) {
+    const res = await axiosClient.post(
+      "/community/admin/posts/official",
+      payload
+    );
+    return res.data?.data;
+  },
+
+  // ---------------------------------------------------------------- comments
+  async getComments(params: CommunityCommentQuery) {
+    const res = await axiosClient.get("/community/admin/comments", { params });
+    return res.data?.data as IPagedResponse<ICommunityAdminComment>;
+  },
+
+  async moderateComment(
+    id: string,
+    payload: { status?: CommunityContentStatus; hiddenReason?: string }
+  ) {
+    const res = await axiosClient.patch(
+      `/community/admin/comments/${id}`,
+      payload
+    );
+    return res.data?.data;
+  },
+
+  // ----------------------------------------------------------------- reports
+  async getReports(params: CommunityReportQuery) {
+    const res = await axiosClient.get("/community/admin/reports", { params });
+    return res.data?.data as IPagedResponse<ICommunityReport>;
+  },
+
+  /**
+   * Close a report.
+   *
+   * RESOLVED_HIDDEN takes the content down as well (and notifies its author);
+   * RESOLVED_KEPT leaves it up. Either way every other pending report on the
+   * same item is closed with the same verdict, so the queue does not keep
+   * offering work that is already done.
+   */
+  async resolveReport(id: string, status: CommunityReportStatus) {
+    const res = await axiosClient.patch(`/community/admin/reports/${id}`, {
+      status,
+    });
+    return res.data?.data;
+  },
+
+  // ------------------------------------------------------------------ weekly
+  async getWeeklyQuestions(params: { page?: number; take?: number }) {
+    const res = await axiosClient.get("/community/admin/weekly", { params });
+    return res.data?.data as IPagedResponse<ICommunityAdminPost>;
+  },
+
+  async createWeeklyQuestion(payload: ICommunityWeeklyPayload) {
+    const res = await axiosClient.post("/community/admin/weekly", payload);
+    return res.data?.data;
+  },
+
+  async updateWeeklyQuestion(id: string, payload: ICommunityWeeklyPayload) {
+    const res = await axiosClient.patch(
+      `/community/admin/weekly/${id}`,
+      payload
+    );
+    return res.data?.data;
+  },
+
+  // --------------------------------------------------------------- sanctions
+  async getSanctions(params: { page?: number; take?: number; userId?: string }) {
+    const res = await axiosClient.get("/community/admin/sanctions", { params });
+    return res.data?.data as IPagedResponse<ICommunitySanction>;
+  },
+
+  /** Every sanction ever applied to one reader — the violation history. */
+  async getSanctionHistory(userId: string) {
+    const res = await axiosClient.get(
+      `/community/admin/sanctions/history/${userId}`
+    );
+    return res.data?.data as ICommunitySanction[];
+  },
+
+  async createSanction(payload: {
+    userId: string;
+    mutedUntil?: string;
+    reason: string;
+  }) {
+    const res = await axiosClient.post("/community/admin/sanctions", payload);
+    return res.data?.data as ICommunitySanction;
+  },
+
+  async revokeSanction(id: string) {
+    const res = await axiosClient.delete(`/community/admin/sanctions/${id}`);
+    return res.data?.data as ICommunitySanction;
+  },
+};
