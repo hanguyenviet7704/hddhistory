@@ -33,6 +33,11 @@ class CommunityCommentTile extends StatelessWidget {
 
   static const Color _rail = Color(0xFFE7E8F0);
 
+  /// The thread rail is drawn straight on the study background, so on a dark
+  /// one the design's pale grey disappears.
+  static Color _railColor(BuildContext context) =>
+      studyThemeIsDarkBg(context) ? const Color(0x66F3F4FA) : _rail;
+
   @override
   Widget build(BuildContext context) {
     final replies = comment.replies;
@@ -93,7 +98,7 @@ class CommunityCommentTile extends StatelessWidget {
                     child: CustomPaint(
                       painter: _ReplyRailPainter(
                         hasNext: index < replies.length - 1,
-                        color: _rail,
+                        color: _railColor(context),
                         // Meets the reply's 28px avatar at its centre.
                         elbowY: 14.h,
                       ),
@@ -215,7 +220,9 @@ class _CommentBody extends StatelessWidget {
             Flexible(
               child: AppText(
                 name,
-                style: AppStyle.textBold14.copyWith(color: AppCustomColor.textPrimary),
+                style: AppStyle.textBold14.copyWith(
+                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                ),
                 maxLines: 1,
               ),
             ),
@@ -242,7 +249,7 @@ class _CommentBody extends StatelessWidget {
               TextSpan(
                 text: comment.body,
                 style: (isReply ? AppStyle.text13 : AppStyle.text14).copyWith(
-                  color: AppCustomColor.textSecondary,
+                  color: studyThemeOnBg(context, AppCustomColor.textSecondary),
                   height: 1.55,
                 ),
               ),
@@ -254,7 +261,9 @@ class _CommentBody extends StatelessWidget {
           children: [
             AppText(
               communityRelativeTime(context, comment.createdAt),
-              style: AppStyle.text12.copyWith(color: AppCustomColor.communityMuted),
+              style: AppStyle.text12.copyWith(
+                color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+              ),
             ),
             SizedBox(width: 16.w),
             _CommentMetaAction(
@@ -279,7 +288,7 @@ class _CommentBody extends StatelessWidget {
               child: Icon(
                 Icons.more_horiz,
                 size: 16.sp,
-                color: AppCustomColor.communityMuted,
+                color: studyThemeOnBg(context, AppCustomColor.communityMuted),
               ),
             ),
           ],
@@ -304,7 +313,9 @@ class _CommentMetaAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppCustomColor.brandPrimary : AppCustomColor.streakTextMuted;
+    final color = isActive
+        ? studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)
+        : studyThemeOnBg(context, AppCustomColor.streakTextMuted);
 
     return GestureDetector(
       onTap: onTap,

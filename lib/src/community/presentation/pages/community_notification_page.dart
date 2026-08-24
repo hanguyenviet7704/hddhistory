@@ -42,7 +42,7 @@ class _CommunityNotificationPageState extends State<CommunityNotificationPage> {
     final l10n = context.l10n.community;
 
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       appBar: _CommunityAppBar(title: l10n.notificationsTitle),
       body: BlocBuilder<CommunityNotificationCubit, CommunityNotificationState>(
         builder: (context, state) {
@@ -121,7 +121,7 @@ class _NotificationRow extends StatelessWidget {
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: item.isRead
-              ? AppCustomColor.backgroundWhite
+              ? studyThemeCardColor(context)
               : AppCustomColor.backgroundBrandSoft,
           borderRadius: BorderRadius.circular(14.r),
         ),
@@ -139,12 +139,16 @@ class _NotificationRow extends StatelessWidget {
                 children: [
                   AppText(
                     _label(context),
-                    style: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary),
+                    style: AppStyle.textBold12.copyWith(
+                      color: studyThemeCardMuted(context, AppCustomColor.textPrimary),
+                    ),
                   ),
                   SizedBox(height: 3.h),
                   AppText(
                     communityRelativeTime(context, item.createdAt),
-                    style: AppStyle.text10.copyWith(color: AppCustomColor.communityMuted),
+                    style: AppStyle.text10.copyWith(
+                      color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+                    ),
                   ),
                 ],
               ),

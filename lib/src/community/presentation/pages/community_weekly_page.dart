@@ -17,7 +17,7 @@ class CommunityWeeklyPage extends StatelessWidget {
         final weekly = state.weekly;
 
         return Scaffold(
-          backgroundColor: AppCustomColor.backgroundGray,
+          backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
           appBar: _CommunityAppBar(title: l10n.weeklyTitle),
           body: state.status == CommunityStatus.loading && weekly == null
               ? const Center(child: CircularProgressIndicator())
@@ -158,7 +158,7 @@ class _WeeklyHeaderBlock extends StatelessWidget {
             child: AppText(
               weekly.note,
               style: AppStyle.text12.copyWith(
-                color: AppCustomColor.communityMuted,
+                color: studyThemeOnBg(context, AppCustomColor.communityMuted),
                 height: 1.5,
               ),
             ),

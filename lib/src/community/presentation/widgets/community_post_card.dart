@@ -32,7 +32,7 @@ class CommunityPostCard extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
         decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
+          color: studyThemeCardColor(context),
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: AppCustomColor.borderDefault),
         ),
@@ -146,7 +146,9 @@ class _TopicChip extends StatelessWidget {
               SizedBox(width: 6.w),
               AppText(
                 topic.name,
-                style: AppStyle.textBold12.copyWith(color: AppCustomColor.streakTextMuted),
+                style: AppStyle.textBold12.copyWith(
+                  color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
+                ),
                 maxLines: 1,
               ),
             ],
@@ -172,7 +174,9 @@ class _CountAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppCustomColor.brandPrimary : AppCustomColor.streakTextMuted;
+    final color = isActive
+        ? AppCustomColor.brandPrimary
+        : studyThemeCardMuted(context, AppCustomColor.streakTextMuted);
 
     return GestureDetector(
       onTap: onTap,

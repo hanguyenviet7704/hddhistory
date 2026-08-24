@@ -206,7 +206,7 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
     final topic = _topic;
 
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -513,7 +513,9 @@ class _SortChip extends StatelessWidget {
         child: AppText(
           label,
           style: AppStyle.textBold12.copyWith(
-            color: isActive ? AppCustomColor.textWhite : AppCustomColor.streakTextMuted,
+            color: isActive
+                ? AppCustomColor.textWhite
+                : studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
           ),
         ),
       ),

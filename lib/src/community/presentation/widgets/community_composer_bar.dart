@@ -66,7 +66,10 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 10.h),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
+        // Nearly opaque rather than glass: this bar sits under the keyboard and
+        // holds an input the reader is typing into — legibility beats letting
+        // the background show through.
+        color: studyThemeCardColor(context, opacity: 0.94),
         border: Border(top: BorderSide(color: AppCustomColor.borderDefault)),
       ),
       child: SafeArea(

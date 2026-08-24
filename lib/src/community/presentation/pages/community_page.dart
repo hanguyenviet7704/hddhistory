@@ -61,7 +61,9 @@ class _CommunityPageState extends State<CommunityPage> {
         unawaited(_cubit.ensureLoaded());
       },
       child: Scaffold(
-        backgroundColor: AppCustomColor.backgroundGray,
+        // Transparent under a custom study background so the shell's
+        // ThemedBackground shows through, exactly like Home/Explore/Library.
+        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -98,7 +100,9 @@ class _CommunityHeader extends StatelessWidget {
     final l10n = context.l10n.community;
 
     return Container(
-      color: AppCustomColor.backgroundGray,
+      // An opaque strip here would punch a grey band across the top of the
+      // reader's background.
+      color: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 8.h),
       child: Column(
         children: [
@@ -107,7 +111,9 @@ class _CommunityHeader extends StatelessWidget {
               Expanded(
                 child: AppText(
                   l10n.title,
-                  style: AppStyle.textBold22.copyWith(color: AppCustomColor.textPrimary),
+                  style: AppStyle.textBold22.copyWith(
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                  ),
                 ),
               ),
               GestureDetector(
@@ -118,7 +124,7 @@ class _CommunityHeader extends StatelessWidget {
                   child: Icon(
                     Icons.bookmark_border,
                     size: 20.sp,
-                    color: AppCustomColor.streakTextMuted,
+                    color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                   ),
                 ),
               ),
@@ -213,16 +219,16 @@ class _ScopeToggle extends StatelessWidget {
                 isFollowing ? Icons.filter_alt : Icons.filter_alt_outlined,
                 size: 15.sp,
                 color: isFollowing
-                    ? AppCustomColor.brandPrimary
-                    : AppCustomColor.streakTextMuted,
+                    ? studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)
+                    : studyThemeOnBg(context, AppCustomColor.streakTextMuted),
               ),
               SizedBox(width: 4.w),
               AppText(
                 isFollowing ? l10n.scopeFollowing : l10n.scopeAll,
                 style: AppStyle.textBold12.copyWith(
                   color: isFollowing
-                      ? AppCustomColor.brandPrimary
-                      : AppCustomColor.streakTextMuted,
+                      ? studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)
+                      : studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                 ),
               ),
             ],
@@ -257,7 +263,7 @@ class _NotificationBell extends StatelessWidget {
               Icon(
                 Icons.notifications_none,
                 size: 21.sp,
-                color: AppCustomColor.streakTextMuted,
+                color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
               ),
               if (unread > 0)
                 Positioned(
@@ -269,7 +275,12 @@ class _NotificationBell extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppCustomColor.errorRed,
-                      border: Border.all(color: AppCustomColor.backgroundGray, width: 1.5),
+                      border: Border.all(
+                        color: studyThemeHasCustomBg(context)
+                            ? Colors.transparent
+                            : AppCustomColor.backgroundGray,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -363,7 +374,7 @@ class _CommunityFeedList extends StatelessWidget {
                         child: AppText(
                           l10n.followNote,
                           style: AppStyle.text12.copyWith(
-                            color: AppCustomColor.communityMuted,
+                            color: studyThemeOnBg(context, AppCustomColor.communityMuted),
                           ),
                           maxLines: 1,
                         ),
@@ -374,7 +385,7 @@ class _CommunityFeedList extends StatelessWidget {
                         child: AppText(
                           l10n.manageTopics,
                           style: AppStyle.textBold12.copyWith(
-                            color: AppCustomColor.brandPrimary,
+                            color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
                           ),
                         ),
                       ),
@@ -534,7 +545,7 @@ class _SectionLabel extends StatelessWidget {
       child: AppText(
         label,
         style: AppStyle.textBold10.copyWith(
-          color: AppCustomColor.communityMuted,
+          color: studyThemeOnBg(context, AppCustomColor.communityMuted),
           letterSpacing: 0.8,
         ),
       ),
@@ -563,7 +574,7 @@ class _CommunityMessage extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 24.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
+        color: studyThemeCardColor(context),
         borderRadius: BorderRadius.circular(18.r),
       ),
       child: Column(
@@ -576,7 +587,9 @@ class _CommunityMessage extends StatelessWidget {
           SizedBox(height: 6.h),
           AppText(
             body,
-            style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+            style: AppStyle.text12.copyWith(
+              color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
+            ),
             textAlign: TextAlign.center,
           ),
           if (actionLabel != null && onAction != null) ...[

@@ -19,7 +19,7 @@ class CommunityPostDetailPage extends StatelessWidget {
         final post = state.post;
 
         return Scaffold(
-          backgroundColor: AppCustomColor.backgroundGray,
+          backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
           appBar: _CommunityAppBar(
             title: l10n.postTitle,
             onBack: () => Navigator.of(context).maybePop(
@@ -100,7 +100,9 @@ class _PostHeaderBlock extends StatelessWidget {
                       : (post.author.name.isEmpty
                             ? l10n.deletedAuthorName
                             : post.author.name),
-                  style: AppStyle.textBold14.copyWith(color: AppCustomColor.textPrimary),
+                  style: AppStyle.textBold14.copyWith(
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                  ),
                   maxLines: 1,
                 ),
               ),
@@ -110,14 +112,19 @@ class _PostHeaderBlock extends StatelessWidget {
               ],
               AppText(
                 communityRelativeTime(context, post.createdAt),
-                style: AppStyle.text12.copyWith(color: AppCustomColor.communityMuted),
+                style: AppStyle.text12.copyWith(
+                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                ),
               ),
             ],
           ),
           SizedBox(height: 12.h),
           AppText(
             post.body,
-            style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.6),
+            style: AppStyle.text14.copyWith(
+              color: studyThemeOnBg(context, AppCustomColor.textSecondary),
+              height: 1.6,
+            ),
           ),
           if (post.attachedCourseId != null)
             CommunityAttachedCourseCard(courseId: post.attachedCourseId!),
@@ -157,13 +164,13 @@ class _PostHeaderBlock extends StatelessWidget {
                     Icon(
                       Icons.mode_comment_outlined,
                       size: 17.sp,
-                      color: AppCustomColor.streakTextMuted,
+                      color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                     ),
                     SizedBox(width: 6.w),
                     AppText(
                       '${post.commentCount}',
                       style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.streakTextMuted,
+                        color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                       ),
                     ),
                   ],
@@ -182,7 +189,7 @@ class _PostHeaderBlock extends StatelessWidget {
                 const Spacer(),
                 _IconTap(
                   icon: Icons.more_horiz,
-                  color: AppCustomColor.communityMuted,
+                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
                   onTap: () => showCommunityItemMenu(
                     context,
                     isMine: post.isMine,
@@ -317,7 +324,9 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
           padding: EdgeInsets.only(bottom: 16.h),
           child: AppText(
             l10n.commentCount(count: state.answerCount),
-            style: AppStyle.textBold14.copyWith(color: AppCustomColor.textPrimary),
+            style: AppStyle.textBold14.copyWith(
+              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+            ),
           ),
         ),
         if (state.commentsStatus == CommunityStatus.loading && state.comments.isEmpty)
@@ -417,7 +426,7 @@ class _ClosedComposerNote extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 14.h),
         decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
+          color: studyThemeCardColor(context, opacity: 0.94),
           border: Border(top: BorderSide(color: AppCustomColor.borderDefault)),
         ),
         child: SafeArea(
@@ -427,7 +436,9 @@ class _ClosedComposerNote extends StatelessWidget {
             children: [
               AppText(
                 message,
-                style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                style: AppStyle.text12.copyWith(
+                  color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
+                ),
                 textAlign: TextAlign.center,
               ),
               if (isGuest) ...[
@@ -465,7 +476,7 @@ class _CommunityAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppCustomColor.backgroundGray,
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
@@ -475,12 +486,14 @@ class _CommunityAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Icon(
           Icons.arrow_back_ios_new,
           size: 18.sp,
-          color: AppCustomColor.textPrimary,
+          color: studyThemeOnBg(context, AppCustomColor.textPrimary),
         ),
       ),
       title: AppText(
         title,
-        style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
+        style: AppStyle.textBold16.copyWith(
+          color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+        ),
       ),
     );
   }

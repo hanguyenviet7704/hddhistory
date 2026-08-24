@@ -111,7 +111,12 @@ class CommunityAuthorLine extends StatelessWidget {
         SizedBox(width: 8.w),
         AppText(
           communityRelativeTime(context, createdAt),
-          style: AppStyle.text12.copyWith(color: AppCustomColor.communityMuted),
+          // This line only ever renders inside a post card, so it takes the
+          // card ink: over a glass card on a photo the design's pale slate
+          // washes out.
+          style: AppStyle.text12.copyWith(
+            color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+          ),
         ),
       ],
     );

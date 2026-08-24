@@ -124,7 +124,7 @@ class _CommunitySavedPageState extends State<CommunitySavedPage> {
     final l10n = context.l10n.community;
 
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       appBar: _CommunityAppBar(title: l10n.savedTitle),
       body: _status == CommunityStatus.loading && _posts.isEmpty
           ? const Center(child: CircularProgressIndicator())

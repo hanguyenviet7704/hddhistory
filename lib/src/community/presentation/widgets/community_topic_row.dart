@@ -23,7 +23,7 @@ class CommunityTopicRow extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
+          color: studyThemeCardColor(context),
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Row(
@@ -42,7 +42,9 @@ class CommunityTopicRow extends StatelessWidget {
                     // Two facts on one line, as the design writes it: how many
                     // people are here, and whether it is alive this week.
                     '${l10n.topicMembers(count: topic.followers)} · ${l10n.topicPostsThisWeek(count: topic.postsThisWeek)}',
-                    style: AppStyle.text12.copyWith(color: AppCustomColor.communityMuted),
+                    style: AppStyle.text12.copyWith(
+                      color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+                    ),
                     maxLines: 1,
                   ),
                 ],
