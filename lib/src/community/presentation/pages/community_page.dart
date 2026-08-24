@@ -520,7 +520,11 @@ class _CommunityTopicsList extends StatelessWidget {
                 (topic) => CommunityTopicRow(
                   topic: topic,
                   onOpen: () => CommunityTopicRoute(topicId: topic.id).push(context),
-                  onToggleFollow: () => cubit.toggleTopicFollow(topic),
+                  onToggleFollow: () => _gated(
+                    context,
+                    state.memberStatus,
+                    () => cubit.toggleTopicFollow(topic),
+                  ),
                 ),
               ),
               if (state.topics.all.isEmpty && state.topics.following.isEmpty)
