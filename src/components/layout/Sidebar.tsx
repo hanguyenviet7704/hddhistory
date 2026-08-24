@@ -9,6 +9,7 @@ import {
   ArrowRightOnRectangleIcon,
   CheckBadgeIcon,
   DocumentTextIcon,
+  HandThumbDownIcon,
   SparklesIcon,
   Cog6ToothIcon,
   PuzzlePieceIcon,
@@ -168,6 +169,12 @@ const menuGroups = [
       // ngay tại chỗ chọn, khỏi vào sai trang. Tên khớp tiêu đề trang.
       { name: "Link Builder", icon: LinkIcon, path: "/deeplinks" },
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
+      // The three AI Coach surfaces sit together: the switch that turns the
+      // feature on, the cache an editor fixes after the fact, and the queue of
+      // turns a reader said were wrong. Named to match their page titles.
+      { name: "AI Coach", icon: ChatBubbleLeftRightIcon, path: "/coach-config" },
+      { name: "Tình huống Coach", icon: SparklesIcon, path: "/coach-situations" },
+      { name: "Đánh giá Coach", icon: HandThumbDownIcon, path: "/coach-ratings" },
       { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
       { name: "Popup Home", icon: MegaphoneIcon, path: "/home-popup" },
       // Audience groups that Banner Home / Popup Home target via `segmentIds`
