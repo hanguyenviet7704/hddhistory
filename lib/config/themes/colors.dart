@@ -100,6 +100,18 @@ mixin AppCustomColor {
   static const Color feedbackThankYouOverlay = Color(0xB3FFFFFF);
   static const Color feedbackThankYouTint = Color(0xB3E5DEFC);
 
+  // Community (design `13 · Community`). Only the two values with no near
+  // equivalent in the palette: the design's #554FF0 is `brandPrimary`, #4B44CA
+  // is `streakActive`, #0D121C is `textPrimary`, #5F6F86 is `streakTextMuted`,
+  // and its #F6F6FB page ground is `backgroundGray` — reused rather than
+  // duplicated a shade apart.
+  static const Color communityMuted = Color(0xFF9AA4B2);
+  // Heading colour on a topic page's header block.
+  static const Color communityTopicHeading = Color(0xFF211B40);
+  // Edge of the weekly-question card. Lighter than `borderBrand` (#C7C5FA),
+  // which reads as a selected state next to this card's tinted fill.
+  static const Color communityWeeklyBorder = Color(0xFFDAD7F7);
+
   // Onboarding (P3 redesign) — exact Figma hex values that don't already
   // match an existing token. Where a design value coincided with an existing
   // token (e.g. brand `#554FF0` == brandPrimary, border `#E3E8EF` ==
@@ -122,6 +134,60 @@ mixin AppCustomColor {
   // brandPrimary200, gap-slot label `#4B44CA` == streakActive, muted caption
   // `#9AA4B2` == textMuted, heading `#0D121C` == textPrimary, arrange badges
   // `#41AE8C`/`#E34646` == successGreen/errorRed.
+  // Week recap ("Hành trình tuần qua") — the scrapbook poster and the chrome
+  // around it. Source: Claude Design "MeUp App" -> pins `week-wrap`,
+  // `wrap-list`, `week-wrap-monday`, `week-wrap-locked`; see
+  // meup-api/plans/260820-week-recap/README.md.
+  //
+  // The poster inks are LOCKED TO THE ARTWORK, not to the app theme: the
+  // poster is a printed page on cream paper and looks the same in dark mode,
+  // so these must not follow a theme swap. Feature-neutral tokens are reused
+  // where the design matched one (`textPrimary` #0D121C, `textMuted` #9AA4B2,
+  // `brandPrimary` #554FF0). Three values coincide with tokens named for other
+  // features (#7C8AA4 practiceModeSubtext, #EEF1F6 kpMissedSurface) — those get
+  // their own names here rather than borrowing an unrelated feature's.
+  // Share-row brand fills, shared by the course-share sheet and the week-recap
+  // poster (see ShareTargetButton). The icon ink and the label ink reuse
+  // existing tokens whose values already match — #2B3242 == kpOptionLabel,
+  // #3A4250 == kpOptionText — rather than adding a third name for each.
+  static const Color shareInstagramStart = Color(0xFF8A3AB9);
+  static const Color shareInstagramMid = Color(0xFFE95950);
+  static const Color shareInstagramEnd = Color(0xFFFCAF45);
+  static const Color shareFacebookBlue = Color(0xFF1877F2);
+  /// rgba(20,20,60,.08) — lifts a white disc off a white sheet.
+  static const Color shareTargetShadow = Color(0x1414143C);
+  static const Color weekRecapCourseLabel = Color(0xFF2E4A6B);
+  static const Color weekRecapFavouriteLabel = Color(0xFFC0392B);
+  static const Color weekRecapLessonInk = Color(0xFF3A3020);
+  static const Color weekRecapBodyInk = Color(0xFF4A4033);
+  static const Color weekRecapDarkInk = Color(0xFF2A2A2A);
+  static const Color weekRecapFaintInk = Color(0xFF8A7B5E);
+  static const Color weekRecapQuoteInk = Color(0xFF390909);
+  static const Color weekRecapTitleInk = Color(0xFF172D58);
+  static const Color weekRecapTitleHalo = Color(0xFFEBE9E7);
+  static const Color weekRecapLabelRed = Color(0xFFA32A2A);
+  static const Color weekRecapCalendarMuted = Color(0xFF6B6B6B);
+  static const Color weekRecapStatStreak = Color(0xFF6E6151);
+  static const Color weekRecapStatHabits = Color(0xFFB8935A);
+  static const Color weekRecapStatLessons = Color(0xFF9E2B2B);
+  static const Color weekRecapStatMinutes = Color(0xFFE0A81E);
+  static const Color weekRecapMoodGood = Color(0xFFCFE9D8);
+  static const Color weekRecapMoodOk = Color(0xFFFCE3B6);
+  static const Color weekRecapMoodLow = Color(0xFFF7CDD7);
+  static const Color weekRecapMoodInk = Color(0xFF5E6152);
+  // Stands in behind the poster while its artwork decodes, so the page opens on
+  // paper rather than on a white flash.
+  static const Color weekRecapPaper = Color(0xFFF1E7D6);
+  static const Color weekRecapBannerStart = Color(0xFF5B4BE0);
+  static const Color weekRecapBannerMid = Color(0xFF8B6BF0);
+  static const Color weekRecapBannerEnd = Color(0xFFC58BEA);
+  static const Color weekRecapPillInk = Color(0xFF4B3EDB);
+  static const Color weekRecapPopupBody = Color(0xFF7C8AA4);
+  static const Color weekRecapMutedAction = Color(0xFF8A93A6);
+  static const Color weekRecapRowBorder = Color(0xFFEEF1F6);
+  static const Color weekRecapRowSubtitle = Color(0xFF8891A3);
+  static const Color weekRecapTileBorder = Color(0xFFEDF0F5);
+
   static const Color kpBodyText = Color(0xFF3D3D46);
   // Answer-option chrome, straight from `_Keypoint Swipe Lab` (the design file
   // that owns BOTH practice decks and the reading deck's exercise cards). The

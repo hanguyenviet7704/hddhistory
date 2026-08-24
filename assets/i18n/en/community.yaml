@@ -1,0 +1,131 @@
+navLabel: Community
+title: Community
+tabAll: All
+tabTopics: Topics
+scopeAll: All posts
+scopeFollowing: Following
+
+officialAuthorName: The MeUp team
+deletedAuthorName: A MeUp member
+
+follow: + Follow
+following: Following
+sectionFollowing: FOLLOWING
+sectionAllTopics: ALL TOPICS
+topicMembers(param=count):
+  one: ${count} member
+  other: ${count} members
+topicPostsThisWeek(param=count):
+  one: ${count} post this week
+  other: ${count} posts this week
+
+weeklyLabel: QUESTION OF THE WEEK
+weeklyLabelWithWeek: QUESTION OF THE WEEK · WEEK ${week}
+weeklyDaysLeft(param=count):
+  one: ${count} day left
+  other: ${count} days left
+weeklyAnswered(param=count):
+  one: ${count} person has answered
+  other: ${count} people have answered
+weeklyJoin: Join in
+weeklyTitle: Question of the week
+weeklyNoneTitle: No question open right now
+weeklyNoneBody: The team asks a new one each week. Come back in a few days.
+weeklyClosed: This week's question has closed. A new one is on the way.
+
+postTitle: Post
+reply: Reply
+replyingTo: Replying to
+commentCount(param=count):
+  one: ${count} comment
+  other: ${count} comments
+commentsLocked: Comments are closed on this post.
+composerHintComment: Write a comment…
+composerHintReply: Write a reply…
+composerHintWeekly: Answer this week's question…
+
+emptyFeedTitle: Nothing here yet
+emptyFeedBody: Be the first to write something. What is on your mind?
+emptyFollowingTitle: You are not following any topic yet
+emptyFollowingBody: Follow a topic and its posts will show up here.
+emptyFollowingAction: Browse all posts
+emptyTopicsTitle: No topics yet
+emptyTopicsBody: The team is still setting them up. Check back soon.
+emptyTopicFeedTitle: No posts in this topic yet
+emptyTopicFeedBody: Yours could be the first one.
+emptyCommentsTitle: No comments yet
+emptyCommentsBody: Say something kind, or just say you have been there too.
+
+menuHide: Hide this content
+menuReport: Report
+menuDelete: Delete
+deletePostDone: Your post was deleted
+
+reportTitle: Report this content
+reportSubtitle: The team reviews reports and decides what comes down. Nothing is hidden automatically.
+reportSpam: Spam or selling something
+reportHarassment: Harassment or abuse
+reportAdult: Adult content
+reportMisinformation: False information
+reportPrivacy: Reveals someone else's identity
+reportOther: Something else
+reportSent: Thank you. The team will take a look.
+reportFailed: Could not send the report. Try again.
+
+guestTitle: Sign in to join in
+guestBody: You can read everything here. Posting, commenting and liking need an account.
+guestAction: Sign in
+mutedTitle: You cannot post right now
+mutedBodyFallback: Your posting is paused for breaking the community rules.
+mutedUntil: Until ${date}
+
+composeTitle: New post
+composeSubmit: Post
+composeGroupLabel: POST TO A TOPIC · OPTIONAL
+composeNoGroup: No topic
+composeBodyHint: What is on your mind?
+composeAddImage: Add photo
+composeCourseAttached: Course attached
+composePostingAs: Posting as ${name}
+composeVisibilityHint: Everyone in the topic will see your post.
+
+attachedCourseTitle: MeUp roadmap
+attachedCourseHint: Open the course this post is about.
+
+savedTitle: Saved
+savedEmptyTitle: Nothing saved yet
+savedEmptyBody: Tap the bookmark on a post to keep it here.
+
+notificationsTitle: Notifications
+notificationsEmptyTitle: Nothing new
+notificationsEmptyBody: Replies to your posts will show up here.
+notificationCommentOnPost: Someone commented on your post
+notificationReplyToComment: Someone replied to you
+notificationOfficialReply: The MeUp team replied
+notificationPostHidden: Your post was hidden
+notificationSanction: Your posting has been paused
+
+errorTitle: Something went wrong
+errorBody: We could not load this. Check your connection and try again.
+retry: Try again
+
+timeJustNow: Just now
+timeMinutes(param=count):
+  one: ${count} min ago
+  other: ${count} mins ago
+timeHours(param=count):
+  one: ${count} hour ago
+  other: ${count} hours ago
+timeYesterday: Yesterday
+timeDays(param=count):
+  one: ${count} day ago
+  other: ${count} days ago
+timeWeeks(param=count):
+  one: ${count} week ago
+  other: ${count} weeks ago
+
+sortRecent: Newest
+sortActive: Active
+composeCta: Write
+followNote: New from the topics you follow
+manageTopics: Manage topics

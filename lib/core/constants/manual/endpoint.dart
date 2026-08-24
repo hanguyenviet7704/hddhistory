@@ -235,6 +235,25 @@ mixin AppEndpoint {
   static const String userLessonAdditionalContentRequest =
       '/api/v1/user-lessons/{id}/additional-content-request';
 
+  //* Community API (forum: topics, posts, comments, reactions, reports)
+  static const String communityFeed = '/api/v1/community/feed';
+  static const String communitySaved = '/api/v1/community/saved';
+  static const String communityWeekly = '/api/v1/community/weekly';
+  static const String communityTopics = '/api/v1/community/topics';
+  static const String communityTopicById = '/api/v1/community/topics/{id}';
+  static const String communityTopicFollow = '/api/v1/community/topics/{id}/follow';
+  static const String communityPosts = '/api/v1/community/posts';
+  static const String communityPostById = '/api/v1/community/posts/{id}';
+  static const String communityPostComments = '/api/v1/community/posts/{id}/comments';
+  static const String communityCommentById = '/api/v1/community/comments/{id}';
+  static const String communityReactions = '/api/v1/community/reactions';
+  static const String communityHidden = '/api/v1/community/hidden';
+  static const String communityReports = '/api/v1/community/reports';
+  static const String communityNotifications = '/api/v1/community/notifications';
+  static const String communityNotificationsUnread = '/api/v1/community/notifications/unread-count';
+  static const String communityNotificationsRead = '/api/v1/community/notifications/read';
+  static const String communityMyStatus = '/api/v1/community/me/status';
+
   //* AI Services API
   static const String voiceFeedback = '/feedback';
   static const String voiceFeedbackStream = '/feedback-stream';

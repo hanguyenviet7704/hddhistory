@@ -1,0 +1,122 @@
+navLabel: 커뮤니티
+title: 커뮤니티
+tabAll: 전체
+tabTopics: 주제
+scopeAll: 전체 글
+scopeFollowing: 팔로우 중
+
+officialAuthorName: MeUp 팀
+deletedAuthorName: MeUp 회원
+
+follow: + 팔로우
+following: 팔로우 중
+sectionFollowing: 팔로우 중
+sectionAllTopics: 전체 주제
+topicMembers(param=count):
+  other: ${count}명
+topicPostsThisWeek(param=count):
+  other: 이번 주 ${count}개
+
+weeklyLabel: 이번 주 질문
+weeklyLabelWithWeek: 이번 주 질문 · ${week}주차
+weeklyDaysLeft(param=count):
+  other: ${count}일 남음
+weeklyAnswered(param=count):
+  other: ${count}명이 답했어요
+weeklyJoin: 참여하기
+weeklyTitle: 이번 주 질문
+weeklyNoneTitle: 아직 열린 질문이 없어요
+weeklyNoneBody: 매주 새로운 질문을 올립니다. 며칠 뒤에 다시 들러 주세요.
+weeklyClosed: 이번 주 질문은 마감됐어요. 새 질문이 곧 올라옵니다.
+
+postTitle: 글
+reply: 답글
+replyingTo: 답글 대상
+commentCount(param=count):
+  other: 댓글 ${count}개
+commentsLocked: 이 글은 댓글이 닫혀 있어요.
+composerHintComment: 댓글을 남겨 보세요…
+composerHintReply: 답글을 남겨 보세요…
+composerHintWeekly: 이번 주 질문에 답해 보세요…
+
+emptyFeedTitle: 아직 아무것도 없어요
+emptyFeedBody: 첫 글을 남겨 보세요. 지금 어떤 생각이 드세요?
+emptyFollowingTitle: 팔로우한 주제가 없어요
+emptyFollowingBody: 주제를 팔로우하면 그 글이 여기에 보여요.
+emptyFollowingAction: 전체 글 보기
+emptyTopicsTitle: 아직 주제가 없어요
+emptyTopicsBody: 팀에서 준비 중이에요. 곧 다시 확인해 주세요.
+emptyTopicFeedTitle: 이 주제에는 아직 글이 없어요
+emptyTopicFeedBody: 회원님의 글이 첫 글이 될 수 있어요.
+emptyCommentsTitle: 아직 댓글이 없어요
+emptyCommentsBody: 따뜻한 한마디도, "저도 그랬어요" 한마디도 좋아요.
+
+menuHide: 이 내용 숨기기
+menuReport: 글 신고하기
+menuDelete: 삭제하기
+deletePostDone: 글을 삭제했어요
+
+reportTitle: 이 내용 신고하기
+reportSubtitle: 팀이 확인한 뒤 처리합니다. 내용이 자동으로 숨겨지지는 않아요.
+reportSpam: 스팸이나 홍보
+reportHarassment: 괴롭힘이나 욕설
+reportAdult: 성인 콘텐츠
+reportMisinformation: 잘못된 정보
+reportPrivacy: 다른 사람의 신원을 드러냄
+reportOther: 기타
+reportSent: 감사합니다. 팀이 확인할게요.
+reportFailed: 신고를 보내지 못했어요. 다시 시도해 주세요.
+
+guestTitle: 로그인하고 참여해 보세요
+guestBody: 읽기는 모두 가능해요. 글쓰기, 댓글, 좋아요는 계정이 필요해요.
+guestAction: 로그인
+mutedTitle: 지금은 글을 쓸 수 없어요
+mutedBodyFallback: 커뮤니티 규칙 위반으로 글쓰기가 일시 중지됐어요.
+mutedUntil: ${date}까지
+
+composeTitle: 새 글
+composeSubmit: 올리기
+composeGroupLabel: 주제에 올리기 · 선택
+composeNoGroup: 주제 선택 안 함
+composeBodyHint: 지금 어떤 생각이 드세요?
+composeAddImage: 사진 추가
+composeCourseAttached: 코스를 첨부했어요
+composePostingAs: ${name}(으)로 올립니다
+composeVisibilityHint: 주제에 있는 모든 사람이 회원님의 글을 볼 수 있어요.
+
+attachedCourseTitle: MeUp 로드맵
+attachedCourseHint: 이 글에서 말한 코스를 열어 보세요.
+
+savedTitle: 저장함
+savedEmptyTitle: 저장한 글이 없어요
+savedEmptyBody: 글의 북마크를 누르면 여기에 보관돼요.
+
+notificationsTitle: 알림
+notificationsEmptyTitle: 새 알림이 없어요
+notificationsEmptyBody: 회원님 글에 달린 답글이 여기에 보여요.
+notificationCommentOnPost: 회원님의 글에 댓글이 달렸어요
+notificationReplyToComment: 회원님에게 답글이 달렸어요
+notificationOfficialReply: MeUp 팀이 답했어요
+notificationPostHidden: 회원님의 글이 숨겨졌어요
+notificationSanction: 회원님의 글쓰기가 일시 중지됐어요
+
+errorTitle: 문제가 생겼어요
+errorBody: 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.
+retry: 다시 시도
+
+timeJustNow: 방금
+timeMinutes(param=count):
+  other: ${count}분 전
+timeHours(param=count):
+  other: ${count}시간 전
+timeYesterday: 어제
+timeDays(param=count):
+  other: ${count}일 전
+timeWeeks(param=count):
+  other: ${count}주 전
+
+sortRecent: 최신
+sortActive: 활발
+composeCta: 글쓰기
+followNote: 팔로우한 주제의 새 글
+manageTopics: 주제 관리

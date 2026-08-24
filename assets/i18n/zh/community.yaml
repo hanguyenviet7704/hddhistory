@@ -1,0 +1,122 @@
+navLabel: 社区
+title: 社区
+tabAll: 全部
+tabTopics: 话题
+scopeAll: 全部帖子
+scopeFollowing: 已关注
+
+officialAuthorName: MeUp 团队
+deletedAuthorName: 一位 MeUp 用户
+
+follow: + 关注
+following: 已关注
+sectionFollowing: 已关注
+sectionAllTopics: 全部话题
+topicMembers(param=count):
+  other: ${count} 人
+topicPostsThisWeek(param=count):
+  other: 本周 ${count} 篇
+
+weeklyLabel: 本周提问
+weeklyLabelWithWeek: 本周提问 · 第 ${week} 周
+weeklyDaysLeft(param=count):
+  other: 还剩 ${count} 天
+weeklyAnswered(param=count):
+  other: ${count} 人已回答
+weeklyJoin: 参与讨论
+weeklyTitle: 本周提问
+weeklyNoneTitle: 本周还没有提问
+weeklyNoneBody: 团队每周会提出一个新问题，过几天再来看看。
+weeklyClosed: 本周的提问已结束，新的问题很快就来。
+
+postTitle: 帖子
+reply: 回复
+replyingTo: 正在回复
+commentCount(param=count):
+  other: ${count} 条评论
+commentsLocked: 这篇帖子已关闭评论。
+composerHintComment: 写下评论…
+composerHintReply: 写下回复…
+composerHintWeekly: 回答本周的提问…
+
+emptyFeedTitle: 这里还什么都没有
+emptyFeedBody: 来写第一篇吧。你现在在想什么？
+emptyFollowingTitle: 你还没有关注任何话题
+emptyFollowingBody: 关注一个话题，它的帖子就会出现在这里。
+emptyFollowingAction: 看全部帖子
+emptyTopicsTitle: 还没有话题
+emptyTopicsBody: 团队正在准备，请稍后再来。
+emptyTopicFeedTitle: 这个话题还没有帖子
+emptyTopicFeedBody: 你的可以是第一篇。
+emptyCommentsTitle: 还没有评论
+emptyCommentsBody: 说一句温暖的话，或者只说你也经历过。
+
+menuHide: 隐藏这条内容
+menuReport: 举报帖子
+menuDelete: 删除
+deletePostDone: 已删除你的帖子
+
+reportTitle: 举报这条内容
+reportSubtitle: 团队会查看举报并决定处理方式，内容不会自动隐藏。
+reportSpam: 垃圾信息或推销
+reportHarassment: 骚扰或辱骂
+reportAdult: 成人内容
+reportMisinformation: 虚假信息
+reportPrivacy: 泄露他人身份
+reportOther: 其他原因
+reportSent: 谢谢你，团队会查看。
+reportFailed: 举报未发送成功，请再试一次。
+
+guestTitle: 登录后即可参与
+guestBody: 你可以浏览全部内容。发帖、评论和点赞需要登录。
+guestAction: 登录
+mutedTitle: 你目前无法发帖
+mutedBodyFallback: 由于违反社区规则，你的发帖权限已暂时停用。
+mutedUntil: 至 ${date}
+
+composeTitle: 新帖子
+composeSubmit: 发布
+composeGroupLabel: 发到话题 · 可不选
+composeNoGroup: 不选话题
+composeBodyHint: 你现在在想什么？
+composeAddImage: 添加照片
+composeCourseAttached: 已附上课程
+composePostingAs: 以 ${name} 的身份发布
+composeVisibilityHint: 话题里的所有人都会看到你的帖子。
+
+attachedCourseTitle: MeUp 学习路径
+attachedCourseHint: 打开这篇帖子提到的课程。
+
+savedTitle: 已收藏
+savedEmptyTitle: 还没有收藏
+savedEmptyBody: 点击帖子上的收藏图标，就会保存到这里。
+
+notificationsTitle: 通知
+notificationsEmptyTitle: 暂无新消息
+notificationsEmptyBody: 对你帖子的回复会显示在这里。
+notificationCommentOnPost: 有人评论了你的帖子
+notificationReplyToComment: 有人回复了你
+notificationOfficialReply: MeUp 团队已回复
+notificationPostHidden: 你的帖子已被隐藏
+notificationSanction: 你的发帖权限已暂时停用
+
+errorTitle: 出了点问题
+errorBody: 内容加载失败，请检查网络后重试。
+retry: 重试
+
+timeJustNow: 刚刚
+timeMinutes(param=count):
+  other: ${count} 分钟前
+timeHours(param=count):
+  other: ${count} 小时前
+timeYesterday: 昨天
+timeDays(param=count):
+  other: ${count} 天前
+timeWeeks(param=count):
+  other: ${count} 周前
+
+sortRecent: 最新
+sortActive: 热门
+composeCta: 写帖子
+followNote: 来自你关注话题的新帖
+manageTopics: 管理话题

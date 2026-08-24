@@ -1,0 +1,122 @@
+navLabel: コミュニティ
+title: コミュニティ
+tabAll: すべて
+tabTopics: トピック
+scopeAll: すべての投稿
+scopeFollowing: フォロー中
+
+officialAuthorName: MeUp チーム
+deletedAuthorName: MeUp のメンバー
+
+follow: + フォロー
+following: フォロー中
+sectionFollowing: フォロー中
+sectionAllTopics: すべてのトピック
+topicMembers(param=count):
+  other: ${count} 人
+topicPostsThisWeek(param=count):
+  other: 今週 ${count} 件
+
+weeklyLabel: 今週の質問
+weeklyLabelWithWeek: 今週の質問 · 第 ${week} 週
+weeklyDaysLeft(param=count):
+  other: あと ${count} 日
+weeklyAnswered(param=count):
+  other: ${count} 人が回答しました
+weeklyJoin: 参加する
+weeklyTitle: 今週の質問
+weeklyNoneTitle: 今週の質問はまだありません
+weeklyNoneBody: チームが毎週新しい質問を出します。数日後にまた見てください。
+weeklyClosed: 今週の質問は終了しました。次の質問をお待ちください。
+
+postTitle: 投稿
+reply: 返信
+replyingTo: 返信先
+commentCount(param=count):
+  other: コメント ${count} 件
+commentsLocked: この投稿はコメントを受け付けていません。
+composerHintComment: コメントを書く…
+composerHintReply: 返信を書く…
+composerHintWeekly: 今週の質問に答える…
+
+emptyFeedTitle: まだ何もありません
+emptyFeedBody: 最初の投稿をしてみませんか。いま何を考えていますか。
+emptyFollowingTitle: フォロー中のトピックがありません
+emptyFollowingBody: トピックをフォローすると、その投稿がここに表示されます。
+emptyFollowingAction: すべての投稿を見る
+emptyTopicsTitle: トピックがまだありません
+emptyTopicsBody: チームが準備中です。またあとで見てください。
+emptyTopicFeedTitle: このトピックにはまだ投稿がありません
+emptyTopicFeedBody: あなたが最初の投稿者になれます。
+emptyCommentsTitle: コメントはまだありません
+emptyCommentsBody: やさしい一言でも、「自分もそうだった」でも十分です。
+
+menuHide: この内容を非表示にする
+menuReport: 投稿を報告する
+menuDelete: 削除する
+deletePostDone: 投稿を削除しました
+
+reportTitle: この内容を報告する
+reportSubtitle: チームが確認して判断します。内容が自動的に非表示になることはありません。
+reportSpam: スパム・宣伝
+reportHarassment: 嫌がらせ・侮辱
+reportAdult: 成人向けの内容
+reportMisinformation: 誤った情報
+reportPrivacy: 他人の身元を明かしている
+reportOther: その他
+reportSent: ありがとうございます。チームが確認します。
+reportFailed: 報告を送信できませんでした。もう一度お試しください。
+
+guestTitle: ログインして参加する
+guestBody: 閲覧はすべて可能です。投稿・コメント・いいねにはアカウントが必要です。
+guestAction: ログイン
+mutedTitle: 現在は投稿できません
+mutedBodyFallback: コミュニティのルール違反により、投稿が一時停止されています。
+mutedUntil: ${date} まで
+
+composeTitle: 新しい投稿
+composeSubmit: 投稿
+composeGroupLabel: トピックに投稿 · 任意
+composeNoGroup: トピックを選ばない
+composeBodyHint: いま何を考えていますか。
+composeAddImage: 写真を追加
+composeCourseAttached: コースを添付しました
+composePostingAs: ${name} として投稿します
+composeVisibilityHint: トピックの全員があなたの投稿を見られます。
+
+attachedCourseTitle: MeUp のロードマップ
+attachedCourseHint: この投稿で触れているコースを開きます。
+
+savedTitle: 保存済み
+savedEmptyTitle: 保存した投稿はまだありません
+savedEmptyBody: 投稿のブックマークを押すと、ここに残ります。
+
+notificationsTitle: お知らせ
+notificationsEmptyTitle: 新しいお知らせはありません
+notificationsEmptyBody: あなたの投稿への返信がここに表示されます。
+notificationCommentOnPost: あなたの投稿にコメントがつきました
+notificationReplyToComment: あなたに返信がありました
+notificationOfficialReply: MeUp チームが返信しました
+notificationPostHidden: あなたの投稿は非表示になりました
+notificationSanction: あなたの投稿は一時停止されています
+
+errorTitle: 問題が発生しました
+errorBody: 読み込めませんでした。通信状況を確認してもう一度お試しください。
+retry: もう一度試す
+
+timeJustNow: たったいま
+timeMinutes(param=count):
+  other: ${count} 分前
+timeHours(param=count):
+  other: ${count} 時間前
+timeYesterday: 昨日
+timeDays(param=count):
+  other: ${count} 日前
+timeWeeks(param=count):
+  other: ${count} 週間前
+
+sortRecent: 新着
+sortActive: 話題
+composeCta: 投稿する
+followNote: フォロー中のトピックの新着
+manageTopics: トピックを管理

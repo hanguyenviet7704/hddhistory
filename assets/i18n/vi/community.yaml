@@ -1,0 +1,122 @@
+navLabel: Cộng đồng
+title: Cộng đồng
+tabAll: Tất cả
+tabTopics: Chủ đề
+scopeAll: Tất cả bài
+scopeFollowing: Đang theo dõi
+
+officialAuthorName: Đội ngũ MeUp
+deletedAuthorName: Một thành viên MeUp
+
+follow: + Theo dõi
+following: Đang theo dõi
+sectionFollowing: ĐANG THEO DÕI
+sectionAllTopics: TẤT CẢ CHỦ ĐỀ
+topicMembers(param=count):
+  other: ${count} người
+topicPostsThisWeek(param=count):
+  other: ${count} bài tuần này
+
+weeklyLabel: CÂU HỎI CỦA TUẦN
+weeklyLabelWithWeek: CÂU HỎI CỦA TUẦN · TUẦN ${week}
+weeklyDaysLeft(param=count):
+  other: còn ${count} ngày
+weeklyAnswered(param=count):
+  other: ${count} người đã trả lời
+weeklyJoin: Vào bàn luận
+weeklyTitle: Câu hỏi của tuần
+weeklyNoneTitle: Tuần này chưa có câu hỏi
+weeklyNoneBody: Mỗi tuần đội ngũ MeUp đặt một câu hỏi mới. Ghé lại sau vài ngày nhé.
+weeklyClosed: Câu hỏi tuần này đã đóng. Sẽ có câu mới sớm thôi.
+
+postTitle: Bài viết
+reply: Trả lời
+replyingTo: Đang trả lời
+commentCount(param=count):
+  other: ${count} bình luận
+commentsLocked: Bài này đã đóng bình luận.
+composerHintComment: Viết bình luận…
+composerHintReply: Viết trả lời…
+composerHintWeekly: Trả lời câu hỏi tuần này…
+
+emptyFeedTitle: Chưa có gì ở đây
+emptyFeedBody: Bạn viết bài đầu tiên nhé. Điều gì đang ở trong đầu bạn?
+emptyFollowingTitle: Bạn chưa theo dõi chủ đề nào
+emptyFollowingBody: Theo dõi một chủ đề, bài của chủ đề đó sẽ hiện ở đây.
+emptyFollowingAction: Xem tất cả bài
+emptyTopicsTitle: Chưa có chủ đề nào
+emptyTopicsBody: Đội ngũ MeUp đang chuẩn bị. Ghé lại sau nhé.
+emptyTopicFeedTitle: Chủ đề này chưa có bài
+emptyTopicFeedBody: Bài của bạn có thể là bài đầu tiên.
+emptyCommentsTitle: Chưa có bình luận
+emptyCommentsBody: Nói một câu tử tế, hoặc chỉ cần nói bạn cũng từng như vậy.
+
+menuHide: Ẩn nội dung này
+menuReport: Báo cáo bài viết
+menuDelete: Xoá bài
+deletePostDone: Đã xoá bài của bạn
+
+reportTitle: Báo cáo nội dung này
+reportSubtitle: Đội ngũ MeUp sẽ xem và quyết định. Nội dung không tự động bị ẩn.
+reportSpam: Spam hoặc rao bán
+reportHarassment: Quấy rối, xúc phạm
+reportAdult: Nội dung 18+
+reportMisinformation: Thông tin sai
+reportPrivacy: Tiết lộ danh tính người khác
+reportOther: Lý do khác
+reportSent: Cảm ơn bạn. Đội ngũ MeUp sẽ xem lại.
+reportFailed: Chưa gửi được báo cáo. Thử lại nhé.
+
+guestTitle: Đăng nhập để tham gia
+guestBody: Bạn đọc được mọi thứ ở đây. Đăng bài, bình luận và thả tim thì cần đăng nhập.
+guestAction: Đăng nhập
+mutedTitle: Hiện bạn chưa thể đăng bài
+mutedBodyFallback: Quyền đăng của bạn đang tạm khoá do vi phạm nội quy cộng đồng.
+mutedUntil: Đến ${date}
+
+composeTitle: Bài viết mới
+composeSubmit: Đăng
+composeGroupLabel: ĐĂNG VÀO NHÓM · KHÔNG BẮT BUỘC
+composeNoGroup: Không chọn nhóm
+composeBodyHint: Điều gì đang ở trong đầu bạn?
+composeAddImage: Thêm ảnh
+composeCourseAttached: Khoá học đã đính kèm
+composePostingAs: Đăng với tên ${name}
+composeVisibilityHint: Mọi người trong chủ đề sẽ thấy bài của bạn.
+
+attachedCourseTitle: Lộ trình MeUp
+attachedCourseHint: Mở khoá học mà bài viết này nhắc tới.
+
+savedTitle: Đã lưu
+savedEmptyTitle: Chưa lưu bài nào
+savedEmptyBody: Chạm dấu lưu trên một bài để giữ lại ở đây.
+
+notificationsTitle: Thông báo
+notificationsEmptyTitle: Chưa có gì mới
+notificationsEmptyBody: Trả lời cho bài của bạn sẽ hiện ở đây.
+notificationCommentOnPost: Có người bình luận bài của bạn
+notificationReplyToComment: Có người trả lời bạn
+notificationOfficialReply: Đội ngũ MeUp đã trả lời
+notificationPostHidden: Bài của bạn đã được ẩn
+notificationSanction: Quyền đăng của bạn đang tạm khoá
+
+errorTitle: Có gì đó chưa ổn
+errorBody: Chưa tải được nội dung. Kiểm tra kết nối rồi thử lại nhé.
+retry: Thử lại
+
+timeJustNow: Vừa xong
+timeMinutes(param=count):
+  other: ${count} phút trước
+timeHours(param=count):
+  other: ${count} giờ trước
+timeYesterday: Hôm qua
+timeDays(param=count):
+  other: ${count} ngày trước
+timeWeeks(param=count):
+  other: ${count} tuần trước
+
+sortRecent: Mới nhất
+sortActive: Sôi nổi
+composeCta: Viết bài
+followNote: Bài mới từ các nhóm bạn theo dõi
+manageTopics: Quản lý nhóm
