@@ -8,6 +8,7 @@ emptyList: 列表为空
 errorNoInternetConnection: 无网络连接
 errorOopsItLooksLikeYouAreOffline: 哎呀！你好像离线了
 errorOopsSomethingWentWrongWhileLoading: 哎呀！加载时出了点问题…
+errorForbidden: 你没有权限执行此操作
 errorServerError: 服务器错误
 errorSomethingHappened: 出错了！
 errorTakingAPauseIsAlsoPart: 稍作休息也是创作过程的一部分…

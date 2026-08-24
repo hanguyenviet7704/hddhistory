@@ -60,7 +60,7 @@ class AppInterceptor extends BaseInterceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    _handleResponseStatus(response.statusCode);
+    _handleResponseStatus(response.statusCode, response: response);
     super.onResponse(response, handler);
   }
 
@@ -132,13 +132,33 @@ class AppInterceptor extends BaseInterceptor {
     return dio.fetch(requestOptions);
   }
 
-  void _handleResponseStatus(int? statusCode) {
+  /// Server error codes a FEATURE answers itself, so the generic toast must stay
+  /// out of the way.
+  ///
+  /// `COMMUNITY_LOGIN_REQUIRED` is the community's guest gate: the app already
+  /// sends the reader to the sign-in screen, and a red toast on top of that says
+  /// something went wrong when nothing did.
+  static const Set<String> _selfHandledForbiddenCodes = {
+    'COMMUNITY_LOGIN_REQUIRED',
+  };
+
+  void _handleResponseStatus(int? statusCode, {Response<dynamic>? response}) {
     switch (statusCode) {
       case HttpStatus.gone:
         _handleOtpNotVerify();
         break;
       case HttpStatus.forbidden:
-        DMessage.showMessage(type: MessageType.error, message: 'Không tìm thấy tài nguyên');
+        final data = response?.data;
+        final code = data is Map ? '${data['message'] ?? ''}' : '';
+        if (_selfHandledForbiddenCodes.contains(code)) return;
+
+        // Was a hardcoded Vietnamese "Không tìm thấy tài nguyên" — wrong twice
+        // over: 403 means the caller may not do this, not that the thing is
+        // missing, and a reader on en/zh/ja/ko got the Vietnamese line.
+        DMessage.showMessage(
+          type: MessageType.error,
+          message: l10n.common.errorForbidden,
+        );
         break;
     }
   }
@@ -147,7 +167,7 @@ class AppInterceptor extends BaseInterceptor {
     if (err.response?.statusCode == HttpStatus.unauthorized) {
       return;
     }
-    _handleResponseStatus(err.response?.statusCode);
+    _handleResponseStatus(err.response?.statusCode, response: err.response);
   }
 
   void _handleUnauthorized() {

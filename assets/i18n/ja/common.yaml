@@ -8,6 +8,7 @@ emptyList: リストが空です
 errorNoInternetConnection: インターネット接続がありません
 errorOopsItLooksLikeYouAreOffline: おっと！オフラインのようです
 errorOopsSomethingWentWrongWhileLoading: おっと！読み込み中に問題が発生しました…
+errorForbidden: この操作を行う権限がありません
 errorServerError: サーバーエラー
 errorSomethingHappened: 問題が発生しました！
 errorTakingAPauseIsAlsoPart: ひと休みも創作プロセスの一部です…

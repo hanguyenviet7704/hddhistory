@@ -8,6 +8,7 @@ emptyList: 목록이 비어 있습니다
 errorNoInternetConnection: 인터넷 연결 없음
 errorOopsItLooksLikeYouAreOffline: 이런! 오프라인 상태인 것 같아요
 errorOopsSomethingWentWrongWhileLoading: 이런! 불러오는 중 문제가 발생했어요…
+errorForbidden: 이 작업을 수행할 권한이 없습니다
 errorServerError: 서버 오류
 errorSomethingHappened: 문제가 발생했어요!
 errorTakingAPauseIsAlsoPart: 잠시 쉬는 것도 창작 과정의 일부예요…

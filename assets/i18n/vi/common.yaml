@@ -8,6 +8,7 @@ emptyList: Danh sách trống
 errorNoInternetConnection: (VI) No Internet Connection
 errorOopsItLooksLikeYouAreOffline: (VI) Oops! It looks like you are offline
 errorOopsSomethingWentWrongWhileLoading: (VI) Oops! Something went wrong while loading...
+errorForbidden: Bạn không có quyền thực hiện việc này
 errorServerError: (VI) Server Error
 errorSomethingHappened: (VI) Something happened!
 errorTakingAPauseIsAlsoPart: (VI) Taking a pause is also part of the creative process...
