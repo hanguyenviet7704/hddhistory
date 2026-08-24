@@ -26,7 +26,9 @@ enum DeeplinkDestination {
   myLessons('my-lessons'),
   importLesson('import-lesson'),
   notificationSetting('notification-setting'),
-  changeLanguage('change-language');
+  changeLanguage('change-language'),
+  community('community'),
+  communityPost('community-post');
 
   const DeeplinkDestination(this.value);
 

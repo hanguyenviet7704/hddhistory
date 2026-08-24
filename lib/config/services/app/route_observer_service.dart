@@ -254,3 +254,11 @@ class LibraryRouterObserver extends BaseRouterObserver {
     PageCubit pageCubit,
   ) : super('LibraryRouterObserver', pageCubit);
 }
+
+@LazySingleton(as: NavigatorObserver)
+@Named(DIKey.communityRouterObserver)
+class CommunityRouterObserver extends BaseRouterObserver {
+  CommunityRouterObserver(
+    PageCubit pageCubit,
+  ) : super('CommunityRouterObserver', pageCubit);
+}

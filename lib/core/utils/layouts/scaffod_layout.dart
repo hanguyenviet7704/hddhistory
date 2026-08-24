@@ -12,11 +12,12 @@ class ScaffoldLayout extends StatefulWidget {
 }
 
 class _ScaffoldLayoutState extends State<ScaffoldLayout> {
-  // Maps visual tab index (0-3) to shell branch index.
-  // Tab 0 Home   → branch 0
-  // Tab 1 Explore→ branch 3 (CoursePage course grid)
-  // Tab 2 Library→ branch 5
-  // Tab 3 Habit  → branch 4
+  // Maps visual tab index (0-4) to shell branch index.
+  // Tab 0 Home     → branch 0
+  // Tab 1 Explore  → branch 3 (CoursePage course grid)
+  // Tab 2 Library  → branch 5
+  // Tab 3 Habit    → branch 4
+  // Tab 4 Community→ branch 6
   // The course-roadmap branch (1) is not a bottom tab and is NEVER the target
   // of a tab tap — tapping Khám phá always opens the Explore browse grid
   // (branch 3), even if a roadmap was left open on a previous visit to that
@@ -27,7 +28,7 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
   // Profile (branch 2) lost its tab to Library (design `5b · Library`): it is
   // reached from the Home header avatar instead, and keeps the nav bar so the
   // reader can leave for any tab — see [_branchToVisual].
-  static const _tabToBranch = [0, 3, 5, 4];
+  static const _tabToBranch = [0, 3, 5, 4, 6];
 
   // Visual tab each branch lights up when the shell arrives there from
   // outside a tab tap (e.g. entering the roadmap by tapping a course). The
@@ -37,7 +38,7 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
   // Profile (branch 2) maps to -1: it has no tab at all, so the bar renders with
   // NOTHING lit rather than borrowing another tab's highlight and claiming the
   // reader is somewhere they aren't.
-  static const _branchToVisual = {0: 0, 1: 1, 2: -1, 3: 1, 4: 3, 5: 2};
+  static const _branchToVisual = {0: 0, 1: 1, 2: -1, 3: 1, 4: 3, 5: 2, 6: 4};
 
   int _visualIndex = 0;
 
@@ -220,7 +221,7 @@ class _FloatingNavBar extends StatelessWidget {
           height: 56.h,
           child: Row(
             children: List.generate(
-              4,
+              5,
               (i) => _NavItem(
                 index: i,
                 selectedIndex: selectedIndex,
@@ -251,6 +252,7 @@ class _NavItem extends StatelessWidget {
     AppAsset.svg.common.navExplore,
     AppAsset.svg.common.navCourse,
     AppAsset.svg.common.navGrowth,
+    AppAsset.svg.common.navCommunity,
   ];
 
   static const _navColor = Color(0xFF110751);
@@ -266,6 +268,8 @@ class _NavItem extends StatelessWidget {
         return context.l10n.library.navLabel;
       case 3:
         return context.l10n.habit.navLabel;
+      case 4:
+        return context.l10n.community.navLabel;
       default:
         return '';
     }

@@ -163,6 +163,44 @@ part of '../routes.dart';
         ),
       ],
     ),
+    //? Community branch — appended last so existing branch indices are
+    //? unchanged; this branch is index 6. Every community screen is nested
+    //? under it: a push from another branch would render in that branch's
+    //? navigator, which is off screen.
+    TypedStatefulShellBranch<CommunityShellBranchData>(
+      routes: [
+        TypedGoRoute<CommunityRoute>(
+          path: RoutePath.community,
+          name: RouteNamed.community,
+          routes: [
+            TypedGoRoute<CommunityTopicRoute>(
+              path: RoutePath.communityTopic,
+              name: RouteNamed.communityTopic,
+            ),
+            TypedGoRoute<CommunityPostRoute>(
+              path: RoutePath.communityPost,
+              name: RouteNamed.communityPost,
+            ),
+            TypedGoRoute<CommunityWeeklyRoute>(
+              path: RoutePath.communityWeekly,
+              name: RouteNamed.communityWeekly,
+            ),
+            TypedGoRoute<CommunityComposeRoute>(
+              path: RoutePath.communityCompose,
+              name: RouteNamed.communityCompose,
+            ),
+            TypedGoRoute<CommunityNotificationRoute>(
+              path: RoutePath.communityNotifications,
+              name: RouteNamed.communityNotifications,
+            ),
+            TypedGoRoute<CommunitySavedRoute>(
+              path: RoutePath.communitySaved,
+              name: RouteNamed.communitySaved,
+            ),
+          ],
+        ),
+      ],
+    ),
   ],
 )
 class MainShellRouteData extends StatefulShellRouteData {

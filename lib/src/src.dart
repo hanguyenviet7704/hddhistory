@@ -4,6 +4,7 @@ export 'habit/habit.dart';
 export 'learning_import/learning_import.dart';
 export 'achievenment/achievenment.dart';
 export 'auth/auth.dart';
+export 'community/community.dart';
 export 'course/course.dart';
 export 'data_collect/data_collect.dart';
 export 'home/home.dart';

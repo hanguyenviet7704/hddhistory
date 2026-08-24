@@ -275,6 +275,28 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         LibraryRoute().go(navContext);
         return true;
 
+      // `meup://community` — the forum tab.
+      case DeeplinkDestination.community:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.community);
+        const CommunityRoute().go(navContext);
+        return true;
+
+      // `meup://community-post?postId=...` — where a community push lands.
+      //
+      // The tab is opened first and the thread pushed on top of it, so backing
+      // out of the notification leaves the reader in the community rather than
+      // wherever they happened to be when the push arrived.
+      case DeeplinkDestination.communityPost:
+        final communityPostId = target.params['postId']?.trim() ?? '';
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.community);
+        const CommunityRoute().go(navContext);
+        if (communityPostId.isEmpty) {
+          _trackDeeplinkOpen(target, resolved: false, reason: 'missing_param');
+          return true;
+        }
+        unawaited(CommunityPostRoute(postId: communityPostId).push(navContext));
+        return true;
+
       // `courseId` là tuỳ chọn: không truyền thì mở roadmap của course đang
       // chọn. Course không chọn được (đã unpublish sau khi link phát ra) thì về
       // Home — giống hệt nhánh `course_not_found` của luồng home widget.

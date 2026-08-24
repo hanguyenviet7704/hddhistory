@@ -32,4 +32,5 @@ part 'data/routes_shell_home_data.dart';
 part 'data/routes_shell_setting_data.dart';
 part 'data/routes_shell_habit_data.dart';
 part 'data/routes_shell_library_data.dart';
+part 'data/routes_shell_community_data.dart';
 part 'routes.g.dart';
