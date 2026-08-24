@@ -1,18 +1,39 @@
+# syntax=docker/dockerfile:1.7
+#
+# Build image cho meup-admin (CRA + nginx).
+#
+# Vì sao chậm và đã tối ưu ở đâu:
+#   1. `npm ci` chỉ chạy lại khi package-lock.json đổi (COPY manifest trước source).
+#      Thêm cache mount cho ~/.npm nên lần chạy lại chỉ giải nén, không tải mạng.
+#   2. Tắt ESLint plugin của CRA (DISABLE_ESLINT_PLUGIN) — nó lint lại toàn bộ src
+#      trong lúc webpack build và thường ăn 30-50% thời gian. Type-check vẫn còn
+#      (fork-ts-checker), nên vẫn fail nếu code sai type. Lint là việc của CI/hook.
+#   3. Tắt source map (GENERATE_SOURCEMAP) — bước tốn RAM/CPU nhất khi Terser minify,
+#      hay làm build bị OOM-killed trong Docker khi host cạn RAM.
+#   4. KHÔNG set NODE_OPTIONS/max-old-space-size. Host build (188.166.208.109)
+#      hay ở load > 4 và ít RAM; nới heap ceiling làm V8 hoãn GC rồi tràn vào
+#      swap -> build bò, chậm hơn là nhanh hơn. Để Node tự chọn theo RAM thấy được.
+#
+# Build cục bộ:  DOCKER_BUILDKIT=1 docker build -t meup-admin .
+
 # --- STAGE 1: build ---
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json* ./ 
-RUN npm ci --silent
+# Chỉ manifest -> layer node_modules được cache lại giữa các commit.
+COPY package.json package-lock.json* ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --no-audit --no-fund --prefer-offline
 
-# Copy toàn bộ source (bao gồm cả .env)
+# Copy source (bao gồm cả .env — CRA tự đọc lúc build).
+# Xem .dockerignore để biết những gì bị loại khỏi build context.
 COPY . .
 
-# Tắt source map: bước tốn RAM nhất khi Terser minify, hay làm build bị
-# OOM-killed trong Docker khi host cạn RAM.
-ENV GENERATE_SOURCEMAP=false
+ENV GENERATE_SOURCEMAP=false \
+    DISABLE_ESLINT_PLUGIN=true \
+    INLINE_RUNTIME_CHUNK=false \
+    CI=false
 
-# Build - CRA sẽ TỰ ĐỘNG đọc file .env
 RUN npm run build
 
 # --- STAGE 2: serve bằng nginx ---

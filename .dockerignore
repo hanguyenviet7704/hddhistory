@@ -1,11 +1,26 @@
+# Build context càng nhỏ -> `docker build` gửi ít file, cache ít bị vỡ oan.
 node_modules
 build
 dist
-.dockerignore
-Dockerfile
-README.md
-.vscode
-#.env
+coverage
+
 .git
 .gitignore
-npm-debug.log
+.dockerignore
+Dockerfile
+Jenkinsfile
+
+# Tài liệu & file dev-only: không ảnh hưởng bundle, nhưng nếu để lại thì mỗi lần
+# sửa docs là layer `COPY . .` bị invalidate và phải build lại từ đầu.
+docs
+plans
+*.md
+testbuild.txt
+
+.vscode
+.idea
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+
+# CHÚ Ý: .env KHÔNG bị ignore — CRA cần nó lúc build.

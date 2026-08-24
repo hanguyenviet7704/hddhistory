@@ -26,7 +26,7 @@ pipeline {
                 expression { env.TARGET == 'develop' }
             }
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
+                timeout(time: 40, unit: 'MINUTES') {
                     echo "Building for develop branch"
                     sshagent(['gitlab-ssh-key']) {
                        sh """ssh -o StrictHostKeyChecking=no ansible@188.166.208.109 << EOF
@@ -67,7 +67,7 @@ pipeline {
                 expression { env.TARGET == 'production' }
             }
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
+                timeout(time: 40, unit: 'MINUTES') {
                     echo "Building for production with tag: ${env.GIT_TAG_NAME}"
                     sshagent(['gitlab-ssh-key']) {
                        sh """ssh -o StrictHostKeyChecking=no ansible@188.166.208.109 << EOF
