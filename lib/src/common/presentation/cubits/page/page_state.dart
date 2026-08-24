@@ -45,6 +45,14 @@ extension PageStateX on PageState {
       // hiding the pill here would leave the back arrow as the only way out of
       // the Library branch.
       RouteNamed.libraryHistory,
+      // The community hub is a tab; without its name here the pill vanished the
+      // moment the fifth tab was opened, leaving no way to any other tab.
+      RouteNamed.community,
+      // A topic keeps the pill too — design `S-03` draws the nav bar on it. The
+      // post, weekly and compose screens deliberately do NOT appear here: those
+      // take the whole screen in the design, and their own back arrow is the way
+      // out.
+      RouteNamed.communityTopic,
     ];
   }
 }

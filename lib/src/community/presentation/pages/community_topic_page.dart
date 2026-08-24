@@ -238,7 +238,15 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
                       onRefresh: _load,
                       child: ListView(
                         controller: _scrollController,
-                        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+                        // Clears the floating nav pill, which stays on screen
+                        // here (design `S-03`) — a flat inset would put the last
+                        // post under it.
+                        padding: EdgeInsets.fromLTRB(
+                          20.w,
+                          12.h,
+                          20.w,
+                          floatingNavBarHeight(context) + 24.h,
+                        ),
                         children: [
                           if (_status == CommunityStatus.failure && _posts.isEmpty)
                             _CommunityMessage(
