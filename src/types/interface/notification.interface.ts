@@ -158,7 +158,12 @@ export interface NotificationCampaign {
   name: string;
   /** `{ locale: { title, body } }` as stored; the editor works on a list. */
   copies: Record<string, { title: string; body: string }>;
-  deeplink: NotificationDeeplink;
+  /**
+   * Khoá màn đích. KHÔNG phải `NotificationDeeplink`: campaign trỏ được tới cả
+   * khoá của danh mục deeplink (`library`, `paywall`, `daily-warm-up`…) — API
+   * validate bằng `CAMPAIGN_DEEPLINK_KEYS`, hợp của hai họ khoá.
+   */
+  deeplink: string;
   segmentIds?: string[];
   sendMode: NotificationCampaignSendMode;
   localHour: number;

@@ -7,14 +7,15 @@ import {
   UsersIcon,
 } from "@heroicons/react/24/outline";
 
+import { deeplinkService } from "../../services/deeplinkService";
 import { notificationService } from "../../services/notificationService";
 import { segmentService } from "../../services/segmentService";
+import { IDeeplinkDestination } from "../../types/interface/deeplink.interface";
 import {
   NotificationCampaign,
   NotificationCampaignSendMode,
   NotificationCampaignSendRow,
   NotificationCampaignStatus,
-  NotificationDeeplink,
 } from "../../types/interface/notification.interface";
 import { SegmentOption } from "../../types/interface/segment.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -40,13 +41,38 @@ const STATUS_LABELS: Record<NotificationCampaignStatus, string> = {
   failed: "Lỗi",
 };
 
-const DEEPLINK_LABELS: Record<string, string> = {
-  home: "home — Trang chủ",
-  resume_lesson: "resume_lesson — Roadmap khoá đang học dở",
-  habit: "habit — Thói quen",
-  library: "library — Thư viện",
-  explore: "explore — Khám phá",
+/**
+ * Đích của các loại noti CÓ LỊCH, không nằm trong danh mục deeplink.
+ *
+ * Chỉ `resume_lesson` được mời chọn: bốn cái còn lại chỉ có nghĩa khi bộ gửi
+ * bơm thêm dữ liệu vào payload (`new_course` cần courseId, `week_recap` cần
+ * recapId, `coach` cần planId) — campaign không có gì để bơm, chọn là gửi ra
+ * một cú chạm rơi về Trang chủ. Vẫn giữ nhãn của chúng ở đây để một campaign cũ
+ * đang mang giá trị đó còn hiện đúng tên thay vì hiện khoá trơ.
+ */
+const LEGACY_DEEPLINK_LABELS: Record<string, string> = {
+  resume_lesson: "Roadmap khoá đang học dở",
+  habit_tracker: "Thói quen",
+  new_course: "Roadmap khoá mới",
+  week_recap: "Poster Hành trình tuần qua",
+  coach: "Sheet AI Coach",
 };
+
+/** Đích cũ duy nhất còn mời chọn — xem ghi chú trên. */
+const OFFERED_LEGACY_KEYS = ["resume_lesson"];
+
+/** Nhóm hiện trên dropdown cho các đích cũ. */
+const LEGACY_GROUP = "Học";
+
+/**
+ * Bản app đầu tiên route được một cú CHẠM PUSH tới khoá của danh mục deeplink.
+ *
+ * KHÁC `minAppBuild` mà danh mục trả về: con số đó nói về LINK
+ * (`meup.training/open/<key>`), đã chạy từ build 130. Đường push học danh mục
+ * muộn hơn — trước bản này, một push trỏ tới `library` chỉ mở app rồi đứng im.
+ * Sửa nếu bản ship thực tế muộn hơn 1.6.0+141.
+ */
+const PUSH_CATALOG_MIN_BUILD = 141;
 
 const emptyCopies = () =>
   LOCALES.map((locale) => ({ locale, title: "", body: "" }));
@@ -83,9 +109,8 @@ export default function NotificationCampaignSection() {
 
   // Composer state
   const [name, setName] = useState("");
-  const [deeplink, setDeeplink] = useState<NotificationDeeplink>(
-    "home" as NotificationDeeplink,
-  );
+  const [deeplink, setDeeplink] = useState<string>("home");
+  const [destinations, setDestinations] = useState<IDeeplinkDestination[]>([]);
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [sendMode, setSendMode] = useState<NotificationCampaignSendMode>("now");
   const [localHour, setLocalHour] = useState("20");
@@ -128,6 +153,14 @@ export default function NotificationCampaignSection() {
         // Targeting is optional; an empty picker still lets you send to everyone.
       }
     })();
+    (async () => {
+      try {
+        setDestinations(await deeplinkService.getDestinations());
+      } catch {
+        // Danh mục không tải được thì dropdown còn đúng một lựa chọn đang chọn
+        // sẵn (`home`) — vẫn gửi được, chỉ là không đổi được đích.
+      }
+    })();
   }, [load]);
 
   // Reach is re-asked whenever the targeting changes: an operator should never
@@ -146,6 +179,67 @@ export default function NotificationCampaignSection() {
       cancelled = true;
     };
   }, [segmentIds]);
+
+  /**
+   * Đích mời chọn: mọi màn trong danh mục deeplink KHÔNG cần tham số bắt buộc,
+   * cộng `resume_lesson`. Khoá cần tham số (`lesson`, `skillset-courses`) bị
+   * loại vì màn này không có picker chọn khoá học/bài — chọn là gửi ra một cú
+   * chạm chắc chắn rơi về Trang chủ.
+   *
+   * Danh mục đến từ API (`GET /deeplink/destinations`, cùng nguồn với trang Link
+   * vào màn), nên thêm một màn sau này chỉ cần deploy API.
+   */
+  const deeplinkGroups = useMemo<
+    [string, { key: string; label: string }[]][]
+  >(() => {
+    const byGroup = new Map<string, { key: string; label: string }[]>();
+    const add = (group: string, item: { key: string; label: string }) =>
+      byGroup.set(group, [...(byGroup.get(group) ?? []), item]);
+
+    destinations
+      .filter((destination) => !destination.params.some((p) => p.required))
+      .forEach((destination) =>
+        add(destination.group, {
+          key: destination.key,
+          label: destination.label,
+        }),
+      );
+    OFFERED_LEGACY_KEYS.forEach((key) =>
+      add(LEGACY_GROUP, { key, label: LEGACY_DEEPLINK_LABELS[key] ?? key }),
+    );
+
+    // Giá trị đang chọn phải luôn có mặt trong danh sách, kể cả khi danh mục
+    // chưa tải được — native select không khớp option nào thì hiện ô trống và
+    // operator không biết mình đang gửi đi đâu.
+    const hasSelected = Array.from(byGroup.values()).some((items) =>
+      items.some((item) => item.key === deeplink),
+    );
+    if (!hasSelected) {
+      add("Đang chọn", {
+        key: deeplink,
+        label: LEGACY_DEEPLINK_LABELS[deeplink] ?? deeplink,
+      });
+    }
+
+    // Array.from chứ không spread: tsconfig của CRA này chưa bật
+    // downlevelIteration nên spread một IterableIterator là lỗi biên dịch.
+    return Array.from(byGroup.entries());
+  }, [destinations, deeplink]);
+
+  const selectedDestination = useMemo(
+    () => destinations.find((destination) => destination.key === deeplink),
+    [destinations, deeplink],
+  );
+
+  /** Tên màn của một campaign đã tạo — danh mục trước, đích cũ sau, cuối cùng
+   * là khoá trơ (campaign mang khoá mà bản admin này chưa biết). */
+  const destinationLabel = useCallback(
+    (key: string) =>
+      destinations.find((destination) => destination.key === key)?.label ??
+      LEGACY_DEEPLINK_LABELS[key] ??
+      key,
+    [destinations],
+  );
 
   const filledCopies = useMemo(
     () => copies.filter((copy) => copy.title.trim() && copy.body.trim()),
@@ -246,12 +340,28 @@ export default function NotificationCampaignSection() {
             SelectProps={{ native: true }}
             label="Deep link"
             value={deeplink}
-            onChange={(e) => setDeeplink(e.target.value as NotificationDeeplink)}
+            onChange={(e) => setDeeplink(e.target.value)}
+            helperText={
+              selectedDestination
+                ? `Cần bản app build ≥ ${Math.max(
+                    selectedDestination.minAppBuild,
+                    PUSH_CATALOG_MIN_BUILD,
+                  )}; bản cũ hơn chạm vào chỉ mở app, không báo lỗi.${
+                    selectedDestination.note
+                      ? ` ${selectedDestination.note}`
+                      : ""
+                  }`
+                : "Đích của noti có lịch — mọi bản app đang chạy đều hiểu."
+            }
           >
-            {Object.keys(DEEPLINK_LABELS).map((value) => (
-              <option key={value} value={value}>
-                {DEEPLINK_LABELS[value]}
-              </option>
+            {deeplinkGroups.map(([group, items]) => (
+              <optgroup key={group} label={group}>
+                {items.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {`${item.label} (${item.key})`}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </TextField>
         </div>
@@ -456,6 +566,10 @@ export default function NotificationCampaignSection() {
                 </div>
 
                 <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                  <span>
+                    Đích: {destinationLabel(campaign.deeplink)}{" "}
+                    <span className="text-slate-400">({campaign.deeplink})</span>
+                  </span>
                   <span>Tạo: {formatDateTime(campaign.createdAt)}</span>
                   {campaign.startedAt ? (
                     <span>Bắt đầu: {formatDateTime(campaign.startedAt)}</span>
