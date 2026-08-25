@@ -334,7 +334,12 @@ class _CoachComposerState extends State<CoachComposer> {
         CoachTwoColumns(
           left: state.columnLeft,
           right: state.columnRight,
-          onMove: (text, toRight) => widget.cubit.moveLine(text, toRight: toRight),
+          onMove: (index, {required fromRight}) =>
+              widget.cubit.moveLine(index, fromRight: fromRight),
+          onEdit: (index, {required inRight, required text}) =>
+              widget.cubit.editLine(index, inRight: inRight, text: text),
+          onDelete: (index, {required inRight}) =>
+              widget.cubit.deleteLine(index, inRight: inRight),
         ),
         SizedBox(height: 11.h),
         _textArea(context, state, busy, onSubmit: widget.cubit.submitProblemStatement),

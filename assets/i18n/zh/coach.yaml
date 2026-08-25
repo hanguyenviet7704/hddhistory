@@ -70,7 +70,10 @@ endClose: 关闭
 
 twoColsLeftTitle: 发生了什么
 twoColsRightTitle: 我真正的问题
-twoColsHint: 点一下就能把这行移过去。草稿只用了你自己说过的话。
+twoColsHint: 点一下把这行移到另一边，写错的可以改或删。这些都是用你说过的话拟的。
+lineEdit: 修改这一行
+lineDelete: 删除这一行
+lineSave: 完成
 twoColsEmpty: 还没有内容
 
 courseInviteTitle: 一门和你说的事情很近的课

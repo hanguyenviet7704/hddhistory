@@ -174,22 +174,55 @@ class CoachCubit extends Cubit<CoachState> {
   Future<void> takeEscape() => _send({'kind': 'escape'});
 
   /// ⑦ — move a line between columns. Purely local until the sentence is sent.
-  void moveLine(String text, {required bool toRight}) {
-    if (toRight) {
-      emit(
-        state.copyWith(
-          columnLeft: state.columnLeft.where((l) => l != text).toList(),
-          columnRight: [...state.columnRight, text],
-        ),
-      );
-    } else {
-      emit(
-        state.copyWith(
-          columnRight: state.columnRight.where((l) => l != text).toList(),
-          columnLeft: [...state.columnLeft, text],
-        ),
-      );
-    }
+  /// ⑦ — move one drafted line to the other column.
+  ///
+  /// Addressed by index rather than by text: the model can draft two lines that
+  /// read the same, and matching on the string moved both of them.
+  void moveLine(int index, {required bool fromRight}) {
+    final source = [...(fromRight ? state.columnRight : state.columnLeft)];
+    if (index < 0 || index >= source.length) return;
+
+    final line = source.removeAt(index);
+    final target = [...(fromRight ? state.columnLeft : state.columnRight), line];
+
+    emit(
+      state.copyWith(
+        columnLeft: fromRight ? target : source,
+        columnRight: fromRight ? source : target,
+      ),
+    );
+  }
+
+  /// The reader rewrote a line the model got wrong.
+  ///
+  /// The whole exercise rests on the lines being their words; a garbled one they
+  /// cannot correct is the model still holding the pen.
+  void editLine(int index, {required bool inRight, required String text}) {
+    final lines = [...(inRight ? state.columnRight : state.columnLeft)];
+    if (index < 0 || index >= lines.length) return;
+
+    lines[index] = text;
+    emit(
+      state.copyWith(
+        columnLeft: inRight ? state.columnLeft : lines,
+        columnRight: inRight ? lines : state.columnRight,
+      ),
+    );
+  }
+
+  /// A line that was never theirs at all. Dropping it is not the same as ⑧:
+  /// that rejects the whole draft, this is one bad row.
+  void deleteLine(int index, {required bool inRight}) {
+    final lines = [...(inRight ? state.columnRight : state.columnLeft)];
+    if (index < 0 || index >= lines.length) return;
+
+    lines.removeAt(index);
+    emit(
+      state.copyWith(
+        columnLeft: inRight ? state.columnLeft : lines,
+        columnRight: inRight ? lines : state.columnRight,
+      ),
+    );
   }
 
   /// Tell the server the sheet is done.

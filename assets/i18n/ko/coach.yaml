@@ -70,7 +70,10 @@ endClose: 닫기
 
 twoColsLeftTitle: 있었던 일
 twoColsRightTitle: 진짜 내 문제
-twoColsHint: 줄을 누르면 옮겨져요. 하신 말씀만으로 만든 초안이에요.
+twoColsHint: 한 줄을 눌러 반대쪽으로 옮기고, 잘못된 줄은 고치거나 지우세요. 당신이 한 말로만 초안을 잡았어요.
+lineEdit: 이 줄 고치기
+lineDelete: 이 줄 지우기
+lineSave: 완료
 twoColsEmpty: 아직 없어요
 
 courseInviteTitle: 방금 이야기와 가까운 코스

@@ -78,7 +78,10 @@ endClose: Close
 
 twoColsLeftTitle: What happened
 twoColsRightTitle: My real problem
-twoColsHint: Tap a line to move it across. I only drafted these from what you told me.
+twoColsHint: Tap a line to move it across, or edit and delete the ones I got wrong. I only drafted these from what you told me.
+lineEdit: Edit this line
+lineDelete: Delete this line
+lineSave: Save
 twoColsEmpty: Nothing here yet
 
 courseInviteTitle: A course close to what you described

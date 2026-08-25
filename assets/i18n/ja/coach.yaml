@@ -70,7 +70,10 @@ endClose: 閉じる
 
 twoColsLeftTitle: 起きたこと
 twoColsRightTitle: 本当の問題
-twoColsHint: 行をタップすると移動します。あなたが話したことだけで下書きしています。
+twoColsHint: タップで反対側へ移せます。違っている行は直すか消してください。あなたが話した言葉だけで下書きしました。
+lineEdit: この行を直す
+lineDelete: この行を消す
+lineSave: 完了
 twoColsEmpty: まだありません
 
 courseInviteTitle: お話に近いコース

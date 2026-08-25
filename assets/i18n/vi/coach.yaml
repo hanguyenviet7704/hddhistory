@@ -70,7 +70,10 @@ endClose: Đóng
 
 twoColsLeftTitle: Chuyện đã xảy ra
 twoColsRightTitle: Vấn đề thật của tôi
-twoColsHint: Chạm để kéo dòng sang bên kia. Mình chỉ dựng nháp bằng lời bạn đã kể.
+twoColsHint: Chạm để kéo dòng sang bên kia, sửa lại hoặc xoá dòng mình ghi sai. Mình chỉ dựng nháp bằng lời bạn đã kể.
+lineEdit: Sửa dòng này
+lineDelete: Xoá dòng này
+lineSave: Xong
 twoColsEmpty: Chưa có dòng nào
 
 courseInviteTitle: Một khoá gần với chuyện bạn kể
