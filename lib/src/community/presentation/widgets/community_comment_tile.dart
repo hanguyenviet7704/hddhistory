@@ -31,13 +31,6 @@ class CommunityCommentTile extends StatelessWidget {
   final void Function(CommunityCommentEntity reply) onReplyReply;
   final void Function(CommunityCommentEntity reply) onReplyMenu;
 
-  static const Color _rail = Color(0xFFE7E8F0);
-
-  /// The thread rail is drawn straight on the study background, so on a dark
-  /// one the design's pale grey disappears.
-  static Color _railColor(BuildContext context) =>
-      studyThemeIsDarkBg(context) ? const Color(0x66F3F4FA) : _rail;
-
   @override
   Widget build(BuildContext context) {
     final replies = comment.replies;
@@ -65,7 +58,11 @@ class CommunityCommentTile extends StatelessWidget {
                         Expanded(
                           child: Align(
                             alignment: Alignment.topCenter,
-                            child: Container(width: 2.w, height: double.infinity, color: _rail),
+                            child: Container(
+                              width: 2.w,
+                              height: double.infinity,
+                              color: studyThemeOnBg(context, AppCustomColor.communityRule),
+                            ),
                           ),
                         ),
                     ],
@@ -98,7 +95,7 @@ class CommunityCommentTile extends StatelessWidget {
                     child: CustomPaint(
                       painter: _ReplyRailPainter(
                         hasNext: index < replies.length - 1,
-                        color: _railColor(context),
+                        color: studyThemeOnBg(context, AppCustomColor.communityRule),
                         // Meets the reply's 28px avatar at its centre.
                         elbowY: 14.h,
                       ),
@@ -212,6 +209,8 @@ class _CommentBody extends StatelessWidget {
         ? l10n.officialAuthorName
         : (comment.author.name.isEmpty ? l10n.deletedAuthorName : comment.author.name);
 
+    final time = communityRelativeTime(context, comment.createdAt);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -221,6 +220,7 @@ class _CommentBody extends StatelessWidget {
               child: AppText(
                 name,
                 style: AppStyle.textBold14.copyWith(
+                  fontSize: isReply ? 13.sp : 13.5.sp,
                   color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                 ),
                 maxLines: 1,
@@ -233,9 +233,25 @@ class _CommentBody extends StatelessWidget {
               SizedBox(width: 7.w),
               const CommunityOfficialBadge(),
             ],
+            // A top-level comment stamps its time right after the name; a reply
+            // carries it down into its action row instead. That is the design's
+            // own split, and it works: the parent needs the timestamp where the
+            // eye already is, while a reply is read as an answer to the comment
+            // above it and its age matters less than its author.
+            if (!isReply) ...[
+              SizedBox(width: 7.w),
+              AppText(
+                '· $time',
+                style: AppStyle.text12.copyWith(
+                  fontSize: 9.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                ),
+              ),
+            ],
           ],
         ),
-        SizedBox(height: 3.h),
+        SizedBox(height: isReply ? 2.h : 3.h),
         RichText(
           text: TextSpan(
             children: [
@@ -248,46 +264,58 @@ class _CommentBody extends StatelessWidget {
                 ),
               TextSpan(
                 text: comment.body,
-                style: (isReply ? AppStyle.text13 : AppStyle.text14).copyWith(
-                  color: studyThemeOnBg(context, AppCustomColor.textSecondary),
+                style: AppStyle.text14.copyWith(
+                  fontSize: isReply ? 13.5.sp : 14.sp,
+                  color: studyThemeOnBg(context, AppCustomColor.communityCommentInk),
                   height: 1.55,
                 ),
               ),
             ],
           ),
         ),
-        SizedBox(height: 7.h),
+        SizedBox(height: isReply ? 6.h : 7.h),
         Row(
           children: [
-            AppText(
-              communityRelativeTime(context, comment.createdAt),
-              style: AppStyle.text12.copyWith(
-                color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+            if (isReply) ...[
+              AppText(
+                time,
+                style: AppStyle.text12.copyWith(
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                ),
               ),
-            ),
-            SizedBox(width: 16.w),
+              SizedBox(width: 14.w),
+            ],
             _CommentMetaAction(
-              icon: comment.isLiked ? Icons.favorite : Icons.favorite_border,
+              asset: comment.isLiked
+                  ? AppAsset.svg.app.icCommunityHeartFill
+                  : AppAsset.svg.app.icCommunityHeart,
               label: '${comment.likeCount}',
               isActive: comment.isLiked,
               onTap: onLike,
+              compact: isReply,
             ),
-            SizedBox(width: 16.w),
+            SizedBox(width: isReply ? 14.w : 16.w),
             // A count, not the word "reply": the design puts a comment glyph
             // with the number of answers here, which doubles as the affordance
             // to add one.
             _CommentMetaAction(
-              icon: Icons.mode_comment_outlined,
+              asset: AppAsset.svg.app.icCommunityBubble,
               label: '${comment.replyCount}',
               onTap: onReply,
+              compact: isReply,
             ),
             const Spacer(),
+            // Kept although design `S-04` draws no overflow on a comment: it is
+            // the only way to report or hide one, and post-moderation is the
+            // whole safety model of the forum.
             GestureDetector(
               onTap: onMenu,
               behavior: HitTestBehavior.opaque,
-              child: Icon(
-                Icons.more_horiz,
-                size: 16.sp,
+              child: CommunityGlyph(
+                AppAsset.svg.app.icCommunityMore,
+                size: 16,
                 color: studyThemeOnBg(context, AppCustomColor.communityMuted),
               ),
             ),
@@ -300,16 +328,22 @@ class _CommentBody extends StatelessWidget {
 
 class _CommentMetaAction extends StatelessWidget {
   const _CommentMetaAction({
-    required this.icon,
+    required this.asset,
     required this.label,
     required this.onTap,
     this.isActive = false,
+    this.compact = false,
   });
 
-  final IconData icon;
+  final String asset;
   final String label;
   final VoidCallback onTap;
   final bool isActive;
+
+  /// One step down, for a reply's row — the design draws a reply's actions
+  /// smaller than its parent's so the indent is not the only thing separating
+  /// the two levels.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -323,9 +357,16 @@ class _CommentMetaAction extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15.sp, color: color),
-          SizedBox(width: 6.w),
-          AppText(label, style: AppStyle.text12.copyWith(color: color)),
+          CommunityGlyph(asset, size: compact ? 14 : 15, color: color),
+          SizedBox(width: compact ? 5.w : 6.w),
+          AppText(
+            label,
+            style: AppStyle.text12.copyWith(
+              fontSize: compact ? 12.sp : 12.5.sp,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
         ],
       ),
     );

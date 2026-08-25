@@ -1,30 +1,60 @@
-navLabel: Cộng đồng
-title: Cộng đồng
+navLabel: Confession
+title: Confession
 tabAll: Tất cả
-tabTopics: Chủ đề
+tabFollowing: Đang theo dõi
+tabTopics: Phòng
 scopeAll: Tất cả bài
 scopeFollowing: Đang theo dõi
 
 officialAuthorName: Đội ngũ MeUp
 deletedAuthorName: Một thành viên MeUp
+anonymousAuthorName: Người giấu tên
 
 follow: + Theo dõi
 following: Đang theo dõi
-sectionFollowing: ĐANG THEO DÕI
-sectionAllTopics: TẤT CẢ CHỦ ĐỀ
+sectionFavourites: Yêu thích
+sectionExploreRooms: Khám phá phòng
 topicMembers(param=count):
   other: ${count} người
+topicMembersLong(param=count):
+  other: ${count} thành viên
 topicPostsThisWeek(param=count):
   other: ${count} bài tuần này
+topicPostsToday(param=count):
+  other: ${count} bài mới hôm nay
+topicNoPostsToday: Chưa có bài mới hôm nay
+topicJustJoined: Vừa tham gia
+
+roomSuggestPromptTitle: Không thấy phòng bạn cần?
+roomSuggestPromptBody: Đề xuất một phòng mới — nếu đủ người quan tâm, MeUp sẽ mở phòng đó.
+roomSuggestCta: Đề xuất phòng mới
+roomSuggestFormTitle: Đề xuất phòng mới
+roomSuggestNameLabel: TÊN PHÒNG
+roomSuggestNameHint: "Ví dụ: Sống một mình ở thành phố"
+roomSuggestDescLabel: MÔ TẢ PHÒNG
+roomSuggestDescHint: Phòng này dành cho ai, nói về chuyện gì?
+roomSuggestSubmit: Gửi đề xuất
+roomSuggestCancel: Huỷ
+roomSuggestSent: Đã gửi đề xuất. Tụi mình sẽ xem sớm.
+roomSuggestMerged: Có người đã đề xuất phòng này rồi — đã tính bạn là một người ủng hộ.
+roomSuggestOthersTitle: Đề xuất đang được cân nhắc
+roomSuggestVotes(param=count):
+  other: ${count} người ủng hộ
+roomSuggestVote: + Ủng hộ
+roomSuggestVoted: Đã ủng hộ
+roomSuggestTooMany: Bạn đang có 3 đề xuất chờ xử lý. Đợi tụi mình trả lời rồi gửi thêm nhé.
+roomSuggestClosed: Đề xuất này đã được xử lý.
 
 weeklyLabel: CÂU HỎI CỦA TUẦN
 weeklyLabelWithWeek: CÂU HỎI CỦA TUẦN · TUẦN ${week}
+weeklyWeekRange: TUẦN ${week} · ${range}
 weeklyDaysLeft(param=count):
   other: còn ${count} ngày
 weeklyAnswered(param=count):
   other: ${count} người đã trả lời
 weeklyJoin: Vào bàn luận
 weeklyTitle: Câu hỏi của tuần
+weeklyNote: Hãy trả lời bằng trải nghiệm của chính bạn và giữ cho nơi này an toàn.
 weeklyNoneTitle: Tuần này chưa có câu hỏi
 weeklyNoneBody: Mỗi tuần đội ngũ MeUp đặt một câu hỏi mới. Ghé lại sau vài ngày nhé.
 weeklyClosed: Câu hỏi tuần này đã đóng. Sẽ có câu mới sớm thôi.
@@ -39,14 +69,18 @@ composerHintComment: Viết bình luận…
 composerHintReply: Viết trả lời…
 composerHintWeekly: Trả lời câu hỏi tuần này…
 
+followThread: Theo dõi bài này
+unfollowThread: Bỏ theo dõi bài này
+followThreadDone: Sẽ nhắc bạn khi có bình luận mới.
+
 emptyFeedTitle: Chưa có gì ở đây
 emptyFeedBody: Bạn viết bài đầu tiên nhé. Điều gì đang ở trong đầu bạn?
-emptyFollowingTitle: Bạn chưa theo dõi chủ đề nào
-emptyFollowingBody: Theo dõi một chủ đề, bài của chủ đề đó sẽ hiện ở đây.
+emptyFollowingTitle: Chưa theo dõi thread nào
+emptyFollowingBody: Bấm chuông trên một bài viết để nhận thông báo khi có bình luận mới.
 emptyFollowingAction: Xem tất cả bài
-emptyTopicsTitle: Chưa có chủ đề nào
+emptyTopicsTitle: Chưa có phòng nào
 emptyTopicsBody: Đội ngũ MeUp đang chuẩn bị. Ghé lại sau nhé.
-emptyTopicFeedTitle: Chủ đề này chưa có bài
+emptyTopicFeedTitle: Phòng này chưa có bài
 emptyTopicFeedBody: Bài của bạn có thể là bài đầu tiên.
 emptyCommentsTitle: Chưa có bình luận
 emptyCommentsBody: Nói một câu tử tế, hoặc chỉ cần nói bạn cũng từng như vậy.
@@ -76,29 +110,64 @@ mutedUntil: Đến ${date}
 
 composeTitle: Bài viết mới
 composeSubmit: Đăng
-composeGroupLabel: ĐĂNG VÀO NHÓM · KHÔNG BẮT BUỘC
-composeNoGroup: Không chọn nhóm
-composeBodyHint: Điều gì đang ở trong đầu bạn?
+composeRoomPick: Chọn phòng để đăng
+composeRoomSectionLabel: PHÒNG BẠN ĐÃ THAM GIA
+composeNoGroup: Không chọn phòng
+composeSubjectHint: Tiêu đề bài viết
+composeBodyHint: Kể chuyện của bạn ở đây…
 composeAddImage: Thêm ảnh
+composeAnonymous: Ẩn danh
+composeAnonymousOnHint: Bài này sẽ không hiện tên bạn.
 composeCourseAttached: Khoá học đã đính kèm
 composePostingAs: Đăng với tên ${name}
-composeVisibilityHint: Mọi người trong chủ đề sẽ thấy bài của bạn.
+composeVisibilityHint: Mọi người trong phòng sẽ thấy bài của bạn.
+composeEmptyBody: Viết vài dòng trước khi đăng nhé.
+
+attachSheetTitle: Đính kèm từ thư viện
+attachTabCourses: Khoá học
+attachTabCards: Card đã lưu
+attachLimitToast: Mỗi bài chỉ đính kèm tối đa 2 mục.
+attachEmptyCourses: Bạn chưa học khoá nào để đính kèm.
+attachEmptyCards: Bạn chưa lưu card nào.
+attachRemove: Bỏ đính kèm
 
 attachedCourseTitle: Lộ trình MeUp
 attachedCourseHint: Mở khoá học mà bài viết này nhắc tới.
-
-savedTitle: Đã lưu
-savedEmptyTitle: Chưa lưu bài nào
-savedEmptyBody: Chạm dấu lưu trên một bài để giữ lại ở đây.
+attachedCourseCta: Xem khoá học
 
 notificationsTitle: Thông báo
 notificationsEmptyTitle: Chưa có gì mới
 notificationsEmptyBody: Trả lời cho bài của bạn sẽ hiện ở đây.
-notificationCommentOnPost: Có người bình luận bài của bạn
-notificationReplyToComment: Có người trả lời bạn
-notificationOfficialReply: Đội ngũ MeUp đã trả lời
+notificationLikedPost: đã thích bài viết của bạn
+notificationLikedPostWithOthers(param=count):
+  other: và ${count} người khác đã thích bài viết của bạn
+notificationCommentOnPost: đã bình luận trong bài viết của bạn
+notificationReplyToComment: đã trả lời bình luận của bạn
+notificationCommentOnFollowed: đã bình luận trong bài bạn theo dõi
+notificationOfficialReply: đã trả lời trong bài viết của bạn
 notificationPostHidden: Bài của bạn đã được ẩn
 notificationSanction: Quyền đăng của bạn đang tạm khoá
+
+shareTitle: Chia sẻ
+shareInsightTitle: Chia sẻ insight
+shareCourseTitle: Chia sẻ lộ trình
+shareToConfession: Đăng vào Confession
+shareToConfessionHint: Kèm lộ trình để mọi người học cùng
+shareToConfessionInsightHint: Kèm card này vào bài viết của bạn
+shareCopyLink: Sao chép link
+shareCopied: Đã sao chép liên kết
+shareInstagramStory: IG Story
+shareFacebookStory: FB Story
+shareMore: Thêm
+shareSendFriends: Gửi bạn bè
+shareStoryDone: Đã chia sẻ lên story
+shareFailed: Chưa chia sẻ được. Thử lại nhé.
+shareThemeLavender: Lavender
+shareThemeSky: Sky
+shareOpenInMeUp: Mở trong MeUp
+shareBrandLine: MeUp · Daily Growth Trainer
+shareLearningThis: MÌNH ĐANG HỌC CÁI NÀY
+shareCancel: Huỷ
 
 errorTitle: Có gì đó chưa ổn
 errorBody: Chưa tải được nội dung. Kiểm tra kết nối rồi thử lại nhé.
@@ -118,5 +187,16 @@ timeWeeks(param=count):
 sortRecent: Mới nhất
 sortActive: Sôi nổi
 composeCta: Viết bài
-followNote: Bài mới từ các nhóm bạn theo dõi
-manageTopics: Quản lý nhóm
+followNote: Bài mới từ các phòng bạn theo dõi
+manageTopics: Quản lý phòng
+
+# Hội bàn tròn — phòng chat nhóm (design `S-03`)
+chatTitle: Hội bàn tròn
+chatOnline(count): ${count} đang online
+chatToday: Hôm nay
+chatModerator: Quản trị viên
+chatHint: Nhắn vào nhóm…
+chatSending: Đang gửi…
+chatSeenAt(time): ${time} · Đã xem
+chatEmptyTitle: Chưa có ai nhắn gì
+chatEmptyBody: Mở lời trước đi — một câu cũng được.

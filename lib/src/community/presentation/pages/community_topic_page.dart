@@ -21,7 +21,8 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
   CommunityTopicEntity? _topic;
   final List<CommunityPostEntity> _posts = [];
   CommunityStatus _status = CommunityStatus.initial;
-  CommunityFeedSort _sort = CommunityFeedSort.recent;
+  final CommunityFeedSort _sort = CommunityFeedSort.recent;
+  bool _showStickyTitle = false;
   int _currentPage = 1;
   int _totalPages = 1;
   bool _isLoadingMore = false;
@@ -42,20 +43,53 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
     super.dispose();
   }
 
+  /// Past this the room's name has scrolled out of the card, so the bar takes
+  /// it over. The design's own threshold.
+  static const double _stickyTitleOffset = 150;
+
   void _onScroll() {
     final position = _scrollController.position;
     if (position.pixels >= position.maxScrollExtent - 400) _loadMore();
+
+    // setState only when the answer CHANGES: this fires on every scroll frame,
+    // and rebuilding the whole feed sixty times a second to re-evaluate one
+    // opacity is how a smooth list starts stuttering.
+    final showTitle = position.pixels > _stickyTitleOffset;
+    if (showTitle != _showStickyTitle) {
+      setState(() => _showStickyTitle = showTitle);
+    }
+  }
+
+  Future<void> _toggleFavourite() => _toggleFollow();
+
+  Future<void> _composeInRoom() async {
+    if (!await communityRequireAccount(context, communityMemberStatus)) return;
+    if (!mounted) return;
+
+    // Seeded with THIS room, so the composer opens already pointed at it —
+    // the reader tapped `+` inside a room, not in the hub.
+    final topic = _topic;
+    if (topic != null) {
+      AppDI.injector.get<CommunityComposeSeed>().set(
+        CommunityComposeSeedData(roomId: topic.id),
+      );
+    }
+
+    final created = await const CommunityComposeRoute().push<bool>(context);
+    if (created == true) await _load();
   }
 
   Future<void> _load() async {
     setState(() => _status = CommunityStatus.loading);
 
     final topicResult = await AppDI.injector.get<GetCommunityTopicUseCase>()(widget.topicId).run();
-    final feedResult = await AppDI.injector.get<GetCommunityFeedUseCase>()(
-      page: 1,
-      topicId: widget.topicId,
-      sort: _sort,
-    ).run();
+    final feedResult = await AppDI.injector
+        .get<GetCommunityFeedUseCase>()(
+          page: 1,
+          topicId: widget.topicId,
+          sort: _sort,
+        )
+        .run();
 
     if (!mounted) return;
 
@@ -83,12 +117,14 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
 
     setState(() => _isLoadingMore = true);
 
-    final result = await AppDI.injector.get<GetCommunityFeedUseCase>()(
-      page: _currentPage + 1,
-      topicId: widget.topicId,
-      sort: _sort,
-      anchorAt: _anchorAt,
-    ).run();
+    final result = await AppDI.injector
+        .get<GetCommunityFeedUseCase>()(
+          page: _currentPage + 1,
+          topicId: widget.topicId,
+          sort: _sort,
+          anchorAt: _anchorAt,
+        )
+        .run();
 
     if (!mounted) return;
 
@@ -117,10 +153,12 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
       ),
     );
 
-    final result = await AppDI.injector.get<SetCommunityTopicFollowUseCase>()(
-      topicId: topic.id,
-      follow: follow,
-    ).run();
+    final result = await AppDI.injector
+        .get<SetCommunityTopicFollowUseCase>()(
+          topicId: topic.id,
+          follow: follow,
+        )
+        .run();
 
     if (!mounted) return;
 
@@ -151,18 +189,6 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
 
   /// Changing the sort changes what page 1 means, so the list is emptied rather
   /// than re-sorted locally — the server decides the order.
-  void _setSort(CommunityFeedSort sort) {
-    if (_sort == sort) return;
-    setState(() {
-      _sort = sort;
-      _posts.clear();
-      _currentPage = 1;
-      _totalPages = 1;
-      _anchorAt = null;
-    });
-    _load();
-  }
-
   void _replacePost(CommunityPostEntity updated) {
     setState(() {
       final index = _posts.indexWhere((post) => post.id == updated.id);
@@ -189,12 +215,14 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
           );
     _replacePost(optimistic);
 
-    final result = await AppDI.injector.get<SetCommunityReactionUseCase>()(
-      targetType: CommunityTargetType.post,
-      targetId: post.id,
-      kind: kind,
-      active: active,
-    ).run();
+    final result = await AppDI.injector
+        .get<SetCommunityReactionUseCase>()(
+          targetType: CommunityTargetType.post,
+          targetId: post.id,
+          kind: kind,
+          active: active,
+        )
+        .run();
 
     if (!mounted) return;
     result.fold((_) => _replacePost(post), (_) {});
@@ -211,25 +239,11 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
         bottom: false,
         child: Column(
           children: [
-            _TopicHeader(
+            _TopicStickyBar(
               topic: topic,
-              onToggleFollow: _toggleFollow,
-              // Faces from the posts already on screen — the design's avatar
-              // stack, without inventing a "recent members" endpoint for it.
-              faces: _faces,
-            ),
-            _TopicToolbar(
-              sort: _sort,
-              onSort: _setSort,
-              onCompose: () async {
-                if (!await communityRequireAccount(context, communityMemberStatus)) {
-                  return;
-                }
-                if (!context.mounted) return;
-
-                final created = await const CommunityComposeRoute().push<bool>(context);
-                if (created == true) await _load();
-              },
+              showTitle: _showStickyTitle,
+              onToggleFavourite: _toggleFavourite,
+              onCompose: _composeInRoom,
             ),
             Expanded(
               child: _status == CommunityStatus.loading && _posts.isEmpty
@@ -248,6 +262,16 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
                           floatingNavBarHeight(context) + 24.h,
                         ),
                         children: [
+                          // The room's own card scrolls away with the feed; the
+                          // bar above keeps the name once it has.
+                          _TopicHeaderCard(
+                            topic: topic,
+                            // Faces from the posts already on screen — the
+                            // design's avatar stack, without inventing a
+                            // "recent members" endpoint for it.
+                            faces: _faces,
+                          ),
+                          SizedBox(height: 14.h),
                           if (_status == CommunityStatus.failure && _posts.isEmpty)
                             _CommunityMessage(
                               title: l10n.errorTitle,
@@ -278,15 +302,18 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
                                 if (updated != null) _replacePost(updated);
                               },
                               onLike: () => _toggleReaction(post, CommunityReactionKind.like),
-                              onSave: () => _toggleReaction(post, CommunityReactionKind.save),
+                              onFollowThread: () => _toggleReaction(post, CommunityReactionKind.save),
+                              onCard: (card) => showCommunityInsightShareSheet(context, card: card),
                               onMenu: () => showCommunityItemMenu(
                                 context,
                                 isMine: post.isMine,
                                 onHide: () async {
-                                  await AppDI.injector.get<HideCommunityItemUseCase>()(
-                                    targetType: CommunityTargetType.post,
-                                    targetId: post.id,
-                                  ).run();
+                                  await AppDI.injector
+                                      .get<HideCommunityItemUseCase>()(
+                                        targetType: CommunityTargetType.post,
+                                        targetId: post.id,
+                                      )
+                                      .run();
                                   if (!mounted) return;
                                   setState(() => _posts.removeWhere((item) => item.id == post.id));
                                 },
@@ -299,23 +326,21 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
                                   }
                                   if (!context.mounted) return;
                                   showCommunityReportSheet(
-                                  context,
-                                  onSubmit: (reason) async {
-                                    final result = await AppDI.injector
-                                        .get<ReportCommunityItemUseCase>()(
-                                          targetType: CommunityTargetType.post,
-                                          targetId: post.id,
-                                          reason: reason,
-                                        )
-                                        .run();
-                                    return result.isRight();
-                                  },
-                                );
+                                    context,
+                                    onSubmit: (reason) async {
+                                      final result = await AppDI.injector
+                                          .get<ReportCommunityItemUseCase>()(
+                                            targetType: CommunityTargetType.post,
+                                            targetId: post.id,
+                                            reason: reason,
+                                          )
+                                          .run();
+                                      return result.isRight();
+                                    },
+                                  );
                                 },
                                 onDelete: () async {
-                                  final result = await AppDI.injector
-                                      .get<DeleteCommunityPostUseCase>()(post.id)
-                                      .run();
+                                  final result = await AppDI.injector.get<DeleteCommunityPostUseCase>()(post.id).run();
                                   if (!mounted) return;
                                   if (result.isRight()) {
                                     setState(
@@ -342,146 +367,128 @@ class _CommunityTopicPageState extends State<CommunityTopicPage> {
   }
 }
 
-class _TopicHeader extends StatelessWidget {
-  const _TopicHeader({
-    required this.topic,
-    required this.onToggleFollow,
-    this.faces = const [],
-  });
-
-  final CommunityTopicEntity? topic;
-  final VoidCallback onToggleFollow;
-  final List<CommunityAuthorEntity> faces;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n.community;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 18.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.brandPrimary50,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24.r)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).maybePop(),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 6.h),
-              child: Icon(
-                Icons.arrow_back_ios_new,
-                size: 18.sp,
-                color: AppCustomColor.communityTopicHeading,
-              ),
-            ),
-          ),
-          SizedBox(height: 6.h),
-          AppText(
-            topic?.name ?? '',
-            style: AppStyle.textBold20.copyWith(
-              color: AppCustomColor.communityTopicHeading,
-              height: 1.3,
-            ),
-            maxLines: 3,
-          ),
-          if ((topic?.description ?? '').isNotEmpty) ...[
-            SizedBox(height: 6.h),
-            AppText(
-              topic!.description,
-              style: AppStyle.text13.copyWith(color: AppCustomColor.streakTextMuted),
-              maxLines: 4,
-            ),
-          ],
-          SizedBox(height: 14.h),
-          Row(
-            children: [
-              if (faces.isNotEmpty) ...[
-                _FaceStack(faces: faces),
-                SizedBox(width: 12.w),
-              ],
-              Expanded(
-                child: AppText(
-                  topic == null
-                      ? ''
-                      : '${l10n.topicMembers(count: topic!.followers)} · ${l10n.topicPostsThisWeek(count: topic!.postsThisWeek)}',
-                  style: AppStyle.text12.copyWith(color: AppCustomColor.communityMuted),
-                  maxLines: 1,
-                ),
-              ),
-              if (topic != null)
-                CommunityFollowButton(
-                  isFollowing: topic!.isFollowing,
-                  onTap: onToggleFollow,
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-/// Sort chips plus the write affordance, between a topic's header and its feed
-/// (design `S-03`).
+/// The bar that stays put while the room scrolls (design `S-03`).
 ///
-/// "Sôi nổi" sorts by the last reply rather than by age, so a thread people are
-/// still answering stays up top — that is the whole difference between the two.
-class _TopicToolbar extends StatelessWidget {
-  const _TopicToolbar({
-    required this.sort,
-    required this.onSort,
+/// The name and the room glyph fade IN rather than being always present: at the
+/// top of the screen they would repeat the card two rows below, and the design
+/// keeps only the back arrow and the two actions there.
+class _TopicStickyBar extends StatelessWidget {
+  const _TopicStickyBar({
+    required this.topic,
+    required this.showTitle,
+    required this.onToggleFavourite,
     required this.onCompose,
   });
 
-  final CommunityFeedSort sort;
-  final void Function(CommunityFeedSort sort) onSort;
+  final CommunityTopicEntity? topic;
+  final bool showTitle;
+  final VoidCallback onToggleFavourite;
   final VoidCallback onCompose;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.community;
+    final isFavourite = topic?.isFollowing ?? false;
+    final slot = communityRoomSlot(topic?.id ?? '');
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 4.h),
+    return Container(
+      padding: EdgeInsets.fromLTRB(20.w, 6.h, 20.w, 12.h),
+      color: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       child: Row(
         children: [
-          _SortChip(
-            label: l10n.sortRecent,
-            isActive: sort == CommunityFeedSort.recent,
-            onTap: () => onSort(CommunityFeedSort.recent),
+          GestureDetector(
+            onTap: () => Navigator.of(context).maybePop(),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 2.w),
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                size: 18.sp,
+                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+              ),
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: AnimatedOpacity(
+              opacity: showTitle ? 1 : 0,
+              duration: const Duration(milliseconds: 180),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28.w,
+                    height: 28.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.communityRoomTints[slot],
+                      borderRadius: BorderRadius.circular(9.r),
+                    ),
+                    child: Icon(
+                      Icons.home_outlined,
+                      size: 15.sp,
+                      color: AppCustomColor.communityRoomInks[slot],
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: AppText(
+                      topic?.name ?? '',
+                      style: AppStyle.textBold14.copyWith(
+                        color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           SizedBox(width: 8.w),
-          _SortChip(
-            label: l10n.sortActive,
-            isActive: sort == CommunityFeedSort.active,
-            onTap: () => onSort(CommunityFeedSort.active),
+          // The heart IS joining the room — the design replaced the old
+          // "Tham gia" pill with it, so this is one control, not two.
+          GestureDetector(
+            onTap: onToggleFavourite,
+            behavior: HitTestBehavior.opaque,
+            child: Semantics(
+              label: isFavourite ? l10n.following : l10n.follow,
+              button: true,
+              toggled: isFavourite,
+              child: Container(
+                width: 30.w,
+                height: 30.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppCustomColor.backgroundWhite.withValues(alpha: 0.8),
+                ),
+                child: Icon(
+                  isFavourite ? Icons.favorite : Icons.favorite_border,
+                  size: 17.sp,
+                  color: isFavourite ? AppCustomColor.errorRed : AppCustomColor.streakTextMuted,
+                ),
+              ),
+            ),
           ),
-          const Spacer(),
+          SizedBox(width: 8.w),
           GestureDetector(
             onTap: onCompose,
             behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 7.h),
-              decoration: BoxDecoration(
-                color: AppCustomColor.backgroundWhite,
-                borderRadius: BorderRadius.circular(99.r),
-                border: Border.all(color: AppCustomColor.borderBrand),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.edit_outlined, size: 14.sp, color: AppCustomColor.streakActive),
-                  SizedBox(width: 6.w),
-                  AppText(
-                    l10n.composeCta,
-                    style: AppStyle.textBold12.copyWith(color: AppCustomColor.streakActive),
-                  ),
-                ],
+            child: Semantics(
+              label: l10n.composeCta,
+              button: true,
+              child: Container(
+                width: 30.w,
+                height: 30.w,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppCustomColor.brandPrimary,
+                ),
+                child: Icon(
+                  Icons.add,
+                  size: 17.sp,
+                  color: AppCustomColor.textWhite,
+                ),
               ),
             ),
           ),
@@ -491,43 +498,119 @@ class _TopicToolbar extends StatelessWidget {
   }
 }
 
-class _SortChip extends StatelessWidget {
-  const _SortChip({required this.label, required this.isActive, required this.onTap});
+/// The room's own card, at the top of its feed (design `S-03`).
+///
+/// A glass panel rather than the old tinted block: it sits over the reader's
+/// study background like every other card in the forum, and the tinted block
+/// punched a solid slab across the top of their picture.
+class _TopicHeaderCard extends StatelessWidget {
+  const _TopicHeaderCard({required this.topic, this.faces = const []});
 
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
+  final CommunityTopicEntity? topic;
+  final List<CommunityAuthorEntity> faces;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 7.h),
-        decoration: BoxDecoration(
-          color: isActive ? AppCustomColor.brandPrimary : AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.circular(99.r),
-          border: isActive ? null : Border.all(color: AppCustomColor.borderDefault),
-        ),
-        child: AppText(
-          label,
-          style: AppStyle.textBold12.copyWith(
-            color: isActive
-                ? AppCustomColor.textWhite
-                : studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
+    final l10n = context.l10n.community;
+    final room = topic;
+    if (room == null) return const SizedBox.shrink();
+
+    final isLive = room.postsThisWeek > 0;
+    final slot = communityRoomSlot(room.id);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
+      decoration: BoxDecoration(
+        color: studyThemeCardColor(context),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: AppCustomColor.borderDefault),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.communityRoomTints[slot],
+                  borderRadius: BorderRadius.circular(15.r),
+                ),
+                child: Icon(
+                  Icons.home_outlined,
+                  size: 23.sp,
+                  color: AppCustomColor.communityRoomInks[slot],
+                ),
+              ),
+              SizedBox(width: 13.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      room.name,
+                      style: AppStyle.textBold18.copyWith(
+                        color: AppCustomColor.textPrimary,
+                        height: 1.25,
+                      ),
+                      maxLines: 3,
+                    ),
+                    SizedBox(height: 5.h),
+                    Row(
+                      children: [
+                        if (isLive) ...[
+                          Container(
+                            width: 6.w,
+                            height: 6.w,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppCustomColor.successGreen,
+                            ),
+                          ),
+                          SizedBox(width: 7.w),
+                        ],
+                        Expanded(
+                          child: AppText(
+                            '${l10n.topicMembersLong(count: room.followers)} · '
+                            '${l10n.topicPostsThisWeek(count: room.postsThisWeek)}',
+                            style: AppStyle.textBold12.copyWith(
+                              color: AppCustomColor.textSecondary,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ),
+          if (room.description.isNotEmpty) ...[
+            SizedBox(height: 11.h),
+            AppText(
+              room.description,
+              style: AppStyle.text14.copyWith(
+                color: AppCustomColor.textSecondary,
+                height: 1.55,
+              ),
+              maxLines: 5,
+            ),
+          ],
+          if (faces.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _FaceStack(faces: faces),
+          ],
+        ],
       ),
     );
   }
 }
 
-
-/// Overlapping author avatars on a topic header (design `S-03`).
-///
-/// Each carries a ring in the header's own tint so the overlap reads as depth
-/// rather than as smudged circles.
 class _FaceStack extends StatelessWidget {
   const _FaceStack({required this.faces});
 

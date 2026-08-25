@@ -17,15 +17,21 @@ class CreateCommunityPostUseCase {
 
   TaskEither<AppException, CommunityPostEntity> call({
     required String body,
+    String? subject,
     String? topicId,
     List<String>? images,
     String? attachedCourseId,
+    CommunityAttachedCardEntity? attachedCard,
+    bool isAnonymous = false,
   }) {
     return _repository.createPost(
       body: body,
+      subject: subject,
       topicId: topicId,
       images: images,
       attachedCourseId: attachedCourseId,
+      attachedCard: attachedCard,
+      isAnonymous: isAnonymous,
     );
   }
 }

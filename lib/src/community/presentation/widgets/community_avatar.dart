@@ -54,6 +54,27 @@ class CommunityAvatar extends StatelessWidget {
       );
     }
 
+    // An anonymous post carries no name and no id, so there is nothing to
+    // derive a tint or initials FROM — a glyph on neutral grey, the same for
+    // every anonymous post, which is the point: two of them must not look like
+    // they came from the same person or from different ones.
+    if (author.isAnonymous) {
+      return Container(
+        width: diameter,
+        height: diameter,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppCustomColor.backgroundGray,
+        ),
+        child: Icon(
+          Icons.person_outline_rounded,
+          size: diameter * 0.55,
+          color: AppCustomColor.communityMuted,
+        ),
+      );
+    }
+
     return Container(
       width: diameter,
       height: diameter,
@@ -72,8 +93,70 @@ class CommunityAvatar extends StatelessWidget {
   }
 }
 
+/// Avatar + author line, at the design's exact geometry (`S-01`/`S-04`, the same
+/// on both).
+///
+/// The row is 22 tall — the height of the NAME, not of the avatar. The 30px
+/// avatar is nudged 3 down and allowed to hang 11 BELOW the row (the design's
+/// `margin:3px 0 -11px`), so the body that follows starts directly under the
+/// name and the avatar reaches down into its left gutter. Letting the avatar set
+/// the row height instead pushes the body a whole avatar away from the name it
+/// belongs to, which is the gap this fixes.
+class CommunityBylineRow extends StatelessWidget {
+  const CommunityBylineRow({
+    super.key,
+    required this.author,
+    this.createdAt,
+    this.isPinned = false,
+  });
+
+  final CommunityAuthorEntity author;
+  final DateTime? createdAt;
+  final bool isPinned;
+
+  /// Avatar width plus its gap. Everything below the row lines up with the NAME.
+  static const double indent = 37;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 22.h,
+      child: Row(
+        // Stretch, so the name line gets the full 22 and centres itself in it
+        // while the avatar overflows past the bottom.
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 30.w,
+            child: OverflowBox(
+              maxHeight: 33.h,
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.only(top: 3.h),
+                child: CommunityAvatar(author: author, size: 30),
+              ),
+            ),
+          ),
+          SizedBox(width: 7.w),
+          Expanded(
+            child: CommunityAuthorLine(
+              author: author,
+              createdAt: createdAt,
+              isPinned: isPinned,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// The name line: display name, the team badge for an official post, and the
-/// relative time.
+/// relative time — the design's `S-01`/`S-04` author line, identical on both.
+///
+/// The name and the time sit NEXT to each other rather than at opposite ends of
+/// the row: the pair is one attribution, and pushing the time to the far edge
+/// turns it into a second column the eye has to travel to.
 class CommunityAuthorLine extends StatelessWidget {
   const CommunityAuthorLine({
     super.key,
@@ -89,33 +172,53 @@ class CommunityAuthorLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.community;
+    // On a card the design's inks stand; on the background they have to flip
+    // light for a dark preset, the same as every other flat surface in the app.
+    final isFlat = CommunityFlatSurface.of(context);
     // An empty name means the account is gone; the placeholder is localised
     // here rather than shipped by the API.
-    final name = author.isOfficial
-        ? l10n.officialAuthorName
-        : (author.name.isEmpty ? l10n.deletedAuthorName : author.name);
+    final name = switch (author) {
+      // Order matters: an anonymous post also has an empty name, and reading it
+      // as a deleted account would be a different (and wrong) claim.
+      _ when author.isOfficial => l10n.officialAuthorName,
+      _ when author.isAnonymous => l10n.anonymousAuthorName,
+      _ when author.name.isEmpty => l10n.deletedAuthorName,
+      _ => author.name,
+    };
 
     return Row(
       children: [
         Flexible(
           child: AppText(
             name,
-            style: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary),
+            style: AppStyle.textBold14.copyWith(
+              fontSize: 13.5.sp,
+              color: isFlat
+                  ? studyThemeOnBg(context, AppCustomColor.communityAuthorName)
+                  : AppCustomColor.communityAuthorName,
+            ),
             maxLines: 1,
           ),
         ),
         if (isPinned) ...[
           SizedBox(width: 6.w),
-          Icon(Icons.push_pin, size: 12.sp, color: AppCustomColor.streakActive),
+          CommunityGlyph(
+            AppAsset.svg.app.icCommunityPin,
+            size: 12,
+            color: AppCustomColor.streakActive,
+          ),
         ],
-        SizedBox(width: 8.w),
+        SizedBox(width: 6.w),
         AppText(
-          communityRelativeTime(context, createdAt),
-          // This line only ever renders inside a post card, so it takes the
-          // card ink: over a glass card on a photo the design's pale slate
-          // washes out.
+          // The interpunct belongs to the timestamp, not to a separator widget:
+          // the design prints "· 3 giờ trước" as one quiet run of text.
+          '· ${communityRelativeTime(context, createdAt)}',
           style: AppStyle.text12.copyWith(
-            color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+            fontSize: 9.5.sp,
+            fontWeight: FontWeight.w600,
+            color: isFlat
+                ? studyThemeOnBg(context, AppCustomColor.communityMuted)
+                : studyThemeCardMuted(context, AppCustomColor.communityMuted),
           ),
         ),
       ],
@@ -166,4 +269,18 @@ String communityRelativeTime(BuildContext context, DateTime? time) {
   if (elapsed.inDays < 7) return l10n.timeDays(count: elapsed.inDays);
 
   return l10n.timeWeeks(count: elapsed.inDays ~/ 7);
+}
+
+/// "08:24" — the wall clock on a chat line (design `S-03`).
+///
+/// A clock, not "3 giờ trước": a chat is read as a sequence of moments in one
+/// sitting, and relative ages there make consecutive lines look further apart
+/// than they are. Local time, 24h, which is what every locale the app ships
+/// writes a chat timestamp in.
+String communityChatClock(DateTime? time) {
+  if (time == null) return '';
+  final local = time.toLocal();
+
+  return '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
 }

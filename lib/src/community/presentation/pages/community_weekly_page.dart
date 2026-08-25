@@ -16,7 +16,8 @@ class CommunityWeeklyPage extends StatelessWidget {
         final cubit = context.read<CommunityPostCubit>();
         final weekly = state.weekly;
 
-        return Scaffold(
+        return CommunityFlatSurface(
+          child: Scaffold(
           backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
           appBar: _CommunityAppBar(title: l10n.weeklyTitle),
           body: state.status == CommunityStatus.loading && weekly == null
@@ -50,6 +51,7 @@ class CommunityWeeklyPage extends StatelessWidget {
                       _ClosedComposerNote(state: state),
                   ],
                 ),
+          ),
         );
       },
     );
@@ -151,15 +153,27 @@ class _WeeklyHeaderBlock extends StatelessWidget {
           ),
         ),
         // Outside the card on purpose: it is house guidance about answering,
-        // not part of the question being asked.
-        if (weekly.note.isNotEmpty)
+        // not part of the question being asked. Falls back to the app's own
+        // line: the design always shows one, and an empty `note` on the
+        // server's side is a blank the reader would read as a layout gap.
+        Padding(
+          padding: EdgeInsets.only(top: 16.h),
+          child: AppText(
+            weekly.note.isNotEmpty ? weekly.note : l10n.weeklyNote,
+            style: AppStyle.text12.copyWith(
+              // Outside the question card, so it is on the background itself.
+              color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+              height: 1.5,
+            ),
+          ),
+        ),
+        if (weekly.answerCount > 0)
           Padding(
-            padding: EdgeInsets.only(top: 16.h),
+            padding: EdgeInsets.only(top: 18.h),
             child: AppText(
-              weekly.note,
-              style: AppStyle.text12.copyWith(
-                color: studyThemeOnBg(context, AppCustomColor.communityMuted),
-                height: 1.5,
+              l10n.commentCount(count: weekly.answerCount),
+              style: AppStyle.textBold14.copyWith(
+                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
               ),
             ),
           ),

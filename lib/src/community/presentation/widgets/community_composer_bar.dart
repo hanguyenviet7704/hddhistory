@@ -64,13 +64,13 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
     final isReplying = replyingTo != null && replyingTo.isNotEmpty;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 10.h),
+      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
       decoration: BoxDecoration(
-        // Nearly opaque rather than glass: this bar sits under the keyboard and
-        // holds an input the reader is typing into — legibility beats letting
-        // the background show through.
+        // Nearly opaque rather than transparent: this bar sits under the
+        // keyboard and holds an input being typed into — legibility beats
+        // letting the background through, on this one strip.
         color: studyThemeCardColor(context, opacity: 0.94),
-        border: Border(top: BorderSide(color: AppCustomColor.borderDefault)),
+        border: const Border(top: BorderSide(color: AppCustomColor.communityRule)),
       ),
       child: SafeArea(
         top: false,
@@ -84,7 +84,9 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
                   children: [
                     AppText(
                       l10n.replyingTo,
-                      style: AppStyle.text12.copyWith(color: AppCustomColor.communityMuted),
+                      style: AppStyle.text12.copyWith(
+                        color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+                      ),
                     ),
                     SizedBox(width: 4.w),
                     Expanded(
@@ -97,9 +99,9 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
                     GestureDetector(
                       onTap: widget.onCancelReply,
                       behavior: HitTestBehavior.opaque,
-                      child: Icon(
-                        Icons.close,
-                        size: 16.sp,
+                      child: CommunityGlyph(
+                        AppAsset.svg.app.icCommunityClose,
+                        size: 14,
                         color: AppCustomColor.communityMuted,
                       ),
                     ),
@@ -111,10 +113,15 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+                    constraints: BoxConstraints(minHeight: 44.h),
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: AppCustomColor.backgroundGray,
-                      borderRadius: BorderRadius.circular(22.r),
+                      // A lighter pill on the bar, as in the design — it reads
+                      // as the one place to type rather than as a second
+                      // background.
+                      color: AppCustomColor.backgroundWhite.withValues(alpha: 0.78),
+                      borderRadius: BorderRadius.circular(99.r),
                       border: Border.all(
                         color: isReplying
                             ? AppCustomColor.brandPrimary
@@ -147,8 +154,8 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
                   onTap: _submit,
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    width: 40.w,
-                    height: 40.w,
+                    width: 44.w,
+                    height: 44.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -165,9 +172,9 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
                               color: AppCustomColor.textWhite,
                             ),
                           )
-                        : Icon(
-                            Icons.send_rounded,
-                            size: 18.sp,
+                        : CommunityGlyph(
+                            AppAsset.svg.app.icCommunitySend,
+                            size: 19,
                             color: _controller.text.trim().isEmpty
                                 ? AppCustomColor.communityMuted
                                 : AppCustomColor.textWhite,

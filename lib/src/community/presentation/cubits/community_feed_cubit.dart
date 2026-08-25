@@ -7,8 +7,7 @@ part of '../../community.dart';
 /// copy would show a reader posts that were taken down while the app was
 /// closed, and the moderation queue exists precisely so that does not happen.
 @lazySingleton
-class CommunityFeedCubit extends Cubit<CommunityFeedState>
-    with CubitUseCaseHandlerMixin<CommunityFeedState> {
+class CommunityFeedCubit extends Cubit<CommunityFeedState> with CubitUseCaseHandlerMixin<CommunityFeedState> {
   final GetCommunityFeedUseCase _getFeedUseCase;
   final GetCommunityTopicsUseCase _getTopicsUseCase;
   final SetCommunityTopicFollowUseCase _setFollowUseCase;
@@ -79,7 +78,7 @@ class CommunityFeedCubit extends Cubit<CommunityFeedState>
     final result = await _getFeedUseCase(
       page: page,
       take: _pageSize,
-      followingOnly: state.scope == CommunityFeedScope.following,
+      followedOnly: state.scope == CommunityFeedScope.following,
       // Page 1 asks for a new anchor; later pages reuse the one it stamped.
       anchorAt: page == 1 ? null : state.anchorAt,
     ).run();
@@ -259,8 +258,7 @@ class CommunityFeedCubit extends Cubit<CommunityFeedState>
   /// Replaces one post in the list with a fresher copy — used when returning
   /// from the detail screen, where likes and comments may have changed.
   void applyPostUpdate(CommunityPostEntity updated) {
-    CommunityPostEntity apply(CommunityPostEntity post) =>
-        post.id == updated.id ? updated : post;
+    CommunityPostEntity apply(CommunityPostEntity post) => post.id == updated.id ? updated : post;
 
     emit(
       state.copyWith(

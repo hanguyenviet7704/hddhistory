@@ -1,33 +1,63 @@
-navLabel: 社区
-title: 社区
+navLabel: Confession
+title: Confession
 tabAll: 全部
-tabTopics: 话题
+tabFollowing: 关注中
+tabTopics: 房间
 scopeAll: 全部帖子
-scopeFollowing: 已关注
+scopeFollowing: 关注中
 
 officialAuthorName: MeUp 团队
-deletedAuthorName: 一位 MeUp 用户
+deletedAuthorName: 一位 MeUp 成员
+anonymousAuthorName: 匿名用户
 
 follow: + 关注
-following: 已关注
-sectionFollowing: 已关注
-sectionAllTopics: 全部话题
+following: 关注中
+sectionFavourites: 收藏
+sectionExploreRooms: 探索房间
 topicMembers(param=count):
   other: ${count} 人
+topicMembersLong(param=count):
+  other: ${count} 位成员
 topicPostsThisWeek(param=count):
-  other: 本周 ${count} 篇
+  other: 本周 ${count} 帖
+topicPostsToday(param=count):
+  other: 今天新增 ${count} 帖
+topicNoPostsToday: 今天还没有新帖
+topicJustJoined: 刚刚加入
+
+roomSuggestPromptTitle: 没找到想要的房间？
+roomSuggestPromptBody: 提议一个新房间 —— 如果有足够多的人想要，MeUp 就会开。
+roomSuggestCta: 提议新房间
+roomSuggestFormTitle: 提议新房间
+roomSuggestNameLabel: 房间名称
+roomSuggestNameHint: 例如：一个人在城市生活
+roomSuggestDescLabel: 房间简介
+roomSuggestDescHint: 这个房间给谁，聊些什么？
+roomSuggestSubmit: 提交提议
+roomSuggestCancel: 取消
+roomSuggestSent: 已提交，我们会尽快查看。
+roomSuggestMerged: 已经有人提过这个房间了 —— 你的支持已计入。
+roomSuggestOthersTitle: 正在考虑的提议
+roomSuggestVotes(param=count):
+  other: ${count} 人支持
+roomSuggestVote: + 支持
+roomSuggestVoted: 已支持
+roomSuggestTooMany: 你已有 3 个待处理的提议，等我们回复后再提吧。
+roomSuggestClosed: 这个提议已经处理过了。
 
 weeklyLabel: 本周提问
 weeklyLabelWithWeek: 本周提问 · 第 ${week} 周
+weeklyWeekRange: 第 ${week} 周 · ${range}
 weeklyDaysLeft(param=count):
   other: 还剩 ${count} 天
 weeklyAnswered(param=count):
   other: ${count} 人已回答
 weeklyJoin: 参与讨论
 weeklyTitle: 本周提问
+weeklyNote: 请用自己的经历来回答，也请让这里保持安全。
 weeklyNoneTitle: 本周还没有提问
-weeklyNoneBody: 团队每周会提出一个新问题，过几天再来看看。
-weeklyClosed: 本周的提问已结束，新的问题很快就来。
+weeklyNoneBody: MeUp 团队每周都会提出新问题，过几天再来看看。
+weeklyClosed: 本周的提问已结束，新的很快就来。
 
 postTitle: 帖子
 reply: 回复
@@ -35,73 +65,112 @@ replyingTo: 正在回复
 commentCount(param=count):
   other: ${count} 条评论
 commentsLocked: 这篇帖子已关闭评论。
-composerHintComment: 写下评论…
-composerHintReply: 写下回复…
-composerHintWeekly: 回答本周的提问…
+composerHintComment: 写评论…
+composerHintReply: 写回复…
+composerHintWeekly: 回答本周的问题…
+
+followThread: 关注这篇帖子
+unfollowThread: 取消关注这篇帖子
+followThreadDone: 有新评论时会通知你。
 
 emptyFeedTitle: 这里还什么都没有
 emptyFeedBody: 来写第一篇吧。你现在在想什么？
-emptyFollowingTitle: 你还没有关注任何话题
-emptyFollowingBody: 关注一个话题，它的帖子就会出现在这里。
-emptyFollowingAction: 看全部帖子
-emptyTopicsTitle: 还没有话题
-emptyTopicsBody: 团队正在准备，请稍后再来。
-emptyTopicFeedTitle: 这个话题还没有帖子
-emptyTopicFeedBody: 你的可以是第一篇。
+emptyFollowingTitle: 还没有关注任何帖子
+emptyFollowingBody: 点帖子上的铃铛，有新评论时就会收到通知。
+emptyFollowingAction: 查看全部帖子
+emptyTopicsTitle: 还没有房间
+emptyTopicsBody: MeUp 团队正在准备，过些时候再来。
+emptyTopicFeedTitle: 这个房间还没有帖子
+emptyTopicFeedBody: 你的这篇也许就是第一篇。
 emptyCommentsTitle: 还没有评论
-emptyCommentsBody: 说一句温暖的话，或者只说你也经历过。
+emptyCommentsBody: 说句暖心的话，或者只说一句“我也经历过”。
 
 menuHide: 隐藏这条内容
 menuReport: 举报帖子
-menuDelete: 删除
+menuDelete: 删除帖子
 deletePostDone: 已删除你的帖子
 
 reportTitle: 举报这条内容
-reportSubtitle: 团队会查看举报并决定处理方式，内容不会自动隐藏。
+reportSubtitle: MeUp 团队会查看并判断，内容不会被自动隐藏。
 reportSpam: 垃圾信息或推销
-reportHarassment: 骚扰或辱骂
+reportHarassment: 骚扰、侮辱
 reportAdult: 成人内容
 reportMisinformation: 虚假信息
 reportPrivacy: 泄露他人身份
 reportOther: 其他原因
-reportSent: 谢谢你，团队会查看。
-reportFailed: 举报未发送成功，请再试一次。
+reportSent: 谢谢你，MeUp 团队会复核。
+reportFailed: 举报没发出去，再试一次。
 
-guestTitle: 登录后即可参与
-guestBody: 你可以浏览全部内容。发帖、评论和点赞需要登录。
+guestTitle: 登录后参与
+guestBody: 你可以自由阅读这里的一切。发帖、评论和点赞需要登录。
 guestAction: 登录
-mutedTitle: 你目前无法发帖
-mutedBodyFallback: 由于违反社区规则，你的发帖权限已暂时停用。
+mutedTitle: 你暫时无法发帖
+mutedBodyFallback: 因违反社区规则，你的发帖权限已暂时冻结。
 mutedUntil: 至 ${date}
 
 composeTitle: 新帖子
 composeSubmit: 发布
-composeGroupLabel: 发到话题 · 可不选
-composeNoGroup: 不选话题
-composeBodyHint: 你现在在想什么？
-composeAddImage: 添加照片
+composeRoomPick: 选择房间
+composeRoomSectionLabel: 你加入的房间
+composeNoGroup: 不选房间
+composeSubjectHint: 帖子标题
+composeBodyHint: 在这里讲你的故事…
+composeAddImage: 添加图片
+composeAnonymous: 匿名
+composeAnonymousOnHint: 这篇帖子不会显示你的名字。
 composeCourseAttached: 已附上课程
-composePostingAs: 以 ${name} 的身份发布
-composeVisibilityHint: 话题里的所有人都会看到你的帖子。
+composePostingAs: 以 ${name} 发布
+composeVisibilityHint: 房间里的人都会看到你的帖子。
+composeEmptyBody: 写几句再发吧。
 
-attachedCourseTitle: MeUp 学习路径
+attachSheetTitle: 从图书馆附加
+attachTabCourses: 课程
+attachTabCards: 已保存的卡片
+attachLimitToast: 每篇最多附加 2 项。
+attachEmptyCourses: 还没有可以附加的课程。
+attachEmptyCards: 你还没有保存任何卡片。
+attachRemove: 移除
+
+attachedCourseTitle: MeUp 学习路线
 attachedCourseHint: 打开这篇帖子提到的课程。
-
-savedTitle: 已收藏
-savedEmptyTitle: 还没有收藏
-savedEmptyBody: 点击帖子上的收藏图标，就会保存到这里。
+attachedCourseCta: 查看课程
 
 notificationsTitle: 通知
-notificationsEmptyTitle: 暂无新消息
-notificationsEmptyBody: 对你帖子的回复会显示在这里。
-notificationCommentOnPost: 有人评论了你的帖子
-notificationReplyToComment: 有人回复了你
-notificationOfficialReply: MeUp 团队已回复
+notificationsEmptyTitle: 没有新消息
+notificationsEmptyBody: 别人对你帖子的回复会出现在这里。
+notificationLikedPost: 喜欢了你的帖子
+notificationLikedPostWithOthers(param=count):
+  other: 和另外 ${count} 人喜欢了你的帖子
+notificationCommentOnPost: 在你的帖子里发表了评论
+notificationReplyToComment: 回复了你的评论
+notificationCommentOnFollowed: 在你关注的帖子里发表了评论
+notificationOfficialReply: 在你的帖子里回复了
 notificationPostHidden: 你的帖子已被隐藏
-notificationSanction: 你的发帖权限已暂时停用
+notificationSanction: 你的发帖权限已暂时冻结
+
+shareTitle: 分享
+shareInsightTitle: 分享洞见
+shareCourseTitle: 分享学习路线
+shareToConfession: 发到 Confession
+shareToConfessionHint: 带上学习路线，让大家一起学
+shareToConfessionInsightHint: 把这张卡片附到你的帖子里
+shareCopyLink: 复制链接
+shareCopied: 链接已复制
+shareInstagramStory: IG 快拍
+shareFacebookStory: FB 快拍
+shareMore: 更多
+shareSendFriends: 发给好友
+shareStoryDone: 已分享到快拍
+shareFailed: 分享失败，再试一次。
+shareThemeLavender: 薰衣草
+shareThemeSky: 天空
+shareOpenInMeUp: 在 MeUp 中打开
+shareBrandLine: MeUp · Daily Growth Trainer
+shareLearningThis: 我正在学这个
+shareCancel: 取消
 
 errorTitle: 出了点问题
-errorBody: 内容加载失败，请检查网络后重试。
+errorBody: 内容没加载出来。检查网络后再试一次。
 retry: 重试
 
 timeJustNow: 刚刚
@@ -118,5 +187,16 @@ timeWeeks(param=count):
 sortRecent: 最新
 sortActive: 热门
 composeCta: 写帖子
-followNote: 来自你关注话题的新帖
-manageTopics: 管理话题
+followNote: 来自你关注房间的新帖
+manageTopics: 管理房间
+
+# 圆桌 — 群聊房间 (design `S-03`)
+chatTitle: 圆桌
+chatOnline(count): ${count} 人在线
+chatToday: 今天
+chatModerator: 管理员
+chatHint: 在群里发消息…
+chatSending: 发送中…
+chatSeenAt(time): ${time} · 已读
+chatEmptyTitle: 还没有人发言
+chatEmptyBody: 你先说吧 — 一句话就够了。

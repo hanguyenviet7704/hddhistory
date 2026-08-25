@@ -10,7 +10,7 @@ class GetCommunityFeedUseCase {
     required int page,
     int take = 10,
     String? topicId,
-    bool followingOnly = false,
+    bool followedOnly = false,
     CommunityFeedSort sort = CommunityFeedSort.recent,
     DateTime? anchorAt,
   }) {
@@ -18,7 +18,7 @@ class GetCommunityFeedUseCase {
       page: page,
       take: take,
       topicId: topicId,
-      followingOnly: followingOnly,
+      followedOnly: followedOnly,
       sort: sort,
       anchorAt: anchorAt,
     );

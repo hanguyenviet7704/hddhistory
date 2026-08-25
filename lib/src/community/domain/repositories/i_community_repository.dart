@@ -5,7 +5,7 @@ abstract interface class ICommunityRepository {
     required int page,
     int take,
     String? topicId,
-    bool followingOnly,
+    bool followedOnly,
     CommunityFeedSort sort,
     DateTime? anchorAt,
   });
@@ -23,9 +23,12 @@ abstract interface class ICommunityRepository {
 
   TaskEither<AppException, CommunityPostEntity> createPost({
     required String body,
+    String? subject,
     String? topicId,
     List<String>? images,
     String? attachedCourseId,
+    CommunityAttachedCardEntity? attachedCard,
+    bool isAnonymous,
   });
 
   TaskEither<AppException, Unit> deletePost(String id);
@@ -83,4 +86,37 @@ abstract interface class ICommunityRepository {
   TaskEither<AppException, Unit> markNotificationsRead({List<String>? ids});
 
   TaskEither<AppException, CommunityMemberStatusEntity> getMemberStatus();
+
+  TaskEither<AppException, List<CommunityRoomSuggestionEntity>> getRoomSuggestions();
+
+  /// Files an ask, or — when the name matches one already open — turns it into
+  /// a vote on that one and returns it with `mergedIntoExisting` set.
+  TaskEither<AppException, CommunityRoomSuggestionEntity> createRoomSuggestion({
+    required String name,
+    String? description,
+  });
+
+  TaskEither<AppException, CommunityRoomSuggestionEntity> voteRoomSuggestion(
+    String id,
+  );
+
+  // ------------------------------------------------------------ group chat
+
+  TaskEither<AppException, CommunityChatRoomEntity> getChatRoom(String room);
+
+  /// One page of the transcript, NEWEST first — page 1 is the bottom of the
+  /// screen, page 2 the history above it.
+  TaskEither<AppException, CommunityChatPageEntity> getChatMessages({
+    required String room,
+    required int page,
+    int take,
+  });
+
+  TaskEither<AppException, CommunityChatMessageEntity> sendChatMessage({
+    required String room,
+    required String body,
+  });
+
+  /// Returns the message's new state, so the row does not have to guess.
+  TaskEither<AppException, ({bool isLiked, int likeCount})> likeChatMessage(String id);
 }

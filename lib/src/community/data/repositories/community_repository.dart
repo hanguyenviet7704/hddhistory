@@ -11,7 +11,7 @@ class CommunityRepository implements ICommunityRepository {
     required int page,
     int take = 10,
     String? topicId,
-    bool followingOnly = false,
+    bool followedOnly = false,
     CommunityFeedSort sort = CommunityFeedSort.recent,
     DateTime? anchorAt,
   }) {
@@ -22,9 +22,9 @@ class CommunityRepository implements ICommunityRepository {
           take: take,
           topicId: topicId,
           // Only sent when true: the server treats the parameter's presence as
-          // "restrict to followed topics", and an explicit false would still
-          // read as a filter to anyone debugging the request.
-          followingOnly: followingOnly ? true : null,
+          // "restrict to the threads I follow", and an explicit false would
+          // still read as a filter to anyone debugging the request.
+          followedOnly: followedOnly ? true : null,
           // Omitted when it is the default, so the request reads as plainly as
           // the server's own default behaviour.
           sort: sort == CommunityFeedSort.recent ? null : sort.value,
@@ -99,17 +99,31 @@ class CommunityRepository implements ICommunityRepository {
   @override
   TaskEither<AppException, CommunityPostEntity> createPost({
     required String body,
+    String? subject,
     String? topicId,
     List<String>? images,
     String? attachedCourseId,
+    CommunityAttachedCardEntity? attachedCard,
+    bool isAnonymous = false,
   }) {
     return TaskEither.tryCatch(
       () async {
         final response = await _api.createPost({
+          if (subject != null && subject.trim().isNotEmpty) 'subject': subject.trim(),
           'body': body,
           'topicId': ?topicId,
           if (images != null && images.isNotEmpty) 'images': images,
           'attachedCourseId': ?attachedCourseId,
+          if (attachedCard != null)
+            'attachedCard': {
+              'keypointId': attachedCard.keypointId,
+              'title': attachedCard.title,
+              'back': attachedCard.back,
+              if (attachedCard.courseName?.isNotEmpty == true) 'courseName': attachedCard.courseName,
+            },
+          // Only sent when on: the server defaults to a named post, and an
+          // explicit false in the payload reads like a decision was made.
+          if (isAnonymous) 'isAnonymous': true,
         });
         final model = response.data;
         if (model == null) throw Exception('Created community post is empty');
@@ -325,12 +339,132 @@ class CommunityRepository implements ICommunityRepository {
   }
 
   @override
+  TaskEither<AppException, List<CommunityRoomSuggestionEntity>> getRoomSuggestions() {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.getRoomSuggestions();
+
+        return (response.data?.items ?? const <CommunityRoomSuggestionModel>[]).map((item) => item.toEntity()).toList();
+      },
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
+  TaskEither<AppException, CommunityRoomSuggestionEntity> createRoomSuggestion({
+    required String name,
+    String? description,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.createRoomSuggestion({
+          'name': name.trim(),
+          if (description != null && description.trim().isNotEmpty) 'description': description.trim(),
+        });
+        final model = response.data;
+        if (model == null) throw Exception('Room suggestion is empty');
+
+        return model.toEntity();
+      },
+      // Not `error.toString()`: this endpoint answers with a CODE the sheet has
+      // its own line for ("bạn đang có 3 đề xuất chờ"), and DioException's
+      // toString drops the response body, so the code never arrived.
+      (error, stackTrace) => AppException.unexpected(_serverMessage(error)),
+    );
+  }
+
+  @override
+  TaskEither<AppException, CommunityRoomSuggestionEntity> voteRoomSuggestion(
+    String id,
+  ) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.voteRoomSuggestion(id);
+        final model = response.data;
+        if (model == null) throw Exception('Room suggestion is empty');
+
+        return model.toEntity();
+      },
+      (error, stackTrace) => AppException.unexpected(_serverMessage(error)),
+    );
+  }
+
+  /// The API's own `message` when there is one, so a caller can branch on the
+  /// server's error CODE rather than on a stringified exception.
+  String _serverMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map && data['message'] != null) return '${data['message']}';
+    }
+
+    return error.toString();
+  }
+
+  @override
   TaskEither<AppException, CommunityMemberStatusEntity> getMemberStatus() {
     return TaskEither.tryCatch(
       () async {
         final response = await _api.getMemberStatus();
 
         return (response.data ?? const CommunityMemberStatusModel()).toEntity();
+      },
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  // ------------------------------------------------------------ group chat
+
+  @override
+  TaskEither<AppException, CommunityChatRoomEntity> getChatRoom(String room) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.getChatRoom(room);
+
+        return (response.data ?? const CommunityChatRoomModel()).toEntity();
+      },
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
+  TaskEither<AppException, CommunityChatPageEntity> getChatMessages({
+    required String room,
+    required int page,
+    int take = 30,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.getChatMessages(room, page: page, take: take);
+
+        return (response.data ?? const CommunityChatPageModel()).toEntity();
+      },
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
+  TaskEither<AppException, CommunityChatMessageEntity> sendChatMessage({
+    required String room,
+    required String body,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.sendChatMessage(room, {'body': body});
+
+        return (response.data ?? const CommunityChatMessageModel()).toEntity();
+      },
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
+  TaskEither<AppException, ({bool isLiked, int likeCount})> likeChatMessage(String id) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.likeChatMessage(id);
+        final data = response.data ?? const CommunityChatLikeModel();
+
+        return (isLiked: data.isLiked, likeCount: data.likeCount);
       },
       (error, stackTrace) => AppException.unexpected(error.toString()),
     );
@@ -345,11 +479,22 @@ extension CommunityAuthorModelX on CommunityAuthorModel {
     name: name,
     avatar: avatar,
     isOfficial: authorType == 'OFFICIAL',
+    isAnonymous: authorType == 'ANONYMOUS',
+  );
+}
+
+extension CommunityAttachedCardModelX on CommunityAttachedCardModel {
+  CommunityAttachedCardEntity toEntity() => CommunityAttachedCardEntity(
+    keypointId: keypointId,
+    title: title,
+    back: back,
+    courseName: courseName,
   );
 }
 
 extension CommunityPostTopicModelX on CommunityPostTopicModel {
-  CommunityPostTopicEntity toEntity() => CommunityPostTopicEntity(id: id, name: name);
+  CommunityPostTopicEntity toEntity() =>
+      CommunityPostTopicEntity(id: id, name: name, imageUrl: imageUrl);
 }
 
 extension CommunityPostModelX on CommunityPostModel {
@@ -357,9 +502,11 @@ extension CommunityPostModelX on CommunityPostModel {
     id: id,
     author: author.toEntity(),
     topic: topic?.toEntity(),
+    subject: subject,
     body: body,
     images: images,
     attachedCourseId: attachedCourseId,
+    attachedCard: attachedCard?.toEntity(),
     isPinned: isPinned,
     commentsLocked: commentsLocked,
     likeCount: likeCount,
@@ -409,6 +556,39 @@ extension CommunityTopicModelX on CommunityTopicModel {
   );
 }
 
+extension CommunityChatRoomModelX on CommunityChatRoomModel {
+  CommunityChatRoomEntity toEntity() => CommunityChatRoomEntity(
+    id: id,
+    slug: slug,
+    name: name,
+    isOfficial: isOfficial,
+    onlineCount: onlineCount,
+    unreadCount: unreadCount,
+  );
+}
+
+extension CommunityChatMessageModelX on CommunityChatMessageModel {
+  CommunityChatMessageEntity toEntity() => CommunityChatMessageEntity(
+    id: id,
+    author: author.toEntity(),
+    isModerator: isModerator,
+    body: body,
+    likeCount: likeCount,
+    isLiked: isLiked,
+    isMine: isMine,
+    isSeen: isSeen,
+    createdAt: DateTime.tryParse(createdAt ?? '')?.toLocal(),
+  );
+}
+
+extension CommunityChatPageModelX on CommunityChatPageModel {
+  CommunityChatPageEntity toEntity() => CommunityChatPageEntity(
+    items: items.map((message) => message.toEntity()).toList(),
+    currentPage: currentPage,
+    totalPages: totalPages,
+  );
+}
+
 extension CommunityTopicListModelX on CommunityTopicListModel {
   CommunityTopicListEntity toEntity() => CommunityTopicListEntity(
     following: following.map((topic) => topic.toEntity()).toList(),
@@ -444,6 +624,8 @@ extension CommunityNotificationModelX on CommunityNotificationModel {
     id: id,
     type: CommunityNotificationType.fromValue(type),
     actorId: actorId,
+    actor: actor?.toEntity(),
+    otherActorCount: otherActorCount,
     postId: postId,
     commentId: commentId,
     isRead: isRead,
@@ -457,6 +639,21 @@ extension CommunityNotificationPageModelX on CommunityNotificationPageModel {
     currentPage: currentPage,
     totalPages: totalPages,
     unreadCount: unreadCount,
+  );
+}
+
+extension CommunityRoomSuggestionModelX on CommunityRoomSuggestionModel {
+  CommunityRoomSuggestionEntity toEntity() => CommunityRoomSuggestionEntity(
+    id: id,
+    name: name,
+    description: description,
+    status: CommunityRoomSuggestionStatus.fromValue(status),
+    voteCount: voteCount,
+    hasVoted: hasVoted,
+    isMine: isMine,
+    topicId: topicId,
+    mergedIntoExisting: mergedIntoExisting,
+    createdAt: DateTime.tryParse(createdAt ?? '')?.toLocal(),
   );
 }
 

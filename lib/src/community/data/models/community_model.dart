@@ -17,9 +17,23 @@ abstract class CommunityPostTopicModel with _$CommunityPostTopicModel {
   const factory CommunityPostTopicModel({
     @Default('') String id,
     @Default('') String name,
+    String? imageUrl,
   }) = _CommunityPostTopicModel;
 
   factory CommunityPostTopicModel.fromJson(Map<String, dynamic> json) => _$CommunityPostTopicModelFromJson(json);
+}
+
+/// A saved keypoint card the writer attached, as the API snapshotted it.
+@freezed
+abstract class CommunityAttachedCardModel with _$CommunityAttachedCardModel {
+  const factory CommunityAttachedCardModel({
+    @Default('') String keypointId,
+    @Default('') String title,
+    @Default('') String back,
+    String? courseName,
+  }) = _CommunityAttachedCardModel;
+
+  factory CommunityAttachedCardModel.fromJson(Map<String, dynamic> json) => _$CommunityAttachedCardModelFromJson(json);
 }
 
 @freezed
@@ -29,9 +43,11 @@ abstract class CommunityPostModel with _$CommunityPostModel {
     @Default('POST') String type,
     @Default(CommunityAuthorModel()) CommunityAuthorModel author,
     CommunityPostTopicModel? topic,
+    @Default('') String subject,
     @Default('') String body,
     @Default(<String>[]) List<String> images,
     String? attachedCourseId,
+    CommunityAttachedCardModel? attachedCard,
     @Default(false) bool isPinned,
     @Default(false) bool commentsLocked,
     @Default(0) int likeCount,
@@ -138,9 +154,11 @@ abstract class CommunityCommentPageModel with _$CommunityCommentPageModel {
 @freezed
 abstract class CommunityNotificationModel with _$CommunityNotificationModel {
   const factory CommunityNotificationModel({
-    @JsonKey(name: '_id') @Default('') String id,
+    @Default('') String id,
     @Default('') String type,
     String? actorId,
+    CommunityAuthorModel? actor,
+    @Default(0) int otherActorCount,
     String? postId,
     String? commentId,
     @Default(false) bool isRead,
@@ -189,12 +207,94 @@ abstract class CommunitySavedPageModel with _$CommunitySavedPageModel {
   factory CommunitySavedPageModel.fromJson(Map<String, dynamic> json) => _$CommunitySavedPageModelFromJson(json);
 }
 
+/// One reader's ask for a room that does not exist yet.
+@freezed
+abstract class CommunityRoomSuggestionModel with _$CommunityRoomSuggestionModel {
+  const factory CommunityRoomSuggestionModel({
+    @Default('') String id,
+    @Default('') String name,
+    @Default('') String description,
+    @Default('PENDING') String status,
+    @Default(0) int voteCount,
+    @Default(false) bool hasVoted,
+    @Default(false) bool isMine,
+    String? topicId,
+
+    /// True when the reader's new ask turned into a vote on one already open.
+    @Default(false) bool mergedIntoExisting,
+    String? createdAt,
+  }) = _CommunityRoomSuggestionModel;
+
+  factory CommunityRoomSuggestionModel.fromJson(Map<String, dynamic> json) => _$CommunityRoomSuggestionModelFromJson(json);
+}
+
+@freezed
+abstract class CommunityRoomSuggestionListModel with _$CommunityRoomSuggestionListModel {
+  const factory CommunityRoomSuggestionListModel({
+    @Default(<CommunityRoomSuggestionModel>[]) List<CommunityRoomSuggestionModel> items,
+  }) = _CommunityRoomSuggestionListModel;
+
+  factory CommunityRoomSuggestionListModel.fromJson(
+    Map<String, dynamic> json,
+  ) => _$CommunityRoomSuggestionListModelFromJson(json);
+}
 
 @freezed
 abstract class CommunityUnreadCountModel with _$CommunityUnreadCountModel {
-  const factory CommunityUnreadCountModel({@Default(0) int count}) =
-      _CommunityUnreadCountModel;
+  const factory CommunityUnreadCountModel({@Default(0) int count}) = _CommunityUnreadCountModel;
 
-  factory CommunityUnreadCountModel.fromJson(Map<String, dynamic> json) =>
-      _$CommunityUnreadCountModelFromJson(json);
+  factory CommunityUnreadCountModel.fromJson(Map<String, dynamic> json) => _$CommunityUnreadCountModelFromJson(json);
+}
+
+@freezed
+abstract class CommunityChatRoomModel with _$CommunityChatRoomModel {
+  const factory CommunityChatRoomModel({
+    @Default('') String id,
+    @Default('') String slug,
+    @Default('') String name,
+    @Default(true) bool isOfficial,
+    @Default(0) int onlineCount,
+    @Default(0) int unreadCount,
+  }) = _CommunityChatRoomModel;
+
+  factory CommunityChatRoomModel.fromJson(Map<String, dynamic> json) => _$CommunityChatRoomModelFromJson(json);
+}
+
+@freezed
+abstract class CommunityChatMessageModel with _$CommunityChatMessageModel {
+  const factory CommunityChatMessageModel({
+    @Default('') String id,
+    @Default(CommunityAuthorModel()) CommunityAuthorModel author,
+    @Default(false) bool isModerator,
+    @Default('') String body,
+    @Default(0) int likeCount,
+    @Default(false) bool isLiked,
+    @Default(false) bool isMine,
+    @Default(false) bool isSeen,
+    String? createdAt,
+  }) = _CommunityChatMessageModel;
+
+  factory CommunityChatMessageModel.fromJson(Map<String, dynamic> json) => _$CommunityChatMessageModelFromJson(json);
+}
+
+@freezed
+abstract class CommunityChatPageModel with _$CommunityChatPageModel {
+  const factory CommunityChatPageModel({
+    @Default(<CommunityChatMessageModel>[]) List<CommunityChatMessageModel> items,
+    @Default(0) int currentPage,
+    @Default(0) int totalPages,
+    @Default(0) int itemsPerPage,
+  }) = _CommunityChatPageModel;
+
+  factory CommunityChatPageModel.fromJson(Map<String, dynamic> json) => _$CommunityChatPageModelFromJson(json);
+}
+
+@freezed
+abstract class CommunityChatLikeModel with _$CommunityChatLikeModel {
+  const factory CommunityChatLikeModel({
+    @Default(false) bool isLiked,
+    @Default(0) int likeCount,
+  }) = _CommunityChatLikeModel;
+
+  factory CommunityChatLikeModel.fromJson(Map<String, dynamic> json) => _$CommunityChatLikeModelFromJson(json);
 }

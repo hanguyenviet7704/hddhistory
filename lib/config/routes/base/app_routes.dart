@@ -113,9 +113,9 @@ mixin RoutePath {
   static const String communityTopic = 'topic/:topicId';
   static const String communityPost = 'post/:postId';
   static const String communityWeekly = 'weekly';
+  static const String communityChat = 'chat/:room';
   static const String communityCompose = 'compose';
   static const String communityNotifications = 'notifications';
-  static const String communitySaved = 'saved';
 }
 
 mixin RouteNamed {
@@ -230,9 +230,9 @@ mixin RouteNamed {
   static const String communityTopic = 'Community Topic';
   static const String communityPost = 'Community Post';
   static const String communityWeekly = 'Community Weekly';
+  static const String communityChat = 'Community Chat';
   static const String communityCompose = 'Community Compose';
   static const String communityNotifications = 'Community Notifications';
-  static const String communitySaved = 'Community Saved';
 }
 
 /// Route names (PageCubit stores [RouteNamed], e.g. 'Register Page' — NOT

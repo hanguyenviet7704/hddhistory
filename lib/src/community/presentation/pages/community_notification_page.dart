@@ -62,7 +62,10 @@ class _CommunityNotificationPageState extends State<CommunityNotificationPage> {
 
           return ListView.builder(
             controller: _scrollController,
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            // Full-bleed rows, no side padding: the design tints the whole row
+            // to mark it unread, and a tinted card inset from both edges reads
+            // as a different KIND of thing rather than as a state.
+            padding: EdgeInsets.only(top: 6.h, bottom: 40.h),
             itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
               if (index >= state.items.length) {
@@ -81,21 +84,31 @@ class _CommunityNotificationPageState extends State<CommunityNotificationPage> {
   }
 }
 
+/// One notification (design `S-05`).
+///
+/// Reads as a sentence with a name in it — "**Thu Hà** đã thích bài viết của
+/// bạn" — because the API now resolves the actor for the whole page in one
+/// query. The small coloured disc on the avatar says WHICH kind of thing
+/// happened, so the sentence does not have to be read to know that.
 class _NotificationRow extends StatelessWidget {
   const _NotificationRow({required this.item});
 
   final CommunityNotificationEntity item;
 
-  /// One line per kind. The actor's name is not carried on the row (the API
-  /// stores an id, and resolving one name per row would be a query per row), so
-  /// the copy is written to read without it — the post it points at supplies
-  /// the context.
-  String _label(BuildContext context) {
+  /// What the actor did. The name is drawn separately (in bold), so these
+  /// fragments deliberately start mid-sentence.
+  String _action(BuildContext context) {
     final l10n = context.l10n.community;
 
+    if (item.type == CommunityNotificationType.likeOnPost && item.otherActorCount > 0) {
+      return l10n.notificationLikedPostWithOthers(count: item.otherActorCount);
+    }
+
     return switch (item.type) {
+      CommunityNotificationType.likeOnPost => l10n.notificationLikedPost,
       CommunityNotificationType.commentOnPost => l10n.notificationCommentOnPost,
       CommunityNotificationType.replyToComment => l10n.notificationReplyToComment,
+      CommunityNotificationType.commentOnFollowedPost => l10n.notificationCommentOnFollowed,
       CommunityNotificationType.officialReply => l10n.notificationOfficialReply,
       CommunityNotificationType.postHidden => l10n.notificationPostHidden,
       CommunityNotificationType.sanctionApplied => l10n.notificationSanction,
@@ -103,62 +116,129 @@ class _NotificationRow extends StatelessWidget {
     };
   }
 
-  bool get _isModeration =>
-      item.type == CommunityNotificationType.postHidden ||
-      item.type == CommunityNotificationType.sanctionApplied;
+  /// Moderation rows are about the READER, not about somebody else — they carry
+  /// no actor and their whole text is the sentence.
+  bool get _isModeration => item.type == CommunityNotificationType.postHidden || item.type == CommunityNotificationType.sanctionApplied;
+
+  (IconData, Color) get _badge => switch (item.type) {
+    CommunityNotificationType.likeOnPost => (
+      Icons.favorite,
+      AppCustomColor.errorRed,
+    ),
+    CommunityNotificationType.replyToComment => (
+      Icons.reply_rounded,
+      AppCustomColor.brandPrimary,
+    ),
+    CommunityNotificationType.postHidden || CommunityNotificationType.sanctionApplied => (
+      Icons.gavel_rounded,
+      AppCustomColor.errorRed,
+    ),
+    _ => (Icons.mode_comment_rounded, AppCustomColor.communityBadgeComment),
+  };
 
   @override
   Widget build(BuildContext context) {
     final postId = item.postId;
+    final actor = item.actor;
+    final name = actor?.name.trim() ?? '';
+    final (badgeIcon, badgeColor) = _badge;
 
     return GestureDetector(
-      onTap: postId == null || postId.isEmpty
-          ? null
-          : () => CommunityPostRoute(postId: postId).push(context),
+      onTap: postId == null || postId.isEmpty ? null : () => CommunityPostRoute(postId: postId).push(context),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        margin: EdgeInsets.only(bottom: 10.h),
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: item.isRead
-              ? studyThemeCardColor(context)
-              : AppCustomColor.backgroundBrandSoft,
-          borderRadius: BorderRadius.circular(14.r),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 13.h),
+        // Unread rows carry a wash; read ones stay on the background. Over a
+        // custom study background both are translucent so the picture still
+        // shows through, and the difference between them survives.
+        color: item.isRead ? studyThemeCardColor(context, opacity: 0.62) : studyThemeCardColor(context, opacity: 0.88),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              _isModeration ? Icons.gavel_outlined : Icons.mode_comment_outlined,
-              size: 18.sp,
-              color: _isModeration ? AppCustomColor.errorRed : AppCustomColor.streakActive,
+            SizedBox(
+              width: 40.w,
+              height: 40.w,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CommunityAvatar(
+                    author: actor ?? const CommunityAuthorEntity(isAnonymous: true),
+                    size: 40,
+                  ),
+                  Positioned(
+                    right: -3,
+                    bottom: -3,
+                    child: Container(
+                      width: 20.w,
+                      height: 20.w,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: badgeColor,
+                        border: Border.all(
+                          color: AppCustomColor.backgroundWhite,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        badgeIcon,
+                        size: 10.sp,
+                        color: AppCustomColor.textWhite,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
-                    _label(context),
-                    style: AppStyle.textBold12.copyWith(
-                      color: studyThemeCardMuted(context, AppCustomColor.textPrimary),
+                  // RichText, not two AppTexts in a Row: the name and the
+                  // action are one sentence and have to wrap as one.
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        if (!_isModeration && name.isNotEmpty)
+                          TextSpan(
+                            text: '$name ',
+                            style: AppStyle.textBold14.copyWith(
+                              color: AppCustomColor.textPrimary,
+                            ),
+                          ),
+                        TextSpan(
+                          text: _action(context),
+                          style: AppStyle.text14.copyWith(
+                            color: AppCustomColor.textSecondary,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 3.h),
                   AppText(
                     communityRelativeTime(context, item.createdAt),
-                    style: AppStyle.text10.copyWith(
-                      color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+                    style: AppStyle.textBold10.copyWith(
+                      color: AppCustomColor.communityMuted,
                     ),
                   ),
                 ],
               ),
             ),
-            if (postId != null && postId.isNotEmpty)
-              Icon(
-                Icons.chevron_right,
-                size: 18.sp,
-                color: AppCustomColor.communityMuted,
+            if (!item.isRead) ...[
+              SizedBox(width: 8.w),
+              Container(
+                width: 8.w,
+                height: 8.w,
+                margin: EdgeInsets.only(top: 6.h),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppCustomColor.brandPrimary,
+                ),
               ),
+            ],
           ],
         ),
       ),

@@ -11,7 +11,28 @@ abstract class CommunityAuthorEntity with _$CommunityAuthorEntity {
     @Default('') String name,
     String? avatar,
     @Default(false) bool isOfficial,
+
+    /// Written without a name. The API sends no id and no name at all for
+    /// these, so the app shows its own localised placeholder — the initials
+    /// fall back to a glyph rather than a letter of the real name.
+    @Default(false) bool isAnonymous,
   }) = _CommunityAuthorEntity;
+}
+
+/// A saved keypoint card carried by a post, snapshotted when it was written.
+///
+/// Deliberately a copy rather than a keypoint id to resolve: the card renders
+/// from these three strings alone, and a keypoint later edited or unpublished
+/// must not blank out the post someone wrote around it. [keypointId] is only
+/// for opening the real card.
+@freezed
+abstract class CommunityAttachedCardEntity with _$CommunityAttachedCardEntity {
+  const factory CommunityAttachedCardEntity({
+    @Default('') String keypointId,
+    @Default('') String title,
+    @Default('') String back,
+    String? courseName,
+  }) = _CommunityAttachedCardEntity;
 }
 
 @freezed
@@ -19,6 +40,11 @@ abstract class CommunityPostTopicEntity with _$CommunityPostTopicEntity {
   const factory CommunityPostTopicEntity({
     @Default('') String id,
     @Default('') String name,
+
+    /// The room's thumbnail, for the post screen's header. Null on a room with
+    /// no image set, where the header falls back to the tinted house glyph the
+    /// rest of the app uses for a room.
+    String? imageUrl,
   }) = _CommunityPostTopicEntity;
 }
 
@@ -30,11 +56,16 @@ abstract class CommunityPostEntity with _$CommunityPostEntity {
 
     /// Null when the writer posted without picking a group.
     CommunityPostTopicEntity? topic,
+
+    /// The headline above the story. Empty on posts written before the
+    /// composer grew a title field, and the card falls back to the body then.
+    @Default('') String subject,
     @Default('') String body,
     @Default(<String>[]) List<String> images,
 
     /// Opens the shared-roadmap screen when tapped.
     String? attachedCourseId,
+    CommunityAttachedCardEntity? attachedCard,
     @Default(false) bool isPinned,
     @Default(false) bool commentsLocked,
     @Default(0) int likeCount,
@@ -154,8 +185,10 @@ extension CommunityCommentPageEntityX on CommunityCommentPageEntity {
 }
 
 enum CommunityNotificationType {
+  likeOnPost('LIKE_ON_POST'),
   commentOnPost('COMMENT_ON_POST'),
   replyToComment('REPLY_TO_COMMENT'),
+  commentOnFollowedPost('COMMENT_ON_FOLLOWED_POST'),
   officialReply('OFFICIAL_REPLY'),
   postHidden('POST_HIDDEN'),
   sanctionApplied('SANCTION_APPLIED'),
@@ -179,11 +212,57 @@ abstract class CommunityNotificationEntity with _$CommunityNotificationEntity {
     @Default('') String id,
     @Default(CommunityNotificationType.unknown) CommunityNotificationType type,
     String? actorId,
+
+    /// The person who acted, resolved by the API. Null on the rows that are
+    /// about the reader themselves (a hidden post, a posting ban).
+    CommunityAuthorEntity? actor,
+
+    /// How many people beyond [actor] did the same thing — the "và N người
+    /// khác" tail. Only ever above 0 on a like.
+    @Default(0) int otherActorCount,
     String? postId,
     String? commentId,
     @Default(false) bool isRead,
     DateTime? createdAt,
   }) = _CommunityNotificationEntity;
+}
+
+enum CommunityRoomSuggestionStatus {
+  pending('PENDING'),
+  approved('APPROVED'),
+  declined('DECLINED');
+
+  const CommunityRoomSuggestionStatus(this.value);
+
+  final String value;
+
+  static CommunityRoomSuggestionStatus fromValue(String? value) {
+    return CommunityRoomSuggestionStatus.values.firstWhere(
+      (status) => status.value == value,
+      orElse: () => CommunityRoomSuggestionStatus.pending,
+    );
+  }
+}
+
+/// A room a reader asked for. Shown under the suggest form so the next reader
+/// backs this instead of filing a fifth copy of it.
+@freezed
+abstract class CommunityRoomSuggestionEntity with _$CommunityRoomSuggestionEntity {
+  const factory CommunityRoomSuggestionEntity({
+    @Default('') String id,
+    @Default('') String name,
+    @Default('') String description,
+    @Default(CommunityRoomSuggestionStatus.pending) CommunityRoomSuggestionStatus status,
+    @Default(0) int voteCount,
+    @Default(false) bool hasVoted,
+    @Default(false) bool isMine,
+    String? topicId,
+
+    /// The ask matched one already open, so it became a vote rather than a new
+    /// row. The screen says so instead of claiming it created something.
+    @Default(false) bool mergedIntoExisting,
+    DateTime? createdAt,
+  }) = _CommunityRoomSuggestionEntity;
 }
 
 @freezed
@@ -249,4 +328,58 @@ enum CommunityReportReason {
   const CommunityReportReason(this.value);
 
   final String value;
+}
+
+/// The group chat room behind the Confession FAB (design `S-03`).
+@freezed
+abstract class CommunityChatRoomEntity with _$CommunityChatRoomEntity {
+  const factory CommunityChatRoomEntity({
+    @Default('') String id,
+    @Default('') String slug,
+    @Default('') String name,
+
+    /// Hosted by the MeUp team — drives the brand tile in the header.
+    @Default(true) bool isOfficial,
+
+    /// Members with a heartbeat in the last few minutes, not open sockets.
+    @Default(0) int onlineCount,
+
+    /// What the FAB's badge shows.
+    @Default(0) int unreadCount,
+  }) = _CommunityChatRoomEntity;
+}
+
+/// One line in a chat room.
+@freezed
+abstract class CommunityChatMessageEntity with _$CommunityChatMessageEntity {
+  const factory CommunityChatMessageEntity({
+    @Default('') String id,
+    @Default(CommunityAuthorEntity()) CommunityAuthorEntity author,
+
+    /// The "Quản trị viên" pill. Stamped on the message when it was written, so
+    /// it does not change under the reader when someone stops being on duty.
+    @Default(false) bool isModerator,
+    @Default('') String body,
+    @Default(0) int likeCount,
+    @Default(false) bool isLiked,
+    @Default(false) bool isMine,
+
+    /// "Đã xem", and only ever on my own message: it means somebody ELSE has
+    /// read past it.
+    @Default(false) bool isSeen,
+    DateTime? createdAt,
+
+    /// True while the line is only on this device — drawn immediately so the
+    /// room answers a tap, then replaced by the server's copy.
+    @Default(false) bool isPending,
+  }) = _CommunityChatMessageEntity;
+}
+
+@freezed
+abstract class CommunityChatPageEntity with _$CommunityChatPageEntity {
+  const factory CommunityChatPageEntity({
+    @Default(<CommunityChatMessageEntity>[]) List<CommunityChatMessageEntity> items,
+    @Default(0) int currentPage,
+    @Default(0) int totalPages,
+  }) = _CommunityChatPageEntity;
 }

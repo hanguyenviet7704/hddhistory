@@ -31,3 +31,38 @@ class SetCommunityTopicFollowUseCase {
     return _repository.setTopicFollow(topicId: topicId, follow: follow);
   }
 }
+
+@lazySingleton
+class GetCommunityRoomSuggestionsUseCase {
+  final ICommunityRepository _repository;
+
+  GetCommunityRoomSuggestionsUseCase(this._repository);
+
+  TaskEither<AppException, List<CommunityRoomSuggestionEntity>> call() => _repository.getRoomSuggestions();
+}
+
+@lazySingleton
+class CreateCommunityRoomSuggestionUseCase {
+  final ICommunityRepository _repository;
+
+  CreateCommunityRoomSuggestionUseCase(this._repository);
+
+  TaskEither<AppException, CommunityRoomSuggestionEntity> call({
+    required String name,
+    String? description,
+  }) {
+    return _repository.createRoomSuggestion(
+      name: name,
+      description: description,
+    );
+  }
+}
+
+@lazySingleton
+class VoteCommunityRoomSuggestionUseCase {
+  final ICommunityRepository _repository;
+
+  VoteCommunityRoomSuggestionUseCase(this._repository);
+
+  TaskEither<AppException, CommunityRoomSuggestionEntity> call(String id) => _repository.voteRoomSuggestion(id);
+}

@@ -1,122 +1,202 @@
-navLabel: コミュニティ
-title: コミュニティ
+navLabel: Confession
+title: Confession
 tabAll: すべて
-tabTopics: トピック
+tabFollowing: フォロー中
+tabTopics: ルーム
 scopeAll: すべての投稿
 scopeFollowing: フォロー中
 
 officialAuthorName: MeUp チーム
 deletedAuthorName: MeUp のメンバー
+anonymousAuthorName: 匿名の誰か
 
 follow: + フォロー
 following: フォロー中
-sectionFollowing: フォロー中
-sectionAllTopics: すべてのトピック
+sectionFavourites: お気に入り
+sectionExploreRooms: ルームを探す
 topicMembers(param=count):
-  other: ${count} 人
+  other: ${count}人
+topicMembersLong(param=count):
+  other: メンバー${count}人
 topicPostsThisWeek(param=count):
-  other: 今週 ${count} 件
+  other: 今週${count}件
+topicPostsToday(param=count):
+  other: 今日${count}件の新着
+topicNoPostsToday: 今日の新着はまだありません
+topicJustJoined: 参加しました
+
+roomSuggestPromptTitle: ほしいルームが見つからない？
+roomSuggestPromptBody: 新しいルームを提案してください。望む人が集まれば MeUp が開きます。
+roomSuggestCta: ルームを提案する
+roomSuggestFormTitle: 新しいルームを提案
+roomSuggestNameLabel: ルーム名
+roomSuggestNameHint: 例：ひとり暮らしの街の生活
+roomSuggestDescLabel: どんなルーム？
+roomSuggestDescHint: 誰のための場所で、何を話すところですか？
+roomSuggestSubmit: 提案を送る
+roomSuggestCancel: キャンセル
+roomSuggestSent: 提案を送りました。近いうちに確認します。
+roomSuggestMerged: 同じルームの提案がすでにありました。あなたの支持として数えました。
+roomSuggestOthersTitle: 検討中の提案
+roomSuggestVotes(param=count):
+  other: ${count}人が希望
+roomSuggestVote: + 支持する
+roomSuggestVoted: 支持済み
+roomSuggestTooMany: 保留中の提案が3件あります。返事を待ってから送ってください。
+roomSuggestClosed: この提案はすでに対応済みです。
 
 weeklyLabel: 今週の質問
-weeklyLabelWithWeek: 今週の質問 · 第 ${week} 週
+weeklyLabelWithWeek: 今週の質問 · 第${week}週
+weeklyWeekRange: 第${week}週 · ${range}
 weeklyDaysLeft(param=count):
-  other: あと ${count} 日
+  other: あと${count}日
 weeklyAnswered(param=count):
-  other: ${count} 人が回答しました
-weeklyJoin: 参加する
+  other: ${count}人が回答
+weeklyJoin: 話に加わる
 weeklyTitle: 今週の質問
+weeklyNote: 自分の経験で答えて、この場所を安全に保ってください。
 weeklyNoneTitle: 今週の質問はまだありません
-weeklyNoneBody: チームが毎週新しい質問を出します。数日後にまた見てください。
-weeklyClosed: 今週の質問は終了しました。次の質問をお待ちください。
+weeklyNoneBody: MeUp チームが毎週新しい質問を出します。数日後にまた見てください。
+weeklyClosed: 今週の質問は終わりました。新しい質問はもうすぐです。
 
 postTitle: 投稿
 reply: 返信
 replyingTo: 返信先
 commentCount(param=count):
-  other: コメント ${count} 件
-commentsLocked: この投稿はコメントを受け付けていません。
+  other: コメント${count}件
+commentsLocked: この投稿のコメントは閉じています。
 composerHintComment: コメントを書く…
 composerHintReply: 返信を書く…
 composerHintWeekly: 今週の質問に答える…
 
-emptyFeedTitle: まだ何もありません
-emptyFeedBody: 最初の投稿をしてみませんか。いま何を考えていますか。
-emptyFollowingTitle: フォロー中のトピックがありません
-emptyFollowingBody: トピックをフォローすると、その投稿がここに表示されます。
-emptyFollowingAction: すべての投稿を見る
-emptyTopicsTitle: トピックがまだありません
-emptyTopicsBody: チームが準備中です。またあとで見てください。
-emptyTopicFeedTitle: このトピックにはまだ投稿がありません
-emptyTopicFeedBody: あなたが最初の投稿者になれます。
-emptyCommentsTitle: コメントはまだありません
-emptyCommentsBody: やさしい一言でも、「自分もそうだった」でも十分です。
+followThread: この投稿をフォロー
+unfollowThread: フォローを解除
+followThreadDone: 新しいコメントをお知らせします。
 
-menuHide: この内容を非表示にする
-menuReport: 投稿を報告する
-menuDelete: 削除する
+emptyFeedTitle: まだ何もありません
+emptyFeedBody: 最初の投稿を書いてみませんか。いま何を考えていますか？
+emptyFollowingTitle: フォロー中の投稿はありません
+emptyFollowingBody: 投稿のベルを押すと、新しいコメントをお知らせします。
+emptyFollowingAction: すべての投稿を見る
+emptyTopicsTitle: ルームはまだありません
+emptyTopicsBody: MeUp チームが準備中です。またのぞいてください。
+emptyTopicFeedTitle: このルームにはまだ投稿がありません
+emptyTopicFeedBody: あなたの投稿が最初になるかもしれません。
+emptyCommentsTitle: コメントはまだありません
+emptyCommentsBody: やさしい一言でも、「私もそうだった」だけでも。
+
+menuHide: これを非表示にする
+menuReport: 投稿を報告
+menuDelete: 投稿を削除
 deletePostDone: 投稿を削除しました
 
-reportTitle: この内容を報告する
-reportSubtitle: チームが確認して判断します。内容が自動的に非表示になることはありません。
+reportTitle: これを報告する
+reportSubtitle: MeUp チームが確認して判断します。自動では非表示になりません。
 reportSpam: スパム・宣伝
 reportHarassment: 嫌がらせ・侮辱
 reportAdult: 成人向けの内容
 reportMisinformation: 誤った情報
-reportPrivacy: 他人の身元を明かしている
+reportPrivacy: 他人の身元をさらしている
 reportOther: その他
-reportSent: ありがとうございます。チームが確認します。
-reportFailed: 報告を送信できませんでした。もう一度お試しください。
+reportSent: ありがとうございます。MeUp チームが確認します。
+reportFailed: 報告を送れませんでした。もう一度お試しください。
 
-guestTitle: ログインして参加する
-guestBody: 閲覧はすべて可能です。投稿・コメント・いいねにはアカウントが必要です。
+guestTitle: ログインして参加
+guestBody: 読むのは自由です。投稿・コメント・いいねにはログインが必要です。
 guestAction: ログイン
-mutedTitle: 現在は投稿できません
-mutedBodyFallback: コミュニティのルール違反により、投稿が一時停止されています。
-mutedUntil: ${date} まで
+mutedTitle: いまは投稿できません
+mutedBodyFallback: コミュニティルール違反により、投稿を一時的に停止しています。
+mutedUntil: ${date}まで
 
 composeTitle: 新しい投稿
 composeSubmit: 投稿
-composeGroupLabel: トピックに投稿 · 任意
-composeNoGroup: トピックを選ばない
-composeBodyHint: いま何を考えていますか。
+composeRoomPick: ルームを選ぶ
+composeRoomSectionLabel: 参加中のルーム
+composeNoGroup: ルームを選ばない
+composeSubjectHint: 投稿のタイトル
+composeBodyHint: ここにあなたの話を…
 composeAddImage: 写真を追加
+composeAnonymous: 匿名
+composeAnonymousOnHint: この投稿に名前は表示されません。
 composeCourseAttached: コースを添付しました
-composePostingAs: ${name} として投稿します
-composeVisibilityHint: トピックの全員があなたの投稿を見られます。
+composePostingAs: ${name}として投稿
+composeVisibilityHint: ルームの全員があなたの投稿を見られます。
+composeEmptyBody: 少し書いてから投稿してください。
 
-attachedCourseTitle: MeUp のロードマップ
-attachedCourseHint: この投稿で触れているコースを開きます。
+attachSheetTitle: ライブラリから添付
+attachTabCourses: コース
+attachTabCards: 保存したカード
+attachLimitToast: 添付は1投稿につき2つまでです。
+attachEmptyCourses: 添付できるコースがまだありません。
+attachEmptyCards: 保存したカードがまだありません。
+attachRemove: 外す
 
-savedTitle: 保存済み
-savedEmptyTitle: 保存した投稿はまだありません
-savedEmptyBody: 投稿のブックマークを押すと、ここに残ります。
+attachedCourseTitle: MeUp ロードマップ
+attachedCourseHint: この投稿が触れているコースを開きます。
+attachedCourseCta: コースを見る
 
 notificationsTitle: お知らせ
-notificationsEmptyTitle: 新しいお知らせはありません
-notificationsEmptyBody: あなたの投稿への返信がここに表示されます。
-notificationCommentOnPost: あなたの投稿にコメントがつきました
-notificationReplyToComment: あなたに返信がありました
-notificationOfficialReply: MeUp チームが返信しました
+notificationsEmptyTitle: 新しいものはありません
+notificationsEmptyBody: あなたの投稿への返信がここに出ます。
+notificationLikedPost: さんがあなたの投稿にいいねしました
+notificationLikedPostWithOthers(param=count):
+  other: さんと他${count}人があなたの投稿にいいねしました
+notificationCommentOnPost: さんがあなたの投稿にコメントしました
+notificationReplyToComment: さんがあなたのコメントに返信しました
+notificationCommentOnFollowed: さんがフォロー中の投稿にコメントしました
+notificationOfficialReply: さんがあなたの投稿に返信しました
 notificationPostHidden: あなたの投稿は非表示になりました
-notificationSanction: あなたの投稿は一時停止されています
+notificationSanction: 投稿が一時的に停止されています
 
-errorTitle: 問題が発生しました
-errorBody: 読み込めませんでした。通信状況を確認してもう一度お試しください。
-retry: もう一度試す
+shareTitle: シェア
+shareInsightTitle: インサイトをシェア
+shareCourseTitle: ロードマップをシェア
+shareToConfession: Confession に投稿
+shareToConfessionHint: ロードマップを添えて、一緒に学べるように
+shareToConfessionInsightHint: このカードを投稿に添える
+shareCopyLink: リンクをコピー
+shareCopied: リンクをコピーしました
+shareInstagramStory: IG ストーリー
+shareFacebookStory: FB ストーリー
+shareMore: その他
+shareSendFriends: 友だちに送る
+shareStoryDone: ストーリーにシェアしました
+shareFailed: シェアできませんでした。もう一度お試しください。
+shareThemeLavender: ラベンダー
+shareThemeSky: スカイ
+shareOpenInMeUp: MeUp で開く
+shareBrandLine: MeUp · Daily Growth Trainer
+shareLearningThis: いま学んでいます
+shareCancel: キャンセル
+
+errorTitle: うまくいきませんでした
+errorBody: 読み込めませんでした。接続を確認してもう一度お試しください。
+retry: もう一度
 
 timeJustNow: たったいま
 timeMinutes(param=count):
-  other: ${count} 分前
+  other: ${count}分前
 timeHours(param=count):
-  other: ${count} 時間前
+  other: ${count}時間前
 timeYesterday: 昨日
 timeDays(param=count):
-  other: ${count} 日前
+  other: ${count}日前
 timeWeeks(param=count):
-  other: ${count} 週間前
+  other: ${count}週前
 
-sortRecent: 新着
-sortActive: 話題
-composeCta: 投稿する
-followNote: フォロー中のトピックの新着
-manageTopics: トピックを管理
+sortRecent: 新しい順
+sortActive: 盛り上がり順
+composeCta: 投稿を書く
+followNote: フォロー中のルームの新しい投稿
+manageTopics: ルームを管理
+
+# 円卓 — グループチャット (design `S-03`)
+chatTitle: 円卓
+chatOnline(count): ${count}人がオンライン
+chatToday: 今日
+chatModerator: モデレーター
+chatHint: グループにメッセージ…
+chatSending: 送信中…
+chatSeenAt(time): ${time} · 既読
+chatEmptyTitle: まだ誰も話していません
+chatEmptyBody: 最初のひとことをどうぞ。

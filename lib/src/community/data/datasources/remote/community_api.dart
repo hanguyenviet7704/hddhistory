@@ -11,7 +11,9 @@ abstract class CommunityApi {
     @Query('page') required int page,
     @Query('take') required int take,
     @Query('topicId') String? topicId,
-    @Query('followingOnly') bool? followingOnly,
+    // Per-POST, not per-room: the "Đang theo dõi" tab lists the threads the
+    // reader put the bell on.
+    @Query('followedOnly') bool? followedOnly,
     @Query('sort') String? sort,
     @Query('anchorAt') String? anchorAt,
   });
@@ -93,4 +95,39 @@ abstract class CommunityApi {
 
   @GET(AppEndpoint.communityMyStatus)
   Future<BaseResponse<CommunityMemberStatusModel>> getMemberStatus();
+
+  @GET(AppEndpoint.communityRoomSuggestions)
+  Future<BaseResponse<CommunityRoomSuggestionListModel>> getRoomSuggestions();
+
+  // Returns the row with `mergedIntoExisting` set when the name matched an ask
+  // already open — the server turns the duplicate into a vote rather than
+  // refusing it.
+  @POST(AppEndpoint.communityRoomSuggestions)
+  Future<BaseResponse<CommunityRoomSuggestionModel>> createRoomSuggestion(
+    @Body() Map<String, dynamic> body,
+  );
+
+  @GET(AppEndpoint.communityChatRoom)
+  Future<BaseResponse<CommunityChatRoomModel>> getChatRoom(@Path('room') String room);
+
+  @GET(AppEndpoint.communityChatMessages)
+  Future<BaseResponse<CommunityChatPageModel>> getChatMessages(
+    @Path('room') String room, {
+    @Query('page') required int page,
+    @Query('take') required int take,
+  });
+
+  @POST(AppEndpoint.communityChatMessages)
+  Future<BaseResponse<CommunityChatMessageModel>> sendChatMessage(
+    @Path('room') String room,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @POST(AppEndpoint.communityChatMessageLike)
+  Future<BaseResponse<CommunityChatLikeModel>> likeChatMessage(@Path('id') String id);
+
+  @POST(AppEndpoint.communityRoomSuggestionVote)
+  Future<BaseResponse<CommunityRoomSuggestionModel>> voteRoomSuggestion(
+    @Path('id') String id,
+  );
 }

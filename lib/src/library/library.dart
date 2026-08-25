@@ -51,6 +51,7 @@ part 'presentation/widgets/saved_card_actions.dart';
 part 'presentation/widgets/saved_card_detail_overlay.dart';
 part 'presentation/widgets/saved_cards_deck.dart';
 part 'presentation/widgets/saved_quote_card.dart';
+part 'presentation/widgets/saved_card_share_sheet.dart';
 part 'presentation/widgets/saved_share.dart';
 
 //* Parts for generated files

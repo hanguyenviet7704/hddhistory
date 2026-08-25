@@ -106,11 +106,78 @@ mixin AppCustomColor {
   // and its #F6F6FB page ground is `backgroundGray` — reused rather than
   // duplicated a shade apart.
   static const Color communityMuted = Color(0xFF9AA4B2);
+  // Author name above a post's body and on a feed card (design `S-01`/`S-04`).
+  // Deliberately NOT `textPrimary`: the headline right above it is #0D121C, and
+  // the name has to sit one step under the headline without going muted.
+  static const Color communityAuthorName = Color(0xFF3A4250);
+  // Comment and reply body ink in a thread (design `S-04`). Darker than the
+  // post's own body (#5F6F86 `streakTextMuted`) on purpose — on a screen where
+  // the post above has already gone grey, an answer is the newer voice.
+  static const Color communityCommentInk = Color(0xFF2C3444);
+  // The "N đang online" dot in a chat room's header (design `S-03`). Same value
+  // as `communityRoomInks[1]`, named separately because one is a room's tint by
+  // position and this one means "there are people in here right now".
+  static const Color communityRoomInkGreen = Color(0xFF2F9E6B);
+  // The group chat's brand tile and its FAB (design `S-03`) — a violet the
+  // gradient runs between. Its own pair rather than `brandPrimary`: the tile is
+  // the MeUp mark's ground, not a button.
+  static const Color communityChatMarkStart = Color(0xFF7C79EC);
+  static const Color communityChatMarkEnd = Color(0xFF5045C9);
+  // The unread badge on the FAB, and the filled heart on a reaction chip.
+  static const Color communityChatBadge = Color(0xFFF2545B);
+  // Border of a reaction chip under a chat bubble.
+  static const Color communityChatChipBorder = Color(0xFFEDEEF4);
+  // Placeholder ink on the composer (design `S-06`) — the title hint, the body
+  // hint, the room-menu section label. Lighter than `communityMuted`
+  // (#9AA4B2), which is real if quiet content: this ink is text not there yet.
+  static const Color communityPlaceholder = Color(0xFFB4BCC9);
+  // Border and fill of an ATTACHED item inside a post — the course card and the
+  // saved-card tile (design `S-01`/`S-04`). Its own pair rather than
+  // `borderDefault`/`backgroundGray`: the attachment has to read as a quoted
+  // object sitting inside the post, one step apart from the post's own ground.
+  static const Color communityAttachBorder = Color(0xFFEAEBF2);
+  static const Color communityAttachSurface = Color(0xFFFAFAFD);
+  // The hairline under a post and the connector rail down its thread (design
+  // `S-04`). A shade warmer than `borderSecondary` (#E3E8EF), the app's general
+  // divider: this one belongs to the thread.
+  static const Color communityRule = Color(0xFFE7E8F0);
   // Heading colour on a topic page's header block.
   static const Color communityTopicHeading = Color(0xFF211B40);
   // Edge of the weekly-question card. Lighter than `borderBrand` (#C7C5FA),
   // which reads as a selected state next to this card's tinted fill.
   static const Color communityWeeklyBorder = Color(0xFFDAD7F7);
+  // The room chip above a post's title. A tint of its own rather than
+  // `brandPrimary50` (#EBEAFD): the chip sits on a translucent card over the
+  // study background, and the darker fill loses its edge there.
+  static const Color communityChipBackground = Color(0xFFF4F3FD);
+  static const Color communityChipInk = Color(0xFF7A69E8);
+  // The kind badge on a notification avatar. Like and moderation reuse
+  // `errorRed`; a comment gets its own violet so the three read apart.
+  static const Color communityBadgeComment = Color(0xFF8148C4);
+  // The dark quote card an attached keypoint renders as — the same ink as
+  // `communityTopicHeading`, named separately because one is a background and
+  // the other is text.
+  static const Color communityInsightCard = Color(0xFF211B40);
+  // Room tile tints in the "Khám phá phòng" grid, cycled by position so a room
+  // keeps its colour between visits.
+  static const List<Color> communityRoomTints = [
+    Color(0xFFEEEDFB),
+    Color(0xFFE4F1EA),
+    Color(0xFFFBE9E4),
+    Color(0xFFFBE4EC),
+    Color(0xFFE6EEFB),
+    Color(0xFFF3EAFB),
+    Color(0xFFFCF2DE),
+  ];
+  static const List<Color> communityRoomInks = [
+    Color(0xFF554FF0),
+    Color(0xFF2F9E6B),
+    Color(0xFFD2683F),
+    Color(0xFFC4477A),
+    Color(0xFF3B6FD4),
+    Color(0xFF8148C4),
+    Color(0xFFB98418),
+  ];
 
   // Onboarding (P3 redesign) — exact Figma hex values that don't already
   // match an existing token. Where a design value coincided with an existing
@@ -154,6 +221,7 @@ mixin AppCustomColor {
   static const Color shareInstagramMid = Color(0xFFE95950);
   static const Color shareInstagramEnd = Color(0xFFFCAF45);
   static const Color shareFacebookBlue = Color(0xFF1877F2);
+
   /// rgba(20,20,60,.08) — lifts a white disc off a white sheet.
   static const Color shareTargetShadow = Color(0x1414143C);
   static const Color weekRecapCourseLabel = Color(0xFF2E4A6B);

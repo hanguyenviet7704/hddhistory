@@ -198,9 +198,24 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with TickerProviderStat
     _flip.value > 0.5 ? _flip.reverse() : _flip.forward();
   }
 
+  /// Opens the share sheet rather than firing the OS share directly: a card can
+  /// go INTO Confession as a post, and that destination has no place in the
+  /// system sheet.
   Future<void> _share() async {
     final card = _card;
     if (card == null) return;
+
+    await showSavedCardShareSheet(
+      context,
+      card: card,
+      onShareImage: _shareImage,
+    );
+  }
+
+  Future<void> _shareImage() async {
+    final card = _card;
+    if (card == null || !mounted) return;
+
     final ok = await shareSavedQuoteCard(
       context,
       boundaryKey: _shareBoundaryKey,

@@ -1,104 +1,173 @@
-navLabel: 커뮤니티
-title: 커뮤니티
+navLabel: Confession
+title: Confession
 tabAll: 전체
-tabTopics: 주제
+tabFollowing: 팔로우 중
+tabTopics: 방
 scopeAll: 전체 글
 scopeFollowing: 팔로우 중
 
 officialAuthorName: MeUp 팀
 deletedAuthorName: MeUp 회원
+anonymousAuthorName: 익명
 
 follow: + 팔로우
 following: 팔로우 중
-sectionFollowing: 팔로우 중
-sectionAllTopics: 전체 주제
+sectionFavourites: 즐겨찾기
+sectionExploreRooms: 방 둘러보기
 topicMembers(param=count):
   other: ${count}명
+topicMembersLong(param=count):
+  other: 멤버 ${count}명
 topicPostsThisWeek(param=count):
   other: 이번 주 ${count}개
+topicPostsToday(param=count):
+  other: 오늘 ${count}개 새 글
+topicNoPostsToday: 오늘은 아직 새 글이 없어요
+topicJustJoined: 방금 참여
+
+roomSuggestPromptTitle: 원하는 방이 없나요?
+roomSuggestPromptBody: 새 방을 제안해 주세요. 원하는 사람이 모이면 MeUp이 열어 드려요.
+roomSuggestCta: 새 방 제안하기
+roomSuggestFormTitle: 새 방 제안
+roomSuggestNameLabel: 방 이름
+roomSuggestNameHint: "예: 도시에서 혼자 살기"
+roomSuggestDescLabel: 어떤 방인가요
+roomSuggestDescHint: 누구를 위한 방이고, 어떤 이야기를 하는 곳인가요?
+roomSuggestSubmit: 제안 보내기
+roomSuggestCancel: 취소
+roomSuggestSent: 제안을 보냈어요. 곧 살펴볼게요.
+roomSuggestMerged: 이미 같은 방을 제안한 분이 있어요. 회원님의 지지로 반영했어요.
+roomSuggestOthersTitle: 검토 중인 제안
+roomSuggestVotes(param=count):
+  other: ${count}명이 원해요
+roomSuggestVote: + 지지하기
+roomSuggestVoted: 지지함
+roomSuggestTooMany: 대기 중인 제안이 3개예요. 답을 드린 뒤에 다시 보내 주세요.
+roomSuggestClosed: 이 제안은 이미 처리했어요.
 
 weeklyLabel: 이번 주 질문
 weeklyLabelWithWeek: 이번 주 질문 · ${week}주차
+weeklyWeekRange: ${week}주차 · ${range}
 weeklyDaysLeft(param=count):
   other: ${count}일 남음
 weeklyAnswered(param=count):
   other: ${count}명이 답했어요
-weeklyJoin: 참여하기
+weeklyJoin: 이야기 나누기
 weeklyTitle: 이번 주 질문
-weeklyNoneTitle: 아직 열린 질문이 없어요
-weeklyNoneBody: 매주 새로운 질문을 올립니다. 며칠 뒤에 다시 들러 주세요.
-weeklyClosed: 이번 주 질문은 마감됐어요. 새 질문이 곧 올라옵니다.
+weeklyNote: 회원님의 경험으로 답해 주시고, 이곳을 안전하게 지켜 주세요.
+weeklyNoneTitle: 이번 주 질문은 아직 없어요
+weeklyNoneBody: MeUp 팀이 매주 새 질문을 올려요. 며칠 뒤에 다시 와 주세요.
+weeklyClosed: 이번 주 질문은 마감됐어요. 새 질문이 곧 올라와요.
 
 postTitle: 글
 reply: 답글
 replyingTo: 답글 대상
 commentCount(param=count):
   other: 댓글 ${count}개
-commentsLocked: 이 글은 댓글이 닫혀 있어요.
-composerHintComment: 댓글을 남겨 보세요…
-composerHintReply: 답글을 남겨 보세요…
-composerHintWeekly: 이번 주 질문에 답해 보세요…
+commentsLocked: 이 글은 댓글이 닫혔어요.
+composerHintComment: 댓글 쓰기…
+composerHintReply: 답글 쓰기…
+composerHintWeekly: 이번 주 질문에 답하기…
+
+followThread: 이 글 팔로우
+unfollowThread: 팔로우 해제
+followThreadDone: 새 댓글이 오면 알려 드려요.
 
 emptyFeedTitle: 아직 아무것도 없어요
-emptyFeedBody: 첫 글을 남겨 보세요. 지금 어떤 생각이 드세요?
-emptyFollowingTitle: 팔로우한 주제가 없어요
-emptyFollowingBody: 주제를 팔로우하면 그 글이 여기에 보여요.
+emptyFeedBody: 첫 글을 써 보세요. 지금 어떤 생각을 하고 있나요?
+emptyFollowingTitle: 팔로우한 글이 없어요
+emptyFollowingBody: 글의 종을 누르면 새 댓글을 알려 드려요.
 emptyFollowingAction: 전체 글 보기
-emptyTopicsTitle: 아직 주제가 없어요
-emptyTopicsBody: 팀에서 준비 중이에요. 곧 다시 확인해 주세요.
-emptyTopicFeedTitle: 이 주제에는 아직 글이 없어요
+emptyTopicsTitle: 아직 방이 없어요
+emptyTopicsBody: MeUp 팀이 준비하고 있어요. 곧 다시 와 주세요.
+emptyTopicFeedTitle: 이 방에는 아직 글이 없어요
 emptyTopicFeedBody: 회원님의 글이 첫 글이 될 수 있어요.
 emptyCommentsTitle: 아직 댓글이 없어요
-emptyCommentsBody: 따뜻한 한마디도, "저도 그랬어요" 한마디도 좋아요.
+emptyCommentsBody: 따뜻한 한마디, 아니면 "저도 그랬어요" 한마디라도요.
 
 menuHide: 이 내용 숨기기
-menuReport: 글 신고하기
-menuDelete: 삭제하기
+menuReport: 글 신고
+menuDelete: 글 삭제
 deletePostDone: 글을 삭제했어요
 
-reportTitle: 이 내용 신고하기
-reportSubtitle: 팀이 확인한 뒤 처리합니다. 내용이 자동으로 숨겨지지는 않아요.
-reportSpam: 스팸이나 홍보
-reportHarassment: 괴롭힘이나 욕설
+reportTitle: 이 내용 신고
+reportSubtitle: MeUp 팀이 확인하고 판단해요. 자동으로 숨겨지지 않아요.
+reportSpam: 스팸 또는 홍보
+reportHarassment: 괴롭힘, 모욕
 reportAdult: 성인 콘텐츠
 reportMisinformation: 잘못된 정보
-reportPrivacy: 다른 사람의 신원을 드러냄
-reportOther: 기타
-reportSent: 감사합니다. 팀이 확인할게요.
+reportPrivacy: 다른 사람의 신분 노출
+reportOther: 다른 이유
+reportSent: 감사해요. MeUp 팀이 확인할게요.
 reportFailed: 신고를 보내지 못했어요. 다시 시도해 주세요.
 
-guestTitle: 로그인하고 참여해 보세요
-guestBody: 읽기는 모두 가능해요. 글쓰기, 댓글, 좋아요는 계정이 필요해요.
+guestTitle: 로그인하고 함께하기
+guestBody: 읽는 건 자유예요. 글쓰기, 댓글, 좋아요는 로그인이 필요해요.
 guestAction: 로그인
 mutedTitle: 지금은 글을 쓸 수 없어요
-mutedBodyFallback: 커뮤니티 규칙 위반으로 글쓰기가 일시 중지됐어요.
+mutedBodyFallback: 커뮤니티 규칙 위반으로 글쓰기가 일시 정지됐어요.
 mutedUntil: ${date}까지
 
 composeTitle: 새 글
 composeSubmit: 올리기
-composeGroupLabel: 주제에 올리기 · 선택
-composeNoGroup: 주제 선택 안 함
-composeBodyHint: 지금 어떤 생각이 드세요?
+composeRoomPick: 방 선택
+composeRoomSectionLabel: 참여 중인 방
+composeNoGroup: 방 선택 안 함
+composeSubjectHint: 글 제목
+composeBodyHint: 여기에 회원님의 이야기를…
 composeAddImage: 사진 추가
+composeAnonymous: 익명
+composeAnonymousOnHint: 이 글에는 이름이 보이지 않아요.
 composeCourseAttached: 코스를 첨부했어요
-composePostingAs: ${name}(으)로 올립니다
-composeVisibilityHint: 주제에 있는 모든 사람이 회원님의 글을 볼 수 있어요.
+composePostingAs: ${name}(으)로 올리기
+composeVisibilityHint: 방에 있는 모두가 글을 볼 수 있어요.
+composeEmptyBody: 몇 줄 쓰고 올려 주세요.
+
+attachSheetTitle: 라이브러리에서 첨부
+attachTabCourses: 코스
+attachTabCards: 저장한 카드
+attachLimitToast: 글마다 첨부는 최대 2개예요.
+attachEmptyCourses: 첨부할 코스가 아직 없어요.
+attachEmptyCards: 저장한 카드가 아직 없어요.
+attachRemove: 첨부 해제
 
 attachedCourseTitle: MeUp 로드맵
-attachedCourseHint: 이 글에서 말한 코스를 열어 보세요.
-
-savedTitle: 저장함
-savedEmptyTitle: 저장한 글이 없어요
-savedEmptyBody: 글의 북마크를 누르면 여기에 보관돼요.
+attachedCourseHint: 이 글이 말하는 코스를 열어요.
+attachedCourseCta: 코스 보기
 
 notificationsTitle: 알림
-notificationsEmptyTitle: 새 알림이 없어요
-notificationsEmptyBody: 회원님 글에 달린 답글이 여기에 보여요.
-notificationCommentOnPost: 회원님의 글에 댓글이 달렸어요
-notificationReplyToComment: 회원님에게 답글이 달렸어요
-notificationOfficialReply: MeUp 팀이 답했어요
+notificationsEmptyTitle: 새로운 소식이 없어요
+notificationsEmptyBody: 회원님 글에 온 답글이 여기 나와요.
+notificationLikedPost: 님이 회원님의 글을 좋아합니다
+notificationLikedPostWithOthers(param=count):
+  other: 님 외 ${count}명이 회원님의 글을 좋아합니다
+notificationCommentOnPost: 님이 회원님의 글에 댓글을 남겼습니다
+notificationReplyToComment: 님이 회원님의 댓글에 답글을 남겼습니다
+notificationCommentOnFollowed: 님이 회원님이 팔로우한 글에 댓글을 남겼습니다
+notificationOfficialReply: 님이 회원님의 글에 답했습니다
 notificationPostHidden: 회원님의 글이 숨겨졌어요
-notificationSanction: 회원님의 글쓰기가 일시 중지됐어요
+notificationSanction: 글쓰기가 일시 정지됐어요
+
+shareTitle: 공유
+shareInsightTitle: 인사이트 공유
+shareCourseTitle: 로드맵 공유
+shareToConfession: Confession에 올리기
+shareToConfessionHint: 로드맵을 함께 올려 같이 배워요
+shareToConfessionInsightHint: 이 카드를 글에 첨부해요
+shareCopyLink: 링크 복사
+shareCopied: 링크를 복사했어요
+shareInstagramStory: IG 스토리
+shareFacebookStory: FB 스토리
+shareMore: 더 보기
+shareSendFriends: 친구에게 보내기
+shareStoryDone: 스토리에 공유했어요
+shareFailed: 공유하지 못했어요. 다시 시도해 주세요.
+shareThemeLavender: 라벤더
+shareThemeSky: 스카이
+shareOpenInMeUp: MeUp에서 열기
+shareBrandLine: MeUp · Daily Growth Trainer
+shareLearningThis: 지금 배우고 있어요
+shareCancel: 취소
 
 errorTitle: 문제가 생겼어요
 errorBody: 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.
@@ -116,7 +185,18 @@ timeWeeks(param=count):
   other: ${count}주 전
 
 sortRecent: 최신
-sortActive: 활발
+sortActive: 활발한 순
 composeCta: 글쓰기
-followNote: 팔로우한 주제의 새 글
-manageTopics: 주제 관리
+followNote: 팔로우한 방의 새 글
+manageTopics: 방 관리
+
+# 원탁 — 그룹 채팅방 (design `S-03`)
+chatTitle: 원탁
+chatOnline(count): ${count}명 접속 중
+chatToday: 오늘
+chatModerator: 운영자
+chatHint: 그룹에 메시지…
+chatSending: 보내는 중…
+chatSeenAt(time): ${time} · 읽음
+chatEmptyTitle: 아직 아무도 말하지 않았어요
+chatEmptyBody: 먼저 한마디 남겨보세요.

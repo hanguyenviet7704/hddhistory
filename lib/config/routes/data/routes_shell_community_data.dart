@@ -64,6 +64,27 @@ class CommunityWeeklyRoute extends BaseTransitionRouteData with $CommunityWeekly
   );
 }
 
+/// A group chat room. Slides up from the bottom and hides the nav pill: the
+/// design opens it as a sheet OVER the forum, not as a sixth tab.
+///
+/// A new cubit per push (`injectable` factory) — the room polls while it is
+/// open, and a singleton would keep doing that after the reader has left.
+class CommunityChatRoute extends BaseTransitionRouteData with $CommunityChatRoute {
+  const CommunityChatRoute({required this.room});
+
+  /// The room's SLUG, so the app names the room instead of carrying its id.
+  final String room;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider(
+    create: (_) => AppDI.injector.get<CommunityChatCubit>(),
+    child: CommunityChatPage(room: room),
+  );
+}
+
 class CommunityComposeRoute extends BaseTransitionRouteData with $CommunityComposeRoute {
   const CommunityComposeRoute();
 
@@ -73,7 +94,11 @@ class CommunityComposeRoute extends BaseTransitionRouteData with $CommunityCompo
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
-      BlocProvider(create: (_) => AppDI.injector.get<CommunityComposeCubit>()),
+      BlocProvider(
+        // applyPendingSeed drains the hand-off from a "Đăng vào Confession"
+        // share, so the attachment is on screen in the composer's FIRST frame.
+        create: (_) => AppDI.injector.get<CommunityComposeCubit>()..applyPendingSeed(),
+      ),
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
     ],
     child: const CommunityComposePage(),
@@ -88,12 +113,4 @@ class CommunityNotificationRoute extends BaseTransitionRouteData with $Community
     create: (_) => AppDI.injector.get<CommunityNotificationCubit>(),
     child: const CommunityNotificationPage(),
   );
-}
-
-class CommunitySavedRoute extends BaseTransitionRouteData with $CommunitySavedRoute {
-  const CommunitySavedRoute();
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) =>
-      const CommunitySavedPage();
 }

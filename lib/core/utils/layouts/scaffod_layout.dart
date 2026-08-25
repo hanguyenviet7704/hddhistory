@@ -288,11 +288,13 @@ class _NavItem extends StatelessWidget {
     final label = _label(context);
     // Active = Text/Brand navy; inactive = Icon/Disable (#AAB8CD) per Figma.
     final tint = isActive ? _navColor : AppCustomColor.textQuaternary;
-    // The Habit (growth) sprout is two-tone — coloured leaves + a WHITE inner
-    // highlight. A srcIn colorFilter would repaint that white too, flattening
-    // it into a blob, so tint it via currentColor (leaves) and let the white
-    // stay white (Figma nav bar 11634:15439). Other icons are single-tone.
-    final isTwoToneSprout = index == 3;
+    // Two icons are two-tone — a coloured body plus a WHITE inner detail: the
+    // Habit sprout (leaves + highlight) and the Confession bubble (bubble + its
+    // three dots). A srcIn colorFilter would repaint that white too, flattening
+    // each into a blob, so tint the body via currentColor and let the white
+    // stay white (Figma nav bar 11634:15439; design `13 · Confession`
+    // nav-confession-on/off). The other three are single-tone.
+    final isTwoTone = index == 3 || index == 4;
 
     return Expanded(
       child: Semantics(
@@ -309,8 +311,8 @@ class _NavItem extends StatelessWidget {
                 _iconPaths[index],
                 width: 24.w,
                 height: 24.w,
-                theme: isTwoToneSprout ? SvgTheme(currentColor: tint) : const SvgTheme(),
-                colorFilter: isTwoToneSprout ? null : ColorFilter.mode(tint, BlendMode.srcIn),
+                theme: isTwoTone ? SvgTheme(currentColor: tint) : const SvgTheme(),
+                colorFilter: isTwoTone ? null : ColorFilter.mode(tint, BlendMode.srcIn),
               ),
               if (isActive) ...[
                 SizedBox(height: 2.h),

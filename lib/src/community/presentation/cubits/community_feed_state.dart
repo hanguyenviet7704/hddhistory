@@ -39,11 +39,14 @@ abstract class CommunityFeedState with _$CommunityFeedState {
 extension CommunityFeedStateX on CommunityFeedState {
   bool get hasMore => currentPage < totalPages;
 
-  bool get isEmpty =>
-      status == CommunityStatus.success && posts.isEmpty && pinned.isEmpty;
+  bool get isEmpty => status == CommunityStatus.success && posts.isEmpty && pinned.isEmpty;
 
-  /// The "following" tab with nothing followed yet is a different empty state
-  /// from a followed-but-quiet one: the fix is to follow a topic, not to wait.
-  bool get isFollowingNothing =>
-      scope == CommunityFeedScope.following && topics.following.isEmpty;
+  /// Nothing in the "Đang theo dõi" tab means exactly one thing: no bell has
+  /// been tapped yet.
+  ///
+  /// Unlike the old room-scoped version of this tab, there is no "you follow
+  /// something but it is quiet" case to tell apart — a followed thread IS a
+  /// post, so following anything at all fills the list. The empty state can
+  /// therefore say what to do instead of hedging.
+  bool get isFollowingNothing => scope == CommunityFeedScope.following && posts.isEmpty;
 }

@@ -18,10 +18,11 @@ class CommunityPostDetailPage extends StatelessWidget {
         final cubit = context.read<CommunityPostCubit>();
         final post = state.post;
 
-        return Scaffold(
+        return CommunityFlatSurface(
+          child: Scaffold(
           backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
-          appBar: _CommunityAppBar(
-            title: l10n.postTitle,
+          appBar: _PostAppBar(
+            topic: post?.topic,
             onBack: () => Navigator.of(context).maybePop(
               CommunityPostScreenResult(post: post),
             ),
@@ -54,8 +55,129 @@ class CommunityPostDetailPage extends StatelessWidget {
                       _ClosedComposerNote(state: state),
                   ],
                 ),
+          ),
         );
       },
+    );
+  }
+}
+
+/// Marks a subtree whose text is drawn DIRECTLY on the study background, with
+/// no card between the two — a post and its thread, and the weekly question and
+/// its answers.
+///
+/// Confession shows the reader's background at full strength, exactly like Habit
+/// and Home. Text on a card can keep the design's dark ink because the card
+/// carries it; text on the background itself cannot, and has to go through
+/// [studyThemeOnBg] so it flips light on a dark preset. A couple of widgets
+/// ([CommunityAuthorLine], `_CountAction`) are drawn on BOTH kinds of surface,
+/// so the surface announces itself once around the screen rather than every
+/// intermediate widget carrying a flag it does not use.
+class CommunityFlatSurface extends InheritedWidget {
+  const CommunityFlatSurface({super.key, required super.child});
+
+  /// True when [context] is on the background rather than on a card. Wrap the
+  /// Scaffold, not its body — an `appBar:` is not a descendant of the body.
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<CommunityFlatSurface>() != null;
+
+  // Presence is the whole message and it never changes for a given screen.
+  @override
+  bool updateShouldNotify(CommunityFlatSurface oldWidget) => false;
+}
+
+/// Avatar width plus its gap: everything under the author line lines up with
+/// the name, exactly as on the feed card.
+const double _postBodyIndent = CommunityBylineRow.indent;
+
+/// The post screen's header: back, then the ROOM this post is in (design
+/// `S-04`).
+///
+/// Left-aligned and naming the room rather than a centred "Bài viết": the room
+/// is the context a reader needs on the way in, and it doubles as the way back
+/// into it. Falls back to "Bài viết" for a post written without a room, which
+/// is the design's own second branch.
+class _PostAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _PostAppBar({required this.topic, this.onBack});
+
+  final CommunityPostTopicEntity? topic;
+  final VoidCallback? onBack;
+
+  @override
+  Size get preferredSize => Size.fromHeight(52.h);
+
+  @override
+  Widget build(BuildContext context) {
+    final room = topic;
+    final image = room?.imageUrl;
+    final slot = communityRoomSlot(room?.id ?? '');
+
+    return AppBar(
+      backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: false,
+      titleSpacing: 0,
+      leadingWidth: 44.w,
+      leading: GestureDetector(
+        onTap: onBack ?? () => Navigator.of(context).maybePop(),
+        behavior: HitTestBehavior.opaque,
+        // Center, or the glyph inflates: AppBar hands `leading` a TIGHT box
+        // (44 here), and SvgPicture's own width/height lose to it.
+        child: Center(
+          child: CommunityGlyph(
+            AppAsset.svg.app.icCommunityBack,
+            // 18, not the design's 21: at 21 the design's 2.2 stroke lands a
+            // 1.9pt chevron, which reads heavier than every other icon on the
+            // screen. 18 keeps the drawn height it had before while taking the
+            // design's shape.
+            size: 18,
+            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+          ),
+        ),
+      ),
+      title: GestureDetector(
+        onTap: room == null
+            ? null
+            : () => CommunityTopicRoute(topicId: room.id).push(context),
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          children: [
+            if (room != null) ...[
+              // The room's picture when it has one; otherwise the tinted house
+              // glyph that stands for a room everywhere else in the forum, so a
+              // room with no image still reads as a room and not as a gap.
+              ClipRRect(
+                borderRadius: BorderRadius.circular(9.r),
+                child: image != null && image.isNotEmpty
+                    ? DCachedImage(url: image, width: 28.w, height: 28.w, fit: BoxFit.cover)
+                    : Container(
+                        width: 28.w,
+                        height: 28.w,
+                        alignment: Alignment.center,
+                        color: AppCustomColor.communityRoomTints[slot],
+                        child: CommunityGlyph(
+                          AppAsset.svg.app.icCommunityRoom,
+                          size: 15,
+                          color: AppCustomColor.communityRoomInks[slot],
+                        ),
+                      ),
+              ),
+              SizedBox(width: 10.w),
+            ],
+            Expanded(
+              child: AppText(
+                room?.name ?? context.l10n.community.postTitle,
+                style: AppStyle.textBold14.copyWith(
+                  fontSize: 15.sp,
+                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                ),
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -72,81 +194,129 @@ class _PostHeaderBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n.community;
-    final cubit = context.read<CommunityPostCubit>();
-    final topic = post.topic;
-
     return Container(
-      padding: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.only(top: 6.h, bottom: 16.h),
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppCustomColor.borderSecondary)),
+        border: Border(
+          bottom: BorderSide(color: studyThemeOnBg(context, AppCustomColor.communityRule)),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (topic != null) ...[
-            _TopicPill(topic: topic),
-            SizedBox(height: 10.h),
+          // A quiet marker above the headline (design `S-04`). Decoration, so
+          // it is hidden from screen readers rather than read out as an
+          // unlabelled image.
+          ExcludeSemantics(
+            child: Container(
+              width: 60.w,
+              height: 60.w,
+              alignment: Alignment.center,
+              margin: EdgeInsets.only(bottom: 12.h),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppCustomColor.communityChipBackground,
+              ),
+              child: CommunityGlyph(
+                AppAsset.svg.app.icCommunityBubble,
+                size: 39,
+                color: AppCustomColor.communityChipInk,
+              ),
+            ),
+          ),
+          // The headline leads, above the author line — the same order as the
+          // feed card, so opening a post does not reshuffle what it said.
+          if (post.subject.trim().isNotEmpty) ...[
+            AppText(
+              post.subject,
+              style: AppStyle.textBold18.copyWith(
+                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                height: 1.28,
+                letterSpacing: -0.2,
+              ),
+            ),
+            SizedBox(height: 20.h),
           ],
-          Row(
-            children: [
-              CommunityAvatar(author: post.author, size: 26),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: AppText(
-                  post.author.isOfficial
-                      ? l10n.officialAuthorName
-                      : (post.author.name.isEmpty
-                            ? l10n.deletedAuthorName
-                            : post.author.name),
-                  style: AppStyle.textBold14.copyWith(
-                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+          // The same byline the feed card draws — the design uses one
+          // attribution on both screens. No pin here: being pinned orders the
+          // FEED, and repeating it on the post says nothing about the post.
+          CommunityBylineRow(author: post.author, createdAt: post.createdAt),
+          // 1, as in the design: the avatar hangs into the gutter below rather
+          // than pushing the body away from the name it belongs to.
+          SizedBox(height: 1.h),
+          // Everything under the author line hangs off the avatar's right edge
+          // (design `S-04`), so the post reads as one block belonging to one
+          // person rather than as a header with a wall beneath it. Same indent
+          // as the feed card, so opening a post does not re-flow what it said.
+          Padding(
+            padding: EdgeInsets.only(left: _postBodyIndent.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  post.body,
+                  style: AppStyle.text14.copyWith(
+                    fontSize: 13.5.sp,
+                    color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                    height: 1.55,
                   ),
-                  maxLines: 1,
                 ),
-              ),
-              if (post.isPinned) ...[
-                Icon(Icons.push_pin, size: 12.sp, color: AppCustomColor.streakActive),
-                SizedBox(width: 8.w),
+                if (post.attachedCard != null) ...[
+                  SizedBox(height: 13.h),
+                  CommunityInsightCard(
+                    card: post.attachedCard!,
+                    onTap: () => showCommunityInsightShareSheet(
+                      context,
+                      card: post.attachedCard!,
+                    ),
+                  ),
+                ],
+                if (post.attachedCourseId != null) ...[
+                  SizedBox(height: 13.h),
+                  CommunityAttachedCourseCard(courseId: post.attachedCourseId!),
+                ],
+                ...post.images.map(
+                  (image) => Padding(
+                    padding: EdgeInsets.only(top: 13.h),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: DCachedImage(url: image, width: double.infinity, fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                _PostActionRow(post: post),
               ],
-              AppText(
-                communityRelativeTime(context, post.createdAt),
-                style: AppStyle.text12.copyWith(
-                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          AppText(
-            post.body,
-            style: AppStyle.text14.copyWith(
-              color: studyThemeOnBg(context, AppCustomColor.textSecondary),
-              height: 1.6,
             ),
           ),
-          if (post.attachedCourseId != null)
-            CommunityAttachedCourseCard(courseId: post.attachedCourseId!),
-          ...post.images.map(
-            (image) => Padding(
-              padding: EdgeInsets.only(top: 12.h),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16.r),
-                child: DCachedImage(url: image, width: double.infinity, fit: BoxFit.cover),
-              ),
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Container(
-            padding: EdgeInsets.only(top: 11.h),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: AppCustomColor.surfaceMuted)),
-            ),
-            child: Row(
+        ],
+      ),
+    );
+  }
+}
+
+/// Tim · số bình luận · chuông · dấu ba chấm, dưới bài viết (design `S-04`).
+///
+/// Tách ra khỏi khối bài viết vì nó phải nằm TRONG phần thụt lề cùng thân bài,
+/// và nhét cả trăm dòng này vào giữa một Column đã dài thì không đọc nổi nữa.
+class _PostActionRow extends StatelessWidget {
+  const _PostActionRow({required this.post});
+
+  final CommunityPostEntity post;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.community;
+    final cubit = context.read<CommunityPostCubit>();
+
+    return Row(
+
               children: [
                 _CountAction(
-                  icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
+                  asset: post.isLiked
+                      ? AppAsset.svg.app.icCommunityHeartFill
+                      : AppAsset.svg.app.icCommunityHeart,
                   count: post.likeCount,
                   isActive: post.isLiked,
                   onTap: () => _gatedPost(
@@ -161,23 +331,30 @@ class _PostHeaderBlock extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.mode_comment_outlined,
-                      size: 17.sp,
+                    CommunityGlyph(
+                      AppAsset.svg.app.icCommunityBubble,
+                      size: 16,
                       color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                     ),
                     SizedBox(width: 6.w),
                     AppText(
                       '${post.commentCount}',
                       style: AppStyle.text12.copyWith(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w500,
                         color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                       ),
                     ),
                   ],
                 ),
                 SizedBox(width: 20.w),
+                // The bell, not a bookmark: this subscribes the reader to the
+                // thread, exactly as it does on the feed card, and the "Đang
+                // theo dõi" tab lists the posts it is lit on.
                 _CountAction(
-                  icon: post.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  asset: post.isSaved
+                      ? AppAsset.svg.app.icCommunityBellFill
+                      : AppAsset.svg.app.icCommunityBell,
                   count: post.saveCount,
                   isActive: post.isSaved,
                   onTap: () => _gatedPost(
@@ -185,19 +362,22 @@ class _PostHeaderBlock extends StatelessWidget {
                     cubit.state.memberStatus,
                     () => cubit.togglePostReaction(CommunityReactionKind.save),
                   ),
+                  tooltip: post.isSaved ? l10n.unfollowThread : l10n.followThread,
                 ),
                 const Spacer(),
                 _IconTap(
-                  icon: Icons.more_horiz,
-                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                  asset: AppAsset.svg.app.icCommunityMore,
+                  color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
                   onTap: () => showCommunityItemMenu(
                     context,
                     isMine: post.isMine,
                     onHide: () async {
-                      await AppDI.injector.get<HideCommunityItemUseCase>()(
-                        targetType: CommunityTargetType.post,
-                        targetId: post.id,
-                      ).run();
+                      await AppDI.injector
+                          .get<HideCommunityItemUseCase>()(
+                            targetType: CommunityTargetType.post,
+                            targetId: post.id,
+                          )
+                          .run();
                       if (context.mounted) {
                         Navigator.of(context).maybePop(
                           const CommunityPostScreenResult(removed: true),
@@ -234,43 +414,6 @@ class _PostHeaderBlock extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The topic chip above a post on the detail screen: a bordered pill, quieter
-/// than the feed card's dotted chip because here it is a way back out rather
-/// than a label on a row being scanned.
-class _TopicPill extends StatelessWidget {
-  const _TopicPill({required this.topic});
-
-  final CommunityPostTopicEntity topic;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => CommunityTopicRoute(topicId: topic.id).push(context),
-      behavior: HitTestBehavior.opaque,
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: AppCustomColor.backgroundGray,
-            borderRadius: BorderRadius.circular(99.r),
-            border: Border.all(color: AppCustomColor.borderDefault),
-          ),
-          child: AppText(
-            topic.name,
-            style: AppStyle.textBold10.copyWith(color: AppCustomColor.streakTextMuted),
-            maxLines: 1,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -311,24 +454,32 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n.community;
     final cubit = context.read<CommunityPostCubit>();
     final state = widget.state;
 
     return ListView(
       controller: _scrollController,
+      // The post and its thread run FLAT on the study background, with no card
+      // between them — every ink inside is therefore on-background ink (see
+      // [CommunityFlatSurface]), exactly as Habit and Home do it.
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-      children: [
+      children: _threadColumn(context, cubit, state),
+    );
+  }
+
+  /// The post (or the weekly question) and its thread.
+  List<Widget> _threadColumn(
+    BuildContext context,
+    CommunityPostCubit cubit,
+    CommunityPostState state,
+  ) {
+    final l10n = context.l10n.community;
+
+    return [
+        // No "N bình luận" heading here: design `S-04` runs straight from the
+        // post into its thread, and the weekly question prints its own count
+        // inside its header block — one here made that screen say it twice.
         widget.header,
-        Padding(
-          padding: EdgeInsets.only(bottom: 16.h),
-          child: AppText(
-            l10n.commentCount(count: state.answerCount),
-            style: AppStyle.textBold14.copyWith(
-              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-            ),
-          ),
-        ),
         if (state.commentsStatus == CommunityStatus.loading && state.comments.isEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 24.h),
@@ -360,8 +511,7 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
             padding: EdgeInsets.symmetric(vertical: 16.h),
             child: const Center(child: CircularProgressIndicator()),
           ),
-      ],
-    );
+    ];
   }
 
   void _showCommentMenu(
@@ -408,11 +558,7 @@ class _ClosedComposerNote extends StatelessWidget {
 
     final String message;
     if (!status.canPost) {
-      message = isGuest
-          ? l10n.guestBody
-          : (status.reason?.trim().isNotEmpty == true
-                ? status.reason!
-                : l10n.mutedBodyFallback);
+      message = isGuest ? l10n.guestBody : (status.reason?.trim().isNotEmpty == true ? status.reason! : l10n.mutedBodyFallback);
     } else if (state.isWeekly) {
       message = l10n.weeklyClosed;
     } else {
@@ -427,8 +573,10 @@ class _ClosedComposerNote extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 14.h),
         decoration: BoxDecoration(
+          // The same veil as the page: the design's composer strip is the page
+          // ground with a lighter pill floating on it, not a white plank.
           color: studyThemeCardColor(context, opacity: 0.94),
-          border: Border(top: BorderSide(color: AppCustomColor.borderDefault)),
+          border: const Border(top: BorderSide(color: AppCustomColor.communityRule)),
         ),
         child: SafeArea(
           top: false,
@@ -464,42 +612,40 @@ class _ClosedComposerNote extends StatelessWidget {
   }
 }
 
-/// Plain back-and-title bar, used by every pushed community screen.
+/// Plain back-and-title bar for the pushed community screens that do not name
+/// something in their header — the weekly question and the notification list.
 class _CommunityAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _CommunityAppBar({required this.title, this.onBack});
+  const _CommunityAppBar({required this.title});
 
   final String title;
-  final VoidCallback? onBack;
 
   @override
   Size get preferredSize => Size.fromHeight(52.h);
 
   @override
   Widget build(BuildContext context) {
+    final ink = studyThemeOnBg(context, AppCustomColor.textPrimary);
+
     return AppBar(
       backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       leading: GestureDetector(
-        onTap: onBack ?? () => Navigator.of(context).maybePop(),
+        onTap: () => Navigator.of(context).maybePop(),
         behavior: HitTestBehavior.opaque,
-        child: Icon(
-          Icons.arrow_back_ios_new,
-          size: 18.sp,
-          color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+        // Center, or the glyph inflates — see the post header's leading.
+        child: Center(
+          child: CommunityGlyph(AppAsset.svg.app.icCommunityBack, size: 18, color: ink),
         ),
       ),
       title: AppText(
         title,
-        style: AppStyle.textBold16.copyWith(
-          color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-        ),
+        style: AppStyle.textBold16.copyWith(fontSize: 15.sp, color: ink),
       ),
     );
   }
 }
-
 
 /// Same gate as the feed's, for the screens driven by [CommunityPostCubit].
 ///

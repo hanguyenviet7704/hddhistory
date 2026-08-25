@@ -185,6 +185,10 @@ part of '../routes.dart';
               path: RoutePath.communityWeekly,
               name: RouteNamed.communityWeekly,
             ),
+            TypedGoRoute<CommunityChatRoute>(
+              path: RoutePath.communityChat,
+              name: RouteNamed.communityChat,
+            ),
             TypedGoRoute<CommunityComposeRoute>(
               path: RoutePath.communityCompose,
               name: RouteNamed.communityCompose,
@@ -192,10 +196,6 @@ part of '../routes.dart';
             TypedGoRoute<CommunityNotificationRoute>(
               path: RoutePath.communityNotifications,
               name: RouteNamed.communityNotifications,
-            ),
-            TypedGoRoute<CommunitySavedRoute>(
-              path: RoutePath.communitySaved,
-              name: RouteNamed.communitySaved,
             ),
           ],
         ),

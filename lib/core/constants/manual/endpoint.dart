@@ -253,6 +253,13 @@ mixin AppEndpoint {
   static const String communityNotificationsUnread = '/api/v1/community/notifications/unread-count';
   static const String communityNotificationsRead = '/api/v1/community/notifications/read';
   static const String communityMyStatus = '/api/v1/community/me/status';
+  static const String communityRoomSuggestions = '/api/v1/community/room-suggestions';
+  static const String communityRoomSuggestionVote = '/api/v1/community/room-suggestions/{id}/vote';
+  // Group chat (design `S-03 · Hội bàn tròn`). `{room}` takes the room's SLUG,
+  // so the app names the room instead of carrying its database id.
+  static const String communityChatRoom = '/api/v1/community/chat/rooms/{room}';
+  static const String communityChatMessages = '/api/v1/community/chat/rooms/{room}/messages';
+  static const String communityChatMessageLike = '/api/v1/community/chat/messages/{id}/like';
 
   //* AI Coach
   static const String coachBubble = '/api/v1/coach/bubble';
