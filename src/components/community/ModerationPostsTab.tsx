@@ -233,10 +233,17 @@ const ModerationPostsTab: React.FC<Props> = ({ onViewComments }) => {
                         <span className="text-amber-700">· khoá bình luận</span>
                       )}
                     </div>
-                    {post.hiddenReason && (
-                      <div className="mt-1 text-xs text-amber-700">
-                        Lý do ẩn: {post.hiddenReason}
+                    {post.hiddenByReports ? (
+                      <div className="mt-1 text-xs text-red-700">
+                        Tự ẩn do {post.reportCount} báo cáo — chờ bạn xác nhận ở
+                        tab Báo cáo (giữ lại = hiện lại bài)
                       </div>
+                    ) : (
+                      post.hiddenReason && (
+                        <div className="mt-1 text-xs text-amber-700">
+                          Lý do ẩn: {post.hiddenReason}
+                        </div>
+                      )
                     )}
                   </TableCell>
                   <TableCell>

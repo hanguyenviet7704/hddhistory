@@ -180,6 +180,12 @@ const ModerationReportsTab: React.FC = () => {
                           </span>
                           <CommunityStatusChip status={report.target.status} />
                         </div>
+                        {report.target.hiddenByReports && (
+                          <div className="mt-1 text-xs text-red-700">
+                            Đã tự ẩn do đủ {report.target.reportCount} báo cáo —
+                            chờ bạn xác nhận
+                          </div>
+                        )}
                       </>
                     ) : (
                       // The author deleted it before a moderator got here.
@@ -244,7 +250,11 @@ const ModerationReportsTab: React.FC = () => {
                             resolve(report, CommunityReportStatus.RESOLVED_KEPT)
                           }
                         >
-                          Bỏ qua
+                          {/* An auto-hidden item comes BACK when kept, so the
+                              button has to promise that and not "ignore". */}
+                          {report.target?.hiddenByReports
+                            ? "Giữ lại (hiện lại)"
+                            : "Bỏ qua"}
                         </Button>
                       </div>
                     ) : (

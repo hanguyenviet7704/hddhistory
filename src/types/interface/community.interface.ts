@@ -117,6 +117,11 @@ export interface ICommunityAdminPost {
   commentCount: number;
   reportCount: number;
   hiddenReason?: string;
+  /**
+   * Taken out of the feed by the report count, not by a moderator — the reports
+   * are still open and this row is waiting for a verdict.
+   */
+  hiddenByReports?: boolean;
   createdAt: string;
 }
 
@@ -156,6 +161,8 @@ export interface ICommunityAdminComment {
   hiddenReason?: string | null;
   /** Hidden only because its post was hidden — restoring the post restores it. */
   hiddenWithPost?: boolean;
+  /** Hidden by the report count; still waiting for a moderator's verdict. */
+  hiddenByReports?: boolean;
   createdAt: string;
 }
 
@@ -205,6 +212,11 @@ export interface ICommunityReport {
     status: CommunityContentStatus;
     author: ICommunityAuthor;
     reportCount: number;
+    /**
+     * Hidden by the report count rather than by a moderator. Keeping it puts it
+     * back; keeping something a moderator hid does not.
+     */
+    hiddenByReports?: boolean;
   } | null;
   createdAt: string;
 }

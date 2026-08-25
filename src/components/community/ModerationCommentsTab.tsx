@@ -191,6 +191,11 @@ const ModerationCommentsTab: React.FC<Props> = ({
                       <div className="mt-1 text-xs text-amber-700">
                         Ẩn theo bài đăng — hiện lại bài sẽ hiện lại bình luận này
                       </div>
+                    ) : comment.hiddenByReports ? (
+                      <div className="mt-1 text-xs text-red-700">
+                        Tự ẩn do {comment.reportCount} báo cáo — chờ bạn xác nhận
+                        ở tab Báo cáo (giữ lại = hiện lại)
+                      </div>
                     ) : (
                       comment.hiddenReason && (
                         <div className="mt-1 text-xs text-amber-700">
