@@ -32,12 +32,22 @@ class CommunityChatCubit extends Cubit<CommunityChatState>
   /// only what calls [_pull].
   static const Duration _pollInterval = Duration(seconds: 6);
 
+  /// The pause after a line lands.
+  ///
+  /// Two seconds against the server's twenty lines a minute: enough that a
+  /// button held down cannot flood the room, short enough that nobody typing at
+  /// human speed ever notices it. The ceiling itself stays server-side — this is
+  /// only what keeps an ordinary conversation from tripping it.
+  static const Duration _sendCooldown = Duration(seconds: 2);
+
   String _room = '';
   Timer? _poll;
+  Timer? _cooldown;
 
   @override
   Future<void> close() {
     _poll?.cancel();
+    _cooldown?.cancel();
     return super.close();
   }
 
@@ -155,7 +165,7 @@ class CommunityChatCubit extends Cubit<CommunityChatState>
   /// own words.
   Future<bool> send(String body) async {
     final text = body.trim();
-    if (text.isEmpty || state.isSending) return false;
+    if (text.isEmpty || state.isSending || state.isCoolingDown) return false;
 
     final pending = CommunityChatMessageEntity(
       body: text,
@@ -163,7 +173,14 @@ class CommunityChatCubit extends Cubit<CommunityChatState>
       isPending: true,
       createdAt: DateTime.now(),
     );
-    emit(state.copyWith(isSending: true, messages: [...state.messages, pending]));
+    emit(
+      state.copyWith(
+        isSending: true,
+        messages: [...state.messages, pending],
+        // Cleared so a `false` from this call means THIS line was refused.
+        errorMessage: null,
+      ),
+    );
 
     var sent = false;
     await runUseCase<CommunityChatMessageEntity>(
@@ -180,10 +197,21 @@ class CommunityChatCubit extends Cubit<CommunityChatState>
       onSuccess: (message) {
         sent = true;
         emit(state.copyWith(isSending: false, messages: _merge([message])));
+        _startCooldown();
       },
     );
 
     return sent;
+  }
+
+  void _startCooldown() {
+    _cooldown?.cancel();
+    emit(state.copyWith(isCoolingDown: true));
+
+    _cooldown = Timer(_sendCooldown, () {
+      if (isClosed) return;
+      emit(state.copyWith(isCoolingDown: false));
+    });
   }
 
   Future<void> toggleLike(CommunityChatMessageEntity message) async {

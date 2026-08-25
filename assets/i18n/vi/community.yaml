@@ -173,6 +173,14 @@ errorTitle: Có gì đó chưa ổn
 errorBody: Chưa tải được nội dung. Kiểm tra kết nối rồi thử lại nhé.
 retry: Thử lại
 
+# Server từ chối vì viết quá nhanh / trùng nội dung (429). Copy nằm ở app vì
+# lúc chặn, API chỉ trả về mã ổn định chứ không trả câu chữ.
+tooFastSeconds(param=count):
+  other: Bạn viết nhanh quá. Thử lại sau ${count} giây nhé.
+tooFastMinutes(param=count):
+  other: Bạn viết nhanh quá. Thử lại sau ${count} phút nhé.
+duplicateContent: Nội dung này bạn vừa gửi rồi. Viết khác đi một chút nhé.
+
 timeJustNow: Vừa xong
 timeMinutes(param=count):
   other: ${count} phút trước

@@ -16,6 +16,7 @@ import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
+part 'data/community_exception.dart';
 part 'data/models/community_model.dart';
 part 'data/datasources/remote/community_api.dart';
 part 'data/repositories/community_repository.dart';

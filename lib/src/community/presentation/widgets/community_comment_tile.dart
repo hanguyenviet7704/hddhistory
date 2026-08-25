@@ -61,7 +61,7 @@ class CommunityCommentTile extends StatelessWidget {
                             child: Container(
                               width: 2.w,
                               height: double.infinity,
-                              color: studyThemeOnBg(context, AppCustomColor.communityRule),
+                              color: AppCustomColor.communityRule,
                             ),
                           ),
                         ),
@@ -95,7 +95,7 @@ class CommunityCommentTile extends StatelessWidget {
                     child: CustomPaint(
                       painter: _ReplyRailPainter(
                         hasNext: index < replies.length - 1,
-                        color: studyThemeOnBg(context, AppCustomColor.communityRule),
+                        color: AppCustomColor.communityRule,
                         // Meets the reply's 28px avatar at its centre.
                         elbowY: 14.h,
                       ),
@@ -221,7 +221,7 @@ class _CommentBody extends StatelessWidget {
                 name,
                 style: AppStyle.textBold14.copyWith(
                   fontSize: isReply ? 13.sp : 13.5.sp,
-                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                  color: AppCustomColor.textPrimary,
                 ),
                 maxLines: 1,
               ),
@@ -245,7 +245,7 @@ class _CommentBody extends StatelessWidget {
                 style: AppStyle.text12.copyWith(
                   fontSize: 9.5.sp,
                   fontWeight: FontWeight.w600,
-                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                  color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
                 ),
               ),
             ],
@@ -266,7 +266,7 @@ class _CommentBody extends StatelessWidget {
                 text: comment.body,
                 style: AppStyle.text14.copyWith(
                   fontSize: isReply ? 13.5.sp : 14.sp,
-                  color: studyThemeOnBg(context, AppCustomColor.communityCommentInk),
+                  color: AppCustomColor.communityCommentInk,
                   height: 1.55,
                 ),
               ),
@@ -282,7 +282,7 @@ class _CommentBody extends StatelessWidget {
                 style: AppStyle.text12.copyWith(
                   fontSize: 11.5.sp,
                   fontWeight: FontWeight.w600,
-                  color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                  color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
                 ),
               ),
               SizedBox(width: 14.w),
@@ -316,7 +316,7 @@ class _CommentBody extends StatelessWidget {
               child: CommunityGlyph(
                 AppAsset.svg.app.icCommunityMore,
                 size: 16,
-                color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+                color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
               ),
             ),
           ],
@@ -348,8 +348,8 @@ class _CommentMetaAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isActive
-        ? studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)
-        : studyThemeOnBg(context, AppCustomColor.streakTextMuted);
+        ? AppCustomColor.brandPrimary
+        : studyThemeCardMuted(context, AppCustomColor.streakTextMuted);
 
     return GestureDetector(
       onTap: onTap,

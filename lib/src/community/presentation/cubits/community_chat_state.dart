@@ -15,6 +15,11 @@ abstract class CommunityChatState with _$CommunityChatState {
     @Default(1) int totalPages,
     @Default(false) bool isLoadingMore,
     @Default(false) bool isSending,
+
+    /// A short pause after a line lands, so a hand on the send button cannot
+    /// fire ten requests — and so an ordinary conversation never reaches the
+    /// server's own flood ceiling.
+    @Default(false) bool isCoolingDown,
     @Default(CommunityMemberStatusEntity()) CommunityMemberStatusEntity memberStatus,
     String? errorMessage,
   }) = _CommunityChatState;

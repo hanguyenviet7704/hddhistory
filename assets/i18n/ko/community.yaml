@@ -173,6 +173,14 @@ errorTitle: 문제가 생겼어요
 errorBody: 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.
 retry: 다시 시도
 
+# 너무 빠른 작성이나 완전히 같은 내용은 서버가 429로 거절합니다. 서버는 코드만
+# 주기 때문에 문구는 앱에 둡니다.
+tooFastSeconds(param=count):
+  other: 너무 빠르게 작성하고 있어요. ${count}초 후에 다시 시도해 주세요.
+tooFastMinutes(param=count):
+  other: 너무 빠르게 작성하고 있어요. ${count}분 후에 다시 시도해 주세요.
+duplicateContent: 방금 같은 내용을 보냈어요. 조금 다르게 써 보세요.
+
 timeJustNow: 방금
 timeMinutes(param=count):
   other: ${count}분 전

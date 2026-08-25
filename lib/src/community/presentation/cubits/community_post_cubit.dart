@@ -150,13 +150,42 @@ class CommunityPostCubit extends Cubit<CommunityPostState>
   String? _replyToUserId;
   String? _replyToName;
 
+  /// The pause after a comment lands.
+  ///
+  /// Three seconds against the server's thirty comments per ten minutes. It is
+  /// there for the accidental double-send and the held button, not for a
+  /// determined spammer — that one is the server's job, and hitting its ceiling
+  /// now says so in a sentence a person can read.
+  static const Duration _commentCooldown = Duration(seconds: 3);
+
+  Timer? _cooldown;
+
+  @override
+  Future<void> close() {
+    _cooldown?.cancel();
+    return super.close();
+  }
+
+  void _startCooldown() {
+    _cooldown?.cancel();
+    emit(state.copyWith(isCoolingDown: true));
+
+    _cooldown = Timer(_commentCooldown, () {
+      if (isClosed) return;
+      emit(state.copyWith(isCoolingDown: false));
+    });
+  }
+
   String? get replyToName => _replyToName;
 
   Future<bool> submitComment(String body) async {
     final postId = _postId;
     if (postId == null || body.trim().isEmpty) return false;
+    if (state.isSubmitting || state.isCoolingDown) return false;
 
-    emit(state.copyWith(isSubmitting: true));
+    // Cleared here so that a `false` from this call means THIS attempt failed,
+    // which is what the screen keys its message off.
+    emit(state.copyWith(isSubmitting: true, errorMessage: null));
 
     final result = await _createCommentUseCase(
       postId: postId,
@@ -191,6 +220,7 @@ class CommunityPostCubit extends Cubit<CommunityPostState>
         );
         _replyToUserId = null;
         _replyToName = null;
+        _startCooldown();
         return true;
       },
     );

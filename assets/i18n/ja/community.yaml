@@ -173,6 +173,14 @@ errorTitle: うまくいきませんでした
 errorBody: 読み込めませんでした。接続を確認してもう一度お試しください。
 retry: もう一度
 
+# 投稿が速すぎる／内容が完全に同じ場合、サーバーは 429 を返します。文言はコードでは
+# なくアプリ側に置いています。
+tooFastSeconds(param=count):
+  other: 投稿が少し速すぎます。${count}秒後にもう一度お試しください。
+tooFastMinutes(param=count):
+  other: 投稿が少し速すぎます。${count}分後にもう一度お試しください。
+duplicateContent: 同じ内容をたった今送信しました。少し言い方を変えてみてください。
+
 timeJustNow: たったいま
 timeMinutes(param=count):
   other: ${count}分前

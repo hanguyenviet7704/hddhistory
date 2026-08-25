@@ -54,12 +54,23 @@ class _CommunityChatPageState extends State<CommunityChatPage> {
 
     final body = _controller.text;
     if (body.trim().isEmpty) return;
+    if (cubit.state.isSending || cubit.state.isCoolingDown) return;
 
     // Cleared before the round trip: the optimistic line is already on screen,
     // and leaving the text in the field invites a second send.
     _controller.clear();
     setState(() {});
-    await cubit.send(body);
+
+    final sent = await cubit.send(body);
+    if (sent || !mounted) return;
+
+    // The optimistic line is pulled back on failure, so without this the words
+    // simply disappear — and the one refusal worth explaining (writing too fast)
+    // would look like the app losing messages.
+    DMessage.showMessage(
+      message: cubit.state.errorMessage ?? context.l10n.community.errorBody,
+      type: MessageType.error,
+    );
   }
 
   @override
@@ -86,6 +97,7 @@ class _CommunityChatPageState extends State<CommunityChatPage> {
                   controller: _controller,
                   focusNode: _focusNode,
                   isSending: state.isSending,
+                  isCoolingDown: state.isCoolingDown,
                   onChanged: () => setState(() {}),
                   onSend: _send,
                 ),
@@ -476,6 +488,7 @@ class _ChatComposer extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.isSending,
+    required this.isCoolingDown,
     required this.onChanged,
     required this.onSend,
   });
@@ -483,13 +496,17 @@ class _ChatComposer extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool isSending;
+
+  /// The two-second pause after a line lands. The button greys out for it rather
+  /// than showing a countdown: it is over before a number would be read.
+  final bool isCoolingDown;
   final VoidCallback onChanged;
   final VoidCallback onSend;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.community;
-    final isEmpty = controller.text.trim().isEmpty;
+    final canSend = controller.text.trim().isNotEmpty && !isSending && !isCoolingDown;
 
     return Container(
       padding: EdgeInsets.fromLTRB(14.w, 11.h, 14.w, 11.h),
@@ -547,7 +564,7 @@ class _ChatComposer extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isEmpty ? AppCustomColor.buttonDisable : AppCustomColor.brandPrimary,
+                  color: canSend ? AppCustomColor.brandPrimary : AppCustomColor.buttonDisable,
                 ),
                 child: isSending
                     ? SizedBox(
@@ -561,9 +578,9 @@ class _ChatComposer extends StatelessWidget {
                     : CommunityGlyph(
                         AppAsset.svg.app.icCommunityArrowRight,
                         size: 18,
-                        color: isEmpty
-                            ? AppCustomColor.communityMuted
-                            : AppCustomColor.textWhite,
+                        color: canSend
+                            ? AppCustomColor.textWhite
+                            : AppCustomColor.communityMuted,
                       ),
               ),
             ),

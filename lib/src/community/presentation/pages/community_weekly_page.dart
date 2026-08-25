@@ -16,8 +16,7 @@ class CommunityWeeklyPage extends StatelessWidget {
         final cubit = context.read<CommunityPostCubit>();
         final weekly = state.weekly;
 
-        return CommunityFlatSurface(
-          child: Scaffold(
+        return Scaffold(
           backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
           appBar: _CommunityAppBar(title: l10n.weeklyTitle),
           body: state.status == CommunityStatus.loading && weekly == null
@@ -42,16 +41,26 @@ class CommunityWeeklyPage extends StatelessWidget {
                     if (state.canComment)
                       CommunityComposerBar(
                         isSubmitting: state.isSubmitting,
+                        isCoolingDown: state.isCoolingDown,
                         replyingToName: state.replyTarget == null ? null : cubit.replyToName,
                         onCancelReply: cubit.cancelReply,
-                        onSubmit: cubit.submitComment,
+                        onSubmit: (body) async {
+                          final sent = await cubit.submitComment(body);
+                          if (sent || !context.mounted) return sent;
+
+                          DMessage.showMessage(
+                            message: cubit.state.errorMessage ?? l10n.errorBody,
+                            type: MessageType.error,
+                          );
+
+                          return sent;
+                        },
                         hintOverride: l10n.composerHintWeekly,
                       )
                     else
                       _ClosedComposerNote(state: state),
                   ],
                 ),
-          ),
         );
       },
     );
@@ -162,7 +171,7 @@ class _WeeklyHeaderBlock extends StatelessWidget {
             weekly.note.isNotEmpty ? weekly.note : l10n.weeklyNote,
             style: AppStyle.text12.copyWith(
               // Outside the question card, so it is on the background itself.
-              color: studyThemeOnBg(context, AppCustomColor.communityMuted),
+              color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
               height: 1.5,
             ),
           ),
@@ -173,7 +182,7 @@ class _WeeklyHeaderBlock extends StatelessWidget {
             child: AppText(
               l10n.commentCount(count: weekly.answerCount),
               style: AppStyle.textBold14.copyWith(
-                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                color: AppCustomColor.textPrimary,
               ),
             ),
           ),

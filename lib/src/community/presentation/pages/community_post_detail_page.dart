@@ -18,8 +18,7 @@ class CommunityPostDetailPage extends StatelessWidget {
         final cubit = context.read<CommunityPostCubit>();
         final post = state.post;
 
-        return CommunityFlatSurface(
-          child: Scaffold(
+        return Scaffold(
           backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
           appBar: _PostAppBar(
             topic: post?.topic,
@@ -47,43 +46,29 @@ class CommunityPostDetailPage extends StatelessWidget {
                     if (state.canComment)
                       CommunityComposerBar(
                         isSubmitting: state.isSubmitting,
+                        isCoolingDown: state.isCoolingDown,
                         replyingToName: state.replyTarget == null ? null : cubit.replyToName,
                         onCancelReply: cubit.cancelReply,
-                        onSubmit: cubit.submitComment,
+                        onSubmit: (body) async {
+                          final sent = await cubit.submitComment(body);
+                          if (sent || !context.mounted) return sent;
+
+                          DMessage.showMessage(
+                            message: cubit.state.errorMessage ?? l10n.errorBody,
+                            type: MessageType.error,
+                          );
+
+                          return sent;
+                        },
                       )
                     else
                       _ClosedComposerNote(state: state),
                   ],
                 ),
-          ),
         );
       },
     );
   }
-}
-
-/// Marks a subtree whose text is drawn DIRECTLY on the study background, with
-/// no card between the two — a post and its thread, and the weekly question and
-/// its answers.
-///
-/// Confession shows the reader's background at full strength, exactly like Habit
-/// and Home. Text on a card can keep the design's dark ink because the card
-/// carries it; text on the background itself cannot, and has to go through
-/// [studyThemeOnBg] so it flips light on a dark preset. A couple of widgets
-/// ([CommunityAuthorLine], `_CountAction`) are drawn on BOTH kinds of surface,
-/// so the surface announces itself once around the screen rather than every
-/// intermediate widget carrying a flag it does not use.
-class CommunityFlatSurface extends InheritedWidget {
-  const CommunityFlatSurface({super.key, required super.child});
-
-  /// True when [context] is on the background rather than on a card. Wrap the
-  /// Scaffold, not its body — an `appBar:` is not a descendant of the body.
-  static bool of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<CommunityFlatSurface>() != null;
-
-  // Presence is the whole message and it never changes for a given screen.
-  @override
-  bool updateShouldNotify(CommunityFlatSurface oldWidget) => false;
 }
 
 /// Avatar width plus its gap: everything under the author line lines up with
@@ -199,7 +184,7 @@ class _PostHeaderBlock extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: studyThemeOnBg(context, AppCustomColor.communityRule)),
+          bottom: BorderSide(color: AppCustomColor.communityRule),
         ),
       ),
       child: Column(
@@ -231,7 +216,7 @@ class _PostHeaderBlock extends StatelessWidget {
             AppText(
               post.subject,
               style: AppStyle.textBold18.copyWith(
-                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                color: AppCustomColor.textPrimary,
                 height: 1.28,
                 letterSpacing: -0.2,
               ),
@@ -258,7 +243,7 @@ class _PostHeaderBlock extends StatelessWidget {
                   post.body,
                   style: AppStyle.text14.copyWith(
                     fontSize: 13.5.sp,
-                    color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                    color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
                     height: 1.55,
                   ),
                 ),
@@ -334,7 +319,7 @@ class _PostActionRow extends StatelessWidget {
                     CommunityGlyph(
                       AppAsset.svg.app.icCommunityBubble,
                       size: 16,
-                      color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                      color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
                     ),
                     SizedBox(width: 6.w),
                     AppText(
@@ -342,7 +327,7 @@ class _PostActionRow extends StatelessWidget {
                       style: AppStyle.text12.copyWith(
                         fontSize: 12.5.sp,
                         fontWeight: FontWeight.w500,
-                        color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                        color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
                       ),
                     ),
                   ],
@@ -367,7 +352,7 @@ class _PostActionRow extends StatelessWidget {
                 const Spacer(),
                 _IconTap(
                   asset: AppAsset.svg.app.icCommunityMore,
-                  color: studyThemeOnBg(context, AppCustomColor.streakTextMuted),
+                  color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
                   onTap: () => showCommunityItemMenu(
                     context,
                     isMine: post.isMine,
@@ -459,11 +444,32 @@ class _CommunityThreadListState extends State<_CommunityThreadList> {
 
     return ListView(
       controller: _scrollController,
-      // The post and its thread run FLAT on the study background, with no card
-      // between them — every ink inside is therefore on-background ink (see
-      // [CommunityFlatSurface]), exactly as Habit and Home do it.
+      // The same 20 side margin the feed uses, so the sheet lines up with the
+      // cards on the hub.
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-      children: _threadColumn(context, cubit, state),
+      children: [
+        // ONE sheet for the post and its whole thread, not a card per item.
+        //
+        // Every other screen in the forum puts its content on white — feed
+        // cards, room tiles, notification rows — and this was the only one that
+        // did not, which is what made it look unfinished next to them. A card
+        // PER comment is the wrong unit: the connector rail has to run
+        // continuously from a comment down into its replies, and a gap between
+        // cards breaks it. One sheet keeps the design's flush layout inside it
+        // and still lets the study background show around and behind.
+        Container(
+          padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
+          decoration: BoxDecoration(
+            color: studyThemeCardColor(context),
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(color: AppCustomColor.borderDefault),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _threadColumn(context, cubit, state),
+          ),
+        ),
+      ],
     );
   }
 

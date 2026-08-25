@@ -173,6 +173,13 @@ errorTitle: 出了点问题
 errorBody: 内容没加载出来。检查网络后再试一次。
 retry: 重试
 
+# 服务器拒绝发送过快或完全重复的内容（429）。文案放在客户端，因为接口只返回稳定的错误码。
+tooFastSeconds(param=count):
+  other: 你发得有点快，请在 ${count} 秒后再试。
+tooFastMinutes(param=count):
+  other: 你发得有点快，请在 ${count} 分钟后再试。
+duplicateContent: 这条你刚刚发过了，换个说法吧。
+
 timeJustNow: 刚刚
 timeMinutes(param=count):
   other: ${count} 分钟前

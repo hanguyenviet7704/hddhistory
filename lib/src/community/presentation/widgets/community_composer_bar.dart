@@ -10,6 +10,7 @@ class CommunityComposerBar extends StatefulWidget {
     super.key,
     required this.onSubmit,
     required this.isSubmitting,
+    this.isCoolingDown = false,
     this.replyingToName,
     this.onCancelReply,
     this.hintOverride,
@@ -17,6 +18,10 @@ class CommunityComposerBar extends StatefulWidget {
 
   final Future<bool> Function(String body) onSubmit;
   final bool isSubmitting;
+
+  /// The short pause after a comment lands. The button greys out for it rather
+  /// than showing a countdown: it is over before a number would be read.
+  final bool isCoolingDown;
   final String? replyingToName;
   final VoidCallback? onCancelReply;
   final String? hintOverride;
@@ -48,7 +53,7 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
 
   Future<void> _submit() async {
     final body = _controller.text.trim();
-    if (body.isEmpty || widget.isSubmitting) return;
+    if (body.isEmpty || widget.isSubmitting || widget.isCoolingDown) return;
 
     final sent = await widget.onSubmit(body);
     if (!sent || !mounted) return;
@@ -62,6 +67,8 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
     final l10n = context.l10n.community;
     final replyingTo = widget.replyingToName;
     final isReplying = replyingTo != null && replyingTo.isNotEmpty;
+    final canSend =
+        _controller.text.trim().isNotEmpty && !widget.isSubmitting && !widget.isCoolingDown;
 
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
@@ -159,9 +166,9 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _controller.text.trim().isEmpty
-                          ? AppCustomColor.buttonDisable
-                          : AppCustomColor.brandPrimary,
+                      color: canSend
+                          ? AppCustomColor.brandPrimary
+                          : AppCustomColor.buttonDisable,
                     ),
                     child: widget.isSubmitting
                         ? SizedBox(
@@ -175,9 +182,9 @@ class _CommunityComposerBarState extends State<CommunityComposerBar> {
                         : CommunityGlyph(
                             AppAsset.svg.app.icCommunitySend,
                             size: 19,
-                            color: _controller.text.trim().isEmpty
-                                ? AppCustomColor.communityMuted
-                                : AppCustomColor.textWhite,
+                            color: canSend
+                                ? AppCustomColor.textWhite
+                                : AppCustomColor.communityMuted,
                           ),
                   ),
                 ),

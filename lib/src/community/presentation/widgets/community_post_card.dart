@@ -227,14 +227,13 @@ class _CountAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // On the background the muted ink has to flip light for a dark preset;
-    // inside a glass card over a photo the design's slate washes out instead.
-    final muted = CommunityFlatSurface.of(context)
-        ? studyThemeOnBg(context, AppCustomColor.streakTextMuted)
-        : studyThemeCardMuted(context, AppCustomColor.streakTextMuted);
+    // Always on a card or the thread sheet, never on the background itself, so
+    // the lit colour is the brand purple straight. NOT studyThemeAccentOnBg:
+    // that lifts it to a pale lavender (#CFCBFF) for a dark preset, which is
+    // right on a photo and nearly invisible on white — a lit heart vanished.
     final color = isActive
-        ? studyThemeAccentOnBg(context, AppCustomColor.brandPrimary)
-        : muted;
+        ? AppCustomColor.brandPrimary
+        : studyThemeCardMuted(context, AppCustomColor.streakTextMuted);
 
     final button = GestureDetector(
       onTap: onTap,

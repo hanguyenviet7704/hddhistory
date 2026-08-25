@@ -173,6 +173,14 @@ errorTitle: Something went wrong
 errorBody: Could not load this. Check your connection and try again.
 retry: Try again
 
+# The server refuses a write that is too fast or word-for-word repeated (429).
+# The copy lives here because the API answers with a stable code, not a sentence.
+tooFastSeconds(param=count):
+  other: You're writing quickly. Try again in ${count} seconds.
+tooFastMinutes(param=count):
+  other: You're writing quickly. Try again in ${count} minutes.
+duplicateContent: You just sent this. Try saying it a little differently.
+
 timeJustNow: Just now
 timeMinutes(param=count):
   other: ${count} min ago

@@ -18,6 +18,10 @@ abstract class CommunityPostState with _$CommunityPostState {
     @Default(false) bool isLoadingMore,
     @Default(false) bool isSubmitting,
 
+    /// A short pause after a comment lands — see CommunityPostCubit's
+    /// `_commentCooldown` for why the client holds one at all.
+    @Default(false) bool isCoolingDown,
+
     /// The comment being replied to, which pins the "Đang trả lời X" strip above
     /// the composer.
     CommunityCommentEntity? replyTarget,

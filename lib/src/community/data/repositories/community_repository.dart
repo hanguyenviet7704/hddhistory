@@ -33,7 +33,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityFeedModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -45,7 +45,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityTopicListModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -59,7 +59,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return model.toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -78,7 +78,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -92,7 +92,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return model.toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -130,7 +130,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return model.toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -142,7 +142,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -158,7 +158,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityCommentPageModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -181,7 +181,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityCommentPageModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -193,7 +193,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -220,7 +220,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -238,7 +238,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -260,7 +260,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -281,7 +281,7 @@ class CommunityRepository implements ICommunityRepository {
           items: data.items.map((item) => item.toEntity()).toList(),
         );
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -293,7 +293,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return response.data?.toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -308,7 +308,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityNotificationPageModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -320,7 +320,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return response.data?.count ?? 0;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -334,7 +334,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return unit;
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -346,7 +346,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data?.items ?? const <CommunityRoomSuggestionModel>[]).map((item) => item.toEntity()).toList();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -408,7 +408,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityMemberStatusModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -422,7 +422,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityChatRoomModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -438,7 +438,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityChatPageModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -453,7 +453,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (response.data ?? const CommunityChatMessageModel()).toEntity();
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 
@@ -466,7 +466,7 @@ class CommunityRepository implements ICommunityRepository {
 
         return (isLiked: data.isLiked, likeCount: data.likeCount);
       },
-      (error, stackTrace) => AppException.unexpected(error.toString()),
+      (error, stackTrace) => communityException(error),
     );
   }
 }

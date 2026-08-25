@@ -172,9 +172,6 @@ class CommunityAuthorLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.community;
-    // On a card the design's inks stand; on the background they have to flip
-    // light for a dark preset, the same as every other flat surface in the app.
-    final isFlat = CommunityFlatSurface.of(context);
     // An empty name means the account is gone; the placeholder is localised
     // here rather than shipped by the API.
     final name = switch (author) {
@@ -193,9 +190,7 @@ class CommunityAuthorLine extends StatelessWidget {
             name,
             style: AppStyle.textBold14.copyWith(
               fontSize: 13.5.sp,
-              color: isFlat
-                  ? studyThemeOnBg(context, AppCustomColor.communityAuthorName)
-                  : AppCustomColor.communityAuthorName,
+              color: AppCustomColor.communityAuthorName,
             ),
             maxLines: 1,
           ),
@@ -216,9 +211,10 @@ class CommunityAuthorLine extends StatelessWidget {
           style: AppStyle.text12.copyWith(
             fontSize: 9.5.sp,
             fontWeight: FontWeight.w600,
-            color: isFlat
-                ? studyThemeOnBg(context, AppCustomColor.communityMuted)
-                : studyThemeCardMuted(context, AppCustomColor.communityMuted),
+            // This line only ever renders inside a card or the thread sheet, so
+            // it takes the card ink: over glass on a photo the design's pale
+            // slate washes out.
+            color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
           ),
         ),
       ],
