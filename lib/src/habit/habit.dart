@@ -84,7 +84,6 @@ part 'presentation/widgets/habit_tracker_card.dart';
 part 'presentation/widgets/habit_empty_state.dart';
 part 'presentation/widgets/habit_domain_icon.dart';
 part 'presentation/widgets/habit_switch.dart';
-part 'presentation/widgets/home_habit_reminder_card.dart';
 
 //* Parts for generated files
 part 'habit.freezed.dart';

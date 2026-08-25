@@ -286,31 +286,13 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                   // ── Got ideas? feedback banner ───────────────────
                                   GotIdeasBanner(onTap: _openInAppSurveyDialog),
 
-                                  // Bottom padding — clear the floating nav bar and, when
-                                  // showing, the habit reminder card that floats above it
-                                  // (see the Positioned below), otherwise the banner stays
-                                  // clipped under those overlays.
-                                  BlocBuilder<HabitCubit, HabitState>(
-                                    bloc: AppDI.injector.get<HabitCubit>(),
-                                    buildWhen: (previous, current) => previous.showHomeReminder != current.showHomeReminder,
-                                    builder: (context, state) {
-                                      final extra = state.showHomeReminder ? 8.h + 80.h + 16.h : 16.h;
-                                      return SizedBox(height: floatingNavBarHeight(context) + extra);
-                                    },
-                                  ),
+                                  // Bottom padding — clear the floating nav bar so the
+                                  // banner above is not left under it.
+                                  SizedBox(height: floatingNavBarHeight(context) + 16.h),
                                 ],
                               ),
                             ),
                           ),
-                        ),
-
-                        // Habit check-in reminder — floats above the bottom nav
-                        // (PRD §9.4). Renders nothing when there's nothing to check in.
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: floatingNavBarHeight(context) + 8.h,
-                          child: const HomeHabitReminderCard(),
                         ),
                       ],
                     ),
