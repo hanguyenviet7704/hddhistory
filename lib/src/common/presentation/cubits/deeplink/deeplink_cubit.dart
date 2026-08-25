@@ -542,12 +542,16 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     // (e.g. `explore`) is still a tap worth counting.
     final notiType = (raw['type'] ?? '').toString().trim();
     final courseId = (raw['courseId'] ?? '').toString().trim();
+    // Campaign gửi thủ công dùng chung một `noti_type` ('campaign'), nên chỉ
+    // `campaign_id` tách được từng cái ra khi đọc số click.
+    final campaignId = (raw['campaignId'] ?? '').toString().trim();
     if (notiType.isNotEmpty) {
       unawaited(
         AppService.instance.appTrackingService.trackEvent(TrackingKey.notiTap, parameters: {
           'noti_type': notiType,
           'deeplink': deeplink,
           if (courseId.isNotEmpty) 'course_id': courseId,
+          if (campaignId.isNotEmpty) 'campaign_id': campaignId,
         }).catchError((_) {}),
       );
     }
@@ -590,10 +594,62 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         HomeRoute().go(navContext);
         return true;
 
+      // Ngoài các đích symbolic ở trên, một noti — nhất là campaign gửi thủ
+      // công — trỏ được tới bất kỳ khoá nào trong DANH MỤC deeplink dùng chung
+      // với link marketing (`deeplink.catalog.ts` bên API). Cùng một bảng đích
+      // mà `_navigateToDestination` đã nối đủ, nên thêm một màn cho campaign chỉ
+      // cần deploy API: không release app, không release admin.
+      //
+      // KHÔNG đi qua `navigationFromService`: đường đó bắn thêm `deeplink_open`,
+      // và số click của link marketing sẽ lẫn cú chạm push vào. Cú chạm push đã
+      // có `noti_tap` ở trên.
       default:
-        LogDev.warning('Unsupported scheduled notification deeplink: $deeplink');
-        return false;
+        final destination = DeeplinkDestination.tryFromValue(deeplink);
+        if (destination == null) {
+          LogDev.warning('Unsupported scheduled notification deeplink: $deeplink');
+          return false;
+        }
+        return _navigateToDestination(
+          navContext,
+          destination,
+          DeeplinkTarget(
+            destination: destination,
+            rawKey: deeplink,
+            params: _notificationDeeplinkParams(raw),
+          ),
+        );
     }
+  }
+
+  /// Tham số cho một đích danh mục mở từ noti: mọi khoá chuỗi trong payload trừ
+  /// các khoá điều khiển của chính lớp thông báo.
+  ///
+  /// Cố ý KHÔNG lọc theo danh sách tên tham số cho phép: mỗi nhánh trong
+  /// `_navigateToDestination` chỉ đọc đúng khoá nó cần, nên khoá lạ là vô hại —
+  /// mà server bơm thêm tham số (`courseId`, `variant`…) thì không phải chờ một
+  /// bản app mới.
+  static Map<String, String> _notificationDeeplinkParams(Map<String, dynamic> raw) {
+    const controlKeys = <String>{
+      NotificationConstants.payloadTypeKey,
+      NotificationConstants.payloadDeeplinkKey,
+      NotificationConstants.payloadTitleKey,
+      NotificationConstants.payloadBodyKey,
+      NotificationConstants.payloadNavigateKey,
+      NotificationConstants.payloadImageUrlKey,
+      NotificationConstants.payloadSourceKey,
+      NotificationConstants.payloadMessageIdKey,
+      NotificationConstants.payloadNestedMessageKey,
+      NotificationConstants.foregroundRenderKey,
+      'campaignId',
+    };
+
+    final params = <String, String>{};
+    raw.forEach((key, value) {
+      if (controlKeys.contains(key)) return;
+      final text = (value ?? '').toString().trim();
+      if (text.isNotEmpty) params[key] = text;
+    });
+    return params;
   }
 
   /// Roadmap source tag for a tap on the daily new-course notification. Unknown
