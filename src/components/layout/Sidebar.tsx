@@ -10,6 +10,7 @@ import {
   CheckBadgeIcon,
   DocumentTextIcon,
   HandThumbDownIcon,
+  LightBulbIcon,
   SparklesIcon,
   Cog6ToothIcon,
   PuzzlePieceIcon,
@@ -136,14 +137,19 @@ const menuGroups = [
     // The community forum. Moderation comes first because it is the only one of
     // these with a queue: post-moderated content stays up until someone works
     // through the reports.
-    title: "Community",
+    title: "Confession",
     items: [
       {
         name: "Kiểm duyệt",
         icon: ChatBubbleOvalLeftEllipsisIcon,
         path: "/community/moderation",
       },
-      { name: "Chủ đề", icon: HashtagIcon, path: "/community/topics" },
+      { name: "Phòng", icon: HashtagIcon, path: "/community/topics" },
+      {
+        name: "Đề xuất phòng",
+        icon: LightBulbIcon,
+        path: "/community/room-suggestions",
+      },
       {
         name: "Câu hỏi của tuần",
         icon: CalendarDaysIcon,
