@@ -1,0 +1,138 @@
+part of '../../coach.dart';
+
+/// Whether the bubble renders, and whether it carries the dot.
+///
+/// The dot is decided entirely by the server — there is exactly one situation
+/// in the whole app that earns it (Home, with a commitment waiting) and keeping
+/// that judgement off the client is what stops it drifting into "a dot whenever
+/// something might be interesting".
+@freezed
+abstract class CoachBubbleModel with _$CoachBubbleModel {
+  const factory CoachBubbleModel({
+    @Default(false) bool visible,
+    @Default(false) bool dot,
+    String? teaser,
+  }) = _CoachBubbleModel;
+
+  factory CoachBubbleModel.fromJson(Map<String, dynamic> json) => _$CoachBubbleModelFromJson(json);
+}
+
+/// One selectable option.
+///
+/// [label] is present only for options built from data (a habit title). Fixed
+/// options carry no label at all — their words live in `coach.yaml` in five
+/// languages, and shipping them from the server would put the same sentence in
+/// two places.
+@freezed
+abstract class CoachChoiceModel with _$CoachChoiceModel {
+  const factory CoachChoiceModel({
+    @Default('') String value,
+    String? label,
+  }) = _CoachChoiceModel;
+
+  factory CoachChoiceModel.fromJson(Map<String, dynamic> json) => _$CoachChoiceModelFromJson(json);
+}
+
+@freezed
+abstract class CoachColumnsModel with _$CoachColumnsModel {
+  const factory CoachColumnsModel({
+    @Default(<String>[]) List<String> left,
+    @Default(<String>[]) List<String> right,
+  }) = _CoachColumnsModel;
+
+  factory CoachColumnsModel.fromJson(Map<String, dynamic> json) => _$CoachColumnsModelFromJson(json);
+}
+
+@freezed
+abstract class CoachHotlineModel with _$CoachHotlineModel {
+  const factory CoachHotlineModel({
+    @Default('') String label,
+    @Default('') String number,
+  }) = _CoachHotlineModel;
+
+  factory CoachHotlineModel.fromJson(Map<String, dynamic> json) => _$CoachHotlineModelFromJson(json);
+}
+
+@freezed
+abstract class CoachKeypointModel with _$CoachKeypointModel {
+  const factory CoachKeypointModel({
+    @Default('') String id,
+    @Default('') String title,
+  }) = _CoachKeypointModel;
+
+  factory CoachKeypointModel.fromJson(Map<String, dynamic> json) => _$CoachKeypointModelFromJson(json);
+}
+
+@freezed
+abstract class CoachUiModel with _$CoachUiModel {
+  const factory CoachUiModel({
+    @Default('text') String kind,
+    @Default(<CoachChoiceModel>[]) List<CoachChoiceModel> choices,
+    CoachColumnsModel? columns,
+    String? situation,
+    @Default(<String>[]) List<String> samples,
+    @Default(<CoachHotlineModel>[]) List<CoachHotlineModel> hotlines,
+    @Default(<CoachKeypointModel>[]) List<CoachKeypointModel> keypoints,
+    @Default(false) bool escapeAvailable,
+  }) = _CoachUiModel;
+
+  factory CoachUiModel.fromJson(Map<String, dynamic> json) => _$CoachUiModelFromJson(json);
+}
+
+@freezed
+abstract class CoachCourseInviteModel with _$CoachCourseInviteModel {
+  const factory CoachCourseInviteModel({
+    @Default('') String courseId,
+    @Default('') String title,
+  }) = _CoachCourseInviteModel;
+
+  factory CoachCourseInviteModel.fromJson(Map<String, dynamic> json) => _$CoachCourseInviteModelFromJson(json);
+}
+
+@freezed
+abstract class CoachReplayModel with _$CoachReplayModel {
+  const factory CoachReplayModel({
+    @Default(false) bool isCoach,
+    @Default('') String text,
+  }) = _CoachReplayModel;
+
+  factory CoachReplayModel.fromJson(Map<String, dynamic> json) => _$CoachReplayModelFromJson(json);
+}
+
+/// What one turn returns.
+///
+/// [reply] and [promptKey] never both carry a value. That split is the whole
+/// i18n contract: a generated line arrives already written in the reader's
+/// language and is shown as-is; a fixed line arrives as a key and is rendered
+/// from slang. Neither ever travels the other's road.
+@freezed
+abstract class CoachTurnModel with _$CoachTurnModel {
+  const factory CoachTurnModel({
+    @Default('') String sessionId,
+    @Default('') String step,
+    String? reply,
+    String? promptKey,
+    @Default(CoachUiModel()) CoachUiModel ui,
+    CoachCourseInviteModel? courseInvite,
+    @Default(false) bool ended,
+
+    /// The exchange so far — sent only when an existing session is resumed.
+    @Default(<CoachReplayModel>[]) List<CoachReplayModel> replay,
+
+    /// A door whose guards said to stay quiet. Not an error.
+    @Default(false) bool silent,
+    String? reasonKey,
+  }) = _CoachTurnModel;
+
+  factory CoachTurnModel.fromJson(Map<String, dynamic> json) => _$CoachTurnModelFromJson(json);
+}
+
+/// A spoken turn, already turned into words. The audio never leaves the request.
+@freezed
+abstract class CoachTranscriptModel with _$CoachTranscriptModel {
+  const factory CoachTranscriptModel({
+    @Default('') String text,
+  }) = _CoachTranscriptModel;
+
+  factory CoachTranscriptModel.fromJson(Map<String, dynamic> json) => _$CoachTranscriptModelFromJson(json);
+}

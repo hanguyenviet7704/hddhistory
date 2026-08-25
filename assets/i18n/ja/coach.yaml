@@ -12,6 +12,11 @@ promptPickNew: 新しい習慣をいくつか追加しましたね。どれか�
 promptPickHabit: 今日はどの習慣に取り組みますか？
 promptPersona: 今日はどんな話し方がいいですか？
 promptTime: 今日はどのくらい時間がありますか？
+promptTell: 何か話したいことはありますか？
+promptTellFollowUp: それからどうなりましたか？
+promptFree: 今日は何かありましたか？聞かせてください。
+promptIntentTell: そのときのこと、聞かせてください。
+promptNextAction: では次はどうしますか？
 promptCheckin: ここ数日、この習慣を使う場面はありましたか？
 promptPlan: 次に向けて、小さな約束をひとつ決めましょう。
 promptSchedule: いつ知らせましょうか？
@@ -25,9 +30,6 @@ promptIntent: そうすると言っていましたね。その場面はありま
 
 fallbackReply: 聞いています。
 
-moodLow: よくない
-moodMid: ふつう
-moodHigh: いい
 
 personaFriend: 友だちのように
 personaDirect: はっきりと
@@ -103,3 +105,18 @@ stepLoop: もうひとつ残っています
 stepMoodEnd: 閉じる前に
 stepRating: ご感想
 stepJot: 今日の一行
+
+# Mood 5 mức · nhịp 4/5 · ⑧
+mood1: つらい
+mood2: 少し疲れた
+mood3: ふつう
+mood4: いい
+mood5: とてもいい
+rejectDraft: これは違います
+redraftPrompt: では、もう一度教えてください。確かに起きたことは何ですか？
+keypointsLabel: 役に立つかも
+explainSimpler: やさしく説明
+closingContinue: 続ける
+stepNextAction: これからすること
+stepClosing: 締めくくる前に
+stepRedraft: あなたの言葉で

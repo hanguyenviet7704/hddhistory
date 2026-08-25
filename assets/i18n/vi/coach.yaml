@@ -12,6 +12,11 @@ promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào tr
 promptPickHabit: Bạn muốn tập habit nào hôm nay?
 promptPersona: Bạn muốn mình nói kiểu nào hôm nay?
 promptTime: Hôm nay bạn có bao nhiêu thời gian?
+promptTell: Có chuyện gì bạn muốn kể không?
+promptTellFollowUp: Rồi sau đó thì sao?
+promptFree: Hôm nay có chuyện gì không? Kể mình nghe.
+promptIntentTell: Kể mình nghe lúc đó thế nào.
+promptNextAction: Vậy lần tới bạn sẽ làm gì?
 promptCheckin: Mấy hôm nay habit này có dịp nào dùng tới không?
 promptPlan: Chốt một nhắc hẹn nhỏ cho lần tới nhé.
 promptSchedule: Nhắc bạn lúc nào?
@@ -25,9 +30,6 @@ promptIntent: Bạn nói sẽ làm điều này. Có dịp nào chưa?
 
 fallbackReply: Mình nghe rồi.
 
-moodLow: Không ổn
-moodMid: Bình thường
-moodHigh: Ổn
 
 personaFriend: Người bạn
 personaDirect: Người thẳng
@@ -103,3 +105,18 @@ stepLoop: còn một nhắc hẹn nữa
 stepMoodEnd: trước khi đóng
 stepRating: bạn thấy sao
 stepJot: một dòng cho hôm nay
+
+# Mood 5 mức · nhịp 4/5 · ⑧
+mood1: Tệ
+mood2: Hơi mệt
+mood3: Bình thường
+mood4: Ổn
+mood5: Tốt
+rejectDraft: Không đúng với mình
+redraftPrompt: "Vậy bạn kể lại giúp mình: cái gì chắc chắn đã xảy ra?"
+keypointsLabel: Có thể giúp bạn
+explainSimpler: Giải thích đơn giản hơn
+closingContinue: Tiếp tục
+stepNextAction: bạn sẽ làm gì
+stepClosing: trước khi khép lại
+stepRedraft: bằng lời của bạn

@@ -581,6 +581,15 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         _openNewCourseRoadmap(navContext, courseId);
         return true;
 
+      case 'coach':
+        // ④ the commitment reminder. The bubble lives on Home, so claiming the
+        // tab IS the destination — the sheet is something the reader opens, and
+        // springing it open from a notification would break the one rule the
+        // whole surface rests on ("it never opens itself").
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
+        HomeRoute().go(navContext);
+        return true;
+
       default:
         LogDev.warning('Unsupported scheduled notification deeplink: $deeplink');
         return false;
@@ -590,6 +599,23 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// Roadmap source tag for a tap on the daily new-course notification. Unknown
   /// to `remapRoadmapSource`, which buckets it into the generic explore source —
   /// correct, since this is not one of the home surfaces it distinguishes.
+  /// The ③C course invitation, opened from the Coach sheet.
+  ///
+  /// Goes through the same `_openCourseRoadmap` every other id-only entry
+  /// uses, rather than re-deriving the "select the course, claim the branch,
+  /// then go" dance — that sequence has a comment in `course_card.dart`
+  /// explaining why each step is load-bearing, and a second copy of it would
+  /// be the one that rots.
+  ///
+  /// Returns false when the course can no longer be selected (unpublished
+  /// since the situation was cached, say); the caller stays where it is rather
+  /// than bouncing the reader to Home from inside a conversation.
+  bool openCourseRoadmapFromCoach(BuildContext navContext, String courseId) {
+    return _openCourseRoadmap(navContext, courseId, _coachRoadmapSource);
+  }
+
+  static const String _coachRoadmapSource = 'ai_coach';
+
   static const String _newCourseRoadmapSource = 'notification_new_course';
 
   /// Nhãn source cho roadmap/explore mở từ một link marketing. Không nằm trong

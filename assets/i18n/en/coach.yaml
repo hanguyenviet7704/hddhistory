@@ -17,6 +17,11 @@ promptPickNew: You just added a couple of habits. Which one should we talk about
 promptPickHabit: Which habit do you want to work on today?
 promptPersona: How would you like me to speak today?
 promptTime: How much time do you have?
+promptTell: Anything you'd like to tell me about?
+promptTellFollowUp: And then what happened?
+promptFree: Anything on your mind today? I'm listening.
+promptIntentTell: Tell me how it went.
+promptNextAction: So what will you do next time?
 promptCheckin: Has this habit come up at all in the last few days?
 promptPlan: Let's set one small reminder for next time.
 promptSchedule: When should I remind you?
@@ -33,9 +38,6 @@ promptIntent: You said you'd do this. Has there been a moment yet?
 # worse than a plain one.
 fallbackReply: I hear you.
 
-moodLow: Not good
-moodMid: Okay
-moodHigh: Good
 
 personaFriend: A friend
 personaDirect: Straight with me
@@ -111,3 +113,18 @@ stepLoop: one more waiting
 stepMoodEnd: before you go
 stepRating: your feedback
 stepJot: one line for today
+
+# Mood 5 mức · nhịp 4/5 · ⑧
+mood1: Bad
+mood2: A bit worn
+mood3: Okay
+mood4: Good
+mood5: Great
+rejectDraft: That's not what I meant
+redraftPrompt: "Tell me again then: what definitely happened?"
+keypointsLabel: Might help
+explainSimpler: Simpler
+closingContinue: Continue
+stepNextAction: what you will do
+stepClosing: before we finish
+stepRedraft: in your own words

@@ -136,6 +136,13 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
                           : MediaQuery.paddingOf(context).bottom + 18.h,
                     ),
             ),
+            // The AI Coach bubble. A sibling of the import toast rather than a
+            // member of the popup-host chain above, and deliberately so: it
+            // never opens itself, so it never has to queue behind the gift and
+            // the streak toast for a turn at the screen. It decides for itself
+            // which tabs it belongs on (Home and Habit) and renders nothing
+            // everywhere else.
+            CoachBubbleHost(bottomInset: floatingNavBarHeight(context) + 12.h),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(
               selector: (state) => state.isPrimaryRoute,

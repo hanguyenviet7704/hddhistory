@@ -30,6 +30,7 @@ import '../../config/l10n/l10n.g.dart';
 import '../../config/routes/routes.dart';
 import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';
+import '../../src/coach/coach.dart';
 import '../../src/common/common.dart';
 import '../../src/learning_import/learning_import.dart';
 import '../../src/learning_streak/learning_streak.dart';

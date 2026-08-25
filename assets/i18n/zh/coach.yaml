@@ -12,6 +12,11 @@ promptPickNew: 你刚加了几个习惯。先聊哪一个？
 promptPickHabit: 今天想练哪个习惯？
 promptPersona: 今天希望我用什么方式说话？
 promptTime: 今天有多少时间？
+promptTell: 有什么想说的事吗？
+promptTellFollowUp: 然后呢？
+promptFree: 今天有什么事吗？说来听听。
+promptIntentTell: 说说当时是怎么样的。
+promptNextAction: 那下次你打算怎么做？
 promptCheckin: 这几天有用到这个习惯的时候吗？
 promptPlan: 为下次定一个小小的约定吧。
 promptSchedule: 什么时候提醒你？
@@ -25,9 +30,6 @@ promptIntent: 你说过要做这件事。有遇到那样的时刻吗？
 
 fallbackReply: 我听着呢。
 
-moodLow: 不太好
-moodMid: 一般
-moodHigh: 还不错
 
 personaFriend: 像朋友
 personaDirect: 直说
@@ -103,3 +105,18 @@ stepLoop: 还有一个在等
 stepMoodEnd: 关闭之前
 stepRating: 你觉得如何
 stepJot: 今天的一行
+
+# Mood 5 mức · nhịp 4/5 · ⑧
+mood1: 很糟
+mood2: 有点累
+mood3: 一般
+mood4: 还行
+mood5: 很好
+rejectDraft: 这不是我想说的
+redraftPrompt: 那你再讲一次：确定发生了什么？
+keypointsLabel: 也许有帮助
+explainSimpler: 讲得简单些
+closingContinue: 继续
+stepNextAction: 你打算做什么
+stepClosing: 收尾之前
+stepRedraft: 用你自己的话

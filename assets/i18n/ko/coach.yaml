@@ -12,6 +12,11 @@ promptPickNew: 새 습관을 몇 개 추가하셨네요. 어떤 것부터 이야
 promptPickHabit: 오늘은 어떤 습관을 연습해 볼까요?
 promptPersona: 오늘은 제가 어떻게 말하면 좋을까요?
 promptTime: 오늘은 시간이 얼마나 있으세요?
+promptTell: 이야기하고 싶은 일이 있나요?
+promptTellFollowUp: 그다음엔 어떻게 됐어요?
+promptFree: 오늘 무슨 일 있었어요? 들어볼게요.
+promptIntentTell: 그때 어땠는지 들려주세요.
+promptNextAction: 그럼 다음엔 어떻게 할래요?
 promptCheckin: 요 며칠 이 습관을 쓸 일이 있었나요?
 promptPlan: 다음을 위해 작은 약속 하나만 정해요.
 promptSchedule: 언제 알려 드릴까요?
@@ -25,9 +30,6 @@ promptIntent: 그렇게 하겠다고 하셨죠. 그런 순간이 있었나요?
 
 fallbackReply: 듣고 있어요.
 
-moodLow: 좋지 않아요
-moodMid: 보통이에요
-moodHigh: 괜찮아요
 
 personaFriend: 친구처럼
 personaDirect: 솔직하게
@@ -103,3 +105,18 @@ stepLoop: 하나 더 남았어요
 stepMoodEnd: 닫기 전에
 stepRating: 어떠셨나요
 stepJot: 오늘의 한 줄
+
+# Mood 5 mức · nhịp 4/5 · ⑧
+mood1: 힘들어요
+mood2: 조금 지쳤어요
+mood3: 보통이에요
+mood4: 괜찮아요
+mood5: 좋아요
+rejectDraft: 이건 제 얘기가 아니에요
+redraftPrompt: 그럼 다시 알려 주세요. 확실히 일어난 일은 무엇인가요?
+keypointsLabel: 도움이 될지도
+explainSimpler: 쉽게 설명
+closingContinue: 계속
+stepNextAction: 무엇을 할지
+stepClosing: 마무리하기 전에
+stepRedraft: 당신의 말로
