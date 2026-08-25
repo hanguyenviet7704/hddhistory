@@ -159,6 +159,38 @@ export interface ICommunityAdminComment {
   createdAt: string;
 }
 
+/**
+ * One line in a group chat room, as the moderation table sees it.
+ *
+ * The author is the REAL account even for an anonymous line — a ban cannot be
+ * enforced against nobody. Readers in the app still never see it.
+ */
+export interface ICommunityAdminChatMessage {
+  id: string;
+  roomId: string;
+  status: CommunityContentStatus;
+  body: string;
+  author: ICommunityAuthor;
+  /** Written while the author was on duty — the "Quản trị viên" pill. */
+  isModerator: boolean;
+  likeCount: number;
+  reportCount: number;
+  hiddenReason?: string | null;
+  moderatedBy?: string | null;
+  moderatedAt?: string | null;
+  createdAt: string;
+}
+
+export interface ICommunityChatQuery {
+  page: number;
+  take: number;
+  status?: CommunityContentStatus;
+  /** Room id or slug. */
+  room?: string;
+  authorId?: string;
+  search?: string;
+}
+
 export interface ICommunityReport {
   id: string;
   targetType: CommunityTargetType;

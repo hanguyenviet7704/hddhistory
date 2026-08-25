@@ -4,8 +4,10 @@ import {
   CommunityReportStatus,
   CommunityRoomSuggestionStatus,
   CommunityTargetType,
+  ICommunityAdminChatMessage,
   ICommunityAdminComment,
   ICommunityAdminPost,
+  ICommunityChatQuery,
   ICommunityOfficialPostPayload,
   ICommunityReport,
   ICommunityRoomSuggestion,
@@ -145,6 +147,25 @@ export const communityService = {
   ) {
     const res = await axiosClient.patch(
       `/community/admin/comments/${id}`,
+      payload
+    );
+    return res.data?.data;
+  },
+
+  // -------------------------------------------------------------- group chat
+  async getChatMessages(params: ICommunityChatQuery) {
+    const res = await axiosClient.get("/community/admin/chat/messages", {
+      params,
+    });
+    return res.data?.data as IPagedResponse<ICommunityAdminChatMessage>;
+  },
+
+  async moderateChatMessage(
+    id: string,
+    payload: { status?: CommunityContentStatus; hiddenReason?: string }
+  ) {
+    const res = await axiosClient.patch(
+      `/community/admin/chat/messages/${id}`,
       payload
     );
     return res.data?.data;

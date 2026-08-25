@@ -4,6 +4,7 @@ import { MegaphoneIcon } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import CommunityOfficialPostModal from "../../components/community/CommunityOfficialPostModal";
+import ModerationChatTab from "../../components/community/ModerationChatTab";
 import ModerationCommentsTab from "../../components/community/ModerationCommentsTab";
 import ModerationPostsTab from "../../components/community/ModerationPostsTab";
 import ModerationReportsTab from "../../components/community/ModerationReportsTab";
@@ -11,7 +12,7 @@ import { communityService } from "../../services/communityService";
 import { ICommunityOfficialPostPayload } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 
-type TabKey = "reports" | "posts" | "comments";
+type TabKey = "reports" | "posts" | "comments" | "chat";
 
 const CommunityModerationPage: React.FC = () => {
   const { showSuccess, showError } = useNotification();
@@ -80,6 +81,7 @@ const CommunityModerationPage: React.FC = () => {
         <Tab value="reports" label="Báo cáo" />
         <Tab value="posts" label="Bài đăng" />
         <Tab value="comments" label="Bình luận" />
+        <Tab value="chat" label="Chat nhóm" />
       </Tabs>
 
       {tab === "reports" && <ModerationReportsTab />}
@@ -99,6 +101,7 @@ const CommunityModerationPage: React.FC = () => {
           onClearPostFilter={clearPostFilter}
         />
       )}
+      {tab === "chat" && <ModerationChatTab />}
 
       <CommunityOfficialPostModal
         open={composeOpen}
