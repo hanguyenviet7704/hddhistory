@@ -2,11 +2,13 @@ import {
   CommunityContentStatus,
   CommunityPostType,
   CommunityReportStatus,
+  CommunityRoomSuggestionStatus,
   CommunityTargetType,
   ICommunityAdminComment,
   ICommunityAdminPost,
   ICommunityOfficialPostPayload,
   ICommunityReport,
+  ICommunityRoomSuggestion,
   ICommunitySanction,
   ICommunityTopic,
   ICommunityTopicPayload,
@@ -33,6 +35,14 @@ export interface CommunityCommentQuery {
   status?: CommunityContentStatus;
   postId?: string;
   authorId?: string;
+}
+
+export interface CommunityRoomSuggestionQuery {
+  page?: number;
+  take?: number;
+  search?: string;
+  status?: CommunityRoomSuggestionStatus;
+  locale?: string;
 }
 
 export interface CommunityReportQuery {
@@ -176,6 +186,37 @@ export const communityService = {
     const res = await axiosClient.patch(
       `/community/admin/weekly/${id}`,
       payload
+    );
+    return res.data?.data;
+  },
+
+  // -------------------------------------------------------- room suggestions
+  async getRoomSuggestions(params: CommunityRoomSuggestionQuery) {
+    const res = await axiosClient.get("/community/admin/room-suggestions", {
+      params,
+    });
+    return res.data?.data as IPagedResponse<ICommunityRoomSuggestion>;
+  },
+
+  /**
+   * Accept an ask by pointing it at a room that now exists.
+   *
+   * Approving does NOT create the room: a room needs a name in all five
+   * languages, a slug and an image, none of which a free-text ask carries. The
+   * flow is create the topic in the Topics screen, then link it here.
+   */
+  async approveRoomSuggestion(id: string, topicId: string, note?: string) {
+    const res = await axiosClient.patch(
+      `/community/admin/room-suggestions/${id}/approve`,
+      { topicId, note }
+    );
+    return res.data?.data;
+  },
+
+  async declineRoomSuggestion(id: string, note?: string) {
+    const res = await axiosClient.patch(
+      `/community/admin/room-suggestions/${id}/decline`,
+      { note }
     );
     return res.data?.data;
   },

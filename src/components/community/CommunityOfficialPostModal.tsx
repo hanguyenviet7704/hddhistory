@@ -44,6 +44,7 @@ const CommunityOfficialPostModal: React.FC<Props> = ({
 }) => {
   const lang = useSelector((state: RootState) => state.lang.code);
 
+  const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [locale, setLocale] = useState<string>(lang);
   const [topicId, setTopicId] = useState("");
@@ -64,6 +65,7 @@ const CommunityOfficialPostModal: React.FC<Props> = ({
 
   useEffect(() => {
     if (!open) return;
+    setSubject("");
     setBody("");
     setLocale(lang);
     setTopicId("");
@@ -76,6 +78,14 @@ const CommunityOfficialPostModal: React.FC<Props> = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Đăng bài với tư cách Đội ngũ MeUp</DialogTitle>
       <DialogContent className="space-y-4">
+        <TextField
+          fullWidth
+          label="Tiêu đề"
+          value={subject}
+          inputProps={{ maxLength: 160 }}
+          helperText="Dòng đậm hiện trên đầu thẻ bài trong feed"
+          onChange={(event) => setSubject(event.target.value)}
+        />
         <TextField
           fullWidth
           multiline
@@ -140,6 +150,7 @@ const CommunityOfficialPostModal: React.FC<Props> = ({
           disabled={saving || !body.trim()}
           onClick={() =>
             onSubmit({
+              subject: subject.trim() || undefined,
               body: body.trim(),
               locale,
               topicId: topicId || undefined,

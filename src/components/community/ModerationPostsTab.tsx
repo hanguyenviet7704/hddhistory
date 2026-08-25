@@ -27,6 +27,7 @@ import { useSelector } from "react-redux";
 import { communityService } from "../../services/communityService";
 import { RootState } from "../../store";
 import {
+  CommunityAuthorType,
   CommunityContentStatus,
   CommunityPostType,
   ICommunityAdminPost,
@@ -199,9 +200,24 @@ const ModerationPostsTab: React.FC<Props> = ({ onViewComments }) => {
               posts.map((post) => (
                 <TableRow key={post.id} hover>
                   <TableCell className="max-w-md">
+                    {!!post.subject && (
+                      <div className="mb-0.5 line-clamp-2 text-sm font-semibold text-gray-900">
+                        {post.subject}
+                      </div>
+                    )}
                     <div className="line-clamp-3 whitespace-pre-wrap text-sm">
                       {post.body}
                     </div>
+                    {post.attachedCard && (
+                      <div className="mt-1.5 rounded-lg bg-[#211B40] px-2.5 py-2">
+                        <div className="line-clamp-1 text-xs font-semibold text-white">
+                          {post.attachedCard.title}
+                        </div>
+                        <div className="line-clamp-2 text-[11px] leading-snug text-white/70">
+                          {post.attachedCard.back}
+                        </div>
+                      </div>
+                    )}
                     <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
                       <span>
                         {new Date(post.createdAt).toLocaleString("vi-VN")}
@@ -228,10 +244,19 @@ const ModerationPostsTab: React.FC<Props> = ({ onViewComments }) => {
                       {post.author?.name || "(tài khoản đã xoá)"}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {post.author?.authorType === "OFFICIAL"
+                      {post.author?.authorType === CommunityAuthorType.OFFICIAL
                         ? "Đội ngũ MeUp"
                         : post.author?.id}
                     </div>
+                    {/* The reader saw no name here. Said out loud so a
+                        moderator does not assume the writer put their name to
+                        it — and so it is obvious the ban still has a target. */}
+                    {post.author?.authorType ===
+                      CommunityAuthorType.ANONYMOUS && (
+                      <span className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">
+                        Đăng ẩn danh
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm">
                     {post.topic

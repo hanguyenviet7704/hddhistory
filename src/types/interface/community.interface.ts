@@ -8,6 +8,14 @@ export enum CommunityPostType {
 export enum CommunityAuthorType {
   USER = "USER",
   OFFICIAL = "OFFICIAL",
+  /**
+   * Written without a name shown to readers.
+   *
+   * The admin endpoints still return the real account — a ban has to land on
+   * somebody — so `author.name` is filled here even though the app hid it. The
+   * queue labels it so a moderator knows the reader could not see who wrote it.
+   */
+  ANONYMOUS = "ANONYMOUS",
 }
 
 export enum CommunityContentStatus {
@@ -30,6 +38,13 @@ export enum CommunityReportReason {
   MISINFORMATION = "MISINFORMATION",
   PRIVACY = "PRIVACY",
   OTHER = "OTHER",
+}
+
+export enum CommunityRoomSuggestionStatus {
+  PENDING = "PENDING",
+  /** A room was opened for it; `topicId` points at that room. */
+  APPROVED = "APPROVED",
+  DECLINED = "DECLINED",
 }
 
 export enum CommunityReportStatus {
@@ -78,7 +93,11 @@ export interface ICommunityAdminPost {
   type: CommunityPostType;
   status: CommunityContentStatus;
   locale?: string | null;
+  /** The headline above the story. Empty on older posts and on weekly questions. */
+  subject?: string;
   body: string;
+  /** A saved keypoint card the writer attached, snapshotted at compose time. */
+  attachedCard?: ICommunityAttachedCard | null;
   /** Weekly questions carry translations instead of a body. */
   title?: ITranslation;
   note?: ITranslation;
@@ -98,6 +117,29 @@ export interface ICommunityAdminPost {
   commentCount: number;
   reportCount: number;
   hiddenReason?: string;
+  createdAt: string;
+}
+
+export interface ICommunityAttachedCard {
+  keypointId: string;
+  title: string;
+  back: string;
+  courseName?: string;
+}
+
+export interface ICommunityRoomSuggestion {
+  id: string;
+  name: string;
+  description: string;
+  locale: string;
+  status: CommunityRoomSuggestionStatus;
+  /** How many readers backed it, the person who asked included. */
+  voteCount: number;
+  author: ICommunityAuthor;
+  /** Set once approved: the room that was opened for this ask. */
+  topicId: string | null;
+  reviewNote: string | null;
+  reviewedAt: string | null;
   createdAt: string;
 }
 
@@ -156,6 +198,7 @@ export interface ICommunityWeeklyPayload {
 }
 
 export interface ICommunityOfficialPostPayload {
+  subject?: string;
   body: string;
   locale: string;
   topicId?: string;
