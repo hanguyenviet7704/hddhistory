@@ -6,6 +6,7 @@ import {
   CommunityTargetType,
   ICommunityAdminChatMessage,
   ICommunityChatRoom,
+  ICommunityOfficialProfile,
   ICommunityAdminComment,
   ICommunityAdminPost,
   ICommunityChatQuery,
@@ -154,6 +155,20 @@ export const communityService = {
   },
 
   // -------------------------------------------------------------- group chat
+  // --------------------------------------------------- official (team) profile
+  async getOfficialProfile() {
+    const res = await axiosClient.get("/community/admin/official-profile");
+    return (res.data?.data ?? { name: "", avatar: "" }) as ICommunityOfficialProfile;
+  },
+
+  async saveOfficialProfile(payload: ICommunityOfficialProfile) {
+    const res = await axiosClient.put(
+      "/community/admin/official-profile",
+      payload
+    );
+    return res.data?.data as ICommunityOfficialProfile;
+  },
+
   async getChatRooms() {
     const res = await axiosClient.get("/community/admin/chat/rooms");
     return (res.data?.data ?? []) as ICommunityChatRoom[];

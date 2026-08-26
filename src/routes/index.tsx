@@ -46,6 +46,7 @@ import HomePopupPage from "../pages/home-popup/HomePopupPage";
 import CommunityModerationPage from "../pages/community/CommunityModerationPage";
 import CommunityRoomSuggestionList from "../pages/community/CommunityRoomSuggestionList";
 import CommunitySanctionList from "../pages/community/CommunitySanctionList";
+import CommunityOfficialProfilePage from "../pages/community/CommunityOfficialProfilePage";
 import CommunityTopicList from "../pages/community/CommunityTopicList";
 import CommunityWeeklyPage from "../pages/community/CommunityWeeklyPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
@@ -137,6 +138,10 @@ export default function AppRouter() {
                 element={<CommunityModerationPage />}
               />
               <Route path="community/topics" element={<CommunityTopicList />} />
+              <Route
+                path="community/official-profile"
+                element={<CommunityOfficialProfilePage />}
+              />
               <Route
                 path="community/room-suggestions"
                 element={<CommunityRoomSuggestionList />}

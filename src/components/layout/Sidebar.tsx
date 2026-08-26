@@ -145,6 +145,12 @@ const menuGroups = [
         path: "/community/moderation",
       },
       { name: "Phòng", icon: HashtagIcon, path: "/community/topics" },
+      // The team's own identity — the name and picture on every official post.
+      {
+        name: "Đội ngũ MeUp",
+        icon: CheckBadgeIcon,
+        path: "/community/official-profile",
+      },
       {
         name: "Đề xuất phòng",
         icon: LightBulbIcon,

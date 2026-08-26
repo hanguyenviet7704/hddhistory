@@ -170,6 +170,17 @@ export interface ICommunityAdminComment {
   createdAt: string;
 }
 
+/**
+ * The team's identity in the forum.
+ *
+ * Both fields may be empty, and empty is meaningful: the app then falls back to
+ * its own localised "Đội ngũ MeUp" and the generated "M" disc.
+ */
+export interface ICommunityOfficialProfile {
+  name: string;
+  avatar: string;
+}
+
 /** A group chat room, as the panel manages it. */
 export interface ICommunityChatRoom {
   id: string;
