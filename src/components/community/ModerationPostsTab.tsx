@@ -235,6 +235,7 @@ const ModerationPostsTab: React.FC = () => {
                 ]}
                 likeCount={post.likeCount}
                 commentCount={post.commentCount}
+                saveCount={post.saveCount}
                 reportCount={post.reportCount}
                 note={
                   post.hiddenByReports ? (

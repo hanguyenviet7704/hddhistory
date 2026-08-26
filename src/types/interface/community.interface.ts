@@ -117,6 +117,8 @@ export interface ICommunityAdminPost {
   commentsLocked: boolean;
   likeCount: number;
   commentCount: number;
+  /** The bell — readers who asked to be told when this thread moves. */
+  saveCount?: number;
   reportCount: number;
   hiddenReason?: string;
   /**
