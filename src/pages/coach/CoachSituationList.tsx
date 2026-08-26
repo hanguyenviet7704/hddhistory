@@ -360,7 +360,9 @@ const CoachSituationList: React.FC = () => {
         <DialogTitle>Sửa tình huống & kịch bản</DialogTitle>
         <DialogContent>
           <p className="text-sm text-gray-500 mb-3">
-            Cảnh: hai câu, một câu hỏi, dưới 30 từ. Câu hỏi hỏi họ{" "}
+            Cảnh: ba đến bốn câu, 45–70 từ, kết bằng một câu hỏi. Phải có chỗ,
+            có tên người, và một chi tiết khiến lựa chọn <em>phải trả giá</em> —
+            đủ để user nhập vai và rút ra được bài học. Câu hỏi hỏi họ{" "}
             <em>sẽ nói hay làm gì</em> — không hỏi cảm thấy thế nào, và không
             được gợi ý là có đáp án đúng.
           </p>
@@ -387,13 +389,14 @@ const CoachSituationList: React.FC = () => {
             Kịch bản
           </div>
           <p className="text-xs text-gray-400 mb-3">
-            Coach đi theo các nhịp này rồi chốt bằng bài học + nước đi. Mặc định
-            1 nhịp (2 lượt), tối đa 2 nhịp (3 lượt). Nhịp là ý cần khơi
-            (&ldquo;họ sẽ nói câu đầu tiên là gì&rdquo;), không phải câu hỏi soạn
-            sẵn.
+            Coach đi theo các nhịp này rồi chốt bằng bài học + nước đi. 2–4 nhịp
+            (nên 3) = 3–5 lượt thoại, để user nghĩ bên trong tình huống. Các nhịp
+            phải <em>tăng dần</em>: câu họ sẽ nói → người kia đáp lại thế nào →
+            bản khó hơn của cùng tình huống. Nhịp là ý cần khơi, không phải câu
+            hỏi soạn sẵn.
           </p>
           <TextField
-            label="Nhịp gợi (mỗi dòng một nhịp, tối đa 2)"
+            label="Nhịp gợi (mỗi dòng một nhịp, 2–4 nhịp)"
             multiline
             minRows={2}
             fullWidth
