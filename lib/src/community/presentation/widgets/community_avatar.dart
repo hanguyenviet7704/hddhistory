@@ -177,6 +177,11 @@ class CommunityAuthorLine extends StatelessWidget {
     final name = switch (author) {
       // Order matters: an anonymous post also has an empty name, and reading it
       // as a deleted account would be a different (and wrong) claim.
+      //
+      // The team's name comes from the server when somebody has set one in the
+      // panel, and falls back to the localised wording otherwise — a brand name
+      // is not translated, but "Đội ngũ MeUp" is, so the fallback has to stay.
+      _ when author.isOfficial && author.name.isNotEmpty => author.name,
       _ when author.isOfficial => l10n.officialAuthorName,
       _ when author.isAnonymous => l10n.anonymousAuthorName,
       _ when author.name.isEmpty => l10n.deletedAuthorName,
