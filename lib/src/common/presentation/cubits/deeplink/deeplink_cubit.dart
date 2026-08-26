@@ -655,19 +655,27 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// Roadmap source tag for a tap on the daily new-course notification. Unknown
   /// to `remapRoadmapSource`, which buckets it into the generic explore source —
   /// correct, since this is not one of the home surfaces it distinguishes.
-  /// The ③C course invitation, opened from the Coach sheet.
+  /// A course the Coach offered — ③C's invitation, or ⑦ nhịp 4's keypoint —
+  /// tapped from the Coach sheet.
   ///
-  /// Goes through the same `_openCourseRoadmap` every other id-only entry
-  /// uses, rather than re-deriving the "select the course, claim the branch,
-  /// then go" dance — that sequence has a comment in `course_card.dart`
-  /// explaining why each step is load-bearing, and a second copy of it would
-  /// be the one that rots.
-  ///
-  /// Returns false when the course can no longer be selected (unpublished
-  /// since the situation was cached, say); the caller stays where it is rather
-  /// than bouncing the reader to Home from inside a conversation.
+  /// Same "select the course, claim the branch, then go" sequence as
+  /// `_openCourseRoadmap`, but with the LENIENT select: the strict
+  /// `trySelectCourseFromCourseId` refuses any course the loaded catalog does
+  /// not contain, and here that refusal came out as a dead tap — the sheet
+  /// closed, the session ended, and nothing happened (2026-08-25). The server
+  /// only ever offers published courses seconds after ranking them, so
+  /// "not in the catalog" almost always means a catalog gap, not a vanished
+  /// course; `selectCourseFromCourseId` covers that by loading the roadmap
+  /// outside the catalog, and the roadmap's own error state covers the rare
+  /// truly-gone course better than silence does.
   bool openCourseRoadmapFromCoach(BuildContext navContext, String courseId) {
-    return _openCourseRoadmap(navContext, courseId, _coachRoadmapSource);
+    if (courseId.trim().isEmpty) return false;
+    LogDev.data('[Coach] open course from sheet: $courseId');
+    AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(courseId);
+    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(_coachRoadmapSource);
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+    CourseRoadmapRoute().go(navContext);
+    return true;
   }
 
   static const String _coachRoadmapSource = 'ai_coach';

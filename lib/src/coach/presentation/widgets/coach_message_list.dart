@@ -196,41 +196,65 @@ class _CourseInvite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 14.h),
-      decoration: BoxDecoration(
-        color: CoachStyle.surface,
-        borderRadius: BorderRadius.circular(18.r),
-        boxShadow: CoachStyle.cardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.l10n.coach.courseInviteTitle.toUpperCase(),
-            style: CoachStyle.sectionLabel(size: 10.5),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            invite.title,
-            style: TextStyle(
-              fontSize: 14.5.sp,
-              fontWeight: FontWeight.w700,
-              height: 1.45,
-              color: CoachStyle.textPrimary,
+    // The card IS the link: popping with the course id hands navigation to
+    // whoever opened the sheet, after the modal is gone — the same door the
+    // END screen's "go to course" button uses.
+    return GestureDetector(
+      onTap: invite.courseId.isEmpty
+          ? null
+          : () => Navigator.of(context)
+              .pop(_CoachSheetResult.openCourse(invite.courseId)),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: CoachStyle.surface,
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: CoachStyle.cardShadow,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.coach.courseInviteTitle.toUpperCase(),
+                    style: CoachStyle.sectionLabel(size: 10.5),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    invite.title,
+                    style: TextStyle(
+                      fontSize: 14.5.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.45,
+                      color: CoachStyle.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    context.l10n.coach.courseInviteCaption,
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      fontWeight: FontWeight.w600,
+                      height: 1.5,
+                      color: CoachStyle.textMuted,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            context.l10n.coach.courseInviteCaption,
-            style: TextStyle(
-              fontSize: 11.5.sp,
-              fontWeight: FontWeight.w600,
-              height: 1.5,
-              color: CoachStyle.textMuted,
-            ),
-          ),
-        ],
+            if (invite.courseId.isNotEmpty) ...[
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20.r,
+                color: CoachStyle.textMuted,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

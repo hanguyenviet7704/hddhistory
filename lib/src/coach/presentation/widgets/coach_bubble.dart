@@ -1,11 +1,16 @@
 part of '../../coach.dart';
 
-/// The floating Coach bubble — 60px, the skin colour, and a face.
+/// The floating Coach — the 60px slime, its badge, and the teaser.
 ///
 /// Sits in the shell's Stack as a sibling of [ImportProgressToast], not inside
 /// the popup-host chain. It never opens itself, and because it never does, the
 /// Coach stays out of the cold-start scramble between the week-recap poster,
 /// the gift popup, the streak toast and the Home promo.
+///
+/// The character's state follows the door's: a pending plan makes it LEAN
+/// toward its own teaser ("Ngóng"), otherwise it just breathes ("Nghỉ") — the
+/// design binds each state to a scenario, so the dot and the body language
+/// always agree.
 class CoachBubble extends StatelessWidget {
   /// Distance from the bottom of the screen. Callers on a primary tab pass
   /// `floatingNavBarHeight(context) + gap` so it clears the nav bar on devices
@@ -28,13 +33,15 @@ class CoachBubble extends StatelessWidget {
     return Positioned(
       right: 18.w,
       bottom: bottomInset,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      // The teaser sits BESIDE the character, tail pointing at it — the
+      // drawing's layout. Stacked above, the tail pointed at nothing.
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           if (teaser != null) ...[
             _Teaser(text: teaser!),
-            SizedBox(height: 10.h),
+            SizedBox(width: 10.w),
           ],
           Semantics(
             button: true,
@@ -45,31 +52,20 @@ class CoachBubble extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(99.r),
-                      boxShadow: CoachStyle.bubbleShadow,
-                    ),
-                    child: const CoachFace.bubble(),
+                  // No DecoratedBox shadow ring: the body is a morphing blob
+                  // now, and a circular shadow behind a non-circle reads as a
+                  // halo. The drop shadow travels with the drawing instead.
+                  CoachSlime(
+                    mood: dot ? CoachSlimeMood.waiting : CoachSlimeMood.idle,
+                    size: 60,
+                    shadow: true,
                   ),
                   // The one dot in the app that means something specific: a
                   // commitment is waiting to be asked about. Anywhere else it
                   // would be decoration, and a decorative dot is how badges
                   // stop being read.
                   if (dot)
-                    Positioned(
-                      right: 1.w,
-                      top: 1.w,
-                      child: Container(
-                        width: 13.w,
-                        height: 13.w,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF04438),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: CoachStyle.surface, width: 2.w),
-                        ),
-                      ),
-                    ),
+                    Positioned(right: -2.w, top: -2.w, child: const _PulseDot()),
                 ],
               ),
             ),
@@ -149,6 +145,52 @@ class _TeaserState extends State<_Teaser> with SingleTickerProviderStateMixin {
             height: 1.45,
             color: CoachStyle.textPrimary,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+
+/// The badge — the design's `cv-pulse`: a slow 1 → 1.18 breath.
+///
+/// Pulsing rather than static because the character next to it never stops
+/// moving; a frozen dot on a live body reads as a rendering glitch.
+class _PulseDot extends StatefulWidget {
+  const _PulseDot();
+
+  @override
+  State<_PulseDot> createState() => _PulseDotState();
+}
+
+class _PulseDotState extends State<_PulseDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: Tween(begin: 1.0, end: 1.18)
+          .chain(CurveTween(curve: Curves.easeInOut))
+          .animate(_controller),
+      child: Container(
+        width: 16.w,
+        height: 16.w,
+        decoration: BoxDecoration(
+          // The design's badge red — warmer than the app's errorRed on
+          // purpose: this is an invitation, not an alarm.
+          color: const Color(0xFFE4604E),
+          shape: BoxShape.circle,
+          border: Border.all(color: CoachStyle.surface, width: 3.w),
         ),
       ),
     );

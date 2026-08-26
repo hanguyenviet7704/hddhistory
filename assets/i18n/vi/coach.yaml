@@ -12,10 +12,10 @@ promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào tr
 promptPickHabit: Bạn muốn tập habit nào hôm nay?
 promptPersona: Bạn muốn mình nói kiểu nào hôm nay?
 promptTime: Hôm nay bạn có bao nhiêu thời gian?
-promptTell: Có chuyện gì bạn muốn kể không?
+promptTell: Kể mình nghe chuyện gần nhất của bạn với thói quen này. Cứ nói tự do, mình không chen.
 promptTellFollowUp: Rồi sau đó thì sao?
 promptFree: Hôm nay có chuyện gì không? Kể mình nghe.
-promptIntentTell: Kể mình nghe lúc đó thế nào.
+promptIntentTell: "Kể mình nghe một câu thôi: lúc đó bạn nói hay làm gì?"
 promptNextAction: Vậy lần tới bạn sẽ làm gì?
 promptCheckin: Mấy hôm nay habit này có dịp nào dùng tới không?
 promptPlan: Chốt một nhắc hẹn nhỏ cho lần tới nhé.
@@ -26,7 +26,7 @@ promptEnd: Bạn muốn làm gì tiếp?
 promptJot: Được. Ghi một dòng cho hôm nay thôi, mình không hỏi gì thêm.
 promptSafety: Cảm ơn bạn đã nói ra điều này. Mình muốn bạn không phải ở một mình với nó.
 promptTwoCols: Mình gom lại thành nháp bằng đúng lời bạn. Kéo dòng nào là vấn đề thật của bạn sang phải, rồi viết lại một câu.
-promptIntent: Bạn nói sẽ làm điều này. Có dịp nào chưa?
+promptIntent: "Hôm qua bạn nói: lần tới khi ${context} sẽ ${action}. Có dịp nào chưa?"
 
 fallbackReply: Mình nghe rồi.
 
@@ -41,8 +41,8 @@ scriptLong: Dài · thoải mái
 scriptPractice: Chỉ tập, không trò chuyện
 
 intentDone: Đã làm được
-intentMissed: Có dịp nhưng chưa làm
-intentNone: Không có tình huống nào
+intentMissed: Có dịp mà chưa làm
+intentNone: Chưa gặp dịp
 
 checkinYes: Có
 checkinNo: Chưa
@@ -70,7 +70,7 @@ endClose: Đóng
 
 twoColsLeftTitle: Chuyện đã xảy ra
 twoColsRightTitle: Vấn đề thật của tôi
-twoColsHint: Chạm để kéo dòng sang bên kia, sửa lại hoặc xoá dòng mình ghi sai. Mình chỉ dựng nháp bằng lời bạn đã kể.
+twoColsHint: Chạm để kéo dòng đúng với bạn sang bên kia, sửa lại hoặc xoá dòng sai. Nháp do Coach gợi từ chuyện bạn kể — chỉ dòng bạn giữ mới được tính.
 lineEdit: Sửa dòng này
 lineDelete: Xoá dòng này
 lineSave: Xong
@@ -113,8 +113,6 @@ stepJot: một dòng cho hôm nay
 mood1: Tệ
 mood2: Hơi mệt
 mood3: Bình thường
-mood4: Ổn
-mood5: Tốt
 rejectDraft: Không đúng với mình
 redraftPrompt: "Vậy bạn kể lại giúp mình: cái gì chắc chắn đã xảy ra?"
 keypointsLabel: Có thể giúp bạn
@@ -123,3 +121,59 @@ closingContinue: Tiếp tục
 stepNextAction: bạn sẽ làm gì
 stepClosing: trước khi khép lại
 stepRedraft: bằng lời của bạn
+
+# BA flow 2026-08-26 — one spine, two doors
+mood4: Ổn
+mood5: Tốt
+promptStory: Hôm nay có chuyện gì mới không?
+storySkip: Bỏ qua
+promptDepth: Mình ghi lại thôi, hay bạn muốn kể sâu hơn?
+depthShallow: Chỉ ghi lại thôi
+depthDeep: Kể sâu hơn
+promptBarrier: Có dịp mà chưa làm được — chuyện đó bình thường. Lúc đó cái gì làm bạn dừng lại?
+shrinkLabel: Thu nhỏ nhắc hẹn — sửa được
+shrinkAccept: Thu nhỏ như vậy
+shrinkKeep: Giữ nguyên, thử lại
+promptContextAsk: "Chưa tới dịp thì thôi, mình để nguyên. Bối cảnh “${context}” có hay xảy ra không?"
+contextKeep: Giữ nguyên
+contextChange: Đổi bối cảnh
+promptContextEdit: Vậy bối cảnh mới là gì?
+planSlept: Cái hẹn này mình tạm cất đi nhé. Khi nào cần thì bạn gọi lại.
+promptInvite: Muốn thử một tình huống ngắn không? Bỏ qua cũng được.
+inviteYes: Thử một tình huống
+inviteNo: Bỏ qua
+promptPlanAsk: Muốn đặt nhắc hẹn cho lần tới không?
+planAskYes: Có, đặt nhắc hẹn
+planAskNo: Không, lần này thôi
+courseCardTitle: Một khoá gần với chuyện bạn kể
+courseCardReason: Khớp với habit “${habit}”
+courseCardSave: Lưu để dành
+courseCardClose: Đóng
+nextStop: Dừng ở đây
+nextAgain: Bắt đầu phiên mới
+closingWithPlan: "Vậy lần tới ${context} nhé. Mình sẽ nhắc bạn lúc ${time}."
+closingWithPlanNoTime: "Vậy lần tới ${context} nhé."
+closingNoPlan: Ghi lại rồi nhé. Khi nào muốn nói tiếp thì mình ở đây.
+promptEndLesson: Tập vậy là đủ cho hôm nay.
+daysCustom: tự chọn
+day1: T2
+day2: T3
+day3: T4
+day4: T5
+day5: T6
+day6: T7
+day7: CN
+ratingChipMissed: Hiểu sai chuyện
+ratingChipGeneric: Quá chung
+ratingChipLong: Quá dài
+ratingChipVoice: Giọng không hợp
+ratingChipImposed: Áp đặt suy nghĩ
+ratingSend: Gửi
+personaLabel: Giọng
+stepStory: chuyện hôm nay
+stepDepth: ghi lại hay kể sâu
+stepBarrier: điều gì đã cản
+stepShrink: thu nhỏ nhắc hẹn
+stepContext: bối cảnh nhắc hẹn
+stepCourse: một khoá gần với bạn
+stepNextSession: khép lại

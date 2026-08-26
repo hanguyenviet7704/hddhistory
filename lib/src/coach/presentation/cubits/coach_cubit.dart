@@ -13,18 +13,20 @@ class CoachCubit extends Cubit<CoachState> {
   final SendCoachTurnUseCase _sendTurn;
   final CloseCoachSessionUseCase _closeSession;
   final ExplainAgainUseCase _explainAgain;
+  final SetCoachPersonaUseCase _setPersona;
 
-  CoachCubit(this._openSession, this._sendTurn, this._closeSession, this._explainAgain) : super(const CoachState());
+  CoachCubit(this._openSession, this._sendTurn, this._closeSession, this._explainAgain, this._setPersona) : super(const CoachState());
 
   CoachEntry _entry = CoachEntry.home;
   String? _lessonId;
   String? _habitId;
   String _locale = 'en';
 
-  /// Resolves a fixed line's slang key. Injected by the sheet, which is the
+  /// Resolves a fixed line's slang key, filling in the reader's own words
+  /// (`args`) where the line quotes them. Injected by the sheet, which is the
   /// only place with a BuildContext — keeping `context.l10n` out of the cubit
   /// is what lets the same cubit be driven from a test with no widget tree.
-  String Function(String key)? promptResolver;
+  String Function(String key, Map<String, String> args)? promptResolver;
 
   Future<void> open({
     required CoachEntry entry,
@@ -85,15 +87,53 @@ class CoachCubit extends Cubit<CoachState> {
 
   Future<void> pickNewHabit(String habitId, String label) => _send({'kind': 'pickNew', 'habitId': habitId}, userLine: label);
 
-  Future<void> pickHabit(String habitId, String label) => _send({'kind': 'pickHabit', 'habitId': habitId}, userLine: label);
-
-  Future<void> pickPersona(String persona, String label) => _send({'kind': 'persona', 'persona': persona}, userLine: label);
-
-  Future<void> pickScript(String script, String label) => _send({'kind': 'time', 'script': script}, userLine: label);
-
+  /// ②A — three equal buttons. The label is echoed so the thread shows what
+  /// was answered; the server decides which branch it opens.
   Future<void> answerIntent(String answer, String label) => _send({'kind': 'intent', 'answer': answer}, userLine: label);
 
-  Future<void> answerCheckin(bool used, String label) => _send({'kind': 'checkin', 'used': used}, userLine: label);
+  /// ② "hoặc bỏ qua" — the story step's second way out.
+  Future<void> skipStory(String label) => _send({'kind': 'skip'}, userLine: label);
+
+  /// After the first line: "Chỉ ghi lại thôi" · "Kể sâu hơn".
+  Future<void> chooseDepth({required bool deep, required String label}) => _send({'kind': 'depth', 'deep': deep}, userLine: label);
+
+  /// ②A — take the smaller commitment (with the reader's edits) or keep the old one.
+  Future<void> answerShrink({
+    required bool accept,
+    required String label,
+    String? context,
+    String? action,
+  }) => _send({
+    'kind': 'shrink',
+    'accept': accept,
+    'planContext': ?context,
+    'planAction': ?action,
+  }, userLine: label);
+
+  /// ②A "Chưa gặp dịp" — keep the context, or go type a new one.
+  Future<void> answerContext({required bool keep, required String label}) => _send({'kind': 'context', 'keep': keep}, userLine: label);
+
+  /// ★ — practise one situation, or not. Never required.
+  Future<void> answerInvite({required bool accept, required String label}) => _send({'kind': 'invite', 'accept': accept}, userLine: label);
+
+  /// "Muốn đặt Nhắc hẹn không?" — the commitment is optional at every door.
+  Future<void> answerPlanAsk({required bool accept, required String label}) => _send({'kind': 'planAsk', 'accept': accept}, userLine: label);
+
+  /// The course card's three ways out: open · save · close.
+  Future<void> courseAction(String action, {String? label}) => _send({'kind': 'course', 'courseAction': action}, userLine: label);
+
+  /// "Dừng phiên hay bắt đầu phiên mới?" — two equal buttons.
+  Future<void> nextSession({required bool again, required String label}) => _send({'kind': 'nextSession', 'again': again}, userLine: label);
+
+  /// The voice, from the header, at any step. Not a turn: nothing in the flow
+  /// moves, so the state is updated first and the server told after.
+  Future<void> setPersona(String persona) async {
+    if (persona == state.persona) return;
+    emit(state.copyWith(persona: persona));
+    if (state.sessionId.isEmpty) return;
+
+    await _setPersona(sessionId: state.sessionId, persona: persona).run();
+  }
 
   Future<void> submitText(String text) {
     final trimmed = text.trim();
@@ -138,12 +178,14 @@ class CoachCubit extends Cubit<CoachState> {
     int? hour,
     int? minute,
     String? days,
+    List<int>? customDays,
   }) => _send({
     'kind': 'schedule',
     'reminderEnabled': enabled,
     'reminderHour': ?hour,
     'reminderMinute': ?minute,
     'reminderDays': ?days,
+    'reminderCustomDays': ?customDays,
   }, userLine: label);
 
   Future<void> loop({required bool keepGoing, required String label}) => _send({'kind': 'loop', 'keepGoing': keepGoing}, userLine: label);
@@ -294,13 +336,21 @@ class CoachCubit extends Cubit<CoachState> {
       messages.add(CoachMessage(isCoach: true, text: turn.reply!));
     }
 
+    // A note before the step's own line — "cái hẹn này mình tạm cất đi nhé".
+    if (turn.noteKey != null) {
+      final note = promptResolver?.call(turn.noteKey!, const {});
+      if (note != null && note.isNotEmpty) {
+        messages.add(CoachMessage(isCoach: true, text: note));
+      }
+    }
+
     // A situation IS the Coach's line at that step — there is no separate
     // prompt to show alongside it.
     final situation = turn.ui.situation;
     if (situation != null) {
       messages.add(CoachMessage(isCoach: true, text: situation));
     } else if (turn.promptKey != null) {
-      final resolved = promptResolver?.call(turn.promptKey!);
+      final resolved = promptResolver?.call(turn.promptKey!, turn.promptArgs);
       if (resolved != null && resolved.isNotEmpty) {
         messages.add(CoachMessage(isCoach: true, text: resolved));
       }
@@ -309,6 +359,7 @@ class CoachCubit extends Cubit<CoachState> {
     return base.copyWith(
       sessionId: turn.sessionId,
       step: turn.step,
+      persona: turn.persona,
       messages: messages,
       ui: turn.ui,
       courseInvite: turn.courseInvite,

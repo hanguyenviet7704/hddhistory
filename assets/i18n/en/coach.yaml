@@ -17,10 +17,10 @@ promptPickNew: You just added a couple of habits. Which one should we talk about
 promptPickHabit: Which habit do you want to work on today?
 promptPersona: How would you like me to speak today?
 promptTime: How much time do you have?
-promptTell: Anything you'd like to tell me about?
+promptTell: Tell me about the last time this habit came up. Take your time — I won't cut in.
 promptTellFollowUp: And then what happened?
 promptFree: Anything on your mind today? I'm listening.
-promptIntentTell: Tell me how it went.
+promptIntentTell: "Tell me in one sentence: what did you say or do?"
 promptNextAction: So what will you do next time?
 promptCheckin: Has this habit come up at all in the last few days?
 promptPlan: Let's set one small reminder for next time.
@@ -31,7 +31,7 @@ promptEnd: What would you like to do next?
 promptJot: Alright. One line for today, and I won't ask anything else.
 promptSafety: Thank you for saying that. I don't want you to be alone with it.
 promptTwoCols: I've pulled out your own lines. Drag whichever one is the real problem to the right, then write it in a sentence.
-promptIntent: You said you'd do this. Has there been a moment yet?
+promptIntent: "Yesterday you said: next time ${context}, you would ${action}. Has there been a moment yet?"
 
 # Shown when the model could not answer. Deliberately empty of content — an
 # acknowledgement that claims to have understood something it never read is
@@ -49,7 +49,7 @@ scriptLong: Long · take your time
 scriptPractice: Just practise, no talking
 
 intentDone: I did it
-intentMissed: There was a moment, I didn't take it
+intentMissed: There was a moment, I didn't
 intentNone: No moment came up
 
 checkinYes: Yes
@@ -78,7 +78,7 @@ endClose: Close
 
 twoColsLeftTitle: What happened
 twoColsRightTitle: My real problem
-twoColsHint: Tap a line to move it across, or edit and delete the ones I got wrong. I only drafted these from what you told me.
+twoColsHint: Tap to move the lines that fit across, edit or delete the wrong ones. The Coach drafted these from your story — only what you keep counts.
 lineEdit: Edit this line
 lineDelete: Delete this line
 lineSave: Save
@@ -119,10 +119,8 @@ stepJot: one line for today
 
 # Mood 5 mức · nhịp 4/5 · ⑧
 mood1: Bad
-mood2: A bit worn
+mood2: A bit tired
 mood3: Okay
-mood4: Good
-mood5: Great
 rejectDraft: That's not what I meant
 redraftPrompt: "Tell me again then: what definitely happened?"
 keypointsLabel: Might help
@@ -131,3 +129,59 @@ closingContinue: Continue
 stepNextAction: what you will do
 stepClosing: before we finish
 stepRedraft: in your own words
+
+# BA flow 2026-08-26 — one spine, two doors
+mood4: Good
+mood5: Great
+promptStory: Anything new today?
+storySkip: Skip
+promptDepth: Shall I just note that down, or do you want to go deeper?
+depthShallow: Just note it
+depthDeep: Go deeper
+promptBarrier: There was a moment and it didn't happen — that's ordinary. What stopped you right then?
+shrinkLabel: A smaller version — edit it
+shrinkAccept: Make it this small
+shrinkKeep: Keep it, try again
+promptContextAsk: "No moment yet — I'll leave it as it is. Does “${context}” actually come up often?"
+contextKeep: Keep it
+contextChange: Change the context
+promptContextEdit: So what's the new context?
+planSlept: I'll put this one away for now. Call it back whenever you need it.
+promptInvite: Want to try a short situation? Skipping is fine.
+inviteYes: Try one
+inviteNo: Skip
+promptPlanAsk: Want to set a reminder for next time?
+planAskYes: Yes, set one
+planAskNo: Not this time
+courseCardTitle: A course close to what you told me
+courseCardReason: Matches the habit “${habit}”
+courseCardSave: Save for later
+courseCardClose: Close
+nextStop: Stop here
+nextAgain: Start a new session
+closingWithPlan: "So, next time ${context}. I'll remind you at ${time}."
+closingWithPlanNoTime: "So, next time ${context}."
+closingNoPlan: Noted. Whenever you want to pick this up again, I'm here.
+promptEndLesson: That's enough practice for today.
+daysCustom: pick days
+day1: Mo
+day2: Tu
+day3: We
+day4: Th
+day5: Fr
+day6: Sa
+day7: Su
+ratingChipMissed: Missed the point
+ratingChipGeneric: Too generic
+ratingChipLong: Too long
+ratingChipVoice: Wrong tone
+ratingChipImposed: Told me what to think
+ratingSend: Send
+personaLabel: Voice
+stepStory: today
+stepDepth: note it, or go deeper
+stepBarrier: what got in the way
+stepShrink: a smaller version
+stepContext: the reminder's context
+stepCourse: a course close to you
+stepNextSession: closing

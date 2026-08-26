@@ -67,6 +67,21 @@ class CoachRepository implements ICoachRepository {
   }
 
   @override
+  TaskEither<AppException, Unit> setPersona({
+    required String sessionId,
+    required String persona,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        await _api.setPersona(sessionId, {'persona': persona});
+
+        return unit;
+      },
+      (error, stackTrace) => AppException.unexpected(error.toString()),
+    );
+  }
+
+  @override
   TaskEither<AppException, Unit> closeSession(String sessionId) {
     return TaskEither.tryCatch(
       () async {

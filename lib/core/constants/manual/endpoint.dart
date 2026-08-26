@@ -266,6 +266,7 @@ mixin AppEndpoint {
   static const String coachSessions = '/api/v1/coach/sessions';
   static const String coachSessionTurns = '/api/v1/coach/sessions/{id}/turns';
   static const String coachSessionClose = '/api/v1/coach/sessions/{id}/close';
+  static const String coachSessionPersona = '/api/v1/coach/sessions/{id}/persona';
   static const String coachTranscribe = '/api/v1/coach/transcribe';
   static const String coachExplainAgain = '/api/v1/coach/explain-again';
 

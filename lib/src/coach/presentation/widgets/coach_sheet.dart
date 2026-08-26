@@ -8,7 +8,6 @@ part of '../../coach.dart';
 @freezed
 sealed class _CoachSheetResult with _$CoachSheetResult {
   const factory _CoachSheetResult.close() = _CoachSheetClose;
-  const factory _CoachSheetResult.keepTalking() = _CoachSheetKeepTalking;
   const factory _CoachSheetResult.openCourse(String courseId) = _CoachSheetOpenCourse;
 }
 
@@ -90,7 +89,7 @@ class _CoachSheetState extends State<_CoachSheet> {
     // The cubit resolves fixed lines through this rather than importing
     // `context.l10n` itself, so the same cubit can be driven with no widget
     // tree at all.
-    cubit.promptResolver = (key) => coachPrompt(context, key) ?? '';
+    cubit.promptResolver = (key, args) => coachPrompt(context, key, args) ?? '';
     cubit.open(
       entry: widget.entry,
       locale: LocaleSettings.currentLocale.languageCode,
@@ -102,11 +101,17 @@ class _CoachSheetState extends State<_CoachSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CoachCubit, CoachState>(
-      listenWhen: (prev, curr) => prev.silent != curr.silent,
+      listenWhen: (prev, curr) => prev.silent != curr.silent || prev.ended != curr.ended,
       listener: (context, state) {
         // A door that decided to stay quiet is not an error and gets no
         // message — the sheet simply goes away again.
         if (state.silent) Navigator.of(context).pop(const _CoachSheetResult.close());
+        // ② "Dừng" — the closing line was the last thing said, and the sheet
+        // goes back to where the reader came from without another button.
+        // ① keeps its END screen: the fixed line plus one Đóng.
+        if (state.ended && state.step == 'end' && widget.entry != CoachEntry.lesson) {
+          Navigator.of(context).pop(const _CoachSheetResult.close());
+        }
       },
       builder: (context, state) {
         final cubit = context.read<CoachCubit>();
@@ -126,6 +131,16 @@ class _CoachSheetState extends State<_CoachSheet> {
               children: [
                 _Header(
                   subtitle: coachStepLabel(context, state.step),
+                  persona: state.persona,
+                  onPersona: state.sessionId.isEmpty ? null : cubit.setPersona,
+                  // The avatar acts the step out: listening while the reader
+                  // types, thinking while composing or at the two columns,
+                  // gentle on the safety screen. Same selector as the design's.
+                  mood: coachSlimeMoodFor(
+                    step: state.step,
+                    typing: state.typing,
+                    safety: isSafety,
+                  ),
                   onClose: () => Navigator.of(context).pop(const _CoachSheetResult.close()),
                 ),
                 Expanded(
@@ -150,7 +165,7 @@ class _CoachSheetState extends State<_CoachSheet> {
   }
 }
 
-/// White bar, hairline underneath, the Coach's face on the left.
+/// White bar, hairline underneath, the Coach on the left.
 ///
 /// Two lines, as drawn. The prototype fills the second one with its own step
 /// ids ("③A hỏi lại nhắc hẹn") — instrumentation for whoever is reading the
@@ -158,9 +173,22 @@ class _CoachSheetState extends State<_CoachSheet> {
 /// carries real words instead.
 class _Header extends StatelessWidget {
   final String? subtitle;
+  final CoachSlimeMood mood;
   final VoidCallback onClose;
 
-  const _Header({required this.subtitle, required this.onClose});
+  /// The voice in force, and the way to change it — "đổi được bất cứ lúc nào,
+  /// kể cả giữa chừng, ở dòng đầu tiên của sheet". Three fictional people,
+  /// labelled as such; never a level, never something to unlock.
+  final String persona;
+  final ValueChanged<String>? onPersona;
+
+  const _Header({
+    required this.subtitle,
+    required this.mood,
+    required this.onClose,
+    this.persona = 'friend',
+    this.onPersona,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +208,7 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const CoachFace.header(),
+          CoachSlime(mood: mood, size: 34),
           SizedBox(width: 11.w),
           Expanded(
             child: Column(
@@ -209,6 +237,10 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
+          if (onPersona != null) ...[
+            _PersonaPill(persona: persona, onChanged: onPersona!),
+            SizedBox(width: 8.w),
+          ],
           GestureDetector(
             onTap: onClose,
             behavior: HitTestBehavior.opaque,
@@ -274,6 +306,78 @@ class _Failed extends StatelessWidget {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// The voice, as a small pill in the header. Tapping opens the three choices;
+/// the current one is marked. Pre-lit from last time, never applied for the
+/// reader — they still tap.
+class _PersonaPill extends StatelessWidget {
+  final String persona;
+  final ValueChanged<String> onChanged;
+
+  const _PersonaPill({required this.persona, required this.onChanged});
+
+  String _label(BuildContext context, String value) {
+    final l10n = context.l10n.coach;
+
+    return switch (value) {
+      'direct' => l10n.personaDirect,
+      'guide' => l10n.personaGuide,
+      _ => l10n.personaFriend,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: context.l10n.coach.personaLabel,
+      onSelected: onChanged,
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+      itemBuilder: (context) => ['friend', 'direct', 'guide']
+          .map(
+            (value) => PopupMenuItem<String>(
+              value: value,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _label(context, value),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: value == persona ? FontWeight.w700 : FontWeight.w600,
+                        color: CoachStyle.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (value == persona) Icon(Icons.check_rounded, size: 16.r, color: CoachStyle.skin),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: CoachStyle.chipBackground,
+          border: Border.all(color: CoachStyle.border, width: 1.5),
+          borderRadius: BorderRadius.circular(99.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _label(context, persona),
+              style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w700, color: CoachStyle.textChip),
+            ),
+            SizedBox(width: 2.w),
+            Icon(Icons.expand_more_rounded, size: 16.r, color: CoachStyle.textChip),
           ],
         ),
       ),

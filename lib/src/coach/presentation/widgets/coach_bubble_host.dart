@@ -42,12 +42,11 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
 
   /// Which door the current tab is, or null where the Coach does not belong.
   ///
-  /// Two tabs and no more. Adding a third would be the moment this stops being
-  /// "a bubble on the screens it has something to say about" and becomes a
-  /// button that follows you around.
+  /// Home and nowhere else — "Nav Habit đã bị bỏ khỏi thiết kế" (BA flow
+  /// 2026-08-26). The Coach touches no screen of the app but the end of a
+  /// lesson and Home; somebody mid-Habit who wants to talk comes back here.
   CoachEntry? _entryFor(String routeName) {
     if (routeName == RouteNamed.home) return CoachEntry.home;
-    if (routeName == RouteNamed.habit) return CoachEntry.habit;
 
     return null;
   }

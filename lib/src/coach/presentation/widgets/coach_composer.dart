@@ -20,18 +20,48 @@ class _CoachComposerState extends State<CoachComposer> {
   final _text = TextEditingController();
   final _planContext = TextEditingController();
   final _planAction = TextEditingController();
+  final _shrinkContext = TextEditingController();
+  final _shrinkAction = TextEditingController();
 
   late final CoachRecorder _recorder = AppDI.injector.get<CoachRecorder>();
   bool _listening = false;
 
   int _hour = 20;
   String _days = 'daily';
+  /// "tự chọn" — ISO weekdays 1 (Mon) … 7 (Sun).
+  final Set<int> _customDays = {};
+
+  /// Rating: the thumb-down chips open only after 👎.
+  bool _thumbDown = false;
+  final Set<String> _ratingChips = {};
+
+  /// The step the shrink draft was last copied into its fields for, so a
+  /// rebuild mid-edit does not overwrite what the reader typed.
+  String? _shrinkFilledFor;
+
+  @override
+  void didUpdateWidget(covariant CoachComposer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final shrink = widget.state.ui.shrink;
+    final key = '${widget.state.sessionId}:${widget.state.step}:${widget.state.messages.length}';
+    if (widget.state.ui.kind == CoachUiKind.shrink && shrink != null && _shrinkFilledFor != key) {
+      _shrinkFilledFor = key;
+      _shrinkContext.text = shrink.context;
+      _shrinkAction.text = shrink.action;
+    }
+    if (widget.state.step != oldWidget.state.step) {
+      _thumbDown = false;
+      _ratingChips.clear();
+    }
+  }
 
   @override
   void dispose() {
     _text.dispose();
     _planContext.dispose();
     _planAction.dispose();
+    _shrinkContext.dispose();
+    _shrinkAction.dispose();
     unawaited(_recorder.cancel());
     super.dispose();
   }
@@ -92,20 +122,28 @@ class _CoachComposerState extends State<CoachComposer> {
     switch (state.ui.kind) {
       case CoachUiKind.chips:
         return _chips(context, state, busy);
+      case CoachUiKind.textSkippable:
+        return _story(context, state, busy);
       case CoachUiKind.twoCols:
         return _twoCols(context, state, busy);
       case CoachUiKind.nextAction:
         return _nextAction(context, state, busy);
       case CoachUiKind.closing:
         return _closing(context, busy);
+      case CoachUiKind.shrink:
+        return _shrink(context, state, busy);
       case CoachUiKind.plan:
         return _plan(context, busy);
       case CoachUiKind.schedule:
         return _schedule(context, busy);
+      case CoachUiKind.courseCard:
+        return _courseCard(context, state, busy);
       case CoachUiKind.rating:
         return _rating(context, busy);
+      case CoachUiKind.nextSession:
+        return _nextSession(context, state, busy);
       case CoachUiKind.end:
-        return _end(context);
+        return _end(context, busy);
       case CoachUiKind.safety:
         return const SizedBox.shrink();
       case CoachUiKind.text:
@@ -125,8 +163,7 @@ class _CoachComposerState extends State<CoachComposer> {
     final step = state.step;
 
     final specs = switch (step) {
-      // Five words, not three. The middle three are what most days actually
-      // are, and collapsing them loses the only movement the delta can see.
+      // "5 mức chữ, 1 chạm" — five words, no numbers, no faces, one tap.
       'mood' || 'moodEnd' => [
         _ChipSpec('1', l10n.mood1),
         _ChipSpec('2', l10n.mood2),
@@ -134,31 +171,35 @@ class _CoachComposerState extends State<CoachComposer> {
         _ChipSpec('4', l10n.mood4),
         _ChipSpec('5', l10n.mood5),
       ],
-      'persona' => [
-        _ChipSpec('friend', l10n.personaFriend),
-        _ChipSpec('direct', l10n.personaDirect),
-        _ChipSpec('guide', l10n.personaGuide),
-      ],
-      'time' => [
-        _ChipSpec('short', l10n.scriptShort),
-        _ChipSpec('medium', l10n.scriptMedium),
-        _ChipSpec('long', l10n.scriptLong),
-        _ChipSpec('practice', l10n.scriptPractice),
-      ],
+      // Three buttons that MUST look identical — no highlighted "right" answer,
+      // or the reader taps to please the app and the câu kể data turns to noise.
       'intent' => [
         _ChipSpec('done', l10n.intentDone),
         _ChipSpec('missed', l10n.intentMissed),
         _ChipSpec('none', l10n.intentNone),
       ],
-      'checkin' => [
-        _ChipSpec('yes', l10n.checkinYes),
-        _ChipSpec('no', l10n.checkinNo),
+      // Shallow first: silence means "chỉ ghi lại", so the default reads first.
+      'depth' => [
+        _ChipSpec('shallow', l10n.depthShallow),
+        _ChipSpec('deep', l10n.depthDeep),
+      ],
+      'contextAsk' => [
+        _ChipSpec('keep', l10n.contextKeep),
+        _ChipSpec('change', l10n.contextChange),
+      ],
+      'invite' => [
+        _ChipSpec('yes', l10n.inviteYes),
+        _ChipSpec('no', l10n.inviteNo),
+      ],
+      'planAsk' => [
+        _ChipSpec('yes', l10n.planAskYes),
+        _ChipSpec('no', l10n.planAskNo),
       ],
       'loop' => [
         _ChipSpec('continue', l10n.loopContinue),
         _ChipSpec('stop', l10n.loopStop),
       ],
-      // pickNew / pickHabit — the only chips whose words are data.
+      // pickNew — the only chips whose words are data.
       _ => state.ui.choices.map((c) => _ChipSpec(c.value, c.label ?? c.value)).toList(),
     };
 
@@ -184,21 +225,248 @@ class _CoachComposerState extends State<CoachComposer> {
         cubit.pickMood(int.parse(spec.value), spec.label);
       case 'moodEnd':
         cubit.pickMoodEnd(int.parse(spec.value), spec.label);
-      case 'persona':
-        cubit.pickPersona(spec.value, spec.label);
-      case 'time':
-        cubit.pickScript(spec.value, spec.label);
       case 'intent':
         cubit.answerIntent(spec.value, spec.label);
-      case 'checkin':
-        cubit.answerCheckin(spec.value == 'yes', spec.label);
+      case 'depth':
+        cubit.chooseDepth(deep: spec.value == 'deep', label: spec.label);
+      case 'contextAsk':
+        cubit.answerContext(keep: spec.value == 'keep', label: spec.label);
+      case 'invite':
+        cubit.answerInvite(accept: spec.value == 'yes', label: spec.label);
+      case 'planAsk':
+        cubit.answerPlanAsk(accept: spec.value == 'yes', label: spec.label);
       case 'loop':
         cubit.loop(keepGoing: spec.value == 'continue', label: spec.label);
       case 'pickNew':
         cubit.pickNewHabit(spec.value, spec.label);
-      case 'pickHabit':
-        cubit.pickHabit(spec.value, spec.label);
     }
+  }
+
+  // --- story -----------------------------------------------------------
+
+  /// "Hôm nay có chuyện gì mới không?" — the text box, and a quiet way past
+  /// it. Skipping is a real answer here, not a failure to answer.
+  Widget _story(BuildContext context, CoachState state, bool busy) {
+    final l10n = context.l10n.coach;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _textArea(context, state, busy, onSubmit: widget.cubit.submitText),
+        if (!busy)
+          Padding(
+            padding: EdgeInsets.only(top: 9.h),
+            child: GestureDetector(
+              onTap: () => widget.cubit.skipStory(l10n.storySkip),
+              behavior: HitTestBehavior.opaque,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l10n.storySkip,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                    color: CoachStyle.textMuted,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // --- shrink ----------------------------------------------------------
+
+  /// ②A — the smaller commitment, as a draft the reader may edit, and two
+  /// EQUAL buttons. Refusing is not a lesser choice, and the Coach does not
+  /// argue after it.
+  Widget _shrink(BuildContext context, CoachState state, bool busy) {
+    final l10n = context.l10n.coach;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(l10n.shrinkLabel.toUpperCase(), style: CoachStyle.sectionLabel()),
+        SizedBox(height: 8.h),
+        _FormField(controller: _shrinkContext, hint: l10n.planContextHint, enabled: !busy),
+        SizedBox(height: 8.h),
+        _FormField(controller: _shrinkAction, hint: l10n.planActionHint, enabled: !busy),
+        SizedBox(height: 9.h),
+        Row(
+          children: [
+            Expanded(
+              child: _SelectableBox(
+                label: l10n.shrinkAccept,
+                selected: false,
+                height: 44,
+                onTap: busy
+                    ? null
+                    : () => widget.cubit.answerShrink(
+                        accept: true,
+                        context: _shrinkContext.text,
+                        action: _shrinkAction.text,
+                        label: '${_shrinkContext.text.trim()} — ${_shrinkAction.text.trim()}',
+                      ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: _SelectableBox(
+                label: l10n.shrinkKeep,
+                selected: false,
+                height: 44,
+                onTap: busy ? null : () => widget.cubit.answerShrink(accept: false, label: l10n.shrinkKeep),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- course card -----------------------------------------------------
+
+  /// One course, three ways out drawn ON the card: tap → the course, Lưu →
+  /// Để dành, Đóng. "Đường ra luôn hiện" is what keeps the offer from being a
+  /// push — the reader never has to hunt for an X.
+  Widget _courseCard(BuildContext context, CoachState state, bool busy) {
+    final l10n = context.l10n.coach;
+    final course = state.ui.course;
+    if (course == null) return _FilledButton(label: l10n.courseCardClose, enabled: !busy, onTap: () => widget.cubit.courseAction('close'));
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          // The tap leaves the sheet; the caller navigates AFTER the modal is
+          // gone. The server is told first so the session records the exit.
+          onTap: busy
+              ? null
+              : () {
+                  unawaited(widget.cubit.courseAction('open'));
+                  Navigator.of(context).pop(_CoachSheetResult.openCourse(course.courseId));
+                },
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: CoachStyle.chipBackground,
+              border: Border.all(color: CoachStyle.border, width: 1.5),
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.r),
+                  child: SizedBox(
+                    width: 56.w,
+                    height: 56.w,
+                    child: ColoredBox(
+                      color: AppCustomColor.brandPrimary50,
+                      child: course.image.isEmpty
+                          ? Icon(Icons.menu_book_rounded, size: 22.w, color: AppCustomColor.brandPrimary)
+                          : CachedNetworkImage(
+                              imageUrl: course.image,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, _, _) => Icon(Icons.menu_book_rounded, size: 22.w, color: AppCustomColor.brandPrimary),
+                            ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.courseCardTitle.toUpperCase(), style: CoachStyle.sectionLabel(size: 10)),
+                      SizedBox(height: 3.h),
+                      Text(
+                        course.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700, height: 1.3, color: CoachStyle.textPrimary),
+                      ),
+                      if (course.habitTitle.isNotEmpty) ...[
+                        SizedBox(height: 3.h),
+                        Text(
+                          l10n.courseCardReason(habit: course.habitTitle),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: CoachStyle.textMuted),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                Icon(Icons.chevron_right_rounded, size: 20.r, color: CoachStyle.textMuted),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          children: [
+            Expanded(
+              child: _SelectableBox(
+                label: l10n.courseCardSave,
+                selected: false,
+                height: 44,
+                onTap: busy ? null : () => widget.cubit.courseAction('save', label: l10n.courseCardSave),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: _SelectableBox(
+                label: l10n.courseCardClose,
+                selected: false,
+                height: 44,
+                onTap: busy ? null : () => widget.cubit.courseAction('close'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- next session ----------------------------------------------------
+
+  /// "Dừng phiên hay bắt đầu phiên mới?" — two equal buttons. A low mood-end
+  /// hides the second: someone tired being invited to keep going is exactly
+  /// what the anti-rumination rules exist to stop.
+  Widget _nextSession(BuildContext context, CoachState state, bool busy) {
+    final l10n = context.l10n.coach;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _SelectableBox(
+            label: l10n.nextStop,
+            selected: false,
+            radius: 14,
+            verticalPadding: 12,
+            onTap: busy ? null : () => widget.cubit.nextSession(again: false, label: l10n.nextStop),
+          ),
+        ),
+        if (state.ui.allowNewSession) ...[
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _SelectableBox(
+              label: l10n.nextAgain,
+              selected: false,
+              radius: 14,
+              verticalPadding: 12,
+              onTap: busy ? null : () => widget.cubit.nextSession(again: true, label: l10n.nextAgain),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   // --- text ------------------------------------------------------------
@@ -394,6 +662,12 @@ class _CoachComposerState extends State<CoachComposer> {
               padding: EdgeInsets.only(bottom: 6.h),
               child: _KeypointRow(
                 title: kp.title,
+                courseTitle: kp.courseTitle,
+                courseImage: kp.courseImage,
+                onOpen: busy || kp.courseId.isEmpty
+                    ? null
+                    : () => Navigator.of(context)
+                        .pop(_CoachSheetResult.openCourse(kp.courseId)),
                 onExplain: busy ? null : () => widget.cubit.explainAgain(kp.id),
               ),
             ),
@@ -483,11 +757,12 @@ class _CoachComposerState extends State<CoachComposer> {
                     ('daily', l10n.daysDaily),
                     ('weekdays', l10n.daysWeekdays),
                     ('weekends', l10n.daysWeekends),
+                    ('custom', l10n.daysCustom),
                   ]
                   .map(
                     (entry) => Expanded(
                       child: Padding(
-                        padding: EdgeInsets.only(right: entry.$1 == 'weekends' ? 0 : 7.w),
+                        padding: EdgeInsets.only(right: entry.$1 == 'custom' ? 0 : 6.w),
                         child: _SelectableBox(
                           label: entry.$2,
                           selected: _days == entry.$1,
@@ -498,6 +773,34 @@ class _CoachComposerState extends State<CoachComposer> {
                   )
                   .toList(),
         ),
+        // "tự chọn" — the reader's own weekdays. Only drawn once chosen, so
+        // the three ready-made shapes stay one tap for everyone else.
+        if (_days == 'custom') ...[
+          SizedBox(height: 7.h),
+          Row(
+            children: List.generate(7, (i) {
+              final day = i + 1;
+              final label = [l10n.day1, l10n.day2, l10n.day3, l10n.day4, l10n.day5, l10n.day6, l10n.day7][i];
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: day == 7 ? 0 : 4.w),
+                  child: _SelectableBox(
+                    label: label,
+                    selected: _customDays.contains(day),
+                    radius: 10,
+                    verticalPadding: 8,
+                    onTap: busy
+                        ? null
+                        : () => setState(() {
+                            if (!_customDays.remove(day)) _customDays.add(day);
+                          }),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
         SizedBox(height: 9.h),
         Row(
           children: [
@@ -510,6 +813,7 @@ class _CoachComposerState extends State<CoachComposer> {
                   hour: _hour,
                   minute: 0,
                   days: _days,
+                  customDays: _days == 'custom' ? (_customDays.toList()..sort()) : null,
                   label: '${_hour.toString().padLeft(2, '0')}:00 · ${_daysLabel(context)}',
                 ),
               ),
@@ -535,6 +839,7 @@ class _CoachComposerState extends State<CoachComposer> {
     return switch (_days) {
       'weekdays' => l10n.daysWeekdays,
       'weekends' => l10n.daysWeekends,
+      'custom' => l10n.daysCustom,
       _ => l10n.daysDaily,
     };
   }
@@ -564,13 +869,48 @@ class _CoachComposerState extends State<CoachComposer> {
             Expanded(
               child: _SelectableBox(
                 label: l10n.ratingDown,
-                selected: false,
+                selected: _thumbDown,
                 radius: 13,
-                onTap: busy ? null : () => widget.cubit.rate(thumb: 'down', label: l10n.ratingDown),
+                onTap: busy ? null : () => setState(() => _thumbDown = true),
               ),
             ),
           ],
         ),
+        // Why it felt wrong — a closed list, multi-select, only after 👎. An
+        // open box here would collect what the reader was talking about
+        // rather than what the Coach did badly.
+        if (_thumbDown) ...[
+          SizedBox(height: 8.h),
+          Wrap(
+            spacing: 7.w,
+            runSpacing: 7.h,
+            children: [
+              ('missed_the_point', l10n.ratingChipMissed),
+              ('too_generic', l10n.ratingChipGeneric),
+              ('too_long', l10n.ratingChipLong),
+              ('voice_mismatch', l10n.ratingChipVoice),
+              ('imposed_thinking', l10n.ratingChipImposed),
+            ]
+                .map(
+                  (chip) => _Pill(
+                    label: chip.$2,
+                    selected: _ratingChips.contains(chip.$1),
+                    onTap: busy
+                        ? null
+                        : () => setState(() {
+                            if (!_ratingChips.remove(chip.$1)) _ratingChips.add(chip.$1);
+                          }),
+                  ),
+                )
+                .toList(),
+          ),
+          SizedBox(height: 8.h),
+          _FilledButton(
+            label: l10n.ratingSend,
+            enabled: !busy,
+            onTap: () => widget.cubit.rate(thumb: 'down', chips: _ratingChips.toList(), label: l10n.ratingDown),
+          ),
+        ],
         SizedBox(height: 2.h),
         GestureDetector(
           onTap: busy ? null : () => widget.cubit.rate(),
@@ -596,86 +936,131 @@ class _CoachComposerState extends State<CoachComposer> {
 
   // --- end -------------------------------------------------------------
 
-  /// Three choices in three equal columns.
-  ///
-  /// Same box, same width, same weight, same order, every time. Promoting "go
-  /// to the course" into a filled button would turn the close of a personal
-  /// conversation into a funnel — the design forbids it, and this grid is where
-  /// that rule is either kept or quietly lost.
-  Widget _end(BuildContext context) {
-    final l10n = context.l10n.coach;
-    final invite = widget.state.courseInvite;
-
-    final labels = [
-      if (invite != null) (l10n.endGoToCourse, _CoachSheetResult.openCourse(invite.courseId)),
-      (l10n.endKeepTalking, const _CoachSheetResult.keepTalking()),
-      (l10n.endClose, const _CoachSheetResult.close()),
-    ];
-
-    return Row(
-      children: labels
-          .map(
-            (entry) => Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: entry == labels.last ? 0 : 8.w),
-                child: _SelectableBox(
-                  label: entry.$1,
-                  selected: false,
-                  radius: 14,
-                  verticalPadding: 12,
-                  onTap: () => Navigator.of(context).pop(entry.$2),
-                ),
-              ),
-            ),
-          )
-          .toList(),
+  /// ① — the fixed closing line has been said; one button closes the sheet
+  /// and the lesson flow carries on. A Home session never shows this: its
+  /// "Dừng" already closed the sheet (see the sheet's listener).
+  Widget _end(BuildContext context, bool busy) {
+    return _FilledButton(
+      label: context.l10n.coach.endClose,
+      enabled: !busy,
+      onTap: () => Navigator.of(context).pop(const _CoachSheetResult.close()),
     );
   }
 }
 
-/// One keypoint, with the quiet way to ask for it in plainer words.
+/// One suggested keypoint. The whole row is the link into its course
+/// ([onOpen] — null strips the affordance and the tap together, e.g. no
+/// published course, or mid-request); the trailing "explain simpler" stays
+/// its own quiet tap and must win over the row's.
 class _KeypointRow extends StatelessWidget {
   final String title;
+  final String courseTitle;
+  final String courseImage;
+  final VoidCallback? onOpen;
   final VoidCallback? onExplain;
 
-  const _KeypointRow({required this.title, required this.onExplain});
+  const _KeypointRow({
+    required this.title,
+    required this.onExplain,
+    this.courseTitle = '',
+    this.courseImage = '',
+    this.onOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: CoachStyle.chipBackground,
-        border: Border.all(color: CoachStyle.border, width: 1.5),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 12.5.sp,
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-                color: CoachStyle.textBody,
+    return GestureDetector(
+      onTap: onOpen,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: CoachStyle.chipBackground,
+          border: Border.all(color: CoachStyle.border, width: 1.5),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            // The course's own illustration, so the row reads as a door into
+            // the course rather than a bare line of text. Falls back to the
+            // book glyph the habit detail's course rail already uses.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(9.r),
+              child: SizedBox(
+                width: 40.w,
+                height: 40.w,
+                child: ColoredBox(
+                  color: AppCustomColor.brandPrimary50,
+                  child: courseImage.isEmpty
+                      ? Icon(
+                          Icons.menu_book_rounded,
+                          size: 18.w,
+                          color: AppCustomColor.brandPrimary,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: courseImage,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, _, _) => Icon(
+                            Icons.menu_book_rounded,
+                            size: 18.w,
+                            color: AppCustomColor.brandPrimary,
+                          ),
+                        ),
+                ),
               ),
             ),
-          ),
-          SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: onExplain,
-            behavior: HitTestBehavior.opaque,
-            child: Text(
-              context.l10n.coach.explainSimpler,
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w700,
-                color: CoachStyle.skin,
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                      color: CoachStyle.textBody,
+                    ),
+                  ),
+                  if (courseTitle.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      courseTitle,
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
+                        color: CoachStyle.textMuted,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ),
-        ],
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: onExplain,
+              behavior: HitTestBehavior.opaque,
+              child: Text(
+                context.l10n.coach.explainSimpler,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: CoachStyle.skin,
+                ),
+              ),
+            ),
+            if (onOpen != null) ...[
+              SizedBox(width: 6.w),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18.r,
+                color: CoachStyle.textMuted,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -692,8 +1077,9 @@ class _ChipSpec {
 class _Pill extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
+  final bool selected;
 
-  const _Pill({required this.label, this.onTap});
+  const _Pill({required this.label, this.onTap, this.selected = false});
 
   @override
   Widget build(BuildContext context) {
@@ -703,8 +1089,8 @@ class _Pill extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
         decoration: BoxDecoration(
-          color: CoachStyle.chipBackground,
-          border: Border.all(color: CoachStyle.border, width: 1.5),
+          color: selected ? CoachStyle.selectedBackground : CoachStyle.chipBackground,
+          border: Border.all(color: selected ? CoachStyle.skin : CoachStyle.border, width: 1.5),
           borderRadius: BorderRadius.circular(99.r),
         ),
         child: Text(
@@ -712,7 +1098,7 @@ class _Pill extends StatelessWidget {
           style: TextStyle(
             fontSize: 12.sp,
             fontWeight: FontWeight.w700,
-            color: CoachStyle.textChip,
+            color: selected ? CoachStyle.selectedText : CoachStyle.textChip,
           ),
         ),
       ),

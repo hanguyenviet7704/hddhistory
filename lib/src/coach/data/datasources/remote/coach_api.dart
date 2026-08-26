@@ -25,6 +25,10 @@ abstract class CoachApi {
   @POST(AppEndpoint.coachSessionClose)
   Future<void> closeSession(@Path('id') String id);
 
+  /// The voice, changed from the header at any step. Not a turn.
+  @PATCH(AppEndpoint.coachSessionPersona)
+  Future<void> setPersona(@Path('id') String id, @Body() Map<String, dynamic> body);
+
   @POST(AppEndpoint.coachExplainAgain)
   Future<void> explainAgain(@Body() Map<String, dynamic> body);
 

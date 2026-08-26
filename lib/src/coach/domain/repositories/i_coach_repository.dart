@@ -22,6 +22,12 @@ abstract interface class ICoachRepository {
 
   TaskEither<AppException, Unit> closeSession(String sessionId);
 
+  /// The voice, changed from the header at any step — remembered for next time.
+  TaskEither<AppException, Unit> setPersona({
+    required String sessionId,
+    required String persona,
+  });
+
   /// Counts a "explain this more simply" against the KEYPOINT, weekly.
   TaskEither<AppException, Unit> explainAgain(String keypointId);
 

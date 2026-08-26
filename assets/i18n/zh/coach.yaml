@@ -12,10 +12,10 @@ promptPickNew: 你刚加了几个习惯。先聊哪一个？
 promptPickHabit: 今天想练哪个习惯？
 promptPersona: 今天希望我用什么方式说话？
 promptTime: 今天有多少时间？
-promptTell: 有什么想说的事吗？
+promptTell: 跟我讲讲这个习惯最近一次出现的事。慢慢说，我不会打断。
 promptTellFollowUp: 然后呢？
 promptFree: 今天有什么事吗？说来听听。
-promptIntentTell: 说说当时是怎么样的。
+promptIntentTell: "用一句话告诉我：当时你说了或做了什么？"
 promptNextAction: 那下次你打算怎么做？
 promptCheckin: 这几天有用到这个习惯的时候吗？
 promptPlan: 为下次定一个小小的约定吧。
@@ -26,7 +26,7 @@ promptEnd: 接下来想做什么？
 promptJot: 好。今天就写一行，我不会再多问。
 promptSafety: 谢谢你说出来。我不希望你一个人扛着。
 promptTwoCols: 我用你自己的话整理成了草稿。把你觉得是真正问题的那行拖到右边，再写成一句话。
-promptIntent: 你说过要做这件事。有遇到那样的时刻吗？
+promptIntent: "昨天你说：下次${context}时，会${action}。有遇到那样的时刻吗？"
 
 fallbackReply: 我听着呢。
 
@@ -42,7 +42,7 @@ scriptPractice: 只练习，不聊天
 
 intentDone: 做到了
 intentMissed: 有机会但没做
-intentNone: 还没遇到那种场合
+intentNone: 还没遇到
 
 checkinYes: 有
 checkinNo: 还没
@@ -70,7 +70,7 @@ endClose: 关闭
 
 twoColsLeftTitle: 发生了什么
 twoColsRightTitle: 我真正的问题
-twoColsHint: 点一下把这行移到另一边，写错的可以改或删。这些都是用你说过的话拟的。
+twoColsHint: 点按把符合的行移到另一边，改写或删除不对的行。草稿由 Coach 根据你讲的内容拟出——只有你留下的才算数。
 lineEdit: 修改这一行
 lineDelete: 删除这一行
 lineSave: 完成
@@ -110,11 +110,9 @@ stepRating: 你觉得如何
 stepJot: 今天的一行
 
 # Mood 5 mức · nhịp 4/5 · ⑧
-mood1: 很糟
+mood1: 很差
 mood2: 有点累
 mood3: 一般
-mood4: 还行
-mood5: 很好
 rejectDraft: 这不是我想说的
 redraftPrompt: 那你再讲一次：确定发生了什么？
 keypointsLabel: 也许有帮助
@@ -123,3 +121,59 @@ closingContinue: 继续
 stepNextAction: 你打算做什么
 stepClosing: 收尾之前
 stepRedraft: 用你自己的话
+
+# BA flow 2026-08-26 — one spine, two doors
+mood4: 还好
+mood5: 很好
+promptStory: 今天有什么新鲜事吗？
+storySkip: 跳过
+promptDepth: 我先记下来就好，还是你想多说一些？
+depthShallow: 记下来就好
+depthDeep: 多说一些
+promptBarrier: 有机会却没做到——这很正常。那一刻是什么让你停下了？
+shrinkLabel: 缩小一点的版本——可以修改
+shrinkAccept: 就这么缩小
+shrinkKeep: 保持原样，再试一次
+promptContextAsk: "还没遇到就先放着。“${context}”这个情境经常出现吗？"
+contextKeep: 保持原样
+contextChange: 换个情境
+promptContextEdit: 那新的情境是什么？
+planSlept: 这个约定我先收起来。需要的时候再叫回来。
+promptInvite: 想试一个小情境吗？跳过也可以。
+inviteYes: 试一个
+inviteNo: 跳过
+promptPlanAsk: 想为下次设一个提醒吗？
+planAskYes: 好，设一个
+planAskNo: 这次不用
+courseCardTitle: 一门贴近你所说的课程
+courseCardReason: 对应习惯“${habit}”
+courseCardSave: 先收藏
+courseCardClose: 关闭
+nextStop: 到此为止
+nextAgain: 开始新的一段
+closingWithPlan: "那就下次${context}。我会在${time}提醒你。"
+closingWithPlanNoTime: "那就下次${context}。"
+closingNoPlan: 记下了。想再聊的时候，我都在。
+promptEndLesson: 今天练到这里就够了。
+daysCustom: 自选
+day1: 一
+day2: 二
+day3: 三
+day4: 四
+day5: 五
+day6: 六
+day7: 日
+ratingChipMissed: 理解错了
+ratingChipGeneric: 太笼统
+ratingChipLong: 太长
+ratingChipVoice: 语气不合
+ratingChipImposed: 强加想法
+ratingSend: 发送
+personaLabel: 语气
+stepStory: 今天的事
+stepDepth: 记下或深聊
+stepBarrier: 是什么挡住了
+stepShrink: 缩小约定
+stepContext: 约定的情境
+stepCourse: 一门贴近你的课
+stepNextSession: 收尾

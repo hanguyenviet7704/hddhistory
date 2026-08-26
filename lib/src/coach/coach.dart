@@ -7,6 +7,11 @@ library;
 // in the entity mappers.
 import 'dart:ui' as dartui;
 
+//* Flutter imports
+// Ticker alone: material re-exports TickerProvider but not the Ticker class
+// itself, and the slime drives its whole animation off one raw ticker.
+import 'package:flutter/scheduler.dart' show Ticker;
+
 //* Single project import
 import 'package:meup/meup.dart';
 
@@ -32,6 +37,7 @@ part 'domain/usecases/send_coach_turn_usecase.dart';
 part 'domain/usecases/close_coach_session_usecase.dart';
 part 'domain/usecases/transcribe_coach_audio_usecase.dart';
 part 'domain/usecases/explain_again_usecase.dart';
+part 'domain/usecases/set_coach_persona_usecase.dart';
 
 //* Presentation Layer - Cubits
 part 'presentation/cubits/coach_bubble_state.dart';
@@ -42,6 +48,7 @@ part 'presentation/cubits/coach_recorder.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/coach_style.dart';
+part 'presentation/widgets/coach_slime.dart';
 part 'presentation/widgets/coach_prompt_map.dart';
 part 'presentation/widgets/coach_bubble.dart';
 part 'presentation/widgets/coach_sheet.dart';

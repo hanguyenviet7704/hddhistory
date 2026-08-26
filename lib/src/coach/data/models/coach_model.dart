@@ -58,9 +58,34 @@ abstract class CoachKeypointModel with _$CoachKeypointModel {
   const factory CoachKeypointModel({
     @Default('') String id,
     @Default('') String title,
+    String? courseId,
+    String? courseTitle,
+    String? courseImage,
   }) = _CoachKeypointModel;
 
   factory CoachKeypointModel.fromJson(Map<String, dynamic> json) => _$CoachKeypointModelFromJson(json);
+}
+
+@freezed
+abstract class CoachShrinkModel with _$CoachShrinkModel {
+  const factory CoachShrinkModel({
+    @Default('') String context,
+    @Default('') String action,
+  }) = _CoachShrinkModel;
+
+  factory CoachShrinkModel.fromJson(Map<String, dynamic> json) => _$CoachShrinkModelFromJson(json);
+}
+
+@freezed
+abstract class CoachCourseCardModel with _$CoachCourseCardModel {
+  const factory CoachCourseCardModel({
+    @Default('') String courseId,
+    @Default('') String title,
+    String? image,
+    String? habitTitle,
+  }) = _CoachCourseCardModel;
+
+  factory CoachCourseCardModel.fromJson(Map<String, dynamic> json) => _$CoachCourseCardModelFromJson(json);
 }
 
 @freezed
@@ -74,6 +99,9 @@ abstract class CoachUiModel with _$CoachUiModel {
     @Default(<CoachHotlineModel>[]) List<CoachHotlineModel> hotlines,
     @Default(<CoachKeypointModel>[]) List<CoachKeypointModel> keypoints,
     @Default(false) bool escapeAvailable,
+    CoachShrinkModel? shrink,
+    CoachCourseCardModel? course,
+    @Default(true) bool allowNewSession,
   }) = _CoachUiModel;
 
   factory CoachUiModel.fromJson(Map<String, dynamic> json) => _$CoachUiModelFromJson(json);
@@ -112,6 +140,9 @@ abstract class CoachTurnModel with _$CoachTurnModel {
     @Default('') String step,
     String? reply,
     String? promptKey,
+    Map<String, String>? promptArgs,
+    String? noteKey,
+    String? persona,
     @Default(CoachUiModel()) CoachUiModel ui,
     CoachCourseInviteModel? courseInvite,
     @Default(false) bool ended,

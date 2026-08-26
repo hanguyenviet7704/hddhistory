@@ -33,6 +33,9 @@ abstract class CoachState with _$CoachState {
     /// two turns in flight would be answered against different steps.
     @Default(false) bool typing,
 
+    /// The voice in force — mirrored here so the header can show and change it.
+    @Default('friend') String persona,
+
     /// ⑦ drag state, mirrored locally so a tap moves a line instantly.
     @Default(<String>[]) List<String> columnLeft,
     @Default(<String>[]) List<String> columnRight,

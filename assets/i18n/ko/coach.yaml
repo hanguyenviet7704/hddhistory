@@ -12,10 +12,10 @@ promptPickNew: 새 습관을 몇 개 추가하셨네요. 어떤 것부터 이야
 promptPickHabit: 오늘은 어떤 습관을 연습해 볼까요?
 promptPersona: 오늘은 제가 어떻게 말하면 좋을까요?
 promptTime: 오늘은 시간이 얼마나 있으세요?
-promptTell: 이야기하고 싶은 일이 있나요?
+promptTell: 이 습관과 관련된 가장 최근 일을 들려주세요. 편하게 이야기하세요 — 끼어들지 않을게요.
 promptTellFollowUp: 그다음엔 어떻게 됐어요?
 promptFree: 오늘 무슨 일 있었어요? 들어볼게요.
-promptIntentTell: 그때 어땠는지 들려주세요.
+promptIntentTell: "한 문장으로만 들려주세요. 그때 무슨 말이나 행동을 했나요?"
 promptNextAction: 그럼 다음엔 어떻게 할래요?
 promptCheckin: 요 며칠 이 습관을 쓸 일이 있었나요?
 promptPlan: 다음을 위해 작은 약속 하나만 정해요.
@@ -26,7 +26,7 @@ promptEnd: 다음으로 무엇을 할까요?
 promptJot: 알겠어요. 오늘은 한 줄만, 더 묻지 않을게요.
 promptSafety: 말해 주셔서 고맙습니다. 혼자 감당하지 않으셨으면 해요.
 promptTwoCols: 하신 말씀 그대로 초안을 만들었어요. 진짜 문제라고 느끼는 줄을 오른쪽으로 옮기고, 한 문장으로 적어 보세요.
-promptIntent: 그렇게 하겠다고 하셨죠. 그런 순간이 있었나요?
+promptIntent: "어제 이렇게 말했죠: 다음에 ${context}일 때 ${action}. 그런 순간이 있었나요?"
 
 fallbackReply: 듣고 있어요.
 
@@ -41,8 +41,8 @@ scriptLong: 길게 · 편하게
 scriptPractice: 대화 없이 연습만
 
 intentDone: 해냈어요
-intentMissed: 기회는 있었는데 못 했어요
-intentNone: 그런 상황이 없었어요
+intentMissed: 기회는 있었지만 못 했어요
+intentNone: 아직 기회가 없었어요
 
 checkinYes: 있었어요
 checkinNo: 아직요
@@ -70,7 +70,7 @@ endClose: 닫기
 
 twoColsLeftTitle: 있었던 일
 twoColsRightTitle: 진짜 내 문제
-twoColsHint: 한 줄을 눌러 반대쪽으로 옮기고, 잘못된 줄은 고치거나 지우세요. 당신이 한 말로만 초안을 잡았어요.
+twoColsHint: 맞는 줄은 탭해서 옮기고, 틀린 줄은 고치거나 지우세요. 초안은 회원님의 이야기에서 코치가 만든 것 — 남긴 줄만 인정돼요.
 lineEdit: 이 줄 고치기
 lineDelete: 이 줄 지우기
 lineSave: 완료
@@ -110,11 +110,9 @@ stepRating: 어떠셨나요
 stepJot: 오늘의 한 줄
 
 # Mood 5 mức · nhịp 4/5 · ⑧
-mood1: 힘들어요
+mood1: 나빠요
 mood2: 조금 지쳤어요
 mood3: 보통이에요
-mood4: 괜찮아요
-mood5: 좋아요
 rejectDraft: 이건 제 얘기가 아니에요
 redraftPrompt: 그럼 다시 알려 주세요. 확실히 일어난 일은 무엇인가요?
 keypointsLabel: 도움이 될지도
@@ -123,3 +121,59 @@ closingContinue: 계속
 stepNextAction: 무엇을 할지
 stepClosing: 마무리하기 전에
 stepRedraft: 당신의 말로
+
+# BA flow 2026-08-26 — one spine, two doors
+mood4: 괜찮아요
+mood5: 좋아요
+promptStory: 오늘 새로운 일이 있었나요?
+storySkip: 건너뛰기
+promptDepth: 적어두기만 할까요, 아니면 더 깊이 이야기할까요?
+depthShallow: 적어두기만
+depthDeep: 더 깊이 이야기
+promptBarrier: 기회는 있었는데 못 했다니 — 흔한 일이에요. 그 순간 무엇이 당신을 멈추게 했나요?
+shrinkLabel: 더 작게 줄인 약속 — 수정할 수 있어요
+shrinkAccept: 이만큼 작게
+shrinkKeep: 그대로 두고 다시
+promptContextAsk: "아직 기회가 없었다면 그대로 둘게요. “${context}” 상황은 자주 생기나요?"
+contextKeep: 그대로
+contextChange: 상황 바꾸기
+promptContextEdit: 그럼 새 상황은 무엇인가요?
+planSlept: 이 약속은 잠시 넣어둘게요. 필요하면 다시 불러 주세요.
+promptInvite: 짧은 상황 하나 연습해 볼까요? 건너뛰어도 괜찮아요.
+inviteYes: 하나 해볼게요
+inviteNo: 건너뛰기
+promptPlanAsk: 다음을 위해 알림을 설정할까요?
+planAskYes: 네, 설정할게요
+planAskNo: 이번엔 괜찮아요
+courseCardTitle: 당신의 이야기와 가까운 코스
+courseCardReason: 습관 “${habit}”에 맞아요
+courseCardSave: 나중에 보기
+courseCardClose: 닫기
+nextStop: 여기서 멈추기
+nextAgain: 새로 시작하기
+closingWithPlan: "그럼 다음엔 ${context}이네요. ${time}에 알려드릴게요."
+closingWithPlanNoTime: "그럼 다음엔 ${context}이네요."
+closingNoPlan: 적어두었어요. 다시 이야기하고 싶을 때 여기 있을게요.
+promptEndLesson: 오늘 연습은 이걸로 충분해요.
+daysCustom: 직접 선택
+day1: 월
+day2: 화
+day3: 수
+day4: 목
+day5: 금
+day6: 토
+day7: 일
+ratingChipMissed: 요점을 놓쳤어요
+ratingChipGeneric: 너무 일반적
+ratingChipLong: 너무 길어요
+ratingChipVoice: 말투가 안 맞아요
+ratingChipImposed: 생각을 강요했어요
+ratingSend: 보내기
+personaLabel: 말투
+stepStory: 오늘의 이야기
+stepDepth: 적어두기 또는 깊이
+stepBarrier: 무엇이 막았나
+stepShrink: 약속을 작게
+stepContext: 약속의 상황
+stepCourse: 당신과 가까운 코스
+stepNextSession: 마무리

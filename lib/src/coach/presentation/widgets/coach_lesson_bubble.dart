@@ -36,7 +36,7 @@ class CoachLessonBubble extends StatelessWidget {
               // announcing something that has not happened yet.
               dot: false,
               onTap: () async {
-                await showCoachSheet(
+                final courseId = await showCoachSheet(
                   context,
                   entry: CoachEntry.lesson,
                   lessonId: lessonId,
@@ -44,6 +44,12 @@ class CoachLessonBubble extends StatelessWidget {
                 if (!context.mounted) return;
 
                 await context.read<CoachBubbleCubit>().invalidate(entry: CoachEntry.lesson, lessonId: lessonId);
+                if (!context.mounted || courseId == null) return;
+
+                // Same contract as the Home bubble: the sheet hands back the
+                // course the reader tapped, and navigation happens only AFTER
+                // the modal is gone — never from under a closing modal.
+                AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(context, courseId);
               },
             );
           },

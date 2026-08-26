@@ -12,10 +12,10 @@ promptPickNew: 新しい習慣をいくつか追加しましたね。どれか�
 promptPickHabit: 今日はどの習慣に取り組みますか？
 promptPersona: 今日はどんな話し方がいいですか？
 promptTime: 今日はどのくらい時間がありますか？
-promptTell: 何か話したいことはありますか？
+promptTell: この習慣にまつわる最近の出来事を聞かせてください。自由に話して — 口は挟みません。
 promptTellFollowUp: それからどうなりましたか？
 promptFree: 今日は何かありましたか？聞かせてください。
-promptIntentTell: そのときのこと、聞かせてください。
+promptIntentTell: "ひとことで教えてください。そのとき何を言い、何をしましたか？"
 promptNextAction: では次はどうしますか？
 promptCheckin: ここ数日、この習慣を使う場面はありましたか？
 promptPlan: 次に向けて、小さな約束をひとつ決めましょう。
@@ -26,7 +26,7 @@ promptEnd: 次はどうしますか？
 promptJot: わかりました。今日は一行だけ、それ以上は聞きません。
 promptSafety: 話してくれてありがとうございます。ひとりで抱えてほしくありません。
 promptTwoCols: あなたの言葉のまま下書きにしました。本当の問題だと思う行を右へ動かして、一文で書き直してください。
-promptIntent: そうすると言っていましたね。その場面はありましたか？
+promptIntent: "昨日あなたは、次に${context}のとき${action}と言っていました。その場面はありましたか？"
 
 fallbackReply: 聞いています。
 
@@ -41,8 +41,8 @@ scriptLong: 長め · ゆっくり
 scriptPractice: 練習だけ、話はしない
 
 intentDone: できた
-intentMissed: 場面はあったけどできなかった
-intentNone: 場面がなかった
+intentMissed: 機会はあったができなかった
+intentNone: まだ機会がない
 
 checkinYes: あった
 checkinNo: まだ
@@ -70,7 +70,7 @@ endClose: 閉じる
 
 twoColsLeftTitle: 起きたこと
 twoColsRightTitle: 本当の問題
-twoColsHint: タップで反対側へ移せます。違っている行は直すか消してください。あなたが話した言葉だけで下書きしました。
+twoColsHint: 合う行をタップで移し、違う行は直すか消してください。下書きはあなたの話からコーチが起こしたもの — 残した行だけがあなたのものです。
 lineEdit: この行を直す
 lineDelete: この行を消す
 lineSave: 完了
@@ -111,10 +111,8 @@ stepJot: 今日の一行
 
 # Mood 5 mức · nhịp 4/5 · ⑧
 mood1: つらい
-mood2: 少し疲れた
+mood2: すこし疲れた
 mood3: ふつう
-mood4: いい
-mood5: とてもいい
 rejectDraft: これは違います
 redraftPrompt: では、もう一度教えてください。確かに起きたことは何ですか？
 keypointsLabel: 役に立つかも
@@ -123,3 +121,59 @@ closingContinue: 続ける
 stepNextAction: これからすること
 stepClosing: 締めくくる前に
 stepRedraft: あなたの言葉で
+
+# BA flow 2026-08-26 — one spine, two doors
+mood4: まあまあ
+mood5: いい感じ
+promptStory: 今日は何か新しいことがありましたか？
+storySkip: スキップ
+promptDepth: メモだけにしますか、それとも深く話しますか？
+depthShallow: メモだけ
+depthDeep: 深く話す
+promptBarrier: 機会はあったのにできなかった——よくあることです。そのとき、何があなたを止めましたか？
+shrinkLabel: 小さくした約束——編集できます
+shrinkAccept: この大きさにする
+shrinkKeep: そのまま、もう一度
+promptContextAsk: "まだ機会がないなら、そのままにしておきます。「${context}」という場面はよくありますか？"
+contextKeep: そのまま
+contextChange: 場面を変える
+promptContextEdit: では、新しい場面は？
+planSlept: この約束はいったんしまっておきます。必要になったら呼び戻してください。
+promptInvite: 短い場面をひとつ試してみますか？スキップしても大丈夫です。
+inviteYes: 試してみる
+inviteNo: スキップ
+promptPlanAsk: 次のためにリマインダーを設定しますか？
+planAskYes: はい、設定する
+planAskNo: 今回はしない
+courseCardTitle: あなたの話に近いコース
+courseCardReason: 習慣「${habit}」に対応
+courseCardSave: あとで見る
+courseCardClose: 閉じる
+nextStop: ここで終える
+nextAgain: 新しく始める
+closingWithPlan: "では次は${context}ですね。${time}にお知らせします。"
+closingWithPlanNoTime: "では次は${context}ですね。"
+closingNoPlan: メモしました。また話したくなったら、ここにいます。
+promptEndLesson: 今日の練習はこれで十分です。
+daysCustom: 曜日を選ぶ
+day1: 月
+day2: 火
+day3: 水
+day4: 木
+day5: 金
+day6: 土
+day7: 日
+ratingChipMissed: 話が伝わっていない
+ratingChipGeneric: 一般的すぎる
+ratingChipLong: 長すぎる
+ratingChipVoice: 口調が合わない
+ratingChipImposed: 考えを押しつけた
+ratingSend: 送る
+personaLabel: 口調
+stepStory: 今日のこと
+stepDepth: メモか、深く
+stepBarrier: 何が止めたか
+stepShrink: 約束を小さく
+stepContext: 約束の場面
+stepCourse: あなたに近いコース
+stepNextSession: 締めくくり

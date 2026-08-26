@@ -54,15 +54,6 @@ abstract final class CoachStyle {
     ),
   ];
 
-  /// The floating bubble sits well above the page and says so.
-  static List<BoxShadow> get bubbleShadow => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.4),
-      blurRadius: 28.r,
-      offset: Offset(0, 12.h),
-    ),
-  ];
-
   static List<BoxShadow> get teaserShadow => [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.3),
@@ -78,62 +69,4 @@ abstract final class CoachStyle {
     letterSpacing: 0.05 * size.sp,
     color: color ?? textMuted,
   );
-}
-
-/// The two eyes that make the Coach a face rather than an icon.
-///
-/// A pill with two rounded bars in it, at two sizes: 8x11 on the floating
-/// bubble, 5x7 in the sheet header. It is the whole of the Coach's identity in
-/// this design — there is no illustration and no mascot anywhere else — so it
-/// is a widget rather than an asset, and scales exactly with its container.
-class CoachFace extends StatelessWidget {
-  final double diameter;
-  final double eyeWidth;
-  final double eyeHeight;
-  final double gap;
-  final Color background;
-
-  const CoachFace({
-    super.key,
-    required this.diameter,
-    required this.eyeWidth,
-    required this.eyeHeight,
-    required this.gap,
-    this.background = CoachStyle.skin,
-  });
-
-  /// The 60px floating bubble.
-  const CoachFace.bubble({super.key, this.background = CoachStyle.skin}) : diameter = 60, eyeWidth = 8, eyeHeight = 11, gap = 7;
-
-  /// The 34px avatar in the sheet header.
-  const CoachFace.header({super.key, this.background = CoachStyle.skin}) : diameter = 34, eyeWidth = 5, eyeHeight = 7, gap = 4;
-
-  @override
-  Widget build(BuildContext context) {
-    final eye = Container(
-      width: eyeWidth.w,
-      height: eyeHeight.h,
-      decoration: BoxDecoration(
-        color: CoachStyle.eye,
-        borderRadius: BorderRadius.circular(99.r),
-      ),
-    );
-
-    return Container(
-      width: diameter.w,
-      height: diameter.w,
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(99.r),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          eye,
-          SizedBox(width: gap.w),
-          eye,
-        ],
-      ),
-    );
-  }
 }
