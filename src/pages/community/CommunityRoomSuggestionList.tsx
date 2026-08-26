@@ -4,14 +4,7 @@ import {
   Chip,
   MenuItem,
   Pagination,
-  Paper,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Tooltip,
 } from "@mui/material";
@@ -20,6 +13,8 @@ import { useSelector } from "react-redux";
 
 import CommunityRoomSuggestionDialog from "../../components/community/CommunityRoomSuggestionDialog";
 import { COMMUNITY_LANGS } from "../../components/community/TranslationFields";
+import CommunityEmpty from "../../components/community/CommunityEmpty";
+import CommunityPageHeader from "../../components/community/CommunityPageHeader";
 import { communityService } from "../../services/communityService";
 import { RootState } from "../../store";
 import {
@@ -149,15 +144,10 @@ const CommunityRoomSuggestionList: React.FC = () => {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Đề xuất phòng</h1>
-          <p className="text-sm text-gray-500">
-            Người đọc xin mở phòng mới. Sắp theo số người ủng hộ — đề xuất chỉ
-            một người muốn thì để đó cũng được.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      <CommunityPageHeader
+        title="Đề xuất phòng"
+        subtitle="Người đọc xin mở phòng mới. Sắp theo số người ủng hộ — đề xuất chỉ một người muốn thì để đó cũng được."
+      >
           <TextField
             size="small"
             placeholder="Tìm theo tên phòng"
@@ -199,14 +189,13 @@ const CommunityRoomSuggestionList: React.FC = () => {
             className="min-w-[130px]"
           >
             <MenuItem value="">Tất cả</MenuItem>
-            {COMMUNITY_LANGS.map(({ code, label }) => (
-              <MenuItem key={code} value={code}>
-                {label}
-              </MenuItem>
-            ))}
-          </TextField>
-        </div>
-      </div>
+          {COMMUNITY_LANGS.map(({ code, label }) => (
+            <MenuItem key={code} value={code}>
+              {label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </CommunityPageHeader>
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
@@ -214,133 +203,118 @@ const CommunityRoomSuggestionList: React.FC = () => {
         </div>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Phòng được đề xuất</TableCell>
-              <TableCell>Người đề xuất</TableCell>
-              <TableCell align="right">Ủng hộ</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="right">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 4 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={5}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="space-y-3">
+        {loading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={120} />
+          ))}
 
-            {!loading && !suggestions.length && (
-              <TableRow>
-                <TableCell colSpan={5}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    Chưa có đề xuất nào ở bộ lọc này.
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
+        {!loading && !suggestions.length && (
+          <CommunityEmpty>Chưa có đề xuất nào ở bộ lọc này.</CommunityEmpty>
+        )}
 
-            {!loading &&
-              suggestions.map((suggestion) => (
-                <TableRow key={suggestion.id} hover>
-                  <TableCell className="max-w-md">
-                    <div className="text-sm font-semibold">
+        {!loading &&
+          suggestions.map((suggestion) => (
+            <article
+              key={suggestion.id}
+              className="flex gap-4 rounded-[18px] border border-gray-200 bg-white p-4"
+            >
+              {/* The vote count as a block on the left, not a number in a
+                  column: how many people asked IS the decision, and it should
+                  be the first thing the eye lands on down a list. */}
+              <div className="flex w-16 shrink-0 flex-col items-center justify-center rounded-[14px] bg-[#F4F3FD] py-2">
+                <span className="text-xl font-bold text-[#7A69E8]">
+                  {suggestion.voteCount}
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-[#7A69E8]/70">
+                  ủng hộ
+                </span>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900">
                       {suggestion.name}
-                    </div>
-                    {!!suggestion.description && (
-                      <div className="mt-0.5 line-clamp-2 text-xs text-gray-600">
-                        {suggestion.description}
-                      </div>
-                    )}
-                    <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                      <span>{suggestion.locale.toUpperCase()}</span>
+                    </h3>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
                       <span>
-                        ·{" "}
+                        {suggestion.author?.name || "(tài khoản đã xoá)"}
+                      </span>
+                      <span>·</span>
+                      <span>{suggestion.locale.toUpperCase()}</span>
+                      <span>·</span>
+                      <span>
                         {new Date(suggestion.createdAt).toLocaleDateString(
                           "vi-VN"
                         )}
                       </span>
                     </div>
-                    {suggestion.reviewNote && (
-                      <div className="mt-1 text-xs text-amber-700">
-                        Ghi chú: {suggestion.reviewNote}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {suggestion.author?.name || "(tài khoản đã xoá)"}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {suggestion.author?.id}
-                    </div>
-                  </TableCell>
-                  <TableCell align="right">
-                    <span className="text-sm font-semibold">
-                      {suggestion.voteCount}
-                    </span>
-                  </TableCell>
-                  <TableCell>
+                  </div>
+                  <div className="shrink-0 text-right">
                     <Chip
                       size="small"
                       label={STATUS_LABEL[suggestion.status]}
                       color={STATUS_COLOR[suggestion.status]}
                     />
                     {suggestion.topicId && (
-                      <div className="mt-1 flex items-center gap-1 text-xs text-indigo-600">
+                      <div className="mt-1 flex items-center justify-end gap-1 text-xs text-indigo-600">
                         <ExternalLinkIcon size={12} />
                         {topicNameById.get(suggestion.topicId) ??
                           suggestion.topicId}
                       </div>
                     )}
-                  </TableCell>
-                  <TableCell align="right">
-                    {suggestion.status ===
-                    CommunityRoomSuggestionStatus.PENDING ? (
-                      <div className="flex justify-end gap-1">
-                        <Tooltip title="Gắn vào một phòng đã tạo">
-                          <Button
-                            size="small"
-                            color="success"
-                            startIcon={<CheckIcon size={14} />}
-                            onClick={() =>
-                              setDialog({ suggestion, mode: "approve" })
-                            }
-                          >
-                            Mở phòng
-                          </Button>
-                        </Tooltip>
+                  </div>
+                </div>
+
+                {!!suggestion.description && (
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
+                    {suggestion.description}
+                  </p>
+                )}
+
+                {suggestion.reviewNote && (
+                  <div className="mt-2 text-xs text-amber-700">
+                    Ghi chú: {suggestion.reviewNote}
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                  {suggestion.status ===
+                  CommunityRoomSuggestionStatus.PENDING ? (
+                    <>
+                      <Button
+                        size="small"
+                        color="inherit"
+                        startIcon={<XIcon size={14} />}
+                        onClick={() =>
+                          setDialog({ suggestion, mode: "decline" })
+                        }
+                      >
+                        Từ chối
+                      </Button>
+                      <Tooltip title="Gắn vào một phòng đã tạo">
                         <Button
                           size="small"
-                          color="inherit"
-                          startIcon={<XIcon size={14} />}
+                          variant="outlined"
+                          color="success"
+                          startIcon={<CheckIcon size={14} />}
                           onClick={() =>
-                            setDialog({ suggestion, mode: "decline" })
+                            setDialog({ suggestion, mode: "approve" })
                           }
                         >
-                          Từ chối
+                          Mở phòng
                         </Button>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">
-                        {suggestion.reviewedAt
-                          ? new Date(suggestion.reviewedAt).toLocaleDateString(
-                              "vi-VN"
-                            )
-                          : "—"}
-                      </span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                      </Tooltip>
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-400">Đã xử lý</span>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-end">

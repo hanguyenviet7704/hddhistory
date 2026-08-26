@@ -4,6 +4,7 @@ import { MegaphoneIcon } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import CommunityOfficialPostModal from "../../components/community/CommunityOfficialPostModal";
+import CommunityPageHeader from "../../components/community/CommunityPageHeader";
 import ModerationChatTab from "../../components/community/ModerationChatTab";
 import ModerationPostsTab from "../../components/community/ModerationPostsTab";
 import ModerationReportsTab from "../../components/community/ModerationReportsTab";
@@ -51,14 +52,10 @@ const CommunityModerationPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Kiểm duyệt cộng đồng</h1>
-          <p className="text-sm text-gray-500">
-            Hậu kiểm: nội dung hiện ngay khi đăng. Hàng đợi báo cáo là việc cần
-            xử lý trước.
-          </p>
-        </div>
+      <CommunityPageHeader
+        title="Kiểm duyệt cộng đồng"
+        subtitle="Hậu kiểm: nội dung hiện ngay khi đăng. Hàng đợi báo cáo là việc cần xử lý trước."
+      >
         <Button
           variant="contained"
           startIcon={<MegaphoneIcon size={16} />}
@@ -66,7 +63,7 @@ const CommunityModerationPage: React.FC = () => {
         >
           Đăng bài Đội ngũ MeUp
         </Button>
-      </div>
+      </CommunityPageHeader>
 
       <Tabs
         value={tab}

@@ -2,20 +2,20 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Chip,
-  Paper,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
 } from "@mui/material";
-import { PencilIcon, PlusIcon } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  MessageCircleIcon,
+  PencilIcon,
+  PlusIcon,
+} from "lucide-react";
 import { useSelector } from "react-redux";
 
 import CommunityWeeklyModal from "../../components/community/CommunityWeeklyModal";
 import { COMMUNITY_LANGS } from "../../components/community/TranslationFields";
+import CommunityEmpty from "../../components/community/CommunityEmpty";
+import CommunityPageHeader from "../../components/community/CommunityPageHeader";
 import { communityService } from "../../services/communityService";
 import { RootState } from "../../store";
 import {
@@ -101,14 +101,10 @@ const CommunityWeeklyPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Câu hỏi của tuần</h1>
-          <p className="text-sm text-gray-500">
-            Đội ngũ MeUp đặt một câu hỏi mỗi tuần; user trả lời như bình luận.
-            Câu hỏi hiện cho mọi ngôn ngữ, nên cần dịch đủ 5 thứ tiếng.
-          </p>
-        </div>
+      <CommunityPageHeader
+        title="Câu hỏi của tuần"
+        subtitle="Đội ngũ MeUp đặt một câu hỏi mỗi tuần; user trả lời như bình luận. Câu hỏi hiện cho mọi ngôn ngữ, nên cần dịch đủ 5 thứ tiếng."
+      >
         <Button
           variant="contained"
           startIcon={<PlusIcon size={16} />}
@@ -119,7 +115,7 @@ const CommunityWeeklyPage: React.FC = () => {
         >
           Câu hỏi mới
         </Button>
-      </div>
+      </CommunityPageHeader>
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
@@ -127,99 +123,93 @@ const CommunityWeeklyPage: React.FC = () => {
         </div>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Câu hỏi</TableCell>
-              <TableCell>Tuần</TableCell>
-              <TableCell>Khoảng thời gian</TableCell>
-              <TableCell align="right">Trả lời</TableCell>
-              <TableCell>Thiếu bản dịch</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 3 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={7}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="space-y-3">
+        {loading &&
+          Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={116} />
+          ))}
 
-            {!loading && !questions.length && (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    Chưa có câu hỏi nào. Không có câu hỏi đang mở thì app ẩn card
-                    "Câu hỏi của tuần" ở đầu feed.
+        {!loading && !questions.length && (
+          <CommunityEmpty>
+            Chưa có câu hỏi nào. Không có câu hỏi đang mở thì app ẩn card "Câu
+            hỏi của tuần" ở đầu feed.
+          </CommunityEmpty>
+        )}
+
+        {!loading &&
+          questions.map((question) => {
+            const questionState = state(question);
+            const missing = missingLocales(question);
+            const isOpen = questionState.label === "Đang mở";
+
+            return (
+              <article
+                key={question.id}
+                className={[
+                  "rounded-[18px] border bg-white p-4",
+                  // The open one is the only row that is live in the app right
+                  // now, so it gets the ring: down a list of a dozen weeks, that
+                  // is the single thing worth finding at a glance.
+                  isOpen ? "border-emerald-300 ring-1 ring-emerald-100" : "border-gray-200",
+                ].join(" ")}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold leading-snug text-gray-900">
+                      {getTranslationValue(question.title, lang) || "—"}
+                    </h3>
+                    {question.note && (
+                      <p className="mt-0.5 text-sm text-gray-500">
+                        {getTranslationValue(question.note, lang)}
+                      </p>
+                    )}
                   </div>
-                </TableCell>
-              </TableRow>
-            )}
+                  <Chip
+                    size="small"
+                    label={questionState.label}
+                    color={questionState.color}
+                  />
+                </div>
 
-            {!loading &&
-              questions.map((question) => {
-                const questionState = state(question);
-                const missing = missingLocales(question);
-                return (
-                  <TableRow key={question.id} hover>
-                    <TableCell className="max-w-md">
-                      <div className="text-sm font-medium">
-                        {getTranslationValue(question.title, lang) || "—"}
-                      </div>
-                      {question.note && (
-                        <div className="text-xs text-gray-500">
-                          {getTranslationValue(question.note, lang)}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {question.weekly
-                        ? `Tuần ${question.weekly.weekNumber}/${question.weekly.year}`
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {windowLabel(question)}
-                    </TableCell>
-                    <TableCell align="right">{question.commentCount}</TableCell>
-                    <TableCell>
-                      {missing.length ? (
-                        <span className="text-xs text-amber-700">
-                          {missing.join(", ")}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">Đủ 5</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={questionState.label}
-                        color={questionState.color}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Button
-                        size="small"
-                        startIcon={<PencilIcon size={14} />}
-                        onClick={() => {
-                          setEditing(question);
-                          setModalOpen(true);
-                        }}
-                      >
-                        Sửa
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                  <span className="flex items-center gap-1.5">
+                    <CalendarDaysIcon size={14} />
+                    {question.weekly
+                      ? `Tuần ${question.weekly.weekNumber}/${question.weekly.year}`
+                      : "Chưa đặt lịch"}
+                  </span>
+                  <span>{windowLabel(question)}</span>
+                  <span className="flex items-center gap-1.5">
+                    <MessageCircleIcon size={14} /> {question.commentCount} trả
+                    lời
+                  </span>
+                </div>
+
+                {!!missing.length && (
+                  // A question missing a locale is a question that simply does
+                  // not appear for those readers — worth saying loudly, since
+                  // nothing in the app reports it.
+                  <div className="mt-2 text-xs text-amber-700">
+                    Thiếu bản dịch: {missing.join(", ")}
+                  </div>
+                )}
+
+                <div className="mt-3 flex justify-end border-t border-gray-100 pt-3">
+                  <Button
+                    size="small"
+                    startIcon={<PencilIcon size={14} />}
+                    onClick={() => {
+                      setEditing(question);
+                      setModalOpen(true);
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
+      </div>
 
       <CommunityWeeklyModal
         open={modalOpen}

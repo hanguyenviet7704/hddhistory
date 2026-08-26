@@ -7,19 +7,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Paper,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
 } from "@mui/material";
-import { EyeOffIcon, PencilIcon, PlusIcon } from "lucide-react";
+import {
+  EyeOffIcon,
+  FileTextIcon,
+  PencilIcon,
+  PlusIcon,
+  UsersIcon,
+} from "lucide-react";
 import { useSelector } from "react-redux";
 
+import CommunityEmpty from "../../components/community/CommunityEmpty";
+import CommunityPageHeader from "../../components/community/CommunityPageHeader";
 import CommunityTopicModal from "../../components/community/CommunityTopicModal";
 import { COMMUNITY_LANGS } from "../../components/community/TranslationFields";
 import { communityService } from "../../services/communityService";
@@ -111,32 +112,30 @@ const CommunityTopicList: React.FC = () => {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Chủ đề cộng đồng</h1>
-          <p className="text-sm text-gray-500">
-            Chủ đề do MeUp tạo — người dùng chỉ theo dõi, không tự tạo được.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <TextField
-            size="small"
-            placeholder="Tìm theo tên hoặc slug"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          <Button
-            variant="contained"
-            startIcon={<PlusIcon size={16} />}
-            onClick={() => {
-              setEditing(null);
-              setModalOpen(true);
-            }}
-          >
-            Chủ đề mới
-          </Button>
-        </div>
-      </div>
+      {/* "Phòng", not "chủ đề": the app calls them phòng everywhere a reader
+          sees them, and the sidebar already did. */}
+      <CommunityPageHeader
+        title="Phòng"
+        subtitle="Phòng do MeUp mở — người dùng chỉ theo dõi và đề xuất, không tự tạo được."
+      >
+        <TextField
+          size="small"
+          placeholder="Tìm theo tên hoặc slug"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="min-w-[220px]"
+        />
+        <Button
+          variant="contained"
+          startIcon={<PlusIcon size={16} />}
+          onClick={() => {
+            setEditing(null);
+            setModalOpen(true);
+          }}
+        >
+          Phòng mới
+        </Button>
+      </CommunityPageHeader>
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
@@ -144,109 +143,118 @@ const CommunityTopicList: React.FC = () => {
         </div>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Tên</TableCell>
-              <TableCell>Slug</TableCell>
-              <TableCell align="right">Người theo dõi</TableCell>
-              <TableCell align="right">Bài tuần này</TableCell>
-              <TableCell>Thiếu bản dịch</TableCell>
-              <TableCell align="right">Thứ tự</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="right">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 4 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={8}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {loading &&
+          Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={168} />
+          ))}
+      </div>
 
-            {!loading && !topics.length && (
-              <TableRow>
-                <TableCell colSpan={8}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    Chưa có chủ đề nào. Tạo chủ đề đầu tiên để mở feed cộng đồng.
+      {!loading && !topics.length && (
+        <CommunityEmpty>
+          Chưa có phòng nào. Mở phòng đầu tiên để feed cộng đồng có chỗ đăng.
+        </CommunityEmpty>
+      )}
+
+      {!loading && !!topics.length && (
+        // A grid of room cards rather than eight columns: a room is a thing with
+        // a face — a cover, a name, and how busy it is — and that is also all a
+        // reader ever sees of it in the app.
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {topics.map((topic) => {
+            // Stats are per locale, so a card reports the operator's current
+            // display language rather than a misleading sum.
+            const stats = topic.stats?.[lang] ?? {};
+            const missing = missingLocales(topic);
+            const name = getTranslationValue(topic.name, lang) || "—";
+
+            return (
+              <article
+                key={topic._id}
+                className={[
+                  "flex flex-col rounded-[18px] border border-gray-200 p-4",
+                  topic.isActive ? "bg-white" : "bg-gray-50",
+                ].join(" ")}
+              >
+                <div
+                  className={[
+                    "flex items-start gap-3",
+                    topic.isActive ? "" : "opacity-60",
+                  ].join(" ")}
+                >
+                  {topic.imageUrl ? (
+                    <img
+                      src={topic.imageUrl}
+                      alt=""
+                      className="h-12 w-12 shrink-0 rounded-[14px] border border-gray-200 object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#F4F3FD] text-lg font-bold text-[#7A69E8]">
+                      {name.trim().charAt(0).toUpperCase() || "?"}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-semibold text-gray-900">
+                      {name}
+                    </div>
+                    <code className="text-xs text-gray-400">{topic.slug}</code>
                   </div>
-                </TableCell>
-              </TableRow>
-            )}
+                  <Chip
+                    size="small"
+                    label={topic.isActive ? "Đang hiện" : "Đã tắt"}
+                    color={topic.isActive ? "success" : "default"}
+                  />
+                </div>
 
-            {!loading &&
-              topics.map((topic) => {
-                // Stats are per locale, so the table reports the operator's
-                // current display language rather than a misleading sum.
-                const stats = topic.stats?.[lang] ?? {};
-                const missing = missingLocales(topic);
+                <p className="mt-3 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-gray-600">
+                  {getTranslationValue(topic.description, lang) || "—"}
+                </p>
 
-                return (
-                  <TableRow key={topic._id} hover>
-                    <TableCell>
-                      <div className="font-medium">
-                        {getTranslationValue(topic.name, lang) || "—"}
-                      </div>
-                      <div className="max-w-md truncate text-xs text-gray-500">
-                        {getTranslationValue(topic.description, lang)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-xs">{topic.slug}</code>
-                    </TableCell>
-                    <TableCell align="right">{stats.followers ?? 0}</TableCell>
-                    <TableCell align="right">
-                      {stats.postsThisWeek ?? 0}
-                    </TableCell>
-                    <TableCell>
-                      {missing.length ? (
-                        <span className="text-xs text-amber-700">
-                          {missing.join(", ")}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">Đủ 5</span>
-                      )}
-                    </TableCell>
-                    <TableCell align="right">{topic.sortOrder}</TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={topic.isActive ? "Đang hiện" : "Đã tắt"}
-                        color={topic.isActive ? "success" : "default"}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Button
-                        size="small"
-                        startIcon={<PencilIcon size={14} />}
-                        onClick={() => {
-                          setEditing(topic);
-                          setModalOpen(true);
-                        }}
-                      >
-                        Sửa
-                      </Button>
-                      {topic.isActive && (
-                        <Button
-                          size="small"
-                          color="warning"
-                          startIcon={<EyeOffIcon size={14} />}
-                          onClick={() => setDeactivating(topic)}
-                        >
-                          Tắt
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                  <span className="flex items-center gap-1.5" title="Người theo dõi">
+                    <UsersIcon size={14} /> {stats.followers ?? 0}
+                  </span>
+                  <span className="flex items-center gap-1.5" title="Bài tuần này">
+                    <FileTextIcon size={14} /> {stats.postsThisWeek ?? 0}
+                  </span>
+                  <span className="text-gray-400">#{topic.sortOrder}</span>
+                </div>
+
+                {!!missing.length && (
+                  // Loud, because a missing translation is invisible in the app:
+                  // the room simply does not appear for readers on that locale.
+                  <div className="mt-2 text-xs text-amber-700">
+                    Thiếu bản dịch: {missing.join(", ")}
+                  </div>
+                )}
+
+                <div className="mt-auto flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                  <Button
+                    size="small"
+                    startIcon={<PencilIcon size={14} />}
+                    onClick={() => {
+                      setEditing(topic);
+                      setModalOpen(true);
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                  {topic.isActive && (
+                    <Button
+                      size="small"
+                      color="warning"
+                      startIcon={<EyeOffIcon size={14} />}
+                      onClick={() => setDeactivating(topic)}
+                    >
+                      Tắt
+                    </Button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       <CommunityTopicModal
         open={modalOpen}
@@ -260,19 +268,19 @@ const CommunityTopicList: React.FC = () => {
       />
 
       <Dialog open={!!deactivating} onClose={() => setDeactivating(null)}>
-        <DialogTitle>Tắt chủ đề này?</DialogTitle>
+        <DialogTitle>Tắt phòng này?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            App sẽ không hiện chủ đề{" "}
+            App sẽ không hiện phòng{" "}
             <strong>{getTranslationValue(deactivating?.name, lang)}</strong> nữa.
-            Bài đã đăng trong chủ đề vẫn còn — chủ đề không bị xoá, nên có thể
-            bật lại bất cứ lúc nào.
+            Bài đã đăng trong phòng vẫn còn — phòng không bị xoá, nên có thể bật
+            lại bất cứ lúc nào.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeactivating(null)}>Huỷ</Button>
           <Button color="warning" variant="contained" onClick={handleDeactivate}>
-            Tắt chủ đề
+            Tắt phòng
           </Button>
         </DialogActions>
       </Dialog>

@@ -3,19 +3,14 @@ import {
   Button,
   Chip,
   Pagination,
-  Paper,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
 } from "@mui/material";
-import { PlusIcon, RotateCcwIcon } from "lucide-react";
+import { BanIcon, PlusIcon, RotateCcwIcon } from "lucide-react";
 
 import CommunitySanctionModal from "../../components/community/CommunitySanctionModal";
+import CommunityEmpty from "../../components/community/CommunityEmpty";
+import CommunityPageHeader from "../../components/community/CommunityPageHeader";
 import { communityService } from "../../services/communityService";
 import { ICommunitySanction } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -93,31 +88,26 @@ const CommunitySanctionList: React.FC = () => {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Khoá quyền đăng</h1>
-          <p className="text-sm text-gray-500">
-            Mỗi lần khoá là một dòng riêng — mở khoá không xoá dòng đó, nên lịch
-            sử vi phạm của một người vẫn đọc được ở đây.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <TextField
-            size="small"
-            placeholder="Lọc theo User ID"
-            value={userId}
-            onChange={(event) => setUserId(event.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="warning"
-            startIcon={<PlusIcon size={16} />}
-            onClick={() => setModalOpen(true)}
-          >
-            Khoá người dùng
-          </Button>
-        </div>
-      </div>
+      <CommunityPageHeader
+        title="Khoá quyền đăng"
+        subtitle="Mỗi lần khoá là một dòng riêng — mở khoá không xoá dòng đó, nên lịch sử vi phạm của một người vẫn đọc được ở đây."
+      >
+        <TextField
+          size="small"
+          placeholder="Lọc theo User ID"
+          value={userId}
+          onChange={(event) => setUserId(event.target.value)}
+          className="min-w-[220px]"
+        />
+        <Button
+          variant="contained"
+          color="warning"
+          startIcon={<PlusIcon size={16} />}
+          onClick={() => setModalOpen(true)}
+        >
+          Khoá người dùng
+        </Button>
+      </CommunityPageHeader>
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
@@ -125,87 +115,93 @@ const CommunitySanctionList: React.FC = () => {
         </div>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>User ID</TableCell>
-              <TableCell>Lý do</TableCell>
-              <TableCell>Đến khi</TableCell>
-              <TableCell>Khoá lúc</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 4 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={6}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="space-y-2">
+        {loading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={84} />
+          ))}
 
-            {!loading && !sanctions.length && (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    Chưa khoá ai cả.
+        {!loading && !sanctions.length && (
+          <CommunityEmpty>Chưa khoá ai cả.</CommunityEmpty>
+        )}
+
+        {!loading &&
+          sanctions.map((sanction) => {
+            const active = isActive(sanction);
+
+            return (
+              <article
+                key={sanction._id}
+                className={[
+                  "flex flex-wrap items-start gap-4 rounded-[18px] border p-4",
+                  // An active mute is the only row anyone can act on, and the
+                  // only one that is doing something to a person right now.
+                  active
+                    ? "border-amber-300 bg-amber-50/50"
+                    : "border-gray-200 bg-white",
+                ].join(" ")}
+              >
+                <div
+                  className={[
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                    active
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-gray-100 text-gray-400",
+                  ].join(" ")}
+                >
+                  <BanIcon size={18} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <code className="text-xs text-gray-700">
+                      {sanction.userId}
+                    </code>
+                    <Chip
+                      size="small"
+                      label={
+                        sanction.revokedAt
+                          ? "Đã mở khoá"
+                          : active
+                          ? "Đang khoá"
+                          : "Đã hết hạn"
+                      }
+                      color={active ? "warning" : "default"}
+                    />
                   </div>
-                </TableCell>
-              </TableRow>
-            )}
-
-            {!loading &&
-              sanctions.map((sanction) => {
-                const active = isActive(sanction);
-                return (
-                  <TableRow key={sanction._id} hover>
-                    <TableCell>
-                      <code className="text-xs">{sanction.userId}</code>
-                    </TableCell>
-                    <TableCell className="max-w-sm text-sm">
-                      {sanction.reason}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {sanction.mutedUntil
-                        ? new Date(sanction.mutedUntil).toLocaleString("vi-VN")
-                        : "Vĩnh viễn"}
-                    </TableCell>
-                    <TableCell className="text-xs text-gray-500">
+                  <p className="mt-1 text-sm text-gray-700">
+                    {sanction.reason}
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 text-xs text-gray-500">
+                    <span>
+                      Đến khi:{" "}
+                      <strong className="font-semibold">
+                        {sanction.mutedUntil
+                          ? new Date(sanction.mutedUntil).toLocaleString("vi-VN")
+                          : "Vĩnh viễn"}
+                      </strong>
+                    </span>
+                    <span>
+                      · Khoá lúc{" "}
                       {new Date(sanction.createdAt).toLocaleString("vi-VN")}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={
-                          sanction.revokedAt
-                            ? "Đã mở khoá"
-                            : active
-                            ? "Đang khoá"
-                            : "Đã hết hạn"
-                        }
-                        color={active ? "warning" : "default"}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      {active && (
-                        <Button
-                          size="small"
-                          startIcon={<RotateCcwIcon size={14} />}
-                          onClick={() => handleRevoke(sanction)}
-                        >
-                          Mở khoá
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    </span>
+                  </div>
+                </div>
+
+                {active && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<RotateCcwIcon size={14} />}
+                    onClick={() => handleRevoke(sanction)}
+                  >
+                    Mở khoá
+                  </Button>
+                )}
+              </article>
+            );
+          })}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-end">
