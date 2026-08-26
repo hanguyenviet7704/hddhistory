@@ -87,7 +87,9 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
             return CoachBubble(
               bottomInset: widget.bottomInset,
               dot: state.dot,
-              teaser: state.teaser,
+              // ②A quotes the reader's own commitment; ④ has no words of
+              // theirs to quote yet and says "Tình huống ba tuần trước…".
+              teaser: state.teaser ?? coachTeaser(context, state.teaserKey),
               onTap: () async {
                 final courseId = await showCoachSheet(context, entry: entry);
                 if (!context.mounted) return;

@@ -39,7 +39,7 @@ class CoachCubit extends Cubit<CoachState> {
     _habitId = habitId;
     _locale = locale;
 
-    emit(state.copyWith(status: CoachStatus.opening, messages: const []));
+    emit(state.copyWith(status: CoachStatus.opening, entry: entry, messages: const []));
 
     final result = await _openSession(
       entry: entry,
@@ -94,32 +94,15 @@ class CoachCubit extends Cubit<CoachState> {
   /// ② "hoặc bỏ qua" — the story step's second way out.
   Future<void> skipStory(String label) => _send({'kind': 'skip'}, userLine: label);
 
-  /// After the first line: "Chỉ ghi lại thôi" · "Kể sâu hơn".
-  Future<void> chooseDepth({required bool deep, required String label}) => _send({'kind': 'depth', 'deep': deep}, userLine: label);
-
-  /// ②A — take the smaller commitment (with the reader's edits) or keep the old one.
-  Future<void> answerShrink({
-    required bool accept,
-    required String label,
-    String? context,
-    String? action,
-  }) => _send({
-    'kind': 'shrink',
-    'accept': accept,
-    'planContext': ?context,
-    'planAction': ?action,
-  }, userLine: label);
-
-  /// ②A "Chưa gặp dịp" — keep the context, or go type a new one.
-  Future<void> answerContext({required bool keep, required String label}) => _send({'kind': 'context', 'keep': keep}, userLine: label);
-
   /// ★ — practise one situation, or not. Never required.
   Future<void> answerInvite({required bool accept, required String label}) => _send({'kind': 'invite', 'accept': accept}, userLine: label);
 
   /// "Muốn đặt Nhắc hẹn không?" — the commitment is optional at every door.
   Future<void> answerPlanAsk({required bool accept, required String label}) => _send({'kind': 'planAsk', 'accept': accept}, userLine: label);
 
-  /// The course card's three ways out: open · save · close.
+  /// The course card's three ways out. "Đi tới khoá học" earns one short
+  /// line and a LEAVE step; the END button then hands the course id back to
+  /// whoever opened the sheet.
   Future<void> courseAction(String action, {String? label}) => _send({'kind': 'course', 'courseAction': action}, userLine: label);
 
   /// "Dừng phiên hay bắt đầu phiên mới?" — two equal buttons.
@@ -190,30 +173,29 @@ class CoachCubit extends Cubit<CoachState> {
 
   Future<void> loop({required bool keepGoing, required String label}) => _send({'kind': 'loop', 'keepGoing': keepGoing}, userLine: label);
 
-  Future<void> rate({String? thumb, List<String>? chips, String? label}) => _send({
+  /// The toast's answer. Nothing is echoed into the thread — the toast rates
+  /// the whole session and closes; a line in the chat would make it a turn.
+  Future<void> rate({String? thumb, List<String>? chips, String? note}) => _send({
     'kind': 'rating',
     'thumb': ?thumb,
     'chips': ?chips,
+    'ratingNote': ?(note == null || note.isEmpty ? null : note),
     'ratingSkipped': thumb == null,
-  }, userLine: label);
+  });
 
-  /// ⑧ — "Không đúng với mình". The draft was not theirs at all, so it is
-  /// thrown away and they write both columns themselves. The Coach does not
-  /// get a second attempt.
+  /// A parked session on a retired step (depth, context) still needs its one
+  /// answer sent; the server routes it back onto the spine.
+  Future<void> sendRetired(Map<String, dynamic> payload, {String? label}) => _send(payload, userLine: label);
+
+  /// ⑤ — "Không đúng với mình". The draft was not theirs at all: it is
+  /// thrown away and the Coach asks to hear the story again. Once only.
   Future<void> rejectDraft(String label) => _send({'kind': 'rejectDraft'}, userLine: label);
-
-  /// Nhịp 5 is the Coach speaking, not asking. One tap moves past it.
-  Future<void> acknowledge() => _send({'kind': 'ack'});
 
   /// "Giải thích đơn giản hơn" — counted against the CONTENT, not the reader.
   /// Fire-and-forget: a failed count must not interrupt the conversation.
   Future<void> explainAgain(String keypointId) async {
     await _explainAgain(keypointId).run();
   }
-
-  /// ⑥ — a small line, never a big button. Placement is the widget's job; this
-  /// only sends it.
-  Future<void> takeEscape() => _send({'kind': 'escape'});
 
   /// ⑦ — move a line between columns. Purely local until the sentence is sent.
   /// ⑦ — move one drafted line to the other column.
@@ -336,9 +318,11 @@ class CoachCubit extends Cubit<CoachState> {
       messages.add(CoachMessage(isCoach: true, text: turn.reply!));
     }
 
-    // A note before the step's own line — "cái hẹn này mình tạm cất đi nhé".
+    // A fixed line before the step's own — "Đó là câu của bạn, mình không
+    // sửa.", "Bạn vừa thêm “…”. Một cảnh ngắn:". Some quote the reader's or
+    // the habit's words, so the args travel to it too.
     if (turn.noteKey != null) {
-      final note = promptResolver?.call(turn.noteKey!, const {});
+      final note = promptResolver?.call(turn.noteKey!, turn.promptArgs);
       if (note != null && note.isNotEmpty) {
         messages.add(CoachMessage(isCoach: true, text: note));
       }

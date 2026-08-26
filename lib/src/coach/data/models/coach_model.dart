@@ -12,6 +12,9 @@ abstract class CoachBubbleModel with _$CoachBubbleModel {
     @Default(false) bool visible,
     @Default(false) bool dot,
     String? teaser,
+
+    /// ④ — a fixed teaser as a slang key, when there are no reader's words.
+    String? teaserKey,
   }) = _CoachBubbleModel;
 
   factory CoachBubbleModel.fromJson(Map<String, dynamic> json) => _$CoachBubbleModelFromJson(json);
@@ -83,6 +86,8 @@ abstract class CoachCourseCardModel with _$CoachCourseCardModel {
     @Default('') String title,
     String? image,
     String? habitTitle,
+    String? author,
+    int? viewCount,
   }) = _CoachCourseCardModel;
 
   factory CoachCourseCardModel.fromJson(Map<String, dynamic> json) => _$CoachCourseCardModelFromJson(json);
@@ -94,6 +99,7 @@ abstract class CoachUiModel with _$CoachUiModel {
     @Default('text') String kind,
     @Default(<CoachChoiceModel>[]) List<CoachChoiceModel> choices,
     CoachColumnsModel? columns,
+    @Default(true) bool rejectAvailable,
     String? situation,
     @Default(<String>[]) List<String> samples,
     @Default(<CoachHotlineModel>[]) List<CoachHotlineModel> hotlines,

@@ -5,7 +5,7 @@ sheetTitle: AI Coach
 bubbleSemantics: Open AI Coach
 failedTitle: Something went wrong on our side. Nothing you said was lost.
 retry: Try again
-inputHint: Type, or tap a suggestion…
+inputHint: "Type, or tap the mic…"
 
 # ⑥ — a small line, never a big button.
 escapeLabel: Just log today, nothing more
@@ -18,20 +18,20 @@ promptPickHabit: Which habit do you want to work on today?
 promptPersona: How would you like me to speak today?
 promptTime: How much time do you have?
 promptTell: Tell me about the last time this habit came up. Take your time — I won't cut in.
-promptTellFollowUp: And then what happened?
+promptTellFollowUp: "Let me ask about what actually happened: who said what, who did what right then?"
 promptFree: Anything on your mind today? I'm listening.
-promptIntentTell: "Tell me in one sentence: what did you say or do?"
+promptIntentTell: "Tell me in one sentence: what did you say or do right then?"
 promptNextAction: So what will you do next time?
 promptCheckin: Has this habit come up at all in the last few days?
-promptPlan: Let's set one small reminder for next time.
-promptSchedule: When should I remind you?
+promptPlan: "In your own words: when, and what will you do?"
+promptSchedule: "Saved. When should I remind you?"
 promptLoop: There's one more thing waiting. Keep going, or stop here?
-promptRating: How was that?
+promptRating: Thank you.
 promptEnd: What would you like to do next?
 promptJot: Alright. One line for today, and I won't ask anything else.
 promptSafety: Thank you for saying that. I don't want you to be alone with it.
-promptTwoCols: I've pulled out your own lines. Drag whichever one is the real problem to the right, then write it in a sentence.
-promptIntent: "Yesterday you said: next time ${context}, you would ${action}. Has there been a moment yet?"
+promptTwoCols: I've put it into two columns — all in your own words. Move whichever line is the real problem to the right, then write it as one sentence.
+promptIntent: "Yesterday you said: ${context}, you would ${action}. Has there been a moment yet?"
 
 # Shown when the model could not answer. Deliberately empty of content — an
 # acknowledgement that claims to have understood something it never read is
@@ -49,7 +49,7 @@ scriptLong: Long · take your time
 scriptPractice: Just practise, no talking
 
 intentDone: I did it
-intentMissed: There was a moment, I didn't
+intentMissed: "There was a moment, I didn't"
 intentNone: No moment came up
 
 checkinYes: Yes
@@ -58,8 +58,8 @@ checkinNo: Not yet
 loopContinue: Talk about the next one
 loopStop: Stop here
 
-planContextHint: When? e.g. in team meetings
-planActionHint: Do what? e.g. say what I think
+planContextHint: "When? e.g. in team meetings"
+planActionHint: "Do what? e.g. say what I think"
 planSave: Save reminder
 
 daysDaily: every day
@@ -78,7 +78,7 @@ endClose: Close
 
 twoColsLeftTitle: What happened
 twoColsRightTitle: My real problem
-twoColsHint: Tap to move the lines that fit across, edit or delete the wrong ones. The Coach drafted these from your story — only what you keep counts.
+twoColsHint: Tap a line to move it right. The Coach only drafts from what you said.
 lineEdit: Edit this line
 lineDelete: Delete this line
 lineSave: Save
@@ -98,31 +98,31 @@ safetyDisclaimer: I'm an AI. I can't take the place of a mental health professio
 close: Close
 micListening: Listening…
 micSemantics: Speak instead of typing
-planLabel: A reminder — in your words
-scheduleLabel: When should I remind you?
+planLabel: "A reminder — in your words"
+scheduleLabel: "When should I remind you?"
 ratingLabel: How was that?
-stepMood: before we start
+stepMood: "morning mood · 5 levels, one tap"
 stepPickHabit: choosing a habit
 stepPersona: how I should speak
 stepTime: how long you have
-stepTelling: listening
-stepTwoCols: the real problem
-stepSituation: a short scene
-stepIntent: yesterday’s reminder
+stepTelling: asking about what happened
+stepTwoCols: "beat 3 · two columns"
+stepSituation: practising a scene
+stepIntent: "yesterday's reminder"
 stepCheckin: this week’s habit
-stepPlan: a reminder for next time
-stepSchedule: setting the reminder
+stepPlan: "a reminder — in your words"
+stepSchedule: time and days
 stepLoop: one more waiting
-stepMoodEnd: before you go
-stepRating: your feedback
+stepMoodEnd: "mood at the end · 5 levels"
+stepRating: rating the conversation
 stepJot: one line for today
 
 # Mood 5 mức · nhịp 4/5 · ⑧
 mood1: Bad
 mood2: A bit tired
 mood3: Okay
-rejectDraft: That's not what I meant
-redraftPrompt: "Tell me again then: what definitely happened?"
+rejectDraft: "That's not it"
+redraftPrompt: "I got that wrong. Tell me again: what happened?"
 keypointsLabel: Might help
 explainSimpler: Simpler
 closingContinue: Continue
@@ -133,12 +133,12 @@ stepRedraft: in your own words
 # BA flow 2026-08-26 — one spine, two doors
 mood4: Good
 mood5: Great
-promptStory: Anything new today?
-storySkip: Skip
+promptStory: "Anything new today?"
+storySkip: Nothing in particular
 promptDepth: Shall I just note that down, or do you want to go deeper?
 depthShallow: Just note it
 depthDeep: Go deeper
-promptBarrier: There was a moment and it didn't happen — that's ordinary. What stopped you right then?
+promptBarrier: "A moment came and it didn't happen — that's ordinary, not a failure. What stopped you right then?"
 shrinkLabel: A smaller version — edit it
 shrinkAccept: Make it this small
 shrinkKeep: Keep it, try again
@@ -147,22 +147,22 @@ contextKeep: Keep it
 contextChange: Change the context
 promptContextEdit: So what's the new context?
 planSlept: I'll put this one away for now. Call it back whenever you need it.
-promptInvite: Want to try a short situation? Skipping is fine.
-inviteYes: Try one
-inviteNo: Skip
-promptPlanAsk: Want to set a reminder for next time?
-planAskYes: Yes, set one
-planAskNo: Not this time
+promptInvite: "I have a short scene to practise. Not required — skipping is fine."
+inviteYes: Try a scene
+inviteNo: Skip for today
+promptPlanAsk: "Want to set a reminder for next time?"
+planAskYes: Yes, set a reminder
+planAskNo: No, close for now
 courseCardTitle: A course close to what you told me
 courseCardReason: Matches the habit “${habit}”
 courseCardSave: Save for later
-courseCardClose: Close
+courseCardClose: Skip
 nextStop: Stop here
 nextAgain: Start a new session
-closingWithPlan: "So, next time ${context}. I'll remind you at ${time}."
-closingWithPlanNoTime: "So, next time ${context}."
+closingWithPlan: "So, tomorrow ${context}. I'll remind you at ${time}."
+closingWithPlanNoTime: "So, tomorrow ${context}."
 closingNoPlan: Noted. Whenever you want to pick this up again, I'm here.
-promptEndLesson: That's enough practice for today.
+promptEndLesson: "That's enough practice for today."
 daysCustom: pick days
 day1: Mo
 day2: Tu
@@ -171,17 +171,69 @@ day4: Th
 day5: Fr
 day6: Sa
 day7: Su
-ratingChipMissed: Missed the point
-ratingChipGeneric: Too generic
+ratingChipMissed: "Didn't get what I meant"
+ratingChipGeneric: Generic answers
 ratingChipLong: Too long
 ratingChipVoice: Wrong tone
 ratingChipImposed: Told me what to think
 ratingSend: Send
 personaLabel: Voice
-stepStory: today
+stepStory: "“Anything new today?”"
 stepDepth: note it, or go deeper
 stepBarrier: what got in the way
 stepShrink: a smaller version
 stepContext: the reminder's context
-stepCourse: a course close to you
-stepNextSession: closing
+stepCourse: "a course · 3 choices"
+stepNextSession: "stop, or a new session?"
+problemHint: "My real problem is…"
+problemPrefix: My real problem is
+problemAck: That's your sentence. I won't touch it.
+lineMoveSemantics: Tap to move to the other column, hold to edit
+lineEditHint: Edit this line — clear it to remove
+
+# design v2 (MeUp AI Coach.html, 2026-08-26)
+intentNoneNote: "So the moment never came up — you didn't avoid it. I'll keep this reminder."
+intentTellDone: "I've saved exactly what you just told me."
+intentTellMissed: Noted. Next time, make it a little smaller.
+intentDoneEcho: I did it.
+intentMissedEcho: "There was a moment and I didn't."
+intentNoneEcho: No moment came up.
+promptStoryMore: "Anything else new today?"
+storySkipEcho: Nothing in particular.
+rejectDraftEcho: "That's not it."
+inviteYesEcho: "Let's try."
+inviteNoEcho: Skip for today.
+sceneAck: "I hear you — no right or wrong here. That's how you see that situation today."
+lessonIntro: "You just added “${habit}”. A short scene:"
+retryScene: "You met this situation three weeks ago. Want to try it again?"
+retryAck: "Saved. Monday's recap will set the two answers side by side and say nothing."
+teaserRetry: "A situation from three weeks ago…"
+planAskYesEcho: Yes.
+planAskNoEcho: No, close for now.
+reminderOffEcho: No reminder.
+scheduleEcho: "Remind me at ${time} · ${days}"
+promptCourseCard: "There's a course close to what you just talked about."
+courseOpen: Go to the course
+courseOpenEcho: Go to the course.
+courseCardSaveEcho: Save for later.
+courseCardCloseEcho: Skip.
+promptCourseLeave: "I'll open it for you. Even one lesson is fine."
+endLeave: "To the course's Roadmap"
+ratingToastTitle: Rate this conversation
+ratingIssuesTitle: "What wasn't right?"
+ratingChipQuestions: Too many questions
+ratingChipOther: Other
+ratingOtherHint: "Say more…"
+nextAgainEcho: Start a new session.
+nextStopEcho: Stop here.
+promptEndStop: "Then let's stop here."
+endCloseHome: "Close · back to where I was"
+endCloseLesson: "Close · back to the Roadmap"
+stepIntentTell: what actually happened
+stepInvite: an offer to practise
+stepRetry: the scene from three weeks ago
+stepPlanAsk: "set a reminder?"
+stepLeave: "to the course's Roadmap"
+stepEnd: "closing line · then close"
+stepWait: "replying…"
+stepSafety: a way through

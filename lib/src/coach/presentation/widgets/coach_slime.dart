@@ -28,9 +28,12 @@ CoachSlimeMood coachSlimeMoodFor({
   if (typing) return CoachSlimeMood.think;
 
   switch (step) {
+    // Nhịp 2–3: "cao và hẹp lại, nghiêng đầu, mắt ngước lên".
     case 'twoCols':
     case 'redraft':
+    case 'shrink':
       return CoachSlimeMood.think;
+    // The reader is telling: "thân dẹt xuống ổn định, mắt mở to".
     case 'tell':
     case 'tell2':
     case 'free':
@@ -38,6 +41,7 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'tellOnce':
     case 'tellOnceA':
     case 'tellOnceB':
+    case 'retryScene':
     case 'intentTell':
     case 'practiceAnswer':
     case 'nextAction':
@@ -45,13 +49,14 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'barrier':
     case 'contextEdit':
       return CoachSlimeMood.listen;
-    case 'shrink':
-      return CoachSlimeMood.think;
+    // The tail: "nảy lên, mắt nhắm cong. Không reo hò, không huy hiệu."
     case 'moodEnd':
     case 'end':
+    case 'leave':
     case 'rating':
     case 'closing':
     case 'nextSession':
+    case 'courseCard':
       return CoachSlimeMood.cheer;
     default:
       return CoachSlimeMood.idle;

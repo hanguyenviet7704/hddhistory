@@ -20,6 +20,9 @@ abstract class CoachState with _$CoachState {
   const factory CoachState({
     @Default(CoachStatus.initial) CoachStatus status,
     @Default('') String sessionId,
+
+    /// Which door opened the sheet — the END button says where "Đóng" goes.
+    @Default(CoachEntry.home) CoachEntry entry,
     @Default('') String step,
     @Default(<CoachMessage>[]) List<CoachMessage> messages,
     @Default(CoachUiEntity()) CoachUiEntity ui,

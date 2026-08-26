@@ -2,7 +2,7 @@ sheetTitle: AI 教练
 bubbleSemantics: 打开 AI 教练
 failedTitle: 我们这边出了点问题。你说过的内容没有丢失。
 retry: 重试
-inputHint: 输入，或选一个示例…
+inputHint: "输入，或点麦克风…"
 
 escapeLabel: 今天只记一行
 
@@ -13,20 +13,20 @@ promptPickHabit: 今天想练哪个习惯？
 promptPersona: 今天希望我用什么方式说话？
 promptTime: 今天有多少时间？
 promptTell: 跟我讲讲这个习惯最近一次出现的事。慢慢说，我不会打断。
-promptTellFollowUp: 然后呢？
+promptTellFollowUp: 我想问清楚当时发生了什么：谁说了什么，谁做了什么？
 promptFree: 今天有什么事吗？说来听听。
-promptIntentTell: "用一句话告诉我：当时你说了或做了什么？"
+promptIntentTell: 用一句话告诉我：当时你说了什么或做了什么？
 promptNextAction: 那下次你打算怎么做？
 promptCheckin: 这几天有用到这个习惯的时候吗？
-promptPlan: 为下次定一个小小的约定吧。
-promptSchedule: 什么时候提醒你？
+promptPlan: 用你自己的话写：什么时候，会做什么？
+promptSchedule: 记下了。什么时候提醒你？
 promptLoop: 还有一个在等着。继续，还是就到这里？
-promptRating: 刚才这段怎么样？
+promptRating: 谢谢你。
 promptEnd: 接下来想做什么？
 promptJot: 好。今天就写一行，我不会再多问。
 promptSafety: 谢谢你说出来。我不希望你一个人扛着。
-promptTwoCols: 我用你自己的话整理成了草稿。把你觉得是真正问题的那行拖到右边，再写成一句话。
-promptIntent: "昨天你说：下次${context}时，会${action}。有遇到那样的时刻吗？"
+promptTwoCols: 我把它整理成两栏——全都是你自己的话。把真正是问题的那一行移到右边，然后写成一句话。
+promptIntent: "昨天你说：${context}，你会${action}。有过这样的时机吗？"
 
 fallbackReply: 我听着呢。
 
@@ -41,8 +41,8 @@ scriptLong: 长 · 慢慢来
 scriptPractice: 只练习，不聊天
 
 intentDone: 做到了
-intentMissed: 有机会但没做
-intentNone: 还没遇到
+intentMissed: 有时机但没做
+intentNone: 没有遇到场景
 
 checkinYes: 有
 checkinNo: 还没
@@ -50,15 +50,15 @@ checkinNo: 还没
 loopContinue: 继续说下一个
 loopStop: 就到这里
 
-planContextHint: 什么时候？例：开小组会时
-planActionHint: 做什么？例：说出我的想法
-planSave: 保存约定
+planContextHint: 什么时候？例如：团队开会时
+planActionHint: 做什么？例如：说出我的想法
+planSave: 保存提醒
 
 daysDaily: 每天
 daysWeekdays: 周一至周五
 daysWeekends: 周末
 reminderOn: 开启提醒
-reminderOff: 关闭提醒
+reminderOff: 不提醒
 
 ratingUp: 挺好
 ratingDown: 不太好
@@ -70,7 +70,7 @@ endClose: 关闭
 
 twoColsLeftTitle: 发生了什么
 twoColsRightTitle: 我真正的问题
-twoColsHint: 点按把符合的行移到另一边，改写或删除不对的行。草稿由 Coach 根据你讲的内容拟出——只有你留下的才算数。
+twoColsHint: 点一行就移到右边。Coach 只用你说过的话来起草。
 lineEdit: 修改这一行
 lineDelete: 删除这一行
 lineSave: 完成
@@ -90,31 +90,31 @@ safetyDisclaimer: 我是 AI，无法代替心理专业人士。
 close: 关闭
 micListening: 正在听…
 micSemantics: 用说的代替打字
-planLabel: 约定 —— 用你的话
+planLabel: "提醒 — 你的话"
 scheduleLabel: 什么时候提醒你？
 ratingLabel: 刚才这段怎么样？
-stepMood: 开始之前
+stepMood: "今日心情 · 5 级，一点"
 stepPickHabit: 选择习惯
 stepPersona: 说话方式
 stepTime: 今天的时间
-stepTelling: 在听
-stepTwoCols: 真正的问题
-stepSituation: 一个小场景
-stepIntent: 上次的约定
+stepTelling: Coach 问发生了什么
+stepTwoCols: "第 3 步 · 分两栏"
+stepSituation: 练习场景
+stepIntent: 回顾昨天的提醒
 stepCheckin: 这周的习惯
-stepPlan: 下次的约定
-stepSchedule: 设置提醒
+stepPlan: "提醒 — 你的话"
+stepSchedule: 时间 + 星期
 stepLoop: 还有一个在等
-stepMoodEnd: 关闭之前
-stepRating: 你觉得如何
+stepMoodEnd: "结束时的心情 · 5 级"
+stepRating: 评价对话
 stepJot: 今天的一行
 
 # Mood 5 mức · nhịp 4/5 · ⑧
 mood1: 很差
 mood2: 有点累
 mood3: 一般
-rejectDraft: 这不是我想说的
-redraftPrompt: 那你再讲一次：确定发生了什么？
+rejectDraft: 不是这样的
+redraftPrompt: 我理解错了。你再讲一遍：发生了什么？
 keypointsLabel: 也许有帮助
 explainSimpler: 讲得简单些
 closingContinue: 继续
@@ -126,11 +126,11 @@ stepRedraft: 用你自己的话
 mood4: 还好
 mood5: 很好
 promptStory: 今天有什么新鲜事吗？
-storySkip: 跳过
+storySkip: 没什么特别的
 promptDepth: 我先记下来就好，还是你想多说一些？
 depthShallow: 记下来就好
 depthDeep: 多说一些
-promptBarrier: 有机会却没做到——这很正常。那一刻是什么让你停下了？
+promptBarrier: 有时机但没做，这很正常，不算失败。当时是什么让你停下来了？
 shrinkLabel: 缩小一点的版本——可以修改
 shrinkAccept: 就这么缩小
 shrinkKeep: 保持原样，再试一次
@@ -139,20 +139,20 @@ contextKeep: 保持原样
 contextChange: 换个情境
 promptContextEdit: 那新的情境是什么？
 planSlept: 这个约定我先收起来。需要的时候再叫回来。
-promptInvite: 想试一个小情境吗？跳过也可以。
-inviteYes: 试一个
-inviteNo: 跳过
+promptInvite: 我有一个小场景可以练。不是必须的，跳过也可以。
+inviteYes: 试练一个场景
+inviteNo: 今天先跳过
 promptPlanAsk: 想为下次设一个提醒吗？
-planAskYes: 好，设一个
-planAskNo: 这次不用
+planAskYes: 好，设提醒
+planAskNo: 不用，先关掉
 courseCardTitle: 一门贴近你所说的课程
 courseCardReason: 对应习惯“${habit}”
 courseCardSave: 先收藏
-courseCardClose: 关闭
-nextStop: 到此为止
-nextAgain: 开始新的一段
-closingWithPlan: "那就下次${context}。我会在${time}提醒你。"
-closingWithPlanNoTime: "那就下次${context}。"
+courseCardClose: 跳过
+nextStop: 到这里
+nextAgain: 开始新的一轮
+closingWithPlan: "那明天${context}。我${time}提醒你。"
+closingWithPlanNoTime: "那明天${context}。"
 closingNoPlan: 记下了。想再聊的时候，我都在。
 promptEndLesson: 今天练到这里就够了。
 daysCustom: 自选
@@ -163,17 +163,69 @@ day4: 四
 day5: 五
 day6: 六
 day7: 日
-ratingChipMissed: 理解错了
-ratingChipGeneric: 太笼统
+ratingChipMissed: 没懂我的意思
+ratingChipGeneric: 回答太笼统
 ratingChipLong: 太长
-ratingChipVoice: 语气不合
-ratingChipImposed: 强加想法
+ratingChipVoice: 语气不合适
+ratingChipImposed: 把想法强加给我
 ratingSend: 发送
 personaLabel: 语气
-stepStory: 今天的事
+stepStory: "“今天有什么新鲜事吗？”"
 stepDepth: 记下或深聊
 stepBarrier: 是什么挡住了
 stepShrink: 缩小约定
 stepContext: 约定的情境
-stepCourse: 一门贴近你的课
-stepNextSession: 收尾
+stepCourse: "课程卡 · 3 个选择"
+stepNextSession: 到这里，还是新的一轮？
+problemHint: "我真正的问题是……"
+problemPrefix: 我真正的问题是
+problemAck: 这是你的话，我不改。
+lineMoveSemantics: 点击移到另一栏，长按编辑
+lineEditHint: 编辑这一行——清空即删除
+
+# design v2 (MeUp AI Coach.html, 2026-08-26)
+intentNoneNote: 那是场景还没出现，不是你在回避。这个提醒我先留着。
+intentTellDone: 我把你刚说的原话存下来了。
+intentTellMissed: 记下了。下次可以再小一点。
+intentDoneEcho: 我做到了。
+intentMissedEcho: 有时机但我没做。
+intentNoneEcho: 还没有遇到。
+promptStoryMore: 今天还有别的事吗？
+storySkipEcho: 没什么特别的。
+rejectDraftEcho: 不是这样的。
+inviteYesEcho: 试试。
+inviteNoEcho: 今天先跳过。
+sceneAck: 我听到了，不评判对错。这就是你今天看这个情境的方式。
+lessonIntro: "你刚添加了“${habit}”。一个小场景："
+retryScene: 这个情境你三周前遇到过。再试一次？
+retryAck: 记下了。周一的回顾会把两句话放在一起，不做评论。
+teaserRetry: "三周前的情境…"
+planAskYesEcho: 好。
+planAskNoEcho: 不用，先关掉。
+reminderOffEcho: 不提醒。
+scheduleEcho: "${time} 提醒 · ${days}"
+promptCourseCard: 有一门课和你刚说的很接近。
+courseOpen: 去看课程
+courseOpenEcho: 去看课程。
+courseCardSaveEcho: 先收藏。
+courseCardCloseEcho: 跳过。
+promptCourseLeave: 我帮你打开。哪怕只看一节课也可以。
+endLeave: 前往课程路线图
+ratingToastTitle: 给刚才的对话打个分
+ratingIssuesTitle: 哪里不对？
+ratingChipQuestions: 问得太多
+ratingChipOther: 其他
+ratingOtherHint: "说清楚一点…"
+nextAgainEcho: 开始新的一轮。
+nextStopEcho: 到这里。
+promptEndStop: 那我们就到这里。
+endCloseHome: "关闭 · 回到刚才的地方"
+endCloseLesson: "关闭 · 回到路线图"
+stepIntentTell: 当时到底怎样
+stepInvite: 邀请练一个场景
+stepRetry: 重练三周前的情境
+stepPlanAsk: 要设提醒吗？
+stepLeave: 前往课程路线图
+stepEnd: "收尾一句 · 然后关闭"
+stepWait: "正在回复…"
+stepSafety: 安全出口

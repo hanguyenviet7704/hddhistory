@@ -2,7 +2,7 @@ sheetTitle: AIコーチ
 bubbleSemantics: AIコーチを開く
 failedTitle: こちら側で問題が起きました。話してくださった内容は失われていません。
 retry: もう一度
-inputHint: 入力するか、候補を選んでください…
+inputHint: "入力するか、マイクをタップ…"
 
 escapeLabel: 今日は記録だけにする
 
@@ -13,20 +13,20 @@ promptPickHabit: 今日はどの習慣に取り組みますか？
 promptPersona: 今日はどんな話し方がいいですか？
 promptTime: 今日はどのくらい時間がありますか？
 promptTell: この習慣にまつわる最近の出来事を聞かせてください。自由に話して — 口は挟みません。
-promptTellFollowUp: それからどうなりましたか？
+promptTellFollowUp: 実際に起きたことを聞かせてください。そのとき誰が何を言い、何をしましたか？
 promptFree: 今日は何かありましたか？聞かせてください。
-promptIntentTell: "ひとことで教えてください。そのとき何を言い、何をしましたか？"
+promptIntentTell: 一文で教えてください。そのとき何を言った、または何をしましたか？
 promptNextAction: では次はどうしますか？
 promptCheckin: ここ数日、この習慣を使う場面はありましたか？
-promptPlan: 次に向けて、小さな約束をひとつ決めましょう。
-promptSchedule: いつ知らせましょうか？
+promptPlan: あなたの言葉で。いつ、何をしますか？
+promptSchedule: 記録しました。いつ思い出させましょう？
 promptLoop: もうひとつ残っています。続けますか、ここで終わりますか？
-promptRating: 今のやりとりはどうでしたか？
+promptRating: ありがとうございます。
 promptEnd: 次はどうしますか？
 promptJot: わかりました。今日は一行だけ、それ以上は聞きません。
 promptSafety: 話してくれてありがとうございます。ひとりで抱えてほしくありません。
-promptTwoCols: あなたの言葉のまま下書きにしました。本当の問題だと思う行を右へ動かして、一文で書き直してください。
-promptIntent: "昨日あなたは、次に${context}のとき${action}と言っていました。その場面はありましたか？"
+promptTwoCols: 二つの列にまとめました——すべてあなた自身の言葉です。本当の問題だと思う行を右へ移して、一文に書き直してください。
+promptIntent: "昨日あなたは「${context}、${action}」と言いました。その場面はありましたか？"
 
 fallbackReply: 聞いています。
 
@@ -41,8 +41,8 @@ scriptLong: 長め · ゆっくり
 scriptPractice: 練習だけ、話はしない
 
 intentDone: できた
-intentMissed: 機会はあったができなかった
-intentNone: まだ機会がない
+intentMissed: 場面はあったが、できなかった
+intentNone: 場面がなかった
 
 checkinYes: あった
 checkinNo: まだ
@@ -50,15 +50,15 @@ checkinNo: まだ
 loopContinue: 次の約束も話す
 loopStop: ここで終わる
 
-planContextHint: いつ？ 例：チーム会議のとき
-planActionHint: 何をする？ 例：自分の考えを言う
-planSave: 約束を保存
+planContextHint: いつ？例：チーム会議のとき
+planActionHint: 何をする？例：自分の意見を言う
+planSave: リマインダーを保存
 
 daysDaily: 毎日
 daysWeekdays: 月〜金
 daysWeekends: 週末
-reminderOn: 知らせる
-reminderOff: 知らせない
+reminderOn: 通知する
+reminderOff: 通知しない
 
 ratingUp: よかった
 ratingDown: よくなかった
@@ -70,7 +70,7 @@ endClose: 閉じる
 
 twoColsLeftTitle: 起きたこと
 twoColsRightTitle: 本当の問題
-twoColsHint: 合う行をタップで移し、違う行は直すか消してください。下書きはあなたの話からコーチが起こしたもの — 残した行だけがあなたのものです。
+twoColsHint: 行をタップすると右へ移ります。Coachはあなたの言葉だけで下書きします。
 lineEdit: この行を直す
 lineDelete: この行を消す
 lineSave: 完了
@@ -90,31 +90,31 @@ safetyDisclaimer: 私はAIです。専門家の代わりにはなれません。
 close: 閉じる
 micListening: 聞いています…
 micSemantics: 入力の代わりに話す
-planLabel: 約束 — あなたの言葉で
-scheduleLabel: いつ知らせましょうか？
+planLabel: "リマインダー — あなたの言葉"
+scheduleLabel: いつ思い出させましょう？
 ratingLabel: 今のやりとりはどうでしたか？
-stepMood: 始める前に
+stepMood: "朝の気分 · 5段階、ワンタップ"
 stepPickHabit: 習慣を選ぶ
 stepPersona: 話し方
 stepTime: 今日の時間
-stepTelling: 聞いています
-stepTwoCols: 本当の問題
-stepSituation: 短い場面
-stepIntent: 前回の約束
+stepTelling: Coachが起きたことを聞く
+stepTwoCols: "ステップ3 · 2列に分ける"
+stepSituation: 場面練習
+stepIntent: 昨日のリマインダー
 stepCheckin: 今週の習慣
-stepPlan: 次への約束
-stepSchedule: 通知の設定
+stepPlan: "リマインダー — あなたの言葉"
+stepSchedule: 時刻と曜日
 stepLoop: もうひとつ残っています
-stepMoodEnd: 閉じる前に
-stepRating: ご感想
+stepMoodEnd: "終わりの気分 · 5段階"
+stepRating: 会話を評価
 stepJot: 今日の一行
 
 # Mood 5 mức · nhịp 4/5 · ⑧
 mood1: つらい
 mood2: すこし疲れた
 mood3: ふつう
-rejectDraft: これは違います
-redraftPrompt: では、もう一度教えてください。確かに起きたことは何ですか？
+rejectDraft: 自分のことではない
+redraftPrompt: 私が間違っていました。もう一度教えてください。何があったのですか？
 keypointsLabel: 役に立つかも
 explainSimpler: やさしく説明
 closingContinue: 続ける
@@ -125,12 +125,12 @@ stepRedraft: あなたの言葉で
 # BA flow 2026-08-26 — one spine, two doors
 mood4: まあまあ
 mood5: いい感じ
-promptStory: 今日は何か新しいことがありましたか？
-storySkip: スキップ
+promptStory: 今日、何か新しいことはありましたか？
+storySkip: 特にない
 promptDepth: メモだけにしますか、それとも深く話しますか？
 depthShallow: メモだけ
 depthDeep: 深く話す
-promptBarrier: 機会はあったのにできなかった——よくあることです。そのとき、何があなたを止めましたか？
+promptBarrier: "場面はあったのにできなかった——それは普通のことで、失敗ではありません。そのとき何が止めましたか？"
 shrinkLabel: 小さくした約束——編集できます
 shrinkAccept: この大きさにする
 shrinkKeep: そのまま、もう一度
@@ -139,20 +139,20 @@ contextKeep: そのまま
 contextChange: 場面を変える
 promptContextEdit: では、新しい場面は？
 planSlept: この約束はいったんしまっておきます。必要になったら呼び戻してください。
-promptInvite: 短い場面をひとつ試してみますか？スキップしても大丈夫です。
-inviteYes: 試してみる
-inviteNo: スキップ
+promptInvite: "練習用の短い場面があります。必須ではありません——飛ばしても大丈夫です。"
+inviteYes: 場面を試す
+inviteNo: 今日は飛ばす
 promptPlanAsk: 次のためにリマインダーを設定しますか？
 planAskYes: はい、設定する
-planAskNo: 今回はしない
+planAskNo: いいえ、閉じる
 courseCardTitle: あなたの話に近いコース
 courseCardReason: 習慣「${habit}」に対応
 courseCardSave: あとで見る
-courseCardClose: 閉じる
+courseCardClose: スキップ
 nextStop: ここで終える
-nextAgain: 新しく始める
-closingWithPlan: "では次は${context}ですね。${time}にお知らせします。"
-closingWithPlanNoTime: "では次は${context}ですね。"
+nextAgain: 新しいセッションを始める
+closingWithPlan: "では明日、${context}。${time}にお知らせします。"
+closingWithPlanNoTime: "では明日、${context}。"
 closingNoPlan: メモしました。また話したくなったら、ここにいます。
 promptEndLesson: 今日の練習はこれで十分です。
 daysCustom: 曜日を選ぶ
@@ -163,17 +163,69 @@ day4: 木
 day5: 金
 day6: 土
 day7: 日
-ratingChipMissed: 話が伝わっていない
-ratingChipGeneric: 一般的すぎる
+ratingChipMissed: 意図を理解していない
+ratingChipGeneric: 答えが一般的すぎる
 ratingChipLong: 長すぎる
 ratingChipVoice: 口調が合わない
-ratingChipImposed: 考えを押しつけた
-ratingSend: 送る
+ratingChipImposed: 考えを押しつけられた
+ratingSend: 送信
 personaLabel: 口調
-stepStory: 今日のこと
+stepStory: 「今日、何か新しいことは？」
 stepDepth: メモか、深く
 stepBarrier: 何が止めたか
 stepShrink: 約束を小さく
 stepContext: 約束の場面
-stepCourse: あなたに近いコース
-stepNextSession: 締めくくり
+stepCourse: "コースカード · 3つの選択"
+stepNextSession: 終える、それとも新しく？
+problemHint: "私の本当の問題は…"
+problemPrefix: 私の本当の問題は
+problemAck: それはあなたの言葉です。私は直しません。
+lineMoveSemantics: タップで反対の列へ、長押しで編集
+lineEditHint: この行を編集 — 空にすると削除
+
+# design v2 (MeUp AI Coach.html, 2026-08-26)
+intentNoneNote: 場面がまだ来ていないだけで、避けたわけではありませんね。このリマインダーは残しておきます。
+intentTellDone: 今の言葉をそのまま保存しました。
+intentTellMissed: 受け取りました。次はもう少し小さくしましょう。
+intentDoneEcho: できました。
+intentMissedEcho: 場面はあったけど、できませんでした。
+intentNoneEcho: まだ場面がありませんでした。
+promptStoryMore: 今日、ほかに何かありましたか？
+storySkipEcho: 特にありません。
+rejectDraftEcho: 自分のことではありません。
+inviteYesEcho: 試してみます。
+inviteNoEcho: 今日は飛ばします。
+sceneAck: "聞きました——正解も不正解もありません。それが今日のあなたの見方です。"
+lessonIntro: "「${habit}」を追加しましたね。短い場面です："
+retryScene: この場面は3週間前にも出会いました。もう一度やってみますか？
+retryAck: "記録しました。月曜の振り返りで2つの答えを並べて見せます——コメントはしません。"
+teaserRetry: "3週間前の場面…"
+planAskYesEcho: はい。
+planAskNoEcho: いいえ、閉じます。
+reminderOffEcho: 通知しない。
+scheduleEcho: "${time}に通知 · ${days}"
+promptCourseCard: 今の話に近いコースがあります。
+courseOpen: コースへ行く
+courseOpenEcho: コースへ行く。
+courseCardSaveEcho: あとで見る。
+courseCardCloseEcho: スキップ。
+promptCourseLeave: 開きますね。レッスンを1つ見るだけでも大丈夫です。
+endLeave: コースのロードマップへ
+ratingToastTitle: 今の会話を評価
+ratingIssuesTitle: どこが合いませんでしたか？
+ratingChipQuestions: 質問が多すぎる
+ratingChipOther: その他
+ratingOtherHint: "もう少し詳しく…"
+nextAgainEcho: 新しいセッションを始めます。
+nextStopEcho: ここで終えます。
+promptEndStop: では、ここで終えましょう。
+endCloseHome: "閉じる · 元の場所へ"
+endCloseLesson: "閉じる · ロードマップへ"
+stepIntentTell: 実際はどうだったか
+stepInvite: 場面練習のお誘い
+stepRetry: 3週間前の場面をもう一度
+stepPlanAsk: リマインダーを設定する？
+stepLeave: コースのロードマップへ
+stepEnd: "締めの一言 · そして閉じる"
+stepWait: "返信中…"
+stepSafety: 安全な出口

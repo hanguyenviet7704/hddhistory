@@ -36,6 +36,7 @@ class CoachBubbleCubit extends Cubit<CoachBubbleState> {
           visible: bubble.visible,
           dot: bubble.dot,
           teaser: bubble.teaser,
+          teaserKey: bubble.teaserKey,
           resolved: true,
         ),
       ),

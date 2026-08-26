@@ -1,21 +1,18 @@
 part of '../../coach.dart';
 
-/// ⑦ — the two-column draft.
+/// Nhịp 3 — the two-column draft, as drawn (design `14 · AI Coach`, twoCols).
 ///
-/// Every line on the left came out of the reader's own telling; the server
-/// throws away anything the model invented before this ever renders. The
-/// sentence they write underneath is the only thing stored — which is the whole
-/// reason the lines have to be theirs.
+/// A white card in the thread: two columns side by side, "CHUYỆN ĐÃ XẢY RA"
+/// muted on the left, "VẤN ĐỀ THẬT CỦA TÔI" in the accent on the right, and one
+/// hint line under them. Every line on the left came out of the reader's own
+/// telling; the server drops anything the model lifted from its own questions
+/// before this ever renders.
 ///
-/// Three things can be done to a line, and the flow diagram names all three:
-/// move it across, fix its wording, or delete it outright. Only the first
-/// shipped at all, which left a reader looking at a line the model had garbled
-/// with no way to correct it — in an exercise whose entire premise is that the
-/// words are theirs.
-///
-/// The right column is tinted and its heading takes the accent colour: it is
-/// the destination, and the design makes that legible before anyone reads a
-/// word of the labels.
+/// A tap moves a line across — that is the whole visible interaction, exactly
+/// as the design draws it (no icons on a line). The flow doc also lets the
+/// reader "sửa chữ", so a long-press opens the line in place for editing;
+/// emptying it deletes it. Nothing visible is added for that: a garbled line
+/// is a rare case and the drawing stays clean for the common one.
 class CoachTwoColumns extends StatelessWidget {
   final List<String> left;
   final List<String> right;
@@ -34,16 +31,24 @@ class CoachTwoColumns extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        IntrinsicHeight(
-          child: Row(
+    final l10n = context.l10n.coach;
+
+    return Container(
+      padding: EdgeInsets.all(13.w),
+      decoration: BoxDecoration(
+        color: CoachStyle.surface,
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: CoachStyle.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: _Column(
-                  title: context.l10n.coach.twoColsLeftTitle,
+                  title: l10n.twoColsLeftTitle,
                   titleColor: CoachStyle.textMuted,
                   lines: left,
                   inRight: false,
@@ -52,10 +57,10 @@ class CoachTwoColumns extends StatelessWidget {
                   onDelete: onDelete,
                 ),
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 9.w),
               Expanded(
                 child: _Column(
-                  title: context.l10n.coach.twoColsRightTitle,
+                  title: l10n.twoColsRightTitle,
                   titleColor: CoachStyle.skin,
                   lines: right,
                   inRight: true,
@@ -66,18 +71,18 @@ class CoachTwoColumns extends StatelessWidget {
               ),
             ],
           ),
-        ),
-        SizedBox(height: 11.h),
-        Text(
-          context.l10n.coach.twoColsHint,
-          style: TextStyle(
-            fontSize: 11.5.sp,
-            fontWeight: FontWeight.w600,
-            height: 1.5,
-            color: CoachStyle.textMuted,
+          SizedBox(height: 11.h),
+          Text(
+            l10n.twoColsHint,
+            style: TextStyle(
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+              color: CoachStyle.textMuted,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -145,13 +150,7 @@ class _Column extends StatelessWidget {
   }
 }
 
-/// One drafted line: tap the words to move it, the pencil to fix it, the cross
-/// to drop it.
-///
-/// Editing happens in place rather than in a dialog. A modal over a sheet over
-/// a conversation is three layers deep for changing four words, and the reader
-/// is mid-exercise — they should not lose sight of the other column while doing
-/// it.
+/// One drafted line. Tap moves it across; long-press edits it in place.
 class _DraftLine extends StatefulWidget {
   final String text;
   final bool highlighted;
@@ -172,8 +171,7 @@ class _DraftLine extends StatefulWidget {
 }
 
 class _DraftLineState extends State<_DraftLine> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.text);
+  late final TextEditingController _controller = TextEditingController(text: widget.text);
   bool _editing = false;
 
   @override
@@ -185,8 +183,7 @@ class _DraftLineState extends State<_DraftLine> {
   void _commit() {
     final value = _controller.text.trim();
     setState(() => _editing = false);
-    // An emptied line is a deleted line. Asking someone to clear a field and
-    // then also press the cross is a step that exists only for the code's sake.
+    // An emptied line is a deleted line.
     if (value.isEmpty) {
       widget.onDelete();
 
@@ -198,121 +195,49 @@ class _DraftLineState extends State<_DraftLine> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.coach;
-    final background =
-        widget.highlighted ? CoachStyle.selectedBackground : CoachStyle.chipBackground;
-    final borderColor =
-        widget.highlighted ? CoachStyle.selectedBorderSoft : CoachStyle.border;
-    final textColor =
-        widget.highlighted ? CoachStyle.selectedText : CoachStyle.textBody;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 7.h),
-      decoration: BoxDecoration(
-        color: background,
-        border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(11.r),
-      ),
-      child: _editing ? _editor(l10n, textColor) : _row(l10n, textColor),
+    final background = widget.highlighted ? CoachStyle.selectedBackground : CoachStyle.chipBackground;
+    final borderColor = widget.highlighted ? CoachStyle.selectedBorderSoft : CoachStyle.border;
+    final textColor = widget.highlighted ? CoachStyle.selectedText : CoachStyle.textBody;
+    final style = TextStyle(
+      fontSize: 12.sp,
+      fontWeight: widget.highlighted ? FontWeight.w700 : FontWeight.w600,
+      height: 1.4,
+      color: textColor,
     );
-  }
 
-  Widget _row(dynamic l10n, Color textColor) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: widget.onMove,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 1.h),
-              child: Text(
-                widget.text,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: widget.highlighted ? FontWeight.w700 : FontWeight.w600,
-                  height: 1.4,
-                  color: textColor,
-                ),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(width: 4.w),
-        _IconTap(
-          icon: Icons.edit_outlined,
-          semantic: l10n.lineEdit,
-          onTap: () => setState(() => _editing = true),
-        ),
-        _IconTap(
-          icon: Icons.close_rounded,
-          semantic: l10n.lineDelete,
-          onTap: widget.onDelete,
-        ),
-      ],
-    );
-  }
-
-  Widget _editor(dynamic l10n, Color textColor) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          child: TextField(
-            controller: _controller,
-            autofocus: true,
-            maxLines: null,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _commit(),
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
-              color: textColor,
-            ),
-            decoration: const InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ),
-        SizedBox(width: 4.w),
-        _IconTap(
-          icon: Icons.check_rounded,
-          semantic: l10n.lineSave,
-          onTap: _commit,
-        ),
-      ],
-    );
-  }
-}
-
-class _IconTap extends StatelessWidget {
-  final IconData icon;
-  final String semantic;
-  final VoidCallback onTap;
-
-  const _IconTap({
-    required this.icon,
-    required this.semantic,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return Semantics(
-      button: true,
-      label: semantic,
+      button: !_editing,
+      label: _editing ? null : l10n.lineMoveSemantics,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: _editing ? null : widget.onMove,
+        onLongPress: _editing ? null : () => setState(() => _editing = true),
         behavior: HitTestBehavior.opaque,
-        // The icon is 15px but the target is not: a 15px tap target on a line
-        // somebody is trying to correct is a line they cannot correct.
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 4.h),
-          child: Icon(icon, size: 15.sp, color: CoachStyle.textMuted),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: background,
+            border: Border.all(color: borderColor),
+            borderRadius: BorderRadius.circular(11.r),
+          ),
+          child: _editing
+              ? TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _commit(),
+                  onTapOutside: (_) => _commit(),
+                  style: style,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    hintText: l10n.lineEditHint,
+                    hintStyle: style.copyWith(color: CoachStyle.textMuted),
+                  ),
+                )
+              : Text(widget.text, style: style),
         ),
       ),
     );

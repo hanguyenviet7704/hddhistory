@@ -3,13 +3,21 @@ part of '../../coach.dart';
 class CoachMessageList extends StatefulWidget {
   final List<CoachMessage> messages;
   final bool typing;
-  final CoachCourseInviteEntity? courseInvite;
+
+  /// Nhịp 3 — the two-column draft is a card IN the thread, under the Coach's
+  /// line that introduced it, exactly as the design draws it. Null hides it.
+  final CoachTwoColumns? draft;
+
+  /// The one course the tail offers — a card in the thread under "Có một khoá
+  /// gần với chuyện bạn vừa nói tới."; the composer holds its three chips.
+  final CoachCourseCardEntity? course;
 
   const CoachMessageList({
     super.key,
     required this.messages,
     required this.typing,
-    this.courseInvite,
+    this.draft,
+    this.course,
   });
 
   @override
@@ -22,7 +30,10 @@ class _CoachMessageListState extends State<CoachMessageList> {
   @override
   void didUpdateWidget(covariant CoachMessageList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.messages.length != oldWidget.messages.length || widget.typing != oldWidget.typing) {
+    if (widget.messages.length != oldWidget.messages.length ||
+        widget.typing != oldWidget.typing ||
+        (widget.draft != null) != (oldWidget.draft != null) ||
+        (widget.course != null) != (oldWidget.course != null)) {
       _scrollToEnd();
     }
   }
@@ -49,7 +60,8 @@ class _CoachMessageListState extends State<CoachMessageList> {
     final children = <Widget>[
       ...widget.messages.map((m) => _Bubble(message: m)),
       if (widget.typing) const _TypingDots(),
-      if (widget.courseInvite != null) _CourseInvite(invite: widget.courseInvite!),
+      if (widget.draft != null) widget.draft!,
+      if (widget.course != null) _CourseCard(course: widget.course!),
     ];
 
     return ListView.separated(
@@ -139,7 +151,7 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 13.h),
           decoration: BoxDecoration(
             color: CoachStyle.surface,
             borderRadius: BorderRadius.only(
@@ -148,7 +160,6 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
               bottomLeft: Radius.circular(5.r),
               bottomRight: Radius.circular(16.r),
             ),
-            boxShadow: CoachStyle.cardShadow,
           ),
           child: AnimatedBuilder(
             animation: _controller,
@@ -158,16 +169,16 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
                 final phase = _phase(_controller.value, i);
 
                 return Padding(
-                  padding: EdgeInsets.only(right: i == 2 ? 0 : 4.w),
+                  padding: EdgeInsets.only(right: i == 2 ? 0 : 5.w),
                   child: Transform.translate(
                     offset: Offset(0, -4.h * phase),
                     child: Opacity(
                       opacity: 0.4 + 0.6 * phase,
                       child: Container(
-                        width: 6.w,
-                        height: 6.w,
+                        width: 7.w,
+                        height: 7.w,
                         decoration: const BoxDecoration(
-                          color: CoachStyle.textMuted,
+                          color: CoachStyle.typingDot,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -183,78 +194,111 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
   }
 }
 
-/// ③C — one course, offered.
+/// The one course the tail offers, as the design draws it: a lilac card with
+/// the course's picture, its title, its author and its reach — the same three
+/// facts the course rail shows, so the card reads as a door into a real course
+/// and not as a verdict on what was just said.
 ///
-/// One, never a list: a list is a catalogue, and the design is explicit that
-/// this is an invitation rather than a verdict on what the reader just said.
-/// The caption says so out loud, because a course card appearing right after
-/// somebody describes a hard week reads as a diagnosis unless it is told not to.
-class _CourseInvite extends StatelessWidget {
-  final CoachCourseInviteEntity invite;
+/// One, never a list: "truy xuất MỘT khoá, không trả danh sách". The card does
+/// nothing on tap; its three ways out are the chips under it, and every one of
+/// them ranks the same.
+class _CourseCard extends StatelessWidget {
+  final CoachCourseCardEntity course;
 
-  const _CourseInvite({required this.invite});
+  const _CourseCard({required this.course});
+
+  String _reach(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(count % 1000000 == 0 ? 0 : 1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(count % 1000 == 0 ? 0 : 1)}k';
+
+    return '$count';
+  }
 
   @override
   Widget build(BuildContext context) {
-    // The card IS the link: popping with the course id hands navigation to
-    // whoever opened the sheet, after the modal is gone — the same door the
-    // END screen's "go to course" button uses.
-    return GestureDetector(
-      onTap: invite.courseId.isEmpty
-          ? null
-          : () => Navigator.of(context)
-              .pop(_CoachSheetResult.openCourse(invite.courseId)),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 14.h),
-        decoration: BoxDecoration(
-          color: CoachStyle.surface,
-          borderRadius: BorderRadius.circular(18.r),
-          boxShadow: CoachStyle.cardShadow,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.coach.courseInviteTitle.toUpperCase(),
-                    style: CoachStyle.sectionLabel(size: 10.5),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    invite.title,
-                    style: TextStyle(
-                      fontSize: 14.5.sp,
-                      fontWeight: FontWeight.w700,
-                      height: 1.45,
-                      color: CoachStyle.textPrimary,
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    context.l10n.coach.courseInviteCaption,
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w600,
-                      height: 1.5,
-                      color: CoachStyle.textMuted,
-                    ),
-                  ),
-                ],
+    final views = course.viewCount;
+
+    return Container(
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: CoachStyle.courseCardBackground,
+        border: Border.all(color: CoachStyle.selectedBorderSoft),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12.r),
+            child: SizedBox(
+              width: 76.w,
+              height: 76.w,
+              child: ColoredBox(
+                color: CoachStyle.courseImageFallback,
+                child: course.image.isEmpty
+                    ? Icon(Icons.menu_book_rounded, size: 26.w, color: CoachStyle.skin)
+                    : CachedNetworkImage(
+                        imageUrl: course.image,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, _, _) => Icon(Icons.menu_book_rounded, size: 26.w, color: CoachStyle.skin),
+                      ),
               ),
             ),
-            if (invite.courseId.isNotEmpty) ...[
-              SizedBox(width: 8.w),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20.r,
-                color: CoachStyle.textMuted,
-              ),
-            ],
-          ],
-        ),
+          ),
+          SizedBox(width: 11.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  course.title,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                    color: CoachStyle.textPrimary,
+                  ),
+                ),
+                if (course.author.isNotEmpty || views != null) ...[
+                  SizedBox(height: 7.h),
+                  Row(
+                    children: [
+                      if (course.author.isNotEmpty)
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.edit_outlined, size: 13.r, color: CoachStyle.courseAuthor),
+                              SizedBox(width: 5.w),
+                              Flexible(
+                                child: Text(
+                                  course.author,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w500, color: CoachStyle.courseAuthor),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (course.author.isNotEmpty && views != null) SizedBox(width: 12.w),
+                      if (views != null) ...[
+                        Icon(Icons.visibility_outlined, size: 13.r, color: CoachStyle.courseMeta),
+                        SizedBox(width: 5.w),
+                        Text(
+                          _reach(views),
+                          style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w500, color: CoachStyle.courseMeta),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

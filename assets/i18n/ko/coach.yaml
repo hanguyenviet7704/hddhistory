@@ -2,7 +2,7 @@ sheetTitle: AI 코치
 bubbleSemantics: AI 코치 열기
 failedTitle: 저희 쪽에서 문제가 생겼어요. 하신 말씀은 사라지지 않았습니다.
 retry: 다시 시도
-inputHint: 입력하거나 예시를 골라 주세요…
+inputHint: "입력하거나 마이크를 누르세요…"
 
 escapeLabel: 오늘은 기록만 할래요
 
@@ -13,20 +13,20 @@ promptPickHabit: 오늘은 어떤 습관을 연습해 볼까요?
 promptPersona: 오늘은 제가 어떻게 말하면 좋을까요?
 promptTime: 오늘은 시간이 얼마나 있으세요?
 promptTell: 이 습관과 관련된 가장 최근 일을 들려주세요. 편하게 이야기하세요 — 끼어들지 않을게요.
-promptTellFollowUp: 그다음엔 어떻게 됐어요?
+promptTellFollowUp: "실제로 있었던 일을 다시 물을게요. 그때 누가 무슨 말을 하고, 누가 무엇을 했나요?"
 promptFree: 오늘 무슨 일 있었어요? 들어볼게요.
-promptIntentTell: "한 문장으로만 들려주세요. 그때 무슨 말이나 행동을 했나요?"
+promptIntentTell: "한 문장으로 말해 주세요. 그때 무슨 말을 했거나 무엇을 했나요?"
 promptNextAction: 그럼 다음엔 어떻게 할래요?
 promptCheckin: 요 며칠 이 습관을 쓸 일이 있었나요?
-promptPlan: 다음을 위해 작은 약속 하나만 정해요.
-promptSchedule: 언제 알려 드릴까요?
+promptPlan: "당신의 말로 써 주세요. 언제, 무엇을 할 건가요?"
+promptSchedule: "저장했어요. 언제 알려드릴까요?"
 promptLoop: 하나 더 남아 있어요. 계속할까요, 여기서 마칠까요?
-promptRating: 방금 대화는 어떠셨어요?
+promptRating: 고마워요.
 promptEnd: 다음으로 무엇을 할까요?
 promptJot: 알겠어요. 오늘은 한 줄만, 더 묻지 않을게요.
 promptSafety: 말해 주셔서 고맙습니다. 혼자 감당하지 않으셨으면 해요.
-promptTwoCols: 하신 말씀 그대로 초안을 만들었어요. 진짜 문제라고 느끼는 줄을 오른쪽으로 옮기고, 한 문장으로 적어 보세요.
-promptIntent: "어제 이렇게 말했죠: 다음에 ${context}일 때 ${action}. 그런 순간이 있었나요?"
+promptTwoCols: 두 열로 정리했어요 — 모두 당신의 말이에요. 진짜 문제인 줄을 오른쪽으로 옮기고, 한 문장으로 다시 써 주세요.
+promptIntent: "어제 당신은 “${context}, ${action}”라고 했어요. 그런 순간이 있었나요?"
 
 fallbackReply: 듣고 있어요.
 
@@ -42,7 +42,7 @@ scriptPractice: 대화 없이 연습만
 
 intentDone: 해냈어요
 intentMissed: 기회는 있었지만 못 했어요
-intentNone: 아직 기회가 없었어요
+intentNone: 그런 상황이 없었어요
 
 checkinYes: 있었어요
 checkinNo: 아직요
@@ -51,8 +51,8 @@ loopContinue: 다음 약속도 이야기하기
 loopStop: 여기서 마치기
 
 planContextHint: "언제? 예: 팀 회의 때"
-planActionHint: "무엇을? 예: 내 생각을 말하기"
-planSave: 약속 저장
+planActionHint: "무엇을? 예: 내 의견 말하기"
+planSave: 알림 저장
 
 daysDaily: 매일
 daysWeekdays: 월–금
@@ -70,7 +70,7 @@ endClose: 닫기
 
 twoColsLeftTitle: 있었던 일
 twoColsRightTitle: 진짜 내 문제
-twoColsHint: 맞는 줄은 탭해서 옮기고, 틀린 줄은 고치거나 지우세요. 초안은 회원님의 이야기에서 코치가 만든 것 — 남긴 줄만 인정돼요.
+twoColsHint: 줄을 탭하면 오른쪽으로 옮겨져요. Coach는 당신이 한 말로만 초안을 만들어요.
 lineEdit: 이 줄 고치기
 lineDelete: 이 줄 지우기
 lineSave: 완료
@@ -90,31 +90,31 @@ safetyDisclaimer: 저는 AI예요. 전문가를 대신할 수 없습니다.
 close: 닫기
 micListening: 듣고 있어요…
 micSemantics: 입력 대신 말하기
-planLabel: 약속 — 당신의 말로
-scheduleLabel: 언제 알려 드릴까요?
+planLabel: "알림 — 당신의 말"
+scheduleLabel: "언제 알려드릴까요?"
 ratingLabel: 방금 대화는 어떠셨어요?
-stepMood: 시작하기 전에
+stepMood: "아침 기분 · 5단계, 한 번 탭"
 stepPickHabit: 습관 고르기
 stepPersona: 말하는 방식
 stepTime: 오늘의 시간
-stepTelling: 듣는 중
-stepTwoCols: 진짜 문제
-stepSituation: 짧은 장면
-stepIntent: 지난 약속
+stepTelling: Coach가 있었던 일을 묻기
+stepTwoCols: "3단계 · 두 칸으로 나누기"
+stepSituation: 장면 연습
+stepIntent: 어제의 알림 되묻기
 stepCheckin: 이번 주 습관
-stepPlan: 다음을 위한 약속
-stepSchedule: 알림 설정
+stepPlan: "알림 — 당신의 말"
+stepSchedule: 시간 + 요일
 stepLoop: 하나 더 남았어요
-stepMoodEnd: 닫기 전에
-stepRating: 어떠셨나요
+stepMoodEnd: "끝날 때 기분 · 5단계"
+stepRating: 대화 평가
 stepJot: 오늘의 한 줄
 
 # Mood 5 mức · nhịp 4/5 · ⑧
 mood1: 나빠요
 mood2: 조금 지쳤어요
 mood3: 보통이에요
-rejectDraft: 이건 제 얘기가 아니에요
-redraftPrompt: 그럼 다시 알려 주세요. 확실히 일어난 일은 무엇인가요?
+rejectDraft: 내 얘기가 아니에요
+redraftPrompt: "제가 잘못 이해했네요. 다시 들려주세요. 무슨 일이 있었나요?"
 keypointsLabel: 도움이 될지도
 explainSimpler: 쉽게 설명
 closingContinue: 계속
@@ -125,12 +125,12 @@ stepRedraft: 당신의 말로
 # BA flow 2026-08-26 — one spine, two doors
 mood4: 괜찮아요
 mood5: 좋아요
-promptStory: 오늘 새로운 일이 있었나요?
-storySkip: 건너뛰기
+promptStory: "오늘 새로운 일 있었어요?"
+storySkip: 특별한 건 없어요
 promptDepth: 적어두기만 할까요, 아니면 더 깊이 이야기할까요?
 depthShallow: 적어두기만
 depthDeep: 더 깊이 이야기
-promptBarrier: 기회는 있었는데 못 했다니 — 흔한 일이에요. 그 순간 무엇이 당신을 멈추게 했나요?
+promptBarrier: "기회가 있었는데 못한 건 흔한 일이에요, 실패로 치지 않아요. 그때 무엇이 당신을 멈추게 했나요?"
 shrinkLabel: 더 작게 줄인 약속 — 수정할 수 있어요
 shrinkAccept: 이만큼 작게
 shrinkKeep: 그대로 두고 다시
@@ -139,22 +139,22 @@ contextKeep: 그대로
 contextChange: 상황 바꾸기
 promptContextEdit: 그럼 새 상황은 무엇인가요?
 planSlept: 이 약속은 잠시 넣어둘게요. 필요하면 다시 불러 주세요.
-promptInvite: 짧은 상황 하나 연습해 볼까요? 건너뛰어도 괜찮아요.
-inviteYes: 하나 해볼게요
-inviteNo: 건너뛰기
-promptPlanAsk: 다음을 위해 알림을 설정할까요?
-planAskYes: 네, 설정할게요
-planAskNo: 이번엔 괜찮아요
+promptInvite: "연습해 볼 짧은 장면이 있어요. 필수는 아니에요 — 건너뛰어도 괜찮아요."
+inviteYes: 장면 하나 연습하기
+inviteNo: 오늘은 건너뛰기
+promptPlanAsk: "다음을 위해 알림을 하나 설정할까요?"
+planAskYes: 네, 알림 설정
+planAskNo: 아니요, 그냥 닫기
 courseCardTitle: 당신의 이야기와 가까운 코스
 courseCardReason: 습관 “${habit}”에 맞아요
 courseCardSave: 나중에 보기
-courseCardClose: 닫기
+courseCardClose: 건너뛰기
 nextStop: 여기서 멈추기
-nextAgain: 새로 시작하기
-closingWithPlan: "그럼 다음엔 ${context}이네요. ${time}에 알려드릴게요."
-closingWithPlanNoTime: "그럼 다음엔 ${context}이네요."
+nextAgain: 새 세션 시작
+closingWithPlan: "그럼 내일 ${context}. ${time}에 알려드릴게요."
+closingWithPlanNoTime: "그럼 내일 ${context}."
 closingNoPlan: 적어두었어요. 다시 이야기하고 싶을 때 여기 있을게요.
-promptEndLesson: 오늘 연습은 이걸로 충분해요.
+promptEndLesson: 오늘 연습은 이만하면 충분해요.
 daysCustom: 직접 선택
 day1: 월
 day2: 화
@@ -163,17 +163,69 @@ day4: 목
 day5: 금
 day6: 토
 day7: 일
-ratingChipMissed: 요점을 놓쳤어요
-ratingChipGeneric: 너무 일반적
+ratingChipMissed: 내 뜻을 못 알아들었어요
+ratingChipGeneric: 대답이 뻔해요
 ratingChipLong: 너무 길어요
 ratingChipVoice: 말투가 안 맞아요
-ratingChipImposed: 생각을 강요했어요
+ratingChipImposed: 내 생각을 강요했어요
 ratingSend: 보내기
 personaLabel: 말투
-stepStory: 오늘의 이야기
+stepStory: "“오늘 새로운 일 있었어요?”"
 stepDepth: 적어두기 또는 깊이
 stepBarrier: 무엇이 막았나
 stepShrink: 약속을 작게
 stepContext: 약속의 상황
-stepCourse: 당신과 가까운 코스
-stepNextSession: 마무리
+stepCourse: "코스 카드 · 3가지 선택"
+stepNextSession: "멈출까, 새로 시작할까?"
+problemHint: "내 진짜 문제는…"
+problemPrefix: 내 진짜 문제는
+problemAck: 그건 당신의 문장이에요. 저는 고치지 않아요.
+lineMoveSemantics: 탭하면 다른 열로, 길게 누르면 수정
+lineEditHint: 이 줄 수정 — 비우면 삭제
+
+# design v2 (MeUp AI Coach.html, 2026-08-26)
+intentNoneNote: 아직 그 상황이 오지 않은 거네요, 피한 게 아니에요. 이 알림은 그대로 둘게요.
+intentTellDone: 방금 말한 그대로 저장했어요.
+intentTellMissed: 기억할게요. 다음엔 조금 더 작게 해봐요.
+intentDoneEcho: 해냈어요.
+intentMissedEcho: 기회는 있었는데 못 했어요.
+intentNoneEcho: 아직 그런 순간이 없었어요.
+promptStoryMore: "오늘 또 다른 일은 없었어요?"
+storySkipEcho: 특별한 건 없어요.
+rejectDraftEcho: 내 얘기가 아니에요.
+inviteYesEcho: 해볼게요.
+inviteNoEcho: 오늘은 건너뛸게요.
+sceneAck: "들었어요 — 맞고 틀림은 없어요. 그게 오늘 당신이 그 상황을 보는 방식이에요."
+lessonIntro: "“${habit}”을(를) 추가했네요. 짧은 장면 하나:"
+retryScene: "이 상황은 3주 전에도 만났어요. 다시 해볼까요?"
+retryAck: 기록했어요. 월요일 리캡에서 두 답을 나란히 놓고 아무 말도 하지 않을게요.
+teaserRetry: "3주 전의 그 상황…"
+planAskYesEcho: 네.
+planAskNoEcho: 아니요, 그냥 닫을게요.
+reminderOffEcho: 알림 끄기.
+scheduleEcho: "${time}에 알림 · ${days}"
+promptCourseCard: 방금 이야기와 가까운 코스가 하나 있어요.
+courseOpen: 코스로 가기
+courseOpenEcho: 코스로 가기.
+courseCardSaveEcho: 나중에 보기.
+courseCardCloseEcho: 건너뛰기.
+promptCourseLeave: 열어 드릴게요. 레슨 하나만 봐도 괜찮아요.
+endLeave: 코스 로드맵으로
+ratingToastTitle: 방금 대화를 평가해 주세요
+ratingIssuesTitle: "어디가 아쉬웠나요?"
+ratingChipQuestions: 질문이 너무 많아요
+ratingChipOther: 기타
+ratingOtherHint: "조금 더 자세히…"
+nextAgainEcho: 새 세션을 시작할게요.
+nextStopEcho: 여기서 멈출게요.
+promptEndStop: 그럼 여기서 멈출게요.
+endCloseHome: "닫기 · 있던 곳으로"
+endCloseLesson: "닫기 · 로드맵으로"
+stepIntentTell: 실제로 어땠는지
+stepInvite: 장면 연습 제안
+stepRetry: 3주 전 장면 다시 하기
+stepPlanAsk: "알림을 설정할까요?"
+stepLeave: 코스 로드맵으로
+stepEnd: "마무리 한 줄 · 그리고 닫기"
+stepWait: "답하는 중…"
+stepSafety: 안전한 출구

@@ -70,10 +70,14 @@ class CoachBubbleEntity {
   final bool dot;
   final String? teaser;
 
+  /// ④ — a fixed teaser as a slang key. Rendered when [teaser] is null.
+  final String? teaserKey;
+
   const CoachBubbleEntity({
     this.visible = false,
     this.dot = false,
     this.teaser,
+    this.teaserKey,
   });
 
   static const hidden = CoachBubbleEntity();
@@ -123,11 +127,17 @@ class CoachCourseCardEntity {
   final String image;
   final String habitTitle;
 
+  /// Drawn on the card as the course rail draws them; blank hides the chip.
+  final String author;
+  final int? viewCount;
+
   const CoachCourseCardEntity({
     required this.courseId,
     required this.title,
     this.image = '',
     this.habitTitle = '',
+    this.author = '',
+    this.viewCount,
   });
 }
 
@@ -143,6 +153,9 @@ class CoachUiEntity {
   final List<CoachChoiceEntity> choices;
   final List<String> columnLeft;
   final List<String> columnRight;
+
+  /// Nhịp 3 — whether ⑤ "Không đúng với mình" is still offered.
+  final bool rejectAvailable;
   final String? situation;
 
   /// Two answers the reader can tap instead of typing. Empty is normal.
@@ -161,6 +174,7 @@ class CoachUiEntity {
     this.choices = const [],
     this.columnLeft = const [],
     this.columnRight = const [],
+    this.rejectAvailable = true,
     this.situation,
     this.samples = const [],
     this.hotlines = const [],
@@ -232,6 +246,7 @@ extension CoachBubbleModelX on CoachBubbleModel {
     visible: visible,
     dot: dot,
     teaser: (teaser?.trim().isEmpty ?? true) ? null : teaser,
+    teaserKey: (teaserKey?.trim().isEmpty ?? true) ? null : teaserKey,
   );
 }
 
@@ -249,6 +264,7 @@ extension CoachTurnModelX on CoachTurnModel {
       choices: ui.choices.map((c) => CoachChoiceEntity(value: c.value, label: c.label)).toList(),
       columnLeft: ui.columns?.left ?? const [],
       columnRight: ui.columns?.right ?? const [],
+      rejectAvailable: ui.rejectAvailable,
       situation: (ui.situation?.trim().isEmpty ?? true) ? null : ui.situation,
       samples: ui.samples,
       hotlines: ui.hotlines.map((h) => CoachHotlineEntity(label: h.label, number: h.number)).toList(),
@@ -276,6 +292,8 @@ extension CoachTurnModelX on CoachTurnModel {
               title: ui.course!.title,
               image: ui.course!.image ?? '',
               habitTitle: ui.course!.habitTitle ?? '',
+              author: ui.course!.author ?? '',
+              viewCount: ui.course!.viewCount,
             ),
       allowNewSession: ui.allowNewSession,
     ),

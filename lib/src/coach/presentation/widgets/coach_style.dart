@@ -28,6 +28,19 @@ abstract final class CoachStyle {
   static const Color textBody = Color(0xFF3F4552);
   static const Color textChip = Color(0xFF5A6172);
   static const Color textMuted = Color(0xFF7A7F8C);
+  /// Placeholder text in the input row and the form fields.
+  static const Color textPlaceholder = Color(0xFF9AA0AE);
+  /// Placeholder text in a DISABLED input row (under the rating toast).
+  static const Color textDisabled = Color(0xFFB4B8C4);
+
+  /// The chip steps' box — a shade lighter than the selected state.
+  static const Color choiceBackground = Color(0xFFF7F6FE);
+  /// The course card in the thread, and the typing dots.
+  static const Color courseCardBackground = Color(0xFFEFEDFD);
+  static const Color courseImageFallback = Color(0xFFE4DEF8);
+  static const Color courseMeta = Color(0xFF7C8AA4);
+  static const Color courseAuthor = Color(0xFF3A4250);
+  static const Color typingDot = Color(0xFFB4A9EE);
 
   /// Selected states — the two-column right side, the schedule chips.
   static const Color selectedBackground = Color(0xFFEFEDFD);
@@ -51,6 +64,15 @@ abstract final class CoachStyle {
       color: const Color(0xFF0D121C).withValues(alpha: 0.05),
       blurRadius: 8.r,
       offset: Offset(0, 2.h),
+    ),
+  ];
+
+  /// The rating toast, lifting off the input area.
+  static List<BoxShadow> get toastShadow => [
+    BoxShadow(
+      color: const Color(0xFF0D121C).withValues(alpha: 0.16),
+      blurRadius: 24.r,
+      offset: Offset(0, 8.h),
     ),
   ];
 
