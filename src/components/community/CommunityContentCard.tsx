@@ -88,6 +88,9 @@ export interface CommunityContentCardProps {
    */
   onAuthorClick?: () => void;
 
+  /** Filters the list down to this room — the chip is the handle. */
+  onTopicClick?: () => void;
+
   /** A reply sits indented under its parent, as in the thread. */
   indented?: boolean;
 }
@@ -148,6 +151,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
   banner,
   actions,
   onAuthorClick,
+  onTopicClick,
   indented,
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -177,9 +181,14 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               {topicLabel ? (
-                <span className="mb-2 inline-block rounded-full bg-[#F4F3FD] px-2.5 py-1 text-[11px] font-bold text-[#7A69E8]">
+                <button
+                  type="button"
+                  onClick={onTopicClick}
+                  disabled={!onTopicClick}
+                  className="mb-2 inline-block rounded-full bg-[#F4F3FD] px-2.5 py-1 text-[11px] font-bold text-[#7A69E8] enabled:hover:bg-[#E7E4FB] disabled:cursor-default"
+                >
                   {topicLabel}
-                </span>
+                </button>
               ) : (
                 showRoomSlot && (
                   <span className="mb-2 inline-block rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium italic text-gray-400">

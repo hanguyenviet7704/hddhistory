@@ -13,11 +13,13 @@ import {
 import {
   EyeOffIcon,
   FileTextIcon,
+  ListIcon,
   PencilIcon,
   PlusIcon,
   UsersIcon,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import CommunityEmpty from "../../components/community/CommunityEmpty";
 import CommunityPageHeader from "../../components/community/CommunityPageHeader";
@@ -34,6 +36,7 @@ import { getTranslationValue } from "../../utils/translation";
 
 const CommunityTopicList: React.FC = () => {
   const { showSuccess, showError } = useNotification();
+  const navigate = useNavigate();
   const lang = useSelector((state: RootState) => state.lang.code);
 
   const [topics, setTopics] = useState<ICommunityTopic[]>([]);
@@ -229,6 +232,20 @@ const CommunityTopicList: React.FC = () => {
                 )}
 
                 <div className="mt-auto flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+                  {/* The room's own posts. Until now the panel could list every
+                      post in the forum but not the ones in ONE room, which is
+                      the question anybody looking at a room actually has. */}
+                  <Button
+                    size="small"
+                    startIcon={<ListIcon size={14} />}
+                    onClick={() =>
+                      navigate(
+                        `/community/moderation?tab=posts&topicId=${topic._id}`
+                      )
+                    }
+                  >
+                    Xem bài
+                  </Button>
                   <Button
                     size="small"
                     startIcon={<PencilIcon size={14} />}

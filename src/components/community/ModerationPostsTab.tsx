@@ -10,6 +10,7 @@ import {
   UnlockIcon,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 
 import { communityService } from "../../services/communityService";
 import { RootState } from "../../store";
@@ -43,7 +44,23 @@ const ModerationPostsTab: React.FC = () => {
     CommunityContentStatus.VISIBLE
   );
   const [locale, setLocale] = useState("");
-  const [topicId, setTopicId] = useState("");
+
+  /**
+   * The room filter lives in the URL, not in local state.
+   *
+   * That is what makes "xem bài trong phòng này" a link: the Phòng page sends
+   * the operator here with `?tab=posts&topicId=…`, and a filtered queue can be
+   * kept open in another window or pasted to whoever has to look at it.
+   */
+  const [params, setParams] = useSearchParams();
+  const topicId = params.get("topicId") ?? "";
+  const setTopicId = (next: string) => {
+    const nextParams = new URLSearchParams(params);
+    if (next) nextParams.set("topicId", next);
+    else nextParams.delete("topicId");
+    setParams(nextParams, { replace: true });
+  };
+
   const [topics, setTopics] = useState<ICommunityTopic[]>([]);
   /// Set by clicking a name: everything this account wrote, which is how a
   /// pattern shows itself. Cleared from the chip above the list.
@@ -217,6 +234,9 @@ const ModerationPostsTab: React.FC = () => {
                     : null
                 }
                 showRoomSlot
+                onTopicClick={
+                  post.topic ? () => setTopicId(post.topic!.id) : undefined
+                }
                 onAuthorClick={() =>
                   setAuthor({
                     id: post.author.id,
