@@ -70,6 +70,16 @@ abstract class CoachKeypointModel with _$CoachKeypointModel {
 }
 
 @freezed
+abstract class CoachSuggestedPlanModel with _$CoachSuggestedPlanModel {
+  const factory CoachSuggestedPlanModel({
+    @Default('') String context,
+    @Default('') String action,
+  }) = _CoachSuggestedPlanModel;
+
+  factory CoachSuggestedPlanModel.fromJson(Map<String, dynamic> json) => _$CoachSuggestedPlanModelFromJson(json);
+}
+
+@freezed
 abstract class CoachShrinkModel with _$CoachShrinkModel {
   const factory CoachShrinkModel({
     @Default('') String context,
@@ -107,6 +117,7 @@ abstract class CoachUiModel with _$CoachUiModel {
     @Default(false) bool escapeAvailable,
     CoachShrinkModel? shrink,
     CoachCourseCardModel? course,
+    CoachSuggestedPlanModel? suggested,
     @Default(true) bool allowNewSession,
   }) = _CoachUiModel;
 

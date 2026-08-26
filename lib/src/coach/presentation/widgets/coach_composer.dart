@@ -36,6 +36,10 @@ class _CoachComposerState extends State<CoachComposer> {
   bool _thumbDown = false;
   final Set<String> _ratingChips = {};
 
+  /// The key the PLAN form's scene pre-fill was last applied for, so a rebuild
+  /// mid-edit does not overwrite what the reader has started typing.
+  String? _planFilledFor;
+
   /// The five moods, one glyph each — "emoji kèm chữ, một chạm". Glyphs are not
   /// words, so they live here rather than in five YAML files.
   static const _moodEmoji = ['😞', '😕', '😐', '🙂', '😄'];
@@ -43,6 +47,18 @@ class _CoachComposerState extends State<CoachComposer> {
   @override
   void didUpdateWidget(covariant CoachComposer oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // PLAN — drop the scene's action into the form once, so the reader edits
+    // rather than retypes what they just practised. "khi nào" comes from the
+    // habit's context; both stay editable.
+    final suggested = widget.state.ui.suggested;
+    final planKey = '${widget.state.sessionId}:${widget.state.step}:${widget.state.messages.length}';
+    if (widget.state.ui.kind == CoachUiKind.plan && suggested != null && !suggested.isEmpty && _planFilledFor != planKey) {
+      _planFilledFor = planKey;
+      if (suggested.context.isNotEmpty) _planContext.text = suggested.context;
+      if (suggested.action.isNotEmpty) _planAction.text = suggested.action;
+    }
+
     if (widget.state.step != oldWidget.state.step) {
       _thumbDown = false;
       _ratingChips.clear();

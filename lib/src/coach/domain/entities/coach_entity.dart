@@ -112,6 +112,17 @@ class CoachKeypointEntity {
   });
 }
 
+/// PLAN — a pre-fill for the commitment form, carried from a scene just
+/// practised. Both fields editable; empty when no scene led here.
+class CoachSuggestedPlanEntity {
+  final String context;
+  final String action;
+
+  const CoachSuggestedPlanEntity({this.context = '', this.action = ''});
+
+  bool get isEmpty => context.isEmpty && action.isEmpty;
+}
+
 /// ②A — the smaller commitment the Coach proposed. A draft until the reader taps.
 class CoachShrinkEntity {
   final String context;
@@ -166,6 +177,9 @@ class CoachUiEntity {
   final CoachShrinkEntity? shrink;
   final CoachCourseCardEntity? course;
 
+  /// PLAN — pre-fill for the commitment form from the scene just practised.
+  final CoachSuggestedPlanEntity? suggested;
+
   /// NEXT_SESSION — false on a low mood-end: only "Dừng" remains.
   final bool allowNewSession;
 
@@ -182,6 +196,7 @@ class CoachUiEntity {
     this.escapeAvailable = false,
     this.shrink,
     this.course,
+    this.suggested,
     this.allowNewSession = true,
   });
 }
@@ -294,6 +309,12 @@ extension CoachTurnModelX on CoachTurnModel {
               habitTitle: ui.course!.habitTitle ?? '',
               author: ui.course!.author ?? '',
               viewCount: ui.course!.viewCount,
+            ),
+      suggested: ui.suggested == null
+          ? null
+          : CoachSuggestedPlanEntity(
+              context: ui.suggested!.context,
+              action: ui.suggested!.action,
             ),
       allowNewSession: ui.allowNewSession,
     ),
