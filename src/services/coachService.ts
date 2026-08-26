@@ -1,5 +1,6 @@
 import {
   CoachConfig,
+  CoachSituationUpdate,
   CoachSituationVariant,
 } from "../types/interface/coach.interface";
 import axiosClient from "./axiosClient";
@@ -34,8 +35,9 @@ export const coachService = {
     return res.data;
   },
 
-  async updateSituation(id: string, prompt: string) {
-    const res = await axiosClient.put(`/coach-situations/${id}`, { prompt });
+  /** Save a scene and its script. Any change flips the row to EDITED so generation never overwrites it. */
+  async updateSituation(id: string, payload: CoachSituationUpdate) {
+    const res = await axiosClient.put(`/coach-situations/${id}`, payload);
     return res.data;
   },
 

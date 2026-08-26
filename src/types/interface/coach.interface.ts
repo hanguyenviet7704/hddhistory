@@ -30,10 +30,27 @@ export interface CoachSituation {
   /** Position in the habit's pool (0-based); the pool holds at most a few per key. */
   slot?: number;
   prompt: string;
+  /** Two tappable opener suggestions shown with the scene. */
+  samples?: string[];
+  /** The scene script: 1–2 ordered probe intents the Coach walks after the first answer. */
+  beats?: string[];
+  /** The lesson this scene lands, woven into the closing reply. */
+  takeaway?: string | null;
+  /** The concrete move this scene teaches — pre-fills the reminder. */
+  goodMove?: string | null;
   /** `generated` = the model's first guess. `edited` = a person fixed it, and generation will never overwrite it again. */
   source: "generated" | "edited";
   createdAt?: string;
   updatedAt?: string;
+}
+
+/** The editable fields of a scene — its prose, its openers, and its script. */
+export interface CoachSituationUpdate {
+  prompt: string;
+  samples?: string[];
+  beats?: string[];
+  takeaway?: string;
+  goodMove?: string;
 }
 
 export type CoachRatingChip =

@@ -58,7 +58,11 @@ const CoachSituationList: React.FC = () => {
   const [rebuilding, setRebuilding] = useState(false);
 
   const [editing, setEditing] = useState<CoachSituation | null>(null);
-  const [draft, setDraft] = useState("");
+  const [draftPrompt, setDraftPrompt] = useState("");
+  const [draftSamples, setDraftSamples] = useState("");
+  const [draftBeats, setDraftBeats] = useState("");
+  const [draftTakeaway, setDraftTakeaway] = useState("");
+  const [draftGoodMove, setDraftGoodMove] = useState("");
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -135,14 +139,29 @@ const CoachSituationList: React.FC = () => {
 
   const openEditor = (row: CoachSituation) => {
     setEditing(row);
-    setDraft(row.prompt);
+    setDraftPrompt(row.prompt);
+    setDraftSamples((row.samples ?? []).join("\n"));
+    setDraftBeats((row.beats ?? []).join("\n"));
+    setDraftTakeaway(row.takeaway ?? "");
+    setDraftGoodMove(row.goodMove ?? "");
   };
 
   const saveEdit = async () => {
     if (!editing) return;
+    const toList = (value: string) =>
+      value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
     setSaving(true);
     try {
-      await coachService.updateSituation(editing._id, draft);
+      await coachService.updateSituation(editing._id, {
+        prompt: draftPrompt,
+        samples: toList(draftSamples),
+        beats: toList(draftBeats),
+        takeaway: draftTakeaway.trim(),
+        goodMove: draftGoodMove.trim(),
+      });
       showSuccess("Đã sửa tình huống — từ giờ AI không ghi đè lên nữa");
       setEditing(null);
       load();
@@ -290,6 +309,15 @@ const CoachSituationList: React.FC = () => {
                   </TableCell>
                   <TableCell className="!py-3">
                     <span className="text-sm">{row.prompt}</span>
+                    <div className="text-xs text-gray-400 mt-1 space-y-0.5">
+                      <div>
+                        {row.beats?.length
+                          ? `${row.beats.length} nhịp gợi`
+                          : "chưa có kịch bản (cảnh cũ)"}
+                      </div>
+                      {row.takeaway && <div>Bài học: {row.takeaway}</div>}
+                      {row.goodMove && <div>Nước đi: {row.goodMove}</div>}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Chip
@@ -329,23 +357,67 @@ const CoachSituationList: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Sửa tình huống</DialogTitle>
+        <DialogTitle>Sửa tình huống & kịch bản</DialogTitle>
         <DialogContent>
           <p className="text-sm text-gray-500 mb-3">
-            Hai câu cảnh, một câu hỏi, dưới 60 từ. Câu hỏi hỏi họ{" "}
+            Cảnh: hai câu, một câu hỏi, dưới 30 từ. Câu hỏi hỏi họ{" "}
             <em>sẽ nói hay làm gì</em> — không hỏi cảm thấy thế nào, và không
             được gợi ý là có đáp án đúng.
           </p>
           <TextField
+            label="Cảnh + câu hỏi"
             multiline
-            minRows={4}
+            minRows={3}
             fullWidth
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            value={draftPrompt}
+            onChange={(e) => setDraftPrompt(e.target.value)}
           />
-          <p className="text-xs text-gray-400 mt-2">
+
+          <TextField
+            label="Gợi ý trả lời (mỗi dòng một câu, 2 câu)"
+            multiline
+            minRows={2}
+            fullWidth
+            className="!mt-4"
+            value={draftSamples}
+            onChange={(e) => setDraftSamples(e.target.value)}
+          />
+
+          <div className="mt-5 mb-2 text-sm font-semibold text-gray-700">
+            Kịch bản
+          </div>
+          <p className="text-xs text-gray-400 mb-3">
+            Coach đi theo các nhịp này rồi chốt bằng bài học + nước đi. Mặc định
+            1 nhịp (2 lượt), tối đa 2 nhịp (3 lượt). Nhịp là ý cần khơi
+            (&ldquo;họ sẽ nói câu đầu tiên là gì&rdquo;), không phải câu hỏi soạn
+            sẵn.
+          </p>
+          <TextField
+            label="Nhịp gợi (mỗi dòng một nhịp, tối đa 2)"
+            multiline
+            minRows={2}
+            fullWidth
+            value={draftBeats}
+            onChange={(e) => setDraftBeats(e.target.value)}
+          />
+          <TextField
+            label="Bài học (takeaway) — một câu"
+            fullWidth
+            className="!mt-4"
+            value={draftTakeaway}
+            onChange={(e) => setDraftTakeaway(e.target.value)}
+          />
+          <TextField
+            label="Nước đi đúng (goodMove) — prefill Nhắc hẹn, ≤10 từ"
+            fullWidth
+            className="!mt-4"
+            value={draftGoodMove}
+            onChange={(e) => setDraftGoodMove(e.target.value)}
+          />
+
+          <p className="text-xs text-gray-400 mt-3">
             Lưu xong dòng này chuyển sang &ldquo;đã sửa&rdquo; và AI sẽ không bao
-            giờ ghi đè lên nữa.
+            giờ ghi đè lên nữa. Trường để trống sẽ giữ nguyên giá trị cũ.
           </p>
         </DialogContent>
         <DialogActions>
@@ -353,7 +425,7 @@ const CoachSituationList: React.FC = () => {
           <Button
             variant="contained"
             onClick={saveEdit}
-            disabled={saving || !draft.trim()}
+            disabled={saving || !draftPrompt.trim()}
           >
             {saving ? "Đang lưu…" : "Lưu"}
           </Button>
