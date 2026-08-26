@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Skeleton } from "@mui/material";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { Button, Skeleton, TextField } from "@mui/material";
+import { EyeIcon, EyeOffIcon, ReplyIcon, SendIcon, XIcon } from "lucide-react";
 
 import { communityService } from "../../services/communityService";
 import {
@@ -38,6 +38,11 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
   const [error, setError] = useState<string | null>(null);
   const [hiding, setHiding] = useState<ICommunityAdminComment | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  /// The top-level comment being answered, or null to comment on the post.
+  const [replyTo, setReplyTo] = useState<ICommunityAdminComment | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -103,6 +108,34 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
     }
   };
 
+  /**
+   * Posts the team's answer.
+   *
+   * The panel could hide a comment and never write one, so a moderator who
+   * wanted to correct something in public had to open the app and post as
+   * themselves — which is a different person answering.
+   */
+  const send = async () => {
+    const body = draft.trim();
+    if (!body) return;
+
+    setSending(true);
+    try {
+      await communityService.createOfficialComment(postId, {
+        body,
+        parentId: replyTo?.id,
+      });
+      showSuccess("Đã trả lời với tư cách Đội ngũ MeUp");
+      setDraft("");
+      setReplyTo(null);
+      load();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không gửi được bình luận");
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     // Indented and on a tinted ground, so it reads as belonging to the post
     // above rather than as the next card in the list.
@@ -152,7 +185,19 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
               ) : null
             }
             actions={
-              comment.status === CommunityContentStatus.VISIBLE ? (
+              <>
+                {/* Only on a top-level comment: the thread is two levels deep,
+                    so answering a reply attaches to the same parent anyway. */}
+                {!comment.parentId && (
+                  <Button
+                    size="small"
+                    startIcon={<ReplyIcon size={15} />}
+                    onClick={() => setReplyTo(comment)}
+                  >
+                    Trả lời
+                  </Button>
+                )}
+                {comment.status === CommunityContentStatus.VISIBLE ? (
                 <Button
                   size="small"
                   variant="outlined"
@@ -181,10 +226,51 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
                     Hiện lại
                   </Button>
                 )
-              )
+                )}
+              </>
             }
           />
         ))}
+
+      {/* The team's composer, at the bottom of the thread where a reply belongs. */}
+      <div className="rounded-[18px] border border-indigo-100 bg-white p-3">
+        {replyTo && (
+          <div className="mb-2 flex items-center gap-2 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs text-indigo-700">
+            Đang trả lời{" "}
+            <strong>{replyTo.author?.name || "(tài khoản đã xoá)"}</strong>
+            <button
+              type="button"
+              className="ml-auto text-indigo-500 hover:text-indigo-700"
+              onClick={() => setReplyTo(null)}
+            >
+              <XIcon size={14} />
+            </button>
+          </div>
+        )}
+        <div className="flex items-end gap-2">
+          <TextField
+            size="small"
+            fullWidth
+            multiline
+            maxRows={6}
+            placeholder={
+              replyTo
+                ? "Trả lời với tư cách Đội ngũ MeUp…"
+                : "Bình luận vào bài này với tư cách Đội ngũ MeUp…"
+            }
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+          />
+          <Button
+            variant="contained"
+            startIcon={<SendIcon size={15} />}
+            disabled={sending || !draft.trim()}
+            onClick={send}
+          >
+            Gửi
+          </Button>
+        </div>
+      </div>
 
       <ModerationReasonDialog
         open={!!hiding}

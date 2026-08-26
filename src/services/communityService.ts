@@ -143,6 +143,22 @@ export const communityService = {
     return res.data?.data as IPagedResponse<ICommunityAdminComment>;
   },
 
+  /**
+   * Answers a thread as Đội ngũ MeUp.
+   *
+   * `parentId` replies inside a thread; leaving it off comments on the post.
+   */
+  async createOfficialComment(
+    postId: string,
+    payload: { body: string; parentId?: string }
+  ) {
+    const res = await axiosClient.post(
+      `/community/admin/posts/${postId}/comments`,
+      payload
+    );
+    return res.data?.data as IPagedResponse<ICommunityAdminComment>;
+  },
+
   async moderateComment(
     id: string,
     payload: { status?: CommunityContentStatus; hiddenReason?: string }
