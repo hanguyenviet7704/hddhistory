@@ -204,7 +204,7 @@ rejectDraftEcho: "That's not it."
 inviteYesEcho: "Let's try."
 inviteNoEcho: Skip for today.
 sceneAck: "I hear you — no right or wrong here. That's how you see that situation today."
-lessonIntro: "You just added “${habit}”. A short scene:"
+lessonIntro: "You just added “${habit}”."
 retryScene: "You met this situation three weeks ago. Want to try it again?"
 retryAck: "Saved. Monday's recap will set the two answers side by side and say nothing."
 teaserRetry: "A situation from three weeks ago…"
@@ -237,3 +237,4 @@ stepLeave: "to the course's Roadmap"
 stepEnd: "closing line · then close"
 stepWait: "replying…"
 stepSafety: a way through
+sceneLead: "A short scene:"

@@ -196,7 +196,7 @@ rejectDraftEcho: 내 얘기가 아니에요.
 inviteYesEcho: 해볼게요.
 inviteNoEcho: 오늘은 건너뛸게요.
 sceneAck: "들었어요 — 맞고 틀림은 없어요. 그게 오늘 당신이 그 상황을 보는 방식이에요."
-lessonIntro: "“${habit}”을(를) 추가했네요. 짧은 장면 하나:"
+lessonIntro: "“${habit}”을(를) 추가했네요."
 retryScene: "이 상황은 3주 전에도 만났어요. 다시 해볼까요?"
 retryAck: 기록했어요. 월요일 리캡에서 두 답을 나란히 놓고 아무 말도 하지 않을게요.
 teaserRetry: "3주 전의 그 상황…"
@@ -229,3 +229,4 @@ stepLeave: 코스 로드맵으로
 stepEnd: "마무리 한 줄 · 그리고 닫기"
 stepWait: "답하는 중…"
 stepSafety: 안전한 출구
+sceneLead: "짧은 장면 하나:"

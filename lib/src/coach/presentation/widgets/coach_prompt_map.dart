@@ -65,9 +65,11 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.problemAck;
     case 'coach.prompt.invite':
       return l10n.promptInvite;
-    // ① names the habit before its scene.
+    // ① names the habit in one bubble, then opens the scene bubble with a lead.
     case 'coach.prompt.lessonIntro':
       return l10n.lessonIntro(habit: args['habit'] ?? '');
+    case 'coach.prompt.sceneLead':
+      return l10n.sceneLead;
     // After the scene, when the model could not reply.
     case 'coach.prompt.sceneAck':
       return l10n.sceneAck;

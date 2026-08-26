@@ -324,15 +324,16 @@ class CoachCubit extends Cubit<CoachState> {
     final note = turn.noteKey == null ? null : promptResolver?.call(turn.noteKey!, turn.promptArgs);
     final situation = turn.ui.situation;
 
-    // A situation IS the Coach's line at that step — there is no separate
-    // prompt to show alongside it. When it arrives with an intro ("Bạn vừa
-    // thêm “X”. Một cảnh ngắn:"), the two are ONE bubble, as the design draws
-    // ①: the intro is the first half of the sentence the scene finishes.
-    if (situation != null) {
-      final text = note == null || note.isEmpty ? situation : '$note $situation';
-      messages.add(CoachMessage(isCoach: true, text: text));
-    } else if (note != null && note.isNotEmpty) {
+    // The note is its own bubble — "Bạn vừa thêm “X”." · "Tình huống này bạn
+    // từng gặp ba tuần trước…" — and the scene follows in a second one. At ①
+    // the scene bubble opens with "Một cảnh ngắn:" so the two read as one
+    // thought split in two, not two unrelated lines.
+    if (note != null && note.isNotEmpty) {
       messages.add(CoachMessage(isCoach: true, text: note));
+    }
+    if (situation != null) {
+      final lead = turn.noteKey == 'coach.prompt.lessonIntro' ? promptResolver?.call('coach.prompt.sceneLead', const {}) : null;
+      messages.add(CoachMessage(isCoach: true, text: lead == null || lead.isEmpty ? situation : '$lead $situation'));
     }
 
     if (situation == null && turn.promptKey != null) {

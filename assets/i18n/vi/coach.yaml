@@ -196,7 +196,7 @@ rejectDraftEcho: Không đúng với mình.
 inviteYesEcho: Tập thử.
 inviteNoEcho: Hôm nay bỏ qua.
 sceneAck: "Mình nghe rồi — không chấm đúng sai. Đây là cách bạn nhìn tình huống đó hôm nay."
-lessonIntro: "Bạn vừa thêm “${habit}”. Một cảnh ngắn:"
+lessonIntro: "Bạn vừa thêm “${habit}”."
 retryScene: "Tình huống này bạn từng gặp ba tuần trước. Thử lại xem sao?"
 retryAck: "Ghi rồi. Recap thứ 2 sẽ đặt hai câu cạnh nhau và im lặng — không bình luận."
 teaserRetry: "Tình huống ba tuần trước…"
@@ -229,3 +229,4 @@ stepLeave: sang Roadmap khoá học
 stepEnd: "câu chốt · rồi đóng"
 stepWait: "đang trả lời…"
 stepSafety: đường thoát an toàn
+sceneLead: "Một cảnh ngắn:"

@@ -196,7 +196,7 @@ rejectDraftEcho: 自分のことではありません。
 inviteYesEcho: 試してみます。
 inviteNoEcho: 今日は飛ばします。
 sceneAck: "聞きました——正解も不正解もありません。それが今日のあなたの見方です。"
-lessonIntro: "「${habit}」を追加しましたね。短い場面です："
+lessonIntro: "「${habit}」を追加しましたね。"
 retryScene: この場面は3週間前にも出会いました。もう一度やってみますか？
 retryAck: "記録しました。月曜の振り返りで2つの答えを並べて見せます——コメントはしません。"
 teaserRetry: "3週間前の場面…"
@@ -229,3 +229,4 @@ stepLeave: コースのロードマップへ
 stepEnd: "締めの一言 · そして閉じる"
 stepWait: "返信中…"
 stepSafety: 安全な出口
+sceneLead: "短い場面です："

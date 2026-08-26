@@ -196,7 +196,7 @@ rejectDraftEcho: 不是这样的。
 inviteYesEcho: 试试。
 inviteNoEcho: 今天先跳过。
 sceneAck: 我听到了，不评判对错。这就是你今天看这个情境的方式。
-lessonIntro: "你刚添加了“${habit}”。一个小场景："
+lessonIntro: "你刚添加了“${habit}”。"
 retryScene: 这个情境你三周前遇到过。再试一次？
 retryAck: 记下了。周一的回顾会把两句话放在一起，不做评论。
 teaserRetry: "三周前的情境…"
@@ -229,3 +229,4 @@ stepLeave: 前往课程路线图
 stepEnd: "收尾一句 · 然后关闭"
 stepWait: "正在回复…"
 stepSafety: 安全出口
+sceneLead: "一个小场景："
