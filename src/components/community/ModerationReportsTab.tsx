@@ -1,19 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  Chip,
-  MenuItem,
-  Pagination,
-  Paper,
-  Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-} from "@mui/material";
+import { Button, MenuItem, Pagination, Skeleton, TextField } from "@mui/material";
 import { CheckIcon, EyeOffIcon } from "lucide-react";
 
 import { communityService } from "../../services/communityService";
@@ -24,7 +10,7 @@ import {
   ICommunityReport,
 } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
-import CommunityStatusChip from "./CommunityStatusChip";
+import CommunityContentCard from "./CommunityContentCard";
 
 const TAKE = 20;
 
@@ -131,141 +117,113 @@ const ModerationReportsTab: React.FC = () => {
         </div>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Nội dung bị báo cáo</TableCell>
-              <TableCell>Loại</TableCell>
-              <TableCell>Lý do</TableCell>
-              <TableCell>Người báo</TableCell>
-              <TableCell align="right">Số báo cáo</TableCell>
-              <TableCell align="right">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={6}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="space-y-3">
+        {loading &&
+          Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={172} />
+          ))}
 
-            {!loading && !reports.length && (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    {status === CommunityReportStatus.PENDING
-                      ? "Không còn báo cáo nào chờ xử lý."
-                      : "Chưa có báo cáo nào ở trạng thái này."}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
+        {!loading && !reports.length && (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-500">
+            {status === CommunityReportStatus.PENDING
+              ? "Không còn báo cáo nào chờ xử lý."
+              : "Chưa có báo cáo nào ở trạng thái này."}
+          </div>
+        )}
 
-            {!loading &&
-              reports.map((report) => (
-                <TableRow key={report.id} hover>
-                  <TableCell className="max-w-md">
-                    {report.target ? (
-                      <>
-                        <div className="line-clamp-3 whitespace-pre-wrap text-sm">
-                          {report.target.body}
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                          <span>
-                            {report.target.author?.name || "(tài khoản đã xoá)"}
-                          </span>
-                          <CommunityStatusChip status={report.target.status} />
-                        </div>
-                        {report.target.hiddenByReports && (
-                          <div className="mt-1 text-xs text-red-700">
-                            Đã tự ẩn do đủ {report.target.reportCount} báo cáo —
-                            chờ bạn xác nhận
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      // The author deleted it before a moderator got here.
-                      <span className="text-sm text-gray-500">
-                        Nội dung không còn tồn tại
+        {!loading &&
+          reports.map((report) => {
+            // The author deleted it before a moderator got here. The report is
+            // still worth showing as history, just with nothing left to act on.
+            if (!report.target) {
+              return (
+                <div
+                  key={report.id}
+                  className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500"
+                >
+                  Nội dung không còn tồn tại · báo cáo vì{" "}
+                  {REASON_LABELS[report.reason] ?? report.reason} ·{" "}
+                  {report.reporter?.name || "(tài khoản đã xoá)"}
+                </div>
+              );
+            }
+
+            return (
+              <CommunityContentCard
+                key={report.id}
+                author={report.target.author}
+                createdAt={report.createdAt}
+                status={report.target.status}
+                body={report.target.body}
+                reportCount={report.target.reportCount}
+                // The verdict a moderator is being asked for is about the
+                // CONTENT, so the content is the card and the accusation sits
+                // above it — the reason and who said it, in one strip, instead
+                // of three columns to look across.
+                banner={
+                  <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-800">
+                    <span className="font-semibold">
+                      {report.targetType === CommunityTargetType.POST
+                        ? "Bài đăng"
+                        : "Bình luận"}{" "}
+                      · {REASON_LABELS[report.reason] ?? report.reason}
+                    </span>
+                    <span className="text-red-700/80">
+                      Người báo: {report.reporter?.name || "(tài khoản đã xoá)"}
+                    </span>
+                    {!!report.note && (
+                      <span className="italic text-red-700/80">
+                        “{report.note}”
                       </span>
                     )}
-                    {report.note && (
-                      <div className="mt-1 text-xs italic text-gray-600">
-                        “{report.note}”
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      size="small"
-                      label={
-                        report.targetType === CommunityTargetType.POST
-                          ? "Bài đăng"
-                          : "Bình luận"
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {REASON_LABELS[report.reason] ?? report.reason}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {report.reporter?.name || "(tài khoản đã xoá)"}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(report.createdAt).toLocaleString("vi-VN")}
-                    </div>
-                  </TableCell>
-                  <TableCell align="right">
-                    <span className="font-semibold text-red-600">
-                      {report.target?.reportCount ?? 1}
+                  </div>
+                }
+                note={
+                  report.target.hiddenByReports ? (
+                    <span className="text-red-700">
+                      Đã tự ẩn do đủ {report.target.reportCount} báo cáo — chờ
+                      bạn xác nhận
                     </span>
-                  </TableCell>
-                  <TableCell align="right">
-                    {report.status === CommunityReportStatus.PENDING ? (
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          size="small"
-                          color="warning"
-                          startIcon={<EyeOffIcon size={14} />}
-                          disabled={saving || !report.target}
-                          onClick={() =>
-                            resolve(
-                              report,
-                              CommunityReportStatus.RESOLVED_HIDDEN
-                            )
-                          }
-                        >
-                          Ẩn
-                        </Button>
-                        <Button
-                          size="small"
-                          startIcon={<CheckIcon size={14} />}
-                          disabled={saving}
-                          onClick={() =>
-                            resolve(report, CommunityReportStatus.RESOLVED_KEPT)
-                          }
-                        >
-                          {/* An auto-hidden item comes BACK when kept, so the
-                              button has to promise that and not "ignore". */}
-                          {report.target?.hiddenByReports
-                            ? "Giữ lại (hiện lại)"
-                            : "Bỏ qua"}
-                        </Button>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-500">Đã xử lý</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                  ) : null
+                }
+                actions={
+                  report.status === CommunityReportStatus.PENDING ? (
+                    <>
+                      <Button
+                        size="small"
+                        startIcon={<CheckIcon size={15} />}
+                        disabled={saving}
+                        onClick={() =>
+                          resolve(report, CommunityReportStatus.RESOLVED_KEPT)
+                        }
+                      >
+                        {/* An auto-hidden item comes BACK when kept, so the
+                            button has to promise that and not "ignore". */}
+                        {report.target?.hiddenByReports
+                          ? "Giữ lại (hiện lại)"
+                          : "Bỏ qua"}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        startIcon={<EyeOffIcon size={15} />}
+                        disabled={saving}
+                        onClick={() =>
+                          resolve(report, CommunityReportStatus.RESOLVED_HIDDEN)
+                        }
+                      >
+                        Ẩn nội dung
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-500">Đã xử lý</span>
+                  )
+                }
+              />
+            );
+          })}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-end">

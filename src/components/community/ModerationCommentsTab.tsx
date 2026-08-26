@@ -1,19 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  MenuItem,
-  Pagination,
-  Paper,
-  Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Button, MenuItem, Pagination, Skeleton, TextField } from "@mui/material";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 import { communityService } from "../../services/communityService";
@@ -22,7 +8,7 @@ import {
   ICommunityAdminComment,
 } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
-import CommunityStatusChip from "./CommunityStatusChip";
+import CommunityContentCard from "./CommunityContentCard";
 import ModerationReasonDialog from "./ModerationReasonDialog";
 
 const TAKE = 20;
@@ -144,132 +130,85 @@ const ModerationCommentsTab: React.FC<Props> = ({
         </div>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Nội dung</TableCell>
-              <TableCell>Tác giả</TableCell>
-              <TableCell>Cấp</TableCell>
-              <TableCell align="right">Tim</TableCell>
-              <TableCell align="right">Báo cáo</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="right">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={7}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="space-y-3">
+        {loading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={116} />
+          ))}
 
-            {!loading && !comments.length && (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    Không có bình luận nào khớp bộ lọc.
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
+        {!loading && !comments.length && (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-500">
+            Không có bình luận nào khớp bộ lọc.
+          </div>
+        )}
 
-            {!loading &&
-              comments.map((comment) => (
-                <TableRow key={comment.id} hover>
-                  <TableCell className="max-w-md">
-                    <div className="whitespace-pre-wrap text-sm">
-                      {comment.body}
-                    </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {new Date(comment.createdAt).toLocaleString("vi-VN")}
-                    </div>
-                    {comment.hiddenWithPost ? (
-                      <div className="mt-1 text-xs text-amber-700">
-                        Ẩn theo bài đăng — hiện lại bài sẽ hiện lại bình luận này
-                      </div>
-                    ) : comment.hiddenByReports ? (
-                      <div className="mt-1 text-xs text-red-700">
-                        Tự ẩn do {comment.reportCount} báo cáo — chờ bạn xác nhận
-                        ở tab Báo cáo (giữ lại = hiện lại)
-                      </div>
-                    ) : (
-                      comment.hiddenReason && (
-                        <div className="mt-1 text-xs text-amber-700">
-                          Lý do ẩn: {comment.hiddenReason}
-                        </div>
-                      )
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {comment.author?.name || "(tài khoản đã xoá)"}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {comment.author?.id}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {comment.parentId ? "Trả lời" : "Bình luận"}
-                    {!comment.parentId && comment.replyCount > 0 && (
-                      <div className="text-gray-500">
-                        {comment.replyCount} trả lời
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">{comment.likeCount}</TableCell>
-                  <TableCell align="right">
-                    {comment.reportCount ? (
-                      <span className="font-semibold text-red-600">
-                        {comment.reportCount}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">0</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <CommunityStatusChip status={comment.status} />
-                  </TableCell>
-                  <TableCell align="right">
-                    {comment.status === CommunityContentStatus.VISIBLE ? (
-                      <Tooltip title="Ẩn bình luận">
-                        <Button
-                          size="small"
-                          color="warning"
-                          disabled={saving}
-                          onClick={() => setHiding(comment)}
-                        >
-                          <EyeOffIcon size={15} />
-                        </Button>
-                      </Tooltip>
-                    ) : (
-                      comment.status === CommunityContentStatus.HIDDEN && (
-                        <Tooltip title="Hiện lại bình luận">
-                          <Button
-                            size="small"
-                            disabled={saving}
-                            onClick={() =>
-                              act(
-                                comment,
-                                { status: CommunityContentStatus.VISIBLE },
-                                "Đã hiện lại bình luận"
-                              )
-                            }
-                          >
-                            <EyeIcon size={15} />
-                          </Button>
-                        </Tooltip>
-                      )
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+        {!loading &&
+          comments.map((comment) => (
+            <CommunityContentCard
+              key={comment.id}
+              author={comment.author}
+              createdAt={comment.createdAt}
+              status={comment.status}
+              body={comment.body}
+              // Indented like a reply is in the thread, so the shape of the
+              // conversation survives the trip into the panel: a reply that
+              // reads as a top-level comment is a reply judged out of context.
+              indented={!!comment.parentId}
+              flags={comment.parentId ? ["Trả lời"] : undefined}
+              likeCount={comment.likeCount}
+              replyCount={comment.parentId ? undefined : comment.replyCount}
+              reportCount={comment.reportCount}
+              note={
+                comment.hiddenWithPost ? (
+                  <span className="text-amber-700">
+                    Ẩn theo bài đăng — hiện lại bài sẽ hiện lại bình luận này
+                  </span>
+                ) : comment.hiddenByReports ? (
+                  <span className="text-red-700">
+                    Tự ẩn do {comment.reportCount} báo cáo — chờ bạn xác nhận ở
+                    tab Báo cáo (giữ lại = hiện lại)
+                  </span>
+                ) : comment.hiddenReason ? (
+                  <span className="text-amber-700">
+                    Lý do ẩn: {comment.hiddenReason}
+                  </span>
+                ) : null
+              }
+              actions={
+                comment.status === CommunityContentStatus.VISIBLE ? (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    startIcon={<EyeOffIcon size={15} />}
+                    disabled={saving}
+                    onClick={() => setHiding(comment)}
+                  >
+                    Ẩn bình luận
+                  </Button>
+                ) : (
+                  comment.status === CommunityContentStatus.HIDDEN && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<EyeIcon size={15} />}
+                      disabled={saving}
+                      onClick={() =>
+                        act(
+                          comment,
+                          { status: CommunityContentStatus.VISIBLE },
+                          "Đã hiện lại bình luận"
+                        )
+                      }
+                    >
+                      Hiện lại
+                    </Button>
+                  )
+                )
+              }
+            />
+          ))}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-end">

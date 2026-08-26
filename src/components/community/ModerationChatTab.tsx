@@ -1,23 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   MenuItem,
   Pagination,
-  Paper,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
-  Tooltip,
 } from "@mui/material";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
@@ -28,7 +19,7 @@ import {
   ICommunityChatRoom,
 } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
-import CommunityStatusChip from "./CommunityStatusChip";
+import CommunityContentCard from "./CommunityContentCard";
 import ModerationReasonDialog from "./ModerationReasonDialog";
 
 const TAKE = 20;
@@ -254,117 +245,73 @@ const ModerationChatTab: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Nội dung</TableCell>
-              <TableCell>Người gửi</TableCell>
-              <TableCell align="right">Tim</TableCell>
-              <TableCell align="right">Báo cáo</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="right">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={6}>
-                    <Skeleton height={28} />
-                  </TableCell>
-                </TableRow>
-              ))}
+      <div className="space-y-3">
+        {loading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={104} />
+          ))}
 
-            {!loading && !messages.length && (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <div className="py-8 text-center text-sm text-gray-500">
-                    Không có tin nhắn nào khớp bộ lọc.
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
+        {!loading && !messages.length && (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-500">
+            Không có tin nhắn nào khớp bộ lọc.
+          </div>
+        )}
 
-            {!loading &&
-              messages.map((message) => (
-                <TableRow key={message.id} hover>
-                  <TableCell className="max-w-md">
-                    <div className="whitespace-pre-wrap text-sm">
-                      {message.body}
-                    </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {new Date(message.createdAt).toLocaleString("vi-VN")}
-                    </div>
-                    {message.hiddenReason && (
-                      <div className="mt-1 text-xs text-amber-700">
-                        Lý do ẩn: {message.hiddenReason}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">
-                        {message.author?.name || "(tài khoản đã xoá)"}
-                      </span>
-                      {message.isModerator && (
-                        <Chip size="small" label="Quản trị viên" color="primary" />
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {message.author?.id}
-                    </div>
-                  </TableCell>
-                  <TableCell align="right">{message.likeCount}</TableCell>
-                  <TableCell align="right">
-                    {message.reportCount ? (
-                      <span className="font-semibold text-red-600">
-                        {message.reportCount}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">0</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <CommunityStatusChip status={message.status} />
-                  </TableCell>
-                  <TableCell align="right">
-                    {message.status === CommunityContentStatus.VISIBLE ? (
-                      <Tooltip title="Ẩn tin nhắn">
-                        <Button
-                          size="small"
-                          color="warning"
-                          disabled={saving}
-                          onClick={() => setHiding(message)}
-                        >
-                          <EyeOffIcon size={15} />
-                        </Button>
-                      </Tooltip>
-                    ) : (
-                      message.status === CommunityContentStatus.HIDDEN && (
-                        <Tooltip title="Hiện lại tin nhắn">
-                          <Button
-                            size="small"
-                            disabled={saving}
-                            onClick={() =>
-                              act(
-                                message,
-                                { status: CommunityContentStatus.VISIBLE },
-                                "Đã hiện lại tin nhắn"
-                              )
-                            }
-                          >
-                            <EyeIcon size={15} />
-                          </Button>
-                        </Tooltip>
-                      )
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+        {!loading &&
+          messages.map((message) => (
+            <CommunityContentCard
+              key={message.id}
+              author={message.author}
+              createdAt={message.createdAt}
+              status={message.status}
+              body={message.body}
+              // The pill the room itself shows next to a moderator's line, so
+              // the panel and the room agree on who was speaking on duty.
+              flags={message.isModerator ? ["Quản trị viên"] : undefined}
+              likeCount={message.likeCount}
+              reportCount={message.reportCount}
+              note={
+                message.hiddenReason ? (
+                  <span className="text-amber-700">
+                    Lý do ẩn: {message.hiddenReason}
+                  </span>
+                ) : null
+              }
+              actions={
+                message.status === CommunityContentStatus.VISIBLE ? (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    startIcon={<EyeOffIcon size={15} />}
+                    disabled={saving}
+                    onClick={() => setHiding(message)}
+                  >
+                    Ẩn tin nhắn
+                  </Button>
+                ) : (
+                  message.status === CommunityContentStatus.HIDDEN && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<EyeIcon size={15} />}
+                      disabled={saving}
+                      onClick={() =>
+                        act(
+                          message,
+                          { status: CommunityContentStatus.VISIBLE },
+                          "Đã hiện lại tin nhắn"
+                        )
+                      }
+                    >
+                      Hiện lại
+                    </Button>
+                  )
+                )
+              }
+            />
+          ))}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-end">
