@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, MenuItem, Pagination, Skeleton, TextField } from "@mui/material";
 import {
+  ChevronUpIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
@@ -20,17 +21,13 @@ import {
 import { useNotification } from "../../utils/hooks/useNotification";
 import { getTranslationValue } from "../../utils/translation";
 import CommunityContentCard from "./CommunityContentCard";
+import PostCommentsPanel from "./PostCommentsPanel";
 import { COMMUNITY_LANGS } from "./TranslationFields";
 import ModerationReasonDialog from "./ModerationReasonDialog";
 
 const TAKE = 20;
 
-interface Props {
-  /** Jumps to the comments tab scoped to one post. */
-  onViewComments: (postId: string) => void;
-}
-
-const ModerationPostsTab: React.FC<Props> = ({ onViewComments }) => {
+const ModerationPostsTab: React.FC = () => {
   const { showSuccess, showError } = useNotification();
   const lang = useSelector((state: RootState) => state.lang.code);
 
@@ -47,6 +44,10 @@ const ModerationPostsTab: React.FC<Props> = ({ onViewComments }) => {
   const [locale, setLocale] = useState("");
   const [hiding, setHiding] = useState<ICommunityAdminPost | null>(null);
   const [saving, setSaving] = useState(false);
+
+  /// One thread open at a time: the panel is for reading a conversation, and
+  /// three of them unfolded is the wall of text the tab was meant to replace.
+  const [openThread, setOpenThread] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -162,120 +163,135 @@ const ModerationPostsTab: React.FC<Props> = ({ onViewComments }) => {
 
         {!loading &&
           posts.map((post) => (
-            <CommunityContentCard
-              key={post.id}
-              author={post.author}
-              createdAt={post.createdAt}
-              status={post.status}
-              topicLabel={
-                post.topic
-                  ? getTranslationValue(post.topic.name ?? undefined, lang)
-                  : null
-              }
-              subject={post.subject}
-              body={post.body}
-              images={post.images}
-              attachedCard={post.attachedCard}
-              flags={[
-                ...(post.locale ? [post.locale.toUpperCase()] : []),
-                ...(post.isPinned ? ["Đã ghim"] : []),
-                ...(post.commentsLocked ? ["Khoá bình luận"] : []),
-              ]}
-              likeCount={post.likeCount}
-              commentCount={post.commentCount}
-              reportCount={post.reportCount}
-              note={
-                post.hiddenByReports ? (
-                  <span className="text-red-700">
-                    Tự ẩn do {post.reportCount} báo cáo — chờ bạn xác nhận ở tab
-                    Báo cáo (giữ lại = hiện lại bài)
-                  </span>
-                ) : post.hiddenReason ? (
-                  <span className="text-amber-700">
-                    Lý do ẩn: {post.hiddenReason}
-                  </span>
-                ) : null
-              }
-              actions={
-                <>
-                  <Button
-                    size="small"
-                    startIcon={<MessageSquareIcon size={15} />}
-                    onClick={() => onViewComments(post.id)}
-                  >
-                    Bình luận ({post.commentCount})
-                  </Button>
-                  <Button
-                    size="small"
-                    color={post.commentsLocked ? "warning" : "inherit"}
-                    startIcon={
-                      post.commentsLocked ? (
-                        <UnlockIcon size={15} />
-                      ) : (
-                        <LockIcon size={15} />
-                      )
-                    }
-                    disabled={saving}
-                    onClick={() =>
-                      act(
-                        post,
-                        { commentsLocked: !post.commentsLocked },
-                        post.commentsLocked
-                          ? "Đã mở lại bình luận"
-                          : "Đã khoá bình luận"
-                      )
-                    }
-                  >
-                    {post.commentsLocked ? "Mở bình luận" : "Khoá bình luận"}
-                  </Button>
-                  <Button
-                    size="small"
-                    color={post.isPinned ? "primary" : "inherit"}
-                    startIcon={<PinIcon size={15} />}
-                    disabled={saving}
-                    onClick={() =>
-                      act(
-                        post,
-                        { isPinned: !post.isPinned },
-                        post.isPinned ? "Đã bỏ ghim" : "Đã ghim bài"
-                      )
-                    }
-                  >
-                    {post.isPinned ? "Bỏ ghim" : "Ghim"}
-                  </Button>
-                  {post.status === CommunityContentStatus.VISIBLE ? (
+            <div key={post.id}>
+              <CommunityContentCard
+                author={post.author}
+                createdAt={post.createdAt}
+                status={post.status}
+                topicLabel={
+                  post.topic
+                    ? getTranslationValue(post.topic.name ?? undefined, lang)
+                    : null
+                }
+                subject={post.subject}
+                body={post.body}
+                images={post.images}
+                attachedCard={post.attachedCard}
+                flags={[
+                  ...(post.locale ? [post.locale.toUpperCase()] : []),
+                  ...(post.isPinned ? ["Đã ghim"] : []),
+                  ...(post.commentsLocked ? ["Khoá bình luận"] : []),
+                ]}
+                likeCount={post.likeCount}
+                commentCount={post.commentCount}
+                reportCount={post.reportCount}
+                note={
+                  post.hiddenByReports ? (
+                    <span className="text-red-700">
+                      Tự ẩn do {post.reportCount} báo cáo — chờ bạn xác nhận ở tab
+                      Báo cáo (giữ lại = hiện lại bài)
+                    </span>
+                  ) : post.hiddenReason ? (
+                    <span className="text-amber-700">
+                      Lý do ẩn: {post.hiddenReason}
+                    </span>
+                  ) : null
+                }
+                actions={
+                  <>
                     <Button
                       size="small"
-                      variant="outlined"
-                      color="warning"
-                      startIcon={<EyeOffIcon size={15} />}
-                      disabled={saving}
-                      onClick={() => setHiding(post)}
+                      color={openThread === post.id ? "primary" : "inherit"}
+                      startIcon={
+                        openThread === post.id ? (
+                          <ChevronUpIcon size={15} />
+                        ) : (
+                          <MessageSquareIcon size={15} />
+                        )
+                      }
+                      onClick={() =>
+                        setOpenThread((prev) =>
+                          prev === post.id ? null : post.id
+                        )
+                      }
                     >
-                      Ẩn bài
+                      Bình luận ({post.commentCount})
                     </Button>
-                  ) : (
-                    post.status === CommunityContentStatus.HIDDEN && (
+                    <Button
+                      size="small"
+                      color={post.commentsLocked ? "warning" : "inherit"}
+                      startIcon={
+                        post.commentsLocked ? (
+                          <UnlockIcon size={15} />
+                        ) : (
+                          <LockIcon size={15} />
+                        )
+                      }
+                      disabled={saving}
+                      onClick={() =>
+                        act(
+                          post,
+                          { commentsLocked: !post.commentsLocked },
+                          post.commentsLocked
+                            ? "Đã mở lại bình luận"
+                            : "Đã khoá bình luận"
+                        )
+                      }
+                    >
+                      {post.commentsLocked ? "Mở bình luận" : "Khoá bình luận"}
+                    </Button>
+                    <Button
+                      size="small"
+                      color={post.isPinned ? "primary" : "inherit"}
+                      startIcon={<PinIcon size={15} />}
+                      disabled={saving}
+                      onClick={() =>
+                        act(
+                          post,
+                          { isPinned: !post.isPinned },
+                          post.isPinned ? "Đã bỏ ghim" : "Đã ghim bài"
+                        )
+                      }
+                    >
+                      {post.isPinned ? "Bỏ ghim" : "Ghim"}
+                    </Button>
+                    {post.status === CommunityContentStatus.VISIBLE ? (
                       <Button
                         size="small"
                         variant="outlined"
-                        startIcon={<EyeIcon size={15} />}
+                        color="warning"
+                        startIcon={<EyeOffIcon size={15} />}
                         disabled={saving}
-                        onClick={() =>
-                          act(
-                            post,
-                            { status: CommunityContentStatus.VISIBLE },
-                            "Đã hiện lại bài"
-                          )
-                        }
+                        onClick={() => setHiding(post)}
                       >
-                        Hiện lại
+                        Ẩn bài
                       </Button>
-                    )
-                  )}
-                </>
-              }
-            />
+                    ) : (
+                      post.status === CommunityContentStatus.HIDDEN && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<EyeIcon size={15} />}
+                          disabled={saving}
+                          onClick={() =>
+                            act(
+                              post,
+                              { status: CommunityContentStatus.VISIBLE },
+                              "Đã hiện lại bài"
+                            )
+                          }
+                        >
+                          Hiện lại
+                        </Button>
+                      )
+                    )}
+                  </>
+                }
+              />
+              {openThread === post.id && (
+                <PostCommentsPanel postId={post.id} />
+              )}
+            </div>
           ))}
       </div>
 

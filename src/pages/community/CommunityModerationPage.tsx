@@ -5,23 +5,22 @@ import { useSearchParams } from "react-router-dom";
 
 import CommunityOfficialPostModal from "../../components/community/CommunityOfficialPostModal";
 import ModerationChatTab from "../../components/community/ModerationChatTab";
-import ModerationCommentsTab from "../../components/community/ModerationCommentsTab";
 import ModerationPostsTab from "../../components/community/ModerationPostsTab";
 import ModerationReportsTab from "../../components/community/ModerationReportsTab";
 import { communityService } from "../../services/communityService";
 import { ICommunityOfficialPostPayload } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 
-type TabKey = "reports" | "posts" | "comments" | "chat";
+// No comments tab: a comment is judged inside the thread it belongs to, so it
+// opens under its post on the "Bài đăng" tab instead of being a list of its own.
+type TabKey = "reports" | "posts" | "chat";
 
 const CommunityModerationPage: React.FC = () => {
   const { showSuccess, showError } = useNotification();
-  // Tab and post filter live in the URL so the "xem bình luận của bài" jump
-  // from the posts tab is a link, and a moderator can keep a queue open in
-  // another window.
+  // The tab lives in the URL so a moderator can keep a queue open in another
+  // window.
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as TabKey) || "reports";
-  const postId = params.get("postId") ?? undefined;
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -29,12 +28,8 @@ const CommunityModerationPage: React.FC = () => {
   const setTab = (next: TabKey) => {
     const nextParams = new URLSearchParams(params);
     nextParams.set("tab", next);
-    if (next !== "comments") nextParams.delete("postId");
-    setParams(nextParams, { replace: true });
-  };
-
-  const clearPostFilter = () => {
-    const nextParams = new URLSearchParams(params);
+    // Left over from the comments tab's per-post filter; dropped so an old
+    // bookmark does not carry a parameter nothing reads any more.
     nextParams.delete("postId");
     setParams(nextParams, { replace: true });
   };
@@ -80,27 +75,11 @@ const CommunityModerationPage: React.FC = () => {
       >
         <Tab value="reports" label="Báo cáo" />
         <Tab value="posts" label="Bài đăng" />
-        <Tab value="comments" label="Bình luận" />
         <Tab value="chat" label="Chat nhóm" />
       </Tabs>
 
       {tab === "reports" && <ModerationReportsTab />}
-      {tab === "posts" && (
-        <ModerationPostsTab
-          onViewComments={(postId) => {
-            const nextParams = new URLSearchParams(params);
-            nextParams.set("tab", "comments");
-            nextParams.set("postId", postId);
-            setParams(nextParams, { replace: true });
-          }}
-        />
-      )}
-      {tab === "comments" && (
-        <ModerationCommentsTab
-          postId={postId}
-          onClearPostFilter={clearPostFilter}
-        />
-      )}
+      {tab === "posts" && <ModerationPostsTab />}
       {tab === "chat" && <ModerationChatTab />}
 
       <CommunityOfficialPostModal
