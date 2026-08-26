@@ -5,6 +5,7 @@ import {
   CommunityRoomSuggestionStatus,
   CommunityTargetType,
   ICommunityAdminChatMessage,
+  ICommunityChatRoom,
   ICommunityAdminComment,
   ICommunityAdminPost,
   ICommunityChatQuery,
@@ -153,6 +154,28 @@ export const communityService = {
   },
 
   // -------------------------------------------------------------- group chat
+  async getChatRooms() {
+    const res = await axiosClient.get("/community/admin/chat/rooms");
+    return (res.data?.data ?? []) as ICommunityChatRoom[];
+  },
+
+  /**
+   * Creates the room, or edits the one already on that slug.
+   *
+   * The only way to open a room outside a script with direct database access —
+   * the app opens `hoi-ban-tron` by name, so an environment without that row is
+   * a 404 behind the chat button.
+   */
+  async upsertChatRoom(payload: {
+    slug: string;
+    name: string;
+    isOfficial?: boolean;
+    status?: CommunityContentStatus;
+  }) {
+    const res = await axiosClient.post("/community/admin/chat/rooms", payload);
+    return res.data?.data as ICommunityChatRoom;
+  },
+
   async getChatMessages(params: ICommunityChatQuery) {
     const res = await axiosClient.get("/community/admin/chat/messages", {
       params,

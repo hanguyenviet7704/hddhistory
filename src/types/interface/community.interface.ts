@@ -166,6 +166,17 @@ export interface ICommunityAdminComment {
   createdAt: string;
 }
 
+/** A group chat room, as the panel manages it. */
+export interface ICommunityChatRoom {
+  id: string;
+  slug: string;
+  name: string;
+  isOfficial: boolean;
+  status: CommunityContentStatus;
+  messageCount: number;
+  createdAt: string;
+}
+
 /**
  * One line in a group chat room, as the moderation table sees it.
  *

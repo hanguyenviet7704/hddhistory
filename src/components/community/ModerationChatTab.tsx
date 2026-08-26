@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   MenuItem,
   Pagination,
   Paper,
@@ -21,6 +25,7 @@ import { communityService } from "../../services/communityService";
 import {
   CommunityContentStatus,
   ICommunityAdminChatMessage,
+  ICommunityChatRoom,
 } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CommunityStatusChip from "./CommunityStatusChip";
@@ -47,6 +52,10 @@ const ModerationChatTab: React.FC = () => {
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<CommunityContentStatus | "">("");
+  const [rooms, setRooms] = useState<ICommunityChatRoom[]>([]);
+  const [room, setRoom] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ slug: "", name: "" });
   const [hiding, setHiding] = useState<ICommunityAdminChatMessage | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -58,6 +67,7 @@ const ModerationChatTab: React.FC = () => {
         page,
         take: TAKE,
         ...(status ? { status } : {}),
+        ...(room ? { room } : {}),
         ...(search.trim() ? { search: search.trim() } : {}),
       });
       setMessages(res?.items ?? []);
@@ -69,7 +79,7 @@ const ModerationChatTab: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, status, search]);
+  }, [page, status, room, search]);
 
   useEffect(() => {
     const timer = setTimeout(load, 300);
@@ -78,7 +88,46 @@ const ModerationChatTab: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [status, search]);
+  }, [status, room, search]);
+
+  const loadRooms = useCallback(async () => {
+    try {
+      setRooms(await communityService.getChatRooms());
+    } catch {
+      // The picker is a convenience; the table below still works without it,
+      // and a second red bar for it would bury the one that matters.
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRooms();
+  }, [loadRooms]);
+
+  /**
+   * Opens a room, or renames the one already on that slug.
+   *
+   * This is the only way to create one without a Mongo shell — the app opens
+   * `hoi-ban-tron` by name, so an environment missing that row answers the chat
+   * button with a 404 and nothing in the panel can fix it.
+   */
+  const saveRoom = async () => {
+    const slug = form.slug.trim();
+    const name = form.name.trim();
+    if (!slug || !name) return;
+
+    setSaving(true);
+    try {
+      await communityService.upsertChatRoom({ slug, name });
+      showSuccess(`Đã lưu phòng "${name}"`);
+      setCreating(false);
+      setForm({ slug: "", name: "" });
+      loadRooms();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không lưu được phòng");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const act = async (
     message: ICommunityAdminChatMessage,
@@ -122,16 +171,88 @@ const ModerationChatTab: React.FC = () => {
           <MenuItem value={CommunityContentStatus.VISIBLE}>Đang hiện</MenuItem>
           <MenuItem value={CommunityContentStatus.HIDDEN}>Đã ẩn</MenuItem>
         </TextField>
+        <TextField
+          select
+          size="small"
+          label="Phòng"
+          value={room}
+          onChange={(event) => setRoom(event.target.value)}
+          className="min-w-[180px]"
+        >
+          <MenuItem value="">Tất cả</MenuItem>
+          {rooms.map((item) => (
+            <MenuItem key={item.id} value={item.slug}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </TextField>
         <Button size="small" onClick={load} disabled={loading}>
           Tải lại
         </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => setCreating(true)}
+        >
+          Tạo phòng
+        </Button>
       </div>
+
+      {rooms.length === 0 && !loading && (
+        // Not an error — an environment nobody has opened a room on yet. Said
+        // plainly, because the symptom on the phone (a 404 behind the chat
+        // button) gives no hint that this is what is missing.
+        <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+          Chưa có phòng chat nào. App mở phòng theo slug{" "}
+          <code>hoi-ban-tron</code> — bấm "Tạo phòng" với đúng slug đó để nút
+          chat trong app hết báo lỗi.
+        </div>
+      )}
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       )}
+
+      <Dialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Tạo / sửa phòng chat</DialogTitle>
+        <DialogContent className="flex flex-col gap-4 pt-2">
+          <TextField
+            size="small"
+            label="Slug"
+            value={form.slug}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, slug: event.target.value }))
+            }
+            helperText="Chữ thường, nối bằng dấu gạch. App đang mở: hoi-ban-tron"
+          />
+          <TextField
+            size="small"
+            label="Tên phòng"
+            value={form.name}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, name: event.target.value }))
+            }
+            helperText="Tên hiện trên đầu màn chat"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreating(false)}>Huỷ</Button>
+          <Button
+            variant="contained"
+            onClick={saveRoom}
+            disabled={saving || !form.slug.trim() || !form.name.trim()}
+          >
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <TableContainer component={Paper}>
         <Table size="small">
