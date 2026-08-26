@@ -321,19 +321,21 @@ class CoachCubit extends Cubit<CoachState> {
     // A fixed line before the step's own — "Đó là câu của bạn, mình không
     // sửa.", "Bạn vừa thêm “…”. Một cảnh ngắn:". Some quote the reader's or
     // the habit's words, so the args travel to it too.
-    if (turn.noteKey != null) {
-      final note = promptResolver?.call(turn.noteKey!, turn.promptArgs);
-      if (note != null && note.isNotEmpty) {
-        messages.add(CoachMessage(isCoach: true, text: note));
-      }
-    }
+    final note = turn.noteKey == null ? null : promptResolver?.call(turn.noteKey!, turn.promptArgs);
+    final situation = turn.ui.situation;
 
     // A situation IS the Coach's line at that step — there is no separate
-    // prompt to show alongside it.
-    final situation = turn.ui.situation;
+    // prompt to show alongside it. When it arrives with an intro ("Bạn vừa
+    // thêm “X”. Một cảnh ngắn:"), the two are ONE bubble, as the design draws
+    // ①: the intro is the first half of the sentence the scene finishes.
     if (situation != null) {
-      messages.add(CoachMessage(isCoach: true, text: situation));
-    } else if (turn.promptKey != null) {
+      final text = note == null || note.isEmpty ? situation : '$note $situation';
+      messages.add(CoachMessage(isCoach: true, text: text));
+    } else if (note != null && note.isNotEmpty) {
+      messages.add(CoachMessage(isCoach: true, text: note));
+    }
+
+    if (situation == null && turn.promptKey != null) {
       final resolved = promptResolver?.call(turn.promptKey!, turn.promptArgs);
       if (resolved != null && resolved.isNotEmpty) {
         messages.add(CoachMessage(isCoach: true, text: resolved));
