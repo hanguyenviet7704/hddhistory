@@ -586,23 +586,16 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         return true;
 
       case 'coach':
-        // ④ the commitment reminder. The bubble lives on Home, so claiming the
-        // tab IS the destination — the sheet is something the reader opens, and
-        // springing it open from a notification would break the one rule the
-        // whole surface rests on ("it never opens itself").
+        // ③ the commitment reminder. The tap on the push IS the reader's tap,
+        // so the sheet opens straight away — "push dẫn thẳng vào sheet Coach,
+        // không đổ về Home rồi bắt tìm bong bóng". Home is claimed underneath
+        // so closing the sheet lands somewhere sane, and the server opens it
+        // as ②A: the pending commitment the push was about is asked first.
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
         HomeRoute().go(navContext);
+        _openCoachFromPush(navContext);
         return true;
 
-      // Ngoài các đích symbolic ở trên, một noti — nhất là campaign gửi thủ
-      // công — trỏ được tới bất kỳ khoá nào trong DANH MỤC deeplink dùng chung
-      // với link marketing (`deeplink.catalog.ts` bên API). Cùng một bảng đích
-      // mà `_navigateToDestination` đã nối đủ, nên thêm một màn cho campaign chỉ
-      // cần deploy API: không release app, không release admin.
-      //
-      // KHÔNG đi qua `navigationFromService`: đường đó bắn thêm `deeplink_open`,
-      // và số click của link marketing sẽ lẫn cú chạm push vào. Cú chạm push đã
-      // có `noti_tap` ở trên.
       default:
         final destination = DeeplinkDestination.tryFromValue(deeplink);
         if (destination == null) {
@@ -655,6 +648,23 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// Roadmap source tag for a tap on the daily new-course notification. Unknown
   /// to `remapRoadmapSource`, which buckets it into the generic explore source —
   /// correct, since this is not one of the home surfaces it distinguishes.
+  /// ③ — open the Coach sheet after a reminder push, once Home has mounted
+  /// under it. Not awaited by the caller: the tap handler answers "handled"
+  /// at once, and the sheet's own result (a course to open) is dealt with here.
+  Future<void> _openCoachFromPush(BuildContext navContext) async {
+    // Let the Home route settle first: a modal pushed from under a route still
+    // in transition is how a navigator ends up with an orphan sheet.
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    final context = AppConfig.instance.context ?? navContext;
+    if (!context.mounted) return;
+
+    LogDev.data('[Coach] opening sheet from reminder push');
+    final courseId = await showCoachSheet(context, entry: CoachEntry.home);
+    if (courseId == null || !context.mounted) return;
+
+    openCourseRoadmapFromCoach(context, courseId);
+  }
+
   /// A course the Coach offered — ③C's invitation, or ⑦ nhịp 4's keypoint —
   /// tapped from the Coach sheet.
   ///
