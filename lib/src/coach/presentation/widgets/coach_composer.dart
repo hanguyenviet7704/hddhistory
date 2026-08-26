@@ -322,18 +322,26 @@ class _CoachComposerState extends State<CoachComposer> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (chips.isNotEmpty && !busy) ...[
-          // Wrapped, not a scrolling row.
-          //
-          // The design draws one row that fades at its right edge, and with two
-          // suggestions that worked. Since 2026-08-26 the model writes THREE,
-          // and in a scrolling row the third sits entirely off-screen — a
-          // suggestion nobody sees is not a suggestion, so the row that fits
-          // beats the row that was drawn. Wrapping also stops the second chip
-          // from being cut mid-word, which read as a rendering fault.
-          Wrap(
-            spacing: 7.w,
-            runSpacing: 7.h,
-            children: chips,
+          // One row that fades at its right edge — the design's `overflow-x`
+          // hint that it scrolls, without a scrollbar. Suggestions are two
+          // short phrases (see the situation/reflect schema), so they fit; the
+          // fade covers the rare longer one. Restored to the artboard on the
+          // product owner's call, over the wrapped-rows variant.
+          ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Colors.black, Colors.black, Colors.transparent],
+              stops: [0, 0.88, 1],
+            ).createShader(bounds),
+            blendMode: BlendMode.dstIn,
+            child: SizedBox(
+              height: 30.h,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: chips.length,
+                separatorBuilder: (_, _) => SizedBox(width: 7.w),
+                itemBuilder: (_, i) => chips[i],
+              ),
+            ),
           ),
           SizedBox(height: 8.h),
         ],
