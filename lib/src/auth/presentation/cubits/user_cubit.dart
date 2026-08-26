@@ -270,6 +270,17 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void initApp({void Function()? onDone}) async {
     AppGlobalValue.accessToken = state.accessToken;
     AppGlobalValue.refreshToken = state.refreshToken;
+
+    // A restored session never runs the login path, and `syncInitialToken`
+    // publishes with `emitToStream: false` — so on every ordinary app open
+    // NOTHING re-sent this device's FCM token. Whoever signed in once on a
+    // build without push, or whose token rotated since, stayed unreachable
+    // forever while the app happily held a valid token locally.
+    //
+    // Best-effort and idempotent: `push-registration` upserts the device row.
+    if (state.accessToken.isNotEmpty) {
+      unawaited(AppDI.injector.get<AuthBloc>().syncPushRegistration());
+    }
     // await Clipboard.setData(ClipboardData(text: AppGlobalValue.accessToken));
 
     HomeRoute().go(AppConfig.instance.context!);
