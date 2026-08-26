@@ -17,6 +17,7 @@ import {
   CommunityContentStatus,
   CommunityPostType,
   ICommunityAdminPost,
+  ICommunityTopic,
 } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { getTranslationValue } from "../../utils/translation";
@@ -42,6 +43,13 @@ const ModerationPostsTab: React.FC = () => {
     CommunityContentStatus.VISIBLE
   );
   const [locale, setLocale] = useState("");
+  const [topicId, setTopicId] = useState("");
+  const [topics, setTopics] = useState<ICommunityTopic[]>([]);
+  /// Set by clicking a name: everything this account wrote, which is how a
+  /// pattern shows itself. Cleared from the chip above the list.
+  const [author, setAuthor] = useState<{ id: string; name: string } | null>(
+    null
+  );
   const [hiding, setHiding] = useState<ICommunityAdminPost | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -59,6 +67,8 @@ const ModerationPostsTab: React.FC = () => {
         type: CommunityPostType.POST,
         ...(status ? { status } : {}),
         ...(locale ? { locale } : {}),
+        ...(topicId ? { topicId } : {}),
+        ...(author ? { authorId: author.id } : {}),
         ...(search.trim() ? { search: search.trim() } : {}),
       });
       setPosts(res?.items ?? []);
@@ -68,7 +78,7 @@ const ModerationPostsTab: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, status, locale, search]);
+  }, [page, status, locale, topicId, author, search]);
 
   useEffect(() => {
     const timer = setTimeout(load, 300);
@@ -79,7 +89,17 @@ const ModerationPostsTab: React.FC = () => {
   // than leaving the operator on an empty page 4.
   useEffect(() => {
     setPage(1);
-  }, [status, locale, search]);
+  }, [status, locale, topicId, author, search]);
+
+  // The room list is small and never changes mid-session, so it is fetched once
+  // rather than with every filter change.
+  useEffect(() => {
+    communityService
+      .getTopics({ page: 1, take: 100 })
+      .then((res) => setTopics(res?.items ?? []))
+      // The picker is a convenience; the list below still works without it.
+      .catch(() => undefined);
+  }, []);
 
   const act = async (
     post: ICommunityAdminPost,
@@ -141,6 +161,29 @@ const ModerationPostsTab: React.FC = () => {
             </MenuItem>
           ))}
         </TextField>
+        <TextField
+          select
+          size="small"
+          label="Phòng"
+          value={topicId}
+          onChange={(event) => setTopicId(event.target.value)}
+          className="min-w-[200px]"
+        >
+          <MenuItem value="">Tất cả phòng</MenuItem>
+          {topics.map((topic) => (
+            <MenuItem key={topic._id} value={topic._id}>
+              {getTranslationValue(topic.name, lang)}
+            </MenuItem>
+          ))}
+        </TextField>
+        {author && (
+          <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-3 py-1.5 text-xs text-indigo-700">
+            Chỉ bài của <strong>{author.name}</strong>
+            <Button size="small" onClick={() => setAuthor(null)}>
+              Bỏ lọc
+            </Button>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -173,10 +216,18 @@ const ModerationPostsTab: React.FC = () => {
                     ? getTranslationValue(post.topic.name ?? undefined, lang)
                     : null
                 }
+                showRoomSlot
+                onAuthorClick={() =>
+                  setAuthor({
+                    id: post.author.id,
+                    name: post.author.name || "(tài khoản đã xoá)",
+                  })
+                }
                 subject={post.subject}
                 body={post.body}
                 images={post.images}
                 attachedCard={post.attachedCard}
+                attachedCourseId={post.attachedCourseId}
                 pinned={post.isPinned}
                 flags={[
                   ...(post.locale ? [post.locale.toUpperCase()] : []),

@@ -98,6 +98,8 @@ export interface ICommunityAdminPost {
   body: string;
   /** A saved keypoint card the writer attached, snapshotted at compose time. */
   attachedCard?: ICommunityAttachedCard | null;
+  /** A course the writer shared. The app draws it as a card; here it is a link. */
+  attachedCourseId?: string | null;
   /** Weekly questions carry translations instead of a body. */
   title?: ITranslation;
   note?: ITranslation;

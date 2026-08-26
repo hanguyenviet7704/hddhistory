@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   BellIcon,
+  BookOpenIcon,
   FlagIcon,
   HeartIcon,
   MessageCircleIcon,
@@ -40,12 +41,26 @@ export interface CommunityContentCardProps {
   /** The room this was written in — part of the meta line, as the group is on Facebook. */
   topicLabel?: string | null;
 
+  /**
+   * Keep the room's place in the meta line even when there is none.
+   *
+   * A post CAN be written without picking a room — the composer allows it — so
+   * a blank where the room goes is ambiguous: a moderator cannot tell "no room"
+   * from "the panel failed to show it". On the posts tab the slot always says
+   * one or the other. Comments and chat lines have no room at all, so they
+   * leave it off entirely.
+   */
+  showRoomSlot?: boolean;
+
   /** Draws the pinned strip above the header, and says why this row is first. */
   pinned?: boolean;
   subject?: string;
   body: string;
   images?: string[];
   attachedCard?: ICommunityAttachedCard | null;
+
+  /** A shared course — the app draws a cover card; here it is a link to the editor. */
+  attachedCourseId?: string | null;
 
   /** Short pills after the name: "đã ghim", "khoá bình luận", "vi". */
   flags?: string[];
@@ -62,6 +77,15 @@ export interface CommunityContentCardProps {
   banner?: React.ReactNode;
 
   actions?: React.ReactNode;
+
+  /**
+   * Filters the list down to this author.
+   *
+   * The one moderation move the app has no equivalent for: judging a single
+   * post tells you whether it is bad, and the author's other twenty tell you
+   * whether you are looking at a person having a bad day or at a spammer.
+   */
+  onAuthorClick?: () => void;
 
   /** A reply sits indented under its parent, as in the thread. */
   indented?: boolean;
@@ -80,11 +104,13 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
   createdAt,
   status,
   topicLabel,
+  showRoomSlot,
   pinned,
   subject,
   body,
   images,
   attachedCard,
+  attachedCourseId,
   flags,
   likeCount,
   commentCount,
@@ -93,6 +119,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
   note,
   banner,
   actions,
+  onAuthorClick,
   indented,
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -128,9 +155,19 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
             <CommunityAvatarDisc author={author} size={indented ? 30 : 38} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="text-sm font-semibold text-gray-900">
-                  {author?.name || "(tài khoản đã xoá)"}
-                </span>
+                {onAuthorClick ? (
+                  <button
+                    type="button"
+                    onClick={onAuthorClick}
+                    className="text-sm font-semibold text-gray-900 hover:text-indigo-600 hover:underline"
+                  >
+                    {author?.name || "(tài khoản đã xoá)"}
+                  </button>
+                ) : (
+                  <span className="text-sm font-semibold text-gray-900">
+                    {author?.name || "(tài khoản đã xoá)"}
+                  </span>
+                )}
                 {badge && (
                   // Said out loud so a moderator never assumes the writer put
                   // their name to it — and so it stays obvious that a ban still
@@ -152,13 +189,22 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
                   room leads because it is the context the words were written
                   in — the same order the app shows above the headline. */}
               <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-gray-500">
-                {!!topicLabel && (
+                {topicLabel ? (
                   <>
                     <span className="font-medium text-indigo-600">
                       {topicLabel}
                     </span>
                     <span>·</span>
                   </>
+                ) : (
+                  showRoomSlot && (
+                    <>
+                      <span className="italic text-gray-400">
+                        Không có phòng
+                      </span>
+                      <span>·</span>
+                    </>
+                  )
                 )}
                 <span>{new Date(createdAt).toLocaleString("vi-VN")}</span>
                 {author?.id && (
@@ -259,6 +305,23 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
                 </div>
               )}
             </div>
+          )}
+
+          {/* Facebook's summary line: what the readers did, sitting between the
+              content and the buttons rather than in a column of its own. */}
+          {!!attachedCourseId && (
+            // A link rather than a rendered cover: the panel would have to
+            // fetch the course to draw one, and what a moderator needs from it
+            // is a way THERE, not a picture of it.
+            <a
+              href={`/course/${attachedCourseId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 flex max-w-md items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 hover:border-indigo-300 hover:text-indigo-700"
+            >
+              <BookOpenIcon size={14} />
+              Đính kèm khoá học — mở trang khoá
+            </a>
           )}
 
           {/* Facebook's summary line: what the readers did, sitting between the
