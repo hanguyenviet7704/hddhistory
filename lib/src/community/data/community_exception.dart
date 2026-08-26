@@ -16,11 +16,13 @@ const String _codeLoginRequired = 'COMMUNITY_LOGIN_REQUIRED';
 /// Turns whatever a community call threw into an [AppException] carrying a line
 /// a person can act on.
 ///
-/// Anything unrecognised keeps the old behaviour — the raw text. That is not
-/// copy, but it IS a clue in a bug report, and dressing an unforeseen error in a
-/// friendly sentence hides exactly the ones worth seeing.
+/// Anything unrecognised gets the generic line, and the raw text goes to the
+/// console instead. A `DioException [bad response]: This exception was thrown
+/// because...` on screen tells the reader nothing they can do and looks like the
+/// app broke — but it is the first thing a developer wants, so it is logged, not
+/// discarded.
 AppException communityException(Object error) {
-  if (error is! DioException) return AppException.unexpected(error.toString());
+  if (error is! DioException) return _communityGenericFailure(error);
 
   // A 5xx can answer with an HTML page, so the body is not always a Map —
   // indexing a String throws, and this runs inside an error mapper where a
@@ -56,8 +58,16 @@ AppException communityException(Object error) {
       return AppException.unauthorized(l10n.community.guestBody);
 
     default:
-      return AppException.unexpected(error.toString());
+      return _communityGenericFailure(error);
   }
+}
+
+/// The line shown for anything the server did not name: "Chưa tải được nội
+/// dung. Kiểm tra kết nối rồi thử lại nhé."
+AppException _communityGenericFailure(Object error) {
+  LogDev.error('[community] $error');
+
+  return AppException.unexpected(l10n.community.errorBody);
 }
 
 /// "Thử lại sau 40 giây" / "sau 3 phút", from the wait the server quoted.
