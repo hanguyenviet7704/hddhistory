@@ -163,6 +163,22 @@ const menuGroups = [
     ],
   },
   {
+    // The Coach's own section rather than three rows inside Operations. It is a
+    // product surface with three moving parts — the switch that turns it on, the
+    // cache an editor fixes after the fact, and the queue of turns a reader said
+    // were wrong — and buried in a list of twelve unrelated tools they read as
+    // three settings pages that happen to share a word.
+    //
+    // Items drop the "Coach" suffix now the header carries it, the same way
+    // nothing under Confession repeats "Confession".
+    title: "AI Coach",
+    items: [
+      { name: "Cấu hình", icon: ChatBubbleLeftRightIcon, path: "/coach-config" },
+      { name: "Tình huống", icon: SparklesIcon, path: "/coach-situations" },
+      { name: "Đánh giá", icon: HandThumbDownIcon, path: "/coach-ratings" },
+    ],
+  },
+  {
     title: "Operations",
     items: [
       // "Statistics" now lives in the Dashboard group as "Tiến trình khoá".
@@ -175,12 +191,6 @@ const menuGroups = [
       // ngay tại chỗ chọn, khỏi vào sai trang. Tên khớp tiêu đề trang.
       { name: "Link Builder", icon: LinkIcon, path: "/deeplinks" },
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
-      // The three AI Coach surfaces sit together: the switch that turns the
-      // feature on, the cache an editor fixes after the fact, and the queue of
-      // turns a reader said were wrong. Named to match their page titles.
-      { name: "AI Coach", icon: ChatBubbleLeftRightIcon, path: "/coach-config" },
-      { name: "Tình huống Coach", icon: SparklesIcon, path: "/coach-situations" },
-      { name: "Đánh giá Coach", icon: HandThumbDownIcon, path: "/coach-ratings" },
       { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
       { name: "Popup Home", icon: MegaphoneIcon, path: "/home-popup" },
       // Audience groups that Banner Home / Popup Home target via `segmentIds`
