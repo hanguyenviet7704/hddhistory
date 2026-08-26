@@ -160,6 +160,28 @@ export const notificationService = {
     return unwrapData<NotificationCampaign>(res.data);
   },
 
+  /**
+   * Sửa một campaign NHÁP. API từ chối mọi trạng thái khác (`queued` có thể đã
+   * gửi được một nửa, chữ đã nằm trên máy người ta), nên nút Sửa chỉ hiện ở dòng
+   * nháp — lỗi 400 ở đây là đã có ai đó bấm Gửi trong lúc mình đang soạn.
+   */
+  async updateCampaign(
+    id: string,
+    payload: {
+      name?: string;
+      copies?: NotificationCampaignCopy[];
+      deeplink?: string;
+      segmentIds?: string[];
+      sendMode?: NotificationCampaignSendMode;
+      localHour?: number;
+      localMinute?: number;
+      scheduledDate?: string;
+    },
+  ): Promise<NotificationCampaign> {
+    const res = await axiosClient.put(`/notifications/campaigns/${id}`, payload);
+    return unwrapData<NotificationCampaign>(res.data);
+  },
+
   async queueCampaign(id: string): Promise<NotificationCampaign> {
     const res = await axiosClient.post(`/notifications/campaigns/${id}/queue`);
     return unwrapData<NotificationCampaign>(res.data);

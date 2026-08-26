@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import {
   ArrowPathIcon,
   ExclamationTriangleIcon,
   PaperAirplaneIcon,
+  PencilSquareIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 
@@ -122,6 +123,10 @@ export default function NotificationCampaignSection() {
 
   const [openSends, setOpenSends] = useState<string | null>(null);
   const [sends, setSends] = useState<NotificationCampaignSendRow[]>([]);
+
+  /** Id của campaign nháp đang sửa; null = ô soạn đang ở chế độ tạo mới. */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const composerRef = useRef<HTMLElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -247,6 +252,78 @@ export default function NotificationCampaignSection() {
   );
   const hasEnglish = filledCopies.some((copy) => copy.locale === "en");
 
+  const resetComposer = useCallback(() => {
+    setEditingId(null);
+    setName("");
+    setCopies(emptyCopies());
+    setSegmentIds([]);
+    setDeeplink("home");
+    setSendMode("now");
+    setLocalHour("20");
+    setLocalMinute("0");
+    setScheduledDate(todayInput());
+  }, []);
+
+  /**
+   * Nạp một campaign nháp vào ô soạn.
+   *
+   * Ô soạn nằm trên đầu trang còn nút Sửa nằm dưới danh sách, nên phải cuộn lên
+   * — không thì bấm Sửa trông như không có gì xảy ra.
+   */
+  const startEdit = (campaign: NotificationCampaign) => {
+    setEditingId(campaign._id);
+    setName(campaign.name);
+    setCopies(
+      LOCALES.map((locale) => ({
+        locale,
+        title: campaign.copies?.[locale]?.title ?? "",
+        body: campaign.copies?.[locale]?.body ?? "",
+      })),
+    );
+    setDeeplink(campaign.deeplink);
+    setSegmentIds(campaign.segmentIds ?? []);
+    setSendMode(campaign.sendMode);
+    setLocalHour(String(campaign.localHour ?? 20));
+    setLocalMinute(String(campaign.localMinute ?? 0));
+    setScheduledDate(campaign.scheduledDate || todayInput());
+    setOpenSends(null);
+    composerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    if (!name.trim()) return showError("Cần đặt tên campaign");
+    if (!hasEnglish) {
+      return showError(
+        "Cần có bản tiếng Anh — đây là bản dự phòng cho mọi ngôn ngữ khác",
+      );
+    }
+    setCreating(true);
+    try {
+      await notificationService.updateCampaign(editingId, {
+        name,
+        // Gửi CẢ danh sách: ngôn ngữ bị xoá trắng biến mất khỏi payload, và đó
+        // đúng là cách gỡ một bản dịch khỏi campaign.
+        copies: filledCopies,
+        deeplink,
+        segmentIds,
+        sendMode,
+        localHour: Number(localHour),
+        localMinute: Number(localMinute),
+        ...(sendMode === "local_hour" ? { scheduledDate } : {}),
+      });
+      showSuccess("Đã lưu thay đổi");
+      resetComposer();
+      await load();
+    } catch (error: any) {
+      showError(
+        error?.response?.data?.message || "Không lưu được thay đổi",
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const create = async (queueNow: boolean) => {
     if (!name.trim()) return showError("Cần đặt tên campaign");
     if (!hasEnglish) {
@@ -268,6 +345,8 @@ export default function NotificationCampaignSection() {
       });
       if (queueNow) await notificationService.queueCampaign(created._id);
       showSuccess(queueNow ? "Đã xếp hàng gửi" : "Đã lưu nháp");
+      // Cố ý KHÔNG resetComposer: đích và giờ gửi được giữ lại vì campaign kế
+      // tiếp thường đi cùng chỗ với campaign vừa tạo.
       setName("");
       setCopies(emptyCopies());
       setSegmentIds([]);
@@ -322,9 +401,14 @@ export default function NotificationCampaignSection() {
       </div>
 
       {/* Composer */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section
+        ref={composerRef}
+        className={`rounded-2xl border bg-white p-6 shadow-sm ${
+          editingId ? "border-teal-400 ring-1 ring-teal-200" : "border-slate-200"
+        }`}
+      >
         <h3 className="mb-4 text-base font-semibold text-slate-900">
-          Tạo campaign mới
+          {editingId ? "Sửa campaign nháp" : "Tạo campaign mới"}
         </h3>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -489,23 +573,50 @@ export default function NotificationCampaignSection() {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            disabled={creating}
-            onClick={() => create(false)}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-          >
-            Lưu nháp
-          </button>
-          <button
-            type="button"
-            disabled={creating}
-            onClick={() => create(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
-          >
-            <PaperAirplaneIcon className="h-4 w-4" />
-            {sendMode === "now" ? "Gửi ngay" : "Xếp hàng theo giờ user"}
-          </button>
+          {editingId ? (
+            <>
+              <button
+                type="button"
+                disabled={creating}
+                onClick={saveEdit}
+                className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+              >
+                Lưu thay đổi
+              </button>
+              <button
+                type="button"
+                disabled={creating}
+                onClick={resetComposer}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Huỷ sửa
+              </button>
+              <span className="text-xs text-slate-500">
+                Lưu xong bấm <b>Gửi</b> ở dòng của campaign bên dưới. Chỉ campaign
+                còn ở trạng thái Nháp mới sửa được.
+              </span>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                disabled={creating}
+                onClick={() => create(false)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Lưu nháp
+              </button>
+              <button
+                type="button"
+                disabled={creating}
+                onClick={() => create(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+              >
+                <PaperAirplaneIcon className="h-4 w-4" />
+                {sendMode === "now" ? "Gửi ngay" : "Xếp hàng theo giờ user"}
+              </button>
+            </>
+          )}
         </div>
       </section>
 
@@ -535,7 +646,11 @@ export default function NotificationCampaignSection() {
             {campaigns.map((campaign) => (
               <article
                 key={campaign._id}
-                className="rounded-xl border border-slate-100 bg-slate-50/60 p-4"
+                className={`rounded-xl border p-4 ${
+                  editingId === campaign._id
+                    ? "border-teal-400 bg-teal-50/60"
+                    : "border-slate-100 bg-slate-50/60"
+                }`}
               >
                 <div className="flex flex-wrap items-center gap-3">
                   <span
@@ -586,14 +701,24 @@ export default function NotificationCampaignSection() {
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   {campaign.status === "draft" ? (
-                    <button
-                      type="button"
-                      disabled={busyId === campaign._id}
-                      onClick={() => act(campaign._id, "queue")}
-                      className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
-                    >
-                      Gửi
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        disabled={busyId === campaign._id}
+                        onClick={() => act(campaign._id, "queue")}
+                        className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+                      >
+                        Gửi
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startEdit(campaign)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white"
+                      >
+                        <PencilSquareIcon className="h-3.5 w-3.5" />
+                        {editingId === campaign._id ? "Đang sửa" : "Sửa"}
+                      </button>
+                    </>
                   ) : null}
                   {campaign.status === "queued" ||
                   campaign.status === "sending" ? (
