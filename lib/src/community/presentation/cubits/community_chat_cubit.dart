@@ -109,6 +109,16 @@ class CommunityChatCubit extends Cubit<CommunityChatState>
     );
   }
 
+  /// Re-opens the room after a failed load.
+  ///
+  /// The room is held privately, so without this the screen has no way to ask
+  /// again — and a chat that fails to open with no retry is a dead end.
+  Future<void> retry() {
+    if (_room.isEmpty) return Future.value();
+
+    return open(_room);
+  }
+
   /// Older history, above what is on screen.
   Future<void> loadOlder() async {
     if (state.isLoadingMore || !state.hasMore) return;

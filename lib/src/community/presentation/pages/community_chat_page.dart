@@ -213,6 +213,23 @@ class _ChatTranscript extends StatelessWidget {
     final l10n = context.l10n.community;
 
     if (state.messages.isEmpty) {
+      // A failed load and an empty room are NOT the same thing, and until now
+      // they drew the same screen: the room 404'd for two hours while this said
+      // "Chưa có ai nhắn gì", which reads as "the room is fine, nobody has
+      // spoken" — the one message guaranteed to send someone looking in the
+      // wrong place.
+      if (state.status == CommunityStatus.failure) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: _CommunityMessage(
+            title: l10n.errorTitle,
+            body: state.errorMessage ?? l10n.errorBody,
+            actionLabel: l10n.retry,
+            onAction: () => context.read<CommunityChatCubit>().retry(),
+          ),
+        );
+      }
+
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: _CommunityMessage(title: l10n.chatEmptyTitle, body: l10n.chatEmptyBody),
@@ -355,6 +372,10 @@ class _OtherChatBubble extends StatelessWidget {
                           color: AppCustomColor.communityCommentInk,
                           height: 1.55,
                         ),
+                        // [AppText] clamps at 10 lines and ellipsises by
+                        // DEFAULT, so a long message was being cut off in the
+                        // room with no way to read the rest of it.
+                        maxLines: 100,
                       ),
                     ],
                   ),
@@ -463,6 +484,7 @@ class _MyChatBubble extends StatelessWidget {
               color: AppCustomColor.textWhite,
               height: 1.55,
             ),
+            maxLines: 100,
           ),
         ),
         SizedBox(height: 5.h),
