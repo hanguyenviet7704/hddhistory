@@ -570,6 +570,14 @@ export default function NotificationCampaignSection() {
           <p className="text-xs text-slate-500">
             Ngôn ngữ để trống sẽ dùng bản tiếng Anh. Bản tiếng Anh là bắt buộc.
           </p>
+          <p className="text-xs text-slate-500">
+            Biến dùng được: <code className="text-slate-700">{"{user_name}"}</code>.
+            User chưa đặt tên sẽ thành <b>bạn</b> / <b>you</b> / <b>你</b> /{" "}
+            <b>あなた</b> / <b>회원님</b> theo ngôn ngữ của chính bản dịch đó, đứng
+            đầu câu thì viết hoa. Biến khác (<code>{"{course_name}"}</code>,{" "}
+            <code>{"{quote}"}</code>…) bị từ chối khi lưu — campaign không có dữ
+            liệu để điền, để lọt thì người đọc thấy nguyên dấu ngoặc nhọn.
+          </p>
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-3">
