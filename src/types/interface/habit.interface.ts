@@ -11,6 +11,10 @@ export interface IHabit {
    * showing the skillset's logo, which is what every habit did before.
    */
   image?: string;
+  /** What the habit is and when it applies — grounds the Coach's scenes. */
+  description?: ITranslation;
+  /** Moments the habit comes up, one per line per locale. */
+  contexts?: ITranslation;
   defaultReminderTime?: string;
   order: number;
   // Keypoints this habit can be suggested in (many-to-many, PRD v2.0 §9.2). A
@@ -26,6 +30,8 @@ export interface HabitPayload {
   skillsetId: string;
   status?: HabitStatus;
   image?: string;
+  description?: ITranslation;
+  contexts?: ITranslation;
   defaultReminderTime?: string;
   order?: number;
   keypointIds?: string[];

@@ -76,6 +76,10 @@ export default function HabitModal({
   const lang = useSelector((state: RootState) => state.lang.code);
 
   const [title, setTitle] = useState<ITranslation>({});
+  // The Coach's grounding text. Two fields, both per locale, both optional —
+  // without them the Coach only has the title to build practice scenes from.
+  const [description, setDescription] = useState<ITranslation>({});
+  const [contexts, setContexts] = useState<ITranslation>({});
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
   const [image, setImage] = useState("");
@@ -125,6 +129,8 @@ export default function HabitModal({
 
     if (initial) {
       setTitle(initial.title ?? {});
+      setDescription(initial.description ?? {});
+      setContexts(initial.contexts ?? {});
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
       setImage(initial.image ?? "");
@@ -137,6 +143,8 @@ export default function HabitModal({
       setSelectedKeypointIds(initial.keypointIds ?? []);
     } else {
       setTitle({});
+      setDescription({});
+      setContexts({});
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
       setImage("");
@@ -332,6 +340,8 @@ export default function HabitModal({
 
     const payload: HabitPayload = {
       title: cleanedTitle,
+      description: cleanTranslation(description) ?? {},
+      contexts: cleanTranslation(contexts) ?? {},
       skillsetId,
       status,
       keypointIds: selectedKeypointIds,
@@ -379,6 +389,32 @@ export default function HabitModal({
               fullWidth
               size="small"
               required
+            />
+
+            <TextField
+              label={`Description (${lang.toUpperCase()})`}
+              value={description[lang] ?? ""}
+              onChange={(e) =>
+                setDescription((prev) => updateTranslationValue(prev, lang, e.target.value))
+              }
+              helperText="What the habit is, concretely, and when it applies — 1–2 sentences. The Coach builds its practice scenes from this."
+              fullWidth
+              size="small"
+              multiline
+              minRows={2}
+            />
+
+            <TextField
+              label={`Contexts (${lang.toUpperCase()})`}
+              value={contexts[lang] ?? ""}
+              onChange={(e) =>
+                setContexts((prev) => updateTranslationValue(prev, lang, e.target.value))
+              }
+              helperText="Moments the habit comes up, ONE PER LINE (e.g. “khi họp nhóm bị bác ý”). Each Coach scene is set in one of them — aim for 3–5."
+              fullWidth
+              size="small"
+              multiline
+              minRows={4}
             />
 
             <TextField
