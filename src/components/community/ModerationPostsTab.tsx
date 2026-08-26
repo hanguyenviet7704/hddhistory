@@ -177,9 +177,9 @@ const ModerationPostsTab: React.FC = () => {
                 body={post.body}
                 images={post.images}
                 attachedCard={post.attachedCard}
+                pinned={post.isPinned}
                 flags={[
                   ...(post.locale ? [post.locale.toUpperCase()] : []),
-                  ...(post.isPinned ? ["Đã ghim"] : []),
                   ...(post.commentsLocked ? ["Khoá bình luận"] : []),
                 ]}
                 likeCount={post.likeCount}

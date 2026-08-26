@@ -1,6 +1,11 @@
 import React, { useState } from "react";
-import { Chip } from "@mui/material";
-import { BellIcon, FlagIcon, HeartIcon, MessageCircleIcon } from "lucide-react";
+import {
+  BellIcon,
+  FlagIcon,
+  HeartIcon,
+  MessageCircleIcon,
+  PinIcon,
+} from "lucide-react";
 
 import {
   CommunityAuthorType,
@@ -32,8 +37,11 @@ export interface CommunityContentCardProps {
   createdAt: string;
   status: CommunityContentStatus;
 
-  /** The room, as the chip above the headline. */
+  /** The room this was written in — part of the meta line, as the group is on Facebook. */
   topicLabel?: string | null;
+
+  /** Draws the pinned strip above the header, and says why this row is first. */
+  pinned?: boolean;
   subject?: string;
   body: string;
   images?: string[];
@@ -72,6 +80,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
   createdAt,
   status,
   topicLabel,
+  pinned,
   subject,
   body,
   images,
@@ -100,6 +109,14 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
         ].join(" ")}
       >
         {banner}
+
+        {pinned && (
+          // Above everything, the way Facebook labels a pinned post — and the
+          // reason this row is at the top of the list rather than in date order.
+          <div className="mb-2 flex items-center gap-1.5 border-b border-gray-100 pb-2 text-xs font-semibold text-indigo-600">
+            <PinIcon size={13} /> Bài đã ghim
+          </div>
+        )}
 
         <div className="flex items-start justify-between gap-4">
           <div
@@ -131,9 +148,25 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
                   </span>
                 ))}
               </div>
-              <div className="mt-0.5 text-xs text-gray-500">
-                {new Date(createdAt).toLocaleString("vi-VN")}
-                {author?.id ? ` · ${author.id}` : ""}
+              {/* Facebook's second line: where it was posted, then when. The
+                  room leads because it is the context the words were written
+                  in — the same order the app shows above the headline. */}
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-gray-500">
+                {!!topicLabel && (
+                  <>
+                    <span className="font-medium text-indigo-600">
+                      {topicLabel}
+                    </span>
+                    <span>·</span>
+                  </>
+                )}
+                <span>{new Date(createdAt).toLocaleString("vi-VN")}</span>
+                {author?.id && (
+                  <>
+                    <span>·</span>
+                    <span className="text-gray-400">{author.id}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -145,7 +178,10 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
 
         <div
           className={[
-            indented ? "mt-2 pl-[42px]" : "mt-3 pl-[50px]",
+            // Full width, not indented under the avatar: a post is read as a
+            // block of writing, and Facebook, the app's own thread screen and
+            // every other feed put the words under the header, not beside it.
+            "mt-3",
             // Dimmed when it is off the feed, so a list can be scanned for what
             // is still live without reading a single status chip. The actions
             // below stay at full strength — the one thing you came to click
@@ -153,21 +189,6 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
             isDown ? "opacity-60" : "",
           ].join(" ")}
         >
-          {!!topicLabel && (
-            <Chip
-              size="small"
-              label={topicLabel}
-              className="mb-2"
-              sx={{
-                height: 22,
-                backgroundColor: "#F4F3FD",
-                color: "#7A69E8",
-                fontWeight: 700,
-                fontSize: 11,
-              }}
-            />
-          )}
-
           {!!subject && (
             <h3 className="mb-1 text-[15px] font-semibold leading-snug text-gray-900">
               {subject}
@@ -196,13 +217,25 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
           )}
 
           {!!images?.length && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            // One picture runs the width of the card, several go two-up — what
+            // a feed does, and what makes a picture judgeable. As 96px
+            // thumbnails they were too small to tell whether the content was
+            // the problem, which is the only question being asked here.
+            <div
+              className={[
+                "mt-3 grid gap-1.5 overflow-hidden rounded-xl",
+                images.length > 1 ? "grid-cols-2" : "grid-cols-1",
+              ].join(" ")}
+            >
               {images.map((url) => (
                 <a key={url} href={url} target="_blank" rel="noreferrer">
                   <img
                     src={url}
                     alt=""
-                    className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
+                    className={[
+                      "w-full border border-gray-200 object-cover",
+                      images.length > 1 ? "h-52" : "max-h-[420px]",
+                    ].join(" ")}
                   />
                 </a>
               ))}
@@ -228,6 +261,8 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
             </div>
           )}
 
+          {/* Facebook's summary line: what the readers did, sitting between the
+              content and the buttons rather than in a column of its own. */}
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
             {likeCount !== undefined && (
               <span className="flex items-center gap-1">
