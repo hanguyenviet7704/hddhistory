@@ -22,10 +22,14 @@ import {
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 import { coachService } from "../../services/coachService";
+import { habitService } from "../../services/habitService";
 import {
   CoachSituation,
   CoachSituationVariant,
 } from "../../types/interface/coach.interface";
+import { IHabit } from "../../types/interface/habit.interface";
+import { LangCode } from "../../types/enum/common.enum";
+import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 const LOCALES = ["", "en", "vi", "zh", "ja", "ko"];
@@ -49,6 +53,9 @@ const CoachSituationList: React.FC = () => {
 
   const [locale, setLocale] = useState("");
   const [variant, setVariant] = useState<"" | CoachSituationVariant>("");
+  const [habitId, setHabitId] = useState("");
+  const [habits, setHabits] = useState<IHabit[]>([]);
+  const [rebuilding, setRebuilding] = useState(false);
 
   const [editing, setEditing] = useState<CoachSituation | null>(null);
   const [draft, setDraft] = useState("");
@@ -61,6 +68,7 @@ const CoachSituationList: React.FC = () => {
       const res = await coachService.getSituations({
         locale: locale || undefined,
         variant: variant || undefined,
+        habitId: habitId || undefined,
       });
       setRows(Array.isArray(res?.data) ? res.data : []);
     } catch (err: any) {
@@ -68,11 +76,57 @@ const CoachSituationList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [locale, variant]);
+  }, [locale, variant, habitId]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // Habit titles for the rows and the filter. Loaded once; the list is small.
+  useEffect(() => {
+    (async () => {
+      try {
+        const res: any = await habitService.getList({ isAll: true });
+        const list = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res?.data?.items)
+          ? res.data.items
+          : Array.isArray(res)
+          ? res
+          : [];
+        setHabits(list as IHabit[]);
+      } catch {
+        setHabits([]);
+      }
+    })();
+  }, []);
+
+  const habitTitle = useCallback(
+    (id: string) => {
+      const habit = habits.find((h) => h._id === id);
+      return habit ? getTranslationValue(habit.title, LangCode.VI) || getTranslationValue(habit.title, LangCode.EN) : "";
+    },
+    [habits]
+  );
+
+  const rebuildPool = async () => {
+    if (!habitId) return;
+    const ok = window.confirm(
+      `Xoá toàn bộ cảnh AI đã sinh của habit “${habitTitle(habitId)}”?\n\n` +
+        "Kho sẽ được dựng lại từ description + contexts hiện tại ở lần tập tiếp theo. Cảnh đã sửa tay được giữ."
+    );
+    if (!ok) return;
+    setRebuilding(true);
+    try {
+      const res = await coachService.rebuildHabitPool(habitId);
+      showSuccess(`Đã xoá ${res?.data?.deleted ?? 0} cảnh — lần tập tới sẽ sinh lại`);
+      load();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không dựng lại được");
+    } finally {
+      setRebuilding(false);
+    }
+  };
 
   const editedCount = useMemo(
     () => rows.filter((r) => r.source === "edited").length,
@@ -120,9 +174,11 @@ const CoachSituationList: React.FC = () => {
       <div>
         <h1 className="text-2xl font-semibold">Tình huống Coach</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Cache, không phải nội dung soạn tay. Dòng tự xuất hiện khi có người
-          đầu tiên cần tới nó — trang này để sửa hoặc bỏ cái dở{" "}
-          <strong>sau khi</strong> nó đã ra, chứ không có luồng duyệt trước.
+          Cache, không phải nội dung soạn tay. Mỗi habit (theo ngôn ngữ, biến
+          thể, nhóm tuổi, mục tiêu) giữ một kho tối đa vài cảnh — đủ kho thì
+          xoay cảnh cũ, không sinh thêm. Cảnh sinh từ description + contexts của
+          habit; đổi hai trường đó thì bấm <strong>Dựng lại kho cảnh</strong>.
+          Trang này để sửa hoặc bỏ cái dở <strong>sau khi</strong> nó đã ra.
         </p>
       </div>
 
@@ -161,6 +217,30 @@ const CoachSituationList: React.FC = () => {
           ))}
         </TextField>
 
+        <TextField
+          select
+          size="small"
+          label="Habit"
+          value={habitId}
+          onChange={(e) => setHabitId(e.target.value)}
+          sx={{ minWidth: 320 }}
+        >
+          <MenuItem value="">Tất cả habit</MenuItem>
+          {habits.map((h) => (
+            <MenuItem key={h._id} value={h._id}>
+              {getTranslationValue(h.title, LangCode.VI) || getTranslationValue(h.title, LangCode.EN) || h._id}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {habitId && (
+          <Tooltip title="Xoá cảnh AI đã sinh của habit này để kho dựng lại từ description + contexts mới">
+            <Button size="small" variant="outlined" onClick={rebuildPool} disabled={rebuilding}>
+              {rebuilding ? "Đang xoá…" : "Dựng lại kho cảnh"}
+            </Button>
+          </Tooltip>
+        )}
+
         <div className="ml-auto text-sm text-gray-500">
           {rows.length} dòng · {editedCount} đã sửa tay
         </div>
@@ -180,16 +260,30 @@ const CoachSituationList: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell width={90}>Locale</TableCell>
-                <TableCell width={150}>Biến thể</TableCell>
+                <TableCell width={220}>Habit</TableCell>
+                <TableCell width={60}>Slot</TableCell>
+                <TableCell width={70}>Locale</TableCell>
+                <TableCell width={120}>Biến thể</TableCell>
                 <TableCell>Tình huống</TableCell>
                 <TableCell width={110}>Nguồn</TableCell>
+                <TableCell width={140}>Tạo lúc</TableCell>
                 <TableCell width={100} />
               </TableRow>
             </TableHead>
             <TableBody>
               {rows.map((row) => (
                 <TableRow key={row._id} hover>
+                  <TableCell>
+                    <span className="text-sm">{habitTitle(row.habitId) || <code className="text-xs">{row.habitId}</code>}</span>
+                    {(row.audience || row.goalKey) && (
+                      <div className="text-xs text-gray-400">
+                        {[row.audience, row.goalKey].filter((v) => v && v !== "unknown").join(" · ")}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <code className="text-xs">{row.slot ?? 0}</code>
+                  </TableCell>
                   <TableCell>{row.locale}</TableCell>
                   <TableCell>
                     <code className="text-xs">{row.variant}</code>
@@ -204,6 +298,11 @@ const CoachSituationList: React.FC = () => {
                       color={row.source === "edited" ? "success" : "default"}
                       variant={row.source === "edited" ? "filled" : "outlined"}
                     />
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-xs text-gray-500">
+                      {row.createdAt ? new Date(row.createdAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : ""}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Sửa">

@@ -19,6 +19,12 @@ export const coachService = {
   // ---- cached situations ----
   // No create: rows appear when a reader first needs one. This surface exists
   // to fix or discard, not to author.
+  /** Drop every AI-generated scene of one habit so its pool is rebuilt from the current description/contexts. Hand-edited scenes stay. */
+  async rebuildHabitPool(habitId: string) {
+    const res = await axiosClient.delete(`/coach-situations/habit/${habitId}`);
+    return res.data;
+  },
+
   async getSituations(params?: {
     habitId?: string;
     locale?: string;

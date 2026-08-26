@@ -24,6 +24,11 @@ export interface CoachSituation {
   habitId: string;
   locale: string;
   variant: CoachSituationVariant;
+  /** Who the scene was written for — the age band and onboarding goal keys. */
+  audience?: string;
+  goalKey?: string;
+  /** Position in the habit's pool (0-based); the pool holds at most a few per key. */
+  slot?: number;
   prompt: string;
   /** `generated` = the model's first guess. `edited` = a person fixed it, and generation will never overwrite it again. */
   source: "generated" | "edited";
