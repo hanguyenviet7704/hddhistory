@@ -15,6 +15,10 @@ export interface IHabit {
   description?: ITranslation;
   /** Moments the habit comes up, one per line per locale. */
   contexts?: ITranslation;
+  /** The skill's rubric — one `key | label` criterion per line per locale (4-5). */
+  rubric?: ITranslation;
+  /** The skill's difficulty ladder — one `<level> | <shape>` rung per line (5). */
+  ladder?: ITranslation;
   defaultReminderTime?: string;
   order: number;
   // Keypoints this habit can be suggested in (many-to-many, PRD v2.0 §9.2). A
@@ -32,6 +36,8 @@ export interface HabitPayload {
   image?: string;
   description?: ITranslation;
   contexts?: ITranslation;
+  rubric?: ITranslation;
+  ladder?: ITranslation;
   defaultReminderTime?: string;
   order?: number;
   keypointIds?: string[];

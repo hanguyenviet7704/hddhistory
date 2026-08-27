@@ -80,6 +80,11 @@ export default function HabitModal({
   // without them the Coach only has the title to build practice scenes from.
   const [description, setDescription] = useState<ITranslation>({});
   const [contexts, setContexts] = useState<ITranslation>({});
+  // Tầng 4 — what a good answer to this skill's scenes does, and what level
+  // 1..5 means for THIS skill. Both optional: no rubric means the scene is
+  // practised but not scored, no ladder means generic escalation.
+  const [rubric, setRubric] = useState<ITranslation>({});
+  const [ladder, setLadder] = useState<ITranslation>({});
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
   const [image, setImage] = useState("");
@@ -131,6 +136,8 @@ export default function HabitModal({
       setTitle(initial.title ?? {});
       setDescription(initial.description ?? {});
       setContexts(initial.contexts ?? {});
+      setRubric(initial.rubric ?? {});
+      setLadder(initial.ladder ?? {});
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
       setImage(initial.image ?? "");
@@ -145,6 +152,8 @@ export default function HabitModal({
       setTitle({});
       setDescription({});
       setContexts({});
+      setRubric({});
+      setLadder({});
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
       setImage("");
@@ -342,6 +351,8 @@ export default function HabitModal({
       title: cleanedTitle,
       description: cleanTranslation(description) ?? {},
       contexts: cleanTranslation(contexts) ?? {},
+      rubric: cleanTranslation(rubric) ?? {},
+      ladder: cleanTranslation(ladder) ?? {},
       skillsetId,
       status,
       keypointIds: selectedKeypointIds,
@@ -411,6 +422,32 @@ export default function HabitModal({
                 setContexts((prev) => updateTranslationValue(prev, lang, e.target.value))
               }
               helperText="Moments the habit comes up, ONE PER LINE (e.g. “khi họp nhóm bị bác ý”). Each Coach scene is set in one of them — aim for 3–5."
+              fullWidth
+              size="small"
+              multiline
+              minRows={4}
+            />
+
+            <TextField
+              label={`Rubric (${lang.toUpperCase()})`}
+              value={rubric[lang] ?? ""}
+              onChange={(e) =>
+                setRubric((prev) => updateTranslationValue(prev, lang, e.target.value))
+              }
+              helperText='Tiêu chí chấm cho kỹ năng này — MỖI DÒNG MỘT tiêu chí, dạng "key | nhãn" (4–5 dòng). Ví dụ: "boundary | Giữ ranh giới khi bị gây áp lực". Key giữ nguyên khi đổi nhãn để không mất điểm cũ. Để trống = tình huống của habit này không chấm điểm.'
+              fullWidth
+              size="small"
+              multiline
+              minRows={4}
+            />
+
+            <TextField
+              label={`Ladder (${lang.toUpperCase()})`}
+              value={ladder[lang] ?? ""}
+              onChange={(e) =>
+                setLadder((prev) => updateTranslationValue(prev, lang, e.target.value))
+              }
+              helperText='Thang độ khó riêng của kỹ năng — MỖI DÒNG MỘT rung, dạng "level | hình dạng tình huống", 5 dòng. Ví dụ: "4 | Đối phương kích thêm lần thứ hai". Cảnh sinh mới sẽ dựng theo đúng rung của level đó.'
               fullWidth
               size="small"
               multiline

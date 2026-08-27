@@ -32,8 +32,14 @@ export interface CoachSituation {
   prompt: string;
   /** Two tappable opener suggestions shown with the scene. */
   samples?: string[];
-  /** The scene script: 1–2 ordered probe intents the Coach walks after the first answer. */
+  /** The scene script: 2–4 ordered probe intents the Coach walks after the first answer. */
   beats?: string[];
+  /** What the other person SAYS at each beat, index-aligned with `beats`. "" = probe. */
+  beatLines?: string[];
+  /** Who those lines belong to, as the scene names them. */
+  counterpart?: string | null;
+  /** Difficulty band 1–5, from the skill's own ladder. */
+  level?: number | null;
   /** The lesson this scene lands, woven into the closing reply. */
   takeaway?: string | null;
   /** The concrete move this scene teaches — pre-fills the reminder. */
@@ -49,6 +55,9 @@ export interface CoachSituationUpdate {
   prompt: string;
   samples?: string[];
   beats?: string[];
+  beatLines?: string[];
+  counterpart?: string;
+  level?: number;
   takeaway?: string;
   goodMove?: string;
 }

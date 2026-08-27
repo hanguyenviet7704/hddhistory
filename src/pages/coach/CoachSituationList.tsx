@@ -61,6 +61,9 @@ const CoachSituationList: React.FC = () => {
   const [draftPrompt, setDraftPrompt] = useState("");
   const [draftSamples, setDraftSamples] = useState("");
   const [draftBeats, setDraftBeats] = useState("");
+  const [draftBeatLines, setDraftBeatLines] = useState("");
+  const [draftCounterpart, setDraftCounterpart] = useState("");
+  const [draftLevel, setDraftLevel] = useState("");
   const [draftTakeaway, setDraftTakeaway] = useState("");
   const [draftGoodMove, setDraftGoodMove] = useState("");
   const [saving, setSaving] = useState(false);
@@ -142,6 +145,11 @@ const CoachSituationList: React.FC = () => {
     setDraftPrompt(row.prompt);
     setDraftSamples((row.samples ?? []).join("\n"));
     setDraftBeats((row.beats ?? []).join("\n"));
+    // Blank lines are MEANINGFUL here (a beat the Coach probes instead of
+    // performing), so they survive the round-trip untrimmed.
+    setDraftBeatLines((row.beatLines ?? []).join("\n"));
+    setDraftCounterpart(row.counterpart ?? "");
+    setDraftLevel(row.level ? String(row.level) : "");
     setDraftTakeaway(row.takeaway ?? "");
     setDraftGoodMove(row.goodMove ?? "");
   };
@@ -159,6 +167,9 @@ const CoachSituationList: React.FC = () => {
         prompt: draftPrompt,
         samples: toList(draftSamples),
         beats: toList(draftBeats),
+        beatLines: draftBeatLines.split("\n").map((line) => line.trim()),
+        counterpart: draftCounterpart.trim(),
+        ...(draftLevel.trim() ? { level: Number(draftLevel) } : {}),
         takeaway: draftTakeaway.trim(),
         goodMove: draftGoodMove.trim(),
       });
@@ -281,6 +292,7 @@ const CoachSituationList: React.FC = () => {
               <TableRow>
                 <TableCell width={220}>Habit</TableCell>
                 <TableCell width={60}>Slot</TableCell>
+                <TableCell width={64}>Level</TableCell>
                 <TableCell width={70}>Locale</TableCell>
                 <TableCell width={120}>Biến thể</TableCell>
                 <TableCell>Tình huống</TableCell>
@@ -303,6 +315,13 @@ const CoachSituationList: React.FC = () => {
                   <TableCell>
                     <code className="text-xs">{row.slot ?? 0}</code>
                   </TableCell>
+                  <TableCell>
+                    {row.level ? (
+                      <Chip size="small" label={row.level} variant="outlined" />
+                    ) : (
+                      <span className="text-xs text-gray-300">—</span>
+                    )}
+                  </TableCell>
                   <TableCell>{row.locale}</TableCell>
                   <TableCell>
                     <code className="text-xs">{row.variant}</code>
@@ -312,7 +331,12 @@ const CoachSituationList: React.FC = () => {
                     <div className="text-xs text-gray-400 mt-1 space-y-0.5">
                       <div>
                         {row.beats?.length
-                          ? `${row.beats.length} nhịp gợi`
+                          ? `${row.beats.length} nhịp gợi` +
+                            ((row.beatLines ?? []).filter(Boolean).length
+                              ? ` · ${(row.beatLines ?? []).filter(Boolean).length} lượt nhập vai${
+                                  row.counterpart ? ` (${row.counterpart})` : ""
+                                }`
+                              : "")
                           : "chưa có kịch bản (cảnh cũ)"}
                       </div>
                       {row.takeaway && <div>Bài học: {row.takeaway}</div>}
@@ -403,6 +427,42 @@ const CoachSituationList: React.FC = () => {
             value={draftBeats}
             onChange={(e) => setDraftBeats(e.target.value)}
           />
+          <TextField
+            label="Lời đối phương từng nhịp (mỗi dòng khớp một nhịp)"
+            multiline
+            minRows={3}
+            fullWidth
+            className="!mt-4"
+            value={draftBeatLines}
+            onChange={(e) => setDraftBeatLines(e.target.value)}
+            helperText="Dòng thứ i là câu người kia NÓI ở nhịp thứ i — Coach sẽ nhập vai đọc câu đó. Dòng nào để TRỐNG thì nhịp đó Coach hỏi như thường. Dòng trống có nghĩa, đừng xoá cho gọn."
+          />
+          <div className="mt-4 flex gap-3">
+            <TextField
+              label="Tên người kia"
+              value={draftCounterpart}
+              onChange={(e) => setDraftCounterpart(e.target.value)}
+              size="small"
+              sx={{ flex: 1 }}
+              helperText="Để trống nếu cảnh chỉ có một mình"
+            />
+            <TextField
+              select
+              label="Độ khó"
+              value={draftLevel}
+              onChange={(e) => setDraftLevel(e.target.value)}
+              size="small"
+              sx={{ width: 150 }}
+              helperText="Theo thang của habit"
+            >
+              <MenuItem value="">—</MenuItem>
+              {[1, 2, 3, 4, 5].map((l) => (
+                <MenuItem key={l} value={String(l)}>
+                  {l}
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
           <TextField
             label="Bài học (takeaway) — một câu"
             fullWidth
