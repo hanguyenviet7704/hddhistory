@@ -81,6 +81,24 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     // After the scene, when the model could not reply.
     case 'coach.prompt.sceneAck':
       return l10n.sceneAck;
+    // T4 — "Mình ghi lại rồi nhé.", said on the way to the commitment question.
+    case 'coach.prompt.jotAck':
+      return l10n.promptJotAck;
+    // Nhịp 4 of the scene, and the line that closes it when nhịp 5 is skipped.
+    case 'coach.prompt.sceneAgain':
+      return l10n.promptSceneAgain;
+    case 'coach.prompt.sceneDone':
+      return l10n.promptSceneDone;
+    // ②C keeps nothing, so it does not say "ghi lại rồi nhé".
+    case 'coach.prompt.closingHeard':
+      return l10n.promptClosingHeard;
+    // Bộ điều phối, and the scene's last two beats.
+    case 'coach.prompt.hub':
+      return l10n.promptHub;
+    case 'coach.prompt.sceneMet':
+      return l10n.promptSceneMet;
+    case 'coach.prompt.sceneWhen':
+      return l10n.promptSceneWhen;
     // ④ — the scene from three weeks ago.
     case 'coach.prompt.retryScene':
       return l10n.retryScene;
@@ -203,6 +221,12 @@ String? coachCourseReason(BuildContext context, String? key, [Map<String, String
   final l10n = context.l10n.coach;
 
   switch (key) {
+    // Ưu tiên 1 — "Ý mình vừa nói nằm trong khoá này."
+    // The card's one reason (doc v4): a habit they do not have yet.
+    case 'coach.course.reasonOutside':
+      return l10n.courseReasonOutside;
+    case 'coach.course.reasonKeypoint':
+      return l10n.courseReasonKeypoint;
     case 'coach.course.reasonBarrier':
       return l10n.courseReasonBarrier(habit: args['habit'] ?? '');
     case 'coach.course.reasonHabit':
@@ -244,6 +268,12 @@ String? coachStepLabel(BuildContext context, String step) {
     case 'free':
     case 'depth':
       return l10n.stepTelling;
+    case 'sceneStage2':
+    case 'sceneMet':
+    case 'sceneWhen':
+      return l10n.stepSituation;
+    case 'hub':
+      return l10n.stepHub;
     case 'twoCols':
     case 'redraft':
       return l10n.stepTwoCols;

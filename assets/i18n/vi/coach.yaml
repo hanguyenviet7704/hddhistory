@@ -9,7 +9,10 @@ escapeLabel: Hôm nay chỉ ghi lại thôi
 promptMood: Trước khi bắt đầu — hôm nay bạn thấy thế nào?
 promptMoodEnd: Trước khi đóng — giờ bạn thấy thế nào?
 promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào trước?
-promptPickHabit: Bạn muốn tập habit nào hôm nay?
+promptPickHabit: Mình hiểu sai rồi — bạn muốn nói về habit nào?
+habitChipLead: Đang nói về
+habitChipChange: Đổi habit
+habitChipChangeEcho: Đổi habit khác.
 promptPersona: Bạn muốn mình nói kiểu nào hôm nay?
 promptTime: Hôm nay bạn có bao nhiêu thời gian?
 promptTell: Kể mình nghe chuyện gần nhất của bạn với thói quen này. Cứ nói tự do, mình không chen.
@@ -127,7 +130,10 @@ mood4: Ổn
 mood5: Tốt
 promptStory: "Hôm nay có chuyện gì mới không?"
 storySkip: Không có gì đặc biệt
-promptDepth: Mình ghi lại thôi, hay bạn muốn kể sâu hơn?
+storyPickHabit: hoặc chọn habit muốn bàn
+storyPickHabitEcho: Mình muốn bàn một habit.
+promptDepth: Bạn muốn chia sẻ thêm không?
+promptJotAck: Mình ghi lại rồi nhé.
 depthShallow: Chỉ ghi lại thôi
 depthDeep: Kể sâu hơn
 promptBarrier: "Có dịp mà chưa làm là chuyện thường, mình không tính là thất bại. Lúc đó điều gì làm bạn dừng lại?"
@@ -140,6 +146,26 @@ contextChange: Đổi bối cảnh
 promptContextEdit: Vậy bối cảnh mới là gì?
 planSlept: Cái hẹn này mình tạm cất đi nhé. Khi nào cần thì bạn gọi lại.
 promptInvite: "Mình có một cảnh ngắn để tập. Không bắt buộc — bỏ qua cũng được."
+promptSceneAgain: Thử nói lại theo cách của bạn xem?
+sceneAgainYes: Nói lại
+sceneAgainYesEcho: Nói lại.
+sceneAgainNo: Đủ rồi
+sceneAgainNoEcho: Đủ rồi.
+promptSceneDone: Vậy mình dừng cảnh ở đây nhé.
+promptHub: Xong rồi. Còn gì bạn muốn nói không?
+hubTaskT1: Xem lại nhắc hẹn
+hubTaskT2: Tập một tình huống
+hubTaskT3: Kể chuyện
+hubStop: Mình dừng ở đây
+hubStopEcho: Mình dừng ở đây.
+promptSceneMet: Chuyện giống vậy bạn gặp bao giờ chưa?
+sceneMetYes: Gặp rồi
+sceneMetYesEcho: Gặp rồi.
+sceneMetNo: Chưa gặp
+sceneMetNoEcho: Chưa gặp.
+promptSceneWhen: Lúc đó là lúc nào?
+courseReasonOutside: Chuyện bạn vừa kể chạm tới một thứ chưa có trong kho của bạn
+promptClosingHeard: Mình nghe rồi. Khi nào muốn nói tiếp thì mình ở đây.
 inviteYes: Tập thử một cảnh
 inviteNo: Hôm nay bỏ qua
 promptPlanAsk: "Muốn đặt một Nhắc hẹn cho lần tới không?"
@@ -172,6 +198,7 @@ ratingSend: Gửi
 personaLabel: Giọng
 stepStory: "“Hôm nay có chuyện gì mới không?”"
 stepDepth: ghi lại hay kể sâu
+stepHub: còn gì muốn nói không
 stepBarrier: điều gì đã cản
 stepShrink: thu nhỏ nhắc hẹn
 stepContext: bối cảnh nhắc hẹn
@@ -204,6 +231,10 @@ planAskYesEcho: Có.
 planAskNoEcho: Không, đóng luôn.
 reminderOffEcho: Tắt nhắc.
 scheduleEcho: "Nhắc lúc ${time} · ${days}"
+modeOnce: Chỉ một lần
+modeDaily: Hằng ngày
+modeWeekly: Hằng tuần
+dateToday: Hôm nay
 promptCourseCard: Có một khoá gần với chuyện bạn vừa nói tới.
 courseOpen: Đi tới khoá học
 courseOpenEcho: Đi tới khoá học.
@@ -240,8 +271,9 @@ shrinkAskNoEcho: Giữ nguyên.
 promptShrinkEdit: "Sửa lại cho nhỏ hơn — vẫn là chữ của bạn."
 shrinkDoneNote: Mình đổi sang bản nhỏ hơn. Giờ nhắc giữ nguyên.
 courseReasonBarrier: "Vì bạn còn vướng ở «${habit}»"
-courseReasonHabit: "Nối tiếp «${habit}» bạn đang tập"
+courseReasonHabit: "Bài đầu tiên của khoá này là «${habit}»"
 courseReasonSkillset: Cùng hướng với thói quen bạn đang tập
+courseReasonKeypoint: Ý mình vừa nói nằm trong khoá này
 courseReasonSaved: Bạn đã lưu khoá này
 stepShrinkAsk: thu nhỏ nhắc hẹn
 

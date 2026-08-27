@@ -9,7 +9,10 @@ escapeLabel: 오늘은 기록만 할래요
 promptMood: 시작하기 전에 — 오늘 기분은 어떠세요?
 promptMoodEnd: 닫기 전에 — 지금은 어떠세요?
 promptPickNew: 새 습관을 몇 개 추가하셨네요. 어떤 것부터 이야기할까요?
-promptPickHabit: 오늘은 어떤 습관을 연습해 볼까요?
+promptPickHabit: 제가 잘못 알았네요 — 어떤 습관을 말한 거예요?
+habitChipLead: 지금 이야기 중
+habitChipChange: 습관 바꾸기
+habitChipChangeEcho: 습관을 바꿀게요.
 promptPersona: 오늘은 제가 어떻게 말하면 좋을까요?
 promptTime: 오늘은 시간이 얼마나 있으세요?
 promptTell: 이 습관과 관련된 가장 최근 일을 들려주세요. 편하게 이야기하세요 — 끼어들지 않을게요.
@@ -127,7 +130,10 @@ mood4: 괜찮아요
 mood5: 좋아요
 promptStory: "오늘 새로운 일 있었어요?"
 storySkip: 특별한 건 없어요
-promptDepth: 적어두기만 할까요, 아니면 더 깊이 이야기할까요?
+storyPickHabit: 또는 이야기할 습관 고르기
+storyPickHabitEcho: 습관에 대해 이야기할게요.
+promptDepth: 조금 더 이야기할까요?
+promptJotAck: 적어 두었어요.
 depthShallow: 적어두기만
 depthDeep: 더 깊이 이야기
 promptBarrier: "기회가 있었는데 못한 건 흔한 일이에요, 실패로 치지 않아요. 그때 무엇이 당신을 멈추게 했나요?"
@@ -140,6 +146,26 @@ contextChange: 상황 바꾸기
 promptContextEdit: 그럼 새 상황은 무엇인가요?
 planSlept: 이 약속은 잠시 넣어둘게요. 필요하면 다시 불러 주세요.
 promptInvite: "연습해 볼 짧은 장면이 있어요. 필수는 아니에요 — 건너뛰어도 괜찮아요."
+promptSceneAgain: 당신의 방식으로 다시 말해볼까요?
+sceneAgainYes: 다시 말하기
+sceneAgainYesEcho: 다시 말해볼게요.
+sceneAgainNo: 충분해요
+sceneAgainNoEcho: 충분해요.
+promptSceneDone: 이 장면은 여기까지 할게요.
+promptHub: 끝났어요. 더 하고 싶은 얘기 있나요?
+hubTaskT1: 약속 확인하기
+hubTaskT2: 상황 연습하기
+hubTaskT3: 이야기하기
+hubStop: 여기서 마칠게요
+hubStopEcho: 여기서 마칠게요.
+promptSceneMet: 비슷한 일을 겪어본 적 있나요?
+sceneMetYes: 있어요
+sceneMetYesEcho: 있어요.
+sceneMetNo: 아직 없어요
+sceneMetNoEcho: 아직 없어요.
+promptSceneWhen: 그게 언제였나요?
+courseReasonOutside: 방금 이야기가 아직 갖고 있지 않은 습관에 닿아 있어요
+promptClosingHeard: 잘 들었어요. 또 이야기하고 싶을 때 여기 있어요.
 inviteYes: 장면 하나 연습하기
 inviteNo: 오늘은 건너뛰기
 promptPlanAsk: "다음을 위해 알림을 하나 설정할까요?"
@@ -172,6 +198,7 @@ ratingSend: 보내기
 personaLabel: 말투
 stepStory: "“오늘 새로운 일 있었어요?”"
 stepDepth: 적어두기 또는 깊이
+stepHub: 더 할 이야기
 stepBarrier: 무엇이 막았나
 stepShrink: 약속을 작게
 stepContext: 약속의 상황
@@ -204,6 +231,10 @@ planAskYesEcho: 네.
 planAskNoEcho: 아니요, 그냥 닫을게요.
 reminderOffEcho: 알림 끄기.
 scheduleEcho: "${time}에 알림 · ${days}"
+modeOnce: 한 번만
+modeDaily: 매일
+modeWeekly: 매주
+dateToday: 오늘
 promptCourseCard: 방금 이야기와 가까운 코스가 하나 있어요.
 courseOpen: 코스로 가기
 courseOpenEcho: 코스로 가기.
@@ -240,8 +271,9 @@ shrinkAskNoEcho: 그대로 둘게요.
 promptShrinkEdit: "더 작게 고쳐 주세요 — 여전히 당신의 말로."
 shrinkDoneNote: 더 작은 버전으로 바꿨어요. 알림 시간은 그대로예요.
 courseReasonBarrier: "“${habit}”에서 자꾸 멈추기 때문에"
-courseReasonHabit: "연습 중인 “${habit}”에 이어서"
+courseReasonHabit: "이 코스의 첫 레슨이 «${habit}»이에요"
 courseReasonSkillset: 연습 중인 습관과 같은 방향의 코스
+courseReasonKeypoint: 방금 말한 내용이 이 코스에 있어요
 courseReasonSaved: 저장해 둔 코스예요
 stepShrinkAsk: 리마인더 줄이기
 

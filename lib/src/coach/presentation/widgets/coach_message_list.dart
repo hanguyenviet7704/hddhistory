@@ -12,12 +12,26 @@ class CoachMessageList extends StatefulWidget {
   /// gần với chuyện bạn vừa nói tới."; the composer holds its three chips.
   final CoachCourseCardEntity? course;
 
+  /// The card's ways out — "Học ngay" (also the whole card body), "Lưu lại",
+  /// and the ✕. Null while a turn is in flight or on a replayed card.
+  final VoidCallback? onCourseTap;
+  final VoidCallback? onCourseSave;
+  final VoidCallback? onCourseClose;
+
+  /// ⟨Phương án⟩ / the mood row, rendered inside the thread right under the
+  /// Coach's line — the design's option screens have no composer at all.
+  final Widget? options;
+
   const CoachMessageList({
     super.key,
     required this.messages,
     required this.typing,
     this.draft,
     this.course,
+    this.onCourseTap,
+    this.onCourseSave,
+    this.onCourseClose,
+    this.options,
   });
 
   @override
@@ -33,7 +47,8 @@ class _CoachMessageListState extends State<CoachMessageList> {
     if (widget.messages.length != oldWidget.messages.length ||
         widget.typing != oldWidget.typing ||
         (widget.draft != null) != (oldWidget.draft != null) ||
-        (widget.course != null) != (oldWidget.course != null)) {
+        (widget.course != null) != (oldWidget.course != null) ||
+        (widget.options != null) != (oldWidget.options != null)) {
       _scrollToEnd();
     }
   }
@@ -61,7 +76,14 @@ class _CoachMessageListState extends State<CoachMessageList> {
       ...widget.messages.map((m) => _Bubble(message: m)),
       if (widget.typing) const _TypingDots(),
       if (widget.draft != null) widget.draft!,
-      if (widget.course != null) _CourseCard(course: widget.course!),
+      if (widget.course != null)
+        _CourseCard(
+          course: widget.course!,
+          onOpen: widget.onCourseTap,
+          onSave: widget.onCourseSave,
+          onClose: widget.onCourseClose,
+        ),
+      if (widget.options != null) widget.options!,
     ];
 
     return ListView.separated(
@@ -106,6 +128,21 @@ class _Bubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // The scene's little headings — "Với thói quen:", "Tôi có tình
+              // huống:" — bold, above their own paragraph.
+              if (message.title != null && message.title!.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 2.h),
+                  child: Text(
+                    message.title!,
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w800,
+                      height: 1.55,
+                      color: isCoach ? CoachStyle.textPrimary : CoachStyle.surface,
+                    ),
+                  ),
+                ),
               Text(
                 message.text,
                 style: TextStyle(
@@ -213,7 +250,13 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
 class _CourseCard extends StatelessWidget {
   final CoachCourseCardEntity course;
 
-  const _CourseCard({required this.course});
+  /// The card's three ways out, as the design draws them: "Học ngay" filled,
+  /// "Lưu lại" outlined, ✕ in the corner. Tapping the body is "Học ngay" too.
+  final VoidCallback? onOpen;
+  final VoidCallback? onSave;
+  final VoidCallback? onClose;
+
+  const _CourseCard({required this.course, this.onOpen, this.onSave, this.onClose});
 
   String _reach(int count) {
     if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(count % 1000000 == 0 ? 0 : 1)}M';
@@ -224,107 +267,200 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n.coach;
     final views = course.viewCount;
-    // Why this course: a fact about the reader the server sent as a key. The
-    // one line that makes the card read as the app having listened rather
-    // than an advert — so it sits right under the title, before the meta row.
+    // Why this course: the one line that makes the card read as the app having
+    // listened rather than an advert. It heads the card, beside the ✕.
     final reason = coachCourseReason(context, course.reasonKey, course.reasonArgs);
 
-    return Container(
-      padding: EdgeInsets.all(10.w),
-      decoration: BoxDecoration(
-        color: CoachStyle.courseCardBackground,
-        border: Border.all(color: CoachStyle.selectedBorderSoft),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
-            child: SizedBox(
-              width: 76.w,
-              height: 76.w,
-              child: ColoredBox(
-                color: CoachStyle.courseImageFallback,
-                child: course.image.isEmpty
-                    ? Icon(Icons.menu_book_rounded, size: 26.w, color: CoachStyle.skin)
-                    : CachedNetworkImage(
-                        imageUrl: course.image,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, _, _) => Icon(Icons.menu_book_rounded, size: 26.w, color: CoachStyle.skin),
-                      ),
-              ),
-            ),
-          ),
-          SizedBox(width: 11.w),
-          Expanded(
-            child: Column(
+    return GestureDetector(
+      onTap: onOpen,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.all(11.w),
+        decoration: BoxDecoration(
+          color: CoachStyle.courseCardBackground,
+          border: Border.all(color: CoachStyle.selectedBorderSoft),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  course.title,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                    color: CoachStyle.textPrimary,
-                  ),
-                ),
-                if (reason != null && reason.isNotEmpty) ...[
-                  SizedBox(height: 4.h),
-                  Text(
-                    reason,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                Expanded(
+                  child: Text(
+                    (reason == null || reason.isEmpty) ? course.title : reason,
                     style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w500,
-                      height: 1.3,
-                      color: CoachStyle.courseAuthor,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.4,
+                      color: const Color(0xFF5B54A8),
                     ),
                   ),
-                ],
-                if (course.author.isNotEmpty || views != null) ...[
-                  SizedBox(height: 7.h),
-                  Row(
-                    children: [
-                      if (course.author.isNotEmpty)
-                        Flexible(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.edit_outlined, size: 13.r, color: CoachStyle.courseAuthor),
-                              SizedBox(width: 5.w),
-                              Flexible(
-                                child: Text(
-                                  course.author,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w500, color: CoachStyle.courseAuthor),
-                                ),
-                              ),
-                            ],
-                          ),
+                ),
+                if (onClose != null) ...[
+                  SizedBox(width: 8.w),
+                  Semantics(
+                    button: true,
+                    label: l10n.courseCardClose,
+                    child: GestureDetector(
+                      onTap: onClose,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 22.w,
+                        height: 22.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE1DCF6),
+                          shape: BoxShape.circle,
                         ),
-                      if (course.author.isNotEmpty && views != null) SizedBox(width: 12.w),
-                      if (views != null) ...[
-                        Icon(Icons.visibility_outlined, size: 13.r, color: CoachStyle.courseMeta),
-                        SizedBox(width: 5.w),
-                        Text(
-                          _reach(views),
-                          style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w500, color: CoachStyle.courseMeta),
-                        ),
-                      ],
-                    ],
+                        alignment: Alignment.center,
+                        child: Icon(Icons.close_rounded, size: 14.w, color: const Color(0xFF6A63B8)),
+                      ),
+                    ),
                   ),
                 ],
               ],
             ),
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: SizedBox(
+                    width: 76.w,
+                    height: 76.w,
+                    child: ColoredBox(
+                      color: CoachStyle.courseImageFallback,
+                      child: course.image.isEmpty
+                          ? Icon(Icons.menu_book_rounded, size: 26.w, color: CoachStyle.skin)
+                          : CachedNetworkImage(
+                              imageUrl: course.image,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, _, _) => Icon(Icons.menu_book_rounded, size: 26.w, color: CoachStyle.skin),
+                            ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 11.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        course.title,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                          color: CoachStyle.textPrimary,
+                        ),
+                      ),
+                      if (course.author.isNotEmpty || views != null) ...[
+                        SizedBox(height: 7.h),
+                        Row(
+                          children: [
+                            if (course.author.isNotEmpty)
+                              Flexible(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.edit_outlined, size: 13.r, color: CoachStyle.courseAuthor),
+                                    SizedBox(width: 5.w),
+                                    Flexible(
+                                      child: Text(
+                                        course.author,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w500, color: CoachStyle.courseAuthor),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (course.author.isNotEmpty && views != null) SizedBox(width: 12.w),
+                            if (views != null) ...[
+                              Icon(Icons.visibility_outlined, size: 13.r, color: CoachStyle.courseMeta),
+                              SizedBox(width: 5.w),
+                              Text(
+                                _reach(views),
+                                style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w500, color: CoachStyle.courseMeta),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (onOpen != null || onSave != null) ...[
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _CourseCardButton(
+                      label: l10n.courseOpen,
+                      filled: true,
+                      onTap: onOpen,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: _CourseCardButton(
+                      label: l10n.courseCardSave,
+                      filled: false,
+                      onTap: onSave,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The card's two ways in: filled for "Học ngay", outlined for "Lưu lại" —
+/// equal width, equal weight, exactly as the design draws them.
+class _CourseCardButton extends StatelessWidget {
+  final String label;
+  final bool filled;
+  final VoidCallback? onTap;
+
+  const _CourseCardButton({required this.label, required this.filled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 11.h, horizontal: 8.w),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: filled ? CoachStyle.skin : CoachStyle.surface,
+          border: filled ? null : Border.all(color: CoachStyle.selectedBorderSoft, width: 1.5),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w700,
+            color: filled ? CoachStyle.surface : CoachStyle.selectedText,
           ),
-        ],
+        ),
       ),
     );
   }

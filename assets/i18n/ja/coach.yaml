@@ -9,7 +9,10 @@ escapeLabel: 今日は記録だけにする
 promptMood: 始める前に — 今日はどんな気分ですか？
 promptMoodEnd: 閉じる前に — 今はどんな気分ですか？
 promptPickNew: 新しい習慣をいくつか追加しましたね。どれから話しますか？
-promptPickHabit: 今日はどの習慣に取り組みますか？
+promptPickHabit: 勘違いしていました。どの習慣のことですか？
+habitChipLead: 話しているのは
+habitChipChange: 習慣を変える
+habitChipChangeEcho: 習慣を変えます。
 promptPersona: 今日はどんな話し方がいいですか？
 promptTime: 今日はどのくらい時間がありますか？
 promptTell: この習慣にまつわる最近の出来事を聞かせてください。自由に話して — 口は挟みません。
@@ -127,7 +130,10 @@ mood4: まあまあ
 mood5: いい感じ
 promptStory: 今日、何か新しいことはありましたか？
 storySkip: 特にない
-promptDepth: メモだけにしますか、それとも深く話しますか？
+storyPickHabit: または話したい習慣を選ぶ
+storyPickHabitEcho: 習慣について話したいです。
+promptDepth: もう少し話しますか？
+promptJotAck: メモしておきました。
 depthShallow: メモだけ
 depthDeep: 深く話す
 promptBarrier: "場面はあったのにできなかった——それは普通のことで、失敗ではありません。そのとき何が止めましたか？"
@@ -140,6 +146,26 @@ contextChange: 場面を変える
 promptContextEdit: では、新しい場面は？
 planSlept: この約束はいったんしまっておきます。必要になったら呼び戻してください。
 promptInvite: "練習用の短い場面があります。必須ではありません——飛ばしても大丈夫です。"
+promptSceneAgain: 自分の言い方でもう一度言ってみますか？
+sceneAgainYes: もう一度言う
+sceneAgainYesEcho: もう一度言います。
+sceneAgainNo: これで十分
+sceneAgainNoEcho: これで十分です。
+promptSceneDone: この場面はここまでにしましょう。
+promptHub: 終わりました。ほかに話したいことはありますか？
+hubTaskT1: リマインドを確認
+hubTaskT2: 場面を練習する
+hubTaskT3: 話してみる
+hubStop: ここで終わります
+hubStopEcho: ここで終わります。
+promptSceneMet: こういうこと、経験ありますか？
+sceneMetYes: あります
+sceneMetYesEcho: あります。
+sceneMetNo: まだです
+sceneMetNoEcho: まだです。
+promptSceneWhen: それはいつでしたか？
+courseReasonOutside: いま話してくれたことは、まだ持っていない習慣に触れています
+promptClosingHeard: 聞きました。また話したくなったら、いつでもここにいます。
 inviteYes: 場面を試す
 inviteNo: 今日は飛ばす
 promptPlanAsk: 次のためにリマインダーを設定しますか？
@@ -172,6 +198,7 @@ ratingSend: 送信
 personaLabel: 口調
 stepStory: 「今日、何か新しいことは？」
 stepDepth: メモか、深く
+stepHub: ほかに話すこと
 stepBarrier: 何が止めたか
 stepShrink: 約束を小さく
 stepContext: 約束の場面
@@ -204,6 +231,10 @@ planAskYesEcho: はい。
 planAskNoEcho: いいえ、閉じます。
 reminderOffEcho: 通知しない。
 scheduleEcho: "${time}に通知 · ${days}"
+modeOnce: 一回だけ
+modeDaily: 毎日
+modeWeekly: 毎週
+dateToday: 今日
 promptCourseCard: 今の話に近いコースがあります。
 courseOpen: コースへ行く
 courseOpenEcho: コースへ行く。
@@ -240,8 +271,9 @@ shrinkAskNoEcho: そのままで。
 promptShrinkEdit: "小さく書き直してください——あなたの言葉のままで。"
 shrinkDoneNote: 小さい版に置き換えました。通知の時間はそのままです。
 courseReasonBarrier: "「${habit}」でいつも止まってしまうから"
-courseReasonHabit: "練習中の「${habit}」の続きとして"
+courseReasonHabit: "このコースの最初のレッスンは「${habit}」です"
 courseReasonSkillset: 練習中の習慣と同じ方向のコース
+courseReasonKeypoint: いま話した考えはこのコースにあります
 courseReasonSaved: 保存していたコースです
 stepShrinkAsk: リマインダーを小さく
 

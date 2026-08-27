@@ -97,6 +97,39 @@ class CoachCubit extends Cubit<CoachState> {
   /// ② "hoặc bỏ qua" — the story step's second way out.
   Future<void> skipStory(String label) => _send({'kind': 'skip'}, userLine: label);
 
+  /// "Bạn muốn chia sẻ thêm không?" — `Kể sâu hơn` runs the 5-beat script,
+  /// `Chỉ ghi lại thôi` files the sentence they already wrote and skips
+  /// straight to the commitment question.
+  Future<void> answerDepth({required bool deep, required String label}) =>
+      _send({'kind': 'depth', 'deep': deep}, userLine: label);
+
+  /// The same pill, tapped later inside the script: file it and move on.
+  Future<void> fileItInstead(String label) => _send({'kind': 'ack'}, userLine: label);
+
+  /// Nhịp 4 of the scene — "Nói lại" answers the same scene a second time,
+  /// "Đủ rồi" closes it. The beat that makes the task practice rather than one
+  /// question and one answer.
+  Future<void> answerSceneAgain({required bool again, required String label}) =>
+      _send({'kind': 'sceneAgain', 'again': again}, userLine: label);
+
+  /// Thanh habit — "đổi": the Coach lists the reader's own kho and puts them
+  /// back on the step they were on. Never refused.
+  Future<void> changeHabit(String label) =>
+      _send({'kind': 'changeHabit'}, userLine: label);
+
+  /// Bộ điều phối — start a task by name. The registry decides whether it is
+  /// still allowed; a refused one comes back as an error rather than a guess.
+  Future<void> pickTask(String task, {required String label}) =>
+      _send({'kind': 'task', 'task': task}, userLine: label);
+
+  /// Bộ điều phối — "Mình dừng ở đây": card → the one commitment offer → tail.
+  Future<void> stopSession(String label) => _send({'kind': 'stop'}, userLine: label);
+
+  /// Nhịp 6 — "Chuyện giống vậy bạn gặp bao giờ chưa?". "Gặp rồi" collects the
+  /// occasion the commitment needs; "Chưa gặp" moves on without a word about it.
+  Future<void> answerSceneMet({required bool met, required String label}) =>
+      _send({'kind': 'sceneMet', 'met': met}, userLine: label);
+
   /// ★ — practise one situation, or not. Never required.
   Future<void> answerInvite({required bool accept, required String label}) => _send({'kind': 'invite', 'accept': accept}, userLine: label);
 
@@ -170,6 +203,7 @@ class CoachCubit extends Cubit<CoachState> {
     int? minute,
     String? days,
     List<int>? customDays,
+    String? date,
   }) => _send({
     'kind': 'schedule',
     'reminderEnabled': enabled,
@@ -177,6 +211,7 @@ class CoachCubit extends Cubit<CoachState> {
     'reminderMinute': ?minute,
     'reminderDays': ?days,
     'reminderCustomDays': ?customDays,
+    'reminderDate': ?date,
   }, userLine: label);
 
   Future<void> loop({required bool keepGoing, required String label}) => _send({'kind': 'loop', 'keepGoing': keepGoing}, userLine: label);
@@ -310,6 +345,17 @@ class CoachCubit extends Cubit<CoachState> {
     );
   }
 
+  /// One reply split on blank lines, never empty for a reply that says anything.
+  static List<String> _paragraphs(String reply) {
+    final parts = reply
+        .split(RegExp(r'\n\s*\n'))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
+
+    return parts.isEmpty ? [reply.trim()] : parts;
+  }
+
   /// Fold one server turn into the state.
   ///
   /// The reply and the next step's prompt are two different lines and both may
@@ -325,7 +371,14 @@ class CoachCubit extends Cubit<CoachState> {
     if (turn.reply != null) {
       // `speaker` set means this line was said IN CHARACTER by the scene's other
       // person, so the bubble is labelled with their name.
-      messages.add(CoachMessage(isCoach: true, text: turn.reply!, speaker: turn.speaker));
+      //
+      // A reply written as paragraphs — nhịp 4's idea and then nhịp 5's one
+      // piece of praise — arrives as ONE string with a blank line in it, and
+      // each paragraph becomes its own bubble: "chat ra nhiều đoạn để dễ hiểu,
+      // không phải chat 1 cục lớn".
+      for (final part in _paragraphs(turn.reply!)) {
+        messages.add(CoachMessage(isCoach: true, text: part, speaker: turn.speaker));
+      }
     }
 
     // A fixed line before the step's own — "Đó là câu của bạn, mình không

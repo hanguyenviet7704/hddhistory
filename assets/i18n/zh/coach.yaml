@@ -9,7 +9,10 @@ escapeLabel: 今天只记一行
 promptMood: 开始之前 —— 你今天感觉怎么样？
 promptMoodEnd: 结束之前 —— 现在感觉怎么样？
 promptPickNew: 你刚加了几个习惯。先聊哪一个？
-promptPickHabit: 今天想练哪个习惯？
+promptPickHabit: 我理解错了——你想说的是哪个习惯？
+habitChipLead: 正在聊
+habitChipChange: 换一个习惯
+habitChipChangeEcho: 换一个习惯。
 promptPersona: 今天希望我用什么方式说话？
 promptTime: 今天有多少时间？
 promptTell: 跟我讲讲这个习惯最近一次出现的事。慢慢说，我不会打断。
@@ -127,7 +130,10 @@ mood4: 还好
 mood5: 很好
 promptStory: 今天有什么新鲜事吗？
 storySkip: 没什么特别的
-promptDepth: 我先记下来就好，还是你想多说一些？
+storyPickHabit: 或者选一个习惯来聊
+storyPickHabitEcho: 我想聊一个习惯。
+promptDepth: 还想多说一点吗？
+promptJotAck: 我记下来了。
 depthShallow: 记下来就好
 depthDeep: 多说一些
 promptBarrier: 有时机但没做，这很正常，不算失败。当时是什么让你停下来了？
@@ -140,6 +146,26 @@ contextChange: 换个情境
 promptContextEdit: 那新的情境是什么？
 planSlept: 这个约定我先收起来。需要的时候再叫回来。
 promptInvite: 我有一个小场景可以练。不是必须的，跳过也可以。
+promptSceneAgain: 要不要用你自己的说法再说一次？
+sceneAgainYes: 再说一次
+sceneAgainYesEcho: 我再说一次。
+sceneAgainNo: 够了
+sceneAgainNoEcho: 够了。
+promptSceneDone: 这个场景就到这里吧。
+promptHub: 好了。还有什么想说的吗？
+hubTaskT1: 看一下提醒
+hubTaskT2: 练一个场景
+hubTaskT3: 说说今天
+hubStop: 我先到这里
+hubStopEcho: 我先到这里。
+promptSceneMet: 类似的事你遇到过吗？
+sceneMetYes: 遇到过
+sceneMetYesEcho: 遇到过。
+sceneMetNo: 还没有
+sceneMetNoEcho: 还没有。
+promptSceneWhen: 那是什么时候？
+courseReasonOutside: 你刚说的事，碰到了一个你还没有的习惯
+promptClosingHeard: 我听到了。想聊的时候我都在。
 inviteYes: 试练一个场景
 inviteNo: 今天先跳过
 promptPlanAsk: 想为下次设一个提醒吗？
@@ -172,6 +198,7 @@ ratingSend: 发送
 personaLabel: 语气
 stepStory: "“今天有什么新鲜事吗？”"
 stepDepth: 记下或深聊
+stepHub: 还有别的吗
 stepBarrier: 是什么挡住了
 stepShrink: 缩小约定
 stepContext: 约定的情境
@@ -204,6 +231,10 @@ planAskYesEcho: 好。
 planAskNoEcho: 不用，先关掉。
 reminderOffEcho: 不提醒。
 scheduleEcho: "${time} 提醒 · ${days}"
+modeOnce: 仅一次
+modeDaily: 每天
+modeWeekly: 每周
+dateToday: 今天
 promptCourseCard: 有一门课和你刚说的很接近。
 courseOpen: 去看课程
 courseOpenEcho: 去看课程。
@@ -240,8 +271,9 @@ shrinkAskNoEcho: 保持原样。
 promptShrinkEdit: "改得小一点——还是你自己的话。"
 shrinkDoneNote: 换成了更小的版本。提醒时间不变。
 courseReasonBarrier: "因为你总在「${habit}」这里卡住"
-courseReasonHabit: "接着你正在练的「${habit}」"
+courseReasonHabit: "这门课的第一课就是「${habit}」"
 courseReasonSkillset: 和你正在练的习惯同一个方向
+courseReasonKeypoint: 我刚说的那个想法就在这门课里
 courseReasonSaved: 你收藏过这门课
 stepShrinkAsk: 改小提醒
 

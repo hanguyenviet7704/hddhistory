@@ -173,6 +173,18 @@ abstract class CoachSceneModel with _$CoachSceneModel {
   factory CoachSceneModel.fromJson(Map<String, dynamic> json) => _$CoachSceneModelFromJson(json);
 }
 
+/// Thanh habit — the habit this session is about, for the chip at the top.
+@freezed
+abstract class CoachHabitChipModel with _$CoachHabitChipModel {
+  const factory CoachHabitChipModel({
+    @Default('') String id,
+    @Default('') String title,
+  }) = _CoachHabitChipModel;
+
+  factory CoachHabitChipModel.fromJson(Map<String, dynamic> json) =>
+      _$CoachHabitChipModelFromJson(json);
+}
+
 @freezed
 abstract class CoachUiModel with _$CoachUiModel {
   const factory CoachUiModel({
@@ -180,6 +192,7 @@ abstract class CoachUiModel with _$CoachUiModel {
     @Default(<CoachChoiceModel>[]) List<CoachChoiceModel> choices,
     CoachColumnsModel? columns,
     @Default(true) bool rejectAvailable,
+    CoachHabitChipModel? habit,
     String? situation,
     CoachSceneModel? scene,
     @Default(<String>[]) List<String> samples,

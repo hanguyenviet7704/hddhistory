@@ -137,6 +137,17 @@ class _CoachSheetState extends State<_CoachSheet> {
                   ),
                   onClose: () => Navigator.of(context).pop(const _CoachSheetResult.close()),
                 ),
+                // Thanh habit — a floating pill under the header, from the
+                // moment the habit is certain to the end of the session. Not a
+                // step of the flow and never a line of dialogue: a status bar
+                // with the reader's own way out of a wrong guess.
+                if (!isSafety && state.ui.habit != null)
+                  _HabitChip(
+                    title: state.ui.habit!.title,
+                    onChange: state.status == CoachStatus.sending
+                        ? null
+                        : () => cubit.changeHabit(context.l10n.coach.habitChipChangeEcho),
+                  ),
                 Expanded(
                   child: switch (state.status) {
                     CoachStatus.opening => const Center(child: CircularProgressIndicator()),
@@ -148,6 +159,22 @@ class _CoachSheetState extends State<_CoachSheet> {
                       // The card stays on screen through LEAVE, under the
                       // Coach's "Mình mở khoá đó cho bạn."
                       course: state.ui.kind == CoachUiKind.courseCard || state.step == 'leave' ? state.ui.course : null,
+                      // Tap on the card = "Học ngay": straight to the course,
+                      // and the session ends on the spot.
+                      onCourseTap: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
+                          ? null
+                          : () => _openCourse(context, cubit),
+                      onCourseSave: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
+                          ? null
+                          : () => cubit.courseAction('save', label: context.l10n.coach.courseCardSaveEcho),
+                      onCourseClose: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
+                          ? null
+                          : () => cubit.courseAction('close', label: context.l10n.coach.courseCardCloseEcho),
+                      // ⟨Phương án⟩ in the thread, as the design draws them —
+                      // and the closing choice is drawn the same way.
+                      options: (state.ui.kind == CoachUiKind.chips || state.ui.kind == CoachUiKind.nextSession) && !state.typing
+                          ? _OptionPills(state: state, cubit: cubit, busy: state.status == CoachStatus.sending)
+                          : null,
                       draft: state.ui.kind == CoachUiKind.twoCols
                           ? CoachTwoColumns(
                               left: state.columnLeft,
@@ -166,6 +193,109 @@ class _CoachSheetState extends State<_CoachSheet> {
           ),
         );
       },
+    );
+  }
+}
+
+/// "Học ngay", from the card body or its button: send the open event, then —
+/// the session having ended server-side — leave the sheet FOR the course.
+/// Nothing else stands between the tap and the Roadmap.
+Future<void> _openCourse(BuildContext context, CoachCubit cubit) async {
+  final course = cubit.state.ui.course;
+  if (course == null) return;
+
+  await cubit.courseAction('open', label: context.l10n.coach.courseOpenEcho);
+  if (context.mounted && cubit.state.ended) {
+    Navigator.of(context).pop(_CoachSheetResult.openCourse(course.courseId));
+  }
+}
+
+/// The habit chip: "Đang nói về · Nói ra ý mình · ⇄".
+///
+/// Centred, floating on a shadow, exactly as the design draws it. The swap
+/// button is the reader's right — "không bao giờ được ẩn theo điều kiện" — so it
+/// is only ever disabled while a turn is in flight, never hidden.
+class _HabitChip extends StatelessWidget {
+  final String title;
+  final VoidCallback? onChange;
+
+  const _HabitChip({required this.title, this.onChange});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.coach;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(15.w, 12.h, 15.w, 8.h),
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.fromLTRB(15.w, 5.h, 5.w, 5.h),
+          decoration: BoxDecoration(
+            color: CoachStyle.surface,
+            border: Border.all(color: CoachStyle.border),
+            borderRadius: BorderRadius.circular(99.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x1F0D121C),
+                blurRadius: 16.r,
+                offset: Offset(0, 6.h),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.habitChipLead,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: CoachStyle.textMuted,
+                ),
+              ),
+              SizedBox(width: 9.w),
+              // The title is data, read from the DB — "không rút gọn, không
+              // diễn đạt lại" — so it is allowed to take the room it needs and
+              // ellipsis only at the edge of the screen.
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: CoachStyle.textPrimary,
+                  ),
+                ),
+              ),
+              SizedBox(width: 9.w),
+              Semantics(
+                button: true,
+                label: l10n.habitChipChange,
+                child: GestureDetector(
+                  onTap: onChange,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 28.w,
+                    height: 28.w,
+                    decoration: BoxDecoration(
+                      color: CoachStyle.sampleBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.swap_horiz_rounded,
+                      size: 16.w,
+                      color: const Color(0xFF5B54A8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -212,13 +342,42 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  context.l10n.coach.sheetTitle,
-                  style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontWeight: FontWeight.w700,
-                    color: CoachStyle.textPrimary,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        context.l10n.coach.sheetTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: CoachStyle.textPrimary,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    // The design's stage marker — a literal, the same word in
+                    // every locale, so it is not a slang key.
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                      decoration: BoxDecoration(
+                        color: CoachStyle.selectedBackground,
+                        border: Border.all(color: CoachStyle.selectedBorderSoft),
+                        borderRadius: BorderRadius.circular(99.r),
+                      ),
+                      child: Text(
+                        'BETA',
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.4,
+                          color: CoachStyle.userBubble,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 if (subtitle != null && subtitle!.isNotEmpty)
                   Text(

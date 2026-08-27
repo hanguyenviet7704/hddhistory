@@ -7,6 +7,14 @@ enum CoachUiKind {
   text,
   /// Free text the reader may also skip — the story step.
   textSkippable,
+
+  /// Free text PLUS the two depth pills — the "Bạn muốn chia sẻ thêm không?"
+  /// step. Both, because the pills are shortcuts and the main road is the
+  /// reader simply typing on.
+  depth,
+
+  /// Bộ điều phối — free text, up to two task pills, and the way to stop.
+  hub,
   twoCols,
   nextAction,
   closing,
@@ -32,6 +40,10 @@ enum CoachUiKind {
         return CoachUiKind.chips;
       case 'text_skippable':
         return CoachUiKind.textSkippable;
+      case 'depth':
+        return CoachUiKind.depth;
+      case 'hub':
+        return CoachUiKind.hub;
       case 'two_cols':
         return CoachUiKind.twoCols;
       case 'next_action':
@@ -264,6 +276,10 @@ class CoachUiEntity {
 
   /// Nhịp 3 — whether ⑤ "Không đúng với mình" is still offered.
   final bool rejectAvailable;
+
+  /// Thanh habit — the habit under discussion, shown as a chip with "đổi" from
+  /// the moment it is certain. Null before that, and never spoken out loud.
+  final CoachHabitChipEntity? habit;
   final String? situation;
 
   /// The same scene, split into habit · setup · question for separate bubbles.
@@ -292,6 +308,7 @@ class CoachUiEntity {
     this.columnLeft = const [],
     this.columnRight = const [],
     this.rejectAvailable = true,
+    this.habit,
     this.situation,
     this.scene,
     this.samples = const [],
@@ -304,6 +321,14 @@ class CoachUiEntity {
     this.score,
     this.allowNewSession = true,
   });
+}
+
+/// The habit the chip names — id for the picker, title read from the DB.
+class CoachHabitChipEntity {
+  final String id;
+  final String title;
+
+  const CoachHabitChipEntity({required this.id, required this.title});
 }
 
 class CoachCourseInviteEntity {
@@ -391,6 +416,9 @@ extension CoachTurnModelX on CoachTurnModel {
       columnLeft: ui.columns?.left ?? const [],
       columnRight: ui.columns?.right ?? const [],
       rejectAvailable: ui.rejectAvailable,
+      habit: ui.habit == null || ui.habit!.title.trim().isEmpty
+          ? null
+          : CoachHabitChipEntity(id: ui.habit!.id, title: ui.habit!.title),
       situation: (ui.situation?.trim().isEmpty ?? true) ? null : ui.situation,
       scene: ui.scene == null || ui.scene!.setup.trim().isEmpty
           ? null

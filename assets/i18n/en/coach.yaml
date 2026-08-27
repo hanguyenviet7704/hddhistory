@@ -14,7 +14,10 @@ escapeLabel: Just log today, nothing more
 promptMood: Before we start — how are you feeling today?
 promptMoodEnd: Before you go — how are you feeling now?
 promptPickNew: You just added a couple of habits. Which one should we talk about first?
-promptPickHabit: Which habit do you want to work on today?
+promptPickHabit: I got that wrong — which habit did you mean?
+habitChipLead: Talking about
+habitChipChange: Change habit
+habitChipChangeEcho: Change the habit.
 promptPersona: How would you like me to speak today?
 promptTime: How much time do you have?
 promptTell: Tell me about the last time this habit came up. Take your time — I won't cut in.
@@ -135,7 +138,10 @@ mood4: Good
 mood5: Great
 promptStory: "Anything new today?"
 storySkip: Nothing in particular
-promptDepth: Shall I just note that down, or do you want to go deeper?
+storyPickHabit: or pick a habit to talk about
+storyPickHabitEcho: I want to talk about a habit.
+promptDepth: Do you want to share more?
+promptJotAck: I've noted that down.
 depthShallow: Just note it
 depthDeep: Go deeper
 promptBarrier: "A moment came and it didn't happen — that's ordinary, not a failure. What stopped you right then?"
@@ -148,6 +154,26 @@ contextChange: Change the context
 promptContextEdit: So what's the new context?
 planSlept: I'll put this one away for now. Call it back whenever you need it.
 promptInvite: "I have a short scene to practise. Not required — skipping is fine."
+promptSceneAgain: Want to say it again, your way?
+sceneAgainYes: Say it again
+sceneAgainYesEcho: Let me say it again.
+sceneAgainNo: That's enough
+sceneAgainNoEcho: That's enough.
+promptSceneDone: Let's leave the scene there.
+promptHub: Done. Anything else you want to say?
+hubTaskT1: Check the reminder
+hubTaskT2: Practise a situation
+hubTaskT3: Tell me something
+hubStop: I'll stop here
+hubStopEcho: I'll stop here.
+promptSceneMet: Have you ever been in something like that?
+sceneMetYes: Yes, I have
+sceneMetYesEcho: Yes, I have.
+sceneMetNo: Not yet
+sceneMetNoEcho: Not yet.
+promptSceneWhen: When was that?
+courseReasonOutside: What you just told me touches something you don't have yet
+promptClosingHeard: I heard you. I'm here whenever you want to talk again.
 inviteYes: Try a scene
 inviteNo: Skip for today
 promptPlanAsk: "Want to set a reminder for next time?"
@@ -180,6 +206,7 @@ ratingSend: Send
 personaLabel: Voice
 stepStory: "“Anything new today?”"
 stepDepth: note it, or go deeper
+stepHub: anything else
 stepBarrier: what got in the way
 stepShrink: a smaller version
 stepContext: the reminder's context
@@ -212,6 +239,10 @@ planAskYesEcho: Yes.
 planAskNoEcho: No, close for now.
 reminderOffEcho: No reminder.
 scheduleEcho: "Remind me at ${time} · ${days}"
+modeOnce: Just once
+modeDaily: Every day
+modeWeekly: Weekly
+dateToday: Today
 promptCourseCard: "There's a course close to what you just talked about."
 courseOpen: Go to the course
 courseOpenEcho: Go to the course.
@@ -248,8 +279,9 @@ shrinkAskNoEcho: Keep it.
 promptShrinkEdit: "Edit it down — still your words."
 shrinkDoneNote: Swapped for the smaller version. Same reminder time.
 courseReasonBarrier: "Because “${habit}” is where you keep getting stuck"
-courseReasonHabit: "Follows on from “${habit}”, which you're practising"
+courseReasonHabit: "This course opens with «${habit}»"
 courseReasonSkillset: Same direction as a habit you practise
+courseReasonKeypoint: What I just said is in this course
 courseReasonSaved: You saved this course
 stepShrinkAsk: a smaller reminder
 
