@@ -315,13 +315,13 @@ class _ScoreCard extends StatelessWidget {
               color: CoachStyle.textMuted,
             ),
           ),
-          SizedBox(height: 12.h),
-          ...score.criteria.map(
-            (c) => Padding(
-              padding: EdgeInsets.only(bottom: 9.h),
-              child: _Criterion(criterion: c),
-            ),
-          ),
+          // The per-criterion bars are deliberately NOT drawn. The rubric still
+          // decides the number — and the reader's skill history is built from
+          // it — but five labelled bars with a note under each turned a
+          // two-minute practice into a report card ("giải thích hơi dài, chỉ cần
+          // chấm điểm và đưa ra lời khuyên", 2026-08-27). One number plus what
+          // to do about it is the whole card.
+          SizedBox(height: 10.h),
           if (score.strength != null)
             _ScoreNote(label: l10n.score.strength, text: score.strength!, tone: _NoteTone.good),
           if (score.improve != null)
@@ -412,72 +412,6 @@ class _ScoreCard extends StatelessWidget {
     return rounded == rounded.roundToDouble()
         ? rounded.toStringAsFixed(0)
         : rounded.toStringAsFixed(1);
-  }
-}
-
-/// One rubric bar: what it checks, how it went, and why.
-class _Criterion extends StatelessWidget {
-  final CoachScoreCriterionEntity criterion;
-
-  const _Criterion({required this.criterion});
-
-  @override
-  Widget build(BuildContext context) {
-    final fraction = (criterion.score / 10).clamp(0.0, 1.0);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                criterion.label,
-                maxLines: 2,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                  height: 1.35,
-                  color: CoachStyle.textBody,
-                ),
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              _ScoreCard._oneDecimal(criterion.score),
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w900,
-                color: CoachStyle.selectedText,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 5.h),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(99.r),
-          child: LinearProgressIndicator(
-            value: fraction,
-            minHeight: 6.h,
-            backgroundColor: CoachStyle.surface,
-            valueColor: const AlwaysStoppedAnimation(CoachStyle.skin),
-          ),
-        ),
-        if (criterion.note != null) ...[
-          SizedBox(height: 4.h),
-          Text(
-            criterion.note!,
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w600,
-              height: 1.45,
-              color: CoachStyle.textMuted,
-            ),
-          ),
-        ],
-      ],
-    );
   }
 }
 
