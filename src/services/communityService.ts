@@ -207,6 +207,22 @@ export const communityService = {
     return res.data?.data as ICommunityChatRoom;
   },
 
+  /**
+   * Says something in a room AS the team.
+   *
+   * The panel could moderate a round table but never speak in one, so an
+   * admin answering a member had to do it from their own phone under their own
+   * name. This writes with the OFFICIAL author type, which is what makes the
+   * app draw the team badge on the bubble.
+   */
+  async sendChatMessage(room: string, body: string) {
+    const res = await axiosClient.post(
+      `/community/admin/chat/rooms/${room}/messages`,
+      { body }
+    );
+    return res.data?.data;
+  },
+
   async getChatMessages(params: ICommunityChatQuery) {
     const res = await axiosClient.get("/community/admin/chat/messages", {
       params,

@@ -49,6 +49,8 @@ const ModerationChatTab: React.FC = () => {
   const [form, setForm] = useState({ slug: "", name: "" });
   const [hiding, setHiding] = useState<ICommunityAdminChatMessage | null>(null);
   const [saving, setSaving] = useState(false);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -120,6 +122,30 @@ const ModerationChatTab: React.FC = () => {
     }
   };
 
+  /**
+   * Says something in the selected room, as the team.
+   *
+   * Requires a room to be picked: "Tất cả" is a filter over every room at once,
+   * and a message has to land in exactly one. The composer says so rather than
+   * guessing at the first room in the list.
+   */
+  const send = async () => {
+    const body = reply.trim();
+    if (!body || !room) return;
+
+    setSending(true);
+    try {
+      await communityService.sendChatMessage(room, body);
+      showSuccess("Đã gửi vào phòng");
+      setReply("");
+      load();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không gửi được tin nhắn");
+    } finally {
+      setSending(false);
+    }
+  };
+
   const act = async (
     message: ICommunityAdminChatMessage,
     payload: Parameters<typeof communityService.moderateChatMessage>[1],
@@ -186,6 +212,32 @@ const ModerationChatTab: React.FC = () => {
           onClick={() => setCreating(true)}
         >
           Tạo phòng
+        </Button>
+      </div>
+
+      {/* Trả lời trong phòng, dưới danh nghĩa đội ngũ. Chỉ mở khi đã chọn một
+          phòng cụ thể — "Tất cả" là bộ lọc, không phải một nơi để nói. */}
+      <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <TextField
+          size="small"
+          fullWidth
+          multiline
+          maxRows={4}
+          placeholder={
+            room
+              ? "Trả lời trong phòng này với tư cách MeUp…"
+              : "Chọn một phòng ở trên để trả lời"
+          }
+          value={reply}
+          onChange={(event) => setReply(event.target.value)}
+          disabled={!room || sending}
+        />
+        <Button
+          variant="contained"
+          onClick={send}
+          disabled={!room || !reply.trim() || sending}
+        >
+          Gửi
         </Button>
       </div>
 
