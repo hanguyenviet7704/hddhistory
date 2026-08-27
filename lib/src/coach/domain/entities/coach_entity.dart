@@ -16,6 +16,10 @@ enum CoachUiKind {
   schedule,
   /// One course with its three ways out drawn on the card.
   courseCard,
+
+  /// Tầng 4 — the rubric card: bars, one strength, one thing to sharpen, a
+  /// better phrasing to borrow, and "thử lại tình huống này".
+  sceneScore,
   rating,
   /// The closing line, then two equal buttons: stop · new session.
   nextSession,
@@ -32,6 +36,8 @@ enum CoachUiKind {
         return CoachUiKind.twoCols;
       case 'next_action':
         return CoachUiKind.nextAction;
+      case 'scene_score':
+        return CoachUiKind.sceneScore;
       case 'closing':
         return CoachUiKind.closing;
       case 'shrink':
@@ -142,6 +148,12 @@ class CoachCourseCardEntity {
   final String author;
   final int? viewCount;
 
+  /// Why THIS course — a slang key and the habit title it quotes. A fact about
+  /// the reader ("you keep stopping at X", "you saved this"), never a model's
+  /// opinion. Null when the server had no reason to give.
+  final String? reasonKey;
+  final Map<String, String> reasonArgs;
+
   const CoachCourseCardEntity({
     required this.courseId,
     required this.title,
@@ -149,6 +161,8 @@ class CoachCourseCardEntity {
     this.habitTitle = '',
     this.author = '',
     this.viewCount,
+    this.reasonKey,
+    this.reasonArgs = const {},
   });
 }
 
@@ -157,6 +171,75 @@ class CoachHotlineEntity {
   final String number;
 
   const CoachHotlineEntity({required this.label, required this.number});
+}
+
+/// One rubric criterion as it was scored — tầng 4 "Reflect".
+class CoachScoreCriterionEntity {
+  final String key;
+
+  /// Already in the reader's language: the server resolves it from the skill.
+  final String label;
+  final double score;
+  final String? note;
+
+  const CoachScoreCriterionEntity({
+    required this.key,
+    required this.label,
+    required this.score,
+    this.note,
+  });
+}
+
+/// The running skill number for one habit, over the last few scored scenes.
+class CoachSkillScoreEntity {
+  /// 0–100. Null on the reader's very first scored scene — a 0 would read as a
+  /// verdict rather than a measurement.
+  final int? score;
+  final int scenes;
+
+  /// The difficulty the NEXT scene will aim for, after this score moved it.
+  final int level;
+
+  /// Newer half minus older half, in points of 10. Null until there is enough.
+  final double? trend;
+
+  const CoachSkillScoreEntity({
+    this.score,
+    this.scenes = 0,
+    this.level = 1,
+    this.trend,
+  });
+}
+
+/// Tầng 4 — the rubric card shown when a scored scene is finished.
+class CoachSceneScoreEntity {
+  final List<CoachScoreCriterionEntity> criteria;
+
+  /// Mean of the criteria, 0–10.
+  final double overall;
+  final String? strength;
+  final String? improve;
+  final String? tip;
+
+  /// Their own answer rewritten to do the job better. Null when it needed none.
+  final String? betterPhrasing;
+
+  /// Difficulty of the scene that was scored, 1–5.
+  final int level;
+  final bool retryAvailable;
+  final CoachSkillScoreEntity? skill;
+
+  const CoachSceneScoreEntity({
+    this.criteria = const [],
+    this.overall = 0,
+    this.strength,
+    this.improve,
+    this.tip,
+    this.betterPhrasing,
+    this.level = 1,
+    this.retryAvailable = false,
+    this.skill,
+  });
 }
 
 class CoachUiEntity {
@@ -180,6 +263,9 @@ class CoachUiEntity {
   /// PLAN — pre-fill for the commitment form from the scene just practised.
   final CoachSuggestedPlanEntity? suggested;
 
+  /// SCENE_SCORE — the rubric read on the scene just finished.
+  final CoachSceneScoreEntity? score;
+
   /// NEXT_SESSION — false on a low mood-end: only "Dừng" remains.
   final bool allowNewSession;
 
@@ -197,6 +283,7 @@ class CoachUiEntity {
     this.shrink,
     this.course,
     this.suggested,
+    this.score,
     this.allowNewSession = true,
   });
 }
@@ -225,6 +312,10 @@ class CoachTurnEntity {
   /// A fixed line shown BEFORE the step's own — "cái hẹn này mình tạm cất đi nhé".
   final String? noteKey;
 
+  /// Tầng 3 — the reply was the scene's other person talking, under this name.
+  /// Null on every ordinary Coach turn.
+  final String? speaker;
+
   /// The voice in force, pre-lit from last time; changeable from the header.
   final String persona;
 
@@ -246,6 +337,7 @@ class CoachTurnEntity {
     this.promptKey,
     this.promptArgs = const {},
     this.noteKey,
+    this.speaker,
     this.persona = 'friend',
     this.ui = const CoachUiEntity(),
     this.courseInvite,
@@ -273,6 +365,7 @@ extension CoachTurnModelX on CoachTurnModel {
     promptKey: (promptKey?.trim().isEmpty ?? true) ? null : promptKey,
     promptArgs: promptArgs ?? const {},
     noteKey: (noteKey?.trim().isEmpty ?? true) ? null : noteKey,
+    speaker: (speaker?.trim().isEmpty ?? true) ? null : speaker,
     persona: (persona?.trim().isEmpty ?? true) ? 'friend' : persona!,
     ui: CoachUiEntity(
       kind: CoachUiKind.fromRaw(ui.kind),
@@ -297,6 +390,37 @@ extension CoachTurnModelX on CoachTurnModel {
           )
           .toList(),
       escapeAvailable: ui.escapeAvailable,
+      score: ui.score == null || ui.score!.criteria.isEmpty
+          ? null
+          : CoachSceneScoreEntity(
+              criteria: ui.score!.criteria
+                  .map(
+                    (c) => CoachScoreCriterionEntity(
+                      key: c.key,
+                      label: c.label,
+                      score: c.score.toDouble(),
+                      note: (c.note?.trim().isEmpty ?? true) ? null : c.note,
+                    ),
+                  )
+                  .toList(),
+              overall: ui.score!.overall.toDouble(),
+              strength: (ui.score!.strength?.trim().isEmpty ?? true) ? null : ui.score!.strength,
+              improve: (ui.score!.improve?.trim().isEmpty ?? true) ? null : ui.score!.improve,
+              tip: (ui.score!.tip?.trim().isEmpty ?? true) ? null : ui.score!.tip,
+              betterPhrasing: (ui.score!.betterPhrasing?.trim().isEmpty ?? true)
+                  ? null
+                  : ui.score!.betterPhrasing,
+              level: ui.score!.level,
+              retryAvailable: ui.score!.retryAvailable,
+              skill: ui.score!.skill == null
+                  ? null
+                  : CoachSkillScoreEntity(
+                      score: ui.score!.skill!.score?.round(),
+                      scenes: ui.score!.skill!.scenes,
+                      level: ui.score!.skill!.level,
+                      trend: ui.score!.skill!.trend?.toDouble(),
+                    ),
+            ),
       shrink: ui.shrink == null
           ? null
           : CoachShrinkEntity(context: ui.shrink!.context, action: ui.shrink!.action),
@@ -309,6 +433,8 @@ extension CoachTurnModelX on CoachTurnModel {
               habitTitle: ui.course!.habitTitle ?? '',
               author: ui.course!.author ?? '',
               viewCount: ui.course!.viewCount,
+              reasonKey: (ui.course!.reasonKey?.trim().isEmpty ?? true) ? null : ui.course!.reasonKey,
+              reasonArgs: ui.course!.reasonArgs ?? const {},
             ),
       suggested: ui.suggested == null
           ? null

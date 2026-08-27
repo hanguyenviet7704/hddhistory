@@ -26,7 +26,7 @@ promptEnd: Bạn muốn làm gì tiếp?
 promptJot: Được. Ghi một dòng cho hôm nay thôi, mình không hỏi gì thêm.
 promptSafety: Cảm ơn bạn đã nói ra điều này. Mình muốn bạn không phải ở một mình với nó.
 promptTwoCols: Mình gom lại thành nháp hai cột — toàn bằng lời bạn. Kéo dòng nào là vấn đề thật của bạn sang phải, rồi viết lại một câu.
-promptIntent: "Hôm qua bạn nói: ${context} sẽ ${action}. Có dịp nào chưa?"
+promptIntent: "Hôm trước bạn nói: ${context} sẽ ${action}. Có dịp nào chưa?"
 
 fallbackReply: Mình nghe rồi.
 
@@ -186,7 +186,7 @@ lineEditHint: Sửa dòng này — xoá hết để bỏ
 # design v2 (MeUp AI Coach.html, 2026-08-26)
 intentNoneNote: Vậy là bối cảnh chưa xuất hiện, không phải bạn tránh. Mình giữ nhắc hẹn này lại.
 intentTellDone: Mình lưu nguyên văn câu bạn vừa kể.
-intentTellMissed: Mình ghi nhận. Lần tới nên nhỏ hơn một chút.
+intentTellMissed: Mình ghi nhận.
 intentDoneEcho: Mình làm được rồi.
 intentMissedEcho: Có dịp mà mình chưa làm.
 intentNoneEcho: Chưa có dịp nào.
@@ -230,3 +230,36 @@ stepEnd: "câu chốt · rồi đóng"
 stepWait: "đang trả lời…"
 stepSafety: đường thoát an toàn
 sceneLead: "Một cảnh ngắn:"
+
+# hướng đi (2026-08-26): thu nhỏ nhắc hẹn · lý do card course
+promptShrinkAsk: Muốn thu nhỏ nhắc hẹn này lại không?
+shrinkAskYes: Thu nhỏ lại
+shrinkAskNo: Giữ nguyên, thử lại
+shrinkAskYesEcho: Thu nhỏ lại.
+shrinkAskNoEcho: Giữ nguyên.
+promptShrinkEdit: "Sửa lại cho nhỏ hơn — vẫn là chữ của bạn."
+shrinkDoneNote: Mình đổi sang bản nhỏ hơn. Giờ nhắc giữ nguyên.
+courseReasonBarrier: "Vì bạn còn vướng ở «${habit}»"
+courseReasonHabit: "Nối tiếp «${habit}» bạn đang tập"
+courseReasonSkillset: Cùng hướng với thói quen bạn đang tập
+courseReasonSaved: Bạn đã lưu khoá này
+stepShrinkAsk: thu nhỏ nhắc hẹn
+
+# tầng 4 "Reflect" (2026-08-27): chấm theo rubric của kỹ năng, rồi cho tập lại
+promptSceneScore: "Mình bước ra khỏi tình huống một chút."
+sceneScoreRetry: Thử lại tình huống này
+sceneScoreGoOn: Đi tiếp
+sceneScoreRetryEcho: Thử lại tình huống này.
+sceneScoreGoOnEcho: Đi tiếp.
+stepSceneScore: xem lại cách bạn xử lý
+score:
+  title: CÁCH BẠN XỬ LÝ
+  outOf: /10
+  level: "Độ khó ${level}/5"
+  strength: "Làm được:"
+  improve: "Sắc hơn được:"
+  tip: "Mẹo:"
+  betterPhrasing: CÓ THỂ NÓI THẾ NÀY
+  skill: "Điểm kỹ năng ${score}/100 · ${scenes} lần tập"
+  trendUp: "▲ ${points}"
+  trendDown: "▼ ${points}"

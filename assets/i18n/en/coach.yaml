@@ -31,7 +31,7 @@ promptEnd: What would you like to do next?
 promptJot: Alright. One line for today, and I won't ask anything else.
 promptSafety: Thank you for saying that. I don't want you to be alone with it.
 promptTwoCols: I've put it into two columns — all in your own words. Move whichever line is the real problem to the right, then write it as one sentence.
-promptIntent: "Yesterday you said: ${context}, you would ${action}. Has there been a moment yet?"
+promptIntent: "The other day you said: ${context}, you would ${action}. Has there been a moment yet?"
 
 # Shown when the model could not answer. Deliberately empty of content — an
 # acknowledgement that claims to have understood something it never read is
@@ -194,7 +194,7 @@ lineEditHint: Edit this line — clear it to remove
 # design v2 (MeUp AI Coach.html, 2026-08-26)
 intentNoneNote: "So the moment never came up — you didn't avoid it. I'll keep this reminder."
 intentTellDone: "I've saved exactly what you just told me."
-intentTellMissed: Noted. Next time, make it a little smaller.
+intentTellMissed: Noted.
 intentDoneEcho: I did it.
 intentMissedEcho: "There was a moment and I didn't."
 intentNoneEcho: No moment came up.
@@ -238,3 +238,36 @@ stepEnd: "closing line · then close"
 stepWait: "replying…"
 stepSafety: a way through
 sceneLead: "A short scene:"
+
+# direction (2026-08-26): smaller reminder · why this course
+promptShrinkAsk: Want to make this reminder smaller?
+shrinkAskYes: Make it smaller
+shrinkAskNo: Keep it, try again
+shrinkAskYesEcho: Make it smaller.
+shrinkAskNoEcho: Keep it.
+promptShrinkEdit: "Edit it down — still your words."
+shrinkDoneNote: Swapped for the smaller version. Same reminder time.
+courseReasonBarrier: "Because “${habit}” is where you keep getting stuck"
+courseReasonHabit: "Follows on from “${habit}”, which you're practising"
+courseReasonSkillset: Same direction as a habit you practise
+courseReasonSaved: You saved this course
+stepShrinkAsk: a smaller reminder
+
+# tầng 4 "Reflect" (2026-08-27)
+promptSceneScore: "Let me step out of the scene for a moment."
+sceneScoreRetry: Try this scene again
+sceneScoreGoOn: Move on
+sceneScoreRetryEcho: Try this scene again.
+sceneScoreGoOnEcho: Move on.
+stepSceneScore: how you handled it
+score:
+  title: HOW YOU HANDLED IT
+  outOf: /10
+  level: "Level ${level}/5"
+  strength: "You did this:"
+  improve: "Sharper next time:"
+  tip: "Tip:"
+  betterPhrasing: YOU COULD SAY IT LIKE THIS
+  skill: "Skill ${score}/100 · ${scenes} practices"
+  trendUp: "▲ ${points}"
+  trendDown: "▼ ${points}"

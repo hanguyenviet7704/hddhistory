@@ -148,6 +148,11 @@ class _CoachSheetState extends State<_CoachSheet> {
                       // The card stays on screen through LEAVE, under the
                       // Coach's "Mình mở khoá đó cho bạn."
                       course: state.ui.kind == CoachUiKind.courseCard || state.step == 'leave' ? state.ui.course : null,
+                      // Tầng 4 — the rubric card, only while its own step is on
+                      // screen: the verdict belongs to the scene it scored, and
+                      // leaving it up through the commitment would read as a
+                      // grade attached to the plan.
+                      score: state.ui.kind == CoachUiKind.sceneScore ? state.ui.score : null,
                       draft: state.ui.kind == CoachUiKind.twoCols
                           ? CoachTwoColumns(
                               left: state.columnLeft,

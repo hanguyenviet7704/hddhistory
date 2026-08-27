@@ -12,7 +12,12 @@ class CoachMessage {
   final bool isCoach;
   final String text;
 
-  const CoachMessage({required this.isCoach, required this.text});
+  /// Tầng 3 — the scene's other person said this, under this name. The bubble
+  /// carries the label so a roleplay turn reads as dialogue rather than as the
+  /// Coach suddenly making demands. Null on every ordinary line.
+  final String? speaker;
+
+  const CoachMessage({required this.isCoach, required this.text, this.speaker});
 }
 
 @freezed

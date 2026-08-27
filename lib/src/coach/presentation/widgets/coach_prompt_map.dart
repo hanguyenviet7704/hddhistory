@@ -46,6 +46,14 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.planSlept;
     case 'coach.prompt.loop':
       return l10n.promptLoop;
+    // ②A after "có dịp mà chưa làm": the offer to make the commitment smaller,
+    // then the form pre-filled with the old wording, then the fact it replaced.
+    case 'coach.prompt.shrinkAsk':
+      return l10n.promptShrinkAsk;
+    case 'coach.prompt.shrinkEdit':
+      return l10n.promptShrinkEdit;
+    case 'coach.prompt.shrinkDone':
+      return l10n.shrinkDoneNote;
 
     // -- the 5 beats
     case 'coach.prompt.story':
@@ -80,6 +88,8 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.retryAck;
 
     // -- nhịp 5: the commitment and the tail
+    case 'coach.prompt.sceneScore':
+      return l10n.promptSceneScore;
     case 'coach.prompt.planAsk':
       return l10n.promptPlanAsk;
     case 'coach.prompt.plan':
@@ -152,6 +162,25 @@ String? coachTeaser(BuildContext context, String? key) {
   }
 }
 
+/// Why the course card shows THIS course — a fact about the reader, from the
+/// server as a key. Null for a card that came with no reason (an older API).
+String? coachCourseReason(BuildContext context, String? key, [Map<String, String> args = const {}]) {
+  final l10n = context.l10n.coach;
+
+  switch (key) {
+    case 'coach.course.reasonBarrier':
+      return l10n.courseReasonBarrier(habit: args['habit'] ?? '');
+    case 'coach.course.reasonHabit':
+      return l10n.courseReasonHabit(habit: args['habit'] ?? '');
+    case 'coach.course.reasonSkillset':
+      return l10n.courseReasonSkillset;
+    case 'coach.course.reasonSaved':
+      return l10n.courseReasonSaved;
+    default:
+      return null;
+  }
+}
+
 /// The second line of the sheet header — which moment of the conversation
 /// this is, in the design's own words ("mood đầu ngày · 5 mức, 1 chạm").
 String? coachStepLabel(BuildContext context, String step) {
@@ -168,6 +197,9 @@ String? coachStepLabel(BuildContext context, String step) {
     case 'intentTell':
     case 'barrier':
       return l10n.stepIntentTell;
+    case 'shrinkAsk':
+    case 'shrink':
+      return l10n.stepShrinkAsk;
     case 'loop':
       return l10n.stepLoop;
     case 'story':
@@ -189,6 +221,8 @@ String? coachStepLabel(BuildContext context, String step) {
       return l10n.stepSituation;
     case 'retryScene':
       return l10n.stepRetry;
+    case 'sceneScore':
+      return l10n.stepSceneScore;
     case 'planAsk':
       return l10n.stepPlanAsk;
     case 'plan':
@@ -213,7 +247,6 @@ String? coachStepLabel(BuildContext context, String step) {
       return l10n.stepJot;
     case 'nextAction':
     case 'closing':
-    case 'shrink':
     case 'contextAsk':
     case 'contextEdit':
     case 'persona':

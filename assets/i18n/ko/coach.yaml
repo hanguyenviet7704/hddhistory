@@ -26,7 +26,7 @@ promptEnd: 다음으로 무엇을 할까요?
 promptJot: 알겠어요. 오늘은 한 줄만, 더 묻지 않을게요.
 promptSafety: 말해 주셔서 고맙습니다. 혼자 감당하지 않으셨으면 해요.
 promptTwoCols: 두 열로 정리했어요 — 모두 당신의 말이에요. 진짜 문제인 줄을 오른쪽으로 옮기고, 한 문장으로 다시 써 주세요.
-promptIntent: "어제 당신은 “${context}, ${action}”라고 했어요. 그런 순간이 있었나요?"
+promptIntent: "얼마 전 당신은 “${context}, ${action}”라고 했어요. 그런 순간이 있었나요?"
 
 fallbackReply: 듣고 있어요.
 
@@ -186,7 +186,7 @@ lineEditHint: 이 줄 수정 — 비우면 삭제
 # design v2 (MeUp AI Coach.html, 2026-08-26)
 intentNoneNote: 아직 그 상황이 오지 않은 거네요, 피한 게 아니에요. 이 알림은 그대로 둘게요.
 intentTellDone: 방금 말한 그대로 저장했어요.
-intentTellMissed: 기억할게요. 다음엔 조금 더 작게 해봐요.
+intentTellMissed: 기억할게요.
 intentDoneEcho: 해냈어요.
 intentMissedEcho: 기회는 있었는데 못 했어요.
 intentNoneEcho: 아직 그런 순간이 없었어요.
@@ -230,3 +230,36 @@ stepEnd: "마무리 한 줄 · 그리고 닫기"
 stepWait: "답하는 중…"
 stepSafety: 안전한 출구
 sceneLead: "짧은 장면 하나:"
+
+# 방향 (2026-08-26): 리마인더 줄이기 · 코스 추천 이유
+promptShrinkAsk: 이 리마인더를 조금 더 작게 바꿀까요?
+shrinkAskYes: 더 작게
+shrinkAskNo: 그대로 두고 다시
+shrinkAskYesEcho: 더 작게요.
+shrinkAskNoEcho: 그대로 둘게요.
+promptShrinkEdit: "더 작게 고쳐 주세요 — 여전히 당신의 말로."
+shrinkDoneNote: 더 작은 버전으로 바꿨어요. 알림 시간은 그대로예요.
+courseReasonBarrier: "“${habit}”에서 자꾸 멈추기 때문에"
+courseReasonHabit: "연습 중인 “${habit}”에 이어서"
+courseReasonSkillset: 연습 중인 습관과 같은 방향의 코스
+courseReasonSaved: 저장해 둔 코스예요
+stepShrinkAsk: 리마인더 줄이기
+
+# tầng 4 "Reflect" (2026-08-27)
+promptSceneScore: "잠깐 상황에서 나올게요."
+sceneScoreRetry: 이 상황 다시 해보기
+sceneScoreGoOn: 계속하기
+sceneScoreRetryEcho: 이 상황 다시 해보기.
+sceneScoreGoOnEcho: 계속하기.
+stepSceneScore: 내가 어떻게 했는지 보기
+score:
+  title: 당신의 대응
+  outOf: /10
+  level: "난이도 ${level}/5"
+  strength: "잘한 점:"
+  improve: "더 나아질 점:"
+  tip: "팁:"
+  betterPhrasing: 이렇게 말할 수도 있어요
+  skill: "스킬 ${score}/100 · ${scenes}번 연습"
+  trendUp: "▲ ${points}"
+  trendDown: "▼ ${points}"

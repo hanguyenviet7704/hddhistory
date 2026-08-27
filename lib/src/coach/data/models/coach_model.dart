@@ -98,9 +98,67 @@ abstract class CoachCourseCardModel with _$CoachCourseCardModel {
     String? habitTitle,
     String? author,
     int? viewCount,
+
+    /// Why this course — a slang key, and the habit title it quotes.
+    String? reasonKey,
+    Map<String, String>? reasonArgs,
   }) = _CoachCourseCardModel;
 
   factory CoachCourseCardModel.fromJson(Map<String, dynamic> json) => _$CoachCourseCardModelFromJson(json);
+}
+
+/// One rubric criterion as it was scored — tầng 4 "Reflect".
+@freezed
+abstract class CoachScoreCriterionModel with _$CoachScoreCriterionModel {
+  const factory CoachScoreCriterionModel({
+    @Default('') String key,
+
+    /// Already in the reader's language — the server resolves it from the skill.
+    @Default('') String label,
+    @Default(0) num score,
+    String? note,
+  }) = _CoachScoreCriterionModel;
+
+  factory CoachScoreCriterionModel.fromJson(Map<String, dynamic> json) =>
+      _$CoachScoreCriterionModelFromJson(json);
+}
+
+/// The running skill number for one habit, over the last few scored scenes.
+@freezed
+abstract class CoachSkillScoreModel with _$CoachSkillScoreModel {
+  const factory CoachSkillScoreModel({
+    /// 0–100. Null on a reader's very first scored scene.
+    num? score,
+    @Default(0) int scenes,
+    @Default(1) int level,
+
+    /// Newer half minus older half, in points of 10. Null until there is enough.
+    num? trend,
+  }) = _CoachSkillScoreModel;
+
+  factory CoachSkillScoreModel.fromJson(Map<String, dynamic> json) =>
+      _$CoachSkillScoreModelFromJson(json);
+}
+
+/// Tầng 4 — the rubric card for the scene just finished.
+@freezed
+abstract class CoachSceneScoreModel with _$CoachSceneScoreModel {
+  const factory CoachSceneScoreModel({
+    @Default(<CoachScoreCriterionModel>[]) List<CoachScoreCriterionModel> criteria,
+    @Default(0) num overall,
+    String? strength,
+    String? improve,
+    String? tip,
+
+    /// Their own answer rewritten to do the job better. Null when it needed none.
+    String? betterPhrasing,
+    @Default(1) int level,
+    @Default(false) bool retryAvailable,
+    CoachSkillScoreModel? skill,
+  }) = _CoachSceneScoreModel;
+
+  factory CoachSceneScoreModel.fromJson(Map<String, dynamic> json) =>
+      _$CoachSceneScoreModelFromJson(json);
 }
 
 @freezed
@@ -118,6 +176,7 @@ abstract class CoachUiModel with _$CoachUiModel {
     CoachShrinkModel? shrink,
     CoachCourseCardModel? course,
     CoachSuggestedPlanModel? suggested,
+    CoachSceneScoreModel? score,
     @Default(true) bool allowNewSession,
   }) = _CoachUiModel;
 
@@ -159,6 +218,9 @@ abstract class CoachTurnModel with _$CoachTurnModel {
     String? promptKey,
     Map<String, String>? promptArgs,
     String? noteKey,
+
+    /// Tầng 3 — the reply was the scene's other person talking, by name.
+    String? speaker,
     String? persona,
     @Default(CoachUiModel()) CoachUiModel ui,
     CoachCourseInviteModel? courseInvite,

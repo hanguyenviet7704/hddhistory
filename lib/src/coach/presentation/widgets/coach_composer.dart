@@ -45,24 +45,36 @@ class _CoachComposerState extends State<CoachComposer> {
   static const _moodEmoji = ['😞', '😕', '😐', '🙂', '😄'];
 
   @override
+  void initState() {
+    super.initState();
+    // A sheet reopened mid-session lands straight on the form: the pre-fill
+    // has to apply here too, not only on the step change into it.
+    _applyPlanPrefill();
+  }
+
+  @override
   void didUpdateWidget(covariant CoachComposer oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // PLAN — drop the scene's action into the form once, so the reader edits
-    // rather than retypes what they just practised. "khi nào" comes from the
-    // habit's context; both stay editable.
+    _applyPlanPrefill();
+
+    if (widget.state.step != oldWidget.state.step) {
+      _thumbDown = false;
+      _ratingChips.clear();
+      _ratingOther.clear();
+    }
+  }
+
+  /// PLAN — drop the server's suggestion into the form once, so the reader
+  /// edits rather than retypes: the move for next time (from the scene, or the
+  /// old wording at SHRINK) and its "khi nào". Both stay editable.
+  void _applyPlanPrefill() {
     final suggested = widget.state.ui.suggested;
     final planKey = '${widget.state.sessionId}:${widget.state.step}:${widget.state.messages.length}';
     if (widget.state.ui.kind == CoachUiKind.plan && suggested != null && !suggested.isEmpty && _planFilledFor != planKey) {
       _planFilledFor = planKey;
       if (suggested.context.isNotEmpty) _planContext.text = suggested.context;
       if (suggested.action.isNotEmpty) _planAction.text = suggested.action;
-    }
-
-    if (widget.state.step != oldWidget.state.step) {
-      _thumbDown = false;
-      _ratingChips.clear();
-      _ratingOther.clear();
     }
   }
 
@@ -113,6 +125,8 @@ class _CoachComposerState extends State<CoachComposer> {
         return _schedule(context, busy);
       case CoachUiKind.courseCard:
         return _courseChips(context, state, busy);
+      case CoachUiKind.sceneScore:
+        return _sceneScoreChips(context, state, busy);
       case CoachUiKind.rating:
         return _rating(context, busy);
       case CoachUiKind.nextSession:
@@ -168,6 +182,11 @@ class _CoachComposerState extends State<CoachComposer> {
       'loop' => [
         _ChipSpec('continue', l10n.loopContinue),
         _ChipSpec('stop', l10n.loopStop),
+      ],
+      // ②A after "có dịp mà chưa làm" — smaller, or keep it. Equal buttons.
+      'shrinkAsk' => [
+        _ChipSpec('yes', l10n.shrinkAskYes, echo: l10n.shrinkAskYesEcho),
+        _ChipSpec('no', l10n.shrinkAskNo, echo: l10n.shrinkAskNoEcho),
       ],
       // Retired steps a parked session may still be on.
       'depth' => [
@@ -241,6 +260,8 @@ class _CoachComposerState extends State<CoachComposer> {
         cubit.answerPlanAsk(accept: spec.value == 'yes', label: echo);
       case 'loop':
         cubit.loop(keepGoing: spec.value == 'continue', label: spec.label);
+      case 'shrinkAsk':
+        cubit.answerShrinkAsk(accept: spec.value == 'yes', label: echo);
       case 'pickNew':
         cubit.pickNewHabit(spec.value, spec.label);
       case 'depth':
@@ -634,6 +655,40 @@ class _CoachComposerState extends State<CoachComposer> {
         _ChoiceButton(
           label: l10n.courseCardClose,
           onTap: busy ? null : () => cubit.courseAction('close', label: l10n.courseCardCloseEcho),
+        ),
+      ],
+    );
+  }
+
+  /// Tầng 4 — the rubric card's two ways out.
+  ///
+  /// "Thử lại tình huống này" comes FIRST and is offered only while the server
+  /// says so (one replay per scene): a second attempt at the same moment is the
+  /// point of the card, and a button that reappears forever would turn the
+  /// practice into grinding a number.
+  Widget _sceneScoreChips(BuildContext context, CoachState state, bool busy) {
+    final l10n = context.l10n.coach;
+    final cubit = widget.cubit;
+    final canRetry = state.ui.score?.retryAvailable ?? false;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (canRetry) ...[
+          _ChoiceButton(
+            label: l10n.sceneScoreRetry,
+            onTap: busy
+                ? null
+                : () => cubit.answerSceneScore(retry: true, label: l10n.sceneScoreRetryEcho),
+          ),
+          SizedBox(height: 7.h),
+        ],
+        _ChoiceButton(
+          label: l10n.sceneScoreGoOn,
+          onTap: busy
+              ? null
+              : () => cubit.answerSceneScore(retry: false, label: l10n.sceneScoreGoOnEcho),
         ),
       ],
     );

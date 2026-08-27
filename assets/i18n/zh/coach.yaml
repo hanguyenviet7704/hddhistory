@@ -26,7 +26,7 @@ promptEnd: 接下来想做什么？
 promptJot: 好。今天就写一行，我不会再多问。
 promptSafety: 谢谢你说出来。我不希望你一个人扛着。
 promptTwoCols: 我把它整理成两栏——全都是你自己的话。把真正是问题的那一行移到右边，然后写成一句话。
-promptIntent: "昨天你说：${context}，你会${action}。有过这样的时机吗？"
+promptIntent: "前几天你说：${context}，你会${action}。有过这样的时机吗？"
 
 fallbackReply: 我听着呢。
 
@@ -186,7 +186,7 @@ lineEditHint: 编辑这一行——清空即删除
 # design v2 (MeUp AI Coach.html, 2026-08-26)
 intentNoneNote: 那是场景还没出现，不是你在回避。这个提醒我先留着。
 intentTellDone: 我把你刚说的原话存下来了。
-intentTellMissed: 记下了。下次可以再小一点。
+intentTellMissed: 记下了。
 intentDoneEcho: 我做到了。
 intentMissedEcho: 有时机但我没做。
 intentNoneEcho: 还没有遇到。
@@ -230,3 +230,36 @@ stepEnd: "收尾一句 · 然后关闭"
 stepWait: "正在回复…"
 stepSafety: 安全出口
 sceneLead: "一个小场景："
+
+# 方向（2026-08-26）：缩小提醒 · 课程推荐理由
+promptShrinkAsk: 想把这个提醒改小一点吗？
+shrinkAskYes: 改小一点
+shrinkAskNo: 保持原样，再试一次
+shrinkAskYesEcho: 改小一点。
+shrinkAskNoEcho: 保持原样。
+promptShrinkEdit: "改得小一点——还是你自己的话。"
+shrinkDoneNote: 换成了更小的版本。提醒时间不变。
+courseReasonBarrier: "因为你总在「${habit}」这里卡住"
+courseReasonHabit: "接着你正在练的「${habit}」"
+courseReasonSkillset: 和你正在练的习惯同一个方向
+courseReasonSaved: 你收藏过这门课
+stepShrinkAsk: 改小提醒
+
+# tầng 4 "Reflect" (2026-08-27)
+promptSceneScore: "我先从情境里出来一下。"
+sceneScoreRetry: 再练一次这个情境
+sceneScoreGoOn: 继续
+sceneScoreRetryEcho: 再练一次这个情境。
+sceneScoreGoOnEcho: 继续。
+stepSceneScore: 回看你的处理
+score:
+  title: 你的处理方式
+  outOf: /10
+  level: "难度 ${level}/5"
+  strength: "做到了："
+  improve: "可以更到位："
+  tip: "提示："
+  betterPhrasing: 也可以这样说
+  skill: "技能分 ${score}/100 · 练习 ${scenes} 次"
+  trendUp: "▲ ${points}"
+  trendDown: "▼ ${points}"

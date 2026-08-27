@@ -91,11 +91,19 @@ class CoachCubit extends Cubit<CoachState> {
   /// was answered; the server decides which branch it opens.
   Future<void> answerIntent(String answer, String label) => _send({'kind': 'intent', 'answer': answer}, userLine: label);
 
+  /// ②A after "có dịp mà chưa làm" — make the commitment smaller, or keep it.
+  Future<void> answerShrinkAsk({required bool accept, required String label}) => _send({'kind': 'shrink', 'accept': accept}, userLine: label);
+
   /// ② "hoặc bỏ qua" — the story step's second way out.
   Future<void> skipStory(String label) => _send({'kind': 'skip'}, userLine: label);
 
   /// ★ — practise one situation, or not. Never required.
   Future<void> answerInvite({required bool accept, required String label}) => _send({'kind': 'invite', 'accept': accept}, userLine: label);
+
+  /// Tầng 4 — the rubric card. "Thử lại tình huống này" replays the SAME scene
+  /// once; anything else moves on to the commitment.
+  Future<void> answerSceneScore({required bool retry, required String label}) =>
+      _send({'kind': 'sceneScore', 'retry': retry}, userLine: label);
 
   /// "Muốn đặt Nhắc hẹn không?" — the commitment is optional at every door.
   Future<void> answerPlanAsk({required bool accept, required String label}) => _send({'kind': 'planAsk', 'accept': accept}, userLine: label);
@@ -315,7 +323,9 @@ class CoachCubit extends Cubit<CoachState> {
       messages.add(CoachMessage(isCoach: false, text: userLine));
     }
     if (turn.reply != null) {
-      messages.add(CoachMessage(isCoach: true, text: turn.reply!));
+      // `speaker` set means this line was said IN CHARACTER by the scene's other
+      // person, so the bubble is labelled with their name.
+      messages.add(CoachMessage(isCoach: true, text: turn.reply!, speaker: turn.speaker));
     }
 
     // A fixed line before the step's own — "Đó là câu của bạn, mình không

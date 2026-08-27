@@ -26,7 +26,7 @@ promptEnd: 次はどうしますか？
 promptJot: わかりました。今日は一行だけ、それ以上は聞きません。
 promptSafety: 話してくれてありがとうございます。ひとりで抱えてほしくありません。
 promptTwoCols: 二つの列にまとめました——すべてあなた自身の言葉です。本当の問題だと思う行を右へ移して、一文に書き直してください。
-promptIntent: "昨日あなたは「${context}、${action}」と言いました。その場面はありましたか？"
+promptIntent: "先日あなたは「${context}、${action}」と言いました。その場面はありましたか？"
 
 fallbackReply: 聞いています。
 
@@ -186,7 +186,7 @@ lineEditHint: この行を編集 — 空にすると削除
 # design v2 (MeUp AI Coach.html, 2026-08-26)
 intentNoneNote: 場面がまだ来ていないだけで、避けたわけではありませんね。このリマインダーは残しておきます。
 intentTellDone: 今の言葉をそのまま保存しました。
-intentTellMissed: 受け取りました。次はもう少し小さくしましょう。
+intentTellMissed: 受け取りました。
 intentDoneEcho: できました。
 intentMissedEcho: 場面はあったけど、できませんでした。
 intentNoneEcho: まだ場面がありませんでした。
@@ -230,3 +230,36 @@ stepEnd: "締めの一言 · そして閉じる"
 stepWait: "返信中…"
 stepSafety: 安全な出口
 sceneLead: "短い場面です："
+
+# 方向づけ（2026-08-26）：リマインダーを小さく · コース提案の理由
+promptShrinkAsk: このリマインダーを少し小さくしますか？
+shrinkAskYes: 小さくする
+shrinkAskNo: そのまま、もう一度
+shrinkAskYesEcho: 小さくします。
+shrinkAskNoEcho: そのままで。
+promptShrinkEdit: "小さく書き直してください——あなたの言葉のままで。"
+shrinkDoneNote: 小さい版に置き換えました。通知の時間はそのままです。
+courseReasonBarrier: "「${habit}」でいつも止まってしまうから"
+courseReasonHabit: "練習中の「${habit}」の続きとして"
+courseReasonSkillset: 練習中の習慣と同じ方向のコース
+courseReasonSaved: 保存していたコースです
+stepShrinkAsk: リマインダーを小さく
+
+# tầng 4 "Reflect" (2026-08-27)
+promptSceneScore: "少し場面から離れますね。"
+sceneScoreRetry: この場面をもう一度
+sceneScoreGoOn: 次へ
+sceneScoreRetryEcho: この場面をもう一度。
+sceneScoreGoOnEcho: 次へ。
+stepSceneScore: 対応をふり返る
+score:
+  title: あなたの対応
+  outOf: /10
+  level: "難易度 ${level}/5"
+  strength: "できていたこと："
+  improve: "もっと良くなる点："
+  tip: "ヒント："
+  betterPhrasing: こう言うこともできます
+  skill: "スキル ${score}/100 · 練習 ${scenes} 回"
+  trendUp: "▲ ${points}"
+  trendDown: "▼ ${points}"
