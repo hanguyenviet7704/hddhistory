@@ -8,6 +8,7 @@ import {
   UsersIcon,
 } from "@heroicons/react/24/outline";
 
+import NotificationImageField from "../../components/notification/NotificationImageField";
 import { deeplinkService } from "../../services/deeplinkService";
 import { notificationService } from "../../services/notificationService";
 import { segmentService } from "../../services/segmentService";
@@ -176,6 +177,8 @@ export default function NotificationCampaignSection() {
   const [localMinute, setLocalMinute] = useState("0");
   const [scheduledDate, setScheduledDate] = useState(todayInput());
   const [copies, setCopies] = useState(emptyCopies);
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [reach, setReach] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -322,6 +325,7 @@ export default function NotificationCampaignSection() {
     setEditingId(null);
     setName("");
     setCopies(emptyCopies());
+    setImageUrl("");
     setSegmentIds([]);
     setDeeplink("home");
     setSendMode("now");
@@ -346,6 +350,7 @@ export default function NotificationCampaignSection() {
         body: campaign.copies?.[locale]?.body ?? "",
       })),
     );
+    setImageUrl(campaign.imageUrl ?? "");
     setDeeplink(campaign.deeplink);
     setSegmentIds(campaign.segmentIds ?? []);
     setSendMode(campaign.sendMode);
@@ -371,6 +376,9 @@ export default function NotificationCampaignSection() {
         // Gửi CẢ danh sách: ngôn ngữ bị xoá trắng biến mất khỏi payload, và đó
         // đúng là cách gỡ một bản dịch khỏi campaign.
         copies: filledCopies,
+        // Gửi kể cả khi rỗng: chuỗi rỗng là cách API hiểu "gỡ ảnh", còn bỏ hẳn
+        // field lại có nghĩa là giữ ảnh cũ.
+        imageUrl: imageUrl.trim(),
         deeplink,
         segmentIds,
         sendMode,
@@ -402,6 +410,7 @@ export default function NotificationCampaignSection() {
       const created = await notificationService.createCampaign({
         name,
         copies: filledCopies,
+        imageUrl: imageUrl.trim(),
         deeplink,
         segmentIds,
         sendMode,
@@ -415,6 +424,9 @@ export default function NotificationCampaignSection() {
       // tiếp thường đi cùng chỗ với campaign vừa tạo.
       setName("");
       setCopies(emptyCopies());
+      // Ảnh KHÔNG được giữ lại như đích và giờ gửi: gửi lại ảnh cũ cho campaign
+      // sau là cái sai người soạn không thấy cho tới khi push đã đi.
+      setImageUrl("");
       setSegmentIds([]);
       await load();
     } catch (error: any) {
@@ -644,6 +656,20 @@ export default function NotificationCampaignSection() {
             <code>{"{quote}"}</code>…) bị từ chối khi lưu — campaign không có dữ
             liệu để điền, để lọt thì người đọc thấy nguyên dấu ngoặc nhọn.
           </p>
+
+          {/* Ảnh đứng sau phần chữ vì nó là tuỳ chọn: người soạn không phải cuộn
+              qua một ô upload để tới ô tiêu đề, thứ duy nhất bắt buộc. */}
+          <div className="pt-2">
+            <NotificationImageField
+              value={imageUrl}
+              onChange={setImageUrl}
+              onUploadingChange={setUploadingImage}
+              onError={showError}
+              onSuccess={showSuccess}
+              folder="notification-campaign"
+              label="Ảnh kèm noti (tuỳ chọn, dùng chung mọi ngôn ngữ)"
+            />
+          </div>
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -651,7 +677,7 @@ export default function NotificationCampaignSection() {
             <>
               <button
                 type="button"
-                disabled={creating}
+                disabled={creating || uploadingImage}
                 onClick={saveEdit}
                 className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
               >
@@ -674,7 +700,7 @@ export default function NotificationCampaignSection() {
             <>
               <button
                 type="button"
-                disabled={creating}
+                disabled={creating || uploadingImage}
                 onClick={() => create(false)}
                 className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               >
@@ -682,7 +708,7 @@ export default function NotificationCampaignSection() {
               </button>
               <button
                 type="button"
-                disabled={creating}
+                disabled={creating || uploadingImage}
                 onClick={() => create(true)}
                 className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
               >

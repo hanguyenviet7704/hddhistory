@@ -13,6 +13,7 @@ import {
 import { Autocomplete, TextField } from "@mui/material";
 
 import NotificationCampaignSection from "./NotificationCampaignSection";
+import NotificationImageField from "../../components/notification/NotificationImageField";
 import ToggleSwitch from "../../components/paywall-config/ToggleSwitch";
 import { segmentService } from "../../services/segmentService";
 import { SegmentOption } from "../../types/interface/segment.interface";
@@ -127,6 +128,8 @@ interface TemplateDraft {
   localHour: string;
   localMinute: string;
   deeplink: NotificationDeeplink;
+  /** Empty string = no image. One image per type, shared by every variant. */
+  imageUrl: string;
   segmentIds: string[];
   variants: VariantDraft[];
 }
@@ -208,6 +211,14 @@ const ContentSection: React.FC = () => {
   const [savingType, setSavingType] = useState<NotificationType | null>(null);
   const [message, setMessage] = useState<string>("");
   const [drafts, setDrafts] = useState<Record<string, TemplateDraft>>({});
+  /**
+   * Which type is mid-upload — a single value, not a set: the field is one file
+   * input per card and only one card can be uploading at a time in practice, and
+   * a set would let a stale entry keep Save disabled forever.
+   */
+  const [uploadingType, setUploadingType] = useState<NotificationType | null>(
+    null,
+  );
   // Keyed `<type>:<index>`. Seven wordings across eight locales is 56 inputs per
   // type, so everything but the first starts closed.
   const [openVariants, setOpenVariants] = useState<Record<string, boolean>>({});
@@ -229,6 +240,7 @@ const ContentSection: React.FC = () => {
               localHour: String(template.localHour ?? 0),
               localMinute: String(template.localMinute ?? 0),
               deeplink: template.deeplink,
+              imageUrl: template.imageUrl ?? "",
               segmentIds: template.segmentIds ?? [],
               variants: toVariantDrafts(template),
             },
@@ -304,6 +316,9 @@ const ContentSection: React.FC = () => {
         localHour: Number(draft?.localHour ?? template.localHour),
         localMinute: Number(draft?.localMinute ?? template.localMinute ?? 0),
         deeplink: draft?.deeplink ?? template.deeplink,
+        // Always sent, including as "": the empty string is how the screen
+        // removes the image, the same way [] clears targeting below.
+        imageUrl: (draft?.imageUrl ?? template.imageUrl ?? "").trim(),
         // Always sent, including as []: that empty array is how the screen
         // clears targeting and goes back to everybody.
         segmentIds: draft?.segmentIds ?? template.segmentIds ?? [],
@@ -495,7 +510,10 @@ const ContentSection: React.FC = () => {
                   checked={template.enabled}
                   onChange={(checked) => void save(template, checked)}
                   label={template.enabled ? "Đang bật" : "Đang tắt"}
-                  disabled={savingType === template.type}
+                  disabled={
+                    savingType === template.type ||
+                    uploadingType === template.type
+                  }
                 />
               </div>
             </div>
@@ -629,6 +647,28 @@ const ContentSection: React.FC = () => {
               })}
             </div>
 
+            {/* Ảnh của cả type, không phải của từng biến thể: biến thể là để đổi
+                câu chữ, và ảnh gắn theo biến thể thì mỗi wording mới lại phải
+                nhớ đính ảnh. */}
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <NotificationImageField
+                value={draft?.imageUrl ?? template.imageUrl ?? ""}
+                onChange={(imageUrl) =>
+                  setDrafts((prev) => ({
+                    ...prev,
+                    [template.type]: { ...prev[template.type], imageUrl },
+                  }))
+                }
+                onUploadingChange={(uploading) =>
+                  setUploadingType(uploading ? template.type : null)
+                }
+                onError={setMessage}
+                onSuccess={setMessage}
+                folder="notification-template"
+                label="Ảnh kèm noti (tuỳ chọn, dùng chung mọi ngôn ngữ và biến thể)"
+              />
+            </div>
+
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <button
                 type="button"
@@ -648,7 +688,10 @@ const ContentSection: React.FC = () => {
               </button>
               <button
                 onClick={() => void save(template)}
-                disabled={savingType === template.type}
+                disabled={
+                  savingType === template.type ||
+                  uploadingType === template.type
+                }
                 className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-60"
               >
                 {savingType === template.type ? "Đang lưu…" : "Lưu thay đổi"}

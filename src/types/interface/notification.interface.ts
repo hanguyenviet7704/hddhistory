@@ -62,6 +62,13 @@ export interface NotificationTemplate {
   localMinute?: number;
   deeplink: NotificationDeeplink;
   /**
+   * Ảnh kèm noti, dùng chung cho mọi locale. `null`/absent = noti chỉ có chữ.
+   *
+   * Android hiện ảnh ở mọi trạng thái app. iOS chỉ hiện khi bản app có
+   * NotificationService extension — bản cũ hơn vẫn nhận noti, chỉ mất ảnh.
+   */
+  imageUrl?: string | null;
+  /**
    * Target segments (OR). Empty/absent = send to everybody, which is what every
    * type did before targeting existed.
    */
@@ -83,6 +90,7 @@ export interface NotificationTemplateFile {
     localHour: number;
     localMinute?: number;
     deeplink: NotificationDeeplink;
+    imageUrl?: string | null;
     copies?: NotificationCopy[];
     variants?: { key?: string; copies: NotificationCopy[] }[];
   }[];
@@ -164,6 +172,13 @@ export interface NotificationCampaign {
    * validate bằng `CAMPAIGN_DEEPLINK_KEYS`, hợp của hai họ khoá.
    */
   deeplink: string;
+  /**
+   * Ảnh kèm noti, dùng chung cho mọi locale. `null`/absent = noti chỉ có chữ.
+   *
+   * Android hiện ảnh ở mọi trạng thái app. iOS chỉ hiện khi bản app có
+   * NotificationService extension — bản cũ hơn vẫn nhận noti, chỉ mất ảnh.
+   */
+  imageUrl?: string | null;
   segmentIds?: string[];
   sendMode: NotificationCampaignSendMode;
   localHour: number;

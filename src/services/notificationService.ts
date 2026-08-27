@@ -40,6 +40,11 @@ export const notificationService = {
       localMinute?: number;
       deeplink?: string;
       /**
+       * Ảnh kèm noti. Chuỗi rỗng xoá ảnh — API chỉ để nguyên ảnh cũ khi field
+       * này vắng mặt hoàn toàn.
+       */
+      imageUrl?: string;
+      /**
        * Target segments (OR). `[]` clears targeting — the API only leaves
        * targeting alone when the field is absent entirely.
        */
@@ -157,6 +162,8 @@ export const notificationService = {
     name: string;
     copies: NotificationCampaignCopy[];
     deeplink: string;
+    /** Ảnh kèm noti, dùng chung cho mọi locale. Chuỗi rỗng = không có ảnh. */
+    imageUrl?: string;
     segmentIds: string[];
     sendMode: NotificationCampaignSendMode;
     localHour?: number;
@@ -178,6 +185,8 @@ export const notificationService = {
       name?: string;
       copies?: NotificationCampaignCopy[];
       deeplink?: string;
+      /** Chuỗi rỗng xoá ảnh; vắng mặt thì giữ ảnh cũ. */
+      imageUrl?: string;
       segmentIds?: string[];
       sendMode?: NotificationCampaignSendMode;
       localHour?: number;
