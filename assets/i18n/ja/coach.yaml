@@ -267,3 +267,20 @@ score:
 # cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
 sceneHabitLabel: "この習慣について："
 sceneSetupLabel: "場面はこちら："
+
+# 気分で選ぶ最初の一言 — 5段階 x 3パターン、日替わり (2026-08-27)
+storyOpenBad1: "今日はどうですか？"
+storyOpenBad2: "今日はどんな日でした？"
+storyOpenBad3: "いまはどんな感じですか？"
+storyOpenTired1: "頭の中を占めていることはありますか？"
+storyOpenTired2: "何か引っかかっていることはありますか？"
+storyOpenTired3: "今日、気になっていることはありますか？"
+storyOpenOk1: "今日、何か新しいことはありました？"
+storyOpenOk2: "今日は何かありました？"
+storyOpenOk3: "今日はどんなことがありました？"
+storyOpenGood1: "今日、話しておきたいことはありますか？"
+storyOpenGood2: "今日、誰かに話したいことはありました？"
+storyOpenGood3: "今日、話したいことはありますか？"
+storyOpenGreat1: "今日、いいことはありました？"
+storyOpenGreat2: "今日うまくいったことは？"
+storyOpenGreat3: "今日、楽しかったことはありました？"

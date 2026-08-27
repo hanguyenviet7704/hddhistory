@@ -267,3 +267,21 @@ score:
 # cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
 sceneHabitLabel: "Với thói quen:"
 sceneSetupLabel: "Tôi có tình huống:"
+
+# câu mở theo mood — 5 mức x 3 biến thể, xoay vòng theo ngày (2026-08-27)
+# Mood chỉ chỉnh ĐỘ MỞ của câu hỏi, không được lộ ra thành lời.
+storyOpenBad1: "Hôm nay thế nào?"
+storyOpenBad2: "Hôm nay của bạn ra sao?"
+storyOpenBad3: "Giờ này bạn thế nào?"
+storyOpenTired1: "Có gì đang chiếm chỗ trong đầu bạn không?"
+storyOpenTired2: "Đang có gì vướng trong đầu không?"
+storyOpenTired3: "Có chuyện gì đang lởn vởn không?"
+storyOpenOk1: "Hôm nay có chuyện gì mới không?"
+storyOpenOk2: "Hôm nay có gì mới không?"
+storyOpenOk3: "Có chuyện gì hôm nay không?"
+storyOpenGood1: "Hôm nay có gì đáng kể lại không?"
+storyOpenGood2: "Có chuyện gì đáng kể lại hôm nay không?"
+storyOpenGood3: "Hôm nay có gì muốn kể không?"
+storyOpenGreat1: "Hôm nay có chuyện gì hay không?"
+storyOpenGreat2: "Có chuyện gì hay hôm nay không?"
+storyOpenGreat3: "Hôm nay có gì vui không?"

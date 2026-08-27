@@ -267,3 +267,20 @@ score:
 # cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
 sceneHabitLabel: "针对习惯："
 sceneSetupLabel: "情境如下："
+
+# 按心情选择的开场句 — 5 档 x 3 个变体，每天轮换 (2026-08-27)
+storyOpenBad1: "今天怎么样？"
+storyOpenBad2: "今天过得如何？"
+storyOpenBad3: "现在感觉怎么样？"
+storyOpenTired1: "有什么一直占着你的心思吗？"
+storyOpenTired2: "有什么事卡在心里吗？"
+storyOpenTired3: "今天有什么放不下的吗？"
+storyOpenOk1: "今天有什么新鲜事吗？"
+storyOpenOk2: "今天发生了什么吗？"
+storyOpenOk3: "今天有什么事吗？"
+storyOpenGood1: "今天有什么值得说的吗？"
+storyOpenGood2: "今天有什么想讲的吗？"
+storyOpenGood3: "今天有什么想聊的吗？"
+storyOpenGreat1: "今天有什么好事吗？"
+storyOpenGreat2: "今天什么事顺利？"
+storyOpenGreat3: "今天有什么开心的吗？"

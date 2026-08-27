@@ -267,3 +267,20 @@ score:
 # cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
 sceneHabitLabel: "이 습관으로:"
 sceneSetupLabel: "상황은 이렇습니다:"
+
+# 기분에 따라 고르는 첫 문장 — 5단계 x 3가지, 매일 번갈아 (2026-08-27)
+storyOpenBad1: "오늘 어때요?"
+storyOpenBad2: "오늘 하루 어땠어요?"
+storyOpenBad3: "지금은 어떤가요?"
+storyOpenTired1: "머릿속을 차지하고 있는 게 있나요?"
+storyOpenTired2: "마음에 걸리는 게 있나요?"
+storyOpenTired3: "오늘 신경 쓰이는 일이 있나요?"
+storyOpenOk1: "오늘 새로운 일 있었어요?"
+storyOpenOk2: "오늘 무슨 일 있었어요?"
+storyOpenOk3: "오늘은 어땠어요?"
+storyOpenGood1: "오늘 얘기할 만한 일 있었어요?"
+storyOpenGood2: "오늘 누군가에게 말하고 싶은 일 있었어요?"
+storyOpenGood3: "오늘 나누고 싶은 얘기 있어요?"
+storyOpenGreat1: "오늘 좋은 일 있었어요?"
+storyOpenGreat2: "오늘 잘된 일은 뭐예요?"
+storyOpenGreat3: "오늘 즐거운 일 있었어요?"

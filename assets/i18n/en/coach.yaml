@@ -275,3 +275,20 @@ score:
 # cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
 sceneHabitLabel: "For the habit:"
 sceneSetupLabel: "Here's the situation:"
+
+# mood-chosen openers — 5 levels x 3 variants, rotated by day (2026-08-27)
+storyOpenBad1: "How is today?"
+storyOpenBad2: "How has your day been?"
+storyOpenBad3: "How are you right now?"
+storyOpenTired1: "Anything taking up space in your head?"
+storyOpenTired2: "Anything stuck in your head right now?"
+storyOpenTired3: "Anything hanging over you today?"
+storyOpenOk1: "Anything new today?"
+storyOpenOk2: "Anything happen today?"
+storyOpenOk3: "What's new today?"
+storyOpenGood1: "Anything worth telling from today?"
+storyOpenGood2: "Anything you'd tell someone about today?"
+storyOpenGood3: "Anything from today you want to talk about?"
+storyOpenGreat1: "Anything good happen today?"
+storyOpenGreat2: "What went well today?"
+storyOpenGreat3: "Anything fun today?"

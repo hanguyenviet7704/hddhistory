@@ -88,6 +88,37 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.retryAck;
 
     // -- nhịp 5: the commitment and the tail
+    // Mood-chosen openers — the server picks the level and the day's variant.
+    case 'coach.prompt.storyOpenBad1':
+      return l10n.storyOpenBad1;
+    case 'coach.prompt.storyOpenBad2':
+      return l10n.storyOpenBad2;
+    case 'coach.prompt.storyOpenBad3':
+      return l10n.storyOpenBad3;
+    case 'coach.prompt.storyOpenTired1':
+      return l10n.storyOpenTired1;
+    case 'coach.prompt.storyOpenTired2':
+      return l10n.storyOpenTired2;
+    case 'coach.prompt.storyOpenTired3':
+      return l10n.storyOpenTired3;
+    case 'coach.prompt.storyOpenOk1':
+      return l10n.storyOpenOk1;
+    case 'coach.prompt.storyOpenOk2':
+      return l10n.storyOpenOk2;
+    case 'coach.prompt.storyOpenOk3':
+      return l10n.storyOpenOk3;
+    case 'coach.prompt.storyOpenGood1':
+      return l10n.storyOpenGood1;
+    case 'coach.prompt.storyOpenGood2':
+      return l10n.storyOpenGood2;
+    case 'coach.prompt.storyOpenGood3':
+      return l10n.storyOpenGood3;
+    case 'coach.prompt.storyOpenGreat1':
+      return l10n.storyOpenGreat1;
+    case 'coach.prompt.storyOpenGreat2':
+      return l10n.storyOpenGreat2;
+    case 'coach.prompt.storyOpenGreat3':
+      return l10n.storyOpenGreat3;
     case 'coach.scene.habitLabel':
       return l10n.sceneHabitLabel;
     case 'coach.scene.setupLabel':
