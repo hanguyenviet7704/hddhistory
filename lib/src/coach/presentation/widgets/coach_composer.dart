@@ -125,8 +125,6 @@ class _CoachComposerState extends State<CoachComposer> {
         return _schedule(context, busy);
       case CoachUiKind.courseCard:
         return _courseChips(context, state, busy);
-      case CoachUiKind.sceneScore:
-        return _sceneScoreChips(context, state, busy);
       case CoachUiKind.rating:
         return _rating(context, busy);
       case CoachUiKind.nextSession:
@@ -136,7 +134,9 @@ class _CoachComposerState extends State<CoachComposer> {
       case CoachUiKind.safety:
         return const SizedBox.shrink();
       // Retired composers a parked session may still be on — a text box lets
-      // them finish; the server routes the answer back onto the spine.
+      // them finish; the server routes the answer back onto the spine. The
+      // rubric card joined them on 2026-08-27 when scoring was cut.
+      case CoachUiKind.sceneScore:
       case CoachUiKind.nextAction:
       case CoachUiKind.closing:
       case CoachUiKind.shrink:
@@ -655,40 +655,6 @@ class _CoachComposerState extends State<CoachComposer> {
         _ChoiceButton(
           label: l10n.courseCardClose,
           onTap: busy ? null : () => cubit.courseAction('close', label: l10n.courseCardCloseEcho),
-        ),
-      ],
-    );
-  }
-
-  /// Tầng 4 — the rubric card's two ways out.
-  ///
-  /// "Thử lại tình huống này" comes FIRST and is offered only while the server
-  /// says so (one replay per scene): a second attempt at the same moment is the
-  /// point of the card, and a button that reappears forever would turn the
-  /// practice into grinding a number.
-  Widget _sceneScoreChips(BuildContext context, CoachState state, bool busy) {
-    final l10n = context.l10n.coach;
-    final cubit = widget.cubit;
-    final canRetry = state.ui.score?.retryAvailable ?? false;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (canRetry) ...[
-          _ChoiceButton(
-            label: l10n.sceneScoreRetry,
-            onTap: busy
-                ? null
-                : () => cubit.answerSceneScore(retry: true, label: l10n.sceneScoreRetryEcho),
-          ),
-          SizedBox(height: 7.h),
-        ],
-        _ChoiceButton(
-          label: l10n.sceneScoreGoOn,
-          onTap: busy
-              ? null
-              : () => cubit.answerSceneScore(retry: false, label: l10n.sceneScoreGoOnEcho),
         ),
       ],
     );
