@@ -62,6 +62,16 @@ const LEGACY_DEEPLINK_LABELS: Record<string, string> = {
 /** Đích cũ duy nhất còn mời chọn — xem ghi chú trên. */
 const OFFERED_LEGACY_KEYS = ["resume_lesson"];
 
+/**
+ * Môi trường app dùng để đếm CLICK. Cùng danh sách và cùng mặc định với card
+ * "Theo dõi gửi" — `prod` là con số người ta thật sự muốn xem, nhưng phải cho
+ * đổi được, không thì test bản dev sẽ thấy 0 click và tưởng là hỏng.
+ *
+ * Chỉ click bị lọc theo nó: số gửi là sổ sách của chính API, không gắn môi
+ * trường nào — nên đọc bằng `dev` sẽ ra số gửi đúng nằm cạnh 0 click.
+ */
+const CLICK_APP_ENVS = ["prod", "stg", "dev"] as const;
+
 /** Nhóm hiện trên dropdown cho các đích cũ. */
 const LEGACY_GROUP = "Học";
 
@@ -74,6 +84,16 @@ const LEGACY_GROUP = "Học";
  * Sửa nếu bản ship thực tế muộn hơn 1.6.0+141.
  */
 const PUSH_CATALOG_MIN_BUILD = 141;
+
+/**
+ * Bản app đầu tiên gắn `campaign_id` vào event `noti_tap` — dưới bản này một cú
+ * chạm vẫn được đếm ở card "Theo dõi gửi" (gộp chung loại `campaign`) nhưng
+ * không quy về được campaign nào, nên không hiện ở đây.
+ *
+ * Trùng [[PUSH_CATALOG_MIN_BUILD]] vì cùng một commit thêm cả hai; tách hằng
+ * số ra để sau này một trong hai đổi thì cái kia không nói dối theo.
+ */
+const CLICK_MIN_BUILD = PUSH_CATALOG_MIN_BUILD;
 
 const emptyCopies = () =>
   LOCALES.map((locale) => ({ locale, title: "", body: "" }));
@@ -92,6 +112,44 @@ const todayInput = () => {
     .toISOString()
     .slice(0, 10);
 };
+
+/**
+ * CTR trên số NGƯỜI chạm, không phải số lần chạm: mở lại một push ba lần vẫn là
+ * một người quan tâm, đếm cả ba sẽ đẩy tỷ lệ vượt 100% mà chẳng ai đổi hành vi.
+ *
+ * Trả chuỗi rỗng khi chưa gửi được ai — mẫu số 0 thì không có tỷ lệ nào để đọc,
+ * và hiện "0%" ở dòng nháp là nói dối về một thứ chưa xảy ra.
+ */
+const ctrLabel = (campaign: NotificationCampaign) => {
+  if (!campaign.sentCount) return "";
+  const rate = ((campaign.clickedUsers ?? 0) / campaign.sentCount) * 100;
+  return `${rate.toFixed(1)}%`;
+};
+
+const clickTitle = (campaign: NotificationCampaign, appEnv: string) =>
+  [
+    `${campaign.clicks ?? 0} lần chạm từ ${campaign.clickedUsers ?? 0} người`,
+    `Môi trường app: ${appEnv}`,
+    "Gắn đúng campaign qua campaign_id, nên chạm muộn mấy ngày vẫn tính về đây.",
+    `Cần app từ bản 1.6.0+${CLICK_MIN_BUILD}; event xoá sau 90 ngày.`,
+  ].join("\n");
+
+/** Số click của một campaign, dán ngay sau bộ đếm gửi/lỗi/bỏ qua. */
+function ClickStat({
+  campaign,
+  appEnv,
+}: {
+  campaign: NotificationCampaign;
+  appEnv: string;
+}) {
+  const ctr = ctrLabel(campaign);
+  return (
+    <span className="ml-2 text-sky-700" title={clickTitle(campaign, appEnv)}>
+      · click <b>{campaign.clicks ?? 0}</b>
+      {ctr ? ` · CTR ${ctr}` : ""}
+    </span>
+  );
+}
 
 /**
  * Manual campaigns: compose a push, aim it at segments, fire or schedule it.
@@ -124,6 +182,9 @@ export default function NotificationCampaignSection() {
   const [openSends, setOpenSends] = useState<string | null>(null);
   const [sends, setSends] = useState<NotificationCampaignSendRow[]>([]);
 
+  /** Môi trường app mà cột click đang đọc — xem [[CLICK_APP_ENVS]]. */
+  const [clickEnv, setClickEnv] = useState<string>("prod");
+
   /** Id của campaign nháp đang sửa; null = ô soạn đang ở chế độ tạo mới. */
   const [editingId, setEditingId] = useState<string | null>(null);
   const composerRef = useRef<HTMLElement>(null);
@@ -131,7 +192,7 @@ export default function NotificationCampaignSection() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setCampaigns(await notificationService.listCampaigns());
+      setCampaigns(await notificationService.listCampaigns(clickEnv));
     } catch (error: any) {
       showError(
         error?.response?.data?.message || "Không tải được danh sách campaign",
@@ -141,10 +202,15 @@ export default function NotificationCampaignSection() {
     }
     // showError is recreated each render by the hook.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [clickEnv]);
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Segment và danh mục deeplink chỉ nạp một lần: đổi môi trường đọc click
+  // không được kéo theo hai request nữa.
+  useEffect(() => {
     (async () => {
       try {
         const res = await segmentService.list();
@@ -166,7 +232,7 @@ export default function NotificationCampaignSection() {
         // sẵn (`home`) — vẫn gửi được, chỉ là không đổi được đích.
       }
     })();
-  }, [load]);
+  }, []);
 
   // Reach is re-asked whenever the targeting changes: an operator should never
   // press send without the number in front of them.
@@ -634,16 +700,43 @@ export default function NotificationCampaignSection() {
           <h3 className="text-base font-semibold text-slate-900">
             Campaign đã tạo
           </h3>
-          <button
-            type="button"
-            onClick={load}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-          >
-            <ArrowPathIcon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Làm mới
-          </button>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-xs text-slate-600">
+              <span>Click từ môi trường</span>
+              <select
+                value={clickEnv}
+                onChange={(e) => setClickEnv(e.target.value)}
+                className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+              >
+                {CLICK_APP_ENVS.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={load}
+              disabled={loading}
+              className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            >
+              <ArrowPathIcon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Làm mới
+            </button>
+          </div>
         </div>
+
+        <p className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-900">
+          <span className="font-semibold">Click đếm thế nào.</span> Lấy từ event
+          app bắn lên khi user chạm vào push, gắn đúng campaign qua{" "}
+          <code>campaign_id</code> — nên khác card "Theo dõi gửi", số này quy
+          được về đúng lần gửi dù người ta chạm muộn mấy ngày.{" "}
+          <span className="font-semibold">CTR</span> tính trên số NGƯỜI chạm chia
+          số gửi. Chỉ app từ bản 1.6.0+{CLICK_MIN_BUILD} mới bắn kèm{" "}
+          <code>campaign_id</code> và event tự xoá sau 90 ngày, nên campaign cũ
+          hoặc người dùng bản cũ sẽ thiếu — đọc như con số sàn.
+        </p>
 
         {campaigns.length === 0 ? (
           <p className="text-sm text-slate-500">
@@ -685,6 +778,7 @@ export default function NotificationCampaignSection() {
                     gửi <b className="text-slate-900">{campaign.sentCount}</b> ·
                     lỗi <b>{campaign.failedCount}</b> · bỏ qua{" "}
                     <b>{campaign.skippedCount}</b>
+                    <ClickStat campaign={campaign} appEnv={clickEnv} />
                   </span>
                 </div>
 

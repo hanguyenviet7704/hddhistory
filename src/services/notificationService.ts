@@ -130,8 +130,15 @@ export const notificationService = {
 
   // ------------------------------------------------------- manual campaigns
 
-  async listCampaigns(): Promise<NotificationCampaign[]> {
-    const res = await axiosClient.get("/notifications/campaigns");
+  /**
+   * `appEnv` chỉ lọc phần CLICK — số gửi là sổ sách của chính API, không gắn môi
+   * trường nào. Đọc campaign bắn cho user thật bằng `dev` sẽ ra số gửi đúng nằm
+   * cạnh 0 click, nên mặc định để server quyết (`prod`).
+   */
+  async listCampaigns(appEnv?: string): Promise<NotificationCampaign[]> {
+    const res = await axiosClient.get("/notifications/campaigns", {
+      params: appEnv ? { appEnv } : undefined,
+    });
     return unwrapData<NotificationCampaign[]>(res.data);
   },
 

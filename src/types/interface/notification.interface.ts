@@ -178,6 +178,14 @@ export interface NotificationCampaign {
   finishedAt?: string | null;
   lastError?: string | null;
   createdAt?: string;
+  /**
+   * Số LẦN chạm vào push của campaign này, đếm từ event `noti_tap` app bắn lên
+   * kèm `campaign_id`. Chỉ tính app build từ 25/08/2026 trở đi và event tự xoá
+   * sau 90 ngày, nên đây là con số sàn chứ không phải tổng.
+   */
+  clicks?: number;
+  /** Số NGƯỜI đã chạm — mẫu số an toàn cho CTR, mở lại 3 lần vẫn là 1 người. */
+  clickedUsers?: number;
 }
 
 export interface NotificationCampaignSendRow {
