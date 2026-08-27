@@ -88,6 +88,10 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.retryAck;
 
     // -- nhịp 5: the commitment and the tail
+    case 'coach.scene.habitLabel':
+      return l10n.sceneHabitLabel;
+    case 'coach.scene.setupLabel':
+      return l10n.sceneSetupLabel;
     case 'coach.prompt.sceneScore':
       return l10n.promptSceneScore;
     case 'coach.prompt.planAsk':

@@ -263,3 +263,7 @@ score:
   skill: "スキル ${score}/100 · 練習 ${scenes} 回"
   trendUp: "▲ ${points}"
   trendDown: "▼ ${points}"
+
+# cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
+sceneHabitLabel: "この習慣について："
+sceneSetupLabel: "場面はこちら："

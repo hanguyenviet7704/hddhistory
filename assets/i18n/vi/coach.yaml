@@ -263,3 +263,7 @@ score:
   skill: "Điểm kỹ năng ${score}/100 · ${scenes} lần tập"
   trendUp: "▲ ${points}"
   trendDown: "▼ ${points}"
+
+# cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
+sceneHabitLabel: "Với thói quen:"
+sceneSetupLabel: "Tôi có tình huống:"

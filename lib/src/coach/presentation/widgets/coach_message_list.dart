@@ -117,6 +117,19 @@ class _Bubble extends StatelessWidget {
               // Tầng 3 — this line was said by the scene's other person, so
               // their name sits above it. Without the label the reader gets a
               // demand in the Coach's bubble and reads it as the Coach's.
+              // A bold heading — "Với thói quen:", "Tôi có tình huống:".
+              if (message.title != null && message.title!.isNotEmpty) ...[
+                Text(
+                  message.title!,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w900,
+                    height: 1.4,
+                    color: CoachStyle.selectedText,
+                  ),
+                ),
+                SizedBox(height: 3.h),
+              ],
               if (message.speaker != null && message.speaker!.isNotEmpty) ...[
                 Text(
                   message.speaker!,
@@ -135,7 +148,9 @@ class _Bubble extends StatelessWidget {
                 message.text,
                 style: TextStyle(
                   fontSize: 13.5.sp,
-                  fontWeight: FontWeight.w600,
+                  // The scene's closing question is the line being answered, so
+                  // it carries the weight in its own bubble.
+                  fontWeight: message.emphasis ? FontWeight.w800 : FontWeight.w600,
                   height: 1.55,
                   color: isCoach ? CoachStyle.textPrimary : CoachStyle.surface,
                 ),

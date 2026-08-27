@@ -17,7 +17,22 @@ class CoachMessage {
   /// Coach suddenly making demands. Null on every ordinary line.
   final String? speaker;
 
-  const CoachMessage({required this.isCoach, required this.text, this.speaker});
+  /// A bold heading above the text, in the reader's language — "Với thói quen:",
+  /// "Tôi có tình huống:". The scene arrives as several short bubbles rather than
+  /// one block, and the heading is what tells them apart at a glance.
+  final String? title;
+
+  /// Render the body itself bold — the scene's closing question, which is the
+  /// line being answered.
+  final bool emphasis;
+
+  const CoachMessage({
+    required this.isCoach,
+    required this.text,
+    this.speaker,
+    this.title,
+    this.emphasis = false,
+  });
 }
 
 @freezed

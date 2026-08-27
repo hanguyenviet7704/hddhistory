@@ -242,6 +242,20 @@ class CoachSceneScoreEntity {
   });
 }
 
+/// The scene, split so the thread shows it as several short bubbles instead of
+/// one block. Built server-side: the app has no habit title at this step, and a
+/// client-side sentence splitter would drift between platforms.
+class CoachSceneEntity {
+  /// The habit being practised. Null at ①, whose intro already names it.
+  final String? habit;
+  final String setup;
+
+  /// The closing question, shown last and on its own. Null if the scene had none.
+  final String? question;
+
+  const CoachSceneEntity({this.habit, required this.setup, this.question});
+}
+
 class CoachUiEntity {
   final CoachUiKind kind;
   final List<CoachChoiceEntity> choices;
@@ -251,6 +265,9 @@ class CoachUiEntity {
   /// Nhịp 3 — whether ⑤ "Không đúng với mình" is still offered.
   final bool rejectAvailable;
   final String? situation;
+
+  /// The same scene, split into habit · setup · question for separate bubbles.
+  final CoachSceneEntity? scene;
 
   /// Two answers the reader can tap instead of typing. Empty is normal.
   final List<String> samples;
@@ -276,6 +293,7 @@ class CoachUiEntity {
     this.columnRight = const [],
     this.rejectAvailable = true,
     this.situation,
+    this.scene,
     this.samples = const [],
     this.hotlines = const [],
     this.keypoints = const [],
@@ -374,6 +392,13 @@ extension CoachTurnModelX on CoachTurnModel {
       columnRight: ui.columns?.right ?? const [],
       rejectAvailable: ui.rejectAvailable,
       situation: (ui.situation?.trim().isEmpty ?? true) ? null : ui.situation,
+      scene: ui.scene == null || ui.scene!.setup.trim().isEmpty
+          ? null
+          : CoachSceneEntity(
+              habit: (ui.scene!.habit?.trim().isEmpty ?? true) ? null : ui.scene!.habit,
+              setup: ui.scene!.setup,
+              question: (ui.scene!.question?.trim().isEmpty ?? true) ? null : ui.scene!.question,
+            ),
       samples: ui.samples,
       hotlines: ui.hotlines.map((h) => CoachHotlineEntity(label: h.label, number: h.number)).toList(),
       // Was silently missing: the server's nhịp-4 suggestion arrived, got

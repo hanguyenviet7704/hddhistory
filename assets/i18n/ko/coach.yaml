@@ -263,3 +263,7 @@ score:
   skill: "스킬 ${score}/100 · ${scenes}번 연습"
   trendUp: "▲ ${points}"
   trendDown: "▼ ${points}"
+
+# cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
+sceneHabitLabel: "이 습관으로:"
+sceneSetupLabel: "상황은 이렇습니다:"

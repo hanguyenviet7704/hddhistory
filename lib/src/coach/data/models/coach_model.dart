@@ -161,6 +161,18 @@ abstract class CoachSceneScoreModel with _$CoachSceneScoreModel {
       _$CoachSceneScoreModelFromJson(json);
 }
 
+/// The scene broken into the parts the app shows as separate bubbles.
+@freezed
+abstract class CoachSceneModel with _$CoachSceneModel {
+  const factory CoachSceneModel({
+    String? habit,
+    @Default('') String setup,
+    String? question,
+  }) = _CoachSceneModel;
+
+  factory CoachSceneModel.fromJson(Map<String, dynamic> json) => _$CoachSceneModelFromJson(json);
+}
+
 @freezed
 abstract class CoachUiModel with _$CoachUiModel {
   const factory CoachUiModel({
@@ -169,6 +181,7 @@ abstract class CoachUiModel with _$CoachUiModel {
     CoachColumnsModel? columns,
     @Default(true) bool rejectAvailable,
     String? situation,
+    CoachSceneModel? scene,
     @Default(<String>[]) List<String> samples,
     @Default(<CoachHotlineModel>[]) List<CoachHotlineModel> hotlines,
     @Default(<CoachKeypointModel>[]) List<CoachKeypointModel> keypoints,

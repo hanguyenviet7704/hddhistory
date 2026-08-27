@@ -341,12 +341,37 @@ class CoachCubit extends Cubit<CoachState> {
     if (note != null && note.isNotEmpty) {
       messages.add(CoachMessage(isCoach: true, text: note));
     }
-    if (situation != null) {
+    // The scene arrives split — habit · setup · question — and goes into the
+    // thread as separate short bubbles with bold headings. One 60-word block
+    // read as a wall of text. Older payloads (no `scene`) keep the single bubble.
+    final scene = turn.ui.scene;
+    if (scene != null) {
+      final habit = scene.habit;
+      if (habit != null && habit.isNotEmpty) {
+        messages.add(
+          CoachMessage(
+            isCoach: true,
+            title: promptResolver?.call('coach.scene.habitLabel', const {}),
+            text: habit,
+          ),
+        );
+      }
+      messages.add(
+        CoachMessage(
+          isCoach: true,
+          title: promptResolver?.call('coach.scene.setupLabel', const {}),
+          text: scene.setup,
+        ),
+      );
+      if (scene.question != null) {
+        messages.add(CoachMessage(isCoach: true, text: scene.question!, emphasis: true));
+      }
+    } else if (situation != null) {
       final lead = turn.noteKey == 'coach.prompt.lessonIntro' ? promptResolver?.call('coach.prompt.sceneLead', const {}) : null;
       messages.add(CoachMessage(isCoach: true, text: lead == null || lead.isEmpty ? situation : '$lead $situation'));
     }
 
-    if (situation == null && turn.promptKey != null) {
+    if (situation == null && scene == null && turn.promptKey != null) {
       final resolved = promptResolver?.call(turn.promptKey!, turn.promptArgs);
       if (resolved != null && resolved.isNotEmpty) {
         messages.add(CoachMessage(isCoach: true, text: resolved));
