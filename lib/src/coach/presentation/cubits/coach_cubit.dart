@@ -409,13 +409,17 @@ class CoachCubit extends Cubit<CoachState> {
           ),
         );
       }
-      messages.add(
-        CoachMessage(
-          isCoach: true,
-          title: promptResolver?.call('coach.scene.setupLabel', const {}),
-          text: scene.setup,
-        ),
-      );
+      // The led scene's second beat carries only the question — the setup is
+      // already in the thread, so an empty one gets no bubble.
+      if (scene.setup.isNotEmpty) {
+        messages.add(
+          CoachMessage(
+            isCoach: true,
+            title: promptResolver?.call('coach.scene.setupLabel', const {}),
+            text: scene.setup,
+          ),
+        );
+      }
       if (scene.question != null) {
         messages.add(CoachMessage(isCoach: true, text: scene.question!, emphasis: true));
       }
@@ -424,10 +428,14 @@ class CoachCubit extends Cubit<CoachState> {
       messages.add(CoachMessage(isCoach: true, text: lead == null || lead.isEmpty ? situation : '$lead $situation'));
     }
 
-    if (situation == null && scene == null && turn.promptKey != null) {
+    // The step's fixed line — unless the scene just closed with its own
+    // question. A scene shown WITHOUT one (the feeling beat holds it back) is
+    // followed by the step's question, emphasised like a scene question is.
+    final sceneAskedItsOwn = scene != null ? scene.question != null : situation != null;
+    if (!sceneAskedItsOwn && turn.promptKey != null) {
       final resolved = promptResolver?.call(turn.promptKey!, turn.promptArgs);
       if (resolved != null && resolved.isNotEmpty) {
-        messages.add(CoachMessage(isCoach: true, text: resolved));
+        messages.add(CoachMessage(isCoach: true, text: resolved, emphasis: scene != null));
       }
     }
 

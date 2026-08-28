@@ -92,6 +92,13 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     // ②C keeps nothing, so it does not say "ghi lại rồi nhé".
     case 'coach.prompt.closingHeard':
       return l10n.promptClosingHeard;
+    // The scene's opening beat — the feeling first, the question after.
+    case 'coach.prompt.sceneFeeling':
+      return l10n.promptSceneFeeling;
+    case 'coach.prompt.sceneFeelingThird':
+      return l10n.promptSceneFeelingThird;
+    case 'coach.prompt.sceneFeelingAck':
+      return l10n.sceneFeelingAck;
     // Bộ điều phối, and the scene's last two beats.
     case 'coach.prompt.hub':
       return l10n.promptHub;
@@ -268,6 +275,7 @@ String? coachStepLabel(BuildContext context, String step) {
     case 'free':
     case 'depth':
       return l10n.stepTelling;
+    case 'sceneFeeling':
     case 'sceneStage2':
     case 'sceneMet':
     case 'sceneWhen':

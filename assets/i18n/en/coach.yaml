@@ -167,6 +167,9 @@ hubTaskT3: Tell me something
 hubTaskT4: Set a reminder
 hubStop: I'll stop here
 hubStopEcho: I'll stop here.
+promptSceneFeeling: In that moment, how would you feel?
+promptSceneFeelingThird: If you were them, how would you feel in that moment?
+sceneFeelingAck: That feeling makes sense.
 promptSceneMet: Have you ever been in something like that?
 sceneMetYes: Yes, I have
 sceneMetYesEcho: Yes, I have.

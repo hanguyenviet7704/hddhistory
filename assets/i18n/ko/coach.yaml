@@ -159,6 +159,9 @@ hubTaskT3: 이야기하기
 hubTaskT4: 리마인드 설정하기
 hubStop: 여기서 마칠게요
 hubStopEcho: 여기서 마칠게요.
+promptSceneFeeling: 그 순간, 어떤 기분일까요?
+promptSceneFeelingThird: 당신이 그 사람이라면, 그 순간 어떤 기분일까요?
+sceneFeelingAck: 그런 기분이 드는 건 당연해요.
 promptSceneMet: 비슷한 일을 겪어본 적 있나요?
 sceneMetYes: 있어요
 sceneMetYesEcho: 있어요.

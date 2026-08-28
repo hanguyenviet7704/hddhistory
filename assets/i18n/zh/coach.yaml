@@ -159,6 +159,9 @@ hubTaskT3: 说说今天
 hubTaskT4: 设一个提醒
 hubStop: 我先到这里
 hubStopEcho: 我先到这里。
+promptSceneFeeling: 那一刻，你会是什么感受？
+promptSceneFeelingThird: 如果你是那个人，那一刻你会是什么感受？
+sceneFeelingAck: 这种感受很正常。
 promptSceneMet: 类似的事你遇到过吗？
 sceneMetYes: 遇到过
 sceneMetYesEcho: 遇到过。

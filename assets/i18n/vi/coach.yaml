@@ -159,6 +159,9 @@ hubTaskT3: Kể chuyện
 hubTaskT4: Đặt Nhắc hẹn
 hubStop: Mình dừng ở đây
 hubStopEcho: Mình dừng ở đây.
+promptSceneFeeling: Lúc đó, bạn cảm thấy thế nào?
+promptSceneFeelingThird: Nếu là người đó, lúc đó bạn cảm thấy thế nào?
+sceneFeelingAck: Cảm giác đó dễ hiểu.
 promptSceneMet: Chuyện giống vậy bạn gặp bao giờ chưa?
 sceneMetYes: Gặp rồi
 sceneMetYesEcho: Gặp rồi.
