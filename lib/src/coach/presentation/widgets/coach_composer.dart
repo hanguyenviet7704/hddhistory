@@ -46,6 +46,15 @@ class _CoachComposerState extends State<CoachComposer> {
     // A sheet reopened mid-session lands straight on the form: the pre-fill
     // has to apply here too, not only on the step change into it.
     _applyPlanPrefill();
+    // The save button lights up only when both fields hold something — the
+    // form arrives EMPTY by design now, and a pale button that silently
+    // ignored taps read as broken (owner, 2026-08-28).
+    _planContext.addListener(_onPlanEdited);
+    _planAction.addListener(_onPlanEdited);
+  }
+
+  void _onPlanEdited() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -513,7 +522,13 @@ class _CoachComposerState extends State<CoachComposer> {
           onSubmitted: (_) => _savePlan(),
         ),
         SizedBox(height: 8.h),
-        _FilledButton(label: l10n.planSave, enabled: !busy, onTap: _savePlan),
+        _FilledButton(
+          label: l10n.planSave,
+          enabled: !busy &&
+              _planContext.text.trim().isNotEmpty &&
+              _planAction.text.trim().isNotEmpty,
+          onTap: _savePlan,
+        ),
       ],
     );
   }
@@ -977,90 +992,89 @@ class _ScheduleFormState extends State<_ScheduleForm> {
     final l10n = context.l10n.coach;
     final busy = widget.busy;
 
-    return Stack(
-      clipBehavior: Clip.none,
+    // The wheel used to float above the form via a Positioned OUTSIDE the
+    // Stack's bounds — Flutter paints there (Clip.none) but never hit-tests
+    // there, so the picker LOOKED tappable and swallowed nothing: "lỗi cứng
+    // không chọn được giờ" (owner, on-device, 2026-08-28). It now opens
+    // INLINE, growing the form upward, where every value is really tappable.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                _TimePill(
-                  hour: _hour,
-                  minute: _minute,
-                  picking: _picking,
-                  onPick: busy ? null : (part) => setState(() => _picking = part),
-                ),
-                SizedBox(width: 9.w),
-                Expanded(child: _dayRow(context, busy)),
-              ],
+        if (_picking != null) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.only(left: _picking == 'hour' ? 4.w : 44.w),
+              child: _WheelPopup(
+                values: _picking == 'hour'
+                    ? List.generate(24, (i) => i)
+                    : List.generate(12, (i) => i * 5),
+                selected: _picking == 'hour' ? _hour : _minute,
+                onPick: (value) => setState(() {
+                  if (_picking == 'hour') {
+                    _hour = value;
+                  } else {
+                    _minute = value;
+                  }
+                  _picking = null;
+                }),
+              ),
             ),
-            SizedBox(height: 10.h),
-            _modeSwitch(l10n, busy),
-            SizedBox(height: 10.h),
-            Row(
-              children: [
-                Expanded(
-                  child: _FilledButton(
-                    label: l10n.reminderOn,
-                    enabled: !busy && (_mode != 'weekly' || _weekdays.isNotEmpty),
-                    onTap: _save,
-                  ),
+          ),
+          SizedBox(height: 8.h),
+        ],
+        Row(
+          children: [
+            _TimePill(
+              hour: _hour,
+              minute: _minute,
+              picking: _picking,
+              // Tapping the open half again closes the wheel.
+              onPick: busy
+                  ? null
+                  : (part) =>
+                      setState(() => _picking = _picking == part ? null : part),
+            ),
+            SizedBox(width: 9.w),
+            Expanded(child: _dayRow(context, busy)),
+          ],
+        ),
+        SizedBox(height: 10.h),
+        _modeSwitch(l10n, busy),
+        SizedBox(height: 10.h),
+        Row(
+          children: [
+            Expanded(
+              child: _FilledButton(
+                label: l10n.reminderOn,
+                enabled: !busy && (_mode != 'weekly' || _weekdays.isNotEmpty),
+                onTap: _save,
+              ),
+            ),
+            SizedBox(width: 9.w),
+            GestureDetector(
+              onTap: busy
+                  ? null
+                  : () => widget.cubit.saveSchedule(enabled: false, label: l10n.reminderOffEcho),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 44.h,
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: CoachStyle.chipBackground,
+                  border: Border.all(color: CoachStyle.border, width: 1.5),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
-                SizedBox(width: 9.w),
-                GestureDetector(
-                  onTap: busy
-                      ? null
-                      : () => widget.cubit.saveSchedule(enabled: false, label: l10n.reminderOffEcho),
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    height: 44.h,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: CoachStyle.chipBackground,
-                      border: Border.all(color: CoachStyle.border, width: 1.5),
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
-                    child: Text(
-                      l10n.reminderOff,
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: CoachStyle.textChip),
-                    ),
-                  ),
+                child: Text(
+                  l10n.reminderOff,
+                  style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: CoachStyle.textChip),
                 ),
-              ],
+              ),
             ),
           ],
         ),
-        // The wheel, floating above the time pill on a dimmed ground.
-        if (_picking != null)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => setState(() => _picking = null),
-              behavior: HitTestBehavior.opaque,
-              child: const ColoredBox(color: Color(0x1A0D121C)),
-            ),
-          ),
-        if (_picking != null)
-          Positioned(
-            left: _picking == 'hour' ? 4.w : 44.w,
-            bottom: 96.h,
-            child: _WheelPopup(
-              values: _picking == 'hour'
-                  ? List.generate(24, (i) => i)
-                  : List.generate(12, (i) => i * 5),
-              selected: _picking == 'hour' ? _hour : _minute,
-              onPick: (value) => setState(() {
-                if (_picking == 'hour') {
-                  _hour = value;
-                } else {
-                  _minute = value;
-                }
-                _picking = null;
-              }),
-            ),
-          ),
       ],
     );
   }
