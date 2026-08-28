@@ -409,6 +409,13 @@ class CoachCubit extends Cubit<CoachState> {
           ),
         );
       }
+      // The scene's SECOND stage arrives split: its body rides in `situation`
+      // (no "Tôi có tình huống:" label — the same situation continuing), its
+      // question alone in `scene.question`. Only when there is no fresh setup,
+      // which is what distinguishes it from a first showing.
+      if (situation != null && situation.isNotEmpty && scene.setup.isEmpty) {
+        messages.add(CoachMessage(isCoach: true, text: situation));
+      }
       // The led scene's second beat carries only the question — the setup is
       // already in the thread, so an empty one gets no bubble.
       if (scene.setup.isNotEmpty) {
