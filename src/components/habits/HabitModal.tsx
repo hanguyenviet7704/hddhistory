@@ -421,7 +421,7 @@ export default function HabitModal({
               onChange={(e) =>
                 setContexts((prev) => updateTranslationValue(prev, lang, e.target.value))
               }
-              helperText="Moments the habit comes up, ONE PER LINE (e.g. “khi họp nhóm bị bác ý”). Each Coach scene is set in one of them — aim for 3–5."
+              helperText="Moments the habit comes up, ONE PER LINE (e.g. “khi họp nhóm bị bác ý”) — aim for 3–5. Cảnh luyện tập được VIẾT MỚI lúc user luyện: nảy từ một khoảnh khắc kiểu này, rồi dựng lại theo độ tuổi và đời sống của từng user (không lấy nguyên văn)."
               fullWidth
               size="small"
               multiline
@@ -434,7 +434,7 @@ export default function HabitModal({
               onChange={(e) =>
                 setRubric((prev) => updateTranslationValue(prev, lang, e.target.value))
               }
-              helperText='Tiêu chí chấm cho kỹ năng này — MỖI DÒNG MỘT tiêu chí, dạng "key | nhãn" (4–5 dòng). Ví dụ: "boundary | Giữ ranh giới khi bị gây áp lực". Key giữ nguyên khi đổi nhãn để không mất điểm cũ. Để trống = tình huống của habit này không chấm điểm.'
+              helperText="KHÔNG CÒN DÙNG — AI Coach đã bỏ chấm điểm tình huống (doc v4: cấm chấm, kể cả khen “Chính xác!”). Field giữ lại chỉ để không mất dữ liệu cũ; điền gì cũng không ảnh hưởng cảnh luyện tập."
               fullWidth
               size="small"
               multiline
