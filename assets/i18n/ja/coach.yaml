@@ -156,6 +156,7 @@ promptHub: 終わりました。ほかに話したいことはありますか？
 hubTaskT1: リマインドを確認
 hubTaskT2: 場面を練習する
 hubTaskT3: 話してみる
+hubTaskT4: リマインドを設定
 hubStop: ここで終わります
 hubStopEcho: ここで終わります。
 promptSceneMet: こういうこと、経験ありますか？

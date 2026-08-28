@@ -242,6 +242,9 @@ class _CoachComposerState extends State<CoachComposer> {
       'T1': l10n.hubTaskT1,
       'T2': l10n.hubTaskT2,
       'T3': l10n.hubTaskT3,
+      // The session's result, first in line once a real occasion exists — it
+      // must never hide behind "Mình dừng ở đây".
+      'T4': l10n.hubTaskT4,
     };
 
     return _textArea(

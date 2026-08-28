@@ -156,6 +156,7 @@ promptHub: 好了。还有什么想说的吗？
 hubTaskT1: 看一下提醒
 hubTaskT2: 练一个场景
 hubTaskT3: 说说今天
+hubTaskT4: 设一个提醒
 hubStop: 我先到这里
 hubStopEcho: 我先到这里。
 promptSceneMet: 类似的事你遇到过吗？

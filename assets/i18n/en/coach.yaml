@@ -164,6 +164,7 @@ promptHub: Done. Anything else you want to say?
 hubTaskT1: Check the reminder
 hubTaskT2: Practise a situation
 hubTaskT3: Tell me something
+hubTaskT4: Set a reminder
 hubStop: I'll stop here
 hubStopEcho: I'll stop here.
 promptSceneMet: Have you ever been in something like that?

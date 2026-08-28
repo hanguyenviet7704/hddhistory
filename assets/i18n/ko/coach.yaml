@@ -156,6 +156,7 @@ promptHub: 끝났어요. 더 하고 싶은 얘기 있나요?
 hubTaskT1: 약속 확인하기
 hubTaskT2: 상황 연습하기
 hubTaskT3: 이야기하기
+hubTaskT4: 리마인드 설정하기
 hubStop: 여기서 마칠게요
 hubStopEcho: 여기서 마칠게요.
 promptSceneMet: 비슷한 일을 겪어본 적 있나요?
