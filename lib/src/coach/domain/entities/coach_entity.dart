@@ -420,7 +420,15 @@ extension CoachTurnModelX on CoachTurnModel {
           ? null
           : CoachHabitChipEntity(id: ui.habit!.id, title: ui.habit!.title),
       situation: (ui.situation?.trim().isEmpty ?? true) ? null : ui.situation,
-      scene: ui.scene == null || ui.scene!.setup.trim().isEmpty
+      // A scene may legitimately carry ONLY its question now — the second
+      // stage arrives split (body in `situation`, question here), and a
+      // mapping that required a setup silently swallowed that question on
+      // screen ("thiếu mất bạn làm gì", owner on-device 2026-08-28). Dropped
+      // only when it carries nothing at all.
+      scene: ui.scene == null ||
+              (ui.scene!.setup.trim().isEmpty &&
+                  (ui.scene!.question?.trim().isEmpty ?? true) &&
+                  (ui.scene!.habit?.trim().isEmpty ?? true))
           ? null
           : CoachSceneEntity(
               habit: (ui.scene!.habit?.trim().isEmpty ?? true) ? null : ui.scene!.habit,
