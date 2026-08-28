@@ -9,6 +9,10 @@ export interface CoachHotline {
 export interface CoachConfig {
   enabled: boolean;
   hotlines: CoachHotline[];
+  /** Model Gemini cho các call hội thoại. Rỗng = dùng env của server. */
+  geminiModel?: string | null;
+  /** Model riêng cho việc VIẾT CẢNH (1 call/lượt luyện). Rỗng = theo geminiModel. */
+  geminiSceneModel?: string | null;
 }
 
 export type CoachSituationVariant =

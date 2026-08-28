@@ -26,7 +26,7 @@ import { useNotification } from "../../utils/hooks/useNotification";
 
 const LOCALES = ["en", "vi", "zh", "ja", "ko"];
 
-const EMPTY: CoachConfig = { enabled: false, hotlines: [] };
+const EMPTY: CoachConfig = { enabled: false, hotlines: [], geminiModel: "", geminiSceneModel: "" };
 
 const CoachConfigPage: React.FC = () => {
   const { showSuccess, showError } = useNotification();
@@ -45,6 +45,8 @@ const CoachConfigPage: React.FC = () => {
       setForm({
         enabled: d.enabled ?? false,
         hotlines: Array.isArray(d.hotlines) ? d.hotlines : [],
+        geminiModel: d.geminiModel ?? "",
+        geminiSceneModel: d.geminiSceneModel ?? "",
       });
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không tải được cấu hình");
@@ -128,6 +130,41 @@ const CoachConfigPage: React.FC = () => {
           chối. Mặc định là tắt — Coach nói chuyện với người thật về chuyện khó
           nói, nên nó bật khi có người quyết định bật.
         </p>
+      </Paper>
+
+      <Paper className="p-5 space-y-4">
+        <div>
+          <h2 className="text-lg font-medium">Model AI</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Đổi ở đây ăn ngay (ưu tiên hơn biến môi trường của server), không
+            cần deploy. Để trống = dùng env <code>GEMINI_MODEL</code> /{" "}
+            <code>GEMINI_SCENE_MODEL</code>.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextField
+            label="Model hội thoại"
+            size="small"
+            fullWidth
+            placeholder="vd: gemini-flash-lite-latest"
+            value={form.geminiModel ?? ""}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, geminiModel: e.target.value }))
+            }
+            helperText="Chạy trên MỌI lượt trả lời của Coach — model to lên là giá mỗi lượt tăng theo."
+          />
+          <TextField
+            label="Model viết cảnh"
+            size="small"
+            fullWidth
+            placeholder="vd: gemini-flash-latest"
+            value={form.geminiSceneModel ?? ""}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, geminiSceneModel: e.target.value }))
+            }
+            helperText="Chỉ chạy 1 lần mỗi lượt luyện tình huống (prompt nặng nhất) — nên để model mạnh hơn hội thoại. Trống = theo model hội thoại."
+          />
+        </div>
       </Paper>
 
       <Paper className="p-5 space-y-4">
