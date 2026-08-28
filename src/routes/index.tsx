@@ -41,6 +41,8 @@ import StreakConfigPage from "../pages/streak-config/StreakConfigPage";
 import CoachConfigPage from "../pages/coach/CoachConfigPage";
 import CoachSituationList from "../pages/coach/CoachSituationList";
 import CoachRatingList from "../pages/coach/CoachRatingList";
+import CoachContentList from "../pages/coach/CoachContentList";
+import CoachAiUsagePage from "../pages/coach/CoachAiUsagePage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
 import HomePopupPage from "../pages/home-popup/HomePopupPage";
 import CommunityModerationPage from "../pages/community/CommunityModerationPage";
@@ -129,6 +131,8 @@ export default function AppRouter() {
               <Route path="coach-config" element={<CoachConfigPage />} />
               <Route path="coach-situations" element={<CoachSituationList />} />
               <Route path="coach-ratings" element={<CoachRatingList />} />
+              <Route path="coach-contents" element={<CoachContentList />} />
+              <Route path="coach-ai-usage" element={<CoachAiUsagePage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />
               <Route path="segments" element={<SegmentsPage />} />

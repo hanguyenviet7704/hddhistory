@@ -2,6 +2,7 @@ import {
   CoachConfig,
   CoachSituationUpdate,
   CoachSituationVariant,
+  CoachContentKind,
 } from "../types/interface/coach.interface";
 import axiosClient from "./axiosClient";
 
@@ -54,6 +55,28 @@ export const coachService = {
 
   async markRatingReviewed(id: string) {
     const res = await axiosClient.put(`/coach-ratings/${id}/reviewed`);
+    return res.data;
+  },
+
+  /**
+   * Chữ do user tự viết. KHÔNG có hội thoại đầy đủ — Coach không lưu những gì
+   * nó nói, theo đúng thiết kế.
+   */
+  async getContents(params?: {
+    userId?: string;
+    habitId?: string;
+    kinds?: CoachContentKind[];
+    from?: string;
+    to?: string;
+    search?: string;
+    limit?: number;
+  }) {
+    const res = await axiosClient.get("/coach-contents", { params });
+    return res.data;
+  },
+
+  async getAiUsageSummary(params?: { from?: string; to?: string }) {
+    const res = await axiosClient.get("/coach-ai-usage/summary", { params });
     return res.data;
   },
 };

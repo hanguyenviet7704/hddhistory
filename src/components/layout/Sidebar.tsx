@@ -182,6 +182,12 @@ const menuGroups = [
       { name: "Cấu hình", icon: ChatBubbleLeftRightIcon, path: "/coach-config" },
       { name: "Tình huống", icon: SparklesIcon, path: "/coach-situations" },
       { name: "Đánh giá", icon: HandThumbDownIcon, path: "/coach-ratings" },
+      {
+        name: "Nội dung user",
+        icon: ChatBubbleLeftRightIcon,
+        path: "/coach-contents",
+      },
+      { name: "Chi phí AI", icon: SparklesIcon, path: "/coach-ai-usage" },
     ],
   },
   {

@@ -77,3 +77,79 @@ export interface CoachRating {
   needsReview: boolean;
   createdAt?: string;
 }
+
+/** Loại chữ do user tự viết mà Coach giữ lại. Sáu loại, bốn collection. */
+export type CoachContentKind =
+  | "evidence"
+  | "problem_statement"
+  | "quick_note"
+  | "barrier"
+  | "situation_answer"
+  | "dip";
+
+export interface CoachContentRow {
+  id: string;
+  kind: CoachContentKind;
+  userId: string;
+  /** Nguyên văn chữ user viết. Không bao giờ là câu Coach sinh ra. */
+  content: string;
+  habitId: string | null;
+  sessionId: string | null;
+  createdAt: string;
+  /** Phụ trợ theo từng loại: planId, round, variant, số dòng nháp bị kéo… */
+  meta: Record<string, unknown>;
+}
+
+export interface CoachContentPage {
+  rows: CoachContentRow[];
+  total: number;
+  /**
+   * Mỗi nguồn bị chặn ở `limit` rồi mới trộn, nên true nghĩa là còn dữ liệu
+   * chưa hiện — thu hẹp khoảng ngày hoặc lọc theo loại.
+   */
+  truncated: boolean;
+  limit: number;
+}
+
+export interface CoachAiUsageGroup {
+  key: string;
+  calls: number;
+  /** Lệnh gọi vẫn bị tính tiền nhưng trả về thứ không dùng được. */
+  failedCalls: number;
+  inputTokens: number;
+  outputTokens: number;
+  costVnd: number;
+}
+
+export interface CoachAiUsageSummary {
+  range: { from: string; to: string };
+  totals: {
+    calls: number;
+    failedCalls: number;
+    inputTokens: number;
+    outputTokens: number;
+    costVnd: number;
+    avgLatencyMs: number;
+  };
+  /** Tiền theo BƯỚC của luồng — đắt nhất lên đầu. */
+  byKind: CoachAiUsageGroup[];
+  byModel: CoachAiUsageGroup[];
+  /** Tăng dần theo ngày, khỏi phải sắp lại ở client. */
+  daily: CoachAiUsageGroup[];
+  sessions: {
+    count: number;
+    users: number;
+    costPerSessionVnd: number | null;
+    costPerUserVnd: number | null;
+  };
+  pricing: {
+    usdToVnd: number;
+    models: {
+      model: string;
+      usdPerMillionInput: number;
+      usdPerMillionOutput: number;
+      /** false = model chưa có trong bảng giá, đang bị tính theo giá dự phòng. */
+      priced: boolean;
+    }[];
+  };
+}
