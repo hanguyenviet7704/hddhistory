@@ -1,8 +1,8 @@
-# AI Coach — every fixed line the sheet says.
+# MeUp Coach — every fixed line the sheet says.
 # Anything the model writes never passes through here; it arrives already in the
 # reader's language. See plans/260824-ai-coach-v2 in meup-api.
-sheetTitle: AI Coach
-bubbleSemantics: Open AI Coach
+sheetTitle: MeUp Coach
+bubbleSemantics: Open MeUp Coach
 failedTitle: Something went wrong on our side. Nothing you said was lost.
 retry: Try again
 inputHint: "Type, or tap the mic…"
@@ -15,6 +15,7 @@ promptMood: Before we start — how are you feeling today?
 promptMoodEnd: Before you go — how are you feeling now?
 promptPickNew: You just added a couple of habits. Which one should we talk about first?
 promptPickHabit: I got that wrong — which habit did you mean?
+pickReroll: Show me three others
 habitChipLead: Talking about
 habitChipChange: Change habit
 habitChipChangeEcho: Change the habit.
@@ -170,12 +171,14 @@ hubStopEcho: I'll stop here.
 promptSceneFeeling: In that moment, how would you feel?
 promptSceneFeelingThird: If you were them, how would you feel in that moment?
 sceneFeelingAck: That feeling makes sense.
-promptSceneMet: Have you ever been in something like that?
-sceneMetYes: Yes, I have
-sceneMetYesEcho: Yes, I have.
+promptSceneMet: Have you run into something like this in real life?
+sceneMetYes: Yes
+sceneMetYesEcho: Yes.
 sceneMetNo: Not yet
 sceneMetNoEcho: Not yet.
 promptSceneWhen: When was that?
+promptSceneDid: What did you do that day?
+promptSceneChange: Next time it comes up, would you do anything differently?
 courseReasonOutside: What you just told me touches something you don't have yet
 promptClosingHeard: I heard you. I'm here whenever you want to talk again.
 inviteYes: Try a scene

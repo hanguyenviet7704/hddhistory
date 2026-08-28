@@ -1,5 +1,5 @@
-sheetTitle: AI 코치
-bubbleSemantics: AI 코치 열기
+sheetTitle: MeUp 코치
+bubbleSemantics: MeUp 코치 열기
 failedTitle: 저희 쪽에서 문제가 생겼어요. 하신 말씀은 사라지지 않았습니다.
 retry: 다시 시도
 inputHint: "입력하거나 마이크를 누르세요…"
@@ -10,6 +10,7 @@ promptMood: 시작하기 전에 — 오늘 기분은 어떠세요?
 promptMoodEnd: 닫기 전에 — 지금은 어떠세요?
 promptPickNew: 새 습관을 몇 개 추가하셨네요. 어떤 것부터 이야기할까요?
 promptPickHabit: 제가 잘못 알았네요 — 어떤 습관을 말한 거예요?
+pickReroll: 다른 3개 보기
 habitChipLead: 지금 이야기 중
 habitChipChange: 습관 바꾸기
 habitChipChangeEcho: 습관을 바꿀게요.
@@ -162,12 +163,14 @@ hubStopEcho: 여기서 마칠게요.
 promptSceneFeeling: 그 순간, 어떤 기분일까요?
 promptSceneFeelingThird: 당신이 그 사람이라면, 그 순간 어떤 기분일까요?
 sceneFeelingAck: 그런 기분이 드는 건 당연해요.
-promptSceneMet: 비슷한 일을 겪어본 적 있나요?
+promptSceneMet: 실제 생활에서 이런 일을 겪어본 적 있나요?
 sceneMetYes: 있어요
 sceneMetYesEcho: 있어요.
-sceneMetNo: 아직 없어요
-sceneMetNoEcho: 아직 없어요.
+sceneMetNo: 아직요
+sceneMetNoEcho: 아직요.
 promptSceneWhen: 그게 언제였나요?
+promptSceneDid: 그날 당신은 어떻게 했나요?
+promptSceneChange: 다음에 또 만나면, 다르게 해보고 싶나요?
 courseReasonOutside: 방금 이야기가 아직 갖고 있지 않은 습관에 닿아 있어요
 promptClosingHeard: 잘 들었어요. 또 이야기하고 싶을 때 여기 있어요.
 inviteYes: 장면 하나 연습하기

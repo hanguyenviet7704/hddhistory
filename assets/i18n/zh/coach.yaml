@@ -1,5 +1,5 @@
-sheetTitle: AI 教练
-bubbleSemantics: 打开 AI 教练
+sheetTitle: MeUp 教练
+bubbleSemantics: 打开 MeUp 教练
 failedTitle: 我们这边出了点问题。你说过的内容没有丢失。
 retry: 重试
 inputHint: "输入，或点麦克风…"
@@ -10,6 +10,7 @@ promptMood: 开始之前 —— 你今天感觉怎么样？
 promptMoodEnd: 结束之前 —— 现在感觉怎么样？
 promptPickNew: 你刚加了几个习惯。先聊哪一个？
 promptPickHabit: 我理解错了——你想说的是哪个习惯？
+pickReroll: 换三个别的
 habitChipLead: 正在聊
 habitChipChange: 换一个习惯
 habitChipChangeEcho: 换一个习惯。
@@ -162,12 +163,14 @@ hubStopEcho: 我先到这里。
 promptSceneFeeling: 那一刻，你会是什么感受？
 promptSceneFeelingThird: 如果你是那个人，那一刻你会是什么感受？
 sceneFeelingAck: 这种感受很正常。
-promptSceneMet: 类似的事你遇到过吗？
+promptSceneMet: 现实生活中你遇到过这样的事吗？
 sceneMetYes: 遇到过
-sceneMetYesEcho: 遇到过。
+sceneMetYesEcho: 遇到过.
 sceneMetNo: 还没有
-sceneMetNoEcho: 还没有。
+sceneMetNoEcho: 还没有.
 promptSceneWhen: 那是什么时候？
+promptSceneDid: 那天你是怎么做的？
+promptSceneChange: 下次再遇到，你想换个做法吗？
 courseReasonOutside: 你刚说的事，碰到了一个你还没有的习惯
 promptClosingHeard: 我听到了。想聊的时候我都在。
 inviteYes: 试练一个场景

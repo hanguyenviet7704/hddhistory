@@ -106,6 +106,11 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.promptSceneMet;
     case 'coach.prompt.sceneWhen':
       return l10n.promptSceneWhen;
+    // 6b · 6d — the real occurrence, and the change question.
+    case 'coach.prompt.sceneDid':
+      return l10n.promptSceneDid;
+    case 'coach.prompt.sceneChange':
+      return l10n.promptSceneChange;
     // ④ — the scene from three weeks ago.
     case 'coach.prompt.retryScene':
       return l10n.retryScene;
@@ -279,6 +284,8 @@ String? coachStepLabel(BuildContext context, String step) {
     case 'sceneStage2':
     case 'sceneMet':
     case 'sceneWhen':
+    case 'sceneDid':
+    case 'sceneChange':
       return l10n.stepSituation;
     case 'hub':
       return l10n.stepHub;

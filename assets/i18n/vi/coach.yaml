@@ -1,5 +1,5 @@
-sheetTitle: AI Coach
-bubbleSemantics: Mở AI Coach
+sheetTitle: MeUp Coach
+bubbleSemantics: Mở MeUp Coach
 failedTitle: Có lỗi ở phía mình. Những gì bạn nói không mất đi đâu cả.
 retry: Thử lại
 inputHint: "Gõ hoặc bấm mic…"
@@ -10,6 +10,7 @@ promptMood: Trước khi bắt đầu — hôm nay bạn thấy thế nào?
 promptMoodEnd: Trước khi đóng — giờ bạn thấy thế nào?
 promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào trước?
 promptPickHabit: Mình hiểu sai rồi — bạn muốn nói về habit nào?
+pickReroll: Gợi ý 3 thói quen khác
 habitChipLead: Đang nói về
 habitChipChange: Đổi habit
 habitChipChangeEcho: Đổi habit khác.
@@ -162,12 +163,14 @@ hubStopEcho: Mình dừng ở đây.
 promptSceneFeeling: Lúc đó, bạn cảm thấy thế nào?
 promptSceneFeelingThird: Nếu là người đó, lúc đó bạn cảm thấy thế nào?
 sceneFeelingAck: Cảm giác đó dễ hiểu.
-promptSceneMet: Chuyện giống vậy bạn gặp bao giờ chưa?
-sceneMetYes: Gặp rồi
-sceneMetYesEcho: Gặp rồi.
-sceneMetNo: Chưa gặp
-sceneMetNoEcho: Chưa gặp.
+promptSceneMet: Ngoài đời bạn gặp chuyện kiểu này chưa?
+sceneMetYes: Rồi
+sceneMetYesEcho: Rồi.
+sceneMetNo: Chưa
+sceneMetNoEcho: Chưa.
 promptSceneWhen: Lúc đó là lúc nào?
+promptSceneDid: Hôm đó bạn làm gì?
+promptSceneChange: Lần sau gặp lại, bạn muốn làm khác đi không?
 courseReasonOutside: Chuyện bạn vừa kể chạm tới một thứ chưa có trong kho của bạn
 promptClosingHeard: Mình nghe rồi. Khi nào muốn nói tiếp thì mình ở đây.
 inviteYes: Tập thử một cảnh
