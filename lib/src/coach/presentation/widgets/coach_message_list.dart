@@ -38,8 +38,36 @@ class CoachMessageList extends StatefulWidget {
   State<CoachMessageList> createState() => _CoachMessageListState();
 }
 
-class _CoachMessageListState extends State<CoachMessageList> {
+class _CoachMessageListState extends State<CoachMessageList>
+    with WidgetsBindingObserver {
   final _controller = ScrollController();
+
+  /// The keyboard inset last seen, logical pixels — to tell opening from closing.
+  double _lastInset = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// The keyboard. The sheet shrinks under it (AnimatedPadding, 160ms) but the
+  /// list keeps its offset, so the newest lines sit hidden behind the keys
+  /// until the reader scrolls by hand. Opening the keyboard now follows the
+  /// conversation down; closing it leaves the reader where they are.
+  @override
+  void didChangeMetrics() {
+    final view = View.of(context);
+    final inset = view.viewInsets.bottom / view.devicePixelRatio;
+    final opened = inset > _lastInset + 1;
+    _lastInset = inset;
+
+    if (!opened) return;
+    // After the sheet's own 160ms resize, or maxScrollExtent is still moving.
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _scrollToEnd();
+    });
+  }
 
   @override
   void didUpdateWidget(covariant CoachMessageList oldWidget) {
@@ -66,6 +94,7 @@ class _CoachMessageListState extends State<CoachMessageList> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
