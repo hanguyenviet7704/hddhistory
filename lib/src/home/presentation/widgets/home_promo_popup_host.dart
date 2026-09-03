@@ -48,13 +48,23 @@ class _HomePromoPopupHostState extends State<HomePromoPopupHost> {
     // worth a retry: the popup is promotional, and Home has already loaded.
     if (popup == null || !popup.isVisible || !mounted) return;
 
+    // One modal per app-open, shared with the shell's hosts. Claimed here
+    // rather than at the top of this method: this popup only knows it has
+    // something to show after the fetch above, and claiming earlier would
+    // silence a sibling on behalf of a campaign that turned out to be empty.
+    if (!AppOpenModalGate.claim('home_promo')) return;
+
     // Latched BEFORE showing, not after: awaiting the dialog would leave the door
     // open for a second Home rebuild to raise a second copy.
     HomePromoPopupHost._shownThisSession = true;
     // Fire the impression right as the popup is raised, not after it closes —
     // "shown" is this call, not whatever the reader does with it afterwards.
     AppDI.injector.get<HomeCubit>().trackPopupImpression(popup.campaignKey);
-    await _HomePromoPopupDialog.show(context, popup);
+    try {
+      await _HomePromoPopupDialog.show(context, popup);
+    } finally {
+      AppOpenModalGate.release('home_promo');
+    }
   }
 
   @override

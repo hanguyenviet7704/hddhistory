@@ -99,14 +99,20 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // running server-side while the app is suspended, so coming back is
             // the moment to check whether the lesson is ready.
             Positioned.fill(
-              child: ImportDonePopupHost(
-                // WinBackHost sits here for the same reason as its neighbours:
-                // the paywall that arms it is gone before its delay elapses, so
-                // the opener has to outlive it.
-                child: WinBackHost(
-                  child: GiftPopupHost(
-                    child: StreakPopupHost(
-                      child: ThemedBackground(child: widget.navigationShell),
+              // WeekRecapPopupHost is outermost, and is the only one of these
+              // that raises a full dialog on a cold start. It shares
+              // AppOpenModalGate with the Home promo popup so the two can never
+              // stack into a card on a card.
+              child: WeekRecapPopupHost(
+                child: ImportDonePopupHost(
+                  // WinBackHost sits here for the same reason as its
+                  // neighbours: the paywall that arms it is gone before its
+                  // delay elapses, so the opener has to outlive it.
+                  child: WinBackHost(
+                    child: GiftPopupHost(
+                      child: StreakPopupHost(
+                        child: ThemedBackground(child: widget.navigationShell),
+                      ),
                     ),
                   ),
                 ),
@@ -125,23 +131,20 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
                 // generating screen IS the run, full-size — a minimised copy of
                 // the thing you are looking at ("cục loading ở dưới không cần
                 // hiện ở màn này", 2026-08-12).
-                shownInline: state.currentRouteName == RouteNamed.myLessons ||
-                    state.currentRouteName == RouteNamed.importGenerating,
+                shownInline: state.currentRouteName == RouteNamed.myLessons || state.currentRouteName == RouteNamed.importGenerating,
               ),
               builder: (context, placement) => placement.shownInline
                   ? const SizedBox.shrink()
                   : ImportProgressToast(
-                      bottomInset: placement.isPrimary
-                          ? floatingNavBarHeight(context) + 10.h
-                          : MediaQuery.paddingOf(context).bottom + 18.h,
+                      bottomInset: placement.isPrimary ? floatingNavBarHeight(context) + 10.h : MediaQuery.paddingOf(context).bottom + 18.h,
                     ),
             ),
             // The AI Coach bubble. A sibling of the import toast rather than a
             // member of the popup-host chain above, and deliberately so: it
-            // never opens itself, so it never has to queue behind the gift and
-            // the streak toast for a turn at the screen. It decides for itself
-            // which tabs it belongs on (Home and Habit) and renders nothing
-            // everywhere else.
+            // never opens itself, so it never has to queue behind the week
+            // recap, the gift and the streak toast for AppOpenModalGate. It
+            // decides for itself which tabs it belongs on (Home and Habit) and
+            // renders nothing everywhere else.
             CoachBubbleHost(bottomInset: floatingNavBarHeight(context) + 12.h),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(

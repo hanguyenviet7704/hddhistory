@@ -22,6 +22,7 @@ export 'output_practice/output_practice.dart';
 export 'profile/profile.dart';
 export 'coach/coach.dart';
 export 'study_journal/study_journal.dart';
+export 'week_recap/week_recap.dart';
 export 'progress/progress.dart';
 export 'roleplay/roleplay.dart';
 export 'setting/setting.dart';

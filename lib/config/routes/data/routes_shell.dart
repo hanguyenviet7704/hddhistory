@@ -152,6 +152,14 @@ part of '../routes.dart';
               path: RoutePath.savedCards,
               name: RouteNamed.savedCards,
             ),
+            TypedGoRoute<WeekRecapArchiveRoute>(
+              path: RoutePath.weekRecapArchive,
+              name: RouteNamed.weekRecapArchive,
+            ),
+            TypedGoRoute<WeekRecapRoute>(
+              path: RoutePath.weekRecap,
+              name: RouteNamed.weekRecap,
+            ),
             TypedGoRoute<MyLessonsRoute>(
               path: RoutePath.myLessons,
               name: RouteNamed.myLessons,

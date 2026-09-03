@@ -27,6 +27,8 @@ class LibraryRoute extends BaseTransitionRouteData with $LibraryRoute {
       BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<SavedCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+      // The week-recap banner and its "Sổ tay" row live on this screen.
+      BlocProvider.value(value: AppDI.injector.get<WeekRecapCubit>()),
     ],
     child: const LibraryPage(),
   );
@@ -112,6 +114,52 @@ class MyLessonsRoute extends BaseTransitionRouteData with $MyLessonsRoute {
       BlocProvider.value(value: AppDI.injector.get<LearningImportCubit>()),
     ],
     child: const MyLessonsPage(),
+  );
+}
+
+/// "Sổ tay" — the grid of every week the reader has been given.
+///
+/// Fades in like every other row of the Library tab: it is a list opened from
+/// the middle of that tab, not a step deeper into a flow.
+class WeekRecapArchiveRoute extends BaseTransitionRouteData with $WeekRecapArchiveRoute {
+  const WeekRecapArchiveRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.fade;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<WeekRecapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+    ],
+    child: const WeekRecapArchivePage(),
+  );
+}
+
+/// The poster itself.
+///
+/// [recapId] is a query parameter rather than a path segment because the two
+/// entry points differ: Sổ tay knows the id, while the banner and the Monday
+/// popup have already put the recap in the cubit and pass nothing.
+///
+/// Scales up rather than fading — this one IS a step deeper, and the poster
+/// arriving as an object matches what it is.
+class WeekRecapRoute extends BaseTransitionRouteData with $WeekRecapRoute {
+  const WeekRecapRoute({this.recapId});
+
+  final String? recapId;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<WeekRecapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+    ],
+    child: WeekRecapPage(recapId: recapId),
   );
 }
 

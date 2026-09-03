@@ -18,7 +18,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 #version: 1.4.3+100 # ios
-version: 1.6.0+141 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
+version: 1.6.0+150 # ios+android (bump build no. each release; Play prod versionCode was 32 → needs >32)
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
@@ -339,7 +339,8 @@ flutter_gen:
       # - dot-delimiter
       style: dot-delimiter
       class_name: AppAsset
-    exclude: []
+    exclude:
+      - assets/images/week_recap/README.md
 
   fonts:
     # Optional
@@ -371,6 +372,7 @@ flutter:
     - assets/icons/common/
     - assets/images/app/
     - assets/images/common/
+    - assets/images/week_recap/
     - assets/rive/
     - assets/svg/app/
     - assets/svg/common/
@@ -388,6 +390,47 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
 
   fonts:
+    # Every handwritten value on the week-recap poster — lesson titles, the
+    # encouragement line, the favourite course, the four stamp digits, the habit
+    # list. The design asks for this family by name; the file is the Vietnamese
+    # cut, and it ships a SINGLE Regular weight, which is why every caller uses
+    # w400 (asking for 300 or 700 would only get a synthetic fake).
+    - family: Lumios Marker
+      fonts:
+        - asset: assets/fonts/LumiosMarker/SVN-LumiosMarker.otf
+    # Week-recap poster display faces, all three named by the design.
+    #
+    # LICENSING — NOT CLEARED FOR RELEASE. Two of these are personal-use builds:
+    #   Billock       "just for personal use" (Alit Design)
+    #   Forward Serif family name is literally "Forward Serif Bold PERSONAL";
+    #                 name table says to buy a commercial licence at
+    #                 mansgreback.com. Its `0`/`1` glyphs are a "PERSONAL USE
+    #                 ONLY" watermark, so it must never render digits.
+    # They are fine for dev/review. Buy the licences or swap the faces before a
+    # store build. Raised with the user 2026-08-20/21.
+
+    # The title's NUMBER ("01"). Latin-only (138 glyphs, no Vietnamese) — fine,
+    # it only ever draws digits, and the poster falls back for anything else.
+    - family: Billock
+      fonts:
+        - asset: assets/fonts/Billock/Billock-Regular.ttf
+    # The title's WORD ("Tuần"). 809 glyphs, Vietnamese verified, no CJK.
+    - family: Forward Serif
+      fonts:
+        - asset: assets/fonts/ForwardSerif/ForwardSerif-Bold.otf
+    # The pinned quote. 802 glyphs, Vietnamese verified.
+    - family: MTD Adventures
+      fonts:
+        - asset: assets/fonts/MTDAdventures/MTDAdventures-Regular.otf
+    # The week-recap poster's small uppercase labels. Straight from the design
+    # (`font-family:'Space Mono'`), OFL-licensed, and its Vietnamese subset is
+    # verified — the labels carry "KHOÁ HỌC ƯA THÍCH".
+    - family: Space Mono
+      fonts:
+        - asset: assets/fonts/SpaceMono/SpaceMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SpaceMono/SpaceMono-Bold.ttf
+          weight: 700
     - family: Mulish
       fonts:
         - asset: assets/fonts/Mulish/static/Mulish-ExtraLight.ttf

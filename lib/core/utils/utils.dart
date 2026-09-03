@@ -36,6 +36,7 @@ import '../../src/learning_import/learning_import.dart';
 import '../../src/learning_streak/learning_streak.dart';
 import '../../src/monetization/monetization.dart';
 import '../../src/study_theme/study_theme.dart';
+import '../../src/week_recap/week_recap.dart';
 import '../constants/constants.dart';
 import '../helpers/helpers.dart';
 
@@ -47,6 +48,7 @@ part 'button/app_button.dart';
 part 'button/button.dart';
 part 'button/cta_button.dart';
 part 'button/gradient_button.dart';
+part 'button/share_target_button.dart';
 part 'images/cache_network_graphic.dart';
 part 'images/cover_art.dart';
 //* Export all images files
@@ -61,6 +63,7 @@ part 'layouts/scaffod_layout.dart';
 part 'navbar/bottom_nav.dart';
 part 'navbar/nav_bar_items.dart';
 //* Export all overlay files
+part 'overlay/app_open_modal_gate.dart';
 part 'overlay/about_dialog.dart';
 part 'overlay/bottom_sheet.dart';
 part 'overlay/data_bottom_sheet.dart';

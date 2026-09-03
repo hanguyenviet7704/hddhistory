@@ -90,6 +90,12 @@ mixin RoutePath {
   static const String savedCourses = 'saved';
   static const String savedCards = 'saved-cards';
 
+  //* Library - Week recap ("Hành trình tuần qua" + the Sổ tay it is filed into)
+  static const String weekRecapArchive = 'week-recap';
+  // The poster is reached with an id from Sổ tay and without one from the
+  // banner or the Monday popup, where the recap is already in the cubit.
+  static const String weekRecap = 'week-recap-poster';
+
   //* Library - Learning import (user's own PDF / YouTube -> generated lesson)
   // Nested under /library, not /profile: the shelf of your own lessons is one of
   // the two things the Library tab is for (design `5b · Library`), and My
@@ -104,7 +110,6 @@ mixin RoutePath {
   //* Habit
   static const String habit = '/habit';
   static const String dailyCheckIn = 'daily-check-in';
-  static const String habitSummary = '/habit-summary';
 
   //* Community — the fifth nav tab. Its sub-screens are nested so a push stays
   //* inside the community branch and keeps the bottom navigation bar where the
@@ -214,6 +219,10 @@ mixin RouteNamed {
   static const String savedCourses = 'Saved Courses';
   static const String savedCards = 'Saved Cards';
 
+  //* Library - Week recap
+  static const String weekRecapArchive = 'Week Recap Archive';
+  static const String weekRecap = 'Week Recap';
+
   //* Library - Learning import
   static const String myLessons = 'My Lessons';
   static const String lessonReader = 'Lesson Reader';
@@ -223,7 +232,6 @@ mixin RouteNamed {
   //* Habit
   static const String habit = 'Habit';
   static const String dailyCheckIn = 'Daily Check In';
-  static const String habitSummary = 'Habit Summary';
 
   //* Community
   static const String community = 'Community';
@@ -274,5 +282,4 @@ const Set<String> preAuthRouteNames = {
 /// the welcome screen then remounts forever and never becomes interactive
 /// ("xoá app cài lại → màn login không bấm được gì"). Splash and the onboarding
 /// flow own their own routing and must not be hijacked either.
-bool shouldForceRegisterNavigationAfterReset(String currentRouteName) =>
-    !preAuthRouteNames.contains(currentRouteName);
+bool shouldForceRegisterNavigationAfterReset(String currentRouteName) => !preAuthRouteNames.contains(currentRouteName);

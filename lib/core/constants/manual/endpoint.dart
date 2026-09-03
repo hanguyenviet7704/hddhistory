@@ -125,6 +125,11 @@ mixin AppEndpoint {
   static const String coursesUserProgressStreakCheckIn = '/api/v1/courses-user-progress/streak/check-in';
   static const String coursesUserProgressStudyJournal = '/api/v1/courses-user-progress/study-journal';
   static const String coursesUserProgressStudyJournalDay = '/api/v1/courses-user-progress/study-journal/day';
+  static const String coursesUserProgressWeekRecapCurrent = '/api/v1/courses-user-progress/week-recap/current';
+  static const String coursesUserProgressWeekRecap = '/api/v1/courses-user-progress/week-recap';
+  static const String coursesUserProgressWeekRecapById = '/api/v1/courses-user-progress/week-recap/{id}';
+  static const String coursesUserProgressWeekRecapViewed = '/api/v1/courses-user-progress/week-recap/{id}/viewed';
+  static const String coursesUserProgressWeekRecapDismissed = '/api/v1/courses-user-progress/week-recap/{id}/dismissed';
   static const String coursesUserProgressWidgetInProgress = '/api/v1/courses-user-progress/widget/in-progress';
   static const String coursesUserProgressWidgetSuggestCourse = '/api/v1/courses-user-progress/widget/suggest-course';
   static const String coursesQuotesRandom = '/api/v1/courses-quotes/random';
@@ -232,8 +237,7 @@ mixin AppEndpoint {
   static const String userLessons = '/api/v1/user-lessons';
   static const String userLessonById = '/api/v1/user-lessons/{id}';
   static const String userLessonProgress = '/api/v1/user-lessons/{id}/progress';
-  static const String userLessonAdditionalContentRequest =
-      '/api/v1/user-lessons/{id}/additional-content-request';
+  static const String userLessonAdditionalContentRequest = '/api/v1/user-lessons/{id}/additional-content-request';
 
   //* Community API (forum: topics, posts, comments, reactions, reports)
   static const String communityFeed = '/api/v1/community/feed';
@@ -253,6 +257,7 @@ mixin AppEndpoint {
   static const String communityNotificationsUnread = '/api/v1/community/notifications/unread-count';
   static const String communityNotificationsRead = '/api/v1/community/notifications/read';
   static const String communityMyStatus = '/api/v1/community/me/status';
+  static const String communityTourSeen = '/api/v1/community/me/tour-seen';
   static const String communityRoomSuggestions = '/api/v1/community/room-suggestions';
   static const String communityRoomSuggestionVote = '/api/v1/community/room-suggestions/{id}/vote';
   // Group chat (design `S-03 · Hội bàn tròn`). `{room}` takes the room's SLUG,

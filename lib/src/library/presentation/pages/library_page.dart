@@ -52,6 +52,11 @@ class _LibraryPageState extends State<LibraryPage> {
     // Both Saved rows count off the id sets, and every bookmark elsewhere in
     // the app reads the same two sets — this is the cheapest place to warm them.
     unawaited(context.read<SavedCubit>().ensureIdsLoaded());
+    // The week-recap banner and its "Sổ tay" row read this. `ensure` rather than
+    // `load`: the popup host on the shell asks for the same thing at startup,
+    // and `ensure` refreshes only once its copy has gone stale — a tab flick
+    // costs nothing, while a return after real work picks the new week up.
+    unawaited(AppDI.injector.get<WeekRecapCubit>().ensureCurrentLoaded());
   }
 
   Future<void> _onRefresh() async {
@@ -126,6 +131,7 @@ class _LibraryPageState extends State<LibraryPage> {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(child: _LibraryHeader(title: l10n.title)),
+              const SliverToBoxAdapter(child: WeekRecapBanner()),
               SliverToBoxAdapter(
                 child: _LibrarySectionHeader(
                   title: l10n.inProgressSection,
@@ -149,6 +155,7 @@ class _LibraryPageState extends State<LibraryPage> {
                       _LibrarySavedRow(onTap: _openSavedCourses),
                       12.verticalSpace,
                       _LibrarySavedCardsRow(onTap: _openSavedCards),
+                      const WeekRecapNotebookRow(),
                     ],
                   ),
                 ),
