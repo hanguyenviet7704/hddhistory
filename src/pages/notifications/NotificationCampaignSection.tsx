@@ -545,75 +545,85 @@ export default function NotificationCampaignSection() {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <TextField
-            size="small"
-            select
-            SelectProps={{ native: true }}
-            label="Deep link"
-            value={deeplink}
-            onChange={(e) => {
-              setDeeplink(e.target.value);
-              // Đổi đích thì bỏ tham số cũ: `variant` của paywall còn sót lại
-              // sau khi chuyển sang Trang chủ là một khoá vô nghĩa đi thẳng vào
-              // payload push. API cũng lọc lại, đây chỉ là để ô chọn không hiện
-              // một giá trị không còn thuộc về đâu.
-              setDeeplinkParams({});
-            }}
-            helperText={
-              selectedDestination
-                ? `Cần bản app build ≥ ${Math.max(
-                    selectedDestination.minAppBuild,
-                    PUSH_CATALOG_MIN_BUILD,
-                  )}; bản cũ hơn chạm vào chỉ mở app, không báo lỗi.${
-                    selectedDestination.note
-                      ? ` ${selectedDestination.note}`
-                      : ""
-                  }`
-                : "Đích của noti có lịch — mọi bản app đang chạy đều hiểu."
-            }
-          >
-            {deeplinkGroups.map(([group, items]) => (
-              <optgroup key={group} label={group}>
-                {items.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {`${item.label} (${item.key})`}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </TextField>
-
-          {selectableParams.map((param) => (
+          {/* Đích và tham số của nó nằm trong CÙNG một ô của grid, xếp dọc:
+              grid lấp theo hàng, nên để rời ra thì ô tham số rơi xuống dưới
+              "Tên campaign" và đọc như một field của tên campaign. */}
+          <div className="flex flex-col gap-4">
             <TextField
-              key={param.name}
               size="small"
               select
               SelectProps={{ native: true }}
-              label={DEEPLINK_PARAM_LABELS[param.name] ?? param.name}
-              value={deeplinkParams[param.name] ?? ""}
-              onChange={(e) =>
-                setDeeplinkParams((current) => {
-                  const next = { ...current };
-                  // Bỏ hẳn khoá thay vì để chuỗi rỗng: rỗng đi vào payload đọc
-                  // như "có truyền nhưng bỏ trống", còn vắng mặt mới đúng nghĩa
-                  // "không truyền" — cùng luật với buildDeeplinkUrl.
-                  if (e.target.value) next[param.name] = e.target.value;
-                  else delete next[param.name];
-                  return next;
-                })
+              label="Deep link"
+              value={deeplink}
+              onChange={(e) => {
+                setDeeplink(e.target.value);
+                // Đổi đích thì bỏ tham số cũ: `variant` của paywall còn sót lại
+                // sau khi chuyển sang Trang chủ là một khoá vô nghĩa đi thẳng vào
+                // payload push. API cũng lọc lại, đây chỉ là để ô chọn không hiện
+                // một giá trị không còn thuộc về đâu.
+                setDeeplinkParams({});
+              }}
+              helperText={
+                selectedDestination
+                  ? `Cần bản app build ≥ ${Math.max(
+                      selectedDestination.minAppBuild,
+                      PUSH_CATALOG_MIN_BUILD,
+                    )}; bản cũ hơn chạm vào chỉ mở app, không báo lỗi.${
+                      selectedDestination.note
+                        ? ` ${selectedDestination.note}`
+                        : ""
+                    }`
+                  : "Đích của noti có lịch — mọi bản app đang chạy đều hiểu."
               }
-              // Chi tiết riêng của từng đích đã nằm ở `note` trên ô Deep link;
-              // câu này phải đúng với mọi tham số select, không riêng paywall.
-              helperText="Bỏ trống = để app tự quyết theo cấu hình."
             >
-              <option value="">Không chọn (theo cấu hình)</option>
-              {(param.options ?? []).map((option) => (
-                <option key={option} value={option}>
-                  {DEEPLINK_PARAM_VALUE_LABELS[param.name]?.[option] ?? option}
-                </option>
+              {deeplinkGroups.map(([group, items]) => (
+                <optgroup key={group} label={group}>
+                  {items.map((item) => (
+                    <option key={item.key} value={item.key}>
+                      {`${item.label} (${item.key})`}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </TextField>
-          ))}
+
+            {selectableParams.map((param) => (
+              <TextField
+                key={param.name}
+                size="small"
+                select
+                SelectProps={{ native: true }}
+                label={DEEPLINK_PARAM_LABELS[param.name] ?? param.name}
+                // Native select LUÔN hiện một option, kể cả khi value là chuỗi
+                // rỗng — nên label phải luôn co lại, không thì nó nằm đè lên chữ
+                // của option. MUI v7 suy `notched` của khung viền ra từ đúng prop
+                // này (TextField.js:157), nên một dòng lo cả hai.
+                InputLabelProps={{ shrink: true }}
+                value={deeplinkParams[param.name] ?? ""}
+                onChange={(e) =>
+                  setDeeplinkParams((current) => {
+                    const next = { ...current };
+                    // Bỏ hẳn khoá thay vì để chuỗi rỗng: rỗng đi vào payload đọc
+                    // như "có truyền nhưng bỏ trống", còn vắng mặt mới đúng nghĩa
+                    // "không truyền" — cùng luật với buildDeeplinkUrl.
+                    if (e.target.value) next[param.name] = e.target.value;
+                    else delete next[param.name];
+                    return next;
+                  })
+                }
+                // Chi tiết riêng của từng đích đã nằm ở `note` trên ô Deep link;
+                // câu này phải đúng với mọi tham số select, không riêng paywall.
+                helperText="Bỏ trống = để app tự quyết theo cấu hình."
+              >
+                <option value="">Không chọn (theo cấu hình)</option>
+                {(param.options ?? []).map((option) => (
+                  <option key={option} value={option}>
+                    {DEEPLINK_PARAM_VALUE_LABELS[param.name]?.[option] ?? option}
+                  </option>
+                ))}
+              </TextField>
+            ))}
+          </div>
         </div>
 
         <div className="mt-4">
