@@ -6,10 +6,13 @@ part of '../../learning_import.dart';
 /// roadmap: these lessons have no ordering, no prerequisites and no progression
 /// — they are a shelf, not a course.
 ///
-/// Read-only, by product call (2026-08-12): no delete, and no create bar either.
-/// Making a lesson starts from the Explore header's button
-/// (`course_header.dart` → `ImportLessonRoute`); this screen is where they are
-/// kept, not where they are made.
+/// Read-only, by product call (2026-08-12): no delete, and no create bar over
+/// the list. The EMPTY state is the one exception (2026-08-25): a reader who
+/// lands here with nothing on the shelf was told what the feature does and then
+/// left with nowhere to do it — the import form lives on Explore, a tab away.
+/// A shelf that already has lessons still has no create affordance; there the
+/// Explore header's button (`course_header.dart` → `ImportLessonRoute`) is the
+/// way in.
 class MyLessonsPage extends StatefulWidget {
   const MyLessonsPage({super.key});
 
@@ -24,9 +27,12 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
     // Refetched on every entry rather than cached: a lesson may have finished
     // generating while the user was elsewhere in the app.
     context.read<UserLessonCubit>().loadLessons();
-    // Quota is NOT fetched here any more: it existed for the create bar's
-    // feature switch, and the bar is gone. The import screen reads it for
-    // itself, next to the credit count that actually needs it.
+    // The allowance is read again, for one reason only: the empty state's create
+    // button is hidden while the admin has importing switched off, and
+    // `isFeatureOff` can only be true once the server has said so (see
+    // `isKnown`). Without this the gate would be decorative on a reader who
+    // never opened Explore this session.
+    unawaited(context.read<LearningImportCubit>().loadQuota());
   }
 
   @override
@@ -184,6 +190,23 @@ class _MyLessonsHeader extends StatelessWidget {
 class _MyLessonsEmpty extends StatelessWidget {
   const _MyLessonsEmpty();
 
+  /// Over to the import form.
+  ///
+  /// `go`, not `push`: [ImportLessonRoute] is mounted under the EXPLORE branch
+  /// (see `routes_shell.dart`) while this screen sits in the Library branch, and
+  /// an imperative push would build the form in a navigator that is off screen —
+  /// the tap would look like it did nothing. The name is claimed the way the
+  /// deeplink handler claims one: the form takes the whole screen, so the
+  /// floating pill must not stay over it, and a branch that ALREADY has the form
+  /// on top pushes nothing for the route observer to notice.
+  void _openImport(BuildContext context) {
+    AppHaptic.select();
+    const ImportLessonRoute().go(context);
+    AppDI.injector.get<PageCubit>().setCurrentRouteName(
+      RouteNamed.importLesson,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.learningImport;
@@ -216,6 +239,21 @@ class _MyLessonsEmpty extends StatelessWidget {
           maxLines: 4,
           style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
         ),
+        // …and then a way to actually do it. Gone entirely while the feature is
+        // switched off, for the same reason the Explore header drops its pill: a
+        // button that opens a screen whose only message is "not right now"
+        // reads as broken rather than as paused. Unknown allowance still shows
+        // the button — the server stays the judge (see `isFeatureOff`).
+        BlocBuilder<LearningImportCubit, LearningImportState>(
+          buildWhen: (previous, current) =>
+              previous.quota.isFeatureOff != current.quota.isFeatureOff,
+          builder: (context, importState) => importState.quota.isFeatureOff
+              ? const SizedBox.shrink()
+              : Padding(
+                  padding: EdgeInsets.only(top: 24.h),
+                  child: _MakeLessonButton(onTap: () => _openImport(context)),
+                ),
+        ),
       ],
     );
 
@@ -237,6 +275,55 @@ class _MyLessonsEmpty extends StatelessWidget {
         child: ThemedGlassCard(
           padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 28.h),
           child: content,
+        ),
+      ),
+    );
+  }
+}
+
+/// The empty shelf's only action: "make one".
+///
+/// Shaped like the import screen's own Generate button (brand pill, 99r) rather
+/// than like a card, so the two ends of the same errand look related.
+class _MakeLessonButton extends StatelessWidget {
+  const _MakeLessonButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = context.l10n.learningImport.createButton;
+
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        key: const Key('my-lessons-empty-create'),
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          // Sized by its padding, with no `alignment`: a Container given an
+          // alignment and no width fills the column's whole cross axis, and a
+          // full-bleed pill inside a centred card reads as a banner.
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: AppCustomColor.brandPrimary,
+            borderRadius: BorderRadius.circular(99.r),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add_rounded, size: 20.w, color: Colors.white),
+              8.horizontalSpace,
+              AppText(
+                label,
+                style: AppStyle.textBold16.copyWith(
+                  fontSize: 15.5.sp,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
