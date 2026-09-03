@@ -16,7 +16,14 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       // belongs to [ListenChainController], which knows what may come next.
       unawaited(dropQueuedTail());
     };
-    _handler.onOsPlay = () => _setPausedByUser(false, 'os play');
+    _handler.onOsPlay = () {
+      _setPausedByUser(false, 'os play');
+      // The lock-screen play is as much the reader's own hand as the in-app
+      // button — it must engage the follow-across-keypoints behaviour too
+      // (reachable un-engaged: a bookmark's silent position-load surfaces a
+      // paused OS media card the reader can start from).
+      _listenEngaged = true;
+    };
   }
 
   /// Background playback + OS media controls (lock-screen/Control Center/
@@ -465,6 +472,10 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   ///
   /// Returns false when nothing is left to read.
   Future<bool> playRestOfKeypoint() async {
+    // Background continuation is a continuation OF LISTENING — a reader who
+    // never engaged (or silenced themselves) has no session for the OS
+    // now-playing card to promise anything about.
+    if (!_listenEngaged || _pausedByUser) return false;
     if (_activeClipIndex < 0) return false;
     // Skip cards with nothing to read (video, roleplay) rather than stopping —
     // and remember which clip each surviving slot holds, so the slot the player
@@ -580,11 +591,19 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   Future<void> enterAudioMode({bool autoplay = true, Duration? startAt}) async {
     // Entering listen mode is an explicit ask for sound — any pinned silence
     // is over. Callers must therefore be genuine asks: the header play tap,
-    // retry, and a NEW keypoint's standing autoplay. A same-keypoint re-sync
-    // is not one (see LessonPage._syncAudioKeypoint), which used to funnel
-    // through here on every entity refresh and silently wipe the reader's
-    // mute ("tap card cuối tự bật tiếng", 2026-08-09 [MuteDbg]).
-    if (autoplay) _setPausedByUser(false, 'enterAudioMode');
+    // retry, and the page carrying an ENGAGED listen onto the next keypoint
+    // (which only happens because a prior genuine ask set [listenEngaged]).
+    // A same-keypoint re-sync is not one (see LessonPage._syncAudioKeypoint),
+    // which used to funnel through here on every entity refresh and silently
+    // wipe the reader's mute ("tap card cuối tự bật tiếng", 2026-08-09
+    // [MuteDbg]).
+    if (autoplay) {
+      _setPausedByUser(false, 'enterAudioMode');
+      _listenEngaged = true;
+    }
+    // A bookmarked position is a CONTINUATION, not a start — whoever presses
+    // play later on this session must not get the entry chime mid-keypoint.
+    if (startAt != null) _entryCuePlayed = true;
     // Âm báo hiệu vào bài — "dạo đầu mỗi keypoint". Chỉ ở cú vào ĐẦU TIÊN
     // (resume giữa chừng qua startAt không phải một sự bắt đầu), qua player
     // phụ nên không đụng playlist/cue map của phiên chính. Fire-and-forget:
@@ -644,7 +663,17 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// pinned mute; a system autoplay while pinned seeks silently (the play
   /// inside is refused).
   Future<void> playCue(int cueIndex, {bool autoplay = false, Duration? offset, bool byUser = false}) async {
-    if (autoplay && byUser) _setPausedByUser(false, 'playCue(byUser: true)');
+    if (autoplay && byUser) {
+      _setPausedByUser(false, 'playCue(byUser: true)');
+      _listenEngaged = true;
+    }
+    // Downgrade an un-engaged system autoplay to a silent re-point HERE, not
+    // just in [play]: the no-session and mid-load branches below stash the
+    // intent in `_playWhenReady`, which `_initializePlayer` honours without
+    // ever consulting [play]'s refusals — the exact leak that turned a silent
+    // entry's forward swipe into narration ("vào phát là không bật rồi nhưng
+    // lướt lại bật", 2026-08-20).
+    final wantsSound = autoplay && _listenEngaged;
     final timeline = _timeline;
     final cue = timeline?.cueAt(cueIndex);
     if (timeline == null || cue == null || cue.durMs <= 0) {
@@ -662,7 +691,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       // RAISE the intent, never lower it — same lesson as [loadCard]'s
       // re-point branch: entry calls arrive with autoplay:false while
       // enterAudioMode's pending `true` is what the load must honour.
-      _playWhenReady = _playWhenReady || autoplay;
+      _playWhenReady = _playWhenReady || wantsSound;
       await _initializePlayer(startAt: target);
       return;
     }
@@ -673,7 +702,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     // alone; the deck re-points narration on every card change anyway, and an
     // entry load already targets the entry cue.
     if (!state.isReady) {
-      _playWhenReady = _playWhenReady || autoplay;
+      _playWhenReady = _playWhenReady || wantsSound;
       return;
     }
     try {
@@ -682,7 +711,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
       // own doing, never a boundary crossing to clamp.
       _previousTickCue = cueIndex;
       emit(state.copyWith(activeCueIndex: cueIndex, hasCompletedPlayback: false));
-      if (autoplay) await play();
+      if (wantsSound) await play();
     } catch (error, stackTrace) {
       _handleFailure(error, stackTrace, errorType: 'LessonAudioCubit.playCue');
     }
@@ -700,6 +729,11 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
     if (cardIndex < 0 || cardIndex >= _cardClips.length) return false;
     final url = _cardClips[cardIndex];
     if (url.isEmpty) return false;
+
+    // Same downgrade as [playCue]: every caller here is the deck re-pointing,
+    // never the reader's own control, so an un-engaged session re-points in
+    // silence ("user sẽ phải chủ động tự bật", 2026-08-19).
+    final wantsSound = autoplay && _listenEngaged;
 
     // Every call that arrives here is the DECK pointing narration at a page, so
     // the two are back in step — only [playRestOfKeypoint] breaks them apart.
@@ -730,18 +764,18 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
         // then the lesson's learning items land mid-load and
         // `KeypointCardCubit` re-points at card 0 with `autoplay: false`,
         // cancelling the very intent it was echoing.
-        _playWhenReady = _playWhenReady || autoplay;
+        _playWhenReady = _playWhenReady || wantsSound;
         return true;
       }
       // Same clip already loaded (e.g. swiping away and back): restart it so the
       // card is read from its beginning rather than from wherever it stopped —
       // unless a position was handed in, which is a resume, not a re-read.
       await seekTo(startAt ?? Duration.zero);
-      if (autoplay) await play();
+      if (wantsSound) await play();
       return true;
     }
 
-    _playWhenReady = autoplay;
+    _playWhenReady = wantsSound;
     await _resetHandlerForNewKeypoint();
     emit(
       state.copyWith(
@@ -791,6 +825,21 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   bool _pausedByUser = false;
   bool get pausedByUser => _pausedByUser;
 
+  /// True once the reader has turned narration ON themselves in this lesson
+  /// session (header headphone, recap play-through, retry, OS transport play).
+  ///
+  /// Entering a keypoint no longer starts the voice by itself ("user sẽ phải
+  /// chủ động tự bật", 2026-08-19) — this flag is the ON side of that switch,
+  /// [pausedByUser] the OFF side. `LessonPage._syncAudioKeypoint` consults the
+  /// pair to decide whether narration FOLLOWS onto the next keypoint: it does
+  /// only while the reader has asked for sound and not since paused.
+  ///
+  /// Sticky by design and never reset: the cubit is created fresh per lesson
+  /// route entry (`BlocProvider(create:)`), so every entry starts silent by
+  /// construction and the flag cannot leak across lessons.
+  bool _listenEngaged = false;
+  bool get listenEngaged => _listenEngaged;
+
   /// Every transition of the pin goes through here so the trail shows WHO
   /// lifted a mute ("tap card cuối tự bật tiếng" was a wiped flag, 2026-08-09
   /// — the wiper was invisible without this).
@@ -807,8 +856,19 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
   /// silence keeps it until they press play themselves, no matter which
   /// heuristic upstream decided sound was wanted ("fix triệt để", 2026-08-09).
   Future<void> play({bool byUser = false}) async {
-    if (byUser) _setPausedByUser(false, 'play(byUser: true)');
+    if (byUser) {
+      _setPausedByUser(false, 'play(byUser: true)');
+      _listenEngaged = true;
+    }
     if (_pausedByUser) return;
+    // The mirror of the pinned-mute refusal: sound may not START un-asked any
+    // more than it may return over a pin ("user sẽ phải chủ động tự bật",
+    // 2026-08-19). Every genuine ask engages before reaching here; a system
+    // caller on a never-engaged session (forward-swipe carry, gate resume,
+    // load-completion intent) is refused. Must sit ABOVE the no-session branch:
+    // falling through there would enterAudioMode(autoplay: true) and engage on
+    // the system's behalf.
+    if (!_listenEngaged) return;
     if (!state.hasStartedSession) {
       await enterAudioMode();
       return;

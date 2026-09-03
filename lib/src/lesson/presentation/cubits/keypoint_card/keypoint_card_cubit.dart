@@ -397,16 +397,17 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
       // do NOT seek — that restarts the sentence mid-word.
       if (cueIndex == _audioCubit.state.activeCueIndex && startAt == null) return;
       final audioState = _audioCubit.state;
-      // Moving FORWARD onto a new card is a listening intent in itself ("mở
-      // loa lên luôn", user call 2026-08-04): the reader just answered the
-      // question card or swiped on, and the next card must start talking even
-      // when the carry flags (playing / just-completed) got consumed along
-      // the way. Requires a started session so a silent read-mode entry
-      // never starts speaking by itself; backward swipes keep the old carry
-      // rule.
-      // A reader who pressed pause themselves keeps their silence as they move
-      // through cards — forward movement is only a listening intent while the
-      // session hasn't been explicitly silenced.
+      // Moving FORWARD keeps an ENGAGED listen talking ("mở loa lên luôn",
+      // user call 2026-08-04): the reader just answered the question card or
+      // swiped on, and the next card must keep reading even when the carry
+      // flags (playing / just-completed) got consumed along the way. It is no
+      // longer an intent in ITSELF: since "user sẽ phải chủ động tự bật"
+      // (2026-08-19) the autoplay handed down is downgraded to a silent
+      // re-point inside [LessonAudioCubit.playCue] unless the reader engaged
+      // narration themselves — `hasStartedSession` alone proved nothing once
+      // silent entries began loading the player without playing it ("vào phát
+      // là không bật rồi nhưng lướt lại bật", 2026-08-20). A reader who
+      // pressed pause keeps their silence as they move through cards.
       final movingForward = audioState.hasStartedSession && index > previousNarratedIndex && !_audioCubit.pausedByUser;
       // `isPlaying` is stale while the recap park's pause is in flight — the
       // reader just muted on the recap card; a swipe back landing in that
@@ -910,9 +911,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // existed): whatever it was reading no longer matches the screen. The
     // condition is deliberately not folded into the seek below — an early
     // return there must never skip the mute.
-    final cueIndex = _takeawayLearningItemId == null
-        ? null
-        : _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
+    final cueIndex = _takeawayLearningItemId == null ? null : _audioCubit.cueForCard(learningItemId: _takeawayLearningItemId!, documentIndex: 0);
     LogDev.warning(
       '[RecapGate] park idx=$index cue=$cueIndex takeaway=$_takeawayLearningItemId '
       'session=${_audioCubit.state.hasStartedSession} playing=${_audioCubit.state.isPlaying} '
@@ -981,7 +980,11 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // asked for outranks the gate, exactly as it does for forward-swipe
     // autoplay ("mở loa lên luôn"), and with no session at all the playCue
     // below would initialise the player and start talking (lock-screen controls
-    // and all) for someone who never turned narration on.
+    // and all) for someone who never turned narration on. (For a never-ENGAGED
+    // reader the playCue is additionally downgraded to a silent seek inside
+    // the audio cubit — the flip tap alone is not a play control since
+    // 2026-08-19; the header play button is, via
+    // [resumeRecapFromPlayControl]'s byUser.)
     if (_audioCubit.pausedByUser || !_audioCubit.state.hasStartedSession) return;
     _recapTapResumed = true;
     unawaited(_audioCubit.playCue(_recapGateCueIndex, autoplay: true));
@@ -1340,9 +1343,7 @@ class KeypointCardCubit extends Cubit<KeypointCardState> with WidgetsBindingObse
     // onto the wall is the reader's own swipe, always.
     // (A reader ALREADY standing on the wall stays there — the clamp is only for
     // the follow that would move them onto it, not off it.)
-    final edgeFollowTarget = lockedCardShown && previousViewedIndex < lockedCardIndex
-        ? math.min(nextFurthestIndex, lockedCardIndex - 1)
-        : nextFurthestIndex;
+    final edgeFollowTarget = lockedCardShown && previousViewedIndex < lockedCardIndex ? math.min(nextFurthestIndex, lockedCardIndex - 1) : nextFurthestIndex;
     final restoredViewedIndex = completionJustTriggered && !_edgeFollowSuspended
         ? nextFurthestIndex
         : _entryPinActive

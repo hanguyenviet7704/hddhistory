@@ -53,16 +53,13 @@ Widget _buildLessonFlowPage(Widget child) {
 }
 
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
-  /// Repurposed from "which mode tab (Read/Listen) to open into" (the old
-  /// dual-mode split) to "should the FIRST keypoint's narration autoplay the
-  /// instant this page mounts" — the unified screen has no mode tabs left.
-  /// Kept as the same `'read'`/`'audio'` wire values so existing/legacy deep
-  /// links keep resolving without crashing.
-  ///
-  /// Defaults to `'audio'`: opening a keypoint starts reading it out. It used to
-  /// default to `'read'` and every call site had to remember to opt in, which is
-  /// how entries like the lesson list ended up silent. Opting OUT is now the
-  /// thing a caller has to say explicitly, and only a link does.
+  /// INERT since 2026-08-19 — kept only so existing/legacy deep links carrying
+  /// `initial-mode` keep resolving without crashing. Its two prior lives:
+  /// "which mode tab (Read/Listen) to open into" (the old dual-mode split),
+  /// then "should the FIRST keypoint's narration autoplay on mount". Narration
+  /// no longer autoplays for anyone ("user sẽ phải chủ động tự bật") — the
+  /// reader starts it from the keypoint header, so nothing reads this value
+  /// anymore.
   final String initialMode;
 
   const LessonRoute({
@@ -74,9 +71,7 @@ class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => _buildLessonFlowPage(
-    LessonPage(
-      autoplayOnEntry: LessonEntryMode.fromRouteValue(initialMode).isAudio,
-    ),
+    const LessonPage(),
   );
 }
 

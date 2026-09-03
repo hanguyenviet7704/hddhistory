@@ -68,7 +68,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     }
   }
 
-
   /// Whether the course-level badge just became fully unlocked (last
   /// keypoint of its last lesson). Mirrors
   /// `_BadgeProgressPageState._isProgressComplete`. This page always renders
@@ -173,9 +172,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   /// server has not finished (text or narration) — as opposed to the lesson
   /// being genuinely read to the end. Decides the "đang tạo" popup.
   bool _nextKeypointStillGenerating(CourseLessonState lessonState) {
-    final userLesson = AppDI.injector
-        .get<UserLessonCubit>()
-        .lessonForKeypoint(lessonState.resolvedCurrentKeypoint.id);
+    final userLesson = AppDI.injector.get<UserLessonCubit>().lessonForKeypoint(lessonState.resolvedCurrentKeypoint.id);
     if (userLesson == null) return false;
 
     final keypoints = lessonState.selectedLesson.keypoints;
@@ -186,8 +183,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
 
     final nextIndex = currentIndex + 1;
 
-    return nextIndex < userLesson.plannedKeypointCount &&
-        !userLesson.keypointReady(nextIndex);
+    return nextIndex < userLesson.plannedKeypointCount && !userLesson.keypointReady(nextIndex);
   }
 
   /// Opens the next keypoint of THIS lesson. Returns false when the just
@@ -279,116 +275,125 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
         key: const Key('keypoint-complete-page'),
         backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundBrandSoft),
         body: ThemedBackground(
-          child: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // The design's X leaves for the roadmap — an EXIT, unlike
-                  // Skip, which continues into the next keypoint. It still
-                  // runs the same completion flow rather than a second,
-                  // quieter exit path.
-                  // Same chrome as the keypoint header's buttons: the design's
-                  // 6%-dark circle vanishes over a ThemedBackground photo.
-                  Semantics(
-                    button: true,
-                    label: context.l10n.common.close,
-                    child: GestureDetector(
-                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: false),
-                      behavior: HitTestBehavior.opaque,
-                      child: KeypointHeaderButtonChrome(
-                        child: Icon(Icons.close, size: 18.w, color: KeypointHeaderChrome.icon),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const _LessonCompleteIllustration(),
-                          24.verticalSpace,
-                          // Design: `muRise .45s ease .3s both` — the .3s delay is the
-                          // leading dead zone of the Interval.
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0, end: 1),
-                            duration: const Duration(milliseconds: 750),
-                            curve: const Interval(0.4, 1, curve: Curves.easeOut),
-                            builder: (context, t, child) => Opacity(
-                              opacity: t,
-                              child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
-                            ),
-                            child: AppText(
-                              context.l10n.lesson.lessonCompleteTitle,
-                              textAlign: TextAlign.center,
-                              // Design 34/800, -0.01em.
-                              style: TextStyle(
-                                fontFamily: AppFont.mulish,
-                                fontSize: 34.sp,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
-                                letterSpacing: 34 * -0.01,
-                                color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-                              ),
-                            ),
+          child: Stack(
+            children: [
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // The design's X leaves for the roadmap — an EXIT, unlike
+                      // Skip, which continues into the next keypoint. It still
+                      // runs the same completion flow rather than a second,
+                      // quieter exit path.
+                      // Same chrome as the keypoint header's buttons: the design's
+                      // 6%-dark circle vanishes over a ThemedBackground photo.
+                      Semantics(
+                        button: true,
+                        label: context.l10n.common.close,
+                        child: GestureDetector(
+                          onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: false),
+                          behavior: HitTestBehavior.opaque,
+                          child: KeypointHeaderButtonChrome(
+                            child: Icon(Icons.close, size: 18.w, color: KeypointHeaderChrome.icon),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  // Practice now → the hub. Deliberately NOT gated on the keypoint
-                  // having questions: the hub also carries the coming-soon modes,
-                  // and Quiz itself guards an empty deck.
-                  //
-                  // Absent for a GENERATED lesson: the hub's practice is built
-                  // from authored exercises, and an imported lesson has none, so
-                  // the button would open a mode with nothing in it. Continuing
-                  // becomes the primary action instead of a text link, because
-                  // with the practice gone it is the only one.
-                  if (!lessonState.selectedLesson.isImported) ...[
-                    Semantics(
-                      button: true,
-                      child: Material(
-                        color: AppCustomColor.brandPrimary,
-                        borderRadius: BorderRadius.circular(999.r),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(999.r),
-                          onTap: () => _openPractice(context, lessonState),
-                          child: Container(
-                            height: 56.h,
-                            alignment: Alignment.center,
-                            child: AppText(
-                              context.l10n.lesson.lessonCompletePracticeNow,
-                              style: AppStyle.text16.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppCustomColor.textWhite,
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const _LessonCompleteIllustration(),
+                              24.verticalSpace,
+                              // Design: `muRise .45s ease .3s both` — the .3s delay is the
+                              // leading dead zone of the Interval.
+                              TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0, end: 1),
+                                duration: const Duration(milliseconds: 750),
+                                curve: const Interval(0.4, 1, curve: Curves.easeOut),
+                                builder: (context, t, child) => Opacity(
+                                  opacity: t,
+                                  child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
+                                ),
+                                child: AppText(
+                                  context.l10n.lesson.lessonCompleteTitle,
+                                  textAlign: TextAlign.center,
+                                  // Design 34/800, -0.01em.
+                                  style: TextStyle(
+                                    fontFamily: AppFont.mulish,
+                                    fontSize: 34.sp,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.2,
+                                    letterSpacing: 34 * -0.01,
+                                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Practice now → the hub. Deliberately NOT gated on the keypoint
+                      // having questions: the hub also carries the coming-soon modes,
+                      // and Quiz itself guards an empty deck.
+                      //
+                      // Absent for a GENERATED lesson: the hub's practice is built
+                      // from authored exercises, and an imported lesson has none, so
+                      // the button would open a mode with nothing in it. Continuing
+                      // becomes the primary action instead of a text link, because
+                      // with the practice gone it is the only one.
+                      if (!lessonState.selectedLesson.isImported) ...[
+                        Semantics(
+                          button: true,
+                          child: Material(
+                            color: AppCustomColor.brandPrimary,
+                            borderRadius: BorderRadius.circular(999.r),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(999.r),
+                              onTap: () => _openPractice(context, lessonState),
+                              child: Container(
+                                height: 56.h,
+                                alignment: Alignment.center,
+                                child: AppText(
+                                  context.l10n.lesson.lessonCompletePracticeNow,
+                                  style: AppStyle.text16.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppCustomColor.textWhite,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
+                        10.verticalSpace,
+                      ],
+                      // Skip kicks off async work (streak gate + habit-suggestion
+                      // fetch) before navigating — show a spinner so the button isn't
+                      // a dead tap for that beat.
+                      Semantics(
+                        button: true,
+                        child: _ContinueCta(
+                          // Filled and full-width when it stands alone; the quiet
+                          // text link only makes sense as the second choice under
+                          // "Practice now". And "Skip to next lesson" is the wrong
+                          // words with nothing to skip.
+                          isPrimary: lessonState.selectedLesson.isImported,
+                          isBusy: _isHandlingPrimaryCta,
+                          onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
+                        ),
                       ),
-                    ),
-                    10.verticalSpace,
-                  ],
-                  // Skip kicks off async work (streak gate + habit-suggestion
-                  // fetch) before navigating — show a spinner so the button isn't
-                  // a dead tap for that beat.
-                  Semantics(
-                    button: true,
-                    child: _ContinueCta(
-                      // Filled and full-width when it stands alone; the quiet
-                      // text link only makes sense as the second choice under
-                      // "Practice now". And "Skip to next lesson" is the wrong
-                      // words with nothing to skip.
-                      isPrimary: lessonState.selectedLesson.isImported,
-                      isBusy: _isHandlingPrimaryCta,
-                      onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              // ① The Coach, only when a habit was just adopted here — the
+              // server's own guards decide that and simply answer `visible:
+              // false` otherwise, so there is no condition to keep in step on
+              // this side. One situation, no conversation opened.
+              CoachLessonBubble(lessonId: lessonState.selectedLesson.id),
+            ],
           ),
         ),
       ),
@@ -427,9 +432,7 @@ class _ContinueCta extends StatelessWidget {
             ),
           )
         : AppText(
-            isPrimary
-                ? context.l10n.common.kContinue
-                : context.l10n.lesson.lessonCompleteSkip,
+            isPrimary ? context.l10n.common.kContinue : context.l10n.lesson.lessonCompleteSkip,
             style: isPrimary
                 ? AppStyle.text16.copyWith(
                     fontWeight: FontWeight.w600,
@@ -483,7 +486,10 @@ class _LessonCompleteIllustration extends StatefulWidget {
 class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration> with TickerProviderStateMixin {
   /// One clock for the staged entry; element delays become [Interval]s on it.
   static const _introMs = 1450;
-  late final AnimationController _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: _introMs))..forward();
+  late final AnimationController _intro = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: _introMs),
+  )..forward();
 
   /// `muFloat 4s ease-in-out infinite` — a gentle bob of the whole block.
   late final AnimationController _float = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat(reverse: true);
@@ -495,7 +501,10 @@ class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration
 
   /// Design delay/duration in ms → an eased slice of the intro clock.
   Animation<double> _stage(int delayMs, int durationMs, [Curve curve = Curves.easeOut]) {
-    return CurvedAnimation(parent: _intro, curve: Interval(delayMs / _introMs, (delayMs + durationMs) / _introMs, curve: curve));
+    return CurvedAnimation(
+      parent: _intro,
+      curve: Interval(delayMs / _introMs, (delayMs + durationMs) / _introMs, curve: curve),
+    );
   }
 
   @override
@@ -511,7 +520,10 @@ class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration
   Widget _rise(Animation<double> t, Widget child) {
     return AnimatedBuilder(
       animation: t,
-      builder: (context, child) => Opacity(opacity: t.value, child: Transform.translate(offset: Offset(0, 12 * (1 - t.value)), child: child)),
+      builder: (context, child) => Opacity(
+        opacity: t.value,
+        child: Transform.translate(offset: Offset(0, 12 * (1 - t.value)), child: child),
+      ),
       child: child,
     );
   }
@@ -521,7 +533,10 @@ class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration
   Widget _slideRight(Animation<double> t, Widget child) {
     return AnimatedBuilder(
       animation: t,
-      builder: (context, child) => Opacity(opacity: t.value, child: Transform.scale(scaleX: t.value, alignment: Alignment.centerLeft, child: child)),
+      builder: (context, child) => Opacity(
+        opacity: t.value,
+        child: Transform.scale(scaleX: t.value, alignment: Alignment.centerLeft, child: child),
+      ),
       child: child,
     );
   }
@@ -530,7 +545,10 @@ class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration
   Widget _pop(Animation<double> t, Widget child) {
     return AnimatedBuilder(
       animation: t,
-      builder: (context, child) => Opacity(opacity: t.value.clamp(0, 1), child: Transform.scale(scale: t.value, child: child)),
+      builder: (context, child) => Opacity(
+        opacity: t.value.clamp(0, 1),
+        child: Transform.scale(scale: t.value, child: child),
+      ),
       child: child,
     );
   }
@@ -540,13 +558,20 @@ class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration
     final t = CurvedAnimation(parent: controller, curve: Curves.easeInOut);
     return AnimatedBuilder(
       animation: t,
-      builder: (context, child) => Opacity(opacity: 0.25 + 0.75 * t.value, child: Transform.scale(scale: 0.7 + 0.3 * t.value, child: child)),
+      builder: (context, child) => Opacity(
+        opacity: 0.25 + 0.75 * t.value,
+        child: Transform.scale(scale: 0.7 + 0.3 * t.value, child: child),
+      ),
       child: child,
     );
   }
 
   Widget _roundedRect({required double width, required double height, required double radius, required Color color}) {
-    return Container(width: width, height: height, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(radius)));
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(radius)),
+    );
   }
 
   @override
@@ -595,19 +620,33 @@ class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration
                   top: 41.28 - 18.82,
                   child: _pop(
                     _stage(740, 500, Curves.easeOutBack),
-                    Container(width: 18.82 * 2, height: 18.82 * 2, decoration: const BoxDecoration(color: Color(0xFF4B44CA), shape: BoxShape.circle)),
+                    Container(
+                      width: 18.82 * 2,
+                      height: 18.82 * 2,
+                      decoration: const BoxDecoration(color: Color(0xFF4B44CA), shape: BoxShape.circle),
+                    ),
                   ),
                 ),
                 Positioned(
                   left: 0,
                   top: 0,
-                  child: CustomPaint(size: const Size(267, 122), painter: _DrawnCheckPainter(progress: _stage(1000, 450))),
+                  child: CustomPaint(
+                    size: const Size(267, 122),
+                    painter: _DrawnCheckPainter(progress: _stage(1000, 450)),
+                  ),
                 ),
                 // Sparkles.
                 Positioned(
                   left: 4.67 - 2.44,
                   top: 20.94 - 2.44,
-                  child: _twinkle(_twinkleA, Container(width: 4.89, height: 4.89, decoration: const BoxDecoration(color: Color(0xFFC7C5FA), shape: BoxShape.circle))),
+                  child: _twinkle(
+                    _twinkleA,
+                    Container(
+                      width: 4.89,
+                      height: 4.89,
+                      decoration: const BoxDecoration(color: Color(0xFFC7C5FA), shape: BoxShape.circle),
+                    ),
+                  ),
                 ),
                 Positioned(
                   left: 4,

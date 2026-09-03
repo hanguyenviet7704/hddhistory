@@ -20,10 +20,9 @@ LessonEntity? findLessonByKeypointId(RoadmapEntity roadmap, String keypointId) {
 /// already in flight), and the roadmap's own selection is updated after the push
 /// (it only feeds back-navigation and the roadmap's highlight).
 ///
-/// Narration always starts: a keypoint is a page being read out, and a keypoint
-/// with nothing to read is a no-op anyway (`LessonPage._syncAudioKeypoint`
-/// returns early on `!keypoint.hasUsableAudio`), so there is nothing here for a
-/// caller to decide.
+/// Narration never starts here: every keypoint opens silent and the reader
+/// turns the voice on from the header themselves ("user sẽ phải chủ động tự
+/// bật", 2026-08-19) — so there is nothing here for a caller to decide.
 void startKeypointLesson({
   required LessonCubit lessonCubit,
   required CourseLessonCubit courseLessonCubit,

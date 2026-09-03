@@ -18,11 +18,24 @@ class _TestLocaleCubit extends LocaleCubit {
 /// `just_audio` player, which cannot exist in a unit test — any playback call
 /// a test reaches throws [UnimplementedError] via [Fake], loudly instead of
 /// silently.
-class _FakeLessonAudioHandler extends Fake implements LessonAudioHandler {
+///
+/// Public (not `_Fake…`) so tests can read [entryCues] back off the injector.
+class FakeLessonAudioHandler extends Fake implements LessonAudioHandler {
   @override
   void Function()? onOsPause;
   @override
   void Function()? onOsPlay;
+
+  /// Entry-chime taps recorded instead of thrown: the cue is fire-and-forget
+  /// chrome around a play intent, and tests asserting the intent flags
+  /// ([LessonAudioCubit.listenEngaged], the chime suppression on a bookmarked
+  /// position-load) must be able to cross it without hosting a player.
+  int entryCues = 0;
+
+  @override
+  Future<void> playEntryCue() async {
+    entryCues++;
+  }
 }
 
 class _NoopAppEventService implements IAppEventService {
@@ -72,7 +85,7 @@ Future<void> setupLocaleCubitForTests({AppLocale locale = AppLocale.en}) async {
   localeCubit.setLocale(locale);
   AppDI.injector.registerSingleton<LocaleCubit>(localeCubit);
 
-  AppDI.injector.registerLazySingleton<LessonAudioHandler>(_FakeLessonAudioHandler.new);
+  AppDI.injector.registerLazySingleton<LessonAudioHandler>(FakeLessonAudioHandler.new);
 
   final noopAppEventService = _NoopAppEventService();
   if (!AppDI.injector.isRegistered<IAppEventService>(instanceName: DIKey.facebookAppEventsService)) {

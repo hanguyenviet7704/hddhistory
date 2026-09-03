@@ -1,20 +1,7 @@
 part of '../../lesson.dart';
 
 class LessonPage extends StatefulWidget {
-  const LessonPage({
-    super.key,
-    required this.autoplayOnEntry,
-  });
-
-  /// Whether the FIRST keypoint synced after this page mounts should
-  /// autoplay its narration immediately. Every keypoint synced AFTER the
-  /// first one within the same session always autoplays regardless (the
-  /// unified screen's standing behavior — narration follows the reader by
-  /// default) — this only covers the initial "should the very first keypoint
-  /// just start talking at me?" decision, sourced from the `initial-mode`
-  /// route query (see `routes_shell_course_lesson_data.dart` /
-  /// `LessonEntryMode` — repurposed from "which mode tab to open" to this).
-  final bool autoplayOnEntry;
+  const LessonPage({super.key});
 
   @override
   State<LessonPage> createState() => _LessonPageState();
@@ -262,13 +249,14 @@ class _LessonPageState extends State<LessonPage> {
     // sound, so the very next flip tap talked ("chủ động tắt thì tap card
     // cuối tự bật tiếng", 2026-08-09 [MuteDbg]).
     //
-    // A re-sync with NO session running is the opposite case: the entry's own
-    // autoplay never materialized (the deck's cue seek can interrupt the first
-    // load, which resets the session), and this refresh is the retry that used
-    // to rescue it — a hard id-gate here left a directly-opened keypoint
-    // silent ("bấm trực tiếp vào 1 keypoint thì không tự động bật audio",
-    // 2026-08-09). configure()/setSpeed above always run: a refresh may carry
-    // a new dub.
+    // A re-sync with NO session running is the opposite case: a CARRIED
+    // listen's play never materialized (the deck's cue seek can interrupt the
+    // first load, which resets the session), and this refresh is the retry
+    // that rescues it — a hard id-gate here left such a keypoint silent ("bấm
+    // trực tiếp vào 1 keypoint thì không tự động bật audio", 2026-08-09; the
+    // entry autoplay that bug report describes is gone since 2026-08-19, but
+    // the interrupted-load window applies to carried listens all the same).
+    // configure()/setSpeed above always run: a refresh may carry a new dub.
     final audioState = _lessonAudioCubit.state;
     if (keypoint.id == _audioSyncedKeypointId && (audioState.hasStartedSession || _lessonAudioCubit.pausedByUser)) {
       return;
@@ -277,18 +265,23 @@ class _LessonPageState extends State<LessonPage> {
 
     final isFirstKeypointSynced = !_hasSyncedFirstKeypoint;
     _hasSyncedFirstKeypoint = true;
-    // A live "đang nghe dở" bookmark opens the merged file at that exact
-    // second (deck follows in [_applyListenResume] once items land) and is a
-    // listening intent in itself, so it also wins the autoplay decision.
+    // Narration never starts by itself anymore ("user sẽ phải chủ động tự
+    // bật", 2026-08-19): every keypoint entry is silent until the reader taps
+    // the header play control. What SURVIVES is following: once they did turn
+    // the voice on ([LessonAudioCubit.listenEngaged]) it keeps reading onto
+    // each next keypoint like before, and their own pause ([pausedByUser])
+    // switches it back off — across keypoints too, now that no standing
+    // autoplay lifts the pin at the boundary.
+    final carryListen = !isFirstKeypointSynced && _lessonAudioCubit.listenEngaged && !_lessonAudioCubit.pausedByUser;
+    // A live "đang nghe dở" bookmark still positions the player at that exact
+    // second (deck follows in [_applyListenResume] once items land) so a play
+    // tap continues instead of restarting — but it is no longer a play intent
+    // in itself: the sound waits for the reader unless a carried listen is
+    // already running.
     final resume = ListenResumeCubit.instanceOrNull?.recordFor(keypoint.id);
-    // Every keypoint AFTER the first one always autoplays — narration
-    // following the reader is this screen's standing behavior. The FIRST
-    // keypoint's autoplay is gated on the route's entry intent so internal
-    // navigations that don't represent "starting a fresh keypoint" (e.g.
-    // `LessonCubit.reviewDone`'s bare re-entry) don't surprise the user with
-    // sound.
-    if (!isFirstKeypointSynced || widget.autoplayOnEntry || resume != null) {
+    if (carryListen || resume != null) {
       await _lessonAudioCubit.enterAudioMode(
+        autoplay: carryListen,
         startAt: resume == null ? null : Duration(milliseconds: resume.positionMs),
       );
     }

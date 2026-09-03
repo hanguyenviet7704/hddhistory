@@ -382,10 +382,10 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// Recomputes the wall and hands it to the deck, which enforces it across
   /// every path that moves the view — not just the reader's swipe.
   ///
-  /// Must run before the voice can turn the first card: narration autoplays on
-  /// entry (`LessonRoute.initialMode` defaults to `'audio'`), so a cap installed
-  /// only on the first swipe arrives after the deck has already been walked past
-  /// the wall for the reader.
+  /// Must run before the voice can turn the first card: the reader can start
+  /// narration from the header at any moment (entry autoplay is gone, but the
+  /// play tap can land immediately), so a cap installed only on the first swipe
+  /// would arrive after the deck has already been walked past the wall.
   int? _syncPaywallCap() {
     final cap = _inLessonPaywallCap();
     if (mounted) {
@@ -397,9 +397,9 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// Whether the wall should render as the "free lesson done for today" card
   /// (design `3 · Learning` → Keypoint — locked card) instead of a snap-back.
   ///
-  /// Only for a SPENT quota: with an unspent ticket the crossing claims and
-  /// passes (see [_blockedByInLessonPaywall]), and the legacy position rule
-  /// keeps its paywall-on-swipe. `quotaSpent` is also what a lost optimistic
+  /// Only for a USED-UP day: while the day has room the keypoint arrives
+  /// uncapped and there is no wall to render, and the legacy position rule keeps
+  /// its paywall-on-swipe. `quotaSpent` is also what a lost optimistic
   /// race resolves to, so the wall the reader is pulled back behind is this
   /// same card.
   bool get _quotaLockedCardWanted => _serverQuotaApplies && _accessReason == KeypointAccessReason.quotaSpent;
@@ -418,9 +418,9 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
   /// [_loadKeypointAccess] was told, updated by each claim.
   ///
   /// `ticketAvailable` is the one that changes behaviour: it is the server saying
-  /// "a claim here would succeed", which is what lets the unlocking swipe go
-  /// through as ONE ordinary swipe instead of block → wait on the network → jump
-  /// ("cú vuốt không hoàn hảo", 2026-08-12).
+  /// the day still has room, which is what lets the unlocking swipe go through as
+  /// ONE ordinary swipe instead of block → wait on the network → jump ("cú vuốt
+  /// không hoàn hảo", 2026-08-12).
   KeypointAccessReason _accessReason = KeypointAccessReason.unknown;
 
   /// Guards against two claims in flight from one impatient reader.
@@ -514,12 +514,14 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     _syncPaywallCap();
   }
 
-  /// Spends today's free ticket on this keypoint, then lets the reader through.
+  /// Asks the server whether the reader may move past the lock, then lets them
+  /// through.
   ///
-  /// Called when they try to move past the lock — not on entry — so opening a
-  /// keypoint and leaving costs nothing (product call, 2026-08-12). Granted lifts
-  /// the cap and completes the move they asked for, so it takes ONE swipe rather
-  /// than making them swipe again into a wall that has just been removed.
+  /// Spends nothing: since 2026-08-21 the day is charged by FINISHING a keypoint,
+  /// which the progress write records, so opening one and leaving costs nothing
+  /// and neither does reading it. Granted lifts the cap and completes the move
+  /// they asked for, so it takes ONE swipe rather than making them swipe again
+  /// into a wall that has just been removed.
   Future<void> _claimThenAdvance(int target) async {
     if (_claimInFlight) return;
     final keypointId = _currentKeypointId;
@@ -560,8 +562,12 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     }
   }
 
-  /// Settles the ticket for a swipe that was already let through on the strength
-  /// of `ticket_available`.
+  /// Confirms a swipe that was already let through on the strength of
+  /// `ticket_available`.
+  ///
+  /// Reached only by a stale cap now — a reader with room is sent `cardCap: null`
+  /// and has no wall to cross — but kept: the deny race below is the one thing
+  /// that still has to be handled if a cap outlives the day it was read in.
   ///
   /// The gesture is long finished when this answers, so the happy path changes
   /// nothing visible. Only a lost race — another device spent the ticket between
@@ -615,12 +621,13 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
     final cap = _syncPaywallCap();
     if (cap == null || target <= cap) return false;
 
-    // Under the daily quota the wall is not final until the ticket has been asked
-    // for: spending it is exactly what "moving past the lock" means.
+    // Under the daily quota the wall is not final until the server has been asked:
+    // the cap in hand may predate a keypoint the reader has since finished (or
+    // un-finished on another device).
     if (_serverQuotaApplies) {
-      // The server already said a claim here would succeed (`ticket_available`,
+      // The server already said this keypoint reads in full (`ticket_available`,
       // read on entry) — so trust it and let the gesture COMPLETE as an ordinary
-      // swipe, settling the ticket behind it. Blocking first and jumping after
+      // swipe, confirming behind it. Blocking first and jumping after
       // the network answered was the visible stutter on the unlocking swipe
       // ("cú vuốt không hoàn hảo mà lại bị nhảy", 2026-08-12); the deny race
       // (another device spent the ticket since we read) is rare enough to pay
@@ -770,9 +777,7 @@ class _KeypointCardShellState extends State<KeypointCardShell> {
       // toàn thì mọi cú vuốt lên đều chuyển thẻ, và panel giải thích dài sẽ
       // không còn cách nào cuộn đọc. Nới mép giải quyết đúng phần bực mình mà
       // vẫn giữ được thao tác đọc.
-      final atBottomEnough = liveDescriptor.isQuiz && state.isLiveCardAnswered
-          ? _contentExtentAfter <= _answeredQuizEdgeSlack
-          : _contentAtBottom;
+      final atBottomEnough = liveDescriptor.isQuiz && state.isLiveCardAnswered ? _contentExtentAfter <= _answeredQuizEdgeSlack : _contentAtBottom;
       if (!atBottomEnough) return _DragMode.content;
       // A revealed card ahead means a real page to drag into.
       if (state.viewedCardIndex < state.furthestCardIndex) return _DragMode.page;
@@ -1213,7 +1218,14 @@ class _KeypointNarrationToggleState extends State<KeypointNarrationToggle> {
     return BlocBuilder<LessonAudioCubit, LessonAudioState>(
       builder: (context, audioState) {
         final isPlaying = audioState.isPlaying;
-        final isLoading = audioState.isLoading;
+        // The spinner is feedback on the READER's ask, not on player I/O:
+        // entry warms the player silently (so the play tap starts instantly),
+        // and spinning for that read as "the app is turning sound on by
+        // itself" right after autoplay was removed ("bỏ hiệu ứng loading khi
+        // mới vào", 2026-08-20). Un-engaged, the circle stays a plain
+        // headphone — and stays TAPPABLE: the tap lands as the play intent
+        // the in-flight load will honour.
+        final isLoading = audioState.isLoading && context.read<LessonAudioCubit>().listenEngaged;
 
         // Playing is the design's "expanded": the circle becomes a pill with the
         // speed chip and pause in it. A load in flight keeps the circle (with its
@@ -1244,6 +1256,11 @@ class _KeypointNarrationToggleState extends State<KeypointNarrationToggle> {
                 : () {
                     _hideBubble();
                     _togglePlayback(context, audioState);
+                    // Engagement lives OUTSIDE Bloc state (a session flag, not
+                    // a playback fact), so the tap itself must re-run this
+                    // builder — that is what swaps the headphone for the
+                    // spinner when the warm load is still in flight.
+                    setState(() {});
                   },
             // Same circle as the close and overflow buttons — see
             // [KeypointHeaderButtonChrome]; this used to carry its own copy at a
