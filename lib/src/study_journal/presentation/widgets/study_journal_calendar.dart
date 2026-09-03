@@ -14,12 +14,16 @@ const List<Color> _kLevelColors = [
 
 const Color _kEmptyPastColor = Color(0xFFECECF0);
 const Color _kEmptyPastInk = Color(0xFFA6A8B4);
-const Color _kFutureInk = Color(0xFFDCDAEA);
+const Color _kFutureInk = Color(0xFFC5C1DC);
 const Color _kFutureBorder = Color(0xFFF1EFF8);
 const Color _kStudyBorder = Color(0xFFECEAF7);
 const Color _kDividerColor = Color(0xFFEFEDF8);
 const Color _kNavButtonBg = Color(0xFFF1F0FA);
-const Color _kWeekdayInk = Color(0xFFB4BCC9);
+
+/// Weekday header + hint ink. Darker than the design's #B4BCC9: that value was
+/// picked against solid white, and on a translucent card over a photo it drops
+/// below readable.
+const Color _kWeekdayInk = Color(0xFF8A94A6);
 
 /// Local twins of the Profile page's own card shadow and text style — those
 /// are private to that library, and re-declaring the two values is cheaper
@@ -63,15 +67,15 @@ class _StudyJournalCalendarState extends State<StudyJournalCalendar> {
     return BlocBuilder<StudyJournalCubit, StudyJournalState>(
       bloc: _cubit,
       builder: (context, state) {
-        return Container(
+        // Translucent white over a custom study background, same as every other
+        // card on this screen — the earlier readability problem was the INK,
+        // not the panel: the month title was flipping to light ({@template} see
+        // below) and the two greys below were pitched for a white page.
+        return ThemedGlassCard(
           key: const Key('profile-study-journal'),
-          width: double.infinity,
           padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: studyThemeCardColor(context),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: _journalCardShadow,
-          ),
+          radius: 20,
+          shadow: _journalCardShadow,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -134,7 +138,10 @@ class _MonthHeader extends StatelessWidget {
           children: [
             AppText(
               context.l10n.studyJournal.monthName(month: month.month),
-              style: _journalText(16, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+              // Plain ink, NOT studyThemeOnBg: that helper flips text to light
+              // for content sitting directly ON a dark background, and this
+              // sits inside a solid white card — it came out nearly invisible.
+              style: _journalText(16, FontWeight.w700),
             ),
             4.horizontalSpace,
             AppText(
@@ -312,9 +319,7 @@ class _DayCell extends StatelessWidget {
         },
         // Today's ring sits outside the square so it never eats into the
         // shade the square is there to communicate.
-        boxShadow: isToday
-            ? [const BoxShadow(color: AppCustomColor.brandPrimary, spreadRadius: 1.5)]
-            : null,
+        boxShadow: isToday ? [const BoxShadow(color: AppCustomColor.brandPrimary, spreadRadius: 1.5)] : null,
       ),
       alignment: Alignment.center,
       child: AppText(
@@ -323,7 +328,11 @@ class _DayCell extends StatelessWidget {
       ),
     );
 
-    if (isFuture) return Semantics(label: context.l10n.studyJournal.dayFuture(day: day), child: cell);
+    if (isFuture)
+      return Semantics(
+        label: context.l10n.studyJournal.dayFuture(day: day),
+        child: cell,
+      );
 
     return Semantics(
       button: true,

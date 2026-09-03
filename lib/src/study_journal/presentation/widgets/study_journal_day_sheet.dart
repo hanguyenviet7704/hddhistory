@@ -78,7 +78,18 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
           14.verticalSpace,
           _Header(day: widget.day, detail: detail, isLoading: _isLoading, hasFailed: _hasFailed),
           18.verticalSpace,
-          Flexible(child: _body(detail)),
+          // The sheet is laid out at loading height and again at content
+          // height; without this the second layout lands as a jerk right after
+          // the sheet has finished sliding up. Animating the difference makes
+          // one motion out of two.
+          Flexible(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: _body(detail),
+            ),
+          ),
         ],
       ),
     );
@@ -86,15 +97,17 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
 
   Widget _body(StudyJournalDayDetailEntity? detail) {
     if (_isLoading) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 40.h),
+      // Sized to roughly what a short day occupies, so the settle is a nudge
+      // rather than a collapse from half the screen.
+      return SizedBox(
+        height: 150.h,
         child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
     if (_hasFailed || detail == null) {
       return _Message(text: context.l10n.studyJournal.dayError, onRetry: _retry);
     }
-    if (detail.isEmpty) return _Message(text: context.l10n.studyJournal.dayEmpty);
+    if (detail.isEmpty) return const _RestDay();
 
     return SingleChildScrollView(
       child: Column(
@@ -141,7 +154,7 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
       // tab change under an open modal leaves the sheet floating over it.
       navigator.pop();
       final resolved = entity.withSkillset;
-      AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kStudyJournalRoadmapSource);
+      AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kRoadmapSourceStudyJournal);
       AppDI.injector.get<HomeCubit>()
         ..selectSkillset(resolved.skillset)
         ..selectCourse(resolved);
@@ -169,9 +182,7 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
     }
     if (!mounted) return;
 
-    final match = habitCubit.state.userHabits
-        .where((item) => item.id == habit.userHabitId)
-        .firstOrNull;
+    final match = habitCubit.state.userHabits.where((item) => item.id == habit.userHabitId).firstOrNull;
     // A habit deleted since that day has no detail to open; the row stays inert
     // rather than opening an empty sheet about nothing.
     if (match == null) return;
@@ -324,55 +335,52 @@ class _CourseRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: course.title,
+      // No chevron by design: the whole row is the target (opaque hit test
+      // above), and `Semantics(button: true)` is what tells a screen reader so.
       child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        AppHaptic.select();
-        onTap();
-      },
-      child: Row(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12.r),
-          child: SizedBox(
-            width: 44.w,
-            height: 44.w,
-            child: course.image.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: _safeImageUrl(course.image),
-                    fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => _LessonPlaceholder(seed: index),
-                    placeholder: (_, _) => _LessonPlaceholder(seed: index),
-                  )
-                : _LessonPlaceholder(seed: index),
-          ),
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(course.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
-              3.verticalSpace,
-              AppText(
-                parts.join(' · '),
-                maxLines: 1,
-                style: _journalText(12, FontWeight.w500, color: const Color(0xFF7C8AA4)),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: SizedBox(
+                width: 44.w,
+                height: 44.w,
+                child: course.image.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: _safeImageUrl(course.image),
+                        fit: BoxFit.cover,
+                        errorWidget: (_, _, _) => _LessonPlaceholder(seed: index),
+                        placeholder: (_, _) => _LessonPlaceholder(seed: index),
+                      )
+                    : _LessonPlaceholder(seed: index),
               ),
-            ],
-          ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(course.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
+                  3.verticalSpace,
+                  AppText(
+                    parts.join(' · '),
+                    maxLines: 1,
+                    style: _journalText(12, FontWeight.w500, color: const Color(0xFF7C8AA4)),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        Icon(Icons.chevron_right_rounded, size: 20.sp, color: const Color(0xFFC2C7D2)),
-      ],
-      ),
       ),
     );
   }
 }
-
-/// `roadmapSource` this screen reports, so the roadmap's own analytics can tell
-/// a journal entry apart from Library and Home as an entry point.
-const String kStudyJournalRoadmapSource = 'study_journal';
 
 /// Keypoint artwork is authored with raw spaces in the path
 /// (`.../keypoints/What is Modern Art.png`), which Dio rejects as an invalid
@@ -419,39 +427,40 @@ class _HabitRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: habit.title,
+      // No chevron by design: the whole row is the target (opaque hit test
+      // above), and `Semantics(button: true)` is what tells a screen reader so.
       child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        AppHaptic.select();
-        onTap();
-      },
-      child: Row(
-      children: [
-        // The habit's own library artwork, with the tick tile standing in only
-        // when a habit has none — the row has to look like the habit it names,
-        // not like a generic completed thing.
-        ClipRRect(
-          borderRadius: BorderRadius.circular(11.r),
-          child: SizedBox(
-            width: 38.w,
-            height: 38.w,
-            child: habit.image.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: _safeImageUrl(habit.image),
-                    fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => const _HabitCheckTile(),
-                    placeholder: (_, _) => const _HabitCheckTile(),
-                  )
-                : const _HabitCheckTile(),
-          ),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: Row(
+          children: [
+            // The habit's own library artwork, with the tick tile standing in only
+            // when a habit has none — the row has to look like the habit it names,
+            // not like a generic completed thing.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(11.r),
+              child: SizedBox(
+                width: 38.w,
+                height: 38.w,
+                child: habit.image.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: _safeImageUrl(habit.image),
+                        fit: BoxFit.cover,
+                        errorWidget: (_, _, _) => const _HabitCheckTile(),
+                        placeholder: (_, _) => const _HabitCheckTile(),
+                      )
+                    : const _HabitCheckTile(),
+              ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: AppText(habit.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
+            ),
+          ],
         ),
-        12.horizontalSpace,
-        Expanded(
-          child: AppText(habit.title, maxLines: 2, style: _journalText(14.5, FontWeight.w700)),
-        ),
-        Icon(Icons.chevron_right_rounded, size: 20.sp, color: const Color(0xFFC2C7D2)),
-      ],
-      ),
       ),
     );
   }
@@ -470,6 +479,54 @@ class _HabitCheckTile extends StatelessWidget {
   }
 }
 
+/// A day with nothing on it — the design's "ngày nghỉ" state.
+///
+/// Deliberately warm rather than a bare "no data" line: the calendar invites
+/// tapping every square, so most visits to this state are curiosity, not a
+/// mistake, and the day off is worth saying out loud.
+class _RestDay extends StatelessWidget {
+  const _RestDay();
+
+  @override
+  Widget build(BuildContext context) {
+    final journal = context.l10n.studyJournal;
+
+    return Padding(
+      padding: EdgeInsets.only(top: 12.h, bottom: 24.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64.w,
+            height: 64.w,
+            decoration: const BoxDecoration(color: Color(0xFFEFEEFB), shape: BoxShape.circle),
+            // Outline crescent, not the filled glyph: in the design the moon
+            // reads as a line drawing inside the tile, and the solid version
+            // came out as a dark blob at this size.
+            child: Icon(Icons.dark_mode_outlined, size: 30.sp, color: AppCustomColor.brandPrimary),
+          ),
+          16.verticalSpace,
+          AppText(
+            journal.dayEmptyTitle,
+            textAlign: TextAlign.center,
+            style: _journalText(15.5, FontWeight.w700),
+          ),
+          6.verticalSpace,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: AppText(
+              journal.dayEmptyBody,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              style: _journalText(12.5, FontWeight.w500, color: const Color(0xFF7C8AA4)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Message extends StatelessWidget {
   const _Message({required this.text, this.onRetry});
 
@@ -480,7 +537,10 @@ class _Message extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 30.h),
+      // Without this the Column takes the sheet's whole max height and the
+      // error floats in a screen of white.
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           AppText(
             text,

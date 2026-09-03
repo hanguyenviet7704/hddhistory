@@ -18,14 +18,18 @@ class StudyJournalCubit extends Cubit<StudyJournalState> {
 
   /// Loads the current month unless a month is already on screen.
   ///
-  /// Safe to call on every visit to Profile: it re-fetches the CURRENT month
-  /// (studying happens between visits) but leaves an already-open older month
-  /// alone, so returning to the tab does not yank the calendar back to today.
+  /// Safe to call on every visit to Profile: it re-fetches the CURRENT month —
+  /// studying happens between visits, and a cached copy would leave the squares
+  /// the learner just earned missing until the app is killed — but leaves an
+  /// already-open older month alone, so returning to the tab does not yank the
+  /// calendar back to today. A month browsed back to is finished; nothing can
+  /// land in it any more.
   Future<void> ensureLoaded() {
-    final visible = state.visibleMonth;
     final now = DateTime.now();
+    final thisMonth = DateTime(now.year, now.month);
+    final month = state.visibleMonth ?? thisMonth;
 
-    return loadMonth(visible ?? DateTime(now.year, now.month), force: visible == null);
+    return loadMonth(month, force: month == thisMonth);
   }
 
   Future<void> loadMonth(DateTime month, {bool force = false}) async {
