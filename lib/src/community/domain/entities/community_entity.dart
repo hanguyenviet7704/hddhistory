@@ -189,6 +189,11 @@ enum CommunityNotificationType {
   commentOnPost('COMMENT_ON_POST'),
   replyToComment('REPLY_TO_COMMENT'),
   commentOnFollowedPost('COMMENT_ON_FOLLOWED_POST'),
+  /// Somebody else answered the weekly question this reader answered.
+  answerOnWeekly('ANSWER_ON_WEEKLY'),
+
+  /// Somebody wrote in a discussion room this reader has taken part in.
+  messageInRoom('MESSAGE_IN_ROOM'),
   officialReply('OFFICIAL_REPLY'),
   postHidden('POST_HIDDEN'),
   sanctionApplied('SANCTION_APPLIED'),
@@ -218,10 +223,15 @@ abstract class CommunityNotificationEntity with _$CommunityNotificationEntity {
     CommunityAuthorEntity? actor,
 
     /// How many people beyond [actor] did the same thing — the "và N người
-    /// khác" tail. Only ever above 0 on a like.
+    /// khác" tail. Above 0 on a like and on a weekly answer — the two rows
+    /// that collapse.
     @Default(0) int otherActorCount,
     String? postId,
     String? commentId,
+
+    /// MESSAGE_IN_ROOM only — the room the row opens, named by SLUG.
+    String? roomId,
+    String? roomSlug,
     @Default(false) bool isRead,
     DateTime? createdAt,
   }) = _CommunityNotificationEntity;
@@ -286,6 +296,11 @@ abstract class CommunityMemberStatusEntity with _$CommunityMemberStatusEntity {
     @Default(false) bool requiresLogin,
     String? reason,
     DateTime? mutedUntil,
+
+    /// True once this reader has been walked through the forum. Defaults to
+    /// TRUE: the tour is opt-OUT by absence of information, never opt-in — a
+    /// server that does not answer must not greet an old member again.
+    @Default(true) bool tourSeen,
   }) = _CommunityMemberStatusEntity;
 }
 

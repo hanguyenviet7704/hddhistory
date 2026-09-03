@@ -17,6 +17,7 @@ class CommunityFeedCubit extends Cubit<CommunityFeedState> with CubitUseCaseHand
   final DeleteCommunityPostUseCase _deletePostUseCase;
   final GetCommunityMemberStatusUseCase _memberStatusUseCase;
   final GetCommunityUnreadCountUseCase _getUnreadCountUseCase;
+  final MarkCommunityTourSeenUseCase _markTourSeenUseCase;
 
   CommunityFeedCubit(
     this._getFeedUseCase,
@@ -28,6 +29,7 @@ class CommunityFeedCubit extends Cubit<CommunityFeedState> with CubitUseCaseHand
     this._deletePostUseCase,
     this._memberStatusUseCase,
     this._getUnreadCountUseCase,
+    this._markTourSeenUseCase,
   ) : super(CommunityFeedState.initial());
 
   static const int _pageSize = 10;
@@ -39,6 +41,18 @@ class CommunityFeedCubit extends Cubit<CommunityFeedState> with CubitUseCaseHand
   static const Duration _freshFor = Duration(minutes: 2);
 
   DateTime? _loadedAt;
+
+  /// Drop everything this holds — called when the ACCOUNT changes.
+  ///
+  /// This cubit is a lazySingleton, so it survives a guest signing in and keeps
+  /// serving the previous session's feed, posting rights and unread badge. Worse
+  /// than stale: `ensureLoaded` trusts a copy for two minutes, so returning to
+  /// the tab right after signing in did nothing at all and the reader was still
+  /// told to sign in. Same reason `HabitCubit` is reset on the same transition.
+  void reset() {
+    _loadedAt = null;
+    emit(CommunityFeedState.initial());
+  }
 
   /// Called from the route listener on every entry to the tab.
   ///
@@ -161,6 +175,19 @@ class CommunityFeedCubit extends Cubit<CommunityFeedState> with CubitUseCaseHand
       (_) {},
       (status) => emit(state.copyWith(memberStatus: status)),
     );
+  }
+
+  /// The first-run tour is finished — close it now, tell the server after.
+  ///
+  /// The state moves FIRST and unconditionally: the tour is over the moment the
+  /// reader taps through the last step, and a failed request must not leave the
+  /// overlay sitting on the screen. The server call is what makes it stick
+  /// across devices; if it fails the reader simply meets the tour once more.
+  Future<void> markTourSeen() async {
+    if (state.memberStatus.tourSeen) return;
+
+    emit(state.copyWith(memberStatus: state.memberStatus.copyWith(tourSeen: true)));
+    await _markTourSeenUseCase().run();
   }
 
   Future<void> refreshUnreadCount() async {

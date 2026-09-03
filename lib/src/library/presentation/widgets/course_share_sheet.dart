@@ -171,55 +171,74 @@ class _CourseShareSheetState extends State<CourseShareSheet> {
 
   /// "More" — the system share sheet, image plus the fixed message.
   Future<void> _shareToSystem() => _guard(() async {
-        final ok = await shareCourseStoryCard(
-          context,
-          boundaryKey: _boundaryKey,
-          courseId: widget.courseId,
-        );
-        if (!ok && mounted) _failed();
-      });
+    final ok = await shareCourseStoryCard(
+      context,
+      boundaryKey: _boundaryKey,
+      courseId: widget.courseId,
+    );
+    if (!ok && mounted) _failed();
+  });
 
   /// "Copy link" — the roadmap link for THIS course, nothing else. The message
   /// belongs to a share; a clipboard paste wants just the address.
   Future<void> _copyLink() => _guard(() async {
-        await Clipboard.setData(
-          ClipboardData(text: courseRoadmapShareUrl(widget.courseId)),
-        );
-        if (!mounted) return;
+    await Clipboard.setData(
+      ClipboardData(text: courseRoadmapShareUrl(widget.courseId)),
+    );
+    if (!mounted) return;
 
-        final token = ++_copyToken;
-        setState(() => _linkCopied = true);
-        await Future.delayed(const Duration(seconds: 2));
-        if (!mounted || token != _copyToken) return;
-        setState(() => _linkCopied = false);
-      });
+    final token = ++_copyToken;
+    setState(() => _linkCopied = true);
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted || token != _copyToken) return;
+    setState(() => _linkCopied = false);
+  });
 
   /// "IG Story" / "FB Story" — hand the picture straight to that app's story
   /// composer. Falls back to the system sheet when the app isn't installed,
   /// which is the only honest thing to do with a button the reader just tapped.
   Future<void> _shareToStory(StoryPlatform platform) => _guard(() async {
-        final png = await AppDI.injector.get<IMediaService>().captureWidgetWithRepaintBoundary(
-              _boundaryKey,
-              pixelRatio: 3,
-              targetWidth: _kStoryCanvasWidth,
-            );
-        if (png == null) {
-          if (mounted) _failed();
-          return;
-        }
-        final handed = await AppDI.injector.get<IStoryShareService>().shareToStory(
-              platform: platform,
-              pngBytes: png,
-            );
-        if (handed || !mounted) return;
-        // Not installed (or the OS refused the hand-off) — keep the tap useful.
-        await _shareToSystem();
-      });
+    final png = await AppDI.injector.get<IMediaService>().captureWidgetWithRepaintBoundary(
+      _boundaryKey,
+      pixelRatio: 3,
+      targetWidth: _kStoryCanvasWidth,
+    );
+    if (png == null) {
+      if (mounted) _failed();
+      return;
+    }
+    final handed = await AppDI.injector.get<IStoryShareService>().shareToStory(
+      platform: platform,
+      pngBytes: png,
+    );
+    if (handed || !mounted) return;
+    // Not installed (or the OS refused the hand-off) — keep the tap useful.
+    await _shareToSystem();
+  });
+
+  /// "Confession" — hand the course to the composer instead of to another app.
+  ///
+  /// Closes this sheet FIRST: the composer is a full-screen push, and leaving
+  /// the share sheet underneath means backing out of the composer lands the
+  /// reader on a sheet they are done with.
+  Future<void> _postToConfession() async {
+    final navigator = Navigator.of(context);
+    final host = context;
+    final seed = CommunityComposeSeedData(
+      courseId: widget.courseId,
+      courseTitle: widget.courseTitle,
+    );
+
+    await navigator.maybePop();
+    if (!host.mounted) return;
+
+    await openCommunityComposeWith(host, seed);
+  }
 
   void _failed() => context.showDSnackBar(
-        message: context.l10n.library.shareFailed,
-        type: MessageType.error,
-      );
+    message: context.l10n.library.shareFailed,
+    type: MessageType.error,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -301,6 +320,7 @@ class _CourseShareSheetState extends State<CourseShareSheet> {
           20.verticalSpace,
           _ShareTargetRow(
             linkCopied: _linkCopied,
+            onConfession: _postToConfession,
             onCopyLink: _copyLink,
             onInstagram: () => _shareToStory(StoryPlatform.instagram),
             onFacebook: () => _shareToStory(StoryPlatform.facebook),
@@ -371,7 +391,7 @@ class _PaletteDots extends StatelessWidget {
   }
 }
 
-/// Copy link · IG Story · FB Story · More.
+/// Confession · Copy link · IG Story · FB Story · More.
 ///
 /// Disc sizes and the brand fills come from the design's own share row
 /// (`_Keypoint Tap and Share` → `shareTargets`), scaled to this sheet's
@@ -379,6 +399,7 @@ class _PaletteDots extends StatelessWidget {
 class _ShareTargetRow extends StatelessWidget {
   const _ShareTargetRow({
     required this.linkCopied,
+    required this.onConfession,
     required this.onCopyLink,
     required this.onInstagram,
     required this.onFacebook,
@@ -387,6 +408,9 @@ class _ShareTargetRow extends StatelessWidget {
 
   /// Đổi icon + nhãn của ô Copy link thành xác nhận đã chép.
   final bool linkCopied;
+
+  /// Đăng vào Confession — đích duy nhất nằm TRONG app, nên nó đứng đầu hàng.
+  final VoidCallback onConfession;
   final VoidCallback onCopyLink;
   final VoidCallback onInstagram;
   final VoidCallback onFacebook;
@@ -400,7 +424,20 @@ class _ShareTargetRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _ShareTarget(
+        // First in the row because it is the only target that keeps the reader
+        // inside MeUp — the design puts it there for the same reason.
+        ShareTargetButton(
+          key: const Key('course-share-confession'),
+          label: context.l10n.community.title,
+          icon: Icons.people_alt_rounded,
+          iconColor: AppCustomColor.textWhite,
+          background: const BoxDecoration(
+            color: AppCustomColor.brandPrimary,
+            shape: BoxShape.circle,
+          ),
+          onTap: onConfession,
+        ),
+        ShareTargetButton(
           key: const Key('course-share-copy'),
           // Nhãn NGẮN, không dùng `shareLinkCopied` ("Đã chép liên kết.") — nhãn ở
           // đây nằm dưới một icon 56 rộng cạnh ba ô khác, câu dài sẽ xuống dòng và
@@ -409,118 +446,38 @@ class _ShareTargetRow extends StatelessWidget {
           // Icon đổi theo, không chỉ đổi chữ: cái tick là thứ đọc được trong một
           // phần mười giây, còn chữ thì phải đọc.
           icon: linkCopied ? Icons.check_rounded : Icons.link_rounded,
-          iconColor: linkCopied ? const Color(0xFF2B604E) : const Color(0xFF2B3242),
+          iconColor: linkCopied ? AppCustomColor.paywallPromoAppliedText : AppCustomColor.kpOptionLabel,
           background: BoxDecoration(
-            color: linkCopied ? const Color(0xFFE6F4EE) : Colors.white,
+            color: linkCopied ? AppCustomColor.paywallPromoAppliedBg : AppCustomColor.backgroundWhite,
             shape: BoxShape.circle,
           ),
           onTap: onCopyLink,
         ),
-        _ShareTarget(
+        ShareTargetButton(
           key: const Key('course-share-instagram'),
           label: l10n.shareInstagramStory,
           icon: Icons.camera_alt_rounded,
-          iconColor: Colors.white,
-          background: const BoxDecoration(
-            shape: BoxShape.circle,
-            // Design source: linear-gradient(135deg,#F9A03C,#E1306C,#8134AF)
-            gradient: LinearGradient(
-              begin: Alignment(-0.5, -1),
-              end: Alignment(0.5, 1),
-              colors: [Color(0xFF8A3AB9), Color(0xFFE95950), Color(0xFFFCAF45)],
-              stops: [0, 0.48, 1],
-            ),
-          ),
+          iconColor: AppCustomColor.textWhite,
+          background: ShareTargetButton.instagramDisc,
           onTap: onInstagram,
         ),
-        _ShareTarget(
+        ShareTargetButton(
           key: const Key('course-share-facebook'),
           label: l10n.shareFacebookStory,
           icon: Icons.facebook_rounded,
-          iconColor: Colors.white,
-          background: const BoxDecoration(color: Color(0xFF1877F2), shape: BoxShape.circle),
+          iconColor: AppCustomColor.textWhite,
+          background: ShareTargetButton.facebookDisc,
           onTap: onFacebook,
         ),
-        _ShareTarget(
+        ShareTargetButton(
           key: const Key('course-share-more'),
           label: l10n.shareMore,
           icon: Icons.more_horiz_rounded,
-          iconColor: const Color(0xFF2B3242),
-          background: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          iconColor: AppCustomColor.kpOptionLabel,
+          background: ShareTargetButton.plainDisc,
           onTap: onMore,
         ),
       ],
-    );
-  }
-}
-
-class _ShareTarget extends StatelessWidget {
-  const _ShareTarget({
-    super.key,
-    required this.label,
-    required this.icon,
-    required this.iconColor,
-    required this.background,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color iconColor;
-  final BoxDecoration background;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          AppHaptic.select();
-          onTap();
-        },
-        child: SizedBox(
-          width: 80.w,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 58.r,
-                height: 58.r,
-                alignment: Alignment.center,
-                decoration: background.copyWith(
-                  boxShadow: background.color == Colors.white
-                      ? [
-                          BoxShadow(
-                            color: const Color(0x1414143C), // rgba(20,20,60,.08)
-                            offset: Offset(0, 6.h),
-                            blurRadius: 16.r,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Icon(icon, size: 25.r, color: iconColor),
-              ),
-              9.verticalSpace,
-              AppText(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppFont.mulish,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  height: 1.35,
-                  color: const Color(0xFF3A4250),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

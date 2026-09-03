@@ -28,7 +28,14 @@ enum DeeplinkDestination {
   notificationSetting('notification-setting'),
   changeLanguage('change-language'),
   community('community'),
-  communityPost('community-post');
+  communityPost('community-post'),
+  /// `meup://community-chat?room=<slug>` — a discussion room (the weekly
+  /// question). Where the "someone answered" push lands.
+  communityChat('community-chat'),
+
+  /// `meup://coach` — Home underneath, the AI Coach sheet on top. The same
+  /// landing the commitment-reminder push uses; the server decides the door.
+  coach('coach');
 
   const DeeplinkDestination(this.value);
 

@@ -48,7 +48,7 @@ class CommunityInsightCard extends StatelessWidget {
                       color: AppCustomColor.backgroundWhite,
                       height: 1.3,
                     ),
-                    maxLines: 3,
+                    maxLines: 100,
                   ),
                 ),
                 Container(
@@ -65,7 +65,7 @@ class CommunityInsightCard extends StatelessWidget {
                     ),
                     height: 1.55,
                   ),
-                  maxLines: 4,
+                  maxLines: 100,
                 ),
               ],
             ),

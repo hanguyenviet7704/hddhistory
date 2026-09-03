@@ -37,6 +37,13 @@ void main() {
       expect(roadmapShowsBackButton('habit_detail'), isTrue);
     });
 
+    test('shows a back button for a course attached to a community post', () {
+      // The attached-course card `.go()`s to the roadmap from the Community
+      // branch, so the roadmap is its branch's root with nothing to pop —
+      // the same strand as 'home_new_today' and 'habit_detail'.
+      expect(roadmapShowsBackButton(kRoadmapSourceCommunityPost), isTrue);
+    });
+
     test('shows NO back button for the Courses-tab default', () {
       // Reaching the roadmap by tapping its own tab (or returning from roleplay)
       // has nothing behind it — a back button there would be a dead end.

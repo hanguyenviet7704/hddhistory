@@ -220,6 +220,7 @@ class _PostHeaderBlock extends StatelessWidget {
                 height: 1.28,
                 letterSpacing: -0.2,
               ),
+              maxLines: 100,
             ),
             SizedBox(height: 20.h),
           ],
@@ -246,6 +247,11 @@ class _PostHeaderBlock extends StatelessWidget {
                     color: studyThemeCardMuted(context, AppCustomColor.streakTextMuted),
                     height: 1.55,
                   ),
+                  // [AppText] clamps at 10 lines by DEFAULT and ellipsises what
+                  // is left, so the screen a reader opens TO READ the post was
+                  // quietly cutting the long ones — with no control to expand
+                  // and nowhere further to go.
+                  maxLines: 100,
                 ),
                 if (post.attachedCard != null) ...[
                   SizedBox(height: 13.h),
@@ -261,15 +267,19 @@ class _PostHeaderBlock extends StatelessWidget {
                   SizedBox(height: 13.h),
                   CommunityAttachedCourseCard(courseId: post.attachedCourseId!),
                 ],
-                ...post.images.map(
-                  (image) => Padding(
-                    padding: EdgeInsets.only(top: 13.h),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16.r),
-                      child: DCachedImage(url: image, width: double.infinity, fit: BoxFit.cover),
-                    ),
+                // The same strip the feed card draws, for the same reason: a
+                // post's pictures are one set, and stacking them down the page
+                // made the reader scroll past each one to reach the comments.
+                // `capSingle: false` — this is the screen you open TO look at
+                // the picture, so a tall one is not cropped here.
+                if (post.images.isNotEmpty) ...[
+                  SizedBox(height: 13.h),
+                  _PostImages(
+                    urls: post.images,
+                    capSingle: false,
+                    tapOpensViewer: true,
                   ),
-                ),
+                ],
                 SizedBox(height: 14.h),
                 _PostActionRow(post: post),
               ],

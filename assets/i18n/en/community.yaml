@@ -86,6 +86,7 @@ emptyCommentsTitle: No comments yet
 emptyCommentsBody: Say something kind, or just say you have been there too.
 
 menuHide: Hide this
+hideDone: Hidden. You will not see this again.
 menuReport: Report post
 menuDelete: Delete post
 deletePostDone: Your post was deleted
@@ -208,3 +209,21 @@ chatSending: Sending…
 chatSeenAt(time): ${time} · Seen
 chatEmptyTitle: Nobody has said anything yet
 chatEmptyBody: Go first — one line is enough.
+notificationWeeklyAnswer: "just answered the question you answered"
+notificationWeeklyAnswerWithOthers: "and ${count} others just answered the question you answered"
+notificationRoomMessage: "just answered in the discussion"
+tourWelcomeTitle: "Welcome to Confession"
+tourWelcomeBody: "A place to share, discuss and build each other up."
+tourWelcomeCta: "Start"
+tourNext: "Continue"
+tourAllTitle: "All"
+tourAllBody: "The latest from the community."
+tourFollowingTitle: "Following"
+tourFollowingBody: "Keep up with the threads you care about."
+tourRoomsTitle: "Rooms"
+tourRoomsBody: "A space of its own for each topic you follow."
+tourChatTitle: "The round table"
+tourChatBody: "Talk with the community — say your piece, no judgement."
+tourComposeTitle: "Start exploring"
+tourComposeBody: "Got a story to share, or just want to say hello to the MeUp members?"
+tourComposeCta: "Write your first post"

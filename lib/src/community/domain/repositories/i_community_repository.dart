@@ -87,6 +87,9 @@ abstract interface class ICommunityRepository {
 
   TaskEither<AppException, CommunityMemberStatusEntity> getMemberStatus();
 
+  /// The first-run tour is done for this reader — never show it again.
+  TaskEither<AppException, Unit> markTourSeen();
+
   TaskEither<AppException, List<CommunityRoomSuggestionEntity>> getRoomSuggestions();
 
   /// Files an ask, or — when the name matches one already open — turns it into

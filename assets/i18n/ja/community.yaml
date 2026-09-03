@@ -86,6 +86,7 @@ emptyCommentsTitle: コメントはまだありません
 emptyCommentsBody: やさしい一言でも、「私もそうだった」だけでも。
 
 menuHide: これを非表示にする
+hideDone: 非表示にしました。今後は表示されません。
 menuReport: 投稿を報告
 menuDelete: 投稿を削除
 deletePostDone: 投稿を削除しました
@@ -208,3 +209,21 @@ chatSending: 送信中…
 chatSeenAt(time): ${time} · 既読
 chatEmptyTitle: まだ誰も話していません
 chatEmptyBody: 最初のひとことをどうぞ。
+notificationWeeklyAnswer: "さんがあなたの答えた質問に回答しました"
+notificationWeeklyAnswerWithOthers: "さんと他${count}人があなたの答えた質問に回答しました"
+notificationRoomMessage: "さんが討論に回答しました"
+tourWelcomeTitle: "Confession へようこそ"
+tourWelcomeBody: "分かち合い、話し合い、支え合う場所です。"
+tourWelcomeCta: "はじめる"
+tourNext: "次へ"
+tourAllTitle: "すべて"
+tourAllBody: "コミュニティの最新の投稿を見られます。"
+tourFollowingTitle: "フォロー中"
+tourFollowingBody: "気になる投稿をフォローしましょう。"
+tourRoomsTitle: "ルーム"
+tourRoomsBody: "テーマごとの専用スペースです。"
+tourChatTitle: "円卓"
+tourChatBody: "みんなと気軽に話せます。評価はありません。"
+tourComposeTitle: "はじめてみよう"
+tourComposeBody: "話したいことがありますか。それとも MeUp のみんなに挨拶だけでも。"
+tourComposeCta: "最初の投稿を書く"

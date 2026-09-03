@@ -27,6 +27,19 @@ class _CommunityPageState extends State<CommunityPage> {
   final ScrollController _scrollController = ScrollController();
   _CommunityTab _tab = _CommunityTab.feed;
 
+  /// Held here, not in the header: the header rebuilds on every tab change and
+  /// fresh GlobalKeys each time would leave the tour pointing at nothing.
+  final CommunityTourAnchors _tourAnchors = CommunityTourAnchors();
+
+  /// Which beat of the first-run tour is on screen, or null when it is not
+  /// running. Started from the member status, which the feed refreshes on
+  /// every entry to the tab.
+  CommunityTourStep? _tourStep;
+
+  /// True once this mount has decided about the tour, so a later status refresh
+  /// (or the reader finishing it) cannot start it a second time.
+  bool _tourResolved = false;
+
   CommunityFeedCubit get _cubit => context.read<CommunityFeedCubit>();
 
   @override
@@ -37,6 +50,11 @@ class _CommunityPageState extends State<CommunityPage> {
     // whether that means a fetch or nothing at all.
     _cubit.ensureLoaded();
     _claimRoute();
+    // The status may already be loaded (re-entering the tab), in which case no
+    // change ever reaches the listener above.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _maybeStartTour(_cubit.state.memberStatus);
+    });
   }
 
   /// Tells the app which screen is on top.
@@ -76,6 +94,56 @@ class _CommunityPageState extends State<CommunityPage> {
   /// does not run again on a tab switch.
   static const int _communityBranchIndex = 6;
 
+  /// Opens the tour the first time the status says this reader has not seen it.
+  ///
+  /// Driven from the status rather than from `initState`: the flag arrives with
+  /// the feed's own load, so on a cold entry it is simply not known yet when
+  /// this page first builds.
+  void _maybeStartTour(CommunityMemberStatusEntity status) {
+    if (_tourResolved || status.tourSeen) return;
+    _tourResolved = true;
+    // After the frame: the tour measures the header chips, and they have no
+    // size until this build has been laid out.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _tourStep = CommunityTourStep.welcome);
+    });
+  }
+
+  /// One tap on the tour's button: move to the next beat, or finish.
+  ///
+  /// Finishing stamps the flag server-side and, on the last step, hands the
+  /// reader straight to the composer — the design ends on "Viết bài đầu tiên",
+  /// which is an invitation and has to actually open something.
+  Future<void> _advanceTour() async {
+    final current = _tourStep;
+    if (current == null) return;
+
+    final next = current.next;
+    if (next != null) {
+      setState(() {
+        _tourStep = next;
+        _tab = _CommunityTab.values[next.underlyingTabIndex ?? 0];
+      });
+      if (_tab.isFeed) _cubit.setScope(_tab.scope);
+
+      return;
+    }
+
+    setState(() {
+      _tourStep = null;
+      _tab = _CommunityTab.feed;
+    });
+    _cubit.setScope(_CommunityTab.feed.scope);
+    unawaited(_cubit.markTourSeen());
+
+    final allowed = await communityRequireAccount(context, _cubit.state.memberStatus);
+    if (!allowed || !mounted) return;
+
+    final created = await const CommunityComposeRoute().push<bool>(context);
+    if (created == true) await _cubit.refresh();
+  }
+
   /// Switching tab also switches what the feed is filtered by.
   ///
   /// The scope lives in the cubit rather than in this widget's state because
@@ -97,36 +165,54 @@ class _CommunityPageState extends State<CommunityPage> {
         // nothing at all — flicking between tabs must not cost a request.
         unawaited(_cubit.ensureLoaded());
       },
-      child: Scaffold(
-        // Transparent under a custom study background so the shell's
-        // ThemedBackground shows through, exactly like Home/Explore/Library.
-        backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
-        body: SafeArea(
-          bottom: false,
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  _CommunityHeader(tab: _tab, onTabChanged: _onTabChanged),
-                  Expanded(
-                    child: _tab.isFeed
-                        ? _CommunityFeedList(
-                            scrollController: _scrollController,
-                            onSeeAll: () => _onTabChanged(_CommunityTab.feed),
-                          )
-                        : const _CommunityRoomsList(),
+      child: BlocListener<CommunityFeedCubit, CommunityFeedState>(
+        listenWhen: (previous, current) => previous.memberStatus.tourSeen != current.memberStatus.tourSeen,
+        listener: (context, state) => _maybeStartTour(state.memberStatus),
+        child: Scaffold(
+          // Transparent under a custom study background so the shell's
+          // ThemedBackground shows through, exactly like Home/Explore/Library.
+          backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
+          body: SafeArea(
+            bottom: false,
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    _CommunityHeader(tab: _tab, onTabChanged: _onTabChanged, anchors: _tourAnchors),
+                    Expanded(
+                      child: _tab.isFeed
+                          ? _CommunityFeedList(
+                              scrollController: _scrollController,
+                              onSeeAll: () => _onTabChanged(_CommunityTab.feed),
+                            )
+                          : const _CommunityRoomsList(),
+                    ),
+                  ],
+                ),
+                // Above the floating nav pill, bottom-right (design `S-03`). Only
+                // on the hub: inside a post or a room the reader is already
+                // somewhere, and the design drops it there too.
+                Positioned(
+                  right: 18.w,
+                  bottom: floatingNavBarHeight(context) + 16.h,
+                  child: CommunityChatFabLoader(key: _tourAnchors.chatBubble, room: communityDefaultChatRoom),
+                ),
+                // The first-run tour, last in the Stack so it covers the hub —
+                // including the bubble it points at on its fifth beat.
+                //
+                // A DIRECT child of the Stack: `Positioned` handed to anything
+                // else (a listener, a builder) is a ParentDataWidget in the wrong
+                // place and throws the moment the tour opens.
+                if (_tourStep != null)
+                  Positioned.fill(
+                    child: CommunityTour(
+                      step: _tourStep!,
+                      anchors: _tourAnchors,
+                      onNext: () => unawaited(_advanceTour()),
+                    ),
                   ),
-                ],
-              ),
-              // Above the floating nav pill, bottom-right (design `S-03`). Only
-              // on the hub: inside a post or a room the reader is already
-              // somewhere, and the design drops it there too.
-              Positioned(
-                right: 18.w,
-                bottom: floatingNavBarHeight(context) + 16.h,
-                child: const CommunityChatFabLoader(room: communityDefaultChatRoom),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -135,10 +221,14 @@ class _CommunityPageState extends State<CommunityPage> {
 }
 
 class _CommunityHeader extends StatelessWidget {
-  const _CommunityHeader({required this.tab, required this.onTabChanged});
+  const _CommunityHeader({required this.tab, required this.onTabChanged, required this.anchors});
 
   final _CommunityTab tab;
   final void Function(_CommunityTab tab) onTabChanged;
+
+  /// Where the first-run tour points. Held by the page so the keys survive the
+  /// header rebuilding on every tab change.
+  final CommunityTourAnchors anchors;
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +272,7 @@ class _CommunityHeader extends StatelessWidget {
                     if (created == true) await cubit.refresh();
                   },
                   child: Container(
+                    key: anchors.compose,
                     width: 32.w,
                     height: 32.w,
                     alignment: Alignment.center,
@@ -207,18 +298,21 @@ class _CommunityHeader extends StatelessWidget {
           Row(
             children: [
               _TabChip(
+                key: anchors.tabAll,
                 label: l10n.tabAll,
                 isActive: tab == _CommunityTab.feed,
                 onTap: () => onTabChanged(_CommunityTab.feed),
               ),
               SizedBox(width: 8.w),
               _TabChip(
+                key: anchors.tabFollowing,
                 label: l10n.tabFollowing,
                 isActive: tab == _CommunityTab.following,
                 onTap: () => onTabChanged(_CommunityTab.following),
               ),
               SizedBox(width: 8.w),
               _TabChip(
+                key: anchors.tabRooms,
                 label: l10n.tabTopics,
                 isActive: tab == _CommunityTab.rooms,
                 onTap: () => onTabChanged(_CommunityTab.rooms),
@@ -283,7 +377,7 @@ class _NotificationBell extends StatelessWidget {
 }
 
 class _TabChip extends StatelessWidget {
-  const _TabChip({required this.label, required this.isActive, required this.onTap});
+  const _TabChip({super.key, required this.label, required this.isActive, required this.onTap});
 
   final String label;
   final bool isActive;

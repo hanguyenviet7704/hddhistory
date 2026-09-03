@@ -1,6 +1,7 @@
 library;
 
 //* Dart imports
+import 'dart:math' as math;
 // Prefixed: retrofit exports a `Path` annotation that shadows dart:ui's Path,
 // which the comment-thread rail painter needs.
 import 'dart:ui' as ui;
@@ -13,6 +14,10 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+// Pinch/pan/swipe arbitration for the full-screen picture viewer — see
+// `community_image_viewer.dart` for why this rather than InteractiveViewer.
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
@@ -75,6 +80,8 @@ part 'presentation/widgets/community_room_suggest_sheet.dart';
 part 'presentation/widgets/community_attach_sheet.dart';
 part 'presentation/widgets/community_share_sheet.dart';
 part 'presentation/widgets/community_muted_banner.dart';
+part 'presentation/widgets/community_image_viewer.dart';
+part 'presentation/widgets/community_tour.dart';
 
 //* Parts for generated files
 part 'community.freezed.dart';

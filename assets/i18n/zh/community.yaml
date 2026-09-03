@@ -86,6 +86,7 @@ emptyCommentsTitle: 还没有评论
 emptyCommentsBody: 说句暖心的话，或者只说一句“我也经历过”。
 
 menuHide: 隐藏这条内容
+hideDone: 已隐藏，你不会再看到这条内容。
 menuReport: 举报帖子
 menuDelete: 删除帖子
 deletePostDone: 已删除你的帖子
@@ -207,3 +208,21 @@ chatSending: 发送中…
 chatSeenAt(time): ${time} · 已读
 chatEmptyTitle: 还没有人发言
 chatEmptyBody: 你先说吧 — 一句话就够了。
+notificationWeeklyAnswer: "刚刚回答了你回答过的问题"
+notificationWeeklyAnswerWithOthers: "和另外 ${count} 人刚刚回答了你回答过的问题"
+notificationRoomMessage: "刚刚在讨论中回复了"
+tourWelcomeTitle: "欢迎来到 Confession"
+tourWelcomeBody: "一个分享、讨论、彼此鼓励的地方。"
+tourWelcomeCta: "开始"
+tourNext: "继续"
+tourAllTitle: "全部"
+tourAllBody: "查看社区最新的分享。"
+tourFollowingTitle: "关注中"
+tourFollowingBody: "关注你在意的帖子。"
+tourRoomsTitle: "房间"
+tourRoomsBody: "每个主题都有自己的空间。"
+tourChatTitle: "圆桌会"
+tourChatBody: "和大家交流，畅所欲言，不带评判。"
+tourComposeTitle: "开始探索"
+tourComposeBody: "有故事想分享，还是只想跟 MeUp 的成员打个招呼？"
+tourComposeCta: "写下第一篇"

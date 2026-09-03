@@ -86,6 +86,7 @@ emptyCommentsTitle: Chưa có bình luận
 emptyCommentsBody: Nói một câu tử tế, hoặc chỉ cần nói bạn cũng từng như vậy.
 
 menuHide: Ẩn nội dung này
+hideDone: Đã ẩn. Bạn sẽ không thấy nội dung này nữa.
 menuReport: Báo cáo bài viết
 menuDelete: Xoá bài
 deletePostDone: Đã xoá bài của bạn
@@ -208,3 +209,21 @@ chatSending: Đang gửi…
 chatSeenAt(time): ${time} · Đã xem
 chatEmptyTitle: Chưa có ai nhắn gì
 chatEmptyBody: Mở lời trước đi — một câu cũng được.
+notificationWeeklyAnswer: "vừa trả lời câu hỏi bạn đã trả lời"
+notificationWeeklyAnswerWithOthers: "và ${count} người khác vừa trả lời câu hỏi bạn đã trả lời"
+notificationRoomMessage: "vừa trả lời trong bàn luận"
+tourWelcomeTitle: "Chào mừng bạn đến với Confession"
+tourWelcomeBody: "Nơi chia sẻ, thảo luận và cùng đóng góp một cách lành mạnh."
+tourWelcomeCta: "Bắt đầu"
+tourNext: "Tiếp tục"
+tourAllTitle: "Tất cả"
+tourAllBody: "Xem những chia sẻ mới nhất từ cộng đồng."
+tourFollowingTitle: "Đang theo dõi"
+tourFollowingBody: "Theo dõi những bài viết bạn quan tâm."
+tourRoomsTitle: "Phòng"
+tourRoomsBody: "Không gian riêng cho từng chủ đề bạn theo đuổi."
+tourChatTitle: "Hội bàn tròn"
+tourChatBody: "Giao lưu cùng cộng đồng, thoải mái đóng góp, không phán xét."
+tourComposeTitle: "Bắt đầu khám phá"
+tourComposeBody: "Bạn có câu chuyện muốn chia sẻ, hay chỉ muốn gửi lời chào tới thành viên MeUp?"
+tourComposeCta: "Viết bài đầu tiên"

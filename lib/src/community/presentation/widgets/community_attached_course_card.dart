@@ -66,7 +66,7 @@ class _CommunityAttachedCourseCardState extends State<CommunityAttachedCourseCar
     // before. `selectCourseFromCourseId` locates the skillset itself and
     // falls back to loading the roadmap outside the catalog.
     LogDev.data('[Community] open attached course: ${course.id}');
-    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('community_post');
+    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kRoadmapSourceCommunityPost);
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(course.id);
     if (!mounted) return;
     CourseRoadmapRoute().go(context);

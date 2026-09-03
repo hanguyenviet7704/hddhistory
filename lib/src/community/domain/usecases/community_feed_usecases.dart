@@ -56,3 +56,12 @@ class GetCommunityMemberStatusUseCase {
 
   TaskEither<AppException, CommunityMemberStatusEntity> call() => _repository.getMemberStatus();
 }
+
+@lazySingleton
+class MarkCommunityTourSeenUseCase {
+  final ICommunityRepository _repository;
+
+  MarkCommunityTourSeenUseCase(this._repository);
+
+  TaskEither<AppException, Unit> call() => _repository.markTourSeen();
+}

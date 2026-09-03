@@ -65,6 +65,26 @@ const String kRoadmapSourceLibrary = 'library';
 /// actually reading, not the tab root a `.go()` would reset them to.
 const String kRoadmapSourceLibraryHistory = 'library_history';
 
+/// Roadmap source for a course opened from Profile → "Nhật ký học tập" → a
+/// day's course row. Back returns to Profile, where that calendar lives.
+///
+/// Registered here for the same reason `habit_detail` is: the journal sheet
+/// pops itself before navigating, so without a source of its own the reader
+/// lands on a roadmap with no way out.
+const String kRoadmapSourceStudyJournal = 'study_journal';
+
+/// Roadmap source for a course opened from the card a writer attached to a
+/// community post. Back returns to the Cộng đồng tab.
+///
+/// Registered here for the same reason `habit_detail` is: the card `.go()`s to
+/// the roadmap, which is the ROOT of its own shell branch, so nothing is left on
+/// the stack to pop and the reader lands with no way out — which is how it
+/// shipped. Back lands on the tab rather than on the post itself: `.go()` on the
+/// branch root is what actually moves the shell (`PageCubit.setCurrentIndex`
+/// only mirrors state), and that resets the branch stack. The post is in the
+/// feed the reader lands on.
+const String kRoadmapSourceCommunityPost = 'community_post';
+
 /// Roadmap-source values that mean the user opened this roadmap from the Library
 /// tab. Back returns to that tab (see `_backFromRoadmap`).
 @visibleForTesting
@@ -75,7 +95,12 @@ const roadmapLibrarySources = {kRoadmapSourceLibrary, kRoadmapSourceLibraryHisto
 /// the whole roadmap widget tree.
 @visibleForTesting
 bool roadmapShowsBackButton(String source) =>
-    roadmapExploreSources.contains(source) || roadmapHomeSources.contains(source) || roadmapHabitSources.contains(source) || roadmapLibrarySources.contains(source);
+    roadmapExploreSources.contains(source) ||
+    roadmapHomeSources.contains(source) ||
+    roadmapHabitSources.contains(source) ||
+    roadmapLibrarySources.contains(source) ||
+    source == kRoadmapSourceStudyJournal ||
+    source == kRoadmapSourceCommunityPost;
 
 class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
@@ -142,6 +167,26 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         const LibraryRoute().go(context);
         page.setCurrentRouteName(RouteNamed.library);
       }
+      return;
+    }
+    // Opened from Profile → "Nhật ký học tập". The day sheet was popped on the
+    // way out, so back returns to the Profile tab the calendar sits on rather
+    // than to a re-opened sheet: re-opening it would mean carrying the day
+    // through the roadmap, and the square that opened it is right there.
+    if (source == kRoadmapSourceStudyJournal) {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(2); // Setting/Profile branch
+      ProfileRoute().go(context);
+      page.setCurrentRouteName(RouteNamed.profile);
+      return;
+    }
+    // Opened from the course card attached to a community post — back returns
+    // to the Cộng đồng tab the post was being read on.
+    if (source == kRoadmapSourceCommunityPost) {
+      final page = context.read<PageCubit>();
+      page.setCurrentIndex(6); // Community branch
+      const CommunityRoute().go(context);
+      page.setCurrentRouteName(RouteNamed.community);
       return;
     }
     // "View more" opened the full one-skillset grid (SkillsetCoursesRoute, a

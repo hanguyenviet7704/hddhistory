@@ -96,6 +96,9 @@ abstract class CommunityApi {
   @GET(AppEndpoint.communityMyStatus)
   Future<BaseResponse<CommunityMemberStatusModel>> getMemberStatus();
 
+  @POST(AppEndpoint.communityTourSeen)
+  Future<void> markTourSeen();
+
   @GET(AppEndpoint.communityRoomSuggestions)
   Future<BaseResponse<CommunityRoomSuggestionListModel>> getRoomSuggestions();
 

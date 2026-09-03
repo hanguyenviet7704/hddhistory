@@ -598,7 +598,7 @@ class _TopicHeaderCard extends StatelessWidget {
                 color: AppCustomColor.textSecondary,
                 height: 1.55,
               ),
-              maxLines: 5,
+              maxLines: 100,
             ),
           ],
           if (faces.isNotEmpty) ...[

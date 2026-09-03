@@ -342,6 +342,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     if (AppDI.injector.isRegistered<HabitCubit>()) {
       AppDI.injector.get<HabitCubit>().reset();
     }
+    // Community is the same shape of problem: a lazySingleton holding the
+    // previous session's feed, the reader's posting rights and the unread
+    // badge. It bites hardest on guest → login, because that is the transition
+    // the forum's own sign-in notice starts: without this the reader signs in,
+    // comes back to the tab, and is still invited to sign in — `ensureLoaded`
+    // trusts the loaded copy for two minutes and does nothing.
+    if (AppDI.injector.isRegistered<CommunityFeedCubit>()) {
+      AppDI.injector.get<CommunityFeedCubit>().reset();
+    }
   }
 
   bool get hasActiveAnonymousSession => _userCubit.state.user.anonymous && AppGlobalValue.accessToken.isNotEmpty;

@@ -226,6 +226,30 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         HomeRoute().go(navContext);
         return true;
 
+      // `meup://community-chat?room=<slug>` — a discussion room, where the
+      // "someone answered in the discussion" push lands. The tab is claimed
+      // first and the room pushed over it, so backing out of the notification
+      // leaves the reader in the forum rather than wherever they were.
+      case DeeplinkDestination.communityChat:
+        final roomSlug = target.params['room']?.trim() ?? '';
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.community);
+        const CommunityRoute().go(navContext);
+        if (roomSlug.isEmpty) {
+          _trackDeeplinkOpen(target, resolved: false, reason: 'missing_param');
+          return true;
+        }
+        unawaited(CommunityChatRoute(room: roomSlug).push(navContext));
+        return true;
+
+      // `meup://coach` — the AI Coach sheet, over Home. Exactly what the
+      // reminder push does on tap, so a campaign link and a push land the
+      // reader in the same place; which door opens is the server's call.
+      case DeeplinkDestination.coach:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
+        HomeRoute().go(navContext);
+        unawaited(_openCoachFromPush(navContext));
+        return true;
+
       // `meup://paywall` — what admin enters as a banner/popup linkUrl to send
       // the tap to the paywall. Pushed over wherever the reader is (the link is
       // an offer, not a relocation), with the generic entry point: which
@@ -404,14 +428,16 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
 
   void _trackDeeplinkOpen(DeeplinkTarget target, {required bool resolved, String reason = ''}) {
     unawaited(
-      AppService.instance.appTrackingService.trackEvent(
-        TrackingKey.deeplinkOpen,
-        parameters: {
-          ...target.trackingParams,
-          'resolved': resolved,
-          if (reason.isNotEmpty) 'reason': reason,
-        },
-      ).catchError((_) {}),
+      AppService.instance.appTrackingService
+          .trackEvent(
+            TrackingKey.deeplinkOpen,
+            parameters: {
+              ...target.trackingParams,
+              'resolved': resolved,
+              if (reason.isNotEmpty) 'reason': reason,
+            },
+          )
+          .catchError((_) {}),
     );
   }
 
@@ -547,12 +573,17 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     final campaignId = (raw['campaignId'] ?? '').toString().trim();
     if (notiType.isNotEmpty) {
       unawaited(
-        AppService.instance.appTrackingService.trackEvent(TrackingKey.notiTap, parameters: {
-          'noti_type': notiType,
-          'deeplink': deeplink,
-          if (courseId.isNotEmpty) 'course_id': courseId,
-          if (campaignId.isNotEmpty) 'campaign_id': campaignId,
-        }).catchError((_) {}),
+        AppService.instance.appTrackingService
+            .trackEvent(
+              TrackingKey.notiTap,
+              parameters: {
+                'noti_type': notiType,
+                'deeplink': deeplink,
+                if (courseId.isNotEmpty) 'course_id': courseId,
+                if (campaignId.isNotEmpty) 'campaign_id': campaignId,
+              },
+            )
+            .catchError((_) {}),
       );
     }
 
@@ -596,6 +627,27 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         _openCoachFromPush(navContext);
         return true;
 
+      case 'week_recap':
+        // The Monday weekly-recap pushes. `recapId` is set when the week's
+        // snapshot already exists server-side and empty when it does not —
+        // the poster page treats an absent id as "load my current one",
+        // which generates the snapshot on that first ask. The page lives on
+        // the Library branch, so the tab is claimed first, the same dance
+        // `habit_tracker` does.
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.library);
+        final recapId = (raw['recapId'] ?? '').toString().trim();
+        WeekRecapRoute(recapId: recapId.isEmpty ? null : recapId).go(navContext);
+        return true;
+
+      // Ngoài các đích symbolic ở trên, một noti — nhất là campaign gửi thủ
+      // công — trỏ được tới bất kỳ khoá nào trong DANH MỤC deeplink dùng chung
+      // với link marketing (`deeplink.catalog.ts` bên API). Cùng một bảng đích
+      // mà `_navigateToDestination` đã nối đủ, nên thêm một màn cho campaign chỉ
+      // cần deploy API: không release app, không release admin.
+      //
+      // KHÔNG đi qua `navigationFromService`: đường đó bắn thêm `deeplink_open`,
+      // và số click của link marketing sẽ lẫn cú chạm push vào. Cú chạm push đã
+      // có `noti_tap` ở trên.
       default:
         final destination = DeeplinkDestination.tryFromValue(deeplink);
         if (destination == null) {
@@ -841,7 +893,6 @@ String normalizeDeeplinkPath(String path) {
 
   return trimmedPath.startsWith('/') ? trimmedPath : '/$trimmedPath';
 }
-
 
 /// Opens an ADMIN-CONFIGURED link (home banner slide, promo popup): the app's
 /// own scheme routes inside the app through [DeeplinkCubit]'s table, anything

@@ -103,12 +103,18 @@ class _NotificationRow extends StatelessWidget {
     if (item.type == CommunityNotificationType.likeOnPost && item.otherActorCount > 0) {
       return l10n.notificationLikedPostWithOthers(count: item.otherActorCount);
     }
+    // Weekly answers collapse the same way likes do — one row per question.
+    if (item.type == CommunityNotificationType.answerOnWeekly && item.otherActorCount > 0) {
+      return l10n.notificationWeeklyAnswerWithOthers(count: item.otherActorCount);
+    }
 
     return switch (item.type) {
       CommunityNotificationType.likeOnPost => l10n.notificationLikedPost,
       CommunityNotificationType.commentOnPost => l10n.notificationCommentOnPost,
       CommunityNotificationType.replyToComment => l10n.notificationReplyToComment,
       CommunityNotificationType.commentOnFollowedPost => l10n.notificationCommentOnFollowed,
+      CommunityNotificationType.answerOnWeekly => l10n.notificationWeeklyAnswer,
+      CommunityNotificationType.messageInRoom => l10n.notificationRoomMessage,
       CommunityNotificationType.officialReply => l10n.notificationOfficialReply,
       CommunityNotificationType.postHidden => l10n.notificationPostHidden,
       CommunityNotificationType.sanctionApplied => l10n.notificationSanction,
@@ -129,6 +135,14 @@ class _NotificationRow extends StatelessWidget {
       Icons.reply_rounded,
       AppCustomColor.brandPrimary,
     ),
+    CommunityNotificationType.answerOnWeekly => (
+      Icons.help_center_rounded,
+      AppCustomColor.brandPrimary,
+    ),
+    CommunityNotificationType.messageInRoom => (
+      Icons.forum_rounded,
+      AppCustomColor.brandPrimary,
+    ),
     CommunityNotificationType.postHidden || CommunityNotificationType.sanctionApplied => (
       Icons.gavel_rounded,
       AppCustomColor.errorRed,
@@ -139,19 +153,37 @@ class _NotificationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final postId = item.postId;
+    final roomSlug = item.roomSlug;
     final actor = item.actor;
     final name = actor?.name.trim() ?? '';
     final (badgeIcon, badgeColor) = _badge;
 
     return GestureDetector(
-      onTap: postId == null || postId.isEmpty ? null : () => CommunityPostRoute(postId: postId).push(context),
+      // A room row goes to the room; everything else to the post it is about.
+      onTap: switch ((roomSlug, postId)) {
+        (final String slug, _) when slug.isNotEmpty => () => CommunityChatRoute(room: slug).push(context),
+        (_, final String id) when id.isNotEmpty => () => CommunityPostRoute(postId: id).push(context),
+        _ => null,
+      },
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 13.h),
-        // Unread rows carry a wash; read ones stay on the background. Over a
-        // custom study background both are translucent so the picture still
-        // shows through, and the difference between them survives.
-        color: item.isRead ? studyThemeCardColor(context, opacity: 0.62) : studyThemeCardColor(context, opacity: 0.88),
+        // Unread rows carry a stronger wash; read ones settle to the same panel
+        // every other card in the app uses. Read rows used to drop to 0.62 —
+        // the most transparent surface in the codebase — and since opening the
+        // inbox marks everything read, that was the state the reader actually
+        // looked at: a whole screen of grey text over a photograph. The
+        // read/unread difference survives at 0.82 vs 0.94, and neither one
+        // asks the reader to work for the words.
+        decoration: BoxDecoration(
+          color: item.isRead ? studyThemeCardColor(context) : studyThemeCardColor(context, opacity: 0.94),
+          // A hairline, because these rows are full-bleed with no gap between
+          // them: once both states sit near white, one row runs into the next
+          // and the list reads as a single block of text.
+          border: Border(
+            bottom: BorderSide(color: AppCustomColor.communityMuted.withValues(alpha: 0.18)),
+          ),
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

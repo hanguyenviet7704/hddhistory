@@ -412,6 +412,18 @@ class CommunityRepository implements ICommunityRepository {
     );
   }
 
+  @override
+  TaskEither<AppException, Unit> markTourSeen() {
+    return TaskEither.tryCatch(
+      () async {
+        await _api.markTourSeen();
+
+        return unit;
+      },
+      (error, stackTrace) => communityException(error),
+    );
+  }
+
   // ------------------------------------------------------------ group chat
 
   @override
@@ -628,6 +640,8 @@ extension CommunityNotificationModelX on CommunityNotificationModel {
     otherActorCount: otherActorCount,
     postId: postId,
     commentId: commentId,
+    roomId: roomId,
+    roomSlug: roomSlug,
     isRead: isRead,
     createdAt: DateTime.tryParse(createdAt ?? '')?.toLocal(),
   );
@@ -663,5 +677,6 @@ extension CommunityMemberStatusModelX on CommunityMemberStatusModel {
     requiresLogin: requiresLogin,
     reason: reason,
     mutedUntil: DateTime.tryParse(mutedUntil ?? '')?.toLocal(),
+    tourSeen: tourSeen,
   );
 }

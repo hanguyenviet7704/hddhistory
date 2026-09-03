@@ -8,9 +8,12 @@ part of '../community.dart';
 /// reading. The guest notice is TAPPABLE — that is the way to the sign-in
 /// screen, taken only if they want it.
 ///
-/// - A **guest** gets the invitation, and tapping it opens auth. Coming back
-///   re-reads the member status, so signing in unlocks the composer and the
-///   write affordances without leaving and re-entering the tab.
+/// - A **guest** gets the invitation, and tapping it opens auth. Backing OUT of
+///   auth re-reads the member status on the way back. Actually signing in does
+///   not come back at all — `AuthBloc` ends a successful login with a `.go()`
+///   to Home, which replaces the stack — so the unlock is carried by the reset
+///   in `AuthBloc._resetAppCubits`, which drops this cubit's guest-session copy
+///   and makes the next entry to the tab a real load.
 /// - A **suspended member** gets the moderator's reason. There is nothing for
 ///   them to do on a login screen, and sending them there would read as the app
 ///   losing their session.
@@ -55,8 +58,10 @@ Future<void> _openCommunityAuth() async {
 
   await const RegisterRoute().push(context);
 
-  // The singleton feed cubit owns the status the whole tab reads, so refreshing
-  // it here is what re-opens the composer and the write affordances.
+  // Reached only when the reader BACKED OUT: a successful login replaces the
+  // stack and never returns here. Kept because backing out still has to settle
+  // the status (they may have signed in on another screen meanwhile), and
+  // because it costs one request on a path the reader took deliberately.
   await AppDI.injector.get<CommunityFeedCubit>().refreshMemberStatus();
 }
 

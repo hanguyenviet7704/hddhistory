@@ -36,7 +36,10 @@ class CommunityWeeklyCard extends StatelessWidget {
                       color: AppCustomColor.streakActive,
                       letterSpacing: 0.6,
                     ),
-                    maxLines: 1,
+                    // The English label ("QUESTION OF THE WEEK · WEEK 35") is
+                    // long enough to clip on a narrow phone. Two lines, never a
+                    // cut word.
+                    maxLines: 2,
                   ),
                 ),
                 if (daysLeft != null && daysLeft > 0)
@@ -53,7 +56,7 @@ class CommunityWeeklyCard extends StatelessWidget {
                 color: AppCustomColor.communityTopicHeading,
                 height: 1.4,
               ),
-              maxLines: 3,
+              maxLines: 100,
             ),
             SizedBox(height: 12.h),
             Row(

@@ -161,6 +161,8 @@ abstract class CommunityNotificationModel with _$CommunityNotificationModel {
     @Default(0) int otherActorCount,
     String? postId,
     String? commentId,
+    String? roomId,
+    String? roomSlug,
     @Default(false) bool isRead,
     String? createdAt,
   }) = _CommunityNotificationModel;
@@ -190,6 +192,10 @@ abstract class CommunityMemberStatusModel with _$CommunityMemberStatusModel {
     @Default(false) bool requiresLogin,
     String? reason,
     String? mutedUntil,
+
+    /// True once the first-run tour has been finished. Defaults to TRUE so an
+    /// older server (or a failed read) never opens the tour by accident.
+    @Default(true) bool tourSeen,
   }) = _CommunityMemberStatusModel;
 
   factory CommunityMemberStatusModel.fromJson(Map<String, dynamic> json) => _$CommunityMemberStatusModelFromJson(json);

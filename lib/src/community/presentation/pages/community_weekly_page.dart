@@ -79,13 +79,23 @@ class _WeeklyHeaderBlock extends StatelessWidget {
   String _label(BuildContext context) {
     final l10n = context.l10n.community;
     final week = weekly.weekNumber;
-    final base = week == null ? l10n.weeklyLabel : l10n.weeklyLabelWithWeek(week: week);
-
     final start = weekly.startsAt;
     final end = weekly.endsAt;
-    if (start == null || end == null) return base;
+    final range = start == null || end == null
+        ? ''
+        : '${start.parseString('dd/MM')}—${end.parseString('dd/MM')}';
 
-    return '$base · ${start.parseString('dd/MM')}—${end.parseString('dd/MM')}';
+    // "CÂU HỎI CỦA TUẦN · TUẦN 35 · 24/08—30/08" does not fit this row at any
+    // phone width — it was ellipsised mid-date, which is the one part of the
+    // line a reader is here for. The prefix goes instead: the app bar directly
+    // above already says "Câu hỏi của tuần", so repeating it cost the dates.
+    // [weeklyWeekRange] is the short form, written for exactly this and unused
+    // until now.
+    if (week != null && range.isNotEmpty) {
+      return l10n.weeklyWeekRange(week: week, range: range);
+    }
+    if (week != null) return l10n.weeklyLabelWithWeek(week: week);
+    return range.isEmpty ? l10n.weeklyLabel : '${l10n.weeklyLabel} · $range';
   }
 
   @override
@@ -115,7 +125,9 @@ class _WeeklyHeaderBlock extends StatelessWidget {
                         color: AppCustomColor.streakActive,
                         letterSpacing: 0.7,
                       ),
-                      maxLines: 1,
+                      // Wraps rather than clips: a longer locale must cost a
+                      // second line, never the dates at the end of it.
+                      maxLines: 2,
                     ),
                   ),
                   if (daysLeft != null && daysLeft > 0)
@@ -132,6 +144,7 @@ class _WeeklyHeaderBlock extends StatelessWidget {
                   color: AppCustomColor.communityTopicHeading,
                   height: 1.4,
                 ),
+                maxLines: 100,
               ),
               SizedBox(height: 14.h),
               Row(
@@ -174,6 +187,9 @@ class _WeeklyHeaderBlock extends StatelessWidget {
               color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
               height: 1.5,
             ),
+            // The note is written by the team in admin and can be longer than
+            // [AppText]'s default ten lines.
+            maxLines: 100,
           ),
         ),
         if (weekly.answerCount > 0)
