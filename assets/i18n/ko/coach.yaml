@@ -33,6 +33,7 @@ promptTwoCols: 두 열로 정리했어요 — 모두 당신의 말이에요. 진
 promptIntent: "얼마 전 당신은 “${context}, ${action}”라고 했어요. 그런 순간이 있었나요?"
 
 fallbackReply: 듣고 있어요.
+fallbackNetwork: 연결이 불안정해서 방금 메시지가 전달되지 않았어요 — 다시 보내 주세요.
 
 
 personaFriend: 친구처럼
@@ -72,7 +73,7 @@ endGoToCourse: 코스 열기
 endKeepTalking: 계속 이야기하기
 endClose: 닫기
 
-twoColsLeftTitle: 있었던 일
+twoColsLeftTitle: 제가 본 것
 twoColsRightTitle: 진짜 내 문제
 twoColsHint: 줄을 탭하면 오른쪽으로 옮겨져요. Coach는 당신이 한 말로만 초안을 만들어요.
 lineEdit: 이 줄 고치기
@@ -154,6 +155,7 @@ sceneAgainNo: 충분해요
 sceneAgainNoEcho: 충분해요.
 promptSceneDone: 이 장면은 여기까지 할게요.
 promptHub: 끝났어요. 더 하고 싶은 얘기 있나요?
+hubOpen: 오늘은 무엇을 해볼까요?
 hubTaskT1: 약속 확인하기
 hubTaskT2: 상황 연습하기
 hubTaskT3: 이야기하기
@@ -270,7 +272,7 @@ stepSafety: 안전한 출구
 sceneLead: "짧은 장면 하나:"
 
 # 방향 (2026-08-26): 리마인더 줄이기 · 코스 추천 이유
-promptShrinkAsk: 이 리마인더를 조금 더 작게 바꿀까요?
+promptShrinkAsk: 이 리마인더를 더 간단하게 바꿀까요?
 shrinkAskYes: 더 작게
 shrinkAskNo: 그대로 두고 다시
 shrinkAskYesEcho: 더 작게요.

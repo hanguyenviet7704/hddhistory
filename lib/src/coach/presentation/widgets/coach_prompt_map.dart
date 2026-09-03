@@ -102,6 +102,10 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     // Bộ điều phối, and the scene's last two beats.
     case 'coach.prompt.hub':
       return l10n.promptHub;
+    // The coordinator is ②'s opening step as well as the seam between tasks;
+    // "Xong rồi…" reads as a goodbye before anything has happened.
+    case 'coach.prompt.hubOpen':
+      return l10n.hubOpen;
     case 'coach.prompt.sceneMet':
       return l10n.promptSceneMet;
     case 'coach.prompt.sceneWhen':

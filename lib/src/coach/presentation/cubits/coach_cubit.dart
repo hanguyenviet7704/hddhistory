@@ -446,6 +446,9 @@ class CoachCubit extends Cubit<CoachState> {
       }
     }
 
+    if (turn.ui.kind == CoachUiKind.courseCard || turn.ui.course != null) {
+      LogDev.data('[CoachDbg] turn: step=${turn.step} kind=${turn.ui.kind} course=${turn.ui.course?.courseId} ended=${turn.ended}'); // TEMP-DEBUG
+    }
     return base.copyWith(
       sessionId: turn.sessionId,
       step: turn.step,

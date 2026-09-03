@@ -41,15 +41,23 @@ class CoachLessonBubble extends StatelessWidget {
                   entry: CoachEntry.lesson,
                   lessonId: lessonId,
                 );
-                if (!context.mounted) return;
-
-                await context.read<CoachBubbleCubit>().invalidate(entry: CoachEntry.lesson, lessonId: lessonId);
-                if (!context.mounted || courseId == null) return;
+                LogDev.data('[CoachDbg] lesson sheet closed: courseId=$courseId mounted=${context.mounted}'); // TEMP-DEBUG
 
                 // Same contract as the Home bubble: the sheet hands back the
                 // course the reader tapped, and navigation happens only AFTER
-                // the modal is gone — never from under a closing modal.
-                AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(context, courseId);
+                // the modal is gone — never from under a closing modal. It goes
+                // through the app-level context: the lesson surface under the
+                // sheet may itself be gone by the time the modal closes, and
+                // its dead element was silently eating the navigation.
+                if (courseId != null) {
+                  final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
+                  if (navContext != null && navContext.mounted) {
+                    AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId);
+                  }
+                }
+                if (!context.mounted) return;
+
+                await context.read<CoachBubbleCubit>().invalidate(entry: CoachEntry.lesson, lessonId: lessonId);
               },
             );
           },

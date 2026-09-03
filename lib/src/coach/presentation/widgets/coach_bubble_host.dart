@@ -51,6 +51,30 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
     return null;
   }
 
+  /// The sheet, and what the reader chose on the way out.
+  ///
+  /// Lives on the STATE, not the bubble's builder: PageCubit's route name gets
+  /// re-anchored by overlays while the sheet is up, the selector below collapses
+  /// to a shrink, and the builder's element dies — so a courseId handed back
+  /// after the modal closed was silently dropped by its `context.mounted` guard.
+  /// The State survives that collapse, and navigation itself goes through the
+  /// app-level context, which outlives even this host.
+  Future<void> _openSheet(CoachEntry entry) async {
+    final courseId = await showCoachSheet(context, entry: entry);
+    LogDev.data('[CoachDbg] sheet closed: courseId=$courseId mounted=$mounted'); // TEMP-DEBUG
+
+    if (courseId != null) {
+      final navContext = AppConfig.instance.context ?? (mounted ? context : null);
+      if (navContext != null && navContext.mounted) {
+        AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId);
+      }
+    }
+    if (!mounted) return;
+
+    _asked = null;
+    await context.read<CoachBubbleCubit>().invalidate(entry: entry);
+  }
+
   /// Ask once per arrival at a door, after the frame — never during build.
   void _refreshIfNeeded(BuildContext context, CoachEntry entry) {
     if (_asked == entry) return;
@@ -90,19 +114,10 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
               // ②A quotes the reader's own commitment; ④ has no words of
               // theirs to quote yet and says "Tình huống ba tuần trước…".
               teaser: state.teaser ?? coachTeaser(context, state.teaserKey),
-              onTap: () async {
-                final courseId = await showCoachSheet(context, entry: entry);
-                if (!context.mounted) return;
-
-                _asked = null;
-                await context.read<CoachBubbleCubit>().invalidate(entry: entry);
-                if (!context.mounted || courseId == null) return;
-
-                // Navigating AFTER the sheet is gone, never from inside it —
-                // pushing a route from under a closing modal is how a
-                // navigator ends up with an orphan.
-                AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(context, courseId);
-              },
+              // Navigating AFTER the sheet is gone, never from inside it —
+              // pushing a route from under a closing modal is how a
+              // navigator ends up with an orphan.
+              onTap: () => _openSheet(entry),
             );
           },
         );

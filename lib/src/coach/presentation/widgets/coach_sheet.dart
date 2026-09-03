@@ -38,6 +38,11 @@ Future<String?> showCoachSheet(
     // leaves the page showing behind it. A conversation about something
     // difficult should not have the app peeking round its edges.
     isScrollControlled: true,
+    // A downward swipe used to close the whole sheet — reaching for the thread
+    // and losing the conversation instead (bug sheet 2026-08-28 16:18: "vuốt
+    // xuống là tắt màn hình AI Coach"). The sheet is full-bleed, so the gesture
+    // overlaps ordinary scrolling everywhere; leaving is the header's ✕.
+    enableDrag: false,
     useSafeArea: false,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.35),
@@ -125,8 +130,6 @@ class _CoachSheetState extends State<_CoachSheet> {
             child: Column(
               children: [
                 _Header(
-                  // "đang trả lời…" while a turn is in flight, else the step.
-                  subtitle: state.typing ? context.l10n.coach.stepWait : coachStepLabel(context, state.step),
                   // The avatar acts the step out: listening while the reader
                   // types, thinking while composing or at the two columns,
                   // gentle on the safety screen. Same selector as the design's.
@@ -202,9 +205,11 @@ class _CoachSheetState extends State<_CoachSheet> {
 /// Nothing else stands between the tap and the Roadmap.
 Future<void> _openCourse(BuildContext context, CoachCubit cubit) async {
   final course = cubit.state.ui.course;
+  LogDev.data('[CoachDbg] _openCourse tap: course=${course?.courseId} step=${cubit.state.step} kind=${cubit.state.ui.kind}'); // TEMP-DEBUG
   if (course == null) return;
 
   await cubit.courseAction('open', label: context.l10n.coach.courseOpenEcho);
+  LogDev.data('[CoachDbg] after open: ended=${cubit.state.ended} status=${cubit.state.status} mounted=${context.mounted}'); // TEMP-DEBUG
   if (context.mounted && cubit.state.ended) {
     Navigator.of(context).pop(_CoachSheetResult.openCourse(course.courseId));
   }
@@ -302,17 +307,16 @@ class _HabitChip extends StatelessWidget {
 
 /// White bar, hairline underneath, the Coach on the left, "Đóng" on the right.
 ///
-/// Two lines, as drawn: the name, and under it what this moment of the
-/// conversation is — "mood đầu ngày · 5 mức, 1 chạm". No other control: the
+/// ONE line: the name. The step label that used to sit under it is gone
+/// (owner's call, 2026-08-28) — naming the step turned a conversation into a
+/// form the reader could see the length of. No other control either: the
 /// design's header has no voice picker and no settings, because a header full
 /// of controls is a screen, and this is a conversation.
 class _Header extends StatelessWidget {
-  final String? subtitle;
   final CoachSlimeMood mood;
   final VoidCallback onClose;
 
   const _Header({
-    required this.subtitle,
     required this.mood,
     required this.onClose,
   });
@@ -338,58 +342,41 @@ class _Header extends StatelessWidget {
           CoachSlime(mood: mood, size: 34),
           SizedBox(width: 11.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        context.l10n.coach.sheetTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14.5.sp,
-                          fontWeight: FontWeight.w700,
-                          color: CoachStyle.textPrimary,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 6.w),
-                    // The design's stage marker — a literal, the same word in
-                    // every locale, so it is not a slang key.
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
-                      decoration: BoxDecoration(
-                        color: CoachStyle.selectedBackground,
-                        border: Border.all(color: CoachStyle.selectedBorderSoft),
-                        borderRadius: BorderRadius.circular(99.r),
-                      ),
-                      child: Text(
-                        'BETA',
-                        style: TextStyle(
-                          fontSize: 9.sp,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.4,
-                          color: CoachStyle.userBubble,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (subtitle != null && subtitle!.isNotEmpty)
-                  Text(
-                    subtitle!,
+                Flexible(
+                  child: Text(
+                    context.l10n.coach.sheetTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: CoachStyle.textMuted,
+                      fontSize: 14.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: CoachStyle.textPrimary,
                     ),
                   ),
+                ),
+                SizedBox(width: 6.w),
+                // The design's stage marker — a literal, the same word in
+                // every locale, so it is not a slang key.
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                  decoration: BoxDecoration(
+                    color: CoachStyle.selectedBackground,
+                    border: Border.all(color: CoachStyle.selectedBorderSoft),
+                    borderRadius: BorderRadius.circular(99.r),
+                  ),
+                  child: Text(
+                    'BETA',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                      color: CoachStyle.userBubble,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

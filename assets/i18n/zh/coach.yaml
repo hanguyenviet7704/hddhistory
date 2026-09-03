@@ -33,6 +33,7 @@ promptTwoCols: 我把它整理成两栏——全都是你自己的话。把真�
 promptIntent: "前几天你说：${context}，你会${action}。有过这样的时机吗？"
 
 fallbackReply: 我听着呢。
+fallbackNetwork: 网络不稳定，刚才那条没有送达——请再发一次。
 
 
 personaFriend: 像朋友
@@ -72,7 +73,7 @@ endGoToCourse: 打开课程
 endKeepTalking: 继续聊
 endClose: 关闭
 
-twoColsLeftTitle: 发生了什么
+twoColsLeftTitle: 我观察到的
 twoColsRightTitle: 我真正的问题
 twoColsHint: 点一行就移到右边。Coach 只用你说过的话来起草。
 lineEdit: 修改这一行
@@ -154,6 +155,7 @@ sceneAgainNo: 够了
 sceneAgainNoEcho: 够了。
 promptSceneDone: 这个场景就到这里吧。
 promptHub: 好了。还有什么想说的吗？
+hubOpen: 今天你想做什么？
 hubTaskT1: 看一下提醒
 hubTaskT2: 练一个场景
 hubTaskT3: 说说今天
@@ -270,7 +272,7 @@ stepSafety: 安全出口
 sceneLead: "一个小场景："
 
 # 方向（2026-08-26）：缩小提醒 · 课程推荐理由
-promptShrinkAsk: 想把这个提醒改小一点吗？
+promptShrinkAsk: 想把这个提醒改得简单一点吗？
 shrinkAskYes: 改小一点
 shrinkAskNo: 保持原样，再试一次
 shrinkAskYesEcho: 改小一点。

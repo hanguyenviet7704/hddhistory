@@ -33,6 +33,7 @@ promptTwoCols: Mình gom lại thành nháp hai cột — toàn bằng lời b�
 promptIntent: "Hôm trước bạn nói: ${context} sẽ ${action}. Có dịp nào chưa?"
 
 fallbackReply: Mình nghe rồi.
+fallbackNetwork: Mạng chập chờn, tin vừa rồi chưa tới nơi — gửi lại giúp mình nhé.
 
 
 personaFriend: Người bạn
@@ -72,7 +73,7 @@ endGoToCourse: Mở khoá học
 endKeepTalking: Tiếp tục trò chuyện
 endClose: Đóng
 
-twoColsLeftTitle: Chuyện đã xảy ra
+twoColsLeftTitle: Mình quan sát được
 twoColsRightTitle: Vấn đề thật của tôi
 twoColsHint: Tap để kéo dòng sang phải. Coach chỉ dựng nháp bằng lời bạn đã kể.
 lineEdit: Sửa dòng này
@@ -154,6 +155,7 @@ sceneAgainNo: Đủ rồi
 sceneAgainNoEcho: Đủ rồi.
 promptSceneDone: Vậy mình dừng cảnh ở đây nhé.
 promptHub: Xong rồi. Còn gì bạn muốn nói không?
+hubOpen: Hôm nay bạn muốn làm gì?
 hubTaskT1: Xem lại nhắc hẹn
 hubTaskT2: Tập một tình huống
 hubTaskT3: Kể chuyện
@@ -270,7 +272,7 @@ stepSafety: đường thoát an toàn
 sceneLead: "Một cảnh ngắn:"
 
 # hướng đi (2026-08-26): thu nhỏ nhắc hẹn · lý do card course
-promptShrinkAsk: Muốn thu nhỏ nhắc hẹn này lại không?
+promptShrinkAsk: Bạn có muốn thay đổi nhắc hẹn cho đơn giản hơn không?
 shrinkAskYes: Thu nhỏ lại
 shrinkAskNo: Giữ nguyên, thử lại
 shrinkAskYesEcho: Thu nhỏ lại.

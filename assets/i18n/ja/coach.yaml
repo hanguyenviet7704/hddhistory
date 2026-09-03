@@ -33,6 +33,7 @@ promptTwoCols: 二つの列にまとめました——すべてあなた自身�
 promptIntent: "先日あなたは「${context}、${action}」と言いました。その場面はありましたか？"
 
 fallbackReply: 聞いています。
+fallbackNetwork: 通信が不安定で、さっきのメッセージが届きませんでした——もう一度送ってください。
 
 
 personaFriend: 友だちのように
@@ -72,7 +73,7 @@ endGoToCourse: コースを開く
 endKeepTalking: 話を続ける
 endClose: 閉じる
 
-twoColsLeftTitle: 起きたこと
+twoColsLeftTitle: 気づいたこと
 twoColsRightTitle: 本当の問題
 twoColsHint: 行をタップすると右へ移ります。Coachはあなたの言葉だけで下書きします。
 lineEdit: この行を直す
@@ -154,6 +155,7 @@ sceneAgainNo: これで十分
 sceneAgainNoEcho: これで十分です。
 promptSceneDone: この場面はここまでにしましょう。
 promptHub: 終わりました。ほかに話したいことはありますか？
+hubOpen: 今日は何をしますか？
 hubTaskT1: リマインドを確認
 hubTaskT2: 場面を練習する
 hubTaskT3: 話してみる
@@ -270,7 +272,7 @@ stepSafety: 安全な出口
 sceneLead: "短い場面です："
 
 # 方向づけ（2026-08-26）：リマインダーを小さく · コース提案の理由
-promptShrinkAsk: このリマインダーを少し小さくしますか？
+promptShrinkAsk: このリマインダーをもっとシンプルに変えますか？
 shrinkAskYes: 小さくする
 shrinkAskNo: そのまま、もう一度
 shrinkAskYesEcho: 小さくします。

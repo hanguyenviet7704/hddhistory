@@ -101,6 +101,12 @@ class _CoachComposerState extends State<CoachComposer> {
     CoachUiKind.textSkippable,
     CoachUiKind.depth,
     CoachUiKind.hub,
+    // Nhịp 3 answers in a text box too, and `_twoCols` builds it with
+    // `_textArea` — which draws the white bar and the safe-area gap itself.
+    // Left out of this set, it got a SECOND bar and a second bottom inset
+    // wrapped around it by build(): the broken footer under the two-column
+    // draft (bug sheet 2026-08-28 16:18).
+    CoachUiKind.twoCols,
     CoachUiKind.sceneScore,
     CoachUiKind.nextAction,
     CoachUiKind.closing,
@@ -761,6 +767,13 @@ class _OptionPills extends StatelessWidget {
       );
     }
 
+    // pickNew / pickHabit — the choices ARE the reader's own library, and a
+    // library is long. Three at a time, re-rollable, instead of every habit at
+    // once (owner's call, 2026-08-28).
+    if (step == 'pickNew' || step == 'pickHabit') {
+      return _HabitPickPills(state: state, cubit: cubit, busy: busy);
+    }
+
     final specs = _chipSpecsFor(l10n, state);
 
     return Padding(
@@ -777,6 +790,153 @@ class _OptionPills extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// pickNew / pickHabit — THREE habits at a time, drawn at random from the
+/// reader's own library, with a quiet way to ask for three more.
+///
+/// The server sends the library WHOLE (thirteen and up in practice), and
+/// thirteen identical pills is not a question — it is a list the reader scrolls
+/// past. Three is a choice. The re-roll is what makes three safe: nothing is
+/// hidden for good, it is only out of frame.
+class _HabitPickPills extends StatefulWidget {
+  final CoachState state;
+  final CoachCubit cubit;
+  final bool busy;
+
+  const _HabitPickPills({required this.state, required this.cubit, required this.busy});
+
+  @override
+  State<_HabitPickPills> createState() => _HabitPickPillsState();
+}
+
+class _HabitPickPillsState extends State<_HabitPickPills> {
+  /// How many the reader sees at once.
+  static const _size = 3;
+
+  final _random = Random();
+  List<CoachChoiceEntity> _shown = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _shown = _roll(widget.state.ui.choices, const []);
+  }
+
+  @override
+  void didUpdateWidget(covariant _HabitPickPills oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A different library (or a different step's list) starts over — but ONLY
+    // then. Compared by VALUE, never by list identity: every rebuild hands us a
+    // fresh list object, and reshuffling on each one would move the answer out
+    // from under a thumb already on its way down.
+    final before = oldWidget.state.ui.choices.map((c) => c.value).join('\u0000');
+    final now = widget.state.ui.choices.map((c) => c.value).join('\u0000');
+    if (before != now) _shown = _roll(widget.state.ui.choices, const []);
+  }
+
+  /// Three at random — and never the same three twice while the library still
+  /// has unseen ones to give, because a re-roll that returns what was already
+  /// on screen reads as a broken button.
+  List<CoachChoiceEntity> _roll(List<CoachChoiceEntity> pool, List<CoachChoiceEntity> previous) {
+    if (pool.length <= _size) return List.of(pool);
+
+    final seen = previous.map((c) => c.value).toSet();
+    final unseen = pool.where((c) => !seen.contains(c.value)).toList()..shuffle(_random);
+    final picked = unseen.take(_size).toList();
+
+    // A library barely bigger than three runs out of unseen ones. Fill from the
+    // rest rather than show fewer — but only after every unseen one is in, so
+    // each tap still moves at least one pill.
+    if (picked.length < _size) {
+      final taken = picked.map((c) => c.value).toSet();
+      final rest = pool.where((c) => !taken.contains(c.value)).toList()..shuffle(_random);
+      picked.addAll(rest.take(_size - picked.length));
+    }
+
+    return picked;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.coach;
+
+    return Padding(
+      padding: EdgeInsets.only(top: 2.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < _shown.length; i++) ...[
+            if (i > 0) SizedBox(height: 7.h),
+            _OptionPill(
+              label: _shown[i].label ?? _shown[i].value,
+              onTap: widget.busy
+                  ? null
+                  : () => _dispatchChip(
+                      widget.cubit,
+                      widget.state.step,
+                      _ChipSpec(_shown[i].value, _shown[i].label ?? _shown[i].value),
+                    ),
+            ),
+          ],
+          // Nothing left to swap in — a button that cannot change anything is
+          // worse than no button.
+          if (widget.state.ui.choices.length > _size) ...[
+            SizedBox(height: 9.h),
+            _RerollLink(
+              label: l10n.pickReroll,
+              onTap: widget.busy
+                  ? null
+                  : () => setState(() => _shown = _roll(widget.state.ui.choices, _shown)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The way to ask for three more. A quiet line with a shuffle mark, never a
+/// fourth pill: the answers must look identical to each other, so nothing that
+/// is NOT an answer may look like one.
+class _RerollLink extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+
+  const _RerollLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = onTap == null ? CoachStyle.textDisabled : CoachStyle.textMuted;
+
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.shuffle_rounded, size: 14.sp, color: color),
+              SizedBox(width: 6.w),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

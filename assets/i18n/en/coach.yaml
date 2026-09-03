@@ -41,6 +41,7 @@ promptIntent: "The other day you said: ${context}, you would ${action}. Has ther
 # acknowledgement that claims to have understood something it never read is
 # worse than a plain one.
 fallbackReply: I hear you.
+fallbackNetwork: The connection hiccuped and that last message did not get through — please send it again.
 
 
 personaFriend: A friend
@@ -80,7 +81,7 @@ endGoToCourse: Go to the course
 endKeepTalking: Keep talking
 endClose: Close
 
-twoColsLeftTitle: What happened
+twoColsLeftTitle: What I noticed
 twoColsRightTitle: My real problem
 twoColsHint: Tap a line to move it right. The Coach only drafts from what you said.
 lineEdit: Edit this line
@@ -162,6 +163,7 @@ sceneAgainNo: That's enough
 sceneAgainNoEcho: That's enough.
 promptSceneDone: Let's leave the scene there.
 promptHub: Done. Anything else you want to say?
+hubOpen: What would you like to do?
 hubTaskT1: Check the reminder
 hubTaskT2: Practise a situation
 hubTaskT3: Tell me something
@@ -278,7 +280,7 @@ stepSafety: a way through
 sceneLead: "A short scene:"
 
 # direction (2026-08-26): smaller reminder · why this course
-promptShrinkAsk: Want to make this reminder smaller?
+promptShrinkAsk: Want to change this reminder to something simpler?
 shrinkAskYes: Make it smaller
 shrinkAskNo: Keep it, try again
 shrinkAskYesEcho: Make it smaller.
