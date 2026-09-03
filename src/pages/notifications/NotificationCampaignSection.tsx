@@ -44,6 +44,22 @@ const STATUS_LABELS: Record<NotificationCampaignStatus, string> = {
 };
 
 /**
+ * Nhãn tiếng Việt cho tham số của đích. Khoá lạ rơi về chính tên tham số, nên
+ * thêm một tham số ở API vẫn hiện ra được ngay — chỉ là chưa có nhãn đẹp.
+ */
+const DEEPLINK_PARAM_LABELS: Record<string, string> = {
+  variant: "Biến thể paywall",
+};
+
+/** Nhãn cho từng giá trị của một tham số select. Thiếu thì hiện giá trị thô. */
+const DEEPLINK_PARAM_VALUE_LABELS: Record<string, Record<string, string>> = {
+  variant: {
+    full: "Đầy đủ (full)",
+    compact: "Gọn (compact)",
+  },
+};
+
+/**
  * Đích của các loại noti CÓ LỊCH, không nằm trong danh mục deeplink.
  *
  * Chỉ `resume_lesson` được mời chọn: bốn cái còn lại chỉ có nghĩa khi bộ gửi
@@ -170,6 +186,16 @@ export default function NotificationCampaignSection() {
   // Composer state
   const [name, setName] = useState("");
   const [deeplink, setDeeplink] = useState<string>("home");
+  /**
+   * Tham số tuỳ chọn của đích đang chọn — hiện chỉ `paywall` có một cái.
+   *
+   * Giữ theo TÊN tham số chứ không phải một state riêng cho `variant`: danh mục
+   * đến từ API, nên thêm một tham số select ở màn khác sau này không phải sửa
+   * lại chỗ này.
+   */
+  const [deeplinkParams, setDeeplinkParams] = useState<Record<string, string>>(
+    {},
+  );
   const [destinations, setDestinations] = useState<IDeeplinkDestination[]>([]);
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [sendMode, setSendMode] = useState<NotificationCampaignSendMode>("now");
@@ -305,6 +331,25 @@ export default function NotificationCampaignSection() {
     [destinations, deeplink],
   );
 
+  /**
+   * Tham số của đích mà màn này render được: đúng những cái TUỲ CHỌN có picker
+   * `select`.
+   *
+   * Không phải sự lười: picker `course` / `keypoint` cần bộ chọn thực thể, và
+   * chính vì màn này không có chúng mà những đích cần tham số BẮT BUỘC đã bị lọc
+   * khỏi dropdown ở trên. Một `select` thì chỉ là mấy option do API khai sẵn.
+   */
+  const selectableParams = useMemo(
+    () =>
+      (selectedDestination?.params ?? []).filter(
+        (param) =>
+          !param.required &&
+          param.picker === "select" &&
+          (param.options?.length ?? 0) > 0,
+      ),
+    [selectedDestination],
+  );
+
   /** Tên màn của một campaign đã tạo — danh mục trước, đích cũ sau, cuối cùng
    * là khoá trơ (campaign mang khoá mà bản admin này chưa biết). */
   const destinationLabel = useCallback(
@@ -328,6 +373,7 @@ export default function NotificationCampaignSection() {
     setImageUrl("");
     setSegmentIds([]);
     setDeeplink("home");
+    setDeeplinkParams({});
     setSendMode("now");
     setLocalHour("20");
     setLocalMinute("0");
@@ -352,6 +398,7 @@ export default function NotificationCampaignSection() {
     );
     setImageUrl(campaign.imageUrl ?? "");
     setDeeplink(campaign.deeplink);
+    setDeeplinkParams(campaign.deeplinkParams ?? {});
     setSegmentIds(campaign.segmentIds ?? []);
     setSendMode(campaign.sendMode);
     setLocalHour(String(campaign.localHour ?? 20));
@@ -380,6 +427,7 @@ export default function NotificationCampaignSection() {
         // field lại có nghĩa là giữ ảnh cũ.
         imageUrl: imageUrl.trim(),
         deeplink,
+        deeplinkParams,
         segmentIds,
         sendMode,
         localHour: Number(localHour),
@@ -412,6 +460,7 @@ export default function NotificationCampaignSection() {
         copies: filledCopies,
         imageUrl: imageUrl.trim(),
         deeplink,
+        deeplinkParams,
         segmentIds,
         sendMode,
         localHour: Number(localHour),
@@ -502,7 +551,14 @@ export default function NotificationCampaignSection() {
             SelectProps={{ native: true }}
             label="Deep link"
             value={deeplink}
-            onChange={(e) => setDeeplink(e.target.value)}
+            onChange={(e) => {
+              setDeeplink(e.target.value);
+              // Đổi đích thì bỏ tham số cũ: `variant` của paywall còn sót lại
+              // sau khi chuyển sang Trang chủ là một khoá vô nghĩa đi thẳng vào
+              // payload push. API cũng lọc lại, đây chỉ là để ô chọn không hiện
+              // một giá trị không còn thuộc về đâu.
+              setDeeplinkParams({});
+            }}
             helperText={
               selectedDestination
                 ? `Cần bản app build ≥ ${Math.max(
@@ -526,6 +582,38 @@ export default function NotificationCampaignSection() {
               </optgroup>
             ))}
           </TextField>
+
+          {selectableParams.map((param) => (
+            <TextField
+              key={param.name}
+              size="small"
+              select
+              SelectProps={{ native: true }}
+              label={DEEPLINK_PARAM_LABELS[param.name] ?? param.name}
+              value={deeplinkParams[param.name] ?? ""}
+              onChange={(e) =>
+                setDeeplinkParams((current) => {
+                  const next = { ...current };
+                  // Bỏ hẳn khoá thay vì để chuỗi rỗng: rỗng đi vào payload đọc
+                  // như "có truyền nhưng bỏ trống", còn vắng mặt mới đúng nghĩa
+                  // "không truyền" — cùng luật với buildDeeplinkUrl.
+                  if (e.target.value) next[param.name] = e.target.value;
+                  else delete next[param.name];
+                  return next;
+                })
+              }
+              // Chi tiết riêng của từng đích đã nằm ở `note` trên ô Deep link;
+              // câu này phải đúng với mọi tham số select, không riêng paywall.
+              helperText="Bỏ trống = để app tự quyết theo cấu hình."
+            >
+              <option value="">Không chọn (theo cấu hình)</option>
+              {(param.options ?? []).map((option) => (
+                <option key={option} value={option}>
+                  {DEEPLINK_PARAM_VALUE_LABELS[param.name]?.[option] ?? option}
+                </option>
+              ))}
+            </TextField>
+          ))}
         </div>
 
         <div className="mt-4">

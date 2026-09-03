@@ -173,6 +173,12 @@ export interface NotificationCampaign {
    */
   deeplink: string;
   /**
+   * Tham số tuỳ chọn của đích, theo `params` mà danh mục khai cho khoá đó —
+   * hiện chỉ `paywall` có một cái (`variant: full | compact`). API lọc theo
+   * danh mục khi lưu, nên thứ đọc về đây luôn hợp lệ với đích đang chọn.
+   */
+  deeplinkParams?: Record<string, string>;
+  /**
    * Ảnh kèm noti, dùng chung cho mọi locale. `null`/absent = noti chỉ có chữ.
    *
    * Android hiện ảnh ở mọi trạng thái app. iOS chỉ hiện khi bản app có

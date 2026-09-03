@@ -162,6 +162,8 @@ export const notificationService = {
     name: string;
     copies: NotificationCampaignCopy[];
     deeplink: string;
+    /** Tham số tuỳ chọn của đích (ví dụ `{ variant: "full" }` cho paywall). */
+    deeplinkParams?: Record<string, string>;
     /** Ảnh kèm noti, dùng chung cho mọi locale. Chuỗi rỗng = không có ảnh. */
     imageUrl?: string;
     segmentIds: string[];
@@ -185,6 +187,8 @@ export const notificationService = {
       name?: string;
       copies?: NotificationCampaignCopy[];
       deeplink?: string;
+      /** Gửi cùng `deeplink`: đổi đích thì API lọc lại bộ này theo đích mới. */
+      deeplinkParams?: Record<string, string>;
       /** Chuỗi rỗng xoá ảnh; vắng mặt thì giữ ảnh cũ. */
       imageUrl?: string;
       segmentIds?: string[];
