@@ -176,6 +176,22 @@ class AppService {
     for (final languageCode in ['en', 'vi', 'zh', 'ja', 'ko']) {
       await initializeDateFormatting(languageCode);
     }
+
+    // slang ships cardinal resolvers for only a few languages; four of the five
+    // we support are not among them, so every plural string in vi/zh/ja/ko was
+    // logging "Resolver for <lang = ..> not specified" and falling back on each
+    // render (20 plural keys, so the log filled with it).
+    //
+    // These four genuinely have ONE cardinal form — Vietnamese "2 tuần" and
+    // Chinese "2 周" are the same word as their singular — so `other` is not a
+    // fallback here, it is the correct answer. Registering it says so and stops
+    // relying on slang's guess.
+    for (final languageCode in ['vi', 'zh', 'ja', 'ko']) {
+      LocaleSettings.setPluralResolverSync(
+        language: languageCode,
+        cardinalResolver: (n, {zero, one, two, few, many, other}) => other ?? '',
+      );
+    }
   }
 
   Future<void> _configUIResponsible() async {
