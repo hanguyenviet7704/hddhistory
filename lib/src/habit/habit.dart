@@ -51,7 +51,6 @@ part 'domain/usecases/get_habit_practices_usecase.dart';
 part 'domain/usecases/submit_practice_attempt_usecase.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/cubits/habit_qa_flags.dart';
 part 'presentation/cubits/habit_state.dart';
 part 'presentation/cubits/habit_cubit.dart';
 part 'presentation/cubits/habit_reminder_scheduler.dart';
@@ -64,7 +63,6 @@ part 'presentation/pages/daily_check_in_page.dart';
 part 'presentation/pages/journal_check_in_page.dart';
 part 'presentation/pages/habit_quiz_page.dart';
 part 'presentation/pages/practice_done_page.dart';
-part 'presentation/pages/habit_summary_page.dart';
 part 'presentation/pages/upgrade_habit_page.dart';
 part 'presentation/pages/manage_slots_page.dart';
 part 'presentation/pages/habit_detail_page.dart';

@@ -5,7 +5,6 @@ enum AdoptHabitResult { success, slotFull, failure }
 @lazySingleton
 class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitState> {
   final GetHabitsUseCase _getHabitsUseCase;
-  final GetUserHabitsSummaryUseCase _getSummaryUseCase;
   final AdoptHabitUseCase _adoptUseCase;
   final UpdateUserHabitUseCase _updateUseCase;
   final RemoveUserHabitUseCase _removeUseCase;
@@ -20,7 +19,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
 
   HabitCubit(
     this._getHabitsUseCase,
-    this._getSummaryUseCase,
     this._adoptUseCase,
     this._updateUseCase,
     this._removeUseCase,
@@ -72,16 +70,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
 
   /// Hide the Home check-in reminder card for the rest of today (§9.4 FR4.4).
   void dismissHomeReminderToday() => emit(state.copyWith(homeReminderDismissedOn: DateTime.now()));
-
-  /// Mark the Weekly recap as shown for this week so it doesn't re-open (§9.9).
-  /// Records both the server week start (preferred dedup key) and the device
-  /// day (legacy fallback for when the server didn't supply a week start).
-  void markWeeklyRecapShown() => emit(
-    state.copyWith(
-      weeklyRecapShownOn: DateTime.now(),
-      weeklyRecapShownWeekStart: state.summary.weekStartDate,
-    ),
-  );
 
   /// Loads the Habit tab's tracker + summary + slot cap in a single combined
   /// request (`GetHabitScreenUseCase` → `GET /user-habits/screen`), replacing
@@ -155,14 +143,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
     );
   }
 
-  Future<void> loadSummary() async {
-    await runUseCase<UserHabitSummaryEntity>(
-      usecase: () => _getSummaryUseCase(),
-      onFailure: (_) {},
-      onSuccess: (summary) => emit(state.copyWith(summary: summary)),
-    );
-  }
-
   /// Self-heal for the Habit tab, safe to call on every page mount and tab
   /// return. [resolveHabitReloadAction] decides between three outcomes: block
   /// with a spinner (nothing loaded yet / previous attempt failed), do nothing
@@ -225,7 +205,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
       (userHabit) {
         AppHaptic.success();
         emit(state.copyWith(userHabits: [...state.userHabits, userHabit]));
-        unawaited(loadSummary());
         return AdoptHabitResult.success;
       },
     );
@@ -243,7 +222,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
       (exception) => _isSlotFullError(exception) ? AdoptHabitResult.slotFull : AdoptHabitResult.failure,
       (updated) {
         _replaceUserHabit(updated);
-        unawaited(loadSummary());
         unawaited(cancelHabitReminder(userHabitId));
         return AdoptHabitResult.success;
       },
@@ -256,7 +234,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
       (_) => false,
       (_) {
         emit(state.copyWith(userHabits: state.userHabits.where((h) => h.id != userHabitId).toList()));
-        unawaited(loadSummary());
         unawaited(cancelHabitReminder(userHabitId));
         return true;
       },
@@ -301,7 +278,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
       (updated) {
         if (done) AppHaptic.success();
         _replaceUserHabit(updated);
-        unawaited(loadSummary());
         return true;
       },
     );
@@ -354,7 +330,6 @@ class HabitCubit extends Cubit<HabitState> with CubitUseCaseHandlerMixin<HabitSt
       (updated) {
         AppHaptic.success();
         _replaceUserHabit(updated);
-        unawaited(loadSummary());
         return true;
       },
     );

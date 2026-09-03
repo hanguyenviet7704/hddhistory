@@ -22,14 +22,6 @@ abstract class HabitState with _$HabitState {
     // Day the user tapped/dismissed the Home check-in reminder card (§9.4);
     // the card stays hidden for the rest of that local day.
     DateTime? homeReminderDismissedOn,
-    // Day the Sunday Weekly recap was auto-shown (§9.9); prevents re-opening it
-    // repeatedly on the same Sunday. Legacy device-clock fallback — used only
-    // when the server hasn't provided its week start (older API).
-    DateTime? weeklyRecapShownOn,
-    // Server week-start (weekStartDate) the recap was last shown for. Preferred
-    // dedup key: shows the recap at most once per server-week, independent of
-    // the device clock.
-    DateTime? weeklyRecapShownWeekStart,
     // Courses whose Re-anchor prompt (§9.1) has already been shown this session,
     // so it appears at most once per course.
     // The re-anchor reason the user picked per course (keyed by courseId),
@@ -101,34 +93,5 @@ extension HabitStateX on HabitState {
     if (uncheckedTodayCount <= 0) return false;
     final dismissedOn = homeReminderDismissedOn;
     return dismissedOn == null || !DateUtils.isSameDay(dismissedOn, DateTime.now());
-  }
-
-  /// Weekly recap auto-open (§9.9 FR9.1): the recap day, with at least one
-  /// active habit, and not already shown for this week.
-  ///
-  /// The "is it recap day?" decision is driven by the SERVER ([summary.isRecapDay]
-  /// + [summary.weekStartDate]) so it doesn't trust the device clock. When the
-  /// server hasn't supplied a week start (older API not yet deployed), it falls
-  /// back to the previous local-Sunday behaviour so nothing regresses. Requires
-  /// [HabitCubit.loadSummary] to have run first (see home_page `_maybeOpenWeeklyRecap`).
-  bool get shouldShowWeeklyRecap {
-    if (activeHabits.isEmpty) return false;
-
-    // QA override (debug + non-prod only): open the recap on any day so it can
-    // be verified without waiting for the server's recap day. See HabitQaFlags.
-    if (HabitQaFlags.forceWeeklyRecap) return true;
-
-    final serverWeekStart = summary.weekStartDate;
-    if (serverWeekStart != null) {
-      if (!summary.isRecapDay) return false;
-      final shownWeek = weeklyRecapShownWeekStart;
-      return shownWeek == null || !DateUtils.isSameDay(shownWeek, serverWeekStart);
-    }
-
-    // Fallback: legacy device-clock behaviour (server week start unavailable).
-    final now = DateTime.now();
-    if (now.weekday != DateTime.sunday) return false;
-    final shownOn = weeklyRecapShownOn;
-    return shownOn == null || !DateUtils.isSameDay(shownOn, now);
   }
 }

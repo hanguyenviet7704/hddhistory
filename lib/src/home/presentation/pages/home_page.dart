@@ -118,35 +118,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         await _loadInAppSurveyConfig();
         if (mounted) _handleSurveyStateChanged(context.read<InAppSurveyCubit>().state);
       }
-      await _maybeOpenWeeklyRecap();
     });
-  }
-
-  /// Weekly recap auto-opens on the recap day (PRD §9.9), after the paywall/
-  /// warm-up/survey gates so it never stacks on top of them.
-  ///
-  /// Whether it's the recap day is decided by the SERVER (summary.isRecapDay),
-  /// not the device clock — so we must load the summary before checking. Skip
-  /// the fetch entirely for users with no active habits (they can never see a
-  /// recap), so this stays a no-op cost on most Home opens.
-  Future<void> _maybeOpenWeeklyRecap() async {
-    final habitCubit = AppDI.injector.get<HabitCubit>();
-    // Already know there's nothing to recap → don't await anything. Without this
-    // an account with no active habits still blocked here on a habit fetch whose
-    // result is guaranteed to fail the check on the next line (and once the
-    // in-memory data goes stale, ensureLoaded() awaits a full round-trip to
-    // revalidate a screen this method won't use).
-    if (habitCubit.state.status == HabitPageStatus.success && habitCubit.state.activeHabits.isEmpty) return;
-    // Otherwise make sure habits are loaded before reading activeHabits (cold
-    // start: this runs after the paywall/warm-up gates, but the habit fetch
-    // kicked off in initState may not have landed yet).
-    await habitCubit.ensureLoaded();
-    if (!mounted || habitCubit.state.activeHabits.isEmpty) return;
-    await habitCubit.loadSummary();
-    if (!mounted) return;
-    if (!habitCubit.state.shouldShowWeeklyRecap) return;
-    habitCubit.markWeeklyRecapShown();
-    await const HabitSummaryRoute().push(context);
   }
 
   @override
@@ -265,10 +237,6 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                       );
                                     },
                                   ),
-
-                                  // ── Quick tiles: Explore · Today's habit ─────────
-                                  const _HomeQuickTiles(),
-                                  28.verticalSpace,
 
                                   // ── Recommended ──────────────────────────────────
                                   _RecommendedSection(
@@ -521,149 +489,6 @@ class _JumpBackInCard extends StatelessWidget {
                 child: AppText(
                   context.l10n.home.continueLearning,
                   style: _poppins(14, FontWeight.w600, color: AppCustomColor.brandPrimary),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Quick tiles: Explore many courses · Today's habit
-// ───────────────────────────────────────────────────────────────────────────
-
-class _HomeQuickTiles extends StatelessWidget {
-  const _HomeQuickTiles();
-
-  @override
-  Widget build(BuildContext context) {
-    // Both tiles are top-aligned and size to their own content — no stretch
-    // (which needs a bounded height in the vertical scroll) and no
-    // IntrinsicHeight (which trips a semantics parent-data assertion when it
-    // wraps interactive/Semantics children). A fixed tile height keeps the two
-    // cards visually equal regardless of subtitle line count.
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: _QuickTile(
-              iconSvg: _kQuickSearchSvg,
-              iconBackground: const Color(0xFFEEEDFB),
-              title: context.l10n.home.homeExploreTopics,
-              subtitle: context.l10n.home.homeExploreTopicsSub,
-              onTap: () {
-                HomeTracking.track(TrackingKey.homeExploreClick);
-                context.read<CourseCubit>()
-                  ..setAllCourseSource('home_quick_explore')
-                  ..resetExploreToAll();
-                context.read<PageCubit>().setCurrentIndex(3);
-                CourseRoute().go(context);
-              },
-            ),
-          ),
-          14.horizontalSpace,
-          Expanded(
-            child: _QuickTile(
-              iconSvg: _kQuickSproutSvg,
-              iconBackground: const Color(0xFFE4F1E7),
-              title: context.l10n.home.homeTodayHabit,
-              subtitle: context.l10n.home.homeTodayHabitSub,
-              onTap: () {
-                HomeTracking.track(TrackingKey.homeHabitClick);
-                AppDI.injector.get<HabitCubit>().setPendingScrSource('home_habit');
-                const HabitRoute(source: 'home_habit').go(context);
-                // .go() to a shell branch doesn't update PageCubit's index, so
-                // set it (→ habit branch 4) after the switch settles — that's
-                // what fires HabitPage's habit_scr_view for this entry.
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
-                });
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Design asset `assets/cat-*`-style inline icons for the two Home quick tiles
-/// (search magnifier + growth sprout), taken verbatim from the design markup so
-/// the stroke colours match 1:1.
-const String _kQuickSearchSvg =
-    '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7" stroke="#554FF0" stroke-width="2.2"/><path d="M16.5 16.5L21 21" stroke="#554FF0" stroke-width="2.2" stroke-linecap="round"/></svg>''';
-const String _kQuickSproutSvg =
-    '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21v-8" stroke="#3F9E5A" stroke-width="2.1" stroke-linecap="round"/><path d="M12 15c0-3.3-2.7-6-6-6-.55 0-1 .45-1 1 0 3.3 2.7 6 6 6" stroke="#3F9E5A" stroke-width="2.1" stroke-linejoin="round"/><path d="M12 13c0-3.9 3.1-7 7-7 .55 0 1 .45 1 1 0 3.9-3.1 7-7 7" stroke="#3F9E5A" stroke-width="2.1" stroke-linejoin="round"/></svg>''';
-
-class _QuickTile extends StatelessWidget {
-  final String iconSvg;
-  final Color iconBackground;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _QuickTile({
-    required this.iconSvg,
-    required this.iconBackground,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: title,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          AppHaptic.select();
-          onTap();
-        },
-        child: Container(
-          // Tall enough for a 2-line title + 2-line subtitle so longer
-          // localized titles ("Khám phá 60+ chủ đề") wrap instead of being
-          // clipped; both tiles share this height so they stay visually equal.
-          height: 172.h,
-          padding: EdgeInsets.all(18.w),
-          decoration: BoxDecoration(
-            color: studyThemeCardColor(context),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: _homeCardShadow,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 44.r,
-                height: 44.r,
-                decoration: BoxDecoration(
-                  color: iconBackground,
-                  borderRadius: BorderRadius.circular(13.r),
-                ),
-                alignment: Alignment.center,
-                child: SvgPicture.string(iconSvg, width: 24.r, height: 24.r),
-              ),
-              14.verticalSpace,
-              AppText(
-                title,
-                maxLines: 2,
-                style: _poppins(15, FontWeight.w600, height: 1.2),
-              ),
-              2.verticalSpace,
-              AppText(
-                subtitle,
-                maxLines: 2,
-                style: AppStyle.text12.copyWith(
-                  color: const Color(0xFF7C8AA4),
-                  height: 1.3,
                 ),
               ),
             ],

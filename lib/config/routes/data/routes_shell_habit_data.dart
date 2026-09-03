@@ -42,20 +42,3 @@ class DailyCheckInRoute extends BaseTransitionRouteData with $DailyCheckInRoute 
     child: const DailyCheckInPage(),
   );
 }
-
-//* Habit Summary Page — root-level route (not part of the Habit shell branch)
-//* so it can be pushed on top of the Course branch right after a lesson
-//* finishes, without switching the bottom-nav tab (design.md 5.4).
-@TypedGoRoute<HabitSummaryRoute>(path: RoutePath.habitSummary, name: RouteNamed.habitSummary)
-class HabitSummaryRoute extends BaseTransitionRouteData with $HabitSummaryRoute {
-  const HabitSummaryRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<HabitCubit>(),
-    child: const HabitSummaryPage(),
-  );
-}
