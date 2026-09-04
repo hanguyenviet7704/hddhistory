@@ -427,3 +427,6 @@ dividerYesterday: "昨天"
 doorHome: "首页"
 doorLesson: "课程"
 doorHabit: "习惯"
+
+# Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
+promptStoryOpen: "来，说给我听。最近怎么样——有什么开心的事，或者在想些什么？"

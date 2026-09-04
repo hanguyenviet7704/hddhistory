@@ -428,3 +428,6 @@ dividerYesterday: "Hôm qua"
 doorHome: "Trang chủ"
 doorLesson: "Bài học"
 doorHabit: "Thói quen"
+
+# Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
+promptStoryOpen: "Ừ, kể mình nghe đi. Dạo này thế nào rồi — có gì vui hay đang nghĩ về chuyện gì không?"

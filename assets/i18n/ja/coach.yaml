@@ -427,3 +427,6 @@ dividerYesterday: "昨日"
 doorHome: "ホーム"
 doorLesson: "レッスン"
 doorHabit: "習慣"
+
+# Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
+promptStoryOpen: "うん、聞かせて。最近どう？うれしいことや、考えていることはある？"

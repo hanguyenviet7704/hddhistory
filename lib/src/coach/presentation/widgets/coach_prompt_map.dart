@@ -83,6 +83,9 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     // -- the 5 beats
     case 'coach.prompt.story':
       return l10n.promptStory;
+    // Home · "Kể chuyện hôm nay" — the one open question, nothing to tap.
+    case 'coach.prompt.storyOpen':
+      return l10n.promptStoryOpen;
     case 'coach.prompt.storyMore':
       return l10n.promptStoryMore;
     // Nhịp 2's question when the model could not write one.

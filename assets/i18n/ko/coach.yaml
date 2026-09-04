@@ -427,3 +427,6 @@ dividerYesterday: "어제"
 doorHome: "홈"
 doorLesson: "레슨"
 doorHabit: "습관"
+
+# Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
+promptStoryOpen: "응, 들려줘. 요즘 어때 — 좋은 일이 있었거나, 마음에 두고 있는 게 있어?"

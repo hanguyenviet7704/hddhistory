@@ -435,3 +435,6 @@ dividerYesterday: "Yesterday"
 doorHome: "Home"
 doorLesson: "Lesson"
 doorHabit: "Habit"
+
+# Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
+promptStoryOpen: "Go on, I'm listening. How have things been lately — anything good, or something on your mind?"
