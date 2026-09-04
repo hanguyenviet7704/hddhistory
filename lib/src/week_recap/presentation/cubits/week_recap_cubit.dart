@@ -150,6 +150,26 @@ class WeekRecapCubit extends Cubit<WeekRecapState> {
   /// of flashing a spinner over data already in memory.
   void openRecap(WeekRecapEntity recap) {
     emit(state.copyWith(opened: recap, openedStatus: WeekRecapStatus.success, errorMessage: null));
+    _markViewedIfCurrent(recap.id);
+  }
+
+  /// Records the week as READ the moment its poster is opened, whichever door
+  /// the reader came through.
+  ///
+  /// It lives here rather than at each call site because the Monday popup's
+  /// button used to be the ONLY thing that wrote `viewedAt`: a reader who
+  /// opened their week from the Library banner instead was offered the same
+  /// popup again every morning until Sunday, and the banner's "MỚI" pill —
+  /// which keys off the same stamp — never went out at all. A fifth entry point
+  /// added later must not have to remember this.
+  ///
+  /// Scoped to the CURRENT week. A recap pulled out of Sổ tay is history being
+  /// re-read; its stamps were written the week it was live and re-stamping them
+  /// would be a lie about when it was seen.
+  void _markViewedIfCurrent(String id) {
+    if (id.isEmpty || state.current?.id != id) return;
+
+    unawaited(markInteracted(viewed: true));
   }
 
   /// Fetches an older recap by id — the Sổ tay path, where only the tile's
@@ -163,7 +183,11 @@ class WeekRecapCubit extends Cubit<WeekRecapState> {
         errorMessage: null,
       ),
     );
-    if (cached != null) return;
+    if (cached != null) {
+      _markViewedIfCurrent(id);
+
+      return;
+    }
 
     final result = await _getByIdUseCase(id).run();
     result.match(
@@ -174,6 +198,7 @@ class WeekRecapCubit extends Cubit<WeekRecapState> {
       (data) {
         if (isClosed) return;
         emit(state.copyWith(opened: data, openedStatus: WeekRecapStatus.success, errorMessage: null));
+        _markViewedIfCurrent(id);
       },
     );
   }
