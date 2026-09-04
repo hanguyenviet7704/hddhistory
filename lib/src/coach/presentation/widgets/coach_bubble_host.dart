@@ -75,6 +75,15 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
         AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId);
       }
     }
+    // Luồng 5 — the sheet may have written today's check-in (⟨Ghi nhận hôm
+    // nay⟩, or a quiz finished in the chat). The Habit tab is sitting right
+    // under it with yesterday's ticks, so reload it: the server has the row,
+    // and a reader who just told the Coach what they did should see it ticked
+    // without pulling to refresh (owner, 2026-09-04).
+    if (entry == CoachEntry.habit) {
+      unawaited(AppDI.injector.get<HabitCubit>().load(showLoading: false));
+    }
+
     if (!mounted) return;
 
     _asked = null;
