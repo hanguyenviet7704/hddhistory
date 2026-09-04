@@ -5,6 +5,7 @@ library;
 // annotation coach_api.dart needs. NOT prefixed `ui`: the turn model has a
 // field called `ui`, and the prefix would swallow every `turn.ui.something`
 // in the entity mappers.
+import 'dart:math' as math;
 import 'dart:ui' as dartui;
 
 //* Flutter imports
