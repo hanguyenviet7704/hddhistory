@@ -26,7 +26,24 @@ import { useNotification } from "../../utils/hooks/useNotification";
 
 const LOCALES = ["en", "vi", "zh", "ja", "ko"];
 
-const EMPTY: CoachConfig = { enabled: false, hotlines: [], geminiModel: "", geminiSceneModel: "" };
+const EMPTY: CoachConfig = {
+  enabled: false,
+  hotlines: [],
+  geminiModel: "",
+  geminiSceneModel: "",
+  onboardAskStyle: true,
+  onboardAskAge: true,
+  onboardAskGender: true,
+  onboardAskJob: true,
+};
+
+/** Bốn câu onboarding tắt được — ba câu đầu (mục tiêu, khó khăn, đang làm) luôn hỏi. */
+const ONBOARD_TOGGLES: { key: keyof CoachConfig; label: string; hint: string }[] = [
+  { key: "onboardAskStyle", label: "Hỏi cách học", hint: "Nghe · Đọc · Thực hành — practice làm Coach trả lời ngắn hơn." },
+  { key: "onboardAskAge", label: "Hỏi độ tuổi", hint: "Sáng sẵn từ user.age nếu app đã biết; ghi ngược lại vào user." },
+  { key: "onboardAskGender", label: "Hỏi giới tính", hint: "Có lựa chọn không nói; sáng sẵn từ user.gender." },
+  { key: "onboardAskJob", label: "Hỏi công việc", hint: "Gõ tay được — server gom về 6 nhóm để chọn cảnh cho đúng người." },
+];
 
 const CoachConfigPage: React.FC = () => {
   const { showSuccess, showError } = useNotification();
@@ -47,6 +64,10 @@ const CoachConfigPage: React.FC = () => {
         hotlines: Array.isArray(d.hotlines) ? d.hotlines : [],
         geminiModel: d.geminiModel ?? "",
         geminiSceneModel: d.geminiSceneModel ?? "",
+        onboardAskStyle: d.onboardAskStyle ?? true,
+        onboardAskAge: d.onboardAskAge ?? true,
+        onboardAskGender: d.onboardAskGender ?? true,
+        onboardAskJob: d.onboardAskJob ?? true,
       });
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không tải được cấu hình");
@@ -164,6 +185,36 @@ const CoachConfigPage: React.FC = () => {
             }
             helperText="Chỉ chạy 1 lần mỗi lượt luyện tình huống (prompt nặng nhất) — nên để model mạnh hơn hội thoại. Trống = theo model hội thoại."
           />
+        </div>
+      </Paper>
+
+      <Paper className="p-5 space-y-3">
+        <div>
+          <h2 className="text-lg font-medium">Onboarding Coach</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Phiên Home đầu tiên của mỗi người: Coach tự giới thiệu, hỏi xưng hô,
+            mục tiêu, khó khăn, đang làm gì — rồi bốn câu dưới đây nếu bật. Ai
+            đã qua onboarding (có <code>onboardedAt</code>) sẽ không gặp lại.
+            Mọi câu đều bỏ qua được trừ xưng hô.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+          {ONBOARD_TOGGLES.map((t) => (
+            <div key={t.key} className="py-1">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={Boolean(form[t.key])}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, [t.key]: e.target.checked }))
+                    }
+                  />
+                }
+                label={t.label}
+              />
+              <p className="text-xs text-gray-500 -mt-1 ml-12">{t.hint}</p>
+            </div>
+          ))}
         </div>
       </Paper>
 

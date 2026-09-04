@@ -13,6 +13,11 @@ export interface CoachConfig {
   geminiModel?: string | null;
   /** Model riêng cho việc VIẾT CẢNH (1 call/lượt luyện). Rỗng = theo geminiModel. */
   geminiSceneModel?: string | null;
+  /** Onboarding Coach (luồng 1): bốn câu tuỳ chọn ở phiên Home đầu tiên. */
+  onboardAskStyle?: boolean;
+  onboardAskAge?: boolean;
+  onboardAskGender?: boolean;
+  onboardAskJob?: boolean;
 }
 
 export type CoachSituationVariant =
