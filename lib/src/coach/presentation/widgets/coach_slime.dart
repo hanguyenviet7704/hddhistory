@@ -39,6 +39,13 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'checkinAsk':
     case 'checkinOffer':
     case 'quizInChat':
+    // Luồng 2/3 — asking how to start, handing the quiz over, offering the recap.
+    case 'talkAsk':
+    case 'quizHandoff':
+    case 'quizRun':
+    case 'talkWhen':
+    case 'recapPick':
+    case 'recapQuiz':
       return CoachSlimeMood.think;
     // The reader is telling: "thân dẹt xuống ổn định, mắt mở to".
     case 'tell':
@@ -51,6 +58,7 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'retryScene':
     case 'sceneRetry':
     case 'checkinTell':
+    case 'talkSummary':
     case 'intentTell':
     case 'practiceAnswer':
     case 'nextAction':

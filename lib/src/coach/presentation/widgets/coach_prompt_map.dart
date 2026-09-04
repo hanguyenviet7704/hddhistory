@@ -104,6 +104,17 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.promptHub;
     // The coordinator is ②'s opening step as well as the seam between tasks;
     // "Xong rồi…" reads as a goodbye before anything has happened.
+    // Luồng 2/3 — the talk after a keypoint, the course recap.
+    case 'coach.prompt.talkAsk':
+      return l10n.promptTalkAsk;
+    case 'coach.prompt.quizHandoff':
+      return l10n.promptQuizHandoff;
+    case 'coach.prompt.talkWhen':
+      return l10n.promptTalkWhen;
+    case 'coach.prompt.recapPick':
+      return l10n.promptRecapPick(course: args['course'] ?? '');
+    case 'coach.prompt.recapQuiz':
+      return l10n.promptRecapQuiz;
     // Luồng 5 — the Habit screen.
     case 'coach.prompt.checkinAsk':
       return l10n.promptCheckinAsk;
@@ -259,6 +270,8 @@ String? coachCourseReason(BuildContext context, String? key, [Map<String, String
       return l10n.courseReasonHabit(habit: args['habit'] ?? '');
     case 'coach.course.reasonStory':
       return l10n.courseReasonStory;
+    case 'coach.course.reasonRecap':
+      return l10n.courseReasonRecap;
     case 'coach.course.reasonSkillset':
       return l10n.courseReasonSkillset;
     case 'coach.course.reasonSaved':
@@ -318,6 +331,16 @@ String? coachStepLabel(BuildContext context, String step) {
       return l10n.stepCheckinToday;
     case 'quizInChat':
       return l10n.stepQuiz;
+    // Luồng 2/3.
+    case 'talkAsk':
+    case 'talkSummary':
+    case 'quizHandoff':
+    case 'quizRun':
+    case 'talkWhen':
+      return l10n.stepTalk;
+    case 'recapPick':
+    case 'recapQuiz':
+      return l10n.stepRecap;
     case 'twoCols':
     case 'redraft':
       return l10n.stepTwoCols;

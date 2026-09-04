@@ -305,6 +305,9 @@ class CoachUiEntity {
   /// QUIZ_IN_CHAT — questions still to ask (luồng 5); the plea counts them (luồng 6).
   final int? quizRemaining;
 
+  /// Luồng 2 — `runQuiz` · `nextKeypoint`: something the app does on this step.
+  final String? action;
+
   const CoachUiEntity({
     this.kind = CoachUiKind.text,
     this.choices = const [],
@@ -324,6 +327,7 @@ class CoachUiEntity {
     this.score,
     this.allowNewSession = true,
     this.quizRemaining,
+    this.action,
   });
 }
 
@@ -460,6 +464,7 @@ extension CoachTurnModelX on CoachTurnModel {
           .toList(),
       escapeAvailable: ui.escapeAvailable,
     quizRemaining: ui.quizRemaining,
+    action: (ui.action?.trim().isEmpty ?? true) ? null : ui.action,
       score: ui.score == null || ui.score!.criteria.isEmpty
           ? null
           : CoachSceneScoreEntity(

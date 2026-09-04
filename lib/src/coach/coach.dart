@@ -54,7 +54,7 @@ part 'presentation/widgets/coach_prompt_map.dart';
 part 'presentation/widgets/coach_bubble.dart';
 part 'presentation/widgets/coach_sheet.dart';
 part 'presentation/widgets/coach_bubble_host.dart';
-part 'presentation/widgets/coach_lesson_bubble.dart';
+part 'presentation/widgets/coach_keypoint_invite.dart';
 part 'presentation/widgets/coach_message_list.dart';
 part 'presentation/widgets/coach_composer.dart';
 part 'presentation/widgets/coach_two_columns.dart';

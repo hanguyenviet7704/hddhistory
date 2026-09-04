@@ -11,6 +11,9 @@ abstract interface class ICoachRepository {
     required CoachEntry entry,
     String? lessonId,
     String? habitId,
+    String? keypointId,
+    String? courseId,
+    bool recap = false,
     required String locale,
     required int tzOffsetMinutes,
   });

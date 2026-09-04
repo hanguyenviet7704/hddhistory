@@ -58,11 +58,19 @@ class CoachCubit extends Cubit<CoachState> {
   /// is what lets the same cubit be driven from a test with no widget tree.
   String Function(String key, Map<String, String> args)? promptResolver;
 
+  /// Luồng 2 — the keypoint's playable questions, handed in by the page that
+  /// opened the sheet; the quiz runs on them when the server says `runQuiz`.
+  List<QuestionEntity> quizQuestions = const [];
+  String quizTitle = '';
+
   Future<void> open({
     required CoachEntry entry,
     required String locale,
     String? lessonId,
     String? habitId,
+    String? keypointId,
+    String? courseId,
+    bool recap = false,
   }) async {
     _entry = entry;
     _lessonId = lessonId;
@@ -75,6 +83,9 @@ class CoachCubit extends Cubit<CoachState> {
       entry: entry,
       lessonId: lessonId,
       habitId: habitId,
+      keypointId: keypointId,
+      courseId: courseId,
+      recap: recap,
       locale: locale,
       tzOffsetMinutes: DateTime.now().timeZoneOffset.inMinutes,
     ).run();
@@ -162,6 +173,35 @@ class CoachCubit extends Cubit<CoachState> {
   /// Luồng 5 — QUIZ_IN_CHAT: the option tapped, by index.
   Future<void> answerQuiz(String answer, String label) =>
       _send({'kind': 'quizAnswer', 'quizAnswer': answer}, userLine: label);
+
+  /// Luồng 2/3 — a generic chip pick for the talk and recap steps.
+  Future<void> pick(String value, String label) => _send({'kind': 'pick', 'value': value}, userLine: label);
+
+  /// Luồng 2 — the keypoint quiz came back from its own screen. Each answer is
+  /// reported with its texts so the Coach can talk about the CONTENT of what
+  /// went wrong, never the score.
+  Future<void> sendQuizDone(List<QuizCardAnswer> answers) {
+    String choiceText(QuizCardAnswer answer, bool Function(int index) keep) => [
+      for (var i = 0; i < answer.choiceOptions.length; i++)
+        if (keep(i)) answer.choiceOptions[i].value.text,
+    ].where((text) => text.isNotEmpty).join(' / ');
+
+    return _send({
+      'kind': 'quizDone',
+      'quizResults': [
+        for (final answer in answers.where((a) => a.hasChecked))
+          {
+            'exerciseId': answer.question.exerciseId.isNotEmpty ? answer.question.exerciseId : '${answer.question.id}',
+            'passed': answer.isCorrect,
+            'question': answer.question.questionText,
+            'chosen': answer.isChoice ? choiceText(answer, answer.selected.contains) : '',
+            'correct': answer.isChoice
+                ? choiceText(answer, (i) => answer.choiceOptions[i].isCorrect)
+                : answer.correctGapWords.join(' '),
+          },
+      ],
+    });
+  }
 
   /// Nhịp 6 — "Chuyện giống vậy bạn gặp bao giờ chưa?". "Gặp rồi" collects the
   /// occasion the commitment needs; "Chưa gặp" moves on without a word about it.

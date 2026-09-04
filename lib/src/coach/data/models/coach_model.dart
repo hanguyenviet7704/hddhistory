@@ -207,6 +207,9 @@ abstract class CoachUiModel with _$CoachUiModel {
 
     /// Luồng 5/6 — QUIZ_IN_CHAT: questions still to ask, the current one included.
     int? quizRemaining,
+
+    /// Luồng 2 — `runQuiz` · `nextKeypoint`: something the app does on this step.
+    String? action,
   }) = _CoachUiModel;
 
   factory CoachUiModel.fromJson(Map<String, dynamic> json) => _$CoachUiModelFromJson(json);

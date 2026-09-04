@@ -388,11 +388,18 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                   ),
                 ),
               ),
-              // ① The Coach, only when a habit was just adopted here — the
-              // server's own guards decide that and simply answer `visible:
-              // false` otherwise, so there is no condition to keep in step on
-              // this side. One situation, no conversation opened.
-              CoachLessonBubble(lessonId: lessonState.selectedLesson.id),
+              // Luồng 2/3 — the Coach's invitation after this keypoint (the talk),
+              // or after the course's last one (the recap). The server decides
+              // whether the Coach is on at all; this decides only when.
+              CoachKeypointInvite(
+                lessonId: lessonState.selectedLesson.id,
+                keypointId: lessonState.resolvedCurrentKeypoint.id,
+                courseId: lessonState.selectedLesson.courseId,
+                isCourseDone: context.read<CourseRoadmapCubit>().state.roadmap.isAllCurrentRoadmapContentCompleted,
+                quizQuestions: QuizCardAnswer.practiceQuestionsOf(context.read<LessonCubit>().state),
+                quizTitle: lessonState.currentTitle,
+                onContinue: () => _handlePrimaryCta(lessonState, continueToNext: true),
+              ),
             ],
           ),
         ),

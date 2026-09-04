@@ -27,6 +27,9 @@ class CoachRepository implements ICoachRepository {
     required CoachEntry entry,
     String? lessonId,
     String? habitId,
+    String? keypointId,
+    String? courseId,
+    bool recap = false,
     required String locale,
     required int tzOffsetMinutes,
   }) {
@@ -36,6 +39,10 @@ class CoachRepository implements ICoachRepository {
           'entry': entry.raw,
           'lessonId': ?lessonId,
           'habitId': ?habitId,
+          // Luồng 2/3 — the keypoint just finished, or the course just finished.
+          'keypointId': ?keypointId,
+          'courseId': ?courseId,
+          if (recap) 'recap': true,
           'locale': locale,
           'tzOffsetMinutes': tzOffsetMinutes,
         });

@@ -24,12 +24,15 @@ class KeypointQuizPage extends StatefulWidget {
 
   /// Pushed imperatively rather than through a typed go_router route because it
   /// carries entities, and the repo has no `$extra` typed routes to follow.
-  static Future<void> push(
+  /// Resolves with the deck's answers as checked so far — the AI Coach (luồng
+  /// 2) reads them to talk about the CONTENT of what went wrong. The Practice
+  /// Hub ignores the value.
+  static Future<List<QuizCardAnswer>?> push(
     BuildContext context, {
     required String title,
     required List<QuestionEntity> questions,
   }) {
-    return Navigator.of(context).push<void>(
+    return Navigator.of(context).push<List<QuizCardAnswer>>(
       MaterialPageRoute(builder: (_) => KeypointQuizPage(title: title, questions: questions)),
     );
   }
@@ -117,7 +120,7 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
     // question, so this should be unreachable — but never render a dead deck.
     if (_answers.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.of(context).pop();
+        if (mounted) Navigator.of(context).pop(<QuizCardAnswer>[]);
       });
       return const SizedBox.shrink();
     }
@@ -179,7 +182,7 @@ class _KeypointQuizPageState extends State<KeypointQuizPage> {
               // card is a completion, already reported by
               // prac_quiz_complete_scr_view, not a mid-quiz abandon.
               if (_index < _answers.length) LessonTracking.pracQuizExit();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(_answers);
             },
             behavior: HitTestBehavior.opaque,
             child: SizedBox(

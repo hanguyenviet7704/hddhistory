@@ -9,6 +9,17 @@ part of '../../coach.dart';
 sealed class _CoachSheetResult with _$CoachSheetResult {
   const factory _CoachSheetResult.close() = _CoachSheetClose;
   const factory _CoachSheetResult.openCourse(String courseId) = _CoachSheetOpenCourse;
+  /// Luồng 2 — ⟨Học tiếp⟩: the sheet is done and the reader goes on to the next keypoint.
+  const factory _CoachSheetResult.nextKeypoint() = _CoachSheetNextKeypoint;
+}
+
+/// Luồng 2/3 — what the keypoint page does after the sheet: open a course, go
+/// on to the next keypoint, or nothing.
+class CoachSheetOutcome {
+  final String? courseId;
+  final bool nextKeypoint;
+
+  const CoachSheetOutcome({this.courseId, this.nextKeypoint = false});
 }
 
 /// Opens the Coach sheet and settles what the reader chose on the way out.
@@ -21,7 +32,27 @@ Future<String?> showCoachSheet(
   String? lessonId,
   String? habitId,
 }) async {
+  final outcome = await showCoachSheetForKeypoint(context, entry: entry, lessonId: lessonId, habitId: habitId);
+
+  return outcome.courseId;
+}
+
+/// Luồng 2/3 — the sheet opened from the keypoint invite: it may end on "go to
+/// the next keypoint" as well as on a course, so the whole outcome comes back.
+Future<CoachSheetOutcome> showCoachSheetForKeypoint(
+  BuildContext context, {
+  required CoachEntry entry,
+  String? lessonId,
+  String? habitId,
+  String? keypointId,
+  String? courseId,
+  bool recap = false,
+  List<QuestionEntity> quizQuestions = const [],
+  String quizTitle = '',
+}) async {
   final cubit = AppDI.injector.get<CoachCubit>();
+  cubit.quizQuestions = quizQuestions;
+  cubit.quizTitle = quizTitle;
 
   /// The device's real safe-area insets, read HERE and carried inside.
   ///
@@ -54,7 +85,14 @@ Future<String?> showCoachSheet(
       ),
       child: BlocProvider.value(
         value: cubit,
-        child: _CoachSheet(entry: entry, lessonId: lessonId, habitId: habitId),
+        child: _CoachSheet(
+          entry: entry,
+          lessonId: lessonId,
+          habitId: habitId,
+          keypointId: keypointId,
+          courseId: courseId,
+          recap: recap,
+        ),
       ),
     ),
   );
@@ -66,8 +104,9 @@ Future<String?> showCoachSheet(
   if (result != null) await cubit.endSession();
 
   return switch (result) {
-    _CoachSheetOpenCourse(courseId: final id) => id,
-    _ => null,
+    _CoachSheetOpenCourse(courseId: final id) => CoachSheetOutcome(courseId: id),
+    _CoachSheetNextKeypoint() => const CoachSheetOutcome(nextKeypoint: true),
+    _ => const CoachSheetOutcome(),
   };
 }
 
@@ -75,8 +114,18 @@ class _CoachSheet extends StatefulWidget {
   final CoachEntry entry;
   final String? lessonId;
   final String? habitId;
+  final String? keypointId;
+  final String? courseId;
+  final bool recap;
 
-  const _CoachSheet({required this.entry, this.lessonId, this.habitId});
+  const _CoachSheet({
+    required this.entry,
+    this.lessonId,
+    this.habitId,
+    this.keypointId,
+    this.courseId,
+    this.recap = false,
+  });
 
   @override
   State<_CoachSheet> createState() => _CoachSheetState();
@@ -100,7 +149,25 @@ class _CoachSheetState extends State<_CoachSheet> {
       locale: LocaleSettings.currentLocale.languageCode,
       lessonId: widget.lessonId,
       habitId: widget.habitId,
+      keypointId: widget.keypointId,
+      courseId: widget.courseId,
+      recap: widget.recap,
     );
+  }
+
+  /// Luồng 2 — the server said `runQuiz`: the keypoint quiz runs on its own
+  /// screen (the same deck the Practice Hub opens) and reports back. Launched
+  /// once per step; leaving the deck early reports the answers checked so far.
+  bool _quizLaunched = false;
+
+  Future<void> _runQuiz(BuildContext context, CoachCubit cubit) async {
+    final answers = await KeypointQuizPage.push(
+      context,
+      title: cubit.quizTitle,
+      questions: cubit.quizQuestions,
+    );
+    if (!context.mounted) return;
+    await cubit.sendQuizDone(answers ?? const []);
   }
 
   /// Luồng 6 — ⟨Đóng⟩ mid-session asks ONCE to stay, then respects the answer.
@@ -153,8 +220,23 @@ class _CoachSheetState extends State<_CoachSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CoachCubit, CoachState>(
-      listenWhen: (prev, curr) => prev.silent != curr.silent,
+      listenWhen: (prev, curr) =>
+          prev.silent != curr.silent ||
+          prev.step != curr.step ||
+          prev.ui.action != curr.ui.action ||
+          prev.ended != curr.ended,
       listener: (context, state) {
+        // Luồng 2 — the two things the app DOES on the server's word.
+        if (state.step != 'quizRun') _quizLaunched = false;
+        if (state.ui.action == 'runQuiz' && state.step == 'quizRun' && !_quizLaunched) {
+          _quizLaunched = true;
+          _runQuiz(context, context.read<CoachCubit>());
+        }
+        if (state.ended && state.ui.action == 'nextKeypoint') {
+          Navigator.of(context).pop(const _CoachSheetResult.nextKeypoint());
+
+          return;
+        }
         // A door that decided to stay quiet is not an error and gets no
         // message — the sheet simply goes away again. Every other ending
         // keeps its one button: "Đóng · về chỗ vừa rời đi".

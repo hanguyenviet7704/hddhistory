@@ -269,6 +269,9 @@ class _CoachComposerState extends State<CoachComposer> {
       // Luồng 5 — the Habit screen's two pills.
       'checkin': l10n.hubTaskCheckin,
       'quiz': l10n.hubTaskQuiz,
+      // Luồng 2 — TALK_ASK's two pills.
+      'summary': l10n.hubTaskSummary,
+      'talkQuiz': l10n.hubTaskTalkQuiz,
     };
 
     // Luồng 4: the two pills and the box — "gõ thẳng vào ô chat thì đi luôn
@@ -278,7 +281,7 @@ class _CoachComposerState extends State<CoachComposer> {
       context,
       state,
       busy,
-      hint: l10n.hubHint,
+      hint: state.step == 'talkAsk' ? l10n.talkAskHint : l10n.hubHint,
       onSubmit: widget.cubit.submitText,
       leadingChips: [
         for (final choice in state.ui.choices)
@@ -1016,6 +1019,21 @@ List<_ChipSpec> _chipSpecsFor(dynamic l10n, CoachState state) {
       _ChipSpec('yes', l10n.sceneAgainYes, echo: l10n.sceneAgainYesEcho),
       _ChipSpec('no', l10n.sceneAgainNo, echo: l10n.sceneAgainNoEcho),
     ],
+    // Luồng 2/3 — the quiz hand-off, the closing question, the recap's offer.
+    'quizHandoff' => [
+      _ChipSpec('start', l10n.quizStart, echo: l10n.quizStartEcho),
+      _ChipSpec('later', l10n.quizLater, echo: l10n.quizLaterEcho),
+    ],
+    'talkWhen' => [
+      _ChipSpec('continue', l10n.learnContinue, echo: l10n.learnContinueEcho),
+      _ChipSpec('later', l10n.learnLater, echo: l10n.learnLaterEcho),
+    ],
+    'recapQuiz' => [
+      _ChipSpec('try', l10n.recapTry, echo: l10n.recapTryEcho),
+      _ChipSpec('later', l10n.recapLater, echo: l10n.recapLaterEcho),
+    ],
+    // The quiz is on its own screen — nothing to tap here.
+    'quizRun' => const <_ChipSpec>[],
     // Luồng 5 — did you do it today; then the next unwritten habit.
     'checkinAsk' => [
       _ChipSpec('yes', l10n.checkinAskYes, echo: l10n.checkinAskYesEcho),
@@ -1102,6 +1120,12 @@ void _dispatchChip(CoachCubit cubit, String step, _ChipSpec spec) {
       cubit.answerInvite(accept: spec.value == 'yes', label: echo);
     case 'quizInChat':
       cubit.answerQuiz(spec.value, spec.label);
+    // Luồng 2/3 — one generic pick; the server reads the value by step.
+    case 'quizHandoff':
+    case 'talkWhen':
+    case 'recapQuiz':
+    case 'recapPick':
+      cubit.pick(spec.value, echo);
     case 'depth':
       cubit.sendRetired({'kind': 'depth', 'deep': spec.value == 'deep'}, label: spec.label);
     case 'contextAsk':

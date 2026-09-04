@@ -10,6 +10,9 @@ class OpenCoachSessionUseCase {
     required CoachEntry entry,
     String? lessonId,
     String? habitId,
+    String? keypointId,
+    String? courseId,
+    bool recap = false,
     required String locale,
     required int tzOffsetMinutes,
   }) {
@@ -17,6 +20,9 @@ class OpenCoachSessionUseCase {
       entry: entry,
       lessonId: lessonId,
       habitId: habitId,
+      keypointId: keypointId,
+      courseId: courseId,
+      recap: recap,
       locale: locale,
       tzOffsetMinutes: tzOffsetMinutes,
     );
