@@ -389,7 +389,7 @@ inviteBubble: "Bạn vừa học xong một phần — nói một chút về nó
 inviteRecapBubble: "Bạn vừa xong cả khoá «${course}» — nhìn lại một chút nhé?"
 inviteRecapBubbleNoName: "Bạn vừa xong cả khoá — nhìn lại một chút nhé?"
 inviteAccept: "Thực hành với Coach"
-inviteLater: "Lúc khác"
+inviteLater: "Bỏ qua, sang bài tiếp theo"
 inviteCourseDone: "Hoàn thành khoá học"
 inviteRecapAccept: "Nhìn lại cả khoá"
 

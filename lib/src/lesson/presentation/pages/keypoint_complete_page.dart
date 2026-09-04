@@ -8,6 +8,13 @@ class KeypointCompletePage extends StatefulWidget {
 }
 
 class _KeypointCompletePageState extends State<KeypointCompletePage> {
+  /// Coach có mời sau keypoint này hay không — null khi server chưa trả lời.
+  ///
+  /// Owner chốt 2026-09-04: sau keypoint chỉ còn MỘT màn, là lời mời của Coach.
+  /// Nên khối "Hoàn thành bài học!" bên dưới giờ là PHAO, chỉ vẽ khi Coach tắt
+  /// — không có nó thì một user không bật Coach xong bài sẽ đứng trên màn trống
+  /// không có đường đi tiếp.
+  bool? _coachWillInvite;
   bool _isHandlingPrimaryCta = false;
   // Set once we intentionally navigate the user off this page to ANOTHER shell
   // branch (e.g. "Go to Habit"). This page stays alive & `isCurrent` in its own
@@ -300,90 +307,95 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const _LessonCompleteIllustration(),
-                              24.verticalSpace,
-                              // Design: `muRise .45s ease .3s both` — the .3s delay is the
-                              // leading dead zone of the Interval.
-                              TweenAnimationBuilder<double>(
-                                tween: Tween(begin: 0, end: 1),
-                                duration: const Duration(milliseconds: 750),
-                                curve: const Interval(0.4, 1, curve: Curves.easeOut),
-                                builder: (context, t, child) => Opacity(
-                                  opacity: t,
-                                  child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
-                                ),
-                                child: AppText(
-                                  context.l10n.lesson.lessonCompleteTitle,
-                                  textAlign: TextAlign.center,
-                                  // Design 34/800, -0.01em.
-                                  style: TextStyle(
-                                    fontFamily: AppFont.mulish,
-                                    fontSize: 34.sp,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1.2,
-                                    letterSpacing: 34 * -0.01,
-                                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                      // Chỉ vẽ khi đã biết Coach KHÔNG mời. Lúc chưa biết thì
+                      // để trống: hiện khối này rồi một giây sau bị dialog phủ
+                      // lên đúng là cái owner yêu cầu bỏ.
+                      if (_coachWillInvite == false) ...[
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const _LessonCompleteIllustration(),
+                                24.verticalSpace,
+                                // Design: `muRise .45s ease .3s both` — the .3s delay is the
+                                // leading dead zone of the Interval.
+                                TweenAnimationBuilder<double>(
+                                  tween: Tween(begin: 0, end: 1),
+                                  duration: const Duration(milliseconds: 750),
+                                  curve: const Interval(0.4, 1, curve: Curves.easeOut),
+                                  builder: (context, t, child) => Opacity(
+                                    opacity: t,
+                                    child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
+                                  ),
+                                  child: AppText(
+                                    context.l10n.lesson.lessonCompleteTitle,
+                                    textAlign: TextAlign.center,
+                                    // Design 34/800, -0.01em.
+                                    style: TextStyle(
+                                      fontFamily: AppFont.mulish,
+                                      fontSize: 34.sp,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.2,
+                                      letterSpacing: 34 * -0.01,
+                                      color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      // Practice now → the hub. Deliberately NOT gated on the keypoint
-                      // having questions: the hub also carries the coming-soon modes,
-                      // and Quiz itself guards an empty deck.
-                      //
-                      // Absent for a GENERATED lesson: the hub's practice is built
-                      // from authored exercises, and an imported lesson has none, so
-                      // the button would open a mode with nothing in it. Continuing
-                      // becomes the primary action instead of a text link, because
-                      // with the practice gone it is the only one.
-                      if (!lessonState.selectedLesson.isImported) ...[
-                        Semantics(
-                          button: true,
-                          child: Material(
-                            color: AppCustomColor.brandPrimary,
-                            borderRadius: BorderRadius.circular(999.r),
-                            child: InkWell(
+                        // Practice now → the hub. Deliberately NOT gated on the keypoint
+                        // having questions: the hub also carries the coming-soon modes,
+                        // and Quiz itself guards an empty deck.
+                        //
+                        // Absent for a GENERATED lesson: the hub's practice is built
+                        // from authored exercises, and an imported lesson has none, so
+                        // the button would open a mode with nothing in it. Continuing
+                        // becomes the primary action instead of a text link, because
+                        // with the practice gone it is the only one.
+                        if (!lessonState.selectedLesson.isImported) ...[
+                          Semantics(
+                            button: true,
+                            child: Material(
+                              color: AppCustomColor.brandPrimary,
                               borderRadius: BorderRadius.circular(999.r),
-                              onTap: () => _openPractice(context, lessonState),
-                              child: Container(
-                                height: 56.h,
-                                alignment: Alignment.center,
-                                child: AppText(
-                                  context.l10n.lesson.lessonCompletePracticeNow,
-                                  style: AppStyle.text16.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppCustomColor.textWhite,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(999.r),
+                                onTap: () => _openPractice(context, lessonState),
+                                child: Container(
+                                  height: 56.h,
+                                  alignment: Alignment.center,
+                                  child: AppText(
+                                    context.l10n.lesson.lessonCompletePracticeNow,
+                                    style: AppStyle.text16.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppCustomColor.textWhite,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
+                          10.verticalSpace,
+                        ],
+                        // Skip kicks off async work (streak gate + habit-suggestion
+                        // fetch) before navigating — show a spinner so the button isn't
+                        // a dead tap for that beat.
+                        Semantics(
+                          button: true,
+                          child: _ContinueCta(
+                            // Filled and full-width when it stands alone; the quiet
+                            // text link only makes sense as the second choice under
+                            // "Practice now". And "Skip to next lesson" is the wrong
+                            // words with nothing to skip.
+                            isPrimary: lessonState.selectedLesson.isImported,
+                            isBusy: _isHandlingPrimaryCta,
+                            onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
+                          ),
                         ),
-                        10.verticalSpace,
                       ],
-                      // Skip kicks off async work (streak gate + habit-suggestion
-                      // fetch) before navigating — show a spinner so the button isn't
-                      // a dead tap for that beat.
-                      Semantics(
-                        button: true,
-                        child: _ContinueCta(
-                          // Filled and full-width when it stands alone; the quiet
-                          // text link only makes sense as the second choice under
-                          // "Practice now". And "Skip to next lesson" is the wrong
-                          // words with nothing to skip.
-                          isPrimary: lessonState.selectedLesson.isImported,
-                          isBusy: _isHandlingPrimaryCta,
-                          onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -399,12 +411,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                 // Named in the course-complete line. Only when Home's selected
                 // course IS this lesson's course — otherwise the line would
                 // name whatever the header happens to show.
-                courseTitle: context.read<HomeCubit>().state.isSelectedCourse(lessonState.selectedLesson.courseId)
-                    ? context.read<HomeCubit>().state.currentCourse.title.text
-                    : '',
+                courseTitle: context.read<HomeCubit>().state.isSelectedCourse(lessonState.selectedLesson.courseId) ? context.read<HomeCubit>().state.currentCourse.title.text : '',
                 quizQuestions: QuizCardAnswer.practiceQuestionsOf(context.read<LessonCubit>().state),
                 quizTitle: lessonState.currentTitle,
                 onContinue: () => _handlePrimaryCta(lessonState, continueToNext: true),
+                onResolved: (willInvite) {
+                  if (mounted) setState(() => _coachWillInvite = willInvite);
+                },
               ),
             ],
           ),

@@ -273,6 +273,11 @@ class _CoachComposerState extends State<CoachComposer> {
     // answers, not tasks) and a lit one is the answer the app already holds.
     // "Chip là gợi ý, không phải danh sách đóng": the box stays open under them.
     final onboarding = state.step.startsWith('onboard');
+    // `_hub` vẽ cho ba bước khác nhau, và chúng nhận HAI loại event khác nhau:
+    // HUB nhận `task` (T1/T2/T3), còn TALK_ASK và onboarding nhận `pick` —
+    // ⟨Tóm tắt⟩/⟨Làm quiz⟩ là lựa chọn, không phải task. Gửi sai loại thì
+    // advance() trả null và request 400 ("Có lỗi ở phía mình").
+    final picks = onboarding || state.step == 'talkAsk';
     String? labelOf(CoachChoiceEntity choice) => onboarding ? (choice.label ?? choice.value) : labels[choice.value];
 
     // Luồng 4: the two pills and the box — "gõ thẳng vào ô chat thì đi luôn
@@ -298,7 +303,7 @@ class _CoachComposerState extends State<CoachComposer> {
               selected: choice.selected,
               onTap: busy
                   ? null
-                  : onboarding
+                  : picks
                   ? () => widget.cubit.pick(choice.value, labelOf(choice)!)
                   : () => widget.cubit.pickTask(
                       choice.value,

@@ -26,6 +26,13 @@ class CoachKeypointInvite extends StatefulWidget {
   /// ⟨Học tiếp⟩ inside the sheet — the page goes on to the next keypoint.
   final VoidCallback onContinue;
 
+  /// Coach có mời hay không, báo ra ngay khi server trả lời — gọi ĐÚNG một lần.
+  ///
+  /// Trang bên ngoài cần biết để quyết định vẽ gì: màn "Hoàn thành bài học"
+  /// giờ chỉ là phao cho trường hợp Coach tắt. Không có callback này thì trạng
+  /// thái đó nằm kín trong BlocProvider của widget và ngoài kia không đọc được.
+  final ValueChanged<bool>? onResolved;
+
   const CoachKeypointInvite({
     super.key,
     required this.lessonId,
@@ -36,6 +43,7 @@ class CoachKeypointInvite extends StatefulWidget {
     required this.quizQuestions,
     required this.quizTitle,
     required this.onContinue,
+    this.onResolved,
   });
 
   @override
@@ -44,16 +52,37 @@ class CoachKeypointInvite extends StatefulWidget {
 
 class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
   bool _shown = false;
+  bool _reported = false;
 
   @override
   Widget build(BuildContext context) {
-    if (widget.lessonId.isEmpty || widget.keypointId.isEmpty) return const SizedBox.shrink();
+    if (widget.lessonId.isEmpty || widget.keypointId.isEmpty) {
+      // Không đủ dữ liệu để hỏi server ⇒ chắc chắn không mời. Vẫn phải BÁO,
+      // không thì trang ngoài đứng ở trạng thái "chưa biết" mãi và user xong
+      // bài chỉ còn nút X — không có đường sang bài tiếp theo.
+      if (!_reported) {
+        _reported = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) widget.onResolved?.call(false);
+        });
+      }
+
+      return const SizedBox.shrink();
+    }
 
     return BlocProvider<CoachBubbleCubit>(
       create: (_) => AppDI.injector.get<CoachBubbleCubit>()..refresh(entry: CoachEntry.lesson, lessonId: widget.lessonId),
       child: BlocListener<CoachBubbleCubit, CoachBubbleState>(
-        listenWhen: (prev, curr) => curr.resolved && curr.visible && !_shown,
+        // Nghe cả trường hợp KHÔNG mời: hai cờ riêng vì `onResolved` phải báo
+        // được "Coach tắt" — dùng chung một cờ thì lượt resolve không-visible
+        // sẽ khoá luôn lượt mời sau đó.
+        listenWhen: (prev, curr) => curr.resolved && !(_reported && _shown),
         listener: (context, state) {
+          if (!_reported) {
+            _reported = true;
+            widget.onResolved?.call(state.visible);
+          }
+          if (!state.visible || _shown) return;
           _shown = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) _invite(context);
@@ -70,7 +99,16 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
       isCourseDone: widget.isCourseDone,
       courseTitle: widget.courseTitle,
     );
-    if (accepted != true || !context.mounted) return;
+    // Nút thứ hai giờ mang chữ "Bỏ qua, sang bài tiếp theo" (`inviteLater`), nên
+    // nó phải đi tiếp thật. Trước đây nó chỉ đóng dialog và rơi về màn "Hoàn
+    // thành bài học" phía dưới — mà màn đó đã bỏ, nên không đi tiếp là để user
+    // đứng trên một trang trống.
+    if (accepted != true) {
+      if (mounted) widget.onContinue();
+
+      return;
+    }
+    if (!context.mounted) return;
 
     final outcome = await showCoachSheetForKeypoint(
       context,

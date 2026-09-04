@@ -388,7 +388,7 @@ inviteBubble: "한 부분을 마쳤네요 — 잠깐 이야기해 볼까요?"
 inviteRecapBubble: "«${course}» 과정을 모두 마쳤네요 — 잠깐 돌아볼까요?"
 inviteRecapBubbleNoName: "과정을 모두 마쳤네요 — 잠깐 돌아볼까요?"
 inviteAccept: "코치와 연습하기"
-inviteLater: "다음에"
+inviteLater: "건너뛰고 다음 레슨으로"
 inviteCourseDone: "코스 완료"
 inviteRecapAccept: "코스 돌아보기"
 

@@ -396,7 +396,7 @@ inviteBubble: "You just finished a part — talk about it a little?"
 inviteRecapBubble: "You just finished the whole course «${course}» — look back a little?"
 inviteRecapBubbleNoName: "You just finished the whole course — look back a little?"
 inviteAccept: "Practise with the Coach"
-inviteLater: "Another time"
+inviteLater: "Skip to next lesson"
 inviteCourseDone: "Course complete"
 inviteRecapAccept: "Look back at the course"
 

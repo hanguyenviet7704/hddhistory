@@ -388,7 +388,7 @@ inviteBubble: "ひと区切り学び終えましたね — 少し話してみま
 inviteRecapBubble: "コース「${course}」を修了しましたね — 少し振り返ってみませんか？"
 inviteRecapBubbleNoName: "コースを修了しましたね — 少し振り返ってみませんか？"
 inviteAccept: "コーチと練習する"
-inviteLater: "また今度"
+inviteLater: "スキップして次のレッスンへ"
 inviteCourseDone: "コース完了"
 inviteRecapAccept: "コースを振り返る"
 

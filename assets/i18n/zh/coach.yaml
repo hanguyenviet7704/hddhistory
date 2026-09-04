@@ -388,7 +388,7 @@ inviteBubble: "你刚学完一部分——聊几句吗？"
 inviteRecapBubble: "你刚完成整门课程《${course}》——回顾一下吗？"
 inviteRecapBubbleNoName: "你刚完成整门课程——回顾一下吗？"
 inviteAccept: "和 Coach 练一练"
-inviteLater: "下次吧"
+inviteLater: "跳过，进入下一课"
 inviteCourseDone: "课程完成"
 inviteRecapAccept: "回顾整门课"
 
