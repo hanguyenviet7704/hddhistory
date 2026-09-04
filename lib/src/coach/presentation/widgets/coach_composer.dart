@@ -512,11 +512,16 @@ class _CoachComposerState extends State<CoachComposer> {
   /// — the reader types instead, and being told off for a permission they did
   /// not grant is not what this moment needs.
   Future<void> _toggleMic() async {
+    // Chụp state TRƯỚC await: sau đó widget có thể đã rời cây, và event chỉ cần
+    // biết phiên/bước lúc người đọc bấm mic.
+    final state = widget.state;
+
     if (_listening) {
       setState(() => _listening = false);
       final text = await _recorder.stopAndTranscribe(
         LocaleSettings.currentLocale.languageCode,
       );
+      CoachTracking.micDone(state, hasText: text.isNotEmpty);
       if (!mounted || text.isEmpty) return;
 
       // Into the box, not straight out: the transcription is a draft of their
@@ -527,6 +532,9 @@ class _CoachComposerState extends State<CoachComposer> {
     }
 
     final started = await _recorder.start();
+    // `granted: false` là micro bị từ chối — màn hình không đổi gì, nên đây là
+    // dấu vết DUY NHẤT của một người bấm mic mà không nói được câu nào.
+    CoachTracking.micStart(state, granted: started);
     if (!mounted || !started) return;
 
     setState(() => _listening = true);
@@ -1095,8 +1103,14 @@ List<_ChipSpec> _chipSpecsFor(dynamic l10n, CoachState state) {
       if (state.ui.allowNewSession) _ChipSpec('again', l10n.nextAgain, echo: l10n.nextAgainEcho),
       _ChipSpec('stop', l10n.nextStop, echo: l10n.nextStopEcho),
     ],
-    // pickNew / pickHabit — the only chips whose words are data.
-    _ => state.ui.choices.map((c) => _ChipSpec(c.value, c.label ?? c.value)).toList(),
+    // pickNew / pickHabit — the only chips whose words are data. ⟨Xáo trộn⟩
+    // rides among them with no label: it is not a habit, so its words are ours.
+    _ =>
+      state.ui.choices
+          .map(
+            (c) => c.value == 'shuffle' ? _ChipSpec(c.value, l10n.sceneShuffle) : _ChipSpec(c.value, c.label ?? c.value),
+          )
+          .toList(),
   };
 }
 
@@ -1126,9 +1140,14 @@ void _dispatchChip(CoachCubit cubit, String step, _ChipSpec spec) {
     // The chip's picker sends the same event; the server knows which step it
     // came from and puts the reader back there.
     case 'pickHabit':
-    // Luồng 4 — the habit to practise, from the kho.
+    // Luồng 4 — the habit to practise, from the kho. ⟨Xáo trộn⟩ deals three
+    // others instead of choosing one, so it goes as a plain pick.
     case 'scenePick':
-      cubit.pickNewHabit(spec.value, spec.label);
+      if (spec.value == 'shuffle') {
+        cubit.pick(spec.value, spec.label);
+      } else {
+        cubit.pickNewHabit(spec.value, spec.label);
+      }
     // Luồng 4 — the retry offer rides the `sceneAgain` event: same meaning.
     case 'sceneFix':
       cubit.answerSceneAgain(again: spec.value == 'retry', label: echo);
