@@ -352,3 +352,10 @@ checkinOfferLater: "以后再说"
 checkinOfferLaterEcho: "以后再说."
 stepCheckinToday: "记录今天"
 stepQuiz: "聊天里的测验"
+
+# Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
+exitPleaStory: "你还没说完呢。再留一句好吗？"
+exitPleaScene: "这个情境再一句就结束了。试着说完再关？"
+exitPleaQuiz: "还剩 ${n} 题。做完我就帮你记下今天？"
+exitPleaStay: "再留一句"
+exitPleaLeave: "还是关掉"

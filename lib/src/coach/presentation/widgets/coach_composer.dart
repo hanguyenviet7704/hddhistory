@@ -60,6 +60,12 @@ class _CoachComposerState extends State<CoachComposer> {
   @override
   void didUpdateWidget(covariant CoachComposer oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Luồng 6 — the line they were typing when they closed, back in the box
+    // when the same session reopens: "lần sau không phải kể lại từ đầu".
+    if (oldWidget.state.sessionId != widget.state.sessionId && widget.state.sessionId.isNotEmpty && _text.text.isEmpty) {
+      final draft = widget.cubit.draftFor(widget.state.sessionId);
+      if (draft.isNotEmpty) _text.text = draft;
+    }
 
     _applyPlanPrefill();
 
@@ -458,9 +464,11 @@ class _CoachComposerState extends State<CoachComposer> {
         minLines: 1,
         maxLines: 4,
         textInputAction: TextInputAction.send,
+        onChanged: (value) => widget.cubit.rememberDraft(widget.state.sessionId, value),
         onSubmitted: (value) {
           onSubmit(value);
           _text.clear();
+          widget.cubit.rememberDraft(widget.state.sessionId, '');
         },
         style: TextStyle(
           fontSize: 13.5.sp,

@@ -25,6 +25,10 @@ abstract class CoachApi {
   @POST(AppEndpoint.coachSessionClose)
   Future<void> closeSession(@Path('id') String id);
 
+  /// Luồng 6 — the plea at ⟨Đóng⟩ was answered: `{"stayed": bool}`.
+  @POST(AppEndpoint.coachSessionExit)
+  Future<void> exitSession(@Path('id') String id, @Body() Map<String, dynamic> body);
+
   /// The voice, changed from the header at any step. Not a turn.
   @PATCH(AppEndpoint.coachSessionPersona)
   Future<void> setPersona(@Path('id') String id, @Body() Map<String, dynamic> body);

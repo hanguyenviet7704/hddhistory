@@ -352,3 +352,10 @@ checkinOfferLater: "あとで"
 checkinOfferLaterEcho: "あとで."
 stepCheckinToday: "今日を記録"
 stepQuiz: "チャットでクイズ"
+
+# Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
+exitPleaStory: "まだ話し終わっていませんね。もう一言だけ？"
+exitPleaScene: "この場面はあと一言で終わります。言ってみてから閉じませんか？"
+exitPleaQuiz: "あと ${n} 問だけです。終えたら今日を記録しますよ？"
+exitPleaStay: "もう一言だけ"
+exitPleaLeave: "やっぱり閉じる"

@@ -63,5 +63,8 @@ abstract class CoachState with _$CoachState {
     @Default(<String>[]) List<String> columnLeft,
     @Default(<String>[]) List<String> columnRight,
     @Default(false) bool ended,
+
+    /// Luồng 6 — ⟨Đóng⟩ may plead once; false once the reader declined twice in a row.
+    @Default(true) bool exitPlea,
   }) = _CoachState;
 }

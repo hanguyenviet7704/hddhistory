@@ -35,6 +35,7 @@ part 'domain/usecases/get_coach_bubble_usecase.dart';
 part 'domain/usecases/open_coach_session_usecase.dart';
 part 'domain/usecases/send_coach_turn_usecase.dart';
 part 'domain/usecases/close_coach_session_usecase.dart';
+part 'domain/usecases/exit_coach_session_usecase.dart';
 part 'domain/usecases/transcribe_coach_audio_usecase.dart';
 part 'domain/usecases/explain_again_usecase.dart';
 part 'domain/usecases/set_coach_persona_usecase.dart';
@@ -58,6 +59,7 @@ part 'presentation/widgets/coach_message_list.dart';
 part 'presentation/widgets/coach_composer.dart';
 part 'presentation/widgets/coach_two_columns.dart';
 part 'presentation/widgets/coach_safety_panel.dart';
+part 'presentation/widgets/coach_exit_plea_sheet.dart';
 
 //* Parts for generated files
 part 'coach.freezed.dart';

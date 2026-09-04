@@ -302,6 +302,9 @@ class CoachUiEntity {
   /// NEXT_SESSION — false on a low mood-end: only "Dừng" remains.
   final bool allowNewSession;
 
+  /// QUIZ_IN_CHAT — questions still to ask (luồng 5); the plea counts them (luồng 6).
+  final int? quizRemaining;
+
   const CoachUiEntity({
     this.kind = CoachUiKind.text,
     this.choices = const [],
@@ -320,6 +323,7 @@ class CoachUiEntity {
     this.suggested,
     this.score,
     this.allowNewSession = true,
+    this.quizRemaining,
   });
 }
 
@@ -373,6 +377,9 @@ class CoachTurnEntity {
   final bool silent;
   final String? reasonKey;
 
+  /// Luồng 6 — whether ⟨Đóng⟩ may plead once. Off after two declines in a row.
+  final bool exitPlea;
+
   const CoachTurnEntity({
     this.sessionId = '',
     this.step = '',
@@ -388,6 +395,7 @@ class CoachTurnEntity {
     this.replay = const [],
     this.silent = false,
     this.reasonKey,
+    this.exitPlea = true,
   });
 }
 
@@ -451,6 +459,7 @@ extension CoachTurnModelX on CoachTurnModel {
           )
           .toList(),
       escapeAvailable: ui.escapeAvailable,
+    quizRemaining: ui.quizRemaining,
       score: ui.score == null || ui.score!.criteria.isEmpty
           ? null
           : CoachSceneScoreEntity(
@@ -512,6 +521,7 @@ extension CoachTurnModelX on CoachTurnModel {
             title: courseInvite!.title,
           ),
     ended: ended,
+    exitPlea: exitPlea,
     silent: silent,
     reasonKey: reasonKey,
   );

@@ -360,3 +360,10 @@ checkinOfferLater: "Later"
 checkinOfferLaterEcho: "Later."
 stepCheckinToday: "writing today"
 stepQuiz: "quiz in the chat"
+
+# Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
+exitPleaStory: "You haven't finished. Stay for one more line?"
+exitPleaScene: "One more line and this scene is done. Try it, then we close?"
+exitPleaQuiz: "Only ${n} left. Finish them and I'll write today down for you?"
+exitPleaStay: "Stay for one line"
+exitPleaLeave: "Close anyway"

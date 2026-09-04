@@ -14,8 +14,38 @@ class CoachCubit extends Cubit<CoachState> {
   final CloseCoachSessionUseCase _closeSession;
   final ExplainAgainUseCase _explainAgain;
   final SetCoachPersonaUseCase _setPersona;
+  final ExitCoachSessionUseCase _exitSession;
 
-  CoachCubit(this._openSession, this._sendTurn, this._closeSession, this._explainAgain, this._setPersona) : super(const CoachState());
+  CoachCubit(
+    this._openSession,
+    this._sendTurn,
+    this._closeSession,
+    this._explainAgain,
+    this._setPersona,
+    this._exitSession,
+  ) : super(const CoachState());
+
+  // ------------------------------------------------------------ luồng 6
+
+  /// The unsent line in the box, kept across a close so "lần sau không phải kể
+  /// lại từ đầu". Keyed by session: a new session starts with an empty box.
+  String _draft = '';
+  String _draftSessionId = '';
+
+  void rememberDraft(String sessionId, String text) {
+    _draftSessionId = sessionId;
+    _draft = text;
+  }
+
+  String draftFor(String sessionId) => sessionId.isNotEmpty && sessionId == _draftSessionId ? _draft : '';
+
+  /// The plea's answer. Fire-and-forget: closing must never wait on it.
+  Future<void> recordExit({required bool stayed}) async {
+    final id = state.sessionId;
+    if (id.isEmpty) return;
+    emit(state.copyWith(exitPlea: stayed ? true : state.exitPlea));
+    await _exitSession(id, stayed: stayed).run();
+  }
 
   CoachEntry _entry = CoachEntry.home;
   String? _lessonId;
@@ -467,6 +497,7 @@ class CoachCubit extends Cubit<CoachState> {
       columnLeft: turn.ui.columnLeft.isNotEmpty ? turn.ui.columnLeft : base.columnLeft,
       columnRight: turn.ui.columnRight.isNotEmpty ? turn.ui.columnRight : base.columnRight,
       ended: turn.ended,
+      exitPlea: turn.exitPlea,
     );
   }
 }

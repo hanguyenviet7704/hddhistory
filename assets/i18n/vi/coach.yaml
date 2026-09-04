@@ -353,3 +353,10 @@ checkinOfferLater: "Để sau"
 checkinOfferLaterEcho: "Để sau."
 stepCheckinToday: "ghi nhận hôm nay"
 stepQuiz: "quiz trong chat"
+
+# Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
+exitPleaStory: "Bạn kể chưa hết mà. Ở thêm một câu nữa nhé?"
+exitPleaScene: "Cảnh này còn một câu nữa là xong. Nói thử rồi mình đóng?"
+exitPleaQuiz: "Còn ${n} câu thôi. Làm nốt rồi mình ghi hôm nay cho bạn nhé?"
+exitPleaStay: "Ở lại một câu"
+exitPleaLeave: "Vẫn đóng"

@@ -103,6 +103,53 @@ class _CoachSheetState extends State<_CoachSheet> {
     );
   }
 
+  /// Luồng 6 — ⟨Đóng⟩ mid-session asks ONCE to stay, then respects the answer.
+  ///
+  /// The plea appears only when there is something to finish (the reader has
+  /// spoken, the session is live, the step has a line for it) and only while
+  /// the server still allows it — two sessions closed against the plea and it
+  /// is gone for good. A barrier tap is not a decision: nothing is recorded and
+  /// the sheet stays.
+  Future<void> _requestClose(BuildContext context, CoachState state, CoachCubit cubit) async {
+    final line = _exitPleaLineFor(context, state);
+    final canPlead =
+        state.exitPlea &&
+        !state.ended &&
+        state.status == CoachStatus.ready &&
+        line != null &&
+        state.messages.any((m) => !m.isCoach);
+
+    if (canPlead) {
+      final decision = await CoachExitPleaSheet.show(context, line);
+      if (decision == CoachExitDecision.stay) {
+        unawaited(cubit.recordExit(stayed: true));
+
+        return;
+      }
+      if (decision == null) return;
+      unawaited(cubit.recordExit(stayed: false));
+    }
+
+    if (!context.mounted) return;
+    Navigator.of(context).pop(const _CoachSheetResult.close());
+  }
+
+  /// The four written pleas, by where the reader is; null where none fits —
+  /// a hub, a card, a finished session.
+  String? _exitPleaLineFor(BuildContext context, CoachState state) {
+    final l10n = context.l10n.coach;
+    const story = {'story', 'storyTalk', 'depth', 'checkinTell', 'tell', 'tell2'};
+    const scene = {'tellOnce', 'sceneRetry', 'sceneFix', 'sceneStage2', 'sceneMet', 'sceneDid', 'sceneChange'};
+
+    if (story.contains(state.step)) return l10n.exitPleaStory;
+    if (scene.contains(state.step)) return l10n.exitPleaScene;
+    if (state.step == 'quizInChat') {
+      return l10n.exitPleaQuiz(n: (state.ui.quizRemaining ?? 2).toString());
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CoachCubit, CoachState>(
@@ -138,7 +185,9 @@ class _CoachSheetState extends State<_CoachSheet> {
                     typing: state.typing,
                     safety: isSafety,
                   ),
-                  onClose: () => Navigator.of(context).pop(const _CoachSheetResult.close()),
+                  onClose: () {
+                    _requestClose(context, state, cubit);
+                  },
                 ),
                 // Thanh habit — a floating pill under the header, from the
                 // moment the habit is certain to the end of the session. Not a

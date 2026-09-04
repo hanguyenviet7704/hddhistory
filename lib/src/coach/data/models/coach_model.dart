@@ -204,6 +204,9 @@ abstract class CoachUiModel with _$CoachUiModel {
     CoachSuggestedPlanModel? suggested,
     CoachSceneScoreModel? score,
     @Default(true) bool allowNewSession,
+
+    /// Luồng 5/6 — QUIZ_IN_CHAT: questions still to ask, the current one included.
+    int? quizRemaining,
   }) = _CoachUiModel;
 
   factory CoachUiModel.fromJson(Map<String, dynamic> json) => _$CoachUiModelFromJson(json);
@@ -258,6 +261,9 @@ abstract class CoachTurnModel with _$CoachTurnModel {
     /// A door whose guards said to stay quiet. Not an error.
     @Default(false) bool silent,
     String? reasonKey,
+
+    /// Luồng 6 — whether ⟨Đóng⟩ may plead once for this reader.
+    @Default(true) bool exitPlea,
   }) = _CoachTurnModel;
 
   factory CoachTurnModel.fromJson(Map<String, dynamic> json) => _$CoachTurnModelFromJson(json);
