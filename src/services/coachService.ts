@@ -59,8 +59,12 @@ export const coachService = {
   },
 
   /**
-   * Chữ do user tự viết. KHÔNG có hội thoại đầy đủ — Coach không lưu những gì
-   * nó nói, theo đúng thiết kế.
+   * Chữ do user tự viết.
+   *
+   * KHÔNG có hội thoại đầy đủ: lời Coach nói chỉ nằm trong phiên và Mongo xoá
+   * phiên sau 48h. Riêng dòng trả lời tình huống có kèm `meta.situationPrompt`
+   * — câu hỏi do biên tập viên viết nên còn lâu dài, và nó là thứ làm dòng
+   * thời gian đọc được như một lượt qua lại.
    */
   async getContents(params?: {
     userId?: string;
@@ -72,6 +76,19 @@ export const coachService = {
     limit?: number;
   }) {
     const res = await axiosClient.get("/coach-contents", { params });
+    return res.data;
+  },
+
+  /** Ai có viết, viết bao nhiêu, lần cuối là khi nào — mới nhất lên đầu. */
+  async getContentUsers(params?: {
+    habitId?: string;
+    kinds?: CoachContentKind[];
+    from?: string;
+    to?: string;
+    search?: string;
+    limit?: number;
+  }) {
+    const res = await axiosClient.get("/coach-contents/users", { params });
     return res.data;
   },
 

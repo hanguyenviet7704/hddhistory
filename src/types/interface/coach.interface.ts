@@ -113,6 +113,29 @@ export interface CoachContentPage {
    */
   truncated: boolean;
   limit: number;
+  /** Chỉ có khi lọc đúng một user — phần đầu của trang dòng thời gian. */
+  user?: { userId: string; name: string | null; email: string | null };
+}
+
+/** Một user và dấu vết họ để lại, cho danh sách "Theo user". */
+export interface CoachContentUserRow {
+  userId: string;
+  /** Null khi tài khoản không còn: chữ họ viết sống lâu hơn tài khoản. */
+  name: string | null;
+  email: string | null;
+  anonymous: boolean;
+  firstAt: string;
+  lastAt: string;
+  total: number;
+  /** Đủ sáu loại, kể cả loại bằng 0, để bảng có cột cố định. */
+  byKind: Record<CoachContentKind, number>;
+}
+
+export interface CoachContentUserPage {
+  rows: CoachContentUserRow[];
+  total: number;
+  truncated: boolean;
+  limit: number;
 }
 
 export interface CoachAiUsageGroup {
