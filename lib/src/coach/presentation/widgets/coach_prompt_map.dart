@@ -55,6 +55,10 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     case 'coach.prompt.shrinkDone':
       return l10n.shrinkDoneNote;
 
+    // -- the replay's divider between sessions: "Hôm qua · Trang chủ"
+    case 'coach.divider':
+      return _dividerLabel(l10n, args);
+
     // -- luồng 1: the onboarding. An empty `address` means the neutral wording
     // (a non-Vietnamese reader who kept "bạn").
     case 'coach.prompt.onboardAddress':
@@ -424,4 +428,26 @@ String _addressFor(String key, String address) {
   if (LocaleSettings.currentLocale.languageCode != 'vi' || !_leadingInVi.contains(key)) return word;
 
   return word[0].toUpperCase() + word.substring(1);
+}
+
+/// "Hôm nay · Trang chủ" / "Hôm qua · Bài học" / "12 thg 8 · Thói quen" — the
+/// day the session happened and the door it was opened from.
+String _dividerLabel(dynamic l10n, Map<String, String> args) {
+  final door = switch (args['entry']) {
+    'lesson' => l10n.doorLesson as String,
+    'habit' => l10n.doorHabit as String,
+    _ => l10n.doorHome as String,
+  };
+  final at = DateTime.tryParse(args['at'] ?? '')?.toLocal();
+  if (at == null) return door;
+
+  final now = DateTime.now();
+  final days = DateTime(now.year, now.month, now.day).difference(DateTime(at.year, at.month, at.day)).inDays;
+  final when = days <= 0
+      ? l10n.dividerToday as String
+      : days == 1
+      ? l10n.dividerYesterday as String
+      : DateFormat.MMMd(LocaleSettings.currentLocale.languageCode).format(at);
+
+  return '$when · $door';
 }

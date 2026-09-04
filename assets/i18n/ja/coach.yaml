@@ -420,3 +420,10 @@ onboardConfirmYes: "はい"
 onboardConfirmYesEcho: "はい。"
 onboardConfirmNo: "いいえ、別の呼び方で"
 onboardConfirmNoEcho: "いいえ、別の呼び方で。"
+
+# 再開時のセッション間の区切り。
+dividerToday: "今日"
+dividerYesterday: "昨日"
+doorHome: "ホーム"
+doorLesson: "レッスン"
+doorHabit: "習慣"

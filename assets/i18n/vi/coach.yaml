@@ -421,3 +421,10 @@ onboardConfirmYes: "Đúng rồi"
 onboardConfirmYesEcho: "Đúng rồi."
 onboardConfirmNo: "Không, gọi khác"
 onboardConfirmNoEcho: "Không, gọi khác."
+
+# Vạch ngăn giữa hai phiên khi mở lại.
+dividerToday: "Hôm nay"
+dividerYesterday: "Hôm qua"
+doorHome: "Trang chủ"
+doorLesson: "Bài học"
+doorHabit: "Thói quen"

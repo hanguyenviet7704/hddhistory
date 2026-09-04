@@ -244,6 +244,21 @@ abstract class CoachReplayModel with _$CoachReplayModel {
   const factory CoachReplayModel({
     @Default(false) bool isCoach,
     @Default('') String text,
+
+    /// One drawn exchange: what was said or tapped, and the pieces the Coach's
+    /// side is rendered from — fixed lines as KEYS, re-rendered in the current
+    /// language. A `divider` item marks where one session ended.
+    String? at,
+    String? step,
+    String? userLine,
+    String? reply,
+    String? speaker,
+    String? noteKey,
+    String? promptKey,
+    Map<String, String>? promptArgs,
+    String? situation,
+    CoachSceneModel? scene,
+    CoachDividerModel? divider,
   }) = _CoachReplayModel;
 
   factory CoachReplayModel.fromJson(Map<String, dynamic> json) => _$CoachReplayModelFromJson(json);
@@ -255,6 +270,17 @@ abstract class CoachReplayModel with _$CoachReplayModel {
 /// i18n contract: a generated line arrives already written in the reader's
 /// language and is shown as-is; a fixed line arrives as a key and is rendered
 /// from slang. Neither ever travels the other's road.
+/// The line between two sessions in the replay: when, and at which door.
+@freezed
+abstract class CoachDividerModel with _$CoachDividerModel {
+  const factory CoachDividerModel({
+    @Default('') String at,
+    @Default('') String entry,
+  }) = _CoachDividerModel;
+
+  factory CoachDividerModel.fromJson(Map<String, dynamic> json) => _$CoachDividerModelFromJson(json);
+}
+
 @freezed
 abstract class CoachTurnModel with _$CoachTurnModel {
   const factory CoachTurnModel({
@@ -274,6 +300,9 @@ abstract class CoachTurnModel with _$CoachTurnModel {
 
     /// The exchange so far — sent only when an existing session is resumed.
     @Default(<CoachReplayModel>[]) List<CoachReplayModel> replay,
+
+    /// The session was picked back up: its current lines are already in `replay`.
+    @Default(false) bool resumed,
 
     /// A door whose guards said to stay quiet. Not an error.
     @Default(false) bool silent,

@@ -420,3 +420,10 @@ onboardConfirmYes: "对"
 onboardConfirmYesEcho: "对。"
 onboardConfirmNo: "不，换一个"
 onboardConfirmNoEcho: "不，换一个。"
+
+# 重开时两次会话之间的分隔线。
+dividerToday: "今天"
+dividerYesterday: "昨天"
+doorHome: "首页"
+doorLesson: "课程"
+doorHabit: "习惯"

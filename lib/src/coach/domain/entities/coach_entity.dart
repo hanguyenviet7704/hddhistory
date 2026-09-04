@@ -366,6 +366,40 @@ class CoachCourseInviteEntity {
   const CoachCourseInviteEntity({required this.courseId, required this.title});
 }
 
+/// One item of the replay: a drawn exchange, or the divider before a session.
+class CoachReplayEntity {
+  final DateTime? at;
+  final String? userLine;
+  final String? reply;
+  final String? speaker;
+  final String? noteKey;
+  final String? promptKey;
+  final Map<String, String> promptArgs;
+  final String? situation;
+  final CoachSceneEntity? scene;
+  final CoachDividerEntity? divider;
+
+  const CoachReplayEntity({
+    this.at,
+    this.userLine,
+    this.reply,
+    this.speaker,
+    this.noteKey,
+    this.promptKey,
+    this.promptArgs = const {},
+    this.situation,
+    this.scene,
+    this.divider,
+  });
+}
+
+class CoachDividerEntity {
+  final DateTime at;
+  final String entry;
+
+  const CoachDividerEntity({required this.at, required this.entry});
+}
+
 class CoachTurnEntity {
   final String sessionId;
   final String step;
@@ -394,8 +428,13 @@ class CoachTurnEntity {
   final CoachCourseInviteEntity? courseInvite;
   final bool ended;
 
-  /// The exchange so far, when a session was resumed rather than started.
-  final List<CoachMessage> replay;
+  /// The thread to draw before this response's own lines: earlier sessions
+  /// (each behind a divider), then — on resume — this session so far.
+  final List<CoachReplayEntity> replay;
+
+  /// Picked back up: the current step's lines are already in [replay], so the
+  /// sheet draws the replay and nothing more.
+  final bool resumed;
 
   /// The door decided to stay quiet. The sheet never opens; nothing is wrong.
   final bool silent;
@@ -417,6 +456,7 @@ class CoachTurnEntity {
     this.courseInvite,
     this.ended = false,
     this.replay = const [],
+    this.resumed = false,
     this.silent = false,
     this.reasonKey,
     this.exitPlea = true,
@@ -442,6 +482,8 @@ extension CoachTurnModelX on CoachTurnModel {
     noteKey: (noteKey?.trim().isEmpty ?? true) ? null : noteKey,
     speaker: (speaker?.trim().isEmpty ?? true) ? null : speaker,
     persona: (persona?.trim().isEmpty ?? true) ? 'friend' : persona!,
+    resumed: resumed,
+    replay: replay.map((r) => r.toEntity()).toList(),
     ui: CoachUiEntity(
       kind: CoachUiKind.fromRaw(ui.kind),
       choices: ui.choices.map((c) => CoachChoiceEntity(value: c.value, label: c.label, selected: c.selected)).toList(),
@@ -542,4 +584,29 @@ extension CoachTurnModelX on CoachTurnModel {
     silent: silent,
     reasonKey: reasonKey,
   );
+}
+
+extension CoachReplayModelX on CoachReplayModel {
+  /// Older servers sent only `isCoach` + `text`; those still read as one line.
+  CoachReplayEntity toEntity() {
+    String? clean(String? v) => (v?.trim().isEmpty ?? true) ? null : v;
+    final d = divider;
+    final dividerAt = d == null ? null : DateTime.tryParse(d.at);
+    final legacy = clean(text);
+
+    return CoachReplayEntity(
+      at: DateTime.tryParse(at ?? ''),
+      userLine: clean(userLine) ?? (legacy != null && !isCoach ? legacy : null),
+      reply: clean(reply) ?? (legacy != null && isCoach && clean(userLine) == null ? legacy : null),
+      speaker: clean(speaker),
+      noteKey: clean(noteKey),
+      promptKey: clean(promptKey),
+      promptArgs: promptArgs ?? const {},
+      situation: clean(situation),
+      scene: scene == null || (scene!.setup.trim().isEmpty && clean(scene!.question) == null && clean(scene!.habit) == null)
+          ? null
+          : CoachSceneEntity(habit: clean(scene!.habit), setup: scene!.setup, question: clean(scene!.question)),
+      divider: d == null || dividerAt == null ? null : CoachDividerEntity(at: dividerAt, entry: d.entry),
+    );
+  }
 }

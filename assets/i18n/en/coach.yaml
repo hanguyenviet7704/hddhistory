@@ -428,3 +428,10 @@ onboardConfirmYes: "Yes"
 onboardConfirmYesEcho: "Yes."
 onboardConfirmNo: "No, something else"
 onboardConfirmNoEcho: "No, something else."
+
+# The replay's divider between sessions.
+dividerToday: "Today"
+dividerYesterday: "Yesterday"
+doorHome: "Home"
+doorLesson: "Lesson"
+doorHabit: "Habit"

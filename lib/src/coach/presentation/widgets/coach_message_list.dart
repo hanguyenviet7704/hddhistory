@@ -38,8 +38,7 @@ class CoachMessageList extends StatefulWidget {
   State<CoachMessageList> createState() => _CoachMessageListState();
 }
 
-class _CoachMessageListState extends State<CoachMessageList>
-    with WidgetsBindingObserver {
+class _CoachMessageListState extends State<CoachMessageList> with WidgetsBindingObserver {
   final _controller = ScrollController();
 
   /// The keyboard inset last seen, logical pixels — to tell opening from closing.
@@ -132,6 +131,23 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The line between two sessions — a label on a hairline, not a bubble.
+    if (message.divider) {
+      return Row(
+        children: [
+          Expanded(child: Container(height: 1, color: CoachStyle.border)),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
+            child: Text(
+              message.text,
+              style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, letterSpacing: 0.2, color: CoachStyle.textMuted),
+            ),
+          ),
+          Expanded(child: Container(height: 1, color: CoachStyle.border)),
+        ],
+      );
+    }
+
     final isCoach = message.isCoach;
     final width = MediaQuery.sizeOf(context).width;
 

@@ -420,3 +420,10 @@ onboardConfirmYes: "네"
 onboardConfirmYesEcho: "네."
 onboardConfirmNo: "아니요, 다르게"
 onboardConfirmNoEcho: "아니요, 다르게."
+
+# 다시 열 때 세션 사이의 구분선.
+dividerToday: "오늘"
+dividerYesterday: "어제"
+doorHome: "홈"
+doorLesson: "레슨"
+doorHabit: "습관"

@@ -105,12 +105,16 @@ class CoachCubit extends Cubit<CoachState> {
           return;
         }
 
-        // A resumed session arrives with its thread; a new one starts empty.
+        // Earlier sessions come first, each behind a divider; a resumed
+        // session then follows with everything it showed — its current lines
+        // included, so nothing more is drawn for it. A new session draws its
+        // opening under the history.
         emit(
           _applyTurn(
-            state.copyWith(status: CoachStatus.ready, messages: turn.replay),
+            state.copyWith(status: CoachStatus.ready, messages: _replayMessages(turn.replay)),
             turn,
             userLine: null,
+            appendLines: !turn.resumed,
           ),
         );
       },
@@ -141,8 +145,7 @@ class CoachCubit extends Cubit<CoachState> {
   /// "Bạn muốn chia sẻ thêm không?" — `Kể sâu hơn` runs the 5-beat script,
   /// `Chỉ ghi lại thôi` files the sentence they already wrote and skips
   /// straight to the commitment question.
-  Future<void> answerDepth({required bool deep, required String label}) =>
-      _send({'kind': 'depth', 'deep': deep}, userLine: label);
+  Future<void> answerDepth({required bool deep, required String label}) => _send({'kind': 'depth', 'deep': deep}, userLine: label);
 
   /// The same pill, tapped later inside the script: file it and move on.
   Future<void> fileItInstead(String label) => _send({'kind': 'ack'}, userLine: label);
@@ -150,29 +153,24 @@ class CoachCubit extends Cubit<CoachState> {
   /// Nhịp 4 of the scene — "Nói lại" answers the same scene a second time,
   /// "Đủ rồi" closes it. The beat that makes the task practice rather than one
   /// question and one answer.
-  Future<void> answerSceneAgain({required bool again, required String label}) =>
-      _send({'kind': 'sceneAgain', 'again': again}, userLine: label);
+  Future<void> answerSceneAgain({required bool again, required String label}) => _send({'kind': 'sceneAgain', 'again': again}, userLine: label);
 
   /// Thanh habit — "đổi": the Coach lists the reader's own kho and puts them
   /// back on the step they were on. Never refused.
-  Future<void> changeHabit(String label) =>
-      _send({'kind': 'changeHabit'}, userLine: label);
+  Future<void> changeHabit(String label) => _send({'kind': 'changeHabit'}, userLine: label);
 
   /// Bộ điều phối — start a task by name. The registry decides whether it is
   /// still allowed; a refused one comes back as an error rather than a guess.
-  Future<void> pickTask(String task, {required String label}) =>
-      _send({'kind': 'task', 'task': task}, userLine: label);
+  Future<void> pickTask(String task, {required String label}) => _send({'kind': 'task', 'task': task}, userLine: label);
 
   /// Bộ điều phối — "Mình dừng ở đây": card → the one commitment offer → tail.
   Future<void> stopSession(String label) => _send({'kind': 'stop'}, userLine: label);
 
   /// Luồng 5 — CHECKIN_ASK: "Có, mình làm được" · "Chưa, hôm nay không có dịp".
-  Future<void> answerCheckin({required bool done, required String label}) =>
-      _send({'kind': 'checkin', 'done': done}, userLine: label);
+  Future<void> answerCheckin({required bool done, required String label}) => _send({'kind': 'checkin', 'done': done}, userLine: label);
 
   /// Luồng 5 — QUIZ_IN_CHAT: the option tapped, by index.
-  Future<void> answerQuiz(String answer, String label) =>
-      _send({'kind': 'quizAnswer', 'quizAnswer': answer}, userLine: label);
+  Future<void> answerQuiz(String answer, String label) => _send({'kind': 'quizAnswer', 'quizAnswer': answer}, userLine: label);
 
   /// Luồng 2/3 — a generic chip pick for the talk and recap steps.
   Future<void> pick(String value, String label) => _send({'kind': 'pick', 'value': value}, userLine: label);
@@ -195,9 +193,7 @@ class CoachCubit extends Cubit<CoachState> {
             'passed': answer.isCorrect,
             'question': answer.question.questionText,
             'chosen': answer.isChoice ? choiceText(answer, answer.selected.contains) : '',
-            'correct': answer.isChoice
-                ? choiceText(answer, (i) => answer.choiceOptions[i].isCorrect)
-                : answer.correctGapWords.join(' '),
+            'correct': answer.isChoice ? choiceText(answer, (i) => answer.choiceOptions[i].isCorrect) : answer.correctGapWords.join(' '),
           },
       ],
     });
@@ -205,16 +201,14 @@ class CoachCubit extends Cubit<CoachState> {
 
   /// Nhịp 6 — "Chuyện giống vậy bạn gặp bao giờ chưa?". "Gặp rồi" collects the
   /// occasion the commitment needs; "Chưa gặp" moves on without a word about it.
-  Future<void> answerSceneMet({required bool met, required String label}) =>
-      _send({'kind': 'sceneMet', 'met': met}, userLine: label);
+  Future<void> answerSceneMet({required bool met, required String label}) => _send({'kind': 'sceneMet', 'met': met}, userLine: label);
 
   /// ★ — practise one situation, or not. Never required.
   Future<void> answerInvite({required bool accept, required String label}) => _send({'kind': 'invite', 'accept': accept}, userLine: label);
 
   /// Tầng 4 — the rubric card. "Thử lại tình huống này" replays the SAME scene
   /// once; anything else moves on to the commitment.
-  Future<void> answerSceneScore({required bool retry, required String label}) =>
-      _send({'kind': 'sceneScore', 'retry': retry}, userLine: label);
+  Future<void> answerSceneScore({required bool retry, required String label}) => _send({'kind': 'sceneScore', 'retry': retry}, userLine: label);
 
   /// "Muốn đặt Nhắc hẹn không?" — the commitment is optional at every door.
   Future<void> answerPlanAsk({required bool accept, required String label}) => _send({'kind': 'planAsk', 'accept': accept}, userLine: label);
@@ -396,7 +390,10 @@ class CoachCubit extends Cubit<CoachState> {
       ),
     );
 
-    final result = await _sendTurn(sessionId: state.sessionId, payload: payload).run();
+    // The chip's words go with the event: the server keeps them so a reopened
+    // sheet can draw this answer again. Typed text is already the payload.
+    final body = {...payload, if (userLine != null && payload['kind'] != 'text') 'label': userLine};
+    final result = await _sendTurn(sessionId: state.sessionId, payload: body).run();
 
     await result.match(
       (error) async {
@@ -425,11 +422,7 @@ class CoachCubit extends Cubit<CoachState> {
 
   /// One reply split on blank lines, never empty for a reply that says anything.
   static List<String> _paragraphs(String reply) {
-    final parts = reply
-        .split(RegExp(r'\n\s*\n'))
-        .map((part) => part.trim())
-        .where((part) => part.isNotEmpty)
-        .toList();
+    final parts = reply.split(RegExp(r'\n\s*\n')).map((part) => part.trim()).where((part) => part.isNotEmpty).toList();
 
     return parts.isEmpty ? [reply.trim()] : parts;
   }
@@ -440,8 +433,31 @@ class CoachCubit extends Cubit<CoachState> {
   /// arrive together — the reply answers what was just said, the prompt asks
   /// the next thing. Appending them in that order is what makes the thread read
   /// like a conversation rather than a form.
-  CoachState _applyTurn(CoachState base, CoachTurnEntity turn, {String? userLine}) {
-    final messages = [...base.messages];
+  CoachState _applyTurn(CoachState base, CoachTurnEntity turn, {String? userLine, bool appendLines = true}) {
+    final messages = [...base.messages, if (appendLines) ..._linesFor(turn, userLine: userLine)];
+
+    if (turn.ui.kind == CoachUiKind.courseCard || turn.ui.course != null) {
+      LogDev.data('[CoachDbg] turn: step=${turn.step} kind=${turn.ui.kind} course=${turn.ui.course?.courseId} ended=${turn.ended}'); // TEMP-DEBUG
+    }
+    return base.copyWith(
+      sessionId: turn.sessionId,
+      step: turn.step,
+      persona: turn.persona,
+      messages: messages,
+      ui: turn.ui,
+      courseInvite: turn.courseInvite,
+      columnLeft: turn.ui.columnLeft.isNotEmpty ? turn.ui.columnLeft : base.columnLeft,
+      columnRight: turn.ui.columnRight.isNotEmpty ? turn.ui.columnRight : base.columnRight,
+      ended: turn.ended,
+      exitPlea: turn.exitPlea,
+    );
+  }
+
+  /// The bubbles one response adds, in reading order: the reader's own line,
+  /// the reply, the note, the scene, then the step's fixed line. Shared by a
+  /// live turn and by the replay, so a reopened sheet reads exactly as it did.
+  List<CoachMessage> _linesFor(CoachTurnEntity turn, {String? userLine}) {
+    final messages = <CoachMessage>[];
 
     if (userLine != null) {
       messages.add(CoachMessage(isCoach: false, text: userLine));
@@ -524,20 +540,36 @@ class CoachCubit extends Cubit<CoachState> {
       }
     }
 
-    if (turn.ui.kind == CoachUiKind.courseCard || turn.ui.course != null) {
-      LogDev.data('[CoachDbg] turn: step=${turn.step} kind=${turn.ui.kind} course=${turn.ui.course?.courseId} ended=${turn.ended}'); // TEMP-DEBUG
+    return messages;
+  }
+
+  /// The thread before this response: earlier sessions behind their dividers,
+  /// then — on resume — this session so far. Each exchange is redrawn through
+  /// the same path a live turn takes, keys rendered in the current language.
+  List<CoachMessage> _replayMessages(List<CoachReplayEntity> items) {
+    final out = <CoachMessage>[];
+    for (final item in items) {
+      final divider = item.divider;
+      if (divider != null) {
+        final label = promptResolver?.call('coach.divider', {'at': divider.at.toIso8601String(), 'entry': divider.entry});
+        if (label != null && label.isNotEmpty) out.add(CoachMessage(isCoach: true, text: label, divider: true));
+        continue;
+      }
+      out.addAll(
+        _linesFor(
+          CoachTurnEntity(
+            reply: item.reply,
+            promptKey: item.promptKey,
+            promptArgs: item.promptArgs,
+            noteKey: item.noteKey,
+            speaker: item.speaker,
+            ui: CoachUiEntity(situation: item.situation, scene: item.scene),
+          ),
+          userLine: item.userLine,
+        ),
+      );
     }
-    return base.copyWith(
-      sessionId: turn.sessionId,
-      step: turn.step,
-      persona: turn.persona,
-      messages: messages,
-      ui: turn.ui,
-      courseInvite: turn.courseInvite,
-      columnLeft: turn.ui.columnLeft.isNotEmpty ? turn.ui.columnLeft : base.columnLeft,
-      columnRight: turn.ui.columnRight.isNotEmpty ? turn.ui.columnRight : base.columnRight,
-      ended: turn.ended,
-      exitPlea: turn.exitPlea,
-    );
+
+    return out;
   }
 }

@@ -26,12 +26,17 @@ class CoachMessage {
   /// line being answered.
   final bool emphasis;
 
+  /// Not a bubble: the thin line between two sessions, [text] being its label
+  /// ("Hôm qua · Trang chủ").
+  final bool divider;
+
   const CoachMessage({
     required this.isCoach,
     required this.text,
     this.speaker,
     this.title,
     this.emphasis = false,
+    this.divider = false,
   });
 }
 
