@@ -174,6 +174,13 @@ class _CoachSheetState extends State<_CoachSheet> {
   /// once per step; leaving the deck early reports the answers checked so far.
   bool _quizLaunched = false;
 
+  /// Analytics — bề mặt đã đếm rồi.
+  ///
+  /// `ui.kind` là thứ quyết định người đọc đang NHÌN thấy gì (thẻ khoá học,
+  /// bảng điểm, màn an toàn, toast đánh giá), nên một lần đổi kind là một lần
+  /// hiện. Giữ lại ở đây vì listener không được đưa state cũ.
+  CoachUiKind? _lastKind;
+
   Future<void> _runQuiz(BuildContext context, CoachCubit cubit) async {
     final answers = await KeypointQuizPage.push(
       context,
@@ -196,6 +203,7 @@ class _CoachSheetState extends State<_CoachSheet> {
     final canPlead = state.exitPlea && !state.ended && state.status == CoachStatus.ready && line != null && state.messages.any((m) => !m.isCoach);
 
     if (canPlead) {
+      CoachTracking.exitPleaView(state);
       final decision = await CoachExitPleaSheet.show(context, line);
       if (decision == CoachExitDecision.stay) {
         unawaited(cubit.recordExit(stayed: true));
@@ -226,15 +234,38 @@ class _CoachSheetState extends State<_CoachSheet> {
     return null;
   }
 
+  /// Bốn bề mặt đáng đếm riêng — phần còn lại của phiên đã nằm trong
+  /// `coach_turn_send` với `step` của nó, đếm thêm chỉ là nhân đôi.
+  void _trackSurface(CoachState state) {
+    if (state.ui.kind == _lastKind) return;
+    _lastKind = state.ui.kind;
+
+    switch (state.ui.kind) {
+      case CoachUiKind.courseCard:
+        CoachTracking.courseCardView(state);
+      case CoachUiKind.rating:
+        CoachTracking.ratingView(state);
+      case CoachUiKind.safety:
+        CoachTracking.safetyView(state);
+      case CoachUiKind.sceneScore:
+        CoachTracking.sceneScoreView(state);
+      default:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CoachCubit, CoachState>(
-      listenWhen: (prev, curr) => prev.silent != curr.silent || prev.step != curr.step || prev.ui.action != curr.ui.action || prev.ended != curr.ended,
+      listenWhen: (prev, curr) =>
+          prev.silent != curr.silent || prev.step != curr.step || prev.ui.action != curr.ui.action || prev.ended != curr.ended || prev.ui.kind != curr.ui.kind,
       listener: (context, state) {
+        _trackSurface(state);
         // Luồng 2 — the two things the app DOES on the server's word.
         if (state.step != 'quizRun') _quizLaunched = false;
         if (state.ui.action == 'runQuiz' && state.step == 'quizRun' && !_quizLaunched) {
           _quizLaunched = true;
+          CoachTracking.quizRun(state, questionCount: context.read<CoachCubit>().quizQuestions.length);
           _runQuiz(context, context.read<CoachCubit>());
         }
         if (state.ended && state.ui.action == 'nextKeypoint') {

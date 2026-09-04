@@ -569,4 +569,46 @@ mixin TrackingKey {
   static const String subscriptionExpired = 'subscription_expired';
   static const String subscriptionFailed = 'subscription_failed';
   static const String subscriptionCompleted = 'subscription_completed';
+
+  //* AI Coach events
+  // Chưa có tab Coach trong sheet "[MeUp] Event Tracking" tại thời điểm gắn
+  // (2026-09-04) — tên dưới đây theo đúng công ước của sheet
+  // ([màn]_[function]_[action], ≤35 ký tự) và cần analytics duyệt lại.
+  //
+  // Khối param dùng chung mọi event TRONG phiên: session_id (id server, join
+  // được với coach_sessions bên meup-api), entry (home/habit/lesson), step.
+  // Không bao giờ gửi chữ người dùng gõ — chỉ độ dài và lựa chọn dạng scalar.
+  static const String coachBubbleView = 'coach_bubble_view';
+  static const String coachBubbleClick = 'coach_bubble_click';
+  static const String coachInviteScrView = 'coach_invite_scr_view';
+  static const String coachInviteAccept = 'coach_invite_accept';
+  static const String coachInviteLater = 'coach_invite_later';
+
+  // Vòng đời phiên. `coach_scr_view` là phiên MỞ ĐƯỢC thật (server trả lượt
+  // đầu), không phải lúc bấm — cửa im lặng và lỗi có event riêng.
+  static const String coachScrView = 'coach_scr_view';
+  static const String coachOpenSilent = 'coach_open_silent';
+  static const String coachOpenFailed = 'coach_open_failed';
+  static const String coachScrExit = 'coach_scr_exit';
+
+  // Mỗi lượt người đọc gửi lên, bắn từ đúng một chỗ nghẽn (CoachCubit._send).
+  // `kind` (mood/intent/text/quizAnswer/plan/schedule/rating/course/…) là thứ
+  // trả lời câu hỏi "họ làm gì trong phiên" mà không cần event cho từng nút.
+  static const String coachTurnSend = 'coach_turn_send';
+  static const String coachTurnFailed = 'coach_turn_failed';
+  static const String coachSessionExpired = 'coach_session_expired';
+
+  // Các bề mặt trong phiên, bắn khi ui.kind đổi sang chúng.
+  static const String coachCourseCardView = 'coach_course_card_view';
+  static const String coachRatingView = 'coach_rating_view';
+  static const String coachSafetyView = 'coach_safety_view';
+  static const String coachSceneScoreView = 'coach_scene_score_view';
+  static const String coachQuizRun = 'coach_quiz_run';
+  static const String coachMicStart = 'coach_mic_start';
+  static const String coachMicDone = 'coach_mic_done';
+
+  // Luồng 6 — lời níu khi ⟨Đóng⟩ giữa chừng, và câu trả lời cho nó.
+  static const String coachExitPleaView = 'coach_exit_plea_view';
+  static const String coachExitStay = 'coach_exit_stay';
+  static const String coachExitLeave = 'coach_exit_leave';
 }

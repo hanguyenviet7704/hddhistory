@@ -49,6 +49,9 @@ part 'presentation/cubits/coach_state.dart';
 part 'presentation/cubits/coach_cubit.dart';
 part 'presentation/cubits/coach_recorder.dart';
 
+//* Presentation Layer - Helpers
+part 'presentation/helpers/coach_tracking.dart';
+
 //* Presentation Layer - Widgets
 part 'presentation/widgets/coach_style.dart';
 part 'presentation/widgets/coach_slime.dart';

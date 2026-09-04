@@ -40,6 +40,14 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
   /// throwing you out of the tab.
   CoachEntry? _asked;
 
+  /// Analytics — bong bóng ĐÃ hiện dưới hình dạng nào rồi.
+  ///
+  /// Cùng vai trò với [_asked]: builder chạy lại mỗi lần shell rebuild, và bắn
+  /// `coach_bubble_view` từ đó sẽ đếm một lần hiện thành hàng chục lần. Khoá
+  /// gồm cả chấm và câu mời vì một bong bóng đổi từ "nghỉ" sang "ngóng" là một
+  /// lần hiện khác, đáng đếm lại.
+  String? _viewed;
+
   /// Which door the current tab is, or null where the Coach does not belong.
   ///
   /// Home and the Habit tab (owner, 2026-09-04: "thiếu coach ở màn habit
@@ -87,7 +95,19 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
     if (!mounted) return;
 
     _asked = null;
+    _viewed = null;
     await context.read<CoachBubbleCubit>().invalidate(entry: entry);
+  }
+
+  /// Đếm một lần hiện, sau frame — không bao giờ trong build.
+  void _trackViewIfNeeded(CoachEntry entry, CoachBubbleState state) {
+    final key = '${entry.raw}|${state.dot}|${state.teaser ?? state.teaserKey ?? ''}';
+    if (_viewed == key) return;
+    _viewed = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      CoachTracking.bubbleView(entry, dot: state.dot, teaser: state.teaser != null || state.teaserKey != null);
+    });
   }
 
   /// Ask once per arrival at a door, after the frame — never during build.
@@ -111,6 +131,7 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
           // dot and teaser go stale the moment a commitment is answered
           // anywhere else.
           _asked = null;
+          _viewed = null;
 
           return const SizedBox.shrink();
         }
@@ -123,6 +144,8 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
             // flashes in and out on first paint.
             if (!state.resolved || !state.visible) return const SizedBox.shrink();
 
+            _trackViewIfNeeded(entry, state);
+
             return CoachBubble(
               bottomInset: widget.bottomInset,
               dot: state.dot,
@@ -132,7 +155,10 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
               // Navigating AFTER the sheet is gone, never from inside it —
               // pushing a route from under a closing modal is how a
               // navigator ends up with an orphan.
-              onTap: () => _openSheet(entry),
+              onTap: () {
+                CoachTracking.bubbleClick(entry, dot: state.dot);
+                _openSheet(entry);
+              },
             );
           },
         );

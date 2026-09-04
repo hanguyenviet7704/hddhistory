@@ -43,6 +43,12 @@ class CoachCubit extends Cubit<CoachState> {
   Future<void> recordExit({required bool stayed}) async {
     final id = state.sessionId;
     if (id.isEmpty) return;
+
+    if (stayed) {
+      CoachTracking.exitStay(state);
+    } else {
+      CoachTracking.exitLeave(state);
+    }
     emit(state.copyWith(exitPlea: stayed ? true : state.exitPlea));
     await _exitSession(id, stayed: stayed).run();
   }
@@ -51,6 +57,12 @@ class CoachCubit extends Cubit<CoachState> {
   String? _lessonId;
   String? _habitId;
   String _locale = 'en';
+
+  /// Analytics only — bao nhiêu lượt và bao lâu, đọc ra ở `coach_scr_exit`.
+  /// Đếm ở đây chứ không trong state: chúng không vẽ ra gì cả, và mỗi lần đổi
+  /// là một lần rebuild cả sheet cho không.
+  int _turnCount = 0;
+  DateTime? _openedAt;
 
   /// Resolves a fixed line's slang key, filling in the reader's own words
   /// (`args`) where the line quotes them. Injected by the sheet, which is the
@@ -71,11 +83,16 @@ class CoachCubit extends Cubit<CoachState> {
     String? keypointId,
     String? courseId,
     bool recap = false,
+    // Mở lại tự động sau khi phiên hết hạn 48h, không phải người đọc bấm.
+    // Chỉ đi vào `coach_scr_view` để funnel lọc nó ra.
+    bool reopened = false,
   }) async {
     _entry = entry;
     _lessonId = lessonId;
     _habitId = habitId;
     _locale = locale;
+    _turnCount = 0;
+    _openedAt = DateTime.now();
 
     emit(state.copyWith(status: CoachStatus.opening, entry: entry, messages: const []));
 
@@ -91,9 +108,13 @@ class CoachCubit extends Cubit<CoachState> {
     ).run();
 
     result.match(
-      (_) => emit(state.copyWith(status: CoachStatus.failed)),
+      (_) {
+        CoachTracking.openFailed(entry);
+        emit(state.copyWith(status: CoachStatus.failed));
+      },
       (turn) {
         if (turn.silent) {
+          CoachTracking.openSilent(entry, reasonKey: turn.reasonKey);
           emit(
             state.copyWith(
               status: CoachStatus.closed,
@@ -117,6 +138,15 @@ class CoachCubit extends Cubit<CoachState> {
             appendLines: !turn.resumed,
           ),
         );
+
+        CoachTracking.scrView(
+          entry: entry,
+          sessionId: turn.sessionId,
+          step: turn.step,
+          resumed: turn.resumed,
+          reopened: reopened,
+        );
+        CoachTracking.profile(persona: turn.persona, lastSessionAt: DateTime.now());
       },
     );
   }
@@ -225,6 +255,7 @@ class CoachCubit extends Cubit<CoachState> {
   /// moves, so the state is updated first and the server told after.
   Future<void> setPersona(String persona) async {
     if (persona == state.persona) return;
+    CoachTracking.profile(persona: persona);
     emit(state.copyWith(persona: persona));
     if (state.sessionId.isEmpty) return;
 
@@ -371,6 +402,14 @@ class CoachCubit extends Cubit<CoachState> {
   /// while looking exactly like this code.
   Future<void> endSession() async {
     final id = state.sessionId;
+    if (id.isNotEmpty) {
+      final openedAt = _openedAt;
+      CoachTracking.scrExit(
+        state,
+        turnCount: _turnCount,
+        durationSec: openedAt == null ? 0 : DateTime.now().difference(openedAt).inSeconds,
+      );
+    }
     emit(state.copyWith(status: CoachStatus.closed));
     if (id.isEmpty) return;
 
@@ -381,6 +420,12 @@ class CoachCubit extends Cubit<CoachState> {
 
   Future<void> _send(Map<String, dynamic> payload, {String? userLine}) async {
     if (state.typing || state.sessionId.isEmpty) return;
+
+    // Bắn TRƯỚC emit: `step` phải là bước câu trả lời này thuộc về, không phải
+    // bước server đẩy sang sau đó.
+    final kind = payload['kind'] is String ? payload['kind'] as String : '';
+    _turnCount++;
+    CoachTracking.turnSend(state, kind: kind, payload: payload);
 
     emit(
       state.copyWith(
@@ -401,17 +446,20 @@ class CoachCubit extends Cubit<CoachState> {
         // sheet and it's gone" a property of the database. Reopen rather than
         // report: the reader did nothing wrong and has nothing to fix.
         if (error.message == CoachRepository.sessionExpiredCode) {
+          CoachTracking.sessionExpired(state, kind: kind);
           emit(state.copyWith(typing: false));
           await open(
             entry: _entry,
             locale: _locale,
             lessonId: _lessonId,
             habitId: _habitId,
+            reopened: true,
           );
 
           return;
         }
 
+        CoachTracking.turnFailed(state, kind: kind, errorType: error.message);
         emit(state.copyWith(status: CoachStatus.failed, typing: false));
       },
       (turn) async => emit(
