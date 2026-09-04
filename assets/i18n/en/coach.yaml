@@ -17,6 +17,8 @@ promptPickNew: You just added a couple of habits. Which one should we talk about
 promptPickHabit: I got that wrong — which habit did you mean?
 pickReroll: Show me three others
 habitChipLead: Talking about
+scopeKeypoint: "Keypoint"
+scopeCourse: "Course"
 habitChipChange: Change habit
 habitChipChangeEcho: Change the habit.
 promptPersona: How would you like me to speak today?

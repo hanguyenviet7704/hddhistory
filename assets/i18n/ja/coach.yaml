@@ -12,6 +12,8 @@ promptPickNew: 新しい習慣をいくつか追加しましたね。どれか�
 promptPickHabit: 勘違いしていました。どの習慣のことですか？
 pickReroll: 別の3つを見る
 habitChipLead: 話しているのは
+scopeKeypoint: "キーポイント"
+scopeCourse: "コース"
 habitChipChange: 習慣を変える
 habitChipChangeEcho: 習慣を変えます。
 promptPersona: 今日はどんな話し方がいいですか？

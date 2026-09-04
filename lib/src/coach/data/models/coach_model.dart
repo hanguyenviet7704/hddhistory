@@ -173,6 +173,18 @@ abstract class CoachSceneModel with _$CoachSceneModel {
   factory CoachSceneModel.fromJson(Map<String, dynamic> json) => _$CoachSceneModelFromJson(json);
 }
 
+/// Thanh phạm vi của luồng 2/3 — cùng khung với thanh habit, nhưng cái đang
+/// bàn là một keypoint (hoặc cả khoá ở bản recap), không phải một habit.
+@freezed
+abstract class CoachScopeModel with _$CoachScopeModel {
+  const factory CoachScopeModel({
+    @Default('') String kind,
+    @Default('') String title,
+  }) = _CoachScopeModel;
+
+  factory CoachScopeModel.fromJson(Map<String, dynamic> json) => _$CoachScopeModelFromJson(json);
+}
+
 /// Thanh habit — the habit this session is about, for the chip at the top.
 @freezed
 abstract class CoachHabitChipModel with _$CoachHabitChipModel {
@@ -192,6 +204,7 @@ abstract class CoachUiModel with _$CoachUiModel {
     CoachColumnsModel? columns,
     @Default(true) bool rejectAvailable,
     CoachHabitChipModel? habit,
+    CoachScopeModel? scope,
     String? situation,
     CoachSceneModel? scene,
     @Default(<String>[]) List<String> samples,

@@ -12,6 +12,8 @@ promptPickNew: 你刚加了几个习惯。先聊哪一个？
 promptPickHabit: 我理解错了——你想说的是哪个习惯？
 pickReroll: 换三个别的
 habitChipLead: 正在聊
+scopeKeypoint: "要点"
+scopeCourse: "课程"
 habitChipChange: 换一个习惯
 habitChipChangeEcho: 换一个习惯。
 promptPersona: 今天希望我用什么方式说话？

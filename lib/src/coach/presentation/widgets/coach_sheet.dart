@@ -300,6 +300,15 @@ class _CoachSheetState extends State<_CoachSheet> {
                     canChange: state.entry != CoachEntry.habit,
                     onChange: state.status == CoachStatus.sending ? null : () => cubit.changeHabit(context.l10n.coach.habitChipChangeEcho),
                   ),
+                // Luồng 2/3 — cùng thanh đó, phạm vi là keypoint hoặc cả khoá.
+                // KHÔNG có nút đổi: keypoint vừa học xong không chọn lại được.
+                if (!isSafety && state.ui.habit == null && state.ui.scope != null)
+                  _HabitChip(
+                    title:
+                        '${state.ui.scope!.kind == 'course' ? context.l10n.coach.scopeCourse : context.l10n.coach.scopeKeypoint}'
+                        ' · ${state.ui.scope!.title}',
+                    canChange: false,
+                  ),
                 Expanded(
                   child: switch (state.status) {
                     CoachStatus.opening => const Center(child: CircularProgressIndicator()),

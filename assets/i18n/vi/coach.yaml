@@ -12,6 +12,8 @@ promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào tr
 promptPickHabit: Mình hiểu sai rồi — bạn muốn nói về habit nào?
 pickReroll: Gợi ý 3 thói quen khác
 habitChipLead: Đang nói về
+scopeKeypoint: "Keypoint"
+scopeCourse: "Khoá"
 habitChipChange: Đổi habit
 habitChipChangeEcho: Đổi habit khác.
 promptPersona: Bạn muốn mình nói kiểu nào hôm nay?

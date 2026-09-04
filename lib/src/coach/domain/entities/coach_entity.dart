@@ -296,6 +296,9 @@ class CoachUiEntity {
   /// Thanh habit — the habit under discussion, shown as a chip with "đổi" from
   /// the moment it is certain. Null before that, and never spoken out loud.
   final CoachHabitChipEntity? habit;
+
+  /// Thanh phạm vi cho luồng 2/3, khi phiên không bàn về một habit nào.
+  final CoachScopeEntity? scope;
   final String? situation;
 
   /// The same scene, split into habit · setup · question for separate bubbles.
@@ -334,6 +337,7 @@ class CoachUiEntity {
     this.columnRight = const [],
     this.rejectAvailable = true,
     this.habit,
+    this.scope,
     this.situation,
     this.scene,
     this.samples = const [],
@@ -352,6 +356,17 @@ class CoachUiEntity {
 }
 
 /// The habit the chip names — id for the picker, title read from the DB.
+/// Phạm vi của luồng 2/3 — keypoint vừa học, hoặc cả khoá.
+///
+/// [kind] là `keypoint` hoặc `course`; app tự dịch chữ dẫn, server chỉ gửi
+/// loại + tiêu đề chứ không gửi chuỗi ghép sẵn.
+class CoachScopeEntity {
+  final String kind;
+  final String title;
+
+  const CoachScopeEntity({required this.kind, required this.title});
+}
+
 class CoachHabitChipEntity {
   final String id;
   final String title;
@@ -491,6 +506,7 @@ extension CoachTurnModelX on CoachTurnModel {
       columnRight: ui.columns?.right ?? const [],
       rejectAvailable: ui.rejectAvailable,
       habit: ui.habit == null || ui.habit!.title.trim().isEmpty ? null : CoachHabitChipEntity(id: ui.habit!.id, title: ui.habit!.title),
+      scope: ui.scope == null || ui.scope!.title.trim().isEmpty ? null : CoachScopeEntity(kind: ui.scope!.kind, title: ui.scope!.title),
       situation: (ui.situation?.trim().isEmpty ?? true) ? null : ui.situation,
       // A scene may legitimately carry ONLY its question now — the second
       // stage arrives split (body in `situation`, question here), and a

@@ -131,7 +131,14 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
 
       return;
     }
-    if (outcome.nextKeypoint && mounted) widget.onContinue();
+    // MỌI đường ra khỏi sheet đều phải rời trang này. Trang bên dưới giờ trống
+    // khi Coach có mời (khối "Hoàn thành bài học" chỉ là phao cho lúc Coach
+    // tắt), nên đóng sheet mà không đi đâu là để user đứng trên nền ảnh với
+    // đúng một nút X — owner gặp ngay lần thử đầu.
+    //
+    // Bấm Đóng giữa chừng cho `nextKeypoint: false`, không phải một ý định
+    // "ở lại": ở lại đâu thì không còn chỗ nào để ở.
+    if (mounted) widget.onContinue();
   }
 }
 
