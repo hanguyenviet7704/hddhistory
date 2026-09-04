@@ -52,9 +52,14 @@ export const KIND_META: Record<
 export const KIND_ORDER = Object.keys(KIND_META) as CoachContentKind[];
 
 /** Ngữ cảnh phụ của một dòng, gộp thành một dòng chữ nhỏ. */
-export const formatMeta = (row: CoachContentRow): string => {
+export const formatMeta = (row: CoachContentRow): string =>
+  formatMetaBits(row.meta);
+
+export const formatMetaBits = (
+  meta: Record<string, unknown> | undefined,
+): string => {
   const parts: string[] = [];
-  const meta = row.meta ?? {};
+  meta = meta ?? {};
 
   if (typeof meta.round === "number") parts.push(`chặng ${meta.round}`);
   if (typeof meta.variant === "string" && meta.variant) {
@@ -84,4 +89,39 @@ export const dateInput = (daysAgo = 0) => {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
   return date.toISOString().slice(0, 10);
+};
+
+/**
+ * Câu hỏi cố định Coach hỏi ngay trước mỗi loại, để dựng lại phía Coach cho
+ * những phiên đã hết hạn lưu.
+ *
+ * Chép nguyên văn từ `meup-flutter/assets/i18n/vi/coach.yaml` — API chỉ giữ
+ * KEY của mấy câu này, câu chữ do client render. Đây là tái dựng chứ không
+ * phải bản ghi: nó đúng ở chỗ "bước này Coach luôn hỏi câu này", không đúng ở
+ * chỗ "hôm đó Coach đã nói đúng từng chữ này" — nên chỗ nào dùng nó cũng phải
+ * đánh dấu. Sửa YAML thì sửa cả đây.
+ */
+export const KIND_QUESTION: Record<CoachContentKind, string> = {
+  // promptIntentTell
+  evidence: "Kể mình nghe một câu: lúc đó bạn nói hay làm gì?",
+  // promptTwoCols
+  problem_statement:
+    "Mình gom lại thành nháp hai cột — toàn bằng lời bạn. Kéo dòng nào là vấn đề thật của bạn sang phải, rồi viết lại một câu.",
+  // promptBarrier
+  barrier:
+    "Có dịp mà chưa làm là chuyện thường, mình không tính là thất bại. Lúc đó điều gì làm bạn dừng lại?",
+  // promptJot
+  quick_note: "Được. Ghi một dòng cho hôm nay thôi, mình không hỏi gì thêm.",
+  // promptSceneWhen
+  dip: "Lúc đó là lúc nào?",
+  // Cảnh do biên tập viên viết nên không có câu cố định — nếu tới đây nghĩa là
+  // cảnh đã bị xoá khỏi kho và câu hỏi thật sự không còn.
+  situation_answer: "(cảnh đã bị xoá khỏi kho tình huống)",
+};
+
+/** Cửa vào phiên, cho header của khối hội thoại. */
+export const ENTRY_LABEL: Record<string, string> = {
+  home: "Màn hình chính",
+  lesson: "Cuối bài học",
+  habit: "Màn habit",
 };

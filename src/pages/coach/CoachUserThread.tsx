@@ -7,73 +7,89 @@ import {
   CircularProgress,
   Paper,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { coachService } from "../../services/coachService";
 import {
-  CoachContentPage,
-  CoachContentRow,
+  CoachThreadMessage,
+  CoachThreadPage,
+  CoachThreadSession,
 } from "../../types/interface/coach.interface";
 import {
   dateInput,
-  formatMeta,
+  ENTRY_LABEL,
+  formatMetaBits,
   KIND_META,
-  situationPrompt,
+  KIND_QUESTION,
 } from "../../utils/coachContentKinds";
-
-/**
- * Cả một phiên gom lại: chữ user viết trong cùng một lần mở Coach.
- *
- * Câu kể không mang `sessionId` (nó được viết ở màn khác), nên nó rơi vào nhóm
- * "ngoài phiên" của ngày hôm đó thay vì bị ghép nhầm vào phiên gần nhất.
- */
-interface ThreadGroup {
-  key: string;
-  sessionId: string | null;
-  at: Date;
-  rows: CoachContentRow[];
-}
-
-interface ThreadDay {
-  day: string;
-  groups: ThreadGroup[];
-}
 
 const LIMIT = 500;
 
-/**
- * Xếp các dòng thành ngày → phiên → dòng, theo chiều thời gian TĂNG dần.
- *
- * Feed chung đọc ngược, mới nhất trước, vì câu hỏi ở đó là "vừa có gì mới".
- * Ở đây câu hỏi khác hẳn: một người đã đi qua những gì — mà chuyện thì phải
- * đọc xuôi mới ra chuyện.
- */
-const toThread = (rows: CoachContentRow[]): ThreadDay[] => {
-  const ascending = [...rows].sort(
-    (left, right) =>
-      new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
-  );
+const time = (iso: string) =>
+  new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const days = new Map<string, Map<string, ThreadGroup>>();
-  for (const row of ascending) {
-    const at = new Date(row.createdAt);
-    const day = at.toLocaleDateString();
-    const key = row.sessionId ?? `${day}:loose`;
-
-    const groups = days.get(day) ?? new Map<string, ThreadGroup>();
-    const group =
-      groups.get(key) ??
-      ({ key, sessionId: row.sessionId, at, rows: [] } as ThreadGroup);
-    group.rows.push(row);
-    groups.set(key, group);
-    days.set(day, groups);
+/** Gom các phiên theo ngày để dòng thời gian có mốc. */
+const byDay = (sessions: CoachThreadSession[]) => {
+  const days: Array<{ day: string; sessions: CoachThreadSession[] }> = [];
+  for (const session of sessions) {
+    const day = new Date(session.startedAt).toLocaleDateString();
+    const last = days[days.length - 1];
+    if (last?.day === day) last.sessions.push(session);
+    else days.push({ day, sessions: [session] });
   }
+  return days;
+};
 
-  return Array.from(days.entries()).map(([day, groups]) => ({
-    day,
-    groups: Array.from(groups.values()),
-  }));
+/**
+ * Một bong bóng chat.
+ *
+ * Coach bên trái nền xám, user bên phải nền teal — quy ước chat mà ai cũng đọc
+ * được ngay, không phải học. Dòng tái dựng thì viền đứt và có nhãn, vì "Coach
+ * đã nói câu này" và "bước này Coach luôn hỏi câu này" là hai khẳng định khác
+ * nhau, và người đọc đang rút ra kết luận từ chúng.
+ */
+const Bubble: React.FC<{ message: CoachThreadMessage }> = ({ message }) => {
+  const mine = message.role === "user";
+  const kind = message.kind ? KIND_META[message.kind] : null;
+  const text =
+    message.text ??
+    (message.kind ? KIND_QUESTION[message.kind] : "(không còn lời Coach)");
+
+  return (
+    <div className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
+      {mine && kind && (
+        <Tooltip title={kind.hint} placement="left">
+          <span
+            className={`mb-1 rounded-full border px-2 py-0.5 text-[11px] ${kind.color}`}
+          >
+            {kind.label}
+          </span>
+        </Tooltip>
+      )}
+
+      <div
+        className={`max-w-[68%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm ${
+          mine
+            ? "rounded-br-sm bg-teal-600 text-white"
+            : message.derived
+              ? "rounded-bl-sm border border-dashed border-slate-300 bg-white italic text-slate-500"
+              : "rounded-bl-sm bg-slate-100 text-slate-800"
+        }`}
+      >
+        {text}
+      </div>
+
+      <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400">
+        <span>{time(message.at)}</span>
+        {mine && formatMetaBits(message.meta) && (
+          <span>· {formatMetaBits(message.meta)}</span>
+        )}
+        {message.derived && <span>· câu cố định của bước này, tái dựng</span>}
+      </div>
+    </div>
+  );
 };
 
 const CoachUserThread: React.FC = () => {
@@ -82,7 +98,7 @@ const CoachUserThread: React.FC = () => {
   const location = useLocation();
   const opened = (location.state ?? {}) as { from?: string; to?: string };
 
-  const [page, setPage] = useState<CoachContentPage | null>(null);
+  const [page, setPage] = useState<CoachThreadPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [from, setFrom] = useState(opened.from ?? dateInput(29));
@@ -92,15 +108,14 @@ const CoachUserThread: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await coachService.getContents({
-        userId,
+      const res = await coachService.getUserThread(userId, {
         from,
         to,
         limit: LIMIT,
       });
       setPage(res?.data ?? null);
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Không tải được nội dung");
+      setError(err?.response?.data?.message ?? "Không tải được hội thoại");
     } finally {
       setLoading(false);
     }
@@ -111,7 +126,11 @@ const CoachUserThread: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const thread = useMemo(() => toThread(page?.rows ?? []), [page]);
+  const days = useMemo(() => byDay(page?.sessions ?? []), [page]);
+  const derivedCount = useMemo(
+    () => (page?.sessions ?? []).filter((s) => s.source === "derived").length,
+    [page],
+  );
 
   return (
     <div className="space-y-5 p-6">
@@ -125,17 +144,11 @@ const CoachUserThread: React.FC = () => {
         </Button>
         <div>
           <h1 className="text-2xl font-semibold">
-            {page?.user?.name || "Dòng thời gian của user"}
+            {page?.user?.name || "Hội thoại Coach"}
           </h1>
           <p className="mt-1 text-sm text-gray-500">
             {page?.user?.email ? `${page.user.email} · ` : ""}
             <span className="font-mono text-xs">{userId}</span>
-          </p>
-          <p className="mt-1 text-sm text-gray-500">
-            Đọc xuôi theo thời gian, gom theo ngày và theo từng phiên Coach.{" "}
-            <b>Đây không phải bản ghi hội thoại</b> — lời Coach nói bị xoá cùng
-            phiên sau 48h. Chỗ duy nhất còn nghe được hai phía là câu trả lời
-            tình huống: câu hỏi in nghiêng phía trên là chữ của biên tập viên.
           </p>
         </div>
       </div>
@@ -163,9 +176,18 @@ const CoachUserThread: React.FC = () => {
           {loading ? "Đang tải…" : "Áp dụng"}
         </Button>
         <span className="text-xs text-slate-400">
-          {page ? `${page.rows.length} dòng` : ""}
+          {page ? `${page.sessions.length} phiên` : ""}
         </span>
       </Paper>
+
+      {derivedCount > 0 && (
+        <Alert severity="info">
+          {derivedCount} phiên đã quá hạn lưu nên được <b>tái dựng</b>: chữ user
+          là thật, còn lời Coach chỉ còn với câu hỏi tình huống — các câu khác
+          hiện là câu cố định của bước đó, không phải bản ghi. Phiên mở sau khi
+          bản này lên sẽ được lưu nguyên văn 30 ngày.
+        </Alert>
+      )}
 
       {page?.truncated && (
         <Alert severity="warning">
@@ -178,65 +200,63 @@ const CoachUserThread: React.FC = () => {
         <div className="flex justify-center p-10">
           <CircularProgress />
         </div>
-      ) : thread.length === 0 ? (
+      ) : days.length === 0 ? (
         <Paper className="p-10 text-center text-sm text-gray-500">
-          User này không viết gì trong khoảng này.
+          Không có hội thoại nào trong khoảng này.
         </Paper>
       ) : (
         <div className="space-y-6">
-          {thread.map((day) => (
+          {days.map((day) => (
             <div key={day.day} className="space-y-3">
               <div className="sticky top-0 z-10 bg-slate-50/90 py-1 text-sm font-medium text-slate-500 backdrop-blur">
                 {day.day}
               </div>
 
-              {day.groups.map((group) => (
-                <Paper key={group.key} className="space-y-4 p-4">
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    {group.sessionId ? (
-                      <>
-                        <span>Một phiên Coach</span>
-                        <span className="font-mono">{group.sessionId}</span>
-                      </>
+              {day.sessions.map((session, index) => (
+                <Paper
+                  key={session.sessionId ?? `loose-${day.day}-${index}`}
+                  className="space-y-4 p-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-2 text-xs text-slate-400">
+                    <span className="font-medium text-slate-500">
+                      {time(session.startedAt)}
+                    </span>
+                    {session.sessionId ? (
+                      <span>
+                        {ENTRY_LABEL[session.entry ?? ""] ?? "Phiên Coach"}
+                      </span>
                     ) : (
-                      // Câu kể được viết ở màn habit chứ không trong phiên —
-                      // ghép nó vào một phiên nào đó là bịa ra ngữ cảnh.
+                      // Câu kể viết ở màn habit chứ không trong phiên — ghép nó
+                      // vào một phiên nào đó là bịa ra ngữ cảnh.
                       <span>Ngoài phiên</span>
+                    )}
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={
+                        session.source === "transcript"
+                          ? "Nguyên văn"
+                          : "Tái dựng"
+                      }
+                      className={
+                        session.source === "transcript"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                          : "border-amber-200 bg-amber-50 text-amber-900"
+                      }
+                    />
+                    {session.sessionId && (
+                      <span className="font-mono">{session.sessionId}</span>
                     )}
                   </div>
 
-                  {group.rows.map((row) => (
-                    <div key={row.id} className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Chip
-                          size="small"
-                          variant="outlined"
-                          title={KIND_META[row.kind]?.hint}
-                          label={KIND_META[row.kind]?.label ?? row.kind}
-                          className={KIND_META[row.kind]?.color}
-                        />
-                        <span className="text-xs text-slate-400">
-                          {new Date(row.createdAt).toLocaleTimeString()}
-                        </span>
-                        {formatMeta(row) && (
-                          <span className="text-xs text-slate-400">
-                            · {formatMeta(row)}
-                          </span>
-                        )}
-                      </div>
-
-                      {situationPrompt(row) && (
-                        <div className="border-l-2 border-slate-200 pl-3 text-sm italic text-slate-500">
-                          {situationPrompt(row)}
-                        </div>
-                      )}
-
-                      {/* Nguyên văn, không rút gọn. */}
-                      <div className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-sm text-slate-800">
-                        {row.content}
-                      </div>
-                    </div>
-                  ))}
+                  <div className="flex flex-col gap-3">
+                    {session.messages.map((message, position) => (
+                      <Bubble
+                        key={`${message.at}-${position}`}
+                        message={message}
+                      />
+                    ))}
+                  </div>
                 </Paper>
               ))}
             </div>

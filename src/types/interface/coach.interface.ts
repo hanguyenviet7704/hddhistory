@@ -180,3 +180,41 @@ export interface CoachAiUsageSummary {
     }[];
   };
 }
+
+/**
+ * Lời Coach đến từ đâu.
+ *
+ * `transcript` — đọc nguyên văn từ phiên còn trong hạn lưu.
+ * `derived` — phiên đã bị xoá, hội thoại được dựng lại quanh những gì user để
+ * lại: chữ user là thật, còn lời Coach chỉ có với câu hỏi tình huống.
+ */
+export type CoachThreadSource = "transcript" | "derived";
+
+export interface CoachThreadMessage {
+  at: string;
+  role: "coach" | "user";
+  /** Null = câu cố định, admin tự điền theo `kind` và đánh dấu tái dựng. */
+  text: string | null;
+  kind?: CoachContentKind;
+  step?: string | null;
+  derived?: boolean;
+  meta?: Record<string, unknown>;
+}
+
+export interface CoachThreadSession {
+  /** Null cho khối "ngoài phiên" — câu kể viết ở màn habit. */
+  sessionId: string | null;
+  entry: string | null;
+  habitId: string | null;
+  startedAt: string;
+  endedAt: string;
+  source: CoachThreadSource;
+  messages: CoachThreadMessage[];
+}
+
+export interface CoachThreadPage {
+  user: { userId: string; name: string | null; email: string | null };
+  sessions: CoachThreadSession[];
+  truncated: boolean;
+  limit: number;
+}

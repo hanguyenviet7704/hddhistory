@@ -92,6 +92,22 @@ export const coachService = {
     return res.data;
   },
 
+  /**
+   * Toàn bộ lịch sử Coach của một user, đã dựng sẵn thành hội thoại.
+   *
+   * Mỗi phiên kèm `source`: `transcript` là nguyên văn, `derived` là tái dựng
+   * vì phiên đã hết hạn lưu.
+   */
+  async getUserThread(
+    userId: string,
+    params?: { from?: string; to?: string; limit?: number },
+  ) {
+    const res = await axiosClient.get(`/coach-contents/users/${userId}/thread`, {
+      params,
+    });
+    return res.data;
+  },
+
   async getAiUsageSummary(params?: { from?: string; to?: string }) {
     const res = await axiosClient.get("/coach-ai-usage/summary", { params });
     return res.data;
