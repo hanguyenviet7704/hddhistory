@@ -628,6 +628,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
           habits: suggestions,
           sourceKeypointId: keypointId,
           sourceCourseId: courseId,
+          sourceLessonId: context.read<CourseLessonCubit>().state.selectedLesson.id,
         );
         return;
       }

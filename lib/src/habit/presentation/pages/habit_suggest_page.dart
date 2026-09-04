@@ -21,11 +21,18 @@ class HabitSuggestPage extends StatefulWidget {
   final String? sourceKeypointId;
   final String? sourceCourseId;
 
+  /// Luồng 7 — the lesson this page belongs to, carried so the Coach door
+  /// opened from here is scoped to it. Without it the server's
+  /// "already shown this lesson" guard degrades to once per DAY across every
+  /// lesson, and the second lesson of a day that adds a habit gets a dead tap.
+  final String? sourceLessonId;
+
   const HabitSuggestPage({
     super.key,
     required this.habits,
     this.sourceKeypointId,
     this.sourceCourseId,
+    this.sourceLessonId,
   });
 
   /// Pushed on the ROOT navigator so it overlays the shell (and its floating
@@ -40,6 +47,7 @@ class HabitSuggestPage extends StatefulWidget {
     required List<HabitEntity> habits,
     String? sourceKeypointId,
     String? sourceCourseId,
+    String? sourceLessonId,
   }) {
     return Navigator.of(context, rootNavigator: true).push<void>(
       PageRouteBuilder(
@@ -51,6 +59,7 @@ class HabitSuggestPage extends StatefulWidget {
             habits: habits,
             sourceKeypointId: sourceKeypointId,
             sourceCourseId: sourceCourseId,
+            sourceLessonId: sourceLessonId,
           ),
         ),
         transitionsBuilder: (_, animation, __, child) => FadeTransition(
@@ -71,6 +80,18 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
   /// Habit id currently mid-adopt — its row shows a spinner chip and every
   /// other row ignores taps, so two quick taps can't fire two writes.
   String? _submittingHabitId;
+
+  /// Luồng 7 — habit ids adopted during THIS visit, in the order they were
+  /// added.
+  ///
+  /// Deliberately NOT `_adoptedRowFor(habit) != null`: that asks whether the
+  /// habit is in the kho AT ALL, which is true for one adopted last week — and
+  /// the Coach's invitation says "bạn vừa thêm", a claim about *now*. Reusing
+  /// kho-membership there told readers they had just added three habits they
+  /// had not touched today, and the server (which counts habits created since
+  /// midnight) then found nothing to talk about and stayed silent, so the
+  /// invitation's button did nothing.
+  final List<String> _justAdded = <String>[];
 
   /// Design `shfToast`: "Habit added to your list" fades in under the list
   /// after a successful add, then fades back out on its own.
@@ -133,6 +154,10 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     // so a first add files the day's check-in in the same gesture. Best-effort:
     // a failed check-in must not undo or hide a successful add.
     if (result == AdoptHabitResult.success) {
+      // Recorded before the mounted check: nothing renders from it, and the
+      // check below returns on a page that is already gone.
+      if (!_justAdded.contains(habit.id)) _justAdded.add(habit.id);
+
       final adopted = _adoptedRowFor(habit);
       if (adopted != null && !adopted.todayDone) {
         await habitCubit.checkIn(adopted.id, done: true);
@@ -175,20 +200,23 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     // the lesson-complete screen, on this page rather than after it, and
     // ⟨Lúc khác⟩ simply goes on — the habit is in the kho and Home can practise
     // it any day.
-    if (adoptedAny) {
+    if (_justAdded.isNotEmpty) {
       final accepted = await CoachInvitePopup.show(
         context,
         kind: CoachInviteKind.newHabit,
-        newHabitCount: adopted.length,
+        newHabitCount: _justAdded.length,
       );
       if (!mounted) return;
       if (accepted == true) {
         await showCoachSheet(
           context,
           entry: CoachEntry.lesson,
+          lessonId: widget.sourceLessonId,
           // One habit needs no question; the server asks which one when the
-          // reader added several.
-          habitId: adopted.length == 1 ? adopted.first.id : null,
+          // reader added several. The HABIT's id, not the user_habit row's —
+          // the server resolves the row from it (`userHabitRowFor`), and a row
+          // id handed over there matches nothing.
+          habitId: _justAdded.length == 1 ? _justAdded.single : null,
         );
         if (!mounted) return;
       }
