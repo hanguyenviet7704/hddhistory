@@ -308,6 +308,7 @@ class _CoachSheetState extends State<_CoachSheet> {
                         '${state.ui.scope!.kind == 'course' ? context.l10n.coach.scopeCourse : context.l10n.coach.scopeKeypoint}'
                         ' · ${state.ui.scope!.title}',
                     canChange: false,
+                    maxLines: 2,
                   ),
                 Expanded(
                   child: switch (state.status) {
@@ -445,7 +446,19 @@ class _HabitChip extends StatelessWidget {
   /// False hides the ⇄ button entirely (luồng 5, the Habit door).
   final bool canChange;
 
-  const _HabitChip({required this.title, this.onChange, this.canChange = true});
+  /// Số dòng tối đa cho tiêu đề.
+  ///
+  /// Tên habit ngắn nên một dòng là đủ, còn phạm vi của luồng 2 là tiêu đề
+  /// keypoint — dài, và cắt bằng "…" thì không còn đọc được đang bàn bài nào
+  /// (owner bắt trên sim 2026-09-04).
+  final int maxLines;
+
+  const _HabitChip({
+    required this.title,
+    this.onChange,
+    this.canChange = true,
+    this.maxLines = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -486,7 +499,7 @@ class _HabitChip extends StatelessWidget {
               Flexible(
                 child: Text(
                   title,
-                  maxLines: 1,
+                  maxLines: maxLines,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13.sp,
