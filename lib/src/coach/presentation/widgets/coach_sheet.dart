@@ -62,7 +62,20 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
   /// this one, which is full-bleed by design. Without this the header renders
   /// under the clock and the notch, which is exactly how it first shipped to
   /// the simulator.
-  final insets = MediaQuery.viewPaddingOf(context);
+  ///
+  /// Read from the VIEW, not from this context: the Habit tab wraps its page
+  /// in a SafeArea, so by the time the bubble calls in, the MediaQuery here
+  /// already has its top padding consumed and reports 0 — which put the header
+  /// back under the clock on that tab only (owner, 2026-09-04).
+  final view = View.of(context);
+  final fromView = EdgeInsets.fromViewPadding(view.viewPadding, view.devicePixelRatio);
+  final fromContext = MediaQuery.viewPaddingOf(context);
+  final insets = EdgeInsets.only(
+    top: math.max(fromView.top, fromContext.top),
+    bottom: math.max(fromView.bottom, fromContext.bottom),
+    left: math.max(fromView.left, fromContext.left),
+    right: math.max(fromView.right, fromContext.right),
+  );
 
   final result = await showModalBottomSheet<_CoachSheetResult>(
     context: context,
