@@ -805,10 +805,15 @@ class _OptionPills extends StatelessWidget {
       );
     }
 
-    // pickNew / pickHabit — the choices ARE the reader's own library, and a
-    // library is long. Three at a time, re-rollable, instead of every habit at
-    // once (owner's call, 2026-08-28).
-    if (step == 'pickNew' || step == 'pickHabit') {
+    // pickNew / pickHabit / scenePick — the choices ARE the reader's own
+    // library, and a library is long. Three at a time, re-rollable, instead of
+    // every habit at once (owner's call, 2026-08-28).
+    //
+    // scenePick vào đây 2026-09-04: trước đó nó có một chip ⟨Xáo trộn⟩ gửi lên
+    // server, nên mỗi lần đổi để lại hai bong bóng (chữ chip + Coach hỏi lại).
+    // Owner: "có nút bấm phát thay đổi ra các habit khác luôn" — đổi tại chỗ
+    // bằng setState, không tốn lượt và không ghi gì vào hội thoại.
+    if (step == 'pickNew' || step == 'pickHabit' || step == 'scenePick') {
       return _HabitPickPills(state: state, cubit: cubit, busy: busy);
     }
 
@@ -1103,14 +1108,8 @@ List<_ChipSpec> _chipSpecsFor(dynamic l10n, CoachState state) {
       if (state.ui.allowNewSession) _ChipSpec('again', l10n.nextAgain, echo: l10n.nextAgainEcho),
       _ChipSpec('stop', l10n.nextStop, echo: l10n.nextStopEcho),
     ],
-    // pickNew / pickHabit — the only chips whose words are data. ⟨Xáo trộn⟩
-    // rides among them with no label: it is not a habit, so its words are ours.
-    _ =>
-      state.ui.choices
-          .map(
-            (c) => c.value == 'shuffle' ? _ChipSpec(c.value, l10n.sceneShuffle) : _ChipSpec(c.value, c.label ?? c.value),
-          )
-          .toList(),
+    // pickNew / pickHabit — the only chips whose words are data.
+    _ => state.ui.choices.map((c) => _ChipSpec(c.value, c.label ?? c.value)).toList(),
   };
 }
 
@@ -1140,14 +1139,10 @@ void _dispatchChip(CoachCubit cubit, String step, _ChipSpec spec) {
     // The chip's picker sends the same event; the server knows which step it
     // came from and puts the reader back there.
     case 'pickHabit':
-    // Luồng 4 — the habit to practise, from the kho. ⟨Xáo trộn⟩ deals three
-    // others instead of choosing one, so it goes as a plain pick.
+    // Luồng 4 — the habit to practise, from the kho. Đổi ba cái khác là việc
+    // của client (xem _HabitPickPills), không còn chip nào gửi lên server.
     case 'scenePick':
-      if (spec.value == 'shuffle') {
-        cubit.pick(spec.value, spec.label);
-      } else {
-        cubit.pickNewHabit(spec.value, spec.label);
-      }
+      cubit.pickNewHabit(spec.value, spec.label);
     // Luồng 4 — the retry offer rides the `sceneAgain` event: same meaning.
     case 'sceneFix':
       cubit.answerSceneAgain(again: spec.value == 'retry', label: echo);
