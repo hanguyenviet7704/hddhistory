@@ -94,9 +94,16 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
   }
 
   Future<void> _invite(BuildContext context) async {
+    CoachTracking.inviteScrView(
+      lessonId: widget.lessonId,
+      keypointId: widget.keypointId,
+      courseId: widget.courseId,
+      isCourseDone: widget.isCourseDone,
+    );
+
     final accepted = await CoachInvitePopup.show(
       context,
-      isCourseDone: widget.isCourseDone,
+      kind: widget.isCourseDone ? CoachInviteKind.courseDone : CoachInviteKind.keypoint,
       courseTitle: widget.courseTitle,
     );
     // Nút thứ hai giờ mang chữ "Bỏ qua, sang bài tiếp theo" (`inviteLater`), nên
@@ -104,10 +111,23 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
     // thành bài học" phía dưới — mà màn đó đã bỏ, nên không đi tiếp là để user
     // đứng trên một trang trống.
     if (accepted != true) {
+      CoachTracking.inviteLater(
+        lessonId: widget.lessonId,
+        keypointId: widget.keypointId,
+        courseId: widget.courseId,
+        isCourseDone: widget.isCourseDone,
+      );
       if (mounted) widget.onContinue();
 
       return;
     }
+
+    CoachTracking.inviteAccept(
+      lessonId: widget.lessonId,
+      keypointId: widget.keypointId,
+      courseId: widget.courseId,
+      isCourseDone: widget.isCourseDone,
+    );
     if (!context.mounted) return;
 
     final outcome = await showCoachSheetForKeypoint(
@@ -148,13 +168,39 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
 /// paragraph, no second card — "chỉ đổi câu và nhãn nút". After the course's
 /// last keypoint a small "Hoàn thành khoá học" label sits above the bubble and
 /// the line names the course.
+/// Which invitation this is — the three share one frame and differ only in the
+/// line, the small label above it and the primary button's words.
+enum CoachInviteKind {
+  /// Luồng 2 — after a keypoint: "nói một chút về nó nhé?".
+  keypoint,
+
+  /// Luồng 3 — after the course's last keypoint: "nhìn lại một chút nhé?".
+  courseDone,
+
+  /// Luồng 7 — habits were just added at the end of a lesson: "tập thử một cái
+  /// ngay nhé, lúc còn nhớ vì sao mình thêm?".
+  newHabit,
+}
+
 class CoachInvitePopup extends StatelessWidget {
-  final bool isCourseDone;
+  final CoachInviteKind kind;
   final String courseTitle;
 
-  const CoachInvitePopup._({required this.isCourseDone, required this.courseTitle});
+  /// Luồng 7 — how many habits were just added; the line counts them.
+  final int newHabitCount;
 
-  static Future<bool?> show(BuildContext context, {required bool isCourseDone, String courseTitle = ''}) {
+  const CoachInvitePopup._({
+    required this.kind,
+    required this.courseTitle,
+    this.newHabitCount = 0,
+  });
+
+  static Future<bool?> show(
+    BuildContext context, {
+    required CoachInviteKind kind,
+    String courseTitle = '',
+    int newHabitCount = 0,
+  }) {
     return showGeneralDialog<bool>(
       context: context,
       // A full screen with its own ⟨Lúc khác⟩: tapping outside is not a way out
@@ -171,7 +217,7 @@ class CoachInvitePopup extends StatelessWidget {
           opacity: curved,
           child: SlideTransition(
             position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(curved),
-            child: CoachInvitePopup._(isCourseDone: isCourseDone, courseTitle: courseTitle),
+            child: CoachInvitePopup._(kind: kind, courseTitle: courseTitle, newHabitCount: newHabitCount),
           ),
         );
       },
@@ -181,7 +227,23 @@ class CoachInvitePopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n.coach;
-    final line = isCourseDone ? (courseTitle.trim().isEmpty ? l10n.inviteRecapBubbleNoName : l10n.inviteRecapBubble(course: courseTitle.trim())) : l10n.inviteBubble;
+    final line = switch (kind) {
+      CoachInviteKind.courseDone => courseTitle.trim().isEmpty ? l10n.inviteRecapBubbleNoName : l10n.inviteRecapBubble(course: courseTitle.trim()),
+      // "Lúc còn nhớ vì sao mình thêm" — why this beat runs here rather than
+      // tomorrow from the Habit tab.
+      CoachInviteKind.newHabit => newHabitCount > 1 ? l10n.inviteNewHabitsBubble(n: newHabitCount.toString()) : l10n.inviteNewHabitBubble,
+      CoachInviteKind.keypoint => l10n.inviteBubble,
+    };
+    final kicker = switch (kind) {
+      CoachInviteKind.courseDone => l10n.inviteCourseDone,
+      CoachInviteKind.newHabit => newHabitCount > 1 ? l10n.inviteNewHabitsKicker(n: newHabitCount.toString()) : l10n.inviteNewHabitKicker,
+      CoachInviteKind.keypoint => null,
+    };
+    final accept = switch (kind) {
+      CoachInviteKind.courseDone => l10n.inviteRecapAccept,
+      CoachInviteKind.newHabit => l10n.inviteNewHabitAccept,
+      CoachInviteKind.keypoint => l10n.inviteAccept,
+    };
 
     return Material(
       color: CoachStyle.sheetBackground,
@@ -191,7 +253,7 @@ class CoachInvitePopup extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(flex: 5),
-              if (isCourseDone) ...[
+              if (kicker != null) ...[
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
@@ -200,7 +262,7 @@ class CoachInvitePopup extends StatelessWidget {
                     borderRadius: BorderRadius.circular(99.r),
                   ),
                   child: Text(
-                    l10n.inviteCourseDone,
+                    kicker,
                     style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w800, letterSpacing: 0.3, color: CoachStyle.selectedText),
                   ),
                 ),
@@ -246,7 +308,7 @@ class CoachInvitePopup extends StatelessWidget {
                   ),
                   onPressed: () => Navigator.of(context).pop(true),
                   child: Text(
-                    isCourseDone ? l10n.inviteRecapAccept : l10n.inviteAccept,
+                    accept,
                     style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w800),
                   ),
                 ),

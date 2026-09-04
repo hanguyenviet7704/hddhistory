@@ -436,3 +436,8 @@ teaserHabit: "실제로 있었던 한 번을 들려줄래요, 아니면 같이 �
 teaserHome: "잠깐 이야기하러 올래요?"
 teaserOnboard: "서로 조금 알아갈까요?"
 sceneShuffle: "다른 것 보기"
+inviteNewHabitBubble: "습관을 하나 추가했네요. 왜 추가했는지 기억나는 지금 한번 해볼까요?"
+inviteNewHabitsBubble: "습관을 ${n}개 추가했네요. 이유가 기억나는 지금 하나 해볼까요?"
+inviteNewHabitKicker: "습관 추가됨"
+inviteNewHabitsKicker: "습관 ${n}개 추가됨"
+inviteNewHabitAccept: "지금 해보기"

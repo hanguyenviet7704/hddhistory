@@ -165,9 +165,35 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     }
   }
 
-  void _continue() {
+  Future<void> _continue() async {
     AppHaptic.select();
-    final adoptedAny = widget.habits.any((habit) => _adoptedRowFor(habit) != null);
+    final adopted = widget.habits.where((habit) => _adoptedRowFor(habit) != null).toList();
+    final adoptedAny = adopted.isNotEmpty;
+
+    // Luồng 7 — a habit added here is at its most vivid right now: the reader
+    // still knows why they added it. So the Coach offers ONE practice before
+    // the lesson-complete screen, on this page rather than after it, and
+    // ⟨Lúc khác⟩ simply goes on — the habit is in the kho and Home can practise
+    // it any day.
+    if (adoptedAny) {
+      final accepted = await CoachInvitePopup.show(
+        context,
+        kind: CoachInviteKind.newHabit,
+        newHabitCount: adopted.length,
+      );
+      if (!mounted) return;
+      if (accepted == true) {
+        await showCoachSheet(
+          context,
+          entry: CoachEntry.lesson,
+          // One habit needs no question; the server asks which one when the
+          // reader added several.
+          habitId: adopted.length == 1 ? adopted.first.id : null,
+        );
+        if (!mounted) return;
+      }
+    }
+
     if (!adoptedAny && widget.habits.isNotEmpty) {
       // Same telemetry meaning as the old prompt's skip: offered, left empty.
       HabitTracking.startSkip(
