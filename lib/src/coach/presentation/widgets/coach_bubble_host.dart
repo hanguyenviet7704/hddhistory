@@ -42,11 +42,13 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
 
   /// Which door the current tab is, or null where the Coach does not belong.
   ///
-  /// Home and nowhere else — "Nav Habit đã bị bỏ khỏi thiết kế" (BA flow
-  /// 2026-08-26). The Coach touches no screen of the app but the end of a
-  /// lesson and Home; somebody mid-Habit who wants to talk comes back here.
+  /// Home and the Habit tab (owner, 2026-09-04: "thiếu coach ở màn habit
+  /// này"). Both open the same HOME session — the conversation, and the
+  /// practice pill that picks a habit out of the kho. The Habit DOOR proper
+  /// (luồng 5, `CoachEntry.habit`) belongs to one habit's own screen and is
+  /// opened from the practice picker there, not from this bubble.
   CoachEntry? _entryFor(String routeName) {
-    if (routeName == RouteNamed.home) return CoachEntry.home;
+    if (routeName == RouteNamed.home || routeName == RouteNamed.habit) return CoachEntry.home;
 
     return null;
   }

@@ -15,6 +15,16 @@ part of '../../coach.dart';
 /// An unknown key returns null and the sheet simply prints nothing — a missing
 /// navigation line is a quieter failure than a raw key on screen.
 String? coachPrompt(BuildContext context, String key, [Map<String, String> args = const {}]) {
+  final line = _coachPromptLine(context, key, args);
+  if (line == null) return null;
+
+  // The reader's address, as the server sends it on every turn once known:
+  // Vietnamese fixed lines are written to "bạn" and follow it here — the one
+  // fix for "lúc thì anh lúc thì bạn" (owner, 2026-09-04).
+  return LocaleSettings.currentLocale.languageCode == 'vi' ? _addressVi(line, args['address']) : line;
+}
+
+String? _coachPromptLine(BuildContext context, String key, Map<String, String> args) {
   final l10n = context.l10n.coach;
 
   switch (key) {
@@ -453,4 +463,23 @@ String _dividerLabel(dynamic l10n, Map<String, String> args) {
       : DateFormat.MMMd(LocaleSettings.currentLocale.languageCode).format(at);
 
   return '$when · $door';
+}
+
+/// "bạn" → «anh» / «chị» / «em» / a name — the second person only, never the
+/// noun ("bạn bè", "người bạn", "bạn thân"). Mirrors the server's `addressVi`.
+String _addressVi(String text, String? address) {
+  final to = address?.trim() ?? '';
+  if (text.isEmpty || to.isEmpty || to == 'bạn') return text;
+  final cap = to[0].toUpperCase() + to.substring(1);
+  final nounAfter = RegExp(r'^\s+(bè|thân|trai|gái|cùng|học|đồng|đời|cũ|mới)(?![\p{L}])', unicode: true);
+  final nounBefore = RegExp(r'(người|cô|anh|chị|ông|bà|thằng|đứa|tụi|các|nhóm|mấy|những|đám|bọn)\s*$', unicode: true);
+
+  return text.replaceAllMapped(RegExp(r'(^|[^\p{L}])([Bb])ạn(?![\p{L}])', unicode: true), (m) {
+    final pre = m.group(1)!;
+    final after = text.substring(m.end);
+    final before = text.substring(0, m.start + pre.length);
+    if (nounAfter.hasMatch(after) || nounBefore.hasMatch(before)) return m.group(0)!;
+
+    return pre + (m.group(2) == 'B' ? cap : to);
+  });
 }
