@@ -157,8 +157,8 @@ promptSceneDone: 这个场景就到这里吧。
 promptHub: 好了。还有什么想说的吗？
 hubOpen: 今天你想做什么？
 hubTaskT1: 看一下提醒
-hubTaskT2: 练一个场景
-hubTaskT3: 说说今天
+hubTaskT2: "练习情境"
+hubTaskT3: "说说今天的事"
 hubTaskT4: 设一个提醒
 hubStop: 我先到这里
 hubStopEcho: 我先到这里。
@@ -325,3 +325,14 @@ storyOpenGood3: "今天有什么想聊的吗？"
 storyOpenGreat1: "今天有什么好事吗？"
 storyOpenGreat2: "今天什么事顺利？"
 storyOpenGreat3: "今天有什么开心的吗？"
+
+# Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
+hubHint: "或者直接说说你今天的事…"
+promptScenePick: "你想练习习惯库里的哪一个？"
+promptSceneRetry: "还是那个情境："
+sceneFixRetry: "再练一次这个情境"
+sceneFixRetryEcho: "再练一次这个情境."
+sceneFixLater: "以后再说"
+sceneFixLaterEcho: "以后再说."
+stepScenePick: "选择要练的习惯"
+courseReasonStory: "从你刚说的事"

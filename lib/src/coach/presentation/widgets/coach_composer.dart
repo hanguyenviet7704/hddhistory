@@ -262,10 +262,14 @@ class _CoachComposerState extends State<CoachComposer> {
       'T4': l10n.hubTaskT4,
     };
 
+    // Luồng 4: the two pills and the box — "gõ thẳng vào ô chat thì đi luôn
+    // nhánh kể chuyện". No "Mình dừng ở đây" pill any more: the sheet's own
+    // ⟨Đóng⟩ is the way out (and luồng 6 will be the one to ask them to stay).
     return _textArea(
       context,
       state,
       busy,
+      hint: l10n.hubHint,
       onSubmit: widget.cubit.submitText,
       leadingChips: [
         for (final choice in state.ui.choices)
@@ -279,10 +283,6 @@ class _CoachComposerState extends State<CoachComposer> {
                         label: labels[choice.value]!,
                       ),
             ),
-        _SampleChip(
-          label: l10n.hubStop,
-          onTap: busy ? null : () => widget.cubit.stopSession(l10n.hubStopEcho),
-        ),
       ],
     );
   }
@@ -1005,6 +1005,11 @@ List<_ChipSpec> _chipSpecsFor(dynamic l10n, CoachState state) {
       _ChipSpec('yes', l10n.sceneAgainYes, echo: l10n.sceneAgainYesEcho),
       _ChipSpec('no', l10n.sceneAgainNo, echo: l10n.sceneAgainNoEcho),
     ],
+    // Luồng 4 — after an off-track answer: the same scene once more, or not.
+    'sceneFix' => [
+      _ChipSpec('retry', l10n.sceneFixRetry, echo: l10n.sceneFixRetryEcho),
+      _ChipSpec('later', l10n.sceneFixLater, echo: l10n.sceneFixLaterEcho),
+    ],
     'planAsk' => [
       _ChipSpec('yes', l10n.planAskYes, echo: l10n.planAskYesEcho),
       _ChipSpec('no', l10n.planAskNo, echo: l10n.planAskNoEcho),
@@ -1064,7 +1069,12 @@ void _dispatchChip(CoachCubit cubit, String step, _ChipSpec spec) {
     // The chip's picker sends the same event; the server knows which step it
     // came from and puts the reader back there.
     case 'pickHabit':
+    // Luồng 4 — the habit to practise, from the kho.
+    case 'scenePick':
       cubit.pickNewHabit(spec.value, spec.label);
+    // Luồng 4 — the retry offer rides the `sceneAgain` event: same meaning.
+    case 'sceneFix':
+      cubit.answerSceneAgain(again: spec.value == 'retry', label: echo);
     case 'depth':
       cubit.sendRetired({'kind': 'depth', 'deep': spec.value == 'deep'}, label: spec.label);
     case 'contextAsk':

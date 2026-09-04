@@ -157,8 +157,8 @@ promptSceneDone: Vậy mình dừng cảnh ở đây nhé.
 promptHub: Xong rồi. Còn gì bạn muốn nói không?
 hubOpen: Hôm nay bạn muốn làm gì?
 hubTaskT1: Xem lại nhắc hẹn
-hubTaskT2: Tập một tình huống
-hubTaskT3: Kể chuyện
+hubTaskT2: "Luyện tập tình huống"
+hubTaskT3: "Kể chuyện hôm nay"
 hubTaskT4: Đặt Nhắc hẹn
 hubStop: Mình dừng ở đây
 hubStopEcho: Mình dừng ở đây.
@@ -326,3 +326,14 @@ storyOpenGood3: "Hôm nay có gì muốn kể không?"
 storyOpenGreat1: "Hôm nay có chuyện gì hay không?"
 storyOpenGreat2: "Có chuyện gì hay hôm nay không?"
 storyOpenGreat3: "Hôm nay có gì vui không?"
+
+# Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
+hubHint: "Hoặc kể luôn chuyện hôm nay của bạn…"
+promptScenePick: "Bạn muốn tập cái nào trong kho của bạn?"
+promptSceneRetry: "Vẫn cảnh đó:"
+sceneFixRetry: "Luyện lại cảnh này"
+sceneFixRetryEcho: "Luyện lại cảnh này."
+sceneFixLater: "Để sau"
+sceneFixLaterEcho: "Để sau."
+stepScenePick: "chọn habit để tập"
+courseReasonStory: "Từ chuyện bạn vừa kể"

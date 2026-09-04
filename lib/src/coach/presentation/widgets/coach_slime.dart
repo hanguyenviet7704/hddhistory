@@ -32,6 +32,9 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'twoCols':
     case 'redraft':
     case 'shrink':
+    // Luồng 4 — choosing the habit, weighing the retry.
+    case 'scenePick':
+    case 'sceneFix':
       return CoachSlimeMood.think;
     // The reader is telling: "thân dẹt xuống ổn định, mắt mở to".
     case 'tell':
@@ -42,6 +45,7 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'tellOnceA':
     case 'tellOnceB':
     case 'retryScene':
+    case 'sceneRetry':
     case 'intentTell':
     case 'practiceAnswer':
     case 'nextAction':

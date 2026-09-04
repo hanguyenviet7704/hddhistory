@@ -165,8 +165,8 @@ promptSceneDone: Let's leave the scene there.
 promptHub: Done. Anything else you want to say?
 hubOpen: What would you like to do?
 hubTaskT1: Check the reminder
-hubTaskT2: Practise a situation
-hubTaskT3: Tell me something
+hubTaskT2: "Practise a situation"
+hubTaskT3: "Tell me about today"
 hubTaskT4: Set a reminder
 hubStop: I'll stop here
 hubStopEcho: I'll stop here.
@@ -333,3 +333,14 @@ storyOpenGood3: "Anything from today you want to talk about?"
 storyOpenGreat1: "Anything good happen today?"
 storyOpenGreat2: "What went well today?"
 storyOpenGreat3: "Anything fun today?"
+
+# Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
+hubHint: "Or just tell me about your day…"
+promptScenePick: "Which one from your collection do you want to practise?"
+promptSceneRetry: "Same scene:"
+sceneFixRetry: "Try this scene again"
+sceneFixRetryEcho: "Try this scene again."
+sceneFixLater: "Later"
+sceneFixLaterEcho: "Later."
+stepScenePick: "choosing a habit"
+courseReasonStory: "From what you just told me"

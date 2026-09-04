@@ -157,8 +157,8 @@ promptSceneDone: 이 장면은 여기까지 할게요.
 promptHub: 끝났어요. 더 하고 싶은 얘기 있나요?
 hubOpen: 오늘은 무엇을 해볼까요?
 hubTaskT1: 약속 확인하기
-hubTaskT2: 상황 연습하기
-hubTaskT3: 이야기하기
+hubTaskT2: "상황 연습하기"
+hubTaskT3: "오늘 이야기하기"
 hubTaskT4: 리마인드 설정하기
 hubStop: 여기서 마칠게요
 hubStopEcho: 여기서 마칠게요.
@@ -325,3 +325,14 @@ storyOpenGood3: "오늘 나누고 싶은 얘기 있어요?"
 storyOpenGreat1: "오늘 좋은 일 있었어요?"
 storyOpenGreat2: "오늘 잘된 일은 뭐예요?"
 storyOpenGreat3: "오늘 즐거운 일 있었어요?"
+
+# Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
+hubHint: "아니면 오늘 있었던 일을 바로 이야기해도 돼요…"
+promptScenePick: "목록에서 어떤 걸 연습해 볼까요?"
+promptSceneRetry: "같은 상황이에요:"
+sceneFixRetry: "이 상황 다시 연습하기"
+sceneFixRetryEcho: "이 상황 다시 연습하기."
+sceneFixLater: "나중에"
+sceneFixLaterEcho: "나중에."
+stepScenePick: "습관 고르기"
+courseReasonStory: "방금 이야기에서"

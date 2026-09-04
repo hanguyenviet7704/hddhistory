@@ -157,8 +157,8 @@ promptSceneDone: この場面はここまでにしましょう。
 promptHub: 終わりました。ほかに話したいことはありますか？
 hubOpen: 今日は何をしますか？
 hubTaskT1: リマインドを確認
-hubTaskT2: 場面を練習する
-hubTaskT3: 話してみる
+hubTaskT2: "場面を練習する"
+hubTaskT3: "今日のことを話す"
 hubTaskT4: リマインドを設定
 hubStop: ここで終わります
 hubStopEcho: ここで終わります。
@@ -325,3 +325,14 @@ storyOpenGood3: "今日、話したいことはありますか？"
 storyOpenGreat1: "今日、いいことはありました？"
 storyOpenGreat2: "今日うまくいったことは？"
 storyOpenGreat3: "今日、楽しかったことはありました？"
+
+# Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
+hubHint: "そのまま今日のことを話しても…"
+promptScenePick: "あなたのリストのどれを練習しますか？"
+promptSceneRetry: "同じ場面です："
+sceneFixRetry: "この場面をもう一度"
+sceneFixRetryEcho: "この場面をもう一度."
+sceneFixLater: "あとで"
+sceneFixLaterEcho: "あとで."
+stepScenePick: "習慣を選ぶ"
+courseReasonStory: "いま話してくれたことから"
