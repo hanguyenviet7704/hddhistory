@@ -429,3 +429,4 @@ doorHabit: "습관"
 
 # Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
 promptStoryOpen: "응, 들려줘. 요즘 어때 — 좋은 일이 있었거나, 마음에 두고 있는 게 있어?"
+teaserFirstHabit: "아직 습관이 없어요. 레슨을 하나 배워 추가할까요?"

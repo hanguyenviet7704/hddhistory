@@ -48,7 +48,11 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
   /// (luồng 5, `CoachEntry.habit`) belongs to one habit's own screen and is
   /// opened from the practice picker there, not from this bubble.
   CoachEntry? _entryFor(String routeName) {
-    if (routeName == RouteNamed.home || routeName == RouteNamed.habit) return CoachEntry.home;
+    if (routeName == RouteNamed.home) return CoachEntry.home;
+    // Luồng 5 — the Habit tab is its own door: no mood, two pills about the
+    // habit still unwritten today, and with an empty kho a course that teaches
+    // a first habit. The Coach picks WHICH habit; the tab names none.
+    if (routeName == RouteNamed.habit) return CoachEntry.habit;
 
     return null;
   }

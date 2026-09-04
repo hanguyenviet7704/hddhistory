@@ -283,6 +283,9 @@ String? coachTeaser(BuildContext context, String? key) {
   switch (key) {
     case 'coach.teaser.retry':
       return context.l10n.coach.teaserRetry;
+    // Luồng 5 — the Habit screen with nothing in the kho yet.
+    case 'coach.teaser.firstHabit':
+      return context.l10n.coach.teaserFirstHabit;
     default:
       return null;
   }
