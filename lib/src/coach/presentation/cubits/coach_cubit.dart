@@ -125,6 +125,14 @@ class CoachCubit extends Cubit<CoachState> {
   /// Bộ điều phối — "Mình dừng ở đây": card → the one commitment offer → tail.
   Future<void> stopSession(String label) => _send({'kind': 'stop'}, userLine: label);
 
+  /// Luồng 5 — CHECKIN_ASK: "Có, mình làm được" · "Chưa, hôm nay không có dịp".
+  Future<void> answerCheckin({required bool done, required String label}) =>
+      _send({'kind': 'checkin', 'done': done}, userLine: label);
+
+  /// Luồng 5 — QUIZ_IN_CHAT: the option tapped, by index.
+  Future<void> answerQuiz(String answer, String label) =>
+      _send({'kind': 'quizAnswer', 'quizAnswer': answer}, userLine: label);
+
   /// Nhịp 6 — "Chuyện giống vậy bạn gặp bao giờ chưa?". "Gặp rồi" collects the
   /// occasion the commitment needs; "Chưa gặp" moves on without a word about it.
   Future<void> answerSceneMet({required bool met, required String label}) =>

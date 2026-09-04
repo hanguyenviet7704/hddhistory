@@ -133,3 +133,7 @@ practiceGrowBubble: Lặp lại đủ nhiều, nó thành nếp sống hằng ng
 practiceGrowLoop: Vòng lặp ${days} ngày
 habitReadMoreTitle: Đọc thêm về chủ đề này
 habitReadMoreSubtitle: Các khoá học hỗ trợ thói quen này
+
+# Luồng 5 (design 2026-09-03) — the third row of the practice chooser.
+practiceCoachTitle: "Với Coach"
+practiceCoachSubtitle: "Ghi nhận hoặc làm quiz ngay trong chat"

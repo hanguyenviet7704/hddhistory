@@ -287,6 +287,11 @@ class _HabitDetailPageState extends State<HabitDetailPage> {
     bool? saved;
     if (choice == PracticeChoice.journal) {
       saved = await JournalCheckInPage.push(context, userHabit: widget.userHabit);
+    } else if (choice == PracticeChoice.coach) {
+      // Luồng 5 — the Coach sheet opened from THIS habit: no mood, two pills
+      // (write today / its quiz). Whatever it wrote, re-read the log after.
+      await showCoachSheet(context, entry: CoachEntry.habit, habitId: habitId);
+      saved = true;
     } else {
       final playable = practices.where((practice) => practice.isPlayable).toList();
       // Only reachable if the sheet offered quiz, which requires a playable

@@ -1,7 +1,8 @@
 part of '../../habit.dart';
 
 /// What the user picked in the practice sheet.
-enum PracticeChoice { journal, quiz }
+/// `coach` is luồng 5 (design 2026-09-03): the same check-in, made in the chat.
+enum PracticeChoice { journal, quiz, coach }
 
 /// "How do you want to check in?" (design "5 · Habit" → practicepick).
 ///
@@ -88,6 +89,19 @@ class PracticePickSheet extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(PracticeChoice.quiz),
             ),
           ],
+          // Luồng 5 — the third row: write today or take the quiz WITH the
+          // Coach, in the chat. Always offered; the sheet itself says so when
+          // the Coach is switched off server-side.
+          12.verticalSpace,
+          _option(
+            context,
+            icon: Icons.chat_bubble_outline_rounded,
+            iconBg: AppCustomColor.brandPrimary100,
+            iconColor: AppCustomColor.brandPrimary,
+            title: context.l10n.habit.practiceCoachTitle,
+            subtitle: context.l10n.habit.practiceCoachSubtitle,
+            onTap: () => Navigator.of(context).pop(PracticeChoice.coach),
+          ),
         ],
       ),
     );

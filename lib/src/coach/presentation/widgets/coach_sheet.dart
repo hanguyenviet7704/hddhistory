@@ -147,6 +147,10 @@ class _CoachSheetState extends State<_CoachSheet> {
                 if (!isSafety && state.ui.habit != null)
                   _HabitChip(
                     title: state.ui.habit!.title,
+                    // Luồng 5 — "⟨Đổi habit⟩ bị ẩn": the reader opened THIS
+                    // habit's own screen; the one place the never-hide rule
+                    // is turned over, on purpose.
+                    canChange: state.entry != CoachEntry.habit,
                     onChange: state.status == CoachStatus.sending
                         ? null
                         : () => cubit.changeHabit(context.l10n.coach.habitChipChangeEcho),
@@ -223,8 +227,10 @@ Future<void> _openCourse(BuildContext context, CoachCubit cubit) async {
 class _HabitChip extends StatelessWidget {
   final String title;
   final VoidCallback? onChange;
+  /// False hides the ⇄ button entirely (luồng 5, the Habit door).
+  final bool canChange;
 
-  const _HabitChip({required this.title, this.onChange});
+  const _HabitChip({required this.title, this.onChange, this.canChange = true});
 
   @override
   Widget build(BuildContext context) {
@@ -274,6 +280,7 @@ class _HabitChip extends StatelessWidget {
                   ),
                 ),
               ),
+              if (canChange) ...[
               SizedBox(width: 9.w),
               Semantics(
                 button: true,
@@ -297,6 +304,7 @@ class _HabitChip extends StatelessWidget {
                   ),
                 ),
               ),
+              ],
             ],
           ),
         ),

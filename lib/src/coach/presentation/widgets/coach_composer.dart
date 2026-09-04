@@ -260,6 +260,9 @@ class _CoachComposerState extends State<CoachComposer> {
       // The session's result, first in line once a real occasion exists — it
       // must never hide behind "Mình dừng ở đây".
       'T4': l10n.hubTaskT4,
+      // Luồng 5 — the Habit screen's two pills.
+      'checkin': l10n.hubTaskCheckin,
+      'quiz': l10n.hubTaskQuiz,
     };
 
     // Luồng 4: the two pills and the box — "gõ thẳng vào ô chat thì đi luôn
@@ -1005,6 +1008,15 @@ List<_ChipSpec> _chipSpecsFor(dynamic l10n, CoachState state) {
       _ChipSpec('yes', l10n.sceneAgainYes, echo: l10n.sceneAgainYesEcho),
       _ChipSpec('no', l10n.sceneAgainNo, echo: l10n.sceneAgainNoEcho),
     ],
+    // Luồng 5 — did you do it today; then the next unwritten habit.
+    'checkinAsk' => [
+      _ChipSpec('yes', l10n.checkinAskYes, echo: l10n.checkinAskYesEcho),
+      _ChipSpec('no', l10n.checkinAskNo, echo: l10n.checkinAskNoEcho),
+    ],
+    'checkinOffer' => [
+      _ChipSpec('yes', l10n.checkinOfferYes, echo: l10n.checkinOfferYesEcho),
+      _ChipSpec('no', l10n.checkinOfferLater, echo: l10n.checkinOfferLaterEcho),
+    ],
     // Luồng 4 — after an off-track answer: the same scene once more, or not.
     'sceneFix' => [
       _ChipSpec('retry', l10n.sceneFixRetry, echo: l10n.sceneFixRetryEcho),
@@ -1075,6 +1087,13 @@ void _dispatchChip(CoachCubit cubit, String step, _ChipSpec spec) {
     // Luồng 4 — the retry offer rides the `sceneAgain` event: same meaning.
     case 'sceneFix':
       cubit.answerSceneAgain(again: spec.value == 'retry', label: echo);
+    // Luồng 5 — the Habit screen.
+    case 'checkinAsk':
+      cubit.answerCheckin(done: spec.value == 'yes', label: echo);
+    case 'checkinOffer':
+      cubit.answerInvite(accept: spec.value == 'yes', label: echo);
+    case 'quizInChat':
+      cubit.answerQuiz(spec.value, spec.label);
     case 'depth':
       cubit.sendRetired({'kind': 'depth', 'deep': spec.value == 'deep'}, label: spec.label);
     case 'contextAsk':

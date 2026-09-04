@@ -133,3 +133,7 @@ practiceGrowBubble: Repeat it enough, it becomes everyday life
 practiceGrowLoop: ${days} days loop
 habitReadMoreTitle: Read more on this
 habitReadMoreSubtitle: Courses that support this habit
+
+# Luồng 5 (design 2026-09-03) — the third row of the practice chooser.
+practiceCoachTitle: "With the Coach"
+practiceCoachSubtitle: "Write today or take the quiz right in the chat"

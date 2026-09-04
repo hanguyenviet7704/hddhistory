@@ -104,6 +104,11 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
       return l10n.promptHub;
     // The coordinator is ②'s opening step as well as the seam between tasks;
     // "Xong rồi…" reads as a goodbye before anything has happened.
+    // Luồng 5 — the Habit screen.
+    case 'coach.prompt.checkinAsk':
+      return l10n.promptCheckinAsk;
+    case 'coach.prompt.checkinTell':
+      return l10n.promptCheckinTell;
     // Luồng 4 — the Home scene.
     case 'coach.prompt.scenePick':
       return l10n.promptScenePick;
@@ -306,6 +311,13 @@ String? coachStepLabel(BuildContext context, String step) {
     case 'sceneFix':
     case 'sceneRetry':
       return l10n.stepSituation;
+    // Luồng 5 — the Habit screen.
+    case 'checkinAsk':
+    case 'checkinTell':
+    case 'checkinOffer':
+      return l10n.stepCheckinToday;
+    case 'quizInChat':
+      return l10n.stepQuiz;
     case 'twoCols':
     case 'redraft':
       return l10n.stepTwoCols;

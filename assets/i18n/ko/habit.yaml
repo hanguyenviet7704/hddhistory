@@ -133,3 +133,7 @@ practiceGrowBubble: 충분히 반복하면 일상이 됩니다
 practiceGrowLoop: ${days}일 루프
 habitReadMoreTitle: 더 알아보기
 habitReadMoreSubtitle: 이 습관을 뒷받침하는 코스
+
+# Luồng 5 (design 2026-09-03) — the third row of the practice chooser.
+practiceCoachTitle: "코치와 함께"
+practiceCoachSubtitle: "채팅 안에서 기록하거나 퀴즈 풀기"
