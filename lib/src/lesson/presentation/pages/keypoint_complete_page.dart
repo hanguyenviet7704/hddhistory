@@ -396,6 +396,12 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                 keypointId: lessonState.resolvedCurrentKeypoint.id,
                 courseId: lessonState.selectedLesson.courseId,
                 isCourseDone: context.read<CourseRoadmapCubit>().state.roadmap.isAllCurrentRoadmapContentCompleted,
+                // Named in the course-complete line. Only when Home's selected
+                // course IS this lesson's course — otherwise the line would
+                // name whatever the header happens to show.
+                courseTitle: context.read<HomeCubit>().state.isSelectedCourse(lessonState.selectedLesson.courseId)
+                    ? context.read<HomeCubit>().state.currentCourse.title.text
+                    : '',
                 quizQuestions: QuizCardAnswer.practiceQuestionsOf(context.read<LessonCubit>().state),
                 quizTitle: lessonState.currentTitle,
                 onContinue: () => _handlePrimaryCta(lessonState, continueToNext: true),
