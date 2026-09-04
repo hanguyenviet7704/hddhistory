@@ -286,6 +286,14 @@ String? coachTeaser(BuildContext context, String? key) {
     // Luồng 5 — the Habit screen with nothing in the kho yet.
     case 'coach.teaser.firstHabit':
       return context.l10n.coach.teaserFirstHabit;
+    // Luồng 5 — the Habit screen with a kho: the two things it can do.
+    case 'coach.teaser.habit':
+      return context.l10n.coach.teaserHabit;
+    // Home — one line, and before the onboarding has run, its own.
+    case 'coach.teaser.home':
+      return context.l10n.coach.teaserHome;
+    case 'coach.teaser.onboard':
+      return context.l10n.coach.teaserOnboard;
     default:
       return null;
   }

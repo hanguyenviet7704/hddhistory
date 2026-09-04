@@ -438,3 +438,6 @@ doorHabit: "Habit"
 # Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
 promptStoryOpen: "Go on, I'm listening. How have things been lately — anything good, or something on your mind?"
 teaserFirstHabit: "No habits in your library yet. Learn a lesson to add one?"
+teaserHabit: "Tell me about one real time, or take a quiz with me?"
+teaserHome: "Come talk with me for a bit?"
+teaserOnboard: "Shall we get to know each other a little?"

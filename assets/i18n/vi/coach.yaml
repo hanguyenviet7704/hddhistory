@@ -431,3 +431,6 @@ doorHabit: "Thói quen"
 # Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
 promptStoryOpen: "Ừ, kể mình nghe đi. Dạo này thế nào rồi — có gì vui hay đang nghĩ về chuyện gì không?"
 teaserFirstHabit: "Chưa có thói quen nào trong kho. Học một bài để thêm nhé?"
+teaserHabit: "Kể mình nghe một lần thật, hay làm quiz cùng mình?"
+teaserHome: "Vào trò chuyện một chút nhé?"
+teaserOnboard: "Mình làm quen với bạn một chút nhé?"
