@@ -31,6 +31,9 @@ abstract class CoachChoiceModel with _$CoachChoiceModel {
   const factory CoachChoiceModel({
     @Default('') String value,
     String? label,
+
+    /// Luồng 1 — lit because the app already holds this answer.
+    @Default(false) bool selected,
   }) = _CoachChoiceModel;
 
   factory CoachChoiceModel.fromJson(Map<String, dynamic> json) => _$CoachChoiceModelFromJson(json);
@@ -119,8 +122,7 @@ abstract class CoachScoreCriterionModel with _$CoachScoreCriterionModel {
     String? note,
   }) = _CoachScoreCriterionModel;
 
-  factory CoachScoreCriterionModel.fromJson(Map<String, dynamic> json) =>
-      _$CoachScoreCriterionModelFromJson(json);
+  factory CoachScoreCriterionModel.fromJson(Map<String, dynamic> json) => _$CoachScoreCriterionModelFromJson(json);
 }
 
 /// The running skill number for one habit, over the last few scored scenes.
@@ -136,8 +138,7 @@ abstract class CoachSkillScoreModel with _$CoachSkillScoreModel {
     num? trend,
   }) = _CoachSkillScoreModel;
 
-  factory CoachSkillScoreModel.fromJson(Map<String, dynamic> json) =>
-      _$CoachSkillScoreModelFromJson(json);
+  factory CoachSkillScoreModel.fromJson(Map<String, dynamic> json) => _$CoachSkillScoreModelFromJson(json);
 }
 
 /// Tầng 4 — the rubric card for the scene just finished.
@@ -157,8 +158,7 @@ abstract class CoachSceneScoreModel with _$CoachSceneScoreModel {
     CoachSkillScoreModel? skill,
   }) = _CoachSceneScoreModel;
 
-  factory CoachSceneScoreModel.fromJson(Map<String, dynamic> json) =>
-      _$CoachSceneScoreModelFromJson(json);
+  factory CoachSceneScoreModel.fromJson(Map<String, dynamic> json) => _$CoachSceneScoreModelFromJson(json);
 }
 
 /// The scene broken into the parts the app shows as separate bubbles.
@@ -181,8 +181,7 @@ abstract class CoachHabitChipModel with _$CoachHabitChipModel {
     @Default('') String title,
   }) = _CoachHabitChipModel;
 
-  factory CoachHabitChipModel.fromJson(Map<String, dynamic> json) =>
-      _$CoachHabitChipModelFromJson(json);
+  factory CoachHabitChipModel.fromJson(Map<String, dynamic> json) => _$CoachHabitChipModelFromJson(json);
 }
 
 @freezed
@@ -210,9 +209,24 @@ abstract class CoachUiModel with _$CoachUiModel {
 
     /// Luồng 2 — `runQuiz` · `nextKeypoint`: something the app does on this step.
     String? action,
+
+    /// Luồng 1 — where the onboarding stands; null outside it.
+    CoachOnboardModel? onboard,
   }) = _CoachUiModel;
 
   factory CoachUiModel.fromJson(Map<String, dynamic> json) => _$CoachUiModelFromJson(json);
+}
+
+/// Luồng 1 — the progress strip's numbers and whether "Bỏ qua" is offered.
+@freezed
+abstract class CoachOnboardModel with _$CoachOnboardModel {
+  const factory CoachOnboardModel({
+    @Default(0) int step,
+    @Default(0) int total,
+    @Default(true) bool skippable,
+  }) = _CoachOnboardModel;
+
+  factory CoachOnboardModel.fromJson(Map<String, dynamic> json) => _$CoachOnboardModelFromJson(json);
 }
 
 @freezed

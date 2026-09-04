@@ -9,6 +9,7 @@ part of '../../coach.dart';
 sealed class _CoachSheetResult with _$CoachSheetResult {
   const factory _CoachSheetResult.close() = _CoachSheetClose;
   const factory _CoachSheetResult.openCourse(String courseId) = _CoachSheetOpenCourse;
+
   /// Luồng 2 — ⟨Học tiếp⟩: the sheet is done and the reader goes on to the next keypoint.
   const factory _CoachSheetResult.nextKeypoint() = _CoachSheetNextKeypoint;
 }
@@ -179,12 +180,7 @@ class _CoachSheetState extends State<_CoachSheet> {
   /// the sheet stays.
   Future<void> _requestClose(BuildContext context, CoachState state, CoachCubit cubit) async {
     final line = _exitPleaLineFor(context, state);
-    final canPlead =
-        state.exitPlea &&
-        !state.ended &&
-        state.status == CoachStatus.ready &&
-        line != null &&
-        state.messages.any((m) => !m.isCoach);
+    final canPlead = state.exitPlea && !state.ended && state.status == CoachStatus.ready && line != null && state.messages.any((m) => !m.isCoach);
 
     if (canPlead) {
       final decision = await CoachExitPleaSheet.show(context, line);
@@ -220,11 +216,7 @@ class _CoachSheetState extends State<_CoachSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CoachCubit, CoachState>(
-      listenWhen: (prev, curr) =>
-          prev.silent != curr.silent ||
-          prev.step != curr.step ||
-          prev.ui.action != curr.ui.action ||
-          prev.ended != curr.ended,
+      listenWhen: (prev, curr) => prev.silent != curr.silent || prev.step != curr.step || prev.ui.action != curr.ui.action || prev.ended != curr.ended,
       listener: (context, state) {
         // Luồng 2 — the two things the app DOES on the server's word.
         if (state.step != 'quizRun') _quizLaunched = false;
@@ -271,6 +263,17 @@ class _CoachSheetState extends State<_CoachSheet> {
                     _requestClose(context, state, cubit);
                   },
                 ),
+                // Luồng 1 — "Câu 3/8" and ⟨Bỏ qua⟩ while the onboarding runs.
+                // The one place the sheet may count its steps: these are
+                // questions, not the conversation, and the reader should see
+                // how few there are. Hidden at the intro, where the only thing
+                // to do is ⟨Bắt đầu⟩.
+                if (!isSafety && state.ui.onboard != null && state.ui.onboard!.step > 0)
+                  _OnboardStrip(
+                    step: state.ui.onboard!.step,
+                    total: state.ui.onboard!.total,
+                    onSkip: state.ui.onboard!.skippable && state.status != CoachStatus.sending ? () => cubit.pick('skip', context.l10n.coach.onboardSkipEcho) : null,
+                  ),
                 // Thanh habit — a floating pill under the header, from the
                 // moment the habit is certain to the end of the session. Not a
                 // step of the flow and never a line of dialogue: a status bar
@@ -282,9 +285,7 @@ class _CoachSheetState extends State<_CoachSheet> {
                     // habit's own screen; the one place the never-hide rule
                     // is turned over, on purpose.
                     canChange: state.entry != CoachEntry.habit,
-                    onChange: state.status == CoachStatus.sending
-                        ? null
-                        : () => cubit.changeHabit(context.l10n.coach.habitChipChangeEcho),
+                    onChange: state.status == CoachStatus.sending ? null : () => cubit.changeHabit(context.l10n.coach.habitChipChangeEcho),
                   ),
                 Expanded(
                   child: switch (state.status) {
@@ -299,9 +300,7 @@ class _CoachSheetState extends State<_CoachSheet> {
                       course: state.ui.kind == CoachUiKind.courseCard || state.step == 'leave' ? state.ui.course : null,
                       // Tap on the card = "Học ngay": straight to the course,
                       // and the session ends on the spot.
-                      onCourseTap: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
-                          ? null
-                          : () => _openCourse(context, cubit),
+                      onCourseTap: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending ? null : () => _openCourse(context, cubit),
                       onCourseSave: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
                           ? null
                           : () => cubit.courseAction('save', label: context.l10n.coach.courseCardSaveEcho),
@@ -355,9 +354,72 @@ Future<void> _openCourse(BuildContext context, CoachCubit cubit) async {
 /// Centred, floating on a shadow, exactly as the design draws it. The swap
 /// button is the reader's right — "không bao giờ được ẩn theo điều kiện" — so it
 /// is only ever disabled while a turn is in flight, never hidden.
+/// Luồng 1 — the onboarding's progress: a thin bar, "Câu n/N", and ⟨Bỏ qua⟩
+/// where the question allows it (the address does not — it is what every
+/// later line is written with).
+class _OnboardStrip extends StatelessWidget {
+  final int step;
+  final int total;
+  final VoidCallback? onSkip;
+
+  const _OnboardStrip({required this.step, required this.total, required this.onSkip});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.coach;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 8.w, 6.h),
+      color: CoachStyle.surface,
+      child: Row(
+        children: [
+          Text(
+            l10n.onboardProgress(n: step.toString(), total: total.toString()),
+            style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w700, color: CoachStyle.textChip),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(99.r),
+              child: LinearProgressIndicator(
+                value: total == 0 ? 0 : (step / total).clamp(0.0, 1.0),
+                minHeight: 4.h,
+                backgroundColor: CoachStyle.selectedBorderSoft,
+                valueColor: const AlwaysStoppedAnimation<Color>(CoachStyle.userBubble),
+              ),
+            ),
+          ),
+          SizedBox(width: 4.w),
+          // Keeps its width when hidden so the bar does not jump between steps.
+          Opacity(
+            opacity: onSkip == null ? 0 : 1,
+            child: IgnorePointer(
+              ignoring: onSkip == null,
+              child: TextButton(
+                onPressed: onSkip,
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: CoachStyle.textMuted,
+                ),
+                child: Text(
+                  l10n.onboardSkip,
+                  style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _HabitChip extends StatelessWidget {
   final String title;
   final VoidCallback? onChange;
+
   /// False hides the ⇄ button entirely (luồng 5, the Habit door).
   final bool canChange;
 
@@ -412,29 +474,29 @@ class _HabitChip extends StatelessWidget {
                 ),
               ),
               if (canChange) ...[
-              SizedBox(width: 9.w),
-              Semantics(
-                button: true,
-                label: l10n.habitChipChange,
-                child: GestureDetector(
-                  onTap: onChange,
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    width: 28.w,
-                    height: 28.w,
-                    decoration: BoxDecoration(
-                      color: CoachStyle.sampleBackground,
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.swap_horiz_rounded,
-                      size: 16.w,
-                      color: const Color(0xFF5B54A8),
+                SizedBox(width: 9.w),
+                Semantics(
+                  button: true,
+                  label: l10n.habitChipChange,
+                  child: GestureDetector(
+                    onTap: onChange,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 28.w,
+                      height: 28.w,
+                      decoration: BoxDecoration(
+                        color: CoachStyle.sampleBackground,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.swap_horiz_rounded,
+                        size: 16.w,
+                        color: const Color(0xFF5B54A8),
+                      ),
                     ),
                   ),
                 ),
-              ),
               ],
             ],
           ),

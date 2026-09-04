@@ -119,8 +119,7 @@ class _CoachComposerState extends State<CoachComposer> {
     CoachUiKind.shrink,
   };
 
-  double _bottomInset(BuildContext context) =>
-      MediaQuery.viewInsetsOf(context).bottom > 0 ? 12.h : 20.h + MediaQuery.viewPaddingOf(context).bottom;
+  double _bottomInset(BuildContext context) => MediaQuery.viewInsetsOf(context).bottom > 0 ? 12.h : 20.h + MediaQuery.viewPaddingOf(context).bottom;
 
   @override
   Widget build(BuildContext context) {
@@ -130,9 +129,7 @@ class _CoachComposerState extends State<CoachComposer> {
     // ⟨Phương án⟩, the mood row, the closing choice and the course card's own
     // buttons all live IN the thread now — those screens have no input area at
     // all in the design, only the safe-area gap.
-    if (state.ui.kind == CoachUiKind.chips ||
-        state.ui.kind == CoachUiKind.nextSession ||
-        state.ui.kind == CoachUiKind.courseCard) {
+    if (state.ui.kind == CoachUiKind.chips || state.ui.kind == CoachUiKind.nextSession || state.ui.kind == CoachUiKind.courseCard) {
       return SizedBox(height: MediaQuery.viewPaddingOf(context).bottom);
     }
 
@@ -217,9 +214,7 @@ class _CoachComposerState extends State<CoachComposer> {
         if (state.ui.habit == null)
           _SampleChip(
             label: l10n.storyPickHabit,
-            onTap: busy
-                ? null
-                : () => widget.cubit.changeHabit(l10n.storyPickHabitEcho),
+            onTap: busy ? null : () => widget.cubit.changeHabit(l10n.storyPickHabitEcho),
           ),
       ],
     );
@@ -274,6 +269,12 @@ class _CoachComposerState extends State<CoachComposer> {
       'talkQuiz': l10n.hubTaskTalkQuiz,
     };
 
+    // Luồng 1 — the onboarding's chips arrive labelled by the server (they are
+    // answers, not tasks) and a lit one is the answer the app already holds.
+    // "Chip là gợi ý, không phải danh sách đóng": the box stays open under them.
+    final onboarding = state.step.startsWith('onboard');
+    String? labelOf(CoachChoiceEntity choice) => onboarding ? (choice.label ?? choice.value) : labels[choice.value];
+
     // Luồng 4: the two pills and the box — "gõ thẳng vào ô chat thì đi luôn
     // nhánh kể chuyện". No "Mình dừng ở đây" pill any more: the sheet's own
     // ⟨Đóng⟩ is the way out (and luồng 6 will be the one to ask them to stay).
@@ -281,19 +282,28 @@ class _CoachComposerState extends State<CoachComposer> {
       context,
       state,
       busy,
-      hint: state.step == 'talkAsk' ? l10n.talkAskHint : l10n.hubHint,
+      hint: switch (state.step) {
+        'talkAsk' => l10n.talkAskHint,
+        'onboardIntro' => l10n.onboardIntroHint,
+        'onboardAddress' => l10n.onboardAddressHint,
+        _ when onboarding => l10n.onboardHint,
+        _ => l10n.hubHint,
+      },
       onSubmit: widget.cubit.submitText,
       leadingChips: [
         for (final choice in state.ui.choices)
-          if (labels.containsKey(choice.value))
+          if (labelOf(choice) != null)
             _SampleChip(
-              label: labels[choice.value]!,
+              label: labelOf(choice)!,
+              selected: choice.selected,
               onTap: busy
                   ? null
+                  : onboarding
+                  ? () => widget.cubit.pick(choice.value, labelOf(choice)!)
                   : () => widget.cubit.pickTask(
-                        choice.value,
-                        label: labels[choice.value]!,
-                      ),
+                      choice.value,
+                      label: labelOf(choice)!,
+                    ),
             ),
       ],
     );
@@ -544,9 +554,7 @@ class _CoachComposerState extends State<CoachComposer> {
         SizedBox(height: 8.h),
         _FilledButton(
           label: l10n.planSave,
-          enabled: !busy &&
-              _planContext.text.trim().isNotEmpty &&
-              _planAction.text.trim().isNotEmpty,
+          enabled: !busy && _planContext.text.trim().isNotEmpty && _planAction.text.trim().isNotEmpty,
           onTap: _savePlan,
         ),
       ],
@@ -604,7 +612,10 @@ class _CoachComposerState extends State<CoachComposer> {
           ),
         ),
         SizedBox(width: 10.w),
-        _ThumbButton(glyph: '👍', onTap: busy ? null : () => widget.cubit.rate(thumb: 'up')),
+        _ThumbButton(
+          glyph: '👍',
+          onTap: busy ? null : () => widget.cubit.rate(thumb: 'up'),
+        ),
         SizedBox(width: 7.w),
         _ThumbButton(glyph: '👎', onTap: busy ? null : () => setState(() => _thumbDown = true)),
         SizedBox(width: 10.w),
@@ -903,9 +914,7 @@ class _HabitPickPillsState extends State<_HabitPickPills> {
             SizedBox(height: 9.h),
             _RerollLink(
               label: l10n.pickReroll,
-              onTap: widget.busy
-                  ? null
-                  : () => setState(() => _shown = _roll(widget.state.ui.choices, _shown)),
+              onTap: widget.busy ? null : () => setState(() => _shown = _roll(widget.state.ui.choices, _shown)),
             ),
           ],
         ],
@@ -1007,6 +1016,11 @@ List<_ChipSpec> _chipSpecsFor(dynamic l10n, CoachState state) {
     'invite' => [
       _ChipSpec('yes', l10n.inviteYes, echo: l10n.inviteYesEcho),
       _ChipSpec('no', l10n.inviteNo, echo: l10n.inviteNoEcho),
+    ],
+    // Luồng 1 — "Mình gọi là «tên» nhé?" after a typed name.
+    'onboardAddressConfirm' => [
+      _ChipSpec('yes', l10n.onboardConfirmYes, echo: l10n.onboardConfirmYesEcho),
+      _ChipSpec('no', l10n.onboardConfirmNo, echo: l10n.onboardConfirmNoEcho),
     ],
     // Nhịp 6 — the invented scene gave them an action; only their own life can
     // give the occasion a commitment needs.
@@ -1125,6 +1139,8 @@ void _dispatchChip(CoachCubit cubit, String step, _ChipSpec spec) {
     case 'talkWhen':
     case 'recapQuiz':
     case 'recapPick':
+    // Luồng 1 — the name confirmation.
+    case 'onboardAddressConfirm':
       cubit.pick(spec.value, echo);
     case 'depth':
       cubit.sendRetired({'kind': 'depth', 'deep': spec.value == 'deep'}, label: spec.label);
@@ -1178,8 +1194,7 @@ class _ScheduleFormState extends State<_ScheduleForm> {
     switch (_mode) {
       case 'once':
         final date = now.add(Duration(days: _onceOffset));
-        final iso =
-            '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        final iso = '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
         widget.cubit.saveSchedule(
           enabled: true,
           hour: _hour,
@@ -1228,9 +1243,7 @@ class _ScheduleFormState extends State<_ScheduleForm> {
             child: Padding(
               padding: EdgeInsets.only(left: _picking == 'hour' ? 4.w : 44.w),
               child: _WheelPopup(
-                values: _picking == 'hour'
-                    ? List.generate(24, (i) => i)
-                    : List.generate(12, (i) => i * 5),
+                values: _picking == 'hour' ? List.generate(24, (i) => i) : List.generate(12, (i) => i * 5),
                 selected: _picking == 'hour' ? _hour : _minute,
                 onPick: (value) => setState(() {
                   if (_picking == 'hour') {
@@ -1252,10 +1265,7 @@ class _ScheduleFormState extends State<_ScheduleForm> {
               minute: _minute,
               picking: _picking,
               // Tapping the open half again closes the wheel.
-              onPick: busy
-                  ? null
-                  : (part) =>
-                      setState(() => _picking = _picking == part ? null : part),
+              onPick: busy ? null : (part) => setState(() => _picking = _picking == part ? null : part),
             ),
             SizedBox(width: 9.w),
             Expanded(child: _dayRow(context, busy)),
@@ -1275,9 +1285,7 @@ class _ScheduleFormState extends State<_ScheduleForm> {
             ),
             SizedBox(width: 9.w),
             GestureDetector(
-              onTap: busy
-                  ? null
-                  : () => widget.cubit.saveSchedule(enabled: false, label: l10n.reminderOffEcho),
+              onTap: busy ? null : () => widget.cubit.saveSchedule(enabled: false, label: l10n.reminderOffEcho),
               behavior: HitTestBehavior.opaque,
               child: Container(
                 height: 44.h,
@@ -1464,7 +1472,10 @@ class _TimePill extends StatelessWidget {
           _half('hour', hour),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 2.w),
-            child: Text(':', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w800, color: CoachStyle.skin)),
+            child: Text(
+              ':',
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w800, color: CoachStyle.skin),
+            ),
           ),
           _half('minute', minute),
         ],
@@ -1616,7 +1627,11 @@ class _SampleChip extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
 
-  const _SampleChip({required this.label, required this.onTap});
+  /// Luồng 1 — filled, not outlined: the app already holds this answer and is
+  /// asking the reader to confirm or change it rather than answer cold.
+  final bool selected;
+
+  const _SampleChip({required this.label, required this.onTap, this.selected = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1627,8 +1642,8 @@ class _SampleChip extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 13.w),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: CoachStyle.surface,
-          border: Border.all(color: CoachStyle.selectedBorderSoft, width: 1.5),
+          color: selected ? CoachStyle.selectedBackground : CoachStyle.surface,
+          border: Border.all(color: selected ? CoachStyle.userBubble : CoachStyle.selectedBorderSoft, width: 1.5),
           borderRadius: BorderRadius.circular(99.r),
           boxShadow: CoachStyle.cardShadow,
         ),

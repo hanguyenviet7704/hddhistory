@@ -65,6 +65,17 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'story':
     case 'barrier':
     case 'contextEdit':
+    // Luồng 1 — getting to know them: listening, never weighing.
+    case 'onboardIntro':
+    case 'onboardAddress':
+    case 'onboardAddressConfirm':
+    case 'onboardGoal':
+    case 'onboardBarrier':
+    case 'onboardCurrent':
+    case 'onboardStyle':
+    case 'onboardAge':
+    case 'onboardGender':
+    case 'onboardJob':
       return CoachSlimeMood.listen;
     // The tail: "nảy lên, mắt nhắm cong. Không reo hò, không huy hiệu."
     case 'moodEnd':
@@ -102,8 +113,7 @@ class _Track {
     final eased = Curves.easeInOut.transform(raw);
 
     return [
-      for (final channel in channels)
-        channel[lo] + (channel[hi] - channel[lo]) * eased,
+      for (final channel in channels) channel[lo] + (channel[hi] - channel[lo]) * eased,
     ];
   }
 }
@@ -327,39 +337,89 @@ const _coreDrift = _Track(
 
 const Map<CoachSlimeMood, _MoodSpec> _specs = {
   CoachSlimeMood.idle: _MoodSpec(
-    bob: 3.4, visc: 1, body: _bobIdle,
-    eyeW: .26, eyeH: .34, gap: .13,
-    eye: _eyeIdle, eyeDur: 5.4, dart: 7.5, tint: 0,
+    bob: 3.4,
+    visc: 1,
+    body: _bobIdle,
+    eyeW: .26,
+    eyeH: .34,
+    gap: .13,
+    eye: _eyeIdle,
+    eyeDur: 5.4,
+    dart: 7.5,
+    tint: 0,
   ),
   CoachSlimeMood.waiting: _MoodSpec(
-    bob: 2.2, visc: .8, body: _bobLean,
-    eyeW: .27, eyeH: .40, gap: .18,
-    eye: _eyeIdle, eyeDur: 3.4, dart: 4, tint: .1,
+    bob: 2.2,
+    visc: .8,
+    body: _bobLean,
+    eyeW: .27,
+    eyeH: .40,
+    gap: .18,
+    eye: _eyeIdle,
+    eyeDur: 3.4,
+    dart: 4,
+    tint: .1,
   ),
   CoachSlimeMood.listen: _MoodSpec(
-    bob: 2.8, visc: 1.6, body: _bobWide,
-    eyeW: .32, eyeH: .46, gap: .20,
-    eye: _eyeWide, eyeDur: 7.5, dart: 9, tint: 0,
+    bob: 2.8,
+    visc: 1.6,
+    body: _bobWide,
+    eyeW: .32,
+    eyeH: .46,
+    gap: .20,
+    eye: _eyeWide,
+    eyeDur: 7.5,
+    dart: 9,
+    tint: 0,
   ),
   CoachSlimeMood.think: _MoodSpec(
-    bob: 5.2, visc: 1.4, body: _bobTall,
-    eyeW: .24, eyeH: .32, gap: .09,
-    eye: _eyeThink, eyeDur: 3.6, dart: 0, tint: -.08,
+    bob: 5.2,
+    visc: 1.4,
+    body: _bobTall,
+    eyeW: .24,
+    eyeH: .32,
+    gap: .09,
+    eye: _eyeThink,
+    eyeDur: 3.6,
+    dart: 0,
+    tint: -.08,
   ),
   CoachSlimeMood.cheer: _MoodSpec(
-    bob: 1.3, visc: .55, body: _bobHop,
-    eyeW: .30, eyeH: .13, gap: .20, bottomRadius: .45,
-    eye: _eyeHappy, eyeDur: 1.9, dart: 0, tint: .14,
+    bob: 1.3,
+    visc: .55,
+    body: _bobHop,
+    eyeW: .30,
+    eyeH: .13,
+    gap: .20,
+    bottomRadius: .45,
+    eye: _eyeHappy,
+    eyeDur: 1.9,
+    dart: 0,
+    tint: .14,
   ),
   CoachSlimeMood.gentle: _MoodSpec(
-    bob: 6.5, visc: 2, body: _bobSag,
-    eyeW: .24, eyeH: .22, gap: .11,
-    eye: _eyeDown, eyeDur: 8, dart: 0, tint: -.16,
+    bob: 6.5,
+    visc: 2,
+    body: _bobSag,
+    eyeW: .24,
+    eyeH: .22,
+    gap: .11,
+    eye: _eyeDown,
+    eyeDur: 8,
+    dart: 0,
+    tint: -.16,
   ),
   CoachSlimeMood.sleep: _MoodSpec(
-    bob: 8.5, visc: 2.4, body: _bobSag,
-    eyeW: .30, eyeH: .06, gap: .14,
-    eye: null, eyeDur: 1, dart: 0, tint: -.22,
+    bob: 8.5,
+    visc: 2.4,
+    body: _bobSag,
+    eyeW: .30,
+    eyeH: .06,
+    gap: .14,
+    eye: null,
+    eyeDur: 1,
+    dart: 0,
+    tint: -.22,
   ),
 };
 
@@ -397,8 +457,7 @@ class CoachSlime extends StatefulWidget {
   State<CoachSlime> createState() => _CoachSlimeState();
 }
 
-class _CoachSlimeState extends State<CoachSlime>
-    with SingleTickerProviderStateMixin {
+class _CoachSlimeState extends State<CoachSlime> with SingleTickerProviderStateMixin {
   /// The design's "Vừa" viscosity — the base the per-state multiplier scales.
   static const double _baseViscosity = 6;
 
@@ -487,8 +546,7 @@ class _SlimePainter extends CustomPainter {
     canvas.rotate(body[4] * pi / 180);
     if (body[5] != 0) {
       canvas.transform(
-        (Matrix4.identity()..setEntry(0, 1, tan(body[5] * pi / 180)))
-            .storage,
+        (Matrix4.identity()..setEntry(0, 1, tan(body[5] * pi / 180))).storage,
       );
     }
     canvas.scale(body[2], body[3]);
@@ -617,9 +675,7 @@ class _SlimePainter extends CustomPainter {
         height: eyeHeight,
       );
       final stadium = Radius.circular(eyeWidth);
-      final bottom = spec.bottomRadius == null
-          ? stadium
-          : Radius.circular(spec.bottomRadius! * eyeWidth);
+      final bottom = spec.bottomRadius == null ? stadium : Radius.circular(spec.bottomRadius! * eyeWidth);
       canvas.drawRRect(
         RRect.fromRectAndCorners(
           eyeRect,
@@ -665,9 +721,6 @@ class _SlimePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SlimePainter oldDelegate) {
-    return oldDelegate.spec != spec ||
-        oldDelegate.color != color ||
-        oldDelegate.shadow != shadow ||
-        oldDelegate.elapsed != elapsed;
+    return oldDelegate.spec != spec || oldDelegate.color != color || oldDelegate.shadow != shadow || oldDelegate.elapsed != elapsed;
   }
 }

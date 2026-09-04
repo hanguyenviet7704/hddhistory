@@ -5,6 +5,7 @@ part of '../../coach.dart';
 enum CoachUiKind {
   chips,
   text,
+
   /// Free text the reader may also skip — the story step.
   textSkippable,
 
@@ -18,10 +19,12 @@ enum CoachUiKind {
   twoCols,
   nextAction,
   closing,
+
   /// The shrunk commitment as an editable draft, accept or keep.
   shrink,
   plan,
   schedule,
+
   /// One course with its three ways out drawn on the card.
   courseCard,
 
@@ -29,6 +32,7 @@ enum CoachUiKind {
   /// better phrasing to borrow, and "thử lại tình huống này".
   sceneScore,
   rating,
+
   /// The closing line, then two equal buttons: stop · new session.
   nextSession,
   end,
@@ -105,7 +109,19 @@ class CoachChoiceEntity {
   final String value;
   final String? label;
 
-  const CoachChoiceEntity({required this.value, this.label});
+  /// Luồng 1 — drawn filled: the app already knows this is the answer.
+  final bool selected;
+
+  const CoachChoiceEntity({required this.value, this.label, this.selected = false});
+}
+
+/// Luồng 1 — the onboarding's position: "Câu 3/8" and whether it can be skipped.
+class CoachOnboardEntity {
+  final int step;
+  final int total;
+  final bool skippable;
+
+  const CoachOnboardEntity({required this.step, required this.total, required this.skippable});
 }
 
 /// Nhịp 4 — a keypoint the closing beat points at. Read from the catalogue,
@@ -308,6 +324,9 @@ class CoachUiEntity {
   /// Luồng 2 — `runQuiz` · `nextKeypoint`: something the app does on this step.
   final String? action;
 
+  /// Luồng 1 — non-null only while the onboarding runs.
+  final CoachOnboardEntity? onboard;
+
   const CoachUiEntity({
     this.kind = CoachUiKind.text,
     this.choices = const [],
@@ -328,6 +347,7 @@ class CoachUiEntity {
     this.allowNewSession = true,
     this.quizRemaining,
     this.action,
+    this.onboard,
   });
 }
 
@@ -424,23 +444,18 @@ extension CoachTurnModelX on CoachTurnModel {
     persona: (persona?.trim().isEmpty ?? true) ? 'friend' : persona!,
     ui: CoachUiEntity(
       kind: CoachUiKind.fromRaw(ui.kind),
-      choices: ui.choices.map((c) => CoachChoiceEntity(value: c.value, label: c.label)).toList(),
+      choices: ui.choices.map((c) => CoachChoiceEntity(value: c.value, label: c.label, selected: c.selected)).toList(),
       columnLeft: ui.columns?.left ?? const [],
       columnRight: ui.columns?.right ?? const [],
       rejectAvailable: ui.rejectAvailable,
-      habit: ui.habit == null || ui.habit!.title.trim().isEmpty
-          ? null
-          : CoachHabitChipEntity(id: ui.habit!.id, title: ui.habit!.title),
+      habit: ui.habit == null || ui.habit!.title.trim().isEmpty ? null : CoachHabitChipEntity(id: ui.habit!.id, title: ui.habit!.title),
       situation: (ui.situation?.trim().isEmpty ?? true) ? null : ui.situation,
       // A scene may legitimately carry ONLY its question now — the second
       // stage arrives split (body in `situation`, question here), and a
       // mapping that required a setup silently swallowed that question on
       // screen ("thiếu mất bạn làm gì", owner on-device 2026-08-28). Dropped
       // only when it carries nothing at all.
-      scene: ui.scene == null ||
-              (ui.scene!.setup.trim().isEmpty &&
-                  (ui.scene!.question?.trim().isEmpty ?? true) &&
-                  (ui.scene!.habit?.trim().isEmpty ?? true))
+      scene: ui.scene == null || (ui.scene!.setup.trim().isEmpty && (ui.scene!.question?.trim().isEmpty ?? true) && (ui.scene!.habit?.trim().isEmpty ?? true))
           ? null
           : CoachSceneEntity(
               habit: (ui.scene!.habit?.trim().isEmpty ?? true) ? null : ui.scene!.habit,
@@ -463,8 +478,9 @@ extension CoachTurnModelX on CoachTurnModel {
           )
           .toList(),
       escapeAvailable: ui.escapeAvailable,
-    quizRemaining: ui.quizRemaining,
-    action: (ui.action?.trim().isEmpty ?? true) ? null : ui.action,
+      quizRemaining: ui.quizRemaining,
+      action: (ui.action?.trim().isEmpty ?? true) ? null : ui.action,
+      onboard: ui.onboard == null || ui.onboard!.total <= 0 ? null : CoachOnboardEntity(step: ui.onboard!.step, total: ui.onboard!.total, skippable: ui.onboard!.skippable),
       score: ui.score == null || ui.score!.criteria.isEmpty
           ? null
           : CoachSceneScoreEntity(
@@ -482,9 +498,7 @@ extension CoachTurnModelX on CoachTurnModel {
               strength: (ui.score!.strength?.trim().isEmpty ?? true) ? null : ui.score!.strength,
               improve: (ui.score!.improve?.trim().isEmpty ?? true) ? null : ui.score!.improve,
               tip: (ui.score!.tip?.trim().isEmpty ?? true) ? null : ui.score!.tip,
-              betterPhrasing: (ui.score!.betterPhrasing?.trim().isEmpty ?? true)
-                  ? null
-                  : ui.score!.betterPhrasing,
+              betterPhrasing: (ui.score!.betterPhrasing?.trim().isEmpty ?? true) ? null : ui.score!.betterPhrasing,
               level: ui.score!.level,
               retryAvailable: ui.score!.retryAvailable,
               skill: ui.score!.skill == null
@@ -496,9 +510,7 @@ extension CoachTurnModelX on CoachTurnModel {
                       trend: ui.score!.skill!.trend?.toDouble(),
                     ),
             ),
-      shrink: ui.shrink == null
-          ? null
-          : CoachShrinkEntity(context: ui.shrink!.context, action: ui.shrink!.action),
+      shrink: ui.shrink == null ? null : CoachShrinkEntity(context: ui.shrink!.context, action: ui.shrink!.action),
       course: ui.course == null || ui.course!.courseId.isEmpty
           ? null
           : CoachCourseCardEntity(

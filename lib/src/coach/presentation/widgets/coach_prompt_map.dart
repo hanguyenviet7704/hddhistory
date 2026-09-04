@@ -55,6 +55,27 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     case 'coach.prompt.shrinkDone':
       return l10n.shrinkDoneNote;
 
+    // -- luồng 1: the onboarding. An empty `address` means the neutral wording
+    // (a non-Vietnamese reader who kept "bạn").
+    case 'coach.prompt.onboardAddress':
+      return l10n.promptOnboardAddress;
+    case 'coach.prompt.onboardAddressConfirm':
+      return l10n.promptOnboardAddressConfirm(name: args['name'] ?? '');
+    case 'coach.prompt.onboardGoal':
+      return _addressed(args) ? l10n.promptOnboardGoalTo(address: _addressFor('promptOnboardGoal', args['address']!)) : l10n.promptOnboardGoal;
+    case 'coach.prompt.onboardBarrier':
+      return _addressed(args) ? l10n.promptOnboardBarrierTo(address: _addressFor('promptOnboardBarrier', args['address']!)) : l10n.promptOnboardBarrier;
+    case 'coach.prompt.onboardCurrent':
+      return _addressed(args) ? l10n.promptOnboardCurrentTo(address: _addressFor('promptOnboardCurrent', args['address']!)) : l10n.promptOnboardCurrent;
+    case 'coach.prompt.onboardStyle':
+      return _addressed(args) ? l10n.promptOnboardStyleTo(address: _addressFor('promptOnboardStyle', args['address']!)) : l10n.promptOnboardStyle;
+    case 'coach.prompt.onboardAge':
+      return _addressed(args) ? l10n.promptOnboardAgeTo(address: _addressFor('promptOnboardAge', args['address']!)) : l10n.promptOnboardAge;
+    case 'coach.prompt.onboardGender':
+      return _addressed(args) ? l10n.promptOnboardGenderTo(address: _addressFor('promptOnboardGender', args['address']!)) : l10n.promptOnboardGender;
+    case 'coach.prompt.onboardJob':
+      return _addressed(args) ? l10n.promptOnboardJobTo(address: _addressFor('promptOnboardJob', args['address']!)) : l10n.promptOnboardJob;
+
     // -- the 5 beats
     case 'coach.prompt.story':
       return l10n.promptStory;
@@ -196,9 +217,7 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
     // words, still not a question.
     case 'coach.prompt.closingWithPlan':
       final time = args['time'] ?? '';
-      return time.isEmpty
-          ? l10n.closingWithPlanNoTime(context: args['context'] ?? '')
-          : l10n.closingWithPlan(context: args['context'] ?? '', time: time);
+      return time.isEmpty ? l10n.closingWithPlanNoTime(context: args['context'] ?? '') : l10n.closingWithPlan(context: args['context'] ?? '', time: time);
     case 'coach.prompt.closingNoPlan':
       return l10n.closingNoPlan;
     // ① closes on this; ② on "Vậy mình dừng ở đây nhé."
@@ -388,4 +407,21 @@ String? coachStepLabel(BuildContext context, String step) {
     default:
       return null;
   }
+}
+
+/// Luồng 1 — whether the server sent an address worth writing into the line.
+bool _addressed(Map<String, String> args) => args['address']?.trim().isNotEmpty ?? false;
+
+/// The Vietnamese lines put the pronoun at the head of some sentences and inside
+/// others, and only a pronoun changes case — a name is written as typed. The
+/// server sends it lowercase; which questions open with it is this list.
+const _leadingInVi = {'promptOnboardGoal', 'promptOnboardStyle', 'promptOnboardAge', 'promptOnboardJob'};
+const _pronouns = {'bạn', 'anh', 'chị', 'em'};
+
+String _addressFor(String key, String address) {
+  final word = address.trim();
+  if (!_pronouns.contains(word)) return word;
+  if (LocaleSettings.currentLocale.languageCode != 'vi' || !_leadingInVi.contains(key)) return word;
+
+  return word[0].toUpperCase() + word.substring(1);
 }
