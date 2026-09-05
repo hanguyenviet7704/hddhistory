@@ -21,7 +21,11 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
   // The reader's address, as the server sends it on every turn once known:
   // Vietnamese fixed lines are written to "bạn" and follow it here — the one
   // fix for "lúc thì anh lúc thì bạn" (owner, 2026-09-04).
-  return LocaleSettings.currentLocale.languageCode == 'vi' ? _addressVi(line, args['address']) : line;
+  // Both shapes the habit title can appear in: quoted as authored
+  // (`lessonIntro`) and lower-cased inside a sentence (`checkinAsk`).
+  return LocaleSettings.currentLocale.languageCode == 'vi'
+      ? _addressVi(line, args['address'], protect: {args['habit'] ?? '', _habitInline(args)})
+      : line;
 }
 
 String? _coachPromptLine(BuildContext context, String key, Map<String, String> args) {
@@ -154,8 +158,14 @@ String? _coachPromptLine(BuildContext context, String key, Map<String, String> a
     case 'coach.prompt.recapQuiz':
       return l10n.promptRecapQuiz;
     // Luồng 5 — the Habit screen.
+    // Luồng 5 — the check-in names the habit it is asking about. Titles are
+    // verb phrases ("nghỉ đúng lúc trước khi cạn sức"), so they read as part of
+    // the question rather than as a quoted object; the fallback covers a title
+    // the server could not resolve, where "nó" would have nothing to point at.
     case 'coach.prompt.checkinAsk':
-      return l10n.promptCheckinAsk;
+      final habit = _habitInline(args);
+
+      return habit.isEmpty ? l10n.promptCheckinAskNoName : l10n.promptCheckinAsk(habit: habit);
     case 'coach.prompt.checkinTell':
       return l10n.promptCheckinTell;
     // Luồng 4 — the Home scene.
@@ -444,6 +454,20 @@ String? coachStepLabel(BuildContext context, String step) {
 /// Luồng 1 — whether the server sent an address worth writing into the line.
 bool _addressed(Map<String, String> args) => args['address']?.trim().isNotEmpty ?? false;
 
+/// The habit's title as it goes INSIDE a sentence.
+///
+/// vi/en drop its leading capital so it reads as a phrase in the middle of the
+/// question ("có dịp nào nghỉ đúng lúc…" rather than "…nào Nghỉ đúng lúc…");
+/// zh/ja/ko quote it in their frame instead and have no case to change.
+String _habitInline(Map<String, String> args) {
+  final habit = (args['habit'] ?? '').trim();
+  if (habit.isEmpty) return '';
+  final language = LocaleSettings.currentLocale.languageCode;
+  if (language != 'vi' && language != 'en') return habit;
+
+  return habit[0].toLowerCase() + habit.substring(1);
+}
+
 /// The Vietnamese lines put the pronoun at the head of some sentences and inside
 /// others, and only a pronoun changes case — a name is written as typed. The
 /// server sends it lowercase; which questions open with it is this list.
@@ -482,10 +506,26 @@ String _dividerLabel(dynamic l10n, Map<String, String> args) {
 
 /// "bạn" → «anh» / «chị» / «em» / a name — the second person only, never the
 /// noun ("bạn bè", "người bạn", "bạn thân"). Mirrors the server's `addressVi`.
-String _addressVi(String text, String? address) {
+String _addressVi(String text, String? address, {Iterable<String> protect = const []}) {
   final to = address?.trim() ?? '';
   if (text.isEmpty || to.isEmpty || to == 'bạn') return text;
   final cap = to[0].toUpperCase() + to.substring(1);
+
+  // Spans that came from CONTENT rather than from the fixed line — today just
+  // the habit title. The library writes titles to the reader too ("Ôn lại một
+  // điều bạn đã học hôm qua"), and rewriting THAT "bạn" produced "…một điều Hà
+  // đã học hôm qua", the reader's name inside their own habit's name. Every
+  // line carrying ${habit} had this; it only became visible once the check-in
+  // question started naming the habit.
+  final keep = <List<int>>[];
+  for (final candidate in protect) {
+    final needle = candidate.trim();
+    if (needle.isEmpty) continue;
+    for (var at = text.indexOf(needle); at != -1; at = text.indexOf(needle, at + needle.length)) {
+      keep.add([at, at + needle.length]);
+    }
+  }
+  bool isContent(int index) => keep.any((range) => index >= range[0] && index < range[1]);
   final nounAfter = RegExp(r'^\s+(bè|thân|trai|gái|cùng|học|đồng|đời|cũ|mới)(?![\p{L}])', unicode: true);
   final nounBefore = RegExp(r'(người|cô|anh|chị|ông|bà|thằng|đứa|tụi|các|nhóm|mấy|những|đám|bọn)\s*$', unicode: true);
 
@@ -493,6 +533,7 @@ String _addressVi(String text, String? address) {
     final pre = m.group(1)!;
     final after = text.substring(m.end);
     final before = text.substring(0, m.start + pre.length);
+    if (isContent(m.start + pre.length)) return m.group(0)!;
     if (nounAfter.hasMatch(after) || nounBefore.hasMatch(before)) return m.group(0)!;
 
     return pre + (m.group(2) == 'B' ? cap : to);
