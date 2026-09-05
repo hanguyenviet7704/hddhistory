@@ -50,17 +50,33 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
 
   /// Which door the current tab is, or null where the Coach does not belong.
   ///
-  /// Home and the Habit tab (owner, 2026-09-04: "thiếu coach ở màn habit
-  /// này"). Both open the same HOME session — the conversation, and the
-  /// practice pill that picks a habit out of the kho. The Habit DOOR proper
-  /// (luồng 5, `CoachEntry.habit`) belongs to one habit's own screen and is
-  /// opened from the practice picker there, not from this bubble.
+  /// Home, Khám phá and Thư viện all open the HOME session — the conversation,
+  /// and the practice pill that picks a habit out of the kho. The Habit tab is
+  /// its own door (owner, 2026-09-04: "thiếu coach ở màn habit này").
+  ///
+  /// Everywhere else — Confession, Profile, and every sub-route pushed on top
+  /// of a tab — the Coach does not belong and this returns null.
   CoachEntry? _entryFor(String routeName) {
     if (routeName == RouteNamed.home) return CoachEntry.home;
     // Luồng 5 — the Habit tab is its own door: no mood, two pills about the
     // habit still unwritten today, and with an empty kho a course that teaches
     // a first habit. The Coach picks WHICH habit; the tab names none.
     if (routeName == RouteNamed.habit) return CoachEntry.habit;
+    // Khám phá and Thư viện share the HOME door (owner, 2026-09-05).
+    //
+    // The bubble was ALREADY appearing on both, and with the Home flow — but by
+    // accident, not by decision: neither page claims its own route name, so
+    // `currentRouteName` stayed on whatever tab the reader came from, and this
+    // function read that stale name as `home`. The same omission is written up
+    // at `PageCubit`'s `case 6`, where it put the bubble over the chat button.
+    //
+    // Naming them here makes the behaviour deliberate and, more to the point,
+    // STABLE: it no longer depends on which tab the reader happened to arrive
+    // from. Only the two tab roots — the shelves pushed on top of Thư viện
+    // (history, saved, my lessons) are sub-routes with no bubble.
+    if (routeName == RouteNamed.course || routeName == RouteNamed.library) {
+      return CoachEntry.home;
+    }
 
     return null;
   }
