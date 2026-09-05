@@ -731,7 +731,12 @@ const UserManagement = () => {
 
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-white w-full max-w-4xl rounded-lg shadow-xl p-6 relative">
+          {/* Cao hơn khung nhìn thì CUỘN, đừng tràn ra ngoài. Panel không có
+              trần chiều cao nên khi thêm mục "AI Coach" vào, hai nút Huỷ/Lưu
+              bị đẩy khuất khỏi màn hình và không bấm được (owner 2026-09-05).
+              Sửa ở panel chứ không ở mục mới: bất kỳ field nào thêm sau này
+              cũng sẽ gặp đúng chuyện đó. */}
+          <div className="bg-white w-full max-w-4xl rounded-lg shadow-xl p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={closeForm}
               className="absolute top-3 right-3 p-2 text-gray-500 hover:text-gray-700"
@@ -978,7 +983,7 @@ const UserManagement = () => {
                   <div className="text-sm font-semibold text-gray-700 mb-2">
                     AI Coach · người dùng tự nói về mình
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <InfoField
                       label="Muốn cải thiện điều gì nhất"
                       value={coachProfile?.goalText || "-"}
