@@ -193,6 +193,17 @@ class _Bubble extends StatelessWidget {
     // impersonated.
     final speaker = isCoach ? message.speaker?.trim() : null;
 
+    // Every heading inside a bubble — the scene's "Với thói quen:" and the
+    // roleplay partner's name alike. One object rather than two identical
+    // literals: they ARE the same thing, and keeping them apart is what let
+    // the speaker label quietly become its own style.
+    final headingStyle = TextStyle(
+      fontSize: 13.5.sp,
+      fontWeight: FontWeight.w800,
+      height: 1.55,
+      color: isCoach ? CoachStyle.textPrimary : CoachStyle.surface,
+    );
+
     return Row(
       mainAxisAlignment: isCoach ? MainAxisAlignment.start : MainAxisAlignment.end,
       children: [
@@ -223,36 +234,20 @@ class _Bubble extends StatelessWidget {
               // on the scene. `speaker` has travelled from the model all the
               // way to CoachMessage since tầng 3 shipped — it was only ever
               // missing HERE, at the last step.
+              //
+              // Drawn as the SAME heading as "Tôi có tình huống:" below, and
+              // through the same [headingStyle] so the two cannot drift apart
+              // again: shipped with its own size, its own violet and a bullet,
+              // which made one bubble in the thread speak a private visual
+              // language (owner, 2026-09-05: "sao lại một mình 1 kiểu").
               if (speaker != null && speaker.isNotEmpty)
                 Padding(
-                  padding: EdgeInsets.only(bottom: 3.h),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 5.w,
-                        height: 5.w,
-                        decoration: const BoxDecoration(
-                          color: CoachStyle.skin,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      SizedBox(width: 6.w),
-                      Flexible(
-                        child: Text(
-                          speaker,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.5.sp,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.2,
-                            height: 1.3,
-                            color: CoachStyle.selectedText,
-                          ),
-                        ),
-                      ),
-                    ],
+                  padding: EdgeInsets.only(bottom: 2.h),
+                  child: Text(
+                    speaker,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: headingStyle,
                   ),
                 ),
               // The scene's little headings — "Với thói quen:", "Tôi có tình
@@ -260,15 +255,7 @@ class _Bubble extends StatelessWidget {
               if (message.title != null && message.title!.isNotEmpty)
                 Padding(
                   padding: EdgeInsets.only(bottom: 2.h),
-                  child: Text(
-                    message.title!,
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.w800,
-                      height: 1.55,
-                      color: isCoach ? CoachStyle.textPrimary : CoachStyle.surface,
-                    ),
-                  ),
+                  child: Text(message.title!, style: headingStyle),
                 ),
               Text(
                 message.text,
