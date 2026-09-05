@@ -1,8 +1,13 @@
 part of '../../../course.dart';
 
 /// Maximum number of courses shown per skillset section in the Explore view.
-/// A "View more" button is shown when a skillset has more courses than this.
-const int _kMaxCoursesPerSection = 5;
+///
+/// Ten, up from five: the section is a horizontal strip now rather than a
+/// two-column grid, so ten cards cost one screen of sideways scrolling instead
+/// of five rows of vertical page. The chevron beside the heading opens the
+/// skillset's full list either way — it is always there, not only when the
+/// catalog happens to be longer than this.
+const int _kMaxCoursesPerSection = 10;
 
 /// Corner radius of a cover tile. 18 in the redesign, up from 12 — the softer
 /// corner is what makes a borderless tile still read as a card.
@@ -160,6 +165,13 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   /// falls back to the topmost visible section.
   static const double _kSpyTopThreshold = 0.15;
 
+  /// Row 0 of the list is the header (search + the import board), which scrolls
+  /// away with the sections rather than sitting pinned above them — the design
+  /// scrolls the whole page (owner, 2026-09-05). So a skillset's list index is
+  /// its position + 1, and every index that crosses into or out of the list has
+  /// to be shifted by this.
+  static const int _kHeaderRows = 1;
+
   void _onPositionsChanged() {
     if (!_spyArmed || !mounted) return;
     final positions = _positionsListener.itemPositions.value;
@@ -168,7 +180,8 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     final active = aboveTop.isNotEmpty
         ? aboveTop.reduce((a, b) => a.itemLeadingEdge >= b.itemLeadingEdge ? a : b)
         : positions.reduce((a, b) => a.itemLeadingEdge <= b.itemLeadingEdge ? a : b);
-    _courseCubit.onActiveSectionChanged(active.index);
+    // Row 0 is the header; a negative index there means "above every section".
+    _courseCubit.onActiveSectionChanged(active.index - _kHeaderRows);
   }
 
   /// Handles a scroll request from the cubit (chip tap, reset, or deep-link),
@@ -179,7 +192,8 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       _spyArmed = false;
     }
     if (!_scrollController.isAttached || skillsetCount == 0) return;
-    final target = state.activeSkillsetIndex.clamp(0, skillsetCount - 1);
+    // A reset asks for the very top, which is the header rather than section 0.
+    final target = state.activeSkillsetIndex < 0 ? 0 : state.activeSkillsetIndex.clamp(0, skillsetCount - 1) + _kHeaderRows;
     _scrollController.scrollTo(
       index: target,
       duration: const Duration(milliseconds: 300),
@@ -255,7 +269,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           }
 
           // "All courses" — every skillset stacked as a scrollspy section.
-          final initialIndex = _courseCubit.state.activeSkillsetIndex.clamp(0, skillsets.length - 1);
+          final activeIndex = _courseCubit.state.activeSkillsetIndex;
+          // Entering with no section in mind opens at the header, as the design
+          // does; a deep link to a skillset still opens on that section.
+          final initialIndex = activeIndex < 0 ? 0 : activeIndex.clamp(0, skillsets.length - 1) + _kHeaderRows;
           return BlocListener<CourseCubit, CourseState>(
             // A bumped nonce is a scroll request (chip tap / reset / deep-link).
             listenWhen: (prev, curr) => prev.exploreScrollNonce != curr.exploreScrollNonce,
@@ -273,16 +290,30 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
                 itemScrollController: _scrollController,
                 itemPositionsListener: _positionsListener,
                 initialScrollIndex: initialIndex,
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
-                itemCount: skillsets.length,
+                // No horizontal padding here: each section pays its own, so its
+                // strip can run to the screen edge instead of stopping 20 short
+                // and reading as a clipped list.
+                padding: EdgeInsets.only(bottom: 80.h),
+                itemCount: skillsets.length + _kHeaderRows,
                 itemBuilder: (context, index) {
-                  final skillset = skillsets[index];
+                  // The search field and the import board ride at the top of
+                  // the list so the whole page scrolls as one.
+                  if (index < _kHeaderRows) {
+                    return Column(
+                      children: [
+                        const CourseHeader(),
+                        12.verticalSpace,
+                      ],
+                    );
+                  }
+
+                  final skillset = skillsets[index - _kHeaderRows];
                   return _CourseSection(
                     skillset: skillset,
                     progressState: progressState,
                     isSelected: (courseId) => homeState.isSelectedCourse(courseId),
                     onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
-                    showBottomSpacing: index < skillsets.length - 1,
+                    showBottomSpacing: index - _kHeaderRows < skillsets.length - 1,
                   );
                 },
               ),
@@ -434,6 +465,15 @@ void _showComingSoonSheet(BuildContext context, CourseEntity course, {SkillsetEn
   );
 }
 
+/// One skillset on Explore: its name, a chevron into its full list, and a
+/// horizontal strip of up to [_kMaxCoursesPerSection] covers.
+///
+/// It used to be a two-column grid capped at five with a "View more" tile in
+/// the sixth slot. The strip (design note 2026-09-04) fits twice as many
+/// courses in a third of the height, which is what lets Explore show every
+/// category on one scroll instead of two per screen — and it moves "see the
+/// rest" from a card that competed with the covers to a chevron in the heading,
+/// present on every section whether or not anything is hidden.
 class _CourseSection extends StatelessWidget {
   final SkillsetEntity skillset;
   final ProgressState progressState;
@@ -449,68 +489,106 @@ class _CourseSection extends StatelessWidget {
     required this.showBottomSpacing,
   });
 
+  /// Card width in the strip (design `width:126px`). The cover is square, so
+  /// this is its height too.
+  static const double _cardWidth = 126;
+
+  void _openFullList(BuildContext context) {
+    AppHaptic.select();
+    ExploreTracking.track(
+      TrackingKey.exploreCatViewmore,
+      parameters: ExploreTracking.skillsetParams(skillset),
+    );
+    SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final progressById = progressLookup(progressState);
     final sorted = sortCoursesForExplore(skillset.courses, progressById);
     final displayed = sorted.take(_kMaxCoursesPerSection).toList();
-    final hasMore = sorted.length > _kMaxCoursesPerSection;
-
-    // Build the grid children: course cards + optional view-more slot.
-    final gridChildren = <Widget>[
-      ...displayed.map((course) {
-        final originalIndex = skillset.courses.indexWhere((c) => c.id == course.id);
-        final progressInfo = _progressInfoFor(course, progressById);
-        return _CourseGridCard(
-          key: ValueKey(course.id),
-          course: course,
-          completedLessons: progressInfo.completedLessons,
-          totalLessons: progressInfo.totalLessons,
-          isSelected: isSelected(course.id),
-          onTap: () => onTapCourse(course, originalIndex >= 0 ? originalIndex : displayed.indexOf(course)),
-        );
-      }),
-      if (hasMore) _ViewMoreGridCard(skillset: skillset),
-    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppText(
-          skillset.title.text,
-          style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Row(
+            children: [
+              Expanded(
+                child: AppText(
+                  skillset.title.text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 15.5.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.1,
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                  ),
+                ),
+              ),
+              10.horizontalSpace,
+              Semantics(
+                button: true,
+                label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _openFullList(context),
+                  // 28 square so the tap target is not just the glyph, pulled 6
+                  // right so the arrow itself lines up with the page margin.
+                  child: Transform.translate(
+                    offset: Offset(6.w, 0),
+                    child: SizedBox(
+                      width: 28.w,
+                      height: 28.w,
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 24.w,
+                        color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        14.verticalSpace,
-        // Manual 2-column grid (not GridView.count): cells size to their own
-        // height so there is no aspect-ratio slack — the vertical gap is exactly
-        // _kCourseGridRowGap.
-        _buildGrid(gridChildren),
-        if (showBottomSpacing) 30.verticalSpace,
+        10.verticalSpace,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 2.h),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (int i = 0; i < displayed.length; i++) ...[
+                if (i > 0) 12.horizontalSpace,
+                SizedBox(
+                  width: _cardWidth.w,
+                  child: Builder(
+                    builder: (context) {
+                      final course = displayed[i];
+                      final originalIndex = skillset.courses.indexWhere((c) => c.id == course.id);
+                      final progressInfo = _progressInfoFor(course, progressById);
+                      return _CourseGridCard(
+                        key: ValueKey(course.id),
+                        course: course,
+                        completedLessons: progressInfo.completedLessons,
+                        totalLessons: progressInfo.totalLessons,
+                        isSelected: isSelected(course.id),
+                        onTap: () => onTapCourse(course, originalIndex >= 0 ? originalIndex : i),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (showBottomSpacing) 22.verticalSpace,
       ],
     );
-  }
-
-  /// Lays [cells] out in a 2-column grid using plain Rows so each cell keeps its
-  /// natural height. Columns are [_kCourseGridColGap] apart, rows
-  /// [_kCourseGridRowGap] apart — no GridView aspect-ratio slack.
-  Widget _buildGrid(List<Widget> cells) {
-    final rows = <Widget>[];
-    for (var i = 0; i < cells.length; i += 2) {
-      if (i > 0) rows.add(SizedBox(height: _kCourseGridRowGap));
-      rows.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: cells[i]),
-            SizedBox(width: _kCourseGridColGap),
-            Expanded(
-              child: i + 1 < cells.length ? cells[i + 1] : const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      );
-    }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
   }
 
   _CourseProgressInfo _progressInfoFor(
@@ -529,85 +607,6 @@ class _CourseSection extends StatelessWidget {
   }
 }
 
-/// Grid-slot card for "View more" — occupies one cell in the 2-column grid,
-/// matching the dimensions of [_CourseGridCard].
-class _ViewMoreGridCard extends StatelessWidget {
-  const _ViewMoreGridCard({required this.skillset});
-
-  final SkillsetEntity skillset;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
-      child: GestureDetector(
-        onTap: () {
-          AppHaptic.select();
-          ExploreTracking.track(
-            TrackingKey.exploreCatViewmore,
-            parameters: ExploreTracking.skillsetParams(skillset),
-          );
-          SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
-        },
-        // Square like a cover, and borderless like one — in the redesign this
-        // tile sits in the grid as a peer of the course cards, not as a button
-        // bolted onto the end of them.
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(_kCoverRadius),
-                  color: const Color(0xFFE7E5FD),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 10.w),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppText(
-                      context.l10n.allcourse.viewMore,
-                      style: AppStyle.text16.copyWith(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
-                        color: const Color(0xFF4B44CA),
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                    ),
-                    6.verticalSpace,
-                    AppText(
-                      skillset.title.text,
-                      style: AppStyle.text12.copyWith(
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
-                        color: const Color(0xFF6B63D6),
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Cold-load placeholder for the Explore grid (first open, no cached
-/// skillsets yet). A static, non-interactive 2-column grid of dummy
-/// [_CourseGridCard]s wrapped in Skeletonizer, which auto-generates bone
-/// shapes matching the real card layout (thumbnail + 2-line title). Swapped
-/// out for the real grid the instant skillsets arrive.
 class _CourseGridSkeleton extends StatelessWidget {
   const _CourseGridSkeleton();
 
