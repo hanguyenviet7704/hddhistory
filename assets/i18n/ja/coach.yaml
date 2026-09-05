@@ -331,7 +331,7 @@ storyOpenGreat3: "今日、楽しかったことはありました？"
 # Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
 hubHint: "そのまま今日のことを話しても…"
 promptScenePick: "あなたのリストのどれを練習しますか？"
-promptSceneRetry: "同じ場面です："
+promptSceneRetry: "似たような場面です："
 sceneFixRetry: "この場面をもう一度"
 sceneFixRetryEcho: "この場面をもう一度."
 sceneFixLater: "あとで"

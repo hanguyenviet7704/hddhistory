@@ -331,7 +331,7 @@ storyOpenGreat3: "오늘 즐거운 일 있었어요?"
 # Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
 hubHint: "아니면 오늘 있었던 일을 바로 이야기해도 돼요…"
 promptScenePick: "목록에서 어떤 걸 연습해 볼까요?"
-promptSceneRetry: "같은 상황이에요:"
+promptSceneRetry: "비슷한 상황이에요:"
 sceneFixRetry: "이 상황 다시 연습하기"
 sceneFixRetryEcho: "이 상황 다시 연습하기."
 sceneFixLater: "나중에"

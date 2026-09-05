@@ -331,7 +331,7 @@ storyOpenGreat3: "今天有什么开心的吗？"
 # Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
 hubHint: "或者直接说说你今天的事…"
 promptScenePick: "你想练习习惯库里的哪一个？"
-promptSceneRetry: "还是那个情境："
+promptSceneRetry: "换一个类似的情境："
 sceneFixRetry: "再练一次这个情境"
 sceneFixRetryEcho: "再练一次这个情境."
 sceneFixLater: "以后再说"

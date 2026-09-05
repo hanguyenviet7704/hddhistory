@@ -339,7 +339,7 @@ storyOpenGreat3: "Anything fun today?"
 # Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
 hubHint: "Or just tell me about your day…"
 promptScenePick: "Which one from your collection do you want to practise?"
-promptSceneRetry: "Same scene:"
+promptSceneRetry: "A similar situation:"
 sceneFixRetry: "Try this scene again"
 sceneFixRetryEcho: "Try this scene again."
 sceneFixLater: "Later"

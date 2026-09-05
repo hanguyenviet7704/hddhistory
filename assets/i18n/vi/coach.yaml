@@ -332,7 +332,7 @@ storyOpenGreat3: "Hôm nay có gì vui không?"
 # Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
 hubHint: "Hoặc kể luôn chuyện hôm nay của bạn…"
 promptScenePick: "Bạn muốn tập cái nào trong kho của bạn?"
-promptSceneRetry: "Vẫn cảnh đó:"
+promptSceneRetry: "Một tình huống tương tự:"
 sceneFixRetry: "Luyện lại cảnh này"
 sceneFixRetryEcho: "Luyện lại cảnh này."
 sceneFixLater: "Để sau"
