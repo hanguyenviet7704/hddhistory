@@ -150,6 +150,10 @@ class _Bubble extends StatelessWidget {
 
     final isCoach = message.isCoach;
     final width = MediaQuery.sizeOf(context).width;
+    // Only ever set on a Coach-side line — the reader's own bubble is never
+    // labelled, and a label on the purple bubble would read as them being
+    // impersonated.
+    final speaker = isCoach ? message.speaker?.trim() : null;
 
     return Row(
       mainAxisAlignment: isCoach ? MainAxisAlignment.start : MainAxisAlignment.end,
@@ -173,6 +177,46 @@ class _Bubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Tầng 3 — the scene's other person is talking, not the Coach.
+              //
+              // Owner 2026-09-05: without this the roleplay bubbles and the
+              // Coach's own bubbles were the same white box, so the reader
+              // could not tell Hằng answering back from the Coach commenting
+              // on the scene. `speaker` has travelled from the model all the
+              // way to CoachMessage since tầng 3 shipped — it was only ever
+              // missing HERE, at the last step.
+              if (speaker != null && speaker.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 3.h),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 5.w,
+                        height: 5.w,
+                        decoration: const BoxDecoration(
+                          color: CoachStyle.skin,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Flexible(
+                        child: Text(
+                          speaker,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                            height: 1.3,
+                            color: CoachStyle.selectedText,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // The scene's little headings — "Với thói quen:", "Tôi có tình
               // huống:" — bold, above their own paragraph.
               if (message.title != null && message.title!.isNotEmpty)
