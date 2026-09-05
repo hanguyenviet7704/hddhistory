@@ -1,5 +1,22 @@
 part of '../../community.dart';
 
+/// Height of the picture band in the FEED (design `13 · Confession`:
+/// `height:150px`).
+///
+/// Fixed rather than derived from the picture's own shape: a 9:16 screenshot
+/// drawn at its natural height is a whole screen of one post, which is how a
+/// feed stops being a feed. Cropping to a band costs the top and bottom of a
+/// tall picture; the thread screen, one tap away, still shows it whole.
+/// The tallest a feed picture may be drawn, as a multiple of the card's width.
+///
+/// It used to be a fixed 150-tall band for every picture, whatever its shape.
+/// That made a portrait poster — the week recap is 1890×3360 — render as a
+/// thin horizontal slice of itself with its own content unreadable (owner,
+/// 2026-09-05: "tuỳ vào kích thước ảnh mà hiển thị chứ"). A picture now keeps
+/// its own ratio and only very tall ones are capped, which is what stops one
+/// screenshot from becoming a screenful.
+const double _kFeedMaxTallness = 1.35;
+
 /// One post in the feed (design `S-01`).
 ///
 /// The whole card opens the thread; the room chip, the attachments and each
@@ -45,7 +62,11 @@ class CommunityPostCard extends StatelessWidget {
       onTap: onOpen,
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
+        // 10 above / 9 below, down from 14/14 (design note 2026-09-04: "thu gọn
+        // padding, spacing giữa các thành phần trong card bài viết"). The feed
+        // shows four of these at a time and the old figure spent a third of a
+        // card on air.
+        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 9.h),
         decoration: BoxDecoration(
           color: studyThemeCardColor(context),
           borderRadius: BorderRadius.circular(18.r),
@@ -68,13 +89,24 @@ class CommunityPostCard extends StatelessWidget {
                 // background is — the card is opaque enough to carry it, and
                 // light ink here would vanish on the stock white one.
                 style: AppStyle.textBold16.copyWith(
+                  fontSize: 15.5.sp,
+                  fontWeight: FontWeight.w800,
                   color: AppCustomColor.textPrimary,
                   height: 1.3,
+                  letterSpacing: -0.2,
                 ),
-                // The loudest line on the card is the last place to cut a word.
-                maxLines: 100,
+                // Two lines in the FEED. This reverses the 2026-08-25 call to
+                // draw headlines whole here: with the card tightened around it,
+                // an unclamped six-line headline pushed the byline, the body and
+                // the actions off the visible card and the feed stopped being
+                // scannable. The thread screen still shows it in full — that is
+                // what opening a post is for.
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 8.h),
+              // 3, not 8: the design tucks the byline up into the headline's
+              // descender space (`margin-top:-6` against a 9 bottom margin).
+              SizedBox(height: 3.h),
             ],
             CommunityBylineRow(
               author: post.author,
@@ -86,49 +118,52 @@ class CommunityPostCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Whole post, not a preview of it (2026-08-25). Three lines
-                  // with a "see more" under them was the previous answer and it
-                  // is the wrong one for a feed people come to READ: Threads
-                  // draws the entire post in the timeline, and a confession cut
-                  // mid-sentence asks the reader to open a screen just to finish
-                  // a paragraph. 100 is this codebase's "do not clamp" number
-                  // ([AppText] asserts maxLines > 0, so there is no null).
+                  // Three lines in the feed, back from the unclamped body of
+                  // 2026-08-25 (design note 2026-09-04: "fix hiển thị giới hạn
+                  // text, ảnh ở chế độ xem nhiều bài viết"). The argument for
+                  // drawing the whole post here — that a confession cut
+                  // mid-sentence is a worse read — held while a card was the
+                  // only thing on screen; in a four-card feed one long post
+                  // buried the three under it. The thread screen still draws it
+                  // whole.
                   if (post.body.trim().isNotEmpty)
                     AppText(
                       post.body,
                       style: AppStyle.text14.copyWith(
+                        fontSize: 13.5.sp,
                         color: studyThemeCardMuted(
                           context,
                           AppCustomColor.streakTextMuted,
                         ),
                         height: 1.55,
                       ),
-                      maxLines: 100,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   if (card != null) ...[
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 7.h),
                     CommunityInsightCard(
                       card: card,
                       onTap: onCard == null ? null : () => onCard!(card),
                     ),
                   ],
                   if (post.attachedCourseId != null) ...[
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 7.h),
                     CommunityAttachedCourseCard(
                       courseId: post.attachedCourseId!,
                     ),
                   ],
                   if (post.images.isNotEmpty) ...[
-                    SizedBox(height: 12.h),
-                    _PostImages(urls: post.images),
+                    SizedBox(height: 7.h),
+                    // Each picture at its own shape, tall ones capped — see
+                    // [_kFeedMaxTallness]. The thread screen draws them whole.
+                    _PostImages(urls: post.images, maxTallness: _kFeedMaxTallness),
                   ],
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 5.h),
                   Row(
                     children: [
                       _CountAction(
-                        asset: post.isLiked
-                            ? AppAsset.svg.app.icCommunityHeartFill
-                            : AppAsset.svg.app.icCommunityHeart,
+                        asset: post.isLiked ? AppAsset.svg.app.icCommunityHeartFill : AppAsset.svg.app.icCommunityHeart,
                         count: post.likeCount,
                         isActive: post.isLiked,
                         onTap: onLike,
@@ -144,9 +179,7 @@ class CommunityPostCard extends StatelessWidget {
                       // the thread, and the "Đang theo dõi" tab lists exactly
                       // the posts it is lit on.
                       _CountAction(
-                        asset: post.isSaved
-                            ? AppAsset.svg.app.icCommunityBellFill
-                            : AppAsset.svg.app.icCommunityBell,
+                        asset: post.isSaved ? AppAsset.svg.app.icCommunityBellFill : AppAsset.svg.app.icCommunityBell,
                         count: post.saveCount,
                         isActive: post.isSaved,
                         onTap: onFollowThread,
@@ -209,9 +242,16 @@ class _PostImages extends StatefulWidget {
     required this.urls,
     this.capSingle = true,
     this.tapOpensViewer = false,
+    this.maxTallness,
   });
 
   final List<String> urls;
+
+  /// How tall a picture may be drawn, as a multiple of the card's width.
+  ///
+  /// Set in the FEED (see [_kFeedMaxTallness]); null on the thread screen,
+  /// where a picture is the thing you came to look at and is drawn whole.
+  final double? maxTallness;
 
   /// Whether tapping a picture opens the full-screen viewer.
   ///
@@ -324,24 +364,28 @@ class _PostImagesState extends State<_PostImages> {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
+        // The feed's cap, or the screen's own; a lone picture on the thread
+        // screen has neither and is drawn whole.
+        final cap = widget.maxTallness ?? _maxTallness;
+
         if (widget.urls.length == 1) {
           final url = widget.urls.first;
           final natural = width / _ratioOf(url);
           return _Picture(
             url: url,
             width: width,
-            height: widget.capSingle
-                ? math.min(natural, width * _maxTallness)
-                : natural,
+            height: widget.capSingle ? math.min(natural, width * cap) : natural,
             onTap: _viewerTap(0),
           );
         }
 
-        final height =
-            (width * _stripFill / _ratioOf(widget.urls.first)).clamp(
-              width * _minStripHeight,
-              width * _maxStripHeight,
-            );
+        // The strip's height comes from the FIRST picture — a tall poster gets
+        // a tall strip rather than a slice of itself — bounded so a row of
+        // portraits cannot own the screen either.
+        final height = (width * _stripFill / _ratioOf(widget.urls.first)).clamp(
+          width * _minStripHeight,
+          width * math.min(_maxStripHeight, cap),
+        );
 
         return SizedBox(
           height: height,
@@ -470,9 +514,7 @@ class _CountAction extends StatelessWidget {
     // the lit colour is the brand purple straight. NOT studyThemeAccentOnBg:
     // that lifts it to a pale lavender (#CFCBFF) for a dark preset, which is
     // right on a photo and nearly invisible on white — a lit heart vanished.
-    final color = isActive
-        ? AppCustomColor.brandPrimary
-        : studyThemeCardMuted(context, AppCustomColor.streakTextMuted);
+    final color = isActive ? AppCustomColor.brandPrimary : studyThemeCardMuted(context, AppCustomColor.streakTextMuted);
 
     final button = GestureDetector(
       onTap: onTap,
