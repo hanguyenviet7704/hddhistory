@@ -10,12 +10,15 @@ sealed class _CoachSheetResult with _$CoachSheetResult {
   const factory _CoachSheetResult.close() = _CoachSheetClose;
   const factory _CoachSheetResult.openCourse(String courseId) = _CoachSheetOpenCourse;
 
-  /// Luồng 2 — the talk after a keypoint ran to its end, so the reader leaves
-  /// for the course Roadmap rather than being walked into the next keypoint.
+  /// The talk ran to its end and the reader chose the Roadmap.
   ///
-  /// The factory keeps its old name because renaming it means regenerating
-  /// `coach.freezed.dart`, and this tree carries other sessions' work — read
-  /// [CoachSheetOutcome.toRoadmap] for what it now means.
+  /// Named `nextKeypoint` until 2026-09-05, when it had long since stopped
+  /// meaning that — it mapped to [CoachSheetOutcome.toRoadmap]. Keeping the
+  /// wrong name was survivable while it was the only exit; it stops being
+  /// survivable now that a REAL next-keypoint exit sits beside it.
+  const factory _CoachSheetResult.roadmap() = _CoachSheetRoadmap;
+
+  /// The reader chose to go straight on to the next keypoint.
   const factory _CoachSheetResult.nextKeypoint() = _CoachSheetNextKeypoint;
 }
 
@@ -25,11 +28,14 @@ class CoachSheetOutcome {
   final String? courseId;
 
   /// The talk finished on its own terms. The button that sent us here reads
-  /// "Đóng · về Roadmap", so that is where the reader goes — NOT into the next
-  /// keypoint, which is what every exit used to do regardless of the label.
+  /// "Đóng · về Roadmap", so that is where the reader goes.
   final bool toRoadmap;
 
-  const CoachSheetOutcome({this.courseId, this.toRoadmap = false});
+  /// They asked for the next keypoint outright — the second button at the end
+  /// of a session opened from a keypoint that is not the course's last.
+  final bool nextKeypoint;
+
+  const CoachSheetOutcome({this.courseId, this.toRoadmap = false, this.nextKeypoint = false});
 }
 
 /// Opens the Coach sheet and settles what the reader chose on the way out.
@@ -57,6 +63,7 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
   String? keypointId,
   String? courseId,
   bool recap = false,
+  bool hasNextKeypoint = false,
   List<QuestionEntity> quizQuestions = const [],
   String quizTitle = '',
 }) async {
@@ -115,20 +122,34 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
           keypointId: keypointId,
           courseId: courseId,
           recap: recap,
+          hasNextKeypoint: hasNextKeypoint,
         ),
       ),
     ),
   );
 
-  // End the session ONLY when the reader chose to end it. A swipe-away, a
-  // phone call or a backgrounded app is not "I'm done" — and treating it as
-  // one threw the whole conversation away for a stray gesture. The server
-  // resumes an ACTIVE session next time the sheet opens.
-  if (result != null) await cubit.endSession();
+  // End the session ONLY when the reader chose to END it — which ⟨Đóng⟩ is
+  // not (owner 2026-09-05: "nhiều lúc bấm đóng bị thoát luôn coach").
+  //
+  // Closing the sheet is putting the phone down, not finishing. The session
+  // stays ACTIVE so the next open carries on where they were; the server
+  // resumes an active session by design. A swipe-away, a phone call or a
+  // backgrounded app never ended it either, for the same reason.
+  //
+  // These DO end it: a course opened, the Roadmap, the next keypoint — each is
+  // the reader leaving for somewhere else — and a session the server has
+  // already closed, where ⟨Đóng⟩ is just acknowledging the end.
+  final endsSession = switch (result) {
+    null => false,
+    _CoachSheetClose() => cubit.state.ended,
+    _ => true,
+  };
+  if (endsSession) await cubit.endSession();
 
   return switch (result) {
     _CoachSheetOpenCourse(courseId: final id) => CoachSheetOutcome(courseId: id),
-    _CoachSheetNextKeypoint() => const CoachSheetOutcome(toRoadmap: true),
+    _CoachSheetRoadmap() => const CoachSheetOutcome(toRoadmap: true),
+    _CoachSheetNextKeypoint() => const CoachSheetOutcome(nextKeypoint: true),
     _ => const CoachSheetOutcome(),
   };
 }
@@ -141,6 +162,12 @@ class _CoachSheet extends StatefulWidget {
   final String? courseId;
   final bool recap;
 
+  /// Whether the course has a keypoint after this one — decided by the page
+  /// that opened the sheet, which is the only place that knows. False on the
+  /// course's last keypoint, and the end of the session then offers the
+  /// Roadmap alone.
+  final bool hasNextKeypoint;
+
   const _CoachSheet({
     required this.entry,
     this.lessonId,
@@ -148,6 +175,7 @@ class _CoachSheet extends StatefulWidget {
     this.keypointId,
     this.courseId,
     this.recap = false,
+    this.hasNextKeypoint = false,
   });
 
   @override
@@ -389,7 +417,7 @@ class _CoachSheetState extends State<_CoachSheet> {
                     ),
                   },
                 ),
-                if (!isSafety && (state.status == CoachStatus.ready || state.status == CoachStatus.sending)) CoachComposer(state: state, cubit: cubit),
+                if (!isSafety && (state.status == CoachStatus.ready || state.status == CoachStatus.sending)) CoachComposer(state: state, cubit: cubit, hasNextKeypoint: widget.hasNextKeypoint),
               ],
             ),
           ),
