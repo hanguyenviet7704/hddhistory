@@ -46,6 +46,19 @@ class CoachKeypointInvite extends StatefulWidget {
     this.onResolved,
   });
 
+  /// Luồng 7 already asked on this trip out of the lesson, so this one stays
+  /// quiet.
+  ///
+  /// The two invitations sit back to back — the habit page's runs on Continue,
+  /// this one on the completion screen right after it — and a reader who has
+  /// just been asked to practise a habit does not also want to be asked to talk
+  /// about the keypoint (owner, 2026-09-05: "vừa thêm 2 thói quen rồi thì
+  /// thôi, mà không thêm thói quen thì cho thảo luận về bài học"). Consumed by
+  /// the first invite that reads it, so it cannot silence a later lesson.
+  static bool _suppressOnce = false;
+
+  static void suppressNext() => _suppressOnce = true;
+
   @override
   State<CoachKeypointInvite> createState() => _CoachKeypointInviteState();
 }
@@ -56,6 +69,21 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
 
   @override
   Widget build(BuildContext context) {
+    // Luồng 7 asked instead; the page still needs its "nothing to offer"
+    // answer so its own Continue button appears.
+    if (CoachKeypointInvite._suppressOnce) {
+      CoachKeypointInvite._suppressOnce = false;
+      _shown = true;
+      if (!_reported) {
+        _reported = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) widget.onResolved?.call(false);
+        });
+      }
+
+      return const SizedBox.shrink();
+    }
+
     if (widget.lessonId.isEmpty || widget.keypointId.isEmpty) {
       // Không đủ dữ liệu để hỏi server ⇒ chắc chắn không mời. Vẫn phải BÁO,
       // không thì trang ngoài đứng ở trạng thái "chưa biết" mãi và user xong
@@ -150,9 +178,7 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
     final roadmapId = outcome.courseId ?? (outcome.toRoadmap ? widget.courseId : null);
     if (roadmapId != null && roadmapId.isNotEmpty) {
       final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
-      if (navContext != null &&
-          navContext.mounted &&
-          AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, roadmapId)) {
+      if (navContext != null && navContext.mounted && AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, roadmapId)) {
         return;
       }
     }

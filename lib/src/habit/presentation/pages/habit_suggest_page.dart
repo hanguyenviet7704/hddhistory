@@ -201,6 +201,9 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     // ⟨Lúc khác⟩ simply goes on — the habit is in the kho and Home can practise
     // it any day.
     if (_justAdded.isNotEmpty) {
+      // One invitation per trip out of the lesson: the keypoint talk stands
+      // down because this one is about to run.
+      CoachKeypointInvite.suppressNext();
       final accepted = await CoachInvitePopup.show(
         context,
         kind: CoachInviteKind.newHabit,
