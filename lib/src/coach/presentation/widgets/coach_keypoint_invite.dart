@@ -195,6 +195,10 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
         keypointId: widget.isCourseDone ? null : widget.keypointId,
         courseId: widget.isCourseDone ? widget.courseId : null,
         recap: widget.isCourseDone,
+        // There is a part after this one unless the course just ended, and the
+        // page already knows how to go there — `onContinue` is the same callback
+        // ⟨Lúc khác⟩ uses.
+        hasNextKeypoint: !widget.isCourseDone,
         quizQuestions: widget.quizQuestions,
         quizTitle: widget.quizTitle,
       );
@@ -205,6 +209,14 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
     // Two destinations reach the same route: a course the Coach offered, and
     // the talk finishing on its own ("Đóng · về Roadmap"). The second one is
     // this course's roadmap, so it uses the id this page already holds.
+      // Asked for the next part outright: hand back to the page, which owns
+      // what "next keypoint" means. Nothing else to navigate.
+      if (outcome.nextKeypoint) {
+        if (mounted) widget.onContinue();
+
+        return;
+      }
+
       final roadmapId = outcome.courseId ?? (outcome.toRoadmap ? widget.courseId : null);
       if (roadmapId != null && roadmapId.isNotEmpty) {
         final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);

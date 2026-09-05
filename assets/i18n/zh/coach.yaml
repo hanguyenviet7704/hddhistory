@@ -263,6 +263,7 @@ nextStopEcho: 到这里。
 promptEndStop: 那我们就到这里。
 endCloseHome: "关闭 · 回到刚才的地方"
 endCloseLesson: "关闭 · 回到路线图"
+endNextKeypoint: "进入下一部分"
 stepIntentTell: 当时到底怎样
 stepInvite: 邀请练一个场景
 stepRetry: 重练三周前的情境

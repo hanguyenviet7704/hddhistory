@@ -271,6 +271,7 @@ nextStopEcho: Stop here.
 promptEndStop: "Then let's stop here."
 endCloseHome: "Close · back to where I was"
 endCloseLesson: "Close · back to the Roadmap"
+endNextKeypoint: "On to the next part"
 stepIntentTell: what actually happened
 stepInvite: an offer to practise
 stepRetry: the scene from three weeks ago

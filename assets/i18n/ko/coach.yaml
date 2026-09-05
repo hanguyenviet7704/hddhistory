@@ -263,6 +263,7 @@ nextStopEcho: 여기서 멈출게요.
 promptEndStop: 그럼 여기서 멈출게요.
 endCloseHome: "닫기 · 있던 곳으로"
 endCloseLesson: "닫기 · 로드맵으로"
+endNextKeypoint: "다음 파트로"
 stepIntentTell: 실제로 어땠는지
 stepInvite: 장면 연습 제안
 stepRetry: 3주 전 장면 다시 하기

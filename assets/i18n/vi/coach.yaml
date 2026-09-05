@@ -263,6 +263,7 @@ nextStopEcho: Dừng ở đây.
 promptEndStop: Vậy mình dừng ở đây nhé.
 endCloseHome: "Đóng · về chỗ vừa rời đi"
 endCloseLesson: "Đóng · về Roadmap"
+endNextKeypoint: "Sang phần tiếp theo"
 stepIntentTell: hỏi thực chất
 stepInvite: mời luyện tập tình huống
 stepRetry: tập lại tình huống cũ

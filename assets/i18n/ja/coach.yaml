@@ -263,6 +263,7 @@ nextStopEcho: ここで終えます。
 promptEndStop: では、ここで終えましょう。
 endCloseHome: "閉じる · 元の場所へ"
 endCloseLesson: "閉じる · ロードマップへ"
+endNextKeypoint: "次のパートへ"
 stepIntentTell: 実際はどうだったか
 stepInvite: 場面練習のお誘い
 stepRetry: 3週間前の場面をもう一度

@@ -59,6 +59,9 @@ CoachSlimeMood coachSlimeMoodFor({
     case 'sceneRetry':
     case 'checkinTell':
     case 'talkSummary':
+    // Luồng 2 — the open floor after the grading turn: the reader is asking,
+    // so the Coach listens rather than weighs.
+    case 'talkFree':
     case 'intentTell':
     case 'practiceAnswer':
     case 'nextAction':

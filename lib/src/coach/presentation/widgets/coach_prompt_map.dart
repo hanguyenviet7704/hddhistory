@@ -395,6 +395,7 @@ String? coachStepLabel(BuildContext context, String step) {
     // Luồng 2/3.
     case 'talkAsk':
     case 'talkSummary':
+    case 'talkFree':
     case 'quizHandoff':
     case 'quizRun':
     case 'talkWhen':

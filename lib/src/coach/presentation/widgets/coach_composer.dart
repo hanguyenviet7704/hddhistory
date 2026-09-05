@@ -10,7 +10,12 @@ class CoachComposer extends StatefulWidget {
   final CoachState state;
   final CoachCubit cubit;
 
-  const CoachComposer({super.key, required this.state, required this.cubit});
+  /// Whether the end of the session may offer "on to the next part" beside the
+  /// Roadmap. False on the course's last keypoint — and on every door that is
+  /// not a keypoint at all, where there is no "next part" to go to.
+  final bool hasNextKeypoint;
+
+  const CoachComposer({super.key, required this.state, required this.cubit, this.hasNextKeypoint = false});
 
   @override
   State<CoachComposer> createState() => _CoachComposerState();
@@ -717,25 +722,37 @@ class _CoachComposerState extends State<CoachComposer> {
   // --- next session ----------------------------------------------------
   // --- end -------------------------------------------------------------
 
-  /// One button out. Where it goes depends on how the session ended: ① back
-  /// to the Roadmap, ② back to wherever the sheet was opened from, and
-  /// "Đi tới khoá học" onward to that course's Roadmap.
+  /// The way out of a finished session.
+  ///
+  /// Usually one button. A session opened from a keypoint that is NOT the
+  /// course's last gets two: "Sang phần tiếp theo" above, the Roadmap below
+  /// (owner, 2026-09-05). Two buttons rather than one that guesses — closing
+  /// used to walk the reader into the next keypoint by itself, which is the
+  /// behaviour that got pulled on 2026-09-05 for doing something its label
+  /// never mentioned. Offering it as its own choice is the honest version.
   Widget _end(BuildContext context, CoachState state, bool busy) {
     final l10n = context.l10n.coach;
     final course = state.ui.course;
     final leaving = state.step == 'leave' && course != null;
 
-    // Owner 2026-09-05: bỏ đuôi "về chỗ vừa rời đi" — nút cuối chỉ còn "Đóng".
-    // Thứ đáng đứng ở cuối phiên là card khoá học, không phải một lời mô tả
-    // việc điều hướng; card giờ hiện bất cứ khi nào có khoá khớp thật
-    // (meup-api: bỏ cổng improveSignal).
+    // The lesson door leaves for the Roadmap; every other door just closes.
+    // One condition decides BOTH the label and where the tap goes — they used
+    // to be decided separately (label from `entry`, destination from a
+    // `keypointDone` action), which is how the button came to say "về Roadmap"
+    // while doing something else.
+    final toRoadmap = !leaving && state.entry == CoachEntry.lesson;
     final label = leaving
         ? l10n.endLeave
-        : state.entry == CoachEntry.lesson
+        : toRoadmap
         ? l10n.endCloseLesson
         : l10n.close;
 
-    return _SelectableBox(
+    // Only where there IS a next part: the course's last keypoint ends on the
+    // Roadmap alone, and a session opened from Home or Habit has no keypoint
+    // behind it at all.
+    final showNext = widget.hasNextKeypoint && toRoadmap;
+
+    final closeButton = _SelectableBox(
       label: label,
       selected: false,
       radius: 14,
@@ -746,14 +763,28 @@ class _CoachComposerState extends State<CoachComposer> {
           : () => Navigator.of(context).pop(
               leaving
                   ? _CoachSheetResult.openCourse(course.courseId)
-                  // Luồng 2 — the talk after a keypoint ran its course. The
-                  // label has always read "Đóng · về Roadmap"; until now every
-                  // exit went into the NEXT keypoint instead, so the button
-                  // said one thing and did another.
-                  : state.ui.action == 'keypointDone'
-                  ? const _CoachSheetResult.nextKeypoint()
+                  : toRoadmap
+                  ? const _CoachSheetResult.roadmap()
                   : const _CoachSheetResult.close(),
             ),
+    );
+
+    if (!showNext) return closeButton;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _FilledButton(
+          label: l10n.endNextKeypoint,
+          enabled: !busy,
+          height: 44,
+          radius: 14,
+          fontSize: 13,
+          onTap: () => Navigator.of(context).pop(const _CoachSheetResult.nextKeypoint()),
+        ),
+        SizedBox(height: 8.h),
+        closeButton,
+      ],
     );
   }
 }
