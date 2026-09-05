@@ -8,13 +8,6 @@ class KeypointCompletePage extends StatefulWidget {
 }
 
 class _KeypointCompletePageState extends State<KeypointCompletePage> {
-  /// Coach có mời sau keypoint này hay không — null khi server chưa trả lời.
-  ///
-  /// Owner chốt 2026-09-04: sau keypoint chỉ còn MỘT màn, là lời mời của Coach.
-  /// Nên khối "Hoàn thành bài học!" bên dưới giờ là PHAO, chỉ vẽ khi Coach tắt
-  /// — không có nó thì một user không bật Coach xong bài sẽ đứng trên màn trống
-  /// không có đường đi tiếp.
-  bool? _coachWillInvite;
   bool _isHandlingPrimaryCta = false;
   // Set once we intentionally navigate the user off this page to ANOTHER shell
   // branch (e.g. "Go to Habit"). This page stays alive & `isCurrent` in its own
@@ -239,11 +232,6 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     return true;
   }
 
-  void _openPractice(BuildContext context, CourseLessonState lessonState) {
-    AppHaptic.select();
-    final questions = QuizCardAnswer.practiceQuestionsOf(context.read<LessonCubit>().state);
-    PracticeHubPage.push(context, title: lessonState.currentTitle, questions: questions);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -307,95 +295,16 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                           ),
                         ),
                       ),
-                      // Chỉ vẽ khi đã biết Coach KHÔNG mời. Lúc chưa biết thì
-                      // để trống: hiện khối này rồi một giây sau bị dialog phủ
-                      // lên đúng là cái owner yêu cầu bỏ.
-                      if (_coachWillInvite == false) ...[
-                        Expanded(
-                          child: Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const _LessonCompleteIllustration(),
-                                24.verticalSpace,
-                                // Design: `muRise .45s ease .3s both` — the .3s delay is the
-                                // leading dead zone of the Interval.
-                                TweenAnimationBuilder<double>(
-                                  tween: Tween(begin: 0, end: 1),
-                                  duration: const Duration(milliseconds: 750),
-                                  curve: const Interval(0.4, 1, curve: Curves.easeOut),
-                                  builder: (context, t, child) => Opacity(
-                                    opacity: t,
-                                    child: Transform.translate(offset: Offset(0, 12 * (1 - t)), child: child),
-                                  ),
-                                  child: AppText(
-                                    context.l10n.lesson.lessonCompleteTitle,
-                                    textAlign: TextAlign.center,
-                                    // Design 34/800, -0.01em.
-                                    style: TextStyle(
-                                      fontFamily: AppFont.mulish,
-                                      fontSize: 34.sp,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.2,
-                                      letterSpacing: 34 * -0.01,
-                                      color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Practice now → the hub. Deliberately NOT gated on the keypoint
-                        // having questions: the hub also carries the coming-soon modes,
-                        // and Quiz itself guards an empty deck.
-                        //
-                        // Absent for a GENERATED lesson: the hub's practice is built
-                        // from authored exercises, and an imported lesson has none, so
-                        // the button would open a mode with nothing in it. Continuing
-                        // becomes the primary action instead of a text link, because
-                        // with the practice gone it is the only one.
-                        if (!lessonState.selectedLesson.isImported) ...[
-                          Semantics(
-                            button: true,
-                            child: Material(
-                              color: AppCustomColor.brandPrimary,
-                              borderRadius: BorderRadius.circular(999.r),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(999.r),
-                                onTap: () => _openPractice(context, lessonState),
-                                child: Container(
-                                  height: 56.h,
-                                  alignment: Alignment.center,
-                                  child: AppText(
-                                    context.l10n.lesson.lessonCompletePracticeNow,
-                                    style: AppStyle.text16.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: AppCustomColor.textWhite,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          10.verticalSpace,
-                        ],
-                        // Skip kicks off async work (streak gate + habit-suggestion
-                        // fetch) before navigating — show a spinner so the button isn't
-                        // a dead tap for that beat.
-                        Semantics(
-                          button: true,
-                          child: _ContinueCta(
-                            // Filled and full-width when it stands alone; the quiet
-                            // text link only makes sense as the second choice under
-                            // "Practice now". And "Skip to next lesson" is the wrong
-                            // words with nothing to skip.
-                            isPrimary: lessonState.selectedLesson.isImported,
-                            isBusy: _isHandlingPrimaryCta,
-                            onTap: _isHandlingPrimaryCta ? null : () => _handlePrimaryCta(lessonState, continueToNext: true),
-                          ),
-                        ),
-                      ],
+                      // Owner 2026-09-05: "xoá sạch các màn này đi".
+                      //
+                      // The celebration — illustration, "Hoàn thành bài học!",
+                      // ⟨Luyện tập ngay⟩ and ⟨Bỏ qua, sang bài tiếp theo⟩ — is
+                      // gone. It was already only drawn when the Coach declined
+                      // to invite, and the reader still hit it mid-conversation
+                      // ("tôi đang chat với AI thì bị nhảy về màn này"). A
+                      // keypoint the Coach has nothing to say about now walks
+                      // straight on from `onResolved` below instead of parking
+                      // the reader on a photo with one ✕.
                     ],
                   ),
                 ),
@@ -416,7 +325,15 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                 quizTitle: lessonState.currentTitle,
                 onContinue: () => _handlePrimaryCta(lessonState, continueToNext: true),
                 onResolved: (willInvite) {
-                  if (mounted) setState(() => _coachWillInvite = willInvite);
+                  if (!mounted) return;
+                  // The Coach has nothing to say about this keypoint, and with
+                  // the celebration deleted there is nothing else on this page.
+                  // Walk on rather than leave the reader on a photo with one ✕.
+                  // `_handlePrimaryCta` guards its own re-entry, so a second
+                  // resolve cannot start a second navigation.
+                  if (willInvite == false) {
+                    _handlePrimaryCta(lessonState, continueToNext: true);
+                  }
                 },
               ),
             ],
@@ -427,318 +344,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 }
 
-/// "Continue" — a text link under Practice, a filled button when it is alone.
-///
-/// One widget rather than two branches at the call site because the two forms
-/// share everything that matters: the same action, the same async gate (the
-/// tap kicks off a streak check and a habit-suggestion fetch before it can
-/// navigate), and the same spinner so neither reads as a dead tap for that beat.
-class _ContinueCta extends StatelessWidget {
-  const _ContinueCta({
-    required this.isPrimary,
-    required this.isBusy,
-    required this.onTap,
-  });
 
-  final bool isPrimary;
-  final bool isBusy;
-  final VoidCallback? onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    final brand = studyThemeOnBg(context, AppCustomColor.brandPrimary);
 
-    final label = isBusy
-        ? SizedBox(
-            width: 18.w,
-            height: 18.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: isPrimary ? AppCustomColor.textWhite : brand,
-            ),
-          )
-        : AppText(
-            isPrimary ? context.l10n.common.kContinue : context.l10n.lesson.lessonCompleteSkip,
-            style: isPrimary
-                ? AppStyle.text16.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppCustomColor.textWhite,
-                  )
-                // Design 15/600 — the app scale has no 15.
-                : TextStyle(
-                    fontFamily: AppFont.mulish,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: brand,
-                  ),
-          );
 
-    if (!isPrimary) {
-      return GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(height: 44.h, alignment: Alignment.center, child: label),
-      );
-    }
-
-    return Material(
-      color: AppCustomColor.brandPrimary,
-      borderRadius: BorderRadius.circular(999.r),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(999.r),
-        onTap: onTap,
-        child: Container(height: 56.h, alignment: Alignment.center, child: label),
-      ),
-    );
-  }
-}
-
-/// The design's illustration with its full choreography (`showComplete`'s
-/// inline SVG + keyframes): the main report card rises in, the back card
-/// follows, the two text bars grow out to the right, the check disc pops with
-/// an overshoot, the tick DRAWS itself, and the two sparkles twinkle forever —
-/// all while the whole block floats gently. Delays and durations are the
-/// design's own (.1/.25/.5/.62/.74/1.0s on a shared clock).
-///
-/// Laid out in the SVG's 267×120 viewBox coordinates inside a [FittedBox], so
-/// every x/y below is the design file's number verbatim.
-class _LessonCompleteIllustration extends StatefulWidget {
-  const _LessonCompleteIllustration();
-
-  @override
-  State<_LessonCompleteIllustration> createState() => _LessonCompleteIllustrationState();
-}
-
-class _LessonCompleteIllustrationState extends State<_LessonCompleteIllustration> with TickerProviderStateMixin {
-  /// One clock for the staged entry; element delays become [Interval]s on it.
-  static const _introMs = 1450;
-  late final AnimationController _intro = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: _introMs),
-  )..forward();
-
-  /// `muFloat 4s ease-in-out infinite` — a gentle bob of the whole block.
-  late final AnimationController _float = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat(reverse: true);
-
-  /// `muTwinkle` — the two sparkles pulse on different periods (2.4s / 2.8s)
-  /// so they never sync up.
-  late final AnimationController _twinkleA = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
-  late final AnimationController _twinkleB = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat(reverse: true);
-
-  /// Design delay/duration in ms → an eased slice of the intro clock.
-  Animation<double> _stage(int delayMs, int durationMs, [Curve curve = Curves.easeOut]) {
-    return CurvedAnimation(
-      parent: _intro,
-      curve: Interval(delayMs / _introMs, (delayMs + durationMs) / _introMs, curve: curve),
-    );
-  }
-
-  @override
-  void dispose() {
-    _intro.dispose();
-    _float.dispose();
-    _twinkleA.dispose();
-    _twinkleB.dispose();
-    super.dispose();
-  }
-
-  /// `muRise`: fade in while drifting up into place.
-  Widget _rise(Animation<double> t, Widget child) {
-    return AnimatedBuilder(
-      animation: t,
-      builder: (context, child) => Opacity(
-        opacity: t.value,
-        child: Transform.translate(offset: Offset(0, 12 * (1 - t.value)), child: child),
-      ),
-      child: child,
-    );
-  }
-
-  /// `muSlideRight`: grow out of the left edge (the design pins the
-  /// transform-origin to the bar's own x).
-  Widget _slideRight(Animation<double> t, Widget child) {
-    return AnimatedBuilder(
-      animation: t,
-      builder: (context, child) => Opacity(
-        opacity: t.value,
-        child: Transform.scale(scaleX: t.value, alignment: Alignment.centerLeft, child: child),
-      ),
-      child: child,
-    );
-  }
-
-  /// `muPop`: scale in with the design's overshoot (cubic-bezier(.2,.9,.3,1.4)).
-  Widget _pop(Animation<double> t, Widget child) {
-    return AnimatedBuilder(
-      animation: t,
-      builder: (context, child) => Opacity(
-        opacity: t.value.clamp(0, 1),
-        child: Transform.scale(scale: t.value, child: child),
-      ),
-      child: child,
-    );
-  }
-
-  /// `muTwinkle`: opacity + scale pulse.
-  Widget _twinkle(AnimationController controller, Widget child) {
-    final t = CurvedAnimation(parent: controller, curve: Curves.easeInOut);
-    return AnimatedBuilder(
-      animation: t,
-      builder: (context, child) => Opacity(
-        opacity: 0.25 + 0.75 * t.value,
-        child: Transform.scale(scale: 0.7 + 0.3 * t.value, child: child),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _roundedRect({required double width, required double height, required double radius, required Color color}) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(radius)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _float,
-      builder: (context, child) => Transform.translate(offset: Offset(0, -3.h * _float.value), child: child),
-      child: SizedBox(
-        width: 290.w,
-        child: FittedBox(
-          child: SizedBox(
-            width: 267,
-            height: 122,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Back report card (rises second).
-                Positioned(
-                  left: 61.16,
-                  top: 63.16,
-                  child: _rise(_stage(250, 500), _roundedRect(width: 177.61, height: 48, radius: 12, color: const Color(0x99EBEAFD))),
-                ),
-                // Main report card (first in).
-                Positioned(
-                  left: 33.93,
-                  top: 1,
-                  child: _rise(
-                    _stage(100, 500),
-                    Container(
-                      width: 232.07,
-                      height: 90.21,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEBEAFD),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(color: AppCustomColor.backgroundWhite, width: 2),
-                      ),
-                    ),
-                  ),
-                ),
-                // The two text bars grow out to the right, staggered.
-                Positioned(left: 57.93, top: 20.5, child: _slideRight(_stage(500, 450), _roundedRect(width: 55, height: 12, radius: 6, color: const Color(0xFFD6CAFD)))),
-                Positioned(left: 57.93, top: 40.5, child: _slideRight(_stage(620, 450), _roundedRect(width: 120, height: 12, radius: 6, color: const Color(0x66D6CAFD)))),
-                // Check disc pops with overshoot, then the tick draws itself.
-                Positioned(
-                  left: 32.93 - 18.82,
-                  top: 41.28 - 18.82,
-                  child: _pop(
-                    _stage(740, 500, Curves.easeOutBack),
-                    Container(
-                      width: 18.82 * 2,
-                      height: 18.82 * 2,
-                      decoration: const BoxDecoration(color: Color(0xFF4B44CA), shape: BoxShape.circle),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  child: CustomPaint(
-                    size: const Size(267, 122),
-                    painter: _DrawnCheckPainter(progress: _stage(1000, 450)),
-                  ),
-                ),
-                // Sparkles.
-                Positioned(
-                  left: 4.67 - 2.44,
-                  top: 20.94 - 2.44,
-                  child: _twinkle(
-                    _twinkleA,
-                    Container(
-                      width: 4.89,
-                      height: 4.89,
-                      decoration: const BoxDecoration(color: Color(0xFFC7C5FA), shape: BoxShape.circle),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 4,
-                  top: 1.7,
-                  child: _twinkle(_twinkleB, CustomPaint(size: const Size(16.7, 16.7), painter: const _SparklePainter())),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The tick inside the check disc, revealed along its own length — the design's
-/// `muDraw` (`stroke-dasharray: 30` animated to offset 0). Painted in the same
-/// 267×120 canvas so the path coordinates are the SVG's verbatim.
-class _DrawnCheckPainter extends CustomPainter {
-  const _DrawnCheckPainter({required this.progress}) : super(repaint: progress);
-
-  final Animation<double> progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress.value <= 0) return;
-    final path = ui.Path()
-      ..moveTo(25.44, 40.93)
-      ..lineTo(30.66, 46.28)
-      ..lineTo(40.44, 36.28);
-    final paint = Paint()
-      ..color = AppCustomColor.backgroundWhite
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.67
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    for (final metric in path.computeMetrics()) {
-      canvas.drawPath(metric.extractPath(0, metric.length * progress.value), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DrawnCheckPainter oldDelegate) => false;
-}
-
-/// The four-point sparkle star, drawn as a concave diamond in its own local
-/// box (the SVG path's bounding box).
-class _SparklePainter extends CustomPainter {
-  const _SparklePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final r = size.width / 2;
-    const pinch = 0.16;
-    final path = ui.Path()
-      ..moveTo(cx, cy - r)
-      ..quadraticBezierTo(cx + r * pinch, cy - r * pinch, cx + r, cy)
-      ..quadraticBezierTo(cx + r * pinch, cy + r * pinch, cx, cy + r)
-      ..quadraticBezierTo(cx - r * pinch, cy + r * pinch, cx - r, cy)
-      ..quadraticBezierTo(cx - r * pinch, cy - r * pinch, cx, cy - r)
-      ..close();
-    canvas.drawPath(path, Paint()..color = const Color(0xFFC7C5FA));
-  }
-
-  @override
-  bool shouldRepaint(_SparklePainter oldDelegate) => false;
-}
