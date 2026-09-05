@@ -89,6 +89,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _claimRouteOnColdStart();
       _trackHomeScrView();
       // Recover from a failed/skipped first load (e.g. transient failure right
       // after a fresh install) instead of showing a blank Home until the user
@@ -125,12 +126,35 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
     });
   }
 
+  /// Claim `home` for the shell — but only if nobody else has.
+  ///
+  /// `PageState.currentRouteName` starts as `''` and nothing on the way into a
+  /// cold start sets it: `PageCubit`'s `case 0` runs on a TAB TAP, and the
+  /// first launch is not a tap. Anything keyed on the route name therefore saw
+  /// an empty string on the one screen the reader lands on — which is why the
+  /// floating Coach bubble was missing from Home until you visited another tab
+  /// and came back (owner 2026-09-05: "bong bóng Coach biến mất khỏi màn Trang
+  /// chủ"). `isPrimaryRoute` (the floating nav) reads the same field.
+  ///
+  /// Guarded on empty on purpose: a cold start from a deep link opens straight
+  /// into a lesson and has already claimed its own name, and taking it back
+  /// here would drop the floating nav onto a full-screen page.
+  void _claimRouteOnColdStart() {
+    if (!mounted) return;
+    final page = context.read<PageCubit>();
+    if (page.state.currentRouteName.isNotEmpty) return;
+    page.setCurrentRouteName(RouteNamed.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<PageCubit, PageState>(
       listenWhen: (previous, current) => previous.currentIndex != current.currentIndex,
       listener: (context, state) {
         if (state.currentIndex == 0) {
+          // Re-entering the branch by `.go()` changes the index without going
+          // through the tab-tap switch, so the name is claimed here too.
+          context.read<PageCubit>().setCurrentRouteName(RouteNamed.home);
           _trackHomeScrView();
           // Returning to the Home tab with an empty catalog (initial retry
           // also failed) → try again.
