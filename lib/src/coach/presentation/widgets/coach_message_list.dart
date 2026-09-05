@@ -48,6 +48,14 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // This is the path that matters on open. The sheet shows a spinner while
+    // the status is `opening` and only swaps in this list once the turn has
+    // landed, so the list is BORN holding the whole conversation — the turn
+    // plus, on a resume, every earlier session replayed above it. No update
+    // ever follows, so the old scroll-on-change hook never ran and the reader
+    // was left at the very top of their history (owner 2026-09-05: "khi bấm
+    // vào coach thì luôn scroll đến đoạn chat hiện tại").
+    if (widget.messages.isNotEmpty) _settleToEnd();
   }
 
   /// The keyboard. The sheet shrinks under it (AnimatedPadding, 160ms) but the
@@ -76,18 +84,48 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
         (widget.draft != null) != (oldWidget.draft != null) ||
         (widget.course != null) != (oldWidget.course != null) ||
         (widget.options != null) != (oldWidget.options != null)) {
-      _scrollToEnd();
+      // A first fill that did arrive as an update (the safety panel giving way
+      // to the thread, say) must LAND at the bottom rather than scroll down
+      // through the history in front of the reader.
+      if (oldWidget.messages.isEmpty && widget.messages.isNotEmpty) {
+        _settleToEnd();
+      } else {
+        _scrollToEnd();
+      }
     }
   }
 
   void _scrollToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_controller.hasClients) return;
+      if (!mounted || !_controller.hasClients) return;
       _controller.animateTo(
         _controller.position.maxScrollExtent,
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
       );
+    });
+  }
+
+  /// Puts the list on its LAST line and keeps putting it there until the extent
+  /// stops moving.
+  ///
+  /// A lazily-built [ListView] only ESTIMATES `maxScrollExtent` for the rows it
+  /// has not laid out yet, working from the average of the ones it has. Jumping
+  /// once therefore stops short of the true bottom, and stops shorter the more
+  /// history there is — which is precisely the case the reader opens the sheet
+  /// in. Each jump lays out more rows and sharpens the estimate, so repeat
+  /// until two frames agree on it.
+  void _settleToEnd({int frames = 8, double lastExtent = -1}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_controller.hasClients) return;
+
+      final extent = _controller.position.maxScrollExtent;
+      if (_controller.offset != extent) _controller.jumpTo(extent);
+      // Bounded: an extent that never settles (an image still resolving its
+      // own height, say) must not keep scheduling frames for the whole session.
+      if (frames > 0 && extent != lastExtent) {
+        _settleToEnd(frames: frames - 1, lastExtent: extent);
+      }
     });
   }
 
