@@ -7,25 +7,19 @@ class SettingShellBranchData extends StatefulShellBranchData {
   static final List<NavigatorObserver> $observers = [AppConfig.instance.settingRouterObserver];
 }
 
-//? Setting Route
-class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
-  const SettingRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
-      BlocProvider.value(value: AppDI.injector.get<NotificationCubit>()),
-    ],
-    child: const SettingPage(),
-  );
-}
-
+/// The branch root behind the Home header's settings gear.
+///
+/// Renders [SettingPage]: Profile and Settings merged into one on 2026-09-04
+/// (design note). Profile's progress blocks moved to Home and what was left —
+/// the identity card and the premium upsell — became two more sections of
+/// Settings, so a separate Profile screen had nothing of its own to show.
+///
+/// This is the ONLY route to that screen now. A second one (`SettingRoute`, at
+/// `/profile/setting`) survived the merge rendering the very same page, and
+/// because Ngôn ngữ and Quản lý gói were nested under IT, `.go()` on either
+/// built both copies — the reader then had to press back twice, the first press
+/// looking like it did nothing (owner, 2026-09-05). Those two are children of
+/// this route now and `SettingRoute` is gone.
 class ProfileRoute extends BaseTransitionRouteData with $ProfileRoute {
   const ProfileRoute();
 
@@ -38,9 +32,9 @@ class ProfileRoute extends BaseTransitionRouteData with $ProfileRoute {
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
       BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<AchievenmentProgressCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<NotificationCubit>()),
     ],
-    child: const ProfilePage(),
+    child: const SettingPage(),
   );
 }
 
@@ -109,7 +103,15 @@ class ManageSubscriptionRoute extends BaseTransitionRouteData with $ManageSubscr
 /// polling outlives the screen that started it (the user is explicitly allowed
 /// to walk away mid-generation), so its cubit must not be scoped to a widget.
 class ImportLessonRoute extends BaseTransitionRouteData with $ImportLessonRoute {
-  const ImportLessonRoute();
+  const ImportLessonRoute({this.pdf});
+
+  /// Open on the PDF source rather than the default YouTube one.
+  ///
+  /// Explore's import board offers both up front, so arriving from its PDF tile
+  /// and then having to pick PDF again would be asking the same question twice.
+  /// Nullable so the generated route omits the query param entirely on the
+  /// ordinary entry.
+  final bool? pdf;
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
@@ -120,7 +122,7 @@ class ImportLessonRoute extends BaseTransitionRouteData with $ImportLessonRoute 
       BlocProvider.value(value: AppDI.injector.get<LearningImportCubit>()),
       BlocProvider.value(value: AppDI.injector.get<UserLessonCubit>()),
     ],
-    child: const ImportLessonPage(),
+    child: ImportLessonPage(startOnPdf: pdf ?? false),
   );
 }
 

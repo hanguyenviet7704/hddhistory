@@ -133,3 +133,7 @@ nextGeneratingBody: The next keypoint and its narration are being finished. You'
 nextGeneratingCta: Back to roadmap
 featureOffTitle: Making lessons is paused
 featureOffBody: This is switched off for a moment. Your lessons are still here — you just cannot make a new one yet.
+
+# Explore import board (design note 2026-09-04)
+boardTitle: Make your own lesson
+boardSubtitle: One tap, from material you already like

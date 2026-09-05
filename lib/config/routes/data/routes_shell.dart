@@ -79,15 +79,19 @@ part of '../routes.dart';
           name: RouteNamed.profile,
           routes: [
             TypedGoRoute<ProfileInfoRoute>(path: RoutePath.profileInfo, name: RouteNamed.profileInfo),
-            TypedGoRoute<SettingRoute>(
-              path: RoutePath.setting,
-              name: RouteNamed.setting,
-              routes: [
-                TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
-                TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage),
-                TypedGoRoute<ManageSubscriptionRoute>(path: RoutePath.manageSubscription, name: RouteNamed.manageSubscription),
-              ],
-            ),
+            // Direct children of the Settings screen, NOT nested under a
+            // `setting` route of their own any more.
+            //
+            // ProfileRoute and SettingRoute both render SettingPage since the
+            // two screens merged (2026-09-04), and `.go()` on a grandchild
+            // builds its whole ancestor chain — so opening Ngôn ngữ stacked TWO
+            // identical Settings pages under the sheet. Closing it left the
+            // reader on the copy, and the back arrow appeared to do nothing
+            // because the screen behind was the same screen (owner, 2026-09-05:
+            // "phải bấm 2 lần nút thoát góc trái trên mới ra được").
+            TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
+            TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage),
+            TypedGoRoute<ManageSubscriptionRoute>(path: RoutePath.manageSubscription, name: RouteNamed.manageSubscription),
           ],
         ),
       ],

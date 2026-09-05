@@ -60,3 +60,6 @@ courseRemovedToast: Removed from saved
 shareFailed: Couldn't share that just now.
 shareCardMessage(param=title): Worth keeping, from MeUp - ${title}
 shareCourseMessage(param=title): I'm learning ${title} on MeUp. Come join me!
+
+# Section "see all" link, shared by every Library shelf (design note 2026-09-04)
+seeAllLink: See all

@@ -1,5 +1,24 @@
 part of '../../coach.dart';
 
+/// Drawn size of the coach character, in logical px (scaled with `.w` where it
+/// is used, like the rest of the app's sizing).
+const double kCoachBubbleSize = 60;
+
+/// Gap the shell leaves between the top of the floating nav bar and the bottom
+/// of the coach character. Shared with [coachBubbleClearance] so the space the
+/// bubble occupies and the space pages reserve for it can never drift apart.
+const double kCoachBubbleGap = 12;
+
+/// Vertical space a primary tab must leave below its LAST row, on top of
+/// `floatingNavBarHeight(context)`, so the floating coach bubble never sits on
+/// top of it.
+///
+/// Home's "Có ý tưởng?" banner is the row this exists for: it used to end
+/// `floatingNavBarHeight + 16` above the screen bottom, which put it squarely
+/// under a bubble that starts `+12` up and is 60 tall (design note 2026-09-04:
+/// "button góp ý đang bị bubble chat đè lên").
+double coachBubbleClearance(BuildContext context) => kCoachBubbleGap.h + kCoachBubbleSize.w + 16.h;
+
 /// The floating Coach — the 60px slime, its badge, and the teaser.
 ///
 /// Sits in the shell's Stack as a sibling of [ImportProgressToast], not inside
@@ -57,7 +76,7 @@ class CoachBubble extends StatelessWidget {
                   // halo. The drop shadow travels with the drawing instead.
                   CoachSlime(
                     mood: dot ? CoachSlimeMood.waiting : CoachSlimeMood.idle,
-                    size: 60,
+                    size: kCoachBubbleSize,
                     shadow: true,
                   ),
                   // The one dot in the app that means something specific: a

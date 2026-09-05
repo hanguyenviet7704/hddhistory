@@ -133,3 +133,7 @@ nextGeneratingBody: 下一个要点和它的朗读还在完成中。先回到路
 nextGeneratingCta: 回到路线图
 featureOffTitle: 课程创建已暂停
 featureOffBody: 此功能暂时关闭。你的课程都还在，只是暂时无法新建。
+
+# Explore import board (design note 2026-09-04)
+boardTitle: 创建你自己的课程
+boardSubtitle: 从你喜欢的材料出发，只需一次点击

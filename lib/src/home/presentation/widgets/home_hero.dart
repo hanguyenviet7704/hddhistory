@@ -298,24 +298,32 @@ class HomeQuote extends StatelessWidget {
 
         return Padding(
           padding: EdgeInsets.fromLTRB(32.w, 0, 32.w, 22.h),
-          child: Semantics(
-            label: context.l10n.home.homeQuoteLabel,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: '“', style: markStyle),
-                  TextSpan(text: text),
-                  TextSpan(text: '”', style: markStyle),
-                ],
-              ),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppFont.mulish,
-                fontSize: 11.5.sp,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                height: 1.5,
-                color: ink,
+          // Full width, or `textAlign: center` centres nothing: Home's column
+          // is `crossAxisAlignment: start`, so without this the block shrinks
+          // to the width of the sentence and gets pinned to the left edge —
+          // the text was centred inside a box that hugged it (owner,
+          // 2026-09-05: "quote căn giữa màn hình").
+          child: SizedBox(
+            width: double.infinity,
+            child: Semantics(
+              label: context.l10n.home.homeQuoteLabel,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: '“', style: markStyle),
+                    TextSpan(text: text),
+                    TextSpan(text: '”', style: markStyle),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppFont.mulish,
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.italic,
+                  height: 1.5,
+                  color: ink,
+                ),
               ),
             ),
           ),

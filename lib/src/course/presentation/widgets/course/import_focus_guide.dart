@@ -65,9 +65,9 @@ class _ImportFocusGuideState extends State<ImportFocusGuide> {
     setState(() => _target = target);
   }
 
-  /// Where the import button actually is, in this widget's own coordinates.
+  /// Where the import board actually is, in this widget's own coordinates.
   Rect? _resolveTargetRect() {
-    final buttonContext = _importButtonKey.currentContext;
+    final buttonContext = importBoardKey.currentContext;
     final selfBox = context.findRenderObject();
     if (buttonContext == null || selfBox is! RenderBox) return null;
 
@@ -76,9 +76,8 @@ class _ImportFocusGuideState extends State<ImportFocusGuide> {
 
     final topLeft = buttonBox.localToGlobal(Offset.zero, ancestor: selfBox);
 
-    // Inflated so the ring sits around the button instead of on it — the design
-    // cuts a 66pt hole around a 50pt control.
-    return (topLeft & buttonBox.size).inflate(5.w);
+    // Inflated so the ring sits around the board instead of on it.
+    return (topLeft & buttonBox.size).inflate(6.w);
   }
 
   Future<void> _dismiss() async {
@@ -116,15 +115,19 @@ class _ImportFocusGuideState extends State<ImportFocusGuide> {
                   child: CustomPaint(
                     painter: _SpotlightPainter(
                       hole: target,
-                      radius: 22.r,
+                      radius: 24.r,
                       unit: 1.w,
                     ),
                   ),
                 ),
                 Positioned(
                   left: 24.w,
-                  right: 76.w,
-                  top: target.bottom + 42.h,
+                  right: 24.w,
+                  // 76 below the hole, which is where the design puts the card
+                  // now that the spotlight is a 134-tall board rather than a
+                  // 50pt button: the arrow needs the room, and the card is no
+                  // longer squeezed beside anything.
+                  top: target.bottom + 76.h,
                   child: _GuideCard(body: l10n.guideBody, hint: l10n.guideHint),
                 ),
               ],
@@ -176,13 +179,19 @@ class _SpotlightPainter extends CustomPainter {
     _paintArrow(canvas);
   }
 
-  /// An elbow from beside the card up into the hole: rises on the hole's centre
-  /// line, then turns left toward the text. Offsets are the design's, measured
-  /// from the bottom edge of the hole.
+  /// A straight arrow from above the card up into the hole, on the hole's own
+  /// centre line. Offsets are the design's, measured from the bottom edge of
+  /// the hole.
+  ///
+  /// It used to be an elbow that turned left toward a card squeezed into the
+  /// right margin. With the spotlight on the full-width board the card is
+  /// full-width too, directly under the arrow, so there is nothing to turn
+  /// toward — the design draws one vertical stroke.
   void _paintArrow(Canvas canvas) {
     final centerX = hole.center.dx;
-    final top = hole.bottom + 6.5 * unit;
-    final bottom = hole.bottom + 93 * unit;
+    final top = hole.bottom + 20 * unit;
+    final bottom = hole.bottom + 72 * unit;
+    final head = hole.bottom + 30.5 * unit;
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
@@ -191,13 +200,10 @@ class _SpotlightPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..color = const Color(0xFFFFCC6F);
 
-    final head = hole.bottom + 17 * unit;
-
-    // Four segments instead of one path, for the same reason the scrim is
+    // Three segments instead of one path, for the same reason the scrim is
     // punched rather than combined — `Path` is taken in this library. Round caps
-    // make the elbow and the tip read as joins.
+    // make the tip read as a join.
     canvas
-      ..drawLine(Offset(centerX - 25 * unit, bottom), Offset(centerX, bottom), paint)
       ..drawLine(Offset(centerX, bottom), Offset(centerX, top), paint)
       ..drawLine(Offset(centerX - 8 * unit, head), Offset(centerX, top), paint)
       ..drawLine(Offset(centerX + 8 * unit, head), Offset(centerX, top), paint);

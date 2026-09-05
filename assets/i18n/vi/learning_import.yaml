@@ -133,3 +133,7 @@ nextGeneratingBody: Keypoint sau cùng lời đọc đang được hoàn thiện
 nextGeneratingCta: Về lộ trình
 featureOffTitle: Tạm dừng tạo bài học
 featureOffBody: Tính năng đang tắt một lát. Bài học của bạn vẫn còn nguyên, chỉ là chưa tạo mới được thôi.
+
+# Explore import board (design note 2026-09-04)
+boardTitle: Tạo bài học của riêng bạn
+boardSubtitle: Chỉ với 1 chạm từ nguồn tài liệu bạn ưa thích

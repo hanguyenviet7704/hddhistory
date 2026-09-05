@@ -56,6 +56,7 @@ part 'presentation/widgets/home_promo_popup_host.dart';
 part 'presentation/widgets/home_header.dart';
 part 'presentation/widgets/home_hero.dart';
 part 'presentation/widgets/home_premium_chip.dart';
+part 'presentation/widgets/home_progress_sections.dart';
 part 'presentation/widgets/home_widget_debug_payload_builder.dart';
 part 'presentation/widgets/section_header.dart';
 part 'presentation/widgets/skillset_card.dart';

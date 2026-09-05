@@ -34,16 +34,17 @@ class SupportSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Same label treatment as every other section on the merged Settings
+        // screen (see SettingSectionCard) — this used to be a 20/700 page
+        // heading because it was one of two on the old Profile screen, and at
+        // that size it now shouts over the four quiet labels around it.
         AppText(
           context.l10n.setting.settingProfileSupportSection,
-          style: TextStyle(
-            fontFamily: AppFont.mulish,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+          style: AppStyle.text14.copyWith(
+            color: studyThemeOnBg(context, AppCustomColor.textTertiary),
           ),
         ),
-        14.verticalSpace,
+        12.verticalSpace,
         Container(
           width: double.infinity,
           decoration: BoxDecoration(

@@ -83,6 +83,7 @@ part 'presentation/widgets/course/course_intro_popup.dart';
 part 'presentation/widgets/course/course_lesson_empty_noti_popup.dart';
 part 'presentation/widgets/course/course_list_tile.dart';
 part 'presentation/widgets/course/course_search_view.dart';
+part 'presentation/widgets/course/import_board.dart';
 part 'presentation/widgets/course/import_focus_guide.dart';
 part 'presentation/widgets/course/course_tab_chip.dart';
 part 'presentation/widgets/course_roadmap/course_level_content.dart';

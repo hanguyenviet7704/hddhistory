@@ -15,7 +15,17 @@ part of '../../community.dart';
 /// 2026-09-05: "tuỳ vào kích thước ảnh mà hiển thị chứ"). A picture now keeps
 /// its own ratio and only very tall ones are capped, which is what stops one
 /// screenshot from becoming a screenful.
-const double _kFeedMaxTallness = 1.35;
+const double _kFeedMaxTallness = 0.62;
+
+/// Shown over the bottom of a feed picture that was CROPPED to the cap: a
+/// gradient fading into a small expand glyph, exactly as the design draws it
+/// (`13 · Confession`).
+///
+/// This is the piece both earlier attempts were missing. A cropped picture with
+/// no mark on it reads as a broken render — which is why the fixed 150 band was
+/// replaced by a cap so tall it stopped cropping anything. Say "there is more
+/// here, tap for it" and a short preview becomes legible as a preview.
+const double _kFeedCropScrimHeight = 52;
 
 /// One post in the feed (design `S-01`).
 ///
@@ -371,10 +381,16 @@ class _PostImagesState extends State<_PostImages> {
         if (widget.urls.length == 1) {
           final url = widget.urls.first;
           final natural = width / _ratioOf(url);
+          final height = widget.capSingle ? math.min(natural, width * cap) : natural;
+
           return _Picture(
             url: url,
             width: width,
-            height: widget.capSingle ? math.min(natural, width * cap) : natural,
+            height: height,
+            // Only when it actually lost something. A landscape photo that fits
+            // under the cap is drawn whole and gets no mark — "tuỳ vào kích
+            // thước ảnh mà hiển thị" (owner, 2026-09-05).
+            cropped: height < natural - 0.5,
             onTap: _viewerTap(0),
           );
         }
@@ -382,10 +398,12 @@ class _PostImagesState extends State<_PostImages> {
         // The strip's height comes from the FIRST picture — a tall poster gets
         // a tall strip rather than a slice of itself — bounded so a row of
         // portraits cannot own the screen either.
-        final height = (width * _stripFill / _ratioOf(widget.urls.first)).clamp(
-          width * _minStripHeight,
-          width * math.min(_maxStripHeight, cap),
-        );
+        // The cap bounds BOTH ends. `_minStripHeight` is taller than the feed's
+        // cap, so clamping to (min, cap) directly would hand `clamp` a lower
+        // limit above its upper one — which throws, not clips.
+        final upper = width * math.min(_maxStripHeight, cap);
+        final lower = math.min(width * _minStripHeight, upper);
+        final height = (width * _stripFill / _ratioOf(widget.urls.first)).clamp(lower, upper);
 
         return SizedBox(
           height: height,
@@ -424,12 +442,17 @@ class _Picture extends StatelessWidget {
     required this.width,
     required this.height,
     this.onTap,
+    this.cropped = false,
   });
 
   final String url;
   final double width;
   final double height;
   final VoidCallback? onTap;
+
+  /// This picture was cut down to the feed's cap, so it wears the scrim and the
+  /// expand glyph that say the rest is one tap away.
+  final bool cropped;
 
   @override
   Widget build(BuildContext context) {
@@ -439,11 +462,54 @@ class _Picture extends StatelessWidget {
     // and asks for the full picture on its own.
     final picture = ClipRRect(
       borderRadius: BorderRadius.circular(14.r),
-      child: DCachedImage(
-        url: url,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
+      child: Stack(
+        children: [
+          DCachedImage(
+            url: url,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            // Top-biased, not centred: a cropped poster's own heading lives at
+            // its top, and centring showed the middle of a page nobody can read
+            // (design `object-position: center 38%`).
+            alignment: cropped ? const Alignment(0, -0.62) : Alignment.center,
+          ),
+          if (cropped)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: _kFeedCropScrimHeight.h,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00090C14), Color(0x6B090C14)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (cropped)
+            Positioned(
+              right: 9.r,
+              bottom: 9.r,
+              child: IgnorePointer(
+                child: Container(
+                  width: 26.r,
+                  height: 26.r,
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.backgroundWhite.withValues(alpha: 0.94),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(Icons.open_in_full_rounded, size: 13.r, color: AppCustomColor.textPrimary),
+                ),
+              ),
+            ),
+        ],
       ),
     );
 

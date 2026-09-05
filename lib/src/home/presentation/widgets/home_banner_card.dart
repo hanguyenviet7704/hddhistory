@@ -22,7 +22,7 @@ class HomeBannerCard extends StatelessWidget {
         if (banner == null || !banner.isVisible) return const SizedBox.shrink();
 
         return Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 28.h),
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 22.h),
           child: _HomeBannerCarousel(slides: banner.effectiveSlides),
         );
       },

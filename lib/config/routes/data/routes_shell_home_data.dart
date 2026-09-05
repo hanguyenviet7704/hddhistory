@@ -42,6 +42,9 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
           BlocProvider.value(value: AppDI.injector.get<InAppSurveyCubit>()),
           BlocProvider.value(value: AppDI.injector.get<DailyWarmUpCubit>()),
+          // Feeds Home's "Tiến độ học tập" grid, which moved here from the
+          // Profile tab (design note 2026-09-04) along with the cubit it reads.
+          BlocProvider.value(value: AppDI.injector.get<AchievenmentProgressCubit>()),
         ],
         child: const HomePage(),
       ),

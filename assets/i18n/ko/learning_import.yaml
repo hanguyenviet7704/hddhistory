@@ -133,3 +133,7 @@ nextGeneratingBody: 다음 키포인트와 내레이션을 마무리하고 있�
 nextGeneratingCta: 로드맵으로 돌아가기
 featureOffTitle: 레슨 만들기 잠시 중단
 featureOffBody: 지금은 꺼져 있어요. 만든 레슨은 그대로 있고, 새로 만드는 것만 잠시 안 돼요.
+
+# Explore import board (design note 2026-09-04)
+boardTitle: 나만의 레슨 만들기
+boardSubtitle: 좋아하는 자료에서 한 번의 탭으로

@@ -18,6 +18,12 @@ extension PageStateX on PageState {
 
   /// Routes that keep the floating nav pill on screen.
   ///
+  /// [RouteNamed.profile] — the merged Settings screen — is deliberately NOT
+  /// here (owner, 2026-09-05). It is a place you go INTO from Home's gear and
+  /// come back out of, not a tab you stand on: it has no tab of its own to
+  /// light, so the pill sat there with nothing selected, and the design draws
+  /// the screen without it. Its own back arrow returns to Home.
+  ///
   /// A place you STAND belongs here; a thing you are in the middle of does not —
   /// so both roadmaps and the shelf that lists your own lessons keep the pill,
   /// while the reading surfaces (lesson, roleplay, warm-up, the import form) take
@@ -37,7 +43,6 @@ extension PageStateX on PageState {
       RouteNamed.courseRoadmap,
       RouteNamed.myLessons,
       RouteNamed.lessonReader,
-      RouteNamed.profile,
       RouteNamed.habit,
       RouteNamed.library,
       // My history is a shelf you browse, not a step in a flow — same call as

@@ -20,6 +20,12 @@ const Color _kStudyBorder = Color(0xFFECEAF7);
 const Color _kDividerColor = Color(0xFFEFEDF8);
 const Color _kNavButtonBg = Color(0xFFF1F0FA);
 
+/// The month block's own width cap, centred in the card (design
+/// `max-width:290px`), and the largest a single day square is allowed to get
+/// (design `max-width:30px`). See [_MonthGrid] for why the pair matters.
+const double _kGridMaxWidth = 290;
+const double _kDayCellMaxSize = 30;
+
 /// Weekday header + hint ink. Darker than the design's #B4BCC9: that value was
 /// picked against solid white, and on a translucent card over a photo it drops
 /// below readable.
@@ -109,12 +115,23 @@ class _StudyJournalCalendarState extends State<StudyJournalCalendar> {
                   if (velocity > 0) unawaited(_cubit.goPrevious());
                   if (velocity < 0) unawaited(_cubit.goNext());
                 },
-                child: Column(
-                  children: [
-                    const _WeekdayRow(),
-                    8.verticalSpace,
-                    _MonthGrid(state: state, onTapDay: _openDay),
-                  ],
+                // The month is capped and centred rather than stretched to the
+                // card (design `max-width:290px; margin:0 auto`). At full width
+                // the squares grew to ~44 and the block read as a wall; capped,
+                // each column is wider than its 30-square, and THAT gap is the
+                // design's column spacing — which is why the grid below sets
+                // crossAxisSpacing to 0.
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: _kGridMaxWidth.w),
+                    child: Column(
+                      children: [
+                        const _WeekdayRow(),
+                        8.verticalSpace,
+                        _MonthGrid(state: state, onTapDay: _openDay),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               12.verticalSpace,
@@ -261,36 +278,59 @@ class _MonthGrid extends StatelessWidget {
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final cellCount = leadingBlanks + daysInMonth;
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
-      itemCount: cellCount,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: DateTime.daysPerWeek,
-        mainAxisSpacing: 6.w,
-        crossAxisSpacing: 6.w,
-      ),
-      itemBuilder: (context, index) {
-        if (index < leadingBlanks) return const SizedBox.shrink();
+    // Each grid tile is one column WIDE but only as tall as the square it holds
+    // (design `gap:5px 0` with `max-width:30px` on the square). The column gap
+    // is what is left over when a 30-square is centred in a wider column — not
+    // crossAxisSpacing, which is why that is 0 — and the row gap of 5 is the
+    // only real spacing. Measured with a LayoutBuilder rather than assumed: the
+    // 290 cap above is a MAXIMUM, so the column width still depends on how much
+    // room the card actually has on this device.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columnWidth = constraints.maxWidth / DateTime.daysPerWeek;
+        final cellSize = min(_kDayCellMaxSize.w, columnWidth);
 
-        final dayNumber = index - leadingBlanks + 1;
-        final date = DateTime(month.year, month.month, dayNumber);
-        final entry = data?.days[formatStudyJournalDate(date)];
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: cellCount,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: DateTime.daysPerWeek,
+            mainAxisSpacing: 5.h,
+            crossAxisSpacing: 0,
+            childAspectRatio: columnWidth / cellSize,
+          ),
+          itemBuilder: (context, index) {
+            if (index < leadingBlanks) return const SizedBox.shrink();
 
-        return _DayCell(
-          date: date,
-          day: dayNumber,
-          level: entry?.level ?? 0,
-          keypoints: entry?.keypoints ?? 0,
-          isToday: date == todayDate,
-          isFuture: date.isAfter(todayDate),
-          onTap: onTapDay,
+            final dayNumber = index - leadingBlanks + 1;
+            final date = DateTime(month.year, month.month, dayNumber);
+            final entry = data?.days[formatStudyJournalDate(date)];
+
+            // Centred at its own size inside the wider tile — this is where the
+            // column gap comes from.
+            return Center(
+              child: SizedBox.square(
+                dimension: cellSize,
+                child: _DayCell(
+                  date: date,
+                  day: dayNumber,
+                  level: entry?.level ?? 0,
+                  keypoints: entry?.keypoints ?? 0,
+                  isToday: date == todayDate,
+                  isFuture: date.isAfter(todayDate),
+                  onTap: onTapDay,
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 }
+
 
 class _DayCell extends StatelessWidget {
   const _DayCell({
@@ -336,7 +376,7 @@ class _DayCell extends StatelessWidget {
     final cell = Container(
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(9.r),
+        borderRadius: BorderRadius.circular(7.r),
         border: switch (true) {
           _ when hasStudy => Border.all(color: _kStudyBorder, width: 0.75),
           _ when isFuture => Border.all(color: _kFutureBorder, width: 0.75),
@@ -349,7 +389,7 @@ class _DayCell extends StatelessWidget {
       alignment: Alignment.center,
       child: AppText(
         '$day',
-        style: _journalText(12, hasStudy ? FontWeight.w700 : FontWeight.w600, color: ink),
+        style: _journalText(10.5, hasStudy ? FontWeight.w700 : FontWeight.w600, color: ink),
       ),
     );
 

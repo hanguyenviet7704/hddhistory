@@ -145,7 +145,7 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             // recap, the gift and the streak toast for AppOpenModalGate. It
             // decides for itself which tabs it belongs on (Home and Habit) and
             // renders nothing everywhere else.
-            CoachBubbleHost(bottomInset: floatingNavBarHeight(context) + 12.h),
+            CoachBubbleHost(bottomInset: floatingNavBarHeight(context) + kCoachBubbleGap.h),
             // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
             BlocSelector<PageCubit, PageState, bool>(
               selector: (state) => state.isPrimaryRoute,
@@ -317,20 +317,22 @@ class _NavItem extends StatelessWidget {
                 theme: isTwoTone ? SvgTheme(currentColor: tint) : const SvgTheme(),
                 colorFilter: isTwoTone ? null : ColorFilter.mode(tint, BlendMode.srcIn),
               ),
-              if (isActive) ...[
-                SizedBox(height: 2.h),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w700,
-                    color: _navColor,
-                    height: 1.75,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              SizedBox(height: 2.h),
+              // The label is always on — every tab is readable at a glance, not
+              // just the one you are already on (design note 2026-09-04). The
+              // selected/unselected state is carried by the same `tint` as the
+              // icon, so the pair reads as one unit.
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  color: tint,
+                  height: 1.75,
                 ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),

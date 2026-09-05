@@ -69,14 +69,24 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.profile);
         break;
       case 3:
-        // Open Explore scrolled to the section holding the user's current
-        // (blue-border) course instead of resetting to the top — so entering
-        // the tab lands on "the course you're studying", not a jumpy default.
-        // Falls back to the top when nothing is selected (index -1).
-        final selectedSkillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
+        // Open Explore at the TOP — the search field and the import board
+        // first, then the sections.
+        //
+        // This used to jump to the section holding the reader's current
+        // (blue-border) course, so the tab landed on "what you're studying".
+        // That worked while the search field and the import board were pinned
+        // ABOVE the scroll view: you got both, the header and your section.
+        // Once they moved INTO the list (2026-09-05) the jump started scrolling
+        // them off the top, so tapping Khám phá opened on a bare section with
+        // no way to search and no board — the reader's two reasons for coming
+        // here (owner, 2026-09-05: "bấm vào nav khám phá bị cuộn lên như này").
+        //
+        // Deep links are unaffected: Home's progress tiles and "Xem tất cả" set
+        // their target through CourseCubit directly and never come through
+        // here.
         AppDI.injector.get<CourseCubit>()
           ..setAllCourseSource('nav_explore')
-          ..jumpToSkillset(selectedSkillsetIndex);
+          ..resetExploreToAll();
         setCurrentRouteName(RouteNamed.course);
         break;
       case 4:

@@ -133,3 +133,7 @@ nextGeneratingBody: 次のキーポイントと読み上げを仕上げていま
 nextGeneratingCta: ロードマップへ戻る
 featureOffTitle: レッスン作成は一時停止中
 featureOffBody: いまはオフになっています。作ったレッスンはそのまま残っていて、新しく作ることだけができません。
+
+# Explore import board (design note 2026-09-04)
+boardTitle: 自分だけのレッスンを作る
+boardSubtitle: お気に入りの資料から、ワンタップで

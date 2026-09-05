@@ -57,3 +57,6 @@ courseRemovedToast: Đã bỏ khỏi mục đã lưu
 shareFailed: Chưa chia sẻ được lúc này.
 shareCardMessage(param=title): Một điều đáng giữ lại, từ MeUp - ${title}
 shareCourseMessage(param=title): Mình đang học ${title} trên MeUp. Tham gia cùng nhé!
+
+# Section "see all" link, shared by every Library shelf (design note 2026-09-04)
+seeAllLink: Xem tất cả

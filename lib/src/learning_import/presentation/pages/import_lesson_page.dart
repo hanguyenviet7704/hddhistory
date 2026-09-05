@@ -19,7 +19,14 @@ const int _kPdfLimitMb = 20;
 /// - **The confirm step is gone.** Everything it summarised is on screen at the
 ///   moment you press the button.
 class ImportLessonPage extends StatefulWidget {
-  const ImportLessonPage({super.key});
+  const ImportLessonPage({super.key, this.startOnPdf = false});
+
+  /// Land on the PDF source instead of the default YouTube one.
+  ///
+  /// Set by Explore's import board when the reader taps its PDF tile: they have
+  /// already answered "from what?", and asking again on arrival would undo the
+  /// point of putting both sources on the board.
+  final bool startOnPdf;
 
   @override
   State<ImportLessonPage> createState() => _ImportLessonPageState();
@@ -28,7 +35,7 @@ class ImportLessonPage extends StatefulWidget {
 enum _ImportSource { youtube, pdf }
 
 class _ImportLessonPageState extends State<ImportLessonPage> {
-  _ImportSource _source = _ImportSource.youtube;
+  late _ImportSource _source = widget.startOnPdf ? _ImportSource.pdf : _ImportSource.youtube;
   final TextEditingController _linkController = TextEditingController();
   File? _pickedFile;
   String _pickedMeta = '';

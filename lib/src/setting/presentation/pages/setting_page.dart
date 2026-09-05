@@ -157,11 +157,20 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
           child: SafePage(
           child: ListView(
             controller: _scrollController,
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 48.h),
+            // No nav-bar allowance: the pill is not drawn on this screen any
+            // more (owner, 2026-09-05 — see PageStateX.primaryRouteNames), and
+            // SafePage above already pays the bottom safe-area inset, so
+            // reserving its height left a screenful of dead space under the
+            // delete-account row.
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 32.h),
             physics: const BouncingScrollPhysics(),
             children: [
               SettingHeader(),
-              8.verticalSpace,
+              12.verticalSpace,
+              // Everything the old Profile screen still had to say, now that its
+              // progress blocks live on Home: who you are, and the upsell.
+              const ProfileIdentityCard(),
+              const ProfilePremiumBanner(),
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                 selector: (state) => state.user,
                 builder: (context, user) {
@@ -248,7 +257,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                   );
                 },
               ),
-              8.verticalSpace,
+              24.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                 selector: (state) => state.user,
                 builder: (context, user) {
@@ -277,7 +286,9 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                   );
                 },
               ),
-              8.verticalSpace,
+              24.verticalSpace,
+              const SupportSection(),
+              24.verticalSpace,
               const _AccountSection(),
             ],
           ),
@@ -342,6 +353,29 @@ Future<bool> _confirmLogout(BuildContext context) async {
 class SettingHeader extends StatelessWidget {
   const SettingHeader({super.key});
 
+  /// Back out of Settings.
+  ///
+  /// Settings is now the ROOT of its shell branch (the Home header gear opens
+  /// it directly), so on that entry there is nothing on the stack to pop and
+  /// `context.back()` would do nothing at all — the arrow would be dead. Pop
+  /// when there is somewhere to pop to, otherwise cross back to Home, which is
+  /// where the gear that opened this lives.
+  ///
+  /// The index+route-name pair is the usual cross-branch requirement: a raw
+  /// `.go()` into an already-built branch fires no didPush, so PageCubit's
+  /// mirror — which the floating nav reads — would stay on Settings.
+  void _leave(BuildContext context) {
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      context.back();
+      return;
+    }
+    final page = context.read<PageCubit>();
+    page.setCurrentIndex(0);
+    HomeRoute().go(context);
+    page.setCurrentRouteName(RouteNamed.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -351,7 +385,7 @@ class SettingHeader extends StatelessWidget {
           onTap: () {
             AppHaptic.select();
             AppService.instance.appTrackingService.trackSettingBackClick();
-            context.back();
+            _leave(context);
           },
           child: Icon(
             Icons.arrow_back_ios_new_rounded,

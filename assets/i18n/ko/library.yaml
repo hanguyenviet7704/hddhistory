@@ -57,3 +57,6 @@ courseRemovedToast: 저장을 해제했어요
 shareFailed: 지금은 공유할 수 없어요.
 shareCardMessage(param=title): MeUp 에서 건진 한 조각 - ${title}
 shareCourseMessage(param=title): MeUp 에서 ${title} 를 배우고 있어요. 같이 해요!
+
+# Section "see all" link, shared by every Library shelf (design note 2026-09-04)
+seeAllLink: 전체 보기

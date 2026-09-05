@@ -57,3 +57,6 @@ courseRemovedToast: 保存を解除しました
 shareFailed: 今は共有できませんでした。
 shareCardMessage(param=title): MeUp で見つけた残しておきたい一節 - ${title}
 shareCourseMessage(param=title): MeUp で ${title} を学んでいます。一緒にどうぞ！
+
+# Section "see all" link, shared by every Library shelf (design note 2026-09-04)
+seeAllLink: すべて見る
