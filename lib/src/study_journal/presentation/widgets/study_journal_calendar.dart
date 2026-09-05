@@ -23,7 +23,26 @@ const Color _kNavButtonBg = Color(0xFFF1F0FA);
 /// Weekday header + hint ink. Darker than the design's #B4BCC9: that value was
 /// picked against solid white, and on a translucent card over a photo it drops
 /// below readable.
+///
+/// Doubles as the FUTURE-day ink under a study theme — see [_DayCell]: it is
+/// this file's proven "quiet ink that still survives the glass card", and the
+/// future days want exactly that.
 const Color _kWeekdayInk = Color(0xFF8A94A6);
+
+/// Ground given to a future day cell when a study theme is on.
+///
+/// Every other constant above is pitched against a SOLID white card. With a
+/// custom background [ThemedGlassCard] becomes a translucent white panel
+/// (alpha .82, no blur), so the photo behind it comes through — and a cell
+/// painted `transparent` comes through at FULL strength. That is why the
+/// future half of the month disappeared under a theme while every day with a
+/// fill survived (owner, 2026-09-05: "để theme phát mờ tịt luôn"). A veil of
+/// its own gives the cell a ground without making it look studied.
+const double _kFutureVeilAlpha = 0.45;
+
+/// The hairline under the grid. #EFEDF8 is invisible once a photo is behind
+/// the card, so it lifts to the same quiet ink as the weekday header.
+Color _dividerColor(BuildContext context) => studyThemeHasCustomBg(context) ? _kWeekdayInk.withValues(alpha: 0.35) : _kDividerColor;
 
 /// Local twins of the Profile page's own card shadow and text style — those
 /// are private to that library, and re-declaring the two values is cheaper
@@ -99,7 +118,7 @@ class _StudyJournalCalendarState extends State<StudyJournalCalendar> {
                 ),
               ),
               12.verticalSpace,
-              Container(height: 1, color: _kDividerColor),
+              Container(height: 1, color: _dividerColor(context)),
               9.verticalSpace,
               const _Legend(),
             ],
@@ -295,17 +314,23 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasStudy = level > 0;
+    // Glass card over a photo, or the stock solid-white card. Only the two
+    // FILL-LESS states need to know — see [_kFutureVeilAlpha].
+    final glass = studyThemeHasCustomBg(context);
     final background = switch (true) {
       _ when hasStudy => _kLevelColors[(level - 1).clamp(0, _kLevelColors.length - 1)],
-      _ when isFuture => Colors.transparent,
+      _ when isFuture => glass ? AppCustomColor.backgroundWhite.withValues(alpha: _kFutureVeilAlpha) : Colors.transparent,
       _ => _kEmptyPastColor,
     };
     // The two darkest shades need light text; anything lighter keeps the ink.
     final ink = switch (true) {
       _ when hasStudy && level >= 3 => Colors.white,
       _ when hasStudy => AppCustomColor.textPrimary,
-      _ when isFuture => _kFutureInk,
-      _ => _kEmptyPastInk,
+      // Future stays the quietest of the three, theme or no theme — it is the
+      // part of the month that has not happened yet, and darkening it to the
+      // muted slate below would make it read as studied.
+      _ when isFuture => glass ? _kWeekdayInk : _kFutureInk,
+      _ => studyThemeCardMuted(context, _kEmptyPastInk),
     };
 
     final cell = Container(
