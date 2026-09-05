@@ -79,6 +79,21 @@ export const coachService = {
     return res.data;
   },
 
+  /**
+   * Xoá hẳn một dòng nội dung. Không hoàn tác được.
+   *
+   * `kind` không thừa: sáu loại nằm ở bốn nguồn khác nhau, server phải biết
+   * loại mới biết xoá ở đâu — và với ba loại chung một collection, nó còn là
+   * cái chặn xoá nhầm dòng khi id đúng mà loại sai. Riêng `dip` id mang hậu tố
+   * `:dip`, cứ gửi nguyên như feed trả về.
+   */
+  async deleteContent(kind: CoachContentKind, id: string) {
+    const res = await axiosClient.delete(
+      `/coach-contents/${kind}/${encodeURIComponent(id)}`,
+    );
+    return res.data;
+  },
+
   /** Ai có viết, viết bao nhiêu, lần cuối là khi nào — mới nhất lên đầu. */
   async getContentUsers(params?: {
     habitId?: string;

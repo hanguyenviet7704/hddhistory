@@ -5,6 +5,11 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   MenuItem,
   Paper,
   Tab,
@@ -15,12 +20,15 @@ import {
   TableRow,
   Tabs,
   TextField,
+  Tooltip,
 } from "@mui/material";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 import { coachService } from "../../services/coachService";
 import {
   CoachContentKind,
   CoachContentPage,
+  CoachContentRow,
   CoachContentUserPage,
 } from "../../types/interface/coach.interface";
 import {
@@ -30,6 +38,7 @@ import {
   KIND_ORDER,
   situationPrompt,
 } from "../../utils/coachContentKinds";
+import { useNotification } from "../../utils/hooks/useNotification";
 
 const LIMIT_OPTIONS = [50, 100, 200, 500];
 
@@ -38,6 +47,7 @@ type View = "feed" | "users";
 
 const CoachContentList: React.FC = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
 
   const [view, setView] = useState<View>("feed");
   const [page, setPage] = useState<CoachContentPage | null>(null);
@@ -51,6 +61,13 @@ const CoachContentList: React.FC = () => {
   const [userId, setUserId] = useState("");
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState(200);
+
+  // Xoá là thao tác không hoàn tác được duy nhất trên màn này, nên nó đi qua
+  // một hộp xác nhận có hiện lại nguyên văn dòng sắp mất.
+  const [pendingDelete, setPendingDelete] = useState<CoachContentRow | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(
     async (which: View) => {
@@ -103,6 +120,34 @@ const CoachContentList: React.FC = () => {
     setKinds((prev) =>
       prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind],
     );
+
+  const removePending = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    try {
+      await coachService.deleteContent(pendingDelete.kind, pendingDelete.id);
+      // Gỡ tại chỗ thay vì nạp lại cả bảng: ô tìm kiếm quét không index, nên
+      // mỗi lần reload là một lượt scan collection — dọn mười dòng rác sẽ
+      // thành mười lượt scan.
+      setPage((prev) =>
+        prev
+          ? {
+              ...prev,
+              rows: prev.rows.filter((row) => row.id !== pendingDelete.id),
+              total: Math.max(0, prev.total - 1),
+            }
+          : prev,
+      );
+      showSuccess("Đã xoá dòng này");
+      setPendingDelete(null);
+    } catch (err: any) {
+      // 404 nghĩa là dòng đã bị xoá ở chỗ khác — vẫn là lỗi, vì bảng đang hiện
+      // một thứ không còn tồn tại và người đọc cần biết để bấm Áp dụng lại.
+      showError(err?.response?.data?.message ?? "Không xoá được dòng này");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const counts = useMemo(() => {
     const map = new Map<CoachContentKind, number>();
@@ -353,6 +398,7 @@ const CoachContentList: React.FC = () => {
                 <TableCell>Nội dung</TableCell>
                 <TableCell width={170}>User</TableCell>
                 <TableCell width={160}>Lúc</TableCell>
+                <TableCell width={56} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -404,6 +450,16 @@ const CoachContentList: React.FC = () => {
                       {new Date(row.createdAt).toLocaleString()}
                     </span>
                   </TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="Xoá dòng này">
+                      <IconButton
+                        size="small"
+                        onClick={() => setPendingDelete(row)}
+                      >
+                        <TrashIcon className="h-4 w-4 text-slate-400" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -420,6 +476,67 @@ const CoachContentList: React.FC = () => {
             ? `${page.rows.length} dòng đang hiện`
             : ""}
       </p>
+
+      <Dialog
+        open={Boolean(pendingDelete)}
+        onClose={() => !deleting && setPendingDelete(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Xoá dòng này?</DialogTitle>
+        <DialogContent>
+          {/* Hiện lại nguyên văn chứ không chỉ hỏi "chắc chưa": bảng có thể
+              đang cuộn ở chỗ khác, và đây là chữ của một người thật. */}
+          {pendingDelete && (
+            <>
+              <div className="mb-3">
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={
+                    KIND_META[pendingDelete.kind]?.label ?? pendingDelete.kind
+                  }
+                  className={KIND_META[pendingDelete.kind]?.color}
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+                {pendingDelete.content}
+              </div>
+              <p className="mt-3 text-xs text-slate-500">
+                User{" "}
+                <span className="font-mono">{pendingDelete.userId}</span> ·{" "}
+                {new Date(pendingDelete.createdAt).toLocaleString()}
+              </p>
+
+              <Alert severity="warning" className="!mt-3">
+                Xoá cứng, <b>không hoàn tác được</b>.
+                {pendingDelete.kind === "evidence" && (
+                  <>
+                    {" "}
+                    Câu kể còn được dùng để dựng mục <b>Tuần qua</b> của user
+                    này — xoá là đổi bản tổng kết tuần của họ.
+                  </>
+                )}
+                {pendingDelete.kind === "dip" && (
+                  <>
+                    {" "}
+                    Dịp là một trường trên phiên Coach: chỉ cụm chữ này mất,
+                    phiên và hội thoại giữ nguyên.
+                  </>
+                )}
+              </Alert>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPendingDelete(null)} disabled={deleting}>
+            Huỷ
+          </Button>
+          <Button color="error" onClick={removePending} disabled={deleting}>
+            {deleting ? "Đang xoá…" : "Xoá"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
