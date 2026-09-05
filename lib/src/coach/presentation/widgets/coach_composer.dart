@@ -725,11 +725,15 @@ class _CoachComposerState extends State<CoachComposer> {
     final course = state.ui.course;
     final leaving = state.step == 'leave' && course != null;
 
+    // Owner 2026-09-05: bỏ đuôi "về chỗ vừa rời đi" — nút cuối chỉ còn "Đóng".
+    // Thứ đáng đứng ở cuối phiên là card khoá học, không phải một lời mô tả
+    // việc điều hướng; card giờ hiện bất cứ khi nào có khoá khớp thật
+    // (meup-api: bỏ cổng improveSignal).
     final label = leaving
         ? l10n.endLeave
         : state.entry == CoachEntry.lesson
         ? l10n.endCloseLesson
-        : l10n.endCloseHome;
+        : l10n.close;
 
     return _SelectableBox(
       label: label,
