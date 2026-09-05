@@ -1,23 +1,29 @@
 part of '../../home.dart';
 
-/// How far the "Today's new course" card is lifted INTO the purple header
-/// (design `2 · Home`: the card carries `margin-top:-64px` against a header
-/// whose `padding-bottom` is 78).
+/// How far the "Today's new course" card is lifted INTO the purple header.
+///
+/// From the app's own design (`_MeUp App`, pin `app:explore`), which is the
+/// one the Home screen is drawn against now: the card carries `margin:-64px`.
+/// The older standalone Home mock said -76 against a taller header — following
+/// it left the card sitting deeper in the purple than the screen it belongs to.
 const double _kHeroCardOverlap = 64;
 
-/// The card is inset further than the page's own 20 (design: the card is
-/// `calc(100% - 52px)` wide), which is what makes it read as sitting ON the
-/// header rather than as another full-width section.
+/// Half the card's horizontal margin: the design's `width: calc(100% - 52px)`.
+///
+/// It used to be 8, from a mock that widened the card to `calc(100% - 16px)`.
+/// At that width the card ran almost edge to edge and its artwork — whose
+/// height is fixed — stretched to a ratio the design never draws, which is
+/// what read as "tràn" on the simulator (owner, 2026-09-05).
 const double _kHeroCardInset = 26;
 
-/// Home's header: one purple panel carrying the greeting, the streak chip, the
-/// change-background button and the day's quote — with the new-course card
-/// lifted out of its bottom edge.
+/// Home's header: one purple panel carrying the greeting, the premium chip and
+/// the settings gear — with the new-course card lifted out of its bottom edge.
 ///
-/// Replaces the previous flat greeting + lavender quote card. The quote is no
-/// longer a card of its own: on the purple it is the header's own voice, which
-/// is why it lost the eyebrow and the medallion the standalone card needed to
-/// separate itself from the page.
+/// The header is deliberately spare now. The streak chip and the avatar are
+/// gone (design note 2026-09-04): the streak has a full card of its own further
+/// down the page, and the avatar's job — reaching the account — is the gear's,
+/// which opens one merged Settings screen instead of two. The quote left too,
+/// and sits under the card rather than inside the purple (see [HomeQuote]).
 ///
 /// The panel deliberately runs BEHIND the status bar (design: the header starts
 /// at y=0 with a 62px top padding, and the status bar is drawn over it), so Home
@@ -128,57 +134,28 @@ class _HeroPanel extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      // 78 below the quote in the design, of which the last 64 is the foot the
-      // card sits on — so the panel itself stops 14 short.
+      // The design leaves 14 under the greeting plus 78 of header padding = 92,
+      // of which the last 76 is the foot the card sits on — so the panel itself
+      // stops 16 short.
       // The design's 62 top is measured from y=0 over a 54-tall status bar, i.e. 8
       // of clear space under it; 12 keeps that tight look without crowding a
       // Dynamic Island.
-      padding: EdgeInsets.fromLTRB(20.w, statusBar + 12.h, 20.w, roundedBottom ? 24.h : 14.h),
+      padding: EdgeInsets.fromLTRB(20.w, statusBar + 12.h, 20.w, roundedBottom ? 24.h : 16.h),
       decoration: BoxDecoration(
         gradient: _kHeroGradient,
         borderRadius: roundedBottom ? const BorderRadius.vertical(bottom: Radius.circular(30)) : null,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _HeroGreetingRow(),
-          16.verticalSpace,
-          const _HeroQuote(),
-        ],
-      ),
+      child: const _HeroGreetingRow(),
     );
   }
 }
 
-/// Greeting + streak chip + change-background button, all on the purple.
+/// Greeting + premium chip + settings gear, all on the purple.
 class _HeroGreetingRow extends StatelessWidget {
   const _HeroGreetingRow();
 
-  /// The streak chip switches to the Profile tab (user call, 2026-08-05).
-  ///
-  /// It used to push the streak-detail popup. Profile's own streak card is now
-  /// where the week is read, so the chip hands over to that page instead of
-  /// stacking a second streak surface on top of Home. No re-entrancy guard is
-  /// needed either: switching a branch is idempotent, where the old `push`
-  /// would stack a duplicate route on a double tap.
-  ///
-  /// Sets the branch index AND the route name. Entering an already-built branch
-  /// through a raw `.go()` fires no didPush, so PageCubit's mirror — which the
-  /// floating nav reads to decide which tab is lit — would otherwise stay on
-  /// Home (see the comment on `PageCubit.onTapTab`).
-  void _openProfile(BuildContext context, int currentStreak) {
-    AppService.instance.appTrackingService.trackHomeStreakChipClick(currentStreak: currentStreak);
-
-    final page = context.read<PageCubit>();
-    page.setCurrentIndex(2); // Setting/Profile branch
-    ProfileRoute().go(context);
-    page.setCurrentRouteName(RouteNamed.profile);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final currentStreak = context.select((LearningStreakCubit cubit) => cubit.state.selectedItem.currentStreak);
-
     return BlocSelector<ProfileCubit, ProfileState, ({String name, bool isPremium})>(
       selector: (state) => (name: state.user.name, isPremium: state.user.isPremium),
       builder: (context, profile) {
@@ -206,26 +183,14 @@ class _HeroGreetingRow extends StatelessWidget {
               ),
             ),
             12.horizontalSpace,
-            // Premium crown, first in the trailing cluster (design `2 · Home`
-            // → `showHome`). Hidden once they subscribe — the same rule the
+            // Premium crown. Hidden once they subscribe — the same rule the
             // Profile page's `_PremiumBanner` follows — so a paying reader is
-            // never sold to. Spacing stays on this row's 12 rhythm rather than
-            // the design's 7: the streak/avatar pair beside it already ships
-            // at 12, and a lone 7 here would read as a mistake.
+            // never sold to.
             if (!profile.isPremium) ...[
               const HomePremiumChip(),
-              12.horizontalSpace,
+              7.horizontalSpace,
             ],
-            StreakHomeChip(
-              currentStreak: currentStreak,
-              onTap: () => _openProfile(context, currentStreak),
-            ),
-            12.horizontalSpace,
-            // The avatar replaces the change-background button (design updated
-            // 2026-08-14): theme now lives in Settings, and this slot is the
-            // face of the account — tapping it opens Profile, same as the
-            // streak chip.
-            _HeroAvatarButton(onTap: () => _openProfile(context, currentStreak)),
+            const _HeroSettingsButton(),
           ],
         );
       },
@@ -233,10 +198,67 @@ class _HeroGreetingRow extends StatelessWidget {
   }
 }
 
-/// The day's quote, in the header's own voice: italic, white, wrapped in
-/// oversized quote marks instead of a card.
-class _HeroQuote extends StatelessWidget {
-  const _HeroQuote();
+/// The 30px settings gear on the purple header.
+///
+/// Replaces the streak chip AND the avatar that used to share this corner
+/// (design note 2026-09-04). Both went to the same place, and the page below
+/// now carries the streak itself, so one button to one merged Settings screen
+/// says the same thing with a third of the chrome.
+class _HeroSettingsButton extends StatelessWidget {
+  const _HeroSettingsButton();
+
+  /// Sets the branch index AND the route name. Entering an already-built branch
+  /// through a raw `.go()` fires no didPush, so PageCubit's mirror — which the
+  /// floating nav reads to decide which tab is lit — would otherwise stay on
+  /// Home (see the comment on `PageCubit.onTapTab`).
+  void _openSettings(BuildContext context) {
+    AppHaptic.select();
+    final page = context.read<PageCubit>();
+    page.setCurrentIndex(2); // Setting/Profile branch
+    ProfileRoute().go(context);
+    page.setCurrentRouteName(RouteNamed.profile);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: context.l10n.setting.settingTitle,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _openSettings(context),
+        child: Container(
+          width: 30.r,
+          height: 30.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            // Near-white rather than pure white (design `rgba(255,255,255,.92)`)
+            // so the purple reads faintly through and the button sits ON the
+            // header instead of punching a hole in it.
+            color: AppCustomColor.textWhite.withValues(alpha: 0.92),
+            boxShadow: [
+              BoxShadow(color: const Color(0x2E252525), blurRadius: 10.r, offset: Offset(0, 4.h)),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Icon(Icons.settings_outlined, size: 18.r, color: AppCustomColor.brandPrimary),
+        ),
+      ),
+    );
+  }
+}
+
+/// The day's quote — under the new-course card now, not inside the purple.
+///
+/// It changed voice with its position: on the header it was white, bold and
+/// loud enough to compete with the greeting; on the page it is small, grey and
+/// centred — a caption between the card above it and the banners below.
+class HomeQuote extends StatelessWidget {
+  const HomeQuote({super.key});
+
+  /// Design `#8792A6`, which is a touch darker than the meta grey so the
+  /// italic still reads at 11.5.
+  static const Color _ink = Color(0xFF8792A6);
 
   @override
   Widget build(BuildContext context) {
@@ -244,101 +266,52 @@ class _HeroQuote extends StatelessWidget {
       selector: (state) => state.quote,
       builder: (context, quote) {
         final text = quote?.content.text ?? '';
+        // Collapses with its own bottom gap: no quote today must not leave a
+        // hole between the card and the banner strip.
         if (text.isEmpty) return const SizedBox.shrink();
 
-        // The marks are set bigger and fainter than the sentence and sit on the
-        // same line as it (design: `line-height:0; vertical-align:-4px`).
+        // The design's grey was picked against the stock lavender page. The
+        // quote is drawn straight onto the study background, so over a photo it
+        // has to lift the same way every other bare-on-background line on Home
+        // does — at #8792A6 on a dark wallpaper it was barely legible
+        // (simulator, 2026-09-04).
+        final ink = studyThemeOnBg(context, _ink);
+
+        // The marks are set bigger than the sentence and sit on the same line
+        // as it (design: `line-height:0; vertical-align:-2px`).
         final markStyle = TextStyle(
           fontFamily: AppFont.mulish,
-          fontSize: 22.sp,
-          fontWeight: FontWeight.w700,
+          fontSize: 13.sp,
+          fontWeight: FontWeight.w600,
           height: 1,
-          color: AppCustomColor.textWhite.withValues(alpha: 0.6),
+          color: ink,
         );
 
-        return Semantics(
-          label: context.l10n.home.homeQuoteLabel,
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: '“', style: markStyle),
-                TextSpan(text: text),
-                TextSpan(text: '”', style: markStyle),
-              ],
-            ),
-            style: TextStyle(
-              fontFamily: AppFont.mulish,
-              fontSize: 13.5.sp,
-              fontWeight: FontWeight.w700,
-              fontStyle: FontStyle.italic,
-              height: 1.5,
-              color: AppCustomColor.textWhite.withValues(alpha: 0.9),
+        return Padding(
+          padding: EdgeInsets.fromLTRB(32.w, 0, 32.w, 22.h),
+          child: Semantics(
+            label: context.l10n.home.homeQuoteLabel,
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: '“', style: markStyle),
+                  TextSpan(text: text),
+                  TextSpan(text: '”', style: markStyle),
+                ],
+              ),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppFont.mulish,
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                height: 1.5,
+                color: ink,
+              ),
             ),
           ),
         );
       },
-    );
-  }
-}
-
-
-/// The 30px account avatar on the purple header (design: `acctColor` disc with
-/// the initial, or the photo, inside a near-white ring). Opens Profile.
-class _HeroAvatarButton extends StatelessWidget {
-  const _HeroAvatarButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final user = context.select((ProfileCubit cubit) => cubit.state.user);
-    final avatarUrl = user.avatar.trim();
-    String ref = user.name.trim();
-    if (ref.isEmpty) ref = user.email.trim();
-    final initial = ref.isEmpty ? '?' : String.fromCharCode(ref.runes.first).toUpperCase();
-
-    return Semantics(
-      button: true,
-      label: context.l10n.setting.settingProfileLabel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          AppHaptic.select();
-          onTap();
-        },
-        child: Container(
-          width: 30.r,
-          height: 30.r,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppCustomColor.brandPrimary700,
-            border: Border.all(color: AppCustomColor.textWhite.withValues(alpha: 0.95), width: 1.5),
-            boxShadow: [
-              BoxShadow(color: const Color(0x2E252525), blurRadius: 10.r, offset: Offset(0, 4.h)),
-            ],
-          ),
-          clipBehavior: Clip.antiAlias,
-          alignment: Alignment.center,
-          child: avatarUrl.isNotEmpty
-              // ClipOval on the image itself, not just the Container's
-              // decoration clip: at this small size the decoration clip left
-              // the photo's corners peeking out past the ring (4 white wedges,
-              // seen on-device 2026-08-14) — the same pattern
-              // _SettingProfileAvatar uses, which renders clean.
-              ? ClipOval(
-                  child: CacheNetworkGraphic(url: avatarUrl, width: 30.r, height: 30.r, fit: BoxFit.cover),
-                )
-              : Text(
-                  initial,
-                  style: TextStyle(
-                    fontFamily: AppFont.mulish,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w800,
-                    color: AppCustomColor.textWhite,
-                  ),
-                ),
-        ),
-      ),
     );
   }
 }

@@ -110,6 +110,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       unawaited(context.read<HomeCubit>().checkOptionalUpdate());
       // Habit data so the check-in reminder card (§9.4) knows today's count.
       unawaited(AppDI.injector.get<HabitCubit>().ensureLoaded());
+      // Per-skillset achievements, which is what the "Tiến độ học tập" grid
+      // divides by. Cache-first inside the cubit, so this paints from the last
+      // known values and refreshes behind them.
+      context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
       await _prefetchLearningStreak();
       final didOpenPaywall = await _tryOpenPaywallAutoOpen();
       if (didOpenPaywall) return;
@@ -194,6 +198,13 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                           child: RefreshIndicator(
                             onRefresh: () async {
                               context.read<HomeCubit>().initializeData(isInit: true, force: true);
+                              // The three progress blocks are on this page now,
+                              // so a pull has to refresh them too — otherwise
+                              // the half of Home a reader actually pulls FOR
+                              // (yesterday's streak, today's square) is the half
+                              // that stays stale.
+                              context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
+                              unawaited(AppDI.injector.get<StudyJournalCubit>().ensureLoaded());
                               await _prefetchLearningStreak();
                               final didOpenPaywall = await _tryOpenPaywallAutoOpen();
                               if (didOpenPaywall) return;
@@ -209,34 +220,29 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // ── Hero: greeting + quote + today's new course ──
+                                  // ── Hero: greeting + settings gear + today's new
+                                  // course ─────────────────────────────────────────
                                   // One purple panel with the course card lifted out
-                                  // of its bottom edge (design "2 · Home").
+                                  // of its bottom edge.
                                   HomeHero(hasUpdateHeader: showUpdateBanner),
-                                  20.verticalSpace,
+                                  18.verticalSpace,
+
+                                  // ── The day's quote ──────────────────────────────
+                                  // Under the card, not in the header: it reads as a
+                                  // caption for the day rather than as a second
+                                  // headline competing with the greeting.
+                                  const HomeQuote(),
 
                                   // ── Admin-configured promo banner ────────────────
                                   // Collapses to zero height (spacing included) when
                                   // disabled/empty — see HomeBannerCard.
                                   const HomeBannerCard(),
 
-                                  // ── Jump back in (in-progress courses) ───────────
-                                  BlocBuilder<ProgressCubit, ProgressState>(
-                                    // Only myCoursesPageData drives this section — see the
-                                    // original buildWhen note: ProgressCubit also emits on
-                                    // frequent mid-lesson progress updates we don't need here.
-                                    buildWhen: (previous, current) => previous.myCoursesPageData != current.myCoursesPageData,
-                                    builder: (context, state) {
-                                      // Only surface courses with something left to
-                                      // continue — a 100%-complete course drops out.
-                                      final inProgress = state.myCourses.where((c) => c.completionPercentage < 100).toList();
-                                      if (inProgress.isEmpty) return const SizedBox.shrink();
-                                      return Padding(
-                                        padding: EdgeInsets.only(bottom: 28.h),
-                                        child: _JumpBackInSection(courses: inProgress),
-                                      );
-                                    },
-                                  ),
+                                  // "Jump back in" is gone from Home. Every course it
+                                  // listed is one tap away in the Library tab, which
+                                  // took that job when it took Profile's slot in the
+                                  // bottom bar — and the three progress blocks below
+                                  // are the answer to "where was I?" this page owes.
 
                                   // ── Recommended ──────────────────────────────────
                                   _RecommendedSection(
@@ -251,12 +257,20 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                     },
                                   ),
 
+                                  // ── Progress blocks, moved here from the Profile
+                                  // tab (design note 2026-09-04) ───────────────────
+                                  const HomeStreakSection(),
+                                  const HomeJournalSection(),
+                                  const HomeLearningProgressSection(),
+
                                   // ── Got ideas? feedback banner ───────────────────
+                                  20.verticalSpace,
                                   GotIdeasBanner(onTap: _openInAppSurveyDialog),
 
-                                  // Bottom padding — clear the floating nav bar so the
-                                  // banner above is not left under it.
-                                  SizedBox(height: floatingNavBarHeight(context) + 16.h),
+                                  // Bottom padding — clear the floating nav bar AND the
+                                  // coach bubble that floats above it, so the banner
+                                  // above is not left under either.
+                                  SizedBox(height: floatingNavBarHeight(context) + coachBubbleClearance(context)),
                                 ],
                               ),
                             ),
@@ -300,206 +314,6 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// Greeting
-// ───────────────────────────────────────────────────────────────────────────
-
-// ───────────────────────────────────────────────────────────────────────────
-// Jump back in — horizontal in-progress course cards + page dots
-// ───────────────────────────────────────────────────────────────────────────
-
-class _JumpBackInSection extends StatefulWidget {
-  final List<CourseEntity> courses;
-
-  const _JumpBackInSection({required this.courses});
-
-  @override
-  State<_JumpBackInSection> createState() => _JumpBackInSectionState();
-}
-
-class _JumpBackInSectionState extends State<_JumpBackInSection> {
-  late final PageController _pageController;
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    // Slightly less than full width so the next card peeks in, matching the
-    // design's snap-scroll strip.
-    _pageController = PageController(viewportFraction: 0.9);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          context.l10n.home.homeJumpBackIn,
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
-          style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
-        ),
-        14.verticalSpace,
-        SizedBox(
-          // PageView gives each card a tight height, so this box height IS the
-          // card height. Trimmed to hug the card's content (~178) — 202 left a
-          // chunk of empty white space below the "Continue" button.
-          height: 184.h,
-          child: PageView.builder(
-            controller: _pageController,
-            padEnds: false,
-            onPageChanged: (i) {
-              HomeTracking.track(TrackingKey.homeContinueSwipe, parameters: {'to_index': i});
-              setState(() => _currentIndex = i);
-            },
-            itemCount: widget.courses.length,
-            itemBuilder: (context, i) {
-              return Padding(
-                padding: EdgeInsets.only(left: 20.w, right: 6.w),
-                child: _JumpBackInCard(course: widget.courses[i].withSkillset),
-              );
-            },
-          ),
-        ),
-        if (widget.courses.length > 1) ...[
-          14.verticalSpace,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.courses.length, (i) {
-              final isActive = i == _currentIndex;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: EdgeInsets.symmetric(horizontal: 3.w),
-                width: isActive ? 22.w : 6.w,
-                height: 6.h,
-                decoration: BoxDecoration(
-                  color: isActive ? AppCustomColor.brandPrimary : AppCustomColor.brandPrimary.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(30.r),
-                ),
-              );
-            }),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _JumpBackInCard extends StatelessWidget {
-  final CourseEntity course;
-
-  const _JumpBackInCard({required this.course});
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = (course.completionPercentage / 100).clamp(0.0, 1.0);
-    return Semantics(
-      button: true,
-      label: course.title.text,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          AppHaptic.select();
-          HomeTracking.track(TrackingKey.homeContinueCardClick);
-          context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
-          context.read<HomeCubit>()
-            ..selectSkillset(course.skillset)
-            ..selectCourse(course);
-          CourseRoadmapRoute().go(context);
-          // .go() to the roadmap branch root doesn't re-fire the route observer,
-          // so re-anchor the route name explicitly (mirrors course_card.dart).
-          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-        },
-        child: Container(
-          padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: studyThemeCardColor(context),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: _homeCardShadow,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Container(
-                      width: 96.r,
-                      height: 96.r,
-                      color: const Color(0xFFE7EAF1),
-                      child: CacheNetworkGraphic(
-                        url: course.image,
-                        width: 96.r,
-                        height: 96.r,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  16.horizontalSpace,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppText(
-                          course.skillset.title.text.toUpperCase(),
-                          maxLines: 1,
-                          style: AppStyle.text12.copyWith(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.8,
-                            color: const Color(0xFF7C8AA4),
-                          ),
-                        ),
-                        8.verticalSpace,
-                        AppText(
-                          course.title.text,
-                          maxLines: 2,
-                          style: _poppins(16, FontWeight.w600, height: 1.3),
-                        ),
-                        10.verticalSpace,
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(99.r),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 8.h,
-                            backgroundColor: const Color(0xFFDEDCF5),
-                            valueColor: const AlwaysStoppedAnimation(Color(0xFF6C63E8)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              14.verticalSpace,
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 11.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEEDFB),
-                  borderRadius: BorderRadius.circular(99.r),
-                ),
-                child: AppText(
-                  context.l10n.home.continueLearning,
-                  style: _poppins(14, FontWeight.w600, color: AppCustomColor.brandPrimary),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ───────────────────────────────────────────────────────────────────────────
 // Recommended courses — horizontal 132×132 tiles
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -526,7 +340,7 @@ class _RecommendedSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _RecommendedHeader(onSeeAll: onSeeAll),
-            14.verticalSpace,
+            12.verticalSpace,
             // Controller-less strip: fire home_rcm_swipe once per gesture on the
             // settle (ScrollEndNotification only fires when scrolling stops, so
             // it can't spam mid-drag).
@@ -551,7 +365,9 @@ class _RecommendedSection extends StatelessWidget {
                 ),
               ),
             ),
-            28.verticalSpace,
+            // Only 4: the next section's heading pays the 28 above it, and two
+            // stacked gaps read as a missing section.
+            4.verticalSpace,
           ],
         );
       },
@@ -577,7 +393,10 @@ class _RecommendedHeader extends StatelessWidget {
         children: [
           AppText(
             context.l10n.home.homeRecommended,
-            style: _poppins(18, FontWeight.w700, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
+            // Same 15.5/700/-0.1 as every other heading on the page — see
+            // [HomeSectionTitle], which this row can't use because it carries
+            // a "see all" action beside the title.
+            style: _poppins(15.5, FontWeight.w700, letterSpacing: -0.1, color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
           ),
           Semantics(
             button: true,
@@ -718,14 +537,25 @@ class _NewTodayCard extends StatelessWidget {
   /// surface lifted onto the purple header, and a see-through panel there would
   /// read as part of the header instead of as a card sitting on it.
   static const List<BoxShadow> _shadow = [
-    BoxShadow(color: Color(0x2914103C), blurRadius: 34, offset: Offset(0, 16)),
+    BoxShadow(color: Color(0x2414103C), blurRadius: 30, offset: Offset(0, 14)),
   ];
 
   /// The image carries a shadow of its own (design), which is what lifts it off
   /// the white card behind it.
   static const List<BoxShadow> _imageShadow = [
-    BoxShadow(color: Color(0x470B082D), blurRadius: 22, offset: Offset(0, 10)),
+    BoxShadow(color: Color(0x380B082D), blurRadius: 22, offset: Offset(0, 8)),
   ];
+
+  /// The artwork's own height, fixed rather than derived from a ratio (design
+  /// `height:238px`, drawn inside a card of `calc(100% - 52px)` — the two
+  /// numbers belong together: widen the card without changing this and the
+  /// picture stretches).
+  ///
+  /// FIXED for the same reason it always was: admin uploads arbitrary artwork,
+  /// and letting the image decide its own height would move every section
+  /// below it. The redesign shortens it — the card now shares the first screen
+  /// with the quote and the banner rather than owning it alone.
+  static const double _imageHeight = 238;
 
   @override
   Widget build(BuildContext context) {
@@ -740,6 +570,7 @@ class _NewTodayCard extends StatelessWidget {
           _openSuggestedCourse(context, course, source: 'home_new_today');
         },
         child: Container(
+          // design: padding 12, radius 22.
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
@@ -749,29 +580,26 @@ class _NewTodayCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Square and full width of the card: the artwork is the reason
-              // this section is a big card and not another list row.
+              // Full width of the card: the artwork is the reason this section
+              // is a big card and not another list row.
               Container(
+                height: _imageHeight.h,
+                // Explicit, because the height is now fixed rather than derived
+                // from an AspectRatio: without a width the Container shrinks to
+                // whatever the decoded picture happens to be wide at 238 tall,
+                // and the artwork sat in the left two-thirds of the card with
+                // white beside it (seen on the simulator 2026-09-04).
+                width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE7EAF1),
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(14.r),
                   boxShadow: _imageShadow,
                 ),
                 clipBehavior: Clip.antiAlias,
-                // 8:7, which is what the design MOCKUP draws — its CSS declares
-                // `aspect-ratio:1/1` but the canvas renderer ignores that and
-                // falls back to the artwork's own ratio, so a square here stood
-                // ~35pt taller than the picture and pushed "Jump back in" off
-                // the first screen ("tỷ lệ sai với thiết kế", 2026-08-13).
-                // FIXED either way: admin uploads arbitrary artwork, and letting
-                // the image decide its own height would move every section below.
-                child: AspectRatio(
-                  aspectRatio: 8 / 7,
-                  child: CacheNetworkGraphic(url: course.image, fit: BoxFit.cover),
-                ),
+                child: CacheNetworkGraphic(url: course.image, fit: BoxFit.cover),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(4.w, 12.h, 4.w, 2.h),
+                padding: EdgeInsets.fromLTRB(2.w, 10.h, 2.w, 0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -787,21 +615,25 @@ class _NewTodayCard extends StatelessWidget {
                             maxLines: 1,
                             style: TextStyle(
                               fontFamily: AppFont.mulish,
-                              fontSize: 10.sp,
+                              fontSize: 9.sp,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: 0.11 * 10.sp,
+                              letterSpacing: 0.11 * 9.sp,
                               color: AppCustomColor.brandPrimary,
                             ),
                           ),
-                          5.verticalSpace,
+                          4.verticalSpace,
+                          // Two lines, not three: at 13.5 the title is a label
+                          // for the artwork above it, and a third line pushed
+                          // the quote below off the first screen.
                           AppText(
                             course.title.text,
-                            maxLines: 3,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: AppFont.mulish,
-                              fontSize: 16.sp,
+                              fontSize: 13.5.sp,
                               fontWeight: FontWeight.w800,
-                              height: 1.25,
+                              height: 1.3,
                               color: AppCustomColor.textPrimary,
                             ),
                           ),
@@ -811,23 +643,23 @@ class _NewTodayCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    12.horizontalSpace,
+                    10.horizontalSpace,
                     Container(
-                      width: 36.r,
-                      height: 36.r,
+                      width: 30.r,
+                      height: 30.r,
                       decoration: BoxDecoration(
                         color: AppCustomColor.brandPrimary,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
                             color: AppCustomColor.brandPrimary.withValues(alpha: 0.35),
-                            blurRadius: 16.r,
-                            offset: Offset(0, 8.h),
+                            blurRadius: 14.r,
+                            offset: Offset(0, 6.h),
                           ),
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: Icon(Icons.chevron_right_rounded, size: 22.r, color: AppCustomColor.textWhite),
+                      child: Icon(Icons.chevron_right_rounded, size: 19.r, color: AppCustomColor.textWhite),
                     ),
                   ],
                 ),
@@ -880,7 +712,7 @@ class _NewTodayMetaRow extends StatelessWidget {
     return Row(
       children: [
         for (int i = 0; i < parts.length; i++) ...[
-          if (i > 0) 12.horizontalSpace,
+          if (i > 0) 10.horizontalSpace,
           parts[i],
         ],
       ],
@@ -901,13 +733,13 @@ class _NewTodayMetaItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13.r, color: color),
+        Icon(icon, size: 12.r, color: color),
         4.horizontalSpace,
         AppText(
           label,
           style: TextStyle(
             fontFamily: AppFont.mulish,
-            fontSize: 11.5.sp,
+            fontSize: 10.5.sp,
             fontWeight: FontWeight.w500,
             color: color,
           ),
