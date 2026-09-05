@@ -110,12 +110,21 @@ SuggestedCourseEntity? _pickTodayCourse(List<SuggestedCourseEntity> courses) {
   return courses[dayIndex];
 }
 
-/// Design `linear-gradient(100deg,#6C63FF,#554FF0)`, flattened to horizontal so
-/// the panel and the foot below it can share it without a seam.
+/// The header's purple.
+///
+/// The design builds it from ONE base colour, `#8B84F2`, and lifts a second
+/// stop 13% toward white for the gradient (`homeHdrBg` in the app's design
+/// source) — so `#9A94F4 → #8B84F2`. The code carried the brand purple
+/// `#6C63FF → #554FF0` instead, which is a whole step darker and more
+/// saturated than the screen it is drawn on (owner, 2026-09-05: "chỗ xin chào
+/// màu chưa giống design").
+///
+/// Flattened to horizontal so the panel and the foot below it can share it
+/// without a seam — the design's 100deg tilt would show the join.
 const LinearGradient _kHeroGradient = LinearGradient(
   begin: Alignment.centerLeft,
   end: Alignment.centerRight,
-  colors: [Color(0xFF6C63FF), Color(0xFF554FF0)],
+  colors: [Color(0xFF9A94F4), Color(0xFF8B84F2)],
 );
 
 /// The purple panel itself.
