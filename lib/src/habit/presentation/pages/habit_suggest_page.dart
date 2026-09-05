@@ -209,13 +209,26 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
       // Coach is not a decision to move on.
       while (true) {
         if (!mounted) return;
-        final accepted = await CoachInvitePopup.show(
+        final choice = await CoachInvitePopup.show(
           context,
           kind: CoachInviteKind.newHabit,
           newHabitCount: _justAdded.length,
         );
         if (!mounted) return;
-        if (accepted != true) break;
+        // ✕ — out of the lesson flow, for the course Roadmap.
+        if (choice == CoachInviteChoice.exit) {
+          final courseId = widget.sourceCourseId ?? '';
+          final navContext = AppConfig.instance.context ?? context;
+          if (courseId.isNotEmpty &&
+              navContext.mounted &&
+              AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId)) {
+            return;
+          }
+          // No course to go back to (a generated lesson, a catalogue gap): fall
+          // through to the ordinary exit rather than stranding them here.
+          break;
+        }
+        if (choice != CoachInviteChoice.practice) break;
 
         final courseId = await showCoachSheet(
           context,

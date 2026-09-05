@@ -142,16 +142,33 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
       // Second time round the loop this follows the sheet's own await, so the
       // context has to be re-checked before it opens a dialog.
       if (!context.mounted) return;
-      final accepted = await CoachInvitePopup.show(
+      final choice = await CoachInvitePopup.show(
         context,
         kind: widget.isCourseDone ? CoachInviteKind.courseDone : CoachInviteKind.keypoint,
         courseTitle: widget.courseTitle,
       );
-    // Nút thứ hai giờ mang chữ "Bỏ qua, sang bài tiếp theo" (`inviteLater`), nên
-    // nó phải đi tiếp thật. Trước đây nó chỉ đóng dialog và rơi về màn "Hoàn
-    // thành bài học" phía dưới — mà màn đó đã bỏ, nên không đi tiếp là để user
-    // đứng trên một trang trống.
-      if (accepted != true) {
+
+      // ✕ — out of the lesson flow altogether, for the course Roadmap.
+      if (choice == CoachInviteChoice.exit) {
+        if (!mounted) return;
+        final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
+        if (navContext != null &&
+            navContext.mounted &&
+            AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, widget.courseId)) {
+          return;
+        }
+        // The Roadmap could not be reached (no course id, catalogue gap). Going
+        // on beats stranding them on a page with nothing on it.
+        if (mounted) widget.onContinue();
+
+        return;
+      }
+
+      // Nút thứ hai mang chữ "Bỏ qua, sang bài tiếp theo" (`inviteLater`), nên
+      // nó phải đi tiếp thật. Trước đây nó chỉ đóng dialog và rơi về màn "Hoàn
+      // thành bài học" phía dưới — mà màn đó đã bỏ, nên không đi tiếp là để
+      // user đứng trên một trang trống.
+      if (choice != CoachInviteChoice.practice) {
         CoachTracking.inviteLater(
           lessonId: widget.lessonId,
           keypointId: widget.keypointId,
@@ -212,6 +229,22 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
 /// the line names the course.
 /// Which invitation this is — the three share one frame and differ only in the
 /// line, the small label above it and the primary button's words.
+/// The three ways off the invitation screen.
+///
+/// Owner 2026-09-05: the screen had only two — practise, or go on to the next
+/// keypoint — so a reader who wanted neither had nowhere to go. The page
+/// underneath has its own ✕ to the Roadmap, but this covers it.
+enum CoachInviteChoice {
+  /// ⟨Thực hành với Coach⟩.
+  practice,
+
+  /// ⟨Bỏ qua, sang bài tiếp theo⟩.
+  next,
+
+  /// ✕ — leave the lesson flow entirely, for the course Roadmap.
+  exit,
+}
+
 enum CoachInviteKind {
   /// Luồng 2 — after a keypoint: "nói một chút về nó nhé?".
   keypoint,
@@ -237,13 +270,13 @@ class CoachInvitePopup extends StatelessWidget {
     this.newHabitCount = 0,
   });
 
-  static Future<bool?> show(
+  static Future<CoachInviteChoice?> show(
     BuildContext context, {
     required CoachInviteKind kind,
     String courseTitle = '',
     int newHabitCount = 0,
   }) {
-    return showGeneralDialog<bool>(
+    return showGeneralDialog<CoachInviteChoice>(
       context: context,
       // A full screen with its own ⟨Lúc khác⟩: tapping outside is not a way out
       // because there is no outside.
@@ -294,6 +327,34 @@ class CoachInvitePopup extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 28.w),
           child: Column(
             children: [
+              // The way OUT of the lesson flow. The page underneath has the
+              // same ✕ and this screen covers it, so without one here the only
+              // moves were "practise" and "next keypoint" (owner 2026-09-05).
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: Semantics(
+                    button: true,
+                    label: context.l10n.common.close,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(CoachInviteChoice.exit),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 36.w,
+                        height: 36.w,
+                        decoration: BoxDecoration(
+                          color: CoachStyle.surface,
+                          shape: BoxShape.circle,
+                          boxShadow: CoachStyle.cardShadow,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(Icons.close, size: 18.w, color: CoachStyle.textChip),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               const Spacer(flex: 5),
               if (kicker != null) ...[
                 Container(
@@ -348,7 +409,7 @@ class CoachInvitePopup extends StatelessWidget {
                     shape: const StadiumBorder(),
                     elevation: 0,
                   ),
-                  onPressed: () => Navigator.of(context).pop(true),
+                  onPressed: () => Navigator.of(context).pop(CoachInviteChoice.practice),
                   child: Text(
                     accept,
                     style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w800),
@@ -361,7 +422,7 @@ class CoachInvitePopup extends StatelessWidget {
                   foregroundColor: CoachStyle.textMuted,
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 ),
-                onPressed: () => Navigator.of(context).pop(false),
+                onPressed: () => Navigator.of(context).pop(CoachInviteChoice.next),
                 child: Text(
                   l10n.inviteLater,
                   style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
