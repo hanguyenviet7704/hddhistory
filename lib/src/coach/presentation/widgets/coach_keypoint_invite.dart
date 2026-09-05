@@ -129,45 +129,58 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
       isCourseDone: widget.isCourseDone,
     );
 
-    final accepted = await CoachInvitePopup.show(
-      context,
-      kind: widget.isCourseDone ? CoachInviteKind.courseDone : CoachInviteKind.keypoint,
-      courseTitle: widget.courseTitle,
-    );
+    // Owner 2026-09-05: "bấm đóng thì quay lại màn thực hành với coach chứ
+    // không được sang keypoint tiếp".
+    //
+    // Closing the sheet mid-conversation is not a decision to move on — it is
+    // backing out of the sheet. It used to fall through to `onContinue()` and
+    // walk the reader into the next keypoint, so the only way to LOOK at the
+    // Coach and then not use it was to be pushed forward. The invitation is
+    // shown again instead, and the reader leaves it deliberately: ⟨Bỏ qua,
+    // sang bài tiếp theo⟩, or a Coach ending that goes to the Roadmap.
+    while (true) {
+      // Second time round the loop this follows the sheet's own await, so the
+      // context has to be re-checked before it opens a dialog.
+      if (!context.mounted) return;
+      final accepted = await CoachInvitePopup.show(
+        context,
+        kind: widget.isCourseDone ? CoachInviteKind.courseDone : CoachInviteKind.keypoint,
+        courseTitle: widget.courseTitle,
+      );
     // Nút thứ hai giờ mang chữ "Bỏ qua, sang bài tiếp theo" (`inviteLater`), nên
     // nó phải đi tiếp thật. Trước đây nó chỉ đóng dialog và rơi về màn "Hoàn
     // thành bài học" phía dưới — mà màn đó đã bỏ, nên không đi tiếp là để user
     // đứng trên một trang trống.
-    if (accepted != true) {
-      CoachTracking.inviteLater(
+      if (accepted != true) {
+        CoachTracking.inviteLater(
+          lessonId: widget.lessonId,
+          keypointId: widget.keypointId,
+          courseId: widget.courseId,
+          isCourseDone: widget.isCourseDone,
+        );
+        if (mounted) widget.onContinue();
+
+        return;
+      }
+
+      CoachTracking.inviteAccept(
         lessonId: widget.lessonId,
         keypointId: widget.keypointId,
         courseId: widget.courseId,
         isCourseDone: widget.isCourseDone,
       );
-      if (mounted) widget.onContinue();
+      if (!context.mounted) return;
 
-      return;
-    }
-
-    CoachTracking.inviteAccept(
-      lessonId: widget.lessonId,
-      keypointId: widget.keypointId,
-      courseId: widget.courseId,
-      isCourseDone: widget.isCourseDone,
-    );
-    if (!context.mounted) return;
-
-    final outcome = await showCoachSheetForKeypoint(
-      context,
-      entry: CoachEntry.lesson,
-      lessonId: widget.lessonId,
-      keypointId: widget.isCourseDone ? null : widget.keypointId,
-      courseId: widget.isCourseDone ? widget.courseId : null,
-      recap: widget.isCourseDone,
-      quizQuestions: widget.quizQuestions,
-      quizTitle: widget.quizTitle,
-    );
+      final outcome = await showCoachSheetForKeypoint(
+        context,
+        entry: CoachEntry.lesson,
+        lessonId: widget.lessonId,
+        keypointId: widget.isCourseDone ? null : widget.keypointId,
+        courseId: widget.isCourseDone ? widget.courseId : null,
+        recap: widget.isCourseDone,
+        quizQuestions: widget.quizQuestions,
+        quizTitle: widget.quizTitle,
+      );
 
     // Navigation happens only AFTER the modal is gone, through the app-level
     // context — the lesson surface under the sheet may itself be gone by then.
@@ -175,21 +188,19 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
     // Two destinations reach the same route: a course the Coach offered, and
     // the talk finishing on its own ("Đóng · về Roadmap"). The second one is
     // this course's roadmap, so it uses the id this page already holds.
-    final roadmapId = outcome.courseId ?? (outcome.toRoadmap ? widget.courseId : null);
-    if (roadmapId != null && roadmapId.isNotEmpty) {
-      final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
-      if (navContext != null && navContext.mounted && AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, roadmapId)) {
-        return;
+      final roadmapId = outcome.courseId ?? (outcome.toRoadmap ? widget.courseId : null);
+      if (roadmapId != null && roadmapId.isNotEmpty) {
+        final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
+        if (navContext != null && navContext.mounted && AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, roadmapId)) {
+          return;
+        }
       }
+      // Nothing navigated: the sheet was simply closed. Round the loop and
+      // offer it again — the page underneath is bare now that the "Hoàn thành
+      // bài học" block is gone, so leaving the reader on it is the trap this
+      // whole guard exists to avoid.
+      if (!mounted) return;
     }
-    // MỌI đường ra khỏi sheet đều phải rời trang này. Trang bên dưới giờ trống
-    // khi Coach có mời (khối "Hoàn thành bài học" chỉ là phao cho lúc Coach
-    // tắt), nên đóng sheet mà không đi đâu là để user đứng trên nền ảnh với
-    // đúng một nút X — owner gặp ngay lần thử đầu.
-    //
-    // Bấm Đóng giữa chừng cho `nextKeypoint: false`, không phải một ý định
-    // "ở lại": ở lại đâu thì không còn chỗ nào để ở.
-    if (mounted) widget.onContinue();
   }
 }
 

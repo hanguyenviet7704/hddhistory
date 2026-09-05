@@ -204,14 +204,20 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
       // One invitation per trip out of the lesson: the keypoint talk stands
       // down because this one is about to run.
       CoachKeypointInvite.suppressNext();
-      final accepted = await CoachInvitePopup.show(
-        context,
-        kind: CoachInviteKind.newHabit,
-        newHabitCount: _justAdded.length,
-      );
-      if (!mounted) return;
-      if (accepted == true) {
-        await showCoachSheet(
+      // Owner 2026-09-05: closing the sheet puts the reader back on THIS
+      // invitation, not on the way to the next keypoint. Backing out of the
+      // Coach is not a decision to move on.
+      while (true) {
+        if (!mounted) return;
+        final accepted = await CoachInvitePopup.show(
+          context,
+          kind: CoachInviteKind.newHabit,
+          newHabitCount: _justAdded.length,
+        );
+        if (!mounted) return;
+        if (accepted != true) break;
+
+        final courseId = await showCoachSheet(
           context,
           entry: CoachEntry.lesson,
           lessonId: widget.sourceLessonId,
@@ -222,6 +228,17 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
           habitId: _justAdded.length == 1 ? _justAdded.single : null,
         );
         if (!mounted) return;
+        // The course the Coach offered. This return value used to be thrown
+        // away, so "Học ngay" here closed the sheet and did nothing — and with
+        // the loop below it would have closed and asked again for ever.
+        if (courseId != null && courseId.isNotEmpty) {
+          final navContext = AppConfig.instance.context ?? context;
+          if (navContext.mounted &&
+              AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId)) {
+            return;
+          }
+        }
+        // Simply closed — round the loop and offer it again.
       }
     }
 
