@@ -2,6 +2,9 @@ part of '../../habit.dart';
 
 /// What the user picked in the practice sheet.
 /// `coach` is luồng 5 (design 2026-09-03): the same check-in, made in the chat.
+/// `quiz` is no longer offered by this sheet (design, 2026-09-05) — the value
+/// and the screen behind it stay, because the quiz itself lives on inside the
+/// Coach and in the habit's own detail page.
 enum PracticeChoice { journal, quiz, coach }
 
 /// "How do you want to check in?" (design "5 · Habit" → practicepick).
@@ -31,7 +34,6 @@ class PracticePickSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasQuiz = practices.any((practice) => practice.isPlayable);
     // Baked into the container's padding rather than a SafeArea wrapper, so the
     // white sheet stays flush to the bottom edge — same reason as
     // check_in_diary_sheet.dart.
@@ -77,27 +79,16 @@ class PracticePickSheet extends StatelessWidget {
             subtitle: context.l10n.habit.practiceJournalSubtitle,
             onTap: () => Navigator.of(context).pop(PracticeChoice.journal),
           ),
-          if (hasQuiz) ...[
-            12.verticalSpace,
-            _option(
-              context,
-              icon: Icons.help_outline_rounded,
-              iconBg: AppCustomColor.successGreen.withValues(alpha: 0.12),
-              iconColor: AppCustomColor.successGreen,
-              title: context.l10n.habit.practiceQuizTitle,
-              subtitle: context.l10n.habit.practiceQuizSubtitle,
-              onTap: () => Navigator.of(context).pop(PracticeChoice.quiz),
-            ),
-          ],
-          // Luồng 5 — the third row: write today or take the quiz WITH the
-          // Coach, in the chat. Always offered; the sheet itself says so when
-          // the Coach is switched off server-side.
+          // ⟨Làm quiz⟩ was a third row here and is gone (design, 2026-09-05):
+          // a quiz is not a way of RECORDING the day the way telling a real
+          // one is, and it already has its own place inside the Coach.
           12.verticalSpace,
           _option(
             context,
-            icon: Icons.chat_bubble_outline_rounded,
+            // The one row in this sheet that leads to somebody to talk to, so
+            // it shows that somebody rather than a chat glyph.
+            iconChild: const CoachSlime(mood: CoachSlimeMood.idle, size: 30),
             iconBg: AppCustomColor.brandPrimary100,
-            iconColor: AppCustomColor.brandPrimary,
             title: context.l10n.habit.practiceCoachTitle,
             subtitle: context.l10n.habit.practiceCoachSubtitle,
             onTap: () => Navigator.of(context).pop(PracticeChoice.coach),
@@ -109,9 +100,12 @@ class PracticePickSheet extends StatelessWidget {
 
   Widget _option(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    Color? iconColor,
+
+    /// Drawn instead of [icon] — the Coach row shows its mascot.
+    Widget? iconChild,
     required Color iconBg,
-    required Color iconColor,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -139,7 +133,7 @@ class PracticePickSheet extends StatelessWidget {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(14.r),
               ),
-              child: Icon(icon, size: 24.w, color: iconColor),
+              child: iconChild ?? Icon(icon, size: 24.w, color: iconColor),
             ),
             14.horizontalSpace,
             Expanded(
