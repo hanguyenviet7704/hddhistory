@@ -323,6 +323,10 @@ String? coachCourseReason(BuildContext context, String? key, [Map<String, String
       return l10n.courseReasonSkillset;
     case 'coach.course.reasonSaved':
       return l10n.courseReasonSaved;
+    // Ưu tiên cuối — chuyện vừa kể không khớp habit nào, nên card là khoá
+    // chính họ đang học dở. Không phải một gợi ý, mà là việc họ đang làm.
+    case 'coach.course.reasonResume':
+      return l10n.courseReasonResume;
     default:
       return null;
   }
