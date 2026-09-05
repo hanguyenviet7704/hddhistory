@@ -192,10 +192,20 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       _spyArmed = false;
     }
     if (!_scrollController.isAttached || skillsetCount == 0) return;
-    // A reset asks for the very top, which is the header rather than section 0.
-    final target = state.activeSkillsetIndex < 0 ? 0 : state.activeSkillsetIndex.clamp(0, skillsetCount - 1) + _kHeaderRows;
+
+    // Entering the tab resets to "no section", which means the very top — the
+    // header, not section 0. Jump rather than animate: this is not a move
+    // WITHIN the page the reader is looking at, it is how the page opens, and
+    // 300ms of travel from wherever they left it reads as the list running
+    // away from them.
+    if (state.activeSkillsetIndex < 0) {
+      _scrollController.jumpTo(index: 0);
+
+      return;
+    }
+
     _scrollController.scrollTo(
-      index: target,
+      index: state.activeSkillsetIndex.clamp(0, skillsetCount - 1) + _kHeaderRows,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
@@ -269,10 +279,13 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           }
 
           // "All courses" — every skillset stacked as a scrollspy section.
-          final activeIndex = _courseCubit.state.activeSkillsetIndex;
-          // Entering with no section in mind opens at the header, as the design
-          // does; a deep link to a skillset still opens on that section.
-          final initialIndex = activeIndex < 0 ? 0 : activeIndex.clamp(0, skillsets.length - 1) + _kHeaderRows;
+          // Always the top. `activeSkillsetIndex` is where the scrollspy last
+          // left the reader, and opening there used to be visible — the chip
+          // strip lit the matching chip and explained it. With the strip gone,
+          // tapping Explore just threw the page down to a section with nothing
+          // saying why (owner, 2026-09-05: "bấm vào nav khám phá bị cuộn phát
+          // xuống cuối luôn"). A deep link to a section still arrives through
+          // the scroll nonce below.
           return BlocListener<CourseCubit, CourseState>(
             // A bumped nonce is a scroll request (chip tap / reset / deep-link).
             listenWhen: (prev, curr) => prev.exploreScrollNonce != curr.exploreScrollNonce,
@@ -289,7 +302,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
               child: ScrollablePositionedList.builder(
                 itemScrollController: _scrollController,
                 itemPositionsListener: _positionsListener,
-                initialScrollIndex: initialIndex,
+                initialScrollIndex: 0,
                 // No horizontal padding here: each section pays its own, so its
                 // strip can run to the screen edge instead of stopping 20 short
                 // and reading as a clipped list.
