@@ -16,6 +16,10 @@ import { UserRole, UserStatus } from "../../types/enum/user.enum";
 import { userService } from "../../services/userService";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { userProgressService } from "../../services/userProgressService";
+import {
+  coachProfileService,
+  ICoachOnboardingProfile,
+} from "../../services/coachProfileService";
 import { UserProgressExportStatus } from "../../types/enum/user-progress.enum";
 
 const PAGE_SIZE = 10;
@@ -150,6 +154,11 @@ const UserManagement = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<IUser>>(defaultUserForm);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
+  // What this reader told the AI Coach about themselves. Fetched when the
+  // dialog opens rather than with the list: one request per user looked at,
+  // not one per row rendered.
+  const [coachProfile, setCoachProfile] =
+    useState<ICoachOnboardingProfile | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [deletingUser, setDeletingUser] = useState<IUser | null>(null);
@@ -261,12 +270,23 @@ const UserManagement = () => {
       ...defaultUserForm,
       ...user,
     });
+    setCoachProfile(null);
+    const userId = getUserId(user);
+    if (userId) {
+      // Never blocks the dialog and never raises: a reader who has not met the
+      // Coach has no profile, and that is an empty section, not an error.
+      coachProfileService
+        .getByUser(userId)
+        .then(setCoachProfile)
+        .catch(() => setCoachProfile(null));
+    }
     setIsFormOpen(true);
   };
 
   const closeForm = () => {
     setIsFormOpen(false);
     setEditingUser(null);
+    setCoachProfile(null);
     setFormData(defaultUserForm);
   };
 
@@ -952,6 +972,51 @@ const UserManagement = () => {
                   value={formatDevicesValue(formData.devices)}
                 />
               </div>
+
+              {editingUser && (
+                <div>
+                  <div className="text-sm font-semibold text-gray-700 mb-2">
+                    AI Coach · người dùng tự nói về mình
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <InfoField
+                      label="Muốn cải thiện điều gì nhất"
+                      value={coachProfile?.goalText || "-"}
+                    />
+                    <InfoField
+                      label="Điều đang cản nhiều nhất"
+                      value={coachProfile?.barrierText || "-"}
+                    />
+                    <InfoField
+                      label="Đang làm gì"
+                      value={coachProfile?.currentPractice || "-"}
+                    />
+                    <InfoField
+                      label="Cách học hợp"
+                      value={coachProfile?.learningStyle || "-"}
+                    />
+                    <InfoField
+                      label="Công việc"
+                      value={
+                        coachProfile?.occupationRaw ||
+                        coachProfile?.occupation ||
+                        "-"
+                      }
+                    />
+                    <InfoField
+                      label="Xong onboarding lúc"
+                      value={
+                        coachProfile?.onboardedAt
+                          ? new Date(coachProfile.onboardedAt).toLocaleString(
+                              "vi-VN",
+                              { hour12: false },
+                            )
+                          : "-"
+                      }
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 pt-2">
                 <button
