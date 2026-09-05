@@ -143,13 +143,18 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
 
     // Navigation happens only AFTER the modal is gone, through the app-level
     // context — the lesson surface under the sheet may itself be gone by then.
-    if (outcome.courseId != null) {
+    //
+    // Two destinations reach the same route: a course the Coach offered, and
+    // the talk finishing on its own ("Đóng · về Roadmap"). The second one is
+    // this course's roadmap, so it uses the id this page already holds.
+    final roadmapId = outcome.courseId ?? (outcome.toRoadmap ? widget.courseId : null);
+    if (roadmapId != null && roadmapId.isNotEmpty) {
       final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
-      if (navContext != null && navContext.mounted) {
-        AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, outcome.courseId!);
+      if (navContext != null &&
+          navContext.mounted &&
+          AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, roadmapId)) {
+        return;
       }
-
-      return;
     }
     // MỌI đường ra khỏi sheet đều phải rời trang này. Trang bên dưới giờ trống
     // khi Coach có mời (khối "Hoàn thành bài học" chỉ là phao cho lúc Coach

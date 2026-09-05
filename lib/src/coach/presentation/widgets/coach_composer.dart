@@ -744,7 +744,15 @@ class _CoachComposerState extends State<CoachComposer> {
       onTap: busy
           ? null
           : () => Navigator.of(context).pop(
-              leaving ? _CoachSheetResult.openCourse(course.courseId) : const _CoachSheetResult.close(),
+              leaving
+                  ? _CoachSheetResult.openCourse(course.courseId)
+                  // Luồng 2 — the talk after a keypoint ran its course. The
+                  // label has always read "Đóng · về Roadmap"; until now every
+                  // exit went into the NEXT keypoint instead, so the button
+                  // said one thing and did another.
+                  : state.ui.action == 'keypointDone'
+                  ? const _CoachSheetResult.nextKeypoint()
+                  : const _CoachSheetResult.close(),
             ),
     );
   }

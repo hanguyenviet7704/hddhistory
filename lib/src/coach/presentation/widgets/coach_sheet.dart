@@ -10,17 +10,26 @@ sealed class _CoachSheetResult with _$CoachSheetResult {
   const factory _CoachSheetResult.close() = _CoachSheetClose;
   const factory _CoachSheetResult.openCourse(String courseId) = _CoachSheetOpenCourse;
 
-  /// Luồng 2 — ⟨Học tiếp⟩: the sheet is done and the reader goes on to the next keypoint.
+  /// Luồng 2 — the talk after a keypoint ran to its end, so the reader leaves
+  /// for the course Roadmap rather than being walked into the next keypoint.
+  ///
+  /// The factory keeps its old name because renaming it means regenerating
+  /// `coach.freezed.dart`, and this tree carries other sessions' work — read
+  /// [CoachSheetOutcome.toRoadmap] for what it now means.
   const factory _CoachSheetResult.nextKeypoint() = _CoachSheetNextKeypoint;
 }
 
-/// Luồng 2/3 — what the keypoint page does after the sheet: open a course, go
-/// on to the next keypoint, or nothing.
+/// Luồng 2/3 — what the keypoint page does after the sheet: open a course,
+/// leave for the Roadmap, or nothing.
 class CoachSheetOutcome {
   final String? courseId;
-  final bool nextKeypoint;
 
-  const CoachSheetOutcome({this.courseId, this.nextKeypoint = false});
+  /// The talk finished on its own terms. The button that sent us here reads
+  /// "Đóng · về Roadmap", so that is where the reader goes — NOT into the next
+  /// keypoint, which is what every exit used to do regardless of the label.
+  final bool toRoadmap;
+
+  const CoachSheetOutcome({this.courseId, this.toRoadmap = false});
 }
 
 /// Opens the Coach sheet and settles what the reader chose on the way out.
@@ -119,7 +128,7 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
 
   return switch (result) {
     _CoachSheetOpenCourse(courseId: final id) => CoachSheetOutcome(courseId: id),
-    _CoachSheetNextKeypoint() => const CoachSheetOutcome(nextKeypoint: true),
+    _CoachSheetNextKeypoint() => const CoachSheetOutcome(toRoadmap: true),
     _ => const CoachSheetOutcome(),
   };
 }
@@ -268,14 +277,16 @@ class _CoachSheetState extends State<_CoachSheet> {
           CoachTracking.quizRun(state, questionCount: context.read<CoachCubit>().quizQuestions.length);
           _runQuiz(context, context.read<CoachCubit>());
         }
-        if (state.ended && state.ui.action == 'nextKeypoint') {
-          Navigator.of(context).pop(const _CoachSheetResult.nextKeypoint());
+        // Owner 2026-09-05: the sheet no longer closes ITSELF when the talk
+        // ends. It used to pop the moment `nextKeypoint` arrived — which is the
+        // same turn the grading is drawn on — so the reader was thrown out of
+        // the page before they could read what they had got right ("trả lời
+        // xong là bị out luôn"). The server now sends `keypointDone`, the
+        // closing line says where to go, and the reader leaves by the button.
 
-          return;
-        }
         // A door that decided to stay quiet is not an error and gets no
-        // message — the sheet simply goes away again. Every other ending
-        // keeps its one button: "Đóng · về chỗ vừa rời đi".
+        // message — the sheet simply goes away again. Every other ending keeps
+        // its one button.
         if (state.silent) Navigator.of(context).pop(const _CoachSheetResult.close());
       },
       builder: (context, state) {
