@@ -48,17 +48,6 @@ const createAxiosClient = (baseURL: string) => {
       // được QUẢNG BÁ ở đâu, không phải ai được mở.
       config.headers["x-ignore-market-targeting"] = "1";
 
-      // Panel đọc BẢN ĐANG SỬA, app đọc tag đang phát hành. Cùng lý do và
-      // cùng chỗ đặt như header trên: `courses`/`lessons`/`keypoints` dùng
-      // chung route với app, và `user.role` thì không dùng được — tài khoản
-      // admin thật có role USER nên `@Roles(ADMIN)` đã 403 cả panel ba lần.
-      //
-      // Thiếu header này thì editor mở bài ra sẽ thấy nội dung ĐÃ PHÁT HÀNH
-      // trong khi đang sửa bản nháp — không lỗi, không log, chỉ là sai bản.
-      // Thêm `?version=v1.0.0` để xem lại một tag cũ, `?version=current` để
-      // xem đúng cái user thật đang thấy.
-      config.headers["x-ignore-content-version"] = "1";
-
       return config;
     },
     (error: AxiosError) => {

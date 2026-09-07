@@ -14,8 +14,6 @@ export interface DriveSyncResult {
   fileId: string;
   fileName: string;
   courseId?: string;
-  /** Tag được phát hành cho khoá này nếu bật autoTag, null nếu không. */
-  autoTaggedAs?: string | null;
   action: "created" | "updated" | "noop" | "failed";
   stats?: Record<string, DriveSyncEntityStats>;
   errorCount: number;
@@ -71,15 +69,9 @@ export const courseService = {
     });
   },
 
-  /**
-   * `version` xuất một tag đã đóng băng thay vì bản đang sửa ("v1.0.0" hoặc
-   * "current"). Id trong tag là id thật, nên import lại workbook đó chính là
-   * cách khôi phục nội dung của tag đó lên bản đang sửa.
-   */
-  async exportCourseFull(courseId: string, version?: string) {
+  async exportCourseFull(courseId: string) {
     return axiosClient.get(`/course-content-transfers/${courseId}/export`, {
       responseType: "blob",
-      params: version ? { version } : undefined,
     });
   },
 
@@ -105,15 +97,9 @@ export const courseService = {
     return res.data as { fileId: string; webViewLink?: string };
   },
 
-  /**
-   * `autoTag` phát hành luôn: mỗi khoá import sạch lỗi sẽ được đánh tag patch
-   * kế tiếp và trỏ current sang đó. Mặc định tắt — sync chỉ ghi vào bản đang
-   * sửa, nên nếu không bật thì app vẫn phát tag cũ.
-   */
-  async syncFromDrive(fileId?: string, autoTag = false) {
+  async syncFromDrive(fileId?: string) {
     const res = await axiosClient.post(`/course-content-transfers/drive-sync`, {
       fileId,
-      autoTag,
     });
     return res.data as DriveSyncResult[];
   },
