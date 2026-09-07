@@ -250,6 +250,8 @@ promptCourseCard: Có một khoá gần với chuyện bạn vừa nói tới.
 courseOpen: Đi tới khoá học
 courseOpenEcho: Đi tới khoá học.
 courseCardSaveEcho: Lưu để sau.
+courseHarderScene: "Luyện cảnh khó hơn"
+courseHarderSceneEcho: "Luyện cảnh khó hơn."
 courseCardCloseEcho: Bỏ qua.
 promptCourseLeave: Mình mở khoá đó cho bạn. Cứ xem một lesson thôi cũng được.
 endLeave: Sang Roadmap khoá học

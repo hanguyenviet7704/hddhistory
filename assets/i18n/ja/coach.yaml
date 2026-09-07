@@ -250,6 +250,8 @@ promptCourseCard: 今の話に近いコースがあります。
 courseOpen: コースへ行く
 courseOpenEcho: コースへ行く。
 courseCardSaveEcho: あとで見る。
+courseHarderScene: "もっと難しい場面で練習"
+courseHarderSceneEcho: "もっと難しい場面で練習します。"
 courseCardCloseEcho: スキップ。
 promptCourseLeave: 開きますね。レッスンを1つ見るだけでも大丈夫です。
 endLeave: コースのロードマップへ

@@ -400,6 +400,14 @@ class _CoachSheetState extends State<_CoachSheet> {
                       onCourseClose: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
                           ? null
                           : () => cubit.courseAction('close', label: context.l10n.coach.courseCardCloseEcho),
+                      // The alternative to the course: another scene about the
+                      // same habit, one rung up. Rides the same `course` event
+                      // — the card is where the two ways forward sit together,
+                      // so the reader is choosing between them, not doing two
+                      // things.
+                      onCourseHarder: state.ui.kind != CoachUiKind.courseCard || state.status == CoachStatus.sending
+                          ? null
+                          : () => cubit.courseAction('harder', label: context.l10n.coach.courseHarderSceneEcho),
                       // ⟨Phương án⟩ in the thread, as the design draws them —
                       // and the closing choice is drawn the same way.
                       options: (state.ui.kind == CoachUiKind.chips || state.ui.kind == CoachUiKind.nextSession) && !state.typing

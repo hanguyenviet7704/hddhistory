@@ -258,6 +258,8 @@ promptCourseCard: "There's a course close to what you just talked about."
 courseOpen: Go to the course
 courseOpenEcho: Go to the course.
 courseCardSaveEcho: Save for later.
+courseHarderScene: "Practise a harder scene"
+courseHarderSceneEcho: "Practise a harder scene."
 courseCardCloseEcho: Skip.
 promptCourseLeave: "I'll open it for you. Even one lesson is fine."
 endLeave: "To the course's Roadmap"

@@ -250,6 +250,8 @@ promptCourseCard: 有一门课和你刚说的很接近。
 courseOpen: 去看课程
 courseOpenEcho: 去看课程。
 courseCardSaveEcho: 先收藏。
+courseHarderScene: "练一个更难的情境"
+courseHarderSceneEcho: "练一个更难的情境。"
 courseCardCloseEcho: 跳过。
 promptCourseLeave: 我帮你打开。哪怕只看一节课也可以。
 endLeave: 前往课程路线图

@@ -18,6 +18,9 @@ class CoachMessageList extends StatefulWidget {
   final VoidCallback? onCourseSave;
   final VoidCallback? onCourseClose;
 
+  /// "Luyện cảnh khó hơn" — the alternative to taking the course.
+  final VoidCallback? onCourseHarder;
+
   /// ⟨Phương án⟩ / the mood row, rendered inside the thread right under the
   /// Coach's line — the design's option screens have no composer at all.
   final Widget? options;
@@ -31,6 +34,7 @@ class CoachMessageList extends StatefulWidget {
     this.onCourseTap,
     this.onCourseSave,
     this.onCourseClose,
+    this.onCourseHarder,
     this.options,
   });
 
@@ -148,6 +152,7 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
           onOpen: widget.onCourseTap,
           onSave: widget.onCourseSave,
           onClose: widget.onCourseClose,
+          onHarder: widget.onCourseHarder,
         ),
       if (widget.options != null) widget.options!,
     ];
@@ -364,13 +369,24 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
 class _CourseCard extends StatelessWidget {
   final CoachCourseCardEntity course;
 
-  /// The card's three ways out, as the design draws them: "Học ngay" filled,
+  /// The card's ways out, as the design draws them: "Học ngay" filled,
   /// "Lưu lại" outlined, ✕ in the corner. Tapping the body is "Học ngay" too.
   final VoidCallback? onOpen;
   final VoidCallback? onSave;
   final VoidCallback? onClose;
 
-  const _CourseCard({required this.course, this.onOpen, this.onSave, this.onClose});
+  /// The other way forward: another scene about the same habit, one rung
+  /// harder. Its own full-width row under the pair, because it is not a third
+  /// way of dealing with the course — it is the alternative to taking it.
+  final VoidCallback? onHarder;
+
+  const _CourseCard({
+    required this.course,
+    this.onOpen,
+    this.onSave,
+    this.onClose,
+    this.onHarder,
+  });
 
   String _reach(int count) {
     if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(count % 1000000 == 0 ? 0 : 1)}M';
@@ -534,6 +550,14 @@ class _CourseCard extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ],
+            if (onHarder != null) ...[
+              SizedBox(height: 8.h),
+              _CourseCardButton(
+                label: l10n.courseHarderScene,
+                filled: false,
+                onTap: onHarder,
               ),
             ],
           ],

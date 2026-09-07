@@ -250,6 +250,8 @@ promptCourseCard: 방금 이야기와 가까운 코스가 하나 있어요.
 courseOpen: 코스로 가기
 courseOpenEcho: 코스로 가기.
 courseCardSaveEcho: 나중에 보기.
+courseHarderScene: "더 어려운 상황 연습"
+courseHarderSceneEcho: "더 어려운 상황을 연습할게요."
 courseCardCloseEcho: 건너뛰기.
 promptCourseLeave: 열어 드릴게요. 레슨 하나만 봐도 괜찮아요.
 endLeave: 코스 로드맵으로
