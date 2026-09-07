@@ -7,6 +7,7 @@ import {
   SpeakerWaveIcon,
   GlobeAltIcon,
   CloudArrowUpIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import { countryLabel } from "../../config/countries";
 import {
@@ -26,6 +27,7 @@ import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import ExcelImportButton from "../../components/imports/ExcelImportButton";
 import { downloadBlob } from "../../utils/downloadBlob";
+import CourseVersionsModal from "../../components/courses/CourseVersionsModal";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 export default function CourseList() {
@@ -44,6 +46,11 @@ export default function CourseList() {
   // The voiceover status/coverage modal (per course) — see which keypoints ×
   // languages are done / stale / missing / failed, and generate from there.
   const [voiceoverCourse, setVoiceoverCourse] = useState<ICourse | null>(null);
+  const [versionsCourse, setVersionsCourse] = useState<ICourse | null>(null);
+  // Sync Drive chỉ ghi vào BẢN ĐANG SỬA. Trên khoá đã có tag, app vẫn phát tag
+  // cũ cho tới khi đánh tag mới — bật cờ này để mỗi khoá import sạch lỗi được
+  // phát hành luôn. Mặc định tắt: phát hành phải là hành động có chủ ý.
+  const [syncAutoTag, setSyncAutoTag] = useState(false);
 
   // modal / confirm state
   const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
@@ -137,7 +144,7 @@ export default function CourseList() {
   const syncDrive = async () => {
     setSyncingDrive(true);
     try {
-      const results = await courseService.syncFromDrive();
+      const results = await courseService.syncFromDrive(undefined, syncAutoTag);
       setSyncResults(results);
       const failed = results.filter((r) => r.action === "failed").length;
       if (failed) {
@@ -292,6 +299,17 @@ export default function CourseList() {
             >
               Export
             </button>
+            <label
+              className="inline-flex items-center gap-2 text-sm text-slate-600"
+              title="Phát hành luôn mỗi khoá import sạch lỗi (đánh tag patch kế tiếp)"
+            >
+              <input
+                type="checkbox"
+                checked={syncAutoTag}
+                onChange={(event) => setSyncAutoTag(event.target.checked)}
+              />
+              Phát hành sau sync
+            </label>
             <button
               type="button"
               disabled={syncingDrive}
@@ -395,6 +413,13 @@ export default function CourseList() {
                             title="Push this course's sheet to Google Drive"
                           >
                             <CloudArrowUpIcon className="h-5 w-5 text-emerald-600" />
+                          </button>
+                          <button
+                            onClick={() => setVersionsCourse(course)}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                            title="Phiên bản nội dung: đánh tag, phát hành, rollback"
+                          >
+                            <TagIcon className="h-5 w-5 text-amber-600" />
                           </button>
                           <button
                             onClick={() => setVoiceoverCourse(course)}
@@ -570,6 +595,15 @@ export default function CourseList() {
         onClose={() => setVoiceoverCourse(null)}
       />
 
+      <CourseVersionsModal
+        open={Boolean(versionsCourse)}
+        courseId={versionsCourse?._id ?? ""}
+        courseTitle={
+          versionsCourse ? getTranslationValue(versionsCourse.title, lang) : ""
+        }
+        onClose={() => setVersionsCourse(null)}
+      />
+
       {/* Drive sync results */}
       {syncResults && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -605,6 +639,20 @@ export default function CourseList() {
                       <tr key={r.fileId} className="border-b last:border-0 align-top">
                         <td className="py-2 pr-3 font-medium text-gray-900">
                           {r.fileName}
+                          {/* Sync ghi vào bản đang sửa. Nếu không phát hành thì
+                              app vẫn phát tag cũ — nói rõ ra để người sửa sheet
+                              không tưởng đã live. */}
+                          {r.action !== "failed" && r.action !== "noop" && (
+                            <span
+                              className={`mt-1 block text-xs font-normal ${
+                                r.autoTaggedAs ? "text-emerald-600" : "text-amber-600"
+                              }`}
+                            >
+                              {r.autoTaggedAs
+                                ? `đã phát hành ${r.autoTaggedAs}`
+                                : "chưa phát hành — cần đánh tag"}
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 pr-3">
                           {r.action === "created" && (
