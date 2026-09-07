@@ -1,4 +1,8 @@
 import {
+  ICoachMetricsWeek,
+  ICoachStatsPage,
+} from "../types/interface/coachStats.interface";
+import {
   IDashboardQuery,
   ILearningPage,
   IOnboardingPage,
@@ -37,6 +41,23 @@ export const dashboardService = {
 
   async getLearning(params: IDashboardQuery): Promise<ILearningPage> {
     const res = await axiosClient.get(`${basePath}/learning`, { params });
+    return unwrap(res);
+  },
+
+  async getCoach(params: IDashboardQuery): Promise<ICoachStatsPage> {
+    const res = await axiosClient.get(`${basePath}/coach`, { params });
+    return unwrap(res);
+  },
+
+  /**
+   * The Coach's own weekly counters — a different endpoint and a different
+   * grain from everything above, so it takes an ISO week rather than a range.
+   * Omitting the week asks for the most recent one that has data.
+   */
+  async getCoachMetrics(isoWeek?: string): Promise<ICoachMetricsWeek> {
+    const res = await axiosClient.get("/coach-metrics", {
+      params: isoWeek ? { isoWeek } : undefined,
+    });
     return unwrap(res);
   },
 };

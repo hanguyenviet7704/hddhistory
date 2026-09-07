@@ -187,6 +187,14 @@ const menuGroups = [
         icon: ChatBubbleLeftRightIcon,
         path: "/coach-contents",
       },
+      {
+        // Sits in this group rather than under Dashboard so the people who
+        // author the Coach can read its numbers without leaving the section
+        // they work in.
+        name: "Thống kê",
+        icon: PresentationChartLineIcon,
+        path: "/coach-stats",
+      },
       { name: "Chi phí AI", icon: SparklesIcon, path: "/coach-ai-usage" },
     ],
   },

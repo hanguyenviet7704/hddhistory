@@ -44,6 +44,7 @@ import CoachRatingList from "../pages/coach/CoachRatingList";
 import CoachContentList from "../pages/coach/CoachContentList";
 import CoachUserThread from "../pages/coach/CoachUserThread";
 import CoachAiUsagePage from "../pages/coach/CoachAiUsagePage";
+import CoachStatsPage from "../pages/coach/CoachStatsPage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
 import HomePopupPage from "../pages/home-popup/HomePopupPage";
 import CommunityModerationPage from "../pages/community/CommunityModerationPage";
@@ -137,6 +138,7 @@ export default function AppRouter() {
                 path="coach-contents/users/:userId"
                 element={<CoachUserThread />}
               />
+              <Route path="coach-stats" element={<CoachStatsPage />} />
               <Route path="coach-ai-usage" element={<CoachAiUsagePage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />
