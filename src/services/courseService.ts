@@ -4,6 +4,7 @@ import {
   RoadmapPayload,
 } from "../types/interface/course.interface";
 import axiosClient from "./axiosClient";
+import { unwrapApi } from "../utils/unwrapApi";
 
 export interface DriveSyncEntityStats {
   created: number;
@@ -115,7 +116,9 @@ export const courseService = {
       fileId,
       autoTag,
     });
-    return res.data as DriveSyncResult[];
+    // Bị bọc phong bì như mọi response JSON khác; trả thẳng `res.data` thì
+    // `syncResults.map` trong CourseList nổ và trắng cả trang.
+    return unwrapApi<DriveSyncResult[]>(res.data);
   },
 
   async importExcel(file: File) {
