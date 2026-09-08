@@ -30,6 +30,7 @@ import {
   PaywallProductRef,
   PaywallProductVariant,
   PaywallGiftCampaign,
+  PaywallGiftOpenFrequency,
   PaywallCompactPaywall,
   PaywallLocalizedLine,
   PaywallReview,
@@ -122,6 +123,10 @@ export interface GiftCampaignDraft {
   windowDays: string;
   triggerOnFirstHabit: boolean;
   triggerOnDailyOpen: boolean;
+  /** Tần suất của lịch mở app; `oncePerDay` là hành vi cũ. */
+  openFrequency: PaywallGiftOpenFrequency;
+  /** Chuỗi để bind input; rỗng = không gửi, app dùng mặc định 30. Chỉ đọc khi `everyOpen`. */
+  minGapMinutes: string;
 }
 
 /** Copy owned by the compact paywall itself; SKUs stay per-strategy. */
@@ -327,6 +332,8 @@ export const defaultDraft = (): ConfigDraft => ({
     windowDays: "",
     triggerOnFirstHabit: true,
     triggerOnDailyOpen: true,
+    openFrequency: "oncePerDay",
+    minGapMinutes: "",
   },
   compactPaywall: {
     discountPercent: "",
@@ -541,6 +548,12 @@ export const toDraft = (config: PaywallConfig): ConfigDraft => ({
     // shipped before these toggles existed.
     triggerOnFirstHabit: config.giftCampaign?.triggerOnFirstHabit !== false,
     triggerOnDailyOpen: config.giftCampaign?.triggerOnDailyOpen !== false,
+    // Anything but the one known alternative reads as the original schedule,
+    // so a version published before the mode existed edits as `oncePerDay`.
+    openFrequency:
+      config.giftCampaign?.openFrequency === "everyOpen" ? "everyOpen" : "oncePerDay",
+    minGapMinutes:
+      config.giftCampaign?.minGapMinutes != null ? String(config.giftCampaign.minGapMinutes) : "",
   },
   compactPaywall: {
     discountPercent: config.compactPaywall?.discountPercent != null ? String(config.compactPaywall.discountPercent) : "",
@@ -785,6 +798,9 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
   const giftWindowDays = draft.giftCampaign.windowDays.trim()
     ? Number(draft.giftCampaign.windowDays)
     : undefined;
+  const giftMinGapMinutes = draft.giftCampaign.minGapMinutes.trim()
+    ? Number(draft.giftCampaign.minGapMinutes)
+    : undefined;
   const giftCampaign: PaywallGiftCampaign = {
     enabled: draft.giftCampaign.enabled,
     title: fromLocalizedLineDraft(draft.giftCampaign.title),
@@ -793,6 +809,14 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
     ...(giftWindowDays != null ? { windowDays: giftWindowDays } : {}),
     triggerOnFirstHabit: draft.giftCampaign.triggerOnFirstHabit,
     triggerOnDailyOpen: draft.giftCampaign.triggerOnDailyOpen,
+    openFrequency: draft.giftCampaign.openFrequency,
+    // Blank = don't send, same reasoning as windowDays: the app keeps its
+    // built-in 30 rather than being pinned to a number nobody chose. Sent only
+    // in the mode that reads it, so a switch back to `oncePerDay` doesn't
+    // publish a stale throttle.
+    ...(draft.giftCampaign.openFrequency === "everyOpen" && giftMinGapMinutes != null
+      ? { minGapMinutes: giftMinGapMinutes }
+      : {}),
   };
 
   // Trống toàn bộ → không gửi field, giữ nguyên tắc field-sau-v1 optional.
@@ -1064,6 +1088,18 @@ export const validateDraft = (
     if (!Number.isInteger(giftWindow) || giftWindow < 1 || giftWindow > 30) {
       errors["giftCampaign.windowDays"] =
         "Số ngày phải là số nguyên từ 1 đến 30, hoặc để trống để dùng mặc định 7";
+    }
+  }
+
+  // Same contract as windowDays: blank means "don't send" and the app uses its
+  // built-in 30. Validated whatever the mode is — a number typed here, then
+  // left behind by a switch back to `oncePerDay`, must not become a 400 the
+  // next time somebody switches the mode back.
+  if (draft.giftCampaign.minGapMinutes.trim()) {
+    const giftMinGap = Number(draft.giftCampaign.minGapMinutes);
+    if (!Number.isInteger(giftMinGap) || giftMinGap < 0 || giftMinGap > 1440) {
+      errors["giftCampaign.minGapMinutes"] =
+        "Giãn cách phải là số nguyên từ 0 đến 1440 phút, hoặc để trống để dùng mặc định 30";
     }
   }
 

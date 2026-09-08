@@ -113,24 +113,48 @@ export type PaywallLocalizedLine = {
 } & Partial<Record<Exclude<PaywallLocale, "en">, string>>;
 
 /**
+ * How often the app-open trigger may fire. Refines `triggerOnDailyOpen` rather
+ * than replacing it: the toggle still says whether the app-open popup runs at
+ * all, this says how often.
+ *
+ * `oncePerDay` — the original schedule: first open of each day, days
+ * 1..windowDays, and only once the reader has adopted their first habit.
+ * `everyOpen` — drops BOTH the day-zero requirement and the window: every
+ * non-premium reader, from their first open, indefinitely, throttled only by
+ * `minGapMinutes`.
+ */
+export type PaywallGiftOpenFrequency = "oncePerDay" | "everyOpen";
+
+/**
  * The gift popup: its only job is to open the COMPACT paywall on a schedule
- * hardcoded in the app (first habit on day 0, first open of each day 1-7,
- * premium users skipped). Everything the reader sees after the tap belongs to
- * the compact paywall's own config (see `PaywallCompactPaywall` /
- * `compactProducts` below) — the ONLY thing configurable here is the popup's
- * title line; absent falls back to the app's bundled copy ("A special gift
- * for you!"). The CTA label ("Open") is hardcoded too.
+ * (first habit on day 0, then the app-open trigger — see
+ * `PaywallGiftOpenFrequency`; premium users skipped). Everything the reader
+ * sees after the tap belongs to the compact paywall's own config (see
+ * `PaywallCompactPaywall` / `compactProducts` below) — the only copy
+ * configurable here is the popup's title line; absent falls back to the app's
+ * bundled copy ("A special gift for you!"). The CTA label ("Open") is
+ * hardcoded.
  */
 export interface PaywallGiftCampaign {
   enabled: boolean;
   /** Popup title per locale. Absent uses the app's bundled copy. */
   title?: PaywallLocalizedLine;
-  /** Days after day zero the daily-open popup keeps running. Absent = 7. */
+  /** Days after day zero the daily-open popup keeps running. Absent = 7. Unread in `everyOpen` mode. */
   windowDays?: number;
   /** Show when the reader adopts their first habit (day 0). Absent = on. */
   triggerOnFirstHabit?: boolean;
-  /** Show on the first app open of each day in the window. Absent = on. */
+  /** Show on app open. Absent = on. How often is `openFrequency`'s job. */
   triggerOnDailyOpen?: boolean;
+  /** Absent = `oncePerDay`, so configs published before this field behave as before. */
+  openFrequency?: PaywallGiftOpenFrequency;
+  /**
+   * Minutes since the popup last went up before `everyOpen` may show it again;
+   * read only in that mode. The app-open check runs on every `resumed`
+   * lifecycle event, not just a cold start, so without this a reader who left
+   * for ten seconds comes back to a paywall popup. 0 = literally every resume;
+   * absent = the app's 30.
+   */
+  minGapMinutes?: number;
 }
 
 /**
