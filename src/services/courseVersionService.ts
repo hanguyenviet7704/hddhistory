@@ -1,4 +1,5 @@
 import axiosClient from "./axiosClient";
+import { unwrapApi } from "../utils/unwrapApi";
 
 export interface CourseVersionEntityCounts {
   lessons: number;
@@ -45,7 +46,7 @@ export interface CourseVersionList {
 export const courseVersionService = {
   async list(courseId: string) {
     const res = await axiosClient.get(`/courses/${courseId}/versions`);
-    return res.data as CourseVersionList;
+    return unwrapApi<CourseVersionList>(res.data);
   },
 
   async create(
@@ -56,7 +57,7 @@ export const courseVersionService = {
       `/courses/${courseId}/versions`,
       payload
     );
-    return res.data as CourseVersion;
+    return unwrapApi<CourseVersion>(res.data);
   },
 
   /** Phát hành một tag đã có — cũng chính là cách rollback. */
@@ -64,20 +65,20 @@ export const courseVersionService = {
     const res = await axiosClient.put(`/courses/${courseId}/current-version`, {
       tag,
     });
-    return res.data as CourseVersion;
+    return unwrapApi<CourseVersion>(res.data);
   },
 
   async remove(courseId: string, tag: string) {
     const res = await axiosClient.delete(
       `/courses/${courseId}/versions/${tag}`
     );
-    return res.data as { deleted: boolean };
+    return unwrapApi<{ deleted: boolean }>(res.data);
   },
 
   /** Chạy một lần cho mỗi môi trường: đánh v1.0.0 cho mọi khoá chưa có tag. */
   async backfill() {
     const res = await axiosClient.post(`/courses/versions/backfill`);
-    return res.data as { tagged: string[]; skipped: string[] };
+    return unwrapApi<{ tagged: string[]; skipped: string[] }>(res.data);
   },
 };
 

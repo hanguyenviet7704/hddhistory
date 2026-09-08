@@ -63,7 +63,10 @@ const CourseVersionsModal: React.FC<Props> = ({
     try {
       const result = await courseVersionService.list(courseId);
       setData(result);
-      setTag(result.nextTag);
+      // `?? ""` không phải trang trí: `tag` undefined làm `tag.trim()` dưới
+      // đây nổ ngay trong render, React unmount cả cây và TRẮNG toàn bộ trang
+      // admin. Xem test "survives a payload with no nextTag".
+      setTag(result?.nextTag ?? "");
     } catch (error: any) {
       showError(error?.response?.data?.message || "Không tải được danh sách phiên bản");
     } finally {
@@ -89,14 +92,17 @@ const CourseVersionsModal: React.FC<Props> = ({
 
   const createTag = () =>
     runBusy(async () => {
+      const wanted = (tag ?? "").trim();
       await courseVersionService.create(courseId, {
-        tag: tag.trim(),
+        tag: wanted,
         note: note.trim() || undefined,
         setCurrent,
       });
       setNote("");
       showSuccess(
-        setCurrent ? `Đã phát hành ${tag.trim()}` : `Đã đóng gói ${tag.trim()} (chưa phát hành)`
+        setCurrent
+          ? `Đã phát hành ${wanted}`
+          : `Đã đóng gói ${wanted} (chưa phát hành)`
       );
     });
 
@@ -171,9 +177,9 @@ const CourseVersionsModal: React.FC<Props> = ({
                 </p>
                 <ul className="mt-2 space-y-0.5 text-sm text-amber-900">
                   {[
-                    ...pending.changed.map((ref) => ({ ref, kind: "sửa" })),
-                    ...pending.added.map((ref) => ({ ref, kind: "thêm" })),
-                    ...pending.removed.map((ref) => ({ ref, kind: "xoá" })),
+                    ...(pending.changed ?? []).map((ref) => ({ ref, kind: "sửa" })),
+                    ...(pending.added ?? []).map((ref) => ({ ref, kind: "thêm" })),
+                    ...(pending.removed ?? []).map((ref) => ({ ref, kind: "xoá" })),
                   ]
                     .slice(0, 12)
                     .map(({ ref, kind }) => (
@@ -226,7 +232,7 @@ const CourseVersionsModal: React.FC<Props> = ({
               </label>
               <button
                 onClick={createTag}
-                disabled={busy || !tag.trim()}
+                disabled={busy || !(tag ?? "").trim()}
                 className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60"
               >
                 Đánh tag
