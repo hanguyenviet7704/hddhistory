@@ -168,6 +168,12 @@ abstract class CoachSceneModel with _$CoachSceneModel {
     String? habit,
     @Default('') String setup,
     String? question,
+    /// Ba cách tiếp cận, server đã dựng sẵn thành dòng `A. tên — "câu"`.
+    /// Là CHỮ để đọc, không phải nút: bấm rồi chép thì câu gửi đi không còn là
+    /// câu người học nghĩ ra, mà đó mới là câu được chấm.
+    @Default(<String>[]) List<String> options,
+    /// Câu dẫn phía trên chúng, và nó nói rõ tự viết cũng được.
+    String? optionsLead,
   }) = _CoachSceneModel;
 
   factory CoachSceneModel.fromJson(Map<String, dynamic> json) => _$CoachSceneModelFromJson(json);

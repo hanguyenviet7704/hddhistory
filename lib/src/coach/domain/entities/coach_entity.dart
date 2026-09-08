@@ -281,7 +281,23 @@ class CoachSceneEntity {
   /// The closing question, shown last and on its own. Null if the scene had none.
   final String? question;
 
-  const CoachSceneEntity({this.habit, required this.setup, this.question});
+  /// Ba cách tiếp cận đã dựng sẵn thành dòng, hiện dưới câu hỏi.
+  ///
+  /// Chỉ là chữ — không có nút nào để bấm. Luật này canh đúng khoảnh khắc cảnh
+  /// vừa hiện: "có nút đó thì người dùng sẽ bấm và chép, và cả bài tập mất
+  /// nghĩa". Rỗng với cảnh cũ và với cảnh mà model không viết được bộ nào.
+  final List<String> options;
+
+  /// Câu dẫn phía trên chúng. Null khi không có cách nào để dẫn.
+  final String? optionsLead;
+
+  const CoachSceneEntity({
+    this.habit,
+    required this.setup,
+    this.question,
+    this.options = const <String>[],
+    this.optionsLead,
+  });
 }
 
 class CoachUiEntity {
@@ -519,6 +535,8 @@ extension CoachTurnModelX on CoachTurnModel {
               habit: (ui.scene!.habit?.trim().isEmpty ?? true) ? null : ui.scene!.habit,
               setup: ui.scene!.setup,
               question: (ui.scene!.question?.trim().isEmpty ?? true) ? null : ui.scene!.question,
+              options: ui.scene!.options.where((line) => line.trim().isNotEmpty).toList(),
+              optionsLead: (ui.scene!.optionsLead?.trim().isEmpty ?? true) ? null : ui.scene!.optionsLead,
             ),
       samples: ui.samples,
       hotlines: ui.hotlines.map((h) => CoachHotlineEntity(label: h.label, number: h.number)).toList(),
@@ -621,7 +639,13 @@ extension CoachReplayModelX on CoachReplayModel {
       situation: clean(situation),
       scene: scene == null || (scene!.setup.trim().isEmpty && clean(scene!.question) == null && clean(scene!.habit) == null)
           ? null
-          : CoachSceneEntity(habit: clean(scene!.habit), setup: scene!.setup, question: clean(scene!.question)),
+          : CoachSceneEntity(
+              habit: clean(scene!.habit),
+              setup: scene!.setup,
+              question: clean(scene!.question),
+              options: scene!.options.where((line) => line.trim().isNotEmpty).toList(),
+              optionsLead: clean(scene!.optionsLead),
+            ),
       divider: d == null || dividerAt == null ? null : CoachDividerEntity(at: dividerAt, entry: d.entry),
     );
   }

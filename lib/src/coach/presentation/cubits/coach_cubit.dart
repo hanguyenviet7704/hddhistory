@@ -572,6 +572,18 @@ class CoachCubit extends Cubit<CoachState> {
       if (scene.question != null) {
         messages.add(CoachMessage(isCoach: true, text: scene.question!, emphasis: true));
       }
+      // Ba cách tiếp cận, dưới câu hỏi và mỗi cái một bong bóng — cùng hình
+      // dạng với lúc cảnh phản ứng lại, nên hai khoảnh khắc đọc như một thứ.
+      // KHÔNG đẩy vào `samples`: samples là chip bấm được, mà ở đây bấm-rồi-chép
+      // là đúng cái làm bài tập mất nghĩa. Không nhấn mạnh, vì thứ được nhấn ở
+      // màn này phải là câu hỏi.
+      final optionsLead = scene.optionsLead;
+      if (optionsLead != null && optionsLead.isNotEmpty) {
+        messages.add(CoachMessage(isCoach: true, text: optionsLead));
+      }
+      for (final line in scene.options) {
+        messages.add(CoachMessage(isCoach: true, text: line));
+      }
     } else if (situation != null) {
       final lead = turn.noteKey == 'coach.prompt.lessonIntro' ? promptResolver?.call('coach.prompt.sceneLead', const {}) : null;
       messages.add(CoachMessage(isCoach: true, text: lead == null || lead.isEmpty ? situation : '$lead $situation'));
