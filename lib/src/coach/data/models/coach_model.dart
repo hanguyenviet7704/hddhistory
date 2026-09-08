@@ -161,6 +161,23 @@ abstract class CoachSceneScoreModel with _$CoachSceneScoreModel {
   factory CoachSceneScoreModel.fromJson(Map<String, dynamic> json) => _$CoachSceneScoreModelFromJson(json);
 }
 
+/// Một hướng trả lời cảnh, do server đặt tên.
+@freezed
+abstract class CoachSceneOptionModel with _$CoachSceneOptionModel {
+  const factory CoachSceneOptionModel({
+    /// "A" · "B" · "C" — người đọc gõ đúng chữ này cũng chọn được.
+    @Default('') String key,
+
+    /// Tên của hướng, 2–4 chữ.
+    @Default('') String label,
+
+    /// Một câu ngắn theo giọng của hướng đó.
+    @Default('') String text,
+  }) = _CoachSceneOptionModel;
+
+  factory CoachSceneOptionModel.fromJson(Map<String, dynamic> json) => _$CoachSceneOptionModelFromJson(json);
+}
+
 /// The scene broken into the parts the app shows as separate bubbles.
 @freezed
 abstract class CoachSceneModel with _$CoachSceneModel {
@@ -168,10 +185,12 @@ abstract class CoachSceneModel with _$CoachSceneModel {
     String? habit,
     @Default('') String setup,
     String? question,
-    /// Ba cách tiếp cận, server đã dựng sẵn thành dòng `A. tên — "câu"`.
-    /// Là CHỮ để đọc, không phải nút: bấm rồi chép thì câu gửi đi không còn là
-    /// câu người học nghĩ ra, mà đó mới là câu được chấm.
-    @Default(<String>[]) List<String> options,
+
+    /// Ba hướng trả lời. Có cấu trúc chứ không phải dòng dựng sẵn, để app in
+    /// đậm được phần chữ cái + tên hướng rồi để câu trích xuống dưới — một
+    /// `Text` không mang được hai độ đậm.
+    @Default(<CoachSceneOptionModel>[]) List<CoachSceneOptionModel> options,
+
     /// Câu dẫn phía trên chúng, và nó nói rõ tự viết cũng được.
     String? optionsLead,
   }) = _CoachSceneModel;

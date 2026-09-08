@@ -581,8 +581,17 @@ class CoachCubit extends Cubit<CoachState> {
       if (optionsLead != null && optionsLead.isNotEmpty) {
         messages.add(CoachMessage(isCoach: true, text: optionsLead));
       }
-      for (final line in scene.options) {
-        messages.add(CoachMessage(isCoach: true, text: line));
+      for (final option in scene.options) {
+        // Chữ cái + tên hướng vào TIÊU ĐỀ in đậm, câu trích xuống dòng dưới:
+        // chữ cái là thứ người đọc với tay tới (gõ "A" cũng chọn được), nên nó
+        // phải nhìn ra ngay. Một `Text` không mang được hai độ đậm.
+        messages.add(
+          CoachMessage(
+            isCoach: true,
+            title: '${option.key}. ${option.label}',
+            text: '"${option.text}"',
+          ),
+        );
       }
     } else if (situation != null) {
       final lead = turn.noteKey == 'coach.prompt.lessonIntro' ? promptResolver?.call('coach.prompt.sceneLead', const {}) : null;

@@ -273,6 +273,19 @@ class CoachSceneScoreEntity {
 /// The scene, split so the thread shows it as several short bubbles instead of
 /// one block. Built server-side: the app has no habit title at this step, and a
 /// client-side sentence splitter would drift between platforms.
+/// Một hướng trả lời cảnh — chữ cái, tên hướng, và câu theo giọng hướng đó.
+class CoachSceneOptionEntity {
+  final String key;
+  final String label;
+  final String text;
+
+  const CoachSceneOptionEntity({
+    required this.key,
+    required this.label,
+    required this.text,
+  });
+}
+
 class CoachSceneEntity {
   /// The habit being practised. Null at ①, whose intro already names it.
   final String? habit;
@@ -281,12 +294,11 @@ class CoachSceneEntity {
   /// The closing question, shown last and on its own. Null if the scene had none.
   final String? question;
 
-  /// Ba cách tiếp cận đã dựng sẵn thành dòng, hiện dưới câu hỏi.
+  /// Ba hướng trả lời, hiện dưới câu hỏi của cảnh.
   ///
-  /// Chỉ là chữ — không có nút nào để bấm. Luật này canh đúng khoảnh khắc cảnh
-  /// vừa hiện: "có nút đó thì người dùng sẽ bấm và chép, và cả bài tập mất
-  /// nghĩa". Rỗng với cảnh cũ và với cảnh mà model không viết được bộ nào.
-  final List<String> options;
+  /// Chữ cái + tên hướng đi vào tiêu đề in đậm của bong bóng, câu trích xuống
+  /// dòng dưới. Rỗng với cảnh cũ và cảnh mà model không viết được bộ nào.
+  final List<CoachSceneOptionEntity> options;
 
   /// Câu dẫn phía trên chúng. Null khi không có cách nào để dẫn.
   final String? optionsLead;
@@ -295,7 +307,7 @@ class CoachSceneEntity {
     this.habit,
     required this.setup,
     this.question,
-    this.options = const <String>[],
+    this.options = const <CoachSceneOptionEntity>[],
     this.optionsLead,
   });
 }
@@ -535,7 +547,10 @@ extension CoachTurnModelX on CoachTurnModel {
               habit: (ui.scene!.habit?.trim().isEmpty ?? true) ? null : ui.scene!.habit,
               setup: ui.scene!.setup,
               question: (ui.scene!.question?.trim().isEmpty ?? true) ? null : ui.scene!.question,
-              options: ui.scene!.options.where((line) => line.trim().isNotEmpty).toList(),
+              options: ui.scene!.options
+                  .where((option) => option.label.trim().isNotEmpty && option.text.trim().isNotEmpty)
+                  .map((option) => CoachSceneOptionEntity(key: option.key, label: option.label, text: option.text))
+                  .toList(),
               optionsLead: (ui.scene!.optionsLead?.trim().isEmpty ?? true) ? null : ui.scene!.optionsLead,
             ),
       samples: ui.samples,
@@ -643,7 +658,10 @@ extension CoachReplayModelX on CoachReplayModel {
               habit: clean(scene!.habit),
               setup: scene!.setup,
               question: clean(scene!.question),
-              options: scene!.options.where((line) => line.trim().isNotEmpty).toList(),
+              options: scene!.options
+                  .where((option) => option.label.trim().isNotEmpty && option.text.trim().isNotEmpty)
+                  .map((option) => CoachSceneOptionEntity(key: option.key, label: option.label, text: option.text))
+                  .toList(),
               optionsLead: clean(scene!.optionsLead),
             ),
       divider: d == null || dividerAt == null ? null : CoachDividerEntity(at: dividerAt, entry: d.entry),
