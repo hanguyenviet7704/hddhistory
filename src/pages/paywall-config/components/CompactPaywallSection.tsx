@@ -63,7 +63,7 @@ const CompactPaywallSection: React.FC<CompactPaywallSectionProps> = ({
     <SectionCard
       title="Paywall rút gọn"
       description={
-        'Bản một-gói kiểu "33% OFF" mở ra ở các điểm đặt "Rút gọn" và từ popup quà. Toàn bộ số má của sheet — % giảm, hạn đếm ngược, dòng cảnh báo — config ngay tại đây. Sự kiện sale KHÔNG ảnh hưởng bản này (chỉ dành cho paywall đầy đủ).'
+        'Bản một-gói kiểu "33% OFF" mở ra ở các điểm đặt "Rút gọn" và từ popup quà. Toàn bộ số má của sheet — % giảm, hạn đếm ngược, dòng cảnh báo — config ngay tại đây. Sự kiện sale không đổi số của bản này, nhưng trong lúc sale chạy thì bản này KHÔNG hiện ở đâu cả: mọi điểm đặt "Rút gọn" nhảy sang paywall đầy đủ của chiến dịch, để app không tự chào hai giá cùng lúc.'
       }
       icon={RectangleStackIcon}
     >

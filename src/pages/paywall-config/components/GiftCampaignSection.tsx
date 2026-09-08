@@ -57,7 +57,7 @@ const GiftCampaignSection: React.FC<GiftCampaignSectionProps> = ({
     <SectionCard
       title="Gift campaign (popup quà tặng)"
       description={
-        'Popup quà dẫn tới Paywall rút gọn. Hai thời điểm hiện: khi thêm habit đầu tiên (D0), và khi mở app — tần suất của lịch mở app chọn ngay bên dưới. Luôn bỏ qua user đã premium, và không bao giờ đè lên popup/sheet đang mở. CTA "Open" là chữ cứng.'
+        'Popup quà dẫn tới Paywall rút gọn. Hai thời điểm hiện: khi thêm habit đầu tiên (D0), và khi mở app — tần suất của lịch mở app chọn ngay bên dưới. Luôn bỏ qua user đã premium, và không bao giờ đè lên popup/sheet đang mở. Trong lúc có sự kiện sale chạy thì popup này NGƯNG hẳn (không đốt lượt — hết đợt sale là lịch tiếp tục từ đúng chỗ đang dở). CTA "Open" là chữ cứng.'
       }
       icon={GiftIcon}
       headerRight={

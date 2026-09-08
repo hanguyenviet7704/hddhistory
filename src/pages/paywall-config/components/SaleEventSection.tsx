@@ -30,7 +30,9 @@ const SaleEventSection: React.FC<SaleEventSectionProps> = ({
   return (
     <SectionCard
       title="Sự kiện sale"
-      description="Một chiến dịch có thời hạn (vd: Black Friday) sẽ ghi đè các chiến lược khác trong lúc đang chạy."
+      description={
+        'Một chiến dịch có thời hạn (vd: Black Friday) sẽ ghi đè các chiến lược khác trong lúc đang chạy. Đang chạy thì nó là đề nghị DUY NHẤT: popup quà và win-back không bắn, và mọi điểm đặt "Rút gọn" hiện paywall đầy đủ của chiến dịch — hết đợt thì tất cả trở lại như cũ.'
+      }
       icon={MegaphoneIcon}
       headerRight={
         <ToggleSwitch
