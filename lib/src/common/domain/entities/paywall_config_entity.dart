@@ -78,6 +78,22 @@ extension PaywallConfigEntityX on PaywallConfigEntity {
   PaywallProductVariant variantForEntryPoint(String entryPointName) {
     return entryPointVariants[entryPointName] ?? PaywallProductVariant.full;
   }
+
+  /// True while a sale event is switched on and [nowUtc] sits inside its
+  /// window. Enabled and in-window is all it takes — `appliesTo` is not
+  /// consulted (there is one audience; see [ResolvePaywallStrategyUsecase]).
+  ///
+  /// It lives here rather than staying private to the resolver because a
+  /// running sale now silences the compact surfaces as well: the gift popup,
+  /// the win-back and the resolver each have to reach the same verdict, and
+  /// three copies of this arithmetic would drift the moment one of them was
+  /// fixed alone.
+  bool hasActiveSaleEventAt(DateTime nowUtc) {
+    final event = saleStrategy?.saleEvent;
+    if (event == null || !event.enabled || event.startAtUtc == null || event.endAtUtc == null) return false;
+    final now = nowUtc.toUtc();
+    return !now.isBefore(event.startAtUtc!) && !now.isAfter(event.endAtUtc!);
+  }
 }
 
 @freezed

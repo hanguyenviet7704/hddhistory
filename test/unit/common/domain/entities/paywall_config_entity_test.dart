@@ -197,6 +197,73 @@ void main() {
       expect(strategy.defaultUser.compactProducts, isEmpty);
     });
   });
+
+  group('PaywallConfigEntity.hasActiveSaleEventAt', () {
+    // Three callers read this one answer — the strategy resolver, the gift
+    // popup and the win-back — because a running campaign now silences the
+    // compact surfaces instead of merely being ignored by them.
+    PaywallConfigEntity configWithEvent(String eventJson) {
+      return PaywallConfigEntity.fromRawConfig('''
+{
+  "schemaVersion": 2,
+  "saleStrategy": {
+    "defaultUser": {
+      "content": {"en": {"heading": "Head"}},
+      "products": [{"appleProductId": "a1", "googleProductId": "g1"}]
+    },
+    "saleEvent": $eventJson
+  }
+}
+''');
+    }
+
+    const inWindow = '{"enabled": true, "startAtUtc": "2026-06-20T00:00:00Z", "endAtUtc": "2026-06-30T23:59:59Z"}';
+
+    test('Given an enabled event, When now sits inside its window, Then it is active', () {
+      expect(configWithEvent(inWindow).hasActiveSaleEventAt(DateTime.utc(2026, 6, 25)), isTrue);
+    });
+
+    test('Given an enabled event, When now sits on either bound, Then it is active', () {
+      final config = configWithEvent(inWindow);
+
+      expect(config.hasActiveSaleEventAt(DateTime.utc(2026, 6, 20)), isTrue);
+      expect(config.hasActiveSaleEventAt(DateTime.utc(2026, 6, 30, 23, 59, 59)), isTrue);
+    });
+
+    test('Given an enabled event, When now sits outside its window, Then it is not active', () {
+      final config = configWithEvent(inWindow);
+
+      expect(config.hasActiveSaleEventAt(DateTime.utc(2026, 6, 19, 23, 59, 59)), isFalse);
+      expect(config.hasActiveSaleEventAt(DateTime.utc(2026, 7)), isFalse);
+    });
+
+    test('Given a local timestamp, When compared, Then it is read as UTC', () {
+      // Callers outside the resolver hand this `DateTime.now()`, not a UTC one.
+      final config = configWithEvent(inWindow);
+
+      expect(config.hasActiveSaleEventAt(DateTime.utc(2026, 6, 25).toLocal()), isTrue);
+    });
+
+    test('Given a switched-off or unbounded event, When asked, Then it is not active', () {
+      expect(
+        configWithEvent('{"enabled": false, "startAtUtc": "2026-06-20T00:00:00Z", "endAtUtc": "2026-06-30T23:59:59Z"}')
+            .hasActiveSaleEventAt(DateTime.utc(2026, 6, 25)),
+        isFalse,
+      );
+      // A half-open window is not treated as "runs forever": the admin
+      // validator requires both bounds, so one missing means a broken record.
+      expect(
+        configWithEvent('{"enabled": true, "startAtUtc": "2026-06-20T00:00:00Z"}').hasActiveSaleEventAt(DateTime.utc(2026, 6, 25)),
+        isFalse,
+      );
+    });
+
+    test('Given a config with no sale strategy at all, When asked, Then it is not active', () {
+      const bare = PaywallConfigEntity(schemaVersion: 2);
+
+      expect(bare.hasActiveSaleEventAt(DateTime.utc(2026, 6, 25)), isFalse);
+    });
+  });
 }
 
 const _approvedConfig = r'''

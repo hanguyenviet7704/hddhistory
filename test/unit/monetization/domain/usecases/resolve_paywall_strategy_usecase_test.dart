@@ -10,6 +10,7 @@ void main() {
     PaymentPlatform platform = PaymentPlatform.google,
     DateTime? nowUtc,
     PaywallEntryPoint entryPoint = PaywallEntryPoint.other,
+    PaywallProductVariant? variantOverride,
   }) {
     return resolver(
       ResolvePaywallStrategyParams(
@@ -17,6 +18,7 @@ void main() {
         platform: platform,
         nowUtc: nowUtc ?? now,
         entryPoint: entryPoint,
+        variantOverride: variantOverride,
       ),
     );
   }
@@ -154,31 +156,61 @@ void main() {
       }
     });
 
-    test('Given an active sale event and a compact entry point, When resolved, Then the sheet keeps its own offer', () {
-      // Sale events restyle the FULL paywall only (spec owner's ruling in
-      // 9ad35881): the compact sheet carries its own discount and its own
-      // fixed 24h clock, so a campaign must not reach in and change it. These
-      // two cases asserted the opposite until now — they predate that ruling
-      // and had been failing ever since.
+    test('Given an active sale event and a compact entry point, When resolved, Then the sale takes the screen', () {
+      // A running campaign is the only offer, and it lives on the FULL
+      // paywall. Until now a compact entry point resolved past the campaign to
+      // the default strategy — so a tap mid-campaign quoted the NON-sale price
+      // while the sale was live. Sale events still never restyle the compact
+      // sheet; the sheet simply does not appear for the duration.
       final result = resolve(
         config: _compactConfig(onSaleEvent: true),
         nowUtc: DateTime.utc(2026, 6, 25),
         entryPoint: PaywallEntryPoint.inLesson,
+      );
+
+      expect(result.strategyType, ResolvedPaywallStrategyType.saleEvent);
+      expect(result.variant, PaywallProductVariant.full);
+      expect(result.productIds, ['google-event']);
+    });
+
+    test('Given an active sale event and a compact entry point, When resolved, Then the sale countdown is carried', () {
+      final result = resolve(
+        config: _compactConfig(onSaleEvent: true),
+        nowUtc: DateTime.utc(2026, 6, 25),
+        entryPoint: PaywallEntryPoint.inLesson,
+      );
+
+      expect(result.hasSaleCountdown, isTrue);
+    });
+
+    test('Given an active sale event, When a caller forces compact, Then the sale still wins', () {
+      // The backstop for the gift popup and the win-back: both are silenced at
+      // their own call sites while a campaign runs, but should either ever get
+      // through, it must land on the campaign's offer rather than a stale
+      // non-sale sheet.
+      final result = resolve(
+        config: _compactConfig(onSaleEvent: true),
+        nowUtc: DateTime.utc(2026, 6, 25),
+        entryPoint: PaywallEntryPoint.profile,
+        variantOverride: PaywallProductVariant.compact,
+      );
+
+      expect(result.strategyType, ResolvedPaywallStrategyType.saleEvent);
+      expect(result.variant, PaywallProductVariant.full);
+      expect(result.productIds, ['google-event']);
+    });
+
+    test('Given a sale event outside its window, When a caller forces compact, Then the sheet is unaffected', () {
+      final result = resolve(
+        config: _compactConfig(onSaleEvent: true),
+        nowUtc: DateTime.utc(2026, 7, 15),
+        entryPoint: PaywallEntryPoint.profile,
+        variantOverride: PaywallProductVariant.compact,
       );
 
       expect(result.strategyType, ResolvedPaywallStrategyType.defaultUser);
       expect(result.variant, PaywallProductVariant.compact);
       expect(result.productIds, ['google-default-compact']);
-    });
-
-    test('Given an active sale event and a compact entry point, When resolved, Then no sale countdown is carried', () {
-      final result = resolve(
-        config: _compactConfig(onSaleEvent: true),
-        nowUtc: DateTime.utc(2026, 6, 25),
-        entryPoint: PaywallEntryPoint.inLesson,
-      );
-
-      expect(result.hasSaleCountdown, isFalse);
     });
 
     test('Given the same strategy on two entry points, When resolved, Then the signatures differ', () {

@@ -125,6 +125,14 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   final triggerEnabled = dayZeroEvent ? campaign.triggerOnFirstHabit : campaign.triggerOnDailyOpen;
   if (!triggerEnabled) return;
 
+  // A running sale event owns the screen. This popup's whole payload is the
+  // COMPACT sheet, which sale events never restyle — so showing it mid-campaign
+  // means putting a second, cheaper-looking, NON-sale offer in front of someone
+  // the campaign is already selling to. Both triggers are silenced, and the
+  // slot is deliberately NOT spent: the campaign ends, and day 3 of the gift
+  // window is still day 3.
+  if (iapCubit.resolvedPaywallConfig.hasActiveSaleEventAt(DateTime.now())) return;
+
   // An unloaded profile reads as non-premium; showing an upsell to someone who
   // already paid is worse than skipping a day, so wait for a real answer.
   final user = AppDI.injector.get<ProfileCubit>().state.user;

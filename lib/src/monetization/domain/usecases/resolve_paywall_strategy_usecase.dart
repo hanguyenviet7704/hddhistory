@@ -44,15 +44,25 @@ class ResolvePaywallStrategyUsecase {
     final saleStrategy = params.config.saleStrategy;
     if (saleStrategy == null) return _invalid('missing_sale_strategy');
 
-    // Which strategy wins is decided exactly as before; the entry point only
-    // narrows the winner's SKU list afterwards.
-    final variant = params.variantOverride ?? params.config.variantForEntryPoint(params.entryPoint.name);
+    // A running sale is the only offer on screen: it FORCES the full paywall,
+    // overriding both the entry-point table and a caller's `variantOverride`.
+    //
+    // It used to be the other way round — a compact variant sent the reader
+    // past the sale to the default strategy, on the reading that "sale events
+    // restyle the FULL paywall only". That is still true of the sheet's
+    // numbers, but it meant a compact entry point tapped mid-campaign quoted
+    // the NON-sale price while the campaign was live, i.e. the one moment the
+    // app must not be caught undercutting itself. The surfaces that push the
+    // compact sheet unasked (gift popup, win-back) are silenced for the
+    // duration at their own call sites; this is the backstop for anything that
+    // still asks.
+    final saleActive = params.config.hasActiveSaleEventAt(params.nowUtc);
+    final variant = saleActive
+        ? PaywallProductVariant.full
+        : params.variantOverride ?? params.config.variantForEntryPoint(params.entryPoint.name);
 
     final event = saleStrategy.saleEvent;
-    // Sale events restyle the FULL paywall only (spec owner's ruling). The
-    // compact sheet carries its own numbers in `compactPaywall`, so a compact
-    // entry point resolves straight to the default strategy even mid-sale.
-    if (variant != PaywallProductVariant.compact && _isActiveEvent(event, params.nowUtc)) {
+    if (saleActive) {
       return _fromProducts(
         strategyType: ResolvedPaywallStrategyType.saleEvent,
         products: event!.products,
@@ -73,15 +83,6 @@ class ResolvePaywallStrategyUsecase {
       content: saleStrategy.defaultUser.content,
       platform: params.platform,
     );
-  }
-
-  /// Enabled and inside its window is all it takes. `appliesTo` is deliberately
-  /// NOT consulted any more: with a single audience its only remaining power
-  /// was to make a correctly configured campaign show to nobody.
-  bool _isActiveEvent(PaywallSaleEventStrategyEntity? event, DateTime nowUtc) {
-    if (event == null || !event.enabled || event.startAtUtc == null || event.endAtUtc == null) return false;
-    final now = nowUtc.toUtc();
-    return !now.isBefore(event.startAtUtc!) && !now.isAfter(event.endAtUtc!);
   }
 
   ResolvedPaywallStrategyEntity _fromProducts({

@@ -159,14 +159,24 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void armWinBack({required bool wasFullVariant, required bool didPurchase}) {
     final config = resolvedPaywallConfig.winBack;
     if (!config.enabled || !wasFullVariant || didPurchase) return;
+    // A running sale event owns the screen: the win-back exists to follow the
+    // full paywall with the COMPACT discount sheet, and sale events never
+    // restyle that sheet — so mid-campaign it would answer the campaign's own
+    // offer with a different, non-sale one seconds later.
+    if (resolvedPaywallConfig.hasActiveSaleEventAt(DateTime.now())) return;
     if (_winBackFiredThisSession >= config.maxPerSession) return;
     // An armed timer means a previous close is still pending; letting a second
     // one through would stack two sheets on one delay.
     if (_winBackTimer?.isActive ?? false) return;
 
     _winBackTimer = Timer(Duration(seconds: config.delaySeconds), () {
-      _winBackFiredThisSession++;
       if (isClosed) return;
+      // Re-checked on the way out, not just on the way in: the config refresh
+      // this cubit fires on every paywall open can start a campaign inside the
+      // delay. The counter is only touched once the tick really goes out, so a
+      // suppressed win-back does not spend a slot it never used.
+      if (resolvedPaywallConfig.hasActiveSaleEventAt(DateTime.now())) return;
+      _winBackFiredThisSession++;
       emit(state.copyWith(winBackDueTick: state.winBackDueTick + 1));
     });
   }
