@@ -44,6 +44,18 @@ abstract class MonetizationLocalDataSource {
 
   Future<void> setGiftLastShownDay(String day);
 
+  /// Epoch ms the gift popup last showed, at minute resolution — the gap the
+  /// `everyOpen` mode enforces between two showings.
+  ///
+  /// Separate from [getGiftLastShownDay] rather than replacing it: a day key
+  /// cannot answer "how long ago", and an epoch alone cannot answer "was that
+  /// today" across a device clock change. Both are stamped whenever the popup
+  /// goes up, so switching the config's mode either way finds a mark it can
+  /// read.
+  Future<int?> getGiftLastShownEpochMs();
+
+  Future<void> setGiftLastShownEpochMs(int epochMs);
+
   /// Epoch ms this reader first saw the compact paywall in the CURRENT
   /// countdown cycle. The sheet's clock runs `countdownHours` from here, so
   /// everyone gets the full offer window from the moment it was shown to them
@@ -142,6 +154,7 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
 
   static const String _giftDayZeroKey = 'monetization_gift_day_zero_ms';
   static const String _giftLastShownKey = 'monetization_gift_last_shown_day';
+  static const String _giftLastShownMsKey = 'monetization_gift_last_shown_ms';
   static const String _compactCountdownAnchorKey = 'monetization_compact_countdown_anchor_ms';
 
   @override
@@ -177,6 +190,24 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
   Future<void> setGiftLastShownDay(String day) async {
     try {
       await _localStoreService.setString(key: _giftLastShownKey, value: day);
+    } catch (_) {
+      // See setGiftDayZeroEpochMs.
+    }
+  }
+
+  @override
+  Future<int?> getGiftLastShownEpochMs() async {
+    try {
+      return int.tryParse(await _localStoreService.getString(key: _giftLastShownMsKey));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> setGiftLastShownEpochMs(int epochMs) async {
+    try {
+      await _localStoreService.setString(key: _giftLastShownMsKey, value: epochMs.toString());
     } catch (_) {
       // See setGiftDayZeroEpochMs.
     }

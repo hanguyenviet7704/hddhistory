@@ -235,9 +235,26 @@ enum PaywallAudienceSegment {
   newUser,
 }
 
-/// The gift popup. It opens the compact paywall on a schedule coded in the
-/// app (day 0 + days 1-7), so all the config carries is the switch and an
-/// optional title; empty title falls back to the app's bundled copy.
+/// How often the app-open trigger may fire. Refines [PaywallGiftCampaignEntity.triggerOnDailyOpen]
+/// rather than replacing it: the toggle still says whether the app-open popup
+/// runs at all, this says how often.
+enum GiftOpenFrequency {
+  /// The original schedule: first app open of each local day, days
+  /// 1..windowDays, and only once day zero (the first habit) has happened.
+  @JsonValue('oncePerDay')
+  oncePerDay,
+
+  /// Every app open, for every non-premium reader, from their first one,
+  /// indefinitely — no day zero, no window. Throttled only by
+  /// [PaywallGiftCampaignEntity.minGapMinutes].
+  @JsonValue('everyOpen')
+  everyOpen,
+}
+
+/// The gift popup. It opens the compact paywall on a schedule that is now
+/// config (day 0, plus the app-open trigger — see [GiftOpenFrequency]), so the
+/// config carries the switch, an optional title, and those schedule knobs; an
+/// empty title falls back to the app's bundled copy.
 @freezed
 abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
   const factory PaywallGiftCampaignEntity({
@@ -246,7 +263,9 @@ abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
 
     /// How many days after day zero the daily-open popup keeps running. The
     /// default is the number this used to hardcode, so a config written before
-    /// the field existed behaves exactly as before.
+    /// the field existed behaves exactly as before. Unread when
+    /// [openFrequency] is [GiftOpenFrequency.everyOpen] — that mode has no
+    /// window and does not count from day zero.
     @Default(7) int windowDays,
 
     /// The two triggers, switchable independently — a run can want the day-0
@@ -254,6 +273,20 @@ abstract class PaywallGiftCampaignEntity with _$PaywallGiftCampaignEntity {
     /// which is what the app did before they existed.
     @Default(true) bool triggerOnFirstHabit,
     @Default(true) bool triggerOnDailyOpen,
+
+    /// Defaults to the original schedule, so a config written before this
+    /// field — and this build reading one — behaves exactly as before.
+    @Default(GiftOpenFrequency.oncePerDay) GiftOpenFrequency openFrequency,
+
+    /// Minutes that must pass since the popup last went up before
+    /// [GiftOpenFrequency.everyOpen] may show it again. Read ONLY in that mode;
+    /// `oncePerDay` has the calendar day as its own gap.
+    ///
+    /// It exists because the app-open check runs on every `resumed` lifecycle
+    /// event, not just a cold start (see `GiftPopupHost`): without it, a reader
+    /// who leaves for ten seconds to answer a message comes back to a paywall
+    /// popup. 0 means literally every resume.
+    @Default(30) int minGapMinutes,
   }) = _PaywallGiftCampaignEntity;
 
   factory PaywallGiftCampaignEntity.fromJson(Map<String, dynamic> json) => _$PaywallGiftCampaignEntityFromJson(json);
@@ -289,9 +322,19 @@ class _PaywallConfigParser {
     // running campaign off.
     final rawWindow = value['windowDays'];
     final windowDays = rawWindow is int && rawWindow >= 1 && rawWindow <= 30 ? rawWindow : 7;
+    // Same rule as windowDays, for the same reason: anything unexpected —
+    // absent, a typo, a mode a later admin build invented — falls back to the
+    // original schedule rather than to the more aggressive one. A config we
+    // cannot read must never escalate how often the reader is upsold.
+    final rawFrequency = value['openFrequency'];
+    final openFrequency = rawFrequency == 'everyOpen' ? GiftOpenFrequency.everyOpen : GiftOpenFrequency.oncePerDay;
+    final rawMinGap = value['minGapMinutes'];
+    final minGapMinutes = rawMinGap is int && rawMinGap >= 0 && rawMinGap <= 1440 ? rawMinGap : 30;
     return PaywallGiftCampaignEntity(
       enabled: true,
       windowDays: windowDays,
+      openFrequency: openFrequency,
+      minGapMinutes: minGapMinutes,
       // Absent reads as ON, matching every build that shipped before the
       // toggles existed.
       triggerOnFirstHabit: value['triggerOnFirstHabit'] is bool ? value['triggerOnFirstHabit'] as bool : true,
