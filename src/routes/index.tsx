@@ -76,6 +76,7 @@ import ResetOnboardingPage from "../pages/users/ResetOnboardingPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import PaywallConfigPage from "../pages/paywall-config/PaywallConfigPage";
 import SegmentsPage from "../pages/segments/SegmentsPage";
+import ContentExperimentsPage from "../pages/content-experiments/ContentExperimentsPage";
 
 export default function AppRouter() {
   return (
@@ -139,6 +140,10 @@ export default function AppRouter() {
                 element={<CoachUserThread />}
               />
               <Route path="coach-stats" element={<CoachStatsPage />} />
+              <Route
+                path="content-experiments"
+                element={<ContentExperimentsPage />}
+              />
               <Route path="coach-ai-usage" element={<CoachAiUsagePage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />

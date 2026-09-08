@@ -1,4 +1,5 @@
 import {
+  BeakerIcon,
   BookOpenIcon,
   ClipboardDocumentListIcon,
   PencilSquareIcon,
@@ -84,6 +85,12 @@ const menuGroups = [
     items: [
       { name: "Skillset", icon: PuzzlePieceIcon, path: "/skillset" },
       { name: "Course", icon: BookOpenIcon, path: "/course" },
+      {
+        // A/B nội dung khoá học: cấu hình đợt + bảng kết quả phễu theo người.
+        name: "A/B nội dung",
+        icon: BeakerIcon,
+        path: "/content-experiments",
+      },
       { name: "Lesson", icon: ClipboardDocumentListIcon, path: "/lesson" },
       { name: "Keypoint", icon: StarIcon, path: "/keypoint" },
       { name: "Theory", icon: DocumentTextIcon, path: "/theory" },
