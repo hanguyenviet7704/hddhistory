@@ -541,7 +541,14 @@ extension CoachTurnModelX on CoachTurnModel {
       // mapping that required a setup silently swallowed that question on
       // screen ("thiếu mất bạn làm gì", owner on-device 2026-08-28). Dropped
       // only when it carries nothing at all.
-      scene: ui.scene == null || (ui.scene!.setup.trim().isEmpty && (ui.scene!.question?.trim().isEmpty ?? true) && (ui.scene!.habit?.trim().isEmpty ?? true))
+      // `options` counts as content: chặng hai của cảnh chỉ mang ba hướng (lời
+      // người kia đã ở trong `reply`), nên bỏ scene vì thiếu setup/question là
+      // đánh rơi đúng phần đang cần vẽ.
+      scene: ui.scene == null ||
+              (ui.scene!.setup.trim().isEmpty &&
+                  (ui.scene!.question?.trim().isEmpty ?? true) &&
+                  (ui.scene!.habit?.trim().isEmpty ?? true) &&
+                  ui.scene!.options.isEmpty)
           ? null
           : CoachSceneEntity(
               habit: (ui.scene!.habit?.trim().isEmpty ?? true) ? null : ui.scene!.habit,
@@ -652,7 +659,11 @@ extension CoachReplayModelX on CoachReplayModel {
       promptKey: clean(promptKey),
       promptArgs: promptArgs ?? const {},
       situation: clean(situation),
-      scene: scene == null || (scene!.setup.trim().isEmpty && clean(scene!.question) == null && clean(scene!.habit) == null)
+      scene: scene == null ||
+              (scene!.setup.trim().isEmpty &&
+                  clean(scene!.question) == null &&
+                  clean(scene!.habit) == null &&
+                  scene!.options.isEmpty)
           ? null
           : CoachSceneEntity(
               habit: clean(scene!.habit),
