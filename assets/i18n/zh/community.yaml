@@ -18,10 +18,12 @@ topicMembers(param=count):
   other: ${count} 人
 topicMembersLong(param=count):
   other: ${count} 位成员
+topicDiscussions(param=count):
+  other: ${count} 条讨论
 topicPostsThisWeek(param=count):
   other: 本周 ${count} 帖
 topicPostsToday(param=count):
-  other: 今天新增 ${count} 帖
+  other: 今天 ${count} 条
 topicNoPostsToday: 今天还没有新帖
 topicJustJoined: 刚刚加入
 

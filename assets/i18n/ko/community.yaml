@@ -18,10 +18,12 @@ topicMembers(param=count):
   other: ${count}명
 topicMembersLong(param=count):
   other: 멤버 ${count}명
+topicDiscussions(param=count):
+  other: ${count}개의 이야기
 topicPostsThisWeek(param=count):
   other: 이번 주 ${count}개
 topicPostsToday(param=count):
-  other: 오늘 ${count}개 새 글
+  other: 오늘 ${count}개
 topicNoPostsToday: 오늘은 아직 새 글이 없어요
 topicJustJoined: 방금 참여
 

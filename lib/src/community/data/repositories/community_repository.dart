@@ -6,6 +6,13 @@ class CommunityRepository implements ICommunityRepository {
 
   CommunityRepository(this._api);
 
+  /// Minutes east of UTC, which is what decides whose "hôm nay" the room cards
+  /// count. Read here rather than threaded down from a Cubit (as
+  /// `StudyJournalCubit` does): there is no decision in it, only a fact about
+  /// the device, and it is read per call so a reader who crosses a timezone
+  /// mid-session gets the right day without restarting the app.
+  int get _tzOffset => DateTime.now().timeZoneOffset.inMinutes;
+
   @override
   TaskEither<AppException, CommunityFeedEntity> getFeed({
     required int page,
@@ -41,7 +48,7 @@ class CommunityRepository implements ICommunityRepository {
   TaskEither<AppException, CommunityTopicListEntity> getTopics() {
     return TaskEither.tryCatch(
       () async {
-        final response = await _api.getTopics();
+        final response = await _api.getTopics(_tzOffset);
 
         return (response.data ?? const CommunityTopicListModel()).toEntity();
       },
@@ -53,7 +60,7 @@ class CommunityRepository implements ICommunityRepository {
   TaskEither<AppException, CommunityTopicEntity> getTopic(String id) {
     return TaskEither.tryCatch(
       () async {
-        final response = await _api.getTopic(id);
+        final response = await _api.getTopic(id, _tzOffset);
         final model = response.data;
         if (model == null) throw Exception('Community topic $id is empty');
 
@@ -564,6 +571,7 @@ extension CommunityTopicModelX on CommunityTopicModel {
     imageUrl: imageUrl,
     followers: followers,
     postsThisWeek: postsThisWeek,
+    postsToday: postsToday,
     isFollowing: isFollowing,
   );
 }

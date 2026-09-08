@@ -18,10 +18,12 @@ topicMembers(param=count):
   other: ${count} người
 topicMembersLong(param=count):
   other: ${count} thành viên
+topicDiscussions(param=count):
+  other: ${count} lượt thảo luận
 topicPostsThisWeek(param=count):
   other: ${count} bài tuần này
 topicPostsToday(param=count):
-  other: ${count} bài mới hôm nay
+  other: ${count} hôm nay
 topicNoPostsToday: Chưa có bài mới hôm nay
 topicJustJoined: Vừa tham gia
 

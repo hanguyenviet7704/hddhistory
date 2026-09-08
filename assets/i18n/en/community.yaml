@@ -18,10 +18,12 @@ topicMembers(param=count):
   other: ${count} people
 topicMembersLong(param=count):
   other: ${count} members
+topicDiscussions(param=count):
+  other: ${count} discussions
 topicPostsThisWeek(param=count):
   other: ${count} posts this week
 topicPostsToday(param=count):
-  other: ${count} new today
+  other: ${count} today
 topicNoPostsToday: Nothing new today
 topicJustJoined: Just joined
 

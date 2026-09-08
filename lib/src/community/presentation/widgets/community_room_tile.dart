@@ -65,9 +65,11 @@ class CommunityRoomTile extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.h),
+            // One number only (design `S-02`). The follower count went with it:
+            // in a grid cell this narrow it competed with the number that
+            // actually tells the reader whether the room is worth opening.
             AppText(
-              '${l10n.topicMembers(count: topic.followers)} · '
-              '${l10n.topicPostsThisWeek(count: topic.postsThisWeek)}',
+              l10n.topicDiscussions(count: topic.postsThisWeek),
               style: AppStyle.textBold10.copyWith(
                 color: AppCustomColor.streakTextMuted,
               ),
@@ -101,7 +103,10 @@ class CommunityFavouriteRoomRow extends StatelessWidget {
     final slot = communityRoomSlot(topic.id);
     final tint = AppCustomColor.communityRoomTints[slot];
     final ink = AppCustomColor.communityRoomInks[slot];
-    final isLive = topic.postsThisWeek > 0;
+    // The dot now tracks TODAY, not the week: the line beside it says "hôm
+    // nay", and a green dot on a room whose last post was Monday is a promise
+    // the text next to it does not keep.
+    final isLive = topic.postsToday > 0;
 
     return GestureDetector(
       onTap: onTap,
@@ -154,11 +159,15 @@ class CommunityFavouriteRoomRow extends StatelessWidget {
                       ],
                       Flexible(
                         child: AppText(
+                          // "· 0 hôm nay" is a sentence with no news in it, so
+                          // a quiet room drops the second half and keeps the
+                          // number that is still worth reading.
                           isLive
-                              ? l10n.topicPostsThisWeek(
+                              ? '${l10n.topicDiscussions(count: topic.postsThisWeek)} · '
+                                    '${l10n.topicPostsToday(count: topic.postsToday)}'
+                              : l10n.topicDiscussions(
                                   count: topic.postsThisWeek,
-                                )
-                              : l10n.topicNoPostsToday,
+                                ),
                           style: AppStyle.textBold12.copyWith(
                             color: isLive
                                 ? AppCustomColor.successGreen

@@ -515,7 +515,9 @@ class _TopicHeaderCard extends StatelessWidget {
     final room = topic;
     if (room == null) return const SizedBox.shrink();
 
-    final isLive = room.postsThisWeek > 0;
+    // Today, not the week — the line it gates says "hôm nay". Same reasoning
+    // as `CommunityFavouriteRoomRow`.
+    final isLive = room.postsToday > 0;
     final slot = communityRoomSlot(room.id);
 
     return Container(
@@ -575,8 +577,15 @@ class _TopicHeaderCard extends StatelessWidget {
                         ],
                         Expanded(
                           child: AppText(
-                            '${l10n.topicMembersLong(count: room.followers)} · '
-                            '${l10n.topicPostsThisWeek(count: room.postsThisWeek)}',
+                            // Same line, and the same quiet-room rule, as the
+                            // "Yêu thích" row this screen is opened from — see
+                            // `CommunityFavouriteRoomRow`.
+                            isLive
+                                ? '${l10n.topicDiscussions(count: room.postsThisWeek)} · '
+                                      '${l10n.topicPostsToday(count: room.postsToday)}'
+                                : l10n.topicDiscussions(
+                                    count: room.postsThisWeek,
+                                  ),
                             style: AppStyle.textBold12.copyWith(
                               color: AppCustomColor.textSecondary,
                             ),

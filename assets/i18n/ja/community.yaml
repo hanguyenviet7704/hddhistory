@@ -18,10 +18,12 @@ topicMembers(param=count):
   other: ${count}人
 topicMembersLong(param=count):
   other: メンバー${count}人
+topicDiscussions(param=count):
+  other: ${count}件の話題
 topicPostsThisWeek(param=count):
   other: 今週${count}件
 topicPostsToday(param=count):
-  other: 今日${count}件の新着
+  other: 今日${count}件
 topicNoPostsToday: 今日の新着はまだありません
 topicJustJoined: 参加しました
 

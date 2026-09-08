@@ -105,6 +105,7 @@ abstract class CommunityTopicModel with _$CommunityTopicModel {
     String? imageUrl,
     @Default(0) int followers,
     @Default(0) int postsThisWeek,
+    @Default(0) int postsToday,
     @Default(false) bool isFollowing,
   }) = _CommunityTopicModel;
 

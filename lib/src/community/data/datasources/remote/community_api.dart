@@ -19,10 +19,10 @@ abstract class CommunityApi {
   });
 
   @GET(AppEndpoint.communityTopics)
-  Future<BaseResponse<CommunityTopicListModel>> getTopics();
+  Future<BaseResponse<CommunityTopicListModel>> getTopics(@Query('tzOffset') int tzOffset);
 
   @GET(AppEndpoint.communityTopicById)
-  Future<BaseResponse<CommunityTopicModel>> getTopic(@Path('id') String id);
+  Future<BaseResponse<CommunityTopicModel>> getTopic(@Path('id') String id, @Query('tzOffset') int tzOffset);
 
   @POST(AppEndpoint.communityTopicFollow)
   Future<void> followTopic(@Path('id') String id);

@@ -140,6 +140,12 @@ abstract class CommunityTopicEntity with _$CommunityTopicEntity {
     String? imageUrl,
     @Default(0) int followers,
     @Default(0) int postsThisWeek,
+
+    /// Posts in this room since the reader's own midnight. Counted live by the
+    /// server per request, so unlike [postsThisWeek] it is never stale — and it
+    /// reads 0 against an API build that predates it, which the cards render as
+    /// "no news today" rather than as a wrong number.
+    @Default(0) int postsToday,
     @Default(false) bool isFollowing,
   }) = _CommunityTopicEntity;
 }
