@@ -145,6 +145,14 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
       onSuccess: (roadmap) {
         if (_switchingToCourseId == courseId) _switchingToCourseId = null;
         _hasLoadedThisSession = true;
+        // Nhánh A/B nội dung do server chia, nhớ lại để MỌI event của khoá /
+        // bài / keypoint đóng dấu được nó. Không có dấu này thì bảng kết quả
+        // A/B toàn số 0 và trông y như "hai bản không khác gì nhau".
+        ContentExperimentTracker.instance.remember(
+          courseId: courseId,
+          key: roadmap.contentExperiment?.key,
+          arm: roadmap.contentExperiment?.arm,
+        );
         final selection = roadmap.autoSelectedLesson(fallbackLevel: state.currentCourseLevel);
         final selectedLesson = selection.key;
         final selectedLevel = selection.value;

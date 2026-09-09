@@ -39,6 +39,10 @@ class LessonTracking {
       'lesson_name': trackingData.lesson.trackingName,
       'keypoint_id': trackingData.keypoint.id,
       'keypoint_name': trackingData.keypoint.trackingName,
+      // Nhánh A/B nội dung. Phải đóng dấu Ở ĐÂY NỮA: helper này là đường
+      // tracking thứ hai, không đi qua `_keypointParams` của service — và
+      // `keypoint_complete_skip` (tín hiệu âm của phễu A/B) chỉ bắn qua đây.
+      ...ContentExperimentTracker.instance.paramsFor(trackingData.course.id),
     };
   }
 

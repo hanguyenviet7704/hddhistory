@@ -1,6 +1,17 @@
 part of '../../course.dart';
 
 @freezed
+abstract class ContentExperimentEntity with _$ContentExperimentEntity {
+  const factory ContentExperimentEntity({
+    @Default('') String key,
+    @Default('') String arm,
+  }) = _ContentExperimentEntity;
+
+  factory ContentExperimentEntity.fromJson(Map<String, dynamic> json) =>
+      _$ContentExperimentEntityFromJson(json);
+}
+
+@freezed
 abstract class RoadmapEntity with _$RoadmapEntity {
   const factory RoadmapEntity({
     @Default('') String id,
@@ -11,6 +22,11 @@ abstract class RoadmapEntity with _$RoadmapEntity {
     /// the course LIST payload deliberately omits `description` (5 languages,
     /// ~30% of /skillsets, and no list surface renders it).
     @Default(BaseMultiLanguage()) BaseMultiLanguage courseDescription,
+
+    /// Nhánh A/B nội dung của người này ở khoá này. App PHẢI đóng dấu `key` và
+    /// `arm` lên event học tập — không có nó thì bảng kết quả toàn số 0 và
+    /// trông y như "hai bản không khác gì nhau".
+    ContentExperimentEntity? contentExperiment,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _RoadmapEntity;

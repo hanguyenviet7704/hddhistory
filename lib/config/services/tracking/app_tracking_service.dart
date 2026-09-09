@@ -41,12 +41,21 @@ final class AppTrackingService extends ITrackingService {
     return values.where((value) => value.isNotEmpty).join(',');
   }
 
+  /// Nhánh A/B nội dung của khoá này, hoặc rỗng khi khoá không trong đợt.
+  /// Trộn ở ba hàm dựng params dùng chung thay vì ở từng event: phễu cần nó
+  /// trên roadmap + intro + exercise + complete, và ba hàm này đã là chokepoint
+  /// của tất cả event khoá/bài/keypoint.
+  Map<String, dynamic> _contentExperimentParams(String courseId) {
+    return ContentExperimentTracker.instance.paramsFor(courseId);
+  }
+
   Map<String, dynamic> _courseParams(CourseTrackingData trackingData) {
     return {
       'skill_name': trackingData.skillset.trackingName,
       'skill_id': trackingData.skillset.id,
       'course_id': trackingData.course.id,
       'course_name': trackingData.course.trackingName,
+      ..._contentExperimentParams(trackingData.course.id),
     };
   }
 
@@ -68,6 +77,7 @@ final class AppTrackingService extends ITrackingService {
       'lesson_name': trackingData.lesson.trackingName,
       'keypoint_id': trackingData.keypoint.id,
       'keypoint_name': trackingData.keypoint.trackingName,
+      ..._contentExperimentParams(trackingData.course.id),
     };
   }
 
