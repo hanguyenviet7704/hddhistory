@@ -595,6 +595,10 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
 
     switch (deeplink) {
       case 'home':
+        // Claim tên branch trước khi `.go()`, giống mọi nhánh khác: một `.go()`
+        // vào branch đã dựng sẵn không sinh didPush, nên không claim thì thanh
+        // nav dưới còn sáng tab cũ.
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
         HomeRoute().go(navContext);
         return true;
 
@@ -798,6 +802,15 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// opens, foreground receipts, other locals) is ignored — the local nudge's
   /// notification id is the only match.
   void _handleNotificationInteraction(NotificationInteraction interaction) {
+    // Một push RƠI VÀO lúc app đang mở không phải là một cú chạm. Không chặn ở
+    // đây thì `foregroundReceived` — bootstrap bắn cho MỌI message nhận khi app
+    // ở foreground — chạy thẳng vào bảng đích: người đang giữa bài học bị giật
+    // sang màn khác dù không ai chạm gì, và `noti_tap` bắn khống nên số click
+    // của mọi campaign bị thổi phồng. Cú chạm thật vẫn tới: foreground message
+    // được dựng lại thành local notification, chạm vào nó về đây dưới dạng
+    // `localAction`.
+    if (interaction.type == NotificationInteractionType.foregroundReceived) return;
+
     // Scheduled server notifications (daily remind / unfinished lesson / habit)
     // are recognised by the `deeplink` key their payload carries, not by a
     // notification id — the id is assigned by the OS on delivery.
