@@ -119,6 +119,10 @@ export const communityService = {
       hiddenReason?: string;
       isPinned?: boolean;
       commentsLocked?: boolean;
+      /** Sửa nội dung tại chỗ. Omit để giữ nguyên; chuỗi/mảng rỗng ghi đè thật. */
+      subject?: string;
+      body?: string;
+      images?: string[];
     }
   ) {
     const res = await axiosClient.patch(

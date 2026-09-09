@@ -6,6 +6,7 @@ import {
   EyeOffIcon,
   LockIcon,
   MessageSquareIcon,
+  PencilIcon,
   PinIcon,
   UnlockIcon,
 } from "lucide-react";
@@ -23,6 +24,9 @@ import {
 import { useNotification } from "../../utils/hooks/useNotification";
 import { getTranslationValue } from "../../utils/translation";
 import CommunityContentCard from "./CommunityContentCard";
+import EditCommunityPostDialog, {
+  EditCommunityPostPayload,
+} from "./EditCommunityPostDialog";
 import PostCommentsPanel from "./PostCommentsPanel";
 import { COMMUNITY_LANGS } from "./TranslationFields";
 import ModerationReasonDialog from "./ModerationReasonDialog";
@@ -68,6 +72,7 @@ const ModerationPostsTab: React.FC = () => {
     null
   );
   const [hiding, setHiding] = useState<ICommunityAdminPost | null>(null);
+  const [editing, setEditing] = useState<ICommunityAdminPost | null>(null);
   const [saving, setSaving] = useState(false);
 
   /// One thread open at a time: the panel is for reading a conversation, and
@@ -128,6 +133,7 @@ const ModerationPostsTab: React.FC = () => {
       await communityService.moderatePost(post.id, payload);
       showSuccess(successMessage);
       setHiding(null);
+      setEditing(null);
       load();
     } catch (err: any) {
       showError(err?.response?.data?.message ?? "Không thực hiện được");
@@ -291,6 +297,15 @@ const ModerationPostsTab: React.FC = () => {
                     </Button>
                     <Button
                       size="small"
+                      color="inherit"
+                      startIcon={<PencilIcon size={15} />}
+                      disabled={saving}
+                      onClick={() => setEditing(post)}
+                    >
+                      Sửa bài
+                    </Button>
+                    <Button
+                      size="small"
                       color={post.commentsLocked ? "warning" : "inherit"}
                       startIcon={
                         post.commentsLocked ? (
@@ -390,6 +405,15 @@ const ModerationPostsTab: React.FC = () => {
             { status: CommunityContentStatus.HIDDEN, hiddenReason: reason },
             "Đã ẩn bài"
           )
+        }
+      />
+
+      <EditCommunityPostDialog
+        post={editing}
+        saving={saving}
+        onClose={() => setEditing(null)}
+        onConfirm={(payload: EditCommunityPostPayload) =>
+          editing && act(editing, payload, "Đã lưu bài đăng")
         }
       />
     </div>
