@@ -91,3 +91,32 @@ export const formatDate = (date: string | Date): string => {
 
 /** 22 → "22h". Used by the peak-hour chart and the golden-hours line. */
 export const formatHour = (hour: number): string => `${hour}h`;
+
+/**
+ * Series cho các trang so sánh PHIÊN BẢN — slot 1..5 của cùng bộ palette đã
+ * validate, theo thứ tự cố định.
+ *
+ * Không mâu thuẫn với luật "đừng vượt quá ba series" ở đầu file: luật đó nói
+ * về việc TỰ SINH thêm màu. Đây là 5 slot có sẵn trong bộ, và đã chạy
+ * validator ở đúng 5 slot trên nền `#fcfcfb`: lightness/chroma/CVD/ngưỡng
+ * mắt thường đều PASS (cặp sát nhau tệ nhất ΔE thường 19.6).
+ *
+ * Hai điều kiện đi kèm, không được bỏ:
+ *
+ *  - **Contrast của slot 3/4/5 dưới 3:1**, nên màu KHÔNG bao giờ được là thứ
+ *    duy nhất mang danh tính: mọi đồ thị dùng bộ này phải có legend, nhãn
+ *    trực tiếp ở cuối đường, và một bảng số bên cạnh.
+ *  - **Màu theo phiên bản, không theo thứ hạng.** Chỉ số slot phải lấy từ vị
+ *    trí của bản trong TOÀN BỘ danh sách, không phải trong danh sách đang tích
+ *    chọn — nếu không thì bỏ tích một bản sẽ sơn lại màu của những bản còn lại.
+ */
+export const VERSION_SERIES = [
+  "#2a78d6",
+  "#eb6834",
+  "#1baf7a",
+  "#eda100",
+  "#e87ba4",
+] as const;
+
+/** Bao nhiêu bản so được một lúc — bằng số slot, không cycle để có slot thứ 6. */
+export const MAX_COMPARED_VERSIONS = VERSION_SERIES.length;

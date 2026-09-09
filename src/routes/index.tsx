@@ -77,6 +77,7 @@ import NotificationsPage from "../pages/notifications/NotificationsPage";
 import PaywallConfigPage from "../pages/paywall-config/PaywallConfigPage";
 import SegmentsPage from "../pages/segments/SegmentsPage";
 import ContentExperimentsPage from "../pages/content-experiments/ContentExperimentsPage";
+import VersionComparisonPage from "../pages/version-comparison/VersionComparisonPage";
 
 export default function AppRouter() {
   return (
@@ -143,6 +144,10 @@ export default function AppRouter() {
               <Route
                 path="content-experiments"
                 element={<ContentExperimentsPage />}
+              />
+              <Route
+                path="version-comparison"
+                element={<VersionComparisonPage />}
               />
               <Route path="coach-ai-usage" element={<CoachAiUsagePage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />

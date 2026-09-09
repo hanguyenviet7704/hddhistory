@@ -1,6 +1,7 @@
 import {
   BeakerIcon,
   BookOpenIcon,
+  ChartBarSquareIcon,
   ClipboardDocumentListIcon,
   PencilSquareIcon,
   ChevronLeftIcon,
@@ -90,6 +91,14 @@ const menuGroups = [
         name: "A/B nội dung",
         icon: BeakerIcon,
         path: "/content-experiments",
+      },
+      {
+        // Đối chiếu các tag nội dung của MỘT khoá theo cửa sổ phát hành —
+        // khác trang trên: chỗ kia là một đợt A/B đang chạy, chỗ này là lịch
+        // sử phiên bản của khoá.
+        name: "So sánh phiên bản",
+        icon: ChartBarSquareIcon,
+        path: "/version-comparison",
       },
       { name: "Lesson", icon: ClipboardDocumentListIcon, path: "/lesson" },
       { name: "Keypoint", icon: StarIcon, path: "/keypoint" },
