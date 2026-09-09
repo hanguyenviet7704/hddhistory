@@ -80,10 +80,12 @@ export default function HabitModal({
   // without them the Coach only has the title to build practice scenes from.
   const [description, setDescription] = useState<ITranslation>({});
   const [contexts, setContexts] = useState<ITranslation>({});
-  // Tầng 4 — what a good answer to this skill's scenes does, and what level
-  // 1..5 means for THIS skill. Both optional: no rubric means the scene is
-  // practised but not scored, no ladder means generic escalation.
-  const [rubric, setRubric] = useState<ITranslation>({});
+  // The ladder is still what a slot's difficulty MEANS for this skill (see
+  // coach-situation.service.ts). Rubric-based scoring is not: "cấm chấm điểm,
+  // kể cả khen 'Chính xác!'" retired tầng 4 (doc v4), and nothing in the coach
+  // module calls the scoring path any more (grepped every call site) — the
+  // field itself stays on the schema/DB only so old data is not lost, but this
+  // form no longer reads, shows, or writes it (owner 2026-09-09).
   const [ladder, setLadder] = useState<ITranslation>({});
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
@@ -136,7 +138,6 @@ export default function HabitModal({
       setTitle(initial.title ?? {});
       setDescription(initial.description ?? {});
       setContexts(initial.contexts ?? {});
-      setRubric(initial.rubric ?? {});
       setLadder(initial.ladder ?? {});
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
@@ -152,7 +153,6 @@ export default function HabitModal({
       setTitle({});
       setDescription({});
       setContexts({});
-      setRubric({});
       setLadder({});
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
@@ -351,7 +351,10 @@ export default function HabitModal({
       title: cleanedTitle,
       description: cleanTranslation(description) ?? {},
       contexts: cleanTranslation(contexts) ?? {},
-      rubric: cleanTranslation(rubric) ?? {},
+      // `rubric` is deliberately OMITTED, not sent as `{}` — the API's update
+      // is a partial `$set: dto`, so a key absent from the body leaves an
+      // existing habit's legacy rubric text untouched in the DB. Sending `{}`
+      // here would instead wipe it on the next unrelated edit of this habit.
       ladder: cleanTranslation(ladder) ?? {},
       skillsetId,
       status,
@@ -422,19 +425,6 @@ export default function HabitModal({
                 setContexts((prev) => updateTranslationValue(prev, lang, e.target.value))
               }
               helperText="Moments the habit comes up, ONE PER LINE (e.g. “khi họp nhóm bị bác ý”) — aim for 3–5. Cảnh luyện tập được VIẾT MỚI lúc user luyện: nảy từ một khoảnh khắc kiểu này, rồi dựng lại theo độ tuổi và đời sống của từng user (không lấy nguyên văn)."
-              fullWidth
-              size="small"
-              multiline
-              minRows={4}
-            />
-
-            <TextField
-              label={`Rubric (${lang.toUpperCase()})`}
-              value={rubric[lang] ?? ""}
-              onChange={(e) =>
-                setRubric((prev) => updateTranslationValue(prev, lang, e.target.value))
-              }
-              helperText="KHÔNG CÒN DÙNG — AI Coach đã bỏ chấm điểm tình huống (doc v4: cấm chấm, kể cả khen “Chính xác!”). Field giữ lại chỉ để không mất dữ liệu cũ; điền gì cũng không ảnh hưởng cảnh luyện tập."
               fullWidth
               size="small"
               multiline
