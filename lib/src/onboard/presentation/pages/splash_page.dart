@@ -186,6 +186,11 @@ class _SplashPageState extends State<SplashPage> {
         _goOnboardingEntryByFlowConfig();
         return;
       case SplashAuthenticatedDestination.home:
+        // Một cú chạm push đã dẫn đi đâu đó rồi thì đừng kéo về Home. Chạm
+        // push không đi qua `_serviceRoutePath` nên `hasHandledPendingLink` và
+        // `initialLink()` ở trên đều KHÔNG thấy nó; thiếu chốt này thì mọi đích
+        // của noti đều có thể bị cú `.go()` cuối cùng này nuốt mất.
+        if (context.read<DeeplinkCubit>().hasNotificationNavigated) return;
         HomeRoute().go(context);
         return;
     }

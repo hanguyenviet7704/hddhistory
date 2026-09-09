@@ -16,6 +16,18 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   Map<String, String> _serviceRouteQuery = {};
   DeeplinkTarget? _pendingTarget;
 
+  /// Đã có một cú chạm noti điều hướng đi đâu đó trong lần chạy này.
+  ///
+  /// Splash đọc cờ này trước khi tự `.go()` về Home. Cold-start từ push là một
+  /// cuộc đua: interaction xếp hàng từ trước được xả đúng lúc splash `read`
+  /// DeeplinkCubit lần đầu (provider lazy), nên cú `.go()` của noti và cú
+  /// `.go()` của splash cách nhau đúng một frame — bên nào chạy sau thì thắng.
+  /// Không có cờ này thì kết quả phụ thuộc vào việc frame đó có kịp dựng hay
+  /// không, và khi splash thắng thì mọi đích đều rơi về Home.
+  bool _notificationDidNavigate = false;
+
+  bool get hasNotificationNavigated => _notificationDidNavigate;
+
   void init() {
     _deepLinkService.uriStream.listen(
       (uri) => navigationFromService(uri),
@@ -557,6 +569,12 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// falls through, which is what an app build older than a newly added
   /// destination does — the tap then just brings the app forward.
   bool _handleScheduledNotificationTap(NotificationInteraction interaction) {
+    final isHandled = _routeScheduledNotificationTap(interaction);
+    if (isHandled) _notificationDidNavigate = true;
+    return isHandled;
+  }
+
+  bool _routeScheduledNotificationTap(NotificationInteraction interaction) {
     final raw = interaction.payload.raw;
     final deeplink = (raw['deeplink'] ?? '').toString().trim();
     if (deeplink.isEmpty) return false;
