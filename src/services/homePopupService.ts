@@ -45,6 +45,18 @@ export interface HomePopupItem {
   endAt?: string | null;
   /** Per-campaign switch — false keeps the creative staged without showing it. */
   enabled?: boolean;
+  /**
+   * Show this campaign again even to somebody who already tapped it — the ONE
+   * filter it skips. The tap is still recorded (CTR counts those rows); it just
+   * stops retiring the popup.
+   *
+   * Everything else still applies: the kill switch, the window, market,
+   * language and segment — and the app raises the popup at most once per app
+   * session, so this means "every time they open the app", not "every time they
+   * land on Home". A campaign with this on and a high priority never yields its
+   * turn to a lower-priority one.
+   */
+  alwaysShow?: boolean;
 }
 
 export interface HomePopupConfig {

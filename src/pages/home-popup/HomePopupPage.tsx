@@ -47,6 +47,7 @@ const emptyItem = (): HomePopupItem => ({
   startAt: null,
   endAt: null,
   enabled: true,
+  alwaysShow: false,
 });
 
 /**
@@ -129,6 +130,8 @@ const HomePopupPage: React.FC = () => {
                 startAt: null,
                 endAt: null,
                 enabled: true,
+                // Cấu hình cũ (một popup phẳng) chưa từng có ô này.
+                alwaysShow: false,
               },
             ]
           : [];

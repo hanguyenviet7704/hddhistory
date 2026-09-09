@@ -179,6 +179,28 @@ const HomePopupCampaignCard: React.FC<Props> = ({
 
       <div className="h-4" />
 
+      <div className="flex items-start gap-2">
+        <Switch
+          size="small"
+          checked={item.alwaysShow ?? false}
+          onChange={(e) => onChange({ alwaysShow: e.target.checked })}
+        />
+        <div className="pt-1">
+          <div className="text-sm text-gray-700">Luôn hiện lại</div>
+          <div className="text-xs text-gray-500">
+            Bật thì người đã bấm vào popup vẫn thấy nó ở những lần mở app sau —
+            đây là bộ lọc DUY NHẤT bị bỏ qua. Lượt bấm vẫn được ghi nên CTR bên
+            dưới không đổi. Vẫn chỉ hiện <b>một lần mỗi lần mở app</b> (không
+            phải mỗi lần vào tab Trang chủ), và vẫn phải qua thị trường, ngôn
+            ngữ, phân khúc, khoảng thời gian. Lưu ý: chiến dịch bật ô này mà
+            đang ở ưu tiên cao thì các chiến dịch dưới sẽ không bao giờ tới
+            lượt.
+          </div>
+        </div>
+      </div>
+
+      <div className="h-4" />
+
       <Autocomplete
         multiple
         size="small"
