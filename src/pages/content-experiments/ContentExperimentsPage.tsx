@@ -409,7 +409,7 @@ const ContentExperimentsPage: React.FC = () => {
                       <th className="py-1.5 pr-3 font-medium">Nhánh</th>
                       <th className="py-1.5 pr-3 font-medium">Người thấy khoá</th>
                       <th className="py-1.5 pr-3 font-medium">Mở keypoint</th>
-                      <th className="py-1.5 pr-3 font-medium">Vào bài tập</th>
+                      <th className="py-1.5 pr-3 font-medium">Đọc nội dung</th>
                       <th className="py-1.5 pr-3 font-medium">Hoàn thành</th>
                       <th className="py-1.5 pr-3 font-medium">Tỉ lệ</th>
                       <th className="py-1.5 pr-3 font-medium">Bỏ qua</th>
@@ -425,7 +425,7 @@ const ContentExperimentsPage: React.FC = () => {
                         </td>
                         <td className="py-1.5 pr-3">{arm.viewers}</td>
                         <td className="py-1.5 pr-3">{arm.keypointStarts}</td>
-                        <td className="py-1.5 pr-3">{arm.exercises}</td>
+                        <td className="py-1.5 pr-3">{arm.keypointReads}</td>
                         <td className="py-1.5 pr-3">{arm.completes}</td>
                         <td className="py-1.5 pr-3">{arm.completionRate}%</td>
                         <td className="py-1.5 pr-3">{arm.skips}</td>

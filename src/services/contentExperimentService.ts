@@ -24,7 +24,7 @@ export interface ContentExperimentArmStats {
   arm: "A" | "B";
   viewers: number;
   keypointStarts: number;
-  exercises: number;
+  keypointReads: number;
   completes: number;
   skips: number;
   exits: number;
