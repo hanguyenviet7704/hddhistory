@@ -15,6 +15,8 @@ import { RootState } from "../../store";
 import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
 import VoiceoverStatusModal from "../../components/courses/VoiceoverStatusModal";
+import VbeeDubConfirmDialog from "../../components/courses/VbeeDubConfirmDialog";
+import VbeeVoicePanel from "../../components/courses/VbeeVoicePanel";
 import {
   voiceoverService,
   CourseVoiceoverSummary,
@@ -22,6 +24,8 @@ import {
   VoiceoverCellStatus,
   VoiceoverJob,
   VoiceoverJobFeed,
+  VoiceoverProviderKind,
+  VoiceoverSettings,
 } from "../../services/voiceoverService";
 
 // Stat cards mirror VoiceoverStatusModal's SUMMARY, plus a Total tile since
@@ -126,6 +130,16 @@ export default function VoiceoverBatch() {
 
   const [drillCourse, setDrillCourse] = useState<CourseVoiceoverSummary | null>(null);
 
+  // Vbee: the shared narrator + which courses are opted in. Kept on this page
+  // because the toggle belongs next to the coverage numbers it changes.
+  const [settings, setSettings] = useState<VoiceoverSettings | null>(null);
+  const [togglingRows, setTogglingRows] = useState<Set<string>>(new Set());
+  // A Vbee dub spends real credit, so it goes through a confirm that shows the
+  // counted cost first. Edge dubs still start on the first click.
+  const [pendingDub, setPendingDub] = useState<CourseVoiceoverSummary | null>(
+    null
+  );
+
   const wasRunningRef = useRef(false);
   const pollRef = useRef<number | undefined>(undefined);
 
@@ -161,6 +175,13 @@ export default function VoiceoverBatch() {
   useEffect(() => {
     load();
     refreshJobs();
+    // Read once: the narrator and the "is Vbee configured at all" flag do not
+    // change under the page, and a failure here must not block the coverage
+    // report — it only means the Vbee panel renders its unconfigured state.
+    voiceoverService
+      .getSettings()
+      .then(setSettings)
+      .catch(() => setSettings(null));
   }, [load, refreshJobs]);
 
   const globalJob = feed?.global ?? null;
@@ -271,6 +292,64 @@ export default function VoiceoverBatch() {
       true,
       "Đang chạy tiếp job đã bị ngắt…"
     );
+
+  // A Vbee course costs money to dub, so the first click only opens the
+  // estimate. Everything else starts immediately, exactly as before.
+  const handleRowDubClick = (course: CourseVoiceoverSummary) => {
+    if (anyRunning || startingRows.has(course.courseId)) return;
+    if (course.viProvider === "vbee") {
+      setPendingDub(course);
+      return;
+    }
+    void handleRowDub(course);
+  };
+
+  /**
+   * Turn the paid provider on or off for one course.
+   *
+   * Nothing is re-dubbed here: the flag only changes which narrator the NEXT
+   * run resolves for Vietnamese. That is also why the row's coverage flips to
+   * `stale` afterwards — the stored narrator no longer matches.
+   */
+  const handleToggleProvider = async (
+    course: CourseVoiceoverSummary,
+    next: VoiceoverProviderKind
+  ) => {
+    if (togglingRows.has(course.courseId)) return;
+    setTogglingRows((prev) => new Set(prev).add(course.courseId));
+    try {
+      await voiceoverService.setCourseProvider(course.courseId, next);
+      // Patch the row in place rather than re-scanning the whole catalogue —
+      // a full scan reads every keypoint of every course.
+      setStatus((prev) =>
+        prev
+          ? {
+              ...prev,
+              courses: prev.courses.map((row) =>
+                row.courseId === course.courseId
+                  ? { ...row, viProvider: next }
+                  : row
+              ),
+            }
+          : prev
+      );
+      showSuccess(
+        next === "vbee"
+          ? "Đã bật Vbee cho tiếng Việt của khoá này. Bấm Dub để áp dụng."
+          : "Đã trả khoá này về giọng Edge miễn phí. Bấm Dub để áp dụng."
+      );
+    } catch (err: any) {
+      showError(
+        err?.response?.data?.message || "Không đổi được nhà cung cấp giọng"
+      );
+    } finally {
+      setTogglingRows((prev) => {
+        const nextSet = new Set(prev);
+        nextSet.delete(course.courseId);
+        return nextSet;
+      });
+    }
+  };
 
   const handleRowDub = async (course: CourseVoiceoverSummary) => {
     if (anyRunning || startingRows.has(course.courseId)) return;
@@ -399,6 +478,15 @@ export default function VoiceoverBatch() {
             </button>
           </div>
         )}
+
+        {/* Vbee narrator. Rendered above the table because changing the voice
+            changes what every Vbee row will cost on its next dub. */}
+        <VbeeVoicePanel
+          settings={settings}
+          onSaved={setSettings}
+          onSuccess={showSuccess}
+          onError={showError}
+        />
 
         {/* Running global job */}
         {globalJob && globalJob.status === "running" && (
@@ -654,6 +742,7 @@ export default function VoiceoverBatch() {
                     <th className="px-4 py-3 text-center font-medium">Keypoint</th>
                     <th className="px-4 py-3 font-medium">Tiến trình</th>
                     <th className="px-4 py-3 font-medium">Độ phủ</th>
+                    <th className="px-4 py-3 font-medium">Giọng vi</th>
                     <th className="px-4 py-3 text-right font-medium">Hành động</th>
                   </tr>
                 </thead>
@@ -732,6 +821,41 @@ export default function VoiceoverBatch() {
                             )}
                           </div>
                         </td>
+                        <td className="px-4 py-3">
+                          {/* Vietnamese only. The other four locales have no
+                              paid option, so there is nothing to choose. */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleToggleProvider(
+                                course,
+                                course.viProvider === "vbee" ? "edge" : "vbee"
+                              )
+                            }
+                            disabled={
+                              !settings?.vbeeConfigured ||
+                              anyRunning ||
+                              togglingRows.has(course.courseId)
+                            }
+                            title={
+                              !settings?.vbeeConfigured
+                                ? "Vbee chưa được cấu hình trên môi trường này"
+                                : course.viProvider === "vbee"
+                                ? "Đang dùng Vbee (tốn điểm) — bấm để trả về Edge"
+                                : "Đang dùng Edge (miễn phí) — bấm để chuyển sang Vbee"
+                            }
+                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${
+                              course.viProvider === "vbee"
+                                ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                          >
+                            {togglingRows.has(course.courseId) && (
+                              <Loader2Icon className="h-3 w-3 animate-spin" />
+                            )}
+                            {course.viProvider === "vbee" ? "Vbee" : "Edge"}
+                          </button>
+                        </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
                             <button
@@ -743,7 +867,7 @@ export default function VoiceoverBatch() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleRowDub(course)}
+                              onClick={() => handleRowDubClick(course)}
                               disabled={anyRunning || rowStarting}
                               className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                             >
@@ -776,6 +900,22 @@ export default function VoiceoverBatch() {
         highlightLang={langFilter !== "all" ? langFilter : undefined}
         onClose={() => setDrillCourse(null)}
       />
+
+      {/* Vbee dub cost confirmation */}
+      {pendingDub && (
+        <VbeeDubConfirmDialog
+          courseId={pendingDub.courseId}
+          courseTitle={
+            getTranslationValue(pendingDub.title, lang) || pendingDub.courseId
+          }
+          onCancel={() => setPendingDub(null)}
+          onConfirm={() => {
+            const course = pendingDub;
+            setPendingDub(null);
+            void handleRowDub(course);
+          }}
+        />
+      )}
 
       {/* Force dub confirmation */}
       {confirmForce && (

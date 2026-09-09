@@ -1,4 +1,5 @@
 import axiosClient from "./axiosClient";
+import unwrapApi from "../utils/unwrapApi";
 
 // TTS voiceover generation (free Microsoft Edge neural voices, server-side — no
 // key, no per-character billing). One clip per CARD (theory pages read in full, exercise cards read
@@ -56,7 +57,80 @@ export const voiceoverService = {
     );
     return res.data;
   },
+
+  // --- Vbee (paid Vietnamese provider) --------------------------------------
+  //
+  // Vietnamese only, and only on courses explicitly switched over: Vbee bills
+  // per character, so nothing here may become a catalogue-wide default.
+
+  // Every Vietnamese voice the account can use, with its credit factor and a
+  // demo clip. `creditFactor` is the difference between a run costing X and 3X,
+  // so the picker shows it next to the name rather than hiding it.
+  async getVbeeVoices(): Promise<VbeeVoice[]> {
+    const res = await axiosClient.get("/voiceover/vbee/voices");
+    return unwrapApi<VbeeVoice[]>(res.data) ?? [];
+  },
+
+  async getSettings(): Promise<VoiceoverSettings> {
+    const res = await axiosClient.get("/voiceover/settings");
+    return unwrapApi<VoiceoverSettings>(res.data);
+  },
+
+  async updateVbeeVoice(vbeeVoiceCode: string): Promise<VoiceoverSettings> {
+    const res = await axiosClient.put("/voiceover/settings", { vbeeVoiceCode });
+    return unwrapApi<VoiceoverSettings>(res.data);
+  },
+
+  // Opt one course's Vietnamese in or out. Changes nothing on its own — the
+  // next dub of that course is what re-synthesises Vietnamese.
+  async setCourseProvider(courseId: string, provider: VoiceoverProviderKind) {
+    const res = await axiosClient.put(`/voiceover/course/${courseId}/provider`, {
+      provider,
+    });
+    return unwrapApi(res.data);
+  },
+
+  // Characters (and credits) the next Vbee dub of this course would spend.
+  // Counted from the same reuse rules the dub uses, not averaged.
+  async estimateCourse(courseId: string): Promise<CourseVoiceoverEstimate> {
+    const res = await axiosClient.get(`/voiceover/course/${courseId}/estimate`);
+    return unwrapApi<CourseVoiceoverEstimate>(res.data);
+  },
 };
+
+/** Which speech engine dubs a course's Vietnamese. Other locales are always Edge. */
+export type VoiceoverProviderKind = "edge" | "vbee";
+
+export interface VbeeVoice {
+  code: string;
+  name: string;
+  gender: string;
+  languageCode: string;
+  /** Characters billed per character read: 1 standard, 2 "nâng cao", 3 "2.0". */
+  creditFactor: number;
+  demo: string;
+}
+
+export interface VoiceoverSettings {
+  vbeeVoiceCode: string;
+  /** False when the environment has no Vbee credentials — the toggle stays off. */
+  vbeeConfigured: boolean;
+}
+
+export interface CourseVoiceoverEstimate {
+  courseId: string;
+  provider: VoiceoverProviderKind;
+  keypoints: number;
+  /** What the NEXT run would synthesise, after per-card reuse. */
+  chars: number;
+  /** Every Vietnamese character in the course — the cost of a forced re-dub. */
+  charsIfForced: number;
+  voiceCode: string;
+  creditFactor: number;
+  estimatedCredits: number;
+  /** 0 when uncapped. */
+  maxCharsPerRun: number;
+}
 
 export type VoiceoverCellStatus =
   | "done"
@@ -132,6 +206,8 @@ export interface CourseVoiceoverSummary {
   title: Record<string, string> | string;
   keypointCount: number;
   summary: Record<VoiceoverCellStatus, number>;
+  /** Which engine dubs this course's Vietnamese; absent on older API builds. */
+  viProvider?: VoiceoverProviderKind;
 }
 
 // One distinct failure message and how many cells carry it. A bare "1190 failed"
