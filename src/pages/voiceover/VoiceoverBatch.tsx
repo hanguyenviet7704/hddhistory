@@ -371,11 +371,14 @@ export default function VoiceoverBatch() {
     }
   };
 
-  const handleRowDub = async (course: CourseVoiceoverSummary) => {
+  const handleRowDub = async (
+    course: CourseVoiceoverSummary,
+    force = false
+  ) => {
     if (anyRunning || startingRows.has(course.courseId)) return;
     setStartingRows((prev) => new Set(prev).add(course.courseId));
     try {
-      await voiceoverService.generateForCourse(course.courseId);
+      await voiceoverService.generateForCourse(course.courseId, force);
       showSuccess(
         `Đã bắt đầu dub cho "${getTranslationValue(course.title, lang) || course.courseId}"`
       );
@@ -948,7 +951,7 @@ export default function VoiceoverBatch() {
           }
           switchingToVbee={pendingDub.switchToVbee}
           onCancel={() => setPendingDub(null)}
-          onConfirm={async () => {
+          onConfirm={async (force) => {
             const { course, switchToVbee } = pendingDub;
             setPendingDub(null);
             // Persist first, then dub: the run reads the course's stored
@@ -957,7 +960,7 @@ export default function VoiceoverBatch() {
               const ok = await handleToggleProvider(course, "vbee");
               if (!ok) return;
             }
-            void handleRowDub(course);
+            void handleRowDub(course, force);
           }}
         />
       )}

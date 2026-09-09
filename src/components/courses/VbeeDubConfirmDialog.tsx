@@ -22,7 +22,8 @@ interface Props {
   /** True when confirming also flips the course from Edge onto Vbee. */
   switchingToVbee?: boolean;
   onCancel: () => void;
-  onConfirm: () => void;
+  /** `force` re-synthesises even what reuse would have skipped. */
+  onConfirm: (force: boolean) => void;
 }
 
 const formatNumber = (value: number): string =>
@@ -37,6 +38,7 @@ export default function VbeeDubConfirmDialog({
 }: Props) {
   const [estimate, setEstimate] = useState<CourseVoiceoverEstimate | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [force, setForce] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,11 +117,36 @@ export default function VbeeDubConfirmDialog({
                 </p>
               )}
 
-              {estimate.chars === 0 && (
+              {estimate.chars === 0 && !force && (
                 <p className="rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
-                  Không có gì phải tổng hợp lại — chạy cũng không tốn điểm.
+                  Không có gì phải tổng hợp lại — chạy cũng không tốn điểm. Nếu
+                  bạn vừa sửa lỗi ở API và cần làm lại thật, tick "Dub lại từ
+                  đầu" bên dưới: khoá có thể đang ghi một giọng khác với giọng
+                  của clip nó đang giữ, và phép tái dùng so đúng hai thứ đó nên
+                  sẽ bỏ qua.
                 </p>
               )}
+
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={force}
+                  onChange={(event) => setForce(event.target.checked)}
+                  className="mt-0.5 h-3.5 w-3.5 accent-indigo-600"
+                />
+                <span>
+                  <span className="font-medium">Dub lại từ đầu (force)</span> —
+                  bỏ qua phép tái dùng, tổng hợp lại toàn bộ{" "}
+                  <span className="font-semibold">
+                    {formatNumber(estimate.charsIfForced)}
+                  </span>{" "}
+                  ký tự ={" "}
+                  <span className="font-semibold">
+                    {formatNumber(estimate.charsIfForced * estimate.creditFactor)}
+                  </span>{" "}
+                  điểm.
+                </span>
+              </label>
 
               {overCap && (
                 <p className="flex items-start gap-1.5 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
@@ -144,7 +171,7 @@ export default function VbeeDubConfirmDialog({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={() => onConfirm(force)}
             disabled={!estimate && !error}
             className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
           >

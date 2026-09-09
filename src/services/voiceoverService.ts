@@ -18,8 +18,13 @@ export const voiceoverService = {
     return res.data;
   },
 
-  async generateForCourse(courseId: string) {
-    const res = await axiosClient.post(`/voiceover/course/${courseId}`);
+  // `force` re-synthesises even languages whose text and narrator are unchanged.
+  // The repair path for a course whose stored narrator disagrees with its actual
+  // clips — reuse compares exactly those two, so it would otherwise skip.
+  async generateForCourse(courseId: string, force = false) {
+    const res = await axiosClient.post(
+      `/voiceover/course/${courseId}${force ? "?force=true" : ""}`
+    );
     return res.data;
   },
 
