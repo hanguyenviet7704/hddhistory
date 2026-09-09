@@ -136,9 +136,14 @@ export default function VoiceoverBatch() {
   const [togglingRows, setTogglingRows] = useState<Set<string>>(new Set());
   // A Vbee dub spends real credit, so it goes through a confirm that shows the
   // counted cost first. Edge dubs still start on the first click.
-  const [pendingDub, setPendingDub] = useState<CourseVoiceoverSummary | null>(
-    null
-  );
+  //
+  // `switchToVbee` is set by the "Dub Vbee" shortcut on a course still on Edge:
+  // the flag is flipped only AFTER the confirm, so backing out of the estimate
+  // leaves the course exactly as it was.
+  const [pendingDub, setPendingDub] = useState<{
+    course: CourseVoiceoverSummary;
+    switchToVbee: boolean;
+  } | null>(null);
 
   const wasRunningRef = useRef(false);
   const pollRef = useRef<number | undefined>(undefined);
@@ -298,10 +303,23 @@ export default function VoiceoverBatch() {
   const handleRowDubClick = (course: CourseVoiceoverSummary) => {
     if (anyRunning || startingRows.has(course.courseId)) return;
     if (course.viProvider === "vbee") {
-      setPendingDub(course);
+      setPendingDub({ course, switchToVbee: false });
       return;
     }
     void handleRowDub(course);
+  };
+
+  /**
+   * "Dub Vbee" on a course still on Edge: one click instead of toggle-then-dub.
+   *
+   * It still PERSISTS the switch (after the confirm) rather than passing the
+   * provider as a one-off. A provider that lived only in the request would be
+   * undone by the next catalogue-wide run, which would re-dub the course back
+   * to Edge and throw away audio that cost real credit.
+   */
+  const handleRowDubVbee = (course: CourseVoiceoverSummary) => {
+    if (anyRunning || startingRows.has(course.courseId)) return;
+    setPendingDub({ course, switchToVbee: course.viProvider !== "vbee" });
   };
 
   /**
@@ -314,8 +332,8 @@ export default function VoiceoverBatch() {
   const handleToggleProvider = async (
     course: CourseVoiceoverSummary,
     next: VoiceoverProviderKind
-  ) => {
-    if (togglingRows.has(course.courseId)) return;
+  ): Promise<boolean> => {
+    if (togglingRows.has(course.courseId)) return false;
     setTogglingRows((prev) => new Set(prev).add(course.courseId));
     try {
       await voiceoverService.setCourseProvider(course.courseId, next);
@@ -338,10 +356,12 @@ export default function VoiceoverBatch() {
           ? "Đã bật Vbee cho tiếng Việt của khoá này. Bấm Dub để áp dụng."
           : "Đã trả khoá này về giọng Edge miễn phí. Bấm Dub để áp dụng."
       );
+      return true;
     } catch (err: any) {
       showError(
         err?.response?.data?.message || "Không đổi được nhà cung cấp giọng"
       );
+      return false;
     } finally {
       setTogglingRows((prev) => {
         const nextSet = new Set(prev);
@@ -878,6 +898,23 @@ export default function VoiceoverBatch() {
                               )}
                               Dub
                             </button>
+                            {/* Shortcut for the common flow: nominate this
+                                course for the paid voice and dub it, without
+                                first hunting for the toggle. Hidden once the
+                                course is already on Vbee — plain Dub does it. */}
+                            {settings?.vbeeConfigured &&
+                              course.viProvider !== "vbee" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRowDubVbee(course)}
+                                  disabled={anyRunning || rowStarting}
+                                  title="Chuyển khoá này sang Vbee rồi dub — sẽ hiện chi phí trước"
+                                  className="inline-flex items-center gap-1 rounded-md bg-purple-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-purple-700 disabled:opacity-50"
+                                >
+                                  <Volume2Icon className="h-3.5 w-3.5" />
+                                  Dub Vbee
+                                </button>
+                              )}
                           </div>
                         </td>
                       </tr>
@@ -904,14 +941,22 @@ export default function VoiceoverBatch() {
       {/* Vbee dub cost confirmation */}
       {pendingDub && (
         <VbeeDubConfirmDialog
-          courseId={pendingDub.courseId}
+          courseId={pendingDub.course.courseId}
           courseTitle={
-            getTranslationValue(pendingDub.title, lang) || pendingDub.courseId
+            getTranslationValue(pendingDub.course.title, lang) ||
+            pendingDub.course.courseId
           }
+          switchingToVbee={pendingDub.switchToVbee}
           onCancel={() => setPendingDub(null)}
-          onConfirm={() => {
-            const course = pendingDub;
+          onConfirm={async () => {
+            const { course, switchToVbee } = pendingDub;
             setPendingDub(null);
+            // Persist first, then dub: the run reads the course's stored
+            // provider, so dubbing before the write would still use Edge.
+            if (switchToVbee) {
+              const ok = await handleToggleProvider(course, "vbee");
+              if (!ok) return;
+            }
             void handleRowDub(course);
           }}
         />

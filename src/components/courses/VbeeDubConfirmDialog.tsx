@@ -19,6 +19,8 @@ import {
 interface Props {
   courseId: string;
   courseTitle: string;
+  /** True when confirming also flips the course from Edge onto Vbee. */
+  switchingToVbee?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -29,6 +31,7 @@ const formatNumber = (value: number): string =>
 export default function VbeeDubConfirmDialog({
   courseId,
   courseTitle,
+  switchingToVbee = false,
   onCancel,
   onConfirm,
 }: Props) {
@@ -103,6 +106,14 @@ export default function VbeeDubConfirmDialog({
                 {formatNumber(estimate.charsIfForced)} ký tự · giọng{" "}
                 <span className="font-mono">{estimate.voiceCode}</span>
               </p>
+
+              {switchingToVbee && (
+                <p className="rounded-md bg-purple-50 px-3 py-2 text-xs text-purple-800">
+                  Khoá này đang dùng Edge. Bấm "Dub ngay" sẽ chuyển hẳn sang
+                  Vbee và giữ nguyên như vậy cho những lần dub sau — huỷ ở đây
+                  thì không đổi gì cả.
+                </p>
+              )}
 
               {estimate.chars === 0 && (
                 <p className="rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">

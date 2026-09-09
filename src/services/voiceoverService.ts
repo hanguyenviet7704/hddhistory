@@ -115,6 +115,12 @@ export interface VoiceoverSettings {
   vbeeVoiceCode: string;
   /** False when the environment has no Vbee credentials — the toggle stays off. */
   vbeeConfigured: boolean;
+  /**
+   * Present when a pasted code is not in any Vbee catalogue. Not a rejection —
+   * community and cloned voices are legitimately unlisted — so the panel shows
+   * it as a caution, not an error.
+   */
+  warning?: string;
 }
 
 export interface CourseVoiceoverEstimate {

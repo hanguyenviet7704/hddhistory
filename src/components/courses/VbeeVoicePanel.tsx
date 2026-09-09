@@ -49,6 +49,10 @@ export default function VbeeVoicePanel({
   const [selected, setSelected] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
+  const [pasted, setPasted] = useState("");
+  // Kept from the last save: a code the API could not place in any catalogue is
+  // accepted, not refused, so the caution has to persist to be read.
+  const [warning, setWarning] = useState<string | null>(null);
 
   // One element for the whole list: two demos playing at once is never wanted,
   // and reusing it means switching rows stops the previous clip for free.
@@ -126,20 +130,26 @@ export default function VbeeVoicePanel({
     setPlaying(voice.code);
   };
 
-  const handleSave = async () => {
-    if (!dirty || saving) return;
+  const saveCode = async (code: string, label: string) => {
+    if (saving || !code.trim()) return;
     setSaving(true);
     try {
-      const saved = await voiceoverService.updateVbeeVoice(selected);
+      const saved = await voiceoverService.updateVbeeVoice(code.trim());
       onSaved(saved);
-      onSuccess(`Đã đổi giọng Vbee sang "${current?.name ?? selected}"`);
+      setWarning(saved.warning ?? null);
+      setSelected(saved.vbeeVoiceCode);
+      setPasted("");
+      onSuccess(`Đã đổi giọng Vbee sang "${label}"`);
     } catch (err: any) {
-      onError(
-        err?.response?.data?.message || "Không lưu được giọng Vbee"
-      );
+      onError(err?.response?.data?.message || "Không lưu được giọng Vbee");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSave = () => {
+    if (!dirty) return;
+    return saveCode(selected, current?.name ?? selected);
   };
 
   if (!configured) {
@@ -178,6 +188,46 @@ export default function VbeeVoicePanel({
           Lưu giọng
         </button>
       </header>
+
+      {/* Paste box. The list above is Vbee's own catalogue only; a community
+          voice or the account's own cloned one has a perfectly valid code that
+          will never appear there, and pasting is the only way to reach it. */}
+      <div className="space-y-2 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={pasted}
+            onChange={(event) => setPasted(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && pasted.trim()) {
+                void saveCode(pasted, pasted.trim());
+              }
+            }}
+            placeholder="Dán mã giọng, ví dụ hn_female_ngochuyen_full_48k-fhg"
+            className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-800 placeholder:font-sans placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => saveCode(pasted, pasted.trim())}
+            disabled={!pasted.trim() || saving}
+            className="shrink-0 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          >
+            Dùng mã này
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-500">
+          Đang dùng:{" "}
+          <span className="font-mono text-slate-700">
+            {settings?.vbeeVoiceCode || "—"}
+          </span>
+          {current ? ` · ${current.name} · ×${current.creditFactor}` : ""}
+        </p>
+        {warning && (
+          <p className="rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+            {warning}
+          </p>
+        )}
+      </div>
 
       {loading ? (
         <p className="flex items-center gap-2 px-4 py-6 text-sm text-slate-500">
