@@ -10,6 +10,7 @@ abstract class SavedCardModel with _$SavedCardModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage recap,
     @Default('') String recapText,
     @Default(BaseMultiLanguage()) BaseMultiLanguage courseTitle,
   }) = _SavedCardModel;
@@ -26,6 +27,7 @@ extension SavedCardModelX on SavedCardModel {
     title: title,
     description: description,
     image: image,
+    recap: recap,
     recapText: recapText,
     courseTitle: courseTitle,
   );

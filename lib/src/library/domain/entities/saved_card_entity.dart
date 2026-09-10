@@ -25,6 +25,14 @@ abstract class SavedCardEntity with _$SavedCardEntity {
     /// back face when the lesson had no takeaway item to snapshot.
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+
+    /// Recap ở cả năm ngôn ngữ — ảnh chụp lúc lưu, nhưng chụp ĐỦ tiếng, nên
+    /// thẻ vẫn đi theo ngôn ngữ app về sau.
+    @Default(BaseMultiLanguage()) BaseMultiLanguage recap,
+
+    /// Thẻ lưu TRƯỚC khi [recap] tồn tại: một chuỗi, đúng thứ tiếng đang bật
+    /// hôm đó. Giữ lại để những thẻ ấy không thành trống trơn; thẻ lưu mới
+    /// luôn có [recap] nên không rơi vào nhánh này.
     @Default('') String recapText,
     @Default(BaseMultiLanguage()) BaseMultiLanguage courseTitle,
   }) = _SavedCardEntity;
@@ -33,7 +41,16 @@ abstract class SavedCardEntity with _$SavedCardEntity {
 extension SavedCardEntityX on SavedCardEntity {
   /// What the back face reads. Same precedence the recap card itself uses, so a
   /// card in the Library says exactly what it said at the end of the lesson.
-  String get backText => recapText.isNotEmpty ? recapText : description.text.trim();
+  ///
+  /// [recap] trước [recapText]: thẻ mới có đủ năm tiếng nên đi theo ngôn ngữ
+  /// app, thẻ cũ chỉ có chuỗi một tiếng và vẫn hiện đúng như trước.
+  String get backText {
+    final multi = recap.text.trim();
+    if (multi.isNotEmpty) return multi;
+    if (recapText.isNotEmpty) return recapText;
+
+    return description.text.trim();
+  }
 
   /// Never empty on screen: a keypoint with no title of its own still has to
   /// name itself on a card that is mostly title.

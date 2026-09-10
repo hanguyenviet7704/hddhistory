@@ -31,4 +31,11 @@ extension BaseMultiLanguageExtension on BaseMultiLanguage {
     if (ja.isNotEmpty) return ja;
     return ko;
   }
+
+  /// Có chữ ở BẤT KỲ ngôn ngữ nào chưa.
+  ///
+  /// Khác `text.isNotEmpty` ở chỗ không phụ thuộc ngôn ngữ đang bật — dùng khi
+  /// cần biết "object này có nội dung để gửi/lưu không", chứ không phải "có gì
+  /// để hiện cho người đang xem không".
+  bool get hasAnyText => en.isNotEmpty || vi.isNotEmpty || zh.isNotEmpty || ja.isNotEmpty || ko.isNotEmpty;
 }

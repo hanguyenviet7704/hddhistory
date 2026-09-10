@@ -234,6 +234,9 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with TickerProviderStat
         keypointId: card.keypointId,
         lessonId: card.lessonId,
         courseId: card.courseId,
+        // Trả lại nguyên bản đa ngôn ngữ khi lưu lại, nếu không một lần bỏ
+        // lưu rồi lưu lại sẽ hạ thẻ xuống còn một thứ tiếng.
+        recap: card.recap,
         recapText: card.recapText,
       ),
     );

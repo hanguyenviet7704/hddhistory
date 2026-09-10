@@ -68,6 +68,10 @@ class SavedRepository with RestfulRequestHandlerMixin implements ISavedRepositor
         'keypointId': params.keypointId,
         if (params.lessonId.isNotEmpty) 'lessonId': params.lessonId,
         if (params.courseId.isNotEmpty) 'courseId': params.courseId,
+        // Gửi CẢ HAI: `recap` (đa ngôn ngữ, bản API mới đọc) và `recapText`
+        // (ngôn ngữ đang bật) để bản API chưa deploy vẫn lưu được như cũ —
+        // app luôn có thể lên trước hoặc sau API mà không vỡ.
+        if (params.recap.hasAnyText) 'recap': params.recap.toJson(),
         if (params.recapText.isNotEmpty) 'recapText': params.recapText,
       }),
     );

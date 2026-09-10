@@ -57,14 +57,40 @@ TakeawaySummary resolveTakeawaySummary(List<LearningItemEntity> items) {
 }
 
 extension TakeawaySummaryItemX on LearningItemEntity {
-  /// This item's text blocks flattened for the recap card's back face. NOT a
-  /// takeaway test — whether an item is the takeaway is positional
-  /// ([resolveTakeawaySummary]); any single-page theory answers here.
-  String get takeawaySummaryText {
+  /// This item's text blocks flattened for the recap card's back face, in ALL
+  /// FIVE languages. NOT a takeaway test — whether an item is the takeaway is
+  /// positional ([resolveTakeawaySummary]); any single-page theory answers here.
+  ///
+  /// Multi-language on purpose. A saved card stores this text as a SNAPSHOT
+  /// (the recap is derived here, not a stored field on the keypoint — see
+  /// [SavedCardEntity]), and a snapshot of one language is a card that stops
+  /// following the reader: save in Vietnamese, switch the app to English, and
+  /// the Library shows an English title over a Vietnamese body (reported
+  /// on-device 2026-09-10). Flattening per language costs nothing here — the
+  /// source blocks already carry all five — and keeps the snapshot honest.
+  BaseMultiLanguage get takeawaySummary => BaseMultiLanguage(
+    en: _flattenTakeaway((content) => content.en),
+    vi: _flattenTakeaway((content) => content.vi),
+    zh: _flattenTakeaway((content) => content.zh),
+    ja: _flattenTakeaway((content) => content.ja),
+    ko: _flattenTakeaway((content) => content.ko),
+  );
+
+  /// The recap in the language the app is showing right now. Kept as the
+  /// reading path for the card on screen; the SAVE path wants
+  /// [takeawaySummary] instead.
+  String get takeawaySummaryText => takeawaySummary.text;
+
+  /// One language's worth. `pick` reads that language off each block, so a
+  /// language nobody authored comes back empty rather than borrowing another
+  /// — `BaseMultiLanguage.text` already owns the fallback order, and baking a
+  /// fallback in here would freeze the card into whichever language happened
+  /// to exist on the day it was saved.
+  String _flattenTakeaway(String Function(BaseMultiLanguage) pick) {
     if (documents.isEmpty) return '';
     final joined = documents.first.document
         .where((block) => block.type == ContentDocumentType.text)
-        .map((block) => block.data.content.text.trim())
+        .map((block) => pick(block.data.content).trim())
         .where((text) => text.isNotEmpty)
         .join('\n\n');
     // Some authored variants embed their own heading line ("🔑 KEY TAKEAWAY")

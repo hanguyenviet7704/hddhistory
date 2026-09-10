@@ -103,7 +103,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   /// The recap text travels with the save: it is derived HERE from the lesson's
   /// items ([resolveTakeawaySummary]) and the server has no way to re-derive it
   /// — see [SavedCardEntity].
-  Future<void> _toggleSave({required String recapText}) async {
+  Future<void> _toggleSave({required BaseMultiLanguage recap, required String recapText}) async {
     final lessonState = context.read<CourseLessonCubit>().state;
     final keypointId = lessonState.currentKeypointId;
     if (keypointId.isEmpty) return;
@@ -117,6 +117,9 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
         keypointId: keypointId,
         lessonId: lessonState.selectedLesson.id,
         courseId: lessonState.selectedLesson.courseId,
+        // Lưu ĐỦ năm tiếng, không chỉ tiếng đang hiện: đổi ngôn ngữ app xong
+        // mở lại thẻ trong Thư viện phải ra đúng ngôn ngữ mới.
+        recap: recap,
         recapText: recapText,
       ),
     );
@@ -186,7 +189,10 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     final imageUrl = keypoint.image.isNotEmpty ? keypoint.image : courseLessonState.selectedLesson.image;
     final lessonItems = context.watch<LessonCubit>().state.pageData.items;
     final takeaway = resolveTakeawaySummary(lessonItems);
-    final takeawayText = takeaway.exists ? lessonItems[takeaway.itemIndex].takeawaySummaryText : '';
+    // Giữ cả bản đa ngôn ngữ (để LƯU) lẫn bản đã chọn ngôn ngữ (để HIỆN).
+    final takeawayMulti = takeaway.exists ? lessonItems[takeaway.itemIndex].takeawaySummary : const BaseMultiLanguage();
+    final takeawayText = takeawayMulti.text;
+    final recapMulti = takeawayText.isNotEmpty ? takeawayMulti : keypoint.description;
     final recapText = takeawayText.isNotEmpty ? takeawayText : keypoint.description.text.trim();
     final hasRecap = recapText.isNotEmpty;
 
@@ -240,7 +246,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
             ),
           ),
           16.verticalSpace,
-          _hintAndActions(context, hasRecap: hasRecap, keypointTitle: keypointTitle, recapText: recapText),
+          _hintAndActions(context, hasRecap: hasRecap, keypointTitle: keypointTitle, recap: recapMulti, recapText: recapText),
           const Spacer(),
           SavedToastHost(controller: _toast),
           8.verticalSpace,
@@ -265,9 +271,10 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     BuildContext context, {
     required bool hasRecap,
     required String keypointTitle,
+    required BaseMultiLanguage recap,
     required String recapText,
   }) {
-    final actions = _recapActions(context, keypointTitle: keypointTitle, recapText: recapText);
+    final actions = _recapActions(context, keypointTitle: keypointTitle, recap: recap, recapText: recapText);
 
     // Nothing to flip TO — the card never turns, so the hint would be a lie and
     // the cross-fade has nothing to fade between. Show the actions outright,
@@ -337,7 +344,12 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   ///
   /// Sharing is untouched — it renders the card locally and asks the server
   /// nothing.
-  Widget _recapActions(BuildContext context, {required String keypointTitle, required String recapText}) {
+  Widget _recapActions(
+    BuildContext context, {
+    required String keypointTitle,
+    required BaseMultiLanguage recap,
+    required String recapText,
+  }) {
     final l10n = context.l10n.library;
     final lessonState = context.watch<CourseLessonCubit>().state;
     final keypointId = lessonState.currentKeypointId;
@@ -364,7 +376,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
                 semanticsLabel: isSaved ? l10n.unsaveCardLabel : l10n.saveCardLabel,
                 isSaved: isSaved,
                 dropShadow: true,
-                onTap: () => unawaited(_toggleSave(recapText: recapText)),
+                onTap: () => unawaited(_toggleSave(recap: recap, recapText: recapText)),
               ),
             ],
           ],
