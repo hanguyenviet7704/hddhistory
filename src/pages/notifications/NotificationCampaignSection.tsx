@@ -209,6 +209,10 @@ export default function NotificationCampaignSection() {
   const [creating, setCreating] = useState(false);
 
   const [openSends, setOpenSends] = useState<string | null>(null);
+  // Nội dung thật của campaign — chữ theo từng ngôn ngữ, ảnh, đích. Nó đã
+  // nằm sẵn trong object campaign, chỉ là hàng ở trên mới hiện đúng một
+  // dòng tiêu đề, nên không có cách nào xem lại thứ đã gửi đi.
+  const [openCopy, setOpenCopy] = useState<string | null>(null);
   const [sends, setSends] = useState<NotificationCampaignSendRow[]>([]);
 
   /** Môi trường app mà cột click đang đọc — xem [[CLICK_APP_ENVS]]. */
@@ -964,7 +968,103 @@ export default function NotificationCampaignSection() {
                   >
                     {openSends === campaign._id ? "Ẩn log gửi" : "Xem log gửi"}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenCopy((prev) =>
+                        prev === campaign._id ? null : campaign._id
+                      )
+                    }
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white"
+                  >
+                    {openCopy === campaign._id
+                      ? "Ẩn nội dung"
+                      : "Xem nội dung"}
+                  </button>
                 </div>
+
+                {openCopy === campaign._id ? (
+                  <div className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="space-y-2">
+                      {LOCALES.map((locale) => {
+                        const copy = campaign.copies?.[locale];
+                        // Ngôn ngữ chưa soạn thì nói thẳng là chưa soạn: người
+                        // đọc thuộc locale đó nhận bản `en` (server tự rơi về),
+                        // và đó là điều cần thấy chứ không phải một dòng trống.
+                        if (!copy?.title && !copy?.body) {
+                          return (
+                            <div
+                              key={locale}
+                              className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-400"
+                            >
+                              <span className="font-mono font-semibold uppercase">
+                                {locale}
+                              </span>{" "}
+                              — chưa soạn, sẽ dùng bản <b>en</b>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={locale}
+                            className="rounded-md border border-slate-200 px-3 py-2"
+                          >
+                            <div className="mb-1 font-mono text-[10px] font-semibold uppercase text-slate-400">
+                              {locale}
+                            </div>
+                            <div className="text-sm font-semibold text-slate-900">
+                              {copy.title || "—"}
+                            </div>
+                            {/* `whitespace-pre-wrap`: nội dung noti có xuống
+                                dòng thật, cắt hết đi thì không còn là thứ
+                                người dùng sẽ thấy. */}
+                            <div className="whitespace-pre-wrap text-sm text-slate-600">
+                              {copy.body || "—"}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex flex-wrap items-start gap-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                      <div>
+                        <div className="font-semibold text-slate-700">Đích</div>
+                        <div>
+                          {destinationLabel(campaign.deeplink)}{" "}
+                          <span className="text-slate-400">
+                            ({campaign.deeplink})
+                          </span>
+                        </div>
+                        {campaign.deeplinkParams &&
+                        Object.keys(campaign.deeplinkParams).length > 0 ? (
+                          <div className="font-mono text-[11px] text-slate-400">
+                            {Object.entries(campaign.deeplinkParams)
+                              .map(([key, value]) => `${key}=${value}`)
+                              .join(" · ")}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-700">Ảnh</div>
+                        {campaign.imageUrl ? (
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={campaign.imageUrl}
+                              alt=""
+                              className="h-12 w-12 rounded border border-slate-200 object-cover"
+                            />
+                            <span className="max-w-[320px] break-all font-mono text-[11px] text-slate-400">
+                              {campaign.imageUrl}
+                            </span>
+                          </div>
+                        ) : (
+                          <div>Không có — noti chỉ có chữ</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
 
                 {openSends === campaign._id ? (
                   <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">

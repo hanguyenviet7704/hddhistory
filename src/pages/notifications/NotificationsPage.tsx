@@ -729,10 +729,18 @@ const TestSendBox: React.FC<{ templates: NotificationTemplate[] }> = ({
         variantKey || undefined
       );
       const which = response.variantKey ? ` [${response.variantKey}]` : "";
+      // Server trả `failures` — mã FCM cho từng token — chứ không có `reason`.
+      // Đọc nhầm field là lý do ô này xưa nay chỉ nói được "không rõ", trong
+      // khi câu trả lời thật đã nằm sẵn trong response.
+      const why = response.failures?.length
+        ? response.failures.join(", ")
+        : response.conditionMet === false
+          ? "điều kiện thực tế không thỏa"
+          : "không có token nào để gửi";
       setResult(
         response.sent
           ? `Đã gửi${which}${response.conditionMet === false ? " (điều kiện thực tế KHÔNG thỏa — chỉ để xem nội dung)" : ""}`
-          : `Không gửi: ${response.reason ?? "không rõ"}`
+          : `Không gửi: ${why}`
       );
     } catch (error: any) {
       setResult(error?.message ?? "Lỗi gửi test");

@@ -26,6 +26,23 @@ export interface NotificationLogQuery {
   toDate?: string;
 }
 
+/**
+ * Những gì `POST /notifications/test-send` thật sự trả về.
+ *
+ * `reason` KHÔNG nằm trong đó — nhưng UI lại đọc đúng field đó, nên mọi lần
+ * gửi thử hỏng đều hiện "Không gửi: không rõ" dù server đã nói rõ vì sao.
+ * `failures` là mã lỗi FCM cho từng token (`messaging/...`), thứ phân biệt
+ * token hết hạn với khoá APNs chưa cấu hình.
+ */
+export interface TestSendResult {
+  sent: boolean;
+  conditionMet?: boolean;
+  variantKey?: string;
+  successCount?: number;
+  failureCount?: number;
+  failures?: string[];
+}
+
 export const notificationService = {
   async getTemplates(): Promise<NotificationTemplate[]> {
     const res = await axiosClient.get("/notifications/templates", {});
@@ -114,23 +131,13 @@ export const notificationService = {
     type: NotificationType,
     userId: string,
     variantKey?: string
-  ): Promise<{
-    sent: boolean;
-    reason?: string;
-    conditionMet?: boolean;
-    variantKey?: string;
-  }> {
+  ): Promise<TestSendResult> {
     const res = await axiosClient.post(
       "/notifications/test-send",
       { type, userId, ...(variantKey ? { variantKey } : {}) },
       {}
     );
-    return unwrapData<{
-      sent: boolean;
-      reason?: string;
-      conditionMet?: boolean;
-      variantKey?: string;
-    }>(res.data);
+    return unwrapData<TestSendResult>(res.data);
   },
 
   // ------------------------------------------------------- manual campaigns
