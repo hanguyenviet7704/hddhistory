@@ -76,17 +76,17 @@ export default function HabitModal({
   const lang = useSelector((state: RootState) => state.lang.code);
 
   const [title, setTitle] = useState<ITranslation>({});
-  // The Coach's grounding text. Two fields, both per locale, both optional —
-  // without them the Coach only has the title to build practice scenes from.
-  const [description, setDescription] = useState<ITranslation>({});
-  const [contexts, setContexts] = useState<ITranslation>({});
-  // The ladder is still what a slot's difficulty MEANS for this skill (see
-  // coach-situation.service.ts). Rubric-based scoring is not: "cấm chấm điểm,
-  // kể cả khen 'Chính xác!'" retired tầng 4 (doc v4), and nothing in the coach
-  // module calls the scoring path any more (grepped every call site) — the
-  // field itself stays on the schema/DB only so old data is not lost, but this
-  // form no longer reads, shows, or writes it (owner 2026-09-09).
-  const [ladder, setLadder] = useState<ITranslation>({});
+  // Description/Contexts/Ladder — owner 2026-09-10: "bỏ hết, không cần dùng
+  // các trường này nữa" for the ADMIN FORM specifically (chosen over also
+  // touching AI Coach's own generation code, which still reads all three from
+  // the DB in coach-situation.service.ts and is untouched by this).
+  //
+  // Same shape as the Rubric removal one commit before this: the fields stay
+  // on the schema/DB so a habit's existing grounding text is not lost, this
+  // form just stops reading, showing, or writing them. Whether the Coach
+  // itself keeps using that data for scene generation is a separate decision
+  // the owner deferred — see the payload assembly below for why omitting the
+  // key (not sending `{}`) is what keeps that data alive.
   const [skillsetId, setSkillsetId] = useState("");
   const [status, setStatus] = useState<HabitStatus>(HabitStatus.DRAFT);
   const [image, setImage] = useState("");
@@ -136,9 +136,6 @@ export default function HabitModal({
 
     if (initial) {
       setTitle(initial.title ?? {});
-      setDescription(initial.description ?? {});
-      setContexts(initial.contexts ?? {});
-      setLadder(initial.ladder ?? {});
       setSkillsetId(initial.skillsetId ?? "");
       setStatus(initial.status ?? HabitStatus.DRAFT);
       setImage(initial.image ?? "");
@@ -151,9 +148,6 @@ export default function HabitModal({
       setSelectedKeypointIds(initial.keypointIds ?? []);
     } else {
       setTitle({});
-      setDescription({});
-      setContexts({});
-      setLadder({});
       setSkillsetId("");
       setStatus(HabitStatus.DRAFT);
       setImage("");
@@ -349,13 +343,11 @@ export default function HabitModal({
 
     const payload: HabitPayload = {
       title: cleanedTitle,
-      description: cleanTranslation(description) ?? {},
-      contexts: cleanTranslation(contexts) ?? {},
-      // `rubric` is deliberately OMITTED, not sent as `{}` — the API's update
-      // is a partial `$set: dto`, so a key absent from the body leaves an
-      // existing habit's legacy rubric text untouched in the DB. Sending `{}`
-      // here would instead wipe it on the next unrelated edit of this habit.
-      ladder: cleanTranslation(ladder) ?? {},
+      // description/contexts/ladder/rubric are all deliberately OMITTED, not
+      // sent as `{}` — the API's update is a partial `$set: dto`, so a key
+      // absent from the body leaves an existing habit's grounding text
+      // untouched in the DB. Sending `{}` here would instead wipe it on the
+      // next unrelated edit of this habit (title, status, whatever).
       skillsetId,
       status,
       keypointIds: selectedKeypointIds,
@@ -403,45 +395,6 @@ export default function HabitModal({
               fullWidth
               size="small"
               required
-            />
-
-            <TextField
-              label={`Description (${lang.toUpperCase()})`}
-              value={description[lang] ?? ""}
-              onChange={(e) =>
-                setDescription((prev) => updateTranslationValue(prev, lang, e.target.value))
-              }
-              helperText="What the habit is, concretely, and when it applies — 1–2 sentences. The Coach builds its practice scenes from this."
-              fullWidth
-              size="small"
-              multiline
-              minRows={2}
-            />
-
-            <TextField
-              label={`Contexts (${lang.toUpperCase()})`}
-              value={contexts[lang] ?? ""}
-              onChange={(e) =>
-                setContexts((prev) => updateTranslationValue(prev, lang, e.target.value))
-              }
-              helperText="Moments the habit comes up, ONE PER LINE (e.g. “khi họp nhóm bị bác ý”) — aim for 3–5. Cảnh luyện tập được VIẾT MỚI lúc user luyện: nảy từ một khoảnh khắc kiểu này, rồi dựng lại theo độ tuổi và đời sống của từng user (không lấy nguyên văn)."
-              fullWidth
-              size="small"
-              multiline
-              minRows={4}
-            />
-
-            <TextField
-              label={`Ladder (${lang.toUpperCase()})`}
-              value={ladder[lang] ?? ""}
-              onChange={(e) =>
-                setLadder((prev) => updateTranslationValue(prev, lang, e.target.value))
-              }
-              helperText='Thang độ khó riêng của kỹ năng — MỖI DÒNG MỘT rung, dạng "level | hình dạng tình huống", 5 dòng. Ví dụ: "4 | Đối phương kích thêm lần thứ hai". Cảnh sinh mới sẽ dựng theo đúng rung của level đó.'
-              fullWidth
-              size="small"
-              multiline
-              minRows={4}
             />
 
             <TextField
