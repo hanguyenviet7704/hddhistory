@@ -14,6 +14,7 @@ import { getClientInfo } from "../../utils/device";
 import { useNavigate } from "react-router-dom";
 import { setLang } from "../../store/slices/lang.slice";
 import { userService } from "../../services/userService";
+import AdminProfileDialog from "./AdminProfileDialog";
 
 const langs: LangOption[] = [
   { code: LangCode.EN, label: "English", countryCode: "GB" },
@@ -27,6 +28,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const dispatch = useDispatch();
   const lang = useSelector((state: RootState) => state.lang.code);
@@ -86,7 +88,10 @@ export default function Header() {
 
   const handleProfile = () => {
     setLangOpen(false);
-    setOpen((prev) => !prev);
+    // Đóng dropdown rồi mở hồ sơ. Trước đây hàm này chỉ toggle `open` và
+    // không đi đâu cả — nút "Profile" là một nút chết.
+    setOpen(false);
+    setProfileOpen(true);
   };
 
   const handleChangeLang = async (code: LangCode) => {
@@ -205,6 +210,11 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      <AdminProfileDialog
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+      />
     </header>
   );
 }
