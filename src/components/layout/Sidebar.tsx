@@ -76,9 +76,6 @@ const menuGroups = [
       // Gộp trên TOÀN BỘ user — khác trang User progress soi từng người. Trả
       // lời câu hỏi biên tập: khoá nào đang làm rơi người học ở keypoint nào.
       { name: "Điểm dừng khoá học", icon: MapPinIcon, path: "/dashboard/drop-off" },
-      // Moved here from Operations: it is the same question as the rest of
-      // this group. The route is unchanged so saved links still work.
-      { name: "Tiến trình khoá", icon: ChartBarIcon, path: "/statistics" },
     ],
   },
   {
