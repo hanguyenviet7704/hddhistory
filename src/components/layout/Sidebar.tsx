@@ -113,17 +113,17 @@ const menuGroups = [
       // Habits manages the library (content); Habit check-ins is the read-only
       // view of what users actually do with it, journal text included.
       { name: "Habit check-ins", icon: ClipboardDocumentCheckIcon, path: "/habit-checkins" },
-      { name: "Re-anchor reasons", icon: ArrowPathIcon, path: "/reanchor-reasons" },
+      // { name: "Re-anchor reasons", icon: ArrowPathIcon, path: "/reanchor-reasons" },
       { name: "Study Themes", icon: SwatchIcon, path: "/study-themes" },
     ],
   },
   {
     title: "Onboarding",
     items: [
-      { name: "Onboarding", icon: SparklesIcon, path: "/onboarding" },
-      { name: "Onboarding Branching", icon: SparklesIcon, path: "/onboarding-branching" },
+      // { name: "Onboarding", icon: SparklesIcon, path: "/onboarding" },
+      // { name: "Onboarding Branching", icon: SparklesIcon, path: "/onboarding-branching" },
       { name: "Onboarding Config", icon: AdjustmentsHorizontalIcon, path: "/onboarding-config" },
-      { name: "Reset Onboarding (QA)", icon: BugAntIcon, path: "/reset-onboarding" },
+      // { name: "Reset Onboarding (QA)", icon: BugAntIcon, path: "/reset-onboarding" },
     ],
   },
   {
