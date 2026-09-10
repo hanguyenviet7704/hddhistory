@@ -7,6 +7,8 @@ import {
   SpeakerWaveIcon,
   GlobeAltIcon,
   CloudArrowUpIcon,
+  CloudArrowDownIcon,
+  ArrowPathIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
 import { countryLabel } from "../../config/countries";
@@ -130,6 +132,36 @@ export default function CourseList() {
   const [syncResults, setSyncResults] = useState<DriveSyncResult[] | null>(
     null
   );
+
+  /**
+   * Kéo về từng khoá. `syncAutoTag` dùng chung với nút Sync Drive: một ô tick
+   * "Phát hành sau sync" điều khiển cả hai, để kéo một khoá và kéo cả folder
+   * không âm thầm khác nhau ở chuyện có phát hành hay không.
+   */
+  const [pullingCourseId, setPullingCourseId] = useState<string | null>(null);
+
+  const pullFromDrive = async (course: ICourse) => {
+    setPullingCourseId(course._id);
+    try {
+      const result = await courseService.pullCourseFromDrive(
+        course._id,
+        syncAutoTag
+      );
+      // Đổ vào đúng bảng kết quả của Sync Drive — lỗi import nằm theo dòng và
+      // theo sheet, một cái toast không chở nổi.
+      setSyncResults([result]);
+      if (result.action === "failed" || result.errorCount > 0) {
+        showError(`Kéo về "${result.fileName}": ${result.errorCount} lỗi`);
+      } else {
+        showSuccess(`Đã kéo "${result.fileName}" về`);
+      }
+      fetchCourses(searchTerm.trim(), 1, false);
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Kéo về từ Drive thất bại");
+    } finally {
+      setPullingCourseId(null);
+    }
+  };
 
   const pushToDrive = async (course: ICourse) => {
     try {
@@ -410,9 +442,21 @@ export default function CourseList() {
                           <button
                             onClick={() => pushToDrive(course)}
                             className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                            title="Push this course's sheet to Google Drive"
+                            title="Đẩy sheet của khoá này lên Google Drive"
                           >
                             <CloudArrowUpIcon className="h-5 w-5 text-emerald-600" />
+                          </button>
+                          <button
+                            onClick={() => pullFromDrive(course)}
+                            disabled={pullingCourseId === course._id}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                            title="Kéo sheet của riêng khoá này từ Google Drive về"
+                          >
+                            {pullingCourseId === course._id ? (
+                              <ArrowPathIcon className="h-5 w-5 text-sky-600 animate-spin" />
+                            ) : (
+                              <CloudArrowDownIcon className="h-5 w-5 text-sky-600" />
+                            )}
                           </button>
                           <button
                             onClick={() => setVersionsCourse(course)}

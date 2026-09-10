@@ -107,6 +107,18 @@ export const courseService = {
   },
 
   /**
+   * Kéo về ĐÚNG MỘT khoá — nửa lẻ của [syncFromDrive], cùng luồng import và
+   * cùng kiểu kết quả, chỉ khác là không đụng tới các khoá khác trong folder.
+   */
+  async pullCourseFromDrive(courseId: string, autoTag = false) {
+    const res = await axiosClient.post(
+      `/course-content-transfers/${courseId}/pull-from-drive`,
+      { autoTag }
+    );
+    return unwrapApi<DriveSyncResult>(res.data);
+  },
+
+  /**
    * `autoTag` phát hành luôn: mỗi khoá import sạch lỗi sẽ được đánh tag patch
    * kế tiếp và trỏ current sang đó. Mặc định tắt — sync chỉ ghi vào bản đang
    * sửa, nên nếu không bật thì app vẫn phát tag cũ.
