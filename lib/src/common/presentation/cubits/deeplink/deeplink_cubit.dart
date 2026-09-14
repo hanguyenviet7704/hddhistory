@@ -484,10 +484,25 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// (the SAME sequence the home_widget→course deeplink uses). [source] tags the
   /// roadmap for back-nav/analytics. Returns false only when a non-empty course
   /// can't be selected, so callers can fall back to Home.
-  bool _openCourseRoadmap(BuildContext navContext, String? courseId, String source) {
+  ///
+  /// [allowOutsideCatalog] switches to the LENIENT select — the one the Coach
+  /// sheet uses. The strict select answers "is this course in the catalog Home
+  /// has loaded?", and that catalog is paginated AND empty on a cold start, so
+  /// for a caller that already knows the course exists (the server named it in a
+  /// push seconds ago) a `false` there is a dead tap, not a missing course.
+  bool _openCourseRoadmap(
+    BuildContext navContext,
+    String? courseId,
+    String source, {
+    bool allowOutsideCatalog = false,
+  }) {
     if (courseId?.isNotEmpty == true) {
-      final isSelected = AppDI.injector.get<HomeCubit>().trySelectCourseFromCourseId(courseId!);
-      if (!isSelected) return false;
+      final homeCubit = AppDI.injector.get<HomeCubit>();
+      if (allowOutsideCatalog) {
+        homeCubit.selectCourseFromCourseId(courseId!);
+      } else if (!homeCubit.trySelectCourseFromCourseId(courseId!)) {
+        return false;
+      }
     }
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(source);
     // Not just setCurrentIndex(1) — see course_card.dart's identical fix.
@@ -779,8 +794,17 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   /// lesson that is already on screen, which is right for "resume what you were
   /// doing" and wrong here — the reader tapped a specific new course and has to
   /// land on it.
+  ///
+  /// Opens OUTSIDE the catalog, for the same reason the Coach sheet does: this
+  /// tap arrives from a cold start more often than not, and the interaction
+  /// queue is flushed while splash is still up — `HomeCubit.state.skillsets` is
+  /// then empty, so the strict select refused every course and the push that
+  /// announced a new course landed on Home. Which is precisely the bug this
+  /// notification is accused of (2026-09-14). A course that really is gone now
+  /// surfaces as the roadmap's own error state rather than as silence.
   void _openNewCourseRoadmap(BuildContext navContext, String courseId) {
-    if (courseId.isEmpty || !_openCourseRoadmap(navContext, courseId, _newCourseRoadmapSource)) {
+    if (courseId.isEmpty ||
+        !_openCourseRoadmap(navContext, courseId, _newCourseRoadmapSource, allowOutsideCatalog: true)) {
       HomeRoute().go(navContext);
     }
   }
