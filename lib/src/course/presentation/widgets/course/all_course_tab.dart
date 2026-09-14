@@ -718,11 +718,11 @@ class _CourseGridCard extends StatelessWidget {
                           totalLessons: totalLessons,
                         ),
                       ),
-                      if ((course.viewCount ?? 0) > 0)
+                      if ((course.displayViewCount ?? 0) > 0)
                         Positioned(
                           right: 9.r,
                           bottom: 9.r,
-                          child: CourseViewsChip(count: course.viewCount!),
+                          child: CourseViewsChip(count: course.displayViewCount!),
                         ),
                     ],
                   ),

@@ -529,11 +529,11 @@ class LibraryCoverCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     CoverArt(url: course.image, seed: course.id, label: course.title.text),
-                    if ((course.viewCount ?? 0) > 0)
+                    if ((course.displayViewCount ?? 0) > 0)
                       Positioned(
                         right: 9.r,
                         bottom: 9.r,
-                        child: CourseViewsChip(count: course.viewCount!),
+                        child: CourseViewsChip(count: course.displayViewCount!),
                       ),
                   ],
                 ),

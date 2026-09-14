@@ -64,4 +64,11 @@ extension CourseEntityExtension on CourseEntity {
     final now = DateTime.now();
     return !now.isBefore(at) && now.isBefore(at.add(Duration(days: days)));
   }
+
+  /// The reach figure a card is allowed to claim. A course that has not
+  /// launched yet has no readers, so an admin-entered [viewCount] stays hidden
+  /// while the course is "Coming soon" — the badge and the eye chip can never
+  /// contradict each other. Reads through [isComingSoonNow], so a scheduled
+  /// course gets its figure back by itself once [publishAt] passes.
+  int? get displayViewCount => isComingSoonNow ? null : viewCount;
 }
