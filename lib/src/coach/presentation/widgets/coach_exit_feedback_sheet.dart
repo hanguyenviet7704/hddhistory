@@ -16,17 +16,22 @@ part of '../../coach.dart';
 /// the barrier all end with the Coach closing. Somebody who has decided to
 /// leave twice over must not be made to answer a form to get out.
 class CoachExitFeedbackSheet extends StatefulWidget {
-  const CoachExitFeedbackSheet._();
+  /// `story` · `scene` · `recap` · `onboard` · `hub`, from the server. Anything
+  /// else — including an API that does not send it — falls back to the story
+  /// chips, which are the ones that make sense about a conversation.
+  final String kind;
+
+  const CoachExitFeedbackSheet._({required this.kind});
 
   /// Returns what they said, or null when they skipped — either way the
   /// caller closes the Coach next.
-  static Future<CoachExitFeedback?> show(BuildContext context) {
+  static Future<CoachExitFeedback?> show(BuildContext context, {String kind = ''}) {
     return showModalBottomSheet<CoachExitFeedback>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.18),
-      builder: (_) => const CoachExitFeedbackSheet._(),
+      builder: (_) => CoachExitFeedbackSheet._(kind: kind),
     );
   }
 
@@ -58,17 +63,50 @@ class _CoachExitFeedbackSheetState extends State<CoachExitFeedbackSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n.coach;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final hub = widget.kind == 'hub';
 
-    // Praise first, in the design's order. The ids are the server's enum:
-    // `understood_me` and `right_questions` are the two it reads as praise, and
-    // everything else puts the row in front of a person.
-    final chips = [
-      ('understood_me', l10n.rateChipUnderstood),
-      ('right_questions', l10n.rateChipRightQuestions),
-      ('too_long', l10n.rateChipTooLong),
-      ('imposed_thinking', l10n.rateChipImposed),
-      ('not_helpful', l10n.rateChipNotHelpful),
-    ];
+    // Praise first, in the design's order, and a different list per kind — the
+    // ids are the server's enum, which is also what decides whether a row needs
+    // a person. `RATING_CHIPS_BY_KIND` on the API is the same list; if the two
+    // ever disagree the server wins, because it refuses chips a kind never
+    // offered.
+    final chips = switch (widget.kind) {
+      'scene' => [
+          ('scene_realistic', l10n.rateChipSceneRealistic),
+          ('scene_useful', l10n.rateChipSceneUseful),
+          ('scene_unrealistic', l10n.rateChipSceneUnrealistic),
+          ('scene_unnatural', l10n.rateChipSceneUnnatural),
+          ('not_helpful', l10n.rateChipNotHelpful),
+        ],
+      'recap' => [
+          ('recap_accurate', l10n.rateChipRecapAccurate),
+          ('recap_on_point', l10n.rateChipRecapOnPoint),
+          ('recap_wrong', l10n.rateChipRecapWrong),
+          ('recap_bad_level', l10n.rateChipRecapBadLevel),
+          ('not_helpful', l10n.rateChipNotHelpful),
+        ],
+      'onboard' => [
+          ('onboard_easy', l10n.rateChipOnboardEasy),
+          ('too_many_questions', l10n.rateChipOnboardTooMany),
+          ('onboard_too_personal', l10n.rateChipOnboardTooPersonal),
+          ('onboard_unclear', l10n.rateChipOnboardUnclear),
+        ],
+      // No praise chip: they never spoke to the Coach, so there is nothing to
+      // praise. This kind asks why they never started instead.
+      'hub' => [
+          ('hub_unsure', l10n.rateChipHubUnsure),
+          ('hub_nothing_fits', l10n.rateChipHubNothingFits),
+          ('hub_just_looking', l10n.rateChipHubJustLooking),
+          ('hub_busy', l10n.rateChipHubBusy),
+        ],
+      _ => [
+          ('understood_me', l10n.rateChipUnderstood),
+          ('right_questions', l10n.rateChipRightQuestions),
+          ('too_long', l10n.rateChipTooLong),
+          ('imposed_thinking', l10n.rateChipImposed),
+          ('not_helpful', l10n.rateChipNotHelpful),
+        ],
+    };
 
     return Padding(
       // The note box lifts the sheet clear of the keyboard; without this the
@@ -111,7 +149,7 @@ class _CoachExitFeedbackSheetState extends State<CoachExitFeedbackSheet> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        l10n.rateSheetTitle,
+                        hub ? l10n.rateSheetTitleHub : l10n.rateSheetTitle,
                         style: TextStyle(
                           fontSize: 17.sp,
                           fontWeight: FontWeight.w700,
@@ -121,7 +159,7 @@ class _CoachExitFeedbackSheetState extends State<CoachExitFeedbackSheet> {
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        l10n.rateSheetSubtitle,
+                        hub ? l10n.rateSheetSubtitleHub : l10n.rateSheetSubtitle,
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w500,

@@ -486,9 +486,14 @@ class CoachTurnEntity {
   /// Luồng 6 — whether ⟨Đóng⟩ may plead once. Off after two declines in a row.
   final bool exitPlea;
 
-  /// Luồng 6 — ⟨Đóng⟩ asks "chỗ nào chưa ổn?" instead of pleading. Outranks
-  /// [exitPlea]: one question per close.
+  /// Luồng 6 — whether the rating sheet follows ⟨Vẫn đóng⟩ this time. Decided
+  /// by the frequency knobs in admin; the app only reads it.
   final bool exitFeedback;
+
+  /// Luồng 6 — `story` · `scene` · `recap` · `onboard` · `hub`. Which question
+  /// the rating sheet asks. Server-sent: the app must not guess a kind, because
+  /// the row filed against it has to match the question actually shown.
+  final String sessionKind;
 
   const CoachTurnEntity({
     this.sessionId = '',
@@ -508,6 +513,7 @@ class CoachTurnEntity {
     this.reasonKey,
     this.exitPlea = true,
     this.exitFeedback = false,
+    this.sessionKind = '',
   });
 }
 
@@ -643,6 +649,7 @@ extension CoachTurnModelX on CoachTurnModel {
     ended: ended,
     exitPlea: exitPlea,
     exitFeedback: exitFeedback,
+    sessionKind: sessionKind,
     silent: silent,
     reasonKey: reasonKey,
   );

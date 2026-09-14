@@ -586,6 +586,7 @@ class CoachCubit extends Cubit<CoachState> {
       ended: turn.ended,
       exitPlea: turn.exitPlea,
       exitFeedback: turn.exitFeedback,
+      sessionKind: turn.sessionKind,
     );
   }
 

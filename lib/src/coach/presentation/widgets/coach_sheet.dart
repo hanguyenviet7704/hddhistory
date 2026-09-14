@@ -311,7 +311,9 @@ class _CoachSheetState extends State<_CoachSheet> {
       // ⟨Vẫn đóng⟩ → popup đánh giá, nếu tần suất bên admin cho phép lần này.
       CoachExitFeedback? feedback;
       if (state.exitFeedback && context.mounted) {
-        feedback = await CoachExitFeedbackSheet.show(context);
+        // Loại lấy từ state, tức từ server — client không tự suy ra bộ chip,
+        // nếu không thì hàng ghi về sẽ không khớp với câu đã thật sự hỏi.
+        feedback = await CoachExitFeedbackSheet.show(context, kind: state.sessionKind);
       }
       // Trả lời hay ⟨Để sau⟩ đều ghi: server cần đếm cả hai để biết "không ai
       // chê" khác "không ai buồn trả lời".
