@@ -88,12 +88,44 @@ export interface CoachSituationUpdate {
   goodMove?: string;
 }
 
+/**
+ * User đang làm gì lúc đóng Coach. Popup hỏi một câu khác cho mỗi loại, nên
+ * đọc chê mà không biết loại thì không biết chê cái gì.
+ *
+ * Hàng ghi trước 2026-09-14 không có field này và KHÔNG được đoán ngược.
+ */
+export type CoachSessionKind =
+  | "story"
+  | "scene"
+  | "recap"
+  | "onboard"
+  | "hub";
+
 export type CoachRatingChip =
-  /** Ba chip dưới là bộ hiện hành (2026-09-14); hai cái đầu là lời khen. */
+  /** Bộ "kể chuyện" — cũng là bộ dùng chung trước khi tách theo loại. */
   | "understood_me"
   | "right_questions"
   | "not_helpful"
   | "imposed_thinking"
+  /** Bộ "luyện tập tình huống". */
+  | "scene_realistic"
+  | "scene_useful"
+  | "scene_unrealistic"
+  | "scene_unnatural"
+  /** Bộ "tổng kết / ôn tập". */
+  | "recap_accurate"
+  | "recap_on_point"
+  | "recap_wrong"
+  | "recap_bad_level"
+  /** Bộ "onboarding". */
+  | "onboard_easy"
+  | "onboard_too_personal"
+  | "onboard_unclear"
+  /** Bộ "chưa chọn gì" — lý do không bắt đầu, không phải khen hay chê. */
+  | "hub_unsure"
+  | "hub_nothing_fits"
+  | "hub_just_looking"
+  | "hub_busy"
   | "too_many_questions"
   | "missed_the_point"
   | "too_generic"
@@ -108,6 +140,13 @@ export type CoachRatingChip =
 export const POSITIVE_RATING_CHIPS: CoachRatingChip[] = [
   "understood_me",
   "right_questions",
+  "scene_realistic",
+  "scene_useful",
+  "recap_accurate",
+  "recap_on_point",
+  "onboard_easy",
+  // Bốn chip của loại "chưa chọn gì" cố tình không nằm đây: chúng là lý do
+  // không bắt đầu, và "không có mục nào hợp" phải vào hàng đợi người đọc.
 ];
 
 /**
@@ -126,6 +165,8 @@ export interface CoachRating {
   chips: CoachRatingChip[];
   note?: string | null;
   source?: CoachRatingSource;
+  /** Null ở hàng cũ — admin hiện "Không rõ loại" chứ không đoán. */
+  sessionKind?: CoachSessionKind | null;
   needsReview: boolean;
   createdAt?: string;
 }

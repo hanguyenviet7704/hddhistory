@@ -52,6 +52,7 @@ export const coachService = {
     /** Bỏ trống = xem tất, kể cả lời khen (khen không bao giờ vào hàng đợi). */
     needsReview?: boolean;
     source?: "rating" | "exit";
+    sessionKind?: "story" | "scene" | "recap" | "onboard" | "hub";
     from?: string;
     to?: string;
   }) {

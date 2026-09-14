@@ -19,6 +19,7 @@ import {
   CoachRating,
   CoachRatingChip,
   CoachRatingSource,
+  CoachSessionKind,
   POSITIVE_RATING_CHIPS,
 } from "../../types/interface/coach.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -36,6 +37,21 @@ const CHIP_LABEL: Record<CoachRatingChip, string> = {
   not_helpful: "Chưa giúp được gì",
   imposed_thinking: "Áp đặt suy nghĩ",
   too_long: "Nói nhiều quá",
+  scene_realistic: "Tình huống giống đời thật",
+  scene_useful: "Gợi ý trả lời dùng được",
+  scene_unrealistic: "Không giống đời mình",
+  scene_unnatural: "Gợi ý nghe không tự nhiên",
+  recap_accurate: "Tóm đúng ý",
+  recap_on_point: "Ôn đúng trọng tâm",
+  recap_wrong: "Tóm sai hoặc thiếu ý",
+  recap_bad_level: "Quá dễ / quá khó",
+  onboard_easy: "Câu hỏi dễ trả lời",
+  onboard_too_personal: "Hỏi riêng tư quá",
+  onboard_unclear: "Chưa hiểu Coach để làm gì",
+  hub_unsure: "Không biết chọn gì",
+  hub_nothing_fits: "Không có mục nào hợp",
+  hub_just_looking: "Chỉ ghé xem thử",
+  hub_busy: "Đang bận, để sau",
   too_many_questions: "Hỏi quá nhiều",
   missed_the_point: "Không hiểu đúng ý",
   too_generic: "Trả lời chung chung",
@@ -43,6 +59,23 @@ const CHIP_LABEL: Record<CoachRatingChip, string> = {
   other: "Khác",
   felt_judged: "Thấy bị phán xét",
   pushed_too_hard: "Thúc ép quá",
+};
+
+/** Loại việc user đang làm lúc đóng Coach — quyết định popup hỏi câu nào. */
+const KIND_LABEL: Record<CoachSessionKind, string> = {
+  story: "Kể chuyện hôm nay",
+  scene: "Luyện tập tình huống",
+  recap: "Tổng kết / ôn tập",
+  onboard: "Onboarding",
+  hub: "Chưa chọn gì",
+};
+
+const KIND_COLOR: Record<CoachSessionKind, "default" | "primary" | "secondary" | "info" | "warning"> = {
+  story: "primary",
+  scene: "secondary",
+  recap: "info",
+  onboard: "default",
+  hub: "warning",
 };
 
 const isPraise = (chip: CoachRatingChip) => POSITIVE_RATING_CHIPS.includes(chip);
@@ -67,6 +100,15 @@ const SOURCES: { value: "all" | CoachRatingSource; label: string }[] = [
   { value: "rating", label: "Toast 👍/👎 (đã bỏ)" },
 ];
 
+const KINDS: { value: "all" | CoachSessionKind; label: string }[] = [
+  { value: "all", label: "Mọi loại" },
+  { value: "story", label: KIND_LABEL.story },
+  { value: "scene", label: KIND_LABEL.scene },
+  { value: "recap", label: KIND_LABEL.recap },
+  { value: "onboard", label: KIND_LABEL.onboard },
+  { value: "hub", label: KIND_LABEL.hub },
+];
+
 const CoachRatingList: React.FC = () => {
   const { showSuccess, showError } = useNotification();
 
@@ -78,6 +120,7 @@ const CoachRatingList: React.FC = () => {
   // nên mở trang ở chế độ hàng đợi sẽ giấu vĩnh viễn một nửa số câu trả lời.
   const [view, setView] = useState<ViewFilter>("all");
   const [source, setSource] = useState<"all" | CoachRatingSource>("all");
+  const [kind, setKind] = useState<"all" | CoachSessionKind>("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
@@ -88,6 +131,7 @@ const CoachRatingList: React.FC = () => {
       const res = await coachService.getRatings({
         ...(view === "all" ? {} : { needsReview: view === "open" }),
         ...(source === "all" ? {} : { source }),
+        ...(kind === "all" ? {} : { sessionKind: kind }),
         ...(from ? { from } : {}),
         ...(to ? { to } : {}),
       });
@@ -97,7 +141,7 @@ const CoachRatingList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [view, source, from, to]);
+  }, [view, source, kind, from, to]);
 
   useEffect(() => {
     load();
@@ -105,8 +149,15 @@ const CoachRatingList: React.FC = () => {
 
   const tally = useMemo(() => {
     const praise = rows.filter(isAllPraise).length;
+    // Đếm theo loại, vì đó là cả lý do trang này tách loại: 12 lượt chê dồn
+    // vào "luyện tập tình huống" là một câu chuyện khác hẳn 12 lượt rải đều.
+    const byKind = new Map<string, number>();
+    for (const row of rows) {
+      const key = row.sessionKind ?? "unknown";
+      byKind.set(key, (byKind.get(key) ?? 0) + 1);
+    }
 
-    return { praise, rest: rows.length - praise };
+    return { praise, rest: rows.length - praise, byKind };
   }, [rows]);
 
   const markReviewed = async (row: CoachRating) => {
@@ -128,6 +179,10 @@ const CoachRatingList: React.FC = () => {
           thì hiện popup chọn chip và viết thêm. Tần suất hỏi chỉnh ở trang{" "}
           <strong>Cấu hình</strong>. Mọi câu trả lời đều vào đây, kể cả lời khen,
           không lấy mẫu — chê mà không có gì để so thì không đọc ra được điều gì.
+          <br />
+          Popup hỏi <strong>theo loại việc user đang làm lúc đóng</strong>, nên
+          chip mỗi loại một khác: người bỏ đi ở hub được hỏi vì sao chưa bắt đầu
+          chứ không phải Coach trả lời thế nào — họ chưa nói gì với Coach cả.
         </p>
       </div>
 
@@ -165,6 +220,21 @@ const CoachRatingList: React.FC = () => {
         </TextField>
 
         <TextField
+          select
+          size="small"
+          label="Loại"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as "all" | CoachSessionKind)}
+          className="min-w-[190px]"
+        >
+          {KINDS.map((k) => (
+            <MenuItem key={k.value} value={k.value}>
+              {k.label}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
           type="date"
           size="small"
           label="Từ ngày"
@@ -181,12 +251,13 @@ const CoachRatingList: React.FC = () => {
           InputLabelProps={{ shrink: true }}
         />
 
-        {(from || to || source !== "all" || view !== "all") && (
+        {(from || to || source !== "all" || kind !== "all" || view !== "all") && (
           <Button
             size="small"
             onClick={() => {
               setView("all");
               setSource("all");
+              setKind("all");
               setFrom("");
               setTo("");
             }}
@@ -199,6 +270,30 @@ const CoachRatingList: React.FC = () => {
           {rows.length} dòng — {tally.praise} khen, {tally.rest} cần đọc
         </span>
       </Paper>
+
+      {rows.length > 0 && (
+        <Paper className="p-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-500 mr-1">Theo loại:</span>
+          {KINDS.filter((k) => k.value !== "all").map((k) => (
+            <Chip
+              key={k.value}
+              size="small"
+              variant={kind === k.value ? "filled" : "outlined"}
+              color={KIND_COLOR[k.value as CoachSessionKind]}
+              label={`${k.label} · ${tally.byKind.get(k.value) ?? 0}`}
+              onClick={() => setKind(kind === k.value ? "all" : (k.value as CoachSessionKind))}
+            />
+          ))}
+          {(tally.byKind.get("unknown") ?? 0) > 0 && (
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`Không rõ loại · ${tally.byKind.get("unknown")}`}
+              title="Hàng ghi trước 2026-09-14, lúc popup chưa hỏi theo loại."
+            />
+          )}
+        </Paper>
+      )}
 
       <Paper>
         {loading ? (
@@ -221,6 +316,7 @@ const CoachRatingList: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell width={170}>Thời điểm</TableCell>
+                <TableCell width={170}>Loại</TableCell>
                 <TableCell width={150}>Nguồn</TableCell>
                 <TableCell>Ý kiến</TableCell>
                 <TableCell width={220}>User</TableCell>
@@ -234,6 +330,23 @@ const CoachRatingList: React.FC = () => {
                     {row.createdAt
                       ? new Date(row.createdAt).toLocaleString("vi-VN")
                       : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {row.sessionKind ? (
+                      <Chip
+                        size="small"
+                        label={KIND_LABEL[row.sessionKind] ?? row.sessionKind}
+                        color={KIND_COLOR[row.sessionKind]}
+                        variant="outlined"
+                      />
+                    ) : (
+                      <span
+                        className="text-gray-400 text-sm"
+                        title="Hàng ghi trước 2026-09-14, lúc popup chưa hỏi theo loại."
+                      >
+                        Không rõ loại
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Chip
