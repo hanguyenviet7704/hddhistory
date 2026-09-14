@@ -35,7 +35,64 @@ const EMPTY: CoachConfig = {
   onboardAskAge: true,
   onboardAskGender: true,
   onboardAskJob: true,
+  ratingAskEnabled: true,
+  ratingAskMinDays: 7,
+  ratingAskSnoozeDays: 3,
+  ratingAskEveryNthExit: 1,
+  ratingAskProbability: 100,
+  ratingAskMaxPerUser: 0,
 };
+
+/**
+ * Các cổng quyết định có hiện popup đánh giá sau ⟨Vẫn đóng⟩ hay không.
+ *
+ * Server bắt buộc PHẢI qua hết mọi cổng — không phải chọn một kiểu. Mỗi cổng có
+ * một giá trị trung tính (cột "Tắt bằng") để tắt riêng nó, nên admin chỉ dùng
+ * một cách thì cứ để các cổng còn lại ở giá trị đó.
+ */
+const RATING_KNOBS: {
+  key: keyof CoachConfig;
+  label: string;
+  hint: string;
+  min: number;
+  max: number;
+}[] = [
+  {
+    key: "ratingAskMinDays",
+    label: "Giãn cách sau khi đã gửi (ngày)",
+    hint: "Người vừa gửi đánh giá thì chờ bấy nhiêu ngày mới hỏi lại. 0 = tắt cổng này.",
+    min: 0,
+    max: 365,
+  },
+  {
+    key: "ratingAskSnoozeDays",
+    label: 'Giãn cách sau khi "Để sau" (ngày)',
+    hint: "Người bấm ⟨Để sau⟩ chỉ nói rằng lúc này không tiện, nên chờ ngắn hơn. 0 = tắt cổng này.",
+    min: 0,
+    max: 365,
+  },
+  {
+    key: "ratingAskEveryNthExit",
+    label: "Mỗi N lần thoát",
+    hint: "Cứ N lần đóng Coach mới tính một lần đủ điều kiện hỏi. 1 = mọi lần thoát.",
+    min: 1,
+    max: 50,
+  },
+  {
+    key: "ratingAskProbability",
+    label: "Xác suất mỗi lần (%)",
+    hint: "Bốc thăm SAU khi đã qua các cổng trên. 100 = hỏi hết, 0 = không bao giờ hỏi.",
+    min: 0,
+    max: 100,
+  },
+  {
+    key: "ratingAskMaxPerUser",
+    label: "Trần mỗi người",
+    hint: "Hỏi tối đa bấy nhiêu lần một người rồi thôi hẳn. 0 = không giới hạn.",
+    min: 0,
+    max: 100,
+  },
+];
 
 /** Bốn câu onboarding tắt được — ba câu đầu (mục tiêu, khó khăn, đang làm) luôn hỏi. */
 const ONBOARD_TOGGLES: { key: keyof CoachConfig; label: string; hint: string }[] = [
@@ -68,6 +125,12 @@ const CoachConfigPage: React.FC = () => {
         onboardAskAge: d.onboardAskAge ?? true,
         onboardAskGender: d.onboardAskGender ?? true,
         onboardAskJob: d.onboardAskJob ?? true,
+        ratingAskEnabled: d.ratingAskEnabled ?? true,
+        ratingAskMinDays: d.ratingAskMinDays ?? 7,
+        ratingAskSnoozeDays: d.ratingAskSnoozeDays ?? 3,
+        ratingAskEveryNthExit: d.ratingAskEveryNthExit ?? 1,
+        ratingAskProbability: d.ratingAskProbability ?? 100,
+        ratingAskMaxPerUser: d.ratingAskMaxPerUser ?? 0,
       });
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không tải được cấu hình");
@@ -213,6 +276,55 @@ const CoachConfigPage: React.FC = () => {
                 label={t.label}
               />
               <p className="text-xs text-gray-500 -mt-1 ml-12">{t.hint}</p>
+            </div>
+          ))}
+        </div>
+      </Paper>
+
+      <Paper className="p-5 space-y-3">
+        <div>
+          <h2 className="text-lg font-medium">Hỏi đánh giá</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Popup đánh giá hiện <strong>sau khi user bấm ⟨Vẫn đóng⟩</strong> ở
+            màn níu — đường duy nhất còn lại để thu feedback (toast 👍/👎 giữa
+            phiên đã bỏ). Câu trả lời đổ về trang <em>Đánh giá</em>.
+            <br />
+            Mọi cổng dưới đây phải qua <strong>hết</strong> thì mới hỏi, không
+            phải chọn một kiểu. Muốn dùng đúng một cách thì để các cổng còn lại
+            ở giá trị tắt ghi trong chú thích.
+          </p>
+        </div>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={Boolean(form.ratingAskEnabled)}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, ratingAskEnabled: e.target.checked }))
+              }
+            />
+          }
+          label="Bật hỏi đánh giá"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          {RATING_KNOBS.map((k) => (
+            <div key={k.key} className="py-1">
+              <TextField
+                type="number"
+                size="small"
+                fullWidth
+                label={k.label}
+                disabled={!form.ratingAskEnabled}
+                inputProps={{ min: k.min, max: k.max }}
+                value={form[k.key] ?? k.min}
+                onChange={(e) => {
+                  const raw = Number(e.target.value);
+                  const safe = Number.isFinite(raw)
+                    ? Math.min(k.max, Math.max(k.min, Math.trunc(raw)))
+                    : k.min;
+                  setForm((prev) => ({ ...prev, [k.key]: safe }));
+                }}
+              />
+              <p className="text-xs text-gray-500 mt-1">{k.hint}</p>
             </div>
           ))}
         </div>

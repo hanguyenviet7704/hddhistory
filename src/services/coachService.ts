@@ -47,8 +47,14 @@ export const coachService = {
     return res.data;
   },
 
-  // ---- the thumb-down queue ----
-  async getRatings(params?: { needsReview?: boolean }) {
+  // ---- đánh giá Coach ----
+  async getRatings(params?: {
+    /** Bỏ trống = xem tất, kể cả lời khen (khen không bao giờ vào hàng đợi). */
+    needsReview?: boolean;
+    source?: "rating" | "exit";
+    from?: string;
+    to?: string;
+  }) {
     const res = await axiosClient.get("/coach-ratings", { params });
     return res.data;
   },

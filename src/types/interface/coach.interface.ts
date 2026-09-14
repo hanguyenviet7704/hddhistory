@@ -18,6 +18,23 @@ export interface CoachConfig {
   onboardAskAge?: boolean;
   onboardAskGender?: boolean;
   onboardAskJob?: boolean;
+  /**
+   * Luồng 6 — tần suất hiện popup đánh giá sau ⟨Vẫn đóng⟩.
+   *
+   * Mọi cổng phải qua hết thì mới hỏi; mỗi cổng có một giá trị trung tính để
+   * tắt riêng nó, nên không knob nào nằm trên màn hình mà vô tác dụng.
+   */
+  ratingAskEnabled?: boolean;
+  /** Số ngày chờ với người ĐÃ gửi đánh giá. 0 = tắt cổng này. */
+  ratingAskMinDays?: number;
+  /** Số ngày chờ với người bấm ⟨Để sau⟩. 0 = tắt cổng này. */
+  ratingAskSnoozeDays?: number;
+  /** Cứ N lần thoát mới hỏi. 1 = mọi lần thoát. */
+  ratingAskEveryNthExit?: number;
+  /** Phần trăm số lần đã qua các cổng trên mà thực sự được hỏi. 100 = hỏi hết. */
+  ratingAskProbability?: number;
+  /** Hỏi tối đa M lần mỗi người rồi thôi hẳn. 0 = không giới hạn. */
+  ratingAskMaxPerUser?: number;
 }
 
 export type CoachSituationVariant =
@@ -72,17 +89,43 @@ export interface CoachSituationUpdate {
 }
 
 export type CoachRatingChip =
+  /** Ba chip dưới là bộ hiện hành (2026-09-14); hai cái đầu là lời khen. */
+  | "understood_me"
+  | "right_questions"
+  | "not_helpful"
   | "imposed_thinking"
-  | "felt_judged"
+  | "too_many_questions"
   | "missed_the_point"
+  | "too_generic"
+  | "voice_mismatch"
+  | "other"
+  /** Ba loại dưới là chip đời cũ, chỉ còn trong hàng đã lưu. */
+  | "too_long"
+  | "felt_judged"
   | "pushed_too_hard";
+
+/** Hai chip mang nghĩa khen — mọi chip khác đẩy hàng vào hàng đợi người đọc. */
+export const POSITIVE_RATING_CHIPS: CoachRatingChip[] = [
+  "understood_me",
+  "right_questions",
+];
+
+/**
+ * Hàng đến từ đâu: `exit` là popup đánh giá sau ⟨Vẫn đóng⟩ — đường duy nhất
+ * còn lại. `rating` là toast 👍/👎 đã bỏ ngày 2026-09-14; chỉ còn trong hàng
+ * cũ. Hàng ghi trước khi có field này đọc thiếu thì hiểu là `rating`.
+ */
+export type CoachRatingSource = "rating" | "exit";
 
 export interface CoachRating {
   _id: string;
   userId: string;
   sessionId: string;
-  thumb: "up" | "down";
+  /** Null từ 2026-09-14 — chip đã mang nghĩa khen/chê, không cần thumb nữa. */
+  thumb?: "up" | "down" | null;
   chips: CoachRatingChip[];
+  note?: string | null;
+  source?: CoachRatingSource;
   needsReview: boolean;
   createdAt?: string;
 }
