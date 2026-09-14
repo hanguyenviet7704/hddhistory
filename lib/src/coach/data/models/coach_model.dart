@@ -348,6 +348,11 @@ abstract class CoachTurnModel with _$CoachTurnModel {
 
     /// Luồng 6 — whether ⟨Đóng⟩ may plead once for this reader.
     @Default(true) bool exitPlea,
+
+    /// Luồng 6 — ⟨Đóng⟩ asks why they are leaving INSTEAD of pleading, because
+    /// they have never said. Defaults to false so an API without the field
+    /// leaves the close button exactly as it was.
+    @Default(false) bool exitFeedback,
   }) = _CoachTurnModel;
 
   factory CoachTurnModel.fromJson(Map<String, dynamic> json) => _$CoachTurnModelFromJson(json);

@@ -65,6 +65,7 @@ part 'presentation/widgets/coach_composer.dart';
 part 'presentation/widgets/coach_two_columns.dart';
 part 'presentation/widgets/coach_safety_panel.dart';
 part 'presentation/widgets/coach_exit_plea_sheet.dart';
+part 'presentation/widgets/coach_exit_feedback_sheet.dart';
 
 //* Parts for generated files
 part 'coach.freezed.dart';

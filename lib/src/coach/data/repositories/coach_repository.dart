@@ -89,10 +89,14 @@ class CoachRepository implements ICoachRepository {
   }
 
   @override
-  TaskEither<AppException, Unit> exitSession(String sessionId, {required bool stayed}) {
+  TaskEither<AppException, Unit> exitSession(String sessionId, {required bool stayed, List<String>? chips, String? note}) {
     return TaskEither.tryCatch(
       () async {
-        await _api.exitSession(sessionId, {'stayed': stayed});
+        await _api.exitSession(sessionId, {
+          'stayed': stayed,
+          if (chips != null && chips.isNotEmpty) 'chips': chips,
+          if (note != null && note.isNotEmpty) 'note': note,
+        });
 
         return unit;
       },

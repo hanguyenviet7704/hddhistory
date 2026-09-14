@@ -39,8 +39,9 @@ class CoachCubit extends Cubit<CoachState> {
 
   String draftFor(String sessionId) => sessionId.isNotEmpty && sessionId == _draftSessionId ? _draft : '';
 
-  /// The plea's answer. Fire-and-forget: closing must never wait on it.
-  Future<void> recordExit({required bool stayed}) async {
+  /// The plea's answer, and — when they left and said why — the reason with it.
+  /// Fire-and-forget: closing must never wait on it.
+  Future<void> recordExit({required bool stayed, List<String>? chips, String? note}) async {
     final id = state.sessionId;
     if (id.isEmpty) return;
 
@@ -49,8 +50,11 @@ class CoachCubit extends Cubit<CoachState> {
     } else {
       CoachTracking.exitLeave(state);
     }
-    emit(state.copyWith(exitPlea: stayed ? true : state.exitPlea));
-    await _exitSession(id, stayed: stayed).run();
+    // Answered or skipped, the exit question is done for this session — a
+    // second ✕ in the same sheet must not ask it again. The server decides
+    // whether it comes back next time.
+    emit(state.copyWith(exitPlea: stayed ? true : state.exitPlea, exitFeedback: stayed ? state.exitFeedback : false));
+    await _exitSession(id, stayed: stayed, chips: chips, note: note).run();
   }
 
   CoachEntry _entry = CoachEntry.home;
@@ -93,8 +97,27 @@ class CoachCubit extends Cubit<CoachState> {
     _locale = locale;
     _turnCount = 0;
     _openedAt = DateTime.now();
+    // Phiên cũ có thể còn đang nhả bong bóng dở — bỏ số của nó đi, không thì
+    // nó viết tiếp vào cuộc hội thoại vừa mở.
+    _revealToken++;
 
-    emit(state.copyWith(status: CoachStatus.opening, entry: entry, messages: const []));
+    // `silent` phải được dọn ở ĐÂY, không thì nó dính lại vĩnh viễn.
+    //
+    // Cubit là singleton, sống qua nhiều lần mở sheet. Một lần mở im lặng đặt
+    // `silent: true` và trước đây không ai đặt lại false, nên mọi lần mở SAU
+    // đó — dù server trả lời tử tế — vẫn mang cờ cũ; sheet nghe thấy bước đầu
+    // tiên đổi là gọi `pop()` ngay (owner on-device 2026-09-09: "bấm tập thử
+    // ngay ở đây thì sẽ bị out luôn"). Một cửa im một lần không được phép làm
+    // hỏng mọi lần mở còn lại của phiên chạy app.
+    emit(
+      state.copyWith(
+        status: CoachStatus.opening,
+        entry: entry,
+        messages: const [],
+        silent: false,
+        silentReasonKey: null,
+      ),
+    );
 
     final result = await _openSession(
       entry: entry,
@@ -130,8 +153,11 @@ class CoachCubit extends Cubit<CoachState> {
         // session then follows with everything it showed — its current lines
         // included, so nothing more is drawn for it. A new session draws its
         // opening under the history.
-        emit(
-          _applyTurn(
+        // Không await: mấy dòng tracking ngay dưới nói về LƯỢT vừa về, không
+        // phải về việc vẽ xong hay chưa — bắt chúng đợi hết vòng nhả là ghi
+        // sai thời điểm phiên mở.
+        unawaited(
+          _emitTurnStaged(
             state.copyWith(status: CoachStatus.ready, messages: _replayMessages(turn.replay)),
             turn,
             userLine: null,
@@ -319,16 +345,6 @@ class CoachCubit extends Cubit<CoachState> {
 
   Future<void> loop({required bool keepGoing, required String label}) => _send({'kind': 'loop', 'keepGoing': keepGoing}, userLine: label);
 
-  /// The toast's answer. Nothing is echoed into the thread — the toast rates
-  /// the whole session and closes; a line in the chat would make it a turn.
-  Future<void> rate({String? thumb, List<String>? chips, String? note}) => _send({
-    'kind': 'rating',
-    'thumb': ?thumb,
-    'chips': ?chips,
-    'ratingNote': ?(note == null || note.isEmpty ? null : note),
-    'ratingSkipped': thumb == null,
-  });
-
   /// A parked session on a retired step (depth, context) still needs its one
   /// answer sent; the server routes it back onto the spine.
   Future<void> sendRetired(Map<String, dynamic> payload, {String? label}) => _send(payload, userLine: label);
@@ -401,6 +417,8 @@ class CoachCubit extends Cubit<CoachState> {
   /// and shadowing it would quietly stop the bloc from ever being disposed
   /// while looking exactly like this code.
   Future<void> endSession() async {
+    // Phiên đóng rồi thì đừng vẽ nốt những gì nó định nói.
+    _revealToken++;
     final id = state.sessionId;
     if (id.isNotEmpty) {
       final openedAt = _openedAt;
@@ -462,11 +480,80 @@ class CoachCubit extends Cubit<CoachState> {
         CoachTracking.turnFailed(state, kind: kind, errorType: error.message);
         emit(state.copyWith(status: CoachStatus.failed, typing: false));
       },
-      (turn) async => emit(
-        _applyTurn(state.copyWith(status: CoachStatus.ready, typing: false), turn, userLine: null),
+      (turn) async => _emitTurnStaged(
+        state.copyWith(status: CoachStatus.ready, typing: false),
+        turn,
+        userLine: null,
       ),
     );
   }
+
+  /// Lượt nhả bong bóng đang chạy. Mỗi lần mở phiên hoặc gửi lượt mới thì tăng
+  /// lên, và vòng nhả đang dở tự dừng khi thấy số của mình đã cũ — không thì
+  /// nó ghi đè lên state của lượt sau.
+  int _revealToken = 0;
+
+  /// Nhả từng bong bóng một, thay vì đổ cả lượt ra màn hình cùng lúc.
+  ///
+  /// Một lượt trả lời sinh ra 4–6 bong bóng — câu trả lời tách theo đoạn, dòng
+  /// ghi chú, tên habit, bối cảnh, câu hỏi (xem `_linesFor`). Trước đây chúng
+  /// hiện ra cùng một khoảnh khắc, đọc như một bức tường chữ rơi xuống chứ
+  /// không giống ai đang nhắn cho mình.
+  ///
+  /// Đây KHÔNG phải streaming, và cố ý không phải. Toàn bộ câu trả lời đã về
+  /// đủ và đã qua hết các chốt phía server trước khi bong bóng đầu tiên xuất
+  /// hiện — bộ lọc rủi ro có quyền vứt sạch câu trả lời (`enterSafety`), chốt
+  /// chống nhại có quyền chạy lại model và thay câu khác. Stream thật thì mấy
+  /// chốt ấy tới quá muộn: chữ đã nằm trên màn hình, không rút lại được.
+  ///
+  /// `ui`/`step` chỉ đổi ở khung CUỐI. Đổi sớm thì người đọc thấy nút chọn
+  /// A/B/C trước cả câu hỏi mà chúng dùng để trả lời.
+  Future<void> _emitTurnStaged(
+    CoachState base,
+    CoachTurnEntity turn, {
+    String? userLine,
+    bool appendLines = true,
+  }) async {
+    final target = _applyTurn(base, turn, userLine: userLine, appendLines: appendLines);
+    final fresh = target.messages.length - base.messages.length;
+
+    // Một bong bóng thì không có gì để nhả dần, và phát lại lịch sử càng không
+    // — lịch sử phải có sẵn ngay khi mở.
+    if (!appendLines || fresh < 2) {
+      emit(target);
+
+      return;
+    }
+
+    final token = ++_revealToken;
+    for (var shown = 1; shown < fresh; shown++) {
+      if (isClosed || token != _revealToken) return;
+      emit(
+        base.copyWith(
+          messages: target.messages.take(base.messages.length + shown).toList(),
+          // Khoá ô nhập suốt lúc nhả: nửa câu trả lời chưa hiện xong thì chưa
+          // phải lúc mời người ta gõ tiếp. Đồng thời chặn luôn `_send` kế tiếp,
+          // vì nó tự thoát khi `typing` đang bật.
+          status: CoachStatus.sending,
+          typing: true,
+        ),
+      );
+      await Future<void>.delayed(
+        _revealGapFor(target.messages[base.messages.length + shown].text),
+      );
+    }
+
+    if (isClosed || token != _revealToken) return;
+    emit(target);
+  }
+
+  /// Khoảng nghỉ trước một bong bóng, dài theo số chữ của chính nó — câu dài
+  /// thì "gõ" lâu hơn.
+  ///
+  /// Chặn cả hai đầu: dưới 240ms thì giật như lỗi render, trên 560ms thì thành
+  /// bắt chờ thêm trên một lượt vốn đã chờ vài giây vì model.
+  static Duration _revealGapFor(String text) =>
+      Duration(milliseconds: (140 + text.length * 8).clamp(240, 560));
 
   /// One reply split on blank lines, never empty for a reply that says anything.
   static List<String> _paragraphs(String reply) {
@@ -498,6 +585,7 @@ class CoachCubit extends Cubit<CoachState> {
       columnRight: turn.ui.columnRight.isNotEmpty ? turn.ui.columnRight : base.columnRight,
       ended: turn.ended,
       exitPlea: turn.exitPlea,
+      exitFeedback: turn.exitFeedback,
     );
   }
 

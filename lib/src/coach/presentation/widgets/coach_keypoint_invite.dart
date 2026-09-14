@@ -146,6 +146,9 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
         context,
         kind: widget.isCourseDone ? CoachInviteKind.courseDone : CoachInviteKind.keypoint,
         courseTitle: widget.courseTitle,
+        courseId: widget.courseId,
+        lessonId: widget.lessonId,
+        keypointId: widget.keypointId,
       );
 
       // ✕ — out of the lesson flow altogether, for the course Roadmap.
@@ -199,6 +202,9 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
         // page already knows how to go there — `onContinue` is the same callback
         // ⟨Lúc khác⟩ uses.
         hasNextKeypoint: !widget.isCourseDone,
+        // Chỉ hứa "về Roadmap" khi thật sự có khoá để về. Cửa "vừa thêm thói
+        // quen" đi từ trang habit nên courseId rỗng là bình thường ở đó.
+        hasRoadmap: widget.courseId.trim().isNotEmpty,
         quizQuestions: widget.quizQuestions,
         quizTitle: widget.quizTitle,
       );
@@ -217,12 +223,31 @@ class _CoachKeypointInviteState extends State<CoachKeypointInvite> {
         return;
       }
 
+      final askedToLeave = outcome.toRoadmap || (outcome.courseId?.trim().isNotEmpty ?? false);
       final roadmapId = outcome.courseId ?? (outcome.toRoadmap ? widget.courseId : null);
       if (roadmapId != null && roadmapId.isNotEmpty) {
         final navContext = AppConfig.instance.context ?? (context.mounted ? context : null);
         if (navContext != null && navContext.mounted && AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, roadmapId)) {
           return;
         }
+      }
+      // Họ đã bấm để ĐI, mà không đi được — courseId rỗng, hoặc context điều
+      // hướng không còn. Mời lại ở đây là phản ứng tệ nhất có thể: người đọc
+      // vừa nói muốn rời đi thì màn mời hiện lên lần nữa (owner on-device
+      // 2026-09-09). Vòng lặp dưới đây chỉ dành cho người ĐÓNG SHEET mà chưa
+      // chọn gì; ai xin đi thì đưa họ đi bằng đường sẵn có của ⟨Lúc khác⟩.
+      if (askedToLeave) {
+        if (mounted) widget.onContinue();
+
+        return;
+      }
+      // Nói hết rồi thì thôi. Vòng lặp dưới đây dành cho người BỎ NGANG, còn
+      // người luyện hết tình huống mà bị mời lại đúng cái vừa làm xong thì
+      // không hiểu là mình đã xong hay chưa.
+      if (outcome.ended) {
+        if (mounted) widget.onContinue();
+
+        return;
       }
       // Nothing navigated: the sheet was simply closed. Round the loop and
       // offer it again — the page underneath is bare now that the "Hoàn thành
@@ -276,10 +301,20 @@ class CoachInvitePopup extends StatelessWidget {
   /// Luồng 7 — how many habits were just added; the line counts them.
   final int newHabitCount;
 
+  /// What the reader just finished — carried only so the rating card at the
+  /// bottom can file its answer against the right lesson. Empty everywhere the
+  /// card is not drawn.
+  final String courseId;
+  final String lessonId;
+  final String keypointId;
+
   const CoachInvitePopup._({
     required this.kind,
     required this.courseTitle,
     this.newHabitCount = 0,
+    this.courseId = '',
+    this.lessonId = '',
+    this.keypointId = '',
   });
 
   static Future<CoachInviteChoice?> show(
@@ -287,6 +322,9 @@ class CoachInvitePopup extends StatelessWidget {
     required CoachInviteKind kind,
     String courseTitle = '',
     int newHabitCount = 0,
+    String courseId = '',
+    String lessonId = '',
+    String keypointId = '',
   }) {
     return showGeneralDialog<CoachInviteChoice>(
       context: context,
@@ -304,7 +342,14 @@ class CoachInvitePopup extends StatelessWidget {
           opacity: curved,
           child: SlideTransition(
             position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(curved),
-            child: CoachInvitePopup._(kind: kind, courseTitle: courseTitle, newHabitCount: newHabitCount),
+            child: CoachInvitePopup._(
+              kind: kind,
+              courseTitle: courseTitle,
+              newHabitCount: newHabitCount,
+              courseId: courseId,
+              lessonId: lessonId,
+              keypointId: keypointId,
+            ),
           ),
         );
       },
@@ -440,6 +485,15 @@ class CoachInvitePopup extends StatelessWidget {
                   style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
                 ),
               ),
+              // "Bài học vừa rồi thế nào?" — asked here because this is the one
+              // screen where the lesson is over and the reader has not left
+              // yet. Only after a keypoint: the recap and the habit invitation
+              // are not the end of a lesson, and asking there would file the
+              // answer against whatever keypoint came last.
+              if (kind == CoachInviteKind.keypoint && lessonId.isNotEmpty) ...[
+                SizedBox(height: 12.h),
+                _LessonRatingCard(courseId: courseId, lessonId: lessonId, keypointId: keypointId),
+              ],
               SizedBox(height: 8.h),
             ],
           ),
@@ -488,6 +542,138 @@ class _SpeechBubble extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "Bạn thấy bài học thế nào?" — the one-row rating card under the Coach's
+/// invitation on the lesson-complete screen.
+///
+/// It is an ENTRY POINT, not a form: a full answer is two ratings and an
+/// optional comment ([FeedbackCompleteLessonPopup]), and a star tapped here
+/// opens that with the star already filled in. Submitting anything less would
+/// file a half-answer the popup would then ask for again.
+///
+/// Asked once, ever. `userHasKeypointFeedbackComplete` flips the moment a
+/// keypoint feedback is filed — from here or from anywhere else — and the card
+/// stops being drawn, including for the reader who has just this second sent
+/// one. Somebody who has already told us what they think does not get asked
+/// again on every lesson they finish.
+class _LessonRatingCard extends StatefulWidget {
+  final String courseId;
+  final String lessonId;
+  final String keypointId;
+
+  const _LessonRatingCard({required this.courseId, required this.lessonId, required this.keypointId});
+
+  @override
+  State<_LessonRatingCard> createState() => _LessonRatingCardState();
+}
+
+class _LessonRatingCardState extends State<_LessonRatingCard> {
+  /// Purely the drawn state of the stars. The answer itself goes straight into
+  /// the FeedbackCubit's draft and off to the server on the same tap.
+  int _rating = 0;
+
+  /// `feedback_complete_lesson_view` — một lần hiện thẻ là một lần đếm, không
+  /// phải mỗi lần build lại.
+  bool _viewTracked = false;
+
+  /// Chạm sao là GỬI luôn, không mở popup nữa (owner 2026-09-09: "chỉ cần nhận
+  /// 5 sao ở dưới thôi là được không cần popup này nữa").
+  ///
+  /// Chỉ có `contentRating` được điền — thẻ hỏi đúng một câu, nên "Trải
+  /// nghiệm" ở lại 0 nghĩa là KHÔNG HỎI chứ không phải chấm 0 điểm. Đọc được
+  /// như vậy vì phía server chỗ duy nhất tính trung bình lọc
+  /// `contentRating: { $gt: 0 }` và không đụng tới `experienceRating`
+  /// (`user-feedback.repository.ts` → `averageContentRatingInWindows`); điền
+  /// bừa cùng một số cho cả hai mới là bịa ra câu trả lời cho câu chưa hỏi.
+  void _send(BuildContext context, int rating) {
+    setState(() => _rating = rating);
+    final cubit = context.read<FeedbackCubit>();
+    // Order matters: `setActiveFeedback` seeds the draft from what is already
+    // stored (zero, for somebody who has never rated), so the tapped star has
+    // to be written AFTER it or it is wiped on the way in.
+    cubit.setActiveFeedback(
+      type: FeedbackType.complete,
+      entry: FeedbackEntry.keypoint,
+      courseId: widget.courseId,
+      lessonId: widget.lessonId,
+      keypointId: widget.keypointId,
+    );
+    cubit.updateContentRating(rating);
+    _track(context, sent: true);
+    cubit.submitFeedback();
+  }
+
+  /// Hai sự kiện popup vẫn bắn khi nó còn là popup. Bỏ popup mà bỏ luôn chúng
+  /// thì phễu phản hồi mất cả tử số lẫn mẫu số; thẻ này giờ là bề mặt được
+  /// nhìn thấy, nên nó nhận cả hai.
+  void _track(BuildContext context, {required bool sent}) {
+    if (widget.courseId.isEmpty) return;
+    // Đọc HomeCubit trên context — phải là context BÊN TRONG MultiBlocProvider
+    // dưới đây, không phải context của State.
+    final data = CourseTrackingData.fromCourseId(context, widget.courseId);
+    if (data == null) return;
+    final tracking = AppService.instance.appTrackingService;
+    if (sent) {
+      tracking.trackFeedbackCompleteLessonSend(data, source: 'keypoint');
+    } else {
+      tracking.trackFeedbackCompleteLessonView(data, source: 'keypoint');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      // This is a dialog route: nothing the lesson-complete page provides is
+      // above it. Both are `@lazySingleton`, so these are the same instances
+      // the rest of the app is reading — and the popup's own tracking reads
+      // `HomeCubit` off the context, which throws without this.
+      providers: [
+        BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+      ],
+      child: BlocBuilder<FeedbackCubit, FeedbackState>(
+        buildWhen: (prev, curr) => prev.userFeedback.userHasKeypointFeedbackComplete != curr.userFeedback.userHasKeypointFeedbackComplete,
+        builder: (context, state) {
+          if (state.userFeedback.userHasKeypointFeedbackComplete) return const SizedBox.shrink();
+
+          if (!_viewTracked) {
+            _viewTracked = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _track(context, sent: false);
+            });
+          }
+
+          return Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            decoration: BoxDecoration(
+              color: CoachStyle.surface,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.l10n.feedback.completeTitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700, color: CoachStyle.textPrimary),
+                ),
+                SizedBox(height: 10.h),
+                FeedbackRatingRow(
+                  rating: _rating,
+                  starSize: 30,
+                  spacing: 10,
+                  alignment: MainAxisAlignment.center,
+                  onRatingChanged: (value) => _send(context, value),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

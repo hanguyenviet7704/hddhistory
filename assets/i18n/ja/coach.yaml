@@ -362,6 +362,7 @@ stepQuiz: "チャットでクイズ"
 # Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
 exitPleaStory: "まだ話し終わっていませんね。もう一言だけ？"
 exitPleaScene: "この場面はあと一言で終わります。言ってみてから閉じませんか？"
+exitPleaGeneric: "まだここにいますよ。もう一言だけ話してから閉じませんか？"
 exitPleaQuiz: "あと ${n} 問だけです。終えたら今日を記録しますよ？"
 exitPleaStay: "もう一言だけ"
 exitPleaLeave: "やっぱり閉じる"
@@ -446,3 +447,15 @@ inviteNewHabitsBubble: "習慣を${n}つ追加しましたね。理由を覚え�
 inviteNewHabitKicker: "習慣を追加"
 inviteNewHabitsKicker: "習慣を${n}つ追加"
 inviteNewHabitAccept: "いま試す"
+sceneAnswerOther: そのほか
+# Luồng 6 (2026-09-14) — the rating sheet after ⟨Vẫn đóng⟩.
+rateSheetTitle: "MeUp Coach との会話はどうでしたか？"
+rateSheetSubtitle: "当てはまるものを選んで、よければ一言どうぞ。"
+rateChipUnderstood: "話したことを分かってくれた"
+rateChipRightQuestions: "質問がちょうどよかった"
+rateChipTooLong: "話が長すぎた"
+rateChipImposed: "考えを押しつけられた"
+rateChipNotHelpful: "あまり役に立たなかった"
+rateNoteHint: "感想を書いてください…"
+rateSend: "評価を送る"
+rateLater: "あとで"

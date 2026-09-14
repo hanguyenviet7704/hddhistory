@@ -71,5 +71,6 @@ abstract class CoachState with _$CoachState {
 
     /// Luồng 6 — ⟨Đóng⟩ may plead once; false once the reader declined twice in a row.
     @Default(true) bool exitPlea,
+    @Default(false) bool exitFeedback,
   }) = _CoachState;
 }

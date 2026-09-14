@@ -26,7 +26,9 @@ abstract interface class ICoachRepository {
   TaskEither<AppException, Unit> closeSession(String sessionId);
 
   /// Luồng 6 — records whether the reader stayed when asked, or closed anyway.
-  TaskEither<AppException, Unit> exitSession(String sessionId, {required bool stayed});
+  /// [chips]/[note] — why they left, from the sheet after ⟨Vẫn đóng⟩. Absent
+  /// when they skipped it, and always absent when they stayed.
+  TaskEither<AppException, Unit> exitSession(String sessionId, {required bool stayed, List<String>? chips, String? note});
 
   /// The voice, changed from the header at any step — remembered for next time.
   TaskEither<AppException, Unit> setPersona({

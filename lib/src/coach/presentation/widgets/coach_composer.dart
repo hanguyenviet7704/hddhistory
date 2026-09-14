@@ -15,7 +15,16 @@ class CoachComposer extends StatefulWidget {
   /// not a keypoint at all, where there is no "next part" to go to.
   final bool hasNextKeypoint;
 
-  const CoachComposer({super.key, required this.state, required this.cubit, this.hasNextKeypoint = false});
+  /// Có roadmap nào để về hay không. Xem docblock cùng tên ở `_CoachSheet`.
+  final bool hasRoadmap;
+
+  const CoachComposer({
+    super.key,
+    required this.state,
+    required this.cubit,
+    this.hasNextKeypoint = false,
+    this.hasRoadmap = false,
+  });
 
   @override
   State<CoachComposer> createState() => _CoachComposerState();
@@ -25,7 +34,6 @@ class _CoachComposerState extends State<CoachComposer> {
   final _text = TextEditingController();
   final _planContext = TextEditingController();
   final _planAction = TextEditingController();
-  final _ratingOther = TextEditingController();
 
   late final CoachRecorder _recorder = AppDI.injector.get<CoachRecorder>();
   bool _listening = false;
@@ -34,9 +42,14 @@ class _CoachComposerState extends State<CoachComposer> {
 
   /// "tự chọn" — ISO weekdays 1 (Mon) … 7 (Sun).
 
+  /// Cảnh: ô nhập bị giấu cho tới khi người đọc bấm ⟨Khác⟩.
+  ///
+  /// Mặc định của bài tập đảo chiều ở đây (owner 2026-09-08): chọn một hướng
+  /// là đường chính, tự viết là đường phụ. Phải reset mỗi khi bộ hướng đổi,
+  /// không thì mở ra một lần là mở mãi cho mọi cảnh sau.
+  bool _otherOpen = false;
+
   /// Rating: the second toast opens only after 👎.
-  bool _thumbDown = false;
-  final Set<String> _ratingChips = {};
 
   /// The key the PLAN form's scene pre-fill was last applied for, so a rebuild
   /// mid-edit does not overwrite what the reader has started typing.
@@ -74,10 +87,14 @@ class _CoachComposerState extends State<CoachComposer> {
 
     _applyPlanPrefill();
 
+    // Bộ hướng đổi = cảnh khác hoặc nhịp khác, nên ô nhập đóng lại. So bằng
+    // chính các chữ cái + nhãn: step có thể giữ nguyên (TELL_ONCE → TELL_ONCE)
+    // trong khi bộ hướng đã thay hẳn.
+    final keysNow = widget.state.ui.scene?.options.map((o) => '${o.key}|${o.label}').join('\u0000') ?? '';
+    final keysBefore = oldWidget.state.ui.scene?.options.map((o) => '${o.key}|${o.label}').join('\u0000') ?? '';
+    if (keysNow != keysBefore) _otherOpen = false;
+
     if (widget.state.step != oldWidget.state.step) {
-      _thumbDown = false;
-      _ratingChips.clear();
-      _ratingOther.clear();
     }
   }
 
@@ -99,7 +116,6 @@ class _CoachComposerState extends State<CoachComposer> {
     _text.dispose();
     _planContext.dispose();
     _planAction.dispose();
-    _ratingOther.dispose();
     unawaited(_recorder.cancel());
     super.dispose();
   }
@@ -172,8 +188,10 @@ class _CoachComposerState extends State<CoachComposer> {
       // In the thread now — see build().
       case CoachUiKind.courseCard:
         return const SizedBox.shrink();
+      // Bước đã gỡ (2026-09-14). Phiên cũ lưu trước ngày đó vẫn có thể mở lại
+      // ở bước này, nên nhánh giữ lại và không vẽ gì — ✕ vẫn đóng được.
       case CoachUiKind.rating:
-        return _rating(context, busy);
+        return const SizedBox.shrink();
       case CoachUiKind.nextSession:
         return const SizedBox.shrink();
       case CoachUiKind.end:
@@ -402,9 +420,19 @@ class _CoachComposerState extends State<CoachComposer> {
     String? hint,
     List<Widget> leadingChips = const [],
   }) {
+    // Ba hướng của cảnh đi đường KHÁC với mọi gợi ý khác: pill dọc, rộng gần
+    // hết dòng, như bảng chọn habit (owner 2026-09-08). Hàng chip cuộn ngang
+    // cắt mất chữ đúng chỗ cần đọc nhất — tên hướng — nên "Đồ…" và "Thu mìn…"
+    // là thứ người dùng phải chọn giữa. Tên hướng dài hơn mọi chip khác trong
+    // sản phẩm, nên nó cần cả dòng.
+    //
+    // Bấm vẫn chỉ ĐIỀN vào ô, không gửi: câu đi lên server vẫn là câu người
+    // học bấm nút xong còn sửa được.
+    final sceneAnswer = state.ui.scene?.options.isNotEmpty ?? false;
     final chips = [
       ...leadingChips,
-      ...state.ui.samples.map((sample) => _SampleChip(label: sample, onTap: () => _text.text = sample)),
+      if (!sceneAnswer)
+        ...state.ui.samples.map((sample) => _SampleChip(label: sample, onTap: () => _text.text = sample)),
     ];
 
     // Two layers, as the design stacks every text screen: the suggestion pills
@@ -436,6 +464,65 @@ class _CoachComposerState extends State<CoachComposer> {
               ),
             ),
           ),
+        // Chọn bằng CHỮ CÁI, một hàng.
+        //
+        // Trước đó là pill rộng hết dòng mang tên hướng — mà tên hướng đã nằm
+        // ngay trong bong bóng phía trên, nên màn dài gấp đôi để nói đúng một
+        // lượng thông tin ("trông khó nhìn khó cuộn lắm", owner 2026-09-08).
+        // Chữ cái bỏ hẳn phần lặp: nó là con trỏ tới bong bóng, không phải bản
+        // sao của nó.
+        //
+        // Bấm điền chữ cái vào ô, không gửi. Server đổi nó thành câu đầy đủ
+        // NGAY ĐẦU lượt (`resolveSceneOption`, trước cả khi `text` được tính),
+        // nên bong bóng của người đọc và điểm chấm đều nhận câu thật chứ không
+        // phải một chữ "A".
+        // Bấm ⟨Khác⟩ là hàng nút biến mất cùng lúc ô nhập hiện ra (owner
+        // 2026-09-08): hai thứ đó là hai cách trả lời CÙNG một câu hỏi, để cả
+        // hai trên màn cùng lúc thì màn lại dài ra đúng như trước.
+        // Hàng nút THAY CHỖ ô nhập, nên nó phải gánh luôn phần safe-area mà ô
+        // nhập vẫn gánh: `_bottomInset` chỉ nằm trong padding của Container ô
+        // nhập, giấu container đi là hàng nút tụt xuống dưới thanh gesture
+        // (iOS ~34pt, Android 3 nút ~48dp). Cùng lối với nhánh chips/courseCard
+        // ở đầu build: không có ô nhập thì vẫn phải chừa đúng khoảng an toàn.
+        //
+        // Bọc cả nhánh busy: lúc Coach đang gõ thì hàng nút ẩn, và nếu không có
+        // gì ở đây thì đáy sheet mất trắng phần đệm.
+        if (sceneAnswer && !_otherOpen)
+          Padding(
+            padding: EdgeInsets.fromLTRB(15.w, 0, 15.w, _bottomInset(context)),
+            child: busy
+                ? const SizedBox.shrink()
+                : Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                for (var i = 0; i < state.ui.scene!.options.length; i++) ...[
+                  if (i > 0) SizedBox(width: 8.w),
+                  _AnswerKeyButton(
+                    label: state.ui.scene!.options[i].key,
+                    // GỬI thẳng, không điền vào ô. Ô nhập đang bị giấu ở bước
+                    // này, nên "điền vào ô" là điền vào chỗ không ai thấy và
+                    // không có nút gửi để bấm — bấm A xong thì không có gì xảy
+                    // ra ("A B C hiện đang không bấm được", owner 2026-09-09).
+                    // Server đổi chữ cái thành câu đầy đủ ngay đầu lượt.
+                    onTap: () => onSubmit(state.ui.scene!.options[i].key),
+                  ),
+                ],
+                // ⟨Khác⟩ mở ô nhập, chứ không gửi gì. Nó ở cùng hàng với các
+                // chữ cái vì nó là lựa chọn thứ tư của cùng một câu hỏi — tách
+                // ra chỗ khác thì nó đọc như một chức năng, không như một cách
+                // trả lời.
+                SizedBox(width: 8.w),
+                _AnswerKeyButton(
+                  label: context.l10n.coach.sceneAnswerOther,
+                  wide: true,
+                  onTap: () => setState(() => _otherOpen = true),
+                ),
+              ],
+            ),
+          ),
+        // Ô nhập bị giấu ở một cảnh cho tới khi họ bấm ⟨Khác⟩ (owner
+        // 2026-09-08). Ở mọi bước khác nó luôn hiện như trước.
+        if (!sceneAnswer || _otherOpen)
         Container(
           padding: EdgeInsets.fromLTRB(15.w, 11.h, 15.w, _bottomInset(context)),
           decoration: const BoxDecoration(
@@ -589,135 +676,10 @@ class _CoachComposerState extends State<CoachComposer> {
 
   // --- course card -----------------------------------------------------
   // --- rating ----------------------------------------------------------
-
-  /// The rating is a TOAST that rises from the input area and rates the WHOLE
-  /// session — never a line in the chat. 👍 closes it at once; 👎 opens the
-  /// second toast with the closed list; ✕ skips. Nothing is echoed into the
-  /// thread: "toast đóng ngay, không thêm câu nào vào chat".
-  Widget _rating(BuildContext context, bool busy) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _Toast(
-          child: _thumbDown ? _ratingIssues(context, busy) : _ratingThumbs(context, busy),
-        ),
-        SizedBox(height: 9.h),
-        // The input row, disabled: the toast is what is being answered.
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(child: _input(context, true, (_) async {})),
-            SizedBox(width: 9.w),
-            _SendButton(enabled: false, onTap: () {}),
-            SizedBox(width: 9.w),
-            _MicButton(listening: false, enabled: false, onTap: () {}),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _ratingThumbs(BuildContext context, bool busy) {
-    final l10n = context.l10n.coach;
-
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            l10n.ratingToastTitle,
-            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, height: 1.35, color: CoachStyle.textPrimary),
-          ),
-        ),
-        SizedBox(width: 10.w),
-        _ThumbButton(
-          glyph: '👍',
-          onTap: busy ? null : () => widget.cubit.rate(thumb: 'up'),
-        ),
-        SizedBox(width: 7.w),
-        _ThumbButton(glyph: '👎', onTap: busy ? null : () => setState(() => _thumbDown = true)),
-        SizedBox(width: 10.w),
-        _CloseDot(onTap: busy ? null : () => widget.cubit.rate()),
-      ],
-    );
-  }
-
-  /// Why it felt wrong — a closed list, multi-select, only after 👎. "Khác"
-  /// opens one box; the words land beside the chips, not in the thread.
-  Widget _ratingIssues(BuildContext context, bool busy) {
-    final l10n = context.l10n.coach;
-    final chips = [
-      // The doc's five, in its order: "hiểu sai chuyện · quá chung · quá dài ·
-      // giọng không phù hợp · áp đặt suy nghĩ". The last one is the safety valve
-      // — a session tagged with it must be read by a person.
-      ('missed_the_point', l10n.ratingChipMissed),
-      ('too_generic', l10n.ratingChipGeneric),
-      ('too_long', l10n.ratingChipLong),
-      ('voice_mismatch', l10n.ratingChipVoice),
-      ('imposed_thinking', l10n.ratingChipImposed),
-    ];
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.ratingIssuesTitle,
-                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: CoachStyle.textPrimary),
-              ),
-            ),
-            SizedBox(width: 10.w),
-            _CloseDot(onTap: busy ? null : () => widget.cubit.rate()),
-          ],
-        ),
-        SizedBox(height: 9.h),
-        Wrap(
-          spacing: 6.w,
-          runSpacing: 6.h,
-          children: chips
-              .map(
-                (chip) => _Pill(
-                  label: chip.$2,
-                  selected: _ratingChips.contains(chip.$1),
-                  onTap: busy
-                      ? null
-                      : () => setState(() {
-                          if (!_ratingChips.remove(chip.$1)) _ratingChips.add(chip.$1);
-                        }),
-                ),
-              )
-              .toList(),
-        ),
-        if (_ratingChips.contains('other')) ...[
-          SizedBox(height: 8.h),
-          _FormField(
-            controller: _ratingOther,
-            hint: l10n.ratingOtherHint,
-            enabled: !busy,
-            height: 34,
-            radius: 11,
-            fontSize: 12.5,
-          ),
-        ],
-        SizedBox(height: 9.h),
-        _FilledButton(
-          label: l10n.ratingSend,
-          enabled: !busy && _ratingChips.isNotEmpty,
-          height: 34,
-          radius: 11,
-          fontSize: 12.5,
-          onTap: () => widget.cubit.rate(
-            thumb: 'down',
-            chips: _ratingChips.toList(),
-            note: _ratingChips.contains('other') ? _ratingOther.text.trim() : null,
-          ),
-        ),
-      ],
-    );
-  }
+  // Gỡ 2026-09-14. Toast 👍/👎 nổi lên từ ô nhập, chấm điểm cả phiên, từng là
+  // một bước của máy trạng thái (`CoachStep.RATING`). Giờ chỉ còn MỘT đường thu
+  // feedback: popup sau ⟨Vẫn đóng⟩ (`CoachExitFeedbackSheet`), tần suất do
+  // admin đặt. Server không route sang bước đó nữa.
 
   // --- next session ----------------------------------------------------
   // --- end -------------------------------------------------------------
@@ -740,7 +702,11 @@ class _CoachComposerState extends State<CoachComposer> {
     // to be decided separately (label from `entry`, destination from a
     // `keypointDone` action), which is how the button came to say "về Roadmap"
     // while doing something else.
-    final toRoadmap = !leaving && state.entry == CoachEntry.lesson;
+    // Phải CÓ roadmap để về, không chỉ là "đi ra từ cửa bài học". Lần trước
+    // nhãn và đích được hợp nhất để nút thôi nói một đằng làm một nẻo, nhưng cả
+    // hai cùng giả định có khoá phía sau — cửa "vừa thêm thói quen" đi từ trang
+    // habit thì không có, nên nút hứa một nơi nó không tới được.
+    final toRoadmap = !leaving && state.entry == CoachEntry.lesson && widget.hasRoadmap;
     final label = leaving
         ? l10n.endLeave
         : toRoadmap
@@ -1029,6 +995,66 @@ class _RerollLink extends StatelessWidget {
 /// One choice: a white pill with the lilac hairline, as the design draws every
 /// option — identical chrome for every choice, because "ba nút phải trông
 /// giống hệt nhau".
+/// Nút chọn một hướng của cảnh, mang đúng chữ cái của nó.
+///
+/// Cố tình KHÔNG mang nhãn: nhãn đã ở trong bong bóng ngay trên, và lặp lại nó
+/// dưới đây là thứ làm màn hình dài gấp đôi mà không thêm gì để đọc. Nút này
+/// trỏ vào bong bóng, nó không thay thế bong bóng.
+class _AnswerKeyButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+
+  /// ⟨Khác⟩ mang một từ chứ không phải một ký tự, nên nó cần bề ngang của chữ
+  /// thay vì ô vuông 44 — mà vẫn giữ nguyên chiều cao để cả hàng thẳng nhau.
+  final bool wide;
+
+  const _AnswerKeyButton({
+    required this.label,
+    required this.onTap,
+    this.wide = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        // Kích thước CỐ ĐỊNH, không để nó co theo chữ: một chữ cái thì hộp co
+        // lại chỉ còn bằng con chữ và vùng bấm nhỏ hơn ngón tay.
+        child: Container(
+          width: wide ? null : 44.w,
+          height: 44.w,
+          // `alignment` KHÔNG được đặt khi không có width: Container có
+          // alignment mà thiếu width sẽ nở hết bề ngang còn trống của Row, nên
+          // ⟨Khác⟩ sẽ kéo dài cả hàng. Bản ô vuông thì có width nên đặt được;
+          // bản wide để padding và chính con chữ quyết định bề ngang.
+          alignment: wide ? null : Alignment.center,
+          padding: wide ? EdgeInsets.symmetric(horizontal: 16.w) : null,
+          decoration: BoxDecoration(
+            color: CoachStyle.surface,
+            border: Border.all(color: CoachStyle.selectedBorderSoft, width: 1.5),
+            borderRadius: BorderRadius.circular(99.r),
+          ),
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w800,
+              color: onTap == null ? CoachStyle.textMuted : CoachStyle.selectedText,
+            ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _OptionPill extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
@@ -1786,8 +1812,11 @@ class _FormField extends StatelessWidget {
   final bool enabled;
   final double height;
   final double radius;
-  final double fontSize;
   final ValueChanged<String>? onSubmitted;
+
+  /// >1 makes it a box rather than a line: the text starts at the top and the
+  /// caret runs down instead of scrolling sideways past what was already typed.
+  final int maxLines;
 
   const _FormField({
     required this.controller,
@@ -1795,16 +1824,24 @@ class _FormField extends StatelessWidget {
     required this.enabled,
     this.height = 42,
     this.radius = 14,
-    this.fontSize = 13.5,
     this.onSubmitted,
+    this.maxLines = 1,
   });
+
+  /// One size everywhere. It used to be a parameter, for the 12.5 the rating
+  /// toast wanted; the toast is gone and nothing else ever disagreed.
+  static const double _fontSize = 13.5;
 
   @override
   Widget build(BuildContext context) {
+    final multiline = maxLines > 1;
+
     return Container(
       height: height.h,
-      padding: EdgeInsets.symmetric(horizontal: 14.w),
-      alignment: Alignment.center,
+      padding: multiline
+          ? EdgeInsets.fromLTRB(14.w, 11.h, 14.w, 11.h)
+          : EdgeInsets.symmetric(horizontal: 14.w),
+      alignment: multiline ? Alignment.topLeft : Alignment.center,
       decoration: BoxDecoration(
         color: CoachStyle.inputBackground,
         border: Border.all(color: CoachStyle.border, width: 1.5),
@@ -1814,8 +1851,12 @@ class _FormField extends StatelessWidget {
         controller: controller,
         enabled: enabled,
         onSubmitted: onSubmitted,
+        maxLines: maxLines,
+        // A box is for a sentence, not a command line: Enter adds a line here
+        // and the sheet's own button is what sends.
+        textInputAction: multiline ? TextInputAction.newline : TextInputAction.send,
         style: TextStyle(
-          fontSize: fontSize.sp,
+          fontSize: _fontSize.sp,
           fontWeight: FontWeight.w600,
           color: CoachStyle.textPrimary,
         ),
@@ -1825,7 +1866,7 @@ class _FormField extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           hintText: hint,
           hintStyle: TextStyle(
-            fontSize: fontSize.sp,
+            fontSize: _fontSize.sp,
             fontWeight: FontWeight.w600,
             color: CoachStyle.textPlaceholder,
           ),
@@ -1946,83 +1987,6 @@ class _MicButton extends StatelessWidget {
                 ? CoachStyle.textChip
                 : CoachStyle.textPlaceholder,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The card that rises from the input area — the rating's home. Drawn inside
-/// the composer rather than floated over the thread: a widget that overflows
-/// its parent cannot be tapped outside it, and this one has to be.
-class _Toast extends StatelessWidget {
-  final Widget child;
-
-  const _Toast({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 12.h),
-      decoration: BoxDecoration(
-        color: CoachStyle.surface,
-        border: Border.all(color: CoachStyle.border),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: CoachStyle.toastShadow,
-      ),
-      child: child,
-    );
-  }
-}
-
-class _ThumbButton extends StatelessWidget {
-  final String glyph;
-  final VoidCallback? onTap;
-
-  const _ThumbButton({required this.glyph, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 34.w,
-        height: 30.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: CoachStyle.choiceBackground,
-          border: Border.all(color: CoachStyle.selectedBorderSoft, width: 1.5),
-          borderRadius: BorderRadius.circular(10.r),
-        ),
-        child: Text(glyph, style: TextStyle(fontSize: 14.sp, height: 1)),
-      ),
-    );
-  }
-}
-
-/// The toast's ✕ — skipping is allowed, and quiet.
-class _CloseDot extends StatelessWidget {
-  final VoidCallback? onTap;
-
-  const _CloseDot({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 24.w,
-        height: 24.w,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: CoachStyle.inputBackground,
-          shape: BoxShape.circle,
-        ),
-        child: Text(
-          '✕',
-          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, height: 1, color: CoachStyle.textMuted),
         ),
       ),
     );

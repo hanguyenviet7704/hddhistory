@@ -52,13 +52,15 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // This is the path that matters on open. The sheet shows a spinner while
-    // the status is `opening` and only swaps in this list once the turn has
-    // landed, so the list is BORN holding the whole conversation — the turn
-    // plus, on a resume, every earlier session replayed above it. No update
-    // ever follows, so the old scroll-on-change hook never ran and the reader
-    // was left at the very top of their history (owner 2026-09-05: "khi bấm
-    // vào coach thì luôn scroll đến đoạn chat hiện tại").
+    // Đường này vẫn chạy khi danh sách sinh ra đã có sẵn cả cuộc hội thoại —
+    // lượt vừa về, cộng với mọi phiên cũ được phát lại phía trên nếu là phiên
+    // nối tiếp. Trước 2026-09-09 đó là đường DUY NHẤT: sheet để vòng xoay suốt
+    // lúc `opening` rồi mới thay danh sách vào, nên không có update nào theo
+    // sau và cái hook cuộn-khi-đổi cũ chẳng bao giờ chạy, để người đọc đứng
+    // trên đỉnh lịch sử (owner 2026-09-05: "khi bấm vào coach thì luôn scroll
+    // đến đoạn chat hiện tại"). Giờ lúc `opening` sheet đã dựng sẵn danh sách
+    // rỗng với chấm "đang gõ", nên lần đầu có bài thường tới qua
+    // `didUpdateWidget` — nhánh đó gọi đúng `_settleToEnd()` này.
     if (widget.messages.isNotEmpty) _settleToEnd();
   }
 

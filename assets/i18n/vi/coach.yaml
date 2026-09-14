@@ -363,6 +363,7 @@ stepQuiz: "quiz trong chat"
 # Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
 exitPleaStory: "Bạn kể chưa hết mà. Ở thêm một câu nữa nhé?"
 exitPleaScene: "Cảnh này còn một câu nữa là xong. Nói thử rồi mình đóng?"
+exitPleaGeneric: "Mình vẫn ở đây mà. Nói thêm một câu rồi đóng cũng được?"
 exitPleaQuiz: "Còn ${n} câu thôi. Làm nốt rồi mình ghi hôm nay cho bạn nhé?"
 exitPleaStay: "Ở lại một câu"
 exitPleaLeave: "Vẫn đóng"
@@ -447,3 +448,16 @@ inviteNewHabitsBubble: "Bạn vừa thêm ${n} thói quen. Tập thử một cá
 inviteNewHabitKicker: "Vừa thêm thói quen"
 inviteNewHabitsKicker: "Vừa thêm ${n} thói quen"
 inviteNewHabitAccept: "Tập thử ngay"
+sceneAnswerOther: Khác
+# Luồng 6 (2026-09-14) — popup đánh giá sau ⟨Vẫn đóng⟩. Đường DUY NHẤT thu
+# feedback: toast 👍/👎 giữa phiên đã bỏ. Tần suất hỏi do admin đặt.
+rateSheetTitle: "Nói chuyện với MeUp Coach vừa rồi thế nào?"
+rateSheetSubtitle: "Chọn những gì đúng với bạn, rồi viết thêm nếu muốn."
+rateChipUnderstood: "Coach hiểu đúng chuyện mình kể"
+rateChipRightQuestions: "Câu hỏi đúng chỗ"
+rateChipTooLong: "Nói nhiều quá"
+rateChipImposed: "Áp đặt suy nghĩ của mình"
+rateChipNotHelpful: "Chưa giúp được gì"
+rateNoteHint: "Viết đánh giá của bạn..."
+rateSend: "Gửi đánh giá"
+rateLater: "Để sau"

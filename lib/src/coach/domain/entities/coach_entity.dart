@@ -486,6 +486,10 @@ class CoachTurnEntity {
   /// Luồng 6 — whether ⟨Đóng⟩ may plead once. Off after two declines in a row.
   final bool exitPlea;
 
+  /// Luồng 6 — ⟨Đóng⟩ asks "chỗ nào chưa ổn?" instead of pleading. Outranks
+  /// [exitPlea]: one question per close.
+  final bool exitFeedback;
+
   const CoachTurnEntity({
     this.sessionId = '',
     this.step = '',
@@ -503,6 +507,7 @@ class CoachTurnEntity {
     this.silent = false,
     this.reasonKey,
     this.exitPlea = true,
+    this.exitFeedback = false,
   });
 }
 
@@ -637,6 +642,7 @@ extension CoachTurnModelX on CoachTurnModel {
           ),
     ended: ended,
     exitPlea: exitPlea,
+    exitFeedback: exitFeedback,
     silent: silent,
     reasonKey: reasonKey,
   );

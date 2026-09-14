@@ -362,6 +362,7 @@ stepQuiz: "聊天里的测验"
 # Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
 exitPleaStory: "你还没说完呢。再留一句好吗？"
 exitPleaScene: "这个情境再一句就结束了。试着说完再关？"
+exitPleaGeneric: "我还在这儿。再说一句再关好吗？"
 exitPleaQuiz: "还剩 ${n} 题。做完我就帮你记下今天？"
 exitPleaStay: "再留一句"
 exitPleaLeave: "还是关掉"
@@ -446,3 +447,15 @@ inviteNewHabitsBubble: "你刚添加了 ${n} 个习惯。趁还记得原因，�
 inviteNewHabitKicker: "已添加习惯"
 inviteNewHabitsKicker: "已添加 ${n} 个习惯"
 inviteNewHabitAccept: "现在试试"
+sceneAnswerOther: 其他
+# Luồng 6 (2026-09-14) — the rating sheet after ⟨Vẫn đóng⟩.
+rateSheetTitle: "刚才和 MeUp Coach 聊得怎么样？"
+rateSheetSubtitle: "选择符合你感受的，也可以再写几句。"
+rateChipUnderstood: "Coach 理解我说的事"
+rateChipRightQuestions: "问到了点子上"
+rateChipTooLong: "话太多了"
+rateChipImposed: "把它的想法强加给我"
+rateChipNotHelpful: "没什么帮助"
+rateNoteHint: "写下你的评价…"
+rateSend: "发送评价"
+rateLater: "以后再说"

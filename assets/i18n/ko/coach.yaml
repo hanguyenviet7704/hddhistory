@@ -362,6 +362,7 @@ stepQuiz: "채팅 퀴즈"
 # Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
 exitPleaStory: "아직 다 못 했잖아요. 한 문장만 더 있을래요?"
 exitPleaScene: "이 상황은 한 마디만 더 하면 끝나요. 말해 보고 닫을까요?"
+exitPleaGeneric: "저 아직 여기 있어요. 한마디만 더 하고 닫을까요?"
 exitPleaQuiz: "${n} 문제만 남았어요. 마치면 오늘을 기록해 드릴게요?"
 exitPleaStay: "한 문장만 더"
 exitPleaLeave: "그래도 닫기"
@@ -446,3 +447,15 @@ inviteNewHabitsBubble: "습관을 ${n}개 추가했네요. 이유가 기억나�
 inviteNewHabitKicker: "습관 추가됨"
 inviteNewHabitsKicker: "습관 ${n}개 추가됨"
 inviteNewHabitAccept: "지금 해보기"
+sceneAnswerOther: 다른 말로
+# Luồng 6 (2026-09-14) — the rating sheet after ⟨Vẫn đóng⟩.
+rateSheetTitle: "방금 MeUp Coach와 나눈 대화는 어땠나요?"
+rateSheetSubtitle: "해당하는 것을 고르고, 원하면 더 적어 주세요."
+rateChipUnderstood: "제 얘기를 제대로 이해했어요"
+rateChipRightQuestions: "질문이 적절했어요"
+rateChipTooLong: "말이 너무 많았어요"
+rateChipImposed: "자기 생각을 강요했어요"
+rateChipNotHelpful: "별로 도움이 안 됐어요"
+rateNoteHint: "평가를 적어 주세요…"
+rateSend: "평가 보내기"
+rateLater: "나중에"

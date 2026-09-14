@@ -35,7 +35,21 @@ class CoachSheetOutcome {
   /// of a session opened from a keypoint that is not the course's last.
   final bool nextKeypoint;
 
-  const CoachSheetOutcome({this.courseId, this.toRoadmap = false, this.nextKeypoint = false});
+  /// Cuộc trò chuyện đã đi HẾT, chứ không phải bị đóng giữa chừng.
+  ///
+  /// Hai màn mời đều chạy một vòng lặp "đóng sheet thì mời lại", vì backing out
+  /// của sheet không phải là quyết định đi tiếp. Nhưng LÀM XONG thì là một
+  /// quyết định — mời lại người vừa luyện hết tình huống là bắt họ làm lại từ
+  /// đầu (owner on-device 2026-09-09: "tập hết tình huống sau đó bấm đóng thì
+  /// về tiếp màn này"). Cờ này để vòng lặp phân biệt được hai việc đó.
+  final bool ended;
+
+  const CoachSheetOutcome({
+    this.courseId,
+    this.toRoadmap = false,
+    this.nextKeypoint = false,
+    this.ended = false,
+  });
 }
 
 /// Opens the Coach sheet and settles what the reader chose on the way out.
@@ -64,6 +78,7 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
   String? courseId,
   bool recap = false,
   bool hasNextKeypoint = false,
+  bool hasRoadmap = false,
   List<QuestionEntity> quizQuestions = const [],
   String quizTitle = '',
 }) async {
@@ -123,6 +138,7 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
           courseId: courseId,
           recap: recap,
           hasNextKeypoint: hasNextKeypoint,
+          hasRoadmap: hasRoadmap,
         ),
       ),
     ),
@@ -139,18 +155,22 @@ Future<CoachSheetOutcome> showCoachSheetForKeypoint(
   // These DO end it: a course opened, the Roadmap, the next keypoint — each is
   // the reader leaving for somewhere else — and a session the server has
   // already closed, where ⟨Đóng⟩ is just acknowledging the end.
+  // Đọc TRƯỚC `endSession()` — sau đó cờ này không còn nói được gì về việc
+  // cuộc trò chuyện có đi hết hay không.
+  final talkEnded = cubit.state.ended;
+
   final endsSession = switch (result) {
     null => false,
-    _CoachSheetClose() => cubit.state.ended,
+    _CoachSheetClose() => talkEnded,
     _ => true,
   };
   if (endsSession) await cubit.endSession();
 
   return switch (result) {
-    _CoachSheetOpenCourse(courseId: final id) => CoachSheetOutcome(courseId: id),
-    _CoachSheetRoadmap() => const CoachSheetOutcome(toRoadmap: true),
-    _CoachSheetNextKeypoint() => const CoachSheetOutcome(nextKeypoint: true),
-    _ => const CoachSheetOutcome(),
+    _CoachSheetOpenCourse(courseId: final id) => CoachSheetOutcome(courseId: id, ended: talkEnded),
+    _CoachSheetRoadmap() => CoachSheetOutcome(toRoadmap: true, ended: talkEnded),
+    _CoachSheetNextKeypoint() => CoachSheetOutcome(nextKeypoint: true, ended: talkEnded),
+    _ => CoachSheetOutcome(ended: talkEnded),
   };
 }
 
@@ -168,6 +188,14 @@ class _CoachSheet extends StatefulWidget {
   /// Roadmap alone.
   final bool hasNextKeypoint;
 
+  /// Có roadmap nào để về hay không — trang mở sheet là nơi DUY NHẤT biết, y
+  /// như `hasNextKeypoint`.
+  ///
+  /// Thiếu nó thì nút cuối phiên nói "về Roadmap" ở cả những cửa không có khoá
+  /// nào phía sau (cửa "vừa thêm thói quen" đi từ trang habit), bấm vào không
+  /// đi đâu được, và trang mời lại hiện lên (owner on-device 2026-09-09).
+  final bool hasRoadmap;
+
   const _CoachSheet({
     required this.entry,
     this.lessonId,
@@ -176,6 +204,7 @@ class _CoachSheet extends StatefulWidget {
     this.courseId,
     this.recap = false,
     this.hasNextKeypoint = false,
+    this.hasRoadmap = false,
   });
 
   @override
@@ -194,7 +223,18 @@ class _CoachSheetState extends State<_CoachSheet> {
     // The cubit resolves fixed lines through this rather than importing
     // `context.l10n` itself, so the same cubit can be driven with no widget
     // tree at all.
-    cubit.promptResolver = (key, args) => coachPrompt(context, key, args) ?? '';
+    //
+    // KHÔNG bám vào context của sheet này. Cubit là singleton và một lượt trả
+    // về có thể hạ cánh sau khi sheet đã đóng — lúc đó `context` của State ném
+    // "This widget has been unmounted, so the State no longer has a context",
+    // giữa `_applyTurn`, nên lượt ấy hỏng nửa chừng (đã thấy trong log máy
+    // này 2026-09-09 14:17, và bay lên Crashlytics). Context của app sống lâu
+    // hơn sheet và tra được đúng bản dịch đó.
+    cubit.promptResolver = (key, args) {
+      final resolverContext = mounted ? context : AppConfig.instance.context;
+
+      return resolverContext == null ? '' : coachPrompt(resolverContext, key, args) ?? '';
+    };
     cubit.open(
       entry: widget.entry,
       locale: LocaleSettings.currentLocale.languageCode,
@@ -228,18 +268,35 @@ class _CoachSheetState extends State<_CoachSheet> {
     await cubit.sendQuizDone(answers ?? const []);
   }
 
-  /// Luồng 6 — ⟨Đóng⟩ mid-session asks ONCE to stay, then respects the answer.
+  /// Luồng 6 — ⟨Đóng⟩ giữa phiên: níu trước, rồi mới hỏi vừa rồi thế nào.
   ///
-  /// The plea appears only when there is something to finish (the reader has
-  /// spoken, the session is live, the step has a line for it) and only while
-  /// the server still allows it — two sessions closed against the plea and it
-  /// is gone for good. A barrier tap is not a decision: nothing is recorded and
-  /// the sheet stays.
+  /// Hai sheet NỐI TIẾP nhau, đúng thứ tự design vẽ (`EXIT_PLEA` → `RATE_COACH`,
+  /// 2026-09-14): bấm ⟨Đóng⟩ thì Coach níu một câu; chọn ⟨Ở lại một câu⟩ là
+  /// xong, chọn ⟨Vẫn đóng⟩ thì mới hiện popup đánh giá.
+  ///
+  /// Trước đây hai cái này GIÀNH lượt nhau — ai chưa feedback thì hỏi lý do, ai
+  /// feedback rồi thì níu — nên người mới dùng không bao giờ được níu, còn người
+  /// đã trả lời một lần thì không bao giờ được hỏi lại. Nối tiếp bỏ cả hai chỗ
+  /// hụt đó.
+  ///
+  /// Cái giữ popup khỏi thành phiền là `state.exitFeedback`: server tính theo
+  /// các knob tần suất bên admin, client chỉ đọc.
   Future<void> _requestClose(BuildContext context, CoachState state, CoachCubit cubit) async {
-    final line = _exitPleaLineFor(context, state);
-    final canPlead = state.exitPlea && !state.ended && state.status == CoachStatus.ready && line != null && state.messages.any((m) => !m.isCoach);
+    // Chỉ còn MỘT câu hỏi, và luôn là lời níu (owner 2026-09-09: "bấm đóng là
+    // luôn luôn níu — ở lại một câu").
+    //
+    // Ba chốt cũ đã bỏ theo chữ "luôn luôn": bảng hỏi lý do thoát không còn
+    // giành lượt (`state.exitFeedback`), trần hai lần "Vẫn đóng" của server
+    // không còn tắt lời níu (`state.exitPlea`), và bước nào không có câu níu
+    // riêng thì dùng câu chung thay vì im lặng đóng luôn.
+    //
+    // Cái duy nhất giữ lại: nói HẾT rồi thì không níu. Lúc đó ✕ chỉ là gật đầu
+    // với một phiên đã xong, và "ở lại một câu" là một lời nói dối — không còn
+    // câu nào phía sau để ở lại.
+    final live = !state.ended && state.status == CoachStatus.ready;
 
-    if (canPlead) {
+    if (live) {
+      final line = _exitPleaLineFor(context, state) ?? context.l10n.coach.exitPleaGeneric;
       CoachTracking.exitPleaView(state);
       final decision = await CoachExitPleaSheet.show(context, line);
       if (decision == CoachExitDecision.stay) {
@@ -247,16 +304,33 @@ class _CoachSheetState extends State<_CoachSheet> {
 
         return;
       }
+      // A barrier tap is not a decision: nothing is recorded and the sheet
+      // stays.
       if (decision == null) return;
-      unawaited(cubit.recordExit(stayed: false));
+
+      // ⟨Vẫn đóng⟩ → popup đánh giá, nếu tần suất bên admin cho phép lần này.
+      CoachExitFeedback? feedback;
+      if (state.exitFeedback && context.mounted) {
+        feedback = await CoachExitFeedbackSheet.show(context);
+      }
+      // Trả lời hay ⟨Để sau⟩ đều ghi: server cần đếm cả hai để biết "không ai
+      // chê" khác "không ai buồn trả lời".
+      unawaited(
+        cubit.recordExit(
+          stayed: false,
+          chips: feedback?.chips,
+          note: feedback?.note.isEmpty ?? true ? null : feedback!.note,
+        ),
+      );
     }
 
     if (!context.mounted) return;
     Navigator.of(context).pop(const _CoachSheetResult.close());
   }
 
-  /// The four written pleas, by where the reader is; null where none fits —
-  /// a hub, a card, a finished session.
+  /// The written pleas, by where the reader is. Null means "no line of its
+  /// own" — a hub, a card — and the caller falls back to the generic one
+  /// rather than letting the ✕ through unasked.
   String? _exitPleaLineFor(BuildContext context, CoachState state) {
     final l10n = context.l10n.coach;
     const story = {'story', 'storyTalk', 'depth', 'checkinTell', 'tell', 'tell2'};
@@ -382,7 +456,13 @@ class _CoachSheetState extends State<_CoachSheet> {
                   ),
                 Expanded(
                   child: switch (state.status) {
-                    CoachStatus.opening => const Center(child: CircularProgressIndicator()),
+                    // Chấm "đang gõ" của chính Coach, không phải vòng xoay
+                    // giữa màn trắng (owner 2026-09-09: "có cách nào để bớt
+                    // xoay không"). Cùng một thời gian chờ, nhưng nó đọc ra là
+                    // Coach đang soạn câu chứ không phải app bị treo — và khi
+                    // lượt đầu về, `didUpdateWidget` thấy danh sách rỗng chuyển
+                    // sang có bài nên vẫn `_settleToEnd()` xuống đáy như cũ.
+                    CoachStatus.opening => CoachMessageList(messages: state.messages, typing: true),
                     CoachStatus.failed => _Failed(onRetry: _start),
                     _ when isSafety => CoachSafetyPanel(hotlines: state.ui.hotlines),
                     _ => CoachMessageList(
@@ -425,7 +505,7 @@ class _CoachSheetState extends State<_CoachSheet> {
                     ),
                   },
                 ),
-                if (!isSafety && (state.status == CoachStatus.ready || state.status == CoachStatus.sending)) CoachComposer(state: state, cubit: cubit, hasNextKeypoint: widget.hasNextKeypoint),
+                if (!isSafety && (state.status == CoachStatus.ready || state.status == CoachStatus.sending)) CoachComposer(state: state, cubit: cubit, hasNextKeypoint: widget.hasNextKeypoint, hasRoadmap: widget.hasRoadmap),
               ],
             ),
           ),

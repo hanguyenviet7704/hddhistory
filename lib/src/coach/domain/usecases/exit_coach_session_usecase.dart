@@ -8,7 +8,7 @@ class ExitCoachSessionUseCase {
 
   ExitCoachSessionUseCase(this._repository);
 
-  TaskEither<AppException, Unit> call(String sessionId, {required bool stayed}) {
-    return _repository.exitSession(sessionId, stayed: stayed);
+  TaskEither<AppException, Unit> call(String sessionId, {required bool stayed, List<String>? chips, String? note}) {
+    return _repository.exitSession(sessionId, stayed: stayed, chips: chips, note: note);
   }
 }
