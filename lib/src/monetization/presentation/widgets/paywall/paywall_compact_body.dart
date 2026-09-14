@@ -180,6 +180,11 @@ class _PaywallCompactBody extends StatelessWidget {
                   // Price and period read as ONE lockup in the design
                   // (`199.000đ/month`), so the suffix rides inside the same
                   // text rather than as a sibling that can wrap away from it.
+                  //
+                  // `planPeriodLabel`, NOT `periodLabel`: this row prints the
+                  // store's TOTAL price for the period, so a yearly plan read
+                  // "599.000đ/month" — the full paywall never hit it because it
+                  // pairs `periodLabel` with the monthly-equivalent figure.
                   Text.rich(
                     TextSpan(
                       text: product.price,
@@ -191,9 +196,9 @@ class _PaywallCompactBody extends StatelessWidget {
                         height: 1,
                       ),
                       children: [
-                        if (_periodSuffix(product).isNotEmpty)
+                        if (product.planPeriodLabel.isNotEmpty)
                           TextSpan(
-                            text: '/${_periodSuffix(product)}',
+                            text: '/${product.planPeriodLabel}',
                             style: AppStyle.text16.copyWith(
                               fontSize: 17.sp,
                               fontWeight: FontWeight.w600,
@@ -254,12 +259,4 @@ class _PaywallCompactBody extends StatelessWidget {
     );
   }
 
-  /// `per month` → `month`: the store hands the period back as a phrase, the
-  /// design prints only the unit after the slash.
-  String _periodSuffix(IapProductEntity product) {
-    final label = product.periodLabel.trim();
-    if (label.isEmpty) return '';
-    if (label.toLowerCase().startsWith('per ')) return label.substring(4);
-    return label;
-  }
 }

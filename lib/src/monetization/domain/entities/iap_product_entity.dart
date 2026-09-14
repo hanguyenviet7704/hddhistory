@@ -43,6 +43,13 @@ extension IapProductEntityX on IapProductEntity {
   bool get hasCompareAtPrice =>
       compareAtPrice.isNotEmpty && rawPrice > 0 && compareAtRawPrice > rawPrice && (compareAtCurrencyCode.isEmpty || compareAtCurrencyCode == currencyCode);
 
+  /// Đơn vị đi kèm GIÁ QUY VỀ MỖI THÁNG ([pricePerPeriodString]) — cố ý trả
+  /// "mỗi tháng" cho cả gói năm lẫn gói quý.
+  ///
+  /// Chỉ ghép được với [pricePerPeriodString]. Ghép với [price] (tổng giá cả
+  /// chu kỳ mà store trả về) là in ra một câu sai sự thật: "599.000đ/mỗi tháng"
+  /// cho một gói năm. Muốn gọi tên chu kỳ THẬT của gói thì dùng
+  /// [planPeriodLabel].
   String get periodLabel {
     // if (productId.contains('1y') || productId.toLowerCase().contains('year')) return t.monetization.pricePerYear;
     // if (productId.contains('3m') || productId.toLowerCase().contains('quarter')) return t.monetization.pricePerQuarter;
@@ -104,6 +111,19 @@ extension IapProductEntityX on IapProductEntity {
     if (idLower.contains('week')) return IapPlanPeriod.week;
 
     return IapPlanPeriod.month;
+  }
+
+  /// Tên chu kỳ thật của gói ("năm", "tháng"…), cho hậu tố đứng sau [price].
+  ///
+  /// Một nguồn duy nhất cho cả thẻ gói ở paywall đầy đủ lẫn dòng giá ở paywall
+  /// rút gọn: hai chỗ tự map lấy thì một chỗ sẽ lỡ tay với [periodLabel].
+  String get planPeriodLabel {
+    return switch (planPeriod) {
+      IapPlanPeriod.week => l10n.monetization.planPeriodWeek,
+      IapPlanPeriod.month => l10n.monetization.planPeriodMonth,
+      IapPlanPeriod.quarter => l10n.monetization.planPeriodQuarter,
+      IapPlanPeriod.year => l10n.monetization.planPeriodYear,
+    };
   }
 
   /// Giá mỗi ngày, định dạng BÁM THEO chuỗi giá của store.

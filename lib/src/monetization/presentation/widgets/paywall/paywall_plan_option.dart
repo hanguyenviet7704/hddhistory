@@ -247,12 +247,5 @@ class PaywallPlanOption extends StatelessWidget {
   /// Thay cho `product.periodLabel` — nhãn đó là "mỗi tháng" kể cả với gói năm,
   /// nên ghép với tổng giá năm sẽ in "959.000đ/mỗi tháng": sai sự thật, không chỉ
   /// sai design.
-  String _planPeriodLabel(IapProductEntity product) {
-    return switch (product.planPeriod) {
-      IapPlanPeriod.week => l10n.monetization.planPeriodWeek,
-      IapPlanPeriod.month => l10n.monetization.planPeriodMonth,
-      IapPlanPeriod.quarter => l10n.monetization.planPeriodQuarter,
-      IapPlanPeriod.year => l10n.monetization.planPeriodYear,
-    };
-  }
+  String _planPeriodLabel(IapProductEntity product) => product.planPeriodLabel;
 }
