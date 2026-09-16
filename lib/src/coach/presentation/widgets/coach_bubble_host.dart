@@ -48,6 +48,18 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
   /// lần hiện khác, đáng đếm lại.
   String? _viewed;
 
+  /// The teaser already said its piece — `<door>|<text>`.
+  ///
+  /// Keyed on the DOOR, not the route name: Home, Khám phá and Thư viện share
+  /// one door, and `currentRouteName` is re-anchored by overlays (see the note
+  /// on [_sheetResult] below), so a route-keyed guard would let the nudge start
+  /// over every time the name wobbled — which is the flicker this removes.
+  ///
+  /// The text is part of the key on purpose: a teaser that CHANGED is new
+  /// information and has earned its three seconds. The same sentence never gets
+  /// a second showing.
+  String? _teaserSaid;
+
   /// Which door the current tab is, or null where the Coach does not belong.
   ///
   /// Home, Khám phá and Thư viện all open the HOME session — the conversation,
@@ -146,6 +158,12 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
           // Leaving the door resets the guard, so coming back asks again — the
           // dot and teaser go stale the moment a commitment is answered
           // anywhere else.
+          //
+          // `_teaserSaid` is deliberately NOT reset here. Resetting it would
+          // hand the same sentence another three seconds every time the reader
+          // stepped into a sub-route and back, which is the flicker in slow
+          // motion. A teaser that genuinely changed carries a different key and
+          // shows on its own.
           _asked = null;
           _viewed = null;
 
@@ -162,12 +180,20 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
 
             _trackViewIfNeeded(entry, state);
 
+            // ②A quotes the reader's own commitment; ④ has no words of
+            // theirs to quote yet and says "Tình huống ba tuần trước…".
+            final teaser = state.teaser ?? coachTeaser(context, state.teaserKey);
+            final teaserKey = teaser == null ? null : '${entry.raw}|$teaser';
+            final showTeaser = teaserKey != null && _teaserSaid != teaserKey;
+
             return CoachBubble(
               bottomInset: widget.bottomInset,
               dot: state.dot,
-              // ②A quotes the reader's own commitment; ④ has no words of
-              // theirs to quote yet and says "Tình huống ba tuần trước…".
-              teaser: state.teaser ?? coachTeaser(context, state.teaserKey),
+              teaser: showTeaser ? teaser : null,
+              onTeaserDone: () {
+                if (!mounted || _teaserSaid == teaserKey) return;
+                setState(() => _teaserSaid = teaserKey);
+              },
               // Navigating AFTER the sheet is gone, never from inside it —
               // pushing a route from under a closing modal is how a
               // navigator ends up with an orphan.

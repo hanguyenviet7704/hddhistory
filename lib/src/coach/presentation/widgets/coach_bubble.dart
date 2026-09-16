@@ -39,12 +39,19 @@ class CoachBubble extends StatelessWidget {
   final bool dot;
   final String? teaser;
 
+  /// Fired once the teaser has finished its single showing.
+  ///
+  /// The host uses it to stop passing a teaser at all, so the nudge is said
+  /// once and then the Coach just sits there — see [_Teaser].
+  final VoidCallback? onTeaserDone;
+
   const CoachBubble({
     super.key,
     required this.bottomInset,
     required this.onTap,
     this.dot = false,
     this.teaser,
+    this.onTeaserDone,
   });
 
   @override
@@ -59,7 +66,7 @@ class CoachBubble extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (teaser != null) ...[
-            _Teaser(text: teaser!),
+            _Teaser(text: teaser!, onDone: onTeaserDone),
             SizedBox(width: 10.w),
           ],
           Semantics(
@@ -98,12 +105,23 @@ class CoachBubble extends StatelessWidget {
 /// The reader's own commitment, quoted back in one line.
 ///
 /// Their words, not "you have something waiting" — a generic teaser tells them
-/// nothing the dot has not already said. It breathes on a slow loop so it reads
-/// as the Coach waiting rather than as a banner.
+/// nothing the dot has not already said.
+///
+/// Said ONCE, for three seconds, and then gone for that screen (owner,
+/// 2026-09-16). It used to `repeat()` on a six-second loop: the same sentence
+/// fading in and out again every six seconds for as long as the reader stayed
+/// on the tab, which does not read as the Coach waiting — it reads as
+/// something blinking at you while you are trying to read a course card.
+///
+/// The keyframe shape is the design's `cv-teaser` and is kept; only the loop
+/// and the length changed. [onDone] lets the host drop the teaser entirely
+/// afterwards, so it stops taking layout and stops being announced to
+/// screen readers.
 class _Teaser extends StatefulWidget {
   final String text;
+  final VoidCallback? onDone;
 
-  const _Teaser({required this.text});
+  const _Teaser({required this.text, this.onDone});
 
   @override
   State<_Teaser> createState() => _TeaserState();
@@ -112,8 +130,16 @@ class _Teaser extends StatefulWidget {
 class _TeaserState extends State<_Teaser> with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 6),
-  )..repeat();
+    duration: const Duration(seconds: 3),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.forward().whenCompleteOrCancel(() {
+      if (mounted) widget.onDone?.call();
+    });
+  }
 
   @override
   void dispose() {
