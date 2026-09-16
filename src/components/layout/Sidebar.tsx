@@ -224,6 +224,10 @@ const menuGroups = [
       // ngay tại chỗ chọn, khỏi vào sai trang. Tên khớp tiêu đề trang.
       { name: "Link Builder", icon: LinkIcon, path: "/deeplinks" },
       { name: "Popup streak", icon: StreakIcon, path: "/streak-config" },
+      // Beside the other Explore-surface editors: a collection IS a strip on
+      // the Khám phá tab, and it targets by the same `segmentIds` as the two
+      // below it.
+      { name: "Bộ sưu tập khoá học", icon: MegaphoneIcon, path: "/collections" },
       { name: "Banner Home", icon: MegaphoneIcon, path: "/home-banner" },
       { name: "Popup Home", icon: MegaphoneIcon, path: "/home-popup" },
       // Audience groups that Banner Home / Popup Home target via `segmentIds`
@@ -287,10 +291,9 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           ${collapsed ? "justify-center" : "justify-start"}
           px-3 py-1.5 my-0.5 rounded-lg
           transition-all duration-300 ease-in-out
-          ${
-            isActive
-              ? "bg-blue-50 text-blue-600 shadow-sm border-l-4 border-blue-500"
-              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          ${isActive
+            ? "bg-blue-50 text-blue-600 shadow-sm border-l-4 border-blue-500"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           }
         `}
       >
@@ -343,14 +346,12 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
       {/* Logo */}
       <div
-        className={`flex items-center justify-center mb-4 transition-all duration-300 ${
-          collapsed ? "px-0" : "px-4"
-        }`}
+        className={`flex items-center justify-center mb-4 transition-all duration-300 ${collapsed ? "px-0" : "px-4"
+          }`}
       >
         <div
-          className={`flex items-center justify-center rounded-lg shadow-md transition-all duration-300 ${
-            collapsed ? "w-10 h-8" : "w-24 h-16"
-          }`}
+          className={`flex items-center justify-center rounded-lg shadow-md transition-all duration-300 ${collapsed ? "w-10 h-8" : "w-24 h-16"
+            }`}
         >
           <img
             src="https://i.pinimg.com/736x/f9/5d/b0/f95db029418c8d27375b6851060d6f0c.jpg"
@@ -376,9 +377,8 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 >
                   <span>{group.title}</span>
                   <ChevronDownIcon
-                    className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                      isOpen ? "" : "-rotate-90"
-                    }`}
+                    className={`h-3.5 w-3.5 transition-transform duration-200 ${isOpen ? "" : "-rotate-90"
+                      }`}
                   />
                 </button>
               )}

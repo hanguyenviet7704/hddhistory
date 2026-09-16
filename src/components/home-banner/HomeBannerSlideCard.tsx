@@ -6,6 +6,7 @@ import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 import { HomeBannerSlide } from "../../services/homeBannerService";
 import { SegmentOption } from "../../types/interface/segment.interface";
+import SegmentPicker from "../common/SegmentPicker";
 import {
   fromInputDateTime,
   PromoCampaignStats,
@@ -211,25 +212,10 @@ const HomeBannerSlideCard: React.FC<Props> = ({
 
       <div className="h-4" />
 
-      <Autocomplete
-        multiple
-        size="small"
-        options={segments}
-        value={(slide.segmentIds ?? []).map(
-          (id) => segments.find((s) => s._id === id) ?? { _id: id, name: id },
-        )}
-        onChange={(_, selected) =>
-          onChange({ segmentIds: selected.map((s) => s._id) })
-        }
-        isOptionEqualToValue={(a, b) => a._id === b._id}
-        getOptionLabel={(s) => s.name}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Chỉ hiện với các phân khúc user"
-            helperText="Bỏ trống = mọi người dùng. Khớp BẤT KỲ phân khúc nào được chọn."
-          />
-        )}
+      <SegmentPicker
+        segments={segments}
+        value={slide.segmentIds ?? []}
+        onChange={(segmentIds) => onChange({ segmentIds })}
       />
 
       <div className="h-4" />
