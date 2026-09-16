@@ -30,6 +30,46 @@ export interface CourseVersion {
   isCurrent: boolean;
 }
 
+export type AudioCoverageStatus = "done" | "stale" | "missing" | "none";
+
+export interface KeypointAudioCoverage {
+  keypointId: string;
+  title: Record<string, string>;
+  statuses: Record<string, AudioCoverageStatus>;
+  /** Số thẻ có chữ mà chưa có bản thu, theo ngôn ngữ. */
+  missing: Record<string, number>;
+}
+
+/**
+ * Tình trạng audio của MỘT tag, xét theo chữ của chính tag đó.
+ *
+ * Đây là lý do "v1.0.0 có audio mà v1.0.1 thì không" trả lời được: bản thu
+ * định danh bằng hash đoạn chữ, nên tag nào chữ không đổi thì dùng lại đúng
+ * bản thu cũ, tag nào sửa chữ thì hiện thiếu. `complete: false` là thứ chặn
+ * phát hành.
+ */
+export interface CourseAudioCoverage {
+  tag: string;
+  courseId: string;
+  versionId: string;
+  langs: string[];
+  summary: Record<AudioCoverageStatus, number>;
+  complete: boolean;
+  keypoints: KeypointAudioCoverage[];
+}
+
+export interface VersionDubSnapshot {
+  state: "idle" | "running" | "done";
+  courseId: string | null;
+  tag: string | null;
+  total: number;
+  done: number;
+  failed: number;
+  startedAt?: string;
+  finishedAt?: string;
+  lastErrors: string[];
+}
+
 export interface CourseVersionList {
   versions: CourseVersion[];
   currentTag: string | null;
@@ -47,6 +87,25 @@ export const courseVersionService = {
   async list(courseId: string) {
     const res = await axiosClient.get(`/courses/${courseId}/versions`);
     return unwrapApi<CourseVersionList>(res.data);
+  },
+
+  async audioCoverage(courseId: string, tag: string) {
+    const res = await axiosClient.get(
+      `/courses/${courseId}/versions/${tag}/audio-coverage`
+    );
+    return unwrapApi<CourseAudioCoverage>(res.data);
+  },
+
+  async dubMissing(courseId: string, tag: string) {
+    const res = await axiosClient.post(
+      `/courses/${courseId}/versions/${tag}/dub-missing`
+    );
+    return unwrapApi<VersionDubSnapshot>(res.data);
+  },
+
+  async dubStatus() {
+    const res = await axiosClient.get(`/courses/versions/dub-status`);
+    return unwrapApi<VersionDubSnapshot>(res.data);
   },
 
   async create(

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 
 import { store } from "../../store";
@@ -25,8 +25,31 @@ jest.mock("../../services/courseVersionService", () => ({
     setCurrent: jest.fn(),
     remove: jest.fn(),
     backfill: jest.fn(),
+    audioCoverage: jest.fn(),
+    dubMissing: jest.fn(),
+    dubStatus: jest.fn(),
   },
 }));
+
+const VERSION = {
+  _id: "v1",
+  tag: "v1.0.1",
+  note: null,
+  entityCounts: { lessons: 1, keypoints: 2, learningItems: 3 },
+  isCurrent: true,
+};
+
+const renderModal = () =>
+  render(
+    <Provider store={store}>
+      <CourseVersionsModal
+        open
+        courseId="68c0000000000000000000c1"
+        courseTitle="Khoá có tag"
+        onClose={() => undefined}
+      />
+    </Provider>
+  );
 
 /**
  * Tái hiện "bấm nút tag là trắng màn": trắng màn = lỗi lúc render, nên chỉ cần
@@ -79,5 +102,62 @@ describe("CourseVersionsModal", () => {
       expect(screen.getByText("Phiên bản nội dung")).toBeInTheDocument()
     );
     expect(screen.getByPlaceholderText("v1.0.1")).toHaveValue("");
+  });
+
+  // CRA bật `resetMocks`, nên implementation bị xoá giữa các test — dựng lại ở
+  // đây thay vì trong một test rồi trông chờ test sau vẫn còn.
+  const withTag = () => {
+    const { courseVersionService } = jest.requireMock(
+      "../../services/courseVersionService"
+    );
+    courseVersionService.list.mockResolvedValue({
+      versions: [VERSION],
+      currentTag: "v1.0.1",
+      nextTag: "v1.0.2",
+      pending: { added: [], changed: [], removed: [], total: 0 },
+    });
+    courseVersionService.audioCoverage.mockResolvedValue({
+      tag: "v1.0.1",
+      courseId: "c1",
+      versionId: "v1",
+      langs: ["vi", "en", "zh", "ja", "ko"],
+      summary: { done: 3, stale: 1, missing: 2, none: 4 },
+      complete: false,
+      keypoints: [
+        {
+          keypointId: "k1",
+          title: { vi: "Hiểu về mâu thuẫn" },
+          statuses: { vi: "stale" },
+          missing: { vi: 2 },
+        },
+      ],
+    });
+
+    return courseVersionService;
+  };
+
+  /**
+   * Câu hỏi cả tính năng này sinh ra để trả lời: tag nào có audio, tag nào
+   * không. Phải đọc được ngay trên bảng, không phải bấm vào mới biết.
+   */
+  it("shows how many cells a tag is short of audio", async () => {
+    withTag();
+
+    renderModal();
+
+    await waitFor(() => expect(screen.getByText("thiếu 3 ô")).toBeInTheDocument());
+  });
+
+  it("names the keypoints to fix, not just the count", async () => {
+    const courseVersionService = withTag();
+
+    renderModal();
+
+    const chip = await screen.findByText("thiếu 3 ô");
+    fireEvent.click(chip);
+
+    expect(await screen.findByText("Hiểu về mâu thuẫn")).toBeInTheDocument();
+    expect(screen.getByText("Ghi bù phần thiếu")).toBeInTheDocument();
+    expect(courseVersionService.audioCoverage).toHaveBeenCalled();
   });
 });

@@ -6,6 +6,7 @@ import {
   TagIcon,
   Trash2Icon,
   TriangleAlertIcon,
+  Volume2Icon,
   XIcon,
 } from "lucide-react";
 
@@ -13,6 +14,7 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import { courseService } from "../../services/courseService";
 import {
   courseVersionService,
+  CourseAudioCoverage,
   CourseVersionList,
 } from "../../services/courseVersionService";
 import { downloadBlob } from "../../utils/downloadBlob";
@@ -30,6 +32,127 @@ const ENTITY_LABEL: Record<string, string> = {
   lesson: "Bài học",
   keypoint: "Keypoint",
   learningItem: "Nội dung học",
+};
+
+/** Tên keypoint theo ngôn ngữ nào cũng được — miễn là đọc ra được. */
+const titleOf = (title: Record<string, string>, fallback: string) =>
+  title?.vi || title?.en || Object.values(title ?? {})[0] || fallback;
+
+/**
+ * Ô "Audio" của một tag: xanh khi đủ, hổ phách kèm số ô thiếu khi chưa.
+ *
+ * Không tự hỏi cho mọi tag — mỗi lần hỏi là server băm lại cả cây nội dung của
+ * tag đó — nên tag chưa hỏi thì hiện nút "Kiểm".
+ */
+const AudioCell: React.FC<{
+  state?: CourseAudioCoverage | "loading" | "error";
+  onCheck: () => void;
+  onToggle: () => void;
+}> = ({ state, onCheck, onToggle }) => {
+  if (!state) {
+    return (
+      <button
+        onClick={onCheck}
+        className="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 transition hover:bg-gray-50"
+      >
+        Kiểm
+      </button>
+    );
+  }
+  if (state === "loading") {
+    return <span className="text-xs text-gray-400">đang kiểm…</span>;
+  }
+  if (state === "error") {
+    return (
+      <button onClick={onCheck} className="text-xs text-red-600 underline">
+        lỗi — thử lại
+      </button>
+    );
+  }
+
+  const short = state.summary.missing + state.summary.stale;
+
+  return (
+    <button
+      onClick={onToggle}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition ${
+        state.complete
+          ? "bg-green-100 text-green-700 hover:bg-green-200"
+          : "bg-amber-100 text-amber-800 hover:bg-amber-200"
+      }`}
+    >
+      <Volume2Icon className="h-3.5 w-3.5" />
+      {state.complete ? "đủ audio" : `thiếu ${short} ô`}
+    </button>
+  );
+};
+
+/**
+ * Thiếu ở ĐÂU, không phải thiếu BAO NHIÊU.
+ *
+ * Con số tổng không nói được người biên tập phải mở keypoint nào, mà đó là
+ * việc duy nhất họ làm sau khi nhìn bảng này. Lưới đầy đủ keypoint × ngôn ngữ
+ * đã có ở màn voiceover của bản đang sửa; ở đây chỉ liệt kê chỗ hụt.
+ */
+const AudioGaps: React.FC<{
+  coverage: CourseAudioCoverage;
+  busy: boolean;
+  onDub: () => void;
+}> = ({ coverage, busy, onDub }) => {
+  const gaps = coverage.keypoints.filter(
+    (row) => Object.keys(row.missing ?? {}).length
+  );
+
+  if (coverage.complete) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-green-700">
+        <CheckCircle2Icon className="h-4 w-4" />
+        {coverage.tag} đã có đủ audio cho cả {coverage.langs.length} ngôn ngữ.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-amber-800">
+          {coverage.tag} thiếu audio ở {gaps.length} keypoint.{" "}
+          {coverage.summary.stale > 0 && (
+            <>
+              {coverage.summary.stale} ô là chữ đã sửa so với bản đã ghi —{" "}
+              phần chữ không đổi vẫn dùng lại bản thu cũ, không phải ghi lại.
+            </>
+          )}
+        </p>
+        <button
+          onClick={onDub}
+          disabled={busy}
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
+        >
+          <Volume2Icon className={`h-4 w-4 ${busy ? "animate-pulse" : ""}`} />
+          {busy ? "Đang ghi…" : "Ghi bù phần thiếu"}
+        </button>
+      </div>
+      <ul className="space-y-1 text-sm text-gray-700">
+        {gaps.slice(0, 15).map((row) => (
+          <li key={row.keypointId}>
+            <span className="font-medium">
+              {titleOf(row.title, row.keypointId)}
+            </span>{" "}
+            <span className="text-gray-500">
+              —{" "}
+              {Object.entries(row.missing)
+                .map(([lang, count]) => `${lang} (${count} thẻ)`)
+                .join(" · ")}
+            </span>
+          </li>
+        ))}
+        {gaps.length > 15 && (
+          <li className="text-gray-500">… và {gaps.length - 15} keypoint nữa</li>
+        )}
+      </ul>
+    </div>
+  );
 };
 
 /**
@@ -56,6 +179,18 @@ const CourseVersionsModal: React.FC<Props> = ({
   const [tag, setTag] = useState("");
   const [note, setNote] = useState("");
   const [setCurrent, setSetCurrent] = useState(true);
+  /**
+   * Tình trạng audio theo từng tag, nạp LƯỜI.
+   *
+   * Mỗi lần hỏi là server đọc cả cây nội dung của tag đó để băm lại, nên không
+   * hỏi sẵn cho mọi tag. Chỉ tự hỏi cho tag đang phát hành và tag mới nhất —
+   * đúng hai tag mà câu "bản này có audio chưa" thực sự được đặt ra.
+   */
+  const [coverage, setCoverage] = useState<
+    Record<string, CourseAudioCoverage | "loading" | "error">
+  >({});
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [dubbing, setDubbing] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!courseId) return;
@@ -77,6 +212,62 @@ const CourseVersionsModal: React.FC<Props> = ({
   useEffect(() => {
     if (open) load();
   }, [open, load]);
+
+  const loadCoverage = useCallback(
+    async (target: string) => {
+      setCoverage((prev) => ({ ...prev, [target]: "loading" }));
+      try {
+        const result = await courseVersionService.audioCoverage(courseId, target);
+        setCoverage((prev) => ({ ...prev, [target]: result }));
+      } catch {
+        setCoverage((prev) => ({ ...prev, [target]: "error" }));
+      }
+    },
+    [courseId]
+  );
+
+  useEffect(() => {
+    if (!open || !data) return;
+    const wanted = new Set(
+      [data.currentTag, data.versions?.[0]?.tag].filter(Boolean) as string[]
+    );
+    wanted.forEach((target) => {
+      if (!coverage[target]) loadCoverage(target);
+    });
+    // `coverage` cố tình không nằm trong deps: nó đổi sau mỗi lần nạp, và đưa
+    // vào đây là vòng lặp nạp vô tận.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, data, loadCoverage]);
+
+  /**
+   * Ghi bù phần thiếu rồi hỏi lại — job chạy nền nên phải hỏi tiến độ, và
+   * dừng hỏi sau 10 phút để một job kẹt không làm tab quay mãi.
+   */
+  const dubMissing = async (target: string) => {
+    setDubbing(target);
+    try {
+      await courseVersionService.dubMissing(courseId, target);
+      const deadline = Date.now() + 10 * 60 * 1000;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const status = await courseVersionService.dubStatus();
+        if (status.state !== "running" || Date.now() > deadline) {
+          if (status.failed) {
+            showError(`Ghi xong nhưng ${status.failed} thẻ lỗi — xem log API`);
+          } else {
+            showSuccess(`Đã ghi ${status.done} thẻ cho ${target}`);
+          }
+          break;
+        }
+      }
+      await loadCoverage(target);
+    } catch (error: any) {
+      showError(error?.response?.data?.message || "Ghi bù audio thất bại");
+    } finally {
+      setDubbing(null);
+    }
+  };
 
   const runBusy = async (job: () => Promise<void>) => {
     setBusy(true);
@@ -248,13 +439,20 @@ const CourseVersionsModal: React.FC<Props> = ({
                   <th className="px-4 py-2">Tag</th>
                   <th className="px-4 py-2">Ghi chú</th>
                   <th className="px-4 py-2">Nội dung</th>
+                  <th className="px-4 py-2">Audio</th>
                   <th className="px-4 py-2">Người đánh</th>
                   <th className="px-4 py-2" />
                 </tr>
               </thead>
               <tbody>
-                {(data?.versions ?? []).map((version) => (
-                  <tr key={version._id} className="border-t">
+                {(data?.versions ?? []).map((version) => {
+                  const audio = coverage[version.tag];
+                  const showGaps =
+                    expanded === version.tag && audio && typeof audio !== "string";
+
+                  return (
+                  <React.Fragment key={version._id}>
+                  <tr className="border-t">
                     <td className="whitespace-nowrap px-4 py-2 font-medium">
                       {version.tag}
                       {version.isCurrent && (
@@ -268,6 +466,15 @@ const CourseVersionsModal: React.FC<Props> = ({
                       {version.entityCounts?.lessons ?? 0} bài ·{" "}
                       {version.entityCounts?.keypoints ?? 0} kp ·{" "}
                       {version.entityCounts?.learningItems ?? 0} nội dung
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2">
+                      <AudioCell
+                        state={coverage[version.tag]}
+                        onCheck={() => loadCoverage(version.tag)}
+                        onToggle={() =>
+                          setExpanded(expanded === version.tag ? null : version.tag)
+                        }
+                      />
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-600">
                       {version.createdBy?.email ?? "hệ thống"}
@@ -308,10 +515,23 @@ const CourseVersionsModal: React.FC<Props> = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  {showGaps && (
+                    <tr className="bg-gray-50">
+                      <td colSpan={6} className="px-4 py-3">
+                        <AudioGaps
+                          coverage={audio as CourseAudioCoverage}
+                          busy={dubbing === version.tag}
+                          onDub={() => dubMissing(version.tag)}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
+                  );
+                })}
                 {!loading && !(data?.versions ?? []).length && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
                       Khoá này chưa có tag nào — user đang đọc bản đang sửa, y như
                       trước khi có tính năng phiên bản.
                     </td>
