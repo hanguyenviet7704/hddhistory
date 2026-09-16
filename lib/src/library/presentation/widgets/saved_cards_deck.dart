@@ -258,7 +258,7 @@ class _SavedCardsDeckState extends State<SavedCardsDeck> with TickerProviderStat
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(20.w, 26.h, 20.w, floatingNavBarHeight(context) + 20.h),
+      padding: EdgeInsets.fromLTRB(20.w, 26.h, 20.w, floatingNavBarHeight(context) + 20.h + resumeChipClearance(context)),
       child: Column(
         children: [
           GestureDetector(

@@ -105,6 +105,9 @@ mixin RoutePath {
   static const String myLessons = 'my-lessons';
   static const String lessonReader = 'lesson-reader/:lessonId';
   static const String importLesson = 'import-lesson';
+
+  /// The full list behind a curated collection's chevron on the Explore tab.
+  static const String collectionCourses = 'collection-courses/:collectionId';
   static const String importGenerating = 'import-generating';
 
   //* Habit
@@ -227,6 +230,7 @@ mixin RouteNamed {
   static const String myLessons = 'My Lessons';
   static const String lessonReader = 'Lesson Reader';
   static const String importLesson = 'Import Lesson';
+  static const String collectionCourses = 'Collection Courses';
   static const String importGenerating = 'Import Generating';
 
   //* Habit
@@ -242,6 +246,23 @@ mixin RouteNamed {
   static const String communityCompose = 'Community Compose';
   static const String communityNotifications = 'Community Notifications';
 }
+
+/// Every screen inside the Confession branch.
+///
+/// Exists so a rule about "the reader is in Confession" is written once. The
+/// resume chip had it as a single `== RouteNamed.community`, which was true of
+/// the hub and of nothing else — so the chip came back the moment a reader
+/// opened a room, which is most of the time spent in there. A new screen joining
+/// the branch inherits the rule instead of quietly falling out of it.
+const Set<String> communityRouteNames = {
+  RouteNamed.community,
+  RouteNamed.communityTopic,
+  RouteNamed.communityPost,
+  RouteNamed.communityWeekly,
+  RouteNamed.communityChat,
+  RouteNamed.communityCompose,
+  RouteNamed.communityNotifications,
+};
 
 /// Route names (PageCubit stores [RouteNamed], e.g. 'Register Page' — NOT
 /// [RoutePath] like '/register') where the user has NOT yet reached an

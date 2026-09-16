@@ -102,7 +102,7 @@ class _MyLessonsPageState extends State<MyLessonsPage> {
                                 20.w,
                                 8.h,
                                 20.w,
-                                floatingNavBarHeight(context) + 20.h,
+                                floatingNavBarHeight(context) + 20.h + resumeChipClearance(context),
                               ),
                               physics: const AlwaysScrollableScrollPhysics(
                                 parent: BouncingScrollPhysics(),

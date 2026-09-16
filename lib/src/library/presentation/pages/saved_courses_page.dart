@@ -122,7 +122,7 @@ class _SavedCoursesPageState extends State<SavedCoursesPage> {
           : ListView.separated(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(24.w, 6.h, 24.w, floatingNavBarHeight(context) + 20.h),
+              padding: EdgeInsets.fromLTRB(24.w, 6.h, 24.w, floatingNavBarHeight(context) + 20.h + resumeChipClearance(context)),
               itemCount: courses.length + (showPagingLoader ? 1 : 0),
               separatorBuilder: (_, _) => SizedBox(height: 14.h),
               itemBuilder: (context, index) {

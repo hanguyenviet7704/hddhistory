@@ -294,7 +294,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                   // Bottom padding — clear the floating nav bar AND the
                                   // coach bubble that floats above it, so the banner
                                   // above is not left under either.
-                                  SizedBox(height: floatingNavBarHeight(context) + coachBubbleClearance(context)),
+                                  SizedBox(height: floatingNavBarHeight(context) + coachBubbleClearance(context) + resumeChipClearance(context)),
                                 ],
                               ),
                             ),

@@ -375,7 +375,7 @@ class _HabitBody extends StatelessWidget {
       child: Container(
         width: double.infinity,
         color: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
-        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 120.h),
+        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 120.h + resumeChipClearance(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

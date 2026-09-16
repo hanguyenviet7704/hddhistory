@@ -106,7 +106,7 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
       child: GridView.builder(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, floatingNavBarHeight(context) + 20.h),
+        padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, floatingNavBarHeight(context) + 20.h + resumeChipClearance(context)),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           mainAxisSpacing: 14.h,

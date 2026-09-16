@@ -168,7 +168,7 @@ class _LibraryPageState extends State<LibraryPage> {
               SliverToBoxAdapter(child: LibrarySavedCardsStrip(onSeeAll: _openSavedCards)),
               SliverToBoxAdapter(child: LibraryNotebookStrip(onSeeAll: _openNotebook)),
               SliverToBoxAdapter(
-                child: SizedBox(height: floatingNavBarHeight(context) + 20.h),
+                child: SizedBox(height: floatingNavBarHeight(context) + 20.h + resumeChipClearance(context)),
               ),
             ],
           ),

@@ -176,7 +176,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
               // No horizontal padding here: each section pays its own, so its
               // strip can run to the screen edge instead of stopping 20 short
               // and reading as a clipped list.
-              padding: EdgeInsets.only(bottom: 80.h),
+              // + the resume chip: it floats over this list's last row, and
+              // that row is a course card whose author line was landing under
+              // it (owner, 2026-09-16).
+              padding: EdgeInsets.only(bottom: 80.h + resumeChipClearance(context)),
               itemCount: sections.length + _kHeaderRows,
               itemBuilder: (context, index) {
                 // The search field and the import board ride at the top of the
@@ -361,11 +364,7 @@ class _ExploreSection extends StatelessWidget {
 }
 
 /// A heading over a horizontal strip of covers — the shape every editor-curated
-/// collection takes.
-///
-/// No "see all" chevron: the API hands over the eight courses the strip shows
-/// and nothing more, so there is no fuller list to open. Browsing everything in
-/// a topic is what the chips below are for.
+/// collection takes, with a chevron into the same courses as a grid.
 class _CollectionSection extends StatelessWidget {
   const _CollectionSection({required this.section, required this.onTapCourse});
 
@@ -385,36 +384,47 @@ class _CollectionSection extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              AppText(
-                section.title.text,
-                maxLines: 2,
-                style: TextStyle(
-                  fontFamily: AppFont.mulish,
-                  fontSize: 15.5.sp,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.1,
-                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
-                ),
-              ),
-              if (section.description.text.isNotEmpty) ...[
-                4.verticalSpace,
-                AppText(
-                  section.description.text,
-                  // A strapline is content, not a label — let it wrap rather
-                  // than lose its second half to AppText's default clamp.
-                  maxLines: 100,
+              Expanded(
+                child: AppText(
+                  section.title.text,
+                  maxLines: 2,
                   style: TextStyle(
                     fontFamily: AppFont.mulish,
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                    color: studyThemeOnBg(context, AppCustomColor.textSecondary),
+                    fontSize: 15.5.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.1,
+                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
                   ),
                 ),
-              ],
+              ),
+              10.horizontalSpace,
+              Semantics(
+                button: true,
+                label: '${context.l10n.allcourse.viewMore} ${section.title.text}',
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    AppHaptic.select();
+                    CollectionCoursesRoute(collectionId: section.id).push(context);
+                  },
+                  // 28 square so the tap target is not just the glyph, pulled 6
+                  // right so the arrow lines up with the page margin.
+                  child: Transform.translate(
+                    offset: Offset(6.w, 0),
+                    child: SizedBox(
+                      width: 28.w,
+                      height: 28.w,
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 24.w,
+                        color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -484,12 +494,30 @@ class _WeeklyTopSection extends StatefulWidget {
 }
 
 class _WeeklyTopSectionState extends State<_WeeklyTopSection> {
-  late final PageController _controller = PageController();
+  final ScrollController _controller = ScrollController();
+
+  /// Width of one page, learned from layout. Needed to turn a scroll offset
+  /// into a page number for the dots.
+  double _pageWidth = 1;
   int _page = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!mounted || _pageWidth <= 0) return;
+    final page = (_controller.offset / _pageWidth).round();
+    if (page != _page) setState(() => _page = page);
+  }
+
+  @override
   void dispose() {
-    _controller.dispose();
+    _controller
+      ..removeListener(_onScroll)
+      ..dispose();
     super.dispose();
   }
 
@@ -550,20 +578,34 @@ class _WeeklyTopSectionState extends State<_WeeklyTopSection> {
               ],
             ),
             14.verticalSpace,
-            SizedBox(
-              // Fixed because a PageView cannot size itself to its tallest
-              // child. Tall enough for the cover row plus three lines of the
-              // italic description; longer copy clamps rather than overflowing.
-              height: 186.h,
-              child: PageView.builder(
-                controller: _controller,
-                onPageChanged: (page) => setState(() => _page = page),
-                itemCount: courses.length,
-                itemBuilder: (context, index) => _WeeklyTopCard(
-                  course: courses[index],
-                  onTap: () => widget.onTapCourse(courses[index]),
-                ),
-              ),
+            // A snapping horizontal scroller, not a PageView: a PageView cannot
+            // size itself to its children, so it needs a fixed height — and any
+            // height big enough for the longest description leaves a slab of
+            // dead white under the short ones (owner: "spacing đang hơi dày").
+            // This sizes to the tallest card instead, which is also what the
+            // design's scroll-snap row does.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                _pageWidth = constraints.maxWidth;
+                return SingleChildScrollView(
+                  controller: _controller,
+                  scrollDirection: Axis.horizontal,
+                  physics: const PageScrollPhysics(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final course in courses)
+                        SizedBox(
+                          width: constraints.maxWidth,
+                          child: _WeeklyTopCard(
+                            course: course,
+                            onTap: () => widget.onTapCourse(course),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -626,6 +668,7 @@ class _WeeklyTopCard extends StatelessWidget {
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -678,39 +721,37 @@ class _WeeklyTopCard extends StatelessWidget {
             12.verticalSpace,
             Container(height: 1, color: const Color(0x22554FF0)),
             12.verticalSpace,
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    '“',
-                    maxLines: 1,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  '“',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 26.sp,
+                    height: 0.9,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0x38554FF0),
+                  ),
+                ),
+                9.horizontalSpace,
+                Expanded(
+                  child: AppText(
+                    course.description.text,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: AppFont.mulish,
-                      fontSize: 26.sp,
-                      height: 0.9,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0x38554FF0),
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w500,
+                      fontStyle: FontStyle.italic,
+                      height: 1.55,
+                      color: const Color(0xFF4A4A73),
                     ),
                   ),
-                  9.horizontalSpace,
-                  Expanded(
-                    child: AppText(
-                      course.description.text,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: AppFont.mulish,
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w500,
-                        fontStyle: FontStyle.italic,
-                        height: 1.55,
-                        color: const Color(0xFF4A4A73),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -923,8 +964,7 @@ class _BecauseYouSection extends StatelessWidget {
               ],
             ),
             10.verticalSpace,
-            for (final course in section.courses)
-              _BecauseYouRow(course: course, onTap: () => onTapCourse(course)),
+            for (final course in section.courses) _BecauseYouRow(course: course, onTap: () => onTapCourse(course)),
           ],
         ),
       ),
@@ -951,19 +991,25 @@ class _BecauseYouRow extends StatelessWidget {
           AppHaptic.select();
           onTap();
         },
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 7.h),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 9.h),
+          // A rule on TOP of every row, the first one included — that is what
+          // separates the list from the "because you finished X" header above
+          // it, so the panel reads as one thing rather than two stacked blocks.
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Color(0xFFE6E9F1))),
+          ),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(13.r),
                 child: SizedBox(
                   width: 44.w,
                   height: 44.w,
                   child: CoverArt(url: course.image, seed: course.id, label: course.title.text),
                 ),
               ),
-              10.horizontalSpace,
+              11.horizontalSpace,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

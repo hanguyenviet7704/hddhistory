@@ -199,6 +199,9 @@ mixin TrackingKey {
   static const String exploreScrView = 'explore_scr_view';
   static const String exploreCatChipClick = 'explore_cat_chip_click';
   static const String exploreCourseClick = 'explore_course_click';
+
+  /// Chip "Tiếp tục học" nổi trên nav bar.
+  static const String resumeChipClick = 'resume_chip_click';
   static const String exploreCatViewmore = 'explore_cat_viewmore';
   static const String exploreCatlistScrView = 'explore_catlist_scr_view';
   static const String exploreCatlistBackClick = 'explore_catlist_back_click';

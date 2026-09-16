@@ -82,87 +82,111 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
             setState(() => _visualIndex = visual);
           }
         },
-        child: Stack(
-          children: [
-            // Full-screen content — each page handles its own safe-area bottom
-            // padding (or ignores it if it has a floating CTA of its own).
-            // Wrapped in ThemedBackground so the user's chosen study background
-            // (study_theme) paints behind every tab that opts in with a
-            // transparent Scaffold; seamless across tab switches (single host).
-            // StreakPopupHost wraps the shell (not Home) so the daily
-            // time counter keeps running across every tab. GiftPopupHost is on
-            // the shell for the same reason, plus one of its own: it watches for
-            // app RESUME, which is how the days 1-7 gift popup reaches a reader
-            // who left MeUp in the background rather than cold-starting it.
-            // ImportDonePopupHost joins them for both reasons at once: it must
-            // survive tab switches, AND it watches RESUME — an import keeps
-            // running server-side while the app is suspended, so coming back is
-            // the moment to check whether the lesson is ready.
-            Positioned.fill(
-              // WeekRecapPopupHost is outermost, and is the only one of these
-              // that raises a full dialog on a cold start. It shares
-              // AppOpenModalGate with the Home promo popup so the two can never
-              // stack into a card on a card.
-              child: WeekRecapPopupHost(
-                child: ImportDonePopupHost(
-                  // WinBackHost sits here for the same reason as its
-                  // neighbours: the paywall that arms it is gone before its
-                  // delay elapses, so the opener has to outlive it.
-                  child: WinBackHost(
-                    child: GiftPopupHost(
-                      child: StreakPopupHost(
-                        child: ThemedBackground(child: widget.navigationShell),
+        // ProgressCubit is provided per ROUTE, not above the shell — but the
+        // resume chip and the Coach bubble's inset both live at shell level and
+        // need it. Same singleton the routes hand out, so nesting it changes
+        // nothing for the screens below.
+        child: BlocProvider<ProgressCubit>.value(
+          value: AppDI.injector.get<ProgressCubit>(),
+          child: Stack(
+            children: [
+              // Full-screen content — each page handles its own safe-area bottom
+              // padding (or ignores it if it has a floating CTA of its own).
+              // Wrapped in ThemedBackground so the user's chosen study background
+              // (study_theme) paints behind every tab that opts in with a
+              // transparent Scaffold; seamless across tab switches (single host).
+              // StreakPopupHost wraps the shell (not Home) so the daily
+              // time counter keeps running across every tab. GiftPopupHost is on
+              // the shell for the same reason, plus one of its own: it watches for
+              // app RESUME, which is how the days 1-7 gift popup reaches a reader
+              // who left MeUp in the background rather than cold-starting it.
+              // ImportDonePopupHost joins them for both reasons at once: it must
+              // survive tab switches, AND it watches RESUME — an import keeps
+              // running server-side while the app is suspended, so coming back is
+              // the moment to check whether the lesson is ready.
+              Positioned.fill(
+                // WeekRecapPopupHost is outermost, and is the only one of these
+                // that raises a full dialog on a cold start. It shares
+                // AppOpenModalGate with the Home promo popup so the two can never
+                // stack into a card on a card.
+                child: WeekRecapPopupHost(
+                  child: ImportDonePopupHost(
+                    // WinBackHost sits here for the same reason as its
+                    // neighbours: the paywall that arms it is gone before its
+                    // delay elapses, so the opener has to outlive it.
+                    child: WinBackHost(
+                      child: GiftPopupHost(
+                        child: StreakPopupHost(
+                          child: ThemedBackground(child: widget.navigationShell),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            // The minimised import, above the nav bar. Shown on sub-routes too:
-            // a run the reader minimised is still running while they read
-            // something else, and going quiet about it is what the toast exists
-            // to stop.
-            BlocSelector<PageCubit, PageState, ({bool isPrimary, bool shownInline})>(
-              selector: (state) => (
-                isPrimary: state.isPrimaryRoute,
-                // My Creations carries the same run as a row in its own list, so
-                // a toast there would repeat the screen back to itself — and sit
-                // on top of that screen's create bar while doing it. The
-                // generating screen IS the run, full-size — a minimised copy of
-                // the thing you are looking at ("cục loading ở dưới không cần
-                // hiện ở màn này", 2026-08-12).
-                shownInline: state.currentRouteName == RouteNamed.myLessons || state.currentRouteName == RouteNamed.importGenerating,
+              // The minimised import, above the nav bar. Shown on sub-routes too:
+              // a run the reader minimised is still running while they read
+              // something else, and going quiet about it is what the toast exists
+              // to stop.
+              BlocSelector<PageCubit, PageState, ({bool isPrimary, bool shownInline})>(
+                selector: (state) => (
+                  isPrimary: state.isPrimaryRoute,
+                  // My Creations carries the same run as a row in its own list, so
+                  // a toast there would repeat the screen back to itself — and sit
+                  // on top of that screen's create bar while doing it. The
+                  // generating screen IS the run, full-size — a minimised copy of
+                  // the thing you are looking at ("cục loading ở dưới không cần
+                  // hiện ở màn này", 2026-08-12).
+                  shownInline: state.currentRouteName == RouteNamed.myLessons || state.currentRouteName == RouteNamed.importGenerating,
+                ),
+                builder: (context, placement) => placement.shownInline
+                    ? const SizedBox.shrink()
+                    : ImportProgressToast(
+                        bottomInset: placement.isPrimary ? floatingNavBarHeight(context) + 10.h : MediaQuery.paddingOf(context).bottom + 18.h,
+                      ),
               ),
-              builder: (context, placement) => placement.shownInline
-                  ? const SizedBox.shrink()
-                  : ImportProgressToast(
-                      bottomInset: placement.isPrimary ? floatingNavBarHeight(context) + 10.h : MediaQuery.paddingOf(context).bottom + 18.h,
+              // "Tiếp tục học", directly above the nav bar. Decides its own
+              // visibility (see shouldShowResumeChip) rather than being gated
+              // here, so the rule lives next to the widget that obeys it.
+              ResumeChipHost(bottomInset: floatingNavBarHeight(context) + kResumeChipGap.h),
+              // The AI Coach bubble. A sibling of the import toast rather than a
+              // member of the popup-host chain above, and deliberately so: it
+              // never opens itself, so it never has to queue behind the week
+              // recap, the gift and the streak toast for AppOpenModalGate. It
+              // decides for itself which tabs it belongs on (Home and Habit) and
+              // renders nothing everywhere else.
+              //
+              // Stacked ABOVE the resume chip (owner): the bubble has to clear
+              // the chip's full height whenever the chip is on screen, so both
+              // read the SAME predicate. Computing it twice, differently, is how
+              // the bubble ends up sitting on the chip.
+              BlocBuilder<PageCubit, PageState>(
+                builder: (context, pageState) {
+                  final progressState = context.watch<ProgressCubit>().state;
+                  final chipShown = shouldShowResumeChip(pageState, progressState);
+                  return CoachBubbleHost(
+                    bottomInset: floatingNavBarHeight(context) + (chipShown ? (kResumeChipHeight + kResumeChipGap).h : 0) + kCoachBubbleGap.h,
+                  );
+                },
+              ),
+              // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
+              BlocSelector<PageCubit, PageState, bool>(
+                selector: (state) => state.isPrimaryRoute,
+                builder: (context, isPrimary) {
+                  if (!isPrimary) return const SizedBox.shrink();
+                  return Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _FloatingNavBar(
+                      selectedIndex: _visualIndex,
+                      onTap: _onTabTap,
                     ),
-            ),
-            // The AI Coach bubble. A sibling of the import toast rather than a
-            // member of the popup-host chain above, and deliberately so: it
-            // never opens itself, so it never has to queue behind the week
-            // recap, the gift and the streak toast for AppOpenModalGate. It
-            // decides for itself which tabs it belongs on (Home and Habit) and
-            // renders nothing everywhere else.
-            CoachBubbleHost(bottomInset: floatingNavBarHeight(context) + kCoachBubbleGap.h),
-            // Floating pill navbar — hidden on sub-routes (lesson, roleplay…)
-            BlocSelector<PageCubit, PageState, bool>(
-              selector: (state) => state.isPrimaryRoute,
-              builder: (context, isPrimary) {
-                if (!isPrimary) return const SizedBox.shrink();
-                return Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _FloatingNavBar(
-                    selectedIndex: _visualIndex,
-                    onTap: _onTabTap,
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

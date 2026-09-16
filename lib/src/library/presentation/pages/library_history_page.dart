@@ -122,7 +122,7 @@ class _LibraryHistoryPageState extends State<LibraryHistoryPage> {
                       : ListView.separated(
                           controller: _scrollController,
                           physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.fromLTRB(24.w, 6.h, 24.w, floatingNavBarHeight(context) + 20.h),
+                          padding: EdgeInsets.fromLTRB(24.w, 6.h, 24.w, floatingNavBarHeight(context) + 20.h + resumeChipClearance(context)),
                           itemCount: courses.length + (showPagingLoader ? 1 : 0),
                           separatorBuilder: (_, _) => SizedBox(height: 14.h),
                           itemBuilder: (context, index) {
@@ -284,7 +284,7 @@ class _LibraryHistoryEmpty extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(32.w, 60.h, 32.w, floatingNavBarHeight(context) + 20.h),
+      padding: EdgeInsets.fromLTRB(32.w, 60.h, 32.w, floatingNavBarHeight(context) + 20.h + resumeChipClearance(context)),
       children: [
         AppText(
           message,

@@ -77,6 +77,7 @@ part 'presentation/pages/skillset_courses_page.dart';
 part 'presentation/helpers/explore_tracking.dart';
 part 'presentation/helpers/keypoint_resume.dart';
 part 'presentation/widgets/common/course_tracking_data.dart';
+part 'presentation/widgets/course/resume_chip.dart';
 part 'presentation/widgets/course/all_course_tab.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';

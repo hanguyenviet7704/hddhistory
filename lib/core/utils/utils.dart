@@ -32,6 +32,10 @@ import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';
 import '../../src/coach/coach.dart';
 import '../../src/common/common.dart';
+// The shell hosts the resume chip (course) and has to reserve its height when
+// placing the Coach bubble, which needs the reader's progress.
+import '../../src/course/course.dart';
+import '../../src/progress/progress.dart';
 import '../../src/learning_import/learning_import.dart';
 import '../../src/learning_streak/learning_streak.dart';
 import '../../src/monetization/monetization.dart';
