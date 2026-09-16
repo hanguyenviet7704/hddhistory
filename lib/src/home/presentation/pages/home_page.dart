@@ -354,11 +354,28 @@ class _RecommendedSection extends StatelessWidget {
     return BlocSelector<HomeCubit, HomeState, ({List<SuggestedCourseEntity> courses, HomeStatus status})>(
       selector: (state) => (courses: state.suggestedCourses, status: state.status),
       builder: (context, data) {
-        final courses = data.courses;
-        if (courses.isEmpty) {
+        if (data.courses.isEmpty) {
           final isColdLoading = data.status == HomeStatus.loading || data.status == HomeStatus.initial;
           return isColdLoading ? _RecommendedSkeleton(onSeeAll: onSeeAll) : const SizedBox.shrink();
         }
+
+        // Drop whatever the hero card is already featuring. The API pins the
+        // newest course into this very list, so the strip's first tile was
+        // always a small copy of the big card above it — and now that the pin
+        // survives the reader STARTING that course (api 2026-09-16), the copy
+        // would be a course they are in the middle of, sitting under a
+        // "Recommended" heading.
+        //
+        // Matched by id against [_pickTodayCourse] rather than by dropping
+        // index 0: the hero picks by `createdAt`, and pinning is the API's
+        // choice, not a contract this widget should encode.
+        final featured = _pickTodayCourse(data.courses);
+        final courses = featured == null || featured.id.isEmpty
+            ? data.courses
+            : data.courses.where((course) => course.id != featured.id).toList();
+        // The catalogue holds nothing but the featured course: the hero has
+        // already said it, so the strip has nothing left to add.
+        if (courses.isEmpty) return const SizedBox.shrink();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
