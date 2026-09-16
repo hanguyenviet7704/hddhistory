@@ -63,13 +63,49 @@ class GiftPopupSchedule {
   }
 
   /// True when the last showing — in either mode — is at least
-  /// [minGapMinutes] old. Reads no day zero and no window: this mode is for
-  /// every non-premium reader from their first open onwards, so the gap is the
-  /// only gate.
+  /// [minGapMinutes] old AND the account is still inside its window.
+  ///
+  /// Two gates, and the window is the newer one. This mode used to run
+  /// indefinitely, which made it a permanent tax on everyone who had not paid
+  /// rather than a welcome offer; it is now bounded like the other mode.
+  ///
+  /// Anchored on [accountCreatedAt], NOT on day zero and not on a first-open
+  /// mark of its own. Day zero is the first habit, and this mode exists
+  /// precisely to reach readers who have not adopted one. A local first-open
+  /// mark would have meant storing a new date that no existing install has —
+  /// every reader already on the app would have started a fresh window the day
+  /// they updated — and it would reset on reinstall, handing the same reader
+  /// the same week again.
+  ///
+  /// The signup day COUNTS, unlike the `oncePerDay` window which starts at day
+  /// one. That rule is not arbitrary there: day zero already fired its own
+  /// habit popup, so a second one the same evening would be two. Nothing fires
+  /// here, and the day somebody arrives is the day an introductory offer is
+  /// worth the most. So the window is days 0..[windowDays] — the same END date
+  /// as the other mode, one extra day at the front.
+  ///
+  /// Null [accountCreatedAt] leaves the window OPEN rather than shut: the
+  /// profile not being loaded is our problem, not the reader's, and the caller
+  /// already refuses to show anything to an account it cannot read.
   ///
   /// A gap of 0 really does mean every resume; the guard against a torn
   /// double-`resumed` is the caller's `_busy` flag, not this arithmetic.
-  Future<bool> canShowEveryOpen({int minGapMinutes = defaultMinGapMinutes}) async {
+  Future<bool> canShowEveryOpen({
+    int minGapMinutes = defaultMinGapMinutes,
+    DateTime? accountCreatedAt,
+    int windowDays = defaultWindowDays,
+  }) async {
+    if (accountCreatedAt != null) {
+      final now = DateTime.now();
+      final created = accountCreatedAt.toLocal();
+      final elapsedDays = DateTime(now.year, now.month, now.day)
+          .difference(DateTime(created.year, created.month, created.day))
+          .inDays;
+      // Âm nghĩa là đồng hồ máy chạy lùi, hoặc ngày tạo ở tương lai — coi như
+      // vẫn trong cửa sổ, chứ đừng khoá popup vì một cái đồng hồ lệch.
+      if (elapsedDays > windowDays) return false;
+    }
+
     final lastShownMs = await _local.getGiftLastShownEpochMs();
     // Never shown on this install, so nothing to wait out. Note this reads the
     // epoch mark alone: an install that only ever ran the oncePerDay mode has a
@@ -114,7 +150,8 @@ class GiftPopupSchedule {
 /// the matching trigger is switched off, profile not loaded yet, account is
 /// premium, or the schedule says this slot is already spent — which means
 /// "already shown today, or outside days 1–7" in `oncePerDay` mode, and
-/// "shown less than `minGapMinutes` ago" in `everyOpen` mode.
+/// "shown less than `minGapMinutes` ago, or past the signup window" in
+/// `everyOpen` mode.
 Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEvent}) async {
   final iapCubit = AppDI.injector.get<IapCubit>();
   final campaign = iapCubit.resolvedPaywallConfig.giftCampaign;
@@ -143,7 +180,13 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
   final canShow = dayZeroEvent
       ? await schedule.canShowDayZero()
       : everyOpen
-          ? await schedule.canShowEveryOpen(minGapMinutes: campaign.minGapMinutes)
+          ? await schedule.canShowEveryOpen(
+              minGapMinutes: campaign.minGapMinutes,
+              // Cửa sổ của chế độ này neo vào ngày tạo tài khoản — `user` ở
+              // trên đã được kiểm là đọc được rồi.
+              accountCreatedAt: user.createdAt,
+              windowDays: campaign.windowDays,
+            )
           : await schedule.canShowDailyOpen(windowDays: campaign.windowDays);
   if (!canShow || !context.mounted) return;
 
