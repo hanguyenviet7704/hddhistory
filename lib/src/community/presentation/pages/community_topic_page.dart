@@ -581,10 +581,10 @@ class _TopicHeaderCard extends StatelessWidget {
                             // "Yêu thích" row this screen is opened from — see
                             // `CommunityFavouriteRoomRow`.
                             isLive
-                                ? '${l10n.topicDiscussions(count: room.postsThisWeek)} · '
+                                ? '${l10n.topicDiscussions(count: room.discussions)} · '
                                       '${l10n.topicPostsToday(count: room.postsToday)}'
                                 : l10n.topicDiscussions(
-                                    count: room.postsThisWeek,
+                                    count: room.discussions,
                                   ),
                             style: AppStyle.textBold12.copyWith(
                               color: AppCustomColor.textSecondary,

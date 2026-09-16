@@ -2,6 +2,7 @@ library;
 
 //* Package imports
 //* Single project import
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
@@ -69,6 +70,7 @@ part 'presentation/cubits/course_roadmap/course_roadmap_cubit.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/change_course_page.dart';
+part 'presentation/pages/collection_courses_page.dart';
 part 'presentation/pages/course_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 part 'presentation/pages/lesson_list_page.dart';
@@ -77,8 +79,8 @@ part 'presentation/pages/skillset_courses_page.dart';
 part 'presentation/helpers/explore_tracking.dart';
 part 'presentation/helpers/keypoint_resume.dart';
 part 'presentation/widgets/common/course_tracking_data.dart';
-part 'presentation/widgets/course/resume_chip.dart';
 part 'presentation/widgets/course/all_course_tab.dart';
+part 'presentation/widgets/course/resume_chip.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';
 part 'presentation/widgets/course/course_category_chip.dart';

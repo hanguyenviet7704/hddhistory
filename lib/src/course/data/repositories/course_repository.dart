@@ -105,9 +105,9 @@ class CourseRepository with RestfulRequestHandlerMixin implements ICourseReposit
   }
 
   @override
-  TaskEither<AppException, List<ExploreSectionEntity>> getExploreSections(int seed) {
+  TaskEither<AppException, List<ExploreSectionEntity>> getExploreSections() {
     return callApiWithTransform<ExploreResponseModel, List<ExploreSectionEntity>>(
-      apiCall: () => _api.getExploreSections(seed),
+      apiCall: () => _api.getExploreSections(),
       // A section kind this build cannot draw, or one that came back empty, is
       // dropped here rather than in every widget that walks the list.
       transform: (model) => model.sections

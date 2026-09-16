@@ -395,7 +395,7 @@ class _PaletteDots extends StatelessWidget {
 ///
 /// Disc sizes and the brand fills come from the design's own share row
 /// (`_Keypoint Tap and Share` → `shareTargets`), scaled to this sheet's
-/// four-up row.
+/// five-up row.
 class _ShareTargetRow extends StatelessWidget {
   const _ShareTargetRow({
     required this.linkCopied,
@@ -420,64 +420,75 @@ class _ShareTargetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n.library;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // First in the row because it is the only target that keeps the reader
-        // inside MeUp — the design puts it there for the same reason.
-        ShareTargetButton(
-          key: const Key('course-share-confession'),
-          label: context.l10n.community.title,
-          icon: Icons.people_alt_rounded,
-          iconColor: AppCustomColor.textWhite,
-          background: const BoxDecoration(
-            color: AppCustomColor.brandPrimary,
-            shape: BoxShape.circle,
+    // Năm đích ở bề rộng đầy đủ là 400.w, rộng hơn lòng sheet (375 - 40 padding),
+    // nên ô cuối bị cắt và không có cách nào chạm tới. Cuộn ngang thay vì thu nhỏ
+    // nút: `minWidth` giữ hàng canh giữa như cũ khi màn đủ chỗ.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // First in the row because it is the only target that keeps the reader
+              // inside MeUp — the design puts it there for the same reason.
+              ShareTargetButton(
+                key: const Key('course-share-confession'),
+                label: context.l10n.community.title,
+                icon: Icons.people_alt_rounded,
+                iconColor: AppCustomColor.textWhite,
+                background: const BoxDecoration(
+                  color: AppCustomColor.brandPrimary,
+                  shape: BoxShape.circle,
+                ),
+                onTap: onConfession,
+              ),
+              ShareTargetButton(
+                key: const Key('course-share-copy'),
+                // Nhãn NGẮN, không dùng `shareLinkCopied` ("Đã chép liên kết.") — nhãn ở
+                // đây nằm dưới một icon 56 rộng cạnh ba ô khác, câu dài sẽ xuống dòng và
+                // đẩy lệch cả hàng.
+                label: linkCopied ? l10n.shareLinkCopiedShort : l10n.shareCopyLink,
+                // Icon đổi theo, không chỉ đổi chữ: cái tick là thứ đọc được trong một
+                // phần mười giây, còn chữ thì phải đọc.
+                icon: linkCopied ? Icons.check_rounded : Icons.link_rounded,
+                iconColor: linkCopied ? AppCustomColor.paywallPromoAppliedText : AppCustomColor.kpOptionLabel,
+                background: BoxDecoration(
+                  color: linkCopied ? AppCustomColor.paywallPromoAppliedBg : AppCustomColor.backgroundWhite,
+                  shape: BoxShape.circle,
+                ),
+                onTap: onCopyLink,
+              ),
+              ShareTargetButton(
+                key: const Key('course-share-instagram'),
+                label: l10n.shareInstagramStory,
+                icon: Icons.camera_alt_rounded,
+                iconColor: AppCustomColor.textWhite,
+                background: ShareTargetButton.instagramDisc,
+                onTap: onInstagram,
+              ),
+              ShareTargetButton(
+                key: const Key('course-share-facebook'),
+                label: l10n.shareFacebookStory,
+                icon: Icons.facebook_rounded,
+                iconColor: AppCustomColor.textWhite,
+                background: ShareTargetButton.facebookDisc,
+                onTap: onFacebook,
+              ),
+              ShareTargetButton(
+                key: const Key('course-share-more'),
+                label: l10n.shareMore,
+                icon: Icons.more_horiz_rounded,
+                iconColor: AppCustomColor.kpOptionLabel,
+                background: ShareTargetButton.plainDisc,
+                onTap: onMore,
+              ),
+            ],
           ),
-          onTap: onConfession,
         ),
-        ShareTargetButton(
-          key: const Key('course-share-copy'),
-          // Nhãn NGẮN, không dùng `shareLinkCopied` ("Đã chép liên kết.") — nhãn ở
-          // đây nằm dưới một icon 56 rộng cạnh ba ô khác, câu dài sẽ xuống dòng và
-          // đẩy lệch cả hàng.
-          label: linkCopied ? l10n.shareLinkCopiedShort : l10n.shareCopyLink,
-          // Icon đổi theo, không chỉ đổi chữ: cái tick là thứ đọc được trong một
-          // phần mười giây, còn chữ thì phải đọc.
-          icon: linkCopied ? Icons.check_rounded : Icons.link_rounded,
-          iconColor: linkCopied ? AppCustomColor.paywallPromoAppliedText : AppCustomColor.kpOptionLabel,
-          background: BoxDecoration(
-            color: linkCopied ? AppCustomColor.paywallPromoAppliedBg : AppCustomColor.backgroundWhite,
-            shape: BoxShape.circle,
-          ),
-          onTap: onCopyLink,
-        ),
-        ShareTargetButton(
-          key: const Key('course-share-instagram'),
-          label: l10n.shareInstagramStory,
-          icon: Icons.camera_alt_rounded,
-          iconColor: AppCustomColor.textWhite,
-          background: ShareTargetButton.instagramDisc,
-          onTap: onInstagram,
-        ),
-        ShareTargetButton(
-          key: const Key('course-share-facebook'),
-          label: l10n.shareFacebookStory,
-          icon: Icons.facebook_rounded,
-          iconColor: AppCustomColor.textWhite,
-          background: ShareTargetButton.facebookDisc,
-          onTap: onFacebook,
-        ),
-        ShareTargetButton(
-          key: const Key('course-share-more'),
-          label: l10n.shareMore,
-          icon: Icons.more_horiz_rounded,
-          iconColor: AppCustomColor.kpOptionLabel,
-          background: ShareTargetButton.plainDisc,
-          onTap: onMore,
-        ),
-      ],
+      ),
     );
   }
 }

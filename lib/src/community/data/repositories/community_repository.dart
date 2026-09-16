@@ -572,6 +572,7 @@ extension CommunityTopicModelX on CommunityTopicModel {
     followers: followers,
     postsThisWeek: postsThisWeek,
     postsToday: postsToday,
+    discussions: discussions,
     isFollowing: isFollowing,
   );
 }

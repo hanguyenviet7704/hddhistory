@@ -146,6 +146,17 @@ abstract class CommunityTopicEntity with _$CommunityTopicEntity {
     /// reads 0 against an API build that predates it, which the cards render as
     /// "no news today" rather than as a wrong number.
     @Default(0) int postsToday,
+
+    /// Tổng lượt thảo luận mọi thời: bài viết cộng bình luận của chúng.
+    ///
+    /// Đây là con số thẻ phòng hiện. Trước nó dùng [postsThisWeek], mà đó là bộ
+    /// đếm tuần bị server quét định kỳ — nên một phòng có bài và bình luận từ
+    /// tuần trước vẫn hiện "0 lượt thảo luận", đọc ra là phòng chết.
+    ///
+    /// Đọc 0 với bản API cũ hơn nó. Thẻ hiện "0 lượt thảo luận", đúng như một
+    /// phòng chưa có gì — sai, nhưng sai đúng bằng cái nó đang sai hôm nay, và
+    /// tự khỏi khi API lên.
+    @Default(0) int discussions,
     @Default(false) bool isFollowing,
   }) = _CommunityTopicEntity;
 }

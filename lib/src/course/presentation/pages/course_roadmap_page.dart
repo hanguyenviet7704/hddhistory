@@ -14,7 +14,23 @@ class CourseRoadmapPage extends StatefulWidget {
 /// (re-open the root-pushed page over the Profile tab), the rest fall through
 /// to the Explore screen.
 @visibleForTesting
+/// The "Tiếp tục học" chip floats on EVERY tab, so it needs one source per tab
+/// rather than a single `resume_chip`: back has to land the reader on the tab
+/// they were standing on, and that is exactly what these groups already encode.
+/// Kept distinct from the surfaces they sit beside so the chip's own conversion
+/// stays measurable.
+/// A course opened from a collection's full list, which is a drill-down FROM
+/// the Explore tab — so back belongs in the Explore group with it.
+const String kRoadmapSourceCollectionList = 'collection_list';
+
+const String kRoadmapSourceResumeChipHome = 'resume_chip_home';
+const String kRoadmapSourceResumeChipExplore = 'resume_chip_explore';
+const String kRoadmapSourceResumeChipLibrary = 'resume_chip_library';
+const String kRoadmapSourceResumeChipHabit = 'resume_chip_habit';
+
 const roadmapExploreSources = {
+  kRoadmapSourceCollectionList,
+  kRoadmapSourceResumeChipExplore,
   'course_selection',
   'my_courses',
   'skillset_courses',
@@ -34,6 +50,7 @@ const roadmapExploreSources = {
 /// That is exactly how 'home_new_today' shipped broken.
 @visibleForTesting
 const roadmapHomeSources = {
+  kRoadmapSourceResumeChipHome,
   'home_continue_learning',
   'home_recommended',
   'home_new_today',
@@ -52,7 +69,7 @@ const roadmapHomeSources = {
 /// the sheet would mean carrying the [UserHabitEntity] through the roadmap, and
 /// the tracker row it was opened from is right there on the tab.
 @visibleForTesting
-const roadmapHabitSources = {'habit_detail'};
+const roadmapHabitSources = {kRoadmapSourceResumeChipHabit, 'habit_detail'};
 
 /// Roadmap source for a course opened from the Library tab's "In progress"
 /// carousel. Named rather than a bare string because both sides have to agree:
@@ -88,7 +105,11 @@ const String kRoadmapSourceCommunityPost = 'community_post';
 /// Roadmap-source values that mean the user opened this roadmap from the Library
 /// tab. Back returns to that tab (see `_backFromRoadmap`).
 @visibleForTesting
-const roadmapLibrarySources = {kRoadmapSourceLibrary, kRoadmapSourceLibraryHistory};
+const roadmapLibrarySources = {
+  kRoadmapSourceResumeChipLibrary,
+  kRoadmapSourceLibrary,
+  kRoadmapSourceLibraryHistory,
+};
 
 /// Whether the roadmap renders its back button for [source]. Kept pure and
 /// top-level so the source→back-button contract is testable without standing up
@@ -229,9 +250,23 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     // Grid / search live on the Explore tab — return to it. It used to land on
     // the current skillset's section; the tab has no skillset sections now, so
     // the destination is simply the tab.
+    final page = context.read<PageCubit>();
     AppDI.injector.get<CourseCubit>().setAllCourseSource('roadmap_back');
-    context.read<PageCubit>().setCurrentIndex(3);
+    page.setCurrentIndex(3);
     const CourseRoute().go(context);
+    // Đặt lại tên route, như MỌI nhánh khác của hàm này đã làm.
+    //
+    // Nhánh này là nhánh duy nhất quên, và nó im lặng suốt một thời gian dài vì
+    // thứ duy nhất đọc tên route hồi đó là thanh nav — mà `courseRoadmap` lại
+    // nằm trong `primaryRouteNames`, nên nav vẫn hiện và không ai thấy gì sai.
+    // Con trỏ thì kẹt ở `courseRoadmap` mãi. Chip "Tiếp tục học" là thứ đầu
+    // tiên đọc tên route trên đường này, và nó tự ẩn khi thấy `courseRoadmap`
+    // — nên triệu chứng hiện ra là chip biến mất sau khi quay lại Khám phá,
+    // không phải là một lỗi điều hướng trông giống lỗi điều hướng.
+    //
+    // `.go()` sang gốc một nhánh KHÔNG phát `didPush`/`didPop`, nên observer
+    // không bao giờ tự sửa hộ: nơi đến phải tự khai tên mình.
+    page.setCurrentRouteName(RouteNamed.course);
   }
 
   void _trackRoadmapQuickLearningClick(String startType) {

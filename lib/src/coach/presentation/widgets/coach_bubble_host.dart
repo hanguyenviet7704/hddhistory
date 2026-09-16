@@ -48,16 +48,22 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
   /// lần hiện khác, đáng đếm lại.
   String? _viewed;
 
-  /// The teaser already said its piece — `<door>|<text>`.
+  /// Where the teaser last said its piece — `<route>|<text>`.
   ///
-  /// Keyed on the DOOR, not the route name: Home, Khám phá and Thư viện share
-  /// one door, and `currentRouteName` is re-anchored by overlays (see the note
-  /// on [_sheetResult] below), so a route-keyed guard would let the nudge start
-  /// over every time the name wobbled — which is the flicker this removes.
+  /// The LAST screen, not a set of them: the nudge gets three seconds on each
+  /// screen the reader walks onto, and none at all while they stay (owner,
+  /// 2026-09-16: "hết 3 giây tắt rồi thì sang màn khác vẫn hiển thị tiếp").
+  /// Home, Khám phá and Thư viện are three screens here even though they share
+  /// one Coach door.
+  ///
+  /// Comparing against the last screen rather than remembering every screen is
+  /// what keeps it out of the flicker it replaced: `currentRouteName` is
+  /// re-anchored by overlays (see the note on [_sheetResult]), and a wobble that
+  /// lands back on the SAME name leaves this key unchanged, so nothing
+  /// re-fires. Only walking to a different screen does.
   ///
   /// The text is part of the key on purpose: a teaser that CHANGED is new
-  /// information and has earned its three seconds. The same sentence never gets
-  /// a second showing.
+  /// information and has earned its three seconds where it stands.
   String? _teaserSaid;
 
   /// Which door the current tab is, or null where the Coach does not belong.
@@ -159,11 +165,11 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
           // dot and teaser go stale the moment a commitment is answered
           // anywhere else.
           //
-          // `_teaserSaid` is deliberately NOT reset here. Resetting it would
-          // hand the same sentence another three seconds every time the reader
-          // stepped into a sub-route and back, which is the flicker in slow
-          // motion. A teaser that genuinely changed carries a different key and
-          // shows on its own.
+          // `_teaserSaid` is deliberately NOT cleared here. It names the screen
+          // the nudge was last said on, and a screen with no Coach at all is not
+          // a place it was said — clearing it would hand the same sentence
+          // another three seconds the moment the reader stepped back out of a
+          // sub-route onto the tab they came from.
           _asked = null;
           _viewed = null;
 
@@ -183,7 +189,7 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
             // ②A quotes the reader's own commitment; ④ has no words of
             // theirs to quote yet and says "Tình huống ba tuần trước…".
             final teaser = state.teaser ?? coachTeaser(context, state.teaserKey);
-            final teaserKey = teaser == null ? null : '${entry.raw}|$teaser';
+            final teaserKey = teaser == null ? null : '$routeName|$teaser';
             final showTeaser = teaserKey != null && _teaserSaid != teaserKey;
 
             return CoachBubble(

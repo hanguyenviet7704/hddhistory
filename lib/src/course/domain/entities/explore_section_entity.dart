@@ -6,7 +6,6 @@ abstract class ExploreSectionEntity with _$ExploreSectionEntity {
     @Default(ExploreSectionType.unknown) ExploreSectionType type,
     @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
-    @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default([]) List<CourseEntity> courses,
     CourseEntity? sourceCourse,
   }) = _ExploreSectionEntity;

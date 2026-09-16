@@ -39,3 +39,4 @@ exploreBecauseYouTitle: 因为你学完了
 exploreLearnerCount(param=count): ${count} 人在学
 exploreRetry: 重新加载
 exploreLoadFailed: 暂时无法加载
+resumeChipLabel: 继续学习

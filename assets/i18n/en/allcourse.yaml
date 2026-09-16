@@ -40,3 +40,4 @@ exploreBecauseYouTitle: Because you finished
 exploreLearnerCount(param=count): ${count} learners
 exploreRetry: Try again
 exploreLoadFailed: Couldn't load this yet
+resumeChipLabel: Keep going

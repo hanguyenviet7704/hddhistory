@@ -30,6 +30,31 @@ void main() {
       });
     }
 
+    test('a course opened from a collection list can get back to Explore', () {
+      // The collection list is a drill-down FROM Explore and the roadmap is its
+      // branch root, so an unregistered source would strand the reader there.
+      expect(roadmapShowsBackButton(kRoadmapSourceCollectionList), isTrue);
+      expect(roadmapExploreSources.contains(kRoadmapSourceCollectionList), isTrue);
+    });
+
+    // The "Tiếp tục học" chip floats above the nav bar on every tab, so it has
+    // one source per tab. This is the case that shipped broken once: a bare
+    // 'resume_chip' drew no back button and left the reader stuck on the
+    // roadmap (owner, 2026-09-16: "thiếu nút back").
+    const resumeChipSourcesByTab = {
+      kRoadmapSourceResumeChipHome: roadmapHomeSources,
+      kRoadmapSourceResumeChipExplore: roadmapExploreSources,
+      kRoadmapSourceResumeChipLibrary: roadmapLibrarySources,
+      kRoadmapSourceResumeChipHabit: roadmapHabitSources,
+    };
+
+    resumeChipSourcesByTab.forEach((source, group) {
+      test('resume chip source "$source" has a back button that returns to its own tab', () {
+        expect(roadmapShowsBackButton(source), isTrue);
+        expect(group.contains(source), isTrue, reason: 'back must return to the tab the chip was tapped on');
+      });
+    });
+
     test('shows a back button for the habit detail rail', () {
       // "Đọc thêm" inside the habit detail sheet pops the sheet and .go()s to
       // the roadmap — the sheet is gone and the roadmap is its branch's root,

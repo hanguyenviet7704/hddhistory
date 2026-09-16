@@ -190,6 +190,55 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
     }
   }
 
+  /// Về Roadmap khoá VÀ đóng trang này.
+  ///
+  /// `openCourseRoadmapFromCoach` chỉ `.go()` vào một route nằm TRONG
+  /// StatefulShellRoute rồi trả `true` vô điều kiện. Trang này thì được push
+  /// lên ROOT navigator (xem [push]), tức nằm trên cả shell — `.go()` đổi được
+  /// thứ bên dưới nhưng KHÔNG gỡ được nó, nên người dùng bấm ✕ xong vẫn đứng
+  /// nguyên đây và đọc ra là "bị đá về màn thêm thói quen".
+  ///
+  /// Khác biệt này phụ thuộc hình dạng cây route: với cây phẳng thì `.go()`
+  /// dọn luôn route mệnh lệnh, có shell thì không —
+  /// `test/unit/habit/overlay_survives_go_test.dart` ghim cả hai lại.
+  ///
+  /// Thứ tự giống hệt lối ra bình thường ở cuối [_continue]: đổi cái bên dưới
+  /// trước, pop mình ở frame sau, để cú fade lộ ra đúng đích chứ không loé qua
+  /// deck cũ.
+  bool _leaveForRoadmap(String courseId) {
+    if (courseId.trim().isEmpty) return false;
+    final navContext = AppConfig.instance.context ?? context;
+    if (!navContext.mounted) return false;
+
+    // Giữ navigator TRƯỚC khi điều hướng: sau `.go()` thì cây widget dưới shell
+    // đã đổi, và đi tra lại navigator từ `context` lúc đó là tra trong một cây
+    // vừa bị dựng lại.
+    final navigator = Navigator.of(context);
+    if (!AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId)) {
+      return false;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigator.canPop()) navigator.pop();
+
+      // Giành LẠI tên route sau cú pop.
+      //
+      // `BaseRouterObserver.didPop` chạy đồng bộ ngay trong `pop()` và đặt tên
+      // route thành route NẰM DƯỚI — ở đây là deck bài học (`Lesson`) — nên nó
+      // xoá mất `courseRoadmap` mà `.go()` vừa đặt, và cổng nav tưởng đang ở
+      // màn học toàn màn hình nên ẩn thanh nav đi. Đo được trên máy
+      // 2026-09-10:
+      //   [RouteName] Keypoint Complete -> Course Roadmap | openCourseRoadmapFromCoach
+      //   [RouteName] Course Roadmap    -> Lesson         | BaseRouterObserver.didPop
+      //
+      // Observer không sai: nó mô tả đúng ngăn xếp mệnh lệnh. Chỉ là đích thật
+      // nằm ở nhánh shell BÊN DƯỚI, thứ mà `didPop` không nhìn tới.
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+    });
+
+    return true;
+  }
+
   Future<void> _continue() async {
     AppHaptic.select();
     final adopted = widget.habits.where((habit) => _adoptedRowFor(habit) != null).toList();
@@ -217,20 +266,18 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
         if (!mounted) return;
         // ✕ — out of the lesson flow, for the course Roadmap.
         if (choice == CoachInviteChoice.exit) {
-          final courseId = widget.sourceCourseId ?? '';
-          final navContext = AppConfig.instance.context ?? context;
-          if (courseId.isNotEmpty &&
-              navContext.mounted &&
-              AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId)) {
-            return;
-          }
+          if (_leaveForRoadmap(widget.sourceCourseId ?? '')) return;
           // No course to go back to (a generated lesson, a catalogue gap): fall
           // through to the ordinary exit rather than stranding them here.
           break;
         }
         if (choice != CoachInviteChoice.practice) break;
 
-        final courseId = await showCoachSheet(
+        // Cả OUTCOME, không phải mỗi courseId. `showCoachSheet` vứt bỏ
+        // `toRoadmap`, nên nút cuối phiên "Đóng · về Roadmap" ở đây trả về y
+        // như một cú đóng sheet bình thường — và vòng lặp mời lại đúng cái họ
+        // vừa làm xong (owner on-device 2026-09-09).
+        final outcome = await showCoachSheetForKeypoint(
           context,
           entry: CoachEntry.lesson,
           lessonId: widget.sourceLessonId,
@@ -239,18 +286,23 @@ class _HabitSuggestPageState extends State<HabitSuggestPage> {
           // the server resolves the row from it (`userHabitRowFor`), and a row
           // id handed over there matches nothing.
           habitId: _justAdded.length == 1 ? _justAdded.single : null,
+          // Cửa này không đi ra từ một keypoint, nên không có "bài kế tiếp" để
+          // mời; chỉ hứa "về Roadmap" khi thật sự có khoá để về.
+          hasNextKeypoint: false,
+          hasRoadmap: (widget.sourceCourseId ?? '').isNotEmpty,
         );
         if (!mounted) return;
         // The course the Coach offered. This return value used to be thrown
         // away, so "Học ngay" here closed the sheet and did nothing — and with
         // the loop below it would have closed and asked again for ever.
-        if (courseId != null && courseId.isNotEmpty) {
-          final navContext = AppConfig.instance.context ?? context;
-          if (navContext.mounted &&
-              AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId)) {
-            return;
-          }
-        }
+        final leaveFor = outcome.courseId?.trim().isNotEmpty ?? false
+            ? outcome.courseId
+            : (outcome.toRoadmap ? widget.sourceCourseId : null);
+        if (_leaveForRoadmap(leaveFor ?? '')) return;
+        // Họ xin đi mà không đi được, hoặc đã nói hết chuyện: cả hai đều là một
+        // quyết định, và mời lại là bắt làm lại từ đầu. Ra khỏi vòng lặp và đi
+        // tiếp bằng đường sẵn có phía dưới.
+        if (outcome.toRoadmap || outcome.ended) break;
         // Simply closed — round the loop and offer it again.
       }
     }

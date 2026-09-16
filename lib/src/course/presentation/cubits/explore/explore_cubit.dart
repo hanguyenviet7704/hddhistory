@@ -4,42 +4,60 @@ part of '../../../course.dart';
 class ExploreCubit extends Cubit<ExploreState> with CubitUseCaseHandlerMixin<ExploreState> {
   final GetExploreSectionsUseCase _getExploreSections;
 
-  ExploreCubit(this._getExploreSections) : super(ExploreState(seed: _newSeed()));
+  ExploreCubit(this._getExploreSections) : super(const ExploreState());
+
+  final Random _random = Random();
 
   Future<void>? _inFlight;
 
-  /// A fresh seed per cold start. `millisecondsSinceEpoch` is plenty — the only
-  /// requirement is that two launches differ, not that it be unguessable.
-  static int _newSeed() => DateTime.now().millisecondsSinceEpoch & 0x7fffffff;
-
-  /// Loads the tab if it has nothing to show, and does nothing otherwise.
+  /// Loads the tab if it has nothing to show, and reshuffles if it has.
   ///
-  /// Wired from the route listener so re-entering the tab recovers from a
-  /// failed first load, without refetching a tab that is already populated —
-  /// the same self-healing contract as `HomeCubit.ensureHomeDataLoaded`.
+  /// Called on every entry to the tab, which is what makes the strips come back
+  /// in a different order each visit ("random thứ tự mỗi lần user vào"). The
+  /// reshuffle is local, so re-entering costs nothing — doing it server-side
+  /// would mean a fetch per visit for an effect that is purely presentational.
   Future<void> ensureExploreDataLoaded() {
     final inFlight = _inFlight;
     if (inFlight != null) return inFlight;
     if (state.status == ExploreStatus.success && state.sections.isNotEmpty) {
+      reshuffle();
       return Future.value();
     }
     return refresh();
   }
 
   /// Fetches unconditionally — pull to refresh, and the retry button on the
-  /// failure state. Keeps the session's seed so the arrangement does not jump
-  /// while the reader is looking at it.
+  /// failure state.
   Future<void> refresh() {
     final future = _load().whenComplete(() => _inFlight = null);
     _inFlight = future;
     return future;
   }
 
+  /// Reorders the courses inside each strip.
+  ///
+  /// The weekly-popular strip is left alone: its order IS its content (#1 to
+  /// #3), so shuffling it would turn a ranking into a lie.
+  void reshuffle() {
+    if (state.sections.isEmpty) return;
+    emit(state.copyWith(sections: _shuffled(state.sections)));
+  }
+
+  List<ExploreSectionEntity> _shuffled(List<ExploreSectionEntity> sections) {
+    return [
+      for (final section in sections)
+        if (section.type == ExploreSectionType.weeklyTop)
+          section
+        else
+          section.copyWith(courses: [...section.courses]..shuffle(_random)),
+    ];
+  }
+
   Future<void> _load() async {
     emit(state.copyWith(status: ExploreStatus.loading, errorMessage: null));
 
     await runUseCaseList<ExploreSectionEntity>(
-      usecase: () => _getExploreSections(state.seed),
+      usecase: () => _getExploreSections(unit),
       onFailure: (errorMessage) => emit(
         state.copyWith(
           status: ExploreStatus.failure,
@@ -47,7 +65,7 @@ class ExploreCubit extends Cubit<ExploreState> with CubitUseCaseHandlerMixin<Exp
         ),
       ),
       onSuccess: (sections) => emit(
-        state.copyWith(status: ExploreStatus.success, sections: sections),
+        state.copyWith(status: ExploreStatus.success, sections: _shuffled(sections)),
       ),
     );
   }

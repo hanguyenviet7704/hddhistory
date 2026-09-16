@@ -106,6 +106,7 @@ abstract class CommunityTopicModel with _$CommunityTopicModel {
     @Default(0) int followers,
     @Default(0) int postsThisWeek,
     @Default(0) int postsToday,
+    @Default(0) int discussions,
     @Default(false) bool isFollowing,
   }) = _CommunityTopicModel;
 

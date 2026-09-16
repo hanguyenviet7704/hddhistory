@@ -69,7 +69,7 @@ class CommunityRoomTile extends StatelessWidget {
             // in a grid cell this narrow it competed with the number that
             // actually tells the reader whether the room is worth opening.
             AppText(
-              l10n.topicDiscussions(count: topic.postsThisWeek),
+              l10n.topicDiscussions(count: topic.discussions),
               style: AppStyle.textBold10.copyWith(
                 color: AppCustomColor.streakTextMuted,
               ),
@@ -163,10 +163,10 @@ class CommunityFavouriteRoomRow extends StatelessWidget {
                           // a quiet room drops the second half and keeps the
                           // number that is still worth reading.
                           isLive
-                              ? '${l10n.topicDiscussions(count: topic.postsThisWeek)} · '
+                              ? '${l10n.topicDiscussions(count: topic.discussions)} · '
                                     '${l10n.topicPostsToday(count: topic.postsToday)}'
                               : l10n.topicDiscussions(
-                                  count: topic.postsThisWeek,
+                                  count: topic.discussions,
                                 ),
                           style: AppStyle.textBold12.copyWith(
                             color: isLive

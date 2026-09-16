@@ -39,3 +39,4 @@ exploreBecauseYouTitle: 이 코스를 끝냈으니
 exploreLearnerCount(param=count): ${count}명이 학습 중
 exploreRetry: 다시 불러오기
 exploreLoadFailed: 아직 불러오지 못했어요
+resumeChipLabel: 이어서 학습하기

@@ -27,7 +27,6 @@ abstract class ExploreSectionModel with _$ExploreSectionModel {
     ExploreSectionType type,
     @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
-    @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default([]) List<CourseModel> courses,
 
     /// `becauseYou` only: the finished course the suggestions hang off.
@@ -51,7 +50,6 @@ extension ExploreSectionModelExtension on ExploreSectionModel {
     type: type,
     id: id,
     title: title,
-    description: description,
     courses: courses.map((c) => c.toEntity()).toList(),
     sourceCourse: sourceCourse?.toEntity(),
   );
