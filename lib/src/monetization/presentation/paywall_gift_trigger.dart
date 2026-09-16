@@ -162,19 +162,20 @@ Future<void> maybeShowGiftPopup(BuildContext context, {required bool dayZeroEven
 
   // The sheet's gift_trigger vocabulary — the bool is the trigger, so both
   // gift events are reported here where it is in scope, not inside the popup
-  // (which never learns why it was shown). The two app-open modes report
-  // separately on purpose: one funnel mixing "once a day for a week" with
-  // "every open forever" can't tell a better offer from a louder one.
-  final giftTrigger = dayZeroEvent
-      ? 'add_first_habit'
-      : everyOpen
-          ? 'app_every_open'
-          : 'app_first_open_d1_d7';
-  PaywallTracking.giftScrView(trigger: giftTrigger);
+  // (which never learns why it was shown).
+  //
+  // Both app-open modes report as `new_user_offer`: the "New" tab renamed this
+  // value outright ("param trước tên là app_first_open_d1_d7") and gives the
+  // app-open door a single name. Which of the two frequency modes was running
+  // rides along as `gift_mode` so the funnel can still tell a better offer from
+  // a louder one — see [PaywallTracking.giftScrView].
+  final giftTrigger = dayZeroEvent ? 'add_first_habit' : 'new_user_offer';
+  final giftMode = dayZeroEvent ? null : (everyOpen ? 'every_open' : 'once_per_day');
+  PaywallTracking.giftScrView(trigger: giftTrigger, mode: giftMode);
 
   final opened = await PaywallGiftPopup.show(context);
   if (!opened || !context.mounted) return;
-  PaywallTracking.giftOpenClick(trigger: giftTrigger);
+  PaywallTracking.giftOpenClick(trigger: giftTrigger, mode: giftMode);
 
   iapCubit.forcePaywallVariant(PaywallProductVariant.compact);
   // The paywall this opens inherits the trigger as its `source`: no entry

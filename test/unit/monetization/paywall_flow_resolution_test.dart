@@ -47,49 +47,70 @@ void main() {
   group('resolvePremiumTrackingSource', () {
     final trackingService = AppTrackingService(NoOpTrackingService());
 
-    // Values aligned to the tracking sheet's paywall `source` vocabulary —
-    // tab "new" (2026-08) renamed profile_banner → upgrade and theme →
-    // theme_locked, and gave the quota locked card its own keypoint_locked.
-    test('returns system for automatic paywall entry', () {
+    // Values aligned to the tracking sheet's paywall `source` vocabulary — the
+    // "New" tab's red cells (2026-09-16). That pass split `upgrade` into
+    // settings_premium_banner / home_premium_button, folded keypoint_locked
+    // back into roadmap, named lesson creation course_create, and collapsed the
+    // guest/system pair on the auto-open paywall into one auto_open.
+    test('reports the app-initiated paywall as auto_open', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.autoOpen),
-        'system',
+        'auto_open',
       );
-    });
-
-    test('returns roadmap for roadmap paywall entry', () {
+      // The post-onboarding paywall is the same app-initiated open, one screen
+      // earlier.
       expect(
-        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.courseRoadmap),
-        'roadmap',
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.onboarding),
+        'auto_open',
       );
     });
 
-    test('returns habit_slot for habit paywall entry', () {
+    test('puts every course-content gate on roadmap', () {
+      for (final entry in [
+        PaywallEntryPoint.courseRoadmap,
+        PaywallEntryPoint.inLesson,
+        // The quota locked card lost its own value in the red cells.
+        PaywallEntryPoint.keypointLocked,
+      ]) {
+        expect(trackingService.resolvePremiumTrackingSource(entry), 'roadmap');
+      }
+    });
+
+    /// Kept deliberately outside the sheet's six (owner, 2026-09-16): a real,
+    /// distinct door, and the Habit tab already uses this word.
+    test('keeps habit_slot for the habit paywall entry', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.habit),
         'habit_slot',
       );
     });
 
-    test('maps profile / settingPre entries to upgrade', () {
+    /// The split the sheet's own note asks for: "2 event này tách từ 1 event
+    /// ban đầu (upgrade)". Reporting both doors as one value again would undo
+    /// the only reason the value was split.
+    test('splits the old upgrade value into its two doors', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.profile),
-        'upgrade',
+        'settings_premium_banner',
       );
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.settingPre),
-        'upgrade',
+        'settings_premium_banner',
+      );
+      expect(
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.home),
+        'home_premium_button',
       );
     });
 
-    test('maps the theme and quota locked-card entries to their locked names', () {
+    test('maps the theme gate and lesson creation to their own names', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.theme),
         'theme_locked',
       );
       expect(
-        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.keypointLocked),
-        'keypoint_locked',
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.learningImport),
+        'course_create',
       );
     });
 

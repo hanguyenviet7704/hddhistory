@@ -32,12 +32,21 @@ class PaywallTracking {
   }
 
   //* Special gift popup ("A special gift for you!")
-  static void giftScrView({required String trigger}) {
-    track(TrackingKey.paywallGiftScrView, parameters: {'gift_trigger': trigger});
+  /// [mode] rides alongside as `gift_mode`, and only for the app-open trigger.
+  ///
+  /// The sheet's `gift_trigger` has ONE value for app-open (`new_user_offer`)
+  /// while the popup has two frequency modes behind it — once a day for a week,
+  /// or every open. Collapsing them into the sheet's value and stopping there
+  /// would leave one funnel that cannot tell a better offer from a louder one,
+  /// so the distinction moves to a second param instead of bending the name the
+  /// sheet asks for (owner, 2026-09-16). Null everywhere else, and the dispatch
+  /// above drops nulls.
+  static void giftScrView({required String trigger, String? mode}) {
+    track(TrackingKey.paywallGiftScrView, parameters: {'gift_trigger': trigger, 'gift_mode': mode});
   }
 
-  static void giftOpenClick({required String trigger}) {
-    track(TrackingKey.paywallGiftOpenClick, parameters: {'gift_trigger': trigger});
+  static void giftOpenClick({required String trigger, String? mode}) {
+    track(TrackingKey.paywallGiftOpenClick, parameters: {'gift_trigger': trigger, 'gift_mode': mode});
   }
 
   //* 33%-off compact sheet

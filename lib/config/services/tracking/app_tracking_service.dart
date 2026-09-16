@@ -278,7 +278,7 @@ final class AppTrackingService extends ITrackingService {
   /// The sheet's `source` value for the paywall currently on screen — the
   /// entry-point mapping below, unless the opener named a source no entry
   /// point covers (the gift popup's `add_first_habit` /
-  /// `app_first_open_d1_d7`).
+  /// `new_user_offer`).
   ///
   /// Public because the events that are NOT routed through this service still
   /// have to agree with it: [PaywallTracking] reports the compact sheet's own
@@ -293,67 +293,55 @@ final class AppTrackingService extends ITrackingService {
     }
   }
 
-  /// Maps the paywall entry point to the sheet's `source` set. The "new" tab
-  /// (2026-08) renamed the values this emits: `profile_banner` → `upgrade`,
-  /// `theme` → `theme_locked`, and the daily-quota locked card now has its own
-  /// `keypoint_locked` instead of riding along as `roadmap`. Entry points the
-  /// sheet doesn't enumerate keep their old values; unmapped falls to `system`.
+  /// Maps the paywall entry point to the sheet's `source` set.
+  ///
+  /// The vocabulary is the "New" tab's red cells (2026-09-16), which rewrote it
+  /// again: the single `upgrade` value SPLIT into `settings_premium_banner` and
+  /// `home_premium_button` (the sheet's own note: "2 event này tách từ 1 event
+  /// ban đầu (upgrade)"), the locked-keypoint card folded back into `roadmap`,
+  /// lesson creation got `course_create`, and the guest/signed-in split on the
+  /// auto-open paywall collapsed into one `auto_open`.
+  ///
+  /// Two entry points stay OUTSIDE the sheet's six on purpose (owner,
+  /// 2026-09-16): the habit-slot gate keeps `habit_slot` — the Habit tab uses
+  /// that word for its own events — and win-back keeps `system`. Both are real,
+  /// distinct doors; folding them into one of the six would report a place the
+  /// reader did not tap.
   @visibleForTesting
   String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
     switch (entryPoint) {
+      // "user bấm upgrade ở bài học bị khoá" — every course-content gate,
+      // including the daily-quota locked card, which no longer has a value of
+      // its own. `keypoint_locked_scr_view` still reports that screen.
       case PaywallEntryPoint.courseRoadmap:
+      case PaywallEntryPoint.inLesson:
+      case PaywallEntryPoint.keypointLocked:
         return 'roadmap';
       case PaywallEntryPoint.habit:
         return 'habit_slot';
+      // "tap vào theme premium / button upgrade / tải ảnh theme"
       case PaywallEntryPoint.theme:
         return 'theme_locked';
-      case PaywallEntryPoint.keypointLocked:
-        return 'keypoint_locked';
       case PaywallEntryPoint.settingPre:
       case PaywallEntryPoint.profile:
-      // The Home header's crown is the same deliberate "I want premium" tap as
-      // the Setting and Profile banners, so it joins their spec source rather
-      // than inventing a value the sheet's set doesn't have. Home opens stay
-      // separable through the `home_premium_click` event.
+        return 'settings_premium_banner';
+      // The Home header's crown used to share the Setting/Profile value; the
+      // new set gives it one of its own, so the two doors are separable in the
+      // funnel without leaning on `home_premium_click`.
       case PaywallEntryPoint.home:
-        return 'upgrade';
-      case PaywallEntryPoint.autoOpen:
-        // The auto-open paywall shown to a brand-new GUEST (anonymous) user is
-        // the spec's `guest` source; the same auto-open for a signed-in user is
-        // `system`.
-        return _isPaywallUserAnonymous() ? 'guest' : 'system';
-      case PaywallEntryPoint.onboarding:
-        // Post-onboarding paywall (admin Onboarding Config toggle) — almost
-        // always a brand-new guest, so it reports like the auto-open shown to
-        // one.
-        return _isPaywallUserAnonymous() ? 'guest' : 'system';
-      case PaywallEntryPoint.inLesson:
-        // Reported as `roadmap`: the spec's source set has no in-lesson value,
-        // and this gate fires on a course keypoint, so it belongs with the other
-        // course-content entry rather than the catch-all `system`.
-        return 'roadmap';
+        return 'home_premium_button';
+      // "bấm nâng cấp khi xem lượt tạo / bấm tạo bài khi hết lượt"
       case PaywallEntryPoint.learningImport:
-        // "Create a lesson" in My lessons. Reported as `system`: the spec's
-        // source set has no value for it, and unlike the roadmap and habit
-        // gates it is not attached to catalogue content.
-        return 'system';
+        return 'course_create';
+      // "set up của hệ thống, tự mở khi user mở vào app". The post-onboarding
+      // paywall is the same app-initiated open, one screen earlier.
+      case PaywallEntryPoint.autoOpen:
+      case PaywallEntryPoint.onboarding:
+        return 'auto_open';
       case PaywallEntryPoint.manageSubscription:
-      // Win-back is app-initiated, like autoOpen — the reader did not ask for
-      // this second sheet, so it belongs with `system`, not with the deliberate
-      // `upgrade` taps.
       case PaywallEntryPoint.winBack:
       case PaywallEntryPoint.other:
         return 'system';
-    }
-  }
-
-  /// Whether the current user is an anonymous guest — used to tag the auto-open
-  /// paywall's source as `guest` vs `system`.
-  bool _isPaywallUserAnonymous() {
-    try {
-      return AppDI.injector.get<UserCubit>().state.user.anonymous;
-    } catch (_) {
-      return false;
     }
   }
 

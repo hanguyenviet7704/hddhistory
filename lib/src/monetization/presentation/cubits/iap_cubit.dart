@@ -195,7 +195,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   /// The sheet's `source` value for a paywall opened by something that is a
   /// MOMENT rather than a place, so no [PaywallEntryPoint] names it: the gift
-  /// popup's two triggers (`add_first_habit`, `app_first_open_d1_d7`).
+  /// popup's two triggers (`add_first_habit`, `new_user_offer`).
   ///
   /// Wins over the entry-point mapping while set, and is cleared by
   /// [setPaywallEntryPoint] / [resetPaywallEntryPoint] (PaywallPage.dispose) —

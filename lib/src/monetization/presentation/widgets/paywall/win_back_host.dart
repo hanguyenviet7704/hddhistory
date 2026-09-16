@@ -52,7 +52,7 @@ class _WinBackHostState extends State<WinBackHost> with WidgetsBindingObserver {
   }
 
   /// The gift popup's `gift_trigger` value for this path, next to
-  /// `add_first_habit` and `app_first_open_d1_d7` in the sheet's vocabulary.
+  /// `add_first_habit` and `new_user_offer` in the sheet's vocabulary.
   /// It also becomes the compact sheet's `source`, the way the other two do.
   static const String _kGiftTrigger = 'paywall_close';
 
