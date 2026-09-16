@@ -26,7 +26,7 @@ const OPEN_FREQUENCY_OPTIONS: {
   {
     value: "everyOpen",
     label: "Mỗi lần mở app",
-    hint: "Mọi user chưa premium, tính từ lần mở app đầu tiên, không giới hạn ngày — không cần đã thêm habit. Chỉ bị chặn bởi giãn cách bên dưới.",
+    hint: "Mọi user chưa premium, không cần đã thêm habit. Đếm từ NGÀY TẠO TÀI KHOẢN và tính cả ngày đó (D0–D<số ngày>), nên user cũ hơn cửa sổ sẽ không thấy nữa. Còn bị chặn bởi giãn cách bên dưới.",
   },
 ];
 
@@ -171,14 +171,14 @@ const GiftCampaignSection: React.FC<GiftCampaignSectionProps> = ({
             max={30}
             value={value.windowDays}
             onChange={(e) => onChange({ ...value, windowDays: e.target.value })}
-            disabled={scheduleDisabled || everyOpen}
+            disabled={scheduleDisabled}
             placeholder="7"
             className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-slate-100 disabled:text-slate-400"
           />
           <p className="text-[11px] text-slate-500 mt-1.5">
             {everyOpen
-              ? 'Không áp dụng cho chế độ "Mỗi lần mở app" — chế độ đó không có cửa sổ ngày và không đếm từ D0.'
-              : "Đếm từ ngày user thêm habit đầu tiên. Để trống thì app dùng mặc định 7 ngày."}
+              ? "Đếm từ ngày tạo tài khoản, TÍNH CẢ ngày đó (D0–D<số ngày>). Ngày kết thúc giống chế độ kia, chỉ thêm một ngày ở đầu — vì hôm user mới vào không có popup nào khác bắn, và đó là lúc lời mời đáng giá nhất. Để trống thì app dùng mặc định 7 ngày."
+              : "Đếm từ ngày user thêm habit đầu tiên, KHÔNG tính ngày đó (D1–D<số ngày>) — hôm ấy popup habit đã bắn rồi. Để trống thì app dùng mặc định 7 ngày."}
           </p>
           {fieldErrors["giftCampaign.windowDays"] && (
             <p className="text-[11px] text-red-600 mt-1">
