@@ -732,12 +732,20 @@ class _TopicChipsSection extends StatelessWidget {
     final skillsets = context.watch<HomeCubit>().state.skillsets;
     if (skillsets.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
+    // Two rows that scroll sideways together, as designed — NOT a Wrap. A Wrap
+    // looks identical against the design's short mock labels and then collapses
+    // into one chip per line against the real ones ("Hiệu suất & Thói quen",
+    // "Giao tiếp hiệu quả"): two of those exceed the screen width, so every chip
+    // gets a line of its own and the row reads as a vertical list.
+    final half = (skillsets.length / 2).ceil();
+    final rows = [skillsets.take(half).toList(), skillsets.skip(half).toList()];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: AppText(
             context.l10n.allcourse.exploreTopicsTitle,
             maxLines: 2,
             style: TextStyle(
@@ -748,16 +756,30 @@ class _TopicChipsSection extends StatelessWidget {
               color: studyThemeOnBg(context, AppCustomColor.textPrimary),
             ),
           ),
-          10.verticalSpace,
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
+        ),
+        10.verticalSpace,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (final skillset in skillsets) _TopicChip(skillset: skillset),
+              for (int r = 0; r < rows.length; r++) ...[
+                if (r > 0) 8.verticalSpace,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int i = 0; i < rows[r].length; i++) ...[
+                      if (i > 0) 8.horizontalSpace,
+                      _TopicChip(skillset: rows[r][i]),
+                    ],
+                  ],
+                ),
+              ],
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -805,21 +827,18 @@ class _TopicChip extends StatelessWidget {
                 ),
                 8.horizontalSpace,
               ],
-              // Constrained so one long topic name cannot push the chip past
-              // the screen edge — Wrap can move a chip to the next run, but it
-              // cannot shrink one that asks to be wider than the viewport.
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 160.w),
-                child: AppText(
-                  skillset.title.text,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: AppFont.mulish,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3A4250),
-                  ),
+              // No width cap: the strip scrolls sideways, so a long topic name
+              // widens the row instead of being squeezed or wrapped. maxLines 1
+              // keeps every chip the same height whatever the name.
+              AppText(
+                skillset.title.text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppFont.mulish,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3A4250),
                 ),
               ),
             ],
@@ -978,11 +997,6 @@ class _BecauseYouRow extends StatelessWidget {
                     ],
                   ],
                 ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20.w,
-                color: AppCustomColor.brandPrimary,
               ),
             ],
           ),
