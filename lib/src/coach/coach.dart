@@ -23,11 +23,13 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:record/record.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
 part 'data/models/coach_model.dart';
 part 'data/datasources/remote/coach_api.dart';
+part 'data/datasources/remote/coach_stream_data_source.dart';
 part 'data/repositories/coach_repository.dart';
 
 //* Domain Layer - Entities, Repositories, Use Cases

@@ -15,6 +15,7 @@ class CoachCubit extends Cubit<CoachState> {
   final ExplainAgainUseCase _explainAgain;
   final SetCoachPersonaUseCase _setPersona;
   final ExitCoachSessionUseCase _exitSession;
+  final CoachStreamDataSource _stream;
 
   CoachCubit(
     this._openSession,
@@ -23,7 +24,53 @@ class CoachCubit extends Cubit<CoachState> {
     this._explainAgain,
     this._setPersona,
     this._exitSession,
+    this._stream,
   ) : super(const CoachState());
+
+  // ---------------------------------------------------------- xem trước
+
+  final List<StreamSubscription<dynamic>> _streamSubs = [];
+
+  /// Mở kênh xem trước và lắng nghe.
+  ///
+  /// Gọi khi mở sheet. Hỏng thì im lặng bỏ qua: cả tầng này là trang trí, và
+  /// một lỗi socket không được phép làm hỏng việc mở hội thoại.
+  void _listenPreview() {
+    if (_streamSubs.isNotEmpty) return;
+
+    try {
+      _stream.connect();
+      _streamSubs
+        ..add(_stream.onStarted().listen((_) => _clearPreview()))
+        ..add(_stream.onEnded().listen((_) {}))
+        ..add(
+          _stream.onChunk().listen((delta) {
+            // Chỉ vẽ khi đang thật sự chờ. Một mẩu tới muộn sau khi đáp REST đã
+            // về sẽ gõ chữ thừa dưới câu trả lời thật.
+            if (!state.typing) return;
+            emit(state.copyWith(streamingText: state.streamingText + delta));
+          }),
+        );
+    } catch (error) {
+      LogDev.warning('[CoachStream] không mở được kênh xem trước: $error');
+    }
+  }
+
+  void _clearPreview() {
+    if (state.streamingText.isEmpty) return;
+    emit(state.copyWith(streamingText: ''));
+  }
+
+  @override
+  Future<void> close() {
+    for (final sub in _streamSubs) {
+      sub.cancel();
+    }
+    _streamSubs.clear();
+    _stream.disconnect();
+
+    return super.close();
+  }
 
   // ------------------------------------------------------------ luồng 6
 
@@ -91,6 +138,9 @@ class CoachCubit extends Cubit<CoachState> {
     // Chỉ đi vào `coach_scr_view` để funnel lọc nó ra.
     bool reopened = false,
   }) async {
+    // Mở sớm: cảnh được sinh NGAY trong lượt mở này, và đó là cú chờ dài nhất
+    // trong cả tính năng — kênh phải sẵn sàng trước khi nó bắt đầu viết.
+    _listenPreview();
     _entry = entry;
     _lessonId = lessonId;
     _habitId = habitId;
@@ -116,6 +166,8 @@ class CoachCubit extends Cubit<CoachState> {
         messages: const [],
         silent: false,
         silentReasonKey: null,
+        // Lượt mở cũ có thể còn sót chữ xem trước.
+        streamingText: '',
       ),
     );
 
@@ -133,7 +185,7 @@ class CoachCubit extends Cubit<CoachState> {
     result.match(
       (_) {
         CoachTracking.openFailed(entry);
-        emit(state.copyWith(status: CoachStatus.failed));
+        emit(state.copyWith(status: CoachStatus.failed, streamingText: ''));
       },
       (turn) {
         if (turn.silent) {
@@ -143,6 +195,7 @@ class CoachCubit extends Cubit<CoachState> {
               status: CoachStatus.closed,
               silent: true,
               silentReasonKey: turn.reasonKey,
+              streamingText: '',
             ),
           );
 
@@ -158,7 +211,11 @@ class CoachCubit extends Cubit<CoachState> {
         // sai thời điểm phiên mở.
         unawaited(
           _emitTurnStaged(
-            state.copyWith(status: CoachStatus.ready, messages: _replayMessages(turn.replay)),
+            state.copyWith(
+              status: CoachStatus.ready,
+              messages: _replayMessages(turn.replay),
+              streamingText: '',
+            ),
             turn,
             userLine: null,
             appendLines: !turn.resumed,
@@ -478,10 +535,12 @@ class CoachCubit extends Cubit<CoachState> {
         }
 
         CoachTracking.turnFailed(state, kind: kind, errorType: error.message);
-        emit(state.copyWith(status: CoachStatus.failed, typing: false));
+        emit(state.copyWith(status: CoachStatus.failed, typing: false, streamingText: ''));
       },
+      // `streamingText: ''` ở ĐÂY, cùng khung với những bong bóng thật: xoá ở
+      // khung trước thì người đọc thấy chữ biến mất rồi mới hiện lại.
       (turn) async => _emitTurnStaged(
-        state.copyWith(status: CoachStatus.ready, typing: false),
+        state.copyWith(status: CoachStatus.ready, typing: false, streamingText: ''),
         turn,
         userLine: null,
       ),

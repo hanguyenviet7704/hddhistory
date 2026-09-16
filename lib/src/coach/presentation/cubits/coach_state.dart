@@ -75,5 +75,13 @@ abstract class CoachState with _$CoachState {
 
     /// Luồng 6 — loại việc đang làm, quyết định popup đánh giá hỏi bộ chip nào.
     @Default('') String sessionKind,
+
+    /// Chữ Coach đang gõ dở, hiện trong lúc chờ đáp REST.
+    ///
+    /// KHÔNG phải một [CoachMessage]: nó không thuộc về dòng hội thoại và
+    /// không được lưu. Đáp REST về là nó bị xoá và những bong bóng thật lên
+    /// thay — kể cả khi chốt kiểm duyệt đã đổi câu trả lời, vì đáp REST mới là
+    /// bản chính. Rỗng nghĩa là không có gì đang gõ.
+    @Default('') String streamingText,
   }) = _CoachState;
 }

@@ -464,12 +464,18 @@ class _CoachSheetState extends State<_CoachSheet> {
                     // Coach đang soạn câu chứ không phải app bị treo — và khi
                     // lượt đầu về, `didUpdateWidget` thấy danh sách rỗng chuyển
                     // sang có bài nên vẫn `_settleToEnd()` xuống đáy như cũ.
-                    CoachStatus.opening => CoachMessageList(messages: state.messages, typing: true),
+                    CoachStatus.opening => CoachMessageList(
+                      messages: state.messages,
+                      typing: true,
+                      // Mở phiên là cú chờ dài nhất — cảnh được viết ngay ở đây.
+                      streamingText: state.streamingText,
+                    ),
                     CoachStatus.failed => _Failed(onRetry: _start),
                     _ when isSafety => CoachSafetyPanel(hotlines: state.ui.hotlines),
                     _ => CoachMessageList(
                       messages: state.messages,
                       typing: state.typing,
+                      streamingText: state.streamingText,
                       // The card stays on screen through LEAVE, under the
                       // Coach's "Mình mở khoá đó cho bạn."
                       course: state.ui.kind == CoachUiKind.courseCard || state.step == 'leave' ? state.ui.course : null,

@@ -4,6 +4,12 @@ class CoachMessageList extends StatefulWidget {
   final List<CoachMessage> messages;
   final bool typing;
 
+  /// Chữ Coach đang gõ dở, về qua socket trong lúc chờ đáp REST.
+  ///
+  /// Rỗng thì ba chấm đứng nguyên như cũ; có chữ thì chữ thay chỗ ba chấm —
+  /// hai thứ không bao giờ cùng hiện, vì chúng nói cùng một điều.
+  final String streamingText;
+
   /// Nhịp 3 — the two-column draft is a card IN the thread, under the Coach's
   /// line that introduced it, exactly as the design draws it. Null hides it.
   final CoachTwoColumns? draft;
@@ -29,6 +35,7 @@ class CoachMessageList extends StatefulWidget {
     super.key,
     required this.messages,
     required this.typing,
+    this.streamingText = '',
     this.draft,
     this.course,
     this.onCourseTap,
@@ -48,6 +55,139 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
   /// The keyboard inset last seen, logical pixels — to tell opening from closing.
   double _lastInset = 0;
 
+  // ------------------------------------------------------------ máy chữ
+  //
+  // Nhịp gõ sống ở ĐÂY chứ không trong từng bong bóng, vì nó phải chảy LIÊN TỤC
+  // qua ranh giới giữa hai thứ khác hẳn nhau: phần xem trước về bằng socket
+  // trong lúc model còn viết, rồi bong bóng thật về bằng REST khi đã viết xong.
+  // Nếu mỗi bên tự gõ lấy thì người đọc thấy chữ chạy được một đoạn, biến mất,
+  // rồi chạy lại từ đầu. Danh sách biết cả hai nên nó giữ con trỏ.
+
+  /// Một khung hình. Nhanh hơn mắt không thấy, chậm hơn thì thành giật.
+  static const _tick = Duration(milliseconds: 16);
+
+  /// Một chữ mỗi nhịp là ~60 chữ/giây, cỡ tốc độ gõ của người thật. Cứ thêm
+  /// chừng này chữ tồn đọng thì nhả thêm một chữ mỗi nhịp, để gõ xong gần lúc
+  /// model viết xong thay vì để đáp REST về lúc còn gõ dở.
+  static const _catchUpEvery = 60;
+
+  /// Chỗ đang gõ: chỉ số trong `messages`, hoặc -1 nghĩa là bong bóng xem trước.
+  int _typingIndex = -1;
+
+  /// Đã gõ tới ký tự thứ mấy của chỗ đó.
+  int _typed = 0;
+
+  /// Đúng đoạn chữ đang hiện.
+  ///
+  /// Giữ riêng chứ không tính lại từ `_typingText` mỗi lúc cần: `didUpdateWidget`
+  /// chạy SAU khi `widget` đã bị thay, nên tính lại ở đó sẽ đọc phải văn bản
+  /// MỚI và ra chuỗi rỗng — làm hỏng đúng cái mạch nối giữa xem trước và bong
+  /// bóng thật mà toàn bộ phần này tồn tại để giữ.
+  String _shown = '';
+
+  Timer? _typer;
+
+  /// Toàn văn của chỗ đang gõ.
+  String get _typingText {
+    if (_typingIndex < 0) return widget.streamingText;
+    if (_typingIndex >= widget.messages.length) return '';
+
+    return widget.messages[_typingIndex].text;
+  }
+
+  /// Chọn lại xem cái gì đang được gõ, và giữ mạch nếu nối tiếp được.
+  ///
+  /// [grownBy] là số bong bóng vừa thêm. ĐÚNG MỘT bong bóng nghĩa là Coach vừa
+  /// nói ra nó — `_emitTurnStaged` nhả từng cái một. Nhiều cái cùng lúc nghĩa
+  /// là lịch sử được phát lại lúc mở sheet, và lịch sử thì phải có sẵn ngay,
+  /// không ai muốn ngồi xem máy gõ lại cuộc trò chuyện hôm qua.
+  void _retarget({required int grownBy}) {
+    final messages = widget.messages;
+    final lastIsFreshCoachLine = grownBy == 1 &&
+        messages.isNotEmpty &&
+        messages.last.isCoach &&
+        !messages.last.divider &&
+        messages.last.text.isNotEmpty;
+
+    final nextIndex = lastIsFreshCoachLine
+        ? messages.length - 1
+        : (widget.streamingText.isNotEmpty ? -1 : _typingIndex);
+
+    _typingIndex = nextIndex;
+
+    // Chữ mới nối tiếp chữ đã gõ thì gõ TIẾP, không gõ lại.
+    //
+    // Kiểm mỗi lần, KHÔNG chỉ khi đổi chỗ gõ. Hai chuyện khác nhau đều phải bắt
+    // được: chuyển từ xem trước sang bong bóng thật (đổi chỗ, chữ nối tiếp —
+    // gõ tiếp), và cùng một chỗ nhưng nội dung bị thay hẳn (lượt mới, hoặc
+    // chốt kiểm duyệt vừa viết lại câu trả lời — gõ lại từ đầu).
+    final continues = _shown.isNotEmpty && _typingText.startsWith(_shown);
+    if (!continues) {
+      _typed = 0;
+      _shown = '';
+    }
+
+    // Một chữ NGAY, không đợi nhịp đầu tiên: ba chấm tắt đúng lúc bong bóng
+    // hiện ra, nên bắt đầu từ số không để lại trọn một khung hình rỗng ở giữa.
+    if (_typed == 0 && _typingText.isNotEmpty) _advance(1);
+
+    _drive();
+  }
+
+  void _drive() {
+    if (_typer != null) return;
+
+    _typer = Timer.periodic(_tick, (_) {
+      final remaining = _typingText.characters.length - _typed;
+
+      if (remaining <= 0) {
+        _typer?.cancel();
+        _typer = null;
+
+        return;
+      }
+
+      setState(() => _advance(1 + remaining ~/ _catchUpEvery));
+      _stickToEnd();
+    });
+  }
+
+  void _advance(int by) {
+    _typed += by;
+    // Cắt theo `characters`: chữ có dấu và emoji là nhiều mã UTF-16, cắt giữa
+    // chừng sẽ hiện ra ô vuông.
+    _shown = _typingText.characters.take(_typed).toString();
+  }
+
+  /// Bong bóng cao dần lên trong lúc gõ, nên phải bám đáy — nhưng chỉ khi người
+  /// đọc ĐANG ở đáy. Họ cuộn ngược lên đọc lại thì đừng giật họ xuống.
+  void _stickToEnd() {
+    if (!_controller.hasClients) return;
+
+    final position = _controller.position;
+    if (position.maxScrollExtent - position.pixels > 80) return;
+
+    // `jumpTo` chứ không `animateTo`: cái này chạy mỗi khung hình.
+    _controller.jumpTo(position.maxScrollExtent);
+  }
+
+  /// Bong bóng như nó phải hiện lúc này — cắt ngắn nếu đang gõ dở.
+  CoachMessage _revealed(int index) {
+    final message = widget.messages[index];
+    if (index != _typingIndex) return message;
+
+    // Cắt theo `characters`: chữ có dấu và emoji là nhiều mã UTF-16, cắt giữa
+    // chừng sẽ hiện ra ô vuông.
+    return CoachMessage(
+      isCoach: message.isCoach,
+      text: _shown,
+      speaker: message.speaker,
+      title: message.title,
+      emphasis: message.emphasis,
+      divider: message.divider,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +202,9 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
     // rỗng với chấm "đang gõ", nên lần đầu có bài thường tới qua
     // `didUpdateWidget` — nhánh đó gọi đúng `_settleToEnd()` này.
     if (widget.messages.isNotEmpty) _settleToEnd();
+    // `grownBy: 0` — cái gì đã có sẵn ở lần dựng đầu là lịch sử, phải hiện
+    // ngay. Chỉ phần xem trước (nếu đang có) mới bắt đầu gõ.
+    _retarget(grownBy: 0);
   }
 
   /// The keyboard. The sheet shrinks under it (AnimatedPadding, 160ms) but the
@@ -85,8 +228,18 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
   @override
   void didUpdateWidget(covariant CoachMessageList oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Danh sách bị thay hẳn (phiên mới) — bỏ con trỏ cũ đi.
+    if (widget.messages.length < oldWidget.messages.length) {
+      _typingIndex = -1;
+      _typed = 0;
+      _shown = '';
+    }
+    _retarget(grownBy: widget.messages.length - oldWidget.messages.length);
+
     if (widget.messages.length != oldWidget.messages.length ||
         widget.typing != oldWidget.typing ||
+        widget.streamingText != oldWidget.streamingText ||
         (widget.draft != null) != (oldWidget.draft != null) ||
         (widget.course != null) != (oldWidget.course != null) ||
         (widget.options != null) != (oldWidget.options != null)) {
@@ -138,15 +291,22 @@ class _CoachMessageListState extends State<CoachMessageList> with WidgetsBinding
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _typer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final preview = _typingIndex < 0 && widget.streamingText.isNotEmpty ? _shown : '';
+
     final children = <Widget>[
-      ...widget.messages.map((m) => _Bubble(message: m)),
-      if (widget.typing) const _TypingDots(),
+      for (var index = 0; index < widget.messages.length; index++)
+        _Bubble(message: _revealed(index)),
+      // Ba chấm và chữ không bao giờ cùng hiện — chúng nói cùng một điều.
+      if (widget.typing && preview.isEmpty) const _TypingDots(),
+      if (preview.isNotEmpty)
+        _Bubble(message: CoachMessage(isCoach: true, text: preview)),
       if (widget.draft != null) widget.draft!,
       if (widget.course != null)
         _CourseCard(
