@@ -18,6 +18,29 @@ import {
   CoachAiUsageSummary,
 } from "../../types/interface/coach.interface";
 
+/**
+ * Mã lỗi dịch ra thứ nói được nên làm gì.
+ *
+ * Mỗi nhãn nói NGUYÊN NHÂN, không nói triệu chứng: người mở trang này đang tìm
+ * việc phải làm, và "429" tự nó không bảo được là đi nạp tiền hay đi chờ.
+ * Mã lạ thì hiện nguyên xi — bảng tra thiếu một dòng còn hơn nuốt mất mã mà
+ * Google vừa nghĩ ra.
+ */
+const ERROR_LABEL: Record<string, string> = {
+  "429": "429 — hết hạn mức hoặc hết credit Gemini",
+  "503": "503 — model đang quá tải",
+  "500": "500 — lỗi phía Google",
+  "400": "400 — mình gửi sai",
+  timeout: "Quá giờ — chạm trần thời gian của lượt",
+  network: "Không nối được tới provider",
+  budget_spent: "Hết ngân sách thời gian của lượt trước khi kịp gọi",
+  blocked: "Prompt bị provider chặn",
+  max_tokens: "Cụt giữa chừng vì chạm trần token (vẫn bị tính tiền)",
+  no_text: "Trả về không có phần chữ nào",
+  malformed: "JSON hỏng, không đọc được",
+  no_key: "Chưa cấu hình GEMINI_API_KEY",
+};
+
 /** Tên tiếng Việt cho từng bước của luồng đã gọi AI. */
 const KIND_LABEL: Record<string, string> = {
   reflect: "Trả lời hội thoại (T3)",
@@ -42,6 +65,15 @@ const dateInput = (daysAgo = 0) => {
   date.setDate(date.getDate() - daysAgo);
   return date.toISOString().slice(0, 10);
 };
+
+/**
+ * Mili-giây, hoặc "—" khi api chưa trả.
+ *
+ * Không rơi về 0: admin có thể lên trước api, và "0 ms" sẽ đọc ra là "nhanh
+ * lắm" đúng ở chỗ đáng lẽ phải đọc ra "chưa biết".
+ */
+const ms = (value?: number): string =>
+  typeof value === "number" && value > 0 ? `${compact(value)} ms` : "—";
 
 const StatCard: React.FC<{
   label: string;
@@ -71,6 +103,8 @@ const GroupTable: React.FC<{
         <TableCell align="right">Token vào</TableCell>
         <TableCell align="right">Token ra</TableCell>
         <TableCell align="right">Tiền</TableCell>
+        <TableCell align="right">Trễ TB</TableCell>
+        <TableCell align="right">Trễ max</TableCell>
         <TableCell align="right">% tổng</TableCell>
       </TableRow>
     </TableHead>
@@ -93,6 +127,10 @@ const GroupTable: React.FC<{
           <TableCell align="right">{compact(row.inputTokens)}</TableCell>
           <TableCell align="right">{compact(row.outputTokens)}</TableCell>
           <TableCell align="right">{vnd(row.costVnd)}</TableCell>
+          {/* Em dash chứ không phải 0 khi api chưa trả: "chưa đo" và "0ms"
+              là hai chuyện khác hẳn nhau. */}
+          <TableCell align="right">{ms(row.avgLatencyMs)}</TableCell>
+          <TableCell align="right">{ms(row.maxLatencyMs)}</TableCell>
           <TableCell align="right">
             {totalCostVnd > 0
               ? `${Math.round((row.costVnd / totalCostVnd) * 100)}%`
@@ -225,10 +263,50 @@ const CoachAiUsagePage: React.FC = () => {
 
           {totals!.failedCalls > 0 && (
             <Alert severity="warning">
-              {compact(totals!.failedCalls)} lệnh gọi trả về thứ không dùng được
-              (bị chặn, thiếu phần text, JSON sai) nhưng <b>vẫn bị tính tiền</b>.
-              Tỉ lệ này tăng là lý do các nhánh retry ở T3 tồn tại.
+              <b>{compact(totals!.failedCalls)} lệnh gọi không trả lời được</b> —
+              mỗi cái là một người đọc nhìn ba chấm rồi không nhận được gì, vì
+              mọi lỗi của provider đều thành câu rỗng. Bảng bên dưới nói vì sao.
             </Alert>
+          )}
+
+          {(summary.errors ?? []).length > 0 && (
+            <Paper className="p-4">
+              <h2 className="mb-1 text-base font-semibold">Hỏng vì cái gì</h2>
+              {/* Nằm riêng khỏi phần tiền: phần lớn những lỗi này KHÔNG tốn
+                  đồng nào — 503 bị từ chối trước khi tiêu một token — nên ai
+                  dò cột "Tiền" sẽ không bao giờ tìm thấy chúng. */}
+              <p className="mb-3 text-xs text-slate-500">
+                Phần lớn không tốn tiền, nên không xuất hiện ở bảng nào phía
+                trên. 429 là hết hạn mức hoặc hết credit; 503 là model đang
+                đầy; timeout là chạm trần thời gian của lượt.
+              </p>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Lỗi</TableCell>
+                    <TableCell align="right">Số lần</TableCell>
+                    <TableCell>Đánh trúng bước</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {summary.errors!.map((row) => (
+                    <TableRow key={row.key} hover>
+                      <TableCell>
+                        <span className="font-medium text-amber-700">
+                          {ERROR_LABEL[row.key] ?? row.key}
+                        </span>
+                      </TableCell>
+                      <TableCell align="right">{compact(row.calls)}</TableCell>
+                      <TableCell className="text-slate-600">
+                        {(row.kinds ?? [])
+                          .map((kind) => KIND_LABEL[kind] ?? kind)
+                          .join(", ") || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
           )}
 
           <Paper className="p-4">

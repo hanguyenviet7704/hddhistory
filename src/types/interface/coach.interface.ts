@@ -230,11 +230,39 @@ export interface CoachContentUserPage {
 export interface CoachAiUsageGroup {
   key: string;
   calls: number;
-  /** Lệnh gọi vẫn bị tính tiền nhưng trả về thứ không dùng được. */
+  /**
+   * Lệnh gọi không ra được câu trả lời dùng được.
+   *
+   * Từ 2026-09-16 con số này RỘNG HƠN trước: nó từng chỉ đếm những lệnh đã bị
+   * tính tiền (prompt bị chặn, thiếu phần text, JSON hỏng), còn timeout và
+   * 429/503 thì không được ghi ở đâu cả — nên báo cáo hiện `failedCalls: 0`
+   * suốt 8.955 lệnh gọi trong khi từng lượt một đang trả về câu rỗng. Giờ mọi
+   * đường thất bại đều vào sổ; `errors` bên dưới nói rõ vì sao.
+   */
   failedCalls: number;
   inputTokens: number;
   outputTokens: number;
   costVnd: number;
+  /**
+   * Độ trễ theo NHÓM, không phải trung bình toàn kỳ.
+   *
+   * Tuỳ chọn vì api bản cũ không trả trường này, và admin có thể lên trước
+   * api. Trung bình chung không trả lời được câu duy nhất đáng hỏi ("người
+   * đọc chờ ở bước nào") vì cú rẻ nhất cũng là cú chạy nhiều nhất: hai cửa
+   * chặn trên model lite chiếm 3.758/8.955 lệnh gọi một tuần và kéo trung
+   * bình xuống thấp hơn hẳn mọi lượt hội thoại thật.
+   */
+  avgLatencyMs?: number;
+  /** Cú chậm nhất trong kỳ — chỗ trần timeout bị thử. */
+  maxLatencyMs?: number;
+}
+
+/** Một loại lỗi, và những bước nó đánh trúng. */
+export interface CoachAiUsageError {
+  /** '429', '503', 'timeout', 'blocked', 'max_tokens', 'malformed'… */
+  key: string;
+  calls: number;
+  kinds: string[];
 }
 
 export interface CoachAiUsageSummary {
@@ -250,6 +278,17 @@ export interface CoachAiUsageSummary {
   /** Tiền theo BƯỚC của luồng — đắt nhất lên đầu. */
   byKind: CoachAiUsageGroup[];
   byModel: CoachAiUsageGroup[];
+  /**
+   * Mọi lệnh gọi không trả lời được, gom theo lý do.
+   *
+   * Nằm cạnh phần tiền chứ không nằm trong, vì phần lớn chúng KHÔNG tốn đồng
+   * nào — 503 bị từ chối trước khi tiêu một token — nên ai dò `costVnd` sẽ
+   * không bao giờ tìm thấy. Chúng đắt ở đơn vị khác: mỗi cái là một người đọc
+   * nhìn ba chấm rồi không nhận được gì.
+   *
+   * Tuỳ chọn: api chưa deploy bản mới thì trường này không có.
+   */
+  errors?: CoachAiUsageError[];
   /** Tăng dần theo ngày, khỏi phải sắp lại ở client. */
   daily: CoachAiUsageGroup[];
   sessions: {
