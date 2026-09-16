@@ -29,6 +29,7 @@ import { Trash2 } from "lucide-react";
 import SegmentPicker from "../common/SegmentPicker";
 import SortableItem from "../common/SortableItem";
 import {
+  COLLECTION_MAX_COURSES,
   CourseCollectionPayload,
   CourseCollectionSlot,
   CourseCollectionStatus,
@@ -70,7 +71,6 @@ export default function CollectionEditDialog({
   onSave,
 }: Props) {
   const [title, setTitle] = useState<ITranslation>({});
-  const [description, setDescription] = useState<ITranslation>({});
   const [slot, setSlot] = useState<CourseCollectionSlot>(
     CourseCollectionSlot.BOTTOM,
   );
@@ -84,7 +84,6 @@ export default function CollectionEditDialog({
   useEffect(() => {
     if (!open) return;
     setTitle(collection?.title ?? {});
-    setDescription(collection?.description ?? {});
     setSlot(collection?.slot ?? CourseCollectionSlot.BOTTOM);
     setPublished(collection?.status === CourseCollectionStatus.PUBLISHED);
     setSegmentIds(collection?.segmentIds ?? []);
@@ -113,7 +112,6 @@ export default function CollectionEditDialog({
     try {
       await onSave({
         title,
-        description,
         slot,
         status: published
           ? CourseCollectionStatus.PUBLISHED
@@ -148,21 +146,6 @@ export default function CollectionEditDialog({
           ))}
         </div>
 
-        <div className="h-4" />
-
-        <div className="grid grid-cols-2 gap-3">
-          {LOCALES.map((locale) => (
-            <TextField
-              key={`desc-${locale.code}`}
-              size="small"
-              label={`Mô tả (${locale.label})`}
-              value={description[locale.code] ?? ""}
-              onChange={(e) =>
-                setDescription({ ...description, [locale.code]: e.target.value })
-              }
-            />
-          ))}
-        </div>
 
         <div className="h-4" />
 
@@ -203,6 +186,7 @@ export default function CollectionEditDialog({
 
         <Autocomplete
           size="small"
+          disabled={courseIds.length >= COLLECTION_MAX_COURSES}
           options={courses.filter((c) => !courseIds.includes(c._id))}
           getOptionLabel={(c) => c.label}
           value={null}
@@ -216,7 +200,11 @@ export default function CollectionEditDialog({
             <TextField
               {...params}
               label="Thêm khoá học"
-              helperText="App hiển thị 8 khoá đầu tiên của danh sách dưới đây."
+              helperText={
+                courseIds.length >= COLLECTION_MAX_COURSES
+                  ? `Đã đủ ${COLLECTION_MAX_COURSES} khoá — bỏ bớt một khoá nếu muốn thêm khoá khác.`
+                  : `Tối đa ${COLLECTION_MAX_COURSES} khoá, đang có ${courseIds.length}.`
+              }
             />
           )}
         />
@@ -237,13 +225,7 @@ export default function CollectionEditDialog({
                 <SortableItem key={id} id={id}>
                   <div className="flex items-center justify-between gap-3 rounded border border-gray-200 px-3 py-2">
                     <span className="text-sm">
-                      <span
-                        className={
-                          index < 8 ? "text-gray-400 mr-2" : "text-orange-500 mr-2"
-                        }
-                      >
-                        {index + 1}.
-                      </span>
+                      <span className="text-gray-400 mr-2">{index + 1}.</span>
                       {/* A pinned course that no longer resolves still shows,
                           as its id — silently dropping it would hide from the
                           editor why their strip renders short. */}

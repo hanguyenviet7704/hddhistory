@@ -1,5 +1,12 @@
 import { ITranslation } from "../../utils/translate";
 
+/**
+ * Hard cap on a collection's courses, mirrored from the API's own DTO
+ * validation. The Explore strip shows the whole collection, so a ninth course
+ * would simply never be seen — and the save would be rejected anyway.
+ */
+export const COLLECTION_MAX_COURSES = 8;
+
 export enum CourseCollectionStatus {
   DRAFT = "draft",
   PUBLISHED = "published",
@@ -18,7 +25,6 @@ export enum CourseCollectionSlot {
 export interface ICourseCollection {
   _id: string;
   title: ITranslation;
-  description?: ITranslation;
   status: CourseCollectionStatus;
   slot: CourseCollectionSlot;
   /** Order inside the slot. Maintained by drag and drop, not typed by hand. */
