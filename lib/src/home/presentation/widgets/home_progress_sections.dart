@@ -392,29 +392,20 @@ class _HomeCategoryTile extends StatelessWidget {
     return (completedUnits / denominator).clamp(0.0, 1.0);
   }
 
-  /// Tapping a tile jumps to the Explore tab scrolled to that same skillset
-  /// section. The scroll target index is this skillset's position in the
-  /// Explore catalog (HomeCubit.skillsets — the exact list AllCourseTab renders
-  /// and jumpToSkillset scrolls). No-op if the skillset isn't in the catalog.
+  /// Tapping a tile opens that skillset's full course list.
   ///
-  /// jumpToSkillset is called explicitly here (not left to CourseRoute's
-  /// selectedTabIndex): the Explore branch is kept alive by the StatefulShell,
-  /// so re-entering it does NOT re-run CoursePage.initState — only an explicit
-  /// scroll request (bumped nonce) lands the user on the category on re-entry.
+  /// It used to drop the reader on the Explore tab scrolled to the skillset's
+  /// own section. Explore no longer has skillset sections, and a tile that
+  /// names ONE topic should not land on a mixed, curated page — so it opens the
+  /// list that is actually about that topic. No-op if the skillset isn't in the
+  /// catalog.
   void _openInExplore(BuildContext context) {
     final homeCubit = AppDI.injector.get<HomeCubit>();
     final index = homeCubit.state.skillsets.indexWhere((s) => s.id == achievement.skillsetId);
     if (index < 0) return;
     AppHaptic.select();
     homeCubit.selectSkillsetIndex(index);
-    AppDI.injector.get<CourseCubit>()
-      ..setAllCourseSource('home_progress')
-      ..jumpToSkillset(index);
-    // Explicit route name (not just an index): a cross-branch `.go()` into an
-    // already-built branch fires no didPush, so the observer won't set it — this
-    // lights the Explore tab and keeps the nav guard consistent. Also sets
-    // currentIndex to the Explore branch (3) via the route→tab mapping.
-    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
-    CourseRoute(selectedTabIndex: index).go(context);
+    AppDI.injector.get<CourseCubit>().setAllCourseSource('home_progress');
+    SkillsetCoursesRoute(skillsetId: achievement.skillsetId).push(context);
   }
 }

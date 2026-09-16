@@ -54,4 +54,20 @@ class ExploreTracking {
     'course_id': course.id,
     'course_name': course.trackingName,
   };
+
+  /// {section_type, section_id} for a strip on the Explore tab.
+  ///
+  /// Replaces [skillsetParams] on `explore_course_click`. After the redesign
+  /// most tiles belong to no skillset — a collection is hand-picked across
+  /// them — so sending `skill_id` there would have reported an empty skillset
+  /// for nearly every tap on the tab, and the existing skillset breakdown would
+  /// have gone quietly wrong rather than obviously missing.
+  ///
+  /// `section_id` is the collection's id, and empty for the computed strips:
+  /// weeklyTop and becauseYou are one section each, so their type identifies
+  /// them.
+  static Map<String, dynamic> sectionParams(ExploreSectionEntity section) => {
+    'section_type': section.type.name,
+    'section_id': section.id,
+  };
 }

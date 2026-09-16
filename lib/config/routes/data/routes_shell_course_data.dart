@@ -28,6 +28,8 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
+      // The tab's sections live here; CourseCubit keeps search and "Recent".
+      BlocProvider.value(value: AppDI.injector.get<ExploreCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
       BlocProvider.value(value: AppDI.injector.get<UserCubit>()),

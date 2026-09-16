@@ -13,11 +13,16 @@ class _CoursePageState extends State<CoursePage> {
   void initState() {
     super.initState();
     _initializeSelection();
-    // The Explore grid renders HomeCubit's skillsets — recover from a
+    // The topic chips render HomeCubit's skillsets — recover from a
     // failed/skipped first load (e.g. transient failure right after a fresh
-    // install) instead of showing an empty grid until app restart. No-op
+    // install) instead of showing an empty row until app restart. No-op
     // when data is present.
     unawaited(AppDI.injector.get<HomeCubit>().ensureHomeDataLoaded());
+    // Same contract for the tab's own sections. The Explore branch is kept
+    // alive by the StatefulShell, so initState runs once — the route listener
+    // calls this again on every re-entry, and it is a no-op unless the tab has
+    // nothing to show.
+    unawaited(AppDI.injector.get<ExploreCubit>().ensureExploreDataLoaded());
     // The import button on this screen is drawn from the quota's `enabled`
     // flag, and nothing else on Explore fetches it. One silent GET here is what
     // lets the button disappear when the feature is switched off, instead of
@@ -27,17 +32,23 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   void _initializeSelection() {
-    final cubit = context.read<CourseCubit>()
+    context.read<CourseCubit>()
       ..selectTab(1)
       ..clearSearch();
-    // Onboarding / auth deep-links pass a skillset index to land on; everything
-    // else opens in the default "all courses / out menu" state.
+    // Onboarding / auth deep-links name a skillset to land on. That used to
+    // scroll Explore to the skillset's own section; the tab has none, so the
+    // link opens the skillset's full course list instead — the screen the link
+    // was always trying to reach.
     final deepLinkIndex = widget.selectedTabIndex;
-    if (deepLinkIndex != null && deepLinkIndex >= 0) {
-      cubit.jumpToSkillset(deepLinkIndex);
-    } else {
-      cubit.resetExploreToAll();
-    }
+    if (deepLinkIndex == null || deepLinkIndex < 0) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openDeepLinkedSkillset(deepLinkIndex));
+  }
+
+  void _openDeepLinkedSkillset(int index) {
+    if (!mounted) return;
+    final skillsets = context.read<HomeCubit>().state.skillsets;
+    if (index >= skillsets.length) return;
+    SkillsetCoursesRoute(skillsetId: skillsets[index].id).push(context);
   }
 
   Future<void> _tryOpenPaywallAutoOpen() async {

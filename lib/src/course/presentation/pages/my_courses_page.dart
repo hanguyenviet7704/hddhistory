@@ -209,12 +209,9 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
     Navigator.of(context, rootNavigator: true).pop();
     final shellContext = AppConfig.instance.context;
     if (shellContext == null) return;
-    final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
-    AppDI.injector.get<CourseCubit>()
-      ..setAllCourseSource('my_courses_explore_more')
-      ..jumpToSkillset(skillsetIndex);
+    AppDI.injector.get<CourseCubit>().setAllCourseSource('my_courses_explore_more');
     AppDI.injector.get<PageCubit>().setCurrentIndex(3);
-    CourseRoute(selectedTabIndex: skillsetIndex).go(shellContext);
+    const CourseRoute().go(shellContext);
   }
 }
 

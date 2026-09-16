@@ -194,28 +194,20 @@ class _SkillsetCoursesPageState extends State<SkillsetCoursesPage> {
   }
 
   /// This "View more" grid is a drill-down FROM the Explore tab, so back always
-  /// returns to Explore (branch 3) at the current skillset — NOT `context.back()`.
+  /// returns to Explore (branch 3) — NOT `context.back()`.
   ///
   /// `SkillsetCoursesRoute` is a CHILD of `CourseRoadmapRoute` (Course branch),
   /// and the roadmap's own back button reaches this page via a sibling `.go()`.
   /// A plain pop would therefore land back on the roadmap, and the roadmap's
   /// back would re-open this grid — an infinite ping-pong. Jumping straight to
   /// the Explore branch (mirrors CourseRoadmapPage._backFromRoadmap) breaks it.
+  ///
+  /// Back used to also scroll Explore to the section this page was opened from.
+  /// The tab has no skillset sections any more, so it simply returns to it.
   void _backToExplore(BuildContext context) {
-    final homeState = AppDI.injector.get<HomeCubit>().state;
-    // Resolve the target from THIS page's own [skillsetId], not from
-    // `HomeCubit.selectedSkillsetIndex`. That field tracks the Home carousel /
-    // roadmap selection, and Explore's "View more" card opens this page without
-    // ever writing it — so it was whatever Home last pointed at (0 on a fresh
-    // install). Back then jumped Explore to skillset 0, which reads as "it
-    // scrolled to the very top" rather than back to the section departed from.
-    final resolved = homeState.skillsets.indexWhere((s) => s.id == widget.skillsetId);
-    final skillsetIndex = resolved >= 0 ? resolved : homeState.selectedSkillsetIndex;
-    AppDI.injector.get<CourseCubit>()
-      ..setAllCourseSource('skillset_courses_back')
-      ..jumpToSkillset(skillsetIndex);
+    AppDI.injector.get<CourseCubit>().setAllCourseSource('skillset_courses_back');
     context.read<PageCubit>().setCurrentIndex(3);
-    CourseRoute(selectedTabIndex: skillsetIndex).go(context);
+    const CourseRoute().go(context);
   }
 
   void _handleCourseTap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {

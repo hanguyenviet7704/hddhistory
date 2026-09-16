@@ -102,6 +102,11 @@ mixin AppEndpoint {
   //* Courses Recently Viewed API
   static const String coursesRecentlyViewed = '/api/v1/courses-recently-viewed';
 
+  //* Explore tab — every curated/computed strip in one call, already in the
+  //* order they render. Skillset chips are NOT here: the catalogue is already
+  //* in HomeCubit and re-fetching it would be wasted bytes.
+  static const String coursesExplore = '/api/v1/courses-explore';
+
   //* Saved API (Library → Saved / Saved cards)
   static const String savedCourses = '/api/v1/saved-courses';
 

@@ -30,3 +30,12 @@ searchPlaceholderActive: Đang tìm...
 searchRecent: Gần đây
 searchSemanticLabel: Tìm kiếm khoá học
 searchTypeToSearch: Nhập từ khoá để tìm kiếm
+# Tab Khám phá — nhãn cố định của các dải. Tên bộ sưu tập do biên tập nhập
+# nên đi theo dữ liệu, không nằm ở đây.
+exploreWeeklyEyebrow: Tuần qua
+exploreWeeklyTitle: Được học nhiều nhất
+exploreTopicsTitle: Tìm kiếm theo chủ đề
+exploreBecauseYouTitle: Vì bạn đã học
+exploreLearnerCount(param=count): ${count} người học
+exploreRetry: Tải lại
+exploreLoadFailed: Chưa tải được nội dung

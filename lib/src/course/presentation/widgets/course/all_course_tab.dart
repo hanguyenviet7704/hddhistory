@@ -1,14 +1,5 @@
 part of '../../../course.dart';
 
-/// Maximum number of courses shown per skillset section in the Explore view.
-///
-/// Ten, up from five: the section is a horizontal strip now rather than a
-/// two-column grid, so ten cards cost one screen of sideways scrolling instead
-/// of five rows of vertical page. The chevron beside the heading opens the
-/// skillset's full list either way — it is always there, not only when the
-/// catalog happens to be longer than this.
-const int _kMaxCoursesPerSection = 10;
-
 /// Corner radius of a cover tile. 18 in the redesign, up from 12 — the softer
 /// corner is what makes a borderless tile still read as a card.
 double get _kCoverRadius => 18.r;
@@ -89,6 +80,15 @@ List<CourseEntity> sortCoursesForExplore(
   return [...courses]..sort((a, b) => priority(a).compareTo(priority(b)));
 }
 
+/// The Explore tab's scrolling body.
+///
+/// Every strip and its ORDER comes from `GET /courses-explore` — the tab walks
+/// the list it is handed and draws each section by its `type`. It used to build
+/// one section per skillset from `HomeCubit`, which is why a scrollspy
+/// (`ScrollablePositionedList`, an active-chip index, a scroll nonce) lived
+/// here; with the skillset sections gone there is nothing to spy on, and a
+/// plain list is the whole of it. Browsing a whole skillset now happens through
+/// the topic chips, which open its full list directly.
 class AllCourseTab extends StatefulWidget {
   const AllCourseTab({super.key});
 
@@ -98,18 +98,6 @@ class AllCourseTab extends StatefulWidget {
 
 class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClientMixin {
   late final CourseCubit _courseCubit;
-
-  /// Owned per widget instance — an [ItemScrollController] can only attach to one
-  /// list at a time, so it must NOT live on the (singleton) cubit, or two live
-  /// Explore lists (e.g. the kept-alive tab plus a pushed one) would collide and
-  /// crash. Chip-tap scrolls are requested via the cubit's scroll nonce instead.
-  final ItemScrollController _scrollController = ItemScrollController();
-  final ItemPositionsListener _positionsListener = ItemPositionsListener.create();
-
-  /// Scrollspy stays disarmed (no chip highlighted) until the user physically
-  /// scrolls, so a fresh entry shows the "out menu" state. Re-armed to false on
-  /// every reset to all.
-  bool _spyArmed = false;
 
   /// Guards explore_scr_view to once per Explore-tab visit — the tab is kept
   /// alive (AutomaticKeepAliveClientMixin), so initState fires only on the very
@@ -121,20 +109,12 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   void initState() {
     super.initState();
     _courseCubit = context.read<CourseCubit>();
-    _positionsListener.itemPositions.addListener(_onPositionsChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _logScrViewIfActive());
-  }
-
-  @override
-  void dispose() {
-    _positionsListener.itemPositions.removeListener(_onPositionsChanged);
-    super.dispose();
   }
 
   /// Logs explore_scr_view once per Explore-tab visit: source (remapped to the
   /// spec set nav_explore/home_explore/my_course from the entry point's
-  /// allCourseSource) + the active skill_id. No-op unless Explore is the
-  /// current route.
+  /// allCourseSource). No-op unless Explore is the current route.
   void _logScrViewIfActive() {
     if (!mounted) return;
     // Explore is shell branch index 3 (ScaffoldLayout._tabToBranch). Keying on
@@ -145,70 +125,13 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     if (_scrViewLogged) return;
     _scrViewLogged = true;
     final source = _courseCubit.state.allCourseSource;
-    final skillId = context.read<HomeCubit>().state.currentSkillset.id;
     ExploreTracking.track(
       TrackingKey.exploreScrView,
-      parameters: {
-        'source': ExploreTracking.remapScrViewSource(source),
-        'skill_id': skillId,
-      },
+      parameters: {'source': ExploreTracking.remapScrViewSource(source)},
     );
     // Reset so a later plain bottom-nav entry (which sets no source) reports
     // nav_explore instead of reusing the previous entry's source.
     _courseCubit.setAllCourseSource('nav_explore');
-  }
-
-  /// Highlights the chip of the section currently at the TOP of the viewport
-  /// (the section whose header has most recently scrolled up to the top), so
-  /// at the very top the first section is active. Picks the visible section
-  /// with the greatest leading edge still at/above [_kSpyTopThreshold];
-  /// falls back to the topmost visible section.
-  static const double _kSpyTopThreshold = 0.15;
-
-  /// Row 0 of the list is the header (search + the import board), which scrolls
-  /// away with the sections rather than sitting pinned above them — the design
-  /// scrolls the whole page (owner, 2026-09-05). So a skillset's list index is
-  /// its position + 1, and every index that crosses into or out of the list has
-  /// to be shifted by this.
-  static const int _kHeaderRows = 1;
-
-  void _onPositionsChanged() {
-    if (!_spyArmed || !mounted) return;
-    final positions = _positionsListener.itemPositions.value;
-    if (positions.isEmpty) return;
-    final aboveTop = positions.where((p) => p.itemLeadingEdge <= _kSpyTopThreshold).toList();
-    final active = aboveTop.isNotEmpty
-        ? aboveTop.reduce((a, b) => a.itemLeadingEdge >= b.itemLeadingEdge ? a : b)
-        : positions.reduce((a, b) => a.itemLeadingEdge <= b.itemLeadingEdge ? a : b);
-    // Row 0 is the header; a negative index there means "above every section".
-    _courseCubit.onActiveSectionChanged(active.index - _kHeaderRows);
-  }
-
-  /// Handles a scroll request from the cubit (chip tap, reset, or deep-link),
-  /// signalled by a bumped [CourseState.exploreScrollNonce].
-  void _handleScrollRequest(CourseState state, int skillsetCount) {
-    if (state.activeSkillsetIndex < 0) {
-      // Reset to "out menu": disarm scrollspy and return to the top.
-      _spyArmed = false;
-    }
-    if (!_scrollController.isAttached || skillsetCount == 0) return;
-
-    // Entering the tab resets to "no section", which means the very top — the
-    // header, not section 0. Jump rather than animate: this is not a move
-    // WITHIN the page the reader is looking at, it is how the page opens, and
-    // 300ms of travel from wherever they left it reads as the list running
-    // away from them.
-    if (state.activeSkillsetIndex < 0) {
-      _scrollController.jumpTo(index: 0);
-
-      return;
-    }
-
-    _scrollController.scrollTo(
-      index: state.activeSkillsetIndex.clamp(0, skillsetCount - 1) + _kHeaderRows,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
   }
 
   @override
@@ -221,115 +144,61 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       listener: (context, state) {
         if (state.currentIndex == 3) {
           _logScrViewIfActive();
+          // Re-entry is where a failed first load gets a second chance: the tab
+          // is kept alive, so initState does not run again. No-op when the
+          // sections are already there.
+          unawaited(context.read<ExploreCubit>().ensureExploreDataLoaded());
         } else {
           _scrViewLogged = false;
         }
       },
-      child: BlocBuilder<HomeCubit, HomeState>(
-        buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.selectedCourseIndex != curr.selectedCourseIndex || prev.status != curr.status,
-        builder: (context, homeState) {
-          final skillsets = homeState.skillsets;
-          if (skillsets.isEmpty) {
-            // Cold load (first open, no cached skillsets yet): show a grid
-            // skeleton instead of the "nothing to see" empty state, which is
-            // reserved for a confirmed-empty catalog (status == success).
-            final isColdLoading = homeState.status == HomeStatus.loading || homeState.status == HomeStatus.initial;
-            return isColdLoading ? const _CourseGridSkeleton() : const CourseEmptyState();
-          }
-          final progressState = context.watch<ProgressCubit>().state;
-          final exploreMode = context.select<CourseCubit, CourseExploreMode>(
-            (c) => c.state.exploreMode,
-          );
+      child: BlocBuilder<ExploreCubit, ExploreState>(
+        builder: (context, state) {
+          final sections = state.sections;
 
-          // "My courses" — a flat grid of the user's enrolled courses.
-          if (exploreMode == CourseExploreMode.myCourses) {
-            final myCourses = progressState.myCourses;
-            if (myCourses.isEmpty) {
-              return const CourseEmptyState();
+          if (sections.isEmpty) {
+            // Cold load: a skeleton, not the "nothing to see" empty state,
+            // which is reserved for a catalogue that really is empty.
+            if (state.status == ExploreStatus.loading || state.status == ExploreStatus.initial) {
+              return const _CourseGridSkeleton();
             }
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final gridWidth = constraints.maxWidth - 40.w;
-                return GridView.builder(
-                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 80.h),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: _kCourseGridColGap,
-                    mainAxisSpacing: _kCourseGridRowGap,
-                    // Exact card height (no slack) so the visible row gap is
-                    // exactly _kCourseGridRowGap.
-                    mainAxisExtent: courseGridCellExtent(gridWidth),
+            if (state.status == ExploreStatus.failure) {
+              return _ExploreLoadFailed(
+                onRetry: () => context.read<ExploreCubit>().refresh(),
+              );
+            }
+            return const CourseEmptyState();
+          }
+
+          return RefreshIndicator(
+            onRefresh: () => context.read<ExploreCubit>().refresh(),
+            child: ListView.builder(
+              // No horizontal padding here: each section pays its own, so its
+              // strip can run to the screen edge instead of stopping 20 short
+              // and reading as a clipped list.
+              padding: EdgeInsets.only(bottom: 80.h),
+              itemCount: sections.length + _kHeaderRows,
+              itemBuilder: (context, index) {
+                // The search field and the import board ride at the top of the
+                // list so the whole page scrolls as one.
+                if (index < _kHeaderRows) {
+                  return Column(
+                    children: [
+                      const CourseHeader(),
+                      12.verticalSpace,
+                    ],
+                  );
+                }
+
+                final section = sections[index - _kHeaderRows];
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 22.h),
+                  child: _ExploreSection(
+                    section: section,
+                    onTapCourse: (course) => _onTapExploreCourse(context, course, section),
                   ),
-                  itemCount: myCourses.length,
-                  itemBuilder: (context, index) {
-                    final course = myCourses[index];
-                    final info = _myCourseProgress(course);
-                    return _CourseGridCard(
-                      key: ValueKey(course.id),
-                      course: course,
-                      completedLessons: info.completedLessons,
-                      totalLessons: info.totalLessons,
-                      isSelected: homeState.isSelectedCourse(course.id),
-                      onTap: () => _onTapMyCourse(context, skillsets, course),
-                    );
-                  },
                 );
               },
-            );
-          }
-
-          // "All courses" — every skillset stacked as a scrollspy section.
-          // Always the top. `activeSkillsetIndex` is where the scrollspy last
-          // left the reader, and opening there used to be visible — the chip
-          // strip lit the matching chip and explained it. With the strip gone,
-          // tapping Explore just threw the page down to a section with nothing
-          // saying why (owner, 2026-09-05: "bấm vào nav khám phá bị cuộn phát
-          // xuống cuối luôn"). A deep link to a section still arrives through
-          // the scroll nonce below.
-          return BlocListener<CourseCubit, CourseState>(
-            // A bumped nonce is a scroll request (chip tap / reset / deep-link).
-            listenWhen: (prev, curr) => prev.exploreScrollNonce != curr.exploreScrollNonce,
-            listener: (_, state) => _handleScrollRequest(state, skillsets.length),
-            child: NotificationListener<ScrollNotification>(
-              // Arm the scrollspy on the first user-initiated drag (programmatic
-              // scrolls have no dragDetails), so chips don't light on entry.
-              onNotification: (n) {
-                if (n is ScrollStartNotification && n.dragDetails != null) {
-                  _spyArmed = true;
-                }
-                return false;
-              },
-              child: ScrollablePositionedList.builder(
-                itemScrollController: _scrollController,
-                itemPositionsListener: _positionsListener,
-                initialScrollIndex: 0,
-                // No horizontal padding here: each section pays its own, so its
-                // strip can run to the screen edge instead of stopping 20 short
-                // and reading as a clipped list.
-                padding: EdgeInsets.only(bottom: 80.h),
-                itemCount: skillsets.length + _kHeaderRows,
-                itemBuilder: (context, index) {
-                  // The search field and the import board ride at the top of
-                  // the list so the whole page scrolls as one.
-                  if (index < _kHeaderRows) {
-                    return Column(
-                      children: [
-                        const CourseHeader(),
-                        12.verticalSpace,
-                      ],
-                    );
-                  }
-
-                  final skillset = skillsets[index - _kHeaderRows];
-                  return _CourseSection(
-                    skillset: skillset,
-                    progressState: progressState,
-                    isSelected: (courseId) => homeState.isSelectedCourse(courseId),
-                    onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
-                    showBottomSpacing: index - _kHeaderRows < skillsets.length - 1,
-                  );
-                },
-              ),
             ),
           );
         },
@@ -337,15 +206,23 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     );
   }
 
-  void _onTapCourse(
+  /// Row 0 of the list is the header (search + the import board), which scrolls
+  /// away with the sections rather than sitting pinned above them — the design
+  /// scrolls the whole page (owner, 2026-09-05).
+  static const int _kHeaderRows = 1;
+
+  /// Opens a course tapped anywhere on the tab.
+  ///
+  /// A course arrives here without a skillset — a collection is a hand-picked
+  /// list that crosses skillsets — so the owning one is resolved from the
+  /// catalogue, which is what the roadmap's selection flow needs.
+  void _onTapExploreCourse(
     BuildContext context,
-    SkillsetEntity skillset,
     CourseEntity course,
-    int index,
+    ExploreSectionEntity section,
   ) {
-    // Coming-soon courses show an informational bottom sheet instead of navigating.
     if (course.isComingSoonNow) {
-      _showComingSoonSheet(context, course, skillset: skillset);
+      _showComingSoonSheet(context, course);
       return;
     }
 
@@ -361,14 +238,29 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     ExploreTracking.track(
       TrackingKey.exploreCourseClick,
       parameters: {
-        ...ExploreTracking.skillsetParams(skillset),
+        ...ExploreTracking.sectionParams(section),
         ...ExploreTracking.courseParams(course),
         'course_state': ExploreTracking.courseState(course, passed: progress.passed, total: progress.total),
         'source': 'nav_explore',
       },
     );
 
-    _handleCourseTap(context, skillset, course, index);
+    final skillsets = context.read<HomeCubit>().state.skillsets;
+    for (final skillset in skillsets) {
+      final index = skillset.courses.indexWhere((c) => c.id == course.id);
+      if (index >= 0) {
+        _handleCourseTap(context, skillset, course, index);
+        return;
+      }
+    }
+
+    // Not in the cached catalogue (a course published since the skillsets were
+    // fetched). Fall back to selecting it by id rather than swallowing the tap.
+    if (context.read<HomeCubit>().trySelectCourseFromCourseId(course.id)) {
+      context.read<CourseRoadmapCubit>().setRoadmapSource('course_selection');
+      CourseRoadmapRoute().go(context);
+      context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+    }
   }
 
   void _handleCourseTap(
@@ -386,41 +278,6 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     // branch root doesn't re-fire the observer, so otherwise currentRouteName
     // stays non-primary and the bottom nav (the only exit) stays hidden.
     context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-  }
-
-  /// Handle a tap from the "My courses" grid. Resolves the owning skillset so
-  /// the normal selection flow runs; falls back to opening the roadmap by id.
-  void _onTapMyCourse(
-    BuildContext context,
-    List<SkillsetEntity> skillsets,
-    CourseEntity course,
-  ) {
-    for (final skillset in skillsets) {
-      final index = skillset.courses.indexWhere((c) => c.id == course.id);
-      if (index >= 0) {
-        _onTapCourse(context, skillset, course, index);
-        return;
-      }
-    }
-
-    if (course.isComingSoonNow) {
-      _showComingSoonSheet(context, course);
-      return;
-    }
-    if (context.read<HomeCubit>().trySelectCourseFromCourseId(course.id)) {
-      context.read<CourseRoadmapCubit>().setRoadmapSource('my_courses');
-      CourseRoadmapRoute().go(context);
-      context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-    }
-  }
-
-  _CourseProgressInfo _myCourseProgress(CourseEntity course) {
-    // Every "my course" is enrolled — always show its %, even at 0%.
-    return _CourseProgressInfo(
-      showProgress: true,
-      completedLessons: course.numberOfLessonPassed,
-      totalLessons: course.numberOfLesson,
-    );
   }
 
   @override
@@ -478,93 +335,86 @@ void _showComingSoonSheet(BuildContext context, CourseEntity course, {SkillsetEn
   );
 }
 
-/// One skillset on Explore: its name, a chevron into its full list, and a
-/// horizontal strip of up to [_kMaxCoursesPerSection] covers.
-///
-/// It used to be a two-column grid capped at five with a "View more" tile in
-/// the sixth slot. The strip (design note 2026-09-04) fits twice as many
-/// courses in a third of the height, which is what lets Explore show every
-/// category on one scroll instead of two per screen — and it moves "see the
-/// rest" from a card that competed with the covers to a chevron in the heading,
-/// present on every section whether or not anything is hidden.
-class _CourseSection extends StatelessWidget {
-  final SkillsetEntity skillset;
-  final ProgressState progressState;
-  final bool Function(String courseId) isSelected;
-  final void Function(CourseEntity course, int courseIndex) onTapCourse;
-  final bool showBottomSpacing;
+/// Draws one section by its type. A kind this build does not know about is
+/// dropped in the repository, so anything arriving here is drawable.
+class _ExploreSection extends StatelessWidget {
+  const _ExploreSection({required this.section, required this.onTapCourse});
 
-  const _CourseSection({
-    required this.skillset,
-    required this.progressState,
-    required this.isSelected,
-    required this.onTapCourse,
-    required this.showBottomSpacing,
-  });
+  final ExploreSectionEntity section;
+  final void Function(CourseEntity course) onTapCourse;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (section.type) {
+      case ExploreSectionType.curated:
+        return _CollectionSection(section: section, onTapCourse: onTapCourse);
+      case ExploreSectionType.weeklyTop:
+        return _WeeklyTopSection(section: section, onTapCourse: onTapCourse);
+      case ExploreSectionType.becauseYou:
+        return _BecauseYouSection(section: section, onTapCourse: onTapCourse);
+      case ExploreSectionType.topicChips:
+        return const _TopicChipsSection();
+      case ExploreSectionType.unknown:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+/// A heading over a horizontal strip of covers — the shape every editor-curated
+/// collection takes.
+///
+/// No "see all" chevron: the API hands over the eight courses the strip shows
+/// and nothing more, so there is no fuller list to open. Browsing everything in
+/// a topic is what the chips below are for.
+class _CollectionSection extends StatelessWidget {
+  const _CollectionSection({required this.section, required this.onTapCourse});
+
+  final ExploreSectionEntity section;
+  final void Function(CourseEntity course) onTapCourse;
 
   /// Card width in the strip (design `width:126px`). The cover is square, so
   /// this is its height too.
   static const double _cardWidth = 126;
 
-  void _openFullList(BuildContext context) {
-    AppHaptic.select();
-    ExploreTracking.track(
-      TrackingKey.exploreCatViewmore,
-      parameters: ExploreTracking.skillsetParams(skillset),
-    );
-    SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final progressById = progressLookup(progressState);
-    final sorted = sortCoursesForExplore(skillset.courses, progressById);
-    final displayed = sorted.take(_kMaxCoursesPerSection).toList();
+    final progressById = progressLookup(context.watch<ProgressCubit>().state);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: AppText(
-                  skillset.title.text,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              AppText(
+                section.title.text,
+                maxLines: 2,
+                style: TextStyle(
+                  fontFamily: AppFont.mulish,
+                  fontSize: 15.5.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
+                  color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                ),
+              ),
+              if (section.description.text.isNotEmpty) ...[
+                4.verticalSpace,
+                AppText(
+                  section.description.text,
+                  // A strapline is content, not a label — let it wrap rather
+                  // than lose its second half to AppText's default clamp.
+                  maxLines: 100,
                   style: TextStyle(
                     fontFamily: AppFont.mulish,
-                    fontSize: 15.5.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.1,
-                    color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                    color: studyThemeOnBg(context, AppCustomColor.textSecondary),
                   ),
                 ),
-              ),
-              10.horizontalSpace,
-              Semantics(
-                button: true,
-                label: '${context.l10n.allcourse.viewMore} ${skillset.title.text}',
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _openFullList(context),
-                  // 28 square so the tap target is not just the glyph, pulled 6
-                  // right so the arrow itself lines up with the page margin.
-                  child: Transform.translate(
-                    offset: Offset(6.w, 0),
-                    child: SizedBox(
-                      width: 28.w,
-                      height: 28.w,
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        size: 24.w,
-                        color: studyThemeAccentOnBg(context, AppCustomColor.brandPrimary),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              ],
             ],
           ),
         ),
@@ -575,22 +425,20 @@ class _CourseSection extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (int i = 0; i < displayed.length; i++) ...[
+              for (int i = 0; i < section.courses.length; i++) ...[
                 if (i > 0) 12.horizontalSpace,
                 SizedBox(
                   width: _cardWidth.w,
                   child: Builder(
                     builder: (context) {
-                      final course = displayed[i];
-                      final originalIndex = skillset.courses.indexWhere((c) => c.id == course.id);
-                      final progressInfo = _progressInfoFor(course, progressById);
+                      final course = section.courses[i];
+                      final info = _progressInfoFor(course, progressById);
                       return _CourseGridCard(
-                        key: ValueKey(course.id),
+                        key: ValueKey('${section.id}-${course.id}'),
                         course: course,
-                        completedLessons: progressInfo.completedLessons,
-                        totalLessons: progressInfo.totalLessons,
-                        isSelected: isSelected(course.id),
-                        onTap: () => onTapCourse(course, originalIndex >= 0 ? originalIndex : i),
+                        completedLessons: info.completedLessons,
+                        totalLessons: info.totalLessons,
+                        onTap: () => onTapCourse(course),
                       );
                     },
                   ),
@@ -599,7 +447,6 @@ class _CourseSection extends StatelessWidget {
             ],
           ),
         ),
-        if (showBottomSpacing) 22.verticalSpace,
       ],
     );
   }
@@ -616,6 +463,567 @@ class _CourseSection extends StatelessWidget {
       showProgress: true,
       completedLessons: p.passed,
       totalLessons: p.total,
+    );
+  }
+}
+
+/// "Được học nhiều nhất" — one card at a time, swiped sideways, with the three
+/// ranks shown as dots.
+///
+/// A pager rather than a strip because each entry carries a description: the
+/// reason a course is popular is the point of the section, and three
+/// descriptions side by side in a scroller would each be three words wide.
+class _WeeklyTopSection extends StatefulWidget {
+  const _WeeklyTopSection({required this.section, required this.onTapCourse});
+
+  final ExploreSectionEntity section;
+  final void Function(CourseEntity course) onTapCourse;
+
+  @override
+  State<_WeeklyTopSection> createState() => _WeeklyTopSectionState();
+}
+
+class _WeeklyTopSectionState extends State<_WeeklyTopSection> {
+  late final PageController _controller = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final courses = widget.section.courses;
+    if (courses.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.r),
+          border: Border.all(color: const Color(0xFFEBE9F9), width: 1.5),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF4F3FE), Color(0xFFFBF7F4)],
+          ),
+        ),
+        padding: EdgeInsets.fromLTRB(16.w, 15.h, 16.w, 16.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        context.l10n.allcourse.exploreWeeklyEyebrow,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontFamily: AppFont.mulish,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF8A88A8),
+                        ),
+                      ),
+                      2.verticalSpace,
+                      AppText(
+                        context.l10n.allcourse.exploreWeeklyTitle,
+                        maxLines: 2,
+                        style: TextStyle(
+                          fontFamily: AppFont.mulish,
+                          fontSize: 15.5.sp,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.1,
+                          color: AppCustomColor.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (courses.length > 1) _WeeklyDots(count: courses.length, active: _page),
+              ],
+            ),
+            14.verticalSpace,
+            SizedBox(
+              // Fixed because a PageView cannot size itself to its tallest
+              // child. Tall enough for the cover row plus three lines of the
+              // italic description; longer copy clamps rather than overflowing.
+              height: 186.h,
+              child: PageView.builder(
+                controller: _controller,
+                onPageChanged: (page) => setState(() => _page = page),
+                itemCount: courses.length,
+                itemBuilder: (context, index) => _WeeklyTopCard(
+                  course: courses[index],
+                  onTap: () => widget.onTapCourse(courses[index]),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeeklyDots extends StatelessWidget {
+  const _WeeklyDots({required this.count, required this.active});
+
+  final int count;
+  final int active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int i = 0; i < count; i++) ...[
+          if (i > 0) 5.horizontalSpace,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: (i == active ? 22 : 6).w,
+            height: 6.w,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(99.r),
+              color: i == active ? AppCustomColor.textPrimary : const Color(0xFFD9DEE7),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _WeeklyTopCard extends StatelessWidget {
+  const _WeeklyTopCard({required this.course, required this.onTap});
+
+  final CourseEntity course;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final learners = course.learnerCount;
+    final author = course.author ?? '';
+    final meta = [
+      if (author.isNotEmpty) author,
+      if (learners != null && learners > 0) context.l10n.allcourse.exploreLearnerCount(count: learners),
+    ].join(' · ');
+
+    return Semantics(
+      label: course.title.text,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16.r),
+                  child: SizedBox(
+                    width: 60.w,
+                    height: 60.w,
+                    child: CoverArt(url: course.image, seed: course.id, label: course.title.text),
+                  ),
+                ),
+                12.horizontalSpace,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText(
+                        course.title.text,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppFont.mulish,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.28,
+                          color: AppCustomColor.textPrimary,
+                        ),
+                      ),
+                      if (meta.isNotEmpty) ...[
+                        4.verticalSpace,
+                        AppText(
+                          meta,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: AppFont.mulish,
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF7C8AA4),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            12.verticalSpace,
+            Container(height: 1, color: const Color(0x22554FF0)),
+            12.verticalSpace,
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    '“',
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontFamily: AppFont.mulish,
+                      fontSize: 26.sp,
+                      height: 0.9,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0x38554FF0),
+                    ),
+                  ),
+                  9.horizontalSpace,
+                  Expanded(
+                    child: AppText(
+                      course.description.text,
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppFont.mulish,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FontStyle.italic,
+                        height: 1.55,
+                        color: const Color(0xFF4A4A73),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Tìm kiếm theo chủ đề" — the skillset catalogue as chips, two rows of three.
+///
+/// Reads `HomeCubit` rather than the Explore payload: the catalogue is already
+/// loaded for Home and the roadmap, and asking the server for it again on every
+/// Explore open would be bytes spent on data the app is holding.
+class _TopicChipsSection extends StatelessWidget {
+  const _TopicChipsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final skillsets = context.watch<HomeCubit>().state.skillsets;
+    if (skillsets.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            context.l10n.allcourse.exploreTopicsTitle,
+            maxLines: 2,
+            style: TextStyle(
+              fontFamily: AppFont.mulish,
+              fontSize: 15.5.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.1,
+              color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+            ),
+          ),
+          10.verticalSpace,
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              for (final skillset in skillsets) _TopicChip(skillset: skillset),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopicChip extends StatelessWidget {
+  const _TopicChip({required this.skillset});
+
+  final SkillsetEntity skillset;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: skillset.title.text,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          ExploreTracking.track(
+            TrackingKey.exploreCatViewmore,
+            parameters: ExploreTracking.skillsetParams(skillset),
+          );
+          SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
+        },
+        child: Container(
+          padding: EdgeInsets.fromLTRB(10.w, 7.h, 15.w, 7.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F6FA),
+            borderRadius: BorderRadius.circular(99.r),
+            border: Border.all(color: const Color(0xFFEEF0F6), width: 1.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (skillset.image.isNotEmpty) ...[
+                ClipOval(
+                  child: SizedBox(
+                    width: 22.w,
+                    height: 22.w,
+                    // ClipOval on the image itself, not a circular Container
+                    // around it: at this size a shape+clipBehavior container
+                    // leaks the artwork's corners as four pale wedges.
+                    child: CoverArt(url: skillset.image, seed: skillset.id, label: skillset.title.text),
+                  ),
+                ),
+                8.horizontalSpace,
+              ],
+              // Constrained so one long topic name cannot push the chip past
+              // the screen edge — Wrap can move a chip to the next run, but it
+              // cannot shrink one that asks to be wider than the viewport.
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 160.w),
+                child: AppText(
+                  skillset.title.text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppFont.mulish,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF3A4250),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Vì bạn đã học X" — a tinted panel naming the course just finished, with
+/// three suggestions from the same skillset stacked under it.
+///
+/// Stacked rows rather than the horizontal strip the collections use: this is a
+/// short, reasoned list ("because of that, these three"), and a sideways
+/// scroller would hide two of the three behind a gesture.
+class _BecauseYouSection extends StatelessWidget {
+  const _BecauseYouSection({required this.section, required this.onTapCourse});
+
+  final ExploreSectionEntity section;
+  final void Function(CourseEntity course) onTapCourse;
+
+  @override
+  Widget build(BuildContext context) {
+    final source = section.sourceCourse;
+    if (source == null || section.courses.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F6FA),
+          borderRadius: BorderRadius.circular(22.r),
+          border: Border.all(color: const Color(0xFFECEEF6), width: 1.5),
+        ),
+        padding: EdgeInsets.fromLTRB(12.w, 16.h, 12.w, 6.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        context.l10n.allcourse.exploreBecauseYouTitle.toUpperCase(),
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontFamily: AppFont.mulish,
+                          fontSize: 8.5.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.85,
+                          color: AppCustomColor.brandPrimary,
+                        ),
+                      ),
+                      3.verticalSpace,
+                      AppText(
+                        source.title.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppFont.mulish,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                          color: AppCustomColor.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                10.horizontalSpace,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(11.r),
+                  child: SizedBox(
+                    width: 36.w,
+                    height: 36.w,
+                    child: CoverArt(url: source.image, seed: source.id, label: source.title.text),
+                  ),
+                ),
+              ],
+            ),
+            10.verticalSpace,
+            for (final course in section.courses)
+              _BecauseYouRow(course: course, onTap: () => onTapCourse(course)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BecauseYouRow extends StatelessWidget {
+  const _BecauseYouRow({required this.course, required this.onTap});
+
+  final CourseEntity course;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final author = course.author ?? '';
+
+    return Semantics(
+      button: true,
+      label: course.title.text,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptic.select();
+          onTap();
+        },
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 7.h),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: SizedBox(
+                  width: 44.w,
+                  height: 44.w,
+                  child: CoverArt(url: course.image, seed: course.id, label: course.title.text),
+                ),
+              ),
+              10.horizontalSpace,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      course.title.text,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppFont.mulish,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        height: 1.3,
+                        color: AppCustomColor.textPrimary,
+                      ),
+                    ),
+                    if (author.isNotEmpty) ...[
+                      2.verticalSpace,
+                      AppText(
+                        author,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppFont.mulish,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF7C8AA4),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20.w,
+                color: AppCustomColor.brandPrimary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown when the tab has nothing to draw AND the fetch failed — distinct from
+/// an empty catalogue, which is a different message and has no retry.
+class _ExploreLoadFailed extends StatelessWidget {
+  const _ExploreLoadFailed({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppText(
+              context.l10n.allcourse.exploreLoadFailed,
+              maxLines: 100,
+              textAlign: TextAlign.center,
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+            ),
+            16.verticalSpace,
+            AppButton.primary(
+              onPressed: onRetry,
+              child: AppText(
+                context.l10n.allcourse.exploreRetry,
+                style: AppStyle.textBold16.copyWith(color: AppCustomColor.textWhite),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -663,14 +1071,12 @@ class _CourseGridCard extends StatelessWidget {
     required this.course,
     this.completedLessons,
     this.totalLessons,
-    this.isSelected = false,
     required this.onTap,
   });
 
   final CourseEntity course;
   final int? completedLessons;
   final int? totalLessons;
-  final bool isSelected;
   final VoidCallback onTap;
 
   @override
@@ -687,18 +1093,10 @@ class _CourseGridCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Square, borderless, no shadow — the redesign lets the artwork be
-            // the card. The only outline left is the selection ring, drawn
-            // INSIDE via a foreground border so picking a course cannot nudge
-            // the grid's geometry.
+            // the card.
             AspectRatio(
               aspectRatio: 1,
-              child: Container(
-                foregroundDecoration: isSelected
-                    ? BoxDecoration(
-                        border: Border.all(color: AppCustomColor.brandPrimary, width: 2),
-                        borderRadius: BorderRadius.circular(_kCoverRadius),
-                      )
-                    : null,
+              child: SizedBox(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(_kCoverRadius),
                   child: Stack(

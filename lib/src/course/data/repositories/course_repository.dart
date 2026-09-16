@@ -103,4 +103,18 @@ class CourseRepository with RestfulRequestHandlerMixin implements ICourseReposit
       apiCall: () => _api.clearRecentlyViewed(),
     );
   }
+
+  @override
+  TaskEither<AppException, List<ExploreSectionEntity>> getExploreSections(int seed) {
+    return callApiWithTransform<ExploreResponseModel, List<ExploreSectionEntity>>(
+      apiCall: () => _api.getExploreSections(seed),
+      // A section kind this build cannot draw, or one that came back empty, is
+      // dropped here rather than in every widget that walks the list.
+      transform: (model) => model.sections
+          .map((s) => s.toEntity())
+          .where((s) => s.type != ExploreSectionType.unknown && s.hasContent)
+          .toList(),
+      defaultValue: const [],
+    );
+  }
 }

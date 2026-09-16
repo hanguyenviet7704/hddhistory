@@ -31,3 +31,12 @@ searchPlaceholderActive: Finding...
 searchRecent: Recent
 searchSemanticLabel: Search courses
 searchTypeToSearch: Type something to search
+# Explore tab — the fixed strip labels. Collection names come from the editor,
+# so they travel with the data rather than living here.
+exploreWeeklyEyebrow: This week
+exploreWeeklyTitle: Most studied
+exploreTopicsTitle: Browse by topic
+exploreBecauseYouTitle: Because you finished
+exploreLearnerCount(param=count): ${count} learners
+exploreRetry: Try again
+exploreLoadFailed: Couldn't load this yet

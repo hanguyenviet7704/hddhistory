@@ -19,6 +19,11 @@ abstract class CourseModel with _$CourseModel {
     // cards drop each half when the content team left it blank.
     String? author,
     int? viewCount,
+
+    /// Weekly-popular strip only: how many people opened this course since
+    /// Monday. Absent everywhere else, which is why it is nullable rather than
+    /// defaulted to 0 — zero would render as a real "0 người học".
+    int? learnerCount,
   }) = _CourseModel;
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
@@ -221,5 +226,6 @@ extension CourseModelExtension on CourseModel {
     newDurationDays: newDurationDays,
     author: author,
     viewCount: viewCount,
+    learnerCount: learnerCount,
   );
 }

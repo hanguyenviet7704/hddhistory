@@ -34,4 +34,7 @@ abstract class CourseApi {
 
   @DELETE(AppEndpoint.coursesRecentlyViewed)
   Future<void> clearRecentlyViewed();
+
+  @GET(AppEndpoint.coursesExplore)
+  Future<BaseResponse<ExploreResponseModel>> getExploreSections(@Query('seed') int seed);
 }

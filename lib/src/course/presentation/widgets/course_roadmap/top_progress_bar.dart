@@ -21,17 +21,12 @@ class TopProgressBar extends StatelessWidget {
             AppHaptic.select();
             // CourseCubit/PageCubit aren't provided above the roadmap tree, so
             // resolve them from DI (both are singletons).
-            // Jump straight to the current skillset's chip/section in Explore.
-            final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
-            AppDI.injector.get<CourseCubit>()
-              ..setAllCourseSource('course_switch')
-              ..jumpToSkillset(skillsetIndex);
+            AppDI.injector.get<CourseCubit>().setAllCourseSource('course_switch');
             // Switch to the Explore shell branch (index 3) instead of push()ing
             // the grid onto the Courses branch, which left the bottom nav stuck
-            // on "Courses". Pass the index so a first-time Explore build lands on
-            // the same skillset (kept-alive builds use jumpToSkillset above).
+            // on "Courses".
             AppDI.injector.get<PageCubit>().setCurrentIndex(3);
-            CourseRoute(selectedTabIndex: skillsetIndex).go(context);
+            const CourseRoute().go(context);
           },
           child: Container(
             height: 36.h,

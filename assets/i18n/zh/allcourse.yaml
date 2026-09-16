@@ -32,3 +32,10 @@ viewMore: 查看更多
 exploreMoreCourses: 探索更多课程
 changeCourseTitle: 更换课程
 changeCourseTabAll: 全部
+exploreWeeklyEyebrow: 本周
+exploreWeeklyTitle: 学习人数最多
+exploreTopicsTitle: 按主题浏览
+exploreBecauseYouTitle: 因为你学完了
+exploreLearnerCount(param=count): ${count} 人在学
+exploreRetry: 重新加载
+exploreLoadFailed: 暂时无法加载

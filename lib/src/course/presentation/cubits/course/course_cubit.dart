@@ -121,42 +121,15 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
     );
   }
 
-  /// Switches Explore to the "My courses" filtered grid.
-  void showMyCourses() => emit(state.copyWith(exploreMode: CourseExploreMode.myCourses));
-
-  /// Switches Explore to the "all courses" sections and asks the list to scroll
-  /// to skillset [index], lighting its chip. Bumping [exploreScrollNonce] is the
-  /// scroll request — the list (which owns its scroll controller) listens for it.
-  /// Used by chip taps and onboarding deep-links.
-  void jumpToSkillset(int index) {
-    emit(
-      state.copyWith(
-        exploreMode: CourseExploreMode.all,
-        activeSkillsetIndex: index,
-        exploreScrollNonce: state.exploreScrollNonce + 1,
-      ),
-    );
-  }
-
-  /// Scrollspy callback — highlights the chip of the section at the viewport
-  /// middle. Emits only on change to avoid per-frame churn. Does NOT bump the
-  /// scroll nonce, so reporting position never triggers a counter-scroll.
-  void onActiveSectionChanged(int index) {
-    if (state.exploreMode != CourseExploreMode.all) return;
-    if (index == state.activeSkillsetIndex) return;
-    emit(state.copyWith(activeSkillsetIndex: index));
-  }
-
-  /// Resets Explore to the default "all courses / out menu" state: all sections,
-  /// no chip highlighted, scrolled to the top. Called on every Explore entry.
+  /// Resets Explore to its default entry state.
+  ///
+  /// Once this also switched view mode and asked the list to scroll to a
+  /// skillset section; the tab has neither a second mode nor skillset sections
+  /// any more, so all that is left is forgetting where the reader came from —
+  /// which matters because `allCourseSource` decides what `explore_scr_view`
+  /// reports.
   void resetExploreToAll() {
-    emit(
-      state.copyWith(
-        exploreMode: CourseExploreMode.all,
-        activeSkillsetIndex: -1,
-        exploreScrollNonce: state.exploreScrollNonce + 1,
-      ),
-    );
+    clearSearch();
   }
 
   /// Loads the "Recent" list — recently-viewed courses (Figma search screen).

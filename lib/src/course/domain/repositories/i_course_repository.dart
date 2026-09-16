@@ -13,5 +13,9 @@ abstract class ICourseRepository {
 
   TaskEither<AppException, List<CourseEntity>> getRecentCourses();
   TaskEither<AppException, Unit> recordCourseView(String courseId);
+
+  /// The whole Explore tab, sections already in render order. [seed] keeps the
+  /// shuffled strips stable for one session.
+  TaskEither<AppException, List<ExploreSectionEntity>> getExploreSections(int seed);
   TaskEither<AppException, Unit> clearRecentCourses();
 }

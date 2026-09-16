@@ -285,15 +285,12 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         return true;
 
       // Đúng chuỗi mà một cú bấm tab "Khám phá" chạy (xem
-      // PageCubit.handleShellRouteNavigation case 3): mở Explore đã cuộn tới
-      // course đang học, không reset về đầu danh sách.
+      // PageCubit.handleShellRouteNavigation case 3). Trước đây còn cuộn tới
+      // khoá đang học; tab không còn mục theo chủ đề để cuộn tới nữa.
       case DeeplinkDestination.explore:
-        final selectedSkillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
-        AppDI.injector.get<CourseCubit>()
-          ..setAllCourseSource(deeplinkRoadmapSource)
-          ..jumpToSkillset(selectedSkillsetIndex);
+        AppDI.injector.get<CourseCubit>().setAllCourseSource(deeplinkRoadmapSource);
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
-        CourseRoute().go(navContext);
+        const CourseRoute().go(navContext);
         return true;
 
       case DeeplinkDestination.habit:

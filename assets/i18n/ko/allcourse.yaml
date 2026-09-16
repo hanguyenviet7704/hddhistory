@@ -32,3 +32,10 @@ viewMore: 더 보기
 exploreMoreCourses: 더 많은 코스 탐색
 changeCourseTitle: 코스 변경
 changeCourseTabAll: 전체
+exploreWeeklyEyebrow: 이번 주
+exploreWeeklyTitle: 가장 많이 학습한 코스
+exploreTopicsTitle: 주제로 찾기
+exploreBecauseYouTitle: 이 코스를 끝냈으니
+exploreLearnerCount(param=count): ${count}명이 학습 중
+exploreRetry: 다시 불러오기
+exploreLoadFailed: 아직 불러오지 못했어요

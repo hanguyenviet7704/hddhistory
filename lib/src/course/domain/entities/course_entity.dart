@@ -22,6 +22,10 @@ abstract class CourseEntity with _$CourseEntity {
 
     /// Curated reach figure, raw (6300 renders as "6.3k"). Null when unset.
     int? viewCount,
+
+    /// Weekly-popular strip only: people who opened this course since Monday.
+    /// Null everywhere else — a 0 here would render as a real figure.
+    int? learnerCount,
   }) = _CourseEntity;
 
   factory CourseEntity.fromJson(Map<String, dynamic> json) => _$CourseEntityFromJson(json);

@@ -226,14 +226,12 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       });
       return;
     }
-    // Grid / search live on the Explore tab — return to it at the
-    // current skillset (mirrors the header dropdown's navigation).
-    final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
-    AppDI.injector.get<CourseCubit>()
-      ..setAllCourseSource('roadmap_back')
-      ..jumpToSkillset(skillsetIndex);
+    // Grid / search live on the Explore tab — return to it. It used to land on
+    // the current skillset's section; the tab has no skillset sections now, so
+    // the destination is simply the tab.
+    AppDI.injector.get<CourseCubit>().setAllCourseSource('roadmap_back');
     context.read<PageCubit>().setCurrentIndex(3);
-    CourseRoute(selectedTabIndex: skillsetIndex).go(context);
+    const CourseRoute().go(context);
   }
 
   void _trackRoadmapQuickLearningClick(String startType) {
@@ -663,12 +661,9 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                           // pick a course — mirrors the TopProgressBar dropdown.
                           final hasRoadmap = context.read<CourseRoadmapCubit>().state.roadmap.levels.isNotEmpty;
                           if (!hasRoadmap) {
-                            final skillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
-                            AppDI.injector.get<CourseCubit>()
-                              ..setAllCourseSource('my_course_empty')
-                              ..jumpToSkillset(skillsetIndex);
+                            AppDI.injector.get<CourseCubit>().setAllCourseSource('my_course_empty');
                             context.read<PageCubit>().setCurrentIndex(3);
-                            CourseRoute(selectedTabIndex: skillsetIndex).go(context);
+                            const CourseRoute().go(context);
                             return;
                           }
                           // Return-refresher available for this course: open
