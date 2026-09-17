@@ -9,6 +9,8 @@ interface ReviewsSectionProps {
   onChange: (next: ReviewDraft[]) => void;
   disabled?: boolean;
   fieldErrors: Record<string, string>;
+  /** Chuyển tiếp lên trang để khoá nút Đăng khi còn ảnh đang tải. */
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
 /**
@@ -22,6 +24,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   onChange,
   disabled = false,
   fieldErrors,
+  onUploadingChange,
 }) => {
   const updateReview = (index: number, next: ReviewDraft) => {
     onChange(value.map((r, i) => (i === index ? next : r)));
@@ -69,6 +72,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               onMoveDown={() => moveReview(index, 1)}
               disabled={disabled}
               fieldErrors={fieldErrors}
+              onUploadingChange={onUploadingChange}
             />
           ))}
         </div>

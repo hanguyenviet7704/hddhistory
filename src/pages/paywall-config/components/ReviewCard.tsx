@@ -8,6 +8,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import ReviewContentEditor from "../../../components/paywall-config/ReviewContentEditor";
+import { cloudflareService } from "../../../services/cloudflareR2Service";
 import { ReviewDraft } from "../paywallConfigDraft";
 
 interface ReviewCardProps {
@@ -20,6 +21,13 @@ interface ReviewCardProps {
   onMoveDown: () => void;
   disabled?: boolean;
   fieldErrors: Record<string, string>;
+  /**
+   * Nâng lên trang để nút "Đăng thay đổi" bị khoá trong lúc ảnh còn đang tải.
+   *
+   * Không có nó thì đăng giữa chừng sẽ đăng một cấu hình THIẾU đúng cái ảnh
+   * vừa chọn, và không có gì báo — URL chỉ được điền vào sau khi tải xong.
+   */
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
 const RATING_OPTIONS = [1, 2, 3, 4, 5];
@@ -34,11 +42,38 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   onMoveDown,
   disabled = false,
   fieldErrors,
+  onUploadingChange,
 }) => {
   const prefix = `reviews[${index}]`;
   const rowErrors = Object.keys(fieldErrors).filter((f) => f.startsWith(prefix));
   const [expanded, setExpanded] = useState(true);
   const [avatarBroken, setAvatarBroken] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  const uploadAvatar = async (file: File) => {
+    setUploading(true);
+    onUploadingChange?.(true);
+    setUploadError("");
+    try {
+      const res = await cloudflareService.upload(file, {
+        prefix: "",
+        folder: "paywall-review",
+      });
+      const url = res?.data?.data?.url;
+      if (!url) throw new Error("Không nhận được URL ảnh");
+      // Ảnh mới thì cho `<img>` thử lại — cờ hỏng là của ảnh CŨ.
+      setAvatarBroken(false);
+      onChange({ ...value, avatarUrl: url });
+    } catch (e: any) {
+      setUploadError(
+        e?.response?.data?.message || "Tải ảnh thất bại, thử lại giúp mình.",
+      );
+    } finally {
+      setUploading(false);
+      onUploadingChange?.(false);
+    }
+  };
 
   // Never let a collapsed card hide a validation error from view.
   useEffect(() => {
@@ -139,7 +174,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
             </label>
 
             <label className="flex flex-col gap-1 text-xs text-slate-700">
-              <span className="font-medium">URL ảnh đại diện</span>
+              <span className="font-medium">Ảnh đại diện</span>
               <div className="flex items-center gap-2">
                 {avatarUrl && !avatarBroken && (
                   <img
@@ -152,11 +187,51 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
                 <input
                   value={value.avatarUrl}
                   onChange={(e) => onChange({ ...value, avatarUrl: e.target.value })}
-                  placeholder="https://cdn.../avatar.png"
-                  disabled={disabled}
+                  placeholder="Tải ảnh lên, hoặc dán URL có sẵn"
+                  disabled={disabled || uploading}
                   className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-slate-50"
                 />
+                {/* Ô URL giữ nguyên bên cạnh: ảnh có sẵn trên CDN thì dán vẫn
+                    nhanh hơn tải lại một bản trùng. */}
+                <label
+                  className={`flex-shrink-0 cursor-pointer whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-medium ${
+                    disabled || uploading
+                      ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400"
+                      : "border-teal-500 text-teal-700 hover:bg-teal-50"
+                  }`}
+                >
+                  {uploading ? "Đang tải..." : "Tải ảnh"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    disabled={disabled || uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      // Dọn ngay, không thì chọn LẠI cùng một file sẽ không
+                      // bắn onChange và nút trông như bị kẹt.
+                      e.target.value = "";
+                      if (file) uploadAvatar(file);
+                    }}
+                  />
+                </label>
+                {value.avatarUrl && !uploading && (
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => {
+                      setAvatarBroken(false);
+                      onChange({ ...value, avatarUrl: "" });
+                    }}
+                    className="flex-shrink-0 whitespace-nowrap px-2 text-xs text-slate-500 hover:text-red-600 disabled:text-slate-300"
+                  >
+                    Gỡ
+                  </button>
+                )}
               </div>
+              {uploadError && (
+                <span className="text-[11px] text-red-600">{uploadError}</span>
+              )}
               <span className="text-[11px] text-slate-500">
                 Để trống thì app tự render đĩa chữ cái đầu của tên.
               </span>

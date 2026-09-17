@@ -77,6 +77,8 @@ export default function PaywallConfigPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  /** Số ảnh đại diện đang tải lên — nút Đăng khoá khi còn > 0. */
+  const [avatarUploads, setAvatarUploads] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -304,7 +306,12 @@ export default function PaywallConfigPage() {
             <button
               type="button"
               onClick={handlePublishClick}
-              disabled={disabled || !draft || productsLoading}
+              // Đăng giữa chừng sẽ đăng một cấu hình THIẾU đúng cái ảnh vừa
+              // chọn — URL chỉ được điền vào sau khi tải xong, và không có gì
+              // báo là nó đã bị bỏ lại.
+              disabled={
+                disabled || !draft || productsLoading || avatarUploads > 0
+              }
               className="relative min-w-[170px] justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               {isDirty && !saving && (
@@ -494,6 +501,11 @@ export default function PaywallConfigPage() {
             onChange={(reviews) => patchDraft({ reviews })}
             disabled={disabled}
             fieldErrors={fieldErrors}
+            onUploadingChange={(uploading) =>
+              // ĐẾM chứ không phải cờ bật/tắt: nhiều review có thể tải ảnh cùng
+              // lúc, và một cái xong sẽ tắt cờ của những cái còn đang chạy.
+              setAvatarUploads((n) => Math.max(0, n + (uploading ? 1 : -1)))
+            }
           />
         </>
       ) : null}
