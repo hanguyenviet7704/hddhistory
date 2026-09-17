@@ -221,7 +221,36 @@ class CommunityPostCubit extends Cubit<CommunityPostState>
         _replyToUserId = null;
         _replyToName = null;
         _startCooldown();
+        if (!state.isWeekly) unawaited(_refreshPostAfterComment(postId));
         return true;
+      },
+    );
+  }
+
+  /// Pull the post back down after a comment landed.
+  ///
+  /// Commenting follows the thread on the server, so the bell comes on and
+  /// `saveCount` moves — but NOT for a reader who had switched that thread off
+  /// by hand, whose choice the server keeps. This screen cannot tell those two
+  /// apart, and a guess is worse than a request: a bell drawn on when the
+  /// server says off turns the reader's next tap into an unfollow of something
+  /// they were never following.
+  ///
+  /// Not awaited by [submitComment] — the comment is already on screen and the
+  /// composer should not stay disabled for a second round trip. Skipped on the
+  /// weekly question, which has no bell and no auto-follow.
+  Future<void> _refreshPostAfterComment(String postId) async {
+    await runUseCase<CommunityPostEntity>(
+      usecase: () => _getPostUseCase(postId),
+      // Silent on failure: a stale bell is not worth an error banner over a
+      // comment that posted fine.
+      onFailure: (_) {},
+      // Guarded because nothing awaits this: backing out of the screen right
+      // after commenting closes the cubit while the request is still in the
+      // air, and emitting into a closed one throws.
+      onSuccess: (post) {
+        if (isClosed) return;
+        emit(state.copyWith(post: post));
       },
     );
   }
