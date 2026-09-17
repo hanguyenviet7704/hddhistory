@@ -7,4 +7,10 @@ export const adminAuditService = {
     const res = await axiosClient.get("/admin-audit", { params });
     return res.data;
   },
+
+  /** Một thao tác, kèm danh sách trường đã đổi so với lần lưu trước. */
+  async detail(id: string) {
+    const res = await axiosClient.get(`/admin-audit/${id}`);
+    return res.data;
+  },
 };

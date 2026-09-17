@@ -15,6 +15,8 @@ import {
 
 import { adminAuditService } from "../../services/adminAuditService";
 import {
+  AdminAuditChange,
+  AdminAuditDetail,
   AdminAuditPage as AdminAuditPageData,
   AdminAuditQuery,
   AdminAuditRow,
@@ -94,9 +96,76 @@ function prettyBody(raw: string): string {
   }
 }
 
+/**
+ * Một giá trị, viết ra cho người đọc chứ không cho lập trình viên.
+ *
+ * `true`/`false` là thứ hay gặp nhất trong các trang cấu hình, và "true" thì
+ * biên tập viên phải dịch trong đầu; "Bật" thì không.
+ */
+function readable(value: unknown): string {
+  if (value === undefined) return "(không có)";
+  if (value === null) return "(trống)";
+  if (value === true) return "Bật";
+  if (value === false) return "Tắt";
+  if (value === "") return "(để trống)";
+  if (Array.isArray(value) && value.length === 0) return "(danh sách rỗng)";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+/** Bảng "đã đổi gì" — trường, trước, sau. */
+const ChangeTable: React.FC<{ changes: AdminAuditChange[] }> = ({ changes }) => (
+  <Table size="small" className="bg-white">
+    <TableHead>
+      <TableRow>
+        <TableCell>Mục</TableCell>
+        <TableCell>Trước</TableCell>
+        <TableCell>Sau</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {changes.map((change) => (
+        <TableRow key={change.field}>
+          <TableCell className="font-mono text-[11px] text-slate-700">
+            {change.field}
+          </TableCell>
+          <TableCell className="text-slate-500 line-through">
+            {readable(change.before)}
+          </TableCell>
+          <TableCell className="font-medium text-slate-900">
+            {readable(change.after)}
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+);
+
 const Row: React.FC<{ row: AdminAuditRow }> = ({ row }) => {
   const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState<AdminAuditDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [showRaw, setShowRaw] = useState(false);
   const body = prettyBody(row.body);
+
+  // Nạp khi MỞ, không nạp sẵn: so sánh tốn một truy vấn cho mỗi dòng, mà phần
+  // lớn dòng không ai mở ra xem.
+  const toggle = async () => {
+    const next = !open;
+    setOpen(next);
+    if (!next || detail || loadingDetail) return;
+
+    setLoadingDetail(true);
+    try {
+      const res = await adminAuditService.detail(row._id);
+      setDetail(res?.data ?? null);
+    } catch {
+      // Không so được thì vẫn còn nội dung thô bên dưới — không chặn người đọc.
+      setDetail(null);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
 
   return (
     <>
@@ -129,8 +198,8 @@ const Row: React.FC<{ row: AdminAuditRow }> = ({ row }) => {
         </TableCell>
         <TableCell align="right">
           {body ? (
-            <Button size="small" onClick={() => setOpen((v) => !v)}>
-              {open ? "Ẩn" : "Xem nội dung"}
+            <Button size="small" onClick={toggle}>
+              {open ? "Ẩn" : "Xem thay đổi"}
             </Button>
           ) : (
             <span className="text-[11px] text-slate-400">không có</span>
@@ -143,15 +212,59 @@ const Row: React.FC<{ row: AdminAuditRow }> = ({ row }) => {
             {!row.ok && row.errorMessage && (
               <p className="mb-2 text-xs text-amber-800">{row.errorMessage}</p>
             )}
-            <pre className="max-h-96 overflow-auto rounded-lg bg-white p-3 text-[11px] leading-relaxed text-slate-700">
-              {body}
-            </pre>
-            {row.bodyTruncated && (
-              // Nói thẳng là chưa đủ, chứ không im lặng để người đọc tưởng đủ.
-              <p className="mt-1 text-[11px] text-slate-500">
-                Nội dung đã bị cắt vì quá dài — đây không phải toàn bộ những gì
-                đã gửi lên.
+
+            {loadingDetail ? (
+              <div className="flex justify-center p-4">
+                <CircularProgress size={22} />
+              </div>
+            ) : detail?.changes === null || detail === null ? (
+              // KHÔNG so được — nói rõ vì sao, chứ đừng để người đọc tưởng là
+              // "không có gì đổi".
+              <p className="mb-2 text-xs text-slate-600">
+                Chưa so được với lần trước
+                {row.bodyTruncated
+                  ? " vì nội dung quá dài nên đã bị cắt."
+                  : " — đây là lần đầu khu vực này được ghi nhận."}{" "}
+                Bên dưới là toàn bộ nội dung đã gửi lên.
               </p>
+            ) : detail.changes.length === 0 ? (
+              // Khác hẳn ở trên: so được, và kết quả là không đổi gì.
+              <p className="mb-2 text-xs text-slate-600">
+                Có bấm lưu nhưng <b>không thay đổi gì</b> so với lần trước
+                {detail.previousBy ? ` (${detail.previousBy})` : ""}.
+              </p>
+            ) : (
+              <>
+                <p className="mb-2 text-xs text-slate-600">
+                  <b>{detail.changes.length} mục thay đổi</b> so với lần lưu
+                  trước
+                  {detail.previousBy ? ` của ${detail.previousBy}` : ""}
+                  {detail.previousAt ? ` lúc ${timeOf(detail.previousAt)}` : ""}.
+                </p>
+                <ChangeTable changes={detail.changes} />
+              </>
+            )}
+
+            <Button
+              size="small"
+              className="mt-2"
+              onClick={() => setShowRaw((v) => !v)}
+            >
+              {showRaw ? "Ẩn nội dung gốc" : "Xem nội dung gốc"}
+            </Button>
+            {showRaw && (
+              <>
+                <pre className="mt-2 max-h-96 overflow-auto rounded-lg bg-white p-3 text-[11px] leading-relaxed text-slate-700">
+                  {body}
+                </pre>
+                {row.bodyTruncated && (
+                  // Nói thẳng là chưa đủ, chứ không im lặng để người đọc tưởng đủ.
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Nội dung đã bị cắt vì quá dài — đây không phải toàn bộ những
+                    gì đã gửi lên.
+                  </p>
+                )}
+              </>
             )}
           </TableCell>
         </TableRow>
