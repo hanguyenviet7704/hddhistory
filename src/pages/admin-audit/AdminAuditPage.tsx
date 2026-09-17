@@ -245,7 +245,7 @@ const AdminAuditPage: React.FC = () => {
             setPage(1);
             setActorId(e.target.value);
           }}
-          className="min-w-52"
+          sx={{ minWidth: 220 }}
         >
           <MenuItem value="">Tất cả</MenuItem>
           {(data?.actors ?? []).map((actor) => (
@@ -263,7 +263,7 @@ const AdminAuditPage: React.FC = () => {
             setPage(1);
             setPath(e.target.value);
           }}
-          className="min-w-56"
+          sx={{ minWidth: 240 }}
         />
         <TextField
           select
@@ -274,7 +274,7 @@ const AdminAuditPage: React.FC = () => {
             setPage(1);
             setResult(e.target.value);
           }}
-          className="min-w-36"
+          sx={{ minWidth: 150 }}
         >
           <MenuItem value="">Tất cả</MenuItem>
           <MenuItem value="ok">Thành công</MenuItem>
