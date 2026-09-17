@@ -11,10 +11,7 @@ import { PlusIcon, SaveIcon, Trash2Icon } from "lucide-react";
 
 import CommunityPageHeader from "../../components/community/CommunityPageHeader";
 import { communityService } from "../../services/communityService";
-import {
-  ICommunityChatGuide,
-  ICommunityChatGuideSection,
-} from "../../types/interface/community.interface";
+import { ICommunityChatGuide } from "../../types/interface/community.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 // The five languages the forum ships. A guide written in only some of them is
@@ -27,12 +24,84 @@ const LOCALES = [
   { value: "ko", label: "한국어" },
 ];
 
+type ListKey = "dos" | "donts" | "starters";
+
 const emptyGuide = (locale: string): ICommunityChatGuide => ({
   locale,
   title: "",
   intro: "",
-  sections: [],
+  dos: [],
+  donts: [],
+  starters: [],
 });
+
+/**
+ * One of the three lists, with its own colour so the editor reads the way the
+ * sheet does — green for what the room is for, red for what gets a line taken
+ * down, neutral for the openers.
+ */
+const ListEditor: React.FC<{
+  label: string;
+  hint: string;
+  tone: "do" | "dont" | "starter";
+  items: string[];
+  onChange: (items: string[]) => void;
+}> = ({ label, hint, tone, items, onChange }) => {
+  const toneClass = {
+    do: "border-emerald-200 bg-emerald-50/60",
+    dont: "border-rose-200 bg-rose-50/60",
+    starter: "border-indigo-200 bg-indigo-50/60",
+  }[tone];
+
+  return (
+    <div className={`space-y-3 rounded-xl border p-4 ${toneClass}`}>
+      <div>
+        <p className="text-sm font-semibold text-gray-900">{label}</p>
+        <p className="text-xs text-gray-500">{hint}</p>
+      </div>
+
+      {items.map((item, index) => (
+        <div key={index} className="flex items-start gap-2">
+          <TextField
+            fullWidth
+            size="small"
+            multiline
+            value={item}
+            onChange={(event) =>
+              onChange(
+                items.map((row, i) => (i === index ? event.target.value : row))
+              )
+            }
+            className="bg-white"
+          />
+          <Tooltip title="Xoá dòng này">
+            <IconButton
+              aria-label={`Xoá dòng ${index + 1} của ${label}`}
+              onClick={() => onChange(items.filter((_, i) => i !== index))}
+            >
+              <Trash2Icon size={16} />
+            </IconButton>
+          </Tooltip>
+        </div>
+      ))}
+
+      {!items.length && (
+        <p className="rounded-lg border border-dashed border-gray-300 bg-white/70 p-3 text-center text-xs text-gray-500">
+          Chưa có dòng nào.
+        </p>
+      )}
+
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<PlusIcon size={15} />}
+        onClick={() => onChange([...items, ""])}
+      >
+        Thêm dòng
+      </Button>
+    </div>
+  );
+};
 
 /**
  * "Hướng dẫn & nội quy nhóm" — the sheet behind the info button in the chat
@@ -60,9 +129,7 @@ const CommunityChatGuidePage: React.FC = () => {
       .getChatGuides()
       .then((rows) => {
         if (!alive) return;
-        setGuides(
-          Object.fromEntries(rows.map((row) => [row.locale, row]))
-        );
+        setGuides(Object.fromEntries(rows.map((row) => [row.locale, row])));
       })
       .catch((err: any) =>
         showError(err?.response?.data?.message ?? "Không tải được nội quy")
@@ -80,32 +147,28 @@ const CommunityChatGuidePage: React.FC = () => {
   const patch = (next: Partial<ICommunityChatGuide>) =>
     setGuides((all) => ({ ...all, [locale]: { ...current, ...next } }));
 
-  const patchSection = (
-    index: number,
-    next: Partial<ICommunityChatGuideSection>
-  ) =>
-    patch({
-      sections: current.sections.map((section, i) =>
-        i === index ? { ...section, ...next } : section
-      ),
-    });
+  const patchList = (key: ListKey) => (items: string[]) =>
+    patch({ [key]: items } as Partial<ICommunityChatGuide>);
 
   const save = async () => {
     setSaving(true);
     try {
-      // Blank sections are dropped rather than rejected: an empty row is what
-      // "Thêm mục" leaves behind when somebody changes their mind, not a
+      // Blank lines are dropped rather than rejected: an empty row is what
+      // "Thêm dòng" leaves behind when somebody changes their mind, not a
       // mistake worth an error message.
-      const sections = current.sections.filter(
-        (section) => section.heading.trim() || section.body.trim()
-      );
-      const saved = await communityService.saveChatGuide({
+      const clean = (items: string[]) =>
+        items.map((item) => item.trim()).filter(Boolean);
+
+      const payload: ICommunityChatGuide = {
         locale,
         title: current.title.trim(),
         intro: current.intro.trim(),
-        sections,
-      });
-      setGuides((all) => ({ ...all, [locale]: saved ?? { ...current, sections } }));
+        dos: clean(current.dos),
+        donts: clean(current.donts),
+        starters: clean(current.starters),
+      };
+      const saved = await communityService.saveChatGuide(payload);
+      setGuides((all) => ({ ...all, [locale]: saved ?? payload }));
       showSuccess("Đã lưu nội quy nhóm");
     } catch (err: any) {
       showError(err?.response?.data?.message ?? "Không lưu được nội quy");
@@ -122,6 +185,9 @@ const CommunityChatGuidePage: React.FC = () => {
       </div>
     );
   }
+
+  const isWritten = (item?: ICommunityChatGuide) =>
+    !!(item?.title || item?.dos?.length || item?.donts?.length);
 
   return (
     <div className="space-y-5 p-6">
@@ -140,7 +206,7 @@ const CommunityChatGuidePage: React.FC = () => {
           {LOCALES.map((item) => (
             <MenuItem key={item.value} value={item.value}>
               {item.label}
-              {guides[item.value]?.title ? "" : " · trống"}
+              {isWritten(guides[item.value]) ? "" : " · trống"}
             </MenuItem>
           ))}
         </TextField>
@@ -174,65 +240,27 @@ const CommunityChatGuidePage: React.FC = () => {
           onChange={(e) => patch({ intro: e.target.value })}
         />
 
-        <div className="space-y-3">
-          {current.sections.map((section, index) => (
-            <div
-              key={index}
-              className="flex items-start gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3"
-            >
-              <div className="flex-1 space-y-2">
-                <TextField
-                  fullWidth
-                  size="small"
-                  label={`Mục ${index + 1}`}
-                  value={section.heading}
-                  onChange={(e) =>
-                    patchSection(index, { heading: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  size="small"
-                  label="Nội dung"
-                  value={section.body}
-                  onChange={(e) => patchSection(index, { body: e.target.value })}
-                />
-              </div>
-              <Tooltip title="Xoá mục này">
-                <IconButton
-                  aria-label={`Xoá mục ${index + 1}`}
-                  onClick={() =>
-                    patch({
-                      sections: current.sections.filter((_, i) => i !== index),
-                    })
-                  }
-                >
-                  <Trash2Icon size={16} />
-                </IconButton>
-              </Tooltip>
-            </div>
-          ))}
-
-          {!current.sections.length && (
-            <p className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
-              Chưa có mục nào. Nội quy thường là 3–5 mục ngắn.
-            </p>
-          )}
-        </div>
-
-        <Button
-          variant="outlined"
-          startIcon={<PlusIcon size={16} />}
-          onClick={() =>
-            patch({
-              sections: [...current.sections, { heading: "", body: "" }],
-            })
-          }
-        >
-          Thêm mục
-        </Button>
+        <ListEditor
+          label="Nên"
+          hint="Phòng này để làm gì. Thiết kế dùng 4 dòng ngắn."
+          tone="do"
+          items={current.dos}
+          onChange={patchList("dos")}
+        />
+        <ListEditor
+          label="Không"
+          hint="Thứ khiến một dòng bị gỡ. Thiết kế dùng 3 dòng."
+          tone="dont"
+          items={current.donts}
+          onChange={patchList("donts")}
+        />
+        <ListEditor
+          label="Chưa biết nói gì? Hãy thử:"
+          hint="Câu mở lời cho người chưa biết bắt đầu từ đâu. Chạm vào là điền sẵn vào ô soạn."
+          tone="starter"
+          items={current.starters}
+          onChange={patchList("starters")}
+        />
       </div>
     </div>
   );

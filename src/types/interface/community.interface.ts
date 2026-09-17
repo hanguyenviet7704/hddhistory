@@ -181,24 +181,23 @@ export interface ICommunityOfficialProfile {
   avatar: string;
 }
 
-/** One block of the chat room's house rules. */
-export interface ICommunityChatGuideSection {
-  heading: string;
-  body: string;
-}
-
 /**
  * "Hướng dẫn & nội quy nhóm" — one row per language.
  *
  * Authored here rather than shipped in the app's translation files: the rules
  * are what gets reworded after an incident, and that must not wait for a
  * release.
+ *
+ * Three fixed lists, not free-form sections, because the sheet draws each one
+ * differently: a green "Nên" block, a red "Không" block, and tappable openers.
  */
 export interface ICommunityChatGuide {
   locale: string;
   title: string;
   intro: string;
-  sections: ICommunityChatGuideSection[];
+  dos: string[];
+  donts: string[];
+  starters: string[];
 }
 
 
