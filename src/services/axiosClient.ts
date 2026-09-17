@@ -48,6 +48,16 @@ const createAxiosClient = (baseURL: string) => {
       // được QUẢNG BÁ ở đâu, không phải ai được mở.
       config.headers["x-ignore-market-targeting"] = "1";
 
+      // Đánh dấu "request này đến từ trang quản trị".
+      //
+      // Nhật ký thao tác cần biết thao tác nào là của người vận hành, và vai
+      // trò KHÔNG trả lời được câu đó: tài khoản dùng panel đang mang
+      // `role: USER` trong database, nên lọc theo vai trò thì nhật ký trống
+      // trơn. Một dấu hiệu nói thẳng ý định thì đọc được, và hỏng thì hỏng ra
+      // mặt — khác với việc mượn nhờ header bên trên, thứ sẽ im lặng ngừng
+      // hoạt động vào ngày ai đó dọn nó đi.
+      config.headers["x-admin-panel"] = "1";
+
       // Panel đọc BẢN ĐANG SỬA, app đọc tag đang phát hành. Cùng lý do và
       // cùng chỗ đặt như header trên: `courses`/`lessons`/`keypoints` dùng
       // chung route với app, và `user.role` thì không dùng được — tài khoản
