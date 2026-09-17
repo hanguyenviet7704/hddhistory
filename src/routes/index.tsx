@@ -43,6 +43,7 @@ import CoachSituationList from "../pages/coach/CoachSituationList";
 import CoachRatingList from "../pages/coach/CoachRatingList";
 import CoachContentList from "../pages/coach/CoachContentList";
 import CoachUserThread from "../pages/coach/CoachUserThread";
+import AdminAuditPage from "../pages/admin-audit/AdminAuditPage";
 import CoachAiUsagePage from "../pages/coach/CoachAiUsagePage";
 import CoachStatsPage from "../pages/coach/CoachStatsPage";
 import CollectionsPage from "../pages/collections/CollectionsPage";
@@ -151,6 +152,7 @@ export default function AppRouter() {
                 element={<VersionComparisonPage />}
               />
               <Route path="coach-ai-usage" element={<CoachAiUsagePage />} />
+              <Route path="admin-audit" element={<AdminAuditPage />} />
               <Route path="collections" element={<CollectionsPage />} />
               <Route path="home-banner" element={<HomeBannerPage />} />
               <Route path="home-popup" element={<HomePopupPage />} />

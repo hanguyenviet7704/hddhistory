@@ -28,6 +28,7 @@ import {
   SwatchIcon,
   AdjustmentsHorizontalIcon,
   BugAntIcon,
+  ClockIcon,
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
   LinkIcon,
@@ -239,6 +240,9 @@ const menuGroups = [
       { name: "User imports", icon: SparklesIcon, path: "/learning-imports" },
       { name: "Thông báo định kỳ", icon: BellAlertIcon, path: "/notifications" },
       { name: "Compress Images", icon: PhotoIcon, path: "/image-compression" },
+      // Cuối nhóm, và chỉ đọc: đây là chỗ để TRA khi có gì đó vừa đổi mà không
+      // ai nhận, chứ không phải một việc người ta vào đây để làm.
+      { name: "Nhật ký thao tác", icon: ClockIcon, path: "/admin-audit" },
     ],
   },
 ];
