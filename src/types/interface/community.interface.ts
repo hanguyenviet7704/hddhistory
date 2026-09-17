@@ -201,12 +201,6 @@ export interface ICommunityChatGuide {
   sections: ICommunityChatGuideSection[];
 }
 
-/** Somebody holding the (global) ADMIN role. */
-export interface ICommunityAdminUser {
-  id: string;
-  email: string;
-  name: string;
-}
 
 /** A group chat room, as the panel manages it. */
 export interface ICommunityChatRoom {
@@ -233,6 +227,9 @@ export interface ICommunityAdminChatMessage {
   author: ICommunityAuthor;
   /** Written while the author was on duty — the "Quản trị viên" pill. */
   isModerator: boolean;
+  /** Pinned to the top of its room. Pinning is a panel action. */
+  isPinned: boolean;
+  pinnedAt?: string | null;
   likeCount: number;
   reportCount: number;
   hiddenReason?: string | null;

@@ -10,7 +10,7 @@ import {
   Skeleton,
   TextField,
 } from "@mui/material";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, PinIcon, PinOffIcon } from "lucide-react";
 
 import { communityService } from "../../services/communityService";
 import {
@@ -51,6 +51,7 @@ const ModerationChatTab: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [pinning, setPinning] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -143,6 +144,33 @@ const ModerationChatTab: React.FC = () => {
       showError(err?.response?.data?.message ?? "Không gửi được tin nhắn");
     } finally {
       setSending(false);
+    }
+  };
+
+  /**
+   * Pin or unpin a line.
+   *
+   * This is the only place pinning happens — the app draws pins but cannot make
+   * them, because anybody can sign into this panel and there is no role behind
+   * it to tell staff from a reader.
+   *
+   * Reloads rather than patching the row in place: the server decides whether a
+   * pin actually took (pinning what is already pinned is a no-op, so the bar's
+   * order does not shuffle), and guessing here would drift from that.
+   */
+  const pin = async (message: ICommunityAdminChatMessage) => {
+    setPinning(message.id);
+    try {
+      await communityService.pinChatMessage(message.id, !message.isPinned);
+      await load();
+      showSuccess(message.isPinned ? "Đã bỏ ghim" : "Đã ghim tin nhắn");
+    } catch (err: any) {
+      showError(
+        err?.response?.data?.message ??
+          (message.isPinned ? "Không bỏ ghim được" : "Không ghim được")
+      );
+    } finally {
+      setPinning(null);
     }
   };
 
@@ -319,7 +347,14 @@ const ModerationChatTab: React.FC = () => {
               body={message.body}
               // The pill the room itself shows next to a moderator's line, so
               // the panel and the room agree on who was speaking on duty.
-              flags={message.isModerator ? ["Quản trị viên"] : undefined}
+              flags={
+                [
+                  message.isModerator ? "Quản trị viên" : null,
+                  // Says so in the table, because the pin is otherwise only
+                  // visible by opening the room on a phone.
+                  message.isPinned ? "Đã ghim" : null,
+                ].filter(Boolean) as string[]
+              }
               likeCount={message.likeCount}
               reportCount={message.reportCount}
               note={
@@ -330,19 +365,37 @@ const ModerationChatTab: React.FC = () => {
                 ) : null
               }
               actions={
-                message.status === CommunityContentStatus.VISIBLE ? (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="warning"
-                    startIcon={<EyeOffIcon size={15} />}
-                    disabled={saving}
-                    onClick={() => setHiding(message)}
-                  >
-                    Ẩn tin nhắn
-                  </Button>
-                ) : (
-                  message.status === CommunityContentStatus.HIDDEN && (
+                <>
+                  {message.status === CommunityContentStatus.VISIBLE && (
+                    <>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={
+                          message.isPinned ? (
+                            <PinOffIcon size={15} />
+                          ) : (
+                            <PinIcon size={15} />
+                          )
+                        }
+                        disabled={pinning === message.id}
+                        onClick={() => pin(message)}
+                      >
+                        {message.isPinned ? "Bỏ ghim" : "Ghim"}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        startIcon={<EyeOffIcon size={15} />}
+                        disabled={saving}
+                        onClick={() => setHiding(message)}
+                      >
+                        Ẩn tin nhắn
+                      </Button>
+                    </>
+                  )}
+                  {message.status === CommunityContentStatus.HIDDEN && (
                     <Button
                       size="small"
                       variant="outlined"
@@ -358,8 +411,8 @@ const ModerationChatTab: React.FC = () => {
                     >
                       Hiện lại
                     </Button>
-                  )
-                )
+                  )}
+                </>
               }
             />
           ))}

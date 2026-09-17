@@ -24,7 +24,6 @@ import {
   PhotoIcon,
   FireIcon,
   ArrowPathIcon,
-  ShieldCheckIcon,
   SpeakerWaveIcon,
   SwatchIcon,
   AdjustmentsHorizontalIcon,
@@ -186,12 +185,6 @@ const menuGroups = [
         name: "Nội quy nhóm chat",
         icon: BookOpenIcon,
         path: "/community/chat-guide",
-      },
-      // Who may pin a message from inside the app.
-      {
-        name: "Quản trị viên",
-        icon: ShieldCheckIcon,
-        path: "/community/admins",
       },
     ],
   },

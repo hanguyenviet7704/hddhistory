@@ -49,7 +49,6 @@ import CoachStatsPage from "../pages/coach/CoachStatsPage";
 import CollectionsPage from "../pages/collections/CollectionsPage";
 import HomeBannerPage from "../pages/home-banner/HomeBannerPage";
 import HomePopupPage from "../pages/home-popup/HomePopupPage";
-import CommunityAdminList from "../pages/community/CommunityAdminList";
 import CommunityChatGuidePage from "../pages/community/CommunityChatGuidePage";
 import CommunityModerationPage from "../pages/community/CommunityModerationPage";
 import CommunityRoomSuggestionList from "../pages/community/CommunityRoomSuggestionList";
@@ -181,10 +180,6 @@ export default function AppRouter() {
               <Route
                 path="community/chat-guide"
                 element={<CommunityChatGuidePage />}
-              />
-              <Route
-                path="community/admins"
-                element={<CommunityAdminList />}
               />
 
               <Route path="course" element={<CourseList />} />

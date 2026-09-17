@@ -5,7 +5,6 @@ import {
   CommunityRoomSuggestionStatus,
   CommunityTargetType,
   ICommunityAdminChatMessage,
-  ICommunityAdminUser,
   ICommunityChatGuide,
   ICommunityChatRoom,
   ICommunityOfficialProfile,
@@ -360,22 +359,19 @@ export const communityService = {
     return res.data?.data as ICommunityChatGuide;
   },
 
-  // ------------------------------------------------------------- moderators
-  async getAdmins() {
-    const res = await axiosClient.get("/community/admin/admins");
-    return (res.data?.data ?? []) as ICommunityAdminUser[];
-  },
+  // ----------------------------------------------------------- pinned lines
+  /**
+   * Pin / unpin a chat message.
+   *
+   * A panel action with no counterpart in the app: readers see pins, they do
+   * not make them. The app picks the change up on its next poll of the room.
+   */
+  async pinChatMessage(id: string, pinned: boolean) {
+    const path = `/community/admin/chat/messages/${id}/pin`;
+    const res = pinned
+      ? await axiosClient.post(path)
+      : await axiosClient.delete(path);
 
-  /** By email or id — whichever handle the person doing this happens to have. */
-  async grantAdmin(payload: { email?: string; userId?: string }) {
-    const res = await axiosClient.post("/community/admin/admins", payload);
-    return res.data?.data as { id: string; email: string; isAdmin: boolean };
-  },
-
-  async revokeAdmin(userId: string) {
-    const res = await axiosClient.delete(
-      `/community/admin/admins/${userId}`
-    );
-    return res.data?.data as { id: string; email: string; isAdmin: boolean };
+    return res.data?.data as { pinned: boolean };
   },
 };
