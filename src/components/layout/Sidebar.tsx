@@ -24,6 +24,7 @@ import {
   PhotoIcon,
   FireIcon,
   ArrowPathIcon,
+  ShieldCheckIcon,
   SpeakerWaveIcon,
   SwatchIcon,
   AdjustmentsHorizontalIcon,
@@ -179,6 +180,18 @@ const menuGroups = [
         name: "Khoá quyền đăng",
         icon: NoSymbolIcon,
         path: "/community/sanctions",
+      },
+      // The sheet behind the info button at the top of the chat room.
+      {
+        name: "Nội quy nhóm chat",
+        icon: BookOpenIcon,
+        path: "/community/chat-guide",
+      },
+      // Who may pin a message from inside the app.
+      {
+        name: "Quản trị viên",
+        icon: ShieldCheckIcon,
+        path: "/community/admins",
       },
     ],
   },

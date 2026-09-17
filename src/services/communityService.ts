@@ -5,6 +5,8 @@ import {
   CommunityRoomSuggestionStatus,
   CommunityTargetType,
   ICommunityAdminChatMessage,
+  ICommunityAdminUser,
+  ICommunityChatGuide,
   ICommunityChatRoom,
   ICommunityOfficialProfile,
   ICommunityAdminComment,
@@ -342,5 +344,38 @@ export const communityService = {
   async revokeSanction(id: string) {
     const res = await axiosClient.delete(`/community/admin/sanctions/${id}`);
     return res.data?.data as ICommunitySanction;
+  },
+
+  // ------------------------------------------------------- chat house rules
+  async getChatGuides() {
+    const res = await axiosClient.get("/community/admin/chat/guides");
+    return (res.data?.data ?? []) as ICommunityChatGuide[];
+  },
+
+  async saveChatGuide(payload: ICommunityChatGuide) {
+    const res = await axiosClient.post(
+      "/community/admin/chat/guides",
+      payload
+    );
+    return res.data?.data as ICommunityChatGuide;
+  },
+
+  // ------------------------------------------------------------- moderators
+  async getAdmins() {
+    const res = await axiosClient.get("/community/admin/admins");
+    return (res.data?.data ?? []) as ICommunityAdminUser[];
+  },
+
+  /** By email or id — whichever handle the person doing this happens to have. */
+  async grantAdmin(payload: { email?: string; userId?: string }) {
+    const res = await axiosClient.post("/community/admin/admins", payload);
+    return res.data?.data as { id: string; email: string; isAdmin: boolean };
+  },
+
+  async revokeAdmin(userId: string) {
+    const res = await axiosClient.delete(
+      `/community/admin/admins/${userId}`
+    );
+    return res.data?.data as { id: string; email: string; isAdmin: boolean };
   },
 };

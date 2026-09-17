@@ -181,6 +181,33 @@ export interface ICommunityOfficialProfile {
   avatar: string;
 }
 
+/** One block of the chat room's house rules. */
+export interface ICommunityChatGuideSection {
+  heading: string;
+  body: string;
+}
+
+/**
+ * "Hướng dẫn & nội quy nhóm" — one row per language.
+ *
+ * Authored here rather than shipped in the app's translation files: the rules
+ * are what gets reworded after an incident, and that must not wait for a
+ * release.
+ */
+export interface ICommunityChatGuide {
+  locale: string;
+  title: string;
+  intro: string;
+  sections: ICommunityChatGuideSection[];
+}
+
+/** Somebody holding the (global) ADMIN role. */
+export interface ICommunityAdminUser {
+  id: string;
+  email: string;
+  name: string;
+}
+
 /** A group chat room, as the panel manages it. */
 export interface ICommunityChatRoom {
   id: string;
