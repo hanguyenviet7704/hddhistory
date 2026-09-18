@@ -13,6 +13,11 @@ class OnboardV2ResultPage extends StatefulWidget {
 class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
   late final PageController _courseController;
 
+  /// Chỉ bật khi user bấm "Thử lại" TỪ màn này. `recommendStatus == loading`
+  /// một mình KHÔNG đủ để hiện spinner: trần 12 s của S9 đẩy user sang đây khi
+  /// gợi ý vẫn đang chạy, mà spinner thì không có lối thoát.
+  bool _isRetrying = false;
+
   @override
   void initState() {
     super.initState();
@@ -53,7 +58,7 @@ class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
               style: AppStyle.text20.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.5),
             ),
             24.verticalSpace,
-            if (state.recommendStatus == OnboardV2RecommendStatus.loading)
+            if (_isRetrying)
               SizedBox(
                 height: 340.w,
                 child: const Center(child: CircularProgressIndicator()),
@@ -61,6 +66,8 @@ class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
             else if (state.hasRecommendedCourses)
               _CourseCarousel(controller: _courseController, state: state)
             else
+              // Gồm cả trường hợp `recommendStatus == loading` do chạm trần 12 s
+              // ở S9: vẫn phải là màn dự phòng có nút Thử lại.
               const _FallbackContent(),
           ],
         ),
@@ -72,11 +79,8 @@ class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
     final onboardData = state.onboardData;
     final selectCta = onbCopy(onboardData, 'onboardingV3P10Cta', fallback: onboardingL10n.onboardingV3P10Cta);
     final course = state.currentCourse;
-    if (state.recommendStatus == OnboardV2RecommendStatus.loading) {
-      return OnboardV2BottomCta(label: selectCta, isLoading: true, onPressed: null);
-    }
 
-    if (course != null && course.id.isNotEmpty) {
+    if (!_isRetrying && course != null && course.id.isNotEmpty) {
       return OnboardV2BottomCta(
         label: selectCta,
         onPressed: () => context.read<OnboardV2Cubit>().goToThemeWithCourse(course),
@@ -85,10 +89,19 @@ class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
 
     return OnboardV2BottomCta(
       label: onboardingL10n.onboardingV2RetryCta,
-      onPressed: () => unawaited(context.read<OnboardV2Cubit>().retryRecommendation()),
+      isLoading: _isRetrying,
+      onPressed: () => unawaited(_handleRetry()),
       secondaryLabel: onbCopy(onboardData, 'onboardingV2P8CatalogCta', fallback: onboardingL10n.onboardingV2P8CatalogCta),
       onSecondaryPressed: () => context.read<OnboardV2Cubit>().goToThemeWithoutCourse(),
     );
+  }
+
+  Future<void> _handleRetry() async {
+    if (_isRetrying) return;
+    setState(() => _isRetrying = true);
+    await context.read<OnboardV2Cubit>().retryRecommendation();
+    if (!mounted) return;
+    setState(() => _isRetrying = false);
   }
 }
 

@@ -63,6 +63,14 @@ class OnboardV2BranchPage extends StatelessWidget {
               message: state.taxonomyErrorMessage ?? onboardingL10n.onboardingV3TaxonomyLoadError,
               onRetry: () => unawaited(cubit.loadTaxonomy()),
             )
+          // Taxonomy tải được nhưng không nhánh nào `isSelectable && isActive`
+          // (admin tắt hết / import lỗi): vẫn phải cho lối Thử lại, nếu không
+          // user kẹt với danh sách rỗng và CTA tắt vĩnh viễn.
+          else if (state.taxonomy.selectableBranches.isEmpty)
+            OnboardV2InlineError(
+              message: onboardingL10n.onboardingV3TaxonomyLoadError,
+              onRetry: () => unawaited(cubit.loadTaxonomy()),
+            )
           else
             ...state.taxonomy.selectableBranches.map((branch) {
               final iconUrl = branch.iconUrl.trim();

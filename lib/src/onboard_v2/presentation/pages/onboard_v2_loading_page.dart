@@ -19,48 +19,85 @@ class _OnboardV2LoadingPageState extends State<OnboardV2LoadingPage> {
   static const _lineStep = Duration(milliseconds: 500);
   static const _lineCount = 4;
 
-  late DateTime _startedAt;
+  /// BẪY: `PageView` dựng sẵn trang kề bên (cache extent mặc định 250px), nên
+  /// `initState` của màn này chạy từ lúc user CÒN đang ở màn nhắc học. Nếu đếm
+  /// giờ từ đó thì 2,4 s đã trôi hết trước khi user bấm nút, và 4 dòng tick
+  /// không kịp hiện. Vì vậy chuỗi chỉ khởi động khi THẬT SỰ bước sang
+  /// `p9Loading`, và [_sequenceToken] để mọi hẹn giờ của lượt cũ tự bỏ đi.
+  int _sequenceToken = 0;
+  DateTime? _startedAt;
   int _visibleLines = 0;
 
   @override
   void initState() {
     super.initState();
-    _startedAt = context.read<OnboardV2Cubit>().state.loadingStartedAt ?? DateTime.now();
-    for (var i = 0; i < _lineCount; i++) {
-      unawaited(_revealLine(i));
-    }
-    unawaited(_scheduleMinimumHold());
-    unawaited(_scheduleTimeout());
+    // Chỉ đúng ở trường hợp hot restart khi đang đứng sẵn trên màn này.
+    if (context.read<OnboardV2Cubit>().state.currentPage != OnboardV2PageStep.p9Loading) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _startSequence();
+    });
   }
 
-  Future<void> _revealLine(int index) async {
-    if (index > 0) await Future<void>.delayed(_lineStep * index);
-    if (!mounted || _visibleLines > index) return;
+  void _startSequence() {
+    final token = ++_sequenceToken;
+    _startedAt = DateTime.now();
+    setState(() => _visibleLines = 0);
+    for (var i = 0; i < _lineCount; i++) {
+      unawaited(_revealLine(i, token));
+    }
+    unawaited(_scheduleMinimumHold(token));
+    unawaited(_scheduleTimeout(token));
+  }
+
+  /// Huỷ lượt đang chạy (rời màn / quay lại đầu luồng): token đổi là mọi hẹn
+  /// giờ đang treo đều thành no-op.
+  void _cancelSequence() {
+    _sequenceToken += 1;
+    _startedAt = null;
+  }
+
+  Future<void> _revealLine(int index, int token) async {
+    await Future<void>.delayed(_lineStep * index);
+    if (!mounted || token != _sequenceToken || _visibleLines > index) return;
     setState(() => _visibleLines = index + 1);
   }
 
-  Future<void> _scheduleMinimumHold() async {
-    final elapsed = DateTime.now().difference(_startedAt);
-    final remaining = _minDuration - elapsed;
-    if (remaining > Duration.zero) await Future<void>.delayed(remaining);
-    _tryFinish();
+  Future<void> _scheduleMinimumHold(int token) async {
+    await Future<void>.delayed(_minDuration);
+    _tryFinish(token);
   }
 
-  Future<void> _scheduleTimeout() async {
-    final elapsed = DateTime.now().difference(_startedAt);
-    final remaining = _maxDuration - elapsed;
-    if (remaining > Duration.zero) await Future<void>.delayed(remaining);
-    if (!mounted) return;
-    context.read<OnboardV2Cubit>().finishLoading();
-  }
-
-  void _tryFinish() {
-    if (!mounted) return;
+  Future<void> _scheduleTimeout(int token) async {
+    await Future<void>.delayed(_maxDuration);
+    if (!mounted || token != _sequenceToken) return;
     final cubit = context.read<OnboardV2Cubit>();
     if (cubit.state.currentPage != OnboardV2PageStep.p9Loading) return;
-    if (DateTime.now().difference(_startedAt) < _minDuration) return;
+    cubit.finishLoading();
+  }
+
+  void _tryFinish(int token) {
+    if (!mounted || token != _sequenceToken) return;
+    final startedAt = _startedAt;
+    if (startedAt == null) return;
+    final cubit = context.read<OnboardV2Cubit>();
+    if (cubit.state.currentPage != OnboardV2PageStep.p9Loading) return;
+    if (DateTime.now().difference(startedAt) < _minDuration) return;
     if (cubit.state.recommendStatus == OnboardV2RecommendStatus.loading) return;
     cubit.finishLoading();
+  }
+
+  void _handleStateChange(OnboardV2State state) {
+    if (state.currentPage != OnboardV2PageStep.p9Loading) {
+      _cancelSequence();
+      return;
+    }
+    // Vừa bước vào màn → bắt đầu đếm từ ĐÂY. Còn lại là gợi ý đổi trạng thái.
+    if (_startedAt == null) {
+      _startSequence();
+      return;
+    }
+    _tryFinish(_sequenceToken);
   }
 
   @override
@@ -75,8 +112,8 @@ class _OnboardV2LoadingPageState extends State<OnboardV2LoadingPage> {
     ];
 
     return BlocListener<OnboardV2Cubit, OnboardV2State>(
-      listenWhen: (previous, current) => previous.recommendStatus != current.recommendStatus,
-      listener: (_, _) => _tryFinish(),
+      listenWhen: (previous, current) => previous.currentPage != current.currentPage || previous.recommendStatus != current.recommendStatus,
+      listener: (_, state) => _handleStateChange(state),
       child: PopScope(
         canPop: false,
         child: OnboardV2ScreenShell(

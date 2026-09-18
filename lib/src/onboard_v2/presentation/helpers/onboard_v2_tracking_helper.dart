@@ -120,7 +120,7 @@ class OnboardV2Tracking {
       OnboardV2PageStep.p8Reminder => TrackingKey.onboardV2P4View,
       OnboardV2PageStep.p9Loading => TrackingKey.onboardV2P8View,
       OnboardV2PageStep.p10Result => TrackingKey.onboardV2P10View,
-      OnboardV2PageStep.p11Theme => TrackingKey.onboardV2P9View,
+      OnboardV2PageStep.p11Theme => TrackingKey.onboardV2P11View,
     };
   }
 

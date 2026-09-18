@@ -121,10 +121,10 @@ mixin TrackingKey {
   static const String onboardV2CoursesFailure = 'onboard_v2_courses_failure';
   // Spec `obd_course_select`: user property `first_course`.
   static const String onboardV2CourseSelectClick = 'obd_course_select';
-  static const String onboardV2P9View = 'obd_theme_scr_view';
-  // Onboarding v3 (taxonomy flow): result screen is new; the theme constant is
-  // an alias of [onboardV2P9View] kept so the tracking sheet keeps one row for
-  // "theme screen view" regardless of which step index it sits at.
+  // Onboarding v3 (taxonomy flow): màn kết quả là mới. Màn theme đổi số bước
+  // (p9 → p11) nhưng GIỮ NGUYÊN chuỗi sự kiện `obd_theme_scr_view` để sheet
+  // không phải thêm hàng — hằng số cũ `onboardV2P9View` đã gộp vào
+  // `onboardV2P11View`, không còn hai tên cho cùng một sự kiện.
   static const String onboardV2P10View = 'obd_result_scr_view';
   static const String onboardV2P11View = 'obd_theme_scr_view';
   static const String onboardV2ReminderTimeSelect = 'obd_reminder_time_select';
