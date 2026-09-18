@@ -274,11 +274,6 @@ mixin AppEndpoint {
   static const String communityChatRoom = '/api/v1/community/chat/rooms/{room}';
   static const String communityChatMessages = '/api/v1/community/chat/rooms/{room}/messages';
   static const String communityChatMessageLike = '/api/v1/community/chat/messages/{id}/like';
-  // The slice of transcript around one message — what a tap on a pin lands
-  // in when the pin is older than the page the screen is holding.
-  static const String communityChatMessageContext =
-      '/api/v1/community/chat/rooms/{room}/messages/{id}/context';
-  static const String communityChatGuide = '/api/v1/community/chat/guide';
 
   //* AI Coach
   static const String coachBubble = '/api/v1/coach/bubble';
