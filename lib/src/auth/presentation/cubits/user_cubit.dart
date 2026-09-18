@@ -83,11 +83,12 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     unawaited(_persistAuthSession(auth));
   }
 
-  /// Records the order the user tapped categories (Path — Feel/Think/Work/
-  /// Connect/Learn/Explore Better) during onboarding, so the Explore tab can
-  /// show them in that same order instead of the backend's default sort.
-  /// Called once, right when onboarding hands off to Home.
-  void setOnboardingPathOrder(List<OnboardingPath> order) => emit(state.copyWith(onboardingPathOrder: order));
+  /// Records the skillset ids (`branch.skillsetId`) in the order the user
+  /// chose those branches during onboarding, so Home can show them in that
+  /// same order instead of the backend's default sort. Called once, right
+  /// when onboarding hands off to Home — see
+  /// [OnboardV2State.selectedSkillsetIds].
+  void setOnboardingSkillsetOrder(List<String> skillsetIds) => emit(state.copyWith(onboardingSkillsetOrder: skillsetIds));
 
   void setIsAppEventConfigured(bool isAppEventConfigured) => emit(state.copyWith(isAppEventConfigured: isAppEventConfigured));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
@@ -240,7 +241,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     bool isUserPassOnboarding = state.isUserPassOnboarding;
     bool hasCompletedFirstTimeNotificationGate = state.hasCompletedFirstTimeNotificationGate;
     bool hasCompletedCourseEntryNotificationGate = state.hasCompletedCourseEntryNotificationGate;
-    List<OnboardingPath> onboardingPathOrder = state.onboardingPathOrder;
+    List<String> onboardingSkillsetOrder = state.onboardingSkillsetOrder;
     emit(UserState.initial());
     AppDI.injector.get<ProfileCubit>().reset();
     emit(
@@ -248,7 +249,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
         isUserPassOnboarding: isUserPassOnboarding,
         hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate,
         hasCompletedCourseEntryNotificationGate: hasCompletedCourseEntryNotificationGate,
-        onboardingPathOrder: onboardingPathOrder,
+        onboardingSkillsetOrder: onboardingSkillsetOrder,
       ),
     );
     // The mirror goes with the session it mirrors. Leaving it behind would let

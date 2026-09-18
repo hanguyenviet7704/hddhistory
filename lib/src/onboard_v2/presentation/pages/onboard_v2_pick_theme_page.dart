@@ -8,7 +8,9 @@ part of '../../onboard_v2.dart';
 ///
 /// S10 (kết quả) không kết thúc onboarding — nó ghi khoá đã chọn lên
 /// [OnboardV2Cubit] (`chosenCourse`, null = xem kho khoá học) rồi bàn giao sang
-/// đây; "Start Explore" bên dưới mới resolve khoá + điều hướng.
+/// đây; "Start Explore" bên dưới mới đánh dấu hoàn tất onboarding, ghi thứ tự
+/// skillset theo nhánh đã chọn ([OnboardV2State.selectedSkillsetIds]) và điều
+/// hướng thẳng về Home.
 class OnboardV2PickThemePage extends StatefulWidget {
   const OnboardV2PickThemePage({super.key});
 
@@ -107,13 +109,14 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
     );
   }
 
-  /// Performs the handoff that used to fire directly from P8's CTA: resolve
-  /// the picked course (or just prewarm the home dataset for a catalog
-  /// browse), then dispatch to the right destination. The study theme itself
-  /// needs no extra work here — [StudyThemeCubit.selectPreset] already
-  /// applied (and, for a persistable preset, persisted) it the moment the
-  /// user tapped a tile; the bundled default preset applies just as well if
-  /// they never tapped one at all.
+  /// Performs the handoff that used to fire directly from P8's CTA. The
+  /// flow now always ends at Home (S10's chosen course/browse-catalog
+  /// choice already drives Home's ordering via `selectedSkillsetIds` — there
+  /// is no separate course/roadmap destination to resolve here). The study
+  /// theme itself needs no extra work here — [StudyThemeCubit.selectPreset]
+  /// already applied (and, for a persistable preset, persisted) it the
+  /// moment the user tapped a tile; the bundled default preset applies just
+  /// as well if they never tapped one at all.
   Future<void> _startExplore() async {
     if (_isNavigating) return;
     setState(() => _isNavigating = true);
@@ -127,73 +130,33 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
     final cubit = context.read<OnboardV2Cubit>();
     // Reliably persist isOnboarded=true (awaited + retried) before leaving
     // onboarding, so check-onboarding recognises this device on reinstall.
-    // Started here to run alongside the handoff prep below; awaited just before
+    // Started here to run alongside the prewarm below; awaited just before
     // we navigate away.
     final onboardedSave = cubit.markUserOnboarded();
-    final pendingCourse = cubit.state.chosenCourse;
-
-    if (pendingCourse != null) {
-      final resolvedCourse = await cubit.resolveCourseForHandoff(pendingCourse);
-      if (!mounted) return;
-      if (resolvedCourse == null) {
-        setState(() => _isNavigating = false);
-        return;
-      }
-
-      final intent = await const CourseHandoffHelper().prepareRecommendedCourse(
-        course: resolvedCourse,
-        // Await the prewarmed home load (already in-flight since P8 opened)
-        // instead of a fresh cold fetch — no duplicate round-trips, and the
-        // wait is near-zero when the prewarm has already completed.
-        initializeHomeData: cubit.prewarmHomeData,
-      );
-      if (!mounted) return;
-      // Cap the wait so a slow/offline network can't trap the CTA on a spinner;
-      // the retry keeps running in the background past the timeout.
-      await onboardedSave.timeout(const Duration(seconds: 6), onTimeout: () {});
-      if (!mounted) return;
-      _dispatchRoute(intent, selectedCourseId: resolvedCourse.id);
-      return;
-    }
-
-    final intent = await const CourseHandoffHelper().prepareCourseCatalog(
-      initializeHomeData: cubit.prewarmHomeData,
-    );
+    // Home đã prewarm từ S9; chờ cho xong (hoặc timeout) để Home không lạnh.
+    await cubit.prewarmHomeData().timeout(const Duration(seconds: 6), onTimeout: () {});
     if (!mounted) return;
+    // Cap the wait so a slow/offline network can't trap the CTA on a spinner;
+    // the retry keeps running in the background past the timeout.
     await onboardedSave.timeout(const Duration(seconds: 6), onTimeout: () {});
     if (!mounted) return;
-    _dispatchRoute(intent);
+    _dispatchHome();
   }
 
-  void _dispatchRoute(CourseHandoffRouteIntent intent, {String? selectedCourseId}) {
+  void _dispatchHome() {
     try {
       final onboardCubit = context.read<OnboardV2Cubit>();
       final userCubit = context.read<UserCubit>();
       // isOnboarded is now persisted (awaited + retried) in _startExplore
       // before reaching here — see OnboardV2Cubit.markUserOnboarded — so there's
       // no fire-and-forget call at this point anymore.
-      // TODO(onboarding-v3 Task 6): thay bằng setOnboardingSkillsetOrder(state.selectedSkillsetIds).
-      userCubit.setOnboardingPathOrder(const <OnboardingPath>[]);
-      switch (intent) {
-        case CourseHandoffRouteIntent.courseRoadmap:
-          // Mark the roadmap as opened from onboarding so it shows a back
-          // button that returns to Home (see `roadmapHomeSources`) —
-          // a brand-new user's first course has no Explore screen behind it.
-          AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('onboarding');
-          CourseRoadmapRoute().go(context);
-          // Every OTHER roadmap entry point pairs .go() with this (see
-          // all_course_tab.dart) — .go() to the roadmap branch root doesn't
-          // re-fire the route observer, so without it PageCubit.currentRouteName
-          // stays on whatever it was before onboarding. That silently breaks
-          // two things gated on it: the re-anchor prompt (§9.1) never fires for
-          // a brand-new user's very first course, and the floating bottom nav
-          // (gated on isPrimaryRoute) can stay hidden with no way back out.
-          context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-          break;
-        case CourseHandoffRouteIntent.course:
-          CourseRoute(selectedTabIndex: 0).go(context);
-          break;
-      }
+      userCubit.setOnboardingSkillsetOrder(onboardCubit.state.selectedSkillsetIds);
+      OnboardV2Tracking.track(TrackingKey.onboardV2Complete, parameters: {'chosen_course_id': onboardCubit.state.chosenCourse?.id});
+      HomeRoute().go(context);
+      // .go() to a branch root doesn't re-fire the route observer, so without
+      // this PageCubit.currentRouteName stays on whatever it was before
+      // onboarding — see all other Home entry points (e.g. UserCubit.initApp).
+      context.read<PageCubit>().setCurrentRouteName(RouteNamed.home);
       userCubit.setIsUserPassOnboarding(false);
       _maybeShowPostOnboardingPaywall(onboardCubit.state.showPaywallAfterOnboarding);
     } catch (error) {
