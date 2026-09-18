@@ -161,18 +161,41 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
       // before reaching here — see OnboardV2Cubit.markUserOnboarded — so there's
       // no fire-and-forget call at this point anymore.
       userCubit.setOnboardingSkillsetOrder(onboardCubit.state.selectedSkillsetIds);
-      OnboardV2Tracking.track(TrackingKey.onboardV2Complete, parameters: {'chosen_course_id': onboardCubit.state.chosenCourse?.id});
-      HomeRoute().go(context);
-      // .go() to a branch root doesn't re-fire the route observer, so without
-      // this PageCubit.currentRouteName stays on whatever it was before
-      // onboarding — see all other Home entry points (e.g. UserCubit.initApp).
-      context.read<PageCubit>().setCurrentRouteName(RouteNamed.home);
+      final chosenCourse = onboardCubit.state.chosenCourse;
+      OnboardV2Tracking.track(TrackingKey.onboardV2Complete, parameters: {'chosen_course_id': chosenCourse?.id});
+      if (chosenCourse != null && chosenCourse.id.isNotEmpty) {
+        _openChosenCourseRoadmap(chosenCourse);
+      } else {
+        HomeRoute().go(context);
+        // .go() to a branch root doesn't re-fire the route observer, so without
+        // this PageCubit.currentRouteName stays on whatever it was before
+        // onboarding — see all other Home entry points (e.g. UserCubit.initApp).
+        context.read<PageCubit>().setCurrentRouteName(RouteNamed.home);
+      }
       userCubit.setIsUserPassOnboarding(false);
       _maybeShowPostOnboardingPaywall(onboardCubit.state.showPaywallAfterOnboarding);
     } catch (error) {
       LogDev.warning('[OnboardV2PickThemePage] route dispatch failed: $error');
       if (mounted) setState(() => _isNavigating = false);
     }
+  }
+
+  /// Xong onboarding thì mở thẳng LỘ TRÌNH của khoá user vừa chọn ở S10, chứ
+  /// không thả về Home — chọn khoá xong mà vẫn phải tự đi tìm nó thì câu hỏi
+  /// vừa rồi thành vô nghĩa. Nhánh "xem kho khoá học" (không chọn khoá) vẫn về
+  /// Home như cũ.
+  ///
+  /// Đi qua `selectCourseFromCourseId` chứ không `selectCourse`: khoá gợi ý có
+  /// thể không nằm trong danh mục skillset đã tải, và chỉ hàm này mới có nhánh
+  /// dự phòng tự nạp lộ trình theo id. Các cubit lấy thẳng từ DI vì cây
+  /// provider của route onboarding không có chúng.
+  void _openChosenCourseRoadmap(CourseEntity course) {
+    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('onboarding');
+    AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(course.id);
+    CourseRoadmapRoute().go(context);
+    // Cũng vì `.go()` sang gốc nhánh không bắn lại route observer — giống hệt
+    // lối vào lộ trình từ thẻ khoá học ở Home.
+    context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 
   /// Admin Onboarding Config toggle: the FULL paywall opens ON TOP of the
