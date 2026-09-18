@@ -6,6 +6,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+import { Autocomplete, TextField } from "@mui/material";
 import {
   ICourse,
   IPrice,
@@ -20,6 +21,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { skillsetService } from "../../services/skillsetService";
 import { onboardingConfigService } from "../../services/onboardingConfigService";
+import { onboardingTaxonomyService } from "../../services/onboardingTaxonomyService";
+import {
+  OnboardingTaxonomyTree,
+  emptyTaxonomyTree,
+} from "../../types/interface/onboarding-taxonomy.interface";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { ITranslation } from "../../utils/translate";
 import { cleanTranslation, getTranslationValue } from "../../utils/translation";
@@ -72,6 +78,18 @@ export default function CourseModal({
   const [onboardingSymptoms, setOnboardingSymptoms] = useState<
     OnboardingSymptom[]
   >([]);
+  // Onboarding v3: mã nhãn vấn đề (chi tiết) và mã gói mong muốn gắn vào khoá
+  // học, dùng cho gợi ý khoá sau onboarding (khớp taxonomy ở
+  // onboarding-taxonomy).
+  const [onboardingLabelCodes, setOnboardingLabelCodes] = useState<string[]>(
+    []
+  );
+  const [onboardingDesireCodes, setOnboardingDesireCodes] = useState<
+    string[]
+  >([]);
+  const [taxonomy, setTaxonomy] = useState<OnboardingTaxonomyTree>(
+    emptyTaxonomyTree()
+  );
   // Real symptom sentences (from the onboarding config, keyed by the
   // OnboardingSymptom enum value) so the checkboxes below read as the actual
   // symptom the user picks — not the raw title-cased key.
@@ -109,6 +127,8 @@ export default function CourseModal({
       setViewCount(initial.viewCount != null ? String(initial.viewCount) : "");
       setPrices(initial.prices ?? []);
       setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
+      setOnboardingLabelCodes(initial.onboardingLabelCodes ?? []);
+      setOnboardingDesireCodes(initial.onboardingDesireCodes ?? []);
       setCountries(initial.countries ?? []);
       setCountryQuery("");
       setSkillsetId(initial.skillsetId ?? "");
@@ -126,6 +146,8 @@ export default function CourseModal({
       setViewCount("");
       setPrices([]);
       setOnboardingSymptoms([]);
+      setOnboardingLabelCodes([]);
+      setOnboardingDesireCodes([]);
       setCountries([]);
       setCountryQuery("");
       setSkillsetId("");
@@ -163,6 +185,31 @@ export default function CourseModal({
       cancelled = true;
     };
   }, [isOpen, lang]);
+
+  // Tải taxonomy onboarding v3 (nhãn vấn đề + gói mong muốn) khi modal mở, để
+  // hiển thị các picker bên dưới. API chưa deploy hoặc lỗi thì khối hiện rỗng,
+  // không chặn form.
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    onboardingTaxonomyService
+      .getAdmin()
+      .then((t) => {
+        if (!cancelled) {
+          setTaxonomy({
+            branches: t?.branches ?? [],
+            packages: t?.packages ?? [],
+            labels: t?.labels ?? [],
+          });
+        }
+      })
+      .catch(() => {
+        /* khối hiện rỗng, không chặn form */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -234,6 +281,8 @@ export default function CourseModal({
       prices: prices,
       skillsetId, // Add skillsetId to payload
       onboardingSymptoms,
+      onboardingLabelCodes,
+      onboardingDesireCodes,
       // Publish time + New-course duration only apply to Coming Soon.
       publishAt:
         status === CourseStatus.COMING_SOON && publishAt
@@ -637,10 +686,10 @@ export default function CourseModal({
                 </p>
               </div>
 
-              {/* Onboarding Symptoms */}
+              {/* Onboarding Symptoms (legacy — app cũ) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Onboarding Symptoms
+                  Onboarding Symptoms (legacy — app cũ)
                 </label>
                 <div className="border border-gray-300 rounded-lg p-3 max-h-60 overflow-y-auto bg-white">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -672,6 +721,91 @@ export default function CourseModal({
                     >
                       Clear selection
                     </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Nhãn onboarding v3 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nhãn onboarding (v3)
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Gợi ý khoá sau onboarding: khoá lên đầu khi khớp <b>cả</b>{" "}
+                  mong muốn đã chọn <b>và</b> ít nhất một nhãn vấn đề. Quản lý
+                  danh mục ở trang Onboarding Taxonomy.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <Autocomplete
+                    multiple
+                    size="small"
+                    options={[...taxonomy.labels].sort(
+                      (a, b) =>
+                        a.packageCode.localeCompare(b.packageCode) ||
+                        a.order - b.order
+                    )}
+                    groupBy={(l) => {
+                      const pkg = taxonomy.packages.find(
+                        (p) => p.code === l.packageCode
+                      );
+                      return pkg
+                        ? `${pkg.code} · ${pkg.problemLabel?.vi ?? ""}`
+                        : l.packageCode;
+                    }}
+                    getOptionLabel={(l) => `${l.code} — ${l.label?.vi ?? ""}`}
+                    value={taxonomy.labels.filter((l) =>
+                      onboardingLabelCodes.includes(l.code)
+                    )}
+                    onChange={(_, v) =>
+                      setOnboardingLabelCodes(v.map((l) => l.code))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Nhãn vấn đề (chi tiết)"
+                        placeholder="Chọn nhãn…"
+                      />
+                    )}
+                  />
+                  <Autocomplete
+                    multiple
+                    size="small"
+                    options={[...taxonomy.packages].sort(
+                      (a, b) =>
+                        a.branchCode.localeCompare(b.branchCode) ||
+                        a.order - b.order
+                    )}
+                    groupBy={(p) =>
+                      taxonomy.branches.find((b) => b.code === p.branchCode)
+                        ?.label?.vi ?? p.branchCode
+                    }
+                    getOptionLabel={(p) => `${p.code} — ${p.desireLabel?.vi ?? ""}`}
+                    value={taxonomy.packages.filter((p) =>
+                      onboardingDesireCodes.includes(p.code)
+                    )}
+                    onChange={(_, v) =>
+                      setOnboardingDesireCodes(v.map((p) => p.code))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Mong muốn (gói)"
+                        placeholder="Chọn gói…"
+                      />
+                    )}
+                  />
+                  {onboardingLabelCodes.some(
+                    (c) => !taxonomy.labels.find((l) => l.code === c)
+                  ) && (
+                    <p className="text-xs text-amber-600">
+                      Có mã nhãn không còn trong taxonomy (sẽ bị bỏ qua khi gợi
+                      ý):{" "}
+                      {onboardingLabelCodes
+                        .filter(
+                          (c) => !taxonomy.labels.find((l) => l.code === c)
+                        )
+                        .join(", ")}
+                    </p>
                   )}
                 </div>
               </div>
