@@ -36,12 +36,13 @@ class OnboardV2Tracking {
     }
   }
 
-  /// Comma-joined path values for the `path_selected` user property (spec
-  /// values: feel/think/work/connect/learn/explore).
-  static String selectedPathValue(List<OnboardingPath> selectedPaths) => _joinTrackingValues(selectedPaths.map(_pathSheetValue));
-
-  /// Comma-joined symptom trackingIds for the `habit_struggle` user property.
-  static String selectedHabitValue(List<OnboardingSymptom> selectedSymptoms) => _joinTrackingValues(selectedSymptoms.map((symptom) => symptom.trackingId));
+  /// Câu trả lời của 3 câu hỏi, gửi kèm mọi sự kiện "Tiếp tục". Onboarding v3
+  /// gửi MÃ taxonomy (`CX`, `CX-1`) chứ không còn enum.
+  static Map<String, dynamic> selectionParams(OnboardV2State s) => {
+    'branch_codes': s.selectedBranchCodes,
+    'package_codes': s.selectedPackageCodes,
+    'desire_code': s.selectedDesireCode,
+  };
 
   static Map<String, dynamic> ageParams(OnboardOptionEntity age) {
     return {
@@ -55,78 +56,6 @@ class OnboardV2Tracking {
     return {
       ...ageParams(age),
       'age': trackingLabel.isNotEmpty ? trackingLabel : OnboardV2AgeTextResolver.resolve(age),
-    };
-  }
-
-  static Map<String, dynamic> pathParams(OnboardingPath path, {required List<OnboardingPath> selectedPaths}) {
-    return {
-      'path_id': path.trackingId,
-      'path_name': path.title,
-      ...selectedPathParams(selectedPaths),
-    };
-  }
-
-  static Map<String, dynamic> selectedPathParams(List<OnboardingPath> selectedPaths) {
-    return {
-      'selected_path_ids': selectedPaths.map((path) => path.trackingId).toList(),
-      'selected_path_names': selectedPaths.map((path) => path.title).toList(),
-      'selected_path_count': selectedPaths.length,
-    };
-  }
-
-  static Map<String, dynamic> selectedPathSheetParams(List<OnboardingPath> selectedPaths) {
-    return {
-      ...selectedPathParams(selectedPaths),
-      'path_selected': _joinTrackingValues(selectedPaths.map(_pathSheetValue)),
-    };
-  }
-
-  static Map<String, dynamic> availableSymptomParams(List<OnboardingSymptom> symptoms) {
-    return {
-      'available_symptom_ids': symptoms.map((symptom) => symptom.trackingId).toList(),
-    };
-  }
-
-  static Map<String, dynamic> symptomParams(OnboardingSymptom symptom, {required List<OnboardingSymptom> selectedSymptoms}) {
-    return {
-      'symptom_id': symptom.trackingId,
-      'symptom_name': symptom.title,
-      ...selectedSymptomParams(selectedSymptoms),
-    };
-  }
-
-  static Map<String, dynamic> selectedSymptomParams(List<OnboardingSymptom> selectedSymptoms) {
-    return {
-      'selected_symptom_ids': selectedSymptoms.map((symptom) => symptom.trackingId).toList(),
-      'selected_symptom_names': selectedSymptoms.map((symptom) => symptom.title).toList(),
-      'selected_symptom_count': selectedSymptoms.length,
-    };
-  }
-
-  static Map<String, dynamic> selectedSymptomSheetParams(List<OnboardingSymptom> selectedSymptoms) {
-    return {
-      ...selectedSymptomParams(selectedSymptoms),
-      'symptom_selected': _joinTrackingValues(selectedSymptoms.map(_symptomSheetValue)),
-    };
-  }
-
-  static Map<String, dynamic> pathRelateSheetParams({
-    required List<OnboardingPath> selectedPaths,
-    required List<OnboardingSymptom> selectedSymptoms,
-  }) {
-    return {
-      ...selectedPathParams(selectedPaths),
-      ...selectedSymptomSheetParams(selectedSymptoms),
-    };
-  }
-
-  static Map<String, dynamic> coursesLoadedParams({
-    required List<CourseEntity> courses,
-    required List<OnboardingSymptom> selectedSymptoms,
-  }) {
-    return {
-      'course_ids': courses.map((course) => course.id).toList(),
-      ...selectedSymptomParams(selectedSymptoms),
     };
   }
 
@@ -176,17 +105,22 @@ class OnboardV2Tracking {
     };
   }
 
+  /// Sự kiện view giữ nguyên tên trên sheet dù thứ tự bước đã đổi: nhánh dùng
+  /// lại hàng "paths", vấn đề dùng lại "symptom", mong muốn + cách dạy dùng lại
+  /// "infor", nhắc học dùng lại "notif", loading dùng lại "course".
   static String _viewEvent(OnboardV2PageStep page) {
     return switch (page) {
       OnboardV2PageStep.p1Intro => TrackingKey.onboardV2P1View,
       OnboardV2PageStep.p2Name => TrackingKey.onboardV2P2View,
       OnboardV2PageStep.p3Age => TrackingKey.onboardV2P3View,
-      OnboardV2PageStep.p4Notification => TrackingKey.onboardV2P4View,
-      OnboardV2PageStep.p5PathSelection => TrackingKey.onboardV2P5View,
-      OnboardV2PageStep.p6PathMap => TrackingKey.onboardV2P6View,
-      OnboardV2PageStep.p7Symptoms => TrackingKey.onboardV2P7View,
-      OnboardV2PageStep.p8CoursePicker => TrackingKey.onboardV2P8View,
-      OnboardV2PageStep.p9Theme => TrackingKey.onboardV2P9View,
+      OnboardV2PageStep.p4Branches => TrackingKey.onboardV2P5View,
+      OnboardV2PageStep.p5Problems => TrackingKey.onboardV2P7View,
+      OnboardV2PageStep.p6Desire => TrackingKey.onboardV2P6View,
+      OnboardV2PageStep.p7How => TrackingKey.onboardV2P6View,
+      OnboardV2PageStep.p8Reminder => TrackingKey.onboardV2P4View,
+      OnboardV2PageStep.p9Loading => TrackingKey.onboardV2P8View,
+      OnboardV2PageStep.p10Result => TrackingKey.onboardV2P10View,
+      OnboardV2PageStep.p11Theme => TrackingKey.onboardV2P9View,
     };
   }
 
@@ -195,53 +129,14 @@ class OnboardV2Tracking {
       OnboardV2PageStep.p1Intro => 'p1_intro',
       OnboardV2PageStep.p2Name => 'p2_name',
       OnboardV2PageStep.p3Age => 'p3_age',
-      OnboardV2PageStep.p4Notification => 'p4_notification',
-      OnboardV2PageStep.p5PathSelection => 'p5_path_selection',
-      OnboardV2PageStep.p6PathMap => 'p6_path_map',
-      OnboardV2PageStep.p7Symptoms => 'p7_symptoms',
-      OnboardV2PageStep.p8CoursePicker => 'p8_course_picker',
-      OnboardV2PageStep.p9Theme => 'p9_theme',
-    };
-  }
-
-  static String _joinTrackingValues(Iterable<String> values) {
-    return values.where((value) => value.isNotEmpty).join(',');
-  }
-
-  // Values aligned to the tracking sheet's `path_selected` column
-  // (feel/think/work/connect/learn/explore).
-  static String _pathSheetValue(OnboardingPath path) {
-    return switch (path) {
-      OnboardingPath.feelBetter => 'feel',
-      OnboardingPath.thinkBetter => 'think',
-      OnboardingPath.workBetter => 'work',
-      OnboardingPath.connectBetter => 'connect',
-      OnboardingPath.learnBetter => 'learn',
-      OnboardingPath.exploreBetter => 'explore',
-    };
-  }
-
-  static String _symptomSheetValue(OnboardingSymptom symptom) {
-    return switch (symptom) {
-      OnboardingSymptom.motivationDisappears => 'motivation_disappear',
-      OnboardingSymptom.lifeFeelsOverwhelming => 'life_overwhelming',
-      OnboardingSymptom.endlessScrollingFeelsEmpty => 'scroll_feel_empty',
-      OnboardingSymptom.overthinking => 'tend_overthink',
-      OnboardingSymptom.tryingToDoTooMuch => 'too_much_at_once',
-      OnboardingSymptom.rushedDecisions => 'rush_decisions_regret',
-      OnboardingSymptom.difficultyBuildingHabits => 'building_habits_hard',
-      OnboardingSymptom.timeSlipsAway => 'time_slips_away',
-      OnboardingSymptom.strugglingToBreakBadHabits => 'break_bad_habit',
-      OnboardingSymptom.anxietyAroundHardConversations => 'hard_conversations_anxious',
-      OnboardingSymptom.wantToListenMoreDeeply => 'listen_more_deeply',
-      OnboardingSymptom.regretSayingThingsInEmotion => 'regret_words_emotions',
-      OnboardingSymptom.learningDoesNotStick => 'learning_not_stick',
-      OnboardingSymptom.forgettingAfterStudying => 'study_forget_morning',
-      OnboardingSymptom.losingTrainOfThought => 'losing_train_thought',
-      OnboardingSymptom.curiousAboutBody => 'curious_body_works',
-      OnboardingSymptom.loveLearningFromGreatMinds => 'learn_from_great_minds',
-      OnboardingSymptom.amazedByHumanBody => 'body_surprises_me',
-      OnboardingSymptom.unknown => '',
+      OnboardV2PageStep.p4Branches => 'p4_branches',
+      OnboardV2PageStep.p5Problems => 'p5_problems',
+      OnboardV2PageStep.p6Desire => 'p6_desire',
+      OnboardV2PageStep.p7How => 'p7_how',
+      OnboardV2PageStep.p8Reminder => 'p8_reminder',
+      OnboardV2PageStep.p9Loading => 'p9_loading',
+      OnboardV2PageStep.p10Result => 'p10_result',
+      OnboardV2PageStep.p11Theme => 'p11_theme',
     };
   }
 }

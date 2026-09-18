@@ -18,7 +18,7 @@ class OnboardV2AgePage extends StatelessWidget {
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
         activeSegments: 2,
-        totalSegments: 2,
+        totalSegments: _onboardV2TotalProgressSegments,
         pageStep: OnboardV2PageStep.p3Age,
         showBack: true,
         onBack: cubit.goBack,
@@ -47,20 +47,11 @@ class OnboardV2AgePage extends StatelessWidget {
           if (state.onboardStatus == OnboardV2AsyncStatus.loading)
             const Center(child: CircularProgressIndicator())
           else if (state.onboardStatus == OnboardV2AsyncStatus.failure)
-            _InlineError(message: state.onboardErrorMessage ?? onboardingL10n.onboardingV2AgeLoadError, onRetry: cubit.loadOnboardData)
+            OnboardV2InlineError(message: state.onboardErrorMessage ?? onboardingL10n.onboardingV2AgeLoadError, onRetry: cubit.loadOnboardData)
           else if (state.onboardData.age.isEmpty)
-            _InlineError(message: onboardingL10n.onboardingV2AgeEmpty, onRetry: cubit.loadOnboardData)
+            OnboardV2InlineError(message: onboardingL10n.onboardingV2AgeEmpty, onRetry: cubit.loadOnboardData)
           else
-            ...state.onboardData.age.map(
-              (age) => Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: OnboardV2SelectableOptionRow(
-                  label: OnboardV2AgeTextResolver.resolve(age),
-                  selected: state.selectedAge == age,
-                  onTap: () => cubit.selectAge(age),
-                ),
-              ),
-            ),
+            _AgeGrid(options: state.onboardData.age, selectedAge: state.selectedAge, onSelect: cubit.selectAge),
           if (state.p3ErrorMessage?.isNotEmpty ?? false) ...[
             8.verticalSpace,
             AppText(
@@ -75,32 +66,36 @@ class OnboardV2AgePage extends StatelessWidget {
   }
 }
 
-class _InlineError extends StatelessWidget {
-  const _InlineError({required this.message, required this.onRetry});
+/// Lưới 2 cột theo design S3. Số lựa chọn lẻ thì ô CUỐI chiếm trọn hàng thay vì
+/// để một khoảng trống bên phải.
+class _AgeGrid extends StatelessWidget {
+  const _AgeGrid({required this.options, required this.selectedAge, required this.onSelect});
 
-  final String message;
-  final VoidCallback onRetry;
+  final List<OnboardOptionEntity> options;
+  final OnboardOptionEntity? selectedAge;
+  final ValueChanged<OnboardOptionEntity> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          AppText(
-            message,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.visible,
-            style: AppStyle.text14.copyWith(color: AppCustomColor.errorRed),
+    // Shell padding là 20.w mỗi bên (OnboardV2ScreenShell).
+    final fullWidth = MediaQuery.sizeOf(context).width - 40.w;
+    final halfWidth = (fullWidth - 12.w) / 2;
+    return Wrap(
+      spacing: 12.w,
+      runSpacing: 12.h,
+      children: [
+        for (var i = 0; i < options.length; i++)
+          SizedBox(
+            width: (options.length.isOdd && i == options.length - 1) ? fullWidth : halfWidth,
+            child: OnboardV2SelectableOptionRow(
+              label: OnboardV2AgeTextResolver.resolve(options[i]),
+              selected: selectedAge == options[i],
+              trailingCheck: false,
+              centered: true,
+              onTap: () => onSelect(options[i]),
+            ),
           ),
-          TextButton(
-            onPressed: () {
-              AppHaptic.select();
-              onRetry();
-            },
-            child: Text(context.l10n.onboarding.onboardingV2RetryCta),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

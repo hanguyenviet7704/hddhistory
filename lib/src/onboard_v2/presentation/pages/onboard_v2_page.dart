@@ -1,5 +1,9 @@
 part of '../../onboard_v2.dart';
 
+/// Thanh tiến độ 7 nấc, chạy từ p2Name (1) tới p8Reminder (7) — design.md §6.1.
+/// Intro / loading / kết quả / theme không có header.
+const int _onboardV2TotalProgressSegments = 7;
+
 class OnboardV2Page extends StatefulWidget {
   const OnboardV2Page({super.key});
 
@@ -47,11 +51,13 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
               OnboardV2IntroPage(),
               OnboardV2NamePage(),
               OnboardV2AgePage(),
-              OnboardV2NotificationPage(),
-              OnboardV2PathSelectionPage(),
-              OnboardV2PathMapPage(),
-              OnboardV2SymptomSelectionPage(),
-              OnboardV2CoursePickerPage(),
+              OnboardV2BranchPage(),
+              OnboardV2ProblemPage(),
+              OnboardV2DesirePage(),
+              OnboardV2HowPage(),
+              OnboardV2ReminderPage(),
+              OnboardV2LoadingPage(),
+              OnboardV2ResultPage(),
               OnboardV2PickThemePage(),
             ],
           ),

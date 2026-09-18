@@ -122,6 +122,12 @@ mixin TrackingKey {
   // Spec `obd_course_select`: user property `first_course`.
   static const String onboardV2CourseSelectClick = 'obd_course_select';
   static const String onboardV2P9View = 'obd_theme_scr_view';
+  // Onboarding v3 (taxonomy flow): result screen is new; the theme constant is
+  // an alias of [onboardV2P9View] kept so the tracking sheet keeps one row for
+  // "theme screen view" regardless of which step index it sits at.
+  static const String onboardV2P10View = 'obd_result_scr_view';
+  static const String onboardV2P11View = 'obd_theme_scr_view';
+  static const String onboardV2ReminderTimeSelect = 'obd_reminder_time_select';
   // Per-tap theme pick — internal telemetry, not a spec event.
   static const String onboardV2ThemeSelect = 'onboard_v2_theme_select';
   // Spec `obd_theme_select`: fired on "Start explore" (finishes onboarding).

@@ -5,29 +5,29 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   OnboardV2Cubit(
     this._getOnboardingConfigUseCase,
     this._updateUserUseCase,
-    this._getAllCoursesUseCase,
+    this._getTaxonomyUseCase,
+    this._submitAnswersUseCase,
     this._getCourseUseCase,
     this._deviceInfoService,
     this._authBloc,
     this._userCubit,
     this._localeCubit,
-  ) : _random = Random(),
-      _hasActiveAnonymousSessionOverride = null,
+  ) : _hasActiveAnonymousSessionOverride = null,
       _loginAnonymousSilentlyOverride = null,
       _readUserStateOverride = null,
       super(OnboardV2State.initial());
 
   @visibleForTesting
-  OnboardV2Cubit.withRandom(
+  OnboardV2Cubit.forTest(
     this._getOnboardingConfigUseCase,
     this._updateUserUseCase,
-    this._getAllCoursesUseCase,
+    this._getTaxonomyUseCase,
+    this._submitAnswersUseCase,
     this._getCourseUseCase,
     this._deviceInfoService,
     this._authBloc,
     this._userCubit,
-    this._localeCubit,
-    this._random, {
+    this._localeCubit, {
     bool Function()? hasActiveAnonymousSession,
     Future<bool> Function(Map<String, dynamic> payload)? loginAnonymousSilently,
     UserState Function()? readUserState,
@@ -38,43 +38,42 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   final GetOnboardingContentConfigUseCase _getOnboardingConfigUseCase;
   final UpdateUserUseCase _updateUserUseCase;
-  final GetAllCoursesUseCase _getAllCoursesUseCase;
+  final GetOnboardingTaxonomyUseCase _getTaxonomyUseCase;
+  final SubmitOnboardingAnswersUseCase _submitAnswersUseCase;
   final GetCourseUseCase _getCourseUseCase;
   final IDeviceInfoService _deviceInfoService;
   final AuthBloc _authBloc;
   final UserCubit _userCubit;
   final LocaleCubit _localeCubit;
-  final Random _random;
   final bool Function()? _hasActiveAnonymousSessionOverride;
   final Future<bool> Function(Map<String, dynamic> payload)? _loginAnonymousSilentlyOverride;
   final UserState Function()? _readUserStateOverride;
 
   int _requestSerial = 0;
-  int _courseSerial = 0;
+
+  /// Bumped whenever an answer changes (câu 1/câu 2/câu 3) so a recommendation
+  /// response that was already in flight for the OLD answers is dropped.
+  int _recommendSerial = 0;
   bool _isSubmittingAge = false;
-  bool _isLoadingCourses = false;
-  Future<void>? _courseLoadTask;
   Future<bool>? _anonymousSessionTask;
 
-  /// In-flight (or completed) home-dataset prewarm. Started once the P8 course
-  /// picker is reached so the skillset/list-course + progress + profile calls
-  /// overlap with the time the user spends browsing recommended courses —
-  /// instead of the "select course" handoff paying for a cold fetch on the
-  /// critical path. See [prewarmHomeData].
+  /// In-flight (or completed) home-dataset prewarm. Started when the reminder
+  /// screen hands off to the loading screen so the skillset/list-course +
+  /// progress + profile calls overlap with the loading animation and the time
+  /// the user spends on the result cards — instead of the handoff paying for a
+  /// cold fetch on the critical path. See [prewarmHomeData].
   Future<void>? _homeInitFuture;
 
   Future<void> initialize() async {
     reset();
     unawaited(_ensureAnonymousSession(source: 'p1_background'));
-    await loadOnboardData();
+    await Future.wait([loadOnboardData(), loadTaxonomy()]);
   }
 
   void reset() {
     _requestSerial += 1;
-    _courseSerial += 1;
+    _recommendSerial += 1;
     _isSubmittingAge = false;
-    _isLoadingCourses = false;
-    _courseLoadTask = null;
     _anonymousSessionTask = null;
     _homeInitFuture = null;
     emit(OnboardV2State.initial());
@@ -99,22 +98,57 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
           onboardStatus: OnboardV2AsyncStatus.success,
           onboardData: OnboardV2ConfigMapper.toOnboardEntity(config),
           showPaywallAfterOnboarding: config.showPaywallAfterOnboarding,
+          reminderPresets: config.reminder.presets,
         ),
       ),
+    );
+  }
+
+  /// Taxonomy (nhánh + gói) là NGUỒN DUY NHẤT của câu 1/2/3 — không còn enum dự
+  /// phòng, nên lỗi/rỗng đều chuyển sang `failure` để S4 hiện Thử lại.
+  Future<void> loadTaxonomy() async {
+    final serial = _requestSerial;
+    emit(state.copyWith(taxonomyStatus: OnboardV2TaxonomyStatus.loading, taxonomyErrorMessage: null));
+
+    final result = await _getTaxonomyUseCase(unit).run();
+    if (serial != _requestSerial) return;
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          taxonomyStatus: OnboardV2TaxonomyStatus.failure,
+          taxonomyErrorMessage: failure.displayMessage,
+        ),
+      ),
+      (taxonomy) {
+        if (taxonomy.isEmpty) {
+          emit(
+            state.copyWith(
+              taxonomyStatus: OnboardV2TaxonomyStatus.failure,
+              taxonomyErrorMessage: l10n.onboarding.onboardingV3TaxonomyLoadError,
+            ),
+          );
+          return;
+        }
+        emit(state.copyWith(taxonomyStatus: OnboardV2TaxonomyStatus.success, taxonomy: taxonomy));
+        _recomputeOptions();
+      },
     );
   }
 
   void goBack() {
     final currentIndex = OnboardV2PageStep.values.indexOf(state.currentPage);
     if (currentIndex <= OnboardV2PageStep.values.indexOf(OnboardV2PageStep.p1Intro)) return;
-    if (state.currentPage == OnboardV2PageStep.p4Notification || state.currentPage == OnboardV2PageStep.p8CoursePicker) return;
+    // Loading và Kết quả không lùi được (design.md §6.1).
+    if (state.currentPage == OnboardV2PageStep.p9Loading || state.currentPage == OnboardV2PageStep.p10Result) return;
 
-    // Per-screen back events (spec: only Age/Paths/Brain-science/Habit have one).
+    // Per-screen back events — tái dùng đúng key cũ của sheet cho các bước
+    // tương ứng (paths → nhánh, symptom → vấn đề, infor → mong muốn).
     final backEvent = switch (state.currentPage) {
       OnboardV2PageStep.p3Age => TrackingKey.onboardV2AgeBack,
-      OnboardV2PageStep.p5PathSelection => TrackingKey.onboardV2PathsBack,
-      OnboardV2PageStep.p6PathMap => TrackingKey.onboardV2InforBack,
-      OnboardV2PageStep.p7Symptoms => TrackingKey.onboardV2SymptomBack,
+      OnboardV2PageStep.p4Branches => TrackingKey.onboardV2PathsBack,
+      OnboardV2PageStep.p5Problems => TrackingKey.onboardV2SymptomBack,
+      OnboardV2PageStep.p6Desire => TrackingKey.onboardV2InforBack,
       _ => null,
     };
     if (backEvent != null) OnboardV2Tracking.track(backEvent);
@@ -175,7 +209,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     emit(
       state.copyWith(
-        currentPage: OnboardV2PageStep.p4Notification,
+        currentPage: OnboardV2PageStep.p4Branches,
         p3SubmitStatus: OnboardV2AsyncStatus.success,
         p3ErrorMessage: null,
       ),
@@ -259,104 +293,205 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   UserState get _readUserState => (_readUserStateOverride ?? () => _userCubit.state)();
 
-  void continueFromP4Notification({OnboardV2NotificationStatus? notificationStatus}) {
-    final resolvedStatus = notificationStatus ?? state.notificationStatus;
+  //* ---------------------------------------------------------------------
+  //* Câu 1 — Lĩnh vực (S4)
+  //* ---------------------------------------------------------------------
+
+  /// Multi-select không giới hạn. GIỮ thứ tự chọn — luật câu 2 round-robin
+  /// theo đúng thứ tự đó (§3.2).
+  void toggleBranch(String code) {
+    final next = List<String>.from(state.selectedBranchCodes);
+    next.contains(code) ? next.remove(code) : next.add(code);
+    OnboardV2Tracking.track(
+      next.contains(code) ? TrackingKey.onboardV2PathSelect : TrackingKey.onboardV2PathUnselect,
+      parameters: {'branch_code': code},
+    );
+    emit(state.copyWith(selectedBranchCodes: next));
+    _recomputeOptions();
+  }
+
+  void continueFromP4Branches() {
+    if (!state.canContinueBranches) return;
+    OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
+    OnboardV2Tracking.setUserProperties({'path_selected': state.selectedBranchCodes.join(',')});
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p5Problems));
+  }
+
+  //* ---------------------------------------------------------------------
+  //* Câu 2 — Vấn đề (S5)
+  //* ---------------------------------------------------------------------
+
+  void togglePackage(String code) {
+    if (!state.problemOptions.any((p) => p.code == code)) return;
+    final next = List<String>.from(state.selectedPackageCodes);
+    next.contains(code) ? next.remove(code) : next.add(code);
+    emit(state.copyWith(selectedPackageCodes: next));
+    _recomputeOptions();
+  }
+
+  void continueFromP5Problems() {
+    if (!state.canContinueProblems) return;
+    OnboardV2Tracking.track(TrackingKey.onboardV2P7ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
+    OnboardV2Tracking.setUserProperties({'habit_struggle': state.selectedPackageCodes.join(',')});
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p6Desire));
+  }
+
+  //* ---------------------------------------------------------------------
+  //* Câu 3 — Mong muốn (S6)
+  //* ---------------------------------------------------------------------
+
+  void selectDesire(String code) {
+    if (!state.desireOptions.any((p) => p.code == code)) return;
+    emit(state.copyWith(selectedDesireCode: code));
+  }
+
+  void continueFromP6Desire() {
+    if (!state.canContinueDesire) return;
+    OnboardV2Tracking.track(TrackingKey.onboardV2P6ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p7How));
+  }
+
+  void continueFromP7How() {
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p8Reminder));
+  }
+
+  /// Gọi sau mọi thay đổi ở câu 1/câu 2: lọc lại đáp án hợp lệ, cắt lựa chọn
+  /// đã mất, và huỷ gợi ý cũ (câu trả lời đổi ⇒ kết quả cũ hết giá trị).
+  void _recomputeOptions() {
+    final problemOptions = OnboardV2SelectionRules.problemOptions(state.taxonomy, state.selectedBranchCodes);
+    final allowed = {for (final p in problemOptions) p.code};
+    final packages = state.selectedPackageCodes.where(allowed.contains).toList();
+    final desireOptions = OnboardV2SelectionRules.desireOptions(
+      state.taxonomy,
+      packages,
+      seed: OnboardV2SelectionRules.seedFor(packages),
+    );
+    final desire = desireOptions.any((p) => p.code == state.selectedDesireCode) ? state.selectedDesireCode : null;
+    _invalidateRecommendation();
+
     emit(
       state.copyWith(
-        currentPage: OnboardV2PageStep.p5PathSelection,
-        notificationStatus: resolvedStatus,
+        problemOptions: problemOptions,
+        selectedPackageCodes: packages,
+        desireOptions: desireOptions,
+        selectedDesireCode: desire,
+        recommendStatus: OnboardV2RecommendStatus.initial,
+        recommendedCourses: const [],
+        matchReasons: const {},
+        currentCourseIndex: 0,
+        recommendErrorMessage: null,
       ),
     );
   }
 
-  void togglePath(OnboardingPath path) {
-    final selected = List<OnboardingPath>.from(state.selectedPaths);
-    final index = selected.indexOf(path);
-    final isSelecting = index < 0;
+  void _invalidateRecommendation() {
+    _recommendSerial += 1;
+  }
 
-    if (isSelecting && selected.length >= 2) {
+  //* ---------------------------------------------------------------------
+  //* S8 nhắc học → S9 loading → S10 kết quả
+  //* ---------------------------------------------------------------------
+
+  /// Giờ nhắc học: `HH:mm`, phút chỉ nhận bước 15 (bánh xe chỉ sinh ra 4 giá
+  /// trị, guard này chặn preset/config sai định dạng).
+  void setReminderTime(String hhmm) {
+    if (!RegExp(r'^([01]\d|2[0-3]):(00|15|30|45)$').hasMatch(hhmm)) return;
+    if (hhmm == state.reminderTime) return;
+    emit(state.copyWith(reminderTime: hhmm));
+    OnboardV2Tracking.track(TrackingKey.onboardV2ReminderTimeSelect, parameters: {'reminder_time': hhmm});
+  }
+
+  Future<void> submitReminder({required bool enabled, required OnboardV2NotificationStatus notificationStatus}) async {
+    OnboardV2Tracking.track(
+      enabled ? TrackingKey.onboardV2NotificationNotifyClick : TrackingKey.onboardV2NotificationMaybeLaterClick,
+      parameters: {
+        'noti_allow': enabled ? 'yes' : 'no',
+        'reminder_time': enabled ? state.reminderTime : null,
+      },
+    );
+    OnboardV2Tracking.setUserProperties({'noti_allowed': enabled ? 'yes' : 'no'});
+    emit(
+      state.copyWith(
+        reminderEnabled: enabled,
+        notificationStatus: notificationStatus,
+        currentPage: OnboardV2PageStep.p9Loading,
+        loadingStartedAt: DateTime.now(),
+      ),
+    );
+    // Prewarm the home dataset now so it is ready — or nearly ready — by the
+    // time the user taps the result CTA.
+    unawaited(prewarmHomeData());
+    await _submitAndRecommend();
+  }
+
+  Future<void> retryRecommendation() => _submitAndRecommend();
+
+  Future<void> _submitAndRecommend() async {
+    final serial = _requestSerial;
+    final recSerial = ++_recommendSerial;
+    emit(state.copyWith(recommendStatus: OnboardV2RecommendStatus.loading, recommendErrorMessage: null));
+
+    final hasSession = await _ensureAnonymousSession(source: 'p9_submit');
+    if (serial != _requestSerial || recSerial != _recommendSerial) return;
+    if (!hasSession) {
+      _emitRecommendFallback('no_session');
       return;
     }
 
-    if (index >= 0) {
-      selected.removeAt(index);
-    } else {
-      selected.add(path);
-    }
-
-    final selectedPaths = OnboardV2SymptomSelectionMapper.dedupePaths(selected);
-    final availableSymptoms = OnboardV2SymptomSelectionMapper.availableSymptoms(selectedPaths, onboardData: state.onboardData);
-    final selectedSymptoms = OnboardV2SymptomSelectionMapper.retainAvailableSymptoms(
-      selectedSymptoms: state.selectedSymptoms,
-      availableSymptoms: availableSymptoms,
+    final request = OnboardingAnswersRequest(
+      branchCodes: state.selectedBranchCodes,
+      packageCodes: state.selectedPackageCodes,
+      desireCode: state.selectedDesireCode,
+      reminderEnabled: state.reminderEnabled,
+      reminderTime: state.reminderEnabled ? state.reminderTime : null,
+      ageKey: state.selectedAge?.trackingLabel,
     );
-    _invalidateCourses();
 
+    final result = await _submitAnswersUseCase(request).run();
+    if (serial != _requestSerial || recSerial != _recommendSerial) return;
+
+    result.fold(
+      (failure) => _emitRecommendFallback(OnboardV2Tracking.exceptionReason(failure)),
+      (rec) {
+        if (rec.courses.isEmpty) {
+          _emitRecommendFallback('empty_courses');
+          return;
+        }
+        OnboardV2Tracking.track(
+          TrackingKey.onboardV2CoursesLoaded,
+          parameters: {'course_ids': rec.courses.map((course) => course.id).toList()},
+        );
+        emit(
+          state.copyWith(
+            recommendStatus: OnboardV2RecommendStatus.loaded,
+            recommendedCourses: rec.courses,
+            matchReasons: rec.matchReasons,
+            currentCourseIndex: 0,
+            recommendErrorMessage: null,
+          ),
+        );
+      },
+    );
+  }
+
+  void _emitRecommendFallback(String reason) {
+    OnboardV2Tracking.track(TrackingKey.onboardV2CoursesFailure, parameters: {'reason': reason});
     emit(
       state.copyWith(
-        selectedPaths: selectedPaths,
-        availableSymptoms: availableSymptoms,
-        selectedSymptoms: selectedSymptoms,
-        courseStatus: OnboardV2CourseStatus.initial,
+        recommendStatus: OnboardV2RecommendStatus.fallback,
+        recommendErrorMessage: reason,
         recommendedCourses: const [],
+        matchReasons: const {},
         currentCourseIndex: 0,
-        courseErrorMessage: null,
       ),
     );
   }
 
-  void continueFromP5Paths() {
-    if (!state.canContinuePaths) return;
-    OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectedPathSheetParams(state.selectedPaths));
-    OnboardV2Tracking.setUserProperties({'path_selected': OnboardV2Tracking.selectedPathValue(state.selectedPaths)});
-    emit(state.copyWith(currentPage: OnboardV2PageStep.p6PathMap));
-  }
-
-  void continueFromP6PathMap() {
-    OnboardV2Tracking.track(TrackingKey.onboardV2P6ContinueClick, parameters: OnboardV2Tracking.selectedPathParams(state.selectedPaths));
-    emit(state.copyWith(currentPage: OnboardV2PageStep.p7Symptoms));
-  }
-
-  void toggleSymptom(OnboardingSymptom symptom) {
-    if (!state.availableSymptoms.contains(symptom)) return;
-
-    final selected = List<OnboardingSymptom>.from(state.selectedSymptoms);
-    final index = selected.indexOf(symptom);
-    if (index >= 0) {
-      selected.removeAt(index);
-    } else {
-      selected.add(symptom);
-    }
-
-    final selectedSymptoms = OnboardV2SymptomSelectionMapper.dedupeSymptoms(selected);
-    _invalidateCourses();
-
-    emit(
-      state.copyWith(
-        selectedSymptoms: selectedSymptoms,
-        courseStatus: OnboardV2CourseStatus.initial,
-        recommendedCourses: const [],
-        currentCourseIndex: 0,
-        courseErrorMessage: null,
-      ),
-    );
-  }
-
-  Future<void> continueFromP7Symptoms() async {
-    if (!state.canContinueSymptoms) return;
-    OnboardV2Tracking.track(
-      TrackingKey.onboardV2P7ContinueClick,
-      parameters: OnboardV2Tracking.pathRelateSheetParams(
-        selectedPaths: state.selectedPaths,
-        selectedSymptoms: state.selectedSymptoms,
-      ),
-    );
-    OnboardV2Tracking.setUserProperties({'habit_struggle': OnboardV2Tracking.selectedHabitValue(state.selectedSymptoms)});
-    emit(state.copyWith(currentPage: OnboardV2PageStep.p8CoursePicker));
-    // Prewarm the home dataset now (in parallel with the course-list fetch) so
-    // it is ready — or nearly ready — by the time the user taps "select".
-    unawaited(prewarmHomeData());
-    await loadCoursesForP8(force: true);
+  /// Loading page gọi khi (đã ≥2,4s) && recommendStatus != loading — hoặc khi
+  /// chạm trần 12s (kết quả sẽ hiện màn dự phòng + Thử lại).
+  void finishLoading() {
+    if (state.currentPage != OnboardV2PageStep.p9Loading) return;
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p10Result));
   }
 
   /// Loads the home dataset (skillsets/list-course, progress, profile, quote,
@@ -369,7 +504,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     // initializeData hits authenticated endpoints (user progress, profile), so
     // the anonymous session must exist first. Login was already kicked off at
     // initialize(), so this usually resolves immediately.
-    final hasSession = await _ensureAnonymousSession(source: 'p8_home_prewarm');
+    final hasSession = await _ensureAnonymousSession(source: 'p9_home_prewarm');
     if (!hasSession) {
       // Let a later select/retry re-attempt the prewarm rather than caching a
       // failure.
@@ -379,88 +514,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     await AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
   }
 
-  Future<void> retryCoursesForP8() => loadCoursesForP8(force: true);
-
-  Future<void> loadCoursesForP8({bool force = false}) {
-    if (!force && (state.courseStatus == OnboardV2CourseStatus.loaded || state.courseStatus == OnboardV2CourseStatus.fallback)) {
-      return Future<void>.value();
-    }
-
-    final activeTask = _courseLoadTask;
-    if (activeTask != null) return activeTask;
-
-    late final Future<void> task;
-    task = _loadCoursesForP8().whenComplete(() {
-      if (identical(_courseLoadTask, task)) {
-        _courseLoadTask = null;
-      }
-    });
-    _courseLoadTask = task;
-    return task;
-  }
-
-  Future<void> _loadCoursesForP8() async {
-    if (_isLoadingCourses) return;
-    final selectedSymptoms = List<OnboardingSymptom>.from(state.selectedSymptoms);
-    if (selectedSymptoms.isEmpty) {
-      _emitCoursesFallback('empty_symptoms', stage: 'list');
-      return;
-    }
-
-    _isLoadingCourses = true;
-    final serial = _requestSerial;
-    final courseSerial = _courseSerial;
-    emit(
-      state.copyWith(
-        courseStatus: OnboardV2CourseStatus.loading,
-        courseErrorMessage: null,
-        recommendedCourses: const [],
-        currentCourseIndex: 0,
-      ),
-    );
-
-    try {
-      final listResult = await _getAllCoursesUseCase(
-        PageBreakRequest<CourseFilterRequest>(
-          filter: CourseFilterRequest.byOnboardingSymptoms(selectedSymptoms),
-        ),
-      ).run();
-      if (serial != _requestSerial || courseSerial != _courseSerial) return;
-
-      final courses = listResult.fold<List<CourseEntity>?>(
-        (failure) {
-          _emitCoursesFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'list');
-          return null;
-        },
-        (pageData) => pageData.items,
-      );
-      if (courses == null) return;
-
-      final pickedCourses = OnboardV2RandomCoursePicker.pick(courses, nextInt: _random.nextInt);
-      if (pickedCourses.isEmpty) {
-        _emitCoursesFallback('empty_courses', stage: 'list');
-        return;
-      }
-
-      emit(
-        state.copyWith(
-          courseStatus: OnboardV2CourseStatus.loaded,
-          recommendedCourses: pickedCourses,
-          currentCourseIndex: 0,
-          courseErrorMessage: null,
-        ),
-      );
-    } catch (error) {
-      if (serial == _requestSerial && courseSerial == _courseSerial) {
-        _emitCoursesFallback('unexpected', stage: 'unknown');
-      }
-    } finally {
-      if (courseSerial == _courseSerial) {
-        _isLoadingCourses = false;
-      }
-    }
-  }
-
   void setCurrentCourseIndex(int index) {
     if (state.recommendedCourses.isEmpty) return;
     final nextIndex = index.clamp(0, state.recommendedCourses.length - 1);
@@ -468,48 +521,38 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     emit(state.copyWith(currentCourseIndex: nextIndex));
   }
 
-  /// P8 -> P9 handoff: the user picked a specific recommended course. Stashes
-  /// it as the pending handoff action — consumed by P9's "Start Explore" (see
-  /// `onboard_v2_pick_theme_page.dart`, which now owns [resolveCourseForHandoff]
-  /// + the route dispatch) — and moves the flow onto the theme picker so every
-  /// path through onboarding ends with the user personalizing their study
-  /// background before landing in the app.
-  void goToThemeWithSelectedCourse(CourseEntity course) {
-    emit(
-      state.copyWith(
-        currentPage: OnboardV2PageStep.p9Theme,
-        pendingHandoffCourse: course,
-        pendingHandoffIsBrowse: false,
-      ),
+  /// S10 → S11: user chọn khoá đầu tiên. Ghi `chosenCourseId` + `completed`
+  /// lên server (fire-and-forget — không chặn UI) rồi sang màn chọn theme.
+  void goToThemeWithCourse(CourseEntity course) {
+    OnboardV2Tracking.track(
+      TrackingKey.onboardV2CourseSelectClick,
+      parameters: OnboardV2Tracking.courseSelectParams(course: course, currentCourseIndex: state.currentCourseIndex),
     );
+    OnboardV2Tracking.setUserProperties({'first_course': course.id});
+    unawaited(_submitAnswersUseCase(OnboardingAnswersRequest(chosenCourseId: course.id, completed: true)).run());
+    emit(state.copyWith(chosenCourse: course, currentPage: OnboardV2PageStep.p11Theme));
   }
 
-  /// P8 -> P9 handoff: the user chose to browse the course catalog instead of
-  /// a recommended course. See [goToThemeWithSelectedCourse].
-  void goToThemeAsBrowse() {
-    emit(
-      state.copyWith(
-        currentPage: OnboardV2PageStep.p9Theme,
-        pendingHandoffCourse: null,
-        pendingHandoffIsBrowse: true,
-      ),
-    );
+  /// S10 → S11 cho nhánh "xem kho khoá học": không có khoá được chọn.
+  void goToThemeWithoutCourse() {
+    unawaited(_submitAnswersUseCase(const OnboardingAnswersRequest(completed: true)).run());
+    emit(state.copyWith(chosenCourse: null, currentPage: OnboardV2PageStep.p11Theme));
   }
 
+  /// Lấy bản đầy đủ của khoá đã chọn trước khi bàn giao sang app (danh sách gợi
+  /// ý chỉ có bản rút gọn). Trả null nếu không lấy được.
   Future<CourseEntity?> resolveCourseForHandoff(CourseEntity course) async {
     final courseId = course.id.trim();
     if (courseId.isEmpty) return null;
     final serial = _requestSerial;
-    final courseSerial = _courseSerial;
     emit(state.copyWith(navigationStatus: OnboardV2NavigationStatus.loading, navigationErrorMessage: null));
 
     try {
       final result = await _getCourseUseCase(courseId).run();
-      if (serial != _requestSerial || courseSerial != _courseSerial) return null;
+      if (serial != _requestSerial) return null;
 
       return result.fold(
         (failure) {
-          _emitCoursesFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'detail');
           emit(
             state.copyWith(
               navigationStatus: OnboardV2NavigationStatus.failure,
@@ -524,8 +567,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         },
       );
     } catch (error) {
-      if (serial == _requestSerial && courseSerial == _courseSerial) {
-        _emitCoursesFallback('unexpected', stage: 'detail');
+      if (serial == _requestSerial) {
         emit(
           state.copyWith(
             navigationStatus: OnboardV2NavigationStatus.failure,
@@ -577,21 +619,4 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   /// [markUserOnboarded]. Prefer awaiting [markUserOnboarded] at the point the
   /// user actually finishes onboarding so the flag is guaranteed to land.
   void markUserOnboardedInBackground() => unawaited(markUserOnboarded());
-
-  void _emitCoursesFallback(String reason, {required String stage}) {
-    emit(
-      state.copyWith(
-        courseStatus: OnboardV2CourseStatus.fallback,
-        courseErrorMessage: reason,
-        recommendedCourses: const [],
-        currentCourseIndex: 0,
-      ),
-    );
-  }
-
-  void _invalidateCourses() {
-    _courseSerial += 1;
-    _isLoadingCourses = false;
-    _courseLoadTask = null;
-  }
 }

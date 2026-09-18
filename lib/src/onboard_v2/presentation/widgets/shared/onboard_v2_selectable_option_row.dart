@@ -7,6 +7,9 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.iconPath,
+    this.subtitle,
+    this.trailingCheck = true,
+    this.centered = false,
   });
 
   final String label;
@@ -14,9 +17,20 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
   final VoidCallback onTap;
   final String? iconPath;
 
+  /// Dòng phụ dưới nhãn (S4 lĩnh vực). Bỏ qua khi null/rỗng.
+  final String? subtitle;
+
+  /// Vòng tròn ✓ bên phải khi được chọn. Tắt ở lưới tuổi (S3) — ô hẹp, chỉ cần
+  /// viền gradient là đủ tín hiệu.
+  final bool trailingCheck;
+
+  /// Căn giữa nội dung (lưới tuổi 2 cột).
+  final bool centered;
+
   @override
   Widget build(BuildContext context) {
     final icon = iconPath?.trim();
+    final subtitleText = subtitle?.trim();
     final borderRadius = BorderRadius.circular(16.r);
     return InkWell(
       onTap: () {
@@ -33,6 +47,7 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
           border: selected ? GradientBoxBorder(gradient: OnboardV2GradientText.gradient, width: 2.w) : Border.all(color: AppCustomColor.borderSecondary, width: 2.w),
         ),
         child: Row(
+          mainAxisAlignment: centered ? MainAxisAlignment.center : MainAxisAlignment.start,
           children: [
             if (icon != null && icon.isNotEmpty) ...[
               Container(
@@ -47,18 +62,38 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
               ),
               12.horizontalSpace,
             ],
-            Expanded(
-              child: AppText(
-                label,
-                overflow: TextOverflow.visible,
-                style: AppStyle.text16.copyWith(
-                  color: selected ? AppCustomColor.textPrimary : AppCustomColor.textSecondary,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w400,
-                  height: 1.5,
-                ),
+            Flexible(
+              fit: centered ? FlexFit.loose : FlexFit.tight,
+              child: Column(
+                crossAxisAlignment: centered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppText(
+                    label,
+                    textAlign: centered ? TextAlign.center : TextAlign.start,
+                    overflow: TextOverflow.visible,
+                    style: AppStyle.text16.copyWith(
+                      color: selected ? AppCustomColor.textPrimary : AppCustomColor.textSecondary,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w400,
+                      height: 1.5,
+                    ),
+                  ),
+                  if (subtitleText != null && subtitleText.isNotEmpty) ...[
+                    2.verticalSpace,
+                    AppText(
+                      subtitleText,
+                      textAlign: centered ? TextAlign.center : TextAlign.start,
+                      overflow: TextOverflow.visible,
+                      style: AppStyle.text12.copyWith(
+                        color: selected ? AppCustomColor.brandPrimary.op(0.8) : AppCustomColor.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (selected) ...[
+            if (selected && trailingCheck) ...[
               12.horizontalSpace,
               Icon(Icons.check_circle, size: 24.w, color: AppCustomColor.brandPrimary),
             ],

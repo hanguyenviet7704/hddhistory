@@ -56,7 +56,7 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
         activeSegments: 1,
-        totalSegments: 2,
+        totalSegments: _onboardV2TotalProgressSegments,
         pageStep: OnboardV2PageStep.p2Name,
         showBack: false,
         onBack: cubit.goBack,

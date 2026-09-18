@@ -1,17 +1,14 @@
 part of '../../onboard_v2.dart';
 
-/// P9 "Make it yours" — the terminal screen of onboard_v2 (11th/last screen
-/// of the design). A full-screen study-theme picker that reuses the existing
+/// S11 "Make it yours" — màn cuối của onboarding. A full-screen study-theme picker that reuses the existing
 /// [StudyThemeCubit] catalogue instead of introducing a parallel one: the
 /// same singleton backs the in-app "Change background" sheet
 /// (`change_background_sheet.dart`), so whatever the user picks here is
 /// exactly what they land on.
 ///
-/// P8 no longer completes onboarding itself — it stashes the picked course
-/// (or a "browse" flag) on [OnboardV2Cubit] and hands off here (see
-/// [OnboardV2Cubit.goToThemeWithSelectedCourse] /
-/// [OnboardV2Cubit.goToThemeAsBrowse]). "Start Explore" below now performs
-/// the resolve + route dispatch that used to fire directly from P8's CTA.
+/// S10 (kết quả) không kết thúc onboarding — nó ghi khoá đã chọn lên
+/// [OnboardV2Cubit] (`chosenCourse`, null = xem kho khoá học) rồi bàn giao sang
+/// đây; "Start Explore" bên dưới mới resolve khoá + điều hướng.
 class OnboardV2PickThemePage extends StatefulWidget {
   const OnboardV2PickThemePage({super.key});
 
@@ -46,9 +43,8 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         // No back arrow is shown (terminal screen, no progress header) but a
-        // hardware/gesture back should still return to P8 rather than exit
-        // onboarding — see OnboardV2Cubit.goBack (p9Theme is not in its
-        // "block back" set).
+        // hardware/gesture back should still stay inside onboarding rather than
+        // exit it — see OnboardV2Cubit.goBack.
         context.read<OnboardV2Cubit>().goBack();
       },
       child: OnboardV2ScreenShell(
@@ -134,7 +130,7 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
     // Started here to run alongside the handoff prep below; awaited just before
     // we navigate away.
     final onboardedSave = cubit.markUserOnboarded();
-    final pendingCourse = cubit.state.pendingHandoffCourse;
+    final pendingCourse = cubit.state.chosenCourse;
 
     if (pendingCourse != null) {
       final resolvedCourse = await cubit.resolveCourseForHandoff(pendingCourse);
@@ -176,7 +172,8 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
       // isOnboarded is now persisted (awaited + retried) in _startExplore
       // before reaching here — see OnboardV2Cubit.markUserOnboarded — so there's
       // no fire-and-forget call at this point anymore.
-      userCubit.setOnboardingPathOrder(onboardCubit.state.selectedPaths);
+      // TODO(onboarding-v3 Task 6): thay bằng setOnboardingSkillsetOrder(state.selectedSkillsetIds).
+      userCubit.setOnboardingPathOrder(const <OnboardingPath>[]);
       switch (intent) {
         case CourseHandoffRouteIntent.courseRoadmap:
           // Mark the roadmap as opened from onboarding so it shows a back

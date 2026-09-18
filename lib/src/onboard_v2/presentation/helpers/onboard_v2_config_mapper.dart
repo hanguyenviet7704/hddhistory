@@ -2,24 +2,24 @@ part of '../../onboard_v2.dart';
 
 /// Maps the config-driven [OnboardingContentConfigEntity] — fetched from
 /// `GET /onboarding-config` via `GetOnboardingContentConfigUseCase` — onto the
-/// legacy [OnboardEntity] shape that onboard_v2's pages/resolvers already
-/// consume (`OnboardV2PathResolver`, `onbCopy`, `OnboardV2AgeTextResolver`,
-/// ...). This is the ONLY seam onboard_v2 needed to move off the legacy
-/// `/onboardings` module and onto the admin's `onboarding-config` singleton —
-/// every page/widget/resolver downstream stays byte-identical.
+/// [OnboardEntity] shape onboard_v2's pages consume (`onbCopy`,
+/// `OnboardV2AgeTextResolver`, the intro carousel).
 ///
-/// A blank/unseeded [config] (first run, offline, backend not seeded yet)
-/// maps to an [OnboardEntity] with empty `age`/`paths` and copy entries whose
-/// value is blank — `onbCopy` and [OnboardV2PathResolver] both already fall
-/// back to the bundled l10n/enum defaults for a blank value, so the flow
-/// renders identically either way.
+/// A blank/unseeded [config] (first run, offline, backend not seeded yet) maps
+/// to an [OnboardEntity] with an empty `age` list and copy entries whose value
+/// is blank — `onbCopy` falls back to the bundled l10n default for a blank
+/// value, so the flow renders identically either way.
 ///
-/// See meup-api/plans/260721-onboard-v2-config-driven/contract.md.
+/// Onboarding v3 note: `paths`/`symptoms` are NOT mapped anymore. Câu 1/2/3
+/// đọc thẳng taxonomy từ DB (`GET /onboarding-taxonomy`), config chỉ còn giữ
+/// phần chữ.
+///
+/// See meup-api/plans/260721-onboard-v2-config-driven/contract.md and
+/// meup-api/plans/260918-onboarding-v3-taxonomy/design.md.
 abstract final class OnboardV2ConfigMapper {
   static OnboardEntity toOnboardEntity(OnboardingContentConfigEntity config) {
     return OnboardEntity(
       age: _mapAge(config),
-      paths: _mapPaths(config),
       copy: _mapCopy(config),
       intro: _mapIntroDeck(config),
     );
@@ -66,56 +66,8 @@ abstract final class OnboardV2ConfigMapper {
     ];
   }
 
-  static List<OnboardPathEntity> _mapPaths(OnboardingContentConfigEntity config) {
-    return [
-      for (final item in config.paths.items)
-        OnboardPathEntity(
-          key: item.key,
-          title: item.label,
-          shortTitle: OnboardV2PathResolver.matchPath(item.key)?.shortTitle ?? '',
-          iconKey: item.iconKey,
-          iconUrl: item.iconUrl,
-          trackingLabel: item.key,
-          order: item.order,
-          symptoms: item.symptoms.isNotEmpty
-              ? [
-                  for (final symptom in item.symptoms)
-                    OnboardSymptomEntity(
-                      key: symptom.key,
-                      title: symptom.label,
-                      trackingLabel: symptom.key,
-                      order: symptom.order,
-                    ),
-                ]
-              : _enumSymptomsFor(item.key),
-        ),
-    ];
-  }
-
-  /// Defensive fallback for a config path that carries no symptoms yet (config
-  /// deployed/seeded before the `symptoms` field existed, or a partially-filled
-  /// path). Derives the bundled enum symptoms for the matching [OnboardingPath]
-  /// so the P7 symptom-selection screen — and its course recommendation — is
-  /// never empty. Keys stay the enum `trackingId`s, preserving the round-trip
-  /// contract. Returns empty only for a path key with no matching enum.
-  static List<OnboardSymptomEntity> _enumSymptomsFor(String pathKey) {
-    final enumPath = OnboardV2PathResolver.matchPath(pathKey);
-    if (enumPath == null) return const [];
-    final symptoms = enumPath.symptoms;
-    return [
-      for (var i = 0; i < symptoms.length; i++)
-        OnboardSymptomEntity(
-          key: symptoms[i].trackingId,
-          title: _wrapPlainString(symptoms[i].title),
-          trackingLabel: symptoms[i].trackingId,
-          order: i,
-        ),
-    ];
-  }
-
   /// `titleBrand` is a plain String in the config (not per-locale) — mirrored
-  /// into every [BaseMultiLanguage] slot, same pattern as
-  /// [OnboardV2PathResolver]'s enum-fallback titles.
+  /// into every [BaseMultiLanguage] slot.
   static BaseMultiLanguage _wrapPlainString(String value) => BaseMultiLanguage(en: value, vi: value, zh: value, ja: value, ko: value);
 
   static List<OnboardCopyEntity> _mapCopy(OnboardingContentConfigEntity config) {
@@ -172,6 +124,47 @@ abstract final class OnboardV2ConfigMapper {
       OnboardCopyEntity(key: 'onboardingV2P9Subtitle', value: theme.subtitle),
       OnboardCopyEntity(key: 'onboardingV2P9Cta', value: theme.ctaLabel),
       OnboardCopyEntity(key: 'onboardingV2P9Helper', value: theme.helper),
+
+      //* --- Onboarding v3 (11 màn theo taxonomy) ---
+      // S4 lĩnh vực — dùng lại section `paths` của config (chỉ phần chữ).
+      // `paths.heading` KHÔNG có {name}: trang chỉ chèn tên khi config để trống
+      // và phải rơi về l10n.
+      OnboardCopyEntity(key: 'onboardingV3P4HeadingPrefix', value: paths.heading),
+      OnboardCopyEntity(key: 'onboardingV3P4HeadingHighlight', value: paths.headingHighlight),
+      OnboardCopyEntity(key: 'onboardingV3P4Helper', value: paths.helper),
+      // S5 vấn đề — dùng lại section `habit`.
+      OnboardCopyEntity(key: 'onboardingV3P5HeadingPrefix', value: habit.heading),
+      OnboardCopyEntity(key: 'onboardingV3P5HeadingHighlight', value: habit.headingHighlight),
+      OnboardCopyEntity(key: 'onboardingV3P5Helper', value: habit.subtitle),
+      // S6 mong muốn.
+      OnboardCopyEntity(key: 'onboardingV3P6HeadingPrefix', value: config.desire.heading),
+      OnboardCopyEntity(key: 'onboardingV3P6HeadingHighlight', value: config.desire.headingHighlight),
+      OnboardCopyEntity(key: 'onboardingV3P6Helper', value: config.desire.helper),
+      // S7 MeUp dạy thế nào.
+      OnboardCopyEntity(key: 'onboardingV3P7Eyebrow', value: config.how.eyebrow),
+      OnboardCopyEntity(key: 'onboardingV3P7HeadingPrefix', value: config.how.heading),
+      OnboardCopyEntity(key: 'onboardingV3P7HeadingHighlight', value: config.how.headingHighlight),
+      for (var i = 0; i < config.how.steps.length && i < 4; i++) ...[
+        OnboardCopyEntity(key: 'onboardingV3P7Step${i + 1}Title', value: config.how.steps[i].title),
+        OnboardCopyEntity(key: 'onboardingV3P7Step${i + 1}Body', value: config.how.steps[i].body),
+      ],
+      OnboardCopyEntity(key: 'onboardingV3P7Footer', value: config.how.footer),
+      OnboardCopyEntity(key: 'onboardingV3P7Cta', value: config.how.ctaLabel),
+      // S8 nhắc học. GIỜ của preset không đi đường copy — cubit đọc thẳng
+      // `reminder.presets[i].time` vào `state.reminderPresets`.
+      OnboardCopyEntity(key: 'onboardingV3P8HeadingPrefix', value: config.reminder.heading),
+      OnboardCopyEntity(key: 'onboardingV3P8HeadingHighlight', value: config.reminder.headingHighlight),
+      OnboardCopyEntity(key: 'onboardingV3P8Subtitle', value: config.reminder.subtitle),
+      OnboardCopyEntity(key: 'onboardingV3P8TimeSectionLabel', value: config.reminder.timeSectionLabel),
+      for (var i = 0; i < config.reminder.presets.length && i < 3; i++)
+        OnboardCopyEntity(key: 'onboardingV3P8Preset${i + 1}', value: config.reminder.presets[i].label),
+      // S9 loading.
+      OnboardCopyEntity(key: 'onboardingV3P9HeadingPrefix', value: config.loading.heading),
+      OnboardCopyEntity(key: 'onboardingV3P9HeadingHighlight', value: config.loading.headingHighlight),
+      for (var i = 0; i < config.loading.lines.length && i < 4; i++)
+        OnboardCopyEntity(key: 'onboardingV3P9Line${i + 1}', value: config.loading.lines[i]),
+      // S10 kết quả.
+      OnboardCopyEntity(key: 'onboardingV3P10Cta', value: pick.primaryCta),
     ];
   }
 

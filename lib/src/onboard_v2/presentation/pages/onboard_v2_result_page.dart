@@ -1,23 +1,22 @@
 part of '../../onboard_v2.dart';
 
-class OnboardV2CoursePickerPage extends StatefulWidget {
-  const OnboardV2CoursePickerPage({super.key});
+/// S10 — 3 khoá gợi ý do server xếp hạng (§3.4), vuốt ngang, card đầu mang nhãn
+/// "PHÙ HỢP NHẤT". Không lùi được: câu trả lời đã gửi, quay lại chỉ sinh ra một
+/// lượt hỏi thừa.
+class OnboardV2ResultPage extends StatefulWidget {
+  const OnboardV2ResultPage({super.key});
 
   @override
-  State<OnboardV2CoursePickerPage> createState() => _OnboardV2CoursePickerPageState();
+  State<OnboardV2ResultPage> createState() => _OnboardV2ResultPageState();
 }
 
-class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
+class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
   late final PageController _courseController;
 
   @override
   void initState() {
     super.initState();
-    _courseController = PageController(viewportFraction: _p8CourseViewportFraction);
-    _requestTrackingPermission();
-  }
-
-  void _requestTrackingPermission() {
+    _courseController = PageController(viewportFraction: _p10CourseViewportFraction);
     AppService.instance.appEventService.requestTrackingPermission();
   }
 
@@ -43,15 +42,18 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
             AppText(
               onbCopy(onboardData, 'onboardingV2P8Eyebrow', fallback: onboardingL10n.onboardingV2P8Eyebrow),
               textAlign: TextAlign.center,
+              overflow: TextOverflow.visible,
               style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary.op(0.5), height: 1.75),
             ),
             AppText(
               onbCopy(onboardData, 'onboardingV2P8Title', fallback: onboardingL10n.onboardingV2P8Title),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.visible,
               style: AppStyle.text20.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.5),
             ),
             24.verticalSpace,
-            if (state.courseStatus == OnboardV2CourseStatus.loading)
+            if (state.recommendStatus == OnboardV2RecommendStatus.loading)
               SizedBox(
                 height: 340.w,
                 child: const Center(child: CircularProgressIndicator()),
@@ -59,7 +61,7 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
             else if (state.hasRecommendedCourses)
               _CourseCarousel(controller: _courseController, state: state)
             else
-              _FallbackContent(message: state.courseErrorMessage),
+              const _FallbackContent(),
           ],
         ),
       ),
@@ -68,54 +70,30 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
 
   Widget _buildCta(OnboardV2State state, Translations$onboarding$en onboardingL10n) {
     final onboardData = state.onboardData;
-    final selectCta = onbCopy(onboardData, 'onboardingV2P8SelectCta', fallback: onboardingL10n.onboardingV2P8SelectCta);
+    final selectCta = onbCopy(onboardData, 'onboardingV3P10Cta', fallback: onboardingL10n.onboardingV3P10Cta);
     final course = state.currentCourse;
-    if (state.courseStatus == OnboardV2CourseStatus.loading) {
+    if (state.recommendStatus == OnboardV2RecommendStatus.loading) {
       return OnboardV2BottomCta(label: selectCta, isLoading: true, onPressed: null);
     }
 
     if (course != null && course.id.isNotEmpty) {
       return OnboardV2BottomCta(
         label: selectCta,
-        onPressed: () => _goSelectedCourse(course),
+        onPressed: () => context.read<OnboardV2Cubit>().goToThemeWithCourse(course),
       );
     }
 
     return OnboardV2BottomCta(
       label: onboardingL10n.onboardingV2RetryCta,
-      onPressed: () => unawaited(context.read<OnboardV2Cubit>().retryCoursesForP8()),
+      onPressed: () => unawaited(context.read<OnboardV2Cubit>().retryRecommendation()),
       secondaryLabel: onbCopy(onboardData, 'onboardingV2P8CatalogCta', fallback: onboardingL10n.onboardingV2P8CatalogCta),
-      onSecondaryPressed: _goCourseCatalog,
+      onSecondaryPressed: () => context.read<OnboardV2Cubit>().goToThemeWithoutCourse(),
     );
-  }
-
-  /// Hands off to P9 ("Make it yours") with the picked course stashed on the
-  /// cubit — the actual resolve + route dispatch now happens from there (see
-  /// `onboard_v2_pick_theme_page.dart`'s "Start Explore"), so the user always
-  /// personalizes their study background before landing in the app. The
-  /// prewarm kicked off when P8 opened (`continueFromP7Symptoms`) keeps
-  /// running in the background either way.
-  void _goSelectedCourse(CourseEntity course) {
-    final cubit = context.read<OnboardV2Cubit>();
-    OnboardV2Tracking.track(
-      TrackingKey.onboardV2CourseSelectClick,
-      parameters: OnboardV2Tracking.courseSelectParams(
-        course: course,
-        currentCourseIndex: cubit.state.currentCourseIndex,
-      ),
-    );
-    OnboardV2Tracking.setUserProperties({'first_course': course.id});
-    cubit.goToThemeWithSelectedCourse(course);
-  }
-
-  /// Same P9 handoff as [_goSelectedCourse] for the "browse courses" path.
-  void _goCourseCatalog() {
-    context.read<OnboardV2Cubit>().goToThemeAsBrowse();
   }
 }
 
-const _p8CourseViewportFraction = 0.82;
-const _p8SideCourseCardScale = 220 / 260;
+const _p10CourseViewportFraction = 0.82;
+const _p10SideCourseCardScale = 220 / 260;
 
 class _CourseCarousel extends StatelessWidget {
   const _CourseCarousel({required this.controller, required this.state});
@@ -143,7 +121,7 @@ class _CourseCarousel extends StatelessWidget {
               width: MediaQuery.sizeOf(context).width,
               height: 260.w,
               child: PageView.builder(
-                key: const Key('onboard_v2_course_picker_page_view'),
+                key: const Key('onboard_v2_result_page_view'),
                 controller: controller,
                 itemCount: state.recommendedCourses.length,
                 onPageChanged: cubit.setCurrentCourseIndex,
@@ -154,7 +132,7 @@ class _CourseCarousel extends StatelessWidget {
                     builder: (context, child) {
                       final page = controller.hasClients ? (controller.page ?? controller.initialPage.toDouble()) : state.currentCourseIndex.toDouble();
                       final distance = (page - index).abs().clamp(0.0, 1.0);
-                      final scale = 1.0 - (distance * (1.0 - _p8SideCourseCardScale));
+                      final scale = 1.0 - (distance * (1.0 - _p10SideCourseCardScale));
                       return Transform.scale(scale: scale, child: child);
                     },
                     child: OnboardV2CoursePickerCard(course: course),
@@ -186,7 +164,13 @@ class _CourseCarousel extends StatelessWidget {
           ),
         ],
         24.verticalSpace,
-        if (course != null) _CurrentCourseText(course: course),
+        if (course != null)
+          _CurrentCourseText(
+            course: course,
+            // "Vì bạn muốn …" — chỉ hiện khi server nói khoá này khớp ĐÚNG mong
+            // muốn user chọn ở câu 3, không phải khớp nhãn vấn đề.
+            matchesDesire: state.matchReasons[course.id]?.desire ?? false,
+          ),
       ],
     );
   }
@@ -209,6 +193,7 @@ class _BestMatchedLabel extends StatelessWidget {
         AppText(
           onbCopy(onboardData, 'onboardingV2P8Label', fallback: onboardingL10n.onboardingV2P8Label).toUpperCase(),
           textAlign: TextAlign.center,
+          maxLines: 1,
           style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700, height: 1.75),
         ),
         8.horizontalSpace,
@@ -223,9 +208,10 @@ class _BestMatchedLabel extends StatelessWidget {
 }
 
 class _CurrentCourseText extends StatelessWidget {
-  const _CurrentCourseText({required this.course});
+  const _CurrentCourseText({required this.course, required this.matchesDesire});
 
   final CourseEntity course;
+  final bool matchesDesire;
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +239,17 @@ class _CurrentCourseText extends StatelessWidget {
               style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.75),
             ),
           ],
+          if (matchesDesire) ...[
+            8.verticalSpace,
+            AppText(
+              onboardingL10n.onboardingV3ResultReasonDesire,
+              key: const Key('onboard_v2_result_reason_desire'),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.visible,
+              style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700, height: 1.5),
+            ),
+          ],
         ],
       ),
     );
@@ -260,9 +257,7 @@ class _CurrentCourseText extends StatelessWidget {
 }
 
 class _FallbackContent extends StatelessWidget {
-  const _FallbackContent({this.message});
-
-  final String? message;
+  const _FallbackContent();
 
   @override
   Widget build(BuildContext context) {
@@ -277,6 +272,7 @@ class _FallbackContent extends StatelessWidget {
           AppText(
             onboardingL10n.onboardingV2P8FallbackTitle,
             textAlign: TextAlign.center,
+            overflow: TextOverflow.visible,
             style: AppStyle.text24.copyWith(color: AppCustomColor.textBrand, fontWeight: FontWeight.w800),
           ),
           12.verticalSpace,
