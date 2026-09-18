@@ -16,9 +16,17 @@ import { downloadBlob } from "../../utils/downloadBlob";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { unwrapApi } from "../../utils/unwrapApi";
 
+// Two payload shapes land here under the same `errors` key (see
+// all-exceptions.filter.ts): `{entity, code, message}` from the PUT
+// /onboarding-taxonomy validation path, and `{sheet, row, column, message}`
+// from the Excel-import-shaped validator. Every field but `message` is
+// therefore optional — render only what exists, never `undefined`.
 interface Issue {
-  entity: string;
-  code: string;
+  entity?: string;
+  code?: string;
+  sheet?: string;
+  row?: number;
+  column?: string;
   message: string;
 }
 
@@ -80,7 +88,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
     // Danh sách skillset để gắn cho nhánh — số skillset nhỏ (≈6), tải một lần.
     const loadSkillsets = async () => {
       try {
-        const res: any = await skillsetService.getList({ take: 100 } as any);
+        const res: any = await skillsetService.getList({ isAll: true, take: 1000 } as any);
         const page = unwrapApi<any>(res);
         setSkillsets(page?.items ?? []);
       } catch {
@@ -110,7 +118,12 @@ const OnboardingTaxonomyPage: React.FC = () => {
       showSuccess("Đã lưu taxonomy");
     } catch (e: any) {
       const data = e?.response?.data;
-      if (Array.isArray(data?.issues)) setIssues(data.issues);
+      // `issues` covers a stale API build; `errors` is the key the global
+      // exception filter actually forwards (all-exceptions.filter.ts) —
+      // accept either so a validation failure never falls back to the
+      // one-line toast.
+      const list = data?.issues ?? data?.errors;
+      if (Array.isArray(list)) setIssues(list);
       else showError(data?.message || "Lưu thất bại");
     } finally {
       setSaving(false);
@@ -327,9 +340,21 @@ const OnboardingTaxonomyPage: React.FC = () => {
         <Alert severity="error">
           <Typography sx={{ fontWeight: 600 }}>Taxonomy không hợp lệ:</Typography>
           <ul className="list-disc pl-5">
-            {issues.map((i, idx) => (
-              <li key={idx}>[{i.entity}] {i.code}: {i.message}</li>
-            ))}
+            {issues.map((i, idx) => {
+              // Render only the fields this entry actually has — `entity`/
+              // `code` come from the PUT-shaped issue, `sheet`/`row`/`column`
+              // from the import-shaped one. Never print `undefined`.
+              const parts: string[] = [];
+              if (i.entity) parts.push(i.entity);
+              if (i.code) parts.push(i.code);
+              if (i.sheet) parts.push(i.sheet);
+              if (i.row != null) parts.push(`dòng ${i.row}`);
+              if (i.column) parts.push(i.column);
+              const prefix = parts.join(" · ");
+              return (
+                <li key={idx}>{prefix ? `[${prefix}] ` : ""}{i.message}</li>
+              );
+            })}
           </ul>
         </Alert>
       )}

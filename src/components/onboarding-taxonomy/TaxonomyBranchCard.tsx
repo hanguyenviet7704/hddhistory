@@ -123,7 +123,11 @@ const TaxonomyBranchCard: React.FC<Props> = ({
                 <React.Fragment key={pkg._localId}>
                   <TableRow>
                     <TableCell>
-                      <IconButton size="small" onClick={() => setOpen((o) => ({ ...o, [pkg._localId]: !o[pkg._localId] }))}>
+                      <IconButton
+                        size="small"
+                        aria-label={`Toggle labels for ${pkg.code}`}
+                        onClick={() => setOpen((o) => ({ ...o, [pkg._localId]: !o[pkg._localId] }))}
+                      >
                         {isOpen ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
                       </IconButton>
                     </TableCell>
@@ -137,7 +141,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
                     <TableCell>
                       <Typography variant="caption" color="text.secondary">{labels.length}</Typography>
                     </TableCell>
-                    <TableCell><IconButton size="small" color="error" onClick={() => onDeletePackage(pkg._localId)}><TrashIcon size={16} /></IconButton></TableCell>
+                    <TableCell><IconButton size="small" color="error" aria-label={`Delete package ${pkg.code}`} onClick={() => onDeletePackage(pkg._localId)}><TrashIcon size={16} /></IconButton></TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell colSpan={10} sx={{ p: 0, border: 0 }}>
@@ -151,7 +155,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
                               <TextField size="small" sx={{ width: 90 }} value={label.code ?? ""} onChange={(e) => onChangeLabel(label._localId, { ...label, code: e.target.value.toUpperCase() })} />
                               <TextField size="small" sx={{ flex: 1 }} placeholder="Nhãn (vi)" value={label.label?.vi ?? ""} onChange={(e) => onChangeLabel(label._localId, { ...label, label: { ...label.label, vi: e.target.value } })} />
                               <TextField size="small" sx={{ flex: 1 }} placeholder="Nhãn (en)" value={label.label?.en ?? ""} onChange={(e) => onChangeLabel(label._localId, { ...label, label: { ...label.label, en: e.target.value } })} />
-                              <IconButton size="small" color="error" onClick={() => onDeleteLabel(label._localId)}><TrashIcon size={14} /></IconButton>
+                              <IconButton size="small" color="error" aria-label={`Delete label ${label.code}`} onClick={() => onDeleteLabel(label._localId)}><TrashIcon size={14} /></IconButton>
                             </Box>
                           ))}
                           <Button size="small" startIcon={<PlusIcon size={14} />} sx={{ mt: 1 }} onClick={() => onAddLabel(pkg.code)}>Thêm nhãn</Button>

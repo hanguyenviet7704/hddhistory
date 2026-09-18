@@ -819,7 +819,7 @@ export default function CourseModal({
                       />
                     )}
                   />
-                  {onboardingLabelCodes.some(
+                  {taxonomy.labels.length > 0 && onboardingLabelCodes.some(
                     (c) => !taxonomy.labels.find((l) => l.code === c)
                   ) && (
                     <p className="text-xs text-amber-600">
@@ -832,7 +832,7 @@ export default function CourseModal({
                         .join(", ")}
                     </p>
                   )}
-                  {onboardingDesireCodes.some(
+                  {taxonomy.packages.length > 0 && onboardingDesireCodes.some(
                     (c) => !taxonomy.packages.find((p) => p.code === c)
                   ) && (
                     <p className="text-xs text-amber-600">
