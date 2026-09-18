@@ -258,6 +258,30 @@ export default function CourseModal({
     }
   }, [debouncedQuery, isOpen]); // Chạy lại khi query hoặc trạng thái mở modal thay đổi
 
+  // Onboarding v3: options được sort để hiển thị theo nhóm ổn định.
+  //
+  // PHẢI đứng TRƯỚC `if (!isOpen) return null` ngay dưới đây. Đặt sau cái
+  // return sớm ấy thì lúc modal đóng component gọi N hook, lúc mở gọi N+2 —
+  // React ném #310 ("Rendered more hooks than during the previous render") và
+  // giết cả cây, tức TRẮNG nguyên trang danh sách ngay khi bấm Sửa. Cả `tsc`
+  // lẫn `npm run build` đều không thấy: đây là luật lúc chạy, không phải kiểu.
+  const sortedTaxonomyLabels = useMemo(
+    () =>
+      [...taxonomy.labels].sort(
+        (a, b) =>
+          a.packageCode.localeCompare(b.packageCode) || a.order - b.order
+      ),
+    [taxonomy]
+  );
+  const sortedTaxonomyPackages = useMemo(
+    () =>
+      [...taxonomy.packages].sort(
+        (a, b) =>
+          a.branchCode.localeCompare(b.branchCode) || a.order - b.order
+      ),
+    [taxonomy]
+  );
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -416,24 +440,6 @@ export default function CourseModal({
       setShowSkillsetDropdown(true);
     }
   };
-
-  // Onboarding v3: options được sort để hiển thị theo nhóm ổn định.
-  const sortedTaxonomyLabels = useMemo(
-    () =>
-      [...taxonomy.labels].sort(
-        (a, b) =>
-          a.packageCode.localeCompare(b.packageCode) || a.order - b.order
-      ),
-    [taxonomy]
-  );
-  const sortedTaxonomyPackages = useMemo(
-    () =>
-      [...taxonomy.packages].sort(
-        (a, b) =>
-          a.branchCode.localeCompare(b.branchCode) || a.order - b.order
-      ),
-    [taxonomy]
-  );
 
   // Picker chỉ liệt kê mã CÒN trong taxonomy, nên chọn lại luôn thay thế toàn
   // bộ mảng theo đúng những gì MUI báo — nếu không giữ lại mã lạ (đã lưu
