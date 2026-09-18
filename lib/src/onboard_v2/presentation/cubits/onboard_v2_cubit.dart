@@ -7,7 +7,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     this._updateUserUseCase,
     this._getTaxonomyUseCase,
     this._submitAnswersUseCase,
-    this._getCourseUseCase,
     this._deviceInfoService,
     this._authBloc,
     this._userCubit,
@@ -23,7 +22,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     this._updateUserUseCase,
     this._getTaxonomyUseCase,
     this._submitAnswersUseCase,
-    this._getCourseUseCase,
     this._deviceInfoService,
     this._authBloc,
     this._userCubit,
@@ -40,7 +38,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   final UpdateUserUseCase _updateUserUseCase;
   final GetOnboardingTaxonomyUseCase _getTaxonomyUseCase;
   final SubmitOnboardingAnswersUseCase _submitAnswersUseCase;
-  final GetCourseUseCase _getCourseUseCase;
   final IDeviceInfoService _deviceInfoService;
   final AuthBloc _authBloc;
   final UserCubit _userCubit;
@@ -537,46 +534,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   void goToThemeWithoutCourse() {
     unawaited(_submitAnswersUseCase(const OnboardingAnswersRequest(completed: true)).run());
     emit(state.copyWith(chosenCourse: null, currentPage: OnboardV2PageStep.p11Theme));
-  }
-
-  /// Lấy bản đầy đủ của khoá đã chọn trước khi bàn giao sang app (danh sách gợi
-  /// ý chỉ có bản rút gọn). Trả null nếu không lấy được.
-  Future<CourseEntity?> resolveCourseForHandoff(CourseEntity course) async {
-    final courseId = course.id.trim();
-    if (courseId.isEmpty) return null;
-    final serial = _requestSerial;
-    emit(state.copyWith(navigationStatus: OnboardV2NavigationStatus.loading, navigationErrorMessage: null));
-
-    try {
-      final result = await _getCourseUseCase(courseId).run();
-      if (serial != _requestSerial) return null;
-
-      return result.fold(
-        (failure) {
-          emit(
-            state.copyWith(
-              navigationStatus: OnboardV2NavigationStatus.failure,
-              navigationErrorMessage: failure.displayMessage,
-            ),
-          );
-          return null;
-        },
-        (detail) {
-          emit(state.copyWith(navigationStatus: OnboardV2NavigationStatus.success));
-          return detail.id.trim().isEmpty ? course : detail;
-        },
-      );
-    } catch (error) {
-      if (serial == _requestSerial) {
-        emit(
-          state.copyWith(
-            navigationStatus: OnboardV2NavigationStatus.failure,
-            navigationErrorMessage: l10n.onboarding.onboardingV2GenericError,
-          ),
-        );
-      }
-      return null;
-    }
   }
 
   /// Persist `isOnboarded = true` to the server for the current (anonymous)

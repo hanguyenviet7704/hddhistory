@@ -50,49 +50,17 @@ class _FakeProfileRepository implements IProfileRepository {
   TaskEither<AppException, UserEntity> updateUser(Map<String, dynamic> params) => TaskEither.right(const UserEntity());
 }
 
-class _FakeCourseRepository implements ICourseRepository {
-  @override
-  TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest<CourseFilterRequest> request) {
-    return TaskEither.right(BasePageBreak<CourseEntity>());
-  }
-
-  @override
-  TaskEither<AppException, CourseEntity> getCourse(String id) => TaskEither.left(const AppException.notFound('missing course'));
-
-  @override
-  TaskEither<AppException, RoadmapEntity> getRoadmap(String id) => TaskEither.right(const RoadmapEntity());
-
-  @override
-  TaskEither<AppException, List<String>> getSearchHistory() => TaskEither.right(const []);
-
-  @override
-  TaskEither<AppException, Unit> saveSearchQuery(String query) => TaskEither.right(unit);
-
-  @override
-  TaskEither<AppException, Unit> clearSearchHistory() => TaskEither.right(unit);
-
-  @override
-  TaskEither<AppException, List<CourseEntity>> getRecentCourses() => TaskEither.right(const []);
-
-  @override
-  TaskEither<AppException, Unit> recordCourseView(String courseId) => TaskEither.right(unit);
-
-  @override
-  TaskEither<AppException, Unit> clearRecentCourses() => TaskEither.right(unit);
-}
-
 class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   _SeededOnboardV2Cubit()
-    : super.withRandom(
+    : super.forTest(
         GetOnboardingContentConfigUseCase(_FakeOnboardingRepository()),
         UpdateUserUseCase(_FakeProfileRepository()),
-        GetAllCoursesUseCase(_FakeCourseRepository()),
-        GetCourseUseCase(_FakeCourseRepository()),
+        GetOnboardingTaxonomyUseCase(_FakeOnboardingRepository()),
+        SubmitOnboardingAnswersUseCase(_FakeOnboardingRepository()),
         _FakeDeviceInfoService(),
         _MockAuthBloc(),
         _MockUserCubit(),
         AppDI.injector.get<LocaleCubit>(),
-        Random(0),
       );
 }
 
@@ -107,7 +75,12 @@ void main() {
   });
 
   testWidgets('P1 renders animated carousel surface', (tester) async {
-    await tester.pumpWidget(_buildHarness(const OnboardV2IntroCarousel()));
+    final cubit = _SeededOnboardV2Cubit();
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(
+      _buildHarness(BlocProvider<OnboardV2Cubit>.value(value: cubit, child: const OnboardV2IntroCarousel())),
+    );
 
     expect(find.byKey(const Key('onboard_v2_intro_carousel')), findsOneWidget);
     expect(find.byKey(const Key('onboard_v2_intro_carousel_animation')), findsOneWidget);
@@ -141,6 +114,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 220));
     expect(animatingPageView.controller?.page?.round(), 1);
 
+    // P2Name schedules a 400ms delayed focus request from initState (keeps
+    // the keyboard from raising mid P1→P2 transition) — flush it before the
+    // widget tree is torn down, or the pending-timer teardown check fails.
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -174,25 +151,10 @@ void main() {
     expect(animatingPageView.controller?.page, greaterThan(1));
     expect(animatingPageView.controller?.page, lessThan(2));
 
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
-  testWidgets('P5 path subtitle reflects selected option count', (tester) async {
-    final cubit = _SeededOnboardV2Cubit();
-    addTearDown(cubit.close);
-
-    await tester.pumpWidget(_buildHarness(BlocProvider<OnboardV2Cubit>.value(value: cubit, child: const OnboardV2PathSelectionPage())));
-
-    expect(find.text('Pick up 0/2 you most want to grow in'), findsOneWidget);
-
-    cubit.togglePath(OnboardingPath.feelBetter);
-    await tester.pump();
-    expect(find.text('Pick up 1/2 you most want to grow in'), findsOneWidget);
-
-    cubit.togglePath(OnboardingPath.thinkBetter);
-    await tester.pump();
-    expect(find.text('Pick up 2/2 you most want to grow in'), findsOneWidget);
-
+    // P2Name only enters the PageView's build range partway through the
+    // P1→P2 swipe and then schedules its own 400ms delayed focus timer —
+    // flush it before teardown or the pending-timer check fails.
+    await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

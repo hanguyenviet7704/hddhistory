@@ -50,49 +50,17 @@ class _FakeProfileRepository implements IProfileRepository {
   TaskEither<AppException, UserEntity> updateUser(Map<String, dynamic> params) => TaskEither.right(const UserEntity());
 }
 
-class _FakeCourseRepository implements ICourseRepository {
-  @override
-  TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest<CourseFilterRequest> request) {
-    return TaskEither.right(BasePageBreak<CourseEntity>());
-  }
-
-  @override
-  TaskEither<AppException, CourseEntity> getCourse(String id) => TaskEither.right(const CourseEntity());
-
-  @override
-  TaskEither<AppException, RoadmapEntity> getRoadmap(String id) => TaskEither.right(const RoadmapEntity());
-
-  @override
-  TaskEither<AppException, List<String>> getSearchHistory() => TaskEither.right(const []);
-
-  @override
-  TaskEither<AppException, Unit> saveSearchQuery(String query) => TaskEither.right(unit);
-
-  @override
-  TaskEither<AppException, Unit> clearSearchHistory() => TaskEither.right(unit);
-
-  @override
-  TaskEither<AppException, List<CourseEntity>> getRecentCourses() => TaskEither.right(const []);
-
-  @override
-  TaskEither<AppException, Unit> recordCourseView(String courseId) => TaskEither.right(unit);
-
-  @override
-  TaskEither<AppException, Unit> clearRecentCourses() => TaskEither.right(unit);
-}
-
 class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   _SeededOnboardV2Cubit()
-    : super.withRandom(
+    : super.forTest(
         GetOnboardingContentConfigUseCase(_FakeOnboardingRepository()),
         UpdateUserUseCase(_FakeProfileRepository()),
-        GetAllCoursesUseCase(_FakeCourseRepository()),
-        GetCourseUseCase(_FakeCourseRepository()),
+        GetOnboardingTaxonomyUseCase(_FakeOnboardingRepository()),
+        SubmitOnboardingAnswersUseCase(_FakeOnboardingRepository()),
         _FakeDeviceInfoService(),
         _MockAuthBloc(),
         _MockUserCubit(),
         AppDI.injector.get<LocaleCubit>(),
-        Random(0),
       );
 
   void seed(OnboardV2State state) => emit(state);
@@ -114,6 +82,9 @@ void main() {
 
     await tester.pumpWidget(_buildPage(cubit));
     await tester.pump();
+    // Focus is requested from a postFrameCallback after a 400ms delay (keeps
+    // the keyboard from raising mid P1→P2 transition) — flush it here.
+    await tester.pump(const Duration(milliseconds: 400));
 
     final waveHandImage = tester.widget<Image>(find.byKey(const Key('onboard_v2_name_wave_hand')));
     expect((waveHandImage.image as AssetImage).assetName, AppAsset.icons.app.icWaveHand.path);
@@ -136,6 +107,8 @@ void main() {
 
     await tester.pumpWidget(_buildPage(cubit));
     await tester.pump();
+    // Same delayed-focus timer as above — flush it before interacting.
+    await tester.pump(const Duration(milliseconds: 400));
 
     await tester.enterText(find.byKey(const Key('onboard_v2_name_input')), 'Bob');
     await tester.pump();

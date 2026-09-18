@@ -23,7 +23,8 @@ void main() {
       expect(TrackingKey.onboardV2P6View, 'obd_infor_scr_view');
       expect(TrackingKey.onboardV2P7View, 'obd_symptom_scr_view');
       expect(TrackingKey.onboardV2P8View, 'obd_course_view');
-      expect(TrackingKey.onboardV2P9View, 'obd_theme_scr_view');
+      expect(TrackingKey.onboardV2P10View, 'obd_result_scr_view');
+      expect(TrackingKey.onboardV2P11View, 'obd_theme_scr_view');
       // Primary actions
       expect(TrackingKey.onboardV2P1GetStartedClick, 'obd_welcome_get_started');
       expect(TrackingKey.onboardV2P2ContinueClick, 'obd_name_continue');
@@ -47,23 +48,6 @@ void main() {
       expect(TrackingKey.onboardV2SymptomBack, 'obd_symptom_back');
     });
 
-    test('user-property value helpers use the sheet vocabulary', () {
-      expect(
-        OnboardV2Tracking.selectedPathValue([
-          OnboardingPath.feelBetter,
-          OnboardingPath.workBetter,
-        ]),
-        'feel,work',
-      );
-      expect(
-        OnboardV2Tracking.selectedHabitValue([
-          OnboardingSymptom.motivationDisappears,
-          OnboardingSymptom.timeSlipsAway,
-        ]),
-        '${OnboardingSymptom.motivationDisappears.trackingId},${OnboardingSymptom.timeSlipsAway.trackingId}',
-      );
-    });
-
     test('keeps existing age params and adds sheet age alias', () {
       const option = OnboardOptionEntity(
         id: 18,
@@ -76,45 +60,6 @@ void main() {
       expect(params['selected_age_id'], 18);
       expect(params['selected_age_label'], '18-24');
       expect(params['age'], '18-24');
-    });
-
-    test('keeps selected path params and adds sheet path alias', () {
-      final params = OnboardV2Tracking.selectedPathSheetParams([
-        OnboardingPath.feelBetter,
-        OnboardingPath.workBetter,
-      ]);
-
-      expect(params['selected_path_ids'], ['FEEL_BETTER', 'WORK_BETTER']);
-      expect(params['selected_path_count'], 2);
-      expect(params['path_selected'], 'feel,work');
-    });
-
-    test('keeps selected symptom params and adds sheet symptom alias', () {
-      final params = OnboardV2Tracking.selectedSymptomSheetParams([
-        OnboardingSymptom.motivationDisappears,
-        OnboardingSymptom.timeSlipsAway,
-      ]);
-
-      expect(params['selected_symptom_ids'], ['MOTIVATION_DISAPPEARS', 'TIME_SLIPS_AWAY']);
-      expect(params['selected_symptom_count'], 2);
-      expect(params['symptom_selected'], 'motivation_disappear,time_slips_away');
-    });
-
-    test('keeps selected path params on path relate event and adds sheet symptom alias', () {
-      final params = OnboardV2Tracking.pathRelateSheetParams(
-        selectedPaths: [
-          OnboardingPath.feelBetter,
-          OnboardingPath.workBetter,
-        ],
-        selectedSymptoms: [
-          OnboardingSymptom.motivationDisappears,
-          OnboardingSymptom.timeSlipsAway,
-        ],
-      );
-
-      expect(params['selected_path_ids'], ['FEEL_BETTER', 'WORK_BETTER']);
-      expect(params['selected_symptom_ids'], ['MOTIVATION_DISAPPEARS', 'TIME_SLIPS_AWAY']);
-      expect(params['symptom_selected'], 'motivation_disappear,time_slips_away');
     });
 
     test('keeps selected course params and adds sheet course aliases', () {

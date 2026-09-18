@@ -27,15 +27,12 @@ enum OnboardV2TaxonomyStatus { initial, loading, success, failure }
 /// không có kết quả dùng được (S10 hiện màn dự phòng + Thử lại).
 enum OnboardV2RecommendStatus { initial, loading, loaded, fallback }
 
-enum OnboardV2NavigationStatus { initial, loading, success, failure }
-
 @freezed
 abstract class OnboardV2State with _$OnboardV2State {
   const factory OnboardV2State({
     @Default(OnboardV2PageStep.p1Intro) OnboardV2PageStep currentPage,
     @Default(OnboardV2AsyncStatus.initial) OnboardV2AsyncStatus onboardStatus,
     @Default(OnboardV2AsyncStatus.initial) OnboardV2AsyncStatus p3SubmitStatus,
-    @Default(OnboardV2NavigationStatus.initial) OnboardV2NavigationStatus navigationStatus,
     @Default(OnboardEntity()) OnboardEntity onboardData,
 
     /// Admin Onboarding Config toggle: open the FULL paywall right after the
@@ -84,7 +81,6 @@ abstract class OnboardV2State with _$OnboardV2State {
     CourseEntity? chosenCourse,
     String? onboardErrorMessage,
     String? p3ErrorMessage,
-    String? navigationErrorMessage,
   }) = _OnboardV2State;
 
   factory OnboardV2State.initial() => const OnboardV2State();
