@@ -42,12 +42,15 @@ interface Props {
   labelsByPackage: Record<string, LocalLabel[]>;
   onChangeBranch: (next: LocalBranch) => void;
   onDeleteBranch: () => void;
-  onChangePackage: (code: string, next: LocalPackage) => void;
+  // Identified by the stable _localId, not `code` — `code` is user-editable
+  // and can collide (e.g. two freshly-added rows before they're renamed), so
+  // it must never be used to pick out which row a mutation targets.
+  onChangePackage: (localId: string, next: LocalPackage) => void;
   onAddPackage: () => void;
-  onDeletePackage: (code: string) => void;
-  onChangeLabel: (code: string, next: LocalLabel) => void;
+  onDeletePackage: (localId: string) => void;
+  onChangeLabel: (localId: string, next: LocalLabel) => void;
   onAddLabel: (packageCode: string) => void;
-  onDeleteLabel: (code: string) => void;
+  onDeleteLabel: (localId: string) => void;
   skillsetPicker: React.ReactNode; // typeahead do page cung cấp (cần service + debounce)
 }
 
@@ -115,7 +118,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
             {(packages ?? []).map((pkg) => {
               const labels = labelsByPackage[pkg.code] ?? [];
               const isOpen = !!open[pkg._localId];
-              const setPkg = (patch: Partial<OnboardingPackage>) => onChangePackage(pkg.code, { ...pkg, ...patch });
+              const setPkg = (patch: Partial<OnboardingPackage>) => onChangePackage(pkg._localId, { ...pkg, ...patch });
               return (
                 <React.Fragment key={pkg._localId}>
                   <TableRow>
@@ -134,7 +137,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
                     <TableCell>
                       <Typography variant="caption" color="text.secondary">{labels.length}</Typography>
                     </TableCell>
-                    <TableCell><IconButton size="small" color="error" onClick={() => onDeletePackage(pkg.code)}><TrashIcon size={16} /></IconButton></TableCell>
+                    <TableCell><IconButton size="small" color="error" onClick={() => onDeletePackage(pkg._localId)}><TrashIcon size={16} /></IconButton></TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell colSpan={10} sx={{ p: 0, border: 0 }}>
@@ -145,10 +148,10 @@ const TaxonomyBranchCard: React.FC<Props> = ({
                           </Typography>
                           {labels.map((label) => (
                             <Box key={label._localId} className="flex gap-2 items-center mt-1">
-                              <TextField size="small" sx={{ width: 90 }} value={label.code ?? ""} onChange={(e) => onChangeLabel(label.code, { ...label, code: e.target.value.toUpperCase() })} />
-                              <TextField size="small" sx={{ flex: 1 }} placeholder="Nhãn (vi)" value={label.label?.vi ?? ""} onChange={(e) => onChangeLabel(label.code, { ...label, label: { ...label.label, vi: e.target.value } })} />
-                              <TextField size="small" sx={{ flex: 1 }} placeholder="Nhãn (en)" value={label.label?.en ?? ""} onChange={(e) => onChangeLabel(label.code, { ...label, label: { ...label.label, en: e.target.value } })} />
-                              <IconButton size="small" color="error" onClick={() => onDeleteLabel(label.code)}><TrashIcon size={14} /></IconButton>
+                              <TextField size="small" sx={{ width: 90 }} value={label.code ?? ""} onChange={(e) => onChangeLabel(label._localId, { ...label, code: e.target.value.toUpperCase() })} />
+                              <TextField size="small" sx={{ flex: 1 }} placeholder="Nhãn (vi)" value={label.label?.vi ?? ""} onChange={(e) => onChangeLabel(label._localId, { ...label, label: { ...label.label, vi: e.target.value } })} />
+                              <TextField size="small" sx={{ flex: 1 }} placeholder="Nhãn (en)" value={label.label?.en ?? ""} onChange={(e) => onChangeLabel(label._localId, { ...label, label: { ...label.label, en: e.target.value } })} />
+                              <IconButton size="small" color="error" onClick={() => onDeleteLabel(label._localId)}><TrashIcon size={14} /></IconButton>
                             </Box>
                           ))}
                           <Button size="small" startIcon={<PlusIcon size={14} />} sx={{ mt: 1 }} onClick={() => onAddLabel(pkg.code)}>Thêm nhãn</Button>

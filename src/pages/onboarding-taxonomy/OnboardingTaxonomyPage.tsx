@@ -127,55 +127,86 @@ const OnboardingTaxonomyPage: React.FC = () => {
   };
 
   // --- mutators (thuần trên state) ---
-  const updateBranch = (code: string, next: LocalBranch) =>
-    setTree((t) => ({
-      ...t,
-      branches: t.branches.map((b) => (b.code === code ? next : b)),
-      packages: next.code === code ? t.packages : t.packages.map((p) => (p.branchCode === code ? { ...p, branchCode: next.code } : p)),
-    }));
-
-  const deleteBranch = (code: string) => {
-    if (!window.confirm(`Xoá nhánh ${code} cùng toàn bộ gói và nhãn của nó?`)) return;
+  // Every mutator below identifies the row it targets by `_localId`, never by
+  // `code` — `code` is a user-editable field and can collide (two freshly
+  // added rows share the same default/blank code until renamed), so using it
+  // as a lookup key can silently edit or delete the wrong row. Cascades
+  // (branch → its packages, package → its labels) still follow the actual
+  // `branchCode`/`packageCode` relationships, since that's how the API links
+  // them — only the *target* row itself is resolved by `_localId`.
+  const updateBranch = (localId: string, next: LocalBranch) =>
     setTree((t) => {
-      const pkgCodes = new Set(t.packages.filter((p) => p.branchCode === code).map((p) => p.code));
+      const prev = t.branches.find((b) => b._localId === localId);
+      const oldCode = prev?.code;
+      const codeChanged = !!prev && next.code !== oldCode;
       return {
-        branches: t.branches.filter((b) => b.code !== code),
-        packages: t.packages.filter((p) => p.branchCode !== code),
+        ...t,
+        branches: t.branches.map((b) => (b._localId === localId ? next : b)),
+        packages: !codeChanged ? t.packages : t.packages.map((p) => (p.branchCode === oldCode ? { ...p, branchCode: next.code } : p)),
+      };
+    });
+
+  const deleteBranch = (localId: string) => {
+    const branch = tree.branches.find((b) => b._localId === localId);
+    const label = branch?.code || branch?.label?.vi || "(chưa đặt mã)";
+    if (!window.confirm(`Xoá nhánh ${label} cùng toàn bộ gói và nhãn của nó?`)) return;
+    setTree((t) => {
+      const target = t.branches.find((b) => b._localId === localId);
+      if (!target) return t;
+      const pkgCodes = new Set(t.packages.filter((p) => p.branchCode === target.code).map((p) => p.code));
+      return {
+        branches: t.branches.filter((b) => b._localId !== localId),
+        packages: t.packages.filter((p) => p.branchCode !== target.code),
         labels: t.labels.filter((l) => !pkgCodes.has(l.packageCode)),
       };
     });
   };
 
   const addBranch = () =>
-    setTree((t) => ({
-      ...t,
-      branches: [
-        ...t.branches,
-        {
-          code: "",
-          label: { vi: "" },
-          subtitle: {},
-          iconUrl: "",
-          imageUrl: "",
-          order: t.branches.length + 1,
-          isSelectable: true,
-          skillsetId: null,
-          isActive: true,
-          _localId: nextLocalId(),
-        },
-      ],
-    }));
+    setTree((t) => {
+      const maxOrder = t.branches.reduce((m, b) => Math.max(m, b.order ?? 0), 0);
+      return {
+        ...t,
+        branches: [
+          ...t.branches,
+          {
+            code: "",
+            label: { vi: "" },
+            subtitle: {},
+            iconUrl: "",
+            imageUrl: "",
+            order: maxOrder + 1,
+            isSelectable: true,
+            skillsetId: null,
+            isActive: true,
+            _localId: nextLocalId(),
+          },
+        ],
+      };
+    });
 
-  const updatePackage = (code: string, next: LocalPackage) =>
-    setTree((t) => ({
-      ...t,
-      packages: t.packages.map((p) => (p.code === code ? next : p)),
-      labels: next.code === code ? t.labels : t.labels.map((l) => (l.packageCode === code ? { ...l, packageCode: next.code } : l)),
-    }));
+  const updatePackage = (localId: string, next: LocalPackage) =>
+    setTree((t) => {
+      const prev = t.packages.find((p) => p._localId === localId);
+      const oldCode = prev?.code;
+      const codeChanged = !!prev && next.code !== oldCode;
+      return {
+        ...t,
+        packages: t.packages.map((p) => (p._localId === localId ? next : p)),
+        labels: !codeChanged ? t.labels : t.labels.map((l) => (l.packageCode === oldCode ? { ...l, packageCode: next.code } : l)),
+      };
+    });
 
+  // Default package code = smallest unused "<branchCode>-<n>" across the
+  // WHOLE tree (not just this branch's packages) — two packages under
+  // different branches could otherwise still land on the same code if one
+  // branch's code is a prefix of another's default sequence.
   const addPackage = (branchCode: string) =>
     setTree((t) => {
-      const n = t.packages.filter((p) => p.branchCode === branchCode).length + 1;
+      const usedCodes = new Set(t.packages.map((p) => p.code));
+      let n = 1;
+      while (usedCodes.has(`${branchCode}-${n}`)) n++;
+      const siblingCount = t.packages.filter((p) => p.branchCode === branchCode).length;
       return {
         ...t,
         packages: [
@@ -185,7 +216,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
             branchCode,
             problemLabel: { vi: "" },
             desireLabel: { vi: "" },
-            order: n,
+            order: siblingCount + 1,
             isActive: true,
             _localId: nextLocalId(),
           },
@@ -193,30 +224,44 @@ const OnboardingTaxonomyPage: React.FC = () => {
       };
     });
 
-  const deletePackage = (code: string) =>
-    setTree((t) => ({
-      ...t,
-      packages: t.packages.filter((p) => p.code !== code),
-      labels: t.labels.filter((l) => l.packageCode !== code),
-    }));
+  const deletePackage = (localId: string) =>
+    setTree((t) => {
+      const target = t.packages.find((p) => p._localId === localId);
+      if (!target) return t;
+      return {
+        ...t,
+        packages: t.packages.filter((p) => p._localId !== localId),
+        labels: t.labels.filter((l) => l.packageCode !== target.code),
+      };
+    });
 
-  const updateLabel = (code: string, next: LocalLabel) =>
-    setTree((t) => ({ ...t, labels: t.labels.map((l) => (l.code === code ? next : l)) }));
+  const updateLabel = (localId: string, next: LocalLabel) =>
+    setTree((t) => ({ ...t, labels: t.labels.map((l) => (l._localId === localId ? next : l)) }));
 
+  // Default label code = smallest unused "<branchPrefix><NN>" across ALL
+  // labels in the tree — branchPrefix is the package's actual `branchCode`,
+  // not a guess parsed out of the package's own code (which may not follow
+  // the "<branch>-<n>" shape once someone hand-edits it). Two packages under
+  // the same branch previously produced the exact same default label code on
+  // the first "Thêm nhãn" click each; this searches globally instead.
   const addLabel = (packageCode: string) =>
     setTree((t) => {
-      const n = (labelsByPackage[packageCode]?.length ?? 0) + 1;
-      const prefix = packageCode.split("-")[0];
+      const pkg = t.packages.find((p) => p.code === packageCode);
+      const prefix = pkg?.branchCode || packageCode.split("-")[0] || "";
+      const usedCodes = new Set(t.labels.map((l) => l.code));
+      let n = 1;
+      while (usedCodes.has(`${prefix}${String(n).padStart(2, "0")}`)) n++;
+      const siblingCount = t.labels.filter((l) => l.packageCode === packageCode).length;
       return {
         ...t,
         labels: [
           ...t.labels,
-          { code: `${prefix}${String(n).padStart(2, "0")}`, packageCode, label: { vi: "" }, order: n, _localId: nextLocalId() },
+          { code: `${prefix}${String(n).padStart(2, "0")}`, packageCode, label: { vi: "" }, order: siblingCount + 1, _localId: nextLocalId() },
         ],
       };
     });
 
-  const deleteLabel = (code: string) => setTree((t) => ({ ...t, labels: t.labels.filter((l) => l.code !== code) }));
+  const deleteLabel = (localId: string) => setTree((t) => ({ ...t, labels: t.labels.filter((l) => l._localId !== localId) }));
 
   const skillsetPicker = (branch: LocalBranch) => (
     <Autocomplete
@@ -226,7 +271,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
       getOptionLabel={(s) => s.title?.vi || s.title?.en || s._id}
       isOptionEqualToValue={(a, b) => a._id === b._id}
       value={skillsets.find((s) => s._id === branch.skillsetId) ?? null}
-      onChange={(_, s) => updateBranch(branch.code, { ...branch, skillsetId: s?._id ?? null })}
+      onChange={(_, s) => updateBranch(branch._localId, { ...branch, skillsetId: s?._id ?? null })}
       renderInput={(params) => <TextField {...params} label="Skillset (để Home xếp theo nhánh)" />}
     />
   );
@@ -303,8 +348,8 @@ const OnboardingTaxonomyPage: React.FC = () => {
               branch={branch}
               packages={(tree.packages ?? []).filter((p) => p.branchCode === branch.code).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))}
               labelsByPackage={labelsByPackage}
-              onChangeBranch={(next) => updateBranch(branch.code, next)}
-              onDeleteBranch={() => deleteBranch(branch.code)}
+              onChangeBranch={(next) => updateBranch(branch._localId, next)}
+              onDeleteBranch={() => deleteBranch(branch._localId)}
               onChangePackage={updatePackage}
               onAddPackage={() => addPackage(branch.code)}
               onDeletePackage={deletePackage}
