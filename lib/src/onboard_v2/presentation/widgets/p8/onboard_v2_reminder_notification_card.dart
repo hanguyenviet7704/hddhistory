@@ -148,7 +148,11 @@ class _OnboardV2ReminderNotificationCardState extends State<OnboardV2ReminderNot
                 ),
               ),
               alignment: Alignment.center,
-              child: Icon(Icons.all_inclusive_rounded, color: AppCustomColor.textWhite, size: 26.w),
+              // Dấu hiệu thương hiệu "?" (glyph Poppins-Bold), CÙNG một đường
+              // vector với biểu tượng nhỏ của thông báo Android và Live Activity
+              // trên iOS — xem `drawable/ic_stat_meup.xml`. Trước đây chỗ này vẽ
+              // nhầm ký hiệu vô cực.
+              child: SvgPicture.asset(AppAsset.svg.app.obBrandMark, width: 36.w, height: 36.w),
             ),
             12.horizontalSpace,
             Expanded(

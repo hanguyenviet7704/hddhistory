@@ -42,7 +42,7 @@ class OnboardV2AgePage extends StatelessWidget {
             style: onboardV2HeadingStyle(fontSize: 26),
           ),
           12.verticalSpace,
-          AppText(onboardingL10n.onboardingV2P3Subtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),
+          AppText(onboardingL10n.onboardingV2P3Subtitle, style: onboardV2SubtitleStyle()),
           28.verticalSpace,
           if (state.onboardStatus == OnboardV2AsyncStatus.loading)
             const Center(child: CircularProgressIndicator())
@@ -92,6 +92,7 @@ class _AgeGrid extends StatelessWidget {
               selected: selectedAge == options[i],
               trailingCheck: false,
               centered: true,
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 18.h),
               onTap: () => onSelect(options[i]),
             ),
           ),

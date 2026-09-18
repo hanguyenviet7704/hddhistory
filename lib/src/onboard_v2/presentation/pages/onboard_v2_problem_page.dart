@@ -42,7 +42,7 @@ class OnboardV2ProblemPage extends StatelessWidget {
           AppText(
             onbCopy(onboardData, 'onboardingV3P5Helper', fallback: onboardingL10n.onboardingV3P5Helper),
             overflow: TextOverflow.visible,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+            style: onboardV2SubtitleStyle(fontSize: 13.5),
           ),
           28.verticalSpace,
           if (state.problemOptions.isEmpty)

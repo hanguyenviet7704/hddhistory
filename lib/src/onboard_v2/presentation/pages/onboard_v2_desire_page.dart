@@ -42,7 +42,7 @@ class OnboardV2DesirePage extends StatelessWidget {
           AppText(
             onbCopy(onboardData, 'onboardingV3P6Helper', fallback: onboardingL10n.onboardingV3P6Helper),
             overflow: TextOverflow.visible,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+            style: onboardV2SubtitleStyle(),
           ),
           28.verticalSpace,
           if (state.desireOptions.isEmpty)

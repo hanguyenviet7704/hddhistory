@@ -62,7 +62,7 @@ class OnboardV2BranchPage extends StatelessWidget {
           AppText(
             onbCopy(onboardData, 'onboardingV3P4Helper', fallback: onboardingL10n.onboardingV3P4Helper),
             overflow: TextOverflow.visible,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+            style: onboardV2SubtitleStyle(),
           ),
           28.verticalSpace,
           if (state.taxonomyStatus == OnboardV2TaxonomyStatus.loading || state.taxonomyStatus == OnboardV2TaxonomyStatus.initial)
@@ -91,6 +91,7 @@ class OnboardV2BranchPage extends StatelessWidget {
                   subtitle: branch.subtitle.text,
                   iconPath: iconUrl.isNotEmpty ? iconUrl : null,
                   selected: state.selectedBranchCodes.contains(branch.code),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   onTap: () => cubit.toggleBranch(branch.code),
                 ),
               );

@@ -10,6 +10,7 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
     this.subtitle,
     this.trailingCheck = true,
     this.centered = false,
+    this.padding,
   });
 
   final String label;
@@ -21,11 +22,16 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
   final String? subtitle;
 
   /// Vòng tròn ✓ bên phải khi được chọn. Tắt ở lưới tuổi (S3) — ô hẹp, chỉ cần
-  /// viền gradient là đủ tín hiệu.
+  /// viền là đủ tín hiệu.
   final bool trailingCheck;
 
   /// Căn giữa nội dung (lưới tuổi 2 cột).
   final bool centered;
+
+  /// Design cho mỗi màn một cỡ đệm khác nhau: ô tuổi cao và hẹp (18/8), hàng
+  /// lĩnh vực thấp vì đã có icon (12/16), hàng mong muốn ở giữa (15/16). Bỏ
+  /// trống thì lấy cỡ của hàng mong muốn.
+  final EdgeInsets? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -40,27 +46,26 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
       borderRadius: borderRadius,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 15.h),
         decoration: BoxDecoration(
           color: AppCustomColor.backgroundWhite,
           borderRadius: borderRadius,
-          border: selected ? GradientBoxBorder(gradient: OnboardV2GradientText.gradient, width: 2.w) : Border.all(color: AppCustomColor.borderSecondary, width: 2.w),
+          border: selected
+              ? GradientBoxBorder(gradient: OnboardV2GradientText.gradient, width: 1.5.w)
+              : Border.all(color: AppCustomColor.borderSecondary, width: 1.5.w),
         ),
         child: Row(
           mainAxisAlignment: centered ? MainAxisAlignment.center : MainAxisAlignment.start,
           children: [
             if (icon != null && icon.isNotEmpty) ...[
-              Container(
-                width: 48.w,
-                height: 48.w,
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: AppCustomColor.backgroundGray,
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: CacheNetworkGraphic(url: icon, fit: BoxFit.cover),
+              // Design vẽ icon trần 28px, không có ô nền xám — chính cái ô 48px
+              // cũ là thứ làm mỗi hàng cao hơn bản vẽ gần một phần ba.
+              SizedBox(
+                width: 28.w,
+                height: 28.w,
+                child: CacheNetworkGraphic(url: icon, fit: BoxFit.contain),
               ),
-              12.horizontalSpace,
+              14.horizontalSpace,
             ],
             Flexible(
               fit: centered ? FlexFit.loose : FlexFit.tight,
@@ -73,19 +78,21 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
                     textAlign: centered ? TextAlign.center : TextAlign.start,
                     overflow: TextOverflow.visible,
                     style: AppStyle.text16.copyWith(
-                      color: selected ? AppCustomColor.textPrimary : AppCustomColor.textSecondary,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w400,
-                      height: 1.5,
+                      fontSize: 15.sp,
+                      color: selected ? AppCustomColor.brandPrimary : AppCustomColor.textPrimary,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                      height: 1.35,
                     ),
                   ),
                   if (subtitleText != null && subtitleText.isNotEmpty) ...[
-                    2.verticalSpace,
+                    3.verticalSpace,
                     AppText(
                       subtitleText,
                       textAlign: centered ? TextAlign.center : TextAlign.start,
                       overflow: TextOverflow.visible,
                       style: AppStyle.text12.copyWith(
-                        color: selected ? AppCustomColor.brandPrimary.op(0.8) : AppCustomColor.textSecondary,
+                        color: selected ? const Color(0xFF7A74E8) : AppCustomColor.onboardMutedLabel,
+                        fontWeight: FontWeight.w500,
                         height: 1.4,
                       ),
                     ),
@@ -95,7 +102,13 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
             ),
             if (selected && trailingCheck) ...[
               12.horizontalSpace,
-              Icon(Icons.check_circle, size: 24.w, color: AppCustomColor.brandPrimary),
+              Container(
+                width: 22.w,
+                height: 22.w,
+                decoration: const BoxDecoration(color: AppCustomColor.brandPrimary, shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: Icon(Icons.check_rounded, size: 13.w, color: AppCustomColor.textWhite),
+              ),
             ],
           ],
         ),

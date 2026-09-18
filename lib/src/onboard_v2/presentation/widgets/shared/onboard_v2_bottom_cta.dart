@@ -32,7 +32,7 @@ class OnboardV2BottomCta extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          height: 54.h,
+          height: 56.h,
           decoration: hasGlow && !isLoading && onPressed != null
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(1000.r),
@@ -65,7 +65,7 @@ class OnboardV2BottomCta extends StatelessWidget {
                     label,
                     style: AppStyle.text16.copyWith(
                       color: onPressed == null ? AppCustomColor.textTertiary : AppCustomColor.textWhite,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),

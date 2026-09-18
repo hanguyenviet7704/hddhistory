@@ -153,6 +153,7 @@ class _OnboardV2ReminderPageState extends State<OnboardV2ReminderPage> {
                     key: ValueKey('onboard_v2_reminder_preset_${preset.$2}'),
                     label: preset.$1,
                     selected: state.reminderTime == preset.$2,
+                    compact: true,
                     onTap: () => cubit.setReminderTime(preset.$2),
                   ),
               ],

@@ -21,16 +21,15 @@ class OnboardV2IntroPage extends StatelessWidget {
           AppText(
             onbCopy(onboardData, 'onboardingV2P1TitlePrefix', fallback: onboardingL10n.onboardingV2P1TitlePrefix),
             textAlign: TextAlign.center,
-            style: AppStyle.text32.copyWith(
+            style: onboardV2HeadingStyle(fontSize: 29).copyWith(
               color: AppCustomColor.brandPrimary,
-              fontWeight: FontWeight.w800,
-              height: 1.25,
+              letterSpacing: -0.3,
             ),
           ),
           OnboardV2GradientText(
             onbCopy(onboardData, 'onboardingV2P1TitleBrand', fallback: onboardingL10n.onboardingV2P1TitleBrand),
             textAlign: TextAlign.center,
-            style: AppStyle.text32.copyWith(fontWeight: FontWeight.w800, height: 1.25),
+            style: onboardV2HeadingStyle(fontSize: 29).copyWith(letterSpacing: -0.3),
           ),
           16.verticalSpace,
           AppText(
@@ -38,7 +37,7 @@ class OnboardV2IntroPage extends StatelessWidget {
             '${onbCopy(onboardData, 'onboardingV2P1SubtitleLine2', fallback: onboardingL10n.onboardingV2P1SubtitleLine2)}',
             textAlign: TextAlign.center,
             overflow: TextOverflow.visible,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary, height: 1.5),
+            style: AppStyle.text14.copyWith(fontSize: 15.sp, color: AppCustomColor.streakTextMuted, fontWeight: FontWeight.w500, height: 1.55),
           ),
         ],
       ),

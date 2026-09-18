@@ -88,11 +88,11 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
           12.verticalSpace,
           AppText(
             onbCopy(state.onboardData, 'onboardingV2P2Subtitle', fallback: onboardingL10n.onboardingV2P2Subtitle),
-            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+            style: onboardV2SubtitleStyle(),
           ),
           32.verticalSpace,
           SizedBox(
-            height: 80.w,
+            height: 56.h,
             child: TextField(
               key: const Key('onboard_v2_name_input'),
               controller: _nameController,
@@ -101,25 +101,25 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.done,
               scrollPadding: EdgeInsets.only(bottom: 180.h),
-              style: AppStyle.text16.copyWith(color: AppCustomColor.textPrimary, height: 1.5),
+              style: AppStyle.text16.copyWith(fontSize: 15.sp, color: AppCustomColor.textPrimary, fontWeight: FontWeight.w600, height: 1.4),
               onSubmitted: (_) => _continueFromName(),
               decoration: InputDecoration(
                 hintText: onbCopy(state.onboardData, 'onboardingV2P2InputHint', fallback: onboardingL10n.onboardingV2P2InputHint),
-                hintStyle: AppStyle.text16.copyWith(color: AppCustomColor.textTertiary, height: 1.5),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.w),
+                hintStyle: AppStyle.text16.copyWith(fontSize: 15.sp, color: AppCustomColor.onboardMutedLabel, fontWeight: FontWeight.w600, height: 1.4),
+                contentPadding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 0),
                 filled: true,
-                fillColor: AppCustomColor.backgroundGray,
+                fillColor: AppCustomColor.onboardStepCardBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16.r),
-                  borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 2),
+                  borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 1.5),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16.r),
-                  borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 2),
+                  borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 1.5),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16.r),
-                  borderSide: const BorderSide(color: AppCustomColor.brandPrimary, width: 2),
+                  borderSide: const BorderSide(color: AppCustomColor.brandPrimary, width: 1.5),
                 ),
               ),
             ),

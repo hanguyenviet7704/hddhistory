@@ -18,39 +18,46 @@ class OnboardV2ProgressHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Design: mũi tên lùi 22px, cách 14px, rồi thanh chiếm HẾT phần còn lại với
+    // các nấc cao 6px cách nhau 6px, nấc đã qua màu thương hiệu. Bản cũ để
+    // thanh rộng cố định 240 nằm giữa và nấc cao 8px màu gần đen, nên trông vừa
+    // ngắn vừa dày hơn bản vẽ. Ô mũi tên luôn chiếm chỗ kể cả màn không có nút
+    // lùi, để thanh không nhảy ngang giữa các bước.
     final header = SizedBox(
       key: ValueKey('onboard_v2_progress_header_$activeSegments'),
       width: double.infinity,
-      height: 48.h,
-      child: Stack(
-        alignment: Alignment.center,
+      height: 44.h,
+      child: Row(
         children: [
-          if (showBack)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                key: const Key('onboard_v2_back_button'),
-                onPressed: onBack == null
-                    ? null
-                    : () {
-                        AppHaptic.select();
-                        onBack!();
-                      },
-                icon: Icon(Icons.arrow_back, size: 24.w, color: AppCustomColor.textTertiary),
-              ),
-            ),
           SizedBox(
-            width: 240.w,
+            width: 30.w,
+            child: showBack
+                ? IconButton(
+                    key: const Key('onboard_v2_back_button'),
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minWidth: 30.w, minHeight: 44.h),
+                    onPressed: onBack == null
+                        ? null
+                        : () {
+                            AppHaptic.select();
+                            onBack!();
+                          },
+                    icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20.w, color: AppCustomColor.textPrimary),
+                  )
+                : null,
+          ),
+          14.horizontalSpace,
+          Expanded(
             child: Row(
               children: List.generate(totalSegments, (index) {
                 final active = index < activeSegments;
                 return Expanded(
                   child: Container(
-                    height: 8.h,
-                    margin: EdgeInsets.symmetric(horizontal: 4.w),
+                    height: 6.h,
+                    margin: EdgeInsets.symmetric(horizontal: 3.w),
                     decoration: BoxDecoration(
-                      color: active ? AppCustomColor.textPrimary : AppCustomColor.borderSecondary,
-                      borderRadius: BorderRadius.circular(100.r),
+                      color: active ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
+                      borderRadius: BorderRadius.circular(99.r),
                     ),
                   ),
                 );
