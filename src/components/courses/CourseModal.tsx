@@ -1,5 +1,5 @@
 // src/components/courses/CourseModal.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowPathIcon,
   XMarkIcon,
@@ -417,6 +417,43 @@ export default function CourseModal({
     }
   };
 
+  // Onboarding v3: options được sort để hiển thị theo nhóm ổn định.
+  const sortedTaxonomyLabels = useMemo(
+    () =>
+      [...taxonomy.labels].sort(
+        (a, b) =>
+          a.packageCode.localeCompare(b.packageCode) || a.order - b.order
+      ),
+    [taxonomy]
+  );
+  const sortedTaxonomyPackages = useMemo(
+    () =>
+      [...taxonomy.packages].sort(
+        (a, b) =>
+          a.branchCode.localeCompare(b.branchCode) || a.order - b.order
+      ),
+    [taxonomy]
+  );
+
+  // Picker chỉ liệt kê mã CÒN trong taxonomy, nên chọn lại luôn thay thế toàn
+  // bộ mảng theo đúng những gì MUI báo — nếu không giữ lại mã lạ (đã lưu
+  // trước đó, nay bị xoá khỏi danh mục) thì chỉ cần đụng vào picker vì lý do
+  // bất kỳ là mất trắng các mã đó khi Save. Mã lạ không thể bị xoá TỪ picker
+  // (nó không phải option) — chỉ dọn được qua import lại taxonomy hoặc sửa
+  // tay ở nơi khác.
+  const handleChangeOnboardingLabelCodes = (v: { code: string }[]) => {
+    setOnboardingLabelCodes((prev) => [
+      ...prev.filter((c) => !taxonomy.labels.some((l) => l.code === c)),
+      ...v.map((l) => l.code),
+    ]);
+  };
+  const handleChangeOnboardingDesireCodes = (v: { code: string }[]) => {
+    setOnboardingDesireCodes((prev) => [
+      ...prev.filter((c) => !taxonomy.packages.some((p) => p.code === c)),
+      ...v.map((p) => p.code),
+    ]);
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -739,11 +776,7 @@ export default function CourseModal({
                   <Autocomplete
                     multiple
                     size="small"
-                    options={[...taxonomy.labels].sort(
-                      (a, b) =>
-                        a.packageCode.localeCompare(b.packageCode) ||
-                        a.order - b.order
-                    )}
+                    options={sortedTaxonomyLabels}
                     groupBy={(l) => {
                       const pkg = taxonomy.packages.find(
                         (p) => p.code === l.packageCode
@@ -756,9 +789,7 @@ export default function CourseModal({
                     value={taxonomy.labels.filter((l) =>
                       onboardingLabelCodes.includes(l.code)
                     )}
-                    onChange={(_, v) =>
-                      setOnboardingLabelCodes(v.map((l) => l.code))
-                    }
+                    onChange={(_, v) => handleChangeOnboardingLabelCodes(v)}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -770,11 +801,7 @@ export default function CourseModal({
                   <Autocomplete
                     multiple
                     size="small"
-                    options={[...taxonomy.packages].sort(
-                      (a, b) =>
-                        a.branchCode.localeCompare(b.branchCode) ||
-                        a.order - b.order
-                    )}
+                    options={sortedTaxonomyPackages}
                     groupBy={(p) =>
                       taxonomy.branches.find((b) => b.code === p.branchCode)
                         ?.label?.vi ?? p.branchCode
@@ -783,9 +810,7 @@ export default function CourseModal({
                     value={taxonomy.packages.filter((p) =>
                       onboardingDesireCodes.includes(p.code)
                     )}
-                    onChange={(_, v) =>
-                      setOnboardingDesireCodes(v.map((p) => p.code))
-                    }
+                    onChange={(_, v) => handleChangeOnboardingDesireCodes(v)}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -803,6 +828,19 @@ export default function CourseModal({
                       {onboardingLabelCodes
                         .filter(
                           (c) => !taxonomy.labels.find((l) => l.code === c)
+                        )
+                        .join(", ")}
+                    </p>
+                  )}
+                  {onboardingDesireCodes.some(
+                    (c) => !taxonomy.packages.find((p) => p.code === c)
+                  ) && (
+                    <p className="text-xs text-amber-600">
+                      Có mã gói không còn trong taxonomy (sẽ bị bỏ qua khi gợi
+                      ý):{" "}
+                      {onboardingDesireCodes
+                        .filter(
+                          (c) => !taxonomy.packages.find((p) => p.code === c)
                         )
                         .join(", ")}
                     </p>
