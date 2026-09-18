@@ -35,6 +35,13 @@ class _FakeDeviceInfoService implements IDeviceInfoService {
 class _FakeOnboardingRepository implements IOnboardingRepository {
   @override
   TaskEither<AppException, OnboardingContentConfigEntity> getOnboardingConfig() => TaskEither.right(const OnboardingContentConfigEntity());
+
+  @override
+  TaskEither<AppException, OnboardingTaxonomyEntity> getTaxonomy() => TaskEither.right(const OnboardingTaxonomyEntity());
+
+  @override
+  TaskEither<AppException, OnboardingRecommendationEntity> submitAnswers(OnboardingAnswersRequest request) =>
+      TaskEither.right(const OnboardingRecommendationEntity());
 }
 
 class _FakeProfileRepository implements IProfileRepository {

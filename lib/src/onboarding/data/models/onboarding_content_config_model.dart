@@ -13,6 +13,12 @@ abstract class OnboardingContentConfigModel with _$OnboardingContentConfigModel 
     @Default(OnboardingPickConfigModel()) OnboardingPickConfigModel pick,
     @Default(OnboardingThemeConfigModel()) OnboardingThemeConfigModel theme,
     @Default(false) bool showPaywallAfterOnboarding,
+
+    //* Onboarding v3 sections (taxonomy-driven flow)
+    @Default(OnboardingDesireConfigModel()) OnboardingDesireConfigModel desire,
+    @Default(OnboardingHowConfigModel()) OnboardingHowConfigModel how,
+    @Default(OnboardingReminderConfigModel()) OnboardingReminderConfigModel reminder,
+    @Default(OnboardingLoadingConfigModel()) OnboardingLoadingConfigModel loading,
   }) = _OnboardingContentConfigModel;
 
   factory OnboardingContentConfigModel.fromJson(Map<String, dynamic> json) => _$OnboardingContentConfigModelFromJson(json);
@@ -30,5 +36,9 @@ extension OnboardingContentConfigModelExtension on OnboardingContentConfigModel 
     pick: pick.toEntity(),
     theme: theme.toEntity(),
     showPaywallAfterOnboarding: showPaywallAfterOnboarding,
+    desire: desire.toEntity(),
+    how: how.toEntity(),
+    reminder: reminder.toEntity(),
+    loading: loading.toEntity(),
   );
 }

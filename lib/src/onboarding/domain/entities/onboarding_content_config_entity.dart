@@ -30,5 +30,11 @@ abstract class OnboardingContentConfigEntity with _$OnboardingContentConfigEntit
     /// Show the FULL paywall right after onboarding completes (admin toggle
     /// on the Onboarding Config page). Off when unset/unseeded.
     @Default(false) bool showPaywallAfterOnboarding,
+
+    //* Onboarding v3 sections (taxonomy-driven flow)
+    @Default(OnboardingDesireConfigEntity()) OnboardingDesireConfigEntity desire,
+    @Default(OnboardingHowConfigEntity()) OnboardingHowConfigEntity how,
+    @Default(OnboardingReminderConfigEntity()) OnboardingReminderConfigEntity reminder,
+    @Default(OnboardingLoadingConfigEntity()) OnboardingLoadingConfigEntity loading,
   }) = _OnboardingContentConfigEntity;
 }

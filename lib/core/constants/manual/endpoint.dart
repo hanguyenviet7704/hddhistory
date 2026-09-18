@@ -64,6 +64,10 @@ mixin AppEndpoint {
   //* Onboarding Content Config API (P3 redesign — admin-editable 9-screen flow)
   static const String onboardingContentConfig = '/api/v1/onboarding-config';
 
+  //* Onboarding v3 (taxonomy trong DB + câu trả lời + gợi ý khoá)
+  static const String onboardingTaxonomy = '/api/v1/onboarding-taxonomy';
+  static const String onboardingAnswers = '/api/v1/onboarding-answers';
+
   //* Chats API
   static const String chatMessages = '/api/v1/chats/messages';
 
@@ -270,6 +274,11 @@ mixin AppEndpoint {
   static const String communityChatRoom = '/api/v1/community/chat/rooms/{room}';
   static const String communityChatMessages = '/api/v1/community/chat/rooms/{room}/messages';
   static const String communityChatMessageLike = '/api/v1/community/chat/messages/{id}/like';
+  // The slice of transcript around one message — what a tap on a pin lands
+  // in when the pin is older than the page the screen is holding.
+  static const String communityChatMessageContext =
+      '/api/v1/community/chat/rooms/{room}/messages/{id}/context';
+  static const String communityChatGuide = '/api/v1/community/chat/guide';
 
   //* AI Coach
   static const String coachBubble = '/api/v1/coach/bubble';

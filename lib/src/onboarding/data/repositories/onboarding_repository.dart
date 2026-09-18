@@ -31,4 +31,32 @@ class OnboardingRepository with RestfulRequestHandlerMixin implements IOnboardin
       enableErrorMessages: false,
     );
   }
+
+  /// Fetches the onboarding v3 taxonomy. Khác config: KHÔNG có fallback enum
+  /// nữa. Lỗi mạng → cache; không có cache → Left để S4 hiện lỗi + Thử lại
+  /// (không có gì để hiển thị nếu thiếu nhánh).
+  @override
+  TaskEither<AppException, OnboardingTaxonomyEntity> getTaxonomy() {
+    return callApiWithTransform<OnboardingTaxonomyModel, OnboardingTaxonomyEntity>(
+      apiCall: () => _api.getTaxonomy(),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async {
+        if (data != null) await _localDataSource.cacheTaxonomy(data);
+      },
+      onError: () async {
+        final cached = await _localDataSource.getCachedTaxonomy();
+        return cached?.toEntity();
+      },
+      enableErrorMessages: false,
+    );
+  }
+
+  @override
+  TaskEither<AppException, OnboardingRecommendationEntity> submitAnswers(OnboardingAnswersRequest request) {
+    return callApiWithTransform<OnboardingRecommendationModel, OnboardingRecommendationEntity>(
+      apiCall: () => _api.submitAnswers(request.toJson()),
+      transform: (model) => model.toEntity(),
+      enableErrorMessages: false,
+    );
+  }
 }
