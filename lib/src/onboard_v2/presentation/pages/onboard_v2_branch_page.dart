@@ -4,7 +4,8 @@ part of '../../onboard_v2.dart';
 /// (design.md §3.2 dựa vào thứ tự đó để chia đáp án câu 2).
 ///
 /// Không còn enum dự phòng: taxonomy tải lỗi thì trang đứng ở inline error +
-/// Thử lại chứ không âm thầm hiện danh sách cũ.
+/// Thử lại — kèm một lối thoát "Bỏ qua, chọn giúp tôi" (skipTaxonomyQuestions)
+/// để một máy mới cứng/offline lần đầu vẫn hoàn tất được onboarding.
 class OnboardV2BranchPage extends StatelessWidget {
   const OnboardV2BranchPage({super.key});
 
@@ -22,6 +23,12 @@ class OnboardV2BranchPage extends StatelessWidget {
       'onboardingV3P4HeadingPrefix',
       fallback: onboardingL10n.onboardingV3P4HeadingPrefix(name: name.isEmpty ? onboardingL10n.onboardingV3You : name),
     );
+    // Taxonomy lỗi hoặc tải xong mà rỗng: cả hai đều là ngõ cụt không có Thử
+    // lại nào tự sửa được (offline lần đầu, taxonomy chưa seed/import) — phải
+    // có lối thoát ngoài Retry.
+    final isTaxonomyBroken =
+        state.taxonomyStatus == OnboardV2TaxonomyStatus.failure ||
+        (state.taxonomyStatus == OnboardV2TaxonomyStatus.success && state.taxonomy.selectableBranches.isEmpty);
 
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
@@ -34,6 +41,8 @@ class OnboardV2BranchPage extends StatelessWidget {
       cta: OnboardV2BottomCta(
         label: onboardingL10n.onboardingV2ContinueCta,
         onPressed: state.canContinueBranches ? cubit.continueFromP4Branches : null,
+        secondaryLabel: isTaxonomyBroken ? onboardingL10n.onboardingV3SkipQuestions : null,
+        onSecondaryPressed: isTaxonomyBroken ? cubit.skipTaxonomyQuestions : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

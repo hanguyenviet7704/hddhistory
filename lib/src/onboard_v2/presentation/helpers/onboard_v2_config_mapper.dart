@@ -74,9 +74,6 @@ abstract final class OnboardV2ConfigMapper {
     final welcome = config.welcome;
     final name = config.name;
     final age = config.age;
-    final paths = config.paths;
-    final brain = config.brain;
-    final habit = config.habit;
     final notif = config.notif;
     final pick = config.pick;
     final theme = config.theme;
@@ -93,30 +90,30 @@ abstract final class OnboardV2ConfigMapper {
       // P3 age (headingTemplate keeps its {name} placeholder — the page substitutes it).
       OnboardCopyEntity(key: 'onboardingV2P3HeadingPrefix', value: age.headingTemplate),
       OnboardCopyEntity(key: 'onboardingV2P3HeadingHighlight', value: age.headingHighlight),
-      // P4 symptoms (from config.habit).
-      OnboardCopyEntity(key: 'onboardingV2P4HeadingPrefix', value: habit.heading),
-      OnboardCopyEntity(key: 'onboardingV2P4HeadingHighlight', value: habit.headingHighlight),
-      OnboardCopyEntity(key: 'onboardingV2P4Subtitle', value: habit.subtitle),
-      // P5 path selection.
-      OnboardCopyEntity(key: 'onboardingV2P5PathHeadingPrefix', value: paths.heading),
-      OnboardCopyEntity(key: 'onboardingV2P5PathHeadingHighlight', value: paths.headingHighlight),
-      OnboardCopyEntity(key: 'onboardingV2P5PathSubtitle', value: paths.helper),
-      // P5 path map (from config.brain).
-      OnboardCopyEntity(key: 'onboardingV2P5HeadingPrefix', value: brain.heading),
-      OnboardCopyEntity(key: 'onboardingV2P5HeadingHighlight', value: brain.headingHighlight),
-      OnboardCopyEntity(key: 'onboardingV2P5HeadingSuffix', value: brain.headingSuffix),
+      // NOTE: onboardingV2P4Heading*/Subtitle (config.habit) and
+      // onboardingV2P5PathHeading*/Subtitle + onboardingV2P5Heading*/Suffix
+      // (config.paths/config.brain) used to be mapped here for the retired v2
+      // P4/P5 pages. Nothing reads those keys anymore (onboard_v2 v3 uses its
+      // own onboardingV3P4/P5* keys — see above) — removed as dead write-only
+      // entries rather than left to bit-rot.
       OnboardCopyEntity(key: 'onboardingV2P6HeadingPrefix', value: notif.heading),
       OnboardCopyEntity(key: 'onboardingV2P6HeadingHighlight', value: notif.headingHighlight),
       OnboardCopyEntity(key: 'onboardingV2P6Subtitle', value: notif.subtitle),
       OnboardCopyEntity(key: 'onboardingV2NotificationCardTitle', value: notif.cardTitle),
       OnboardCopyEntity(key: 'onboardingV2NotificationCardBody', value: notif.cardBody),
       OnboardCopyEntity(key: 'onboardingV2NotificationCardTimestamp', value: notif.cardTimestamp),
-      OnboardCopyEntity(key: 'onboardingV2NotifyCta', value: notif.ctaLabel),
+      // onboardingV2NotifyCta (from notif.ctaLabel) removed — it was the
+      // retired v2 notification-gate screen's CTA copy, wired to the wrong
+      // config section. S8's CTA now reads onboardingV3P8Cta below, sourced
+      // from `reminder.ctaLabel` (the field the admin Onboarding Config page
+      // actually exposes for this screen).
       // P8 course picker (from config.pick).
       OnboardCopyEntity(key: 'onboardingV2P8Eyebrow', value: pick.eyebrow),
       OnboardCopyEntity(key: 'onboardingV2P8Title', value: _concat(pick.heading, pick.headingHighlight)),
       OnboardCopyEntity(key: 'onboardingV2P8Label', value: pick.label),
-      OnboardCopyEntity(key: 'onboardingV2P8SelectCta', value: pick.primaryCta),
+      // onboardingV2P8SelectCta (also pick.primaryCta) removed — dead,
+      // nothing reads it; the result page's CTA reads onboardingV3P10Cta,
+      // mapped from the same pick.primaryCta below.
       OnboardCopyEntity(key: 'onboardingV2P8CatalogCta', value: pick.secondaryCta),
       // P9 pick theme (from config.theme).
       OnboardCopyEntity(key: 'onboardingV2P9TitlePrefix', value: theme.titlePrefix),
@@ -126,16 +123,13 @@ abstract final class OnboardV2ConfigMapper {
       OnboardCopyEntity(key: 'onboardingV2P9Helper', value: theme.helper),
 
       //* --- Onboarding v3 (11 màn theo taxonomy) ---
-      // S4 lĩnh vực — dùng lại section `paths` của config (chỉ phần chữ).
-      // `paths.heading` KHÔNG có {name}: trang chỉ chèn tên khi config để trống
-      // và phải rơi về l10n.
-      OnboardCopyEntity(key: 'onboardingV3P4HeadingPrefix', value: paths.heading),
-      OnboardCopyEntity(key: 'onboardingV3P4HeadingHighlight', value: paths.headingHighlight),
-      OnboardCopyEntity(key: 'onboardingV3P4Helper', value: paths.helper),
-      // S5 vấn đề — dùng lại section `habit`.
-      OnboardCopyEntity(key: 'onboardingV3P5HeadingPrefix', value: habit.heading),
-      OnboardCopyEntity(key: 'onboardingV3P5HeadingHighlight', value: habit.headingHighlight),
-      OnboardCopyEntity(key: 'onboardingV3P5Helper', value: habit.subtitle),
+      // S4/S5 KHÔNG map nữa: `paths`/`habit` là config của onboarding v2 (câu
+      // chữ cũ, không có {name}) và bị seed trên MỌI môi trường — nếu map ở
+      // đây, S4/S5 sẽ luôn hiện chữ v2 thay vì bản l10n mới của v3 (đã có
+      // {name}), vì `onbCopy` ưu tiên một giá trị config không rỗng. Cả hai
+      // trang đều gọi `onbCopy(..., fallback: l10n...)` nên bỏ mapping ở đây
+      // là đủ để chúng rơi thẳng về l10n. Có thể thêm field config riêng cho
+      // S4/S5 sau nếu BA muốn admin sửa được hai màn này.
       // S6 mong muốn.
       OnboardCopyEntity(key: 'onboardingV3P6HeadingPrefix', value: config.desire.heading),
       OnboardCopyEntity(key: 'onboardingV3P6HeadingHighlight', value: config.desire.headingHighlight),
@@ -158,6 +152,8 @@ abstract final class OnboardV2ConfigMapper {
       OnboardCopyEntity(key: 'onboardingV3P8TimeSectionLabel', value: config.reminder.timeSectionLabel),
       for (var i = 0; i < config.reminder.presets.length && i < 3; i++)
         OnboardCopyEntity(key: 'onboardingV3P8Preset${i + 1}', value: config.reminder.presets[i].label),
+      OnboardCopyEntity(key: 'onboardingV3P8Cta', value: config.reminder.ctaLabel),
+      OnboardCopyEntity(key: 'onboardingV3P8SecondaryCta', value: config.reminder.secondaryCtaLabel),
       // S9 loading.
       OnboardCopyEntity(key: 'onboardingV3P9HeadingPrefix', value: config.loading.heading),
       OnboardCopyEntity(key: 'onboardingV3P9HeadingHighlight', value: config.loading.headingHighlight),

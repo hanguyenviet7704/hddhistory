@@ -224,6 +224,7 @@ onboardingV3P9Line3: 你想改变的事
 onboardingV3P9Line4: 你的学习时段
 onboardingV3PickBranchFirst: 请先在上一步选择领域
 onboardingV3ResultReasonDesire: 正好对应你想改变的事
+onboardingV3SkipQuestions: 跳过，帮我选择
 onboardingV3TaxonomyLoadError: 无法加载领域列表
 onboardingV3You: 你
 onboardingYoungAdultOption: 18-24 岁

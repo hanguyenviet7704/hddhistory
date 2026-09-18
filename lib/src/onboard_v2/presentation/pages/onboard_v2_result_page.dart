@@ -22,7 +22,11 @@ class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
   void initState() {
     super.initState();
     _courseController = PageController(viewportFraction: _p10CourseViewportFraction);
-    AppService.instance.appEventService.requestTrackingPermission();
+    // ATT request moved to OnboardV2Page's currentPage listener — PageView
+    // pre-builds this page while p8→p9 is still animating, so firing it from
+    // here ran the OS ATT prompt seconds after the user answered the
+    // notification prompt on S8 (iOS commonly drops an ATT request made while
+    // another system alert is dismissing). See OnboardV2Page._requestTrackingPermissionOnce.
   }
 
   @override

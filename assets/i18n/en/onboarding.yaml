@@ -239,6 +239,7 @@ onboardingV3P9Line3: What you want to change
 onboardingV3P9Line4: Your study time
 onboardingV3PickBranchFirst: Pick a topic in the previous step first
 onboardingV3ResultReasonDesire: Matches what you want to change
+onboardingV3SkipQuestions: Skip, choose for me
 onboardingV3TaxonomyLoadError: Couldn't load the topics
 onboardingV3You: you
 onboardingYoungAdultOption: 18-24

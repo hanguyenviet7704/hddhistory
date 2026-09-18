@@ -224,6 +224,7 @@ onboardingV3P9Line3: 바꾸고 싶은 것
 onboardingV3P9Line4: 선호하는 학습 시간
 onboardingV3PickBranchFirst: 이전 단계에서 분야를 먼저 선택하세요
 onboardingV3ResultReasonDesire: 바꾸고 싶은 것과 정확히 맞아요
+onboardingV3SkipQuestions: 건너뛰고 추천받기
 onboardingV3TaxonomyLoadError: 분야 목록을 불러오지 못했어요
 onboardingV3You: 당신
 onboardingYoungAdultOption: 18-24세

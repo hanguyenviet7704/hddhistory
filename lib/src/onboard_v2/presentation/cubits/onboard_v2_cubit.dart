@@ -139,6 +139,14 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     // Loading và Kết quả không lùi được (design.md §6.1).
     if (state.currentPage == OnboardV2PageStep.p9Loading || state.currentPage == OnboardV2PageStep.p10Result) return;
 
+    // skipTaxonomyQuestions() nhảy thẳng S4→S7 với câu trả lời rỗng (không có
+    // gói nào được chọn) — lùi từ đó phải về lại S4 (nơi có Thử lại/Bỏ qua),
+    // KHÔNG được về S6, vì câu 2/câu 3 đã bị bỏ qua nên không còn gì để hiện.
+    if (state.currentPage == OnboardV2PageStep.p7How && state.selectedPackageCodes.isEmpty) {
+      emit(state.copyWith(currentPage: OnboardV2PageStep.p4Branches));
+      return;
+    }
+
     // Per-screen back events — tái dùng đúng key cũ của sheet cho các bước
     // tương ứng (paths → nhánh, symptom → vấn đề, infor → mong muốn).
     final backEvent = switch (state.currentPage) {
@@ -314,6 +322,25 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     emit(state.copyWith(currentPage: OnboardV2PageStep.p5Problems));
   }
 
+  /// Lối thoát khi taxonomy lỗi hoặc rỗng (S4 hiện Thử lại + nút này bên
+  /// cạnh): không còn câu 1/2/3 nào để hỏi, nên bỏ qua thẳng sang S7 với câu
+  /// trả lời rỗng thay vì kẹt user ở màn không tải được. Server vẫn xếp hạng
+  /// được — `OnboardingAnswerService.recommend()` tự bù đủ 3 khoá bằng
+  /// `findPublishedFallback` khi có dưới 3 khoá xếp hạng theo câu trả lời —
+  /// nên S10 vẫn hiện bình thường.
+  void skipTaxonomyQuestions() {
+    emit(
+      state.copyWith(
+        selectedBranchCodes: const [],
+        selectedPackageCodes: const [],
+        selectedDesireCode: null,
+        problemOptions: const [],
+        desireOptions: const [],
+        currentPage: OnboardV2PageStep.p7How,
+      ),
+    );
+  }
+
   //* ---------------------------------------------------------------------
   //* Câu 2 — Vấn đề (S5)
   //* ---------------------------------------------------------------------
@@ -412,7 +439,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         reminderEnabled: enabled,
         notificationStatus: notificationStatus,
         currentPage: OnboardV2PageStep.p9Loading,
-        loadingStartedAt: DateTime.now(),
       ),
     );
     // Prewarm the home dataset now so it is ready — or nearly ready — by the

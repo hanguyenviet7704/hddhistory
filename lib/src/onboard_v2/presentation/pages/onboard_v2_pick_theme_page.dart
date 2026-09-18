@@ -133,12 +133,22 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
     // Started here to run alongside the prewarm below; awaited just before
     // we navigate away.
     final onboardedSave = cubit.markUserOnboarded();
-    // Home đã prewarm từ S9; chờ cho xong (hoặc timeout) để Home không lạnh.
-    await cubit.prewarmHomeData().timeout(const Duration(seconds: 6), onTimeout: () {});
-    if (!mounted) return;
-    // Cap the wait so a slow/offline network can't trap the CTA on a spinner;
-    // the retry keeps running in the background past the timeout.
-    await onboardedSave.timeout(const Duration(seconds: 6), onTimeout: () {});
+    // `.timeout` only guards against a SLOW future — an outright throw (the
+    // prewarm's HomeCubit.initializeData, or the retried update use case)
+    // would otherwise propagate out of this await and skip _dispatchHome()
+    // entirely, leaving _isNavigating stuck true and the CTA permanently
+    // disabled — the last button of onboarding. Catch and log instead; the
+    // handoff below must run either way.
+    try {
+      // Home đã prewarm từ S9; chờ cho xong (hoặc timeout) để Home không lạnh.
+      await cubit.prewarmHomeData().timeout(const Duration(seconds: 6), onTimeout: () {});
+      if (!mounted) return;
+      // Cap the wait so a slow/offline network can't trap the CTA on a spinner;
+      // the retry keeps running in the background past the timeout.
+      await onboardedSave.timeout(const Duration(seconds: 6), onTimeout: () {});
+    } catch (error) {
+      LogDev.warning('[OnboardV2PickThemePage] prewarm/onboarded save failed: $error');
+    }
     if (!mounted) return;
     _dispatchHome();
   }

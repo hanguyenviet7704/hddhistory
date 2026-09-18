@@ -70,7 +70,6 @@ abstract class OnboardV2State with _$OnboardV2State {
     @Default(OnboardV2NotificationStatus.unknown) OnboardV2NotificationStatus notificationStatus,
 
     //* S9 loading + S10 kết quả.
-    DateTime? loadingStartedAt,
     @Default(OnboardV2RecommendStatus.initial) OnboardV2RecommendStatus recommendStatus,
     @Default([]) List<CourseEntity> recommendedCourses,
     @Default({}) Map<String, OnboardingMatchReasonEntity> matchReasons,

@@ -15,6 +15,11 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
   OnboardV2PageStep? _lastTrackedPage;
   late final PageController _pageController;
 
+  /// Guards [_requestTrackingPermissionOnce] so the OS ATT prompt fires at
+  /// most once per flow — see its doc for why it lives here instead of
+  /// `OnboardV2ResultPage.initState`.
+  bool _hasRequestedTrackingPermission = false;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +44,7 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
       listener: (_, state) {
         _trackPage(state.currentPage);
         _animateToStep(state.currentPage);
+        _requestTrackingPermissionOnce(state.currentPage);
       },
       builder: (context, state) {
         return _OnboardV2PageTransitionScope(
@@ -94,6 +100,19 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
     if (_lastTrackedPage == page) return;
     _lastTrackedPage = page;
     OnboardV2Tracking.trackPageView(page);
+  }
+
+  /// Moved here from `OnboardV2ResultPage.initState` — `PageView` pre-builds
+  /// the neighbouring page, so calling it from p10's `initState` fired it
+  /// while the app was still animating p8→p9, seconds after the user answered
+  /// the OS notification prompt on S8. iOS commonly drops an ATT request made
+  /// while another system alert is dismissing. Firing on the REAL transition
+  /// to p10 (this listener only runs once `currentPage` actually changes)
+  /// gives it a clean gap.
+  void _requestTrackingPermissionOnce(OnboardV2PageStep page) {
+    if (page != OnboardV2PageStep.p10Result || _hasRequestedTrackingPermission) return;
+    _hasRequestedTrackingPermission = true;
+    AppService.instance.appEventService.requestTrackingPermission();
   }
 }
 

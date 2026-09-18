@@ -17,8 +17,22 @@ class OnboardV2TimeWheel extends StatefulWidget {
 class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
   static const _minutes = [0, 15, 30, 45];
 
+  /// A flick crosses many items before settling — `ListWheelScrollView` fires
+  /// `onSelectedItemChanged` once PER item crossed, up to ~24 times. The
+  /// haptic stays per-item (that's the intended feel), but emitting the value
+  /// on every one of those would mean up to 24 state emits + analytics events
+  /// + rebuilds for a single flick. Debounce so only the value the wheel
+  /// SETTLES on gets emitted.
+  static const _emitDebounce = Duration(milliseconds: 250);
+
   late FixedExtentScrollController _hour;
   late FixedExtentScrollController _minute;
+  Timer? _emitTimer;
+
+  /// Set while a debounced emit is pending or while the user's finger is on
+  /// the wheel, so [didUpdateWidget]'s programmatic `jumpToItem` sync (e.g. a
+  /// preset chip tapped elsewhere) never fights an in-progress scroll.
+  bool _isUserScrolling = false;
 
   @override
   void initState() {
@@ -32,6 +46,7 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
   void didUpdateWidget(covariant OnboardV2TimeWheel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value == widget.value) return;
+    if (_isUserScrolling) return;
     final parsed = _parse(widget.value);
     if (_hour.hasClients && _hour.selectedItem % 24 != parsed.$1) _hour.jumpToItem(parsed.$1);
     final minuteIndex = _minutes.indexOf(parsed.$2).clamp(0, 3);
@@ -40,6 +55,7 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
 
   @override
   void dispose() {
+    _emitTimer?.cancel();
     _hour.dispose();
     _minute.dispose();
     super.dispose();
@@ -48,6 +64,18 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
   (int, int) _parse(String value) {
     final match = RegExp(r'^(\d{2}):(\d{2})$').firstMatch(value);
     return (int.tryParse(match?.group(1) ?? '') ?? 21, int.tryParse(match?.group(2) ?? '') ?? 0);
+  }
+
+  /// Called on every item crossed while flinging — resets the debounce timer
+  /// so only the value the wheel is on ~250ms after the LAST item crossing
+  /// (i.e. once it has settled) actually gets emitted.
+  void _scheduleEmit() {
+    _isUserScrolling = true;
+    _emitTimer?.cancel();
+    _emitTimer = Timer(_emitDebounce, () {
+      _isUserScrolling = false;
+      _emit();
+    });
   }
 
   void _emit() {
@@ -69,7 +97,7 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
         physics: const FixedExtentScrollPhysics(),
         onSelectedItemChanged: (_) {
           AppHaptic.select();
-          _emit();
+          _scheduleEmit();
         },
         childDelegate: ListWheelChildLoopingListDelegate(
           children: [

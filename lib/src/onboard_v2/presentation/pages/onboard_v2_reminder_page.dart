@@ -102,10 +102,10 @@ class _OnboardV2ReminderPageState extends State<OnboardV2ReminderPage> {
           onBack: cubit.goBack,
         ),
         cta: OnboardV2BottomCta(
-          label: onbCopy(onboardData, 'onboardingV2NotifyCta', fallback: onboardingL10n.onboardingV2NotifyCta),
+          label: onbCopy(onboardData, 'onboardingV3P8Cta', fallback: onboardingL10n.onboardingV2NotifyCta),
           isLoading: _isHandling,
           onPressed: () => unawaited(_handlePrimary()),
-          secondaryLabel: onboardingL10n.onboardingV2MaybeLaterCta,
+          secondaryLabel: onbCopy(onboardData, 'onboardingV3P8SecondaryCta', fallback: onboardingL10n.onboardingV2MaybeLaterCta),
           onSecondaryPressed: () => unawaited(_handleSecondary()),
         ),
         child: Column(

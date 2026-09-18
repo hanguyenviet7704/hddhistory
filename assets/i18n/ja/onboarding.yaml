@@ -224,6 +224,7 @@ onboardingV3P9Line3: 変えたいこと
 onboardingV3P9Line4: 学習の時間帯
 onboardingV3PickBranchFirst: 前のステップで分野を選んでください
 onboardingV3ResultReasonDesire: 変えたいことにぴったり
+onboardingV3SkipQuestions: スキップして選んでもらう
 onboardingV3TaxonomyLoadError: 分野の一覧を読み込めませんでした
 onboardingV3You: あなた
 onboardingYoungAdultOption: 18〜24歳
