@@ -156,6 +156,62 @@ export interface OnboardingThemeConfig {
   helper: OnboardingMultilang;
 }
 
+// Onboarding v3 (screen 6, "what do you want?") — see meup-api plan-api Task 7.
+export interface OnboardingDesireConfig {
+  heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
+  helper: OnboardingMultilang;
+}
+
+// Onboarding v3 (screen 7, "how MeUp teaches") — see meup-api plan-api Task 7.
+export interface OnboardingHowStep {
+  title: OnboardingMultilang;
+  body: OnboardingMultilang;
+}
+
+export interface OnboardingHowConfig {
+  // Small label rendered above `heading`.
+  eyebrow: OnboardingMultilang;
+  heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
+  steps: OnboardingHowStep[];
+  footer: OnboardingMultilang;
+  ctaLabel: OnboardingMultilang;
+}
+
+// Onboarding v3 (screen 8, "set a reminder") — see meup-api plan-api Task 7.
+export interface OnboardingReminderPreset {
+  label: OnboardingMultilang;
+  // 'HH:mm', e.g. "20:00".
+  time: string;
+}
+
+export interface OnboardingReminderConfig {
+  heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
+  subtitle: OnboardingMultilang;
+  timeSectionLabel: OnboardingMultilang;
+  presets: OnboardingReminderPreset[];
+  ctaLabel: OnboardingMultilang;
+  secondaryCtaLabel: OnboardingMultilang;
+}
+
+// Onboarding v3 (screen 9, "building your roadmap" loading screen) — see
+// meup-api plan-api Task 7.
+export interface OnboardingLoadingConfig {
+  heading: OnboardingMultilang;
+  // Gradient-highlighted trailing part of the title, rendered right after
+  // `heading`, mirroring OnboardingNameConfig.headingHighlight.
+  headingHighlight?: OnboardingMultilang;
+  lines: OnboardingMultilang[];
+}
+
 // GET /onboarding-config → the singleton document. The API wraps every
 // response as { statusCode, message, data }, so callers must read
 // res.data.data (see onboardingConfigService) — never res.data at the
@@ -168,6 +224,10 @@ export interface OnboardingConfig {
   paths: OnboardingPathsConfig;
   brain: OnboardingBrainConfig;
   habit: OnboardingHabitConfig;
+  desire: OnboardingDesireConfig;
+  how: OnboardingHowConfig;
+  reminder: OnboardingReminderConfig;
+  loading: OnboardingLoadingConfig;
   notif: OnboardingNotifConfig;
   pick: OnboardingPickConfig;
   theme: OnboardingThemeConfig;

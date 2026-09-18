@@ -57,12 +57,16 @@ import type {
   OnboardingBrainConfig,
   OnboardingConfig,
   OnboardingConfigPayload,
+  OnboardingDesireConfig,
   OnboardingHabitConfig,
+  OnboardingHowConfig,
+  OnboardingLoadingConfig,
   OnboardingMultilang,
   OnboardingNameConfig,
   OnboardingNotifConfig,
   OnboardingPathsConfig,
   OnboardingPickConfig,
+  OnboardingReminderConfig,
   OnboardingThemeConfig,
   OnboardingWelcomeConfig,
 } from "../../types/interface/onboarding-config.interface";
@@ -110,6 +114,10 @@ interface ConfigDraft {
   paths: Omit<OnboardingPathsConfig, "items"> & { items: PathItemDraft[] };
   brain: OnboardingBrainConfig;
   habit: OnboardingHabitConfig;
+  desire: OnboardingDesireConfig;
+  how: OnboardingHowConfig;
+  reminder: OnboardingReminderConfig;
+  loading: OnboardingLoadingConfig;
   notif: OnboardingNotifConfig;
   pick: OnboardingPickConfig;
   theme: OnboardingThemeConfig;
@@ -200,6 +208,39 @@ const toDraft = (config: OnboardingConfig | null): ConfigDraft => ({
     ctaLabel: ml(config?.habit?.ctaLabel),
     iconUrl: config?.habit?.iconUrl || "",
   },
+  desire: {
+    heading: ml(config?.desire?.heading),
+    headingHighlight: ml(config?.desire?.headingHighlight),
+    helper: ml(config?.desire?.helper),
+  },
+  how: {
+    eyebrow: ml(config?.how?.eyebrow),
+    heading: ml(config?.how?.heading),
+    headingHighlight: ml(config?.how?.headingHighlight),
+    steps: (config?.how?.steps ?? []).map((s) => ({
+      title: ml(s?.title),
+      body: ml(s?.body),
+    })),
+    footer: ml(config?.how?.footer),
+    ctaLabel: ml(config?.how?.ctaLabel),
+  },
+  reminder: {
+    heading: ml(config?.reminder?.heading),
+    headingHighlight: ml(config?.reminder?.headingHighlight),
+    subtitle: ml(config?.reminder?.subtitle),
+    timeSectionLabel: ml(config?.reminder?.timeSectionLabel),
+    presets: (config?.reminder?.presets ?? []).map((p) => ({
+      label: ml(p?.label),
+      time: p?.time || "",
+    })),
+    ctaLabel: ml(config?.reminder?.ctaLabel),
+    secondaryCtaLabel: ml(config?.reminder?.secondaryCtaLabel),
+  },
+  loading: {
+    heading: ml(config?.loading?.heading),
+    headingHighlight: ml(config?.loading?.headingHighlight),
+    lines: (config?.loading?.lines ?? []).map((l) => ml(l)),
+  },
   notif: {
     heading: ml(config?.notif?.heading),
     headingHighlight: ml(config?.notif?.headingHighlight),
@@ -276,6 +317,10 @@ const buildPayload = (draft: ConfigDraft): OnboardingConfigPayload => ({
   },
   brain: draft.brain,
   habit: draft.habit,
+  desire: draft.desire,
+  how: draft.how,
+  reminder: draft.reminder,
+  loading: draft.loading,
   notif: draft.notif,
   pick: draft.pick,
   theme: draft.theme,
@@ -292,6 +337,10 @@ const CONFIG_SCREEN_KEYS = [
   "paths",
   "brain",
   "habit",
+  "desire",
+  "how",
+  "reminder",
+  "loading",
   "notif",
   "pick",
   "theme",
@@ -843,6 +892,24 @@ export default function OnboardingConfigPage() {
   const updateHabit = (
     updater: (h: OnboardingHabitConfig) => OnboardingHabitConfig
   ) => setDraft((prev) => (prev ? { ...prev, habit: updater(prev.habit) } : prev));
+  const updateDesire = (
+    updater: (d: OnboardingDesireConfig) => OnboardingDesireConfig
+  ) => setDraft((prev) => (prev ? { ...prev, desire: updater(prev.desire) } : prev));
+  const updateHow = (
+    updater: (h: OnboardingHowConfig) => OnboardingHowConfig
+  ) => setDraft((prev) => (prev ? { ...prev, how: updater(prev.how) } : prev));
+  const updateReminder = (
+    updater: (r: OnboardingReminderConfig) => OnboardingReminderConfig
+  ) =>
+    setDraft((prev) =>
+      prev ? { ...prev, reminder: updater(prev.reminder) } : prev
+    );
+  const updateLoading = (
+    updater: (l: OnboardingLoadingConfig) => OnboardingLoadingConfig
+  ) =>
+    setDraft((prev) =>
+      prev ? { ...prev, loading: updater(prev.loading) } : prev
+    );
   const updateNotif = (
     updater: (n: OnboardingNotifConfig) => OnboardingNotifConfig
   ) => setDraft((prev) => (prev ? { ...prev, notif: updater(prev.notif) } : prev));
@@ -1271,12 +1338,22 @@ export default function OnboardingConfigPage() {
             </AccordionDetails>
           </Accordion>
 
-          {/* Paths */}
+          {/* Paths (screen 4) */}
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Paths
-              </Typography>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Câu 1 — Lĩnh vực (S4)
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block" }}
+                >
+                  heading/helper; danh sách path items là LEGACY cho app cũ,
+                  app mới đọc Onboarding Taxonomy
+                </Typography>
+              </Box>
             </AccordionSummary>
             <AccordionDetails>
               <Box className="flex flex-col gap-3">
@@ -1460,7 +1537,7 @@ export default function OnboardingConfigPage() {
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Symptoms (screen 7)
+                  Câu 2 — Vấn đề (S5) — data key `habit`
                 </Typography>
                 <Typography
                   variant="caption"
@@ -1568,11 +1645,394 @@ export default function OnboardingConfigPage() {
             </AccordionDetails>
           </Accordion>
 
-          {/* Notifications */}
+          {/* Desire (screen 6) */}
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Notifications
+                Câu 3 — Mong muốn (S6)
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box className="flex flex-col gap-3">
+                <MultilangField
+                  label="Heading"
+                  value={draft.desire.heading}
+                  onChange={(v) =>
+                    updateDesire((d) => ({ ...d, heading: v }))
+                  }
+                />
+                <MultilangField
+                  label="Heading highlight"
+                  value={draft.desire.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateDesire((d) => ({ ...d, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
+                  label="Helper"
+                  value={draft.desire.helper}
+                  onChange={(v) => updateDesire((d) => ({ ...d, helper: v }))}
+                />
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* How MeUp teaches (screen 7) */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                MeUp dạy thế nào (S7)
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box className="flex flex-col gap-3">
+                <MultilangField
+                  label="Eyebrow"
+                  value={draft.how.eyebrow}
+                  onChange={(v) => updateHow((h) => ({ ...h, eyebrow: v }))}
+                />
+                <MultilangField
+                  label="Heading"
+                  value={draft.how.heading}
+                  onChange={(v) => updateHow((h) => ({ ...h, heading: v }))}
+                />
+                <MultilangField
+                  label="Heading highlight"
+                  value={draft.how.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateHow((h) => ({ ...h, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="subtitle2">Steps</Typography>
+
+                {draft.how.steps.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No steps yet.
+                  </Typography>
+                ) : (
+                  draft.how.steps.map((step, index) => (
+                    <Box key={index} sx={rowSx}>
+                      <Box className="flex items-center justify-between mb-2">
+                        <Typography variant="subtitle2">
+                          Step {index + 1}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            updateHow((h) => ({
+                              ...h,
+                              steps: h.steps.filter((_, i) => i !== index),
+                            }))
+                          }
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <Box className="flex flex-col gap-3">
+                        <MultilangField
+                          label="Title"
+                          value={step.title}
+                          onChange={(v) =>
+                            updateHow((h) => ({
+                              ...h,
+                              steps: h.steps.map((s, i) =>
+                                i === index ? { ...s, title: v } : s
+                              ),
+                            }))
+                          }
+                        />
+                        <MultilangField
+                          label="Body"
+                          value={step.body}
+                          onChange={(v) =>
+                            updateHow((h) => ({
+                              ...h,
+                              steps: h.steps.map((s, i) =>
+                                i === index ? { ...s, body: v } : s
+                              ),
+                            }))
+                          }
+                          multiline
+                        />
+                      </Box>
+                    </Box>
+                  ))
+                )}
+
+                <Button
+                  onClick={() =>
+                    updateHow((h) => ({
+                      ...h,
+                      steps: [
+                        ...h.steps,
+                        { title: { en: "", vi: "" }, body: { en: "", vi: "" } },
+                      ],
+                    }))
+                  }
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Add />}
+                  sx={{ alignSelf: "flex-start" }}
+                >
+                  Thêm bước
+                </Button>
+
+                <Divider sx={{ my: 1 }} />
+                <MultilangField
+                  label="Footer"
+                  value={draft.how.footer}
+                  onChange={(v) => updateHow((h) => ({ ...h, footer: v }))}
+                  multiline
+                />
+                <MultilangField
+                  label="CTA label"
+                  value={draft.how.ctaLabel}
+                  onChange={(v) => updateHow((h) => ({ ...h, ctaLabel: v }))}
+                />
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Reminder (screen 8) */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Nhắc nhở học (S8)
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box className="flex flex-col gap-3">
+                <Typography variant="caption" color="text.secondary">
+                  Thẻ preview dùng copy của accordion Notifications bên dưới.
+                </Typography>
+                <MultilangField
+                  label="Heading"
+                  value={draft.reminder.heading}
+                  onChange={(v) =>
+                    updateReminder((r) => ({ ...r, heading: v }))
+                  }
+                />
+                <MultilangField
+                  label="Heading highlight"
+                  value={draft.reminder.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateReminder((r) => ({ ...r, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+                <MultilangField
+                  label="Subtitle"
+                  value={draft.reminder.subtitle}
+                  onChange={(v) =>
+                    updateReminder((r) => ({ ...r, subtitle: v }))
+                  }
+                />
+                <MultilangField
+                  label="Time section label"
+                  value={draft.reminder.timeSectionLabel}
+                  onChange={(v) =>
+                    updateReminder((r) => ({ ...r, timeSectionLabel: v }))
+                  }
+                />
+
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="subtitle2">Presets</Typography>
+
+                {draft.reminder.presets.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No presets yet.
+                  </Typography>
+                ) : (
+                  draft.reminder.presets.map((preset, index) => (
+                    <Box key={index} sx={rowSx}>
+                      <Box className="flex items-center justify-between mb-2">
+                        <Typography variant="subtitle2">
+                          Preset {index + 1}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            updateReminder((r) => ({
+                              ...r,
+                              presets: r.presets.filter(
+                                (_, i) => i !== index
+                              ),
+                            }))
+                          }
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <Box className="flex flex-wrap items-start gap-3">
+                        <Box sx={{ flex: 1, minWidth: 220 }}>
+                          <MultilangField
+                            label="Label"
+                            value={preset.label}
+                            onChange={(v) =>
+                              updateReminder((r) => ({
+                                ...r,
+                                presets: r.presets.map((p, i) =>
+                                  i === index ? { ...p, label: v } : p
+                                ),
+                              }))
+                            }
+                          />
+                        </Box>
+                        <TextField
+                          label="Time"
+                          type="time"
+                          value={preset.time}
+                          onChange={(e) =>
+                            updateReminder((r) => ({
+                              ...r,
+                              presets: r.presets.map((p, i) =>
+                                i === index
+                                  ? { ...p, time: e.target.value }
+                                  : p
+                              ),
+                            }))
+                          }
+                          size="small"
+                          InputLabelProps={{ shrink: true }}
+                          inputProps={{ step: 900 }}
+                          sx={{ minWidth: 150 }}
+                        />
+                      </Box>
+                    </Box>
+                  ))
+                )}
+
+                <Button
+                  onClick={() =>
+                    updateReminder((r) => ({
+                      ...r,
+                      presets: [
+                        ...r.presets,
+                        { label: { en: "", vi: "" }, time: "" },
+                      ],
+                    }))
+                  }
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Add />}
+                  sx={{ alignSelf: "flex-start" }}
+                >
+                  Thêm preset
+                </Button>
+
+                <Divider sx={{ my: 1 }} />
+                <MultilangField
+                  label="CTA label"
+                  value={draft.reminder.ctaLabel}
+                  onChange={(v) =>
+                    updateReminder((r) => ({ ...r, ctaLabel: v }))
+                  }
+                />
+                <MultilangField
+                  label="Secondary CTA label"
+                  value={draft.reminder.secondaryCtaLabel}
+                  onChange={(v) =>
+                    updateReminder((r) => ({ ...r, secondaryCtaLabel: v }))
+                  }
+                />
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Loading (screen 9) */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Đang tạo lộ trình (S9)
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box className="flex flex-col gap-3">
+                <MultilangField
+                  label="Heading"
+                  value={draft.loading.heading}
+                  onChange={(v) =>
+                    updateLoading((l) => ({ ...l, heading: v }))
+                  }
+                />
+                <MultilangField
+                  label="Heading highlight"
+                  value={draft.loading.headingHighlight || {}}
+                  onChange={(v) =>
+                    updateLoading((l) => ({ ...l, headingHighlight: v }))
+                  }
+                  helperText="Gradient-highlighted trailing part of the title"
+                />
+
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="subtitle2">Lines</Typography>
+
+                {draft.loading.lines.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No lines yet.
+                  </Typography>
+                ) : (
+                  draft.loading.lines.map((line, index) => (
+                    <Box key={index} sx={rowSx}>
+                      <Box className="flex items-center justify-between mb-2">
+                        <Typography variant="subtitle2">
+                          Line {index + 1}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            updateLoading((l) => ({
+                              ...l,
+                              lines: l.lines.filter((_, i) => i !== index),
+                            }))
+                          }
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <MultilangField
+                        label="Line"
+                        value={line}
+                        onChange={(v) =>
+                          updateLoading((l) => ({
+                            ...l,
+                            lines: l.lines.map((ln, i) =>
+                              i === index ? v : ln
+                            ),
+                          }))
+                        }
+                      />
+                    </Box>
+                  ))
+                )}
+
+                <Button
+                  onClick={() =>
+                    updateLoading((l) => ({
+                      ...l,
+                      lines: [...l.lines, { en: "", vi: "" }],
+                    }))
+                  }
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Add />}
+                  sx={{ alignSelf: "flex-start" }}
+                >
+                  Thêm dòng
+                </Button>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Notifications (S8 preview card) */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Nhắc nhở (S8) — thẻ preview + CTA
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -1652,11 +2112,11 @@ export default function OnboardingConfigPage() {
             </AccordionDetails>
           </Accordion>
 
-          {/* Pick course */}
+          {/* Pick course (S10) */}
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Pick course
+                Kết quả (S10) — data key `pick`
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
