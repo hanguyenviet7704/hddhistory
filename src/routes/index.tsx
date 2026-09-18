@@ -75,6 +75,7 @@ import ImageCompressionPage from "../pages/image-compression/ImageCompressionPag
 import VoiceoverBatch from "../pages/voiceover/VoiceoverBatch";
 import StudyThemeList from "../pages/study-themes/StudyThemeList";
 import OnboardingConfigPage from "../pages/onboarding-config/OnboardingConfigPage";
+import OnboardingTaxonomyPage from "../pages/onboarding-taxonomy/OnboardingTaxonomyPage";
 import ResetOnboardingPage from "../pages/users/ResetOnboardingPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import PaywallConfigPage from "../pages/paywall-config/PaywallConfigPage";
@@ -220,6 +221,10 @@ export default function AppRouter() {
               <Route
                 path="onboarding-config"
                 element={<OnboardingConfigPage />}
+              />
+              <Route
+                path="onboarding-taxonomy"
+                element={<OnboardingTaxonomyPage />}
               />
 
               <Route

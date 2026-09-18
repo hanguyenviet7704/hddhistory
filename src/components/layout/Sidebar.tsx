@@ -124,6 +124,7 @@ const menuGroups = [
       // { name: "Onboarding", icon: SparklesIcon, path: "/onboarding" },
       // { name: "Onboarding Branching", icon: SparklesIcon, path: "/onboarding-branching" },
       { name: "Onboarding Config", icon: AdjustmentsHorizontalIcon, path: "/onboarding-config" },
+      { name: "Onboarding Taxonomy", icon: AdjustmentsHorizontalIcon, path: "/onboarding-taxonomy" },
       // { name: "Reset Onboarding (QA)", icon: BugAntIcon, path: "/reset-onboarding" },
     ],
   },
