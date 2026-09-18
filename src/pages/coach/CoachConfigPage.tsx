@@ -31,6 +31,7 @@ const EMPTY: CoachConfig = {
   hotlines: [],
   geminiModel: "",
   geminiSceneModel: "",
+  geminiFallbackModels: "",
   onboardAskStyle: true,
   onboardAskAge: true,
   onboardAskGender: true,
@@ -121,6 +122,7 @@ const CoachConfigPage: React.FC = () => {
         hotlines: Array.isArray(d.hotlines) ? d.hotlines : [],
         geminiModel: d.geminiModel ?? "",
         geminiSceneModel: d.geminiSceneModel ?? "",
+        geminiFallbackModels: d.geminiFallbackModels ?? "",
         onboardAskStyle: d.onboardAskStyle ?? true,
         onboardAskAge: d.onboardAskAge ?? true,
         onboardAskGender: d.onboardAskGender ?? true,
@@ -249,6 +251,20 @@ const CoachConfigPage: React.FC = () => {
             helperText="Chỉ chạy 1 lần mỗi lượt luyện tình huống (prompt nặng nhất) — nên để model mạnh hơn hội thoại. Trống = theo model hội thoại."
           />
         </div>
+        <TextField
+          label="Model dự phòng khi quá tải"
+          size="small"
+          fullWidth
+          placeholder="vd: gemini-flash-latest,gemini-flash-lite-latest"
+          value={form.geminiFallbackModels ?? ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              geminiFallbackModels: e.target.value,
+            }))
+          }
+          helperText='Model chính báo 429/503 (quá tải) thì lượt đó chạy tiếp bằng model kế trong danh sách, cách nhau bằng dấu phẩy, không chờ giữa hai lần. Trống = mặc định của server. Gõ "off" để tắt hẳn.'
+        />
       </Paper>
 
       <Paper className="p-5 space-y-3">
