@@ -40,6 +40,7 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   weekly_recap_ready: "6a. Weekly recap (thứ 2, nhắc lần 1)",
   weekly_recap_reminder: "6b. Weekly recap (thứ 2, nhắc lần 2)",
   coach_plan_reminder: "7. Nhắc hẹn AI Coach",
+  onboarding_study_reminder: "8. Nhắc học theo giờ đã chọn (onboarding)",
 };
 
 /**
@@ -56,6 +57,8 @@ const TYPE_HINTS: Partial<Record<NotificationType, string>> = {
     "Chỉ gửi vào thứ 2. Chỉ gửi cho user CHƯA MỞ recap tuần này (viewedAt còn trống; bấm \"Để sau\" vẫn tính là chưa mở).",
   coach_plan_reminder:
     "Giờ gửi do CHÍNH USER chọn lúc chốt nhắc hẹn, nên ô \"giờ\" ở đây không có tác dụng. Nội dung là chữ của user điền vào khung câu bên dưới. Tối đa 1 lần/ngày; nhiều nhắc hẹn trùng giờ thì gộp thành một.",
+  onboarding_study_reminder:
+    "Giờ gửi do USER chọn ở màn Nhắc nhở của onboarding (bước 15 phút), nên ô \"giờ\" ở đây không có tác dụng. Chỉ gửi cho user có đặt giờ; tối đa 1 lần/ngày và chịu trần 4 noti/ngày chung.",
 };
 
 /** Display order, so the cards do not follow whatever order Mongo returns. */
@@ -77,6 +80,7 @@ const TYPE_VARIABLES: Record<NotificationType, string> = {
   weekly_recap_reminder: "{user_name}",
   // The reader's own words, not a lookup. Nothing else in this table is.
   coach_plan_reminder: "{context}, {action}",
+  onboarding_study_reminder: "{user_name}, {course_name}",
 };
 
 /** Every destination the API accepts, with what it opens in the app. */

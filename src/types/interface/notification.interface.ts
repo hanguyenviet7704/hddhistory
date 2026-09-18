@@ -7,7 +7,8 @@ export type NotificationType =
   | "new_course"
   | "weekly_recap_ready"
   | "weekly_recap_reminder"
-  | "coach_plan_reminder";
+  | "coach_plan_reminder"
+  | "onboarding_study_reminder";
 
 export type NotificationLogStatus = "sent" | "failed" | "skipped";
 

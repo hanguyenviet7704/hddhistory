@@ -21,6 +21,10 @@ export interface ICourse {
   prices?: IPrice[];
   numberOfLesson?: number;
   onboardingSymptoms?: OnboardingSymptom[];
+  /** Onboarding v3: mã nhãn chi tiết (vấn đề) — xem onboarding-taxonomy. */
+  onboardingLabelCodes?: string[];
+  /** Onboarding v3: mã gói (mong muốn). */
+  onboardingDesireCodes?: string[];
   /** Scheduled publish time (ISO 8601) — used for Coming Soon courses. */
   publishAt?: string | null;
   /** Days the "New course" badge stays after the course publishes. */
