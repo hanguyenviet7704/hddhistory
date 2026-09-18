@@ -65,7 +65,7 @@ class OnboardV2BottomCta extends StatelessWidget {
                     label,
                     style: AppStyle.text16.copyWith(
                       color: onPressed == null ? AppCustomColor.textTertiary : AppCustomColor.textWhite,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
           ),

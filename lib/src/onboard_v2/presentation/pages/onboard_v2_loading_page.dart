@@ -3,7 +3,9 @@ part of '../../onboard_v2.dart';
 /// S9 — màn "đang chọn khoá cho bạn". Không header, không CTA: chỉ 4 dòng tick
 /// hiện lần lượt trong lúc `POST /onboarding-answers` chạy.
 ///
-/// Điều kiện sang S10: đã hiện ít nhất 2,4 s VÀ gợi ý không còn `loading`.
+/// Điều kiện sang S10: đã hiện ít nhất 4,2 s VÀ gợi ý không còn `loading`.
+/// 4,2 s là lúc dòng thứ tư vừa đóng dấu tích — rời sớm hơn thì user không
+/// thấy hết bốn dòng.
 /// Chuỗi 4 dòng tick là của [OnboardV2LoadingChecklist], lặp độc lập.
 /// Trần 12 s — quá thì vẫn sang, S10 tự hiện màn dự phòng + Thử lại, tốt hơn
 /// là để user ngồi nhìn spinner vô hạn.
@@ -15,7 +17,7 @@ class OnboardV2LoadingPage extends StatefulWidget {
 }
 
 class _OnboardV2LoadingPageState extends State<OnboardV2LoadingPage> {
-  static const _minDuration = Duration(milliseconds: 2400);
+  static const _minDuration = Duration(milliseconds: 4200);
   static const _maxDuration = Duration(seconds: 12);
 
   /// BẪY: `PageView` dựng sẵn trang kề bên (cache extent mặc định 250px), nên
@@ -106,11 +108,12 @@ class _OnboardV2LoadingPageState extends State<OnboardV2LoadingPage> {
         canPop: false,
         child: OnboardV2ScreenShell(
           cta: const SizedBox.shrink(),
+          scrollable: false,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 14.w),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                64.verticalSpace,
                 const OnboardV2LoadingIllustration(),
                 10.verticalSpace,
                 AppText(

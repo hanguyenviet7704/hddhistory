@@ -121,7 +121,7 @@ onboardingV2P2InputHint: お名前
 onboardingV2P2Subtitle: あなたらしい旅にしましょう
 onboardingV2P3HeadingHighlight: おいくつですか？
 onboardingV2P3HeadingPrefix: いいですね${name}、
-onboardingV2P3Subtitle: あなたのライフステージに合わせてレッスンを調整します
+onboardingV2P3Subtitle: あなたに合うレッスンを提案します
 onboardingV2P4HeadingHighlight: あなたに響きますか？
 onboardingV2P4HeadingPrefix: どれが
 onboardingV2P4Subtitle: あなたに当てはまるものをすべて選んでください

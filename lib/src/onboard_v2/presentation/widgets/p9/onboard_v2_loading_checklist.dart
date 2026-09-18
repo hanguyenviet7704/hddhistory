@@ -5,7 +5,7 @@ part of '../../../onboard_v2.dart';
 /// chu kỳ 6s và lặp lại.
 ///
 /// Chu kỳ chỉ để trang trí — thời điểm rời màn do
-/// [OnboardV2LoadingPage] quyết định (đủ 2,4s VÀ gợi ý đã xong).
+/// [OnboardV2LoadingPage] quyết định (đủ 4,2s VÀ gợi ý đã xong).
 class OnboardV2LoadingChecklist extends StatefulWidget {
   const OnboardV2LoadingChecklist({super.key, required this.lines});
 
@@ -64,7 +64,7 @@ class _OnboardV2LoadingChecklistState extends State<OnboardV2LoadingChecklist> w
       builder: (context, _) {
         return Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             for (var i = 0; i < widget.lines.length; i++) ...[
               if (i > 0) 12.verticalSpace,

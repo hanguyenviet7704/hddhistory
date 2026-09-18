@@ -11,6 +11,7 @@ class OnboardV2GradientHeading extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.fontSize = 25,
     this.maxLines = 4,
+    this.gradientOnPrefix = false,
   });
 
   final String prefix;
@@ -18,6 +19,9 @@ class OnboardV2GradientHeading extends StatelessWidget {
   final TextAlign textAlign;
   final double fontSize;
   final int maxLines;
+
+  /// Đổ dải màu vào vế ĐẦU thay vì vế sau. Thứ tự chữ không đổi.
+  final bool gradientOnPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -29,16 +33,15 @@ class OnboardV2GradientHeading extends StatelessWidget {
         // riêng đoạn tô màu, nhưng đoạn đó hay tràn nhiều dòng nên không có một
         // hình chữ nhật nào đúng cả — lấy cả đoạn là xấp xỉ gần nhất.
         final shaderRect = Rect.fromLTWH(0, 0, constraints.maxWidth, style.fontSize! * 1.25);
+        final plain = style.copyWith(color: AppCustomColor.textPrimary);
+        final painted = style.copyWith(
+          foreground: Paint()..shader = OnboardV2GradientText.headingGradient.createShader(shaderRect),
+        );
         return Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: '$prefix$gap', style: style.copyWith(color: AppCustomColor.textPrimary)),
-              TextSpan(
-                text: highlight,
-                style: style.copyWith(
-                  foreground: Paint()..shader = OnboardV2GradientText.headingGradient.createShader(shaderRect),
-                ),
-              ),
+              TextSpan(text: '$prefix$gap', style: gradientOnPrefix ? painted : plain),
+              TextSpan(text: highlight, style: gradientOnPrefix ? plain : painted),
             ],
           ),
           textAlign: textAlign,

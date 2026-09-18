@@ -121,7 +121,7 @@ onboardingV2P2InputHint: 你的名字
 onboardingV2P2Subtitle: 让这段旅程更像属于你自己
 onboardingV2P3HeadingHighlight: 你多大了？
 onboardingV2P3HeadingPrefix: 你好，${name}，
-onboardingV2P3Subtitle: 我们会根据你的人生阶段调整课程
+onboardingV2P3Subtitle: 课程将按你的情况推荐
 onboardingV2P4HeadingHighlight: 更像你？
 onboardingV2P4HeadingPrefix: 哪一个
 onboardingV2P4Subtitle: 选择所有符合你的选项
