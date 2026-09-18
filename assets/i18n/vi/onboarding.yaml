@@ -213,6 +213,8 @@ onboardingV2SymptomTimeSlipsAway: Tôi đã mất động lực
 onboardingV2SymptomTryingToDoTooMuch: Suy nghĩ của tôi rối bời
 onboardingV2SymptomWantToListenMoreDeeply: Tôi ước mình hiểu người khác hơn
 onboardingV3P10Cta: Học bài đầu tiên
+onboardingV3P10HeadingHighlight: khoá học đầu tiên
+onboardingV3P10HeadingPrefix: Lựa chọn
 onboardingV3P4HeadingHighlight: cải thiện điều gì?
 onboardingV3P4HeadingPrefix: ${name} muốn
 onboardingV3P4Helper: Chọn tất cả những điều đúng với bạn.
@@ -243,12 +245,12 @@ onboardingV3P8Preset2: Trưa · 12:30
 onboardingV3P8Preset3: Tối · 21:00
 onboardingV3P8Subtitle: Lời nhắc đúng giờ giúp bạn không bỏ lỡ ngày nào
 onboardingV3P8TimeSectionLabel: CHỌN KHUNG GIỜ HỌC ƯA THÍCH
-onboardingV3P9HeadingHighlight: dành cho bạn
-onboardingV3P9HeadingPrefix: Đề xuất khoá học
+onboardingV3P9HeadingHighlight: dành riêng cho bạn
+onboardingV3P9HeadingPrefix: Đề xuất lộ trình
 onboardingV3P9Line1: Lĩnh vực bạn quan tâm
 onboardingV3P9Line2: Điều bạn đang vướng
 onboardingV3P9Line3: Điều bạn muốn thay đổi
-onboardingV3P9Line4: Khung giờ học ưa thích
+onboardingV3P9Line4: Nhịp học mỗi ngày của bạn
 onboardingV3PickBranchFirst: Chọn lĩnh vực ở bước trước đã
 onboardingV3ResultReasonDesire: Khớp đúng điều bạn muốn thay đổi
 onboardingV3SkipQuestions: Bỏ qua, chọn giúp tôi

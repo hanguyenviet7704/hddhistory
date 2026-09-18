@@ -35,11 +35,11 @@ class OnboardV2AgePage extends StatelessWidget {
           AppText(
             ageHeadingPrefix,
             overflow: TextOverflow.visible,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(fontSize: 26).copyWith(color: AppCustomColor.textPrimary),
           ),
           OnboardV2GradientText(
             onbCopy(onboardData, 'onboardingV2P3HeadingHighlight', fallback: onboardingL10n.onboardingV2P3HeadingHighlight),
-            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(fontSize: 26),
           ),
           12.verticalSpace,
           AppText(onboardingL10n.onboardingV2P3Subtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),

@@ -93,6 +93,31 @@ mixin AppCustomColor {
   static const Color roleplayIntroDotInactive = Color(0xFFF2F1FE);
   // Design `6 · Profile`: the pencil disc beside the name on the identity header.
   static const Color profileEditPencilBg = Color(0xFFE8E7FA);
+
+  // Onboarding v3 (Claude Design "MeUp Onboarding v2", màn S7–S10). Chỉ những
+  // giá trị KHÔNG trùng token sẵn có mới nằm ở đây: chữ phụ dùng
+  // `streakTextMuted` (#5F6F86) và nhấn mạnh dùng `brandPrimary` (#554FF0).
+  /// Nền thẻ 4 bước ở S7.
+  static const Color onboardStepCardBg = Color(0xFFF7F8FC);
+
+  /// Nhãn nhỏ + chữ phụ nhạt (eyebrow, phụ đề, giờ chưa chọn).
+  static const Color onboardMutedLabel = Color(0xFF9AA4B2);
+
+  /// Khung điện thoại giả bọc bánh xe giờ ở S8.
+  static const Color onboardPhoneFrame = Color(0xFFE7EBF2);
+
+  /// Số giờ/phút liền kề (chưa chọn) trong bánh xe S8.
+  static const Color onboardWheelIdle = Color(0xFFC7CDD8);
+
+  /// Vòng tròn chờ và dấu tích đã xong ở S9.
+  static const Color onboardCheckIdleRing = Color(0xFFC9CEDE);
+  static const Color onboardCheckDone = Color(0xFF16A97A);
+
+  /// Thẻ khoá học ở S10 và chấm chỉ vị trí.
+  static const Color onboardResultCardBg = Color(0xFFF4F3FE);
+  static const Color onboardResultCardBorder = Color(0xFFD9D6F7);
+  static const Color onboardResultCardDesc = Color(0xFF6B7280);
+  static const Color onboardDotIdle = Color(0xFFD7DBE6);
   static const Color feedbackGradientMid = Color(0xFF7667F3);
   static const Color feedbackGradientEnd = Color(0xFF5E5ACB);
   static const Color feedbackStarActive = Color(0xFFF7C52B);

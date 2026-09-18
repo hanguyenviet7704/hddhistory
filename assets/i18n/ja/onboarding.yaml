@@ -187,6 +187,8 @@ onboardingV2SymptomTimeSlipsAway: 時間が手元から滑り落ちていく
 onboardingV2SymptomTryingToDoTooMuch: あれもこれもやろうとしてしまう
 onboardingV2SymptomWantToListenMoreDeeply: もっと深く耳を傾けたい
 onboardingV3P10Cta: 最初のレッスンへ
+onboardingV3P10HeadingHighlight: 選ぶ
+onboardingV3P10HeadingPrefix: 最初のコースを
 onboardingV3P4HeadingHighlight: 良くしたいことは？
 onboardingV3P4HeadingPrefix: ${name}さんが
 onboardingV3P4Helper: 当てはまるものをすべて選んでください。
@@ -216,12 +218,12 @@ onboardingV3P8Preset2: 昼 · 12:30
 onboardingV3P8Preset3: 夜 · 21:00
 onboardingV3P8Subtitle: ちょうどいい時間のリマインドで一日も逃さない
 onboardingV3P8TimeSectionLabel: 学習する時間帯を選ぶ
-onboardingV3P9HeadingHighlight: コースを選んでいます
-onboardingV3P9HeadingPrefix: あなたに合う
+onboardingV3P9HeadingHighlight: 学習プラン
+onboardingV3P9HeadingPrefix: あなただけの
 onboardingV3P9Line1: 関心のある分野
 onboardingV3P9Line2: 今つまずいていること
 onboardingV3P9Line3: 変えたいこと
-onboardingV3P9Line4: 学習の時間帯
+onboardingV3P9Line4: 毎日の学習ペース
 onboardingV3PickBranchFirst: 前のステップで分野を選んでください
 onboardingV3ResultReasonDesire: 変えたいことにぴったり
 onboardingV3SkipQuestions: スキップして選んでもらう

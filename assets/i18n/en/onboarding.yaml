@@ -201,6 +201,8 @@ onboardingV2SymptomTimeSlipsAway: I've lost my motivation
 onboardingV2SymptomTryingToDoTooMuch: My thoughts feel messy
 onboardingV2SymptomWantToListenMoreDeeply: I wish I understood people better
 onboardingV3P10Cta: Start the first lesson
+onboardingV3P10HeadingHighlight: first course
+onboardingV3P10HeadingPrefix: Pick your
 onboardingV3P4HeadingHighlight: to improve?
 onboardingV3P4HeadingPrefix: ${name}, what do you want
 onboardingV3P4Helper: Pick everything that sounds like you.
@@ -231,12 +233,12 @@ onboardingV3P8Preset2: Noon · 12:30
 onboardingV3P8Preset3: Evening · 21:00
 onboardingV3P8Subtitle: A well-timed reminder keeps every day on track
 onboardingV3P8TimeSectionLabel: PICK YOUR STUDY TIME
-onboardingV3P9HeadingHighlight: for you
-onboardingV3P9HeadingPrefix: Picking a course
+onboardingV3P9HeadingHighlight: made just for you
+onboardingV3P9HeadingPrefix: A learning path
 onboardingV3P9Line1: What you care about
 onboardingV3P9Line2: What's in your way
 onboardingV3P9Line3: What you want to change
-onboardingV3P9Line4: Your study time
+onboardingV3P9Line4: Your daily study rhythm
 onboardingV3PickBranchFirst: Pick a topic in the previous step first
 onboardingV3ResultReasonDesire: Matches what you want to change
 onboardingV3SkipQuestions: Skip, choose for me

@@ -187,6 +187,8 @@ onboardingV2SymptomTimeSlipsAway: 시간이 내게서 빠져나가요
 onboardingV2SymptomTryingToDoTooMuch: 너무 많은 일을 하려고 해요
 onboardingV2SymptomWantToListenMoreDeeply: 더 깊이 경청하고 싶어요
 onboardingV3P10Cta: 첫 레슨 시작하기
+onboardingV3P10HeadingHighlight: 선택하세요
+onboardingV3P10HeadingPrefix: 첫 코스를
 onboardingV3P4HeadingHighlight: 개선하고 싶은 건?
 onboardingV3P4HeadingPrefix: ${name}님이
 onboardingV3P4Helper: 해당하는 것을 모두 선택하세요.
@@ -216,12 +218,12 @@ onboardingV3P8Preset2: 점심 · 12:30
 onboardingV3P8Preset3: 저녁 · 21:00
 onboardingV3P8Subtitle: 딱 맞는 시간의 알림으로 하루도 놓치지 않아요
 onboardingV3P8TimeSectionLabel: 선호하는 학습 시간 선택
-onboardingV3P9HeadingHighlight: 코스를 고르고 있어요
-onboardingV3P9HeadingPrefix: 당신을 위한
+onboardingV3P9HeadingHighlight: 학습 경로
+onboardingV3P9HeadingPrefix: 당신만을 위한
 onboardingV3P9Line1: 관심 있는 분야
 onboardingV3P9Line2: 지금 막히는 것
 onboardingV3P9Line3: 바꾸고 싶은 것
-onboardingV3P9Line4: 선호하는 학습 시간
+onboardingV3P9Line4: 매일의 학습 리듬
 onboardingV3PickBranchFirst: 이전 단계에서 분야를 먼저 선택하세요
 onboardingV3ResultReasonDesire: 바꾸고 싶은 것과 정확히 맞아요
 onboardingV3SkipQuestions: 건너뛰고 추천받기

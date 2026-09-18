@@ -32,11 +32,11 @@ class OnboardV2DesirePage extends StatelessWidget {
             onbCopy(onboardData, 'onboardingV3P6HeadingPrefix', fallback: onboardingL10n.onboardingV3P6HeadingPrefix),
             maxLines: 3,
             overflow: TextOverflow.visible,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(fontSize: 24).copyWith(color: AppCustomColor.textPrimary),
           ),
           OnboardV2GradientText(
             onbCopy(onboardData, 'onboardingV3P6HeadingHighlight', fallback: onboardingL10n.onboardingV3P6HeadingHighlight),
-            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(fontSize: 24),
           ),
           12.verticalSpace,
           AppText(

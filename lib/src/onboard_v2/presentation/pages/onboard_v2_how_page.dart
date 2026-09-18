@@ -1,7 +1,7 @@
 part of '../../onboard_v2.dart';
 
-/// S7 — "MeUp dạy thế nào": 4 bước đánh số (Hiểu / Thử / Ôn / Dùng). Màn thuần
-/// chữ, không hỏi gì, nên CTA luôn bật.
+/// S7 — "MeUp giúp bạn thế nào": 4 thẻ bước (Hiểu / Thử / Ôn / Dùng) trôi lên
+/// lần lượt rồi lặp lại. Màn thuần chữ, không hỏi gì, nên CTA luôn bật.
 class OnboardV2HowPage extends StatelessWidget {
   const OnboardV2HowPage({super.key});
 
@@ -46,36 +46,55 @@ class OnboardV2HowPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          24.verticalSpace,
+          18.verticalSpace,
+          // Design: chữ thường, KHÔNG viết hoa toàn bộ (khác các eyebrow cũ).
           AppText(
-            onbCopy(onboardData, 'onboardingV3P7Eyebrow', fallback: onboardingL10n.onboardingV3P7Eyebrow).toUpperCase(),
+            onbCopy(onboardData, 'onboardingV3P7Eyebrow', fallback: onboardingL10n.onboardingV3P7Eyebrow),
             maxLines: 2,
             overflow: TextOverflow.visible,
-            style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700, height: 1.6),
+            style: AppStyle.text12.copyWith(
+              fontSize: 11.sp,
+              color: AppCustomColor.onboardMutedLabel,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.22,
+              height: 1.4,
+            ),
           ),
-          8.verticalSpace,
+          10.verticalSpace,
           AppText(
             onbCopy(onboardData, 'onboardingV3P7HeadingPrefix', fallback: onboardingL10n.onboardingV3P7HeadingPrefix),
             maxLines: 3,
             overflow: TextOverflow.visible,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle().copyWith(color: AppCustomColor.textPrimary),
           ),
           OnboardV2GradientText(
             onbCopy(onboardData, 'onboardingV3P7HeadingHighlight', fallback: onboardingL10n.onboardingV3P7HeadingHighlight),
-            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(),
           ),
           28.verticalSpace,
-          for (var i = 0; i < steps.length; i++)
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h),
-              child: _HowStepRow(index: i + 1, title: steps[i].$1, body: steps[i].$2),
+          for (var i = 0; i < steps.length; i++) ...[
+            if (i > 0) 12.verticalSpace,
+            OnboardV2StepRevealCard(
+              key: ValueKey('onboard_v2_how_step_$i'),
+              index: i,
+              child: _HowStepCard(index: i + 1, title: steps[i].$1, body: steps[i].$2),
             ),
-          4.verticalSpace,
-          AppText(
-            onbCopy(onboardData, 'onboardingV3P7Footer', fallback: onboardingL10n.onboardingV3P7Footer),
-            maxLines: 4,
-            overflow: TextOverflow.visible,
-            style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.6),
+          ],
+          28.verticalSpace,
+          SizedBox(
+            width: double.infinity,
+            child: AppText(
+              onbCopy(onboardData, 'onboardingV3P7Footer', fallback: onboardingL10n.onboardingV3P7Footer),
+              textAlign: TextAlign.center,
+              maxLines: 4,
+              overflow: TextOverflow.visible,
+              style: AppStyle.text14.copyWith(
+                fontSize: 14.5.sp,
+                color: AppCustomColor.brandPrimary,
+                fontWeight: FontWeight.w600,
+                height: 1.6,
+              ),
+            ),
           ),
         ],
       ),
@@ -83,8 +102,8 @@ class OnboardV2HowPage extends StatelessWidget {
   }
 }
 
-class _HowStepRow extends StatelessWidget {
-  const _HowStepRow({required this.index, required this.title, required this.body});
+class _HowStepCard extends StatelessWidget {
+  const _HowStepCard({required this.index, required this.title, required this.body});
 
   final int index;
   final String title;
@@ -92,42 +111,63 @@ class _HowStepRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 36.w,
-          height: 36.w,
-          decoration: BoxDecoration(color: AppCustomColor.brandPrimary.op(0.1), shape: BoxShape.circle),
-          alignment: Alignment.center,
-          child: AppText(
-            '$index',
-            maxLines: 1,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w800),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: AppCustomColor.onboardStepCardBg,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38.w,
+            height: 38.w,
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundWhite,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF252525).op(0.08),
+                  blurRadius: 12.r,
+                  offset: Offset(0, 4.h),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: AppText(
+              '$index',
+              maxLines: 1,
+              style: AppStyle.text16.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w800),
+            ),
           ),
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.visible,
-                style: AppStyle.text16.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.4),
-              ),
-              2.verticalSpace,
-              AppText(
-                body,
-                maxLines: 3,
-                overflow: TextOverflow.visible,
-                style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.5),
-              ),
-            ],
+          16.horizontalSpace,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.visible,
+                  style: AppStyle.text16.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.3),
+                ),
+                3.verticalSpace,
+                AppText(
+                  body,
+                  maxLines: 4,
+                  overflow: TextOverflow.visible,
+                  style: AppStyle.text14.copyWith(
+                    fontSize: 13.5.sp,
+                    color: AppCustomColor.streakTextMuted,
+                    fontWeight: FontWeight.w500,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

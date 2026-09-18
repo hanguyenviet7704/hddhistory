@@ -79,11 +79,11 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
           AppText(
             onbCopy(state.onboardData, 'onboardingV2P2HeadingPrefix', fallback: onboardingL10n.onboardingV2P2HeadingPrefix),
             overflow: TextOverflow.visible,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(fontSize: 26).copyWith(color: AppCustomColor.textPrimary),
           ),
           OnboardV2GradientText(
             onbCopy(state.onboardData, 'onboardingV2P2HeadingHighlight', fallback: onboardingL10n.onboardingV2P2HeadingHighlight),
-            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+            style: onboardV2HeadingStyle(fontSize: 26),
           ),
           12.verticalSpace,
           AppText(

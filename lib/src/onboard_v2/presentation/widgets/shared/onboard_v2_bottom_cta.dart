@@ -8,6 +8,8 @@ class OnboardV2BottomCta extends StatelessWidget {
     this.isLoading = false,
     this.secondaryLabel,
     this.onSecondaryPressed,
+    this.hasGlow = false,
+    this.mutedSecondary = false,
   });
 
   final String label;
@@ -16,14 +18,29 @@ class OnboardV2BottomCta extends StatelessWidget {
   final String? secondaryLabel;
   final VoidCallback? onSecondaryPressed;
 
+  /// Quầng tím dưới nút. Design chỉ bật ở những màn có một hành động dứt điểm
+  /// (S1 mở đầu, S8 bật thông báo, S10 chọn khoá), không bật ở các màn hỏi.
+  final bool hasGlow;
+
+  /// Nút phụ màu xám nhạt thay vì màu thương hiệu — design dùng cho "Để sau".
+  final bool mutedSecondary;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
+        Container(
           width: double.infinity,
           height: 54.h,
+          decoration: hasGlow && !isLoading && onPressed != null
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(1000.r),
+                  boxShadow: [
+                    BoxShadow(color: AppCustomColor.brandPrimary.op(0.32), blurRadius: 22.r, offset: Offset(0, 10.h)),
+                  ],
+                )
+              : null,
           child: ElevatedButton(
             key: const Key('onboard_v2_primary_cta'),
             onPressed: isLoading || onPressed == null
@@ -66,8 +83,9 @@ class OnboardV2BottomCta extends StatelessWidget {
             child: AppText(
               secondaryLabel!,
               style: AppStyle.text14.copyWith(
-                color: AppCustomColor.brandPrimary,
-                fontWeight: FontWeight.w700,
+                fontSize: mutedSecondary ? 15.sp : 14.sp,
+                color: mutedSecondary ? AppCustomColor.onboardMutedLabel : AppCustomColor.brandPrimary,
+                fontWeight: mutedSecondary ? FontWeight.w600 : FontWeight.w700,
               ),
             ),
           ),

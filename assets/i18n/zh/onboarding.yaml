@@ -187,6 +187,8 @@ onboardingV2SymptomTimeSlipsAway: 时间总从我身边溜走
 onboardingV2SymptomTryingToDoTooMuch: 我试图做太多事
 onboardingV2SymptomWantToListenMoreDeeply: 我想更深入地倾听
 onboardingV3P10Cta: 开始第一课
+onboardingV3P10HeadingHighlight: 第一门课程
+onboardingV3P10HeadingPrefix: 选择你的
 onboardingV3P4HeadingHighlight: 改善什么？
 onboardingV3P4HeadingPrefix: ${name}，你想
 onboardingV3P4Helper: 选出所有符合你的选项。
@@ -216,12 +218,12 @@ onboardingV3P8Preset2: 中午 · 12:30
 onboardingV3P8Preset3: 晚上 · 21:00
 onboardingV3P8Subtitle: 准时的提醒让你一天都不落下
 onboardingV3P8TimeSectionLabel: 选择你的学习时段
-onboardingV3P9HeadingHighlight: 推荐课程
-onboardingV3P9HeadingPrefix: 正在为你
+onboardingV3P9HeadingHighlight: 学习路径
+onboardingV3P9HeadingPrefix: 为你量身定制的
 onboardingV3P9Line1: 你关注的领域
 onboardingV3P9Line2: 你正卡住的地方
 onboardingV3P9Line3: 你想改变的事
-onboardingV3P9Line4: 你的学习时段
+onboardingV3P9Line4: 你每天的学习节奏
 onboardingV3PickBranchFirst: 请先在上一步选择领域
 onboardingV3ResultReasonDesire: 正好对应你想改变的事
 onboardingV3SkipQuestions: 跳过，帮我选择

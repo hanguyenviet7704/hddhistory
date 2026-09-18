@@ -16,6 +16,8 @@ class OnboardV2TimeWheel extends StatefulWidget {
 
 class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
   static const _minutes = [0, 15, 30, 45];
+  static const _itemExtent = 52.0;
+  static const _wheelHeight = 156.0;
 
   /// A flick crosses many items before settling — `ListWheelScrollView` fires
   /// `onSelectedItemChanged` once PER item crossed, up to ~24 times. The
@@ -86,14 +88,16 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
   }
 
   Widget _wheel(FixedExtentScrollController controller, int count, String Function(int) label) {
+    final itemExtent = _itemExtent.h;
     return SizedBox(
-      width: 88.w,
-      height: 156.h,
+      height: _wheelHeight.h,
       child: ListWheelScrollView.useDelegate(
         controller: controller,
-        itemExtent: 52.h,
-        perspective: 0.003,
-        diameterRatio: 1.6,
+        itemExtent: itemExtent,
+        // Design vẽ ba dòng phẳng, không phải trụ tròn — kéo đường kính lên và
+        // gần như tắt phối cảnh để mặt cong biến mất.
+        perspective: 0.00001,
+        diameterRatio: 20,
         physics: const FixedExtentScrollPhysics(),
         onSelectedItemChanged: (_) {
           AppHaptic.select();
@@ -102,13 +106,7 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
         childDelegate: ListWheelChildLoopingListDelegate(
           children: [
             for (var i = 0; i < count; i++)
-              Center(
-                child: AppText(
-                  label(i),
-                  maxLines: 1,
-                  style: AppStyle.text32.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
-                ),
-              ),
+              _WheelLabel(controller: controller, index: i, count: count, itemExtent: itemExtent, text: label(i)),
           ],
         ),
       ),
@@ -117,21 +115,72 @@ class _OnboardV2TimeWheelState extends State<OnboardV2TimeWheel> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      decoration: BoxDecoration(color: AppCustomColor.backgroundGray, borderRadius: BorderRadius.circular(20.r)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _wheel(_hour, 24, (i) => i.toString().padLeft(2, '0')),
-          AppText(
-            ':',
-            maxLines: 1,
-            style: AppStyle.text32.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
-          ),
-          _wheel(_minute, 4, (i) => _minutes[i].toString().padLeft(2, '0')),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: _wheel(_hour, 24, (i) => i.toString().padLeft(2, '0'))),
+        AppText(
+          ':',
+          maxLines: 1,
+          style: AppStyle.text40.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary, height: 1),
+        ),
+        Expanded(child: _wheel(_minute, 4, (i) => _minutes[i].toString().padLeft(2, '0'))),
+      ],
     );
+  }
+}
+
+/// Một nấc của bánh xe. Chữ to dần và đậm dần khi tiến về giữa — design cho số
+/// đang chọn 44px/700 màu chữ chính, hai số kề 24px/500 màu nhạt.
+class _WheelLabel extends StatelessWidget {
+  const _WheelLabel({
+    required this.controller,
+    required this.index,
+    required this.count,
+    required this.itemExtent,
+    required this.text,
+  });
+
+  final FixedExtentScrollController controller;
+  final int index;
+  final int count;
+  final double itemExtent;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final distance = _distanceFromCentre();
+        final fontSize = ui.lerpDouble(44, 24, distance)!;
+        return Center(
+          child: AppText(
+            text,
+            maxLines: 1,
+            style: AppStyle.text40.copyWith(
+              fontSize: fontSize.sp,
+              height: 1,
+              fontWeight: distance < 0.5 ? FontWeight.w700 : FontWeight.w500,
+              color: Color.lerp(AppCustomColor.textPrimary, AppCustomColor.onboardWheelIdle, distance),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 0 = đúng giữa, 1 = cách giữa một nấc trở lên. Danh sách cuộn vòng nên phải
+  /// gói khoảng cách về nửa vòng gần nhất, không thì số cuối và số đầu bị coi
+  /// là cách nhau cả vòng.
+  double _distanceFromCentre() {
+    if (!controller.hasClients || !controller.position.hasPixels || itemExtent <= 0) {
+      return (controller.initialItem % count) == index ? 0 : 1;
+    }
+    var delta = (controller.offset / itemExtent - index) % count;
+    if (delta > count / 2) delta -= count;
+    if (delta < -count / 2) delta += count;
+    return delta.abs().clamp(0.0, 1.0);
   }
 }

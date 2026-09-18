@@ -107,48 +107,46 @@ class _OnboardV2ReminderPageState extends State<OnboardV2ReminderPage> {
           onPressed: () => unawaited(_handlePrimary()),
           secondaryLabel: onbCopy(onboardData, 'onboardingV3P8SecondaryCta', fallback: onboardingL10n.onboardingV2MaybeLaterCta),
           onSecondaryPressed: () => unawaited(_handleSecondary()),
+          hasGlow: true,
+          mutedSecondary: true,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            20.verticalSpace,
-            AppText(
-              onbCopy(onboardData, 'onboardingV3P8HeadingPrefix', fallback: onboardingL10n.onboardingV3P8HeadingPrefix),
+            26.verticalSpace,
+            OnboardV2GradientHeading(
+              prefix: onbCopy(onboardData, 'onboardingV3P8HeadingPrefix', fallback: onboardingL10n.onboardingV3P8HeadingPrefix),
+              highlight: onbCopy(onboardData, 'onboardingV3P8HeadingHighlight', fallback: onboardingL10n.onboardingV3P8HeadingHighlight),
               maxLines: 3,
-              overflow: TextOverflow.visible,
-              style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
             ),
-            OnboardV2GradientText(
-              onbCopy(onboardData, 'onboardingV3P8HeadingHighlight', fallback: onboardingL10n.onboardingV3P8HeadingHighlight),
-              style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
-            ),
-            10.verticalSpace,
+            8.verticalSpace,
             AppText(
               onbCopy(onboardData, 'onboardingV3P8Subtitle', fallback: onboardingL10n.onboardingV3P8Subtitle),
               maxLines: 3,
               overflow: TextOverflow.visible,
-              style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+              style: AppStyle.text14.copyWith(color: AppCustomColor.onboardMutedLabel, fontWeight: FontWeight.w500, height: 1.5),
             ),
-            20.verticalSpace,
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              decoration: BoxDecoration(color: AppCustomColor.backgroundGray, borderRadius: BorderRadius.circular(20.r)),
-              child: const Center(child: OnboardV2FloatingNotificationCard()),
+            24.verticalSpace,
+            Center(
+              child: OnboardV2ReminderPhoneMock(value: state.reminderTime, onChanged: cubit.setReminderTime),
             ),
-            20.verticalSpace,
+            18.verticalSpace,
             AppText(
               onbCopy(onboardData, 'onboardingV3P8TimeSectionLabel', fallback: onboardingL10n.onboardingV3P8TimeSectionLabel).toUpperCase(),
               maxLines: 2,
               overflow: TextOverflow.visible,
-              style: AppStyle.text12.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700, height: 1.6),
+              style: AppStyle.text12.copyWith(
+                fontSize: 11.sp,
+                color: AppCustomColor.onboardMutedLabel,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.77,
+                height: 1.4,
+              ),
             ),
-            12.verticalSpace,
-            Center(child: OnboardV2TimeWheel(value: state.reminderTime, onChanged: cubit.setReminderTime)),
-            16.verticalSpace,
+            10.verticalSpace,
             Wrap(
-              spacing: 9.w,
-              runSpacing: 9.h,
+              spacing: 8.w,
+              runSpacing: 8.h,
               children: [
                 for (final preset in presets)
                   OnboardV2Chip(
@@ -159,6 +157,7 @@ class _OnboardV2ReminderPageState extends State<OnboardV2ReminderPage> {
                   ),
               ],
             ),
+            8.verticalSpace,
           ],
         ),
       ),
