@@ -27,7 +27,7 @@ class OnboardV2DesirePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          24.verticalSpace,
+          6.verticalSpace,
           AppText(
             onbCopy(onboardData, 'onboardingV3P6HeadingPrefix', fallback: onboardingL10n.onboardingV3P6HeadingPrefix),
             maxLines: 3,
@@ -44,14 +44,14 @@ class OnboardV2DesirePage extends StatelessWidget {
             overflow: TextOverflow.visible,
             style: onboardV2SubtitleStyle(),
           ),
-          28.verticalSpace,
+          18.verticalSpace,
           if (state.desireOptions.isEmpty)
             OnboardV2InlineError(message: onboardingL10n.onboardingV3PickBranchFirst, onRetry: cubit.goBack)
           else
             ...state.desireOptions.map(
               (package) => Padding(
                 key: ValueKey('onboard_v2_desire_${package.code}'),
-                padding: EdgeInsets.only(bottom: 12.h),
+                padding: EdgeInsets.only(bottom: 9.h),
                 child: OnboardV2SelectableOptionRow(
                   label: package.desireLabel.text,
                   selected: state.selectedDesireCode == package.code,

@@ -20,7 +20,7 @@ class OnboardV2ScreenShell extends StatelessWidget {
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
           child: Column(
             children: [
               ?header,

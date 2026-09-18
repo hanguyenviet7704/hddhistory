@@ -46,7 +46,7 @@ class OnboardV2HowPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          18.verticalSpace,
+          14.verticalSpace,
           // Design: chữ thường, KHÔNG viết hoa toàn bộ (khác các eyebrow cũ).
           AppText(
             onbCopy(onboardData, 'onboardingV3P7Eyebrow', fallback: onboardingL10n.onboardingV3P7Eyebrow),

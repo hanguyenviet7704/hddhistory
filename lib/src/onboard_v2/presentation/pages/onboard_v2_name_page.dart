@@ -68,14 +68,14 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          32.verticalSpace,
+          22.verticalSpace,
           AppAsset.icons.app.icWaveHand.image(
             key: const Key('onboard_v2_name_wave_hand'),
             width: 32.w,
             height: 32.w,
             fit: BoxFit.contain,
           ),
-          18.verticalSpace,
+          12.verticalSpace,
           AppText(
             onbCopy(state.onboardData, 'onboardingV2P2HeadingPrefix', fallback: onboardingL10n.onboardingV2P2HeadingPrefix),
             overflow: TextOverflow.visible,
@@ -85,12 +85,12 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
             onbCopy(state.onboardData, 'onboardingV2P2HeadingHighlight', fallback: onboardingL10n.onboardingV2P2HeadingHighlight),
             style: onboardV2HeadingStyle(fontSize: 26),
           ),
-          12.verticalSpace,
+          8.verticalSpace,
           AppText(
             onbCopy(state.onboardData, 'onboardingV2P2Subtitle', fallback: onboardingL10n.onboardingV2P2Subtitle),
             style: onboardV2SubtitleStyle(),
           ),
-          32.verticalSpace,
+          30.verticalSpace,
           SizedBox(
             height: 56.h,
             child: TextField(

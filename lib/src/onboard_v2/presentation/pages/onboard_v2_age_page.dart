@@ -31,7 +31,7 @@ class OnboardV2AgePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          24.verticalSpace,
+          22.verticalSpace,
           AppText(
             ageHeadingPrefix,
             overflow: TextOverflow.visible,
@@ -41,9 +41,9 @@ class OnboardV2AgePage extends StatelessWidget {
             onbCopy(onboardData, 'onboardingV2P3HeadingHighlight', fallback: onboardingL10n.onboardingV2P3HeadingHighlight),
             style: onboardV2HeadingStyle(fontSize: 26),
           ),
-          12.verticalSpace,
+          8.verticalSpace,
           AppText(onboardingL10n.onboardingV2P3Subtitle, style: onboardV2SubtitleStyle()),
-          28.verticalSpace,
+          24.verticalSpace,
           if (state.onboardStatus == OnboardV2AsyncStatus.loading)
             const Center(child: CircularProgressIndicator())
           else if (state.onboardStatus == OnboardV2AsyncStatus.failure)

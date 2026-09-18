@@ -27,7 +27,7 @@ class OnboardV2ProblemPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          24.verticalSpace,
+          8.verticalSpace,
           AppText(
             onbCopy(onboardData, 'onboardingV3P5HeadingPrefix', fallback: onboardingL10n.onboardingV3P5HeadingPrefix),
             maxLines: 3,
@@ -38,13 +38,13 @@ class OnboardV2ProblemPage extends StatelessWidget {
             onbCopy(onboardData, 'onboardingV3P5HeadingHighlight', fallback: onboardingL10n.onboardingV3P5HeadingHighlight),
             style: onboardV2HeadingStyle(fontSize: 24),
           ),
-          12.verticalSpace,
+          4.verticalSpace,
           AppText(
             onbCopy(onboardData, 'onboardingV3P5Helper', fallback: onboardingL10n.onboardingV3P5Helper),
             overflow: TextOverflow.visible,
             style: onboardV2SubtitleStyle(fontSize: 13.5),
           ),
-          28.verticalSpace,
+          14.verticalSpace,
           if (state.problemOptions.isEmpty)
             OnboardV2InlineError(message: onboardingL10n.onboardingV3PickBranchFirst, onRetry: cubit.goBack)
           else

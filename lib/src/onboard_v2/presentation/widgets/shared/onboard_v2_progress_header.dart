@@ -26,7 +26,7 @@ class OnboardV2ProgressHeader extends StatelessWidget {
     final header = SizedBox(
       key: ValueKey('onboard_v2_progress_header_$activeSegments'),
       width: double.infinity,
-      height: 44.h,
+      height: 30.h,
       child: Row(
         children: [
           SizedBox(
@@ -35,7 +35,7 @@ class OnboardV2ProgressHeader extends StatelessWidget {
                 ? IconButton(
                     key: const Key('onboard_v2_back_button'),
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(minWidth: 30.w, minHeight: 44.h),
+                    constraints: BoxConstraints(minWidth: 30.w, minHeight: 30.h),
                     onPressed: onBack == null
                         ? null
                         : () {

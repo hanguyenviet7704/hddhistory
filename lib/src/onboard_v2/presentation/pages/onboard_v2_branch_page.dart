@@ -47,7 +47,7 @@ class OnboardV2BranchPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          24.verticalSpace,
+          6.verticalSpace,
           AppText(
             headingPrefix,
             maxLines: 3,
@@ -64,7 +64,7 @@ class OnboardV2BranchPage extends StatelessWidget {
             overflow: TextOverflow.visible,
             style: onboardV2SubtitleStyle(),
           ),
-          28.verticalSpace,
+          18.verticalSpace,
           if (state.taxonomyStatus == OnboardV2TaxonomyStatus.loading || state.taxonomyStatus == OnboardV2TaxonomyStatus.initial)
             const Center(child: CircularProgressIndicator())
           else if (state.taxonomyStatus == OnboardV2TaxonomyStatus.failure)
@@ -85,7 +85,7 @@ class OnboardV2BranchPage extends StatelessWidget {
               final iconUrl = branch.iconUrl.trim();
               return Padding(
                 key: ValueKey('onboard_v2_branch_${branch.code}'),
-                padding: EdgeInsets.only(bottom: 12.h),
+                padding: EdgeInsets.only(bottom: 9.h),
                 child: OnboardV2SelectableOptionRow(
                   label: branch.label.text,
                   subtitle: branch.subtitle.text,

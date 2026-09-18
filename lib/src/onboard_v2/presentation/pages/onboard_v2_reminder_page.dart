@@ -113,7 +113,7 @@ class _OnboardV2ReminderPageState extends State<OnboardV2ReminderPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            26.verticalSpace,
+            22.verticalSpace,
             OnboardV2GradientHeading(
               prefix: onbCopy(onboardData, 'onboardingV3P8HeadingPrefix', fallback: onboardingL10n.onboardingV3P8HeadingPrefix),
               highlight: onbCopy(onboardData, 'onboardingV3P8HeadingHighlight', fallback: onboardingL10n.onboardingV3P8HeadingHighlight),
