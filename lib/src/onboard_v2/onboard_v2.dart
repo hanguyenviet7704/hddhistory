@@ -37,6 +37,7 @@ part 'presentation/helpers/onboard_v2_icon_resolver.dart';
 part 'presentation/helpers/onboard_v2_notification_status_mapper.dart';
 part 'presentation/helpers/onboard_v2_path_resolver.dart';
 part 'presentation/helpers/onboard_v2_random_course_picker.dart';
+part 'presentation/helpers/onboard_v2_selection_rules.dart';
 part 'presentation/helpers/onboard_v2_symptom_selection_mapper.dart';
 part 'presentation/helpers/onboard_v2_tracking_helper.dart';
 
