@@ -1706,7 +1706,7 @@ export default function OnboardingConfigPage() {
                   helperText="Gradient-highlighted trailing part of the title"
                 />
 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1.5 }} />
                 <Typography variant="subtitle2">Steps</Typography>
 
                 {draft.how.steps.length === 0 ? (
@@ -1722,6 +1722,8 @@ export default function OnboardingConfigPage() {
                         </Typography>
                         <IconButton
                           size="small"
+                          color="error"
+                          aria-label={`Delete step ${index + 1}`}
                           onClick={() =>
                             updateHow((h) => ({
                               ...h,
@@ -1781,7 +1783,7 @@ export default function OnboardingConfigPage() {
                   Thêm bước
                 </Button>
 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1.5 }} />
                 <MultilangField
                   label="Footer"
                   value={draft.how.footer}
@@ -1839,7 +1841,7 @@ export default function OnboardingConfigPage() {
                   }
                 />
 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1.5 }} />
                 <Typography variant="subtitle2">Presets</Typography>
 
                 {draft.reminder.presets.length === 0 ? (
@@ -1855,6 +1857,8 @@ export default function OnboardingConfigPage() {
                         </Typography>
                         <IconButton
                           size="small"
+                          color="error"
+                          aria-label={`Delete preset ${index + 1}`}
                           onClick={() =>
                             updateReminder((r) => ({
                               ...r,
@@ -1924,7 +1928,7 @@ export default function OnboardingConfigPage() {
                   Thêm preset
                 </Button>
 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1.5 }} />
                 <MultilangField
                   label="CTA label"
                   value={draft.reminder.ctaLabel}
@@ -1968,7 +1972,7 @@ export default function OnboardingConfigPage() {
                   helperText="Gradient-highlighted trailing part of the title"
                 />
 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1.5 }} />
                 <Typography variant="subtitle2">Lines</Typography>
 
                 {draft.loading.lines.length === 0 ? (
@@ -1984,6 +1988,8 @@ export default function OnboardingConfigPage() {
                         </Typography>
                         <IconButton
                           size="small"
+                          color="error"
+                          aria-label={`Delete line ${index + 1}`}
                           onClick={() =>
                             updateLoading((l) => ({
                               ...l,
