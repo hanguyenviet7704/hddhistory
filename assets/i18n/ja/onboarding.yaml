@@ -153,12 +153,12 @@ onboardingV2P7SocialProof: '93.8%のユーザーが
   同じような課題をこのコースで改善しました'
 onboardingV2P8CatalogCta: コースを見る
 onboardingV2P8CourseTitleFallback: おすすめのコース
-onboardingV2P8Eyebrow: あなたの回答から厳選
+onboardingV2P8Eyebrow: あなたの回答をもとに
 onboardingV2P8FallbackCopy: もう一度試すか、全コースカタログをご覧ください。
 onboardingV2P8FallbackTitle: マッチするコースを読み込めませんでした
 onboardingV2P8Label: ベストマッチ
 onboardingV2P8SelectCta: 選択
-onboardingV2P8Title: コースを選ぶ
+onboardingV2P8Title: 最初のコースを選ぶ
 onboardingV2PathConnectBetter: より良くつながる
 onboardingV2PathExploreBetter: より良く探索する
 onboardingV2PathFeelBetter: より良く感じる
@@ -186,4 +186,44 @@ onboardingV2SymptomStrugglingToBreakBadHabits: 悪い習慣をやめたいのに
 onboardingV2SymptomTimeSlipsAway: 時間が手元から滑り落ちていく
 onboardingV2SymptomTryingToDoTooMuch: あれもこれもやろうとしてしまう
 onboardingV2SymptomWantToListenMoreDeeply: もっと深く耳を傾けたい
+onboardingV3P10Cta: 最初のレッスンへ
+onboardingV3P4HeadingHighlight: 良くしたいことは？
+onboardingV3P4HeadingPrefix: ${name}さんが
+onboardingV3P4Helper: 当てはまるものをすべて選んでください。
+onboardingV3P5HeadingHighlight: 近いのはどれ？
+onboardingV3P5HeadingPrefix: この中で自分に
+onboardingV3P5Helper: 当てはまるものをすべて選んでください。
+onboardingV3P6HeadingHighlight: 何を選びますか？
+onboardingV3P6HeadingPrefix: これから10日で1つだけ変えられるなら、
+onboardingV3P6Helper: いちばん大切なものを1つ選んでください。
+onboardingV3P7Cta: はじめよう
+onboardingV3P7Eyebrow: MeUp があなたを支える方法
+onboardingV3P7Footer: 最初のレッスンから続けられる習慣まで、MeUp が一歩ずつ伴走します。
+onboardingV3P7HeadingHighlight: 使えるようになる
+onboardingV3P7HeadingPrefix: 知るだけで終わらせない
+onboardingV3P7Step1Body: 予定に収まる超短時間レッスン
+onboardingV3P7Step1Title: 学ぶ
+onboardingV3P7Step2Body: 学んだ直後に AI と練習
+onboardingV3P7Step2Title: 試す
+onboardingV3P7Step3Body: 忘れる前に MeUp がリマインド
+onboardingV3P7Step3Title: 復習
+onboardingV3P7Step4Body: 学びを毎日の実生活に活かすガイド
+onboardingV3P7Step4Title: 使う
+onboardingV3P8HeadingHighlight: 続けること
+onboardingV3P8HeadingPrefix: いちばん難しいのは始めることではなく、
+onboardingV3P8Preset1: 朝 · 7:00
+onboardingV3P8Preset2: 昼 · 12:30
+onboardingV3P8Preset3: 夜 · 21:00
+onboardingV3P8Subtitle: ちょうどいい時間のリマインドで一日も逃さない
+onboardingV3P8TimeSectionLabel: 学習する時間帯を選ぶ
+onboardingV3P9HeadingHighlight: コースを選んでいます
+onboardingV3P9HeadingPrefix: あなたに合う
+onboardingV3P9Line1: 関心のある分野
+onboardingV3P9Line2: 今つまずいていること
+onboardingV3P9Line3: 変えたいこと
+onboardingV3P9Line4: 学習の時間帯
+onboardingV3PickBranchFirst: 前のステップで分野を選んでください
+onboardingV3ResultReasonDesire: 変えたいことにぴったり
+onboardingV3TaxonomyLoadError: 分野の一覧を読み込めませんでした
+onboardingV3You: あなた
 onboardingYoungAdultOption: 18〜24歳

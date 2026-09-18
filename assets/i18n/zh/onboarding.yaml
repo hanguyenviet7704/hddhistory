@@ -153,12 +153,12 @@ onboardingV2P7SocialProof: '93.8 % 用户
   通过这门课程改善了类似挑战'
 onboardingV2P8CatalogCta: 浏览课程
 onboardingV2P8CourseTitleFallback: 推荐课程
-onboardingV2P8Eyebrow: 根据你的回答精选
+onboardingV2P8Eyebrow: 根据你的回答
 onboardingV2P8FallbackCopy: 请重试，或浏览完整课程目录。
 onboardingV2P8FallbackTitle: 暂时无法加载匹配课程
 onboardingV2P8Label: 最佳匹配
 onboardingV2P8SelectCta: 选择
-onboardingV2P8Title: 选择你的课程
+onboardingV2P8Title: 选择你的第一门课程
 onboardingV2PathConnectBetter: 更好地连接
 onboardingV2PathExploreBetter: 更好地探索
 onboardingV2PathFeelBetter: 感觉更好
@@ -186,4 +186,44 @@ onboardingV2SymptomStrugglingToBreakBadHabits: 我想改掉坏习惯却做不到
 onboardingV2SymptomTimeSlipsAway: 时间总从我身边溜走
 onboardingV2SymptomTryingToDoTooMuch: 我试图做太多事
 onboardingV2SymptomWantToListenMoreDeeply: 我想更深入地倾听
+onboardingV3P10Cta: 开始第一课
+onboardingV3P4HeadingHighlight: 改善什么？
+onboardingV3P4HeadingPrefix: ${name}，你想
+onboardingV3P4Helper: 选出所有符合你的选项。
+onboardingV3P5HeadingHighlight: 在这里的哪一项？
+onboardingV3P5HeadingPrefix: 你觉得自己
+onboardingV3P5Helper: 选出所有符合你的选项。
+onboardingV3P6HeadingHighlight: 你会选什么？
+onboardingV3P6HeadingPrefix: 如果接下来10天只能改变一件事，
+onboardingV3P6Helper: 选一个对你最重要的。
+onboardingV3P7Cta: 开始吧
+onboardingV3P7Eyebrow: MeUp 如何帮你
+onboardingV3P7Footer: 从第一课到每天坚持的习惯，MeUp 陪你走每一步。
+onboardingV3P7HeadingHighlight: 更要用得上
+onboardingV3P7HeadingPrefix: 不止于知道
+onboardingV3P7Step1Body: 超短课程，贴合你的日程
+onboardingV3P7Step1Title: 学
+onboardingV3P7Step2Body: 学完立刻和 AI 一起练习
+onboardingV3P7Step2Title: 练
+onboardingV3P7Step3Body: 在你忘记之前 MeUp 会提醒你
+onboardingV3P7Step3Title: 复习
+onboardingV3P7Step4Body: 引导你每天把所学用到真实生活
+onboardingV3P7Step4Title: 用
+onboardingV3P8HeadingHighlight: 而是坚持
+onboardingV3P8HeadingPrefix: 最难的不是开始，
+onboardingV3P8Preset1: 早上 · 7:00
+onboardingV3P8Preset2: 中午 · 12:30
+onboardingV3P8Preset3: 晚上 · 21:00
+onboardingV3P8Subtitle: 准时的提醒让你一天都不落下
+onboardingV3P8TimeSectionLabel: 选择你的学习时段
+onboardingV3P9HeadingHighlight: 推荐课程
+onboardingV3P9HeadingPrefix: 正在为你
+onboardingV3P9Line1: 你关注的领域
+onboardingV3P9Line2: 你正卡住的地方
+onboardingV3P9Line3: 你想改变的事
+onboardingV3P9Line4: 你的学习时段
+onboardingV3PickBranchFirst: 请先在上一步选择领域
+onboardingV3ResultReasonDesire: 正好对应你想改变的事
+onboardingV3TaxonomyLoadError: 无法加载领域列表
+onboardingV3You: 你
 onboardingYoungAdultOption: 18-24 岁

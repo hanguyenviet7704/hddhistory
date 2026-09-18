@@ -172,12 +172,12 @@ onboardingV2P7SocialProof: '93.8 % người dùng
   có thử thách tương tự đã cải thiện với khóa học này'
 onboardingV2P8CatalogCta: Xem khóa học
 onboardingV2P8CourseTitleFallback: Khóa học được đề xuất
-onboardingV2P8Eyebrow: Được chọn từ câu trả lời của bạn
+onboardingV2P8Eyebrow: Dựa trên câu trả lời của bạn
 onboardingV2P8FallbackCopy: Thử lại hoặc xem toàn bộ danh mục khóa học.
 onboardingV2P8FallbackTitle: Chưa tải được khóa học phù hợp
 onboardingV2P8Label: Phù hợp nhất
 onboardingV2P8SelectCta: Chọn
-onboardingV2P8Title: Chọn khóa học của bạn
+onboardingV2P8Title: Lựa chọn khoá học đầu tiên
 onboardingV2P9Cta: Bắt đầu khám phá
 onboardingV2P9Helper: Bạn có thể đổi lại sau trong ứng dụng
 onboardingV2P9Subtitle: Chọn giao diện cho toàn bộ ứng dụng
@@ -212,4 +212,45 @@ onboardingV2SymptomStrugglingToBreakBadHabits: Tôi cứ trì hoãn mọi việc
 onboardingV2SymptomTimeSlipsAway: Tôi đã mất động lực
 onboardingV2SymptomTryingToDoTooMuch: Suy nghĩ của tôi rối bời
 onboardingV2SymptomWantToListenMoreDeeply: Tôi ước mình hiểu người khác hơn
+onboardingV3P10Cta: Học bài đầu tiên
+onboardingV3P4HeadingHighlight: cải thiện điều gì?
+onboardingV3P4HeadingPrefix: ${name} muốn
+onboardingV3P4Helper: Chọn tất cả những điều đúng với bạn.
+onboardingV3P5HeadingHighlight: ở đâu trong đây?
+onboardingV3P5HeadingPrefix: Bạn thấy mình
+onboardingV3P5Helper: Chọn tất cả những điều đúng với bạn.
+onboardingV3P6HeadingHighlight: bạn chọn gì?
+onboardingV3P6HeadingPrefix: Nếu chỉ được thay đổi một thứ trong 10 ngày tới,
+onboardingV3P6Helper: Chọn một điều quan trọng nhất với bạn.
+onboardingV3P7Cta: Bắt đầu thôi
+onboardingV3P7Eyebrow: MeUp giúp bạn thế nào
+onboardingV3P7Footer: MeUp đi cùng bạn ở từng bước, từ bài học đầu tiên đến thói quen
+  bạn giữ được mỗi ngày.
+onboardingV3P7HeadingHighlight: Mà phải ứng dụng được
+onboardingV3P7HeadingPrefix: Không dừng ở biết
+onboardingV3P7Step1Body: Bài học siêu ngắn, vừa với lịch của bạn
+onboardingV3P7Step1Title: Hiểu
+onboardingV3P7Step2Body: Luyện tập cùng AI ngay sau khi học
+onboardingV3P7Step2Title: Thử
+onboardingV3P7Step3Body: MeUp nhắc lại trước khi bạn kịp quên
+onboardingV3P7Step3Title: Ôn
+onboardingV3P7Step4Body: Hướng dẫn mang bài học vào việc thật mỗi ngày
+onboardingV3P7Step4Title: Dùng
+onboardingV3P8HeadingHighlight: mà là duy trì
+onboardingV3P8HeadingPrefix: Khó nhất không phải bắt đầu,
+onboardingV3P8Preset1: Sáng · 7:00
+onboardingV3P8Preset2: Trưa · 12:30
+onboardingV3P8Preset3: Tối · 21:00
+onboardingV3P8Subtitle: Lời nhắc đúng giờ giúp bạn không bỏ lỡ ngày nào
+onboardingV3P8TimeSectionLabel: CHỌN KHUNG GIỜ HỌC ƯA THÍCH
+onboardingV3P9HeadingHighlight: dành cho bạn
+onboardingV3P9HeadingPrefix: Đề xuất khoá học
+onboardingV3P9Line1: Lĩnh vực bạn quan tâm
+onboardingV3P9Line2: Điều bạn đang vướng
+onboardingV3P9Line3: Điều bạn muốn thay đổi
+onboardingV3P9Line4: Khung giờ học ưa thích
+onboardingV3PickBranchFirst: Chọn lĩnh vực ở bước trước đã
+onboardingV3ResultReasonDesire: Khớp đúng điều bạn muốn thay đổi
+onboardingV3TaxonomyLoadError: Không tải được danh sách lĩnh vực
+onboardingV3You: bạn
 onboardingYoungAdultOption: 18–24

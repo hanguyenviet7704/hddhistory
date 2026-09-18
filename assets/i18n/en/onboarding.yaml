@@ -162,12 +162,12 @@ onboardingV2P7SocialProof: '93.8 % users
   facing similar challenges have improved with this course'
 onboardingV2P8CatalogCta: Browse courses
 onboardingV2P8CourseTitleFallback: Recommended course
-onboardingV2P8Eyebrow: Curated from your answers
+onboardingV2P8Eyebrow: Based on your answers
 onboardingV2P8FallbackCopy: Try again or browse the full course catalog.
 onboardingV2P8FallbackTitle: We could not load matches
 onboardingV2P8Label: Best matched
 onboardingV2P8SelectCta: Select
-onboardingV2P8Title: Pick your course
+onboardingV2P8Title: Pick your first course
 onboardingV2P9Cta: Start Explore
 onboardingV2P9Helper: You can change this later in the app
 onboardingV2P9Subtitle: Choose a look for your whole app
@@ -200,4 +200,45 @@ onboardingV2SymptomStrugglingToBreakBadHabits: I keep putting things off
 onboardingV2SymptomTimeSlipsAway: I've lost my motivation
 onboardingV2SymptomTryingToDoTooMuch: My thoughts feel messy
 onboardingV2SymptomWantToListenMoreDeeply: I wish I understood people better
+onboardingV3P10Cta: Start the first lesson
+onboardingV3P4HeadingHighlight: to improve?
+onboardingV3P4HeadingPrefix: ${name}, what do you want
+onboardingV3P4Helper: Pick everything that sounds like you.
+onboardingV3P5HeadingHighlight: see yourself here?
+onboardingV3P5HeadingPrefix: Where do you
+onboardingV3P5Helper: Pick everything that sounds like you.
+onboardingV3P6HeadingHighlight: what would it be?
+onboardingV3P6HeadingPrefix: If you could change one thing in the next 10 days,
+onboardingV3P6Helper: Pick the one that matters most.
+onboardingV3P7Cta: Let's go
+onboardingV3P7Eyebrow: How MeUp helps
+onboardingV3P7Footer: MeUp walks with you every step, from the first lesson to the
+  habit you keep.
+onboardingV3P7HeadingHighlight: but putting it to use
+onboardingV3P7HeadingPrefix: Not just knowing
+onboardingV3P7Step1Body: Bite-size lessons that fit your day
+onboardingV3P7Step1Title: Learn
+onboardingV3P7Step2Body: Practice with AI right after each lesson
+onboardingV3P7Step2Title: Try
+onboardingV3P7Step3Body: MeUp reminds you before you forget
+onboardingV3P7Step3Title: Review
+onboardingV3P7Step4Body: Guidance to use it in real life, every day
+onboardingV3P7Step4Title: Apply
+onboardingV3P8HeadingHighlight: it's keeping going
+onboardingV3P8HeadingPrefix: The hard part isn't starting,
+onboardingV3P8Preset1: Morning · 7:00
+onboardingV3P8Preset2: Noon · 12:30
+onboardingV3P8Preset3: Evening · 21:00
+onboardingV3P8Subtitle: A well-timed reminder keeps every day on track
+onboardingV3P8TimeSectionLabel: PICK YOUR STUDY TIME
+onboardingV3P9HeadingHighlight: for you
+onboardingV3P9HeadingPrefix: Picking a course
+onboardingV3P9Line1: What you care about
+onboardingV3P9Line2: What's in your way
+onboardingV3P9Line3: What you want to change
+onboardingV3P9Line4: Your study time
+onboardingV3PickBranchFirst: Pick a topic in the previous step first
+onboardingV3ResultReasonDesire: Matches what you want to change
+onboardingV3TaxonomyLoadError: Couldn't load the topics
+onboardingV3You: you
 onboardingYoungAdultOption: 18-24

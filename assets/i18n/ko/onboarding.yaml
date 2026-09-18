@@ -153,12 +153,12 @@ onboardingV2P7SocialProof: '93.8% 사용자가
   비슷한 어려움을 이 코스로 개선했어요'
 onboardingV2P8CatalogCta: 코스 둘러보기
 onboardingV2P8CourseTitleFallback: 추천 코스
-onboardingV2P8Eyebrow: 당신의 답변을 바탕으로 선별
+onboardingV2P8Eyebrow: 당신의 답변을 바탕으로
 onboardingV2P8FallbackCopy: 다시 시도하거나 전체 코스 카탈로그를 둘러보세요.
 onboardingV2P8FallbackTitle: 매칭 코스를 불러올 수 없었어요
 onboardingV2P8Label: 가장 잘 맞음
 onboardingV2P8SelectCta: 선택
-onboardingV2P8Title: 코스를 선택하세요
+onboardingV2P8Title: 첫 코스를 선택하세요
 onboardingV2PathConnectBetter: 더 잘 연결하기
 onboardingV2PathExploreBetter: 더 잘 탐색하기
 onboardingV2PathFeelBetter: 더 좋게 느끼기
@@ -186,4 +186,44 @@ onboardingV2SymptomStrugglingToBreakBadHabits: 나쁜 습관을 끊고 싶은데
 onboardingV2SymptomTimeSlipsAway: 시간이 내게서 빠져나가요
 onboardingV2SymptomTryingToDoTooMuch: 너무 많은 일을 하려고 해요
 onboardingV2SymptomWantToListenMoreDeeply: 더 깊이 경청하고 싶어요
+onboardingV3P10Cta: 첫 레슨 시작하기
+onboardingV3P4HeadingHighlight: 개선하고 싶은 건?
+onboardingV3P4HeadingPrefix: ${name}님이
+onboardingV3P4Helper: 해당하는 것을 모두 선택하세요.
+onboardingV3P5HeadingHighlight: 가장 가까운 건?
+onboardingV3P5HeadingPrefix: 이 중에서 나와
+onboardingV3P5Helper: 해당하는 것을 모두 선택하세요.
+onboardingV3P6HeadingHighlight: 무엇을 고르시겠어요?
+onboardingV3P6HeadingPrefix: 앞으로 10일 동안 하나만 바꿀 수 있다면,
+onboardingV3P6Helper: 가장 중요한 하나만 선택하세요.
+onboardingV3P7Cta: 시작하기
+onboardingV3P7Eyebrow: MeUp이 돕는 방법
+onboardingV3P7Footer: 첫 레슨부터 매일 지키는 습관까지, MeUp이 한 걸음씩 함께합니다.
+onboardingV3P7HeadingHighlight: 실제로 쓸 수 있게
+onboardingV3P7HeadingPrefix: 아는 데서 멈추지 않고
+onboardingV3P7Step1Body: 일정에 딱 맞는 초단기 레슨
+onboardingV3P7Step1Title: 배우기
+onboardingV3P7Step2Body: 배운 직후 AI와 바로 연습
+onboardingV3P7Step2Title: 해보기
+onboardingV3P7Step3Body: 잊기 전에 MeUp이 다시 알려줘요
+onboardingV3P7Step3Title: 복습
+onboardingV3P7Step4Body: 배운 것을 매일 실제 상황에 쓰도록 안내
+onboardingV3P7Step4Title: 적용
+onboardingV3P8HeadingHighlight: 꾸준히 하는 것
+onboardingV3P8HeadingPrefix: 가장 어려운 건 시작이 아니라
+onboardingV3P8Preset1: 아침 · 7:00
+onboardingV3P8Preset2: 점심 · 12:30
+onboardingV3P8Preset3: 저녁 · 21:00
+onboardingV3P8Subtitle: 딱 맞는 시간의 알림으로 하루도 놓치지 않아요
+onboardingV3P8TimeSectionLabel: 선호하는 학습 시간 선택
+onboardingV3P9HeadingHighlight: 코스를 고르고 있어요
+onboardingV3P9HeadingPrefix: 당신을 위한
+onboardingV3P9Line1: 관심 있는 분야
+onboardingV3P9Line2: 지금 막히는 것
+onboardingV3P9Line3: 바꾸고 싶은 것
+onboardingV3P9Line4: 선호하는 학습 시간
+onboardingV3PickBranchFirst: 이전 단계에서 분야를 먼저 선택하세요
+onboardingV3ResultReasonDesire: 바꾸고 싶은 것과 정확히 맞아요
+onboardingV3TaxonomyLoadError: 분야 목록을 불러오지 못했어요
+onboardingV3You: 당신
 onboardingYoungAdultOption: 18-24세
