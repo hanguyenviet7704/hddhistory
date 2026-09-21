@@ -4,7 +4,7 @@
 # Mỗi thực thể sau khi huấn luyện có một vector embedding. Độ tương đồng
 # cosine giữa hai vector u, v:
 #
-# `sim(u, v) = (u · v) / (‖u‖ ‖v‖)`
+# $$\text{sim}(u, v) = \dfrac{u \cdot v}{\lVert u \rVert \lVert v \rVert}$$
 #
 # Giá trị nằm trong [-1, 1]; gần 1 nghĩa là hai thực thể "gần nhau" trong
 # không gian embedding — với KGE, điều này thường tương ứng với việc hai thực
@@ -64,6 +64,8 @@ def plot_embeddings_2d(result, labels: list, out_path: str = "reports/embedding_
 # MRR≈0.0218 đã báo cáo ở Bước 3), lấy 20 thực thể đầu tiên theo
 # `entity_to_id` để vẽ PCA 2D (lưu tại `reports/embedding_plot.png`), và
 # tính `most_similar` của thực thể đầu tiên so với toàn bộ 1009 thực thể.
+#
+# ![Thực thể trong không gian embedding (PCA 2D)](../reports/embedding_plot.png)
 #
 # **Cặp có liên hệ trực tiếp trên đồ thị** — `Chiến tranh Việt Nam` và
 # `Hoa Kỳ` (nối trực tiếp bằng cạnh `P710 người tham gia` — dòng 7 của

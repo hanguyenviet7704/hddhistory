@@ -8,7 +8,7 @@
 # **Công thức điểm số TransE:** với một triple `(h, r, t)`, TransE giả định
 # `h + r ≈ t` nếu triple đúng, và định nghĩa hàm điểm số
 #
-# `score(h, r, t) = -‖ h + r - t ‖`
+# $$\text{score}(h, r, t) = -\lVert h + r - t \rVert$$
 #
 # (dùng khoảng cách L1 hoặc L2; lấy dấu âm để điểm số cao hơn nghĩa là đúng
 # hơn). Mô hình huấn luyện bằng **margin ranking loss**: với mỗi triple đúng
@@ -99,6 +99,30 @@ def save_eval_json(metrics: dict, path: str) -> None:
 # baseline này dùng để minh hoạ đúng pipeline huấn luyện + đánh giá KGE, không
 # nhằm đạt SOTA. `PipelineResult` (biến `result`) được Bước 4 dùng lại để
 # trích embedding.
+#
+# **Nguyên nhân cụ thể hơn "đồ thị thưa" cho `Hits@1 = 0.0`:** kiểm tra lại
+# `data/raw/triples.csv` cho thấy 533/1000 triple (53.3%) có tail là một
+# literal ngày-giờ (đến từ các quan hệ ngày tháng `P585`/`P580`/`P582`), và
+# 329/1009 thực thể (32.6%) chính là các chuỗi timestamp này — trong đó 281
+# (85%) chỉ xuất hiện đúng **một lần** trong toàn bộ đồ thị (degree 1). Một
+# thực thể degree-1 không có cạnh nào khác để KGE học quan hệ, nên gần như
+# không thể được xếp hạng đúng khi đóng vai trò `t` trong đánh giá — đây là
+# nguyên nhân chính (mạnh hơn và cụ thể hơn việc "đồ thị thưa" nói chung) của
+# `Hits@1 = 0.0`, và cũng giải thích vì sao PCA ở Bước 4 nhìn chủ yếu ra toàn
+# timestamp. Với bộ dữ liệu lịch sử Việt Nam thật sẽ xây sau, nên cân nhắc mô
+# hình hoá ngày tháng như một **thuộc tính (attribute)** của node thay vì một
+# node/quan hệ riêng, để tránh pha loãng tín hiệu huấn luyện KGE theo cách này.
+#
+# **Chênh lệch số thực thể 1017 (Bước 2, Neo4j) → 1009 (Bước 3, PyKEEN):**
+# Bước 2 đếm 1017 node Neo4j, khoá theo `qid` (định danh Wikidata). Bước 3 lại
+# đếm 1009 thực thể duy nhất, vì `triples_csv_to_factory` dựng `TriplesFactory`
+# từ cột **label** (`head_label`/`tail_label`), không phải qid. Khoảng chênh 8
+# này không phải lỗi — nó do đúng 7 label bị trùng trên 8 qid khác nhau, ví dụ
+# "Trung Quốc" ứng với 2 qid khác nhau (Trung Quốc cổ và Trung Quốc hiện đại),
+# "Kon Tum" ứng với 2 qid khác nhau (tỉnh và thị xã). Khoá theo label khiến
+# PyKEEN âm thầm gộp các thực thể thật khác nhau có cùng tên — một điểm cần
+# nhớ khi xây bộ dữ liệu lịch sử Việt Nam thật, nơi tên riêng tiếng Việt có
+# thể trùng nhau còn nhiều hơn (nhiều nhân vật lịch sử cùng chung một tên).
 
 # %%
 if __name__ == "__main__":

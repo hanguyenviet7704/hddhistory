@@ -93,7 +93,11 @@ def save_triples_csv(triples: list, path: str) -> None:
 # Truy vấn với limit=1000 lấy được **1000 triples**. Kết quả đạt đủ 1000 triples
 # (chính xác là limit đã đặt), điều này cho thấy còn dữ liệu ngoài giới hạn trong
 # Wikidata. Phạm vi hiện tại (7 loại quan hệ + điều kiện quốc gia Việt Nam) đã
-# đủ cho Task 1, và dữ liệu được lưu vào `data/raw/triples.csv`.
+# đủ cho Task 1, và dữ liệu được lưu vào `data/raw/triples.csv`. Trong 7 loại
+# quan hệ truy vấn, chỉ **6** loại thực sự có dữ liệu trả về dưới điều kiện lọc
+# này — `P39` (vị trí/chức vụ) trả về **0** dòng cho các thực thể có `P17=Q881`
+# trong phạm vi truy vấn này, một quan sát thật về độ phủ Wikidata (không phải
+# lỗi truy vấn); các Bước sau vì vậy chỉ còn nhắc tới "6 loại quan hệ".
 
 # %%
 if __name__ == "__main__":

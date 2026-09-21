@@ -37,9 +37,6 @@ def format_context(facts: list) -> str:
 # %% [markdown]
 # ### Ví dụ minh hoạ (chạy thật)
 #
-# _(Chọn 1 thực thể quan trọng trong subgraph, in ra chuỗi quan hệ thật quanh
-# nó, dán nguyên văn `format_context(...)` vào đây làm ví dụ cho báo cáo.)_
-#
 # Thực thể chọn: **Q8740** — "Chiến tranh Việt Nam" (xuất hiện ở 27 dòng làm
 # head trong `data/raw/triples.csv`, nên có nhiều quan hệ trong Neo4j). Chạy
 # `python -m src.step5_relation_chain` trên dữ liệu thật (1017 nút / 1000
@@ -82,7 +79,8 @@ if __name__ == "__main__":
     from src.step2_load_neo4j import get_driver
 
     driver = get_driver("bolt://localhost:7687", "neo4j", "kg-research-pw")
-    # Thay QID dưới đây bằng một QID thật có trong data/raw/triples.csv
+    # Q8740 = "Chiến tranh Việt Nam": xuất hiện ở 27 dòng làm head trong
+    # data/raw/triples.csv, nên có nhiều quan hệ thật trong Neo4j để minh hoạ.
     example_qid = "Q8740"
     facts = get_relation_chain(driver, example_qid, max_hops=2, limit=20)
     print(format_context(facts))

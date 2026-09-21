@@ -15,6 +15,10 @@ def test_format_context_numbers_each_fact():
     assert "2. Đảng Cộng sản Việt Nam --thời điểm--> 1930 (nguồn: P585)" in context
 
 
+# CẢNH BÁO: fixture này xoá TOÀN BỘ node/relationship trong Neo4j, kể cả dữ
+# liệu thật đã nạp cho các Bước sau — chạy `pytest` (không chỉ file này) sau
+# khi đã nạp dữ liệu thật sẽ xoá nó; nạp lại bằng `python -m src.step2_load_neo4j`
+# nếu cần.
 @pytest.fixture()
 def driver_with_seed_graph():
     d = get_driver("bolt://localhost:7687", "neo4j", "kg-research-pw")

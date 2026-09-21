@@ -107,7 +107,7 @@ if __name__ == "__main__":
     from src.step5_relation_chain import get_relation_chain, format_context
 
     driver = get_driver("bolt://localhost:7687", "neo4j", "kg-research-pw")
-    example_qid = "Q10520"  # thay bằng QID thật
+    example_qid = "Q8740"
     facts = get_relation_chain(driver, example_qid, max_hops=2, limit=20)
     driver.close()
 
