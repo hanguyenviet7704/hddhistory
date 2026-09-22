@@ -3,7 +3,7 @@
     "description": "Bộ dữ liệu nền thực thể/sự kiện lịch sử Việt Nam, soạn thủ công (không lấy từ Wikidata), bao quát từ thời dựng nước đến hiện đại. Dùng chung cho: (1) pipeline KG/KGE trong knowledge-graph/src (thay cho subgraph Wikidata demo), (2) nguyên liệu seed cho các collection periods/entities/events/figures/places/sources của app thật sau này.",
     "created": "2026-09-21",
     "updated": "2026-09-22",
-    "entity_count": "176 thực thể, 196 relations, 5 claims, 12 thời kỳ, 11 nguồn (thêm s_wikidata) — 16 thực thể mới nhập qua tools/wikidata_entity_importer.py, đã rà soát tay 5 thực thể bị gắn cờ type=unknown/period=None, đã nối quan hệ thủ công cho toàn bộ thực thể mới. Mở rộng 3 lượt từ bản gốc 76 thực thể/73 quan hệ.",
+    "entity_count": "176 thực thể, 203 relations, 5 claims, 12 thời kỳ, 11 nguồn — 16 thực thể nhập qua tools/wikidata_entity_importer.py (đã rà soát 5 thực thể bị gắn cờ), quan hệ được làm giàu bằng tools/wikidata_relation_suggester.py (dò vợ/chồng, cha/mẹ/con qua Wikidata cho các thực thể degree<=1, người rà soát rồi mới thêm tay) — quá trình này còn phát hiện và sửa 1 lỗi mô tả sai (Dương Tam Kha bị ghi nhầm là cha vợ Ngô Quyền, thực ra là em vợ). Mở rộng 4 lượt từ bản gốc 76 thực thể/73 quan hệ.",
     "note_on_accuracy": "Niên đại giai đoạn Hồng Bàng và đầu Bắc thuộc phần lớn là huyền sử/bán huyền sử, không có xác nhận khảo cổ/văn bản đồng đại chắc chắn — đã đánh dấu rõ trong trường 'note' của từng thực thể liên quan thay vì nêu như sự thật xác quyết. Từ thời Ngô-Đinh trở đi niên đại nhìn chung được giới sử học đồng thuận."
   },
   "periods": [
@@ -1475,7 +1475,7 @@
       "type": "figure",
       "name": "Dương Tam Kha",
       "period_id": "p03_ngo_dinh_tienle",
-      "description": "Cha vợ Ngô Quyền, cướp ngôi sau khi Ngô Quyền mất năm 944, góp phần gây ra loạn 12 sứ quân.",
+      "description": "Con trai Dương Đình Nghệ, em vợ Ngô Quyền (Ngô Quyền lấy con gái Dương Đình Nghệ). Cướp ngôi sau khi Ngô Quyền mất năm 944, góp phần gây ra loạn 12 sứ quân.",
       "source_ids": [
         "s_dvsktt"
       ]
@@ -3360,7 +3360,15 @@
     {"head": "tran_nguyen_han", "relation": "participated_in", "tail": "khoi_nghia_lam_son", "source_ids": ["s_wikidata"]},
     {"head": "le_van_duyet", "relation": "served", "tail": "gia_long", "source_ids": ["s_wikidata"]},
     {"head": "truong_chinh", "relation": "served", "tail": "dang_cong_san_vn", "source_ids": ["s_wikidata"]},
-    {"head": "truong_chinh", "relation": "contemporary_with", "tail": "ho_chi_minh", "source_ids": ["s_wikidata"]}
+    {"head": "truong_chinh", "relation": "contemporary_with", "tail": "ho_chi_minh", "source_ids": ["s_wikidata"]},
+
+    {"head": "au_co", "relation": "married", "tail": "lac_long_quan", "source_ids": ["s_wikidata"]},
+    {"head": "duong_tam_kha", "relation": "child_of", "tail": "duong_dinh_nghe", "source_ids": ["s_wikidata"]},
+    {"head": "tran_nhan_tong", "relation": "child_of", "tail": "tran_thanh_tong", "source_ids": ["s_wikidata"]},
+    {"head": "ho_han_thuong", "relation": "child_of", "tail": "ho_quy_ly", "source_ids": ["s_wikidata"]},
+    {"head": "ngo_xuong_van", "relation": "child_of", "tail": "ngo_quyen", "source_ids": ["s_wikidata"]},
+    {"head": "ly_nhan_tong", "relation": "child_of", "tail": "nguyen_phi_y_lan", "source_ids": ["s_wikidata"]},
+    {"head": "tran_khanh_du", "relation": "child_of", "tail": "tran_canh_thai_tong", "note": "Con nuôi, không phải con ruột — Trần Khánh Dư được Trần Thái Tông nhận làm dưỡng tử.", "source_ids": ["s_wikidata"]}
   ],
   "claims": [
     {
