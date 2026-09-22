@@ -3,7 +3,7 @@
     "description": "Bộ dữ liệu nền thực thể/sự kiện lịch sử Việt Nam, soạn thủ công (không lấy từ Wikidata), bao quát từ thời dựng nước đến hiện đại. Dùng chung cho: (1) pipeline KG/KGE trong knowledge-graph/src (thay cho subgraph Wikidata demo), (2) nguyên liệu seed cho các collection periods/entities/events/figures/places/sources của app thật sau này.",
     "created": "2026-09-21",
     "updated": "2026-09-22",
-    "entity_count": "126 (56 figure, 28 organization, 33 event, 9 place), 130 relations, 12 thời kỳ, 10 nguồn — mở rộng từ bản gốc 76 thực thể/73 quan hệ",
+    "entity_count": "160 (76 figure, 31 organization, 43 event, 10 place), 172 relations, 5 claims (dữ kiện còn tranh luận giữa các nguồn), 12 thời kỳ, 10 nguồn — mở rộng 2 lượt từ bản gốc 76 thực thể/73 quan hệ",
     "note_on_accuracy": "Niên đại giai đoạn Hồng Bàng và đầu Bắc thuộc phần lớn là huyền sử/bán huyền sử, không có xác nhận khảo cổ/văn bản đồng đại chắc chắn — đã đánh dấu rõ trong trường 'note' của từng thực thể liên quan thay vì nêu như sự thật xác quyết. Từ thời Ngô-Đinh trở đi niên đại nhìn chung được giới sử học đồng thuận."
   },
   "periods": [
@@ -181,7 +181,52 @@
     {"id": "toan_quoc_khang_chien_1946", "type": "event", "name": "Toàn quốc kháng chiến", "period_id": "p12_hiendai", "date": "1946-12-19", "description": "Lời kêu gọi của Hồ Chí Minh phát động kháng chiến toàn quốc chống Pháp.", "source_ids": ["s_hcm_tt"]},
     {"id": "hiep_dinh_paris_1973", "type": "event", "name": "Hiệp định Paris", "period_id": "p12_hiendai", "date": "1973-01-27", "description": "Hiệp định chấm dứt chiến tranh, lập lại hòa bình ở Việt Nam, Mỹ rút quân.", "source_ids": ["s_lsvn_vsh"]},
     {"id": "chien_dich_ho_chi_minh", "type": "event", "name": "Chiến dịch Hồ Chí Minh", "period_id": "p12_hiendai", "date": "1975-04", "description": "Chiến dịch quân sự cuối cùng, tiến vào Sài Gòn, kết thúc chiến tranh.", "source_ids": ["s_lsvn_vsh"]},
-    {"id": "gia_nhap_asean_1995", "type": "event", "name": "Việt Nam gia nhập ASEAN", "period_id": "p12_hiendai", "date": "1995-07-28", "description": "Việt Nam chính thức trở thành thành viên Hiệp hội các quốc gia Đông Nam Á.", "source_ids": ["s_lsvn_vsh"]}
+    {"id": "gia_nhap_asean_1995", "type": "event", "name": "Việt Nam gia nhập ASEAN", "period_id": "p12_hiendai", "date": "1995-07-28", "description": "Việt Nam chính thức trở thành thành viên Hiệp hội các quốc gia Đông Nam Á.", "source_ids": ["s_lsvn_vsh"]},
+
+    {"id": "le_chan", "type": "figure", "name": "Lê Chân", "period_id": "p02_bacthuoc", "description": "Nữ tướng dưới trướng Hai Bà Trưng, tương truyền là người khai lập vùng đất nay là Hải Phòng.", "source_ids": ["s_dvsktt"]},
+    {"id": "khuc_hao", "type": "figure", "name": "Khúc Hạo", "period_id": "p02_bacthuoc", "description": "Con Khúc Thừa Dụ, tiếp tục giữ quyền tự chủ và tiến hành cải cách hành chính đầu thế kỷ 10.", "source_ids": ["s_dvsktt"]},
+    {"id": "nha_tuy", "type": "organization", "name": "Nhà Tùy (Trung Quốc)", "period_id": "p02_bacthuoc", "description": "Tái chiếm Vạn Xuân, chấm dứt vương triều của Lý Phật Tử khoảng năm 602–603.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "duong_tam_kha", "type": "figure", "name": "Dương Tam Kha", "period_id": "p03_ngo_dinh_tienle", "description": "Cha vợ Ngô Quyền, cướp ngôi sau khi Ngô Quyền mất năm 944, góp phần gây ra loạn 12 sứ quân.", "source_ids": ["s_dvsktt"]},
+    {"id": "ngo_xuong_van", "type": "figure", "name": "Ngô Xương Văn", "period_id": "p03_ngo_dinh_tienle", "description": "Con Ngô Quyền, giành lại ngôi báu từ tay Dương Tam Kha.", "source_ids": ["s_dvsktt"]},
+    {"id": "dinh_lien", "type": "figure", "name": "Đinh Liễn", "period_id": "p03_ngo_dinh_tienle", "description": "Con trai cả Đinh Bộ Lĩnh, được phong vương, tham gia triều chính nhà Đinh.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "ly_anh_tong", "type": "figure", "name": "Lý Anh Tông", "period_id": "p04_ly", "description": "Vua nhà Lý trị vì giữa thế kỷ 12.", "source_ids": ["s_dvsktt"]},
+    {"id": "nguyen_phi_y_lan", "type": "figure", "name": "Nguyên phi Ỷ Lan", "period_id": "p04_ly", "description": "Nhiếp chính hai lần dưới thời Lý Thánh Tông và đầu thời Lý Nhân Tông, có nhiều đóng góp trong trị nước.", "source_ids": ["s_dvsktt"]},
+    {"id": "nam_quoc_son_ha", "type": "organization", "name": "Nam quốc sơn hà", "period_id": "p04_ly", "description": "Bài thơ thần tương truyền của Lý Thường Kiệt, được coi là bản tuyên ngôn độc lập đầu tiên của Việt Nam.", "note": "Tác giả và hoàn cảnh ra đời còn được giới nghiên cứu thảo luận.", "source_ids": ["s_dvsktt"]},
+    {"id": "tu_dao_hanh", "type": "figure", "name": "Từ Đạo Hạnh", "period_id": "p04_ly", "description": "Thiền sư nổi tiếng thời Lý, gắn với nhiều truyền thuyết dân gian.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "tran_thanh_tong", "type": "figure", "name": "Trần Thánh Tông", "period_id": "p05_tran", "description": "Vua nhà Trần, làm Thượng hoàng trong thời gian Trần Nhân Tông kháng chiến chống Mông-Nguyên lần 2 và 3.", "source_ids": ["s_dvsktt"]},
+    {"id": "tran_khanh_du", "type": "figure", "name": "Trần Khánh Dư", "period_id": "p05_tran", "description": "Tướng thủy quân nhà Trần, có công trong kháng chiến chống Mông-Nguyên.", "source_ids": ["s_dvsktt"]},
+    {"id": "chu_van_an", "type": "figure", "name": "Chu Văn An", "period_id": "p05_tran", "description": "Nhà giáo nổi tiếng thời Trần, dâng 'Thất trảm sớ' xin chém 7 gian thần.", "source_ids": ["s_dvsktt"]},
+    {"id": "tran_hamtu_chuongduong", "type": "event", "name": "Trận Hàm Tử – Chương Dương", "period_id": "p05_tran", "date": "1285", "description": "Quân Trần giành lại Thăng Long từ tay quân Nguyên trong cuộc kháng chiến lần 2.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "ho_han_thuong", "type": "figure", "name": "Hồ Hán Thương", "period_id": "p06_ho_thuocminh_lamson", "description": "Con Hồ Quý Ly, cùng cha chống quân Minh xâm lược năm 1407.", "source_ids": ["s_dvsktt"]},
+    {"id": "tran_tot_dong_chuc_dong", "type": "event", "name": "Trận Tốt Động – Chúc Động", "period_id": "p06_ho_thuocminh_lamson", "date": "1426", "description": "Chiến thắng lớn của nghĩa quân Lam Sơn trước quân Minh, bước ngoặt cuộc khởi nghĩa.", "source_ids": ["s_dvsktt"]},
+    {"id": "tran_chi_lang_xuong_giang", "type": "event", "name": "Trận Chi Lăng – Xương Giang", "period_id": "p06_ho_thuocminh_lamson", "date": "1427", "description": "Nghĩa quân Lam Sơn giết tướng Liễu Thăng, đánh tan viện binh Minh, quyết định thắng lợi cuối cùng.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "luong_the_vinh", "type": "figure", "name": "Lương Thế Vinh", "period_id": "p07_leso", "description": "Trạng nguyên, nhà toán học nổi tiếng thời Lê Thánh Tông.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "dao_duy_tu", "type": "figure", "name": "Đào Duy Từ", "period_id": "p08_trinhnguyen", "description": "Quân sư chúa Nguyễn, thiết kế xây dựng hệ thống phòng tuyến Lũy Thầy.", "source_ids": ["s_dvsktt"]},
+    {"id": "luy_thay", "type": "place", "name": "Lũy Thầy (Lũy Trường Dục – Đồng Hới)", "period_id": "p08_trinhnguyen", "description": "Hệ thống phòng tuyến do Đào Duy Từ xây dựng, giúp chúa Nguyễn chống lại các cuộc tấn công của chúa Trịnh.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "bui_thi_xuan", "type": "figure", "name": "Bùi Thị Xuân", "period_id": "p09_tayson", "description": "Nữ tướng nhà Tây Sơn, chỉ huy đội tượng binh.", "source_ids": ["s_dvsktt"]},
+    {"id": "ngo_thi_nham", "type": "figure", "name": "Ngô Thì Nhậm", "period_id": "p09_tayson", "description": "Mưu sĩ, văn thần phục vụ Quang Trung, soạn thảo nhiều văn kiện ngoại giao quan trọng.", "source_ids": ["s_dvsktt"]},
+
+    {"id": "nguyen_du", "type": "figure", "name": "Nguyễn Du", "period_id": "p10_nguyen", "description": "Đại thi hào, tác giả Truyện Kiều, làm quan dưới triều Gia Long.", "source_ids": ["s_vnsl"]},
+
+    {"id": "truong_dinh", "type": "figure", "name": "Trương Định", "period_id": "p11_phapthuoc", "description": "Lãnh đạo kháng chiến chống Pháp ở Nam Kỳ giai đoạn 1859–1864.", "source_ids": ["s_vnsl"]},
+    {"id": "nguyen_trung_truc", "type": "figure", "name": "Nguyễn Trung Trực", "period_id": "p11_phapthuoc", "description": "Đốt cháy tàu chiến Pháp trên sông Nhật Tảo năm 1861, sau bị hành quyết.", "source_ids": ["s_vnsl"]},
+    {"id": "dong_kinh_nghia_thuc", "type": "organization", "name": "Đông Kinh Nghĩa Thục", "period_id": "p11_phapthuoc", "description": "Trường học theo tư tưởng duy tân, hoạt động năm 1907 tại Hà Nội.", "source_ids": ["s_vnsl"]},
+    {"id": "phong_trao_dong_du", "type": "event", "name": "Phong trào Đông Du", "period_id": "p11_phapthuoc", "date": "1905–1909", "description": "Phan Bội Châu khởi xướng, đưa thanh niên Việt Nam sang Nhật Bản du học nhằm chuẩn bị lực lượng cách mạng.", "source_ids": ["s_vnsl"]},
+    {"id": "xo_viet_nghe_tinh", "type": "event", "name": "Xô viết Nghệ Tĩnh", "period_id": "p11_phapthuoc", "date": "1930–1931", "description": "Cao trào đấu tranh của công nhân, nông dân ở Nghệ An – Hà Tĩnh dưới sự lãnh đạo của Đảng Cộng sản Việt Nam.", "source_ids": ["s_vkd"]},
+
+    {"id": "le_duan", "type": "figure", "name": "Lê Duẩn", "period_id": "p12_hiendai", "description": "Bí thư thứ nhất rồi Tổng Bí thư Đảng Cộng sản Việt Nam, giữ vai trò lãnh đạo then chốt giai đoạn kháng chiến chống Mỹ.", "source_ids": ["s_vkd"]},
+    {"id": "su_kien_vinh_bac_bo", "type": "event", "name": "Sự kiện Vịnh Bắc Bộ", "period_id": "p12_hiendai", "date": "1964-08", "description": "Sự kiện Mỹ dùng làm cớ leo thang, mở rộng chiến tranh phá hoại miền Bắc.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "tong_tien_cong_tet_mau_than_1968", "type": "event", "name": "Tổng tiến công và nổi dậy Tết Mậu Thân", "period_id": "p12_hiendai", "date": "1968", "description": "Cuộc tổng tiến công đồng loạt trên nhiều đô thị miền Nam, tác động lớn đến cục diện chiến tranh và dư luận Mỹ.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "dien_bien_phu_tren_khong", "type": "event", "name": "Chiến dịch Điện Biên Phủ trên không", "period_id": "p12_hiendai", "date": "1972-12", "description": "Quân dân Hà Nội đánh bại chiến dịch tập kích B-52 của Mỹ cuối năm 1972, góp phần buộc Mỹ ký Hiệp định Paris.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "gia_nhap_lhq_1977", "type": "event", "name": "Việt Nam gia nhập Liên Hợp Quốc", "period_id": "p12_hiendai", "date": "1977-09-20", "description": "Việt Nam chính thức trở thành thành viên Liên Hợp Quốc sau khi thống nhất đất nước.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "chien_tranh_bien_gioi_1979", "type": "event", "name": "Chiến tranh biên giới phía Bắc", "period_id": "p12_hiendai", "date": "1979-02", "description": "Xung đột vũ trang ở biên giới phía Bắc Việt Nam.", "source_ids": ["s_lsvn_vsh"]}
   ],
   "relations": [
     {"head": "lac_long_quan", "relation": "considered_ancestor_of", "tail": "hung_vuong", "source_ids": ["s_dvsktt"]},
@@ -336,6 +381,105 @@
     {"head": "hiep_dinh_paris_1973", "relation": "part_of", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh"]},
     {"head": "chien_dich_ho_chi_minh", "relation": "part_of", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh"]},
     {"head": "chien_dich_ho_chi_minh", "relation": "resulted_in", "tail": "giai_phong_mien_nam_1975", "source_ids": ["s_lsvn_vsh"]},
-    {"head": "gia_nhap_asean_1995", "relation": "followed", "tail": "doi_moi_1986", "source_ids": ["s_lsvn_vsh"]}
+    {"head": "gia_nhap_asean_1995", "relation": "followed", "tail": "doi_moi_1986", "source_ids": ["s_lsvn_vsh"]},
+
+    {"head": "le_chan", "relation": "participated_in", "tail": "khoi_nghia_hai_ba_trung", "source_ids": ["s_dvsktt"]},
+    {"head": "khuc_hao", "relation": "succeeded", "tail": "khuc_thua_du", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_tuy", "relation": "conquered", "tail": "van_xuan", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_phat_tu", "relation": "opposed", "tail": "nha_tuy", "source_ids": ["s_dvsktt"]},
+
+    {"head": "duong_tam_kha", "relation": "succeeded", "tail": "ngo_quyen", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_xuong_van", "relation": "opposed", "tail": "duong_tam_kha", "source_ids": ["s_dvsktt"]},
+    {"head": "dinh_lien", "relation": "served", "tail": "nha_dinh", "source_ids": ["s_dvsktt"]},
+
+    {"head": "ly_anh_tong", "relation": "served", "tail": "nha_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_phi_y_lan", "relation": "served", "tail": "nha_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thuong_kiet", "relation": "authored", "tail": "nam_quoc_son_ha", "source_ids": ["s_dvsktt"]},
+    {"head": "tu_dao_hanh", "relation": "contemporary_with", "tail": "ly_nhan_tong", "source_ids": ["s_dvsktt"]},
+
+    {"head": "tran_thanh_tong", "relation": "served", "tail": "nha_tran", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thanh_tong", "relation": "ruled_during", "tail": "khang_chien_mong_nguyen", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_khanh_du", "relation": "participated_in", "tail": "khang_chien_mong_nguyen", "source_ids": ["s_dvsktt"]},
+    {"head": "chu_van_an", "relation": "served", "tail": "nha_tran", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_hamtu_chuongduong", "relation": "part_of", "tail": "khang_chien_mong_nguyen", "source_ids": ["s_dvsktt"]},
+
+    {"head": "ho_han_thuong", "relation": "served", "tail": "nha_ho", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_tot_dong_chuc_dong", "relation": "part_of", "tail": "khoi_nghia_lam_son", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_chi_lang_xuong_giang", "relation": "part_of", "tail": "khoi_nghia_lam_son", "source_ids": ["s_dvsktt"]},
+    {"head": "le_loi", "relation": "led", "tail": "tran_chi_lang_xuong_giang", "source_ids": ["s_dvsktt"]},
+
+    {"head": "luong_the_vinh", "relation": "served", "tail": "nha_le_so", "source_ids": ["s_dvsktt"]},
+    {"head": "luong_the_vinh", "relation": "contemporary_with", "tail": "le_thanh_tong", "source_ids": ["s_dvsktt"]},
+
+    {"head": "dao_duy_tu", "relation": "served", "tail": "chua_nguyen", "source_ids": ["s_dvsktt"]},
+    {"head": "dao_duy_tu", "relation": "built", "tail": "luy_thay", "source_ids": ["s_dvsktt"]},
+
+    {"head": "bui_thi_xuan", "relation": "participated_in", "tail": "khoi_nghia_tay_son", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_thi_nham", "relation": "served", "tail": "nguyen_hue", "source_ids": ["s_dvsktt"]},
+
+    {"head": "nguyen_du", "relation": "served", "tail": "nha_nguyen", "source_ids": ["s_vnsl"]},
+    {"head": "nguyen_du", "relation": "contemporary_with", "tail": "gia_long", "source_ids": ["s_vnsl"]},
+
+    {"head": "truong_dinh", "relation": "opposed", "tail": "phap_xam_luoc_da_nang_1858", "source_ids": ["s_vnsl"]},
+    {"head": "nguyen_trung_truc", "relation": "contemporary_with", "tail": "truong_dinh", "source_ids": ["s_vnsl"]},
+    {"head": "phan_boi_chau", "relation": "initiated", "tail": "phong_trao_dong_du", "source_ids": ["s_vnsl"]},
+    {"head": "phong_trao_dong_du", "relation": "preceded", "tail": "viet_nam_quang_phuc_hoi", "source_ids": ["s_vnsl"]},
+    {"head": "dong_kinh_nghia_thuc", "relation": "contemporary_with", "tail": "phong_trao_dong_du", "source_ids": ["s_vnsl"]},
+    {"head": "dang_cong_san_vn", "relation": "led", "tail": "xo_viet_nghe_tinh", "source_ids": ["s_vkd"]},
+
+    {"head": "le_duan", "relation": "led", "tail": "khang_chien_chong_my", "source_ids": ["s_vkd"]},
+    {"head": "su_kien_vinh_bac_bo", "relation": "preceded", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "tong_tien_cong_tet_mau_than_1968", "relation": "part_of", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "vo_nguyen_giap", "relation": "led", "tail": "dien_bien_phu_tren_khong", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "dien_bien_phu_tren_khong", "relation": "part_of", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "dien_bien_phu_tren_khong", "relation": "resulted_in", "tail": "hiep_dinh_paris_1973", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "gia_nhap_lhq_1977", "relation": "followed", "tail": "giai_phong_mien_nam_1975", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chien_tranh_bien_gioi_1979", "relation": "followed", "tail": "giai_phong_mien_nam_1975", "source_ids": ["s_lsvn_vsh"]}
+  ],
+  "claims": [
+    {
+      "id": "c01_trieuda_conquest_year",
+      "topic_entity_id": "trieu_da",
+      "description": "Năm Triệu Đà thôn tính Âu Lạc còn có nhiều thuyết khác nhau giữa các nguồn.",
+      "positions": [
+        {"source_id": "s_dvsktt", "claim": "Ghi nhận truyền thống, thường được diễn giải là khoảng 179 TCN."},
+        {"source_id": "s_lsvn_vsh", "claim": "Một số nghiên cứu hiện đại cho rằng đây là một quá trình thôn tính kéo dài chứ không phải một mốc duy nhất, niên đại chính xác chưa thống nhất."}
+      ]
+    },
+    {
+      "id": "c02_hungvuong_historicity",
+      "topic_entity_id": "hung_vuong",
+      "description": "Tính lịch sử và số đời (truyền thống nói 18 đời) của các Hùng Vương chưa có xác nhận khảo cổ/văn bản đồng đại chắc chắn.",
+      "positions": [
+        {"source_id": "s_dvsktt", "claim": "18 đời Hùng Vương nối nhau trị vì nước Văn Lang."},
+        {"source_id": "s_lsvn_vsh", "claim": "Giới sử học/khảo cổ hiện đại nhìn nhận đây là truyền thuyết mang tính biểu tượng về một giai đoạn lịch sử dài, hơn là ghi chép chính xác theo từng đời vua cụ thể."}
+      ]
+    },
+    {
+      "id": "c03_ngaythanhlapdang",
+      "topic_entity_id": "dang_cong_san_vn",
+      "description": "Ngày thành lập Đảng Cộng sản Việt Nam được kỷ niệm chính thức là 3/2/1930, nhưng quá trình hội nghị hợp nhất ba tổ chức cộng sản diễn ra qua nhiều ngày đầu năm 1930.",
+      "positions": [
+        {"source_id": "s_vkd", "claim": "3/2/1930 được lấy làm ngày kỷ niệm chính thức; hội nghị hợp nhất được cho là diễn ra từ khoảng đầu tháng 1 đến đầu tháng 2/1930 tại Hong Kong."}
+      ]
+    },
+    {
+      "id": "c04_khoinghia_maithucloan_nam",
+      "topic_entity_id": "mai_hac_de",
+      "description": "Niên đại bắt đầu và kết thúc khởi nghĩa Mai Thúc Loan không hoàn toàn thống nhất giữa các nguồn.",
+      "positions": [
+        {"source_id": "s_dvsktt", "claim": "Khoảng 713–722."},
+        {"source_id": "s_khamdinh", "claim": "Một số mốc thời gian chi tiết hơn được ghi nhận khác biệt đôi chút so với Đại Việt sử ký toàn thư."}
+      ]
+    },
+    {
+      "id": "c05_namviet_status",
+      "topic_entity_id": "nam_viet",
+      "description": "Việc coi nước Nam Việt (Triệu Đà) là một triều đại trong lịch sử Việt Nam hay là một cuộc xâm chiếm/đồng hóa từ phương Bắc là vấn đề còn được giới sử học thảo luận qua các thời kỳ.",
+      "positions": [
+        {"source_id": "s_dvsktt", "claim": "Sử liệu phong kiến truyền thống (Đại Việt sử ký toàn thư) từng xếp nhà Triệu vào chính thống các triều đại Việt Nam."},
+        {"source_id": "s_lsvn_vsh", "claim": "Sử học hiện đại phần lớn coi Nam Việt/nhà Triệu là thế lực gốc Hán thôn tính Âu Lạc, không tính là một triều đại người Việt bản địa."}
+      ]
+    }
   ]
 }
