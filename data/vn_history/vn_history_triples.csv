@@ -171,6 +171,30 @@ dien_bien_phu_tren_khong,Chiến dịch Điện Biên Phủ trên không,part_of
 dien_bien_phu_tren_khong,Chiến dịch Điện Biên Phủ trên không,resulted_in,resulted_in,hiep_dinh_paris_1973,Hiệp định Paris
 gia_nhap_lhq_1977,Việt Nam gia nhập Liên Hợp Quốc,followed,followed,giai_phong_mien_nam_1975,"Giải phóng miền Nam, thống nhất đất nước"
 chien_tranh_bien_gioi_1979,Chiến tranh biên giới phía Bắc,followed,followed,giai_phong_mien_nam_1975,"Giải phóng miền Nam, thống nhất đất nước"
+ly_chieu_hoang,Lý Chiêu Hoàng,married,married,tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh)
+nguyen_cong_tru,Nguyễn Công Trứ,served,served,nha_nguyen,Nhà Nguyễn
+bao_dai,Bảo Đại,served,served,nha_nguyen,Nhà Nguyễn
+cach_mang_thang_tam,Cách mạng tháng Tám,ended,ended,nha_nguyen,Nhà Nguyễn
+ha_noi,Hà Nội,renamed_from,renamed_from,thang_long,Thăng Long
+hiep_dinh_geneva_1954,Hiệp định Genève,border_at,border_at,song_ben_hai,Sông Bến Hải
+dang_cong_san_vn,Đảng Cộng sản Việt Nam,founded,founded,mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+phong_trao_dong_khoi,Phong trào Đồng khởi,preceded,preceded,mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+phong_trao_dong_khoi,Phong trào Đồng khởi,part_of,part_of,khang_chien_chong_my,Kháng chiến chống Mỹ
+nguyen_thi_dinh,Nguyễn Thị Định,participated_in,participated_in,phong_trao_dong_khoi,Phong trào Đồng khởi
+nguyen_thi_dinh,Nguyễn Thị Định,served,served,mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+pham_van_dong,Phạm Văn Đồng,served,served,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+pham_van_dong,Phạm Văn Đồng,contemporary_with,contemporary_with,ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc)
+ngo_dinh_diem,Ngô Đình Diệm,founded,founded,viet_nam_cong_hoa,Việt Nam Cộng hòa
+ngo_dinh_diem,Ngô Đình Diệm,served,served,viet_nam_cong_hoa,Việt Nam Cộng hòa
+mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam,opposed,opposed,viet_nam_cong_hoa,Việt Nam Cộng hòa
+duong_van_minh,Dương Văn Minh,served,served,viet_nam_cong_hoa,Việt Nam Cộng hòa
+duong_van_minh,Dương Văn Minh,participated_in,participated_in,giai_phong_mien_nam_1975,"Giải phóng miền Nam, thống nhất đất nước"
+giai_phong_mien_nam_1975,"Giải phóng miền Nam, thống nhất đất nước",ended,ended,viet_nam_cong_hoa,Việt Nam Cộng hòa
+dang_tran_con,Đặng Trần Côn,served,served,le_trung_hung,Nhà Lê Trung hưng
+tran_nguyen_han,Trần Nguyên Hãn,participated_in,participated_in,khoi_nghia_lam_son,Khởi nghĩa Lam Sơn
+le_van_duyet,Lê Văn Duyệt,served,served,gia_long,Gia Long (Nguyễn Ánh)
+truong_chinh,Trường Chinh,served,served,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+truong_chinh,Trường Chinh,contemporary_with,contemporary_with,ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc)
 hung_vuong,Hùng Vương,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
 lac_long_quan,Lạc Long Quân,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
 au_co,Âu Cơ,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
@@ -331,3 +355,19 @@ tong_tien_cong_tet_mau_than_1968,Tổng tiến công và nổi dậy Tết Mậu
 dien_bien_phu_tren_khong,Chiến dịch Điện Biên Phủ trên không,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
 gia_nhap_lhq_1977,Việt Nam gia nhập Liên Hợp Quốc,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
 chien_tranh_bien_gioi_1979,Chiến tranh biên giới phía Bắc,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+truong_chinh,Trường Chinh,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+ly_chieu_hoang,Lý Chiêu Hoàng,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+nguyen_cong_tru,Nguyễn Công Trứ,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+bao_dai,Bảo Đại,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+ha_noi,Hà Nội,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+song_ben_hai,Sông Bến Hải,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+phong_trao_dong_khoi,Phong trào Đồng khởi,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+nguyen_thi_dinh,Nguyễn Thị Định,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+pham_van_dong,Phạm Văn Đồng,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+ngo_dinh_diem,Ngô Đình Diệm,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+duong_van_minh,Dương Văn Minh,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+dang_tran_con,Đặng Trần Côn,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+tran_nguyen_han,Trần Nguyên Hãn,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+le_van_duyet,Lê Văn Duyệt,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+viet_nam_cong_hoa,Việt Nam Cộng hòa,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại

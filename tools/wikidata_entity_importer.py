@@ -28,7 +28,9 @@ import argparse
 import json
 import re
 import sys
+import time
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -71,10 +73,21 @@ def slugify_vi(name: str) -> str:
     return slug
 
 
-def _http_get_json(url: str) -> dict:
+def _http_get_json(url: str, max_retries: int = 6) -> dict:
+    """GET + parse JSON, với retry lùi dần khi bị Wikidata rate-limit (429)
+    hoặc lỗi tạm thời phía server (503)."""
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 503) and attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  (bị giới hạn tần suất HTTP {e.code}, đợi {wait}s rồi thử lại...)")
+                time.sleep(wait)
+                continue
+            raise
 
 
 def search_qid_by_name(name: str, language: str = "vi") -> list:
@@ -249,7 +262,9 @@ def main():
 
     qids_to_fetch = list(args.qids)
     unresolved_names = []
-    for name in args.names:
+    for i, name in enumerate(args.names):
+        if i > 0:
+            time.sleep(2.5)  # tránh bị Wikidata rate-limit khi tra nhiều tên liên tiếp
         print(f"Đang tìm QID cho '{name}'...")
         candidates = search_qid_by_name(name)
         if not candidates:
