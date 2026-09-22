@@ -1,6 +1,8 @@
 """Tool GỢI Ý quan hệ còn thiếu giữa các thực thể ĐÃ CÓ trong
-data/vn_history/vn_history_seed.json, dựa trên vợ/chồng (P26) và
-cha/mẹ/con (P22/P25/P40) tra trên Wikidata. Thuần code, không dùng AI.
+data/vn_history/vn_history_seed.json, dựa trên vợ/chồng (P26), cha/mẹ/con
+(P22/P25/P40), đảng/tổ chức (P102/P463 — chỉ khớp nếu đích là 'organization'
+trong dataset), và tham chiến (P607 — chỉ khớp nếu đích là 'event' trong
+dataset) tra trên Wikidata. Thuần code, không dùng AI.
 
 CHỈ IN GỢI Ý RA MÀN HÌNH, KHÔNG TỰ GHI FILE. Khác với
 wikidata_entity_importer.py (tạo thực thể mới, tự tin ghi thẳng), việc suy ra
@@ -32,27 +34,26 @@ from wikidata_entity_importer import (
     slugify_vi,
 )
 
-# P22 cha, P25 mẹ, P40 con -> quan hệ nội bộ (head, relation, tail_là_gì)
-# "reverse" nghĩa là thực thể tìm được (X) đứng ở vị trí head, thực thể gốc
-# đứng ở vị trí tail của quan hệ đó.
-FAMILY_PROPERTIES = {
-    "P22": ("child_of", False),   # X là cha -> (gốc, child_of, X)
-    "P25": ("child_of", False),   # X là mẹ -> (gốc, child_of, X)
-    "P40": ("child_of", True),    # X là con -> (X, child_of, gốc)
-}
-SPOUSE_PROPERTY = "P26"
 
-
-def fetch_family_and_spouse(qid: str) -> dict:
+def fetch_person_properties(qid: str) -> dict:
     """Trả về {"spouse": [(qid,label)...], "father": [...], "mother": [...],
-    "child": [...]}."""
+    "child": [...], "party": [...], "member_of": [...], "conflict": [...]}.
+
+    - party (P102), member_of (P463): dùng để nối vào các thực thể loại
+      organization đã có (ví dụ đảng, hội, tổ chức).
+    - conflict (P607, "tham chiến trong"): dùng để nối vào các thực thể loại
+      event đã có (ví dụ 'Kháng chiến chống Mỹ')."""
     query = f"""
     SELECT ?spouse ?spouseLabel ?father ?fatherLabel ?mother ?motherLabel
-           ?child ?childLabel WHERE {{
+           ?child ?childLabel ?party ?partyLabel ?memberOf ?memberOfLabel
+           ?conflict ?conflictLabel WHERE {{
       OPTIONAL {{ wd:{qid} wdt:P26 ?spouse }}
       OPTIONAL {{ wd:{qid} wdt:P22 ?father }}
       OPTIONAL {{ wd:{qid} wdt:P25 ?mother }}
       OPTIONAL {{ wd:{qid} wdt:P40 ?child }}
+      OPTIONAL {{ wd:{qid} wdt:P102 ?party }}
+      OPTIONAL {{ wd:{qid} wdt:P463 ?memberOf }}
+      OPTIONAL {{ wd:{qid} wdt:P607 ?conflict }}
       SERVICE wikibase:label {{ bd:serviceParam wikibase:language "vi,en". }}
     }}
     """
@@ -60,10 +61,12 @@ def fetch_family_and_spouse(qid: str) -> dict:
     data = _http_get_json(url)
     bindings = data["results"]["bindings"]
 
-    result = {"spouse": set(), "father": set(), "mother": set(), "child": set()}
+    fields = [("spouse", "spouse"), ("father", "father"), ("mother", "mother"),
+              ("child", "child"), ("party", "party"), ("memberOf", "member_of"),
+              ("conflict", "conflict")]
+    result = {key: set() for _, key in fields}
     for b in bindings:
-        for field, key in [("spouse", "spouse"), ("father", "father"),
-                            ("mother", "mother"), ("child", "child")]:
+        for field, key in fields:
             if field in b:
                 qid_v = b[field]["value"].rsplit("/", 1)[-1]
                 label_v = b.get(f"{field}Label", {}).get("value", qid_v)
@@ -130,7 +133,7 @@ def main():
         qid = candidates[0]["qid"]
 
         time.sleep(1)
-        fam = fetch_family_and_spouse(qid)
+        fam = fetch_person_properties(qid)
 
         found_any = False
         for spouse_qid, spouse_label in fam["spouse"]:
@@ -156,6 +159,23 @@ def main():
             if tail_id and tail_id != head_id and not existing_relation_exists(relations, tail_id, head_id):
                 suggestions.append({"head": tail_id, "relation": "child_of", "tail": head_id,
                                      "evidence": f"{child_label} là con của {name} (Wikidata P40, {qid})"})
+                found_any = True
+        # party/member_of chỉ khớp nếu thực thể đích trong dataset là 'organization'
+        # (giảm dương tính giả — không nối nhầm sang một figure/event trùng tên)
+        for prop_qid, prop_label in fam["party"] | fam["member_of"]:
+            tail_id = lookup.get(slugify_vi(prop_label))
+            if (tail_id and tail_id != head_id and by_id.get(tail_id, {}).get("type") == "organization"
+                    and not existing_relation_exists(relations, head_id, tail_id)):
+                suggestions.append({"head": head_id, "relation": "served", "tail": tail_id,
+                                     "evidence": f"{name} là thành viên/đảng viên {prop_label} (Wikidata P102/P463, {qid})"})
+                found_any = True
+        # conflict chỉ khớp nếu thực thể đích trong dataset là 'event'
+        for conflict_qid, conflict_label in fam["conflict"]:
+            tail_id = lookup.get(slugify_vi(conflict_label))
+            if (tail_id and tail_id != head_id and by_id.get(tail_id, {}).get("type") == "event"
+                    and not existing_relation_exists(relations, head_id, tail_id)):
+                suggestions.append({"head": head_id, "relation": "participated_in", "tail": tail_id,
+                                     "evidence": f"{name} tham chiến trong {conflict_label} (Wikidata P607, {qid})"})
                 found_any = True
 
         status = "có gợi ý" if found_any else "không có quan hệ mới khớp dataset"

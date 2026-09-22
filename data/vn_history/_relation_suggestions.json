@@ -1,56 +1,14 @@
 [
   {
-    "head": "au_co",
-    "relation": "married",
-    "tail": "lac_long_quan",
-    "evidence": "Âu Cơ <-> Lạc Long Quân (Wikidata P26, Q2226926<->Q1190131)"
-  },
-  {
-    "head": "duong_tam_kha",
-    "relation": "child_of",
-    "tail": "duong_dinh_nghe",
-    "evidence": "Dương Tam Kha là con của Dương Đình Nghệ (Wikidata P40, Q1010530)"
-  },
-  {
-    "head": "tran_nhan_tong",
-    "relation": "child_of",
-    "tail": "tran_thanh_tong",
-    "evidence": "Trần Nhân Tông là con của Trần Thánh Tông (Wikidata P22, Q72083)"
-  },
-  {
-    "head": "ho_han_thuong",
-    "relation": "child_of",
-    "tail": "ho_quy_ly",
-    "evidence": "Hồ Hán Thương là con của Hồ Quý Ly (Wikidata P40, Q1319152)"
-  },
-  {
     "head": "minh_menh",
     "relation": "child_of",
     "tail": "gia_long",
     "evidence": "Minh Mạng là con của Gia Long (Wikidata P22, Q434419)"
   },
   {
-    "head": "ngo_xuong_van",
-    "relation": "child_of",
-    "tail": "ngo_quyen",
-    "evidence": "Ngô Xương Văn là con của Ngô Quyền (Wikidata P22, Q708833)"
-  },
-  {
-    "head": "ly_nhan_tong",
-    "relation": "child_of",
-    "tail": "nguyen_phi_y_lan",
-    "evidence": "Lý Nhân Tông là con của Nguyên phi Ỷ Lan (Wikidata P40, Q10843033)"
-  },
-  {
-    "head": "tran_khanh_du",
-    "relation": "child_of",
-    "tail": "tran_canh_thai_tong",
-    "evidence": "Trần Khánh Dư là con của Trần Thái Tông (Wikidata P22, Q7833304)"
-  },
-  {
-    "head": "ho_han_thuong",
-    "relation": "child_of",
-    "tail": "ho_quy_ly",
-    "evidence": "Hồ Hán Thương là con của Hồ Quý Ly (Wikidata P22, Q3269873)"
+    "head": "le_duan",
+    "relation": "served",
+    "tail": "dang_cong_san_vn",
+    "evidence": "Lê Duẩn là thành viên/đảng viên Đảng Cộng sản Việt Nam (Wikidata P102/P463, Q466001)"
   }
 ]

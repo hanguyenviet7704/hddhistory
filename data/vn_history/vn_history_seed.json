@@ -3368,7 +3368,10 @@
     {"head": "ho_han_thuong", "relation": "child_of", "tail": "ho_quy_ly", "source_ids": ["s_wikidata"]},
     {"head": "ngo_xuong_van", "relation": "child_of", "tail": "ngo_quyen", "source_ids": ["s_wikidata"]},
     {"head": "ly_nhan_tong", "relation": "child_of", "tail": "nguyen_phi_y_lan", "source_ids": ["s_wikidata"]},
-    {"head": "tran_khanh_du", "relation": "child_of", "tail": "tran_canh_thai_tong", "note": "Con nuôi, không phải con ruột — Trần Khánh Dư được Trần Thái Tông nhận làm dưỡng tử.", "source_ids": ["s_wikidata"]}
+    {"head": "tran_khanh_du", "relation": "child_of", "tail": "tran_canh_thai_tong", "note": "Con nuôi, không phải con ruột — Trần Khánh Dư được Trần Thái Tông nhận làm dưỡng tử.", "source_ids": ["s_wikidata"]},
+
+    {"head": "minh_menh", "relation": "child_of", "tail": "gia_long", "note": "Bị bỏ sót ở lượt thêm quan hệ trước — tool phát hiện lại và bổ sung.", "source_ids": ["s_wikidata"]},
+    {"head": "le_duan", "relation": "served", "tail": "dang_cong_san_vn", "source_ids": ["s_wikidata"]}
   ],
   "claims": [
     {
