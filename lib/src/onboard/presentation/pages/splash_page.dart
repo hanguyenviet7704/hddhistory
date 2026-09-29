@@ -8,14 +8,8 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  /// Kicked off in [initState] rather than awaited in [_initScreen] so the
-  /// Remote Config round-trip overlaps the rest of startup instead of adding to
-  /// it.
-  late final Future<bool> _shouldForceUpdate;
-
   @override
   void initState() {
-    _shouldForceUpdate = _resolveShouldForceUpdate();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
@@ -28,15 +22,6 @@ class _SplashPageState extends State<SplashPage> {
   void _trackSplashView() {
     final userId = context.read<UserCubit>().state.user.id;
     AppService.instance.appTrackingService.trackSplashScrView(userId: userId);
-  }
-
-  Future<bool> _resolveShouldForceUpdate() async {
-    try {
-      return await AppService.instance.remoteConfigService.shouldForceUpdate();
-    } catch (e) {
-      LogDev.error('Error checking for update: $e');
-      return false;
-    }
   }
 
   Future<void> _configAppLocalization() async {
@@ -84,20 +69,10 @@ class _SplashPageState extends State<SplashPage> {
     try {
       if (!mounted) return;
       final splashDelay = Future<void>.delayed(const Duration(milliseconds: 300));
-      // Forced updates block entry here; the optional case is left to the Home
-      // banner (see HomeCubit.checkOptionalUpdate). Capped at 1.5s so a slow or
-      // failed Remote Config fetch degrades to "not forced" instead of hanging
-      // the splash — never trade entry to the app for a config round-trip.
-      final shouldUpdate = await _shouldForceUpdate.timeout(
-        const Duration(milliseconds: 1500),
-        onTimeout: () => false,
-      );
-      if (!mounted) return;
-      if (shouldUpdate) {
-        _showUpdateDialog();
-        return;
-      }
-
+      // Cổng buộc cập nhật đã bị gỡ khỏi splash: nó đọc Remote Config của Meup,
+      // nên trên bản fork này nó chặn mọi bản build dev bằng một hộp thoại mang
+      // thương hiệu sai. Bản cập nhật tuỳ chọn ở Home (HomeCubit.checkOptionalUpdate)
+      // không bị ảnh hưởng.
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
       if (!mounted) return;
@@ -242,29 +217,6 @@ class _SplashPageState extends State<SplashPage> {
     NotificationRequestRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
   }
 
-  void _handleUpdatePressed() {
-    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateConfirm);
-    try {
-      final String appStoreUrl = Platform.isIOS ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' : 'https://play.google.com/store/apps/details?id=com.eup.meup';
-      appStoreUrl.launchURL();
-    } catch (e) {
-      LogDev.error('Error launching app store: $e');
-    }
-    // Deliberately does NOT dismiss: the user has to come back with a newer
-    // build, so the gate must still be here when they return from the store.
-  }
-
-  void _showUpdateDialog() {
-    AppService.instance.appTrackingService.trackEvent(TrackingKey.alertUpdateView);
-    showDDialog(
-      context,
-      backgroundColor: Colors.transparent,
-      dialogContent: ForceUpdateContent(
-        onUpdatePressed: _handleUpdatePressed,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final double bottomInset = MediaQuery.paddingOf(context).bottom;
@@ -274,10 +226,10 @@ class _SplashPageState extends State<SplashPage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Container(
-          // Design "Splash mới": light backdrop with the brand "?" gradient tile
-          // centred (the tile carries the gradient, so the page stays light).
+          // Design "Splash mới": nền sáng, ô logo thương hiệu đặt giữa. Nền đổi từ
+          // tím nhạt #F2F1FA sang kem thương hiệu khi app chuyển sang tông vàng.
           decoration: const BoxDecoration(
-            color: Color(0xFFF2F1FA),
+            color: AppCustomColor.brandPrimary50,
           ),
           child: SafeArea(
             top: false,
