@@ -6,7 +6,7 @@
  * `extmetadata.LicenseShortName`). Mọi giấy phép khác (fair use, non-free, NC,
  * ND, không có trường giấy phép) bị loại. Vì CC BY* buộc ghi công, mỗi ảnh nhận
  * đủ `imageAuthor` (nếu biết), `imageLicense`, `imageFile`, `imageSource`; builder
- * đọc chúng để sinh khối `caption` ngay sau khối ảnh.
+ * đọc chúng để ghi lời ghi công vào `data.content` của chính khối ảnh.
  *
  * Chọn chủ đề cho thẻ (KHÔNG chọn "cái nào có ảnh thì lấy"):
  *  1. Thẻ có nhiều entityIds -> thực thể có tên (hoặc biến thể đặc trưng của tên)
@@ -23,6 +23,20 @@
  *   npm run fetch:card-images -- --reset
  *   npm run fetch:card-images                   (tiếp tục)
  *   npm run fetch:card-images -- --limit=20     (chỉ xử lý 20 thẻ đầu chưa có ảnh)
+ *
+ * Ảnh bìa bài (`--covers`): mỗi bài nhận `image` + các trường image* riêng, dùng cho
+ * `Lesson.image`. Bìa xuất hiện ở danh sách/thẻ, nơi không có chỗ hiện dòng ghi công,
+ * nên ưu tiên public domain/CC0; chỉ khi không có mới rơi xuống CC BY/CC BY-SA.
+ *  1. Có ảnh thẻ public domain/CC0 trong bài -> lấy ảnh của thẻ đứng sớm nhất.
+ *  2. Không có -> tra ảnh cho chính bài (thực thể xuất hiện nhiều nhất trong các
+ *     thẻ, không thì tên bài), cùng luật giấy phép và cùng chốt "tên file nêu thực
+ *     thể khác". Nhận nếu là public domain/CC0.
+ *  3. Vẫn chưa có -> ảnh thẻ đầu tiên (CC BY*), rồi tới ảnh tra được (CC BY*).
+ *  4. Không có gì -> bài giữ ảnh placeholder của thời kỳ.
+ *  Ảnh tra riêng cho bìa dùng tối đa MAX_REPEAT_GLOBAL bài; ảnh bìa lấy từ thẻ thì
+ *  không bị trần đó (ảnh thẻ đã bị trần riêng).
+ *
+ *   npm run fetch:card-images -- --covers      (làm lại toàn bộ bìa, không đụng ảnh thẻ)
  *
  * Biến môi trường: CARD_IMAGE_CONTACT (thông tin liên hệ đưa vào User-Agent),
  * CARD_IMAGE_CACHE (đường dẫn file cache tra cứu, mặc định trong thư mục tmp).
@@ -305,6 +319,104 @@ const forEachCard = (d: any, fn: (k: Card, l: any) => void) =>
   d.skillsets.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach((l: any) =>
     l.keypoints.forEach((k: Card) => fn(k, l)))));
 
+
+/** Thực thể xuất hiện nhiều nhất trong các thẻ của bài; hoà thì thực thể gặp sớm hơn. */
+export function dominantEntity(
+  cards: { entityIds?: string[] }[],
+  names: Map<string, string>,
+): { id: string; name: string } | null {
+  const count = new Map<string, number>();
+  for (const c of cards) for (const id of c.entityIds ?? []) if (names.has(id)) count.set(id, (count.get(id) ?? 0) + 1);
+  let best: string | null = null;
+  for (const [id, n] of count) if (best === null || n > count.get(best)!) best = id;
+  return best === null ? null : { id: best, name: names.get(best)! };
+}
+
+/** Public domain / CC0: dùng được làm bìa không cần dòng ghi công. */
+export const isPublicDomainLicense = (license: string | undefined) => PD_RE.test((license ?? '').trim());
+
+const forEachLesson = (d: any, fn: (l: any) => void) =>
+  d.skillsets.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach(fn)));
+
+const COVER_KEYS = ['image', 'imageAuthor', 'imageLicense', 'imageFile', 'imageSource'] as const;
+/** Đặt trường bìa ngay sau descriptionVi (trước keypoints) để file đọc tự nhiên. */
+function withCover(l: any, cover: Partial<Record<(typeof COVER_KEYS)[number], string>> | null): any {
+  const { titleVi, descriptionVi, keypoints } = l;
+  const out: any = { titleVi, descriptionVi };
+  if (cover) COVER_KEYS.forEach((k) => cover[k] !== undefined && (out[k] = cover[k]));
+  out.keypoints = keypoints;
+  return out;
+}
+
+async function runCovers(data: any, names: Map<string, string>) {
+  const coverUse = new Map<string, number>(); // ảnh tra riêng cho bìa
+  const stats = { pdCard: 0, pdFetched: 0, ccCard: 0, ccFetched: 0, none: 0 };
+  const log: string[] = [];
+
+  for (const s of data.skillsets) for (const c of s.courses) {
+    for (let i = 0; i < c.lessons.length; i++) {
+      const l = c.lessons[i];
+      const cards: Card[] = l.keypoints;
+      const withImg = cards.filter((k) => k.image && k.imageFile);
+      const cardCover = (k: Card) => ({
+        image: k.image, imageAuthor: k.imageAuthor, imageLicense: k.imageLicense, imageFile: k.imageFile, imageSource: k.imageSource,
+      });
+      const pdCard = withImg.find((k) => isPublicDomainLicense(k.imageLicense));
+      let cover: ReturnType<typeof cardCover> | null = null;
+      let kind: keyof typeof stats = 'none';
+      let note = '';
+
+      if (pdCard) {
+        cover = cardCover(pdCard);
+        kind = 'pdCard';
+      } else {
+        const ent = dominantEntity(cards, names) ?? { id: '', name: l.titleVi as string };
+        let hit: Hit | null = null;
+        let why = '';
+        for (const t of topicCandidates(ent.name)) {
+          hit = await lookupTopic(t);
+          if (hit) break;
+        }
+        if (!hit) why = `"${ent.name}" không có ảnh đạt chuẩn`;
+        const foreign = hit ? foreignSubject(hit.file, ent, names) : null;
+        if (hit && foreign) {
+          why = `${hit.file} là ảnh của "${foreign}", không phải "${ent.name}"`;
+          hit = null;
+        } else if (hit && (coverUse.get(hit.file) ?? 0) >= MAX_REPEAT_GLOBAL) {
+          why = `${hit.file} đã đủ ${MAX_REPEAT_GLOBAL} bìa`;
+          hit = null;
+        }
+        const hitCover = hit && {
+          image: hit.url, imageAuthor: hit.author, imageLicense: hit.license, imageFile: hit.file, imageSource: hit.source,
+        };
+        if (hit && hitCover && isPublicDomainLicense(hit.license)) {
+          cover = hitCover;
+          kind = 'pdFetched';
+          coverUse.set(hit.file, (coverUse.get(hit.file) ?? 0) + 1);
+          note = `(${ent.name})`;
+        } else if (withImg.length) {
+          cover = cardCover(withImg[0]);
+          kind = 'ccCard';
+        } else if (hit && hitCover) {
+          cover = hitCover;
+          kind = 'ccFetched';
+          coverUse.set(hit.file, (coverUse.get(hit.file) ?? 0) + 1);
+          note = `(${ent.name})`;
+        } else {
+          note = why;
+        }
+      }
+      stats[kind]++;
+      // Bỏ trường undefined (imageAuthor vắng) để serializer không ghi "undefined".
+      const clean = cover && Object.fromEntries(Object.entries(cover).filter(([, v]) => v !== undefined));
+      c.lessons[i] = withCover(l, clean as any);
+      log.push(`${kind.padEnd(9)} ${l.titleVi} -> ${cover ? `${cover.imageFile} [${cover.imageLicense}] ${note}` : 'giữ placeholder: ' + note}`);
+    }
+  }
+  log.forEach((x) => console.log(x));
+  console.log('Bìa:', JSON.stringify(stats));
+}
+
 async function main() {
   const limitArg = process.argv.find((a) => a.startsWith('--limit='));
   const limit = limitArg ? Number(limitArg.split('=')[1]) : Infinity;
@@ -327,6 +439,28 @@ async function main() {
   const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf-8'));
   const names = new Map<string, string>(seed.entities.map((e: any) => [e.id, e.name]));
 
+  const persist = () => {
+    fs.writeFileSync(CURRICULUM_FILE, serialize(data) + '\n');
+    saveCache();
+  };
+  const verify = (mem: any, expected: { nonEmpty: number; empty: number }) => {
+    // Đọc lại và so sánh sâu với bộ nhớ, rồi kiểm số entityIds.
+    const reread = JSON.parse(fs.readFileSync(CURRICULUM_FILE, 'utf-8'));
+    assert.deepStrictEqual(reread, mem, 'file sau khi ghi khác dữ liệu trong bộ nhớ');
+    const now = idCount(reread);
+    assert.deepStrictEqual(now, expected, `entityIds thay đổi: ${JSON.stringify(expected)} -> ${JSON.stringify(now)}`);
+    console.log(`entityIds không rỗng: ${now.nonEmpty}, mảng rỗng: ${now.empty}`);
+    return reread;
+  };
+
+  if (process.argv.includes('--covers')) {
+    forEachLesson(data, (l) => COVER_KEYS.forEach((k) => delete l[k]));
+    await runCovers(data, names);
+    persist();
+    verify(data, before);
+    return;
+  }
+
   if (reset) {
     // Giấy phép chấp nhận đã đổi; giữ ảnh cũ là giữ luôn các ảnh sai.
     forEachCard(data, (k) => IMAGE_FIELDS.forEach((f) => delete (k as any)[f]));
@@ -340,10 +474,6 @@ async function main() {
   forEachCard(data, (k) => k.image && k.imageFile && globalUse.set(k.imageFile, (globalUse.get(k.imageFile) ?? 0) + 1));
 
   let processed = 0;
-  const persist = () => {
-    fs.writeFileSync(CURRICULUM_FILE, serialize(data) + '\n');
-    saveCache();
-  };
 
   outer: for (const s of data.skillsets) for (const c of s.courses) for (const l of c.lessons) {
     const used = new Map<string, number>();
@@ -392,12 +522,7 @@ async function main() {
   }
   persist();
 
-  // Đọc lại và so sánh sâu với bộ nhớ, rồi kiểm số entityIds.
-  const reread = JSON.parse(fs.readFileSync(CURRICULUM_FILE, 'utf-8'));
-  assert.deepStrictEqual(reread, data, 'file sau khi ghi khác dữ liệu trong bộ nhớ');
-  const after = idCount(reread);
-  assert.deepStrictEqual(after, before, `entityIds thay đổi: ${JSON.stringify(before)} -> ${JSON.stringify(after)}`);
-  console.log(`entityIds không rỗng: ${after.nonEmpty}, mảng rỗng: ${after.empty}`);
+  const reread = verify(data, before);
 
   let cards = 0, withImage = 0;
   const uses = new Map<string, number>();

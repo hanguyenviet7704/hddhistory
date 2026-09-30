@@ -1,4 +1,4 @@
-import { CurriculumFile, CurriculumKeypoint } from './curriculum.types';
+import { CurriculumFile, CurriculumImageMeta, CurriculumKeypoint } from './curriculum.types';
 import { normalizeKey } from './curriculum.validator';
 
 export interface PeriodRef {
@@ -61,11 +61,11 @@ export interface KeypointDoc {
 
 /**
  * `DocumentDataModel` của app đọc `url` như một translation object chứ không
- * phải chuỗi trần. App bỏ qua `content` của khối ảnh, nên lời ghi công đi trong
- * một khối `caption` riêng ngay sau ảnh (khối caption thì render `content.text`).
+ * phải chuỗi trần. Khối ảnh mang lời ghi công ngay trong `data.content.vi` (app
+ * hiển thị thành dòng nghiêng nhỏ dưới ảnh); không có khối caption riêng.
  */
 export type DocumentBlockDoc =
-  | { id: number; type: 'title' | 'text' | 'caption'; data: { content: ViOnly } }
+  | { id: number; type: 'title' | 'text'; data: { content: ViOnly } }
   | { id: number; type: 'image'; data: { url: ViOnly; content: ViOnly } };
 
 /**
@@ -139,7 +139,7 @@ function imageFor(staticBaseUrl: string, periodId: string): string {
  * thể còn thẻ HTML (Commons hay trả `<a>`), nên bỏ hết trước khi dùng. Không
  * biết tác giả thì chỉ nêu giấy phép.
  */
-export function imageCredit(k: CurriculumKeypoint): string {
+export function imageCredit(k: CurriculumImageMeta): string {
   const author = (k.imageAuthor ?? '')
     .replace(/<[^>]*>/g, '')
     .replace(/\s+/g, ' ')
@@ -150,7 +150,7 @@ export function imageCredit(k: CurriculumKeypoint): string {
 }
 
 /**
- * Các khối của một thẻ: tiêu đề, (ảnh + chú thích ghi công nếu có), rồi nội dung.
+ * Các khối của một thẻ: tiêu đề, (ảnh mang lời ghi công nếu có), rồi nội dung.
  * `id` theo vị trí nên thẻ không ảnh giữ nguyên id 1/2 như trước.
  */
 function cardBlocks(k: CurriculumKeypoint): DocumentBlockDoc[] {
@@ -160,11 +160,7 @@ function cardBlocks(k: CurriculumKeypoint): DocumentBlockDoc[] {
   if (k.image) {
     blocks.push({
       type: 'image',
-      data: { url: { vi: k.image }, content: { vi: k.titleVi } },
-    });
-    blocks.push({
-      type: 'caption',
-      data: { content: { vi: imageCredit(k) } },
+      data: { url: { vi: k.image }, content: { vi: imageCredit(k) } },
     });
   }
   blocks.push({ type: 'text', data: { content: { vi: k.descriptionVi } } });
@@ -253,7 +249,8 @@ export function buildSeedPlan(
           title: { vi: l.titleVi },
           description: { vi: l.descriptionVi },
           status: 'published',
-          image,
+          // Ảnh bìa riêng của bài nếu đã chọn được, không thì ảnh thời kỳ.
+          image: l.image || image,
         });
 
         roadmap.nodes.push({

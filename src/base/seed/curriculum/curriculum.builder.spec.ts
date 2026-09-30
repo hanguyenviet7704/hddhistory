@@ -227,32 +227,25 @@ describe('buildSeedPlan', () => {
           (li) => li.title.vi === 'Lần thứ nhất, 1258',
         ).documents;
 
-      it('thẻ có ảnh: image rồi caption ghi công liền sau, rồi text; url là translation object', () => {
+      it('thẻ có ảnh: title, image (ghi công trong content), text; không có khối caption', () => {
         const d = docsOf(WITH_IMAGE)[1].document;
-        expect(d.map((b) => b.type)).toEqual(['title', 'image', 'caption', 'text']);
-        expect(d.map((b) => b.id)).toEqual([1, 2, 3, 4]);
-        expect(d[2].data).toEqual({
-          content: { vi: 'Ảnh: Nguyễn Văn A / CC BY-SA 4.0 — Wikimedia Commons' },
-        });
+        expect(d.map((b) => b.type)).toEqual(['title', 'image', 'text']);
+        expect(d.map((b) => b.id)).toEqual([1, 2, 3]);
         expect(d[1].data).toEqual({
           url: { vi: 'https://upload.wikimedia.org/thumb/1200px-x.jpg' },
-          content: { vi: 'Rút khỏi Thăng Long' },
+          content: { vi: 'Ảnh: Nguyễn Văn A / CC BY-SA 4.0 — Wikimedia Commons' },
         });
       });
 
-      it('không rõ tác giả: caption chỉ nêu giấy phép và Wikimedia Commons', () => {
+      it('không rõ tác giả: lời ghi công chỉ nêu giấy phép và Wikimedia Commons', () => {
         const f: CurriculumFile = JSON.parse(JSON.stringify(WITH_IMAGE));
         const k = f.skillsets[0].courses[0].lessons[0].keypoints[1];
         delete k.imageAuthor;
-        expect(docsOf(f)[1].document[2]).toEqual({
-          id: 3,
-          type: 'caption',
-          data: { content: { vi: 'Ảnh: CC BY-SA 4.0 — Wikimedia Commons' } },
-        });
+        const credit = (x: CurriculumFile) =>
+          (docsOf(x)[1].document[1].data as { content: { vi: string } }).content.vi;
+        expect(credit(f)).toBe('Ảnh: CC BY-SA 4.0 — Wikimedia Commons');
         k.imageAuthor = '<a href="x"> </a>';
-        expect(docsOf(f)[1].document[2].data).toEqual({
-          content: { vi: 'Ảnh: CC BY-SA 4.0 — Wikimedia Commons' },
-        });
+        expect(credit(f)).toBe('Ảnh: CC BY-SA 4.0 — Wikimedia Commons');
       });
 
       it('thẻ không ảnh giữ nguyên hai khối title/text với id 1, 2', () => {
@@ -261,6 +254,21 @@ describe('buildSeedPlan', () => {
           expect(docs[i].document.map((b) => b.type)).toEqual(['title', 'text']);
           expect(docs[i].document.map((b) => b.id)).toEqual([1, 2]);
         });
+      });
+
+      it('ảnh bìa của bài thay ảnh placeholder cho Lesson.image; bài không có giữ placeholder', () => {
+        const f: CurriculumFile = JSON.parse(JSON.stringify(FILE));
+        const lessons = f.skillsets[0].courses[0].lessons;
+        lessons[0].image = 'https://upload.wikimedia.org/thumb/cover.jpg';
+        const plan = buildSeedPlan(f, PERIODS);
+        const first = plan.lessons.find((l) => l.title.vi === lessons[0].titleVi);
+        expect(first.image).toBe('https://upload.wikimedia.org/thumb/cover.jpg');
+        plan.lessons
+          .filter((l) => l !== first)
+          .forEach((l) => expect(l.image).toMatch(/\/static\/history\/p\d{2}_\w+\.png$/));
+        // Chỉ Lesson.image đổi; keypoint/course/skillset vẫn là placeholder.
+        expect(plan.keypoints[0].image).toMatch(/\.png$/);
+        expect(plan.courses[0].image).toMatch(/\.png$/);
       });
 
       it('không sinh khối ảnh khi image là chuỗi rỗng, và không đụng file đầu vào', () => {

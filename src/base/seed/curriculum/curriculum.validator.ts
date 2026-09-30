@@ -199,6 +199,7 @@ function validateLesson(l: CurriculumLesson, at: string, ctx: Ctx): string | und
   const { errors, seed } = ctx;
   const title = requireTitle(l as any, at, errors);
   requireText(l as any, 'descriptionVi', at, errors);
+  validateImageFields(l as unknown as Record<string, unknown>, at, errors);
 
   if (!Array.isArray(l.keypoints)) {
     errors.push(`${at}: thiếu mảng keypoints`);
