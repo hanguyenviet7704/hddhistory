@@ -5,11 +5,11 @@
     "subtitle": { "vi": "Lịch sử Việt Nam, kể theo mạch để bạn nhớ được lâu." },
     "ctaLabel": { "vi": "Bắt đầu" },
     "deck": [
-      { "key": "EXPLORE_BETTER", "label": { "vi": "Truyền thuyết dựng nước" }, "imageUrl": "", "order": 1 },
-      { "key": "LEARN_BETTER", "label": { "vi": "Nghìn năm Bắc thuộc" }, "imageUrl": "", "order": 2 },
-      { "key": "THINK_BETTER", "label": { "vi": "Hào khí Đông A" }, "imageUrl": "", "order": 3 },
-      { "key": "WORK_BETTER", "label": { "vi": "Nam tiến mở cõi" }, "imageUrl": "", "order": 4 },
-      { "key": "CONNECT_BETTER", "label": { "vi": "Đường tới độc lập" }, "imageUrl": "", "order": 5 }
+      { "key": "EXPLORE_BETTER", "label": { "vi": "Truyền thuyết dựng nước" }, "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tambour-song-da2.jpg/960px-Tambour-song-da2.jpg", "order": 1 },
+      { "key": "LEARN_BETTER", "label": { "vi": "Nghìn năm Bắc thuộc" }, "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Hai_B%C3%A0_Tr%C6%B0ng_%28tranh_%C4%90%C3%B4ng_H%E1%BB%93%29.jpeg", "order": 2 },
+      { "key": "THINK_BETTER", "label": { "vi": "Hào khí Đông A" }, "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Viet_military_officers%2C_1100-1300_AD.jpg/500px-Viet_military_officers%2C_1100-1300_AD.jpg", "order": 3 },
+      { "key": "WORK_BETTER", "label": { "vi": "Nam tiến mở cõi" }, "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/An_Nam_Dai_Quoc_Hoa_Do_by_Jean_Louis_Taberd_1838.jpg/960px-An_Nam_Dai_Quoc_Hoa_Do_by_Jean_Louis_Taberd_1838.jpg", "order": 4 },
+      { "key": "CONNECT_BETTER", "label": { "vi": "Đường tới độc lập" }, "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Ba_Dinh_Square_September_2nd%2C_1945.jpg/960px-Ba_Dinh_Square_September_2nd%2C_1945.jpg", "order": 5 }
     ]
   },
   "name": {
