@@ -1,0 +1,373 @@
+// Paste this WHOLE file into the DevTools Console on the admin tab (any page).
+//
+// Seeds the `quotes` collection so "Daily remind" (body = {quote}) has more than
+// the 2 lines dev shipped with. Quotes have no bulk endpoint and no import button
+// in admin, so this loops POST /courses-quotes — one request per quote — reusing
+// the admin session's own accessToken.
+//
+// Idempotent: an English line already on the server is skipped, so re-pasting
+// does not duplicate.
+(async () => {
+  const QUOTES = [
+  {
+    "content": {
+      "en": "A little every day beats a lot once in a while.",
+      "vi": "Mỗi ngày một chút hơn thật nhiều nhưng thỉnh thoảng.",
+      "zh": "每天一点点，胜过偶尔一大堆。",
+      "ja": "毎日少しずつが、時々たくさんより強い。",
+      "ko": "매일 조금씩이 어쩌다 한 번보다 강합니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "You don't need to be perfect. You need to be understood.",
+      "vi": "Bạn không cần hoàn hảo. Bạn cần được hiểu.",
+      "zh": "你不需要完美，只需要被听懂。",
+      "ja": "完璧である必要はありません。伝わればいいのです。",
+      "ko": "완벽할 필요는 없어요. 전달되면 충분합니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Mistakes are proof that you are speaking.",
+      "vi": "Lỗi sai là bằng chứng bạn đang thật sự nói.",
+      "zh": "犯错，说明你已经在开口说了。",
+      "ja": "間違いは、あなたが話している証拠です。",
+      "ko": "실수는 당신이 말하고 있다는 증거입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Ten minutes today is worth more than two hours next week.",
+      "vi": "Mười phút hôm nay giá trị hơn hai giờ tuần sau.",
+      "zh": "今天的十分钟，胜过下周的两小时。",
+      "ja": "今日の10分は、来週の2時間より価値があります。",
+      "ko": "오늘의 10분이 다음 주의 2시간보다 값집니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Fluency is just familiarity in disguise.",
+      "vi": "Trôi chảy chỉ là sự quen tay đã đủ lâu.",
+      "zh": "流利，只是熟悉久了的样子。",
+      "ja": "流暢さとは、慣れが積み重なった姿です。",
+      "ko": "유창함은 익숙함이 쌓인 모습일 뿐입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Speak before you feel ready. Readiness comes after.",
+      "vi": "Hãy nói trước khi thấy sẵn sàng. Sự sẵn sàng đến sau.",
+      "zh": "别等准备好再开口，准备好是说出来之后的事。",
+      "ja": "準備ができる前に話しましょう。自信は後から来ます。",
+      "ko": "준비되기 전에 말해보세요. 자신감은 그다음에 옵니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Progress you can't see today is still progress.",
+      "vi": "Tiến bộ hôm nay chưa thấy vẫn là tiến bộ.",
+      "zh": "今天看不见的进步，依然是进步。",
+      "ja": "今日は見えない成長も、確かな成長です。",
+      "ko": "오늘 보이지 않는 성장도 분명한 성장입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "One more lesson. That's how it always starts.",
+      "vi": "Thêm một bài nữa thôi. Mọi thứ luôn bắt đầu như thế.",
+      "zh": "再学一课就好，一切都是这样开始的。",
+      "ja": "あと1レッスンだけ。いつもそこから始まります。",
+      "ko": "한 레슨만 더. 언제나 그렇게 시작됩니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Your accent is a map of where you've been.",
+      "vi": "Chất giọng của bạn là tấm bản đồ những nơi bạn đã đi qua.",
+      "zh": "你的口音，是你走过的路留下的地图。",
+      "ja": "あなたの発音は、歩んできた道の地図です。",
+      "ko": "당신의 억양은 지나온 길의 지도입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Consistency is a skill. Today you practiced it.",
+      "vi": "Đều đặn cũng là một kỹ năng. Hôm nay bạn đã luyện nó.",
+      "zh": "坚持也是一种能力，今天你练了它。",
+      "ja": "続けることも一つの力。今日それを鍛えました。",
+      "ko": "꾸준함도 실력입니다. 오늘 그걸 연습했어요."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "The words you use today become the words you own tomorrow.",
+      "vi": "Từ bạn dùng hôm nay sẽ thành từ của riêng bạn ngày mai.",
+      "zh": "今天用过的词，明天就成了你的词。",
+      "ja": "今日使った言葉が、明日あなたのものになります。",
+      "ko": "오늘 쓴 단어가 내일 당신의 단어가 됩니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Learning slows down when you stop, not when you're tired.",
+      "vi": "Việc học chỉ chậm lại khi bạn dừng, không phải khi bạn mệt.",
+      "zh": "让学习变慢的是停下来，不是累。",
+      "ja": "学びが止まるのは疲れた時ではなく、やめた時です。",
+      "ko": "배움이 멈추는 건 지칠 때가 아니라 그만둘 때입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Nobody remembers your grammar. They remember your courage.",
+      "vi": "Không ai nhớ ngữ pháp của bạn. Người ta nhớ sự dũng cảm của bạn.",
+      "zh": "没人会记得你的语法，他们记得你的勇气。",
+      "ja": "誰も文法は覚えていません。覚えているのはあなたの勇気です。",
+      "ko": "아무도 문법은 기억하지 않아요. 용기를 기억합니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Small steps still leave footprints.",
+      "vi": "Bước nhỏ vẫn để lại dấu chân.",
+      "zh": "再小的步子，也留下脚印。",
+      "ja": "小さな一歩も、足跡を残します。",
+      "ko": "작은 걸음도 발자국을 남깁니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Curiosity learns faster than pressure.",
+      "vi": "Tò mò học nhanh hơn áp lực.",
+      "zh": "好奇心比压力学得更快。",
+      "ja": "好奇心は、プレッシャーより速く学びます。",
+      "ko": "호기심은 압박보다 빠르게 배웁니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "You are allowed to start again at any hour of the day.",
+      "vi": "Bạn được phép bắt đầu lại vào bất cứ giờ nào trong ngày.",
+      "zh": "一天中的任何时刻，你都可以重新开始。",
+      "ja": "一日のどの時間からでも、やり直していいのです。",
+      "ko": "하루 중 어느 시간에도 다시 시작해도 됩니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Listening is half of speaking.",
+      "vi": "Nghe là một nửa của nói.",
+      "zh": "会听，就已经会说一半了。",
+      "ja": "聞くことは、話すことの半分です。",
+      "ko": "듣기는 말하기의 절반입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "A sentence you can say beats a page you can only read.",
+      "vi": "Một câu nói được hơn cả trang chỉ đọc được.",
+      "zh": "能说出的一句，胜过只能读的一页。",
+      "ja": "言える一文は、読めるだけの一ページに勝ります。",
+      "ko": "말할 수 있는 한 문장이 읽기만 하는 한 페이지보다 낫습니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Show up tired. Learn anyway.",
+      "vi": "Cứ đến dù đang mệt. Rồi vẫn học được.",
+      "zh": "累了也来，照样能学。",
+      "ja": "疲れていても、まず開く。それで十分です。",
+      "ko": "지쳐도 일단 펼쳐보세요. 그걸로 충분합니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Confidence is built one awkward conversation at a time.",
+      "vi": "Tự tin được xây từ từng cuộc hội thoại lóng ngóng.",
+      "zh": "自信，是一次次尴尬的对话堆起来的。",
+      "ja": "自信は、ぎこちない会話を重ねて育ちます。",
+      "ko": "자신감은 어색한 대화를 하나씩 쌓아 자랍니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "The hardest part of today's lesson is opening it.",
+      "vi": "Phần khó nhất của bài hôm nay là mở nó ra.",
+      "zh": "今天这课最难的部分，是打开它。",
+      "ja": "今日のレッスンで一番難しいのは、開くことです。",
+      "ko": "오늘 레슨에서 가장 어려운 건 여는 일입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Two words a day is seven hundred a year.",
+      "vi": "Hai từ mỗi ngày là bảy trăm từ mỗi năm.",
+      "zh": "每天两个词，一年就是七百多个。",
+      "ja": "1日2語で、1年に700語を超えます。",
+      "ko": "하루 두 단어면 1년에 700개가 넘습니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Don't translate. Just mean it.",
+      "vi": "Đừng dịch. Cứ nói đúng ý mình.",
+      "zh": "别在心里翻译，直接表达你的意思。",
+      "ja": "訳さないで。伝えたいことをそのまま。",
+      "ko": "번역하지 말고, 그냥 뜻을 전하세요."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Yesterday's difficult sentence is today's warm-up.",
+      "vi": "Câu khó hôm qua là bài khởi động hôm nay.",
+      "zh": "昨天的难句，今天的热身。",
+      "ja": "昨日の難しい一文は、今日の準備運動です。",
+      "ko": "어제의 어려운 문장이 오늘의 워밍업입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "You learn a language by using it badly first.",
+      "vi": "Muốn giỏi một ngôn ngữ, trước tiên phải dùng nó dở.",
+      "zh": "学会一门语言，先要允许自己说得不好。",
+      "ja": "言語は、まず下手に使うことで身につきます。",
+      "ko": "언어는 먼저 어설프게 써 보면서 익혀집니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Streaks are just kindness to your future self.",
+      "vi": "Chuỗi ngày đều đặn là món quà bạn tặng chính mình mai sau.",
+      "zh": "连续打卡，是送给未来自己的温柔。",
+      "ja": "続けた記録は、未来の自分への贈り物です。",
+      "ko": "연속 기록은 미래의 나에게 주는 선물입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Say it out loud. Your mouth needs practice too.",
+      "vi": "Hãy nói to lên. Miệng của bạn cũng cần luyện.",
+      "zh": "大声说出来，嘴巴也需要练习。",
+      "ja": "声に出してみましょう。口も練習が必要です。",
+      "ko": "소리 내어 말해보세요. 입도 연습이 필요합니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Being understood today matters more than being flawless someday.",
+      "vi": "Được hiểu hôm nay quan trọng hơn hoàn hảo một ngày nào đó.",
+      "zh": "今天被听懂，比某天完美更重要。",
+      "ja": "いつか完璧より、今日伝わることが大切です。",
+      "ko": "언젠가의 완벽함보다 오늘 통하는 게 중요합니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "Five minutes now or an excuse tomorrow. Both cost the same time.",
+      "vi": "Năm phút bây giờ hay một cái cớ ngày mai, đều tốn thời gian như nhau.",
+      "zh": "现在五分钟，还是明天一个借口，花的时间一样。",
+      "ja": "今の5分か、明日の言い訳か。かかる時間は同じです。",
+      "ko": "지금의 5분이나 내일의 변명이나, 드는 시간은 같아요."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  },
+  {
+    "content": {
+      "en": "The best time to learn was yesterday. The second best is now.",
+      "vi": "Thời điểm tốt nhất để học là hôm qua. Tốt thứ hai là ngay bây giờ.",
+      "zh": "最好的学习时间是昨天，其次就是现在。",
+      "ja": "学ぶのに一番よかったのは昨日。次にいいのは今です。",
+      "ko": "배우기 가장 좋은 때는 어제였고, 그다음은 지금입니다."
+    },
+    "backgroundColor": "#362F82",
+    "textColor": "#FFFFFF"
+  }
+];
+
+  const token = localStorage.getItem("accessToken");
+  if (!token) return console.error("No accessToken in localStorage — log in first.");
+
+  // The API host is baked into the admin bundle at build time, so read it back
+  // off a request the page has already made rather than hardcoding an env.
+  const seen = performance.getEntriesByType("resource").map(r => r.name);
+  const hit = seen.find(n => n.includes("/api/v1/"));
+  if (!hit) return console.error("Could not detect the API base URL — open any data page first, then re-run.");
+  const base = hit.split("/api/v1/")[0] + "/api/v1";
+  console.log("API base:", base);
+
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
+  const listRes = await fetch(`${base}/courses-quotes?page=1&take=500`, { headers });
+  if (!listRes.ok) return console.error("GET /courses-quotes failed:", listRes.status, await listRes.text());
+  const listJson = await listRes.json();
+  const existing = new Set(((listJson.data ?? listJson).items ?? []).map(q => q?.content?.en).filter(Boolean));
+  console.log(`Existing quotes: ${existing.size}`);
+
+  let created = 0, skipped = 0, failed = 0;
+  for (const quote of QUOTES) {
+    if (existing.has(quote.content.en)) { skipped++; console.log("= skip:", quote.content.en); continue; }
+    const res = await fetch(`${base}/courses-quotes`, { method: "POST", headers, body: JSON.stringify(quote) });
+    if (res.ok) { created++; console.log("+", quote.content.en); }
+    else { failed++; console.error("x", quote.content.en, res.status, await res.text()); }
+  }
+
+  console.log(`Done — created ${created}, skipped ${skipped}, failed ${failed}.`);
+  console.log("findRandom caches the pool for 5 minutes, so new quotes can take up to 5 min to appear in a notification.");
+})();
