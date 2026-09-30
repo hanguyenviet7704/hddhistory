@@ -437,7 +437,7 @@ class _CoverArtwork extends StatelessWidget {
         height: 120.w,
         margin: EdgeInsets.only(bottom: 24.h),
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F0FD),
+          color: const Color(0xFFFDF9F0),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(color: AppCustomColor.borderDefault, blurRadius: 28.r),
@@ -506,7 +506,7 @@ class _ProgressStrip extends StatelessWidget {
                 widthFactor: total == 0 ? 0 : (done / total).clamp(0, 1),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4B44CA),
+                    color: const Color(0xFF94762A),
                     borderRadius: BorderRadius.circular(18.r),
                   ),
                 ),

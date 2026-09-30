@@ -410,7 +410,7 @@ class _CreditsPill extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.fromLTRB(13.w, 6.h, 6.w, 6.h),
           decoration: BoxDecoration(
-            color: const Color(0xFFEEEDFB),
+            color: const Color(0xFFFBF7ED),
             borderRadius: BorderRadius.circular(99.r),
           ),
           child: Row(
@@ -811,7 +811,7 @@ class _HowItWorks extends StatelessWidget {
                 width: 26.w,
                 height: 26.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEEDFB),
+                  color: const Color(0xFFFBF7ED),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,

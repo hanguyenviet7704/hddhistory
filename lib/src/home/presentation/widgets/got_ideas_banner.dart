@@ -52,7 +52,7 @@ class GotIdeasBanner extends StatelessWidget {
                       TextSpan(
                         text: context.l10n.home.inAppSurveyEntryTitle,
                         style: AppStyle.textBold14.copyWith(
-                          color: const Color(0xFF554FF0),
+                          color: const Color(0xFFB5860F),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -70,7 +70,7 @@ class GotIdeasBanner extends StatelessWidget {
               8.horizontalSpace,
               Icon(
                 Icons.chevron_right_rounded,
-                color: const Color(0xFF8E86F5),
+                color: const Color(0xFFF0C34F),
                 size: 20.w,
               ),
             ],

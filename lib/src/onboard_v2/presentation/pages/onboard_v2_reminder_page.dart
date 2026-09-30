@@ -61,7 +61,7 @@ class _OnboardV2ReminderPageState extends State<OnboardV2ReminderPage> {
 
   /// 3 khung giờ nhanh: ưu tiên config (`reminder.presets`), rỗng thì dùng bộ
   /// mặc định của design (Sáng 07:00 / Trưa 12:30 / Tối 21:00) với nhãn l10n.
-  List<(String, String)> _presets(OnboardV2State state, Translations$onboarding$en onboardingL10n) {
+  List<(String, String)> _presets(OnboardV2State state, Translations$onboarding$vi onboardingL10n) {
     final fallbackLabels = [
       onbCopy(state.onboardData, 'onboardingV3P8Preset1', fallback: onboardingL10n.onboardingV3P8Preset1),
       onbCopy(state.onboardData, 'onboardingV3P8Preset2', fallback: onboardingL10n.onboardingV3P8Preset2),

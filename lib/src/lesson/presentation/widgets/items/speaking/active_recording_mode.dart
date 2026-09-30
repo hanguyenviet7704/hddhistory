@@ -237,7 +237,7 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
           builder: (context, data) {
             return AppText(
               data.duration.formatDuration,
-              style: AppStyle.textBold16.copyWith(color: data.isRecording ? const Color(0xFF554FF0) : const Color(0xFFAAB7CC)),
+              style: AppStyle.textBold16.copyWith(color: data.isRecording ? const Color(0xFFB5860F) : const Color(0xFFAAB7CC)),
             );
           },
         ),
@@ -282,7 +282,7 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
                     height: 48.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isEnabled ? const Color(0xFF554FF0) : const Color(0xFF554FF0).withValues(alpha: 0.3),
+                      color: isEnabled ? const Color(0xFFB5860F) : const Color(0xFFB5860F).withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
                     child: SvgPicture.asset(

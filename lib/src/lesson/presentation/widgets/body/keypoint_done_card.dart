@@ -482,7 +482,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   Widget _recapBack(BuildContext context, {required String keypointTitle, required String recapText}) {
     return _cardShell(
       color: AppCustomColor.kpRecapBackSurface,
-      shadow: BoxShadow(color: const Color(0x57211B40), blurRadius: 38, offset: const Offset(0, 16)),
+      shadow: BoxShadow(color: const Color(0x5740361B), blurRadius: 38, offset: const Offset(0, 16)),
       child: Stack(
         children: [
           Positioned(
@@ -592,68 +592,23 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
     );
   }
 
-  /// Continue = the design's `goStartHabit`: the recap hands over to the habit
-  /// step ([HabitSuggestPage] — "Add one to get daily practice reminders")
-  /// when this keypoint has suggestions the reader hasn't adopted, and to the
-  /// lesson-complete screen after it (or directly, when there's nothing to
-  /// suggest). The suggestion gate is the same one the old post-skip prompt
-  /// used: a habit adopted FROM this keypoint (`sourceKeypointId`) switches
-  /// the step off for it — the adopted habit itself is the flag.
+  /// Continue đi thẳng sang màn hoàn thành keypoint.
+  ///
+  /// Trước đây ở giữa còn một bước gợi ý thói quen (`goStartHabit` trong thiết
+  /// kế); bước đó mất cùng tính năng Thói quen.
   Future<void> _continue() async {
     if (_isContinuing) return;
     AppHaptic.select();
     setState(() => _isContinuing = true);
     try {
-      final lessonCubit = context.read<LessonCubit>();
-      final keypointId = context.read<CourseLessonCubit>().state.currentKeypointId;
-
-      // Habit suggestions are AUTHORED against a catalogue keypoint. A generated
-      // one has none by construction, so the lookup below could only ever come
-      // back empty — skip straight on rather than spend a request proving it.
-      if (context.read<CourseLessonCubit>().state.selectedLesson.isImported) {
-        lessonCubit.openKeypointComplete();
-
-        return;
-      }
-
-      final habitCubit = AppDI.injector.get<HabitCubit>();
-      await habitCubit.ensureLoaded();
-      if (!mounted) return;
-      final canSuggest = keypointId.isEmpty || !habitCubit.state.userHabits.any((h) => h.sourceKeypointId == keypointId);
-      final suggestions = canSuggest ? await habitCubit.loadLibrary(keypointId: keypointId) : const <HabitEntity>[];
-      if (!mounted) return;
-
-      if (suggestions.isNotEmpty) {
-        final roadmapCourseId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.courseId;
-        final homeCourseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
-        final courseId = resolveLessonFlowCourseId(
-          lessonCourseId: context.read<CourseLessonCubit>().state.selectedLesson.courseId,
-          roadmapCourseId: roadmapCourseId,
-          homeCourseId: homeCourseId,
-        );
-        // The habit page navigates ONWARD itself (its Continue swaps the page
-        // beneath to lesson-complete before fading out) — navigating here too
-        // would double-fire. Backing out of it without Continue simply lands
-        // back on this card, where Continue works again.
-        await HabitSuggestPage.push(
-          context,
-          habits: suggestions,
-          sourceKeypointId: keypointId,
-          sourceCourseId: courseId,
-          sourceLessonId: context.read<CourseLessonCubit>().state.selectedLesson.id,
-        );
-        return;
-      }
-
-      lessonCubit.openKeypointComplete();
+      context.read<LessonCubit>().openKeypointComplete();
     } finally {
       if (mounted) setState(() => _isContinuing = false);
     }
   }
 
   /// Full-width Continue (design: 54 tall, pill radius) — hands the reader to
-  /// the habit step, then the lesson-complete screen the deck used to jump to
-  /// on its own.
+  /// the lesson-complete screen the deck used to jump to on its own.
   Widget _continueButton(BuildContext context) {
     return Semantics(
       button: true,

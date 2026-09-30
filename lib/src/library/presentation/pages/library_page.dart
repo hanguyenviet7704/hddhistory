@@ -1,7 +1,7 @@
 part of '../../library.dart';
 
 /// Shell branch index of the Library tab (see `ScaffoldLayout._tabToBranch`).
-const int kLibraryBranchIndex = 5;
+const int kLibraryBranchIndex = 4;
 
 
 /// Slot width of a card in the "In progress" carousel, as a fraction of the
@@ -141,6 +141,10 @@ class _LibraryPageState extends State<LibraryPage> {
             slivers: [
               SliverToBoxAdapter(child: _LibraryHeader(title: l10n.title)),
               const SliverToBoxAdapter(child: WeekRecapBanner()),
+              // Tra cứu đồ thị tri thức lịch sử. Đặt ngay dưới đầu trang vì nó
+              // là lối vào duy nhất của tính năng, và vì nó không phụ thuộc
+              // tiến độ học — luôn dùng được, kể cả với người vừa cài app.
+              const SliverToBoxAdapter(child: KnowledgeGraphEntryCard()),
               SliverToBoxAdapter(
                 child: _LibrarySectionHeader(
                   title: l10n.inProgressSection,

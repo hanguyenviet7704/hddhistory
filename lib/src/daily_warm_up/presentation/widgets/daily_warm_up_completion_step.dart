@@ -18,7 +18,7 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
     final subtitle = entity?.isCourseCompleted == true ? context.l10n.dailyWarmUp.keepLearningWithNewCourses : context.l10n.dailyWarmUp.readyToContinueProgress;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F1FE),
+      backgroundColor: const Color(0xFFFEFAF1),
       body: SafeArea(
         child: Stack(
           children: [
@@ -28,7 +28,7 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
               children: [
                 ShaderMask(
                   shaderCallback: (rect) => const LinearGradient(
-                    colors: [Color(0xFF4B44CA), Color(0xFFA052FF), Color(0xFFEF81D4), Color(0xFFFF8F8F), Color(0xFFFFCE66)],
+                    colors: [Color(0xFF94762A), Color(0xFFDD9E00), Color(0xFFEF81D4), Color(0xFFFF8F8F), Color(0xFFFFCE66)],
                   ).createShader(rect),
                   child: AppText(
                     context.l10n.dailyWarmUp.completeChallenge,
@@ -73,7 +73,7 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
             },
             child: AppText(
               context.l10n.dailyWarmUp.exploreMore,
-              style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w600),
+              style: AppStyle.text16.copyWith(color: const Color(0xFF826A2F), fontWeight: FontWeight.w600),
             ),
           ),
           32.verticalSpace,

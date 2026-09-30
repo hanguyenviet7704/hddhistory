@@ -14,7 +14,7 @@ void main() {
 
   group('RoleplayExerciseAnswerCard', () {
     testWidgets('renders selected answer for single_choice_no_correct_answer', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       const question = QuestionEntity(
         id: 201,

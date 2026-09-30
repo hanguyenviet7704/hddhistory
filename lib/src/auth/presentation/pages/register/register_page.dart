@@ -199,7 +199,7 @@ class _RegisterPageState extends State<RegisterPage> {
     },
     child: AuthLayout(
       body: Container(
-        color: const Color(0xFFEBEAFD),
+        color: const Color(0xFFFDF8EA),
         child: SafeArea(
           child: Column(
             children: [
@@ -215,7 +215,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         maxLines: 5,
                         margin: EdgeInsets.symmetric(horizontal: 20.w),
                         style: AppStyle.textBold20.copyWith(
-                          color: const Color(0xFF110751),
+                          color: const Color(0xFF513C07),
                           fontWeight: FontWeight.w600,
                           height: 1.5,
                         ),
@@ -271,7 +271,7 @@ class _RegisterLegalLinks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseStyle = AppStyle.text12.copyWith(
-      color: const Color(0xFF110751).op(0.5),
+      color: const Color(0xFF513C07).op(0.5),
       height: 1.75,
     );
     final linkStyle = baseStyle.copyWith(decoration: TextDecoration.underline);

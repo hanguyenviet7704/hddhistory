@@ -129,6 +129,17 @@ abstract class CommunityApi {
   @POST(AppEndpoint.communityChatMessageLike)
   Future<BaseResponse<CommunityChatLikeModel>> likeChatMessage(@Path('id') String id);
 
+  @GET(AppEndpoint.communityChatMessageContext)
+  Future<BaseResponse<CommunityChatContextModel>> getChatMessageContext(
+    @Path('room') String room,
+    @Path('id') String id,
+  );
+
+  // Null when nothing has been written in any language — the header hides its
+  // info button rather than opening an empty sheet.
+  @GET(AppEndpoint.communityChatGuide)
+  Future<BaseResponse<CommunityChatGuideModel?>> getChatGuide();
+
   @POST(AppEndpoint.communityRoomSuggestionVote)
   Future<BaseResponse<CommunityRoomSuggestionModel>> voteRoomSuggestion(
     @Path('id') String id,

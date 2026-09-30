@@ -29,7 +29,7 @@ abstract final class NotificationConstants {
 const int _notificationIdMinValue = -0x80000000;
 const int _notificationIdMaxValue = 0x7FFFFFFF;
 const int _notificationIdFallbackSeed = 0x811C9DC5;
-const int _notificationIdFallbackPrime = 0x01000193;
+const int _notificationIdFallbackPrime = 0x01936900;
 
 int _normalizeNotificationId(int value) {
   if (value >= _notificationIdMinValue && value <= _notificationIdMaxValue) {

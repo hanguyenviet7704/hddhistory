@@ -100,7 +100,7 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
     context.read<StudyThemeCubit>().selectPreset(preset);
   }
 
-  Widget _buildCta(OnboardV2State state, Translations$onboarding$en onboardingL10n) {
+  Widget _buildCta(OnboardV2State state, Translations$onboarding$vi onboardingL10n) {
     final label = onbCopy(state.onboardData, 'onboardingV2P9Cta', fallback: onboardingL10n.onboardingV2P9Cta);
     return OnboardV2BottomCta(
       label: label,

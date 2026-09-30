@@ -114,11 +114,11 @@ class _CountdownStripState extends State<_CountdownStrip> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFD9D5F6)),
+        border: Border.all(color: const Color(0xFFF6EDD5)),
       ),
       child: Row(
         children: [
-          Icon(Icons.bolt_rounded, size: 15.w, color: const Color(0xFF6E67D8)),
+          Icon(Icons.bolt_rounded, size: 15.w, color: const Color(0xFF9C7C28)),
           6.horizontalSpace,
           Expanded(
             child: AppText(
@@ -132,7 +132,7 @@ class _CountdownStripState extends State<_CountdownStrip> {
                 fontSize: 11.5.sp,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.69,
-                color: const Color(0xFF6E67D8),
+                color: const Color(0xFF9C7C28),
               ),
             ),
           ),
@@ -163,7 +163,7 @@ class _CountdownSegment extends StatelessWidget {
       constraints: BoxConstraints(minWidth: 27.w),
       padding: EdgeInsets.symmetric(horizontal: 6.w),
       decoration: BoxDecoration(
-        color: light ? const Color(0xFFEDEAFD) : const Color(0xFF4B44CA),
+        color: light ? const Color(0xFFFDF8EA) : const Color(0xFF94762A),
         borderRadius: BorderRadius.circular(light ? 7.r : 8.r),
       ),
       child: AppText(
@@ -172,7 +172,7 @@ class _CountdownSegment extends StatelessWidget {
         maxLines: 1,
         style: AppStyle.text14.copyWith(
           fontSize: light ? 12.5.sp : null,
-          color: light ? const Color(0xFF3A3355) : AppCustomColor.backgroundWhite,
+          color: light ? const Color(0xFF554B33) : AppCustomColor.backgroundWhite,
           fontWeight: light ? FontWeight.w800 : FontWeight.w700,
           height: 1.75,
         ),
@@ -195,7 +195,7 @@ class _CountdownColon extends StatelessWidget {
         maxLines: 1,
         style: AppStyle.text14.copyWith(
           fontSize: light ? 12.sp : null,
-          color: light ? const Color(0xFFA8A2D6) : AppCustomColor.backgroundWhite,
+          color: light ? const Color(0xFFC2AC75) : AppCustomColor.backgroundWhite,
           fontWeight: light ? FontWeight.w800 : FontWeight.w700,
           height: 1.4,
         ),

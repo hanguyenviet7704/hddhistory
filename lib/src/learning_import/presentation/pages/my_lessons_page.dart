@@ -487,7 +487,7 @@ class _GeneratingCard extends StatelessWidget {
             width: 78.w,
             height: 78.w,
             decoration: BoxDecoration(
-              color: const Color(0xFFEEEDFB),
+              color: const Color(0xFFFBF7ED),
               borderRadius: BorderRadius.circular(15.r),
             ),
             alignment: Alignment.center,

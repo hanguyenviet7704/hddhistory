@@ -157,7 +157,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             maxLines: 3,
             style: AppStyle.text14.copyWith(
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF8F8AB9),
+              color: const Color(0xFF7E6F4B),
               height: 1.4,
             ),
           ),
@@ -250,10 +250,10 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
       padding: EdgeInsets.fromLTRB(24.w, 18.h, 24.w, MediaQuery.paddingOf(context).bottom + 20.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: const Border(top: BorderSide(color: Color(0xFFECE9F6))),
+        border: const Border(top: BorderSide(color: Color(0xFFF6F2E9))),
         boxShadow: [
           BoxShadow(
-            color: const Color(0x14110751),
+            color: const Color(0x14513C07),
             offset: Offset(0, -10.h),
             blurRadius: 30.r,
           ),
@@ -363,7 +363,7 @@ class _PaywallCredibilityBlock extends StatelessWidget {
                     style: AppStyle.text14.copyWith(
                       fontSize: 12.5.sp,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6E67D8),
+                      color: const Color(0xFF9C7C28),
                       height: 1.35,
                     ),
                   ),

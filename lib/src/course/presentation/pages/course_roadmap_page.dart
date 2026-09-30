@@ -26,7 +26,6 @@ const String kRoadmapSourceCollectionList = 'collection_list';
 const String kRoadmapSourceResumeChipHome = 'resume_chip_home';
 const String kRoadmapSourceResumeChipExplore = 'resume_chip_explore';
 const String kRoadmapSourceResumeChipLibrary = 'resume_chip_library';
-const String kRoadmapSourceResumeChipHabit = 'resume_chip_habit';
 
 const roadmapExploreSources = {
   kRoadmapSourceCollectionList,
@@ -69,7 +68,6 @@ const roadmapHomeSources = {
 /// the sheet would mean carrying the [UserHabitEntity] through the roadmap, and
 /// the tracker row it was opened from is right there on the tab.
 @visibleForTesting
-const roadmapHabitSources = {kRoadmapSourceResumeChipHabit, 'habit_detail'};
 
 /// Roadmap source for a course opened from the Library tab's "In progress"
 /// carousel. Named rather than a bare string because both sides have to agree:
@@ -118,7 +116,6 @@ const roadmapLibrarySources = {
 bool roadmapShowsBackButton(String source) =>
     roadmapExploreSources.contains(source) ||
     roadmapHomeSources.contains(source) ||
-    roadmapHabitSources.contains(source) ||
     roadmapLibrarySources.contains(source) ||
     source == kRoadmapSourceStudyJournal ||
     source == kRoadmapSourceCommunityPost;
@@ -166,15 +163,6 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       page.setCurrentRouteName(RouteNamed.home);
       return;
     }
-    // Opened from a habit's "Đọc thêm" rail — the sheet was popped on the way
-    // out, so return to the Habit tab it belonged to.
-    if (roadmapHabitSources.contains(source)) {
-      final page = context.read<PageCubit>();
-      page.setCurrentIndex(4); // Habit branch
-      const HabitRoute().go(context);
-      page.setCurrentRouteName(RouteNamed.habit);
-      return;
-    }
     // Opened from the Library tab — back returns to the exact Library screen it
     // was opened from. `.go()` on the branch root would pop My history off, so
     // the history list carries its own source and is navigated to by path.
@@ -205,7 +193,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     // to the Cộng đồng tab the post was being read on.
     if (source == kRoadmapSourceCommunityPost) {
       final page = context.read<PageCubit>();
-      page.setCurrentIndex(6); // Community branch
+      page.setCurrentIndex(5); // Community branch
       const CommunityRoute().go(context);
       page.setCurrentRouteName(RouteNamed.community);
       return;

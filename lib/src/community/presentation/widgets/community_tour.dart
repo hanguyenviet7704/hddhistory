@@ -88,7 +88,7 @@ class CommunityTour extends StatelessWidget {
   /// Advances, or finishes on the last step.
   final VoidCallback onNext;
 
-  static const Color _scrim = Color(0xC30B0B16);
+  static const Color _scrim = Color(0xC316130B);
   static const double _cardWidth = 262;
   static const double _gap = 12;
 
@@ -316,7 +316,7 @@ class _TipCard extends StatelessWidget {
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
-          BoxShadow(color: const Color(0x660B0B16), blurRadius: 40, offset: const Offset(0, 18)),
+          BoxShadow(color: const Color(0x6616130B), blurRadius: 40, offset: const Offset(0, 18)),
         ],
       ),
       child: Column(
@@ -328,7 +328,7 @@ class _TipCard extends StatelessWidget {
             children: [
               AppText(
                 '${step.number}/${CommunityTourStep.count}',
-                style: AppStyle.textBold10.copyWith(color: const Color(0xFF7A69E8), letterSpacing: 0.8),
+                style: AppStyle.textBold10.copyWith(color: const Color(0xFFBF921D), letterSpacing: 0.8),
               ),
               _TourDots(step: step, compact: true),
             ],

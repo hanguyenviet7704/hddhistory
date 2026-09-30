@@ -43,7 +43,7 @@ class PaywallGiftPopup extends StatelessWidget {
           borderRadius: BorderRadius.circular(26.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0D073C).withValues(alpha: 0.3),
+              color: const Color(0xFF3C2D07).withValues(alpha: 0.3),
               blurRadius: 60,
               offset: const Offset(0, 24),
             ),
@@ -90,11 +90,11 @@ class PaywallGiftPopup extends StatelessWidget {
                   height: 56.h,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF5A52F0),
+                      color: const Color(0xFFB88810),
                       borderRadius: BorderRadius.circular(1000.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF5A52F0).withValues(alpha: 0.34),
+                          color: const Color(0xFFB88810).withValues(alpha: 0.34),
                           blurRadius: 28,
                           offset: const Offset(0, 14),
                         ),

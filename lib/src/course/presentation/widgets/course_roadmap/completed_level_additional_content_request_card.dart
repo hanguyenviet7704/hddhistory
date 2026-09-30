@@ -66,7 +66,7 @@ class _CompleteLevelLabel extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF5446CF),
+        color: const Color(0xFF947526),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: AppText(

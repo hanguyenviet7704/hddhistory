@@ -121,15 +121,6 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
               12.verticalSpace,
             ],
           ],
-          if (detail.habits.isNotEmpty) ...[
-            if (detail.courses.isNotEmpty) 8.verticalSpace,
-            _SectionLabel(text: context.l10n.studyJournal.sectionHabits),
-            10.verticalSpace,
-            for (final habit in detail.habits) ...[
-              _HabitRow(habit: habit, onTap: () => _openHabit(habit)),
-              12.verticalSpace,
-            ],
-          ],
         ],
       ),
     );
@@ -164,35 +155,6 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
       shellContext.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
       return null;
     });
-  }
-
-  /// Habit row → that habit's detail sheet.
-  ///
-  /// Detail needs the full [UserHabitEntity]; the journal carries only its id,
-  /// so it is looked up in the habit list and the list is loaded first when the
-  /// user has not opened the Habit tab this session.
-  Future<void> _openHabit(StudyJournalHabitEntity habit) async {
-    if (habit.userHabitId.isEmpty) return;
-    final navigator = Navigator.of(context);
-    final shellContext = navigator.context;
-    final habitCubit = AppDI.injector.get<HabitCubit>();
-
-    if (habitCubit.state.userHabits.isEmpty) {
-      await habitCubit.load(showLoading: false);
-    }
-    if (!mounted) return;
-
-    final match = habitCubit.state.userHabits.where((item) => item.id == habit.userHabitId).firstOrNull;
-    // A habit deleted since that day has no detail to open; the row stays inert
-    // rather than opening an empty sheet about nothing.
-    if (match == null) return;
-
-    navigator.pop();
-    // `shellContext` is the navigator's own context, not this widget's: the
-    // sheet is popped a line above, so its element is gone by the time the
-    // detail sheet opens.
-    if (!shellContext.mounted) return;
-    await HabitDetailPage.show(shellContext, userHabit: match);
   }
 
   void _retry() {
@@ -284,7 +246,6 @@ class _Header extends StatelessWidget {
     final parts = <String>[
       if (data.lessons > 0) journal.lessonCount(count: data.lessons),
       if (data.minutes > 0) journal.minuteCount(count: data.minutes),
-      if (data.lessons == 0 && data.habits.isNotEmpty) journal.habitCount(count: data.habits.length),
     ];
 
     return parts.join(' · ');
@@ -392,7 +353,7 @@ String _safeImageUrl(String url) => url.contains(' ') ? Uri.encodeFull(url) : ur
 /// Rotating pastel tints for rows whose course has no artwork, so a list
 /// missing images reads as several lessons rather than one repeated chip.
 const List<List<Color>> _kPlaceholderTints = [
-  [Color(0xFFECEAFB), Color(0xFF554FF0)],
+  [Color(0xFFFBF6EA), Color(0xFFB5860F)],
   [Color(0xFFFDEEE3), Color(0xFFD9803F)],
   [Color(0xFFE4F6EE), Color(0xFF2E9E76)],
   [Color(0xFFFCE7F0), Color(0xFFC94F86)],
@@ -499,7 +460,7 @@ class _RestDay extends StatelessWidget {
           Container(
             width: 64.w,
             height: 64.w,
-            decoration: const BoxDecoration(color: Color(0xFFEFEEFB), shape: BoxShape.circle),
+            decoration: const BoxDecoration(color: Color(0xFFFBF7EE), shape: BoxShape.circle),
             // Outline crescent, not the filled glyph: in the design the moon
             // reads as a line drawing inside the tile, and the solid version
             // came out as a dark blob at this size.

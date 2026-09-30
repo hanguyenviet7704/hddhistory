@@ -210,7 +210,7 @@ class RoadmapDetailPopup extends StatelessWidget {
                 // the same screen either way, so a music note on some cards and
                 // a list on others read as two different actions.
                 iconAsset: AppAsset.svg.app.icMenu,
-                backgroundColor: const Color(0xFF554FF0),
+                backgroundColor: const Color(0xFFB5860F),
                 foregroundColor: Colors.white,
                 onTap: () => unawaited(_startLearning(context)),
               ),

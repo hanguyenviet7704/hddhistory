@@ -18,7 +18,7 @@ void main() {
     // CTA regardless of whether the keypoint has usable audio — narration
     // autoplays on its own once inside when it does.
     testWidgets('shows a single Start action when the keypoint has usable audio', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       await tester.pumpWidget(
         _buildPopup(
@@ -35,7 +35,7 @@ void main() {
     });
 
     testWidgets('shows the same single Start action when the keypoint has no usable audio', (tester) async {
-      await LocaleSettings.setLocale(AppLocale.en);
+      await LocaleSettings.setLocale(AppLocale.vi);
 
       await tester.pumpWidget(
         _buildPopup(
@@ -51,7 +51,7 @@ void main() {
 
     testWidgets('keeps the action button close to the bottom edge without extra inset gap', (tester) async {
       _setPhoneViewport(tester);
-      await LocaleSettings.setLocale(AppLocale.en);
+      await LocaleSettings.setLocale(AppLocale.vi);
 
       await tester.pumpWidget(
         _buildPopup(

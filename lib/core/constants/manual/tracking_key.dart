@@ -109,13 +109,22 @@ mixin TrackingKey {
   static const String onboardV2NotificationMaybeLaterClick = 'obd_notif_later';
   static const String onboardV2NotificationResult = 'onboard_v2_notification_result';
   // Habit ("Which one sounds like you?") screen (p7 symptoms).
-  static const String onboardV2P7View = 'obd_symptom_scr_view';
-  // Per-tap symptom toggle — internal telemetry, not a spec event.
+  //* S5 — Chọn vấn đề. Sheet 2026-09-18 BỎ cả ba `obd_symptom_*` (view /
+  //* select / back) và thay bằng đúng một sự kiện ở nút Tiếp tục. Màn này
+  //* không còn sự kiện view nào — sheet không liệt kê, nên app không bịa ra.
+  static const String onboardV2StruggleSelect = 'obd_struggle_select';
+
+  //* S6 — Chọn mong muốn. Trước đây nút Tiếp tục của màn này mượn tên
+  //* `obd_infor_continue` của S7; giờ nó có tên riêng.
+  static const String onboardV2GoalSelect = 'obd_goal_select';
+
+  //* S9 — "Đang tạo lộ trình". Trước đây màn loading mượn `obd_course_view`
+  //* của màn chọn khoá, nên hai màn khác nhau đếm chung một hàng.
+  static const String onboardV2PathLoadingView = 'obd_path_loading_view';
+
   static const String onboardV2SymptomSelect = 'onboard_v2_symptom_select';
   static const String onboardV2SymptomUnselect = 'onboard_v2_symptom_unselect';
-  // Spec `obd_symptom_select`: fired on Habit → Continue (user property `habit_struggle`).
-  static const String onboardV2P7ContinueClick = 'obd_symptom_select';
-  static const String onboardV2SymptomBack = 'obd_symptom_back';
+
   static const String onboardV2P8View = 'obd_course_view';
   static const String onboardV2CoursesLoaded = 'onboard_v2_courses_loaded';
   static const String onboardV2CoursesFailure = 'onboard_v2_courses_failure';
@@ -125,7 +134,10 @@ mixin TrackingKey {
   // (p9 → p11) nhưng GIỮ NGUYÊN chuỗi sự kiện `obd_theme_scr_view` để sheet
   // không phải thêm hàng — hằng số cũ `onboardV2P9View` đã gộp vào
   // `onboardV2P11View`, không còn hai tên cho cùng một sự kiện.
-  static const String onboardV2P10View = 'obd_result_scr_view';
+  // `obd_result_scr_view` đã gỡ 2026-09-18: sheet không có hàng nào cho nó, và
+  // màn Kết quả giờ báo cáo dưới `obd_course_view` (hàng "Pick course") đúng
+  // như sheet. Giữ lại một hằng số không ai gọi chỉ để lần sau có người dựng
+  // phễu trên nó rồi ngồi nhìn một cột luôn bằng 0.
   static const String onboardV2P11View = 'obd_theme_scr_view';
   static const String onboardV2ReminderTimeSelect = 'obd_reminder_time_select';
   // Per-tap theme pick — internal telemetry, not a spec event.

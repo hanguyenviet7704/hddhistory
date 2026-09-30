@@ -47,8 +47,8 @@ class _DailyWarmUpResultBottomSheetState extends State<DailyWarmUpResultBottomSh
         explainLabel: context.l10n.exercise.exerciseExplainButton,
         closeExplainLabel: context.l10n.exercise.exerciseCloseExplainButton,
         title: isNeutral ? context.l10n.dailyWarmUp.answerSaved : null,
-        successAccentColor: isNeutral ? const Color(0xFF554FF0) : null,
-        successBackgroundColor: isNeutral ? const Color(0xFFF2F1FE) : null,
+        successAccentColor: isNeutral ? const Color(0xFFB5860F) : null,
+        successBackgroundColor: isNeutral ? const Color(0xFFFEFAF1) : null,
       ),
     );
   }

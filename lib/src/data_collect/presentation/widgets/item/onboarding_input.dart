@@ -42,13 +42,13 @@ class OnboardingInput extends StatelessWidget {
       autofillHints: obscureText ? null : const [AutofillHints.name],
       scrollPadding: EdgeInsets.only(bottom: 120.h),
       style: AppStyle.text20.copyWith(
-        color: const Color(0xFF917FF6), // Brand/Brand/Primary/300
+        color: const Color(0xFFF1BE3D), // Brand/Brand/Primary/300
         fontWeight: FontWeight.normal,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: AppStyle.text20.copyWith(
-          color: const Color(0xFF917FF6), // Brand/Brand/Primary/300
+          color: const Color(0xFFF1BE3D), // Brand/Brand/Primary/300
           fontWeight: FontWeight.normal,
         ),
         fillColor: AppCustomColor.backgroundBrand,

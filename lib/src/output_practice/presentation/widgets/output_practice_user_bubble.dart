@@ -38,7 +38,7 @@ class OutputPracticeUserBubble extends StatelessWidget {
                 8.horizontalSpace,
                 CircleAvatar(
                   radius: 14.r,
-                  backgroundColor: const Color(0xFF3D37A4),
+                  backgroundColor: const Color(0xFFA48537),
                   child: AppText(
                     userLabel.isNotEmpty ? userLabel[0].toUpperCase() : 'Y',
                     style: AppStyle.text12.copyWith(
@@ -55,7 +55,7 @@ class OutputPracticeUserBubble extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: 0.83.sw),
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF3D37A4),
+              color: const Color(0xFFA48537),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(12.r),
                 topRight: Radius.circular(2.r),

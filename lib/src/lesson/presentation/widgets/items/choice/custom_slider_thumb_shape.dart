@@ -12,7 +12,7 @@ class CustomSliderThumbShape extends SliderComponentShape {
     this.thumbRadius = 12.0,
     this.borderWidth = 3.0,
     this.thumbColor = Colors.white,
-    this.borderColor = const Color(0xFF554FF0),
+    this.borderColor = const Color(0xFFB5860F),
   });
 
   @override

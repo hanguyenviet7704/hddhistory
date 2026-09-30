@@ -23,7 +23,7 @@ class _FakeInAppSurveyRepository implements IInAppSurveyRepository {
 void main() {
   setUp(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
     AppDI.injector.registerSingleton<ITrackingService>(
       AppTrackingService(NoOpTrackingService()),
     );

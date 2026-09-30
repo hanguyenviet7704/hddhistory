@@ -131,7 +131,7 @@ class AppButton extends StatelessWidget {
 
   Color get _colorTextSecondary => Color(0xFF7F8EA4);
 
-  Color get _bgColorPrimary => Color(0xFF554FF0);
+  Color get _bgColorPrimary => Color(0xFFB5860F);
 
   Color get _bgColorSecondary => Color(0xFFE3E8EF);
 

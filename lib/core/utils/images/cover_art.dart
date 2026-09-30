@@ -39,7 +39,7 @@ class CoverArt extends StatelessWidget {
   /// Cover palettes, each a pair the app already uses elsewhere. Deliberately
   /// muted: a stand-in must not out-shout the real covers beside it in a grid.
   static const List<List<Color>> _palettes = [
-    [Color(0xFF6C63FF), Color(0xFF554FF0)],
+    [Color(0xFFFEB600), Color(0xFFB5860F)],
     [Color(0xFF3AA07E), Color(0xFF2F8468)],
     [Color(0xFFE0A32E), Color(0xFFC9862B)],
     [Color(0xFF4C8DD8), Color(0xFF3A6FB5)],
@@ -125,7 +125,7 @@ class CoverArt extends StatelessWidget {
     var hash = 0x811c9dc5;
     for (final unit in value.codeUnits) {
       hash ^= unit;
-      hash = (hash * 0x01000193) & 0x7fffffff;
+      hash = (hash * 0x01936900) & 0x7fffffff;
     }
 
     return hash;

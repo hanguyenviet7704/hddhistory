@@ -38,7 +38,7 @@ class ChangeBackgroundButton extends StatelessWidget {
           width: size.r,
           height: size.r,
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F7FA),
+            color: const Color(0xFFFAF9F7),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(color: const Color(0x2E252525), blurRadius: 16.r, offset: Offset(0, 6.h)),

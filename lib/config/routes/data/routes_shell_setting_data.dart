@@ -65,23 +65,6 @@ class NotificationRoute extends BaseTransitionRouteData with $NotificationRoute 
   Widget buildPageWidget(BuildContext context, GoRouterState state) => const SizedBox();
 }
 
-class ChangeLanguageRoute extends GoRouteData with $ChangeLanguageRoute {
-  const ChangeLanguageRoute();
-
-  @override
-  Page<void> buildPage(BuildContext context, GoRouterState state) {
-    return ModalSheetPage<void>(
-      key: state.pageKey,
-      name: state.name,
-      barrierColor: AppCustomColor.bottomSheetScrim,
-      bounce: true,
-      backgroundColor: AppCustomColor.backgroundWhite,
-      topRadius: const Radius.circular(24),
-      builder: (_) => const ChangeLanguagePage(),
-    );
-  }
-}
-
 class ManageSubscriptionRoute extends BaseTransitionRouteData with $ManageSubscriptionRoute {
   const ManageSubscriptionRoute();
 

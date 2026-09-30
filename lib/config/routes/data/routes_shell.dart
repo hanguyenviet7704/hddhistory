@@ -90,7 +90,6 @@ part of '../routes.dart';
             // because the screen behind was the same screen (owner, 2026-09-05:
             // "phải bấm 2 lần nút thoát góc trái trên mới ra được").
             TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
-            TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage),
             TypedGoRoute<ManageSubscriptionRoute>(path: RoutePath.manageSubscription, name: RouteNamed.manageSubscription),
           ],
         ),
@@ -122,26 +121,10 @@ part of '../routes.dart';
         ),
       ],
     ),
-    //? Habit branch — appended last so existing branch indices are
-    //? unchanged; this branch is index 4.
-    TypedStatefulShellBranch<HabitShellBranchData>(
-      routes: [
-        TypedGoRoute<HabitRoute>(
-          path: RoutePath.habit,
-          name: RouteNamed.habit,
-          routes: [
-            TypedGoRoute<DailyCheckInRoute>(
-              path: RoutePath.dailyCheckIn,
-              name: RouteNamed.dailyCheckIn,
-            ),
-          ],
-        ),
-      ],
-    ),
-    //? Library branch — appended last so existing branch indices are unchanged;
-    //? this branch is index 5. My Creations (`myLessons`) moved here from the
-    //? Setting branch with the Library tab: the row that opens it now lives on
-    //? this branch, and a push must stay inside its own branch to be visible.
+    //? Library branch — nhánh 4 (trước là 5, dịch lên một bậc khi nhánh Habit
+    //? bị gỡ). My Creations (`myLessons`) moved here from the Setting branch
+    //? with the Library tab: the row that opens it now lives on this branch,
+    //? and a push must stay inside its own branch to be visible.
     TypedStatefulShellBranch<LibraryShellBranchData>(
       routes: [
         TypedGoRoute<LibraryRoute>(
@@ -167,6 +150,14 @@ part of '../routes.dart';
             TypedGoRoute<WeekRecapRoute>(
               path: RoutePath.weekRecap,
               name: RouteNamed.weekRecap,
+            ),
+            TypedGoRoute<KnowledgeGraphSearchRoute>(
+              path: RoutePath.knowledgeGraph,
+              name: RouteNamed.knowledgeGraph,
+            ),
+            TypedGoRoute<KnowledgeGraphEntityRoute>(
+              path: RoutePath.knowledgeGraphEntity,
+              name: RouteNamed.knowledgeGraphEntity,
             ),
             TypedGoRoute<MyLessonsRoute>(
               path: RoutePath.myLessons,

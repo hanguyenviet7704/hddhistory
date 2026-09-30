@@ -6,19 +6,19 @@ part of '../../study_journal.dart';
 /// quantity of the same thing (study), and a rainbow would read as four
 /// different kinds of day.
 const List<Color> _kLevelColors = [
-  Color(0xFFE7E5FC),
-  Color(0xFFC0BAF7),
-  Color(0xFF8B83EF),
-  Color(0xFF554FF0),
+  Color(0xFFFCF5E5),
+  Color(0xFFF7E6BA),
+  Color(0xFFE6B740),
+  Color(0xFFB5860F),
 ];
 
 const Color _kEmptyPastColor = Color(0xFFECECF0);
 const Color _kEmptyPastInk = Color(0xFFA6A8B4);
-const Color _kFutureInk = Color(0xFFC5C1DC);
-const Color _kFutureBorder = Color(0xFFF1EFF8);
-const Color _kStudyBorder = Color(0xFFECEAF7);
-const Color _kDividerColor = Color(0xFFEFEDF8);
-const Color _kNavButtonBg = Color(0xFFF1F0FA);
+const Color _kFutureInk = Color(0xFFDCD4C1);
+const Color _kFutureBorder = Color(0xFFF8F5EF);
+const Color _kStudyBorder = Color(0xFFF7F3EA);
+const Color _kDividerColor = Color(0xFFF8F5ED);
+const Color _kNavButtonBg = Color(0xFFFAF7F0);
 
 /// The month block's own width cap, centred in the card (design
 /// `max-width:290px`), and the largest a single day square is allowed to get

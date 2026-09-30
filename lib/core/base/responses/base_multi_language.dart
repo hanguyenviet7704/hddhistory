@@ -15,16 +15,10 @@ sealed class BaseMultiLanguage with _$BaseMultiLanguage {
 
 extension BaseMultiLanguageExtension on BaseMultiLanguage {
   String get text {
-    AppLocale locale = AppDI.injector.get<LocaleCubit>().state;
-    final preferred = switch (locale) {
-      AppLocale.en => en,
-      AppLocale.vi => vi,
-      AppLocale.zh => zh,
-      AppLocale.ja => ja,
-      AppLocale.ko => ko,
-    };
-
-    if (preferred.isNotEmpty) return preferred;
+    // App chỉ còn tiếng Việt, nhưng server vẫn trả đủ các trường ngôn ngữ —
+    // giữ nguyên chuỗi dự phòng bên dưới để nội dung mới backfill một nửa vẫn
+    // hiện được chữ nào đó thay vì để trống.
+    if (vi.isNotEmpty) return vi;
     if (en.isNotEmpty) return en;
     if (vi.isNotEmpty) return vi;
     if (zh.isNotEmpty) return zh;

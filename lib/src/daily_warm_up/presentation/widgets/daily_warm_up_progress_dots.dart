@@ -28,7 +28,7 @@ class DailyWarmUpProgressDots extends StatelessWidget {
           height: 8.w,
           margin: EdgeInsets.symmetric(horizontal: gap / 2),
           decoration: BoxDecoration(
-            color: active ? const Color(0xFF4B44CA) : const Color(0xFFE3E8EF),
+            color: active ? const Color(0xFF94762A) : const Color(0xFFE3E8EF),
             borderRadius: BorderRadius.circular(999.r),
           ),
         );

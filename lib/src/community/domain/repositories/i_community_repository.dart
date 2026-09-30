@@ -118,8 +118,21 @@ abstract interface class ICommunityRepository {
   TaskEither<AppException, CommunityChatMessageEntity> sendChatMessage({
     required String room,
     required String body,
+    /// The line being answered. Flat — a reply points at one message, it does
+    /// not open a thread.
+    String? replyToId,
   });
 
   /// Returns the message's new state, so the row does not have to guess.
   TaskEither<AppException, ({bool isLiked, int likeCount})> likeChatMessage(String id);
+
+  /// The slice of transcript around [messageId] — what a tap on a pin lands in
+  /// when the pin is older than the page the screen is holding.
+  TaskEither<AppException, CommunityChatContextEntity> getChatMessageContext({
+    required String room,
+    required String messageId,
+  });
+
+  /// The room's house rules, or null when none have been written.
+  TaskEither<AppException, CommunityChatGuideEntity?> getChatGuide();
 }

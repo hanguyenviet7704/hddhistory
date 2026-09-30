@@ -40,7 +40,7 @@ class CuesPlacementWordWithDropZone extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(
-                  color: isHovering ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
+                  color: isHovering ? const Color(0xFFB5860F) : const Color(0xFFE3E8EF),
                   width: isHovering ? 3.w : 2.w,
                 ),
                 borderRadius: BorderRadius.circular(8.r),
@@ -77,9 +77,9 @@ class CuesPlacementWordWithDropZone extends StatelessWidget {
                 height: 37.h,
                 margin: EdgeInsets.symmetric(horizontal: 4.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF554FF0).op(0.1),
+                  color: const Color(0xFFB5860F).op(0.1),
                   border: Border.all(
-                    color: const Color(0xFF554FF0),
+                    color: const Color(0xFFB5860F),
                     width: 2.w,
                     style: BorderStyle.solid,
                   ),

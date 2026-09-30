@@ -9,7 +9,7 @@ part of '../../profile.dart';
 // ---------------------------------------------------------------------------
 
 /// Flat lavender page background behind the white cards (design #F4F4FB).
-const Color _profileBackground = Color(0xFFF4F4FB);
+const Color _profileBackground = Color(0xFFFBF9F4);
 
 /// Muted secondary text/icon color used throughout this design (design
 /// #9AA4B2) — close to but distinct from the shared textTertiary token, so
@@ -68,7 +68,7 @@ class ProfileIdentityCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0x0F14143C),
+                  color: const Color(0x0F3C3114),
                   blurRadius: 24.r,
                   offset: Offset(0, 8.h),
                 ),
@@ -293,7 +293,7 @@ class ProfilePremiumBanner extends StatelessWidget {
                           AppText(
                             text.settingPremiumSubtitle,
                             style: AppStyle.text12.copyWith(
-                              color: const Color(0xFFD6D3F7),
+                              color: const Color(0xFFF7EDD3),
                               fontWeight: FontWeight.w500,
                             ),
                           ),

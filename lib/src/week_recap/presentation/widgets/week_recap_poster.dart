@@ -134,16 +134,12 @@ class WeekRecapPoster extends StatelessWidget {
     // written on it.
     Widget pass({required bool halo, required bool word}) => _haloText(
       rect: word ? WeekRecapSlots.titleWord : WeekRecapSlots.titleNumber,
-      text: word
-          ? l10n.posterTitleWord
-          : recap.weekNumber.toString().padLeft(2, '0'),
+      text: word ? l10n.posterTitleWord : recap.weekNumber.toString().padLeft(2, '0'),
       family: word ? _kWeekRecapTitleFont : _kWeekRecapNumberFont,
-      fontSize:
-          (word ? WeekRecapSlots.titleWordFontSize : WeekRecapSlots.titleNumberFontSize) * scale,
+      fontSize: (word ? WeekRecapSlots.titleWordFontSize : WeekRecapSlots.titleNumberFontSize) * scale,
       haloRatio: word ? WeekRecapSlots.titleWordHaloRatio : WeekRecapSlots.titleNumberHaloRatio,
       trimRatio: word ? WeekRecapSlots.titleWordTrimRatio : WeekRecapSlots.titleNumberTrimRatio,
-      inkStrokeRatio:
-          word ? WeekRecapSlots.titleWordInkStrokeRatio : WeekRecapSlots.titleNumberInkStrokeRatio,
+      inkStrokeRatio: word ? WeekRecapSlots.titleWordInkStrokeRatio : WeekRecapSlots.titleNumberInkStrokeRatio,
       letterSpacingRatio: word ? 0 : WeekRecapSlots.titleNumberLetterSpacingRatio,
       align: word ? Alignment.topRight : Alignment.topLeft,
       haloPass: halo,
@@ -166,12 +162,14 @@ class WeekRecapPoster extends StatelessWidget {
     required double trimRatio,
     required double inkStrokeRatio,
     double letterSpacingRatio = 0,
+
     /// TOP-anchored, always. CSS `top:` places the block's top edge, so
     /// centring vertically shifts the glyphs up by half the leading — with a
     /// tall display face (Billock) that was enough to push the number clean off
     /// the poster's top edge, where the Stack's clip ate it. Nothing threw; the
     /// title simply lost half of itself.
     required Alignment align,
+
     /// true = draw ONLY the white halo; false = only the ink passes. The two
     /// halves are separate slots so both halos can go under both inks — see
     /// [_weekTitle]. Geometry is identical in both, so the layers register.
@@ -215,15 +213,11 @@ class WeekRecapPoster extends StatelessWidget {
               // 2b. A navy stroke over the fill. Two jobs share it: the word's
               //     weight correction (match the number's measured ink) and the
               //     poster-wide renderer compensation — see the slots table.
-              if (!haloPass && inkStrokeRatio > 0)
-                _titleLayer(text, base,
-                    stroke: fontSize * inkStrokeRatio,
-                    color: AppCustomColor.weekRecapTitleInk),
+              if (!haloPass && inkStrokeRatio > 0) _titleLayer(text, base, stroke: fontSize * inkStrokeRatio, color: AppCustomColor.weekRecapTitleInk),
               // 3. A thin white shave on top, which is what thins the navy —
               //    the only way to do it without a lighter cut of the face.
               //    OFF (ratio 0) since the baked-title era; keep it that way.
-              if (!haloPass && trimRatio > 0)
-                _titleLayer(text, base, stroke: fontSize * trimRatio),
+              if (!haloPass && trimRatio > 0) _titleLayer(text, base, stroke: fontSize * trimRatio),
             ],
           ),
         ),
@@ -362,18 +356,23 @@ class WeekRecapPoster extends StatelessWidget {
           ),
         ),
       // "THÓI QUEN ĐÃ GIỮ:", heading the ruled sheet.
-      _slot(
-        WeekRecapSlots.habitsHeading,
-        Align(
-          alignment: Alignment.centerLeft,
-          child: WeekRecapInkText(
-            l10n.habitsHeading.toUpperCase(),
-            style: mono(WeekRecapSlots.habitsHeadingFontSize),
-            color: AppCustomColor.weekRecapLabelRed,
-            scale: scale,
+      //
+      // Chỉ vẽ khi thật sự có dòng bên dưới (xem [_habits], vốn đã có điều
+      // kiện): tính năng Thói quen đã bị gỡ khỏi app, nên tuần nào server
+      // không trả thói quen nào thì tiêu đề này sẽ đứng trơ một mình.
+      if (recap.habits.isNotEmpty)
+        _slot(
+          WeekRecapSlots.habitsHeading,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: WeekRecapInkText(
+              l10n.habitsHeading.toUpperCase(),
+              style: mono(WeekRecapSlots.habitsHeadingFontSize),
+              color: AppCustomColor.weekRecapLabelRed,
+              scale: scale,
+            ),
           ),
         ),
-      ),
     ];
   }
 
@@ -468,9 +467,7 @@ class WeekRecapPoster extends StatelessWidget {
                   // read as an intent this row never had.
                   fontWeight: FontWeight.w400,
                   fontSize: WeekRecapSlots.lessonCourseFontSize * scale,
-                  letterSpacing: WeekRecapSlots.lessonCourseFontSize *
-                      scale *
-                      WeekRecapSlots.trackingLessonCourse,
+                  letterSpacing: WeekRecapSlots.lessonCourseFontSize * scale * WeekRecapSlots.trackingLessonCourse,
                   height: WeekRecapSlots.lineHeightSmallCaps,
                 ),
                 color: AppCustomColor.weekRecapCourseLabel,
@@ -564,9 +561,7 @@ class WeekRecapPoster extends StatelessWidget {
                 fontFamily: _kWeekRecapMonoFont,
                 fontWeight: FontWeight.w700,
                 fontSize: WeekRecapSlots.favouriteLabelFontSize * scale,
-                letterSpacing: WeekRecapSlots.favouriteLabelFontSize *
-                    scale *
-                    WeekRecapSlots.trackingFavouriteLabel,
+                letterSpacing: WeekRecapSlots.favouriteLabelFontSize * scale * WeekRecapSlots.trackingFavouriteLabel,
                 height: WeekRecapSlots.lineHeightSmallCaps,
               ),
               color: AppCustomColor.weekRecapFavouriteLabel,
@@ -735,9 +730,7 @@ class WeekRecapPoster extends StatelessWidget {
               fontFamily: AppFont.mulish,
               fontWeight: FontWeight.w800,
               fontSize: WeekRecapSlots.watermarkFontSize * scale,
-              letterSpacing: WeekRecapSlots.watermarkFontSize *
-                  scale *
-                  WeekRecapSlots.trackingWordmark,
+              letterSpacing: WeekRecapSlots.watermarkFontSize * scale * WeekRecapSlots.trackingWordmark,
               height: WeekRecapSlots.lineHeightSolid,
             ),
             // The poster's own dark ink, not the brand violet: on cream paper

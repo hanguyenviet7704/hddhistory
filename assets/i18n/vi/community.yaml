@@ -229,3 +229,15 @@ tourChatBody: "Giao lưu cùng cộng đồng, thoải mái đóng góp, không 
 tourComposeTitle: "Bắt đầu khám phá"
 tourComposeBody: "Bạn có câu chuyện muốn chia sẻ, hay chỉ muốn gửi lời chào tới thành viên MeUp?"
 tourComposeCta: "Viết bài đầu tiên"
+# --- Tin nhắn ghim và nội quy nhóm (thiết kế S-03b / S-03c) ---
+chatPinBarJump: Tới tin nhắn đã ghim
+chatPinListTitle: Tin nhắn đã ghim
+chatPinCount(count): ${count} tin nhắn đã ghim
+chatGuideTitle: Hướng dẫn & nội quy nhóm
+chatBackToLatest: Tin mới nhất
+chatReportAction: Báo cáo
+chatReplyRemoved: Tin nhắn đã bị gỡ
+chatPinAdminOnly: Ghim tin nhắn là quyền của quản trị viên
+chatGuideDo: Nên
+chatGuideDont: Không
+chatGuideStarters: "Chưa biết nói gì? Hãy thử:"

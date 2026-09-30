@@ -45,7 +45,6 @@ void main() {
       kRoadmapSourceResumeChipHome: roadmapHomeSources,
       kRoadmapSourceResumeChipExplore: roadmapExploreSources,
       kRoadmapSourceResumeChipLibrary: roadmapLibrarySources,
-      kRoadmapSourceResumeChipHabit: roadmapHabitSources,
     };
 
     resumeChipSourcesByTab.forEach((source, group) {
@@ -55,17 +54,10 @@ void main() {
       });
     });
 
-    test('shows a back button for the habit detail rail', () {
-      // "Đọc thêm" inside the habit detail sheet pops the sheet and .go()s to
-      // the roadmap — the sheet is gone and the roadmap is its branch's root,
-      // so without this the user is stranded exactly as 'home_new_today' was.
-      expect(roadmapShowsBackButton('habit_detail'), isTrue);
-    });
-
     test('shows a back button for a course attached to a community post', () {
       // The attached-course card `.go()`s to the roadmap from the Community
       // branch, so the roadmap is its branch's root with nothing to pop —
-      // the same strand as 'home_new_today' and 'habit_detail'.
+      // the same strand as 'home_new_today'.
       expect(roadmapShowsBackButton(kRoadmapSourceCommunityPost), isTrue);
     });
 
@@ -79,14 +71,12 @@ void main() {
       expect(roadmapShowsBackButton(''), isFalse);
     });
 
-    test('keeps the Home, Explore and Habit sets disjoint', () {
+    test('keeps the Home and Explore sets disjoint', () {
       // A source in two sets would make the back destination ambiguous:
       // _backFromRoadmap checks them in order, so an overlap would silently send
       // the user to whichever set is tested first rather than where they came
       // from.
       expect(roadmapHomeSources.intersection(roadmapExploreSources), isEmpty);
-      expect(roadmapHabitSources.intersection(roadmapHomeSources), isEmpty);
-      expect(roadmapHabitSources.intersection(roadmapExploreSources), isEmpty);
     });
   });
 }

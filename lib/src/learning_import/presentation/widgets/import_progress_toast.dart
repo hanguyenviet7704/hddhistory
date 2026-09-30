@@ -76,7 +76,7 @@ class _ToastCard extends StatelessWidget {
               width: 38.w,
               height: 38.w,
               decoration: BoxDecoration(
-                color: const Color(0xFFEEEDFB),
+                color: const Color(0xFFFBF7ED),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               alignment: Alignment.center,

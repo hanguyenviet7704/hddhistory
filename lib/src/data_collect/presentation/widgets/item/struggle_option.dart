@@ -26,7 +26,7 @@ class StruggleOption extends StatelessWidget {
           color: isSelected ? Colors.white : const Color(0xFFF5F7FB), // Background/Gray
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF554FF0) // Brand/Primary
+                ? const Color(0xFFB5860F) // Brand/Primary
                 : const Color(0xFFE3E8EF), // Border/Default
             width: 2,
           ),
@@ -50,7 +50,7 @@ class StruggleOption extends StatelessWidget {
             if (isSelected)
               Icon(
                 Icons.check_rounded,
-                color: const Color(0xFF554FF0), // Brand/Primary
+                color: const Color(0xFFB5860F), // Brand/Primary
                 size: 28.sp,
               ),
           ],

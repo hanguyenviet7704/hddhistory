@@ -78,5 +78,5 @@ String _debugLocaleCode() {
   if (AppDI.injector.isRegistered<LocaleCubit>()) {
     return AppDI.injector.get<LocaleCubit>().state.languageCode;
   }
-  return AppLocale.en.languageCode;
+  return AppLocale.vi.languageCode;
 }

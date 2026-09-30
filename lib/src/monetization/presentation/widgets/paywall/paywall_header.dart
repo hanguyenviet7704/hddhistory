@@ -46,7 +46,7 @@ class _PaywallCloseButton extends StatelessWidget {
               ),
               child: Icon(
                 Icons.close_rounded,
-                color: const Color(0xFF6B659B),
+                color: const Color(0xFF7A6E4F),
                 size: 19.w,
               ),
             ),
@@ -94,7 +94,7 @@ class PremiumPill extends StatelessWidget {
               gradient: const LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [Color(0xFF5851D5), Color(0xFF857EF7)],
+                colors: [Color(0xFF937424), Color(0xFFF3BF3B)],
               ),
               borderRadius: BorderRadius.circular(8.r),
             ),

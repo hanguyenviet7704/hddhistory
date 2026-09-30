@@ -17,11 +17,11 @@ class KeypointLockedCard extends StatelessWidget {
   // Design palette, verbatim. The pastels are this card's own — they stand for
   // unspecified locked content, so they deliberately match no live content
   // token (`brandPrimary` tints them, but none of them IS a brand color).
-  static const Color _artGradientStart = Color(0xFFD9D5F5);
-  static const Color _artGradientEnd = Color(0xFFEFEDFA);
-  static const Color _skeletonTitle = Color(0xFFC9C6E4);
-  static const Color _skeletonLine = Color(0xFFD5D3E8);
-  static const Color _badgeBackground = Color(0xFFEEE9FE);
+  static const Color _artGradientStart = Color(0xFFF5ECD5);
+  static const Color _artGradientEnd = Color(0xFFFAF6ED);
+  static const Color _skeletonTitle = Color(0xFFE4DCC6);
+  static const Color _skeletonLine = Color(0xFFE8E2D3);
+  static const Color _badgeBackground = Color(0xFFFEF8E9);
   static const Color _bodyText = Color(0xFF5F6F86);
 
   @override

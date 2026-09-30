@@ -15,8 +15,8 @@ class GuestLoginButton extends StatelessWidget {
     return SocialLoginButton(
       text: context.l10n.auth.authGuestOption,
       icon: const SizedBox.shrink(), // No icon for guest button
-      backgroundColor: const Color(0xFFEBEAFD),
-      textColor: const Color(0xFF110751),
+      backgroundColor: const Color(0xFFFDF8EA),
+      textColor: const Color(0xFF513C07),
       onPressed: onPressed,
       showArrow: true,
       isLoading: isLoading,

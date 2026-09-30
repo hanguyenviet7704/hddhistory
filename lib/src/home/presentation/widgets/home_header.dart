@@ -104,7 +104,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFB0ACF5), Color(0xFFB0ACF5), Color(0xFF8579F3)],
+          colors: [Color(0xFFF5E0AC), Color(0xFFF5E0AC), Color(0xFFECB52A)],
           stops: [0.0, 0.5, 1.0],
         ),
       ),

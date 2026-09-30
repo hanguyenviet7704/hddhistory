@@ -48,7 +48,7 @@ class _CountdownRowState extends State<_CountdownRow> {
           style: AppStyle.text12.copyWith(
             fontSize: 13.sp,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF8F8AB9),
+            color: const Color(0xFF7E6F4B),
           ),
         ),
         8.horizontalSpace,
@@ -65,7 +65,7 @@ class _CountdownRowState extends State<_CountdownRow> {
     constraints: BoxConstraints(minWidth: 38.w),
     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
     decoration: BoxDecoration(
-      color: const Color(0xFFEDEAFD),
+      color: const Color(0xFFFDF8EA),
       borderRadius: BorderRadius.circular(9.r),
     ),
     child: AppText(
@@ -73,7 +73,7 @@ class _CountdownRowState extends State<_CountdownRow> {
       textAlign: TextAlign.center,
       style: AppStyle.text16.copyWith(
         fontWeight: FontWeight.w800,
-        color: const Color(0xFF3A3355),
+        color: const Color(0xFF554B33),
       ),
     ),
   );
@@ -84,7 +84,7 @@ class _CountdownRowState extends State<_CountdownRow> {
       ':',
       style: AppStyle.text16.copyWith(
         fontWeight: FontWeight.w800,
-        color: const Color(0xFFA8A2D6),
+        color: const Color(0xFFC2AC75),
       ),
     ),
   );
@@ -98,7 +98,7 @@ class _CloseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFF2F1FA),
+      color: const Color(0xFFFAF7F1),
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -109,7 +109,7 @@ class _CloseButton extends StatelessWidget {
           child: Icon(
             Icons.close_rounded,
             size: 18.w,
-            color: const Color(0xFF6B659B),
+            color: const Color(0xFF7A6E4F),
           ),
         ),
       ),

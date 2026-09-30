@@ -75,14 +75,14 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
             AppText(
               context.l10n.warmUp.introTitle,
               textAlign: TextAlign.center,
-              style: AppStyle.text32.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w700),
+              style: AppStyle.text32.copyWith(color: const Color(0xFF826A2F), fontWeight: FontWeight.w700),
             ),
             12.verticalSpace,
             AppText(
               context.l10n.warmUp.introSubtitle,
               textAlign: TextAlign.center,
               maxLines: 2,
-              style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w500),
+              style: AppStyle.text16.copyWith(color: const Color(0xFF826A2F), fontWeight: FontWeight.w500),
             ),
           ],
         );
@@ -90,7 +90,7 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
         return Scaffold(
           key: const Key('warm-up-intro-page'),
           // Transparent only when a custom study background is active.
-          backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFC7C5FA)),
+          backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFFAEBC5)),
           body: ThemedBackground(
             child: SafeArea(
               child: ListView(
@@ -168,7 +168,7 @@ class _WarmUpIntroPageState extends State<WarmUpIntroPage> with SingleTickerProv
                     context.l10n.warmUp.skipToLesson,
                     // Bare on the background (no card behind it) — swap to
                     // light ink over a dark custom bg.
-                    style: AppStyle.text16.copyWith(color: studyThemeOnBg(context, const Color(0xFF362F82)), fontWeight: FontWeight.w600),
+                    style: AppStyle.text16.copyWith(color: studyThemeOnBg(context, const Color(0xFF826A2F)), fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

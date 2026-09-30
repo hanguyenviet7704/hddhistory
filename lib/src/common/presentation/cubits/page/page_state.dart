@@ -43,7 +43,6 @@ extension PageStateX on PageState {
       RouteNamed.courseRoadmap,
       RouteNamed.myLessons,
       RouteNamed.lessonReader,
-      RouteNamed.habit,
       RouteNamed.library,
       // My history is a shelf you browse, not a step in a flow — same call as
       // [RouteNamed.myLessons] beside it. It also has no tab of its own, so

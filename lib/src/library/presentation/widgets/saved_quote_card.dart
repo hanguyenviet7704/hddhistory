@@ -6,20 +6,20 @@ part of '../../library.dart';
 // ---------------------------------------------------------------------------
 
 /// The oversized opening quote behind the title (design #F0EEFC).
-const Color _kQuoteMark = Color(0xFFF0EEFC);
+const Color _kQuoteMark = Color(0xFFFCF8EE);
 
 /// Short rule between title and course name (design #CFCBF2).
-const Color _kQuoteDivider = Color(0xFFCFCBF2);
+const Color _kQuoteDivider = Color(0xFFF2E7CB);
 
 /// Course name under the rule (design #5F6F86).
 const Color _kQuoteCourseText = Color(0xFF5F6F86);
 
 /// Hexagon ring around the artwork (design #DCD7F7) and its inner well.
-const Color _kQuoteHexRing = Color(0xFFDCD7F7);
-const Color _kQuoteHexWell = Color(0xFFF0EEFC);
+const Color _kQuoteHexRing = Color(0xFFF7EED7);
+const Color _kQuoteHexWell = Color(0xFFFCF8EE);
 
 /// The card's back face (design #211B40) — the only dark surface in Library.
-const Color _kQuoteBackFace = Color(0xFF211B40);
+const Color _kQuoteBackFace = Color(0xFF40361B);
 
 /// Toast pill behind "Saved"/"Removed" (design #0D121C).
 const Color _kSavedToastBg = Color(0xFF0D121C);

@@ -128,7 +128,7 @@ targets:
       slang_build_runner:
         enabled: true  # Allows regeneration via build_runner in addition to `dart run slang`
         options:
-          base_locale: en
+          base_locale: vi
           fallback_strategy: base_locale
           input_directory: assets/i18n
           input_file_pattern: .yaml

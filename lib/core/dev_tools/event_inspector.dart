@@ -323,7 +323,7 @@ class _KindChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isScreen ? const Color(0xFF1F5FA6) : const Color(0xFF3A2E5C),
+        color: isScreen ? const Color(0xFF1F5FA6) : const Color(0xFF5C4F2E),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

@@ -403,7 +403,7 @@ class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF554FF0),
+                                    color: const Color(0xFFB5860F),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Text(
@@ -458,7 +458,7 @@ class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
                                   height: 20.w,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.w,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF554FF0)),
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB5860F)),
                                   ),
                                 ),
                               )
@@ -490,13 +490,13 @@ class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
                                     thumbRadius: 6.w,
                                     borderWidth: 2.5.w,
                                     thumbColor: Colors.white,
-                                    borderColor: const Color(0xFF554FF0),
+                                    borderColor: const Color(0xFFB5860F),
                                   ),
                                   overlayShape: RoundSliderOverlayShape(overlayRadius: 16.r),
-                                  activeTrackColor: const Color(0xFF554FF0),
+                                  activeTrackColor: const Color(0xFFB5860F),
                                   inactiveTrackColor: const Color(0xFFCDD5DF),
-                                  thumbColor: const Color(0xFF554FF0),
-                                  overlayColor: const Color(0xFF554FF0).withAlpha((0.2 * 255).round()),
+                                  thumbColor: const Color(0xFFB5860F),
+                                  overlayColor: const Color(0xFFB5860F).withAlpha((0.2 * 255).round()),
                                   trackShape: RoundedRectSliderTrackShape(),
                                 ),
                                 child: Slider(

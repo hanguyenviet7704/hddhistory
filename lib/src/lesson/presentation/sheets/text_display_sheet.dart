@@ -74,7 +74,7 @@ class _TextDisplaySheetState extends State<TextDisplaySheet> {
               Expanded(
                 child: AppText(
                   context.l10n.lesson.textDisplayTitle,
-                  style: AppStyle.textBold20.copyWith(color: const Color(0xFF171735)),
+                  style: AppStyle.textBold20.copyWith(color: const Color(0xFF352C17)),
                 ),
               ),
               GestureDetector(

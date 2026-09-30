@@ -74,11 +74,11 @@ class _LogicSaleCountdownStripState extends State<_LogicSaleCountdownStrip> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFD9D5F6)),
+        border: Border.all(color: const Color(0xFFF6EDD5)),
       ),
       child: Row(
         children: [
-          Icon(Icons.bolt_rounded, size: 15.w, color: const Color(0xFF6E67D8)),
+          Icon(Icons.bolt_rounded, size: 15.w, color: const Color(0xFF9C7C28)),
           6.horizontalSpace,
           Expanded(
             child: AppText(
@@ -89,7 +89,7 @@ class _LogicSaleCountdownStripState extends State<_LogicSaleCountdownStrip> {
               style: AppStyle.text12.copyWith(
                 fontSize: 11.5.sp,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF6E67D8),
+                color: const Color(0xFF9C7C28),
               ),
             ),
           ),
@@ -100,7 +100,7 @@ class _LogicSaleCountdownStripState extends State<_LogicSaleCountdownStrip> {
             style: AppStyle.text14.copyWith(
               fontSize: 13.sp,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFF3A3355),
+              color: const Color(0xFF554B33),
             ),
           ),
         ],

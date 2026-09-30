@@ -40,7 +40,7 @@ class CourseStoryCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0x3814143C), // rgba(20,20,60,.22)
+                color: const Color(0x383C3114), // rgba(20,20,60,.22)
                 offset: Offset(0, 16.h),
                 blurRadius: 40.r,
               ),
@@ -336,7 +336,7 @@ class _PanelWithBrandDisc extends StatelessWidget {
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w800,
                   height: 1.2,
-                  color: const Color(0xFF2A2340),
+                  color: const Color(0xFF403823),
                 ),
               ),
               if (description.isNotEmpty) ...[
@@ -559,7 +559,7 @@ class _CoverBody extends StatelessWidget {
                       fontSize: 7.sp,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 7 * 0.01,
-                      color: const Color(0xFF2A2340),
+                      color: const Color(0xFF403823),
                     ),
                   ),
                 ],

@@ -18,9 +18,9 @@ class CustomRadio extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF462BF4) : Colors.white, // button/primary/default or white
+          color: isSelected ? const Color(0xFFAE7F09) : Colors.white, // button/primary/default or white
           border: Border.all(
-            color: isSelected ? const Color(0xFF462BF4) : const Color(0xFFE3E8EF), // button/primary/default or Border/Default
+            color: isSelected ? const Color(0xFFAE7F09) : const Color(0xFFE3E8EF), // button/primary/default or Border/Default
             width: 2.w,
           ),
           shape: BoxShape.circle,

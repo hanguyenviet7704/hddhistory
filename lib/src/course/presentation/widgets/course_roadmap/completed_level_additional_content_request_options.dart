@@ -85,7 +85,7 @@ class _AdditionalContentOptionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(8.r),
-        border: selected ? Border.all(color: const Color(0xFF4B44CA), width: 2.w) : null,
+        border: selected ? Border.all(color: const Color(0xFF94762A), width: 2.w) : null,
       ),
       child: Material(
         color: Colors.transparent,

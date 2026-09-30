@@ -78,7 +78,6 @@ mixin RoutePath {
   static const String setting = 'setting';
   static const String profileInfo = 'profile-info';
   static const String notification = 'notification';
-  static const String changeLanguage = 'change-language';
   static const String manageSubscription = 'manage-subscription';
   static const String profileDeleteDialog = 'profile-delete-dialog';
   static const String userAchievementBottomSheet = 'user-achievement-bottom-sheet';
@@ -89,6 +88,13 @@ mixin RoutePath {
   static const String libraryHistory = 'history';
   static const String savedCourses = 'saved';
   static const String savedCards = 'saved-cards';
+
+  //* Library - Đồ thị tri thức lịch sử (tra cứu thực thể + hồ sơ thực thể)
+  // Nằm trong nhánh /library vì lối vào là một thẻ trên tab Thư viện: một
+  // đường dẫn được push từ nhánh khác sẽ hiện trong navigator của nhánh đó,
+  // tức là ngoài màn hình.
+  static const String knowledgeGraph = 'knowledge-graph';
+  static const String knowledgeGraphEntity = 'knowledge-graph/:entityId';
 
   //* Library - Week recap ("Hành trình tuần qua" + the Sổ tay it is filed into)
   static const String weekRecapArchive = 'week-recap';
@@ -110,8 +116,6 @@ mixin RoutePath {
   static const String collectionCourses = 'collection-courses/:collectionId';
   static const String importGenerating = 'import-generating';
 
-  //* Habit
-  static const String habit = '/habit';
   static const String dailyCheckIn = 'daily-check-in';
 
   //* Community — the fifth nav tab. Its sub-screens are nested so a push stays
@@ -210,7 +214,6 @@ mixin RouteNamed {
   static const String profile = 'Profile';
   static const String profileInfo = 'Profile Info';
   static const String notification = 'Notification';
-  static const String changeLanguage = 'Change Language';
   static const String manageSubscription = 'Manage Subscription';
   static const String profileDeleteDialog = 'Profile Delete Dialog';
   static const String userAchievementBottomSheet = 'User Achievement Bottom Sheet';
@@ -221,6 +224,10 @@ mixin RouteNamed {
   static const String libraryHistory = 'Library History';
   static const String savedCourses = 'Saved Courses';
   static const String savedCards = 'Saved Cards';
+
+  //* Library - Knowledge graph
+  static const String knowledgeGraph = 'Knowledge Graph';
+  static const String knowledgeGraphEntity = 'Knowledge Graph Entity';
 
   //* Library - Week recap
   static const String weekRecapArchive = 'Week Recap Archive';
@@ -233,8 +240,6 @@ mixin RouteNamed {
   static const String collectionCourses = 'Collection Courses';
   static const String importGenerating = 'Import Generating';
 
-  //* Habit
-  static const String habit = 'Habit';
   static const String dailyCheckIn = 'Daily Check In';
 
   //* Community

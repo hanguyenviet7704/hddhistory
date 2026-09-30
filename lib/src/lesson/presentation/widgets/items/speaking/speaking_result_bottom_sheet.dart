@@ -146,7 +146,7 @@ class SpeakingGoodPointsSection extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFEBEAFD),
+        color: const Color(0xFFFDF8EA),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
@@ -165,7 +165,7 @@ class SpeakingGoodPointsSection extends StatelessWidget {
               AppText(
                 context.l10n.exercise.exerciseGoodPointsTitle,
                 style: AppStyle.textBold14.copyWith(
-                  color: const Color(0xFF554FF0),
+                  color: const Color(0xFFB5860F),
                   height: 1.75,
                 ),
               ),
@@ -176,8 +176,8 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             child: isLoading && points.isEmpty
                 ? const _SpeakingPointsSkeleton(
                     key: ValueKey('skeleton-goodPoints'),
-                    baseColor: Color(0xFFC7C5FA),
-                    highlightColor: Color(0xFFEBEAFD),
+                    baseColor: Color(0xFFFAEBC5),
+                    highlightColor: Color(0xFFFDF8EA),
                   )
                 : points.isEmpty
                 ? const SizedBox.shrink()
@@ -188,7 +188,7 @@ class SpeakingGoodPointsSection extends StatelessWidget {
                       color: const Color(0xFF364152),
                       height: 1.5,
                     ),
-                    indexColor: const Color(0xFF554FF0),
+                    indexColor: const Color(0xFFB5860F),
                   ),
           ),
         ],

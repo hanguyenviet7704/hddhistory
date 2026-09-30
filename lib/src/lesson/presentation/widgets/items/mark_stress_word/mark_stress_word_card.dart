@@ -14,7 +14,7 @@ class MarkStressWordCard extends StatelessWidget {
 
   Color get backgroundColor {
     return switch (state) {
-      AnswerState.selected => const Color(0xFFEFF0FE),
+      AnswerState.selected => const Color(0xFFFEFAEF),
       AnswerState.correct => const Color(0xFFEAFFEF),
       AnswerState.incorrect => const Color(0xFFFDEAE7),
       AnswerState.correctNotSelected => Colors.white,
@@ -25,7 +25,7 @@ class MarkStressWordCard extends StatelessWidget {
 
   Color get borderColor {
     return switch (state) {
-      AnswerState.selected => const Color(0xFF554FF0),
+      AnswerState.selected => const Color(0xFFB5860F),
       AnswerState.correct => const Color(0xFF1DA75E),
       AnswerState.incorrect => const Color(0xFFE34646),
       AnswerState.correctNotSelected => const Color(0xFF364152),

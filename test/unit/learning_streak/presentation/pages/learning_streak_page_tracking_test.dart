@@ -53,7 +53,7 @@ Future<_LearningStreakPageHarness> _pumpHarness(WidgetTester tester) async {
   });
 
   await setupLocaleCubitForTests();
-  LocaleSettings.setLocaleSync(AppLocale.en);
+  LocaleSettings.setLocaleSync(AppLocale.vi);
 
   final mockTracking = MockTrackingService();
   AppDI.injector.registerSingleton<ITrackingService>(

@@ -7,8 +7,8 @@ class _InAppSurveyTitle extends StatelessWidget {
 
   static const LinearGradient _titleGradient = LinearGradient(
     colors: [
-      Color(0xFF4B44CA),
-      Color(0xFFA052FF),
+      Color(0xFF94762A),
+      Color(0xFFDD9E00),
       Color(0xFFEF81D4),
       Color(0xFFFF8F8F),
       Color(0xFFFFCE66),

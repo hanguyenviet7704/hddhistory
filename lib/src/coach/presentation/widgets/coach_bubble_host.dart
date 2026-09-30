@@ -76,10 +76,6 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
   /// of a tab — the Coach does not belong and this returns null.
   CoachEntry? _entryFor(String routeName) {
     if (routeName == RouteNamed.home) return CoachEntry.home;
-    // Luồng 5 — the Habit tab is its own door: no mood, two pills about the
-    // habit still unwritten today, and with an empty kho a course that teaches
-    // a first habit. The Coach picks WHICH habit; the tab names none.
-    if (routeName == RouteNamed.habit) return CoachEntry.habit;
     // Khám phá and Thư viện share the HOME door (owner, 2026-09-05).
     //
     // The bubble was ALREADY appearing on both, and with the Home flow — but by
@@ -117,15 +113,6 @@ class _CoachBubbleHostBodyState extends State<_CoachBubbleHostBody> {
         AppDI.injector.get<DeeplinkCubit>().openCourseRoadmapFromCoach(navContext, courseId);
       }
     }
-    // Luồng 5 — the sheet may have written today's check-in (⟨Ghi nhận hôm
-    // nay⟩, or a quiz finished in the chat). The Habit tab is sitting right
-    // under it with yesterday's ticks, so reload it: the server has the row,
-    // and a reader who just told the Coach what they did should see it ticked
-    // without pulling to refresh (owner, 2026-09-04).
-    if (entry == CoachEntry.habit) {
-      unawaited(AppDI.injector.get<HabitCubit>().load(showLoading: false));
-    }
-
     if (!mounted) return;
 
     _asked = null;

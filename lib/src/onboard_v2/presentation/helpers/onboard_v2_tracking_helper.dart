@@ -4,7 +4,13 @@ class OnboardV2Tracking {
   const OnboardV2Tracking._();
 
   static void trackPageView(OnboardV2PageStep page) {
-    track(_viewEvent(page), parameters: {'page': _pageName(page)});
+    // Không phải màn nào cũng có sự kiện view trên sheet: S5 (Vấn đề) và S6
+    // (Mong muốn) chỉ được đếm ở nút Tiếp tục. Bịa thêm một hàng view cho
+    // chúng nghĩa là tạo ra một con số không ai yêu cầu và không ai đối chiếu
+    // được.
+    final event = _viewEvent(page);
+    if (event == null) return;
+    track(event, parameters: {'page': _pageName(page)});
   }
 
   static void track(String eventName, {Map<String, dynamic>? parameters}) {
@@ -105,21 +111,26 @@ class OnboardV2Tracking {
     };
   }
 
-  /// Sự kiện view giữ nguyên tên trên sheet dù thứ tự bước đã đổi: nhánh dùng
-  /// lại hàng "paths", vấn đề dùng lại "symptom", mong muốn + cách dạy dùng lại
-  /// "infor", nhắc học dùng lại "notif", loading dùng lại "course".
-  static String _viewEvent(OnboardV2PageStep page) {
+  /// Bước trong app → hàng trên sheet (tab "1. Onboarding (new)", 2026-09-18).
+  ///
+  /// Trước bản này bản đồ được ghép theo tên cũ và có ba chỗ lệch: màn Vấn đề
+  /// báo cáo dưới tên `symptom` (sheet đã BỎ), màn Mong muốn và màn Cách học
+  /// cùng bắn MỘT tên `obd_infor_scr_view` (một màn đếm thành hai), còn màn
+  /// Loading mượn `obd_course_view` của màn chọn khoá. Giờ mỗi màn đúng một
+  /// hàng, và hai màn sheet không có view thì trả null.
+  static String? _viewEvent(OnboardV2PageStep page) {
     return switch (page) {
       OnboardV2PageStep.p1Intro => TrackingKey.onboardV2P1View,
       OnboardV2PageStep.p2Name => TrackingKey.onboardV2P2View,
       OnboardV2PageStep.p3Age => TrackingKey.onboardV2P3View,
       OnboardV2PageStep.p4Branches => TrackingKey.onboardV2P5View,
-      OnboardV2PageStep.p5Problems => TrackingKey.onboardV2P7View,
-      OnboardV2PageStep.p6Desire => TrackingKey.onboardV2P6View,
+      // S5 Vấn đề · S6 Mong muốn — sheet chỉ đếm nút Tiếp tục.
+      OnboardV2PageStep.p5Problems => null,
+      OnboardV2PageStep.p6Desire => null,
       OnboardV2PageStep.p7How => TrackingKey.onboardV2P6View,
       OnboardV2PageStep.p8Reminder => TrackingKey.onboardV2P4View,
-      OnboardV2PageStep.p9Loading => TrackingKey.onboardV2P8View,
-      OnboardV2PageStep.p10Result => TrackingKey.onboardV2P10View,
+      OnboardV2PageStep.p9Loading => TrackingKey.onboardV2PathLoadingView,
+      OnboardV2PageStep.p10Result => TrackingKey.onboardV2P8View,
       OnboardV2PageStep.p11Theme => TrackingKey.onboardV2P11View,
     };
   }

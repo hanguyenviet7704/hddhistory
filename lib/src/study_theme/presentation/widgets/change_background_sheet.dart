@@ -19,7 +19,7 @@ class ChangeBackgroundSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x800B0B10), // design scrim rgba(11,11,16,.5)
+      barrierColor: const Color(0x80100F0B), // design scrim rgba(11,11,16,.5)
       builder: (_) => const ChangeBackgroundSheet(),
     );
   }
@@ -58,7 +58,7 @@ class ChangeBackgroundSheet extends StatelessWidget {
                 children: [
                   AppText(
                     context.l10n.studyTheme.backgroundTitle,
-                    style: AppStyle.textBold20.copyWith(color: const Color(0xFF171735)),
+                    style: AppStyle.textBold20.copyWith(color: const Color(0xFF352C17)),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -126,7 +126,7 @@ class ChangeBackgroundSheet extends StatelessWidget {
                                 child: LinearProgressIndicator(
                                   minHeight: 2,
                                   backgroundColor: Color(0xFFF0F1F6),
-                                  color: Color(0xFF554FF0),
+                                  color: Color(0xFFB5860F),
                                 ),
                               ),
                             ),
@@ -214,7 +214,7 @@ class _UploadBar extends StatelessWidget {
         painter: _DashedRoundedRectPainter(color: const Color(0xFFC7C9D4), radius: 16.r),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFFAFAFC),
+            color: const Color(0xFFFCFBFA),
             borderRadius: BorderRadius.circular(16.r),
           ),
           // The ribbon is drawn past the right edge and relies on this clip to
@@ -268,7 +268,7 @@ class _CornerRibbon extends StatelessWidget {
               width: 72.w,
               padding: EdgeInsets.symmetric(vertical: 3.h),
               alignment: Alignment.center,
-              color: premium ? const Color(0xFFE0A32E) : const Color(0xFF554FF0),
+              color: premium ? const Color(0xFFE0A32E) : const Color(0xFFB5860F),
               child: Text(
                 premium ? 'PRO' : 'FREE',
                 style: const TextStyle(
@@ -305,10 +305,10 @@ class _UnlockPremiumBanner extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFF5B4FE8), Color(0xFF7A5CF0)],
+            colors: [Color(0xFFA87E16), Color(0xFFC39112)],
           ),
           boxShadow: [
-            BoxShadow(color: const Color(0x335B4FE8), blurRadius: 16.r, offset: Offset(0, 6.h)),
+            BoxShadow(color: const Color(0x33A87E16), blurRadius: 16.r, offset: Offset(0, 6.h)),
           ],
         ),
         child: Row(
@@ -541,7 +541,7 @@ class _PresetTile extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(color: const Color(0xFF554FF0), width: 3),
+                    border: Border.all(color: const Color(0xFFB5860F), width: 3),
                   ),
                 ),
               ),
@@ -551,7 +551,7 @@ class _PresetTile extends StatelessWidget {
                 child: Container(
                   width: 22.w,
                   height: 22.w,
-                  decoration: const BoxDecoration(color: Color(0xFF554FF0), shape: BoxShape.circle),
+                  decoration: const BoxDecoration(color: Color(0xFFB5860F), shape: BoxShape.circle),
                   alignment: Alignment.center,
                   child: Icon(Icons.check_rounded, size: 14.w, color: Colors.white),
                 ),
@@ -566,7 +566,7 @@ class _PresetTile extends StatelessWidget {
   LinearGradient? get _gradient {
     if (preset.mode == StudyThemeMode.image || preset.mode == StudyThemeMode.video) return null;
     final colors = preset.gradient.isEmpty
-        ? const [Color(0xFFEFEEF9), Color(0xFFE6EBDE)]
+        ? const [Color(0xFFF9F6EE), Color(0xFFE6EBDE)]
         : preset.gradient.length == 1
             ? [preset.gradient.first, preset.gradient.first]
             : preset.gradient;

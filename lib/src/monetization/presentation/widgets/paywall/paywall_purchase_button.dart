@@ -32,11 +32,11 @@ class _PurchaseButton extends StatelessWidget {
           // carries `inset 0 -3px rgba(0,0,0,.12)` — Flutter's BoxShadow cannot
           // inset, and a 3px inner shelf under a solid fill is not worth a
           // Stack, so only the outer shadow is kept.
-          color: const Color(0xFF5A52F0),
+          color: const Color(0xFFB88810),
           borderRadius: BorderRadius.circular(1000.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF5A52F0).withValues(alpha: 0.28),
+              color: const Color(0xFFB88810).withValues(alpha: 0.28),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),

@@ -42,7 +42,7 @@ class _InlinePlanLoading extends StatelessWidget {
           Container(
             height: 62.h,
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F1FE),
+              color: const Color(0xFFFEFAF1),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(color: AppCustomColor.borderSecondary),
             ),
@@ -63,7 +63,7 @@ class _InlinePlanEmpty extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F1FE),
+        color: const Color(0xFFFEFAF1),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppCustomColor.borderBrand),
       ),

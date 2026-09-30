@@ -195,7 +195,7 @@ class _FloatingIllustration extends StatelessWidget {
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [Color(0xFFDFDCFB), Color(0x00EEEDFB)],
+                        colors: [Color(0xFFFBF2DC), Color(0x00FBF7ED)],
                         stops: [0, 0.7],
                       ),
                     ),

@@ -81,7 +81,7 @@ class PaywallComparisonTable extends StatelessWidget {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0x1A110751), // rgba(17,7,81,.10)
+                color: const Color(0x1A513C07), // rgba(17,7,81,.10)
                 offset: Offset(0, 12.h),
                 blurRadius: 30.r,
               ),
@@ -108,7 +108,7 @@ class PaywallComparisonTable extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(bottom: 11.h),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEEECFA))),
+        border: Border(bottom: BorderSide(color: Color(0xFFFAF6EC))),
       ),
       child: Row(
         // `end`, not `center`: the three labels have different sizes and the
@@ -135,7 +135,7 @@ class PaywallComparisonTable extends StatelessWidget {
               style: AppStyle.text12.copyWith(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF8F8AB9),
+                color: const Color(0xFF7E6F4B),
                 height: 1.2,
               ),
             ),
@@ -148,7 +148,7 @@ class PaywallComparisonTable extends StatelessWidget {
               style: AppStyle.text12.copyWith(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF4B44CA),
+                color: const Color(0xFF94762A),
                 height: 1.2,
               ),
             ),
@@ -170,7 +170,7 @@ class _Row extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 11.h),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFF4F3FC))),
+        border: Border(bottom: BorderSide(color: Color(0xFFFCF9F3))),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -216,7 +216,7 @@ class _Row extends StatelessWidget {
                       height: 16.w,
                       alignment: Alignment.center,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF5A52F0),
+                        color: Color(0xFFB88810),
                         shape: BoxShape.circle,
                       ),
                       child: SvgPicture.string(checkSvg, width: 9.w, height: 9.w),
@@ -231,7 +231,7 @@ class _Row extends StatelessWidget {
                     style: AppStyle.text12.copyWith(
                       fontSize: 12.5.sp,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFF4B44CA),
+                      color: const Color(0xFF94762A),
                       height: 1.3,
                     ),
                   ),

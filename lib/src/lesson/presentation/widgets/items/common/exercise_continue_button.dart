@@ -22,7 +22,7 @@ class ExerciseContinueButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeBgColor = backgroundColor ?? const Color(0xFF554FF0);
+    final activeBgColor = backgroundColor ?? const Color(0xFFB5860F);
     final disabledBgColor = disabledBackgroundColor ?? const Color(0xFFE3E8EF);
     final activeTextColor = textColor ?? Colors.white;
     final disabledTextColor = this.disabledTextColor ?? const Color(0xFF7F8EA4);

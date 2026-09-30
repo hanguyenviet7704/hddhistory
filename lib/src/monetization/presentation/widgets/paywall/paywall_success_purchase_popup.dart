@@ -69,11 +69,11 @@ class PaywallSuccessPurchasePopup extends StatelessWidget {
                     height: 56.h,
                     padding: EdgeInsets.symmetric(horizontal: 34.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF554FF0),
+                      color: const Color(0xFFB5860F),
                       borderRadius: BorderRadius.circular(1000.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF554FF0).withValues(alpha: 0.3),
+                          color: const Color(0xFFB5860F).withValues(alpha: 0.3),
                           blurRadius: 26,
                           offset: const Offset(0, 12),
                         ),

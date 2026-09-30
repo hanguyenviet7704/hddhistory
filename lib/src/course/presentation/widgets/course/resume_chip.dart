@@ -156,8 +156,6 @@ class _ResumeChipHostState extends State<ResumeChipHost> {
     switch (AppDI.injector.get<PageCubit>().state.currentIndex) {
       case 3:
         return kRoadmapSourceResumeChipExplore;
-      case 4:
-        return kRoadmapSourceResumeChipHabit;
       case kLibraryBranchIndex:
         return kRoadmapSourceResumeChipLibrary;
       default:

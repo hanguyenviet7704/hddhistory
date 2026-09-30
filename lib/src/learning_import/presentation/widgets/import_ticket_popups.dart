@@ -19,7 +19,7 @@ part of '../../learning_import.dart';
 /// when the tickets come back.
 
 /// Scrim shade from the design (#0B0B10 at 55%).
-const Color _kTicketScrim = Color(0x8C0B0B10);
+const Color _kTicketScrim = Color(0x8C100F0B);
 
 /// Whole days until [resetsAt], never less than one.
 ///
@@ -126,7 +126,7 @@ class _TicketPopupCard extends StatelessWidget {
               width: 64.w,
               height: 64.w,
               decoration: BoxDecoration(
-                color: const Color(0xFFEEEDFB),
+                color: const Color(0xFFFBF7ED),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               alignment: Alignment.center,
@@ -184,7 +184,7 @@ class _ResetStrip extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 13.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F5FF),
+        color: const Color(0xFFFFFCF5),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(

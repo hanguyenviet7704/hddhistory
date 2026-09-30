@@ -16,7 +16,7 @@ void main() {
 
   group('ContentDocumentEntity.dataAvailable', () {
     test('returns true for explanation documents backed by options only', () {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       const document = ContentDocumentEntity(
         type: ContentDocumentType.explanation,
@@ -33,7 +33,7 @@ void main() {
     });
 
     test('keeps non-explanation empty documents hidden', () {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       const document = ContentDocumentEntity(
         type: ContentDocumentType.text,

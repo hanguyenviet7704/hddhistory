@@ -214,8 +214,8 @@ class LessonTimeWidget extends StatelessWidget {
     this.gap = 8,
     this.strokeWidth = 3,
     this.textStyle,
-    this.textColor = const Color(0xFF554FF0),
-    this.progressColor = const Color(0xFF554FF0),
+    this.textColor = const Color(0xFFB5860F),
+    this.progressColor = const Color(0xFFB5860F),
     this.trackColor = const Color(0xFFE3E8EF),
   });
 

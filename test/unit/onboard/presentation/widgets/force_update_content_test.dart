@@ -28,7 +28,7 @@ void main() {
 
   group('ForceUpdateContent', () {
     testWidgets('renders the localized copy and the decor asset', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
@@ -44,7 +44,7 @@ void main() {
     });
 
     testWidgets('forwards update taps', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
       var updateTapCount = 0;
       await tester.pumpWidget(buildSubject(onUpdatePressed: () => updateTapCount += 1));
       await tester.pump();
@@ -56,7 +56,7 @@ void main() {
     });
 
     testWidgets('refuses to pop — the back gesture must not dismiss a forced update', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 

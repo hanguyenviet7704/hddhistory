@@ -29,7 +29,7 @@ class CuesPlacementPauseMark extends StatelessWidget {
   Color get backgroundColor {
     if (state == null) return Colors.white;
     return switch (state!) {
-      AnswerState.selected => const Color(0xFFEFF0FE),
+      AnswerState.selected => const Color(0xFFFEFAEF),
       AnswerState.correct => const Color(0xFFEAFFEF),
       AnswerState.incorrect => const Color(0xFFFDEAE7),
       _ => Colors.white,
@@ -39,7 +39,7 @@ class CuesPlacementPauseMark extends StatelessWidget {
   Color get borderColor {
     if (state == null) return const Color(0xFFE3E8EF);
     return switch (state!) {
-      AnswerState.selected => const Color(0xFF554FF0),
+      AnswerState.selected => const Color(0xFFB5860F),
       AnswerState.correct => const Color(0xFF1DA75E),
       AnswerState.incorrect => const Color(0xFFE34646),
       _ => const Color(0xFFE3E8EF),
@@ -77,7 +77,7 @@ class CuesPlacementPauseMark extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
-        border: Border.all(color: const Color(0xFF554FF0), width: 2.w),
+        border: Border.all(color: const Color(0xFFB5860F), width: 2.w),
         borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(

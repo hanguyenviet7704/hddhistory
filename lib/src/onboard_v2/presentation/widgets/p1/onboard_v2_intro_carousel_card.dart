@@ -122,13 +122,13 @@ class _OnboardV2CarouselSlotValues {
     final t = emphasis.clamp(0.0, 1.0);
     return [
       BoxShadow(
-        color: Color.lerp(const Color(0x33211B40), const Color(0x47211B40), t)!,
+        color: Color.lerp(const Color(0x3340361B), const Color(0x4740361B), t)!,
         blurRadius: ui.lerpDouble(18, 40, t)!.r,
         spreadRadius: ui.lerpDouble(-8, -12, t)!.r,
         offset: Offset(0, ui.lerpDouble(6, 18, t)!.h),
       ),
       BoxShadow(
-        color: Color.lerp(Colors.transparent, const Color(0x14211B40), t)!,
+        color: Color.lerp(Colors.transparent, const Color(0x1440361B), t)!,
         blurRadius: 0,
         offset: Offset(0, ui.lerpDouble(0, 4, t)!.h),
       ),

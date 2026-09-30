@@ -177,15 +177,6 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                   return SettingSectionCard(
                     title: context.l10n.setting.settingSectionHeaderGeneral,
                     children: [
-                      SettingOptionTile(
-                        iconAsset: AppAsset.svg.app.icGlobe,
-                        title: context.l10n.setting.settingRowLanguage,
-                        trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
-                        onTap: () {
-                          AppService.instance.appTrackingService.trackSettingLanguageClick(context.read<LocaleCubit>().state.label);
-                          const ChangeLanguageRoute().go(context);
-                        },
-                      ),
                       // Theme moved HERE from Home's header (design `6 ·
                       // Profile` → Settings): Home's slot now carries the
                       // avatar, and a background you change once a month

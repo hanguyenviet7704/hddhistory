@@ -6,7 +6,7 @@ import '../../../../support/test_di.dart';
 void main() {
   setUp(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
   });
 
   tearDown(() async {
@@ -16,7 +16,7 @@ void main() {
   group('showLessonAudioSpeedSheet', () {
     testWidgets('keeps the preset buttons close to the bottom edge without extra spacing', (tester) async {
       _setPhoneViewport(tester);
-      await LocaleSettings.setLocale(AppLocale.en);
+      await LocaleSettings.setLocale(AppLocale.vi);
 
       await tester.pumpWidget(
         ScreenUtilInit(

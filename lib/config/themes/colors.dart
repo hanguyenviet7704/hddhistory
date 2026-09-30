@@ -1,20 +1,20 @@
 part of 'themes.dart';
 
 mixin AppCustomColor {
-  static const List<Color> background = [Color(0xFFFF15F0), Color(0xFFF95C70), Color(0xFFF58822), Color(0xFFD02027)];
+  static const List<Color> background = [Color(0xFFBB8600), Color(0xFFF95C70), Color(0xFFF58822), Color(0xFFD02027)];
 
   static const List<Color> gradientButton = [Color(0xFFE86423), Color(0xFFF38421), Color(0xFFF7704B), Color(0xFFF86959), Color(0xFFFA4A92)];
 
-  static const List<Color> gradientBackground = [Color(0xFFE35524), Color(0xFFF58921), Color(0xFFF86463), Color(0xFFFF15F0)];
+  static const List<Color> gradientBackground = [Color(0xFFE35524), Color(0xFFF58921), Color(0xFFF86463), Color(0xFFBB8600)];
 
-  static const List<Color> gradientAvatarBorder = [Color(0xFFD02027), Color(0xFFF58822), Color(0xFFF95C70), Color(0xFFFF15F0)];
+  static const List<Color> gradientAvatarBorder = [Color(0xFFD02027), Color(0xFFF58822), Color(0xFFF95C70), Color(0xFFBB8600)];
 
   static const List<Color> gradientRoleplay = [
     Color(0xFFE3E7EF),
     Color(0xFFFFA9A8),
     Color(0xFFF8A1DC),
-    Color(0xFFE6A5F2),
-    Color(0xFFBEB8FA),
+    Color(0xFFF2DBA3),
+    Color(0xFFFAE7B8),
     Color(0xFF93CEF8),
     Color(0xFF79E2D7),
     Color(0xFF98DC98),
@@ -30,44 +30,49 @@ mixin AppCustomColor {
   static const Color textSecondary = Color(0xFF364152);
   static const Color textTertiary = Color(0xFF7F8EA4);
   static const Color textQuaternary = Color(0xFFAAB8CD);
-  static const Color textBrand = Color(0xFF110751);
+  static const Color textBrand = Color(0xFF3D2C04);
   static const Color textWhite = Color(0xFFFFFFFF);
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundGray = Color(0xFFF5F7FB);
   static const Color backgroundError = Color(0xFFFDEAE7);
   static const Color backgroundSuccess = Color(0xFFEAFFEF);
-  static const Color backgroundBrandSoft = Color(0xFFF2F1FE);
+  static const Color backgroundBrandSoft = Color(0xFFFDF8EC);
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color greyC1 = Color(0xFFC1C5CD);
-  static const Color brandPrimary = Color(0xFF554FF0);
-  static const Color brandPrimary50 = Color(0xFFEBEAFD);
-  static const Color brandPrimary100 = Color(0xFFD6CAFD);
-  static const Color brandPrimary200 = Color(0xFFC7C5FA);
-  static const Color brandPrimary300 = Color(0xFF917FF6);
-  static const Color brandPrimary700 = Color(0xFF362F82);
-  static const Color brandPrimary900 = Color(0xFF151123);
-  static const Color backgroundBrand = Color(0xFFEBEAFD);
+  // Thang màu thương hiệu: hổ phách (#B8860B). Trước đây là tím (#554FF0) —
+  // toàn bộ app tham chiếu qua các hằng số dưới đây nên đổi màu chủ đạo chỉ
+  // cần sửa ở chỗ này. `brandPrimary` được dùng làm nền cho chữ trắng ở nút
+  // bấm, nên sắc độ này được chọn đủ đậm để giữ tương phản chữ trắng đạt
+  // chuẩn (~4.6:1); không thay bằng vàng sáng hơn nếu chưa đổi màu chữ nút.
+  static const Color brandPrimary = Color(0xFFB8860B);
+  static const Color brandPrimary50 = Color(0xFFFBF3E0);
+  static const Color brandPrimary100 = Color(0xFFF5E4B8);
+  static const Color brandPrimary200 = Color(0xFFEBD08A);
+  static const Color brandPrimary300 = Color(0xFFDCB84A);
+  static const Color brandPrimary700 = Color(0xFF7A5807);
+  static const Color brandPrimary900 = Color(0xFF3D2C04);
+  static const Color backgroundBrand = Color(0xFFFBF3E0);
   static const Color paywallAqua = Color(0xFF6BBBD8);
   static const Color paywallBestDeal = Color(0xFFF9D31A);
   // Promo-code block on the paywall. Values come straight from the design
   // (Claude Design "MeUp App" → pin `paywall`); see
   // plans/260727-paywall-redesign/design-spec.md.
-  static const Color paywallPromoLink = Color(0xFF6E67D8);
-  static const Color paywallPromoLabel = Color(0xFF4B44CA);
-  static const Color paywallPromoMuted = Color(0xFF9E99C2);
+  static const Color paywallPromoLink = Color(0xFFA57A0C);
+  static const Color paywallPromoLabel = Color(0xFF96690A);
+  static const Color paywallPromoMuted = Color(0xFFC4AE7A);
   static const Color paywallPromoAppliedBg = Color(0xFFE6F4EE);
   static const Color paywallPromoAppliedText = Color(0xFF2B604E);
-  static const Color paywallPromoRemove = Color(0xFF6E6A85);
+  static const Color paywallPromoRemove = Color(0xFF857A63);
   // Paywall bottom bar, same design source as the promo block above. The CTA
-  // gradient ends on `brandPrimary` (#554FF0) and the countdown digit boxes use
-  // #4B44CA == `paywallPromoLabel`, so neither gets a duplicate token.
-  static const Color paywallCtaGradientStart = Color(0xFF6C63FF);
-  static const Color paywallCtaCaption = Color(0xFF9A96AE);
-  static const Color paywallCtaCaptionStrong = Color(0xFF3A3355);
-  static const Color paywallSaleStripStart = Color(0xFF7B71EC);
-  static const Color paywallSaleStripEnd = Color(0xFF655CE6);
-  static const Color paywallSaleStripMuted = Color(0xFFD8D5F7);
+  // gradient ends on `brandPrimary` (#B8860B) and the countdown digit boxes use
+  // #96690A == `paywallPromoLabel`, so neither gets a duplicate token.
+  static const Color paywallCtaGradientStart = Color(0xFFD9A520);
+  static const Color paywallCtaCaption = Color(0xFFA89A78);
+  static const Color paywallCtaCaptionStrong = Color(0xFF55442A);
+  static const Color paywallSaleStripStart = Color(0xFFC99A18);
+  static const Color paywallSaleStripEnd = Color(0xFFA87F0D);
+  static const Color paywallSaleStripMuted = Color(0xFFF0E2BC);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
   static const Color surfaceMuted = Color(0xFFEFF3FA);
@@ -78,7 +83,7 @@ mixin AppCustomColor {
   // Strength indicator colors
   static const Color successGreen = Color(0xFF41AE8C);
   static const Color errorRed = Color(0xFFE34646);
-  static const Color darkStroke = Color(0xFF110751);
+  static const Color darkStroke = Color(0xFF3D2C04);
   static const Color buttonDisable = Color(0xFFE3E8EF);
   static const Color roleplayIntroBackground = Color(0xFF70401F);
   static const Color roleplayLeftBubble = Color(0xFFABD3F3);
@@ -86,17 +91,17 @@ mixin AppCustomColor {
   static const Color roleplayHintBorder = Color(0xFFE3E8EF);
   static const Color roleplayLeadingSurface = Color(0x99123F54);
   static const Color roleplayFeedbackRadarGrid = Color(0xFFE1E6F5);
-  static const Color bottomSheetScrim = Color(0x80151123);
-  static const Color borderBrand = Color(0xFFC7C5FA);
-  static const Color streakActive = Color(0xFF4B44CA);
+  static const Color bottomSheetScrim = Color(0x803D2C04);
+  static const Color borderBrand = Color(0xFFEBD08A);
+  static const Color streakActive = Color(0xFF96690A);
   static const Color streakTextMuted = Color(0xFF5F6F86);
-  static const Color roleplayIntroDotInactive = Color(0xFFF2F1FE);
+  static const Color roleplayIntroDotInactive = Color(0xFFFDF8EC);
   // Design `6 · Profile`: the pencil disc beside the name on the identity header.
-  static const Color profileEditPencilBg = Color(0xFFE8E7FA);
+  static const Color profileEditPencilBg = Color(0xFFF7EBCF);
 
   // Onboarding v3 (Claude Design "MeUp Onboarding v2", màn S7–S10). Chỉ những
   // giá trị KHÔNG trùng token sẵn có mới nằm ở đây: chữ phụ dùng
-  // `streakTextMuted` (#5F6F86) và nhấn mạnh dùng `brandPrimary` (#554FF0).
+  // `streakTextMuted` (#5F6F86) và nhấn mạnh dùng `brandPrimary` (#B8860B).
   /// Nền thẻ 4 bước ở S7.
   static const Color onboardStepCardBg = Color(0xFFF7F8FC);
 
@@ -114,19 +119,19 @@ mixin AppCustomColor {
   static const Color onboardCheckDone = Color(0xFF16A97A);
 
   /// Thẻ khoá học ở S10 và chấm chỉ vị trí.
-  static const Color onboardResultCardBg = Color(0xFFF4F3FE);
-  static const Color onboardResultCardBorder = Color(0xFFD9D6F7);
+  static const Color onboardResultCardBg = Color(0xFFFDF8EC);
+  static const Color onboardResultCardBorder = Color(0xFFEFDFB4);
   static const Color onboardResultCardDesc = Color(0xFF6B7280);
   static const Color onboardDotIdle = Color(0xFFD7DBE6);
-  static const Color feedbackGradientMid = Color(0xFF7667F3);
-  static const Color feedbackGradientEnd = Color(0xFF5E5ACB);
+  static const Color feedbackGradientMid = Color(0xFFD2A11B);
+  static const Color feedbackGradientEnd = Color(0xFFA87F0D);
   static const Color feedbackStarActive = Color(0xFFF7C52B);
   static const Color feedbackStarInactive = Color(0xFFE3E8EF);
   static const Color feedbackThankYouOverlay = Color(0xB3FFFFFF);
-  static const Color feedbackThankYouTint = Color(0xB3E5DEFC);
+  static const Color feedbackThankYouTint = Color(0xB3F5E7C6);
 
   // Community (design `13 · Community`). Only the two values with no near
-  // equivalent in the palette: the design's #554FF0 is `brandPrimary`, #4B44CA
+  // equivalent in the palette: the design's #B8860B is `brandPrimary`, #96690A
   // is `streakActive`, #0D121C is `textPrimary`, #5F6F86 is `streakTextMuted`,
   // and its #F6F6FB page ground is `backgroundGray` — reused rather than
   // duplicated a shade apart.
@@ -143,11 +148,11 @@ mixin AppCustomColor {
   // as `communityRoomInks[1]`, named separately because one is a room's tint by
   // position and this one means "there are people in here right now".
   static const Color communityRoomInkGreen = Color(0xFF2F9E6B);
-  // The group chat's brand tile and its FAB (design `S-03`) — a violet the
+  // The group chat's brand tile and its FAB (design `S-03`) — the amber the
   // gradient runs between. Its own pair rather than `brandPrimary`: the tile is
-  // the MeUp mark's ground, not a button.
-  static const Color communityChatMarkStart = Color(0xFF7C79EC);
-  static const Color communityChatMarkEnd = Color(0xFF5045C9);
+  // the app mark's ground, not a button.
+  static const Color communityChatMarkStart = Color(0xFFD9A520);
+  static const Color communityChatMarkEnd = Color(0xFF96690A);
   // The unread badge on the FAB, and the filled heart on a reaction chip.
   static const Color communityChatBadge = Color(0xFFF2545B);
   // Border of a reaction chip under a chat bubble.
@@ -161,69 +166,69 @@ mixin AppCustomColor {
   // `borderDefault`/`backgroundGray`: the attachment has to read as a quoted
   // object sitting inside the post, one step apart from the post's own ground.
   static const Color communityAttachBorder = Color(0xFFEAEBF2);
-  static const Color communityAttachSurface = Color(0xFFFAFAFD);
+  static const Color communityAttachSurface = Color(0xFFFDFCFA);
   // The hairline under a post and the connector rail down its thread (design
   // `S-04`). A shade warmer than `borderSecondary` (#E3E8EF), the app's general
   // divider: this one belongs to the thread.
   static const Color communityRule = Color(0xFFE7E8F0);
   // Heading colour on a topic page's header block.
-  static const Color communityTopicHeading = Color(0xFF211B40);
-  // Edge of the weekly-question card. Lighter than `borderBrand` (#C7C5FA),
+  static const Color communityTopicHeading = Color(0xFF40361B);
+  // Edge of the weekly-question card. Lighter than `borderBrand` (#EBD08A),
   // which reads as a selected state next to this card's tinted fill.
-  static const Color communityWeeklyBorder = Color(0xFFDAD7F7);
+  static const Color communityWeeklyBorder = Color(0xFFF2E3BC);
   // The room chip above a post's title. A tint of its own rather than
-  // `brandPrimary50` (#EBEAFD): the chip sits on a translucent card over the
+  // `brandPrimary50` (#FBF3E0): the chip sits on a translucent card over the
   // study background, and the darker fill loses its edge there.
-  static const Color communityChipBackground = Color(0xFFF4F3FD);
-  static const Color communityChipInk = Color(0xFF7A69E8);
+  static const Color communityChipBackground = Color(0xFFFDF6E6);
+  static const Color communityChipInk = Color(0xFFA57A0C);
   // The kind badge on a notification avatar. Like and moderation reuse
   // `errorRed`; a comment gets its own violet so the three read apart.
-  static const Color communityBadgeComment = Color(0xFF8148C4);
+  static const Color communityBadgeComment = Color(0xFF91752F);
   // The dark quote card an attached keypoint renders as — the same ink as
   // `communityTopicHeading`, named separately because one is a background and
   // the other is text.
-  static const Color communityInsightCard = Color(0xFF211B40);
+  static const Color communityInsightCard = Color(0xFF40361B);
   // Room tile tints in the "Khám phá phòng" grid, cycled by position so a room
   // keeps its colour between visits.
   static const List<Color> communityRoomTints = [
-    Color(0xFFEEEDFB),
+    Color(0xFFFBF7ED),
     Color(0xFFE4F1EA),
     Color(0xFFFBE9E4),
     Color(0xFFFBE4EC),
     Color(0xFFE6EEFB),
-    Color(0xFFF3EAFB),
+    Color(0xFFFBF6EA),
     Color(0xFFFCF2DE),
   ];
   static const List<Color> communityRoomInks = [
-    Color(0xFF554FF0),
+    Color(0xFFB8860B),
     Color(0xFF2F9E6B),
     Color(0xFFD2683F),
     Color(0xFFC4477A),
     Color(0xFF3B6FD4),
-    Color(0xFF8148C4),
+    Color(0xFF91752F),
     Color(0xFFB98418),
   ];
 
   // Onboarding (P3 redesign) — exact Figma hex values that don't already
   // match an existing token. Where a design value coincided with an existing
-  // token (e.g. brand `#554FF0` == brandPrimary, border `#E3E8EF` ==
+  // token (e.g. brand `#B8860B` == brandPrimary, border `#E3E8EF` ==
   // borderSecondary) the onboarding feature reuses that token instead of
   // duplicating it here.
-  static const Color onboardingSplashBackground = Color(0xFFF2F1FA);
+  static const Color onboardingSplashBackground = Color(0xFFFDF8EC);
   // Warm peach behind the Welcome screen's card deck (design screen 2).
   static const Color onboardingWelcomeBackground = Color(0xFFF8EBE3);
-  static const Color onboardingGradientStart = Color(0xFF5B4FE8);
+  static const Color onboardingGradientStart = Color(0xFFC99A18);
   static const Color onboardingGradientEnd = Color(0xFFC56B6B);
-  static const Color ctaDisabledBackground = Color(0xFFD7D5E8);
-  static const Color ctaDisabledText = Color(0xFF9A97B5);
+  static const Color ctaDisabledBackground = Color(0xFFE3DED0);
+  static const Color ctaDisabledText = Color(0xFFA39B85);
   static const Color textMuted = Color(0xFF9AA4B2);
   static const Color inputFill = Color(0xFFF0F3F9);
 
   // Keypoint v2 — the swipeable theory + exercise card deck. Exact values from
   // Claude Design "MeUp" → `Keypoint v2.dc.html` / `Keypoint Swipe Lab`. Where a
   // design value already had a token it is reused instead of duplicated here:
-  // brand `#554FF0` == brandPrimary, empty gap-slot dash `#C7C5FA` ==
-  // brandPrimary200, gap-slot label `#4B44CA` == streakActive, muted caption
+  // brand `#B8860B` == brandPrimary, empty gap-slot dash `#EBD08A` ==
+  // brandPrimary200, gap-slot label `#96690A` == streakActive, muted caption
   // `#9AA4B2` == textMuted, heading `#0D121C` == textPrimary, arrange badges
   // `#41AE8C`/`#E34646` == successGreen/errorRed.
   // Week recap ("Hành trình tuần qua") — the scrapbook poster and the chrome
@@ -235,20 +240,20 @@ mixin AppCustomColor {
   // poster is a printed page on cream paper and looks the same in dark mode,
   // so these must not follow a theme swap. Feature-neutral tokens are reused
   // where the design matched one (`textPrimary` #0D121C, `textMuted` #9AA4B2,
-  // `brandPrimary` #554FF0). Three values coincide with tokens named for other
+  // `brandPrimary` #B8860B). Three values coincide with tokens named for other
   // features (#7C8AA4 practiceModeSubtext, #EEF1F6 kpMissedSurface) — those get
   // their own names here rather than borrowing an unrelated feature's.
   // Share-row brand fills, shared by the course-share sheet and the week-recap
   // poster (see ShareTargetButton). The icon ink and the label ink reuse
   // existing tokens whose values already match — #2B3242 == kpOptionLabel,
   // #3A4250 == kpOptionText — rather than adding a third name for each.
-  static const Color shareInstagramStart = Color(0xFF8A3AB9);
+  static const Color shareInstagramStart = Color(0xFFA38333);
   static const Color shareInstagramMid = Color(0xFFE95950);
   static const Color shareInstagramEnd = Color(0xFFFCAF45);
   static const Color shareFacebookBlue = Color(0xFF1877F2);
 
   /// rgba(20,20,60,.08) — lifts a white disc off a white sheet.
-  static const Color shareTargetShadow = Color(0x1414143C);
+  static const Color shareTargetShadow = Color(0x143C3114);
   static const Color weekRecapCourseLabel = Color(0xFF2E4A6B);
   static const Color weekRecapFavouriteLabel = Color(0xFFC0392B);
   static const Color weekRecapLessonInk = Color(0xFF3A3020);
@@ -271,10 +276,10 @@ mixin AppCustomColor {
   // Stands in behind the poster while its artwork decodes, so the page opens on
   // paper rather than on a white flash.
   static const Color weekRecapPaper = Color(0xFFF1E7D6);
-  static const Color weekRecapBannerStart = Color(0xFF5B4BE0);
-  static const Color weekRecapBannerMid = Color(0xFF8B6BF0);
-  static const Color weekRecapBannerEnd = Color(0xFFC58BEA);
-  static const Color weekRecapPillInk = Color(0xFF4B3EDB);
+  static const Color weekRecapBannerStart = Color(0xFF9D781B);
+  static const Color weekRecapBannerMid = Color(0xFFD9A216);
+  static const Color weekRecapBannerEnd = Color(0xFFDFB64F);
+  static const Color weekRecapPillInk = Color(0xFF9C781D);
   static const Color weekRecapPopupBody = Color(0xFF7C8AA4);
   static const Color weekRecapMutedAction = Color(0xFF8A93A6);
   static const Color weekRecapRowBorder = Color(0xFFEEF1F6);
@@ -296,8 +301,8 @@ mixin AppCustomColor {
   static const Color kpOptionLabel = Color(0xFF2B3242);
   // Picked, before grading: a lilac wash + darker ink. The card carried the
   // brand border alone, which at 2px is easy to miss on a small option.
-  static const Color kpOptionSelectedSurface = Color(0xFFF3F2FE);
-  static const Color kpOptionSelectedText = Color(0xFF2B2A6B);
+  static const Color kpOptionSelectedSurface = Color(0xFFFEFBF2);
+  static const Color kpOptionSelectedText = Color(0xFF6B592A);
   static const Color kpCorrectSurface = Color(0xFFEAF9F1);
   static const Color kpCorrectBorder = Color(0xFF35B37E);
   static const Color kpCorrectText = Color(0xFF1F8A5B);
@@ -310,7 +315,7 @@ mixin AppCustomColor {
   static const Color kpMissedBadge = Color(0xFF8B96AB);
   static const Color kpDimText = Color(0xFFA6AFBE);
   static const Color kpDimBorder = Color(0xFFE4E8EF);
-  static const Color kpCheckDisabled = Color(0xFFC3C0F2);
+  static const Color kpCheckDisabled = Color(0xFFE6D5A4);
   static const Color kpArrangeText = Color(0xFF2B3242);
   static const Color kpArrangeHandle = Color(0xFFC3C9D6);
   static const Color kpArrangeHandleCorrect = Color(0xFF8BD3B0);
@@ -318,9 +323,9 @@ mixin AppCustomColor {
   // Per-exercise-type accents: the design tints each card's instruction line
   // violet (single choice, text gap) or green (multiple choice, arrange), and
   // reuses the violet for a filled gap's dashed outline.
-  static const Color kpAccentViolet = Color(0xFF8A82E8);
+  static const Color kpAccentViolet = Color(0xFFDAAC37);
   static const Color kpAccentGreen = Color(0xFF3AA07E);
-  static const Color kpGapFilledSurface = Color(0xFFEDEAFE);
+  static const Color kpGapFilledSurface = Color(0xFFFEF8EA);
   static const Color kpChipPlaceholder = Color(0xFFF1F3F8);
   static const Color kpCorrectAnswerSurface = Color(0xFFF3F5F9);
 
@@ -337,13 +342,13 @@ mixin AppCustomColor {
 
   // Keypoint peek card — the deck's terminal quote card (design
   // `_Keypoint Swipe Lab` → `c.isPeek`). Exact design hex.
-  static const Color kpPeekQuoteMark = Color(0xFFF0EEFC);
-  static const Color kpPeekDivider = Color(0xFFCFCBF2);
+  static const Color kpPeekQuoteMark = Color(0xFFFBF3E0);
+  static const Color kpPeekDivider = Color(0xFFE8D7A8);
   static const Color kpPeekSource = Color(0xFF5F6F86);
-  static const Color kpPeekHint = Color(0xFF7C74B0);
+  static const Color kpPeekHint = Color(0xFF9A844F);
 
   // Back face of the recap flip card (design `_MeUp App` → RECAP). Exact hex.
-  static const Color kpRecapBackSurface = Color(0xFF211B40);
+  static const Color kpRecapBackSurface = Color(0xFF40361B);
 
   // Practice hub mode tiles (design "3 · Learning" → Practice — pick a mode).
   // Quiz reuses brandPrimary50; the roleplay/video tints sit in the truncated

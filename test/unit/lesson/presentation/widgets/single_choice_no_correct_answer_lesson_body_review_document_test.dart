@@ -119,7 +119,7 @@ void main() {
   });
 
   testWidgets('shows matched inline document for reviewed no-correct exercise item', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     final exerciseCubit = _SpyExerciseCubit()..setLearningItemType(LearningItemType.exercise);
     final choiceCubit = _TestChoiceCubit()
@@ -166,7 +166,7 @@ void main() {
   });
 
   testWidgets('does not show inline document when selected answer cannot resolve document group', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     final exerciseCubit = _SpyExerciseCubit()..setLearningItemType(LearningItemType.exercise);
     final choiceCubit = _TestChoiceCubit()

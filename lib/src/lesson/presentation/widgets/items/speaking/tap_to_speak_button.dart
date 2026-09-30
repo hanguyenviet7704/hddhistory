@@ -17,7 +17,7 @@ class TapToSpeakButton extends StatelessWidget {
         height: 80.w,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xFF554FF0),
+          color: const Color(0xFFB5860F),
           shape: BoxShape.circle,
         ),
         child: SvgPicture.asset(

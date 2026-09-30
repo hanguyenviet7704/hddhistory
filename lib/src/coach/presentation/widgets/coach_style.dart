@@ -11,18 +11,18 @@ part of '../../coach.dart';
 abstract final class CoachStyle {
   /// The accent. `#8B8BF0` is the design's DEFAULT skin — `#554FF0` is one of
   /// four options in its colour picker, not the resting state.
-  static const Color skin = Color(0xFF8B8BF0);
+  static const Color skin = Color(0xFFE9BF56);
 
   /// The reader's own message bubble, and only that. The one place the deeper
   /// brand blue appears in this surface.
-  static const Color userBubble = Color(0xFF554FF0);
+  static const Color userBubble = Color(0xFFB5860F);
 
-  static const Color sheetBackground = Color(0xFFF4F3FA);
+  static const Color sheetBackground = Color(0xFFFAF8F3);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE7E5F2);
-  static const Color inputBackground = Color(0xFFF1F0F8);
-  static const Color chipBackground = Color(0xFFF4F3FA);
-  static const Color sampleBackground = Color(0xFFEFEEF7);
+  static const Color border = Color(0xFFF2EEE5);
+  static const Color inputBackground = Color(0xFFF8F6F0);
+  static const Color chipBackground = Color(0xFFFAF8F3);
+  static const Color sampleBackground = Color(0xFFF7F4EE);
 
   static const Color textPrimary = Color(0xFF0D121C);
   static const Color textBody = Color(0xFF3F4552);
@@ -34,18 +34,18 @@ abstract final class CoachStyle {
   static const Color textDisabled = Color(0xFFB4B8C4);
 
   /// The chip steps' box — a shade lighter than the selected state.
-  static const Color choiceBackground = Color(0xFFF7F6FE);
+  static const Color choiceBackground = Color(0xFFFEFCF6);
   /// The course card in the thread, and the typing dots.
-  static const Color courseCardBackground = Color(0xFFEFEDFD);
-  static const Color courseImageFallback = Color(0xFFE4DEF8);
+  static const Color courseCardBackground = Color(0xFFFDF8ED);
+  static const Color courseImageFallback = Color(0xFFF8F1DE);
   static const Color courseMeta = Color(0xFF7C8AA4);
   static const Color courseAuthor = Color(0xFF3A4250);
-  static const Color typingDot = Color(0xFFB4A9EE);
+  static const Color typingDot = Color(0xFFEEDAA7);
 
   /// Selected states — the two-column right side, the schedule chips.
-  static const Color selectedBackground = Color(0xFFEFEDFD);
-  static const Color selectedBorderSoft = Color(0xFFD9D4F3);
-  static const Color selectedText = Color(0xFF3A2F8F);
+  static const Color selectedBackground = Color(0xFFFDF8ED);
+  static const Color selectedBorderSoft = Color(0xFFF3EAD4);
+  static const Color selectedText = Color(0xFF8F742F);
 
   /// The Coach's eyes. Nearly black, never pure black.
   static const Color eye = Color(0xFF15161C);

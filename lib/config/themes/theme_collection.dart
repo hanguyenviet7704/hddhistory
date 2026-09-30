@@ -1145,10 +1145,10 @@ mixin DarkTheme {
       onError: Color(0xFFFFFFFF),
       errorContainer: Color(0xFFFFDAD6),
       onErrorContainer: Color(0xFF001D36),
-      tertiary: Color(0xFF6B5778),
+      tertiary: Color(0xFF786F57),
       onTertiary: Color(0xFFFFFFFF),
-      tertiaryContainer: Color(0xFFF2DAFF),
-      onTertiaryContainer: Color(0xFF251431),
+      tertiaryContainer: Color(0xFFFFF5DA),
+      onTertiaryContainer: Color(0xFF312914),
       outline: Color(0xFF1976D2),
     );
   }

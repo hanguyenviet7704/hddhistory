@@ -19,6 +19,9 @@ import 'package:injectable/injectable.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:retrofit/retrofit.dart';
+// Chat needs scroll-to-INDEX: a jump to a pinned line has to reach a bubble
+// whose height nobody knows and which may not be built yet.
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 //* Data Layer - Models, Datasources, Repositories
 part 'data/community_exception.dart';
@@ -72,6 +75,7 @@ part 'presentation/widgets/community_report_sheet.dart';
 part 'presentation/widgets/community_glyph.dart';
 part 'presentation/widgets/community_chat_mark.dart';
 part 'presentation/widgets/community_chat_fab.dart';
+part 'presentation/widgets/community_chat_pins.dart';
 part 'presentation/widgets/community_avatar.dart';
 part 'presentation/widgets/community_attached_course_card.dart';
 part 'presentation/widgets/community_insight_card.dart';

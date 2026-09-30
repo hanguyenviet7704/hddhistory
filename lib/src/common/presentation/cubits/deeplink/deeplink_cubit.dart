@@ -293,9 +293,14 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         const CourseRoute().go(navContext);
         return true;
 
+      // Tính năng Thói quen đã bị gỡ, nhưng hai khoá này là hợp đồng công khai
+      // (xem [DeeplinkDestination]): link đã gửi push, đã in QR thì không rút
+      // lại được. Giữ khoá và đưa về Trang chủ — sai ít hơn là im lặng không
+      // làm gì, thứ khiến người bấm tưởng app hỏng.
       case DeeplinkDestination.habit:
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
-        HabitRoute().go(navContext);
+      case DeeplinkDestination.dailyCheckIn:
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
+        HomeRoute().go(navContext);
         return true;
 
       case DeeplinkDestination.profile:
@@ -392,10 +397,6 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         HomeLearningStreakRoute().go(navContext);
         return true;
 
-      case DeeplinkDestination.dailyCheckIn:
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
-        DailyCheckInRoute().go(navContext);
-        return true;
 
       // Claim tên CỦA CHÍNH NÓ, không phải tên branch: `myLessons` đã chuyển từ
       // branch Profile sang branch Library (xem routes_shell.dart) và
@@ -419,9 +420,11 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         NotificationRoute().go(navContext);
         return true;
 
+      // App chỉ còn tiếng Việt nên không còn màn đổi ngôn ngữ. Khoá này là hợp
+      // đồng công khai nên giữ lại, đưa về trang Cài đặt.
       case DeeplinkDestination.changeLanguage:
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.profile);
-        ChangeLanguageRoute().go(navContext);
+        ProfileRoute().go(navContext);
         return true;
 
       case DeeplinkDestination.manageSubscription:
@@ -641,9 +644,11 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         );
         return true;
 
+      // Ô widget "thói quen" trên màn hình chính của máy có thể còn sót lại ở
+      // máy người dùng sau khi tính năng bị gỡ; đưa về Trang chủ.
       case 'habit_tracker':
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.habit);
-        HabitRoute().go(navContext);
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.home);
+        HomeRoute().go(navContext);
         return true;
 
       case 'new_course':

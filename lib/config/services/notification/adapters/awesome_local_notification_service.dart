@@ -323,7 +323,7 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
           channelKey: _channelConfig.channelKey,
           channelName: _channelConfig.channelName,
           channelDescription: _channelConfig.channelDescription,
-          defaultColor: const Color(0xFF9D50DD),
+          defaultColor: const Color(0xFF9B771E),
           ledColor: Colors.white,
           importance: NotificationImportance.Max,
           channelShowBadge: true,

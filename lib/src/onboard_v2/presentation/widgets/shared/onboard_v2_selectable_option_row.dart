@@ -91,7 +91,7 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
                       textAlign: centered ? TextAlign.center : TextAlign.start,
                       overflow: TextOverflow.visible,
                       style: AppStyle.text12.copyWith(
-                        color: selected ? const Color(0xFF7A74E8) : AppCustomColor.onboardMutedLabel,
+                        color: selected ? const Color(0xFFCF9E22) : AppCustomColor.onboardMutedLabel,
                         fontWeight: FontWeight.w500,
                         height: 1.4,
                       ),

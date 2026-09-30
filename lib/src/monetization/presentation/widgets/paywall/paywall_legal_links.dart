@@ -37,7 +37,7 @@ class PaywallLegalLinks extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 12.w),
             height: 14.h,
             width: 1.w,
-            color: const Color(0xFFCFCBDD),
+            color: const Color(0xFFDDD8CB),
           ),
           privacy,
         ],
@@ -82,7 +82,7 @@ class PaywallLegalLinks extends StatelessWidget {
   static TextStyle get _compactStyle => AppStyle.text12.copyWith(
     fontSize: 12.5.sp,
     fontWeight: FontWeight.w500,
-    color: const Color(0xFFA8A2C6),
+    color: const Color(0xFFA39369),
     height: 1.4,
   );
 

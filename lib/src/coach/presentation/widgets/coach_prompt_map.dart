@@ -10,7 +10,15 @@ part of '../../coach.dart';
 ///
 /// [args] are the reader's own words the line quotes — the commitment at the
 /// check-in, the habit just added, the reminder time in the closing line.
-/// Never the model's words.
+/// Never the model's words, with ONE exception: `topic` in
+/// `coach.prompt.hubBack` is a phrase the Coach wrote (≤80 chars, written when
+/// the previous session ended). It is allowed in because the alternative — a
+/// whole greeting generated as `reply` — costs the opening question: `reply`
+/// and `promptKey` never both arrive, so a generated greeting REPLACES the
+/// fixed line, and a model that forgets to ask leaves the reader in front of a
+/// hello with nothing to answer. The server only sends it when it was written
+/// in the language now on screen, and it is protected from the address rewriter
+/// below like any other content span.
 ///
 /// An unknown key returns null and the sheet simply prints nothing — a missing
 /// navigation line is a quieter failure than a raw key on screen.
@@ -24,7 +32,14 @@ String? coachPrompt(BuildContext context, String key, [Map<String, String> args 
   // Both shapes the habit title can appear in: quoted as authored
   // (`lessonIntro`) and lower-cased inside a sentence (`checkinAsk`).
   return LocaleSettings.currentLocale.languageCode == 'vi'
-      ? _addressVi(line, args['address'], protect: {args['habit'] ?? '', _habitInline(args)})
+      // `topic` rides along in `protect` for the same reason the habit title
+      // does: it is CONTENT, and rewriting a "bạn" inside it would put the
+      // reader's own name in the middle of the sentence they told the Coach.
+      ? _addressVi(
+          line,
+          args['address'],
+          protect: {args['habit'] ?? '', _habitInline(args), args['topic'] ?? ''},
+        )
       : line;
 }
 
@@ -144,6 +159,11 @@ String? _coachPromptLine(BuildContext context, String key, Map<String, String> a
     // Bộ điều phối, and the scene's last two beats.
     case 'coach.prompt.hub':
       return l10n.promptHub;
+    // Câu mở phiên Home NHẮC LẠI chuyện hôm trước. Khung câu là chữ cố định ở
+    // đây; chỉ `topic` là chữ Coach viết (một mảnh ≤80 ký tự, viết từ lúc phiên
+    // trước kết). Không có mảnh nào thì server gửi `coach.prompt.hub` như cũ.
+    case 'coach.prompt.hubBack':
+      return l10n.promptHubBack(topic: args['topic'] ?? '');
     // The coordinator is ②'s opening step as well as the seam between tasks;
     // "Xong rồi…" reads as a goodbye before anything has happened.
     // Luồng 2/3 — the talk after a keypoint, the course recap.

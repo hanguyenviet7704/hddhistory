@@ -14,7 +14,7 @@ void main() {
 
   group('UnsupportedLessonBody', () {
     testWidgets('shows unsupported raw type label', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       const question = QuestionEntity(
         typedPayload: QuestionPayloadEntity.unsupported(rawType: 'single_choice_unknown'),

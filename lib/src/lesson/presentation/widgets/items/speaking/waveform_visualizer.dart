@@ -24,7 +24,7 @@ part of '../../../../lesson.dart';
 //         enableGesture: false,
 //         shouldCalculateScrolledPosition: false,
 //         waveStyle: WaveStyle(
-//           waveColor: const Color(0xFF554FF0),
+//           waveColor: const Color(0xFFB5860F),
 //           spacing: 6.w,
 //           showBottom: true,
 //           showTop: true,

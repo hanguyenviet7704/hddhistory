@@ -36,8 +36,13 @@ class SendCommunityChatMessageUseCase {
   TaskEither<AppException, CommunityChatMessageEntity> call({
     required String room,
     required String body,
+    String? replyToId,
   }) {
-    return _repository.sendChatMessage(room: room, body: body);
+    return _repository.sendChatMessage(
+      room: room,
+      body: body,
+      replyToId: replyToId,
+    );
   }
 }
 
@@ -49,5 +54,34 @@ class LikeCommunityChatMessageUseCase {
 
   TaskEither<AppException, ({bool isLiked, int likeCount})> call(String id) {
     return _repository.likeChatMessage(id);
+  }
+}
+
+@lazySingleton
+class GetCommunityChatMessageContextUseCase {
+  final ICommunityRepository _repository;
+
+  GetCommunityChatMessageContextUseCase(this._repository);
+
+  /// The window a jump lands in. Needed because a pinned line can sit hundreds
+  /// of messages back, where there is nothing on screen to scroll to.
+  TaskEither<AppException, CommunityChatContextEntity> call({
+    required String room,
+    required String messageId,
+  }) {
+    return _repository.getChatMessageContext(room: room, messageId: messageId);
+  }
+}
+
+@lazySingleton
+class GetCommunityChatGuideUseCase {
+  final ICommunityRepository _repository;
+
+  GetCommunityChatGuideUseCase(this._repository);
+
+  /// Null means nothing has been authored — the header hides its info button
+  /// rather than opening an empty sheet.
+  TaskEither<AppException, CommunityChatGuideEntity?> call() {
+    return _repository.getChatGuide();
   }
 }

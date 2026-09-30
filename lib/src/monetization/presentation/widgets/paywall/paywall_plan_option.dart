@@ -32,13 +32,13 @@ class PaywallPlanOption extends StatelessWidget {
             // The page scrolls, so the extra height costs nothing below.
             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 15.h),
             decoration: BoxDecoration(
-              color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFF2F1FE),
+              color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFFEFAF1),
               borderRadius: BorderRadius.circular(18.r),
               // Unselected keeps a VISIBLE lavender border (design): the old
               // borderDefault (#EBF0F7) vanished against the card's #F2F1FE
               // fill and the card read as borderless.
               border: Border.all(
-                color: selected ? const Color(0xFF4B44CA) : const Color(0xFFD9D5F6),
+                color: selected ? const Color(0xFF94762A) : const Color(0xFFF6EDD5),
                 width: selected ? 2 : 1.5,
               ),
               boxShadow: selected
@@ -160,7 +160,7 @@ class PaywallPlanOption extends StatelessWidget {
                               style: AppStyle.text12.copyWith(
                                 fontSize: 12.5.sp,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xFFA8A2C6),
+                                color: const Color(0xFFA39369),
                                 height: 1.6,
                               ),
                             ),
@@ -174,10 +174,10 @@ class PaywallPlanOption extends StatelessWidget {
                                   maxLines: 1,
                                   style: AppStyle.text12.copyWith(
                                     fontSize: 12.5.sp,
-                                    color: const Color(0xFFA8A2C6),
+                                    color: const Color(0xFFA39369),
                                     fontWeight: FontWeight.w500,
                                     decoration: TextDecoration.lineThrough,
-                                    decorationColor: const Color(0xFFA8A2C6),
+                                    decorationColor: const Color(0xFFA39369),
                                     height: 1.6,
                                   ),
                                 ),
@@ -197,7 +197,7 @@ class PaywallPlanOption extends StatelessWidget {
                         style: AppStyle.text12.copyWith(
                           fontSize: 12.5.sp,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFFA8A2C6),
+                          color: const Color(0xFFA39369),
                           height: 1.6,
                         ),
                       ),

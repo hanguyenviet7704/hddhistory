@@ -124,7 +124,7 @@ class _TextInputAreaState extends State<TextInputArea> {
                       width: 32.w,
                       height: 32.w,
                       decoration: BoxDecoration(
-                        color: currentChars > 0 ? const Color(0xFF554FF0) : const Color(0xFF554FF0).withValues(alpha: 0.3),
+                        color: currentChars > 0 ? const Color(0xFFB5860F) : const Color(0xFFB5860F).withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

@@ -17,7 +17,7 @@ class DailyWarmUpCourseCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4B44CA).withValues(alpha: 0.15),
+            color: const Color(0xFF94762A).withValues(alpha: 0.15),
             blurRadius: 28,
             offset: const Offset(0, 12),
           ),
@@ -32,22 +32,22 @@ class DailyWarmUpCourseCard extends StatelessWidget {
                 ? Container(
                     height: 208,
                     width: double.infinity,
-                    color: const Color(0xFFF2F1FE),
+                    color: const Color(0xFFFEFAF1),
                     alignment: Alignment.center,
-                    child: Icon(Icons.menu_book_rounded, color: const Color(0xFF4B44CA), size: 40.w),
+                    child: Icon(Icons.menu_book_rounded, color: const Color(0xFF94762A), size: 40.w),
                   )
                 : CachedNetworkImage(
                     imageUrl: imageUrl,
                     height: 208,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => Container(height: 208, color: const Color(0xFFF2F1FE)),
+                    errorWidget: (_, _, _) => Container(height: 208, color: const Color(0xFFFEFAF1)),
                   ),
           ),
           20.verticalSpace,
           AppText(
             context.l10n.dailyWarmUp.course.toUpperCase(),
-            style: AppStyle.text12.copyWith(color: const Color(0xFF554FF0), fontWeight: FontWeight.w700),
+            style: AppStyle.text12.copyWith(color: const Color(0xFFB5860F), fontWeight: FontWeight.w700),
           ),
           8.verticalSpace,
           AppText(

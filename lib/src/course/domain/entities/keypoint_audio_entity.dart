@@ -75,16 +75,9 @@ extension KeypointAudioEntityExtension on KeypointAudioEntity {
     final byLanguage = segments;
     if (byLanguage == null || byLanguage.isEmpty) return const [];
 
-    final locale = AppDI.injector.get<LocaleCubit>().state;
-    final preferred = switch (locale) {
-      AppLocale.en => 'en',
-      AppLocale.vi => 'vi',
-      AppLocale.zh => 'zh',
-      AppLocale.ja => 'ja',
-      AppLocale.ko => 'ko',
-    };
-
-    for (final code in [preferred, 'en', 'vi', 'zh', 'ja', 'ko']) {
+    // App chỉ còn tiếng Việt; các mã còn lại vẫn nằm trong chuỗi dự phòng vì
+    // một keypoint có thể mới chỉ được thu bằng ngôn ngữ khác.
+    for (final code in ['vi', 'en', 'zh', 'ja', 'ko']) {
       final clips = byLanguage[code];
       if (clips != null && clips.any((clip) => clip.isNotEmpty)) return clips;
     }
@@ -104,16 +97,9 @@ extension KeypointAudioEntityExtension on KeypointAudioEntity {
     final byLanguage = merged;
     if (byLanguage == null || byLanguage.isEmpty) return null;
 
-    final locale = AppDI.injector.get<LocaleCubit>().state;
-    final preferred = switch (locale) {
-      AppLocale.en => 'en',
-      AppLocale.vi => 'vi',
-      AppLocale.zh => 'zh',
-      AppLocale.ja => 'ja',
-      AppLocale.ko => 'ko',
-    };
-
-    for (final code in [preferred, 'en', 'vi', 'zh', 'ja', 'ko']) {
+    // App chỉ còn tiếng Việt; các mã còn lại vẫn nằm trong chuỗi dự phòng vì
+    // một keypoint có thể mới chỉ được thu bằng ngôn ngữ khác.
+    for (final code in ['vi', 'en', 'zh', 'ja', 'ko']) {
       final candidate = byLanguage[code];
       if (candidate != null && candidate.isUsable) return candidate;
     }

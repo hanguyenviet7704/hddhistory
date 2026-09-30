@@ -268,7 +268,7 @@ class _MethodChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF3A2E5C),
+        color: const Color(0xFF5C4F2E),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

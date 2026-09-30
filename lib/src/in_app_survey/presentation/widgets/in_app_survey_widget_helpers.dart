@@ -1,9 +1,9 @@
 part of '../../in_app_survey.dart';
 
 class _InAppSurveyColors {
-  static const Color brandPrimary = Color(0xFF554FF0);
-  static const Color brandText = Color(0xFF321DB5);
-  static const Color brandWash = Color(0xFFF2F1FE);
+  static const Color brandPrimary = Color(0xFFB5860F);
+  static const Color brandText = Color(0xFFB58A1D);
+  static const Color brandWash = Color(0xFFFEFAF1);
   static const Color border = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color textPrimary = Color(0xFF0D121C);
@@ -21,7 +21,7 @@ BoxDecoration _surveyCardDecoration() {
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        Color(0xFFEDE8FE),
+        Color(0xFFFEF8E8),
         _InAppSurveyColors.brandWash,
       ],
     ),

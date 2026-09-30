@@ -90,12 +90,9 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.course);
         break;
       case 4:
-        setCurrentRouteName(RouteNamed.habit);
-        break;
-      case 5:
         setCurrentRouteName(RouteNamed.library);
         break;
-      case 6:
+      case 5:
         // Confession. Missing until now, and that omission is what put the AI
         // Coach bubble on top of the chat button: with no case here the tab tap
         // claimed nothing, so `currentRouteName` stayed on whatever tab the
@@ -138,20 +135,18 @@ class PageCubit extends Cubit<PageState> {
         return 2;
       case RouteNamed.course:
         return 3;
-      case RouteNamed.habit:
-        return 4;
       case RouteNamed.community:
-        return 6;
+        return 5;
       // Every route that lives in the Library branch resolves to it, not just
       // its root: My Creations and the generated-lesson roadmap are entered by
       // a cross-branch `.go()` from the lesson flow, and that go fires no
       // didPush in an already-built branch — so the name is the only signal
-      // that the shell has moved to branch 5.
+      // that the shell has moved to branch 4.
       case RouteNamed.library:
       case RouteNamed.libraryHistory:
       case RouteNamed.myLessons:
       case RouteNamed.lessonReader:
-        return 5;
+        return 4;
       default:
         return null;
     }

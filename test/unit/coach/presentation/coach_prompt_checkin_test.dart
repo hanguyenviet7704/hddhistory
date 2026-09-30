@@ -81,7 +81,7 @@ void main() {
     });
 
     testWidgets('quotes the habit rather than inlining it outside vi/en', (tester) async {
-      final line = await resolve(tester, AppLocale.ja, 'coach.prompt.checkinAsk', {
+      final line = await resolve(tester, AppLocale.vi, 'coach.prompt.checkinAsk', {
         'habit': '体からのサインに気づく',
       });
 

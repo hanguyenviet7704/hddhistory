@@ -1501,7 +1501,7 @@ class _NarrationSpeedBubble extends StatelessWidget {
                         alignment: Alignment.center,
                         padding: EdgeInsets.symmetric(horizontal: 8.w),
                         decoration: BoxDecoration(
-                          color: value == current ? const Color(0xFFEEEDFB) : Colors.transparent,
+                          color: value == current ? const Color(0xFFFBF7ED) : Colors.transparent,
                           borderRadius: BorderRadius.circular(99.r),
                         ),
                         child: Text(

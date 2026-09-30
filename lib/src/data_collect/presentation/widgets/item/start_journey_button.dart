@@ -10,7 +10,7 @@ class StartJourneyButton extends StatelessWidget {
       width: double.infinity,
       height: 54.h,
       decoration: BoxDecoration(
-        color: const Color(0xFF554FF0),
+        color: const Color(0xFFB5860F),
         borderRadius: BorderRadius.circular(1000.r),
       ),
       child: Material(

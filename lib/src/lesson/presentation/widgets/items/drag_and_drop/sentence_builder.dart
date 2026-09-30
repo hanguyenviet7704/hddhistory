@@ -79,8 +79,8 @@ class SentenceBuilder extends StatelessWidget {
 
   /// Design panel: `#FAF9FF` on a `1.5px #E9E6FA` border, radius 18,
   /// padding 16 vertical / 14 horizontal.
-  static const Color _kPanelFill = Color(0xFFFAF9FF);
-  static const Color _kPanelBorder = Color(0xFFE9E6FA);
+  static const Color _kPanelFill = Color(0xFFFFFDF9);
+  static const Color _kPanelBorder = Color(0xFFFAF4E6);
 
   @override
   Widget build(BuildContext context) {

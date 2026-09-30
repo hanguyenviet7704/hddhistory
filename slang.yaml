@@ -1,5 +1,5 @@
 # Slang configuration reference: https://pub.dev/packages/slang
-base_locale: en
+base_locale: vi
 fallback_strategy: base_locale
 
 # Input/output

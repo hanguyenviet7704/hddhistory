@@ -51,12 +51,12 @@ class CourseSharePalette {
     id: 'violet',
     name: 'Lavender',
     layout: CourseStoryLayout.classic,
-    swatch: Color(0xFFC9BEF2),
+    swatch: Color(0xFFF2E3BE),
     // linear-gradient(160deg,#E6DEFB,#C9BEF2)
     background: LinearGradient(
       begin: Alignment(-0.34, -1),
       end: Alignment(0.34, 1),
-      colors: [Color(0xFFE6DEFB), Color(0xFFC9BEF2)],
+      colors: [Color(0xFFFBF3DE), Color(0xFFF2E3BE)],
     ),
     // radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.5), transparent 62%)
     overlay: RadialGradient(
@@ -65,10 +65,10 @@ class CourseSharePalette {
       colors: [Color(0x80FFFFFF), Color(0x00FFFFFF)],
       stops: [0, 0.62],
     ),
-    foreground: Color(0xFF4A3D7A),
-    foregroundSoft: Color(0xFF7E71A8),
+    foreground: Color(0xFF7A693D),
+    foregroundSoft: Color(0xFF726646),
     chip: Color(0x99FFFFFF), // rgba(255,255,255,.6)
-    buttonBackground: Color(0xFF6C63E8),
+    buttonBackground: Color(0xFFB88C1B),
     buttonForeground: Colors.white,
   );
 
@@ -250,7 +250,7 @@ class _CourseShareSheetState extends State<CourseShareSheet> {
       // it, so the course stays visible behind and the sheet reads as a layer.
       height: MediaQuery.sizeOf(context).height - 56.h,
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F4F8),
+        color: const Color(0xFFF8F7F4),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
       ),
       padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 24.h + bottomInset),
@@ -377,8 +377,8 @@ class _PaletteDots extends StatelessWidget {
                     // separate from the swatch instead of outlining it.
                     boxShadow: palette.id == selected.id
                         ? const [
-                            BoxShadow(color: Color(0xFFF4F4F8), spreadRadius: 2),
-                            BoxShadow(color: Color(0xFF554FF0), spreadRadius: 4),
+                            BoxShadow(color: Color(0xFFF8F7F4), spreadRadius: 2),
+                            BoxShadow(color: Color(0xFFB5860F), spreadRadius: 4),
                           ]
                         : null,
                   ),

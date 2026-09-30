@@ -13,7 +13,6 @@ class AppConfig {
   late NavigatorObserver courseRouterObserver;
   late NavigatorObserver exploreRouterObserver;
   late NavigatorObserver settingRouterObserver;
-  late NavigatorObserver habitRouterObserver;
   late NavigatorObserver libraryRouterObserver;
   late NavigatorObserver communityRouterObserver;
 
@@ -31,7 +30,6 @@ class AppConfig {
     courseRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.courseRouterObserver);
     exploreRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.exploreRouterObserver);
     settingRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.settingRouterObserver);
-    habitRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.habitRouterObserver);
     libraryRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.libraryRouterObserver);
     communityRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.communityRouterObserver);
   }

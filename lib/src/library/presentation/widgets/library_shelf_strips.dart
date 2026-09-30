@@ -315,7 +315,7 @@ class _SavedCardTile extends StatelessWidget {
                 fontSize: 46.sp,
                 fontWeight: FontWeight.w700,
                 height: 1,
-                color: const Color(0xFFF0EEFC),
+                color: const Color(0xFFFCF8EE),
               ),
             ),
           ),
@@ -340,7 +340,7 @@ class _SavedCardTile extends StatelessWidget {
                 width: 18.w,
                 height: 2.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCFCBF2),
+                  color: const Color(0xFFF2E7CB),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),

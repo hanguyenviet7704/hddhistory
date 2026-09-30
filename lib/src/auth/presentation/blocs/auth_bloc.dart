@@ -333,15 +333,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   void _resetAppCubits() {
     _courseRoadmapCubit.reset();
     _progressCubit.reset();
-    // Habit is a lazySingleton holding the previous user's habits/summary/
-    // re-anchor picks; without this an account switch (guest → login, or
-    // logout → next login) leaves the prior user's habits visible until a
-    // refetch. IapCubit is intentionally NOT reset here: its state is only
-    // app-level product/paywall config — premium lives on the user via
-    // ProfileCubit, which is already reset on the same transitions.
-    if (AppDI.injector.isRegistered<HabitCubit>()) {
-      AppDI.injector.get<HabitCubit>().reset();
-    }
+    // IapCubit cố ý KHÔNG reset ở đây: state của nó chỉ là cấu hình sản phẩm /
+    // paywall ở mức ứng dụng — quyền premium nằm trên người dùng qua
+    // ProfileCubit, thứ đã được reset ở cùng những lần chuyển này.
     // Community is the same shape of problem: a lazySingleton holding the
     // previous session's feed, the reader's posting rights and the unread
     // badge. It bites hardest on guest → login, because that is the transition

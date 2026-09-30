@@ -9,7 +9,7 @@ android.apply {
         create("dev") {
             dimension = "flavor-type"
             applicationId = "com.eup.meup.dev"
-            resValue(type = "string", name = "app_name", value = "Meup Dev")
+            resValue(type = "string", name = "app_name", value = "HDDhistory")
             resValue(type = "string", name = "environment", value = "development")
             buildConfigField(type = "String", name = "APP_ENVIRONMENT", value = "\"dev\"")
             buildConfigField(type = "String", name = "API_BASE_URL", value = "\"https://dev.api.com\"")

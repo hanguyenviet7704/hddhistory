@@ -30,7 +30,7 @@ void main() {
 
   group('CourseRoadmapLoadFailureState', () {
     testWidgets('shows the load-failure message and a retry button', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
       await tester.pumpWidget(buildSubject(onRetry: () {}));
       await tester.pump();
 
@@ -39,7 +39,7 @@ void main() {
     });
 
     testWidgets('tapping retry fires the callback', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
       var retried = 0;
       await tester.pumpWidget(buildSubject(onRetry: () => retried++));
       await tester.pump();

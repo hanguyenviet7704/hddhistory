@@ -43,7 +43,7 @@ class InAppSurveyEntryPill extends StatelessWidget {
                   height: 44.w,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFFEBEAFD),
+                    color: Color(0xFFFDF8EA),
                   ),
                   child: Icon(
                     Icons.lightbulb_outline_rounded,

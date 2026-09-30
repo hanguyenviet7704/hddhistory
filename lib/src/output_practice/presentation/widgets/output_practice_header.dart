@@ -31,7 +31,7 @@ class OutputPracticeHeader extends StatelessWidget {
                 dimension: 24.w,
                 child: Icon(
                   Icons.close,
-                  color: const Color(0x80362F82),
+                  color: const Color(0x80826A2F),
                   size: 24.w,
                 ),
               ),
@@ -46,7 +46,7 @@ class OutputPracticeHeader extends StatelessWidget {
                 style: AppStyle.text12.copyWith(
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0x80362F82),
+                  color: const Color(0x80826A2F),
                   height: 1.75,
                 ),
               ),
@@ -55,7 +55,7 @@ class OutputPracticeHeader extends StatelessWidget {
                 margin: EdgeInsets.symmetric(horizontal: 40.w),
                 style: AppStyle.text16.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xB3110751),
+                  color: const Color(0xB3513C07),
                   height: 1.5,
                 ),
               ),

@@ -45,7 +45,7 @@ Color studyThemeOnBg(BuildContext context, Color fallback) =>
 /// [studyThemeOnBg]) for coloured accent text that must stay recognisably
 /// "brand" while remaining legible on any background.
 Color studyThemeAccentOnBg(BuildContext context, Color fallback) =>
-    studyThemeIsDarkBg(context) ? const Color(0xFFCFCBFF) : fallback;
+    studyThemeIsDarkBg(context) ? const Color(0xFFFFF0CB) : fallback;
 
 /// Muted/secondary ink for text or icons INSIDE a glass card (a card filled
 /// with [studyThemeCardColor] / [ThemedGlassCard]). On the stock opaque-white
@@ -112,7 +112,7 @@ class _StudyBackgroundLayer extends StatelessWidget {
         );
       case StudyThemeMode.image:
         final ImageProvider? provider = _imageProvider(preset, state.uploadedFile);
-        if (provider == null) return const ColoredBox(color: Color(0xFFEFEEF9));
+        if (provider == null) return const ColoredBox(color: Color(0xFFF9F6EE));
         return Image(image: provider, fit: BoxFit.cover);
       case StudyThemeMode.video:
         // "Live" preset — a looping muted video (+ optional ambient audio).
@@ -128,7 +128,7 @@ class _StudyBackgroundLayer extends StatelessWidget {
   /// A LinearGradient needs ≥2 stops — expand a solid (1-colour) preset and
   /// guard the empty case so a malformed preset can never crash the paint.
   List<Color> _gradientColors(List<Color> gradient) {
-    if (gradient.isEmpty) return const [Color(0xFFEFEEF9), Color(0xFFE6EBDE)];
+    if (gradient.isEmpty) return const [Color(0xFFF9F6EE), Color(0xFFE6EBDE)];
     if (gradient.length == 1) return [gradient.first, gradient.first];
     return gradient;
   }

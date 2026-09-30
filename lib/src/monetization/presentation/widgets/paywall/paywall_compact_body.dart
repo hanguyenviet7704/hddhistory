@@ -83,7 +83,7 @@ class _PaywallCompactBody extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 5.h),
               decoration: BoxDecoration(
-                color: const Color(0xFFEDEAFD),
+                color: const Color(0xFFFDF8EA),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: AppText(
@@ -92,7 +92,7 @@ class _PaywallCompactBody extends StatelessWidget {
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
-                  color: const Color(0xFF4B44CA),
+                  color: const Color(0xFF94762A),
                 ),
               ),
             ),
@@ -105,7 +105,7 @@ class _PaywallCompactBody extends StatelessWidget {
                   fontSize: 64.sp,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -2.6,
-                  color: const Color(0xFF4B44CA),
+                  color: const Color(0xFF94762A),
                   height: 1.05,
                 ),
               ),
@@ -124,7 +124,7 @@ class _PaywallCompactBody extends StatelessWidget {
                     style: AppStyle.text12.copyWith(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF8F8AB9),
+                      color: const Color(0xFF7E6F4B),
                       height: 1.4,
                     ),
                   ),
@@ -170,9 +170,9 @@ class _PaywallCompactBody extends StatelessWidget {
                       style: AppStyle.text16.copyWith(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFFA8A2C6),
+                        color: const Color(0xFFA39369),
                         decoration: TextDecoration.lineThrough,
-                        decorationColor: const Color(0xFFA8A2C6),
+                        decorationColor: const Color(0xFFA39369),
                       ),
                     ),
                     10.horizontalSpace,
@@ -202,7 +202,7 @@ class _PaywallCompactBody extends StatelessWidget {
                             style: AppStyle.text16.copyWith(
                               fontSize: 17.sp,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF8F8AB9),
+                              color: const Color(0xFF7E6F4B),
                               height: 1,
                             ),
                           ),
@@ -227,7 +227,7 @@ class _PaywallCompactBody extends StatelessWidget {
                   style: AppStyle.text14.copyWith(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF4B44CA),
+                    color: const Color(0xFF94762A),
                   ),
                 ),
               ],

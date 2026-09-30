@@ -115,7 +115,7 @@ void main() {
 
   group('LessonBodyFactory buildBottomButton', () {
     testWidgets('routes to each lesson body bottom button implementation', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
       final factory = _createFactory(onContinueUnsupported: () {});
 
       final capturedButtons = <Widget>[];

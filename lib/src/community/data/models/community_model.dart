@@ -279,6 +279,16 @@ abstract class CommunityChatMessageModel with _$CommunityChatMessageModel {
     @Default(false) bool isLiked,
     @Default(false) bool isMine,
     @Default(false) bool isSeen,
+
+    /// Pinned by an admin: the violet shadow and the pin glyph on the bubble.
+    @Default(false) bool isPinned,
+
+    /// When it was PINNED, which is not when it was written — the bar and the
+    /// sheet order by this.
+    String? pinnedAt,
+
+    /// The line this one answers, null when it answers nothing.
+    CommunityChatReplyModel? replyTo,
     String? createdAt,
   }) = _CommunityChatMessageModel;
 
@@ -289,12 +299,66 @@ abstract class CommunityChatMessageModel with _$CommunityChatMessageModel {
 abstract class CommunityChatPageModel with _$CommunityChatPageModel {
   const factory CommunityChatPageModel({
     @Default(<CommunityChatMessageModel>[]) List<CommunityChatMessageModel> items,
+
+    /// The room's pinned messages, newest pin first. Sent with page 1 only —
+    /// the server puts them here rather than on an endpoint of their own so
+    /// the poll that already runs keeps the pin bar current for free.
+    @Default(<CommunityChatMessageModel>[]) List<CommunityChatMessageModel> pinned,
     @Default(0) int currentPage,
     @Default(0) int totalPages,
     @Default(0) int itemsPerPage,
   }) = _CommunityChatPageModel;
 
   factory CommunityChatPageModel.fromJson(Map<String, dynamic> json) => _$CommunityChatPageModelFromJson(json);
+}
+
+/// The slice of transcript a jump to a pinned message lands in.
+@freezed
+abstract class CommunityChatContextModel with _$CommunityChatContextModel {
+  const factory CommunityChatContextModel({
+    @Default(<CommunityChatMessageModel>[]) List<CommunityChatMessageModel> items,
+    @Default(false) bool hasOlder,
+
+    /// False means the window reaches the live bottom — the screen is back on
+    /// the running transcript and can drop its way back to it.
+    @Default(false) bool hasNewer,
+    @Default('') String anchorId,
+  }) = _CommunityChatContextModel;
+
+  factory CommunityChatContextModel.fromJson(Map<String, dynamic> json) =>
+      _$CommunityChatContextModelFromJson(json);
+}
+
+/// "Hướng dẫn & nội quy nhóm" — authored in the panel, per language.
+@freezed
+abstract class CommunityChatGuideModel with _$CommunityChatGuideModel {
+  const factory CommunityChatGuideModel({
+    @Default('') String title,
+    @Default('') String intro,
+    @Default(<String>[]) List<String> dos,
+    @Default(<String>[]) List<String> donts,
+    @Default(<String>[]) List<String> starters,
+  }) = _CommunityChatGuideModel;
+
+  factory CommunityChatGuideModel.fromJson(Map<String, dynamic> json) =>
+      _$CommunityChatGuideModelFromJson(json);
+}
+
+/// The line a reply quotes.
+@freezed
+abstract class CommunityChatReplyModel with _$CommunityChatReplyModel {
+  const factory CommunityChatReplyModel({
+    @Default('') String id,
+    CommunityAuthorModel? author,
+    @Default('') String body,
+
+    /// The quoted line has been taken down. The reply still answers something,
+    /// so the strip stays and says so instead of vanishing.
+    @Default(false) bool isRemoved,
+  }) = _CommunityChatReplyModel;
+
+  factory CommunityChatReplyModel.fromJson(Map<String, dynamic> json) =>
+      _$CommunityChatReplyModelFromJson(json);
 }
 
 @freezed

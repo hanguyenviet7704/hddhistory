@@ -124,7 +124,7 @@ class _OnboardV2ReminderNotificationCardState extends State<OnboardV2ReminderNot
         gradient: const LinearGradient(
           begin: Alignment(-0.91, -0.42),
           end: Alignment(0.91, 0.42),
-          colors: [Color(0xFF8A82EC), Color(0xFFCDA2E4), Color(0xFFF4B27A)],
+          colors: [Color(0xFFE1B23A), Color(0xFFDBC384), Color(0xFFF4B27A)],
           stops: [0, 0.48, 1],
         ),
         boxShadow: [
@@ -144,7 +144,7 @@ class _OnboardV2ReminderNotificationCardState extends State<OnboardV2ReminderNot
                 gradient: const LinearGradient(
                   begin: Alignment(-0.5, -0.87),
                   end: Alignment(0.5, 0.87),
-                  colors: [Color(0xFF7C79EC), Color(0xFF5045C9)],
+                  colors: [Color(0xFFE0AB25), Color(0xFF93762B)],
                 ),
               ),
               alignment: Alignment.center,

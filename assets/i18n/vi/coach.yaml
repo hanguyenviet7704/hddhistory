@@ -158,6 +158,7 @@ sceneAgainNoEcho: Đủ rồi.
 promptSceneDone: Vậy mình dừng cảnh ở đây nhé.
 promptHub: Xong rồi. Còn gì bạn muốn nói không?
 hubOpen: Hôm nay bạn muốn làm gì?
+promptHubBack: "Hôm trước bạn kể chuyện ${topic}. Hôm nay thế nào?"
 hubTaskT1: Xem lại nhắc hẹn
 hubTaskT2: "Luyện tập tình huống"
 hubTaskT3: "Kể chuyện hôm nay"

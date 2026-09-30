@@ -124,7 +124,7 @@ SuggestedCourseEntity? _pickTodayCourse(List<SuggestedCourseEntity> courses) {
 const LinearGradient _kHeroGradient = LinearGradient(
   begin: Alignment.centerLeft,
   end: Alignment.centerRight,
-  colors: [Color(0xFF9A94F4), Color(0xFF8B84F2)],
+  colors: [Color(0xFFF1CE75), Color(0xFFEBBC46)],
 );
 
 /// The purple panel itself.

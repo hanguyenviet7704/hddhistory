@@ -85,7 +85,7 @@ class OutputPracticeComposer extends StatelessWidget {
                   width: 32.w,
                   height: 32.w,
                   decoration: BoxDecoration(
-                    color: enabled ? const Color(0xFF554FF0) : const Color(0xFFAAB8CD),
+                    color: enabled ? const Color(0xFFB5860F) : const Color(0xFFAAB8CD),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

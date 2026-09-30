@@ -71,7 +71,7 @@ void main() {
   });
 
   testWidgets('renders popup card with continue button without LessonLayout', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     final choiceCubit = ChoiceCubit()..setQuestion(_noCorrectQuestion);
 
@@ -107,7 +107,7 @@ void main() {
   });
 
   testWidgets('renders explanation documents through shared document page path', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     final choiceCubit = ChoiceCubit()..setQuestion(_noCorrectQuestionWithExplanationDocument);
 

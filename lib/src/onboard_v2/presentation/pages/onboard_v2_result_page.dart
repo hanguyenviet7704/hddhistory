@@ -75,7 +75,7 @@ class _OnboardV2ResultPageState extends State<OnboardV2ResultPage> {
     );
   }
 
-  Widget _buildCta(OnboardV2State state, Translations$onboarding$en onboardingL10n) {
+  Widget _buildCta(OnboardV2State state, Translations$onboarding$vi onboardingL10n) {
     final onboardData = state.onboardData;
     final selectCta = onbCopy(onboardData, 'onboardingV3P10Cta', fallback: onboardingL10n.onboardingV3P10Cta);
     final course = state.currentCourse;
@@ -206,7 +206,7 @@ class _BestMatchedLabel extends StatelessWidget {
     );
   }
 
-  Widget _labelStar() => Icon(Icons.star_rounded, size: 12.w, color: const Color(0xFF8B85E8));
+  Widget _labelStar() => Icon(Icons.star_rounded, size: 12.w, color: const Color(0xFFDBAE3E));
 }
 
 class _FallbackContent extends StatelessWidget {

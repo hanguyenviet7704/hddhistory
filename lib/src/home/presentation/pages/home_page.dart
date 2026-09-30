@@ -109,8 +109,6 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       // Optional-update header: surface the pinned banner when a newer,
       // non-forced app version exists (forced updates are gated at splash).
       unawaited(context.read<HomeCubit>().checkOptionalUpdate());
-      // Habit data so the check-in reminder card (§9.4) knows today's count.
-      unawaited(AppDI.injector.get<HabitCubit>().ensureLoaded());
       // Per-skillset achievements, which is what the "Tiến độ học tập" grid
       // divides by. Cache-first inside the cubit, so this paints from the last
       // known values and refreshes behind them.
@@ -177,7 +175,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
             key: const Key('home-page'),
             // Transparent only when a custom study background is active (so it
             // shows through); otherwise the stock flat lavender is preserved.
-            backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFEFEEF9)),
+            backgroundColor: studyThemeScaffoldColor(context, const Color(0xFFF9F6EE)),
             // NO SafeBody here, unlike every other tab: the design runs the purple
             // hero panel behind the status bar, so the top inset is paid inside
             // the panel instead (see HomeHero). The update banner, when it shows,
@@ -578,13 +576,13 @@ class _NewTodayCard extends StatelessWidget {
   /// surface lifted onto the purple header, and a see-through panel there would
   /// read as part of the header instead of as a card sitting on it.
   static const List<BoxShadow> _shadow = [
-    BoxShadow(color: Color(0x2414103C), blurRadius: 30, offset: Offset(0, 14)),
+    BoxShadow(color: Color(0x243C3010), blurRadius: 30, offset: Offset(0, 14)),
   ];
 
   /// The image carries a shadow of its own (design), which is what lifts it off
   /// the white card behind it.
   static const List<BoxShadow> _imageShadow = [
-    BoxShadow(color: Color(0x380B082D), blurRadius: 22, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x382D2308), blurRadius: 22, offset: Offset(0, 8)),
   ];
 
   /// The artwork's own height, fixed rather than derived from a ratio (design

@@ -13,7 +13,7 @@ class UpdateHeader extends StatelessWidget {
   final VoidCallback onDismiss;
 
   /// Design brand indigo (#554FF0) — the cover-sheet fill (NOT a gradient).
-  static const Color _brand = Color(0xFF554FF0);
+  static const Color _brand = Color(0xFFB5860F);
 
   void _handleUpdatePressed() {
     try {

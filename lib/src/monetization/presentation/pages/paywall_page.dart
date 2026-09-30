@@ -162,8 +162,8 @@ class _PaywallPageState extends State<PaywallPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFE0DEFC),
-              Color(0xFFF6F6FE),
+              Color(0xFFFCF3DE),
+              Color(0xFFFEFCF6),
             ],
           ),
         ),

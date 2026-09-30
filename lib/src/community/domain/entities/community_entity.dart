@@ -333,7 +333,11 @@ enum CommunityFeedSort {
 
 enum CommunityTargetType {
   post('POST'),
-  comment('COMMENT');
+  comment('COMMENT'),
+
+  /// A line in a group chat room. Reports on one go through the same endpoint
+  /// as a post's; reactions do NOT — the chat has its own like route.
+  chatMessage('CHAT_MESSAGE');
 
   const CommunityTargetType(this.value);
 
@@ -404,6 +408,17 @@ abstract class CommunityChatMessageEntity with _$CommunityChatMessageEntity {
     /// True while the line is only on this device — drawn immediately so the
     /// room answers a tap, then replaced by the server's copy.
     @Default(false) bool isPending,
+
+    /// Pinned by an admin — the violet shadow and the pin glyph on the bubble.
+    @Default(false) bool isPinned,
+
+    /// When it was PINNED, not when it was written: the bar shows the most
+    /// recent PIN, which is a different order as soon as somebody pins an old
+    /// line.
+    DateTime? pinnedAt,
+
+    /// The line this one answers, null when it answers nothing.
+    CommunityChatReplyEntity? replyTo,
   }) = _CommunityChatMessageEntity;
 }
 
@@ -411,7 +426,58 @@ abstract class CommunityChatMessageEntity with _$CommunityChatMessageEntity {
 abstract class CommunityChatPageEntity with _$CommunityChatPageEntity {
   const factory CommunityChatPageEntity({
     @Default(<CommunityChatMessageEntity>[]) List<CommunityChatMessageEntity> items,
+
+    /// The room's pins, newest pin first. Only page 1 carries them.
+    @Default(<CommunityChatMessageEntity>[]) List<CommunityChatMessageEntity> pinned,
     @Default(0) int currentPage,
     @Default(0) int totalPages,
   }) = _CommunityChatPageEntity;
+}
+
+/// The slice of transcript a jump to a pinned message lands in.
+///
+/// A pin can be hundreds of messages back, outside the page the screen holds,
+/// so there is nothing on screen to scroll to. The server answers with a window
+/// centred on it and the screen swaps its list for that.
+@freezed
+abstract class CommunityChatContextEntity with _$CommunityChatContextEntity {
+  const factory CommunityChatContextEntity({
+    @Default(<CommunityChatMessageEntity>[]) List<CommunityChatMessageEntity> items,
+    @Default(false) bool hasOlder,
+
+    /// False means the window reaches the live bottom, so the screen is back on
+    /// the running transcript: the way back can hide and polling can merge.
+    @Default(false) bool hasNewer,
+    @Default('') String anchorId,
+  }) = _CommunityChatContextEntity;
+}
+
+/// "Hướng dẫn & nội quy nhóm" (design `S-03c`), authored in the panel.
+///
+/// Three fixed lists rather than free-form sections, because the sheet draws
+/// each differently: a green "Nên" block, a red "Không" block, and tappable
+/// openers that fill the composer.
+@freezed
+abstract class CommunityChatGuideEntity with _$CommunityChatGuideEntity {
+  const factory CommunityChatGuideEntity({
+    @Default('') String title,
+    @Default('') String intro,
+    @Default(<String>[]) List<String> dos,
+    @Default(<String>[]) List<String> donts,
+    @Default(<String>[]) List<String> starters,
+  }) = _CommunityChatGuideEntity;
+}
+
+/// The line a reply quotes.
+@freezed
+abstract class CommunityChatReplyEntity with _$CommunityChatReplyEntity {
+  const factory CommunityChatReplyEntity({
+    @Default('') String id,
+    CommunityAuthorEntity? author,
+    @Default('') String body,
+
+    /// The quoted line was taken down. The strip stays and says so — a reply
+    /// with nothing above it reads as a non-sequitur.
+    @Default(false) bool isRemoved,
+  }) = _CommunityChatReplyEntity;
 }

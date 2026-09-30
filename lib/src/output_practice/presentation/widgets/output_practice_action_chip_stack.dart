@@ -28,7 +28,7 @@ class OutputPracticeActionChipStack extends StatelessWidget {
                 helperLabel,
                 style: AppStyle.text12.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: const Color(0x80362F82),
+                  color: const Color(0x80826A2F),
                   height: 1.75,
                 ),
               ),
@@ -36,7 +36,7 @@ class OutputPracticeActionChipStack extends StatelessWidget {
               Icon(
                 Icons.subdirectory_arrow_left_rounded,
                 size: 18.w,
-                color: const Color(0x80362F82),
+                color: const Color(0x80826A2F),
               ),
             ],
           ),
@@ -53,7 +53,7 @@ class OutputPracticeActionChipStack extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
-                    color: isSummary ? const Color(0x994B44CA) : const Color(0x80362F82),
+                    color: isSummary ? const Color(0x9994762A) : const Color(0x80826A2F),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: AppText(

@@ -18,7 +18,7 @@ class ContinueButtonWidget extends StatelessWidget {
       width: double.infinity,
       height: 54.h,
       decoration: BoxDecoration(
-        color: isEnabled ? const Color(0xFF554FF0) : Colors.grey[400],
+        color: isEnabled ? const Color(0xFFB5860F) : Colors.grey[400],
         borderRadius: BorderRadius.circular(1000.r),
       ),
       child: Material(

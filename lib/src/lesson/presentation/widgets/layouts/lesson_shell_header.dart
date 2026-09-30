@@ -111,7 +111,7 @@ abstract final class KeypointHeaderChrome {
   static const Color icon = Color(0xFF0D121C);
 
   /// `audioOn: #554FF0`
-  static const Color audioOn = Color(0xFF554FF0);
+  static const Color audioOn = Color(0xFFB5860F);
 
   /// `audioOff: #9AA4B2`
   static const Color audioOff = Color(0xFF9AA4B2);
@@ -120,7 +120,7 @@ abstract final class KeypointHeaderChrome {
   static final Color pipTrack = AppCustomColor.backgroundWhite.withValues(alpha: 0.9);
 
   /// `pipFill: #554FF0`
-  static const Color pipFill = Color(0xFF554FF0);
+  static const Color pipFill = Color(0xFFB5860F);
 }
 
 /// Round chrome behind a keypoint header control — the design's 34pt circle at

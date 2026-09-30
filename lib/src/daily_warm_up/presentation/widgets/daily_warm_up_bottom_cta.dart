@@ -20,7 +20,7 @@ class DailyWarmUpBottomCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = enabled ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF);
+    final background = enabled ? const Color(0xFFB5860F) : const Color(0xFFE3E8EF);
     final foreground = enabled ? Colors.white : const Color(0xFF7F8EA4);
 
     final button = SizedBox(

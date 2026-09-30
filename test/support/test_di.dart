@@ -77,7 +77,7 @@ class _InMemoryHydratedStorage implements Storage {
   Future<void> close() async {}
 }
 
-Future<void> setupLocaleCubitForTests({AppLocale locale = AppLocale.en}) async {
+Future<void> setupLocaleCubitForTests({AppLocale locale = AppLocale.vi}) async {
   HydratedBloc.storage = _InMemoryHydratedStorage();
   await AppDI.injector.reset();
 

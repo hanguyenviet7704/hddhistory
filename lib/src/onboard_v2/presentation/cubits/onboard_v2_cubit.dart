@@ -147,13 +147,14 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       return;
     }
 
-    // Per-screen back events — tái dùng đúng key cũ của sheet cho các bước
-    // tương ứng (paths → nhánh, symptom → vấn đề, infor → mong muốn).
+    // Sự kiện back theo từng màn, đúng như sheet liệt kê: chỉ S3 (tuổi), S4
+    // (nhánh) và S7 (màn thông tin) có back. Sheet 2026-09-18 bỏ
+    // `obd_symptom_back`, nên màn Vấn đề (S5) không còn bắn gì khi lùi; và
+    // `obd_infor_back` trả về đúng S7 thay vì màn Mong muốn (S6).
     final backEvent = switch (state.currentPage) {
       OnboardV2PageStep.p3Age => TrackingKey.onboardV2AgeBack,
       OnboardV2PageStep.p4Branches => TrackingKey.onboardV2PathsBack,
-      OnboardV2PageStep.p5Problems => TrackingKey.onboardV2SymptomBack,
-      OnboardV2PageStep.p6Desire => TrackingKey.onboardV2InforBack,
+      OnboardV2PageStep.p7How => TrackingKey.onboardV2InforBack,
       _ => null,
     };
     if (backEvent != null) OnboardV2Tracking.track(backEvent);
@@ -355,7 +356,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   void continueFromP5Problems() {
     if (!state.canContinueProblems) return;
-    OnboardV2Tracking.track(TrackingKey.onboardV2P7ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
+    OnboardV2Tracking.track(TrackingKey.onboardV2StruggleSelect, parameters: OnboardV2Tracking.selectionParams(state));
     OnboardV2Tracking.setUserProperties({'habit_struggle': state.selectedPackageCodes.join(',')});
     emit(state.copyWith(currentPage: OnboardV2PageStep.p6Desire));
   }
@@ -371,11 +372,15 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   void continueFromP6Desire() {
     if (!state.canContinueDesire) return;
-    OnboardV2Tracking.track(TrackingKey.onboardV2P6ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
+    OnboardV2Tracking.track(TrackingKey.onboardV2GoalSelect, parameters: OnboardV2Tracking.selectionParams(state));
     emit(state.copyWith(currentPage: OnboardV2PageStep.p7How));
   }
 
   void continueFromP7How() {
+    // S7 trên sheet là màn "MeUp giúp bạn thế nào", và `obd_infor_continue` là
+    // nút Tiếp tục CỦA NÓ. Trước bản này tên ấy bị màn Mong muốn (S6) mượn
+    // mất, nên S7 không bắn gì còn S6 báo cáo dưới tên của màn khác.
+    OnboardV2Tracking.track(TrackingKey.onboardV2P6ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
     emit(state.copyWith(currentPage: OnboardV2PageStep.p8Reminder));
   }
 

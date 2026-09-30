@@ -14,7 +14,7 @@ void main() {
 
   group('PaywallPlanOption', () {
     testWidgets('renders selected styling, hides discount pill, and keeps best-deal badge', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       await tester.pumpWidget(
         _wrap(
@@ -42,7 +42,7 @@ void main() {
     });
 
     testWidgets('renders unselected discounted card with discount pill and original price', (tester) async {
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       await tester.pumpWidget(
         _wrap(
@@ -69,7 +69,7 @@ void main() {
 
     testWidgets('uses localized period label from product id and calls onTap', (tester) async {
       var tapped = false;
-      LocaleSettings.setLocaleSync(AppLocale.en);
+      LocaleSettings.setLocaleSync(AppLocale.vi);
 
       await tester.pumpWidget(
         _wrap(

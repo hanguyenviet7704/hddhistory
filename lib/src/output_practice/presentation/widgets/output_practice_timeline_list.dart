@@ -195,13 +195,13 @@ class OutputPracticeTimelineList extends StatelessWidget {
                     Icon(
                       Icons.arrow_downward_rounded,
                       size: 16.w,
-                      color: const Color(0xFF554FF0),
+                      color: const Color(0xFFB5860F),
                     ),
                     6.horizontalSpace,
                     AppText(
                       jumpToLatestLabel,
                       style: AppStyle.text12.copyWith(
-                        color: const Color(0xFF554FF0),
+                        color: const Color(0xFFB5860F),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -248,14 +248,14 @@ class _OutputPracticeConversationTransitionIndicator extends StatelessWidget {
               height: 14.w,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF554FF0)),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFFB5860F)),
               ),
             ),
             10.horizontalSpace,
             AppText(
               label,
               style: AppStyle.text14.copyWith(
-                color: const Color(0xFF554FF0),
+                color: const Color(0xFFB5860F),
                 fontWeight: FontWeight.w700,
                 height: 1.75,
               ),
@@ -305,7 +305,7 @@ class _OutputPracticeRetryBanner extends StatelessWidget {
             child: AppText(
               actionLabel,
               style: AppStyle.text14.copyWith(
-                color: const Color(0xFF554FF0),
+                color: const Color(0xFFB5860F),
                 fontWeight: FontWeight.w700,
               ),
             ),

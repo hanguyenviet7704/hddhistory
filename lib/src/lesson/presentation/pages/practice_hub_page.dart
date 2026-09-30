@@ -164,7 +164,7 @@ class PracticeHubPage extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(22.r),
               boxShadow: [
-                BoxShadow(color: const Color(0x142B226E), blurRadius: 30, offset: const Offset(0, 10)),
+                BoxShadow(color: const Color(0x146E5822), blurRadius: 30, offset: const Offset(0, 10)),
               ],
             ),
             child: Row(

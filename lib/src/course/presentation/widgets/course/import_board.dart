@@ -19,11 +19,11 @@ class ImportBoard extends StatelessWidget {
   static const LinearGradient _gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFEDECFE), Color(0xFFF6F1FE)],
+    colors: [Color(0xFFFEF9EC), Color(0xFFFEFAF1)],
   );
 
-  static const Color _titleInk = Color(0xFF1B1666);
-  static const Color _bodyInk = Color(0xFF5B5A8C);
+  static const Color _titleInk = Color(0xFF664F16);
+  static const Color _bodyInk = Color(0xFF8B7D5A);
 
   void _open(BuildContext context, {bool pdf = false}) {
     AppHaptic.select();
@@ -160,7 +160,7 @@ class _SourceTile extends StatelessWidget {
             color: AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
-              BoxShadow(color: const Color(0x0F1B1666), blurRadius: 8.r, offset: Offset(0, 2.h)),
+              BoxShadow(color: const Color(0x0F664F16), blurRadius: 8.r, offset: Offset(0, 2.h)),
             ],
           ),
           child: Row(

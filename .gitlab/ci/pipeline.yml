@@ -1,7 +1,0 @@
-include:
-  - local: .gitlab/ci/macos/00-workflow.yml
-  - local: .gitlab/ci/macos/10-prepare.yml
-  - local: .gitlab/ci/macos/20-quality.yml
-  - local: .gitlab/ci/macos/30-build.yml
-  - local: .gitlab/ci/macos/40-release-skeleton.yml
-  - local: .gitlab/ci/macos/45-firebase-distribution.yml

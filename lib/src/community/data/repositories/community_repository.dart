@@ -465,10 +465,17 @@ class CommunityRepository implements ICommunityRepository {
   TaskEither<AppException, CommunityChatMessageEntity> sendChatMessage({
     required String room,
     required String body,
+    String? replyToId,
   }) {
     return TaskEither.tryCatch(
       () async {
-        final response = await _api.sendChatMessage(room, {'body': body});
+        final response = await _api.sendChatMessage(room, {
+          'body': body,
+          // Dropped entirely when there is no reply, rather than sent as null:
+          // the API whitelists its DTO, and an explicit null on an @IsOptional
+          // @IsMongoId field is a 400.
+          'replyToId': ?replyToId,
+        });
 
         return (response.data ?? const CommunityChatMessageModel()).toEntity();
       },
@@ -484,6 +491,35 @@ class CommunityRepository implements ICommunityRepository {
         final data = response.data ?? const CommunityChatLikeModel();
 
         return (isLiked: data.isLiked, likeCount: data.likeCount);
+      },
+      (error, stackTrace) => communityException(error),
+    );
+  }
+
+  @override
+  TaskEither<AppException, CommunityChatContextEntity> getChatMessageContext({
+    required String room,
+    required String messageId,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.getChatMessageContext(room, messageId);
+
+        return (response.data ?? const CommunityChatContextModel()).toEntity();
+      },
+      (error, stackTrace) => communityException(error),
+    );
+  }
+
+  @override
+  TaskEither<AppException, CommunityChatGuideEntity?> getChatGuide() {
+    return TaskEither.tryCatch(
+      () async {
+        final response = await _api.getChatGuide();
+
+        // Null is the real answer, not a failure: nothing has been written in
+        // any language yet, and the header hides its info button.
+        return response.data?.toEntity();
       },
       (error, stackTrace) => communityException(error),
     );
@@ -598,6 +634,9 @@ extension CommunityChatMessageModelX on CommunityChatMessageModel {
     isLiked: isLiked,
     isMine: isMine,
     isSeen: isSeen,
+    isPinned: isPinned,
+    pinnedAt: DateTime.tryParse(pinnedAt ?? '')?.toLocal(),
+    replyTo: replyTo?.toEntity(),
     createdAt: DateTime.tryParse(createdAt ?? '')?.toLocal(),
   );
 }
@@ -605,8 +644,37 @@ extension CommunityChatMessageModelX on CommunityChatMessageModel {
 extension CommunityChatPageModelX on CommunityChatPageModel {
   CommunityChatPageEntity toEntity() => CommunityChatPageEntity(
     items: items.map((message) => message.toEntity()).toList(),
+    pinned: pinned.map((message) => message.toEntity()).toList(),
     currentPage: currentPage,
     totalPages: totalPages,
+  );
+}
+
+extension CommunityChatContextModelX on CommunityChatContextModel {
+  CommunityChatContextEntity toEntity() => CommunityChatContextEntity(
+    items: items.map((message) => message.toEntity()).toList(),
+    hasOlder: hasOlder,
+    hasNewer: hasNewer,
+    anchorId: anchorId,
+  );
+}
+
+extension CommunityChatGuideModelX on CommunityChatGuideModel {
+  CommunityChatGuideEntity toEntity() => CommunityChatGuideEntity(
+    title: title,
+    intro: intro,
+    dos: dos,
+    donts: donts,
+    starters: starters,
+  );
+}
+
+extension CommunityChatReplyModelX on CommunityChatReplyModel {
+  CommunityChatReplyEntity toEntity() => CommunityChatReplyEntity(
+    id: id,
+    author: author?.toEntity(),
+    body: body,
+    isRemoved: isRemoved,
   );
 }
 

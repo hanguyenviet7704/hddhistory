@@ -98,7 +98,7 @@ void main() {
   });
 
   testWidgets('pushes no-correct document route and advances after pop', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     final exerciseCubit = _SpyExerciseCubit()..setLearningItemType(LearningItemType.exercise);
     final choiceCubit = _TestChoiceCubit()..setQuestion(_noCorrectQuestion);
@@ -164,7 +164,7 @@ void main() {
   });
 
   testWidgets('does not advance when no-correct document route returns false', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     final exerciseCubit = _SpyExerciseCubit()..setLearningItemType(LearningItemType.exercise);
     final choiceCubit = _TestChoiceCubit()..setQuestion(_noCorrectQuestion);

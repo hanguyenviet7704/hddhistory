@@ -33,12 +33,12 @@ class RecordingControlsArea extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             width: 2.67.w,
-            color: isEnabled ? const Color(0xFF554FF0) : const Color(0xFFAAB7CC),
+            color: isEnabled ? const Color(0xFFB5860F) : const Color(0xFFAAB7CC),
           ),
         ),
         child: Icon(
           isRecording ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          color: isEnabled ? const Color(0xFF554FF0) : const Color(0xFFAAB7CC),
+          color: isEnabled ? const Color(0xFFB5860F) : const Color(0xFFAAB7CC),
           size: 52.sp,
         ),
       ),

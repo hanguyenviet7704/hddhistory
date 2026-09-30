@@ -22,7 +22,7 @@ class DailyWarmUpChoiceAnswerCard extends StatelessWidget {
 
   Color get borderColor {
     return switch (state) {
-      AnswerState.selected => const Color(0xFF554FF0),
+      AnswerState.selected => const Color(0xFFB5860F),
       AnswerState.correct => const Color(0xFF1DA75E),
       AnswerState.incorrect => const Color(0xFFE34646),
       _ => const Color(0xFFE3E8EF),
@@ -112,7 +112,7 @@ class DailyWarmUpMultipleChoiceAnswerCard extends StatelessWidget {
 
   Color get borderColor {
     return switch (state) {
-      AnswerState.selected => const Color(0xFF554FF0),
+      AnswerState.selected => const Color(0xFFB5860F),
       AnswerState.correct => const Color(0xFF41AE8C),
       AnswerState.incorrect => const Color(0xFFE34646),
       AnswerState.correctNotSelected => const Color(0xFF364152),

@@ -29,7 +29,7 @@ class WarmUpNextLessonCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4B44CA).withValues(alpha: 0.15),
+            color: const Color(0xFF94762A).withValues(alpha: 0.15),
             blurRadius: 24.r,
             offset: Offset(0, 4.h),
           ),
@@ -45,14 +45,14 @@ class WarmUpNextLessonCard extends StatelessWidget {
               height: 247.w,
               child: _thumbnailUrl.isEmpty
                   ? Container(
-                      color: const Color(0xFFF2F1FE),
+                      color: const Color(0xFFFEFAF1),
                       alignment: Alignment.center,
-                      child: Icon(Icons.menu_book_rounded, color: const Color(0xFF4B44CA), size: 40.w),
+                      child: Icon(Icons.menu_book_rounded, color: const Color(0xFF94762A), size: 40.w),
                     )
                   : CachedNetworkImage(
                       imageUrl: _thumbnailUrl,
                       fit: BoxFit.cover,
-                      errorWidget: (_, _, _) => Container(color: const Color(0xFFF2F1FE)),
+                      errorWidget: (_, _, _) => Container(color: const Color(0xFFFEFAF1)),
                     ),
             ),
           ),

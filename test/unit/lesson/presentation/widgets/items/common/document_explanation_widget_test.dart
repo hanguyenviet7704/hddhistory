@@ -53,7 +53,7 @@ void main() {
   });
 
   testWidgets('expands, collapses, and switches explanation options locally', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     await tester.pumpWidget(
       ScreenUtilInit(
@@ -101,7 +101,7 @@ void main() {
   });
 
   testWidgets('does not render title when title is empty', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     await tester.pumpWidget(
       ScreenUtilInit(
@@ -124,7 +124,7 @@ void main() {
   });
 
   testWidgets('resets local selection when options are replaced with a different document', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     Widget buildWidget(List<ExplanationOptionEntity> options) {
       return ScreenUtilInit(
@@ -162,7 +162,7 @@ void main() {
   });
 
   testWidgets('does not leak selection across explanation documents with identical options', (tester) async {
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
 
     Widget buildWidget(ContentDocumentEntity document) {
       return ScreenUtilInit(

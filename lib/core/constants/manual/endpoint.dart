@@ -274,6 +274,11 @@ mixin AppEndpoint {
   static const String communityChatRoom = '/api/v1/community/chat/rooms/{room}';
   static const String communityChatMessages = '/api/v1/community/chat/rooms/{room}/messages';
   static const String communityChatMessageLike = '/api/v1/community/chat/messages/{id}/like';
+  // The slice of transcript around one message — what a tap on a pin lands
+  // in when the pin is older than the page the screen is holding.
+  static const String communityChatMessageContext =
+      '/api/v1/community/chat/rooms/{room}/messages/{id}/context';
+  static const String communityChatGuide = '/api/v1/community/chat/guide';
 
   //* AI Coach
   static const String coachBubble = '/api/v1/coach/bubble';
@@ -284,6 +289,11 @@ mixin AppEndpoint {
   static const String coachSessionPersona = '/api/v1/coach/sessions/{id}/persona';
   static const String coachTranscribe = '/api/v1/coach/transcribe';
   static const String coachExplainAgain = '/api/v1/coach/explain-again';
+
+  //* Đồ thị tri thức lịch sử (module knowledge-graph của API)
+  static const String kgEntities = '/api/v1/knowledge-graph/entities';
+  static const String kgEntityById = '/api/v1/knowledge-graph/entities/{id}';
+  static const String kgEntityRelated = '/api/v1/knowledge-graph/entities/{id}/related';
 
   //* AI Services API
   static const String voiceFeedback = '/feedback';

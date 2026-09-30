@@ -2,7 +2,7 @@ part of '../../../common.dart';
 
 @lazySingleton
 class LocaleCubit extends HydratedCubit<AppLocale> {
-  LocaleCubit() : super(AppLocale.en) {
+  LocaleCubit() : super(AppLocale.vi) {
     LocaleSettings.setLocale(state);
   }
 
@@ -36,38 +36,20 @@ class LocaleCubit extends HydratedCubit<AppLocale> {
   String get storagePrefix => 'LocaleCubit';
 
   @override
-  AppLocale fromJson(Map<String, dynamic> json) => AppLocaleUtils.parse(json['locale'] as String? ?? AppLocale.en.languageCode);
+  AppLocale fromJson(Map<String, dynamic> json) => AppLocaleUtils.parse(json['locale'] as String? ?? AppLocale.vi.languageCode);
 
   @override
   Map<String, dynamic> toJson(AppLocale state) => {'locale': state.languageCode};
 }
 
 extension AppLocaleX on AppLocale {
-  String get label => switch (this) {
-    AppLocale.en => 'English',
-    AppLocale.vi => 'Tiếng Việt',
-    AppLocale.zh => '中文',
-    AppLocale.ja => '日本語',
-    AppLocale.ko => '한국어',
-  };
+  /// App chỉ còn một ngôn ngữ nên các bảng tra theo locale trước đây (nhãn,
+  /// cờ, danh sách chọn) thu về một giá trị. Giữ lại extension thay vì xoá vì
+  /// [languageAISupport] đi vào prompt gửi cho AI, và [localeData] được
+  /// MaterialApp dùng.
+  String get label => 'Tiếng Việt';
 
-  String get languageAISupport => switch (this) {
-    AppLocale.en => 'English',
-    AppLocale.vi => 'Vietnamese',
-    AppLocale.zh => 'Chinese',
-    AppLocale.ja => 'Japanese',
-    AppLocale.ko => 'Korean',
-  };
+  String get languageAISupport => 'Vietnamese';
 
   Locale get localeData => flutterLocale;
-
-  String get flagCircle => switch (this) {
-    AppLocale.en => AppAsset.svg.common.icUsFlag,
-    AppLocale.vi => AppAsset.svg.common.icVnFlag,
-    AppLocale.zh => AppAsset.svg.common.icCnFlag,
-    AppLocale.ja => AppAsset.svg.common.icJpFlag,
-    AppLocale.ko => AppAsset.svg.common.icKrFlag,
-  };
-
-  static List<AppLocale> get displayLocales => [AppLocale.en, AppLocale.vi, AppLocale.zh, AppLocale.ja, AppLocale.ko];
 }

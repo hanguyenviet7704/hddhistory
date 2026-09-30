@@ -75,7 +75,7 @@ class _ReadyNotificationCubit extends NotificationCubit {
 void main() {
   setUp(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
     AppConfig.instance.rootNaviKey = GlobalKey<NavigatorState>();
     AppDI.injector.registerSingleton<ITrackingService>(AppTrackingService(_NoopTrackingService()));
   });

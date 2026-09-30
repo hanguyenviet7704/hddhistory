@@ -37,7 +37,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
     final reduceMotion = (MediaQuery.maybeDisableAnimationsOf(context) ?? false) || MediaQuery.accessibleNavigationOf(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFC7C5FA),
+      backgroundColor: const Color(0xFFFAEBC5),
       body: SafeArea(
         child: ListView(
           padding: EdgeInsets.fromLTRB(20.w, 58.h, 20.w, 24.h),
@@ -46,7 +46,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
               context.l10n.dailyWarmUp.dailyChallenge,
               textAlign: TextAlign.center,
               style: AppStyle.text32.copyWith(
-                color: const Color(0xFF362F82),
+                color: const Color(0xFF826A2F),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -83,14 +83,14 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.trending_up_rounded, size: 20.w, color: const Color(0xFF4B44CA)),
+              Icon(Icons.trending_up_rounded, size: 20.w, color: const Color(0xFF94762A)),
               8.horizontalSpace,
               Flexible(
                 child: AppText(
                   context.l10n.dailyWarmUp.memoryRetentionHint,
                   textAlign: TextAlign.center,
                   maxLines: 2,
-                  style: AppStyle.textBold14.copyWith(color: const Color(0xFF362F82)),
+                  style: AppStyle.textBold14.copyWith(color: const Color(0xFF826A2F)),
                 ),
               ),
             ],
@@ -115,7 +115,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
             child: AppText(
               context.l10n.dailyWarmUp.maybeLater,
               style: AppStyle.text16.copyWith(
-                color: const Color(0xFF362F82),
+                color: const Color(0xFF826A2F),
                 fontWeight: FontWeight.w600,
               ),
             ),

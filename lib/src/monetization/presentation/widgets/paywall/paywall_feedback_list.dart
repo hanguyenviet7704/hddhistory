@@ -142,7 +142,7 @@ class _FeedbackCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF1A1147),
+                        color: const Color(0xFF473811),
                         fontWeight: FontWeight.w700,
                         height: 1.4,
                       ),
@@ -160,7 +160,7 @@ class _FeedbackCard extends StatelessWidget {
             maxLines: 2,
             style: AppStyle.text16.copyWith(
               fontSize: 17.sp,
-              color: const Color(0xFF1A1147),
+              color: const Color(0xFF473811),
               fontWeight: FontWeight.w700,
               height: 1.35,
             ),
@@ -242,7 +242,7 @@ class _ReviewerAvatar extends StatelessWidget {
       width: size,
       height: size,
       decoration: const BoxDecoration(
-        color: Color(0xFFEDEAFD),
+        color: Color(0xFFFDF8EA),
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -250,7 +250,7 @@ class _ReviewerAvatar extends StatelessWidget {
           name.isEmpty ? '?' : name.characters.first.toUpperCase(),
           style: AppStyle.text14.copyWith(
             fontWeight: FontWeight.w800,
-            color: const Color(0xFF4B44CA),
+            color: const Color(0xFF94762A),
           ),
         ),
       ),

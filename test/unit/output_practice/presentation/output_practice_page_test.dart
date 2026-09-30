@@ -86,7 +86,7 @@ class _FakeSocketRepository implements IOutputPracticeSocketRepository {
 void main() {
   setUp(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
   });
 
   tearDown(() async {

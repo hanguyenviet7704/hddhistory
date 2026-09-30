@@ -143,7 +143,7 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
   InlineSpan? _usageSpan(BuildContext context) {
     final copy = context.l10n.outputPractice;
     final usageTextStyle = AppStyle.text14.copyWith(
-      color: const Color(0xFF4B44CA),
+      color: const Color(0xFF94762A),
       height: 1.75,
     );
 
@@ -218,7 +218,7 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
                 width: 156.w,
                 height: 10.h,
                 decoration: BoxDecoration(
-                  color: const Color(0x1F4B44CA),
+                  color: const Color(0x1F94762A),
                   borderRadius: BorderRadius.circular(999.r),
                 ),
               ),

@@ -28,7 +28,7 @@ class GenderOption extends StatelessWidget {
           color: isSelected ? Colors.white : const Color(0xFFF5F7FB), // Background/Gray
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF), // Brand/Primary or Border/Default
+            color: isSelected ? const Color(0xFFB5860F) : const Color(0xFFE3E8EF), // Brand/Primary or Border/Default
             width: 2.w,
           ),
         ),

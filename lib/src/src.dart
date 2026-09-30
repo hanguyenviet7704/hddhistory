@@ -1,6 +1,6 @@
 export 'common/common.dart';
 export 'daily_warm_up/daily_warm_up.dart';
-export 'habit/habit.dart';
+export 'knowledge_graph/knowledge_graph.dart';
 export 'learning_import/learning_import.dart';
 export 'achievenment/achievenment.dart';
 export 'auth/auth.dart';

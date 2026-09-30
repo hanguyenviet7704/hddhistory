@@ -374,7 +374,7 @@ class _DeckStack extends StatelessWidget {
                 bottom: ui.lerpDouble(-16.h, -8.h, t),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEDEBF9),
+                    color: const Color(0xFFF9F5EB),
                     borderRadius: BorderRadius.circular(26.r),
                   ),
                 ),
@@ -393,7 +393,7 @@ class _DeckStack extends StatelessWidget {
                 child: nextCard == null
                     ? DecoratedBox(
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF6F5FD),
+                          color: const Color(0xFFFDFBF5),
                           borderRadius: BorderRadius.circular(27.r),
                           boxShadow: [
                             BoxShadow(

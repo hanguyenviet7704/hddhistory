@@ -6,7 +6,7 @@ import '../../../support/test_di.dart';
 void main() {
   setUpAll(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
   });
 
   tearDownAll(() async {

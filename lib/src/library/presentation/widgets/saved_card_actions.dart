@@ -122,7 +122,7 @@ class SavedCardActionButton extends StatelessWidget {
                 boxShadow: dropShadow
                     ? [
                         BoxShadow(
-                          color: const Color(0xFF2D285A).withValues(alpha: 0.12),
+                          color: const Color(0xFF5A4C28).withValues(alpha: 0.12),
                           blurRadius: 12.r,
                           offset: Offset(0, 4.h),
                         ),

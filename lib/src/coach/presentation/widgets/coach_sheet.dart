@@ -693,7 +693,7 @@ class _HabitChip extends StatelessWidget {
                       child: Icon(
                         Icons.swap_horiz_rounded,
                         size: 16.w,
-                        color: const Color(0xFF5B54A8),
+                        color: const Color(0xFF897544),
                       ),
                     ),
                   ),

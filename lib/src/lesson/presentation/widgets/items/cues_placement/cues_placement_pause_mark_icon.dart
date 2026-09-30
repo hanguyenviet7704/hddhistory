@@ -25,7 +25,7 @@ class CuesPlacementPauseMarkIcon extends StatelessWidget {
               width: 2.w,
               height: 12.h,
               decoration: BoxDecoration(
-                color: filled ? const Color(0xFF554FF0) : Colors.transparent,
+                color: filled ? const Color(0xFFB5860F) : Colors.transparent,
                 borderRadius: BorderRadius.circular(3.r),
               ),
             ),
@@ -35,7 +35,7 @@ class CuesPlacementPauseMarkIcon extends StatelessWidget {
               width: 2.w,
               height: 12.h,
               decoration: BoxDecoration(
-                color: filled ? const Color(0xFF554FF0) : Colors.transparent,
+                color: filled ? const Color(0xFFB5860F) : Colors.transparent,
                 borderRadius: BorderRadius.circular(3.r),
               ),
             ),

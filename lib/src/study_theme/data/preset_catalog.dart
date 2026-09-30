@@ -23,7 +23,7 @@ abstract class PresetCatalog {
     mode: StudyThemeMode.defaultMode,
     category: 'Default',
     name: 'Default',
-    gradient: [Color(0xFFEFEEF9), Color(0xFFE6EBDE)],
+    gradient: [Color(0xFFF9F6EE), Color(0xFFE6EBDE)],
   );
 
   /// Synthetic preset for a user-uploaded image. The picked file itself lives

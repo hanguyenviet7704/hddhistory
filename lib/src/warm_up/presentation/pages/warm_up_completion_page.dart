@@ -43,7 +43,7 @@ class _WarmUpCompletionPageState extends State<WarmUpCompletionPage> {
 
     return Scaffold(
       key: const Key('warm-up-completion-page'),
-      backgroundColor: const Color(0xFFF2F1FE),
+      backgroundColor: const Color(0xFFFEFAF1),
       body: SafeArea(
         child: Stack(
           children: [
@@ -57,7 +57,7 @@ class _WarmUpCompletionPageState extends State<WarmUpCompletionPage> {
                 children: [
                   ShaderMask(
                     shaderCallback: (rect) => const LinearGradient(
-                      colors: [Color(0xFF4B44CA), Color(0xFFA052FF), Color(0xFFEF81D4), Color(0xFFFF8F8F), Color(0xFFFFCE66)],
+                      colors: [Color(0xFF94762A), Color(0xFFDD9E00), Color(0xFFEF81D4), Color(0xFFFF8F8F), Color(0xFFFFCE66)],
                     ).createShader(rect),
                     child: AppText(
                       context.l10n.warmUp.completionTitle,

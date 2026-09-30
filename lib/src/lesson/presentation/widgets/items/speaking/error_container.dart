@@ -43,7 +43,7 @@ class ErrorContainer extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF554FF0),
+                  color: const Color(0xFFB5860F),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -65,7 +65,7 @@ class ErrorContainer extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF554FF0),
+                  color: const Color(0xFFB5860F),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(

@@ -23,7 +23,7 @@ class OutputPracticePageShell extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFC7C5FA),
+              Color(0xFFFAEBC5),
               Color(0xFFF7EAE9),
               Color(0xFFF4E6DD),
             ],

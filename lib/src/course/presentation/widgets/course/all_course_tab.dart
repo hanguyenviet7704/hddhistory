@@ -531,11 +531,11 @@ class _WeeklyTopSectionState extends State<_WeeklyTopSection> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(color: const Color(0xFFEBE9F9), width: 1.5),
+          border: Border.all(color: const Color(0xFFF9F4E9), width: 1.5),
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF4F3FE), Color(0xFFFBF7F4)],
+            colors: [Color(0xFFFEFBF3), Color(0xFFFBF7F4)],
           ),
         ),
         padding: EdgeInsets.fromLTRB(16.w, 15.h, 16.w, 16.h),
@@ -556,7 +556,7 @@ class _WeeklyTopSectionState extends State<_WeeklyTopSection> {
                           fontFamily: AppFont.mulish,
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF8A88A8),
+                          color: const Color(0xFF6B634E),
                         ),
                       ),
                       2.verticalSpace,
@@ -650,12 +650,11 @@ class _WeeklyTopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final learners = course.learnerCount;
+    // Chỉ còn tên tác giả: số người học đã bỏ khỏi thẻ này theo yêu cầu.
+    // `meta` vẫn là danh sách nối bằng ' · ' để thêm lại một mẩu nữa sau này
+    // không phải viết lại chỗ render bên dưới.
     final author = course.author ?? '';
-    final meta = [
-      if (author.isNotEmpty) author,
-      if (learners != null && learners > 0) context.l10n.allcourse.exploreLearnerCount(count: learners),
-    ].join(' · ');
+    final meta = [if (author.isNotEmpty) author].join(' · ');
 
     return Semantics(
       label: course.title.text,
@@ -719,7 +718,7 @@ class _WeeklyTopCard extends StatelessWidget {
               ],
             ),
             12.verticalSpace,
-            Container(height: 1, color: const Color(0x22554FF0)),
+            Container(height: 1, color: const Color(0x22B5860F)),
             12.verticalSpace,
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,7 +731,7 @@ class _WeeklyTopCard extends StatelessWidget {
                     fontSize: 26.sp,
                     height: 0.9,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0x38554FF0),
+                    color: const Color(0x38B5860F),
                   ),
                 ),
                 9.horizontalSpace,
@@ -747,7 +746,7 @@ class _WeeklyTopCard extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       fontStyle: FontStyle.italic,
                       height: 1.55,
-                      color: const Color(0xFF4A4A73),
+                      color: const Color(0xFF73674A),
                     ),
                   ),
                 ),

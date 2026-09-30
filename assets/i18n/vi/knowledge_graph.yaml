@@ -1,0 +1,21 @@
+entryTitle: Tra cứu lịch sử
+entrySubtitle: Tìm hiểu một nhân vật, sự kiện hay triều đại trong đồ thị tri thức
+searchTitle: Tra cứu lịch sử
+searchHint: Tìm nhân vật, sự kiện, địa danh…
+profileTitle: Hồ sơ
+emptyTitle: Không tìm thấy
+emptyBody: Thử một tên khác, hoặc gõ không dấu — "tran hung dao" vẫn ra "Trần Hưng Đạo".
+errorTitle: Không tải được
+errorBody: Kiểm tra kết nối mạng rồi thử lại.
+retry: Thử lại
+typeFigure: Nhân vật
+typeEvent: Sự kiện
+typeOrganization: Triều đại / tổ chức
+typePlace: Địa danh
+typeUnknown: Khác
+sectionDid: Đã làm gì
+sectionMentioned: Được nhắc tới
+sectionRelated: Có liên quan
+sectionSamePeriod: Cùng thời kỳ
+sectionSources: Nguồn sử liệu
+hopsBadge: $count bước

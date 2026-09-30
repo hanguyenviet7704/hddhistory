@@ -25,7 +25,7 @@ class StreakHomeChip extends StatelessWidget {
         // bearing, so a matching 9px on both sides would read as off-centre.
         padding: EdgeInsets.only(left: 6.w, right: 9.w),
         decoration: BoxDecoration(
-          color: const Color(0xFFF7F7FA),
+          color: const Color(0xFFFAF9F7),
           borderRadius: BorderRadius.circular(99.r),
           // The design draws the hairline as `inset 0 0 0 1px rgba(255,255,255,.9)`,
           // which Flutter has no equivalent for — a 1px white border is the same

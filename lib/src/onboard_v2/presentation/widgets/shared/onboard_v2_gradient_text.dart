@@ -16,8 +16,8 @@ class OnboardV2GradientText extends StatelessWidget {
   /// và cũng là dải của hình minh hoạ S9. Không phải dải của tiêu đề.
   static const gradient = LinearGradient(
     colors: [
-      Color(0xFF4B44CA),
-      Color(0xFFA052FF),
+      Color(0xFF94762A),
+      Color(0xFFDD9E00),
       Color(0xFFEF81D4),
       Color(0xFFFF8F8F),
       Color(0xFFFFCE66),
@@ -30,7 +30,7 @@ class OnboardV2GradientText extends StatelessWidget {
   static const headingGradient = LinearGradient(
     begin: Alignment(-1, -0.18),
     end: Alignment(1, 0.18),
-    colors: [Color(0xFF5B4FE8), Color(0xFFC56BD6), Color(0xFFF4A45C)],
+    colors: [Color(0xFFA87E16), Color(0xFF9C7C2B), Color(0xFFF4A45C)],
     stops: [0, 0.52, 1],
   );
 

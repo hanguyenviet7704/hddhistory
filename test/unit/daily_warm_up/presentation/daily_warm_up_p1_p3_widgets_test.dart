@@ -9,7 +9,7 @@ import 'daily_warm_up_test_fakes.dart';
 void main() {
   setUpAll(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
+    LocaleSettings.setLocaleSync(AppLocale.vi);
   });
 
   setUp(() {
