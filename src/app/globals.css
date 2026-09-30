@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Bộ màu lấy đúng từ `hddhistory-flutter/lib/config/themes/colors.dart` để web
+ * và app không lệch tông. Sửa bên nào thì sửa cả hai.
+ */
+@theme {
+  --color-brand: #b8860b;
+  --color-brand-50: #fbf3e0;
+  --color-brand-100: #f5e4b8;
+  --color-brand-200: #ebd08a;
+  --color-brand-300: #dcb84a;
+  --color-brand-700: #7a5807;
+  --color-brand-900: #3d2c04;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ink: #0d121c;
+  --color-ink-muted: #364152;
+  --color-ink-faint: #7f8ea4;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: #ffffff;
+  --color-surface-alt: #f5f7fb;
+  --color-hairline: #ebf0f7;
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-brand-50);
+  color: var(--color-ink);
 }
