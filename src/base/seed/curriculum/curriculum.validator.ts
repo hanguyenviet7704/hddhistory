@@ -150,7 +150,8 @@ const IMAGE_META_FIELDS = ['imageFile', 'imageLicense', 'imageSource', 'imageAut
 
 /**
  * Ảnh là tuỳ chọn, nhưng nếu có thì phải là URL https (app chặn http trên iOS/Android)
- * và các trường nguồn (dùng để kiểm tra sau này) phải là chuỗi.
+ * và các trường nguồn/ghi công (imageAuthor, imageLicense, imageFile, imageSource)
+ * phải là chuỗi — builder dựng lời ghi công từ chúng.
  */
 function validateImageFields(
   k: Record<string, unknown>,

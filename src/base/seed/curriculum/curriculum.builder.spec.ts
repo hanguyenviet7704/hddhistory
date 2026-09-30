@@ -219,19 +219,39 @@ describe('buildSeedPlan', () => {
       const kps = WITH_IMAGE.skillsets[0].courses[0].lessons[0].keypoints;
       kps[1].image = 'https://upload.wikimedia.org/thumb/1200px-x.jpg';
       kps[1].imageFile = 'File:x.jpg';
+      kps[1].imageLicense = 'CC BY-SA 4.0';
+      kps[1].imageAuthor = '<a href="//commons.wikimedia.org/wiki/User:A">Nguyễn  Văn A</a>';
 
       const docsOf = (f: CurriculumFile) =>
         buildSeedPlan(f, PERIODS).learningItems.find(
           (li) => li.title.vi === 'Lần thứ nhất, 1258',
         ).documents;
 
-      it('thẻ có ảnh: khối image nằm trước khối text, url là translation object', () => {
+      it('thẻ có ảnh: image rồi caption ghi công liền sau, rồi text; url là translation object', () => {
         const d = docsOf(WITH_IMAGE)[1].document;
-        expect(d.map((b) => b.type)).toEqual(['title', 'image', 'text']);
-        expect(d.map((b) => b.id)).toEqual([1, 2, 3]);
+        expect(d.map((b) => b.type)).toEqual(['title', 'image', 'caption', 'text']);
+        expect(d.map((b) => b.id)).toEqual([1, 2, 3, 4]);
+        expect(d[2].data).toEqual({
+          content: { vi: 'Ảnh: Nguyễn Văn A / CC BY-SA 4.0 — Wikimedia Commons' },
+        });
         expect(d[1].data).toEqual({
           url: { vi: 'https://upload.wikimedia.org/thumb/1200px-x.jpg' },
           content: { vi: 'Rút khỏi Thăng Long' },
+        });
+      });
+
+      it('không rõ tác giả: caption chỉ nêu giấy phép và Wikimedia Commons', () => {
+        const f: CurriculumFile = JSON.parse(JSON.stringify(WITH_IMAGE));
+        const k = f.skillsets[0].courses[0].lessons[0].keypoints[1];
+        delete k.imageAuthor;
+        expect(docsOf(f)[1].document[2]).toEqual({
+          id: 3,
+          type: 'caption',
+          data: { content: { vi: 'Ảnh: CC BY-SA 4.0 — Wikimedia Commons' } },
+        });
+        k.imageAuthor = '<a href="x"> </a>';
+        expect(docsOf(f)[1].document[2].data).toEqual({
+          content: { vi: 'Ảnh: CC BY-SA 4.0 — Wikimedia Commons' },
         });
       });
 

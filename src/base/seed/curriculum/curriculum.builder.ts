@@ -61,10 +61,11 @@ export interface KeypointDoc {
 
 /**
  * `DocumentDataModel` của app đọc `url` như một translation object chứ không
- * phải chuỗi trần; khối ảnh cũng dùng `content` làm chú thích.
+ * phải chuỗi trần. App bỏ qua `content` của khối ảnh, nên lời ghi công đi trong
+ * một khối `caption` riêng ngay sau ảnh (khối caption thì render `content.text`).
  */
 export type DocumentBlockDoc =
-  | { id: number; type: 'title' | 'text'; data: { content: ViOnly } }
+  | { id: number; type: 'title' | 'text' | 'caption'; data: { content: ViOnly } }
   | { id: number; type: 'image'; data: { url: ViOnly; content: ViOnly } };
 
 /**
@@ -134,8 +135,23 @@ function imageFor(staticBaseUrl: string, periodId: string): string {
 }
 
 /**
- * Các khối của một thẻ: tiêu đề, (ảnh nếu có), rồi nội dung. `id` theo vị trí
- * nên thẻ không ảnh giữ nguyên id 1/2 như trước.
+ * Dòng ghi công: `Ảnh: <tác giả> / <giấy phép> — Wikimedia Commons`. Tác giả có
+ * thể còn thẻ HTML (Commons hay trả `<a>`), nên bỏ hết trước khi dùng. Không
+ * biết tác giả thì chỉ nêu giấy phép.
+ */
+export function imageCredit(k: CurriculumKeypoint): string {
+  const author = (k.imageAuthor ?? '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const license = (k.imageLicense ?? '').trim();
+  const who = [author, license].filter(Boolean).join(' / ');
+  return `Ảnh: ${who ? who + ' — ' : ''}Wikimedia Commons`;
+}
+
+/**
+ * Các khối của một thẻ: tiêu đề, (ảnh + chú thích ghi công nếu có), rồi nội dung.
+ * `id` theo vị trí nên thẻ không ảnh giữ nguyên id 1/2 như trước.
  */
 function cardBlocks(k: CurriculumKeypoint): DocumentBlockDoc[] {
   const blocks: Omit<DocumentBlockDoc, 'id'>[] = [
@@ -145,6 +161,10 @@ function cardBlocks(k: CurriculumKeypoint): DocumentBlockDoc[] {
     blocks.push({
       type: 'image',
       data: { url: { vi: k.image }, content: { vi: k.titleVi } },
+    });
+    blocks.push({
+      type: 'caption',
+      data: { content: { vi: imageCredit(k) } },
     });
   }
   blocks.push({ type: 'text', data: { content: { vi: k.descriptionVi } } });
