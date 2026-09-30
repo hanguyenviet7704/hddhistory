@@ -1,5 +1,5 @@
-navLabel: Confession
-title: Confession
+navLabel: Thảo luận
+title: Thảo luận
 tabAll: Tất cả
 tabFollowing: Đang theo dõi
 tabTopics: Phòng
@@ -154,7 +154,7 @@ notificationSanction: Quyền đăng của bạn đang tạm khoá
 shareTitle: Chia sẻ
 shareInsightTitle: Chia sẻ insight
 shareCourseTitle: Chia sẻ lộ trình
-shareToConfession: Đăng vào Confession
+shareToConfession: Đăng vào Thảo luận
 shareToConfessionHint: Kèm lộ trình để mọi người học cùng
 shareToConfessionInsightHint: Kèm card này vào bài viết của bạn
 shareCopyLink: Sao chép link
@@ -214,7 +214,7 @@ chatEmptyBody: Mở lời trước đi — một câu cũng được.
 notificationWeeklyAnswer: "vừa trả lời câu hỏi bạn đã trả lời"
 notificationWeeklyAnswerWithOthers: "và ${count} người khác vừa trả lời câu hỏi bạn đã trả lời"
 notificationRoomMessage: "vừa trả lời trong bàn luận"
-tourWelcomeTitle: "Chào mừng bạn đến với Confession"
+tourWelcomeTitle: "Chào mừng bạn đến với Thảo luận"
 tourWelcomeBody: "Nơi chia sẻ, thảo luận và cùng đóng góp một cách lành mạnh."
 tourWelcomeCta: "Bắt đầu"
 tourNext: "Tiếp tục"
