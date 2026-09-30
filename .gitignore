@@ -1,0 +1,51 @@
+# compiled output
+.env
+/dist
+/node_modules
+public/*
+google-service.json
+
+# Logs
+/logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.scannerwork/
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+firebase-adminsdk.json
+.env.docker-dev
+pm2.config.json
+
+CLAUDE.md
+
+keys/*
+
+docs/*
+package-lock.json
+HDDhistory.code-workspace
+docker-compose.local.yml
+public/history/

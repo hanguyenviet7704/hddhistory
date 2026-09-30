@@ -1,0 +1,95 @@
+# Dependencies
+node_modules
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Build output (sẽ được build trong Docker)
+dist
+*.tsbuildinfo
+tsbuildinfo.json
+
+# Logs
+logs
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+google-service.json
+firebase-adminsdk.json
+.env.docker-dev
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Testing
+coverage
+.nyc_output
+*.spec.ts
+*.test.ts
+test
+tests
+__tests__
+
+# IDE và editors
+.vscode
+.idea
+.project
+.classpath
+.c9
+*.launch
+.settings
+*.sublime-workspace
+.scannerwork
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# PM2
+.pm2
+pm2.config.json
+
+
+# Documentation
+README.md
+*.md
+!AGENTS.md
+
+# CI/CD
+Jenkinsfile
+.github
+.gitlab-ci.yml
+
+# Keys và secrets
+keys
+*.pem
+*.key
+*.crt
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+.temp
+
+# Other
+CLAUDE.md
+public/*
+swagger-spec.json
+
+# Plans / docs nội bộ
+plans
+Dockerfile*
+.dockerignore
