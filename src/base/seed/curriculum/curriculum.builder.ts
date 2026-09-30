@@ -129,9 +129,17 @@ const ROADMAP_LEVEL = 'level 1';
 
 export const DEFAULT_STATIC_BASE_URL = 'http://localhost:4000';
 
+/**
+ * Tăng khi vẽ lại ảnh nền thời kỳ. File PNG giữ nguyên tên, mà app cache ảnh
+ * theo URL (CachedNetworkImage) — nên không đổi URL thì mọi máy đã từng thấy
+ * bản cũ sẽ hiện bản cũ mãi. Server tĩnh bỏ qua query string, nên tham số này
+ * chỉ đổi khoá cache, không đổi file được phục vụ.
+ */
+export const PLACEHOLDER_ART_VERSION = 2;
+
 function imageFor(staticBaseUrl: string, periodId: string): string {
   const base = staticBaseUrl.replace(/\/+$/, '');
-  return `${base}/static/history/${periodId}.png`;
+  return `${base}/static/history/${periodId}.png?v=${PLACEHOLDER_ART_VERSION}`;
 }
 
 /**

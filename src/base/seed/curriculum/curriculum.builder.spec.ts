@@ -1,4 +1,4 @@
-import { buildSeedPlan, PeriodRef } from './curriculum.builder';
+import { buildSeedPlan, PeriodRef, PLACEHOLDER_ART_VERSION } from './curriculum.builder';
 import { CurriculumFile } from './curriculum.types';
 
 const PERIODS: PeriodRef[] = [
@@ -83,9 +83,9 @@ describe('buildSeedPlan', () => {
 
   it('gán ảnh placeholder tuyệt đối .png theo thời kỳ cho mọi node', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    const abs = /^http:\/\/localhost:4000\/static\/history\/p\d{2}_\w+\.png$/;
+    const abs = /^http:\/\/localhost:4000\/static\/history\/p\d{2}_\w+\.png\?v=\d+$/;
     expect(plan.skillsets[0].image).toBe(
-      'http://localhost:4000/static/history/p04_ly.png',
+      `http://localhost:4000/static/history/p04_ly.png?v=${PLACEHOLDER_ART_VERSION}`,
     );
     [plan.skillsets, plan.courses, plan.lessons, plan.keypoints].forEach(
       (docs) => {
@@ -98,10 +98,10 @@ describe('buildSeedPlan', () => {
   it('nhận base URL do nơi gọi truyền vào, bỏ dấu / thừa cuối', () => {
     const plan = buildSeedPlan(FILE, PERIODS, 'https://cdn.example.com/');
     expect(plan.skillsets[0].image).toBe(
-      'https://cdn.example.com/static/history/p04_ly.png',
+      `https://cdn.example.com/static/history/p04_ly.png?v=${PLACEHOLDER_ART_VERSION}`,
     );
     plan.keypoints.forEach((k) =>
-      expect(k.image).toMatch(/^https:\/\/cdn\.example\.com\/static\/history\/.+\.png$/),
+      expect(k.image).toMatch(/^https:\/\/cdn\.example\.com\/static\/history\/.+\.png\?v=\d+$/),
     );
   });
 
@@ -275,10 +275,10 @@ describe('buildSeedPlan', () => {
         expect(first.image).toBe('https://upload.wikimedia.org/thumb/cover.jpg');
         plan.lessons
           .filter((l) => l !== first)
-          .forEach((l) => expect(l.image).toMatch(/\/static\/history\/p\d{2}_\w+\.png$/));
+          .forEach((l) => expect(l.image).toMatch(/\/static\/history\/p\d{2}_\w+\.png\?v=\d+$/));
         // Chỉ Lesson.image đổi; keypoint/course/skillset vẫn là placeholder.
-        expect(plan.keypoints[0].image).toMatch(/\.png$/);
-        expect(plan.courses[0].image).toMatch(/\.png$/);
+        expect(plan.keypoints[0].image).toMatch(/\.png\?v=\d+$/);
+        expect(plan.courses[0].image).toMatch(/\.png\?v=\d+$/);
       });
 
       it('không sinh khối ảnh khi image là chuỗi rỗng, và không đụng file đầu vào', () => {
