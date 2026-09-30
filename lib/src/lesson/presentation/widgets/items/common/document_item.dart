@@ -25,7 +25,12 @@ class DocumentItem extends StatelessWidget {
 
     return switch (document.type) {
       ContentDocumentType.title || ContentDocumentType.text || ContentDocumentType.caption => DocumentContentWidget(content: data.content.text, type: document.type, prose: prose),
-      ContentDocumentType.image || ContentDocumentType.audio => DocumentMediaWidget(url: data.url.text, type: document.type, prose: prose),
+      // An image block carries its photo credit in `content` — the field the
+      // other block types use for copy. CC BY / CC BY-SA oblige us to name the
+      // author and licence next to the picture, so it travels with the image
+      // rather than as a separate block: a `caption` block renders as a short
+      // label chip, which is the wrong shape for a credit line.
+      ContentDocumentType.image || ContentDocumentType.audio => DocumentMediaWidget(url: data.url.text, type: document.type, prose: prose, credit: data.content.text),
       ContentDocumentType.video => DocumentVideoWidget(url: data.url.text, thumbnail: data.thumbnail),
       ContentDocumentType.explanation => DocumentExplanationWidget(
         key: ObjectKey(document),
