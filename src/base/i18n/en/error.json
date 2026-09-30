@@ -1,0 +1,82 @@
+{
+  "USER": {
+    "NOT_FOUND": "User not found",
+    "EMAIL_EXISTS": "Email already exists"
+  },
+  "AUTH": {
+    "INVALID_CREDENTIALS": "Invalid credentials",
+    "UNAUTHORIZED": "You are not authorized",
+    "FORBIDDEN": "You do not have permission to access this resource",
+    "INVALID_TOKEN_FORMAT": "Invalid token",
+    "EXPIRED_TOKEN": "Expired token",
+    "INVALID_REFRESH": "Invalid refresh token",
+    "EXPIRED_REFRESH_TOKEN": "Expired refresh token",
+    "WRONG_DEVICE": "Logged out of the device"
+  },
+  "ONBOARDING": {
+    "NOT_FOUND": "Onboarding not found",
+    "KEY_EXISTS": "Onboarding key exits"
+  },
+  "CHAT": {
+    "ROOM_NOT_FOUND": "Chat room not found"
+  },
+  "COMMON": {
+    "UNKNOWN": "Something went wrong, please try again later"
+  },
+  "COURSE": {
+    "NOT_FOUND": "Course not found",
+    "ROADMAP_NOT_FOUND": "Roadmap not found",
+    "TITLE_EXISTS": "Course name exits"
+  },
+  "COURSE_LESSON": {
+    "NOT_FOUND": "Lesson not found",
+    "TITLE_EXISTS": "Lesson name exits"
+  },
+  "COURSE_LEARNING_ITEM": {
+    "NOT_FOUND": "Learning item not found",
+    "TITLE_EXISTS": "Learning item name exits",
+    "ROLEPLAY_COLOR_TEMPLATE_NOT_FOUND": "Color template not found"
+  },
+  "COURSE_KEYPOINT": {
+    "NOT_FOUND": "Keypoint not found",
+    "TITLE_EXISTS": "Keypoint name exits"
+  },
+  "COURSE_USER_PROGRESS": {
+    "NOT_FOUND": "Learning result not found",
+    "LESSON_ID_REQUIRED": "Please provide lessonId",
+    "KEYPOINT_ID_REQUIRED": "Please provide keypointId",
+    "EXERCISE_ID_REQUIRED": "Please provide exerciseId"
+  },
+  "COURSE_TAG": {
+    "NOT_FOUND": "Tag item not found",
+    "TITLE_EXISTS": "Tag item name exits"
+  },
+  "COURSE_AVATAR": {
+    "NOT_FOUND": "Avatar not found"
+  },
+  "COURSE_ICON": {
+    "NOT_FOUND": "Icon not found"
+  },
+  "COURSE_QUOTE": {
+    "NOT_FOUND": "Quote not found"
+  },
+  "FILE": {
+    "NOT_FOUND": "File not found",
+    "UPLOAD_FAILED": "Upload file failed"
+  },
+  "HABIT": {
+    "NOT_FOUND": "Habit not found",
+    "USER_HABIT_NOT_FOUND": "This habit is not in your list",
+    "SLOT_FULL": "You've filled all your active habit slots"
+  },
+  "REANCHOR": {
+    "NOT_FOUND": "Re-anchor reason not found"
+  },
+  "STUDY_THEME": {
+    "NOT_FOUND": "Study theme preset not found",
+    "KEY_EXISTS": "Study theme key already exists"
+  },
+  "PAYMENT": {
+    "TRANSACTION_LINKED_TO_ANOTHER_USER": "The store account you paid with is already linked to a different HDDhistory account. Sign in with that account to use the subscription, or pay with a different store account."
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "USER": {
+    "NOT_FOUND": "Không thìm thấy thông tin tài khoản",
+    "EMAIL_EXISTS": "Email đã được sử dụng"
+  },
+  "AUTH": {
+    "INVALID_CREDENTIALS": "Sai thông tin tài khoản",
+    "UNAUTHORIZED": "Vui lòng đăng nhập để tiếp tục",
+    "FORBIDDEN": "Bạn không có quyền truy cập tài nguyên này",
+    "INVALID_TOKEN_FORMAT": "Token không hợp lệ",
+    "EXPIRED_TOKEN": "Token đã hết hạn",
+    "INVALID_REFRESH": "Refresh token không hợp lệ",
+    "EXPIRED_REFRESH_TOKEN": "Refresh token đã hết hạn",
+    "WRONG_DEVICE": "Đã đăng xuất khỏi thiết bị"
+  },
+  "ONBOARDING": {
+    "NOT_FOUND": "Không tìm thấy thông tin onboarding",
+    "KEY_EXISTS": "Key onboarding đã tồn tại"
+  },
+  "CHAT": {
+    "ROOM_NOT_FOUND": "Phòng chat không tồn tại"
+  },
+  "COMMON": {
+    "UNKNOWN": "Có lỗi xảy ra, vui lòng thử lại sau"
+  },
+  "COURSE": {
+    "NOT_FOUND": "Không tìm thấy thông tin khoá học",
+    "ROADMAP_NOT_FOUND": "Không tìm thấy thông tin roadmap",
+    "TITLE_EXISTS": "Tên khoá học đã tồn tại"
+  },
+  "COURSE_LESSON": {
+    "NOT_FOUND": "Không tìm thấy thông tin bài học",
+    "TITLE_EXISTS": "Tên bài học đã tồn tại"
+  },
+  "COURSE_LEARNING_ITEM": {
+    "NOT_FOUND": "Không tìm thấy thông tin danh mục học tập",
+    "TITLE_EXISTS": "Danh mục học tập đã tồn tại",
+    "ROLEPLAY_COLOR_TEMPLATE_NOT_FOUND": "Không tìm thấy thông tin color template"
+  },
+  "COURSE_KEYPOINT": {
+    "NOT_FOUND": "Không tìm thấy thông tin keypoint",
+    "TITLE_EXISTS": "Keypoint đã tồn tại"
+  },
+  "COURSE_USER_PROGRESS": {
+    "NOT_FOUND": "Không tìm thấy thông tin kết quả học tập",
+    "LESSON_ID_REQUIRED": "Vui lòng cung cấp lessonId",
+    "KEYPOINT_ID_REQUIRED": "Vui lòng cung cấp keypointId",
+    "EXERCISE_ID_REQUIRED": "Vui lòng cung cấp exerciseId"
+  },
+  "COURSE_TAG": {
+    "NOT_FOUND": "Không tìm thấy thông tin tag",
+    "TITLE_EXISTS": "Tag đã tồn tại"
+  },
+  "COURSE_AVATAR": {
+    "NOT_FOUND": "Không tìm thấy thông tin avatar"
+  },
+  "COURSE_ICON": {
+    "NOT_FOUND": "Không tìm thấy thông tin icon"
+  },
+  "COURSE_QUOTE": {
+    "NOT_FOUND": "Không tìm thấy thông tin quote"
+  },
+  "FILE": {
+    "NOT_FOUND": "Không tìm thấy thông tin file",
+    "UPLOAD_FAILED": "Upload file thất bại"
+  },
+  "HABIT": {
+    "NOT_FOUND": "Không tìm thấy thông tin habit",
+    "USER_HABIT_NOT_FOUND": "Habit này không có trong danh sách của bạn",
+    "SLOT_FULL": "Bạn đã sử dụng hết số lượng habit đang hoạt động"
+  },
+  "REANCHOR": {
+    "NOT_FOUND": "Không tìm thấy lý do re-anchor"
+  },
+  "STUDY_THEME": {
+    "NOT_FOUND": "Không tìm thấy theme nền học tập",
+    "KEY_EXISTS": "Key theme nền học tập đã tồn tại"
+  },
+  "PAYMENT": {
+    "TRANSACTION_LINKED_TO_ANOTHER_USER": "Tài khoản cửa hàng bạn dùng để thanh toán đã gắn gói với một tài khoản HDDhistory khác. Hãy đăng nhập đúng tài khoản đó để dùng gói, hoặc thanh toán bằng tài khoản cửa hàng khác."
+  }
+}
