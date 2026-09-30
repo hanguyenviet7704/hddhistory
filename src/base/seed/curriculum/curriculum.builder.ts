@@ -13,7 +13,7 @@ interface ViOnly {
   vi: string;
 }
 
-export interface SkillsetDoc {
+export interface CategoryDoc {
   _localKey: string;
   index: number;
   title: ViOnly;
@@ -24,7 +24,7 @@ export interface SkillsetDoc {
 
 export interface CourseDoc {
   _localKey: string;
-  skillsetLocalKey: string;
+  categoryLocalKey: string;
   title: ViOnly;
   description: ViOnly;
   status: string;
@@ -116,7 +116,7 @@ export interface RoadmapDoc {
 }
 
 export interface SeedPlan {
-  skillsets: SkillsetDoc[];
+  categories: CategoryDoc[];
   courses: CourseDoc[];
   lessons: LessonDoc[];
   keypoints: KeypointDoc[];
@@ -172,7 +172,7 @@ function cardBlocks(k: CurriculumKeypoint): DocumentBlockDoc[] {
  * Quan hệ cha–con đi qua `_localKey` để Task 8 tự quyết id khi ghi, và để test
  * được mà không cần database.
  *
- * Thứ tự skillset bám `periods` chứ không bám thứ tự trong file nội dung: người
+ * Thứ tự chủ đề bám `periods` chứ không bám thứ tự trong file nội dung: người
  * biên tập thêm thời kỳ theo lô nào cũng được, trục thời gian trong app vẫn đúng.
  */
 export function buildSeedPlan(
@@ -184,7 +184,7 @@ export function buildSeedPlan(
   const order = new Map(periods.map((p, i) => [p.id, i]));
 
   const plan: SeedPlan = {
-    skillsets: [],
+    categories: [],
     courses: [],
     lessons: [],
     keypoints: [],
@@ -192,7 +192,7 @@ export function buildSeedPlan(
     roadmaps: [],
   };
 
-  const sorted = [...file.skillsets].sort(
+  const sorted = [...file.categories].sort(
     (a, b) => (order.get(a.periodId) ?? 0) - (order.get(b.periodId) ?? 0),
   );
 
@@ -205,7 +205,7 @@ export function buildSeedPlan(
     }
 
     const image = imageFor(staticBaseUrl, period.id);
-    plan.skillsets.push({
+    plan.categories.push({
       _localKey: period.id,
       index: order.get(period.id),
       title: { vi: period.name },
@@ -216,13 +216,17 @@ export function buildSeedPlan(
 
     s.courses.forEach((c) => {
       const courseKey = `${period.id}::${normalizeKey(c.titleVi)}`;
+      // Ảnh bìa khoá: mượn ảnh bìa của bài đầu tiên có ảnh thật. Không bài nào
+      // có thì mới rơi về ảnh nền thời kỳ — trước đây khoá luôn dùng ảnh nền,
+      // nên 32/32 thẻ ở Home trông giống hệt nhau.
+      const courseImage = c.lessons.find((l) => l.image)?.image || image;
       plan.courses.push({
         _localKey: courseKey,
-        skillsetLocalKey: period.id,
+        categoryLocalKey: period.id,
         title: { vi: c.titleVi },
         description: { vi: c.descriptionVi },
         status: 'published',
-        image,
+        image: courseImage,
         numberOfLesson: c.lessons.length,
       });
 
@@ -242,6 +246,12 @@ export function buildSeedPlan(
 
       c.lessons.forEach((l, li) => {
         const lessonKey = `${courseKey}::${normalizeKey(l.titleVi)}`;
+        // Ảnh bìa riêng của bài nếu đã chọn được, không thì ảnh thời kỳ. Dùng
+        // lại cho keypoint và learning item của chính bài: thumbnail trên
+        // roadmap đọc `keypoint.image` TRƯỚC `lesson.image`
+        // (lesson_keypoint_card.dart:17), nên nếu keypoint giữ ảnh thời kỳ thì
+        // ảnh thật của bài không bao giờ hiện ra.
+        const lessonImage = l.image || image;
         plan.lessons.push({
           _localKey: lessonKey,
           courseLocalKey: courseKey,
@@ -249,8 +259,7 @@ export function buildSeedPlan(
           title: { vi: l.titleVi },
           description: { vi: l.descriptionVi },
           status: 'published',
-          // Ảnh bìa riêng của bài nếu đã chọn được, không thì ảnh thời kỳ.
-          image: l.image || image,
+          image: lessonImage,
         });
 
         roadmap.nodes.push({
@@ -272,7 +281,7 @@ export function buildSeedPlan(
           index: 0,
           title: { vi: l.titleVi },
           description: { vi: l.descriptionVi },
-          image,
+          image: lessonImage,
           tag: ['vn-history', keypointKey],
         });
         plan.learningItems.push({
@@ -281,7 +290,7 @@ export function buildSeedPlan(
           type: 'theory',
           title: { vi: l.titleVi },
           description: { vi: l.descriptionVi },
-          image,
+          image: lessonImage,
           tag: ['vn-history', keypointKey],
           index: 0,
           questions: [],
