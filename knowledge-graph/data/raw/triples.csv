@@ -1,0 +1,1001 @@
+head_qid,head_label,relation_pid,relation_label,tail_qid,tail_label
+Q63776,Cúp bóng chuyền nam vô địch châu Á 2012,P580,ngày bắt đầu,2012-09-01T00:00:00Z,2012-09-01T00:00:00Z
+Q82542,Sự kiện Tết Mậu Thân,P580,ngày bắt đầu,1968-01-30T00:00:00Z,1968-01-30T00:00:00Z
+Q111629,Cúp bóng đá nữ châu Á 2014,P580,ngày bắt đầu,2014-05-14T00:00:00Z,2014-05-14T00:00:00Z
+Q63776,Cúp bóng chuyền nam vô địch châu Á 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q111629,Cúp bóng đá nữ châu Á 2014,P585,thời điểm,2014-01-01T00:00:00Z,2014-01-01T00:00:00Z
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q30,Hoa Kỳ
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q148,Trung Quốc
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q408,Úc
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q423,Cộng hòa Dân chủ Nhân dân Triều Tiên
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q664,New Zealand
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q869,Thái Lan
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q884,Hàn Quốc
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q928,Philippines
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q174423,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q180573,Việt Nam Cộng hòa
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q191764,Đảng Cộng sản Campuchia (Khmer Đỏ)
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q221066,GRUNK
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q858887,Pathet Lào
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q870055,Vương quốc Lào
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q1054184,Cộng hòa Khmer
+Q8740,Chiến tranh Việt Nam,P710,người tham gia,Q2638486,Vương quốc Campuchia (1953-70)
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q30,Hoa Kỳ
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q408,Úc
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q664,New Zealand
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q869,Thái Lan
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q884,Hàn Quốc
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q174423,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q180573,Việt Nam Cộng hòa
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q298793,William Westmoreland
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q485921,Bộ chỉ huy Viện trợ Quân sự Mỹ tại Việt Nam
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q700897,Hoàng Văn Thái
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q2936938,Cao Văn Viên
+Q82542,Sự kiện Tết Mậu Thân,P710,người tham gia,Q3206845,Trần Văn Trà
+Q769960,Cách mạng Tháng Tám,P828,nguyên nhân,Q188712,Đế quốc Nhật Bản
+Q8740,Chiến tranh Việt Nam,P580,ngày bắt đầu,1955-11-01T00:00:00Z,1955-11-01T00:00:00Z
+Q8740,Chiến tranh Việt Nam,P585,thời điểm,1975-04-30T00:00:00Z,1975-04-30T00:00:00Z
+Q1070402,Việt Nam tại Thế vận hội Mùa hè 1992,P585,thời điểm,1992-01-01T00:00:00Z,1992-01-01T00:00:00Z
+Q1077086,Việt Nam tại Thế vận hội Mùa hè 2000,P585,thời điểm,2000-01-01T00:00:00Z,2000-01-01T00:00:00Z
+Q714749,Trận Ia Đrăng,P276,vị trí,Q2904975,Suối Ia Drang
+Q727033,1999 Badminton Asia Cup,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q769960,Cách mạng Tháng Tám,P276,vị trí,Q881,Việt Nam
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q148,Trung Quốc
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q424,Campuchia
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q819,Lào
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q869,Thái Lan
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q881,Việt Nam
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q11708,Đông Nam Á
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q29520,Trung Quốc
+Q796498,Chiến tranh Đông Dương lần thứ ba,P276,vị trí,Q43467,bán đảo Đông Dương
+Q799640,1994 Badminton World Cup,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q859217,Chiến dịch Cedar Falls,P276,vị trí,Q1151196,Củ Chi
+Q864752,Cột cờ Hà Nội,P276,vị trí,Q1048785,Bảo tàng Lịch sử Quân sự Việt Nam
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P276,vị trí,Q36315,Kon Tum
+Q175767,Xung đột giành quyền kiểm soát tại quần đảo Trường Sa 1988,P710,người tham gia,Q148,Trung Quốc
+Q175767,Xung đột giành quyền kiểm soát tại quần đảo Trường Sa 1988,P710,người tham gia,Q881,Việt Nam
+Q247395,Trận Đồi Thịt Băm,P710,người tham gia,Q30,Hoa Kỳ
+Q249853,Xung đột tại Lào,P710,người tham gia,Q819,Lào
+Q249853,Xung đột tại Lào,P710,người tham gia,Q881,Việt Nam
+Q259526,Trận Long Tân,P710,người tham gia,Q30,Hoa Kỳ
+Q259526,Trận Long Tân,P710,người tham gia,Q408,Úc
+Q259526,Trận Long Tân,P710,người tham gia,Q664,New Zealand
+Q259526,Trận Long Tân,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q259526,Trận Long Tân,P710,người tham gia,Q174423,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+Q714749,Trận Ia Đrăng,P710,người tham gia,Q30,Hoa Kỳ
+Q769960,Cách mạng Tháng Tám,P710,người tham gia,Q190949,Việt Minh
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q16,Canada
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q30,Hoa Kỳ
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q145,Vương quốc Liên hiệp Anh và Bắc Ireland
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q148,Trung Quốc
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q241,Cuba
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q334,Singapore
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q423,Cộng hòa Dân chủ Nhân dân Triều Tiên
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q424,Campuchia
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q668,Ấn Độ
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q819,Lào
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q833,Malaysia
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q869,Thái Lan
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q881,Việt Nam
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q15180,Liên Xô
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q16410,Cộng hòa Nhân dân Hungary
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q16957,Cộng hòa Dân chủ Đức
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q29520,Trung Quốc
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q41644,Khối Warszawa
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q121932,Cộng hòa Nhân dân Bulgaria
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q191764,Đảng Cộng sản Campuchia (Khmer Đỏ)
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q211274,Cộng hòa Nhân dân Ba Lan
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q219205,người H'Mông
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q330988,Campuchia Dân chủ
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q467864,Cộng hòa Nhân dân Albania
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q842794,Cộng hòa Xã hội chủ nghĩa România
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q853348,Cộng hòa Xã hội chủ nghĩa Tiệp Khắc
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q867778,Cộng hòa Nhân dân Campuchia
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q870055,Vương quốc Lào
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q1359816,Đảng Cộng sản Thái Lan
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q1389839,FULRO
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q2387250,State of Cambodia
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q2448312,Đảng Cộng sản Malaysia
+Q796498,Chiến tranh Đông Dương lần thứ ba,P710,người tham gia,Q16139913,Lao royal family
+Q859217,Chiến dịch Cedar Falls,P710,người tham gia,Q30,Hoa Kỳ
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P710,người tham gia,Q30,Hoa Kỳ
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P710,người tham gia,Q180573,Việt Nam Cộng hòa
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P710,người tham gia,Q10810255,Quân Giải phóng miền Nam Việt Nam
+Q714749,Trận Ia Đrăng,P582,ngày kết thúc,1965-11-18T00:00:00Z,1965-11-18T00:00:00Z
+Q769960,Cách mạng Tháng Tám,P582,ngày kết thúc,1945-08-30T00:00:00Z,1945-08-30T00:00:00Z
+Q796398,Thảm sát Ba Chúc,P582,ngày kết thúc,1978-04-30T00:00:00Z,1978-04-30T00:00:00Z
+Q796498,Chiến tranh Đông Dương lần thứ ba,P582,ngày kết thúc,1991-10-23T00:00:00Z,1991-10-23T00:00:00Z
+Q859217,Chiến dịch Cedar Falls,P582,ngày kết thúc,1967-01-26T00:00:00Z,1967-01-26T00:00:00Z
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P582,ngày kết thúc,1967-11-23T00:00:00Z,1967-11-23T00:00:00Z
+Q923588,Cúp bóng đá nữ châu Á 2008,P582,ngày kết thúc,2008-06-08T00:00:00Z,2008-06-08T00:00:00Z
+Q8740,Chiến tranh Việt Nam,P582,ngày kết thúc,1975-04-30T00:00:00Z,1975-04-30T00:00:00Z
+Q714749,Trận Ia Đrăng,P580,ngày bắt đầu,1965-11-14T00:00:00Z,1965-11-14T00:00:00Z
+Q769960,Cách mạng Tháng Tám,P580,ngày bắt đầu,1945-08-16T00:00:00Z,1945-08-16T00:00:00Z
+Q796398,Thảm sát Ba Chúc,P580,ngày bắt đầu,1978-04-18T00:00:00Z,1978-04-18T00:00:00Z
+Q796498,Chiến tranh Đông Dương lần thứ ba,P580,ngày bắt đầu,1975-05-01T00:00:00Z,1975-05-01T00:00:00Z
+Q859217,Chiến dịch Cedar Falls,P580,ngày bắt đầu,1967-01-08T00:00:00Z,1967-01-08T00:00:00Z
+Q866680,Chủ tịch nước Việt Nam,P580,ngày bắt đầu,1976-07-02T00:00:00Z,1976-07-02T00:00:00Z
+Q901263,Chiến dịch Đắk Tô-Tân Cảnh (1967),P580,ngày bắt đầu,1967-11-03T00:00:00Z,1967-11-03T00:00:00Z
+Q923588,Cúp bóng đá nữ châu Á 2008,P580,ngày bắt đầu,2008-05-28T00:00:00Z,2008-05-28T00:00:00Z
+Q2085798,Giải bóng đá vô địch quốc gia Việt Nam 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q2098304,"Bầu cử Quốc hội Việt Nam, 2011",P585,thời điểm,2011-05-22T00:00:00Z,2011-05-22T00:00:00Z
+Q175767,Xung đột giành quyền kiểm soát tại quần đảo Trường Sa 1988,P276,vị trí,Q1927337,Đá Gạc Ma
+Q180566,Đền Lý Bát Đế,P276,vị trí,Q33408,Bắc Ninh
+Q220882,Chiến dịch Junction City,P276,vị trí,Q130391,Tây Ninh
+Q247395,Trận Đồi Thịt Băm,P276,vị trí,Q8520389,Dong Ap Bia
+Q259526,Trận Long Tân,P276,vị trí,Q3138964,Long Tân
+Q286546,Vườn quốc gia Yok Đôn,P276,vị trí,Q36690,Đắk Lắk
+Q334192,Cúp bóng đá châu Á 2007,P276,vị trí,Q1861,Băng Cốc
+Q371157,Hoa hậu Trái Đất 2010,P276,vị trí,Q10828427,Trung tâm Hội nghị Quốc gia Việt Nam
+Q377998,Vườn quốc gia Lò Gò-Xa Mát,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2085798,Giải bóng đá vô địch quốc gia Việt Nam 2012,P580,ngày bắt đầu,2011-12-31T00:00:00Z,2011-12-31T00:00:00Z
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q424,Campuchia
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q819,Lào
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q881,Việt Nam
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q37660,Biển Đông
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q131217,vịnh Thái Lan
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q172640,Việt Nam Dân chủ Cộng hòa
+Q8740,Chiến tranh Việt Nam,P276,vị trí,Q180573,Việt Nam Cộng hòa
+Q23513,Vườn quốc gia Phong Nha - Kẻ Bàng,P276,vị trí,Q23533,Quảng Bình
+Q26575,Thái Nguyên,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q29712,Trường trung học phổ thông chuyên Hà Nội Amsterdam,P276,vị trí,Q1858,Hà Nội
+Q33379,Sơn La,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q33403,Lạng Sơn,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q962370,Trận Hà Nội 1946,P580,ngày bắt đầu,1946-12-19T00:00:00Z,1946-12-19T00:00:00Z
+Q996912,Văn hóa Đông Sơn,P580,ngày bắt đầu,-0999-01-01T00:00:00Z,-0999-01-01T00:00:00Z
+Q63776,Cúp bóng chuyền nam vô địch châu Á 2012,P582,ngày kết thúc,2012-09-07T00:00:00Z,2012-09-07T00:00:00Z
+Q82542,Sự kiện Tết Mậu Thân,P582,ngày kết thúc,1968-09-23T00:00:00Z,1968-09-23T00:00:00Z
+Q111629,Cúp bóng đá nữ châu Á 2014,P582,ngày kết thúc,2014-05-25T00:00:00Z,2014-05-25T00:00:00Z
+Q2748355,Chiến dịch Biên giới,P585,thời điểm,1950-10-18T00:00:00Z,1950-10-18T00:00:00Z
+Q2888227,Chiến dịch Tây Nguyên,P585,thời điểm,1975-01-01T00:00:00Z,1975-01-01T00:00:00Z
+Q2889611,Battle of Phu Tong Hoa,P585,thời điểm,1948-07-25T00:00:00Z,1948-07-25T00:00:00Z
+Q2889954,Battle of Saigon,P585,thời điểm,1968-01-01T00:00:00Z,1968-01-01T00:00:00Z
+Q144671,Việt Nam tại Thế vận hội Mùa hè 2004,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q146662,Việt Nam tại Thế vận hội Mùa hè 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q146743,Việt Nam tại Thế vận hội Mùa hè 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q147028,Việt Nam tại Thế vận hội Mùa hè 1996,P585,thời điểm,1996-01-01T00:00:00Z,1996-01-01T00:00:00Z
+Q150495,Động đất Myanma 2011,P585,thời điểm,2011-03-24T00:00:00Z,2011-03-24T00:00:00Z
+Q175767,Xung đột giành quyền kiểm soát tại quần đảo Trường Sa 1988,P585,thời điểm,1988-03-14T00:00:00Z,1988-03-14T00:00:00Z
+Q195699,Vòng loại Giải vô địch bóng đá nữ U-19 châu Á 2013,P585,thời điểm,2013-01-01T00:00:00Z,2013-01-01T00:00:00Z
+Q259526,Trận Long Tân,P585,thời điểm,1966-08-18T00:00:00Z,1966-08-18T00:00:00Z
+Q297505,Giải vô địch bóng đá Đông Nam Á 1998,P585,thời điểm,1998-01-01T00:00:00Z,1998-01-01T00:00:00Z
+Q297537,Giải vô địch bóng đá Đông Nam Á 2004,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q334192,Cúp bóng đá châu Á 2007,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q371157,Hoa hậu Trái Đất 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q203395,Cảng hàng không Phú Quốc,P582,ngày kết thúc,2012-12-02T00:00:00Z,2012-12-02T00:00:00Z
+Q220882,Chiến dịch Junction City,P582,ngày kết thúc,1967-05-14T00:00:00Z,1967-05-14T00:00:00Z
+Q247395,Trận Đồi Thịt Băm,P582,ngày kết thúc,1969-05-20T00:00:00Z,1969-05-20T00:00:00Z
+Q334192,Cúp bóng đá châu Á 2007,P582,ngày kết thúc,2007-07-29T00:00:00Z,2007-07-29T00:00:00Z
+Q403827,Bắc thuộc,P582,ngày kết thúc,0938-01-01T00:00:00Z,0938-01-01T00:00:00Z
+Q1968747,Vườn quốc gia Ba Bể,P276,vị trí,Q36404,Bắc Kạn
+Q1998999,"Trận thành Gia Định, 1859",P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2003418,Hoa hậu Trái Đất 2007,P276,vị trí,Q746592,Đại học Philippines
+Q2026028,Operation Crimp,P276,vị trí,Q1151196,Củ Chi
+Q2026094,Operation Francis Marion,P276,vị trí,Q30599,Pleiku
+Q2026397,Chiến dịch Speedy Express,P276,vị trí,Q1052867,Đồng bằng sông Cửu Long
+Q2027273,Quảng trường 1-5,P276,vị trí,Q1858,Hà Nội
+Q2028726,An Hội Đông,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2028754,Tân Sơn Nhất,P276,vị trí,Q1068987,Đông Nam Bộ
+Q3037890,Trường Đại học Kiến trúc Thành phố Hồ Chí Minh,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q3041786,Khởi nghĩa Yên Bái,P276,vị trí,Q26019,Yên Bái
+Q3153736,Hòa Lợi,P276,vị trí,Q1068987,Đông Nam Bộ
+Q482456,Sự kiện 30 tháng 4 năm 1975,P585,thời điểm,1975-04-30T00:00:00Z,1975-04-30T00:00:00Z
+Q486226,Thảm sát Phong Nhất và Phong Nhị,P585,thời điểm,1968-02-12T00:00:00Z,1968-02-12T00:00:00Z
+Q487431,Trận Quang Thạnh,P585,thời điểm,1967-01-01T00:00:00Z,1967-01-01T00:00:00Z
+Q492630,Go Dai Massacre,P585,thời điểm,1966-02-26T00:00:00Z,1966-02-26T00:00:00Z
+Q497528,Thảm sát Bình Hòa,P585,thời điểm,1966-12-01T00:00:00Z,1966-12-01T00:00:00Z
+Q500025,Giải vô địch điền kinh trẻ châu Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q519060,Battle of Palan,P585,thời điểm,1883-09-01T00:00:00Z,1883-09-01T00:00:00Z
+Q532535,Vòng loại Cúp bóng đá nữ châu Á 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q550500,Trận Nam Đông,P585,thời điểm,1964-01-01T00:00:00Z,1964-01-01T00:00:00Z
+Q584604,2007 Asian Women's Club Volleyball Championship,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q588774,Trận Đồng Xoài,P585,thời điểm,1965-01-01T00:00:00Z,1965-01-01T00:00:00Z
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P585,thời điểm,1989-09-26T00:00:00Z,1989-09-26T00:00:00Z
+Q685732,Giải bóng đá vô địch quốc gia Việt Nam 1984,P585,thời điểm,1984-01-01T00:00:00Z,1984-01-01T00:00:00Z
+Q692885,Vụ tập kích Sơn Tây,P585,thời điểm,1970-11-21T00:00:00Z,1970-11-21T00:00:00Z
+Q697053,Trận Mậu Thân tại Huế,P585,thời điểm,1968-03-02T00:00:00Z,1968-03-02T00:00:00Z
+Q36409,Lai Châu,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q36446,Lào Cai,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q36610,Phú Thọ,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q36865,Cao Bằng,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q36955,Điện Biên,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q63776,Cúp bóng chuyền nam vô địch châu Á 2012,P276,vị trí,Q36088,Vĩnh Yên
+Q82542,Sự kiện Tết Mậu Thân,P276,vị trí,Q180573,Việt Nam Cộng hòa
+Q111629,Cúp bóng đá nữ châu Á 2014,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q487431,Trận Quang Thạnh,P710,người tham gia,Q884,Hàn Quốc
+Q487431,Trận Quang Thạnh,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q497528,Thảm sát Bình Hòa,P710,người tham gia,Q4633777,Sư đoàn Thủy quân lục chiến số 2 (Hàn Quốc)
+Q550500,Trận Nam Đông,P710,người tham gia,Q30,Hoa Kỳ
+Q588774,Trận Đồng Xoài,P710,người tham gia,Q30,Hoa Kỳ
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P710,người tham gia,Q869,Thái Lan
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P710,người tham gia,Q881,Việt Nam
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P710,người tham gia,Q330988,Campuchia Dân chủ
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P710,người tham gia,Q867778,Cộng hòa Nhân dân Campuchia
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P710,người tham gia,Q2785731,Liên minh chính phủ Kampuchea Dân chủ
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P710,người tham gia,Q3278067,Mặt trận Đoàn kết Dân tộc Cứu nước Campuchia
+Q682195,Chiến dịch Masher,P710,người tham gia,Q30,Hoa Kỳ
+Q682195,Chiến dịch Masher,P710,người tham gia,Q884,Hàn Quốc
+Q682195,Chiến dịch Masher,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q682195,Chiến dịch Masher,P710,người tham gia,Q180573,Việt Nam Cộng hòa
+Q682195,Chiến dịch Masher,P710,người tham gia,Q10810255,Quân Giải phóng miền Nam Việt Nam
+Q692885,Vụ tập kích Sơn Tây,P710,người tham gia,Q30,Hoa Kỳ
+Q692885,Vụ tập kích Sơn Tây,P710,người tham gia,Q7893188,United States special operations forces
+Q697053,Trận Mậu Thân tại Huế,P710,người tham gia,Q30,Hoa Kỳ
+Q709365,Thảm sát Đắk Sơn,P585,thời điểm,1967-12-05T00:00:00Z,1967-12-05T00:00:00Z
+Q727033,1999 Badminton Asia Cup,P585,thời điểm,1999-01-01T00:00:00Z,1999-01-01T00:00:00Z
+Q766996,Giải bóng đá vô địch quốc gia Việt Nam 1980,P585,thời điểm,1980-01-01T00:00:00Z,1980-01-01T00:00:00Z
+Q769960,Cách mạng Tháng Tám,P585,thời điểm,1945-08-16T00:00:00Z,1945-08-16T00:00:00Z
+Q796398,Thảm sát Ba Chúc,P585,thời điểm,1978-04-18T00:00:00Z,1978-04-18T00:00:00Z
+Q799640,1994 Badminton World Cup,P585,thời điểm,1994-01-01T00:00:00Z,1994-01-01T00:00:00Z
+Q863507,Việt Nam tại Đại hội Thể thao châu Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q923588,Cúp bóng đá nữ châu Á 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q935777,Việt Nam tại Thế vận hội Mùa hè 1952,P585,thời điểm,1952-01-01T00:00:00Z,1952-01-01T00:00:00Z
+Q938030,Việt Nam tại Thế vận hội Người khuyết tật Mùa hè 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q1143088,Hoa hậu Hoàn vũ 2008,P585,thời điểm,2008-07-14T00:00:00Z,2008-07-14T00:00:00Z
+Q1193677,Đại hội Thể thao Trong nhà châu Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q1237104,2008 Vietnam International Badminton Championships,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q1251901,2011 Vietnam International Badminton Championships,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q1272544,Operation Dewey Canyon,P585,thời điểm,1969-03-18T00:00:00Z,1969-03-18T00:00:00Z
+Q1290990,2008 Uber Cup – Qualification Asia,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q1316527,Đại hội Thể thao Bãi biển châu Á 2016,P585,thời điểm,2016-01-01T00:00:00Z,2016-01-01T00:00:00Z
+Q1317621,Giải vô địch bóng đá nữ U-19 châu Á 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q962370,Trận Hà Nội 1946,P276,vị trí,Q1858,Hà Nội
+Q1052222,Cộng đồng Đông Á,P276,vị trí,Q27231,Đông Á
+Q2504172,Tân Bình,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2518802,Người M'Nông,P276,vị trí,Q881,Việt Nam
+Q2523815,2004 Vietnam International Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2523830,2009 Vietnam International Badminton Championships,P276,vị trí,Q1858,Hà Nội
+Q2523833,2012 Vietnam International Badminton Championships,P276,vị trí,Q1858,Hà Nội
+Q2523841,1997 Vietnam Open Badminton Championships,P276,vị trí,Q1858,Hà Nội
+Q2523842,2006 Vietnam Open Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2523844,2007 Vietnam Open Badminton Championships,P276,vị trí,Q1858,Hà Nội
+Q2523845,2011 Vietnam Open Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2546162,Phú Lâm,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2085798,Giải bóng đá vô địch quốc gia Việt Nam 2012,P582,ngày kết thúc,2012-08-19T00:00:00Z,2012-08-19T00:00:00Z
+Q482456,Sự kiện 30 tháng 4 năm 1975,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q485875,Chiến dịch Ranch Hand,P276,vị trí,Q881,Việt Nam
+Q486226,Thảm sát Phong Nhất và Phong Nhị,P276,vị trí,Q725063,Điện Bàn
+Q486866,Chiến dịch Linebacker II,P276,vị trí,Q172640,Việt Nam Dân chủ Cộng hòa
+Q487076,Chiến dịch Xuân Lộc,P276,vị trí,Q5258599,Xuân Lộc
+Q487431,Trận Quang Thạnh,P276,vị trí,Q10828503,Trà Bình
+Q492630,Go Dai Massacre,P276,vị trí,Q2446195,Bình An
+Q497528,Thảm sát Bình Hòa,P276,vị trí,Q10742396,Bình Hòa
+Q500025,Giải vô địch điền kinh trẻ châu Á 2010,P276,vị trí,Q1858,Hà Nội
+Q519060,Battle of Palan,P276,vị trí,Q1858,Hà Nội
+Q550500,Trận Nam Đông,P276,vị trí,Q6961080,Nam Đông
+Q588774,Trận Đồng Xoài,P276,vị trí,Q665981,Đồng Xoài
+Q604897,Chiến dịch Điện Biên Phủ,P276,vị trí,Q36027,Điện Biên Phủ
+Q616518,kinh tế Việt Nam,P276,vị trí,Q881,Việt Nam
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P276,vị trí,Q424,Campuchia
+Q682195,Chiến dịch Masher,P276,vị trí,Q2276503,Bồng Sơn
+Q692885,Vụ tập kích Sơn Tây,P276,vị trí,Q1365138,Sơn Tây
+Q697053,Trận Mậu Thân tại Huế,P276,vị trí,Q36167,Huế
+Q703871,Bảo tàng Chứng tích chiến tranh,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q1374042,1967 USS Forrestal fire,P585,thời điểm,1967-07-29T00:00:00Z,1967-07-29T00:00:00Z
+Q1390442,2010 Vietnam International Badminton Championships,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q1396776,2007 Vietnam International Badminton Championships,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q1445734,2010 Vietnam Open Badminton Championships,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q1465784,Trận Tầm Bó,P585,thời điểm,1966-01-01T00:00:00Z,1966-01-01T00:00:00Z
+Q1475893,Cúp bóng đá châu Á 2007 (vòng đấu loại trực tiếp),P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q1475946,Giải vô địch bóng đá nữ châu Á 1999,P585,thời điểm,1999-01-01T00:00:00Z,1999-01-01T00:00:00Z
+Q1475953,Cúp bóng đá nữ châu Á 2006,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q1475957,Vòng loại Cúp bóng đá nữ châu Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q1475961,Cúp bóng đá nữ châu Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q1626571,Cồn Tiên,P585,thời điểm,1967-02-27T00:00:00Z,1967-02-27T00:00:00Z
+Q1689247,2012 Vietnam Open Badminton Championships,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q1701319,2009 Vietnam Open Badminton Championships,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q1756929,2008 Vietnam Open Badminton Championships,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q1230358,Battle of Hill 881,P710,người tham gia,Q30,Hoa Kỳ
+Q1272544,Operation Dewey Canyon,P710,người tham gia,Q30,Hoa Kỳ
+Q1320031,Trận Bình Giã,P710,người tham gia,Q30,Hoa Kỳ
+Q6756140,Bão Pakhar,P585,thời điểm,2012-04-01T00:00:00Z,2012-04-01T00:00:00Z
+Q7096929,Operation Coronado IV,P585,thời điểm,1967-09-09T00:00:00Z,1967-09-09T00:00:00Z
+Q2909615,Vụ oanh tạc Căn cứ không quân Tân Sơn Nhứt,P585,thời điểm,1975-04-28T00:00:00Z,1975-04-28T00:00:00Z
+Q2953862,Giải bóng đá vô địch quốc gia Việt Nam 1986,P585,thời điểm,1986-01-01T00:00:00Z,1986-01-01T00:00:00Z
+Q2953863,Giải bóng đá vô địch quốc gia Việt Nam 1985,P585,thời điểm,1985-01-01T00:00:00Z,1985-01-01T00:00:00Z
+Q2953864,Giải bóng đá vô địch quốc gia Việt Nam 1989,P585,thời điểm,1989-01-01T00:00:00Z,1989-01-01T00:00:00Z
+Q2953865,Giải bóng đá vô địch quốc gia Việt Nam 1997,P585,thời điểm,1997-01-01T00:00:00Z,1997-01-01T00:00:00Z
+Q2953868,Giải bóng đá vô địch quốc gia Việt Nam 1998,P585,thời điểm,1998-01-01T00:00:00Z,1998-01-01T00:00:00Z
+Q2953870,Giải bóng đá vô địch quốc gia Việt Nam 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q2953871,Giải bóng đá vô địch quốc gia Việt Nam 2005,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q2953872,Giải bóng đá vô địch quốc gia Việt Nam 2004,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q2953873,Giải bóng đá vô địch quốc gia Việt Nam 2006,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q2953874,Giải bóng đá vô địch quốc gia Việt Nam 2007,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q2953876,Giải bóng đá vô địch quốc gia Việt Nam 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q2953882,Giải bóng đá vô địch quốc gia Việt Nam 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q2953884,Giải bóng đá vô địch quốc gia Việt Nam 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q2953898,Giải bóng đá vô địch quốc gia Việt Nam 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q2954399,2005 Asian Amateur Boxing Championships,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q2986395,Phong trào Cần Vương,P585,thời điểm,1885-07-02T00:00:00Z,1885-07-02T00:00:00Z
+Q4814409,Điền kinh tại Đại hội Thể thao Đông Nam Á 2003,P582,ngày kết thúc,2003-12-12T00:00:00Z,2003-12-12T00:00:00Z
+Q4845763,Trận Lộc Ninh,P582,ngày kết thúc,1972-04-07T00:00:00Z,1972-04-07T00:00:00Z
+Q4870316,Battle of Ap Bau Bang II,P582,ngày kết thúc,1967-03-20T00:00:00Z,1967-03-20T00:00:00Z
+Q4870486,Trận Bình Ba,P582,ngày kết thúc,1969-06-08T00:00:00Z,1969-06-08T00:00:00Z
+Q4870513,Battle of Bong Son,P582,ngày kết thúc,1966-02-12T00:00:00Z,1966-02-12T00:00:00Z
+Q4870896,Battle of Dong Khe,P582,ngày kết thúc,1950-09-18T00:00:00Z,1950-09-18T00:00:00Z
+Q4870932,Battle of Duc Lap,P582,ngày kết thúc,1968-08-27T00:00:00Z,1968-08-27T00:00:00Z
+Q4871222,Battle of Hill 488,P582,ngày kết thúc,1966-06-16T00:00:00Z,1966-06-16T00:00:00Z
+Q4871237,Chiến dịch Hòa Bình,P582,ngày kết thúc,1952-02-25T00:00:00Z,1952-02-25T00:00:00Z
+Q4871591,Trận Long Khánh,P582,ngày kết thúc,1971-06-07T00:00:00Z,1971-06-07T00:00:00Z
+Q4871659,Trận Đắk Pơ,P582,ngày kết thúc,1954-07-17T00:00:00Z,1954-07-17T00:00:00Z
+Q4871890,Chiến dịch Lý Thường Kiệt,P582,ngày kết thúc,1951-10-10T00:00:00Z,1951-10-10T00:00:00Z
+Q4872138,Battle of Quang Tri,P582,ngày kết thúc,1968-02-06T00:00:00Z,1968-02-06T00:00:00Z
+Q4872414,Trận Sông Bé,P582,ngày kết thúc,1965-05-15T00:00:00Z,1965-05-15T00:00:00Z
+Q4872569,Battle of Tonkin River,P582,ngày kết thúc,1849-10-22T00:00:00Z,1849-10-22T00:00:00Z
+Q4872690,Trận Vĩnh Yên,P582,ngày kết thúc,1951-01-17T00:00:00Z,1951-01-17T00:00:00Z
+Q2026028,Operation Crimp,P710,người tham gia,Q30,Hoa Kỳ
+Q2026094,Operation Francis Marion,P710,người tham gia,Q30,Hoa Kỳ
+Q2026397,Chiến dịch Speedy Express,P710,người tham gia,Q30,Hoa Kỳ
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P710,người tham gia,Q7185438,Philippines at the 2003 Southeast Asian Games
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P710,người tham gia,Q10832890,Việt Nam tại Đại hội Thể thao Đông Nam Á 2003
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P710,người tham gia,Q18208587,Malaysia at the 2003 Southeast Asian Games
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P710,người tham gia,Q27961960,Indonesia at the 2003 Southeast Asian Games
+Q1465784,Trận Tầm Bó,P710,người tham gia,Q30,Hoa Kỳ
+Q1519185,Chiến dịch Hastings,P710,người tham gia,Q30,Hoa Kỳ
+Q1519185,Chiến dịch Hastings,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q1519185,Chiến dịch Hastings,P710,người tham gia,Q180573,Việt Nam Cộng hòa
+Q2748355,Chiến dịch Biên giới,P710,người tham gia,Q190949,Việt Minh
+Q2748355,Chiến dịch Biên giới,P710,người tham gia,Q848478,Liên hiệp Pháp
+Q2889101,Trận Làng Vây,P710,người tham gia,Q30,Hoa Kỳ
+Q2889954,Battle of Saigon,P710,người tham gia,Q30,Hoa Kỳ
+Q2889954,Battle of Saigon,P710,người tham gia,Q172640,Việt Nam Dân chủ Cộng hòa
+Q1998999,"Trận thành Gia Định, 1859",P582,ngày kết thúc,1861-02-01T00:00:00Z,1861-02-01T00:00:00Z
+Q3380491,Trận Sài Gòn (1955),P582,ngày kết thúc,1955-05-01T00:00:00Z,1955-05-01T00:00:00Z
+Q3381201,Trận An Lão,P582,ngày kết thúc,1964-12-09T00:00:00Z,1964-12-09T00:00:00Z
+Q3486048,Trận Tuyên Quang (1884),P582,ngày kết thúc,1885-03-03T00:00:00Z,1885-03-03T00:00:00Z
+Q3602283,2001 AVC Cup Women's Club Tournament,P582,ngày kết thúc,2001-05-20T00:00:00Z,2001-05-20T00:00:00Z
+Q3602286,2005 Asian Women's Club Volleyball Championship,P582,ngày kết thúc,2005-05-30T00:00:00Z,2005-05-30T00:00:00Z
+Q3602289,2008 Asian Women's Club Volleyball Championship,P582,ngày kết thúc,2008-06-07T00:00:00Z,2008-06-07T00:00:00Z
+Q3602290,2011 Asian Women's Club Volleyball Championship,P582,ngày kết thúc,2011-06-25T00:00:00Z,2011-06-25T00:00:00Z
+Q3602298,2006 Asian Men's Club Volleyball Championship,P582,ngày kết thúc,2006-05-28T00:00:00Z,2006-05-28T00:00:00Z
+Q3616301,Chiến dịch Huế - Đà Nẵng,P582,ngày kết thúc,1975-04-02T00:00:00Z,1975-04-02T00:00:00Z
+Q2234243,Cố đô Huế,P276,vị trí,Q36167,Huế
+Q2237223,Chiến dịch Trị Thiên,P276,vị trí,Q36579,Quảng Trị
+Q4774836,Minh Phụng,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4818018,Đột kích tàu USNS Card,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q4825307,Bình Dương,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4845763,Trận Lộc Ninh,P276,vị trí,Q6711776,Lộc Ninh
+Q4847041,Bến Cát,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4870316,Battle of Ap Bau Bang II,P276,vị trí,Q16480177,Bàu Bàng
+Q4870486,Trận Bình Ba,P276,vị trí,Q2925938,Bình Ba
+Q4870513,Battle of Bong Son,P276,vị trí,Q2276503,Bồng Sơn
+Q4870828,Trận Cầu Giấy (1883),P276,vị trí,Q267015,Cầu Giấy
+Q4870894,Battle of Dong Dang,P276,vị trí,Q1285379,Đồng Đăng
+Q4870896,Battle of Dong Khe,P276,vị trí,Q10840765,Đông Khê
+Q4870932,Battle of Duc Lap,P276,vị trí,Q19840068,Trại Đức Lập
+Q4871074,Trận Gang Toi,P276,vị trí,Q33271,Đồng Nai
+Q4871119,Trận Gò Công,P276,vị trí,Q5626082,Gò Công
+Q4871222,Battle of Hill 488,P276,vị trí,Q4846962,Hiệp Đức
+Q4871237,Chiến dịch Hòa Bình,P276,vị trí,Q36015,Hòa Bình
+Q4871591,Trận Long Khánh,P276,vị trí,Q6672777,Long Khánh
+Q4871659,Trận Đắk Pơ,P276,vị trí,Q6748577,Mang Yang
+Q4871890,Chiến dịch Lý Thường Kiệt,P276,vị trí,Q622778,Miền Bắc
+Q4871925,Battle of Nui Le,P276,vị trí,Q7189910,Phước Tuy
+Q4872138,Battle of Quang Tri,P276,vị trí,Q36579,Quảng Trị
+Q4872414,Trận Sông Bé,P276,vị trí,Q10822747,Sông Bé
+Q4872466,Battle of Suoi Tre,P276,vị trí,Q180573,Việt Nam Cộng hòa
+Q4872569,Battle of Tonkin River,P276,vị trí,Q10771669,Hải Phong
+Q4872690,Trận Vĩnh Yên,P276,vị trí,Q36088,Vĩnh Yên
+Q4873055,Trận Đức Cơ,P276,vị trí,Q5311199,Đức Cơ
+Q5341179,Hệ thống giáo dục Việt Nam,P276,vị trí,Q881,Việt Nam
+Q5358430,Thể thao điện tử tại Đại hội Thể thao Trong nhà châu Á 2009,P276,vị trí,Q3075696,Đại học Bách khoa Hà Nội
+Q5361929,Trận Đà Nẵng,P276,vị trí,Q25282,Đà Nẵng
+Q5381317,Vấn đề môi trường ở Việt Nam,P276,vị trí,Q881,Việt Nam
+Q5450963,finswimming at the 2009 Asian Indoor Games,P276,vị trí,Q1858,Hà Nội
+Q5452524,Chiến dịch Lộc Ninh,P276,vị trí,Q6711776,Lộc Ninh
+Q5466369,Bóng đá tại Việt Nam,P276,vị trí,Q881,Việt Nam
+Q5468340,Trường Đại học Ngoại thương,P276,vị trí,Q881,Việt Nam
+Q5468360,Viện trợ nước ngoài cho Việt Nam,P276,vị trí,Q881,Việt Nam
+Q5574748,Sân vận động Gò Đậu,P276,vị trí,Q524553,Thủ Dầu Một
+Q3352882,Tân Hải,P276,vị trí,Q1068987,Đông Nam Bộ
+Q3380491,Trận Sài Gòn (1955),P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q3381201,Trận An Lão,P276,vị trí,Q4750136,An Lão
+Q3452896,rugby union in Vietnam,P276,vị trí,Q881,Việt Nam
+Q3486048,Trận Tuyên Quang (1884),P276,vị trí,Q33389,Tuyên Quang
+Q3514747,Ngọc Lũ I,P276,vị trí,Q5370414,Bảo tàng Lịch sử Việt Nam
+Q3539853,Trận Ngọc Hồi – Đống Đa,P276,vị trí,Q1048634,Đống Đa
+Q3539853,Trận Ngọc Hồi – Đống Đa,P276,vị trí,Q7189887,Phú Xuân
+Q3539853,Trận Ngọc Hồi – Đống Đa,P276,vị trí,Q10800616,Ngọc Hồi
+Q3595590,Hình phạt tử hình ở Việt Nam,P276,vị trí,Q881,Việt Nam
+Q3602283,2001 AVC Cup Women's Club Tournament,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q3602286,2005 Asian Women's Club Volleyball Championship,P276,vị trí,Q33929,Ninh Bình
+Q3602298,2006 Asian Men's Club Volleyball Championship,P276,vị trí,Q1858,Hà Nội
+Q3616301,Chiến dịch Huế - Đà Nẵng,P276,vị trí,Q36167,Huế
+Q3636548,Battle of Nha Trang,P276,vị trí,Q19491,Nha Trang
+Q3675307,Cho Ro,P276,vị trí,Q33271,Đồng Nai
+Q3698722,Trung tâm Hội nghị Hoàn Vũ,P276,vị trí,Q19491,Nha Trang
+Q6978156,Quốc lộ 13,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2669692,Vĩnh Tân,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2691415,Tam Thắng,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2693355,Chánh Phú Hòa,P276,vị trí,Q1068987,Đông Nam Bộ
+Q1916927,Nhiêu Lộc,P276,vị trí,Q1068987,Đông Nam Bộ
+Q1924899,Điện ảnh Việt Nam,P276,vị trí,Q881,Việt Nam
+Q7023325,Sân vận động 19 tháng 8,P276,vị trí,Q19491,Nha Trang
+Q7096929,Operation Coronado IV,P276,vị trí,Q1052867,Đồng bằng sông Cửu Long
+Q7187240,Phong Châu,P276,vị trí,Q2428694,Bắc Bộ
+Q1143088,Hoa hậu Hoàn vũ 2008,P276,vị trí,Q3698722,Trung tâm Hội nghị Hoàn Vũ
+Q1147328,Mahavira Hall,P276,vị trí,Q5393308,chùa
+Q1150956,Sân vận động quốc gia Mỹ Đình,P276,vị trí,Q16479957,Nam Từ Liêm
+Q1151193,Cầu Cần Thơ,P276,vị trí,Q216075,Cần Thơ
+Q1154466,Loạn 12 sứ quân,P276,vị trí,Q703919,Nhà Ngô
+Q1156336,Văn hóa Đa Bút,P276,vị trí,Q881,Việt Nam
+Q1193677,Đại hội Thể thao Trong nhà châu Á 2009,P276,vị trí,Q1858,Hà Nội
+Q1230358,Battle of Hill 881,P276,vị trí,Q36579,Quảng Trị
+Q1237104,2008 Vietnam International Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1251901,2011 Vietnam International Badminton Championships,P276,vị trí,Q1858,Hà Nội
+Q1272544,Operation Dewey Canyon,P276,vị trí,Q4073426,Thung lũng A Sầu
+Q1290990,2008 Uber Cup – Qualification Asia,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1316527,Đại hội Thể thao Bãi biển châu Á 2016,P276,vị trí,Q25282,Đà Nẵng
+Q1320031,Trận Bình Giã,P276,vị trí,Q672063,Bình Giã
+Q1320437,Vườn quốc gia Chư Yang Sin,P276,vị trí,Q1140648,Tây Nguyên
+Q1324290,Quân chủng Hải quân Việt Nam,P276,vị trí,Q72818,Hải Phòng
+Q5215423,Dancesport at the 2009 Asian Indoor Games,P276,vị trí,Q10751152,Cung thể thao Quần Ngựa
+Q3380491,Trận Sài Gòn (1955),P580,ngày bắt đầu,1955-04-28T00:00:00Z,1955-04-28T00:00:00Z
+Q3381201,Trận An Lão,P580,ngày bắt đầu,1964-12-07T00:00:00Z,1964-12-07T00:00:00Z
+Q3486048,Trận Tuyên Quang (1884),P580,ngày bắt đầu,1884-11-24T00:00:00Z,1884-11-24T00:00:00Z
+Q3602283,2001 AVC Cup Women's Club Tournament,P580,ngày bắt đầu,2001-05-15T00:00:00Z,2001-05-15T00:00:00Z
+Q3602286,2005 Asian Women's Club Volleyball Championship,P580,ngày bắt đầu,2005-05-23T00:00:00Z,2005-05-23T00:00:00Z
+Q3602289,2008 Asian Women's Club Volleyball Championship,P580,ngày bắt đầu,2008-06-01T00:00:00Z,2008-06-01T00:00:00Z
+Q3602290,2011 Asian Women's Club Volleyball Championship,P580,ngày bắt đầu,2011-06-19T00:00:00Z,2011-06-19T00:00:00Z
+Q3602298,2006 Asian Men's Club Volleyball Championship,P580,ngày bắt đầu,2006-05-21T00:00:00Z,2006-05-21T00:00:00Z
+Q3616301,Chiến dịch Huế - Đà Nẵng,P580,ngày bắt đầu,1975-03-05T00:00:00Z,1975-03-05T00:00:00Z
+Q486866,Chiến dịch Linebacker II,P580,ngày bắt đầu,1972-12-18T00:00:00Z,1972-12-18T00:00:00Z
+Q487076,Chiến dịch Xuân Lộc,P580,ngày bắt đầu,1975-04-09T00:00:00Z,1975-04-09T00:00:00Z
+Q487431,Trận Quang Thạnh,P580,ngày bắt đầu,1967-02-14T00:00:00Z,1967-02-14T00:00:00Z
+Q491117,Lai Đại Hàn,P580,ngày bắt đầu,1964-01-01T00:00:00Z,1964-01-01T00:00:00Z
+Q497528,Thảm sát Bình Hòa,P580,ngày bắt đầu,1966-12-03T00:00:00Z,1966-12-03T00:00:00Z
+Q500025,Giải vô địch điền kinh trẻ châu Á 2010,P580,ngày bắt đầu,2010-07-04T00:00:00Z,2010-07-04T00:00:00Z
+Q550500,Trận Nam Đông,P580,ngày bắt đầu,1964-07-05T00:00:00Z,1964-07-05T00:00:00Z
+Q584604,2007 Asian Women's Club Volleyball Championship,P580,ngày bắt đầu,2007-06-16T00:00:00Z,2007-06-16T00:00:00Z
+Q588774,Trận Đồng Xoài,P580,ngày bắt đầu,1965-06-09T00:00:00Z,1965-06-09T00:00:00Z
+Q604897,Chiến dịch Điện Biên Phủ,P580,ngày bắt đầu,1954-03-13T00:00:00Z,1954-03-13T00:00:00Z
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P580,ngày bắt đầu,1977-04-30T00:00:00Z,1977-04-30T00:00:00Z
+Q682195,Chiến dịch Masher,P580,ngày bắt đầu,1966-01-24T00:00:00Z,1966-01-24T00:00:00Z
+Q697053,Trận Mậu Thân tại Huế,P580,ngày bắt đầu,1968-01-30T00:00:00Z,1968-01-30T00:00:00Z
+Q706603,Bão Parma,P580,ngày bắt đầu,2009-09-27T00:00:00Z,2009-09-27T00:00:00Z
+Q4984261,Biến động Miền Trung,P276,vị trí,Q25282,Đà Nẵng
+Q5011541,Hoạt động của CIA tại Việt Nam,P276,vị trí,Q881,Việt Nam
+Q962370,Trận Hà Nội 1946,P582,ngày kết thúc,1947-02-18T00:00:00Z,1947-02-18T00:00:00Z
+Q996912,Văn hóa Đông Sơn,P582,ngày kết thúc,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z
+Q2523833,2012 Vietnam International Badminton Championships,P582,ngày kết thúc,2012-04-01T00:00:00Z,2012-04-01T00:00:00Z
+Q2523841,1997 Vietnam Open Badminton Championships,P582,ngày kết thúc,1997-11-23T00:00:00Z,1997-11-23T00:00:00Z
+Q2523844,2007 Vietnam Open Badminton Championships,P582,ngày kết thúc,2007-11-11T00:00:00Z,2007-11-11T00:00:00Z
+Q2523845,2011 Vietnam Open Badminton Championships,P582,ngày kết thúc,2011-08-28T00:00:00Z,2011-08-28T00:00:00Z
+Q7861132,Bão Brian,P580,ngày bắt đầu,1989-09-28T00:00:00Z,1989-09-28T00:00:00Z
+Q6119778,Thảm sát Bình An,P582,ngày kết thúc,1966-03-17T00:00:00Z,1966-03-17T00:00:00Z
+Q4984261,Biến động Miền Trung,P582,ngày kết thúc,1966-06-08T00:00:00Z,1966-06-08T00:00:00Z
+Q2446552,2012 Tour of Vietnam,P582,ngày kết thúc,2012-12-21T00:00:00Z,2012-12-21T00:00:00Z
+Q486866,Chiến dịch Linebacker II,P582,ngày kết thúc,1972-12-29T00:00:00Z,1972-12-29T00:00:00Z
+Q487076,Chiến dịch Xuân Lộc,P582,ngày kết thúc,1975-04-21T00:00:00Z,1975-04-21T00:00:00Z
+Q487431,Trận Quang Thạnh,P582,ngày kết thúc,1967-02-15T00:00:00Z,1967-02-15T00:00:00Z
+Q491117,Lai Đại Hàn,P582,ngày kết thúc,1973-01-01T00:00:00Z,1973-01-01T00:00:00Z
+Q497528,Thảm sát Bình Hòa,P582,ngày kết thúc,1966-12-06T00:00:00Z,1966-12-06T00:00:00Z
+Q500025,Giải vô địch điền kinh trẻ châu Á 2010,P582,ngày kết thúc,2010-07-04T00:00:00Z,2010-07-04T00:00:00Z
+Q550500,Trận Nam Đông,P582,ngày kết thúc,1964-07-06T00:00:00Z,1964-07-06T00:00:00Z
+Q584604,2007 Asian Women's Club Volleyball Championship,P582,ngày kết thúc,2007-06-23T00:00:00Z,2007-06-23T00:00:00Z
+Q588774,Trận Đồng Xoài,P582,ngày kết thúc,1965-06-13T00:00:00Z,1965-06-13T00:00:00Z
+Q604897,Chiến dịch Điện Biên Phủ,P582,ngày kết thúc,1954-05-07T00:00:00Z,1954-05-07T00:00:00Z
+Q635533,Chiến tranh biên giới Việt Nam – Campuchia,P582,ngày kết thúc,1991-10-23T00:00:00Z,1991-10-23T00:00:00Z
+Q682195,Chiến dịch Masher,P582,ngày kết thúc,1966-03-06T00:00:00Z,1966-03-06T00:00:00Z
+Q697053,Trận Mậu Thân tại Huế,P582,ngày kết thúc,1968-03-03T00:00:00Z,1968-03-03T00:00:00Z
+Q706603,Bão Parma,P582,ngày kết thúc,2009-10-14T00:00:00Z,2009-10-14T00:00:00Z
+Q2281378,Giải vô địch bóng đá trong nhà châu Á 2005,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q2381234,Cầu lông tại Đại hội Thể thao Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q2423247,2008 Thomas Cup – Qualification Asia,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q2440584,Việt Nam tại Thế vận hội Mùa hè 1968,P585,thời điểm,1968-01-01T00:00:00Z,1968-01-01T00:00:00Z
+Q5037043,Trận Định Tường (1861),P710,người tham gia,Q71092,Đế chế thứ hai
+Q5037043,Trận Định Tường (1861),P710,người tham gia,Q3399982,Kingdom of Spain
+Q5037043,Trận Định Tường (1861),P710,người tham gia,Q6500483,nhà Nguyễn
+Q5192182,Quan hệ Việt Nam - Cuba,P710,người tham gia,Q241,Cuba
+Q4763825,Quan hệ Việt Nam - Angola,P710,người tham gia,Q881,Việt Nam
+Q4763825,Quan hệ Việt Nam - Angola,P710,người tham gia,Q916,Angola
+Q4845763,Trận Lộc Ninh,P710,người tham gia,Q30,Hoa Kỳ
+Q4870316,Battle of Ap Bau Bang II,P710,người tham gia,Q30,Hoa Kỳ
+Q4870513,Battle of Bong Son,P710,người tham gia,Q30,Hoa Kỳ
+Q4870932,Battle of Duc Lap,P710,người tham gia,Q30,Hoa Kỳ
+Q4871074,Trận Gang Toi,P710,người tham gia,Q30,Hoa Kỳ
+Q4871074,Trận Gang Toi,P710,người tham gia,Q408,Úc
+Q4871074,Trận Gang Toi,P710,người tham gia,Q664,New Zealand
+Q4871074,Trận Gang Toi,P710,người tham gia,Q174423,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+Q4871222,Battle of Hill 488,P710,người tham gia,Q30,Hoa Kỳ
+Q4871591,Trận Long Khánh,P710,người tham gia,Q30,Hoa Kỳ
+Q4871925,Battle of Nui Le,P710,người tham gia,Q30,Hoa Kỳ
+Q4872138,Battle of Quang Tri,P710,người tham gia,Q30,Hoa Kỳ
+Q4872414,Trận Sông Bé,P710,người tham gia,Q30,Hoa Kỳ
+Q4872466,Battle of Suoi Tre,P710,người tham gia,Q30,Hoa Kỳ
+Q4872466,Battle of Suoi Tre,P710,người tham gia,Q174423,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam
+Q4872569,Battle of Tonkin River,P710,người tham gia,Q174193,Vương quốc Liên hiệp Anh và Ireland
+Q2144798,Việt Nam tại Thế vận hội Mùa hè 1964,P585,thời điểm,1964-01-01T00:00:00Z,1964-01-01T00:00:00Z
+Q2664144,Việt Nam tại Thế vận hội Mùa hè 1980,P585,thời điểm,1980-01-01T00:00:00Z,1980-01-01T00:00:00Z
+Q2665793,Việt Nam tại Thế vận hội Mùa hè 1988,P585,thời điểm,1988-01-01T00:00:00Z,1988-01-01T00:00:00Z
+Q2670487,Thảm sát Mỹ Trạch,P585,thời điểm,1947-11-29T00:00:00Z,1947-11-29T00:00:00Z
+Q3041786,Khởi nghĩa Yên Bái,P585,thời điểm,1930-02-10T00:00:00Z,1930-02-10T00:00:00Z
+Q3117135,Vietnam at the 2010 Summer Youth Olympics,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q3137837,Đảo Song Tử Tây,P585,thời điểm,1975-01-01T00:00:00Z,1975-01-01T00:00:00Z
+Q5361929,Trận Đà Nẵng,P580,ngày bắt đầu,1858-09-01T00:00:00Z,1858-09-01T00:00:00Z
+Q5452524,Chiến dịch Lộc Ninh,P580,ngày bắt đầu,1967-10-29T00:00:00Z,1967-10-29T00:00:00Z
+Q2234243,Cố đô Huế,P580,ngày bắt đầu,1802-01-01T00:00:00Z,1802-01-01T00:00:00Z
+Q2237223,Chiến dịch Trị Thiên,P580,ngày bắt đầu,1972-03-30T00:00:00Z,1972-03-30T00:00:00Z
+Q2523833,2012 Vietnam International Badminton Championships,P580,ngày bắt đầu,2012-03-26T00:00:00Z,2012-03-26T00:00:00Z
+Q2523841,1997 Vietnam Open Badminton Championships,P580,ngày bắt đầu,1997-11-19T00:00:00Z,1997-11-19T00:00:00Z
+Q2523844,2007 Vietnam Open Badminton Championships,P580,ngày bắt đầu,2007-11-06T00:00:00Z,2007-11-06T00:00:00Z
+Q2523845,2011 Vietnam Open Badminton Championships,P580,ngày bắt đầu,2011-08-22T00:00:00Z,2011-08-22T00:00:00Z
+Q2748355,Chiến dịch Biên giới,P580,ngày bắt đầu,1950-10-01T00:00:00Z,1950-10-01T00:00:00Z
+Q2879088,Nhà tù Côn Đảo,P580,ngày bắt đầu,1861-01-01T00:00:00Z,1861-01-01T00:00:00Z
+Q2888227,Chiến dịch Tây Nguyên,P580,ngày bắt đầu,1975-03-03T00:00:00Z,1975-03-03T00:00:00Z
+Q2889101,Trận Làng Vây,P580,ngày bắt đầu,1968-02-06T00:00:00Z,1968-02-06T00:00:00Z
+Q2889446,Battle of Na San,P580,ngày bắt đầu,1952-11-23T00:00:00Z,1952-11-23T00:00:00Z
+Q2889954,Battle of Saigon,P580,ngày bắt đầu,1968-01-30T00:00:00Z,1968-01-30T00:00:00Z
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P580,ngày bắt đầu,2003-12-05T00:00:00Z,2003-12-05T00:00:00Z
+Q1445734,2010 Vietnam Open Badminton Championships,P580,ngày bắt đầu,2010-10-05T00:00:00Z,2010-10-05T00:00:00Z
+Q1465784,Trận Tầm Bó,P580,ngày bắt đầu,1966-04-11T00:00:00Z,1966-04-11T00:00:00Z
+Q1475946,Giải vô địch bóng đá nữ châu Á 1999,P580,ngày bắt đầu,1999-11-07T00:00:00Z,1999-11-07T00:00:00Z
+Q1475953,Cúp bóng đá nữ châu Á 2006,P580,ngày bắt đầu,2006-07-16T00:00:00Z,2006-07-16T00:00:00Z
+Q1475961,Cúp bóng đá nữ châu Á 2010,P580,ngày bắt đầu,2010-05-19T00:00:00Z,2010-05-19T00:00:00Z
+Q1519185,Chiến dịch Hastings,P580,ngày bắt đầu,1966-07-15T00:00:00Z,1966-07-15T00:00:00Z
+Q1689247,2012 Vietnam Open Badminton Championships,P580,ngày bắt đầu,2012-08-21T00:00:00Z,2012-08-21T00:00:00Z
+Q1701319,2009 Vietnam Open Badminton Championships,P580,ngày bắt đầu,2009-10-06T00:00:00Z,2009-10-06T00:00:00Z
+Q1756929,2008 Vietnam Open Badminton Championships,P580,ngày bắt đầu,2008-12-02T00:00:00Z,2008-12-02T00:00:00Z
+Q192090,đồng Việt Nam,P580,ngày bắt đầu,1978-05-03T00:00:00Z,1978-05-03T00:00:00Z
+Q220882,Chiến dịch Junction City,P580,ngày bắt đầu,1967-02-22T00:00:00Z,1967-02-22T00:00:00Z
+Q247395,Trận Đồi Thịt Băm,P580,ngày bắt đầu,1969-05-10T00:00:00Z,1969-05-10T00:00:00Z
+Q249853,Xung đột tại Lào,P580,ngày bắt đầu,1975-12-02T00:00:00Z,1975-12-02T00:00:00Z
+Q334192,Cúp bóng đá châu Á 2007,P580,ngày bắt đầu,2007-07-07T00:00:00Z,2007-07-07T00:00:00Z
+Q342587,Đổi Mới,P580,ngày bắt đầu,1986-01-01T00:00:00Z,1986-01-01T00:00:00Z
+Q403827,Bắc thuộc,P580,ngày bắt đầu,-0110-01-01T00:00:00Z,-0110-01-01T00:00:00Z
+Q2744976,Bàn Cờ,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2748355,Chiến dịch Biên giới,P276,vị trí,Q10840765,Đông Khê
+Q2749575,Thông tin nhân khẩu học Việt Nam,P276,vị trí,Q881,Việt Nam
+Q2754089,An Phú,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2775019,Lái Thiêu,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2782210,Bảy Hiền,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2790502,Long Hương,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2888227,Chiến dịch Tây Nguyên,P276,vị trí,Q33469,Buôn Ma Thuột
+Q2889101,Trận Làng Vây,P276,vị trí,Q36579,Quảng Trị
+Q2889446,Battle of Na San,P276,vị trí,Q33379,Sơn La
+Q2889611,Battle of Phu Tong Hoa,P276,vị trí,Q7189925,Phủ Thông
+Q2889954,Battle of Saigon,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P582,ngày kết thúc,2003-12-13T00:00:00Z,2003-12-13T00:00:00Z
+Q1445734,2010 Vietnam Open Badminton Championships,P582,ngày kết thúc,2010-10-10T00:00:00Z,2010-10-10T00:00:00Z
+Q1465784,Trận Tầm Bó,P582,ngày kết thúc,1966-04-12T00:00:00Z,1966-04-12T00:00:00Z
+Q1475946,Giải vô địch bóng đá nữ châu Á 1999,P582,ngày kết thúc,1999-11-21T00:00:00Z,1999-11-21T00:00:00Z
+Q1475953,Cúp bóng đá nữ châu Á 2006,P582,ngày kết thúc,2006-07-30T00:00:00Z,2006-07-30T00:00:00Z
+Q1475961,Cúp bóng đá nữ châu Á 2010,P582,ngày kết thúc,2010-05-30T00:00:00Z,2010-05-30T00:00:00Z
+Q1519185,Chiến dịch Hastings,P582,ngày kết thúc,1966-08-03T00:00:00Z,1966-08-03T00:00:00Z
+Q1689247,2012 Vietnam Open Badminton Championships,P582,ngày kết thúc,2012-08-26T00:00:00Z,2012-08-26T00:00:00Z
+Q1701319,2009 Vietnam Open Badminton Championships,P582,ngày kết thúc,2009-10-11T00:00:00Z,2009-10-11T00:00:00Z
+Q1756929,2008 Vietnam Open Badminton Championships,P582,ngày kết thúc,2008-12-07T00:00:00Z,2008-12-07T00:00:00Z
+Q2147855,Tân Thành,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2157911,Bình Phú,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2171406,Tân Đông Hiệp,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2381234,Cầu lông tại Đại hội Thể thao Đông Nam Á 2003,P580,ngày bắt đầu,2003-12-06T00:00:00Z,2003-12-06T00:00:00Z
+Q2748355,Chiến dịch Biên giới,P582,ngày kết thúc,1950-10-13T00:00:00Z,1950-10-13T00:00:00Z
+Q2888227,Chiến dịch Tây Nguyên,P582,ngày kết thúc,1975-03-18T00:00:00Z,1975-03-18T00:00:00Z
+Q2889101,Trận Làng Vây,P582,ngày kết thúc,1968-02-07T00:00:00Z,1968-02-07T00:00:00Z
+Q2889446,Battle of Na San,P582,ngày kết thúc,1952-12-02T00:00:00Z,1952-12-02T00:00:00Z
+Q2889954,Battle of Saigon,P582,ngày kết thúc,1968-03-07T00:00:00Z,1968-03-07T00:00:00Z
+Q2097211,Gia Định,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2121077,Xóm Chiếu,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2135306,Bình Đông,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2909615,Vụ oanh tạc Căn cứ không quân Tân Sơn Nhứt,P276,vị trí,Q4115006,Căn cứ không quân Tân Sơn Nhứt
+Q2945269,Bình Hòa,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2954399,2005 Asian Amateur Boxing Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2986395,Phong trào Cần Vương,P276,vị trí,Q881,Việt Nam
+Q5361929,Trận Đà Nẵng,P582,ngày kết thúc,1860-03-22T00:00:00Z,1860-03-22T00:00:00Z
+Q5452524,Chiến dịch Lộc Ninh,P582,ngày kết thúc,1967-11-07T00:00:00Z,1967-11-07T00:00:00Z
+Q1998999,"Trận thành Gia Định, 1859",P580,ngày bắt đầu,1860-03-01T00:00:00Z,1860-03-01T00:00:00Z
+Q4601044,Giải vô địch bóng đá U18 Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q4602450,Giải vô địch bóng đá nữ U-19 châu Á 2004,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q4604761,Vụ tai nạn tàu E1 tại Lăng Cô 2005,P585,thời điểm,2005-03-12T00:00:00Z,2005-03-12T00:00:00Z
+Q4605152,2005 World Wushu Championships,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q4605654,Giải vô địch bóng đá U-17 Đông Nam Á 2006,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q4605655,Vòng loại Cúp bóng đá nữ châu Á 2006,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q4605673,2006 ASEAN University Games,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q4606207,2006 FIFA World Cup qualification – AFC Second Stage Group 7,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q4611499,2008 Merdeka Tournament,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q4611551,2008 Myanmar Grand Royal Challenge Cup,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q4612196,Đội tuyển bóng đá quốc gia Việt Nam năm 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q4613113,Vòng loại Giải vô địch bóng đá nữ U-19 châu Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4613115,Giải vô địch bóng đá trong nhà Đông Nam Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4613117,Giải vô địch bóng đá nữ U-16 Đông Nam Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4613118,Giải vô địch bóng đá U19 Đông Nam Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4615086,Giải bóng đá hạng Nhì Quốc gia 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4616639,2010 Asian Junior Women's Volleyball Championship,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4617864,Cúp 1000 năm Thăng Long - Hà Nội,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4618781,Giải bóng đá hạng Nhì Quốc gia 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4618782,Đội tuyển bóng đá quốc gia Việt Nam năm 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4618783,Cúp bóng đá Việt Nam 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4618787,Giải bóng đá hạng nhất quốc gia Việt Nam 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4620213,Vòng loại Giải vô địch bóng đá nữ U-16 châu Á 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4620217,Vòng loại Giải vô địch bóng đá nữ U-19 châu Á 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4620220,Giải vô địch bóng đá nữ Đông Nam Á 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4622798,VFF Cup 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4622799,2011 VFF Cup squads,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4622819,Siêu cúp bóng đá Việt Nam 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4622822,Giải bóng đá hạng nhất quốc gia Việt Nam 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4623105,2011 crackdown on Vietnamese youth activists,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4624578,2012 AFC Futsal Club Championship qualification,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4624586,Giải vô địch bóng đá U19 Đông Nam Á 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4624590,Giải vô địch bóng đá nữ Đông Nam Á 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4624792,2012 Asian Taekwondo Championships,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4625743,2012 Hassanal Bolkiah Trophy squads,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4627159,2012 VFF Cup squads,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4627164,VFF Cup 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4627165,VTV Cup 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4627185,Đội tuyển bóng đá quốc gia Việt Nam năm 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4627186,Cúp bóng đá Việt Nam 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4627193,Giải bóng đá hạng nhất quốc gia Việt Nam 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4629021,2013 ABL season,P585,thời điểm,2013-01-01T00:00:00Z,2013-01-01T00:00:00Z
+Q4629028,Giải vô địch bóng đá nữ Đông Nam Á 2013,P585,thời điểm,2013-01-01T00:00:00Z,2013-01-01T00:00:00Z
+Q4629996,Giải bóng đá vô địch quốc gia Việt Nam 2013,P585,thời điểm,2013-01-01T00:00:00Z,2013-01-01T00:00:00Z
+Q4630013,Đội tuyển bóng đá quốc gia Việt Nam năm 2013,P585,thời điểm,2013-01-01T00:00:00Z,2013-01-01T00:00:00Z
+Q4630014,Giải bóng đá hạng nhất quốc gia Việt Nam 2013,P585,thời điểm,2013-01-01T00:00:00Z,2013-01-01T00:00:00Z
+Q4630186,Vòng loại Cúp bóng đá nữ châu Á 2014,P585,thời điểm,2014-01-01T00:00:00Z,2014-01-01T00:00:00Z
+Q4630187,Giải vô địch bóng đá Đông Nam Á 2014,P585,thời điểm,2014-01-01T00:00:00Z,2014-01-01T00:00:00Z
+Q4633951,Liên hoan phim Việt Nam lần thứ 2,P585,thời điểm,1973-01-01T00:00:00Z,1973-01-01T00:00:00Z
+Q4634242,3-on-3 basketball at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4641474,Liên hoan phim Việt Nam lần thứ 5,P585,thời điểm,1980-01-01T00:00:00Z,1980-01-01T00:00:00Z
+Q4642819,6th Vietnam Film Festival,P585,thời điểm,1983-01-01T00:00:00Z,1983-01-01T00:00:00Z
+Q4644211,7th Vietnam Film Festival,P585,thời điểm,1985-01-01T00:00:00Z,1985-01-01T00:00:00Z
+Q4645490,Liên hoan phim Việt Nam lần thứ 8,P585,thời điểm,1988-01-01T00:00:00Z,1988-01-01T00:00:00Z
+Q4646695,9th Vietnam Film Festival,P585,thời điểm,1990-01-01T00:00:00Z,1990-01-01T00:00:00Z
+Q4677308,Không chiến Yên Viên,P585,thời điểm,1967-01-01T00:00:00Z,1967-01-01T00:00:00Z
+Q4688201,aerobic gymnastics at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4273438,Trận Kontum,P580,ngày bắt đầu,1972-05-26T00:00:00Z,1972-05-26T00:00:00Z
+Q4555815,Cơn bão Hải Phòng 1881,P580,ngày bắt đầu,1881-09-27T00:00:00Z,1881-09-27T00:00:00Z
+Q7833286,Tran Cao rebellion,P582,ngày kết thúc,1521-01-01T00:00:00Z,1521-01-01T00:00:00Z
+Q7845880,Bão Cecil,P582,ngày kết thúc,1989-05-26T00:00:00Z,1989-05-26T00:00:00Z
+Q6580295,Việt Nam tại Đại hội Thể thao Bãi biển châu Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q6590248,Vietnam at the 2011 World Championships in Athletics,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q2579198,2011 Vietnamese presidential election,P585,thời điểm,2011-07-25T00:00:00Z,2011-07-25T00:00:00Z
+Q2580437,Giải vô địch bóng đá U19 Đông Nam Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q2580845,Việt Nam tại Thế vận hội Mùa hè 1956,P585,thời điểm,1956-01-01T00:00:00Z,1956-01-01T00:00:00Z
+Q2645448,Việt Nam tại Thế vận hội Mùa hè 1960,P585,thời điểm,1960-01-01T00:00:00Z,1960-01-01T00:00:00Z
+Q5036990,Trận Biên Hòa (1861-1862),P585,thời điểm,1861-12-16T00:00:00Z,1861-12-16T00:00:00Z
+Q5037041,Trận Nam Định (1883),P585,thời điểm,1883-03-27T00:00:00Z,1883-03-27T00:00:00Z
+Q5037043,Trận Định Tường (1861),P585,thời điểm,1861-04-12T00:00:00Z,1861-04-12T00:00:00Z
+Q5088005,Thảm sát Châu Đốc,P585,thời điểm,1957-07-11T00:00:00Z,1957-07-11T00:00:00Z
+Q5192569,cue sports at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4605152,2005 World Wushu Championships,P580,ngày bắt đầu,2005-12-09T00:00:00Z,2005-12-09T00:00:00Z
+Q4629996,Giải bóng đá vô địch quốc gia Việt Nam 2013,P580,ngày bắt đầu,2013-03-02T00:00:00Z,2013-03-02T00:00:00Z
+Q2003418,Hoa hậu Trái Đất 2007,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q2026028,Operation Crimp,P585,thời điểm,1966-01-14T00:00:00Z,1966-01-14T00:00:00Z
+Q2026094,Operation Francis Marion,P585,thời điểm,1967-10-11T00:00:00Z,1967-10-11T00:00:00Z
+Q2026397,Chiến dịch Speedy Express,P585,thời điểm,1968-12-01T00:00:00Z,1968-12-01T00:00:00Z
+Q2523814,2002 Vietnam International Badminton Championships,P585,thời điểm,2002-01-01T00:00:00Z,2002-01-01T00:00:00Z
+Q2523815,2004 Vietnam International Badminton Championships,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q2523818,2000 Vietnam International Badminton Championships,P585,thời điểm,2000-01-01T00:00:00Z,2000-01-01T00:00:00Z
+Q2523824,2005 Vietnam International Badminton Championships,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q2523829,2006 Vietnam International Badminton Championships,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q2523830,2009 Vietnam International Badminton Championships,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q2523833,2012 Vietnam International Badminton Championships,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q2523839,1996 Vietnam Open Badminton Championships,P585,thời điểm,1996-01-01T00:00:00Z,1996-01-01T00:00:00Z
+Q2523841,1997 Vietnam Open Badminton Championships,P585,thời điểm,1997-01-01T00:00:00Z,1997-01-01T00:00:00Z
+Q2523842,2006 Vietnam Open Badminton Championships,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q2523844,2007 Vietnam Open Badminton Championships,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q2523845,2011 Vietnam Open Badminton Championships,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q2533968,Đại lễ 1000 năm Thăng Long – Hà Nội,P585,thời điểm,2010-10-01T00:00:00Z,2010-10-01T00:00:00Z
+Q4814409,Điền kinh tại Đại hội Thể thao Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q4818018,Đột kích tàu USNS Card,P585,thời điểm,1964-05-02T00:00:00Z,1964-05-02T00:00:00Z
+Q4870707,Battle of Chan La,P585,thời điểm,1963-11-23T00:00:00Z,1963-11-23T00:00:00Z
+Q4870828,Trận Cầu Giấy (1883),P585,thời điểm,1883-05-19T00:00:00Z,1883-05-19T00:00:00Z
+Q4870894,Battle of Dong Dang,P585,thời điểm,1885-02-23T00:00:00Z,1885-02-23T00:00:00Z
+Q4871074,Trận Gang Toi,P585,thời điểm,1965-11-08T00:00:00Z,1965-11-08T00:00:00Z
+Q4871119,Trận Gò Công,P585,thời điểm,1963-09-03T00:00:00Z,1963-09-03T00:00:00Z
+Q4871659,Trận Đắk Pơ,P585,thời điểm,1954-01-01T00:00:00Z,1954-01-01T00:00:00Z
+Q4871925,Battle of Nui Le,P585,thời điểm,1971-09-21T00:00:00Z,1971-09-21T00:00:00Z
+Q4872414,Trận Sông Bé,P585,thời điểm,1965-01-01T00:00:00Z,1965-01-01T00:00:00Z
+Q4872466,Battle of Suoi Tre,P585,thời điểm,1967-03-21T00:00:00Z,1967-03-21T00:00:00Z
+Q4872569,Battle of Tonkin River,P585,thời điểm,1849-01-01T00:00:00Z,1849-01-01T00:00:00Z
+Q4872690,Trận Vĩnh Yên,P585,thời điểm,1951-01-01T00:00:00Z,1951-01-01T00:00:00Z
+Q4873055,Trận Đức Cơ,P585,thời điểm,1966-08-09T00:00:00Z,1966-08-09T00:00:00Z
+Q4884718,belt wrestling at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q1845095,Bình Lợi Trung,P276,vị trí,Q1068987,Đông Nam Bộ
+Q1884549,Tân Hiệp,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2332060,Tuyên Quang,P276,vị trí,Q7059238,Trung du và miền núi phía Bắc
+Q2332949,Phú Mỹ,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2381234,Cầu lông tại Đại hội Thể thao Đông Nam Á 2003,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2405056,Tân Khánh,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2405555,Chợ Lớn,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2262454,Chánh Hiệp,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2275816,Thuận An,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2276041,Đệ tứ Quốc tế tại Việt Nam,P276,vị trí,Q881,Việt Nam
+Q2292486,Thuận Giao,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2316485,Rạch Dừa,P276,vị trí,Q1068987,Đông Nam Bộ
+Q3785993,Q3785993,P585,thời điểm,1998-01-01T00:00:00Z,1998-01-01T00:00:00Z
+Q3785994,Q3785994,P585,thời điểm,2000-01-01T00:00:00Z,2000-01-01T00:00:00Z
+Q3785995,Q3785995,P585,thời điểm,1999-01-01T00:00:00Z,1999-01-01T00:00:00Z
+Q3785996,Q3785996,P585,thời điểm,2001-01-01T00:00:00Z,2001-01-01T00:00:00Z
+Q3785997,Q3785997,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q3785998,Q3785998,P585,thời điểm,2002-01-01T00:00:00Z,2002-01-01T00:00:00Z
+Q3785999,Q3785999,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q3786000,Q3786000,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q3786002,Q3786002,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q3786006,Q3786006,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q2446552,2012 Tour of Vietnam,P580,ngày bắt đầu,2012-12-17T00:00:00Z,2012-12-17T00:00:00Z
+Q4008482,văn,P582,ngày kết thúc,1945-01-01T00:00:00Z,1945-01-01T00:00:00Z
+Q1154466,Loạn 12 sứ quân,P580,ngày bắt đầu,0965-01-01T00:00:00Z,0965-01-01T00:00:00Z
+Q1156336,Văn hóa Đa Bút,P580,ngày bắt đầu,-4500-01-01T00:00:00Z,-4500-01-01T00:00:00Z
+Q1230358,Battle of Hill 881,P580,ngày bắt đầu,1967-04-24T00:00:00Z,1967-04-24T00:00:00Z
+Q1251901,2011 Vietnam International Badminton Championships,P580,ngày bắt đầu,2011-03-29T00:00:00Z,2011-03-29T00:00:00Z
+Q1316527,Đại hội Thể thao Bãi biển châu Á 2016,P580,ngày bắt đầu,2016-09-24T00:00:00Z,2016-09-24T00:00:00Z
+Q1317621,Giải vô địch bóng đá nữ U-19 châu Á 2011,P580,ngày bắt đầu,2011-10-06T00:00:00Z,2011-10-06T00:00:00Z
+Q1320031,Trận Bình Giã,P580,ngày bắt đầu,1964-12-28T00:00:00Z,1964-12-28T00:00:00Z
+Q2422871,Phú Định,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2423247,2008 Thomas Cup – Qualification Asia,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q2429414,Phú An,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2460295,Bà Rịa,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2467139,Tân Hòa,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2489303,Long Nguyên,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4814409,Điền kinh tại Đại hội Thể thao Đông Nam Á 2003,P580,ngày bắt đầu,2003-12-07T00:00:00Z,2003-12-07T00:00:00Z
+Q4845763,Trận Lộc Ninh,P580,ngày bắt đầu,1972-04-04T00:00:00Z,1972-04-04T00:00:00Z
+Q4870316,Battle of Ap Bau Bang II,P580,ngày bắt đầu,1967-03-19T00:00:00Z,1967-03-19T00:00:00Z
+Q4870486,Trận Bình Ba,P580,ngày bắt đầu,1969-06-06T00:00:00Z,1969-06-06T00:00:00Z
+Q4870513,Battle of Bong Son,P580,ngày bắt đầu,1966-01-28T00:00:00Z,1966-01-28T00:00:00Z
+Q4870896,Battle of Dong Khe,P580,ngày bắt đầu,1950-09-15T00:00:00Z,1950-09-15T00:00:00Z
+Q4870932,Battle of Duc Lap,P580,ngày bắt đầu,1968-08-24T00:00:00Z,1968-08-24T00:00:00Z
+Q4871222,Battle of Hill 488,P580,ngày bắt đầu,1966-06-15T00:00:00Z,1966-06-15T00:00:00Z
+Q4871237,Chiến dịch Hòa Bình,P580,ngày bắt đầu,1951-11-10T00:00:00Z,1951-11-10T00:00:00Z
+Q4871591,Trận Long Khánh,P580,ngày bắt đầu,1971-06-06T00:00:00Z,1971-06-06T00:00:00Z
+Q4871659,Trận Đắk Pơ,P580,ngày bắt đầu,1954-06-24T00:00:00Z,1954-06-24T00:00:00Z
+Q4871890,Chiến dịch Lý Thường Kiệt,P580,ngày bắt đầu,1951-10-03T00:00:00Z,1951-10-03T00:00:00Z
+Q4872138,Battle of Quang Tri,P580,ngày bắt đầu,1968-01-31T00:00:00Z,1968-01-31T00:00:00Z
+Q4872414,Trận Sông Bé,P580,ngày bắt đầu,1965-05-10T00:00:00Z,1965-05-10T00:00:00Z
+Q4872466,Battle of Suoi Tre,P580,ngày bắt đầu,1967-03-21T00:00:00Z,1967-03-21T00:00:00Z
+Q4872569,Battle of Tonkin River,P580,ngày bắt đầu,1849-10-20T00:00:00Z,1849-10-20T00:00:00Z
+Q4872690,Trận Vĩnh Yên,P580,ngày bắt đầu,1951-01-13T00:00:00Z,1951-01-13T00:00:00Z
+Q1370078,Người Khmer,P276,vị trí,Q1052867,Đồng bằng sông Cửu Long
+Q1370092,Đại hội Thể thao Đông Nam Á 2003,P276,vị trí,Q1858,Hà Nội
+Q1374042,1967 USS Forrestal fire,P276,vị trí,Q212428,Vịnh Bắc Bộ
+Q1390442,2010 Vietnam International Badminton Championships,P276,vị trí,Q1858,Hà Nội
+Q1445734,2010 Vietnam Open Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1465784,Trận Tầm Bó,P276,vị trí,Q7189910,Phước Tuy
+Q1475961,Cúp bóng đá nữ châu Á 2010,P276,vị trí,Q30002,Thành Đô
+Q1519185,Chiến dịch Hastings,P276,vị trí,Q2349960,Khu phi quân sự vĩ tuyến 17
+Q1626571,Cồn Tiên,P276,vị trí,Q2349960,Khu phi quân sự vĩ tuyến 17
+Q1689247,2012 Vietnam Open Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1701319,2009 Vietnam Open Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q1741628,Tuyến đường sắt Hải Phòng - Vân Nam,P276,vị trí,Q342451,đồng bằng sông Hồng
+Q1741628,Tuyến đường sắt Hải Phòng - Vân Nam,P276,vị trí,Q1190484,Tây Nam Trung Quốc
+Q1741628,Tuyến đường sắt Hải Phòng - Vân Nam,P276,vị trí,Q1194522,Vùng Tây Bắc
+Q1756929,2008 Vietnam Open Badminton Championships,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q5786381,Giải vô địch bóng đá Đông Nam Á 2008,P582,ngày kết thúc,2008-12-28T00:00:00Z,2008-12-28T00:00:00Z
+Q7862090,Tân Phước,P276,vị trí,Q1068987,Đông Nam Bộ
+Q7928443,Mộ thuyền Việt Khê,P276,vị trí,Q7188256,Phù Ninh
+Q4273438,Trận Kontum,P582,ngày kết thúc,1972-05-27T00:00:00Z,1972-05-27T00:00:00Z
+Q4555815,Cơn bão Hải Phòng 1881,P582,ngày kết thúc,1881-10-08T00:00:00Z,1881-10-08T00:00:00Z
+Q2381234,Cầu lông tại Đại hội Thể thao Đông Nam Á 2003,P582,ngày kết thúc,2003-12-12T00:00:00Z,2003-12-12T00:00:00Z
+Q7510313,Trận Plei Me,P580,ngày bắt đầu,1965-10-19T00:00:00Z,1965-10-19T00:00:00Z
+Q7510542,vây hãm Đông Quan,P580,ngày bắt đầu,1418-01-01T00:00:00Z,1418-01-01T00:00:00Z
+Q4150809,Đoàn cố vấn quân sự Liên Xô tại Việt Nam,P276,vị trí,Q1858,Hà Nội
+Q4150809,Đoàn cố vấn quân sự Liên Xô tại Việt Nam,P276,vị trí,Q72818,Hải Phòng
+Q4216999,Cầu Phú Mỹ,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q4273438,Trận Kontum,P276,vị trí,Q36493,Kon Tum
+Q4328795,Bình Cơ,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4335260,Chiến dịch Bolo,P276,vị trí,Q881,Việt Nam
+Q4346741,Cầu Hàm Rồng,P276,vị trí,Q36175,Thanh Hóa
+Q4355057,Nhân quyền tại Việt Nam,P276,vị trí,Q881,Việt Nam
+Q4457035,Chợ Lớn,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4547183,10th Vietnam Film Festival,P276,vị trí,Q72818,Hải Phòng
+Q4548001,11th Vietnam Film Festival,P276,vị trí,Q1858,Hà Nội
+Q4548945,Liên hoan phim Việt Nam lần thứ 12,P276,vị trí,Q36167,Huế
+Q4549563,Liên hoan phim Việt Nam lần thứ 13,P276,vị trí,Q33428,Vinh
+Q4550109,Liên hoan phim Việt Nam lần thứ 14,P276,vị trí,Q33469,Buôn Ma Thuột
+Q4551060,Liên hoan phim Việt Nam lần thứ 15,P276,vị trí,Q33682,Nam Định
+Q4552258,Liên hoan phim Việt Nam lần thứ 16,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q4572538,1966 in the Vietnam War,P276,vị trí,Q881,Việt Nam
+Q4574278,1970 in the Vietnam War,P276,vị trí,Q881,Việt Nam
+Q4574793,1971 in the Vietnam War,P276,vị trí,Q881,Việt Nam
+Q4575280,Chiến cục năm 1972 tại Việt Nam,P276,vị trí,Q881,Việt Nam
+Q4575847,1973 in the Vietnam War,P276,vị trí,Q881,Việt Nam
+Q4576367,1974 in the Vietnam War,P276,vị trí,Q881,Việt Nam
+Q4576921,1975 in the Vietnam War,P276,vị trí,Q881,Việt Nam
+Q5786381,Giải vô địch bóng đá Đông Nam Á 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q5873956,Vụ hoả hoạn ITC,P585,thời điểm,2002-10-29T00:00:00Z,2002-10-29T00:00:00Z
+Q4951214,bowling at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4951866,boxing at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4984261,Biến động Miền Trung,P585,thời điểm,1966-06-08T00:00:00Z,1966-06-08T00:00:00Z
+Q1154466,Loạn 12 sứ quân,P582,ngày kết thúc,0968-01-01T00:00:00Z,0968-01-01T00:00:00Z
+Q1156336,Văn hóa Đa Bút,P582,ngày kết thúc,-1699-01-01T00:00:00Z,-1699-01-01T00:00:00Z
+Q1230358,Battle of Hill 881,P582,ngày kết thúc,1967-05-11T00:00:00Z,1967-05-11T00:00:00Z
+Q1251901,2011 Vietnam International Badminton Championships,P582,ngày kết thúc,2011-04-03T00:00:00Z,2011-04-03T00:00:00Z
+Q1316527,Đại hội Thể thao Bãi biển châu Á 2016,P582,ngày kết thúc,2016-10-03T00:00:00Z,2016-10-03T00:00:00Z
+Q1320031,Trận Bình Giã,P582,ngày kết thúc,1965-01-01T00:00:00Z,1965-01-01T00:00:00Z
+Q5215423,Dancesport at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q5284303,Nhảy cầu tại Đại hội Thể thao Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q3370452,Vietnam at the 2012 Summer Paralympics,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q3381201,Trận An Lão,P585,thời điểm,1964-01-01T00:00:00Z,1964-01-01T00:00:00Z
+Q3539853,Trận Ngọc Hồi – Đống Đa,P585,thời điểm,1788-01-01T00:00:00Z,1788-01-01T00:00:00Z
+Q3544027,Bóng đá tại Đại hội Thể thao Đông Nam Á 2007,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q3545835,Việt Nam tại Đại hội Thể thao Đông Nam Á 2005,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q3545840,Việt Nam tại Đại hội Thể thao Đông Nam Á 2007,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q3586643,2007 Vietnamese presidential election,P585,thời điểm,2007-07-24T00:00:00Z,2007-07-24T00:00:00Z
+Q3587260,2007 Vietnamese legislative election,P585,thời điểm,2007-07-24T00:00:00Z,2007-07-24T00:00:00Z
+Q3602283,2001 AVC Cup Women's Club Tournament,P585,thời điểm,2001-01-01T00:00:00Z,2001-01-01T00:00:00Z
+Q3602286,2005 Asian Women's Club Volleyball Championship,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q3602289,2008 Asian Women's Club Volleyball Championship,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q3602290,2011 Asian Women's Club Volleyball Championship,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q3602298,2006 Asian Men's Club Volleyball Championship,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q3624312,Vietnam at the 2011 World Aquatics Championships,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q7833286,Tran Cao rebellion,P585,thời điểm,1516-01-01T00:00:00Z,1516-01-01T00:00:00Z
+Q7849268,Trịnh-Nguyễn phân tranh,P585,thời điểm,1627-01-01T00:00:00Z,1627-01-01T00:00:00Z
+Q4984261,Biến động Miền Trung,P580,ngày bắt đầu,1966-03-26T00:00:00Z,1966-03-26T00:00:00Z
+Q6119778,Thảm sát Bình An,P580,ngày bắt đầu,1966-02-12T00:00:00Z,1966-02-12T00:00:00Z
+Q4605152,2005 World Wushu Championships,P582,ngày kết thúc,2005-12-14T00:00:00Z,2005-12-14T00:00:00Z
+Q4629996,Giải bóng đá vô địch quốc gia Việt Nam 2013,P582,ngày kết thúc,2013-08-31T00:00:00Z,2013-08-31T00:00:00Z
+Q3785993,Q3785993,P580,ngày bắt đầu,1998-03-01T00:00:00Z,1998-03-01T00:00:00Z
+Q3785994,Q3785994,P580,ngày bắt đầu,2000-02-21T00:00:00Z,2000-02-21T00:00:00Z
+Q3785995,Q3785995,P580,ngày bắt đầu,1999-02-22T00:00:00Z,1999-02-22T00:00:00Z
+Q3785996,Q3785996,P580,ngày bắt đầu,2001-02-19T00:00:00Z,2001-02-19T00:00:00Z
+Q3785997,Q3785997,P580,ngày bắt đầu,2003-03-10T00:00:00Z,2003-03-10T00:00:00Z
+Q3785998,Q3785998,P580,ngày bắt đầu,2002-03-03T00:00:00Z,2002-03-03T00:00:00Z
+Q3785999,Q3785999,P580,ngày bắt đầu,2004-02-23T00:00:00Z,2004-02-23T00:00:00Z
+Q3786000,Q3786000,P580,ngày bắt đầu,2005-03-14T00:00:00Z,2005-03-14T00:00:00Z
+Q3786002,Q3786002,P580,ngày bắt đầu,2006-03-13T00:00:00Z,2006-03-13T00:00:00Z
+Q3786006,Q3786006,P580,ngày bắt đầu,2007-03-12T00:00:00Z,2007-03-12T00:00:00Z
+Q4008482,văn,P580,ngày bắt đầu,0960-01-01T00:00:00Z,0960-01-01T00:00:00Z
+Q10752804,Cửu vị thần công,P580,ngày bắt đầu,1803-01-31T00:00:00Z,1803-01-31T00:00:00Z
+Q2237223,Chiến dịch Trị Thiên,P582,ngày kết thúc,1972-05-01T00:00:00Z,1972-05-01T00:00:00Z
+Q10747183,Chiến tranh Lê-Mạc,P585,thời điểm,1533-01-01T00:00:00Z,1533-01-01T00:00:00Z
+Q10747193,Chiến tranh Nguyên Mông-Đại Việt lần 2,P585,thời điểm,1285-01-01T00:00:00Z,1285-01-01T00:00:00Z
+Q10747194,Chiến tranh Nguyên Mông-Đại Việt lần 3,P585,thời điểm,1288-01-01T00:00:00Z,1288-01-01T00:00:00Z
+Q10751261,Cuộc đua xe đạp tranh Cúp truyền hình thành phố Hồ Chí Minh 2009,P580,ngày bắt đầu,2009-04-22T00:00:00Z,2009-04-22T00:00:00Z
+Q7709135,Khởi nghĩa Thái Nguyên,P585,thời điểm,1917-01-01T00:00:00Z,1917-01-01T00:00:00Z
+Q5358430,Thể thao điện tử tại Đại hội Thể thao Trong nhà châu Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q5443158,Đấu kiếm tại Đại hội Thể thao Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q5447510,Hội nghị cấp cao Đông Á lần thứ 5,P585,thời điểm,2010-10-30T00:00:00Z,2010-10-30T00:00:00Z
+Q5450963,finswimming at the 2009 Asian Indoor Games,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q5466048,Bóng đá tại Đại hội Thể thao Đông Nam Á 2001,P585,thời điểm,2001-01-01T00:00:00Z,2001-01-01T00:00:00Z
+Q5466150,Bóng đá tại Thế vận hội Mùa hè 2012 – Vòng loại nam khu vực châu Á (Vòng 4),P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q4205808,Giải vô địch bóng đá trong nhà Đông Nam Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q4205814,Cúp bóng đá Việt Nam 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4208155,Việt Nam tại Đại hội Thể thao Đông Nam Á 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q4273438,Trận Kontum,P585,thời điểm,1972-06-09T00:00:00Z,1972-06-09T00:00:00Z
+Q4335260,Chiến dịch Bolo,P585,thời điểm,1967-01-02T00:00:00Z,1967-01-02T00:00:00Z
+Q4346741,Cầu Hàm Rồng,P585,thời điểm,1965-04-04T00:00:00Z,1965-04-04T00:00:00Z
+Q4547183,10th Vietnam Film Festival,P585,thời điểm,1993-01-01T00:00:00Z,1993-01-01T00:00:00Z
+Q4548001,11th Vietnam Film Festival,P585,thời điểm,1996-01-01T00:00:00Z,1996-01-01T00:00:00Z
+Q4548945,Liên hoan phim Việt Nam lần thứ 12,P585,thời điểm,1999-01-01T00:00:00Z,1999-01-01T00:00:00Z
+Q4549563,Liên hoan phim Việt Nam lần thứ 13,P585,thời điểm,2001-01-01T00:00:00Z,2001-01-01T00:00:00Z
+Q4550109,Liên hoan phim Việt Nam lần thứ 14,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q4551060,Liên hoan phim Việt Nam lần thứ 15,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q4552258,Liên hoan phim Việt Nam lần thứ 16,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q4572538,1966 in the Vietnam War,P585,thời điểm,1966-01-01T00:00:00Z,1966-01-01T00:00:00Z
+Q4574278,1970 in the Vietnam War,P585,thời điểm,1970-01-01T00:00:00Z,1970-01-01T00:00:00Z
+Q4574793,1971 in the Vietnam War,P585,thời điểm,1971-01-01T00:00:00Z,1971-01-01T00:00:00Z
+Q4575280,Chiến cục năm 1972 tại Việt Nam,P585,thời điểm,1972-01-01T00:00:00Z,1972-01-01T00:00:00Z
+Q4575847,1973 in the Vietnam War,P585,thời điểm,1973-01-01T00:00:00Z,1973-01-01T00:00:00Z
+Q4576367,1974 in the Vietnam War,P585,thời điểm,1974-01-01T00:00:00Z,1974-01-01T00:00:00Z
+Q4576921,1975 in the Vietnam War,P585,thời điểm,1975-01-01T00:00:00Z,1975-01-01T00:00:00Z
+Q4586357,Giải bóng đá vô địch quốc gia Việt Nam 1990,P585,thời điểm,1990-01-01T00:00:00Z,1990-01-01T00:00:00Z
+Q4587151,Giải bóng đá vô địch quốc gia Việt Nam 1991,P585,thời điểm,1991-01-01T00:00:00Z,1991-01-01T00:00:00Z
+Q4587995,Giải bóng đá vô địch quốc gia Việt Nam 1992,P585,thời điểm,1992-01-01T00:00:00Z,1992-01-01T00:00:00Z
+Q4590736,Giải bóng đá vô địch quốc gia Việt Nam 1995,P585,thời điểm,1995-01-01T00:00:00Z,1995-01-01T00:00:00Z
+Q4591791,Giải bóng đá vô địch quốc gia Việt Nam 1996,P585,thời điểm,1996-01-01T00:00:00Z,1996-01-01T00:00:00Z
+Q4595223,Lũ lụt miền Trung Việt Nam tháng 11 năm 1999,P585,thời điểm,1999-01-01T00:00:00Z,1999-01-01T00:00:00Z
+Q7928577,Việt Nam tại Đại hội Thể thao châu Á 1982,P585,thời điểm,1982-01-01T00:00:00Z,1982-01-01T00:00:00Z
+Q7928580,Việt Nam tại Đại hội Thể thao châu Á 1998,P585,thời điểm,1998-01-01T00:00:00Z,1998-01-01T00:00:00Z
+Q7928581,Việt Nam tại Thế vận hội Người khuyết tật Mùa hè 2000,P585,thời điểm,2000-01-01T00:00:00Z,2000-01-01T00:00:00Z
+Q7928583,Việt Nam tại Đại hội Thể thao châu Á 2002,P585,thời điểm,2002-01-01T00:00:00Z,2002-01-01T00:00:00Z
+Q7928584,Việt Nam tại Thế vận hội Người khuyết tật Mùa hè 2004,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q7928585,Việt Nam tại Đại hội Thể thao châu Á 2006,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q7928586,Việt Nam tại Đại hội Thể thao Trong nhà châu Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q7928588,Việt Nam tại Đại hội Thể thao Đông Nam Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q7928589,Vietnam at the 2009 World Championships in Athletics,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q7928590,Việt Nam tại Đại hội Thể thao Người khuyết tật châu Á 2010,P585,thời điểm,2010-01-01T00:00:00Z,2010-01-01T00:00:00Z
+Q7928592,Việt Nam tại Đại hội Thể thao Sinh viên Mùa hè 2011,P585,thời điểm,2011-01-01T00:00:00Z,2011-01-01T00:00:00Z
+Q7928594,Việt Nam tại Đại hội Thể thao Bãi biển châu Á 2012,P585,thời điểm,2012-01-01T00:00:00Z,2012-01-01T00:00:00Z
+Q7928656,1976 Vietnamese legislative election,P585,thời điểm,1976-04-25T00:00:00Z,1976-04-25T00:00:00Z
+Q7928658,1981 Vietnamese legislative election,P585,thời điểm,1981-04-26T00:00:00Z,1981-04-26T00:00:00Z
+Q7928659,1987 Vietnamese legislative election,P585,thời điểm,1987-04-19T00:00:00Z,1987-04-19T00:00:00Z
+Q7928660,1992 Vietnamese legislative election,P585,thời điểm,1992-07-19T00:00:00Z,1992-07-19T00:00:00Z
+Q7928662,1997 Vietnamese legislative election,P585,thời điểm,1997-07-20T00:00:00Z,1997-07-20T00:00:00Z
+Q7928663,2002 Vietnamese legislative election,P585,thời điểm,2002-05-19T00:00:00Z,2002-05-19T00:00:00Z
+Q6119778,Thảm sát Bình An,P585,thời điểm,1966-02-12T00:00:00Z,1966-02-12T00:00:00Z
+Q7942301,Vovinam tại Đại hội Thể thao Trong nhà châu Á 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q7980025,Cử tạ tại Đại hội Thể thao Đông Nam Á 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q8011774,Giải vô địch cầu lông Việt Nam 1967,P585,thời điểm,1967-01-01T00:00:00Z,1967-01-01T00:00:00Z
+Q3785992,Q3785992,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q10748470,Chùa Đọi Sơn,P276,vị trí,Q10748252,Tiên Sơn
+Q10748548,Chùa Thiên Ấn,P276,vị trí,Q10802050,Núi Thiên Ấn
+Q7314525,Quân lực Việt Nam Cộng hòa,P276,vị trí,Q396499,Sài Gòn
+Q7361011,Roller Coaster,P276,vị trí,Q8079949,Lạc Cảnh Đại Nam Văn Hiến
+Q7361013,Roller Coaster,P276,vị trí,Q2056423,Công viên Văn hoá Đầm Sen
+Q7361018,Roller Coaster,P276,vị trí,Q2930683,Khu du lịch Văn hóa Suối Tiên
+Q7409171,Công nhận các cặp đôi cùng giới ở Việt Nam,P276,vị trí,Q881,Việt Nam
+Q7510313,Trận Plei Me,P276,vị trí,Q1140648,Tây Nguyên
+Q7510542,vây hãm Đông Quan,P276,vị trí,Q1858,Hà Nội
+Q7551216,Social issues in Vietnam,P276,vị trí,Q881,Việt Nam
+Q7579496,Thể thao tại Việt Nam,P276,vị trí,Q881,Việt Nam
+Q7619083,Bia tiến sĩ Văn Miếu Thăng Long,P276,vị trí,Q1202019,Văn Miếu – Quốc Tử Giám
+Q7510313,Trận Plei Me,P582,ngày kết thúc,1965-10-25T00:00:00Z,1965-10-25T00:00:00Z
+Q7510542,vây hãm Đông Quan,P582,ngày kết thúc,1428-01-01T00:00:00Z,1428-01-01T00:00:00Z
+Q7861132,Bão Brian,P582,ngày kết thúc,1989-10-03T00:00:00Z,1989-10-03T00:00:00Z
+Q7928458,Nguyễn Việt và Nguyễn Đức,P582,ngày kết thúc,1988-01-01T00:00:00Z,1988-01-01T00:00:00Z
+Q6055090,International rankings of Vietnam,P276,vị trí,Q881,Việt Nam
+Q6073829,Irrigation in Vietnam,P276,vị trí,Q881,Việt Nam
+Q6119778,Thảm sát Bình An,P276,vị trí,Q1320837,Tây Sơn
+Q7833286,Tran Cao rebellion,P580,ngày bắt đầu,1516-01-01T00:00:00Z,1516-01-01T00:00:00Z
+Q7845880,Bão Cecil,P580,ngày bắt đầu,1989-05-22T00:00:00Z,1989-05-22T00:00:00Z
+Q9291162,Quan hệ Tòa Thánh – Việt Nam,P710,người tham gia,Q881,Việt Nam
+Q9291162,Quan hệ Tòa Thánh – Việt Nam,P710,người tham gia,Q159583,Tòa Thánh
+Q10747195,Chiến tranh Pháp-Đại Nam,P580,ngày bắt đầu,1858-09-01T00:00:00Z,1858-09-01T00:00:00Z
+Q2581751,Bình Tiên,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2595940,Phú Thọ,P276,vị trí,Q1068987,Đông Nam Bộ
+Q2643702,Đông Hòa,P276,vị trí,Q1068987,Đông Nam Bộ
+Q7709135,Khởi nghĩa Thái Nguyên,P276,vị trí,Q881,Việt Nam
+Q7710351,Sân vận động Thanh Hóa,P276,vị trí,Q36175,Thanh Hóa
+Q3041786,Khởi nghĩa Yên Bái,P710,người tham gia,Q185682,Liên bang Đông Dương
+Q3041786,Khởi nghĩa Yên Bái,P710,người tham gia,Q1365892,Việt Nam Quốc dân Ðảng
+Q5452524,Chiến dịch Lộc Ninh,P710,người tham gia,Q30,Hoa Kỳ
+Q5452524,Chiến dịch Lộc Ninh,P710,người tham gia,Q180573,Việt Nam Cộng hòa
+Q5452524,Chiến dịch Lộc Ninh,P710,người tham gia,Q10810255,Quân Giải phóng miền Nam Việt Nam
+Q3380491,Trận Sài Gòn (1955),P710,người tham gia,Q142,Pháp
+Q3380491,Trận Sài Gòn (1955),P710,người tham gia,Q1193879,Quốc gia Việt Nam
+Q3381201,Trận An Lão,P710,người tham gia,Q30,Hoa Kỳ
+Q3539853,Trận Ngọc Hồi – Đống Đa,P710,người tham gia,Q8733,nhà Thanh
+Q3539853,Trận Ngọc Hồi – Đống Đa,P710,người tham gia,Q1034173,nhà Tây Sơn
+Q3539853,Trận Ngọc Hồi – Đống Đa,P710,người tham gia,Q2301908,Chúa Nguyễn
+Q3539853,Trận Ngọc Hồi – Đống Đa,P710,người tham gia,Q6506724,Lê Chiêu Thống
+Q4273438,Trận Kontum,P710,người tham gia,Q30,Hoa Kỳ
+Q7928507,Liên hoan phim Việt Nam,P276,vị trí,Q881,Việt Nam
+Q7928554,Vietnam Vertical Run,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q7928554,Vietnam Vertical Run,P276,vị trí,Q1858,Hà Nội
+Q10747194,Chiến tranh Nguyên Mông-Đại Việt lần 3,P276,vị trí,Q881,Việt Nam
+Q10768928,Trống đồng Hoàng Hạ,P276,vị trí,Q5370414,Bảo tàng Lịch sử Việt Nam
+Q4605152,2005 World Wushu Championships,P276,vị trí,Q1858,Hà Nội
+Q4616848,Bình Tây,P276,vị trí,Q1068987,Đông Nam Bộ
+Q4622819,Siêu cúp bóng đá Việt Nam 2011,P276,vị trí,Q3277621,Sân vận động Vinh
+Q4624792,2012 Asian Taekwondo Championships,P276,vị trí,Q18207285,Nhà thi đấu Phú Thọ
+Q4633951,Liên hoan phim Việt Nam lần thứ 2,P276,vị trí,Q1858,Hà Nội
+Q4641474,Liên hoan phim Việt Nam lần thứ 5,P276,vị trí,Q1858,Hà Nội
+Q4642819,6th Vietnam Film Festival,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q4644211,7th Vietnam Film Festival,P276,vị trí,Q1858,Hà Nội
+Q4645490,Liên hoan phim Việt Nam lần thứ 8,P276,vị trí,Q25282,Đà Nẵng
+Q4646695,9th Vietnam Film Festival,P276,vị trí,Q19491,Nha Trang
+Q4671265,Thang điểm trong hệ thống giáo dục Việt Nam,P276,vị trí,Q881,Việt Nam
+Q4677308,Không chiến Yên Viên,P276,vị trí,Q881,Việt Nam
+Q10767791,Hoa hậu Việt Nam 2006,P585,thời điểm,2006-08-26T00:00:00Z,2006-08-26T00:00:00Z
+Q10767792,Hoa hậu Việt Nam 2008,P585,thời điểm,2008-08-31T00:00:00Z,2008-08-31T00:00:00Z
+Q10767793,Hoa hậu Việt Nam 2010,P585,thời điểm,2010-11-06T00:00:00Z,2010-11-06T00:00:00Z
+Q10767794,Hoa hậu Việt Nam 2012,P585,thời điểm,2012-08-25T00:00:00Z,2012-08-25T00:00:00Z
+Q10768168,Honda Cup 2005,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q10752443,Cầu Ông Lãnh,P276,vị trí,Q1068987,Đông Nam Bộ
+Q10752469,Cẩm Chế,P276,vị trí,Q847496,Thanh Hà
+Q10743447,Bến Thành,P276,vị trí,Q1068987,Đông Nam Bộ
+Q10751813,Cát Lái,P276,vị trí,Q1068987,Đông Nam Bộ
+Q10752106,Cúp 1000 năm Thăng Long - Hà Nội (khu vực Hà Nội),P585,thời điểm,1000-01-01T00:00:00Z,1000-01-01T00:00:00Z
+Q10752107,Cúp 1000 năm Thăng Long - Hà Nội (khu vực TPHCM),P585,thời điểm,1000-01-01T00:00:00Z,1000-01-01T00:00:00Z
+Q10752112,Cúp bóng đá Việt Nam 2003,P585,thời điểm,2003-01-01T00:00:00Z,2003-01-01T00:00:00Z
+Q10752113,Cúp bóng đá Việt Nam 2004,P585,thời điểm,2004-01-01T00:00:00Z,2004-01-01T00:00:00Z
+Q10752115,Cúp bóng đá Việt Nam 2005,P585,thời điểm,2005-01-01T00:00:00Z,2005-01-01T00:00:00Z
+Q10752116,Cúp bóng đá Việt Nam 2006,P585,thời điểm,2006-01-01T00:00:00Z,2006-01-01T00:00:00Z
+Q10752117,Cúp bóng đá Việt Nam 2007,P585,thời điểm,2007-01-01T00:00:00Z,2007-01-01T00:00:00Z
+Q10752118,Cúp bóng đá Việt Nam 2008,P585,thời điểm,2008-01-01T00:00:00Z,2008-01-01T00:00:00Z
+Q10752119,Cúp bóng đá Việt Nam 2009,P585,thời điểm,2009-01-01T00:00:00Z,2009-01-01T00:00:00Z
+Q7798644,Đường hầm sông Sài Gòn,P276,vị trí,Q1060805,sông Sài Gòn
+Q7798648,Cầu Thuận Phước,P276,vị trí,Q25282,Đà Nẵng
+Q7820914,Đội bóng đá Tổng cục Đường sắt,P276,vị trí,Q1858,Hà Nội
+Q7833286,Tran Cao rebellion,P276,vị trí,Q881,Việt Nam
+Q7849268,Trịnh-Nguyễn phân tranh,P276,vị trí,Q881,Việt Nam
+Q10747194,Chiến tranh Nguyên Mông-Đại Việt lần 3,P710,người tham gia,Q7313,nhà Nguyên
+Q10747194,Chiến tranh Nguyên Mông-Đại Việt lần 3,P710,người tham gia,Q3111454,nhà Trần
+Q6420770,Khu công nghệ cao Thành phố Hồ Chí Minh,P276,vị trí,Q1854,Thành phố Hồ Chí Minh
+Q6663988,Local Courts of Vietnam,P276,vị trí,Q881,Việt Nam
+Q6672390,Long Bình,P276,vị trí,Q1068987,Đông Nam Bộ
+Q6672963,Đường hoa Nguyễn Huệ,P276,vị trí,Q11300021,Đường Nguyễn Huệ
+Q7568748,Tuyển cử 1967 Việt Nam Cộng hòa,P585,thời điểm,1967-09-03T00:00:00Z,1967-09-03T00:00:00Z
+Q5036990,Trận Biên Hòa (1861-1862),P276,vị trí,Q19316,Biên Hòa
+Q5037041,Trận Nam Định (1883),P276,vị trí,Q33682,Nam Định
+Q5037043,Trận Định Tường (1861),P276,vị trí,Q33425,Mỹ Tho
+Q5088005,Thảm sát Châu Đốc,P276,vị trí,Q373214,Châu Đốc
+Q5185032,cricket in Vietnam,P276,vị trí,Q881,Việt Nam
+Q5646744,Hana Bank Vietnam Masters,P276,vị trí,Q881,Việt Nam
+Q5739161,Heritage hotels in Vietnam,P276,vị trí,Q881,Việt Nam
+Q10747195,Chiến tranh Pháp-Đại Nam,P582,ngày kết thúc,1885-06-09T00:00:00Z,1885-06-09T00:00:00Z
+Q10739843,Bia Vĩnh Lăng,P276,vị trí,Q10784247,Lam Kinh
+Q5786381,Giải vô địch bóng đá Đông Nam Á 2008,P580,ngày bắt đầu,2008-12-05T00:00:00Z,2008-12-05T00:00:00Z

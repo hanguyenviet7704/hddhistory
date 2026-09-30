@@ -1,0 +1,14 @@
+[
+  {
+    "head": "minh_menh",
+    "relation": "child_of",
+    "tail": "gia_long",
+    "evidence": "Minh Mạng là con của Gia Long (Wikidata P22, Q434419)"
+  },
+  {
+    "head": "le_duan",
+    "relation": "served",
+    "tail": "dang_cong_san_vn",
+    "evidence": "Lê Duẩn là thành viên/đảng viên Đảng Cộng sản Việt Nam (Wikidata P102/P463, Q466001)"
+  }
+]
