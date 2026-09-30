@@ -101,7 +101,7 @@ function normalizeTree(tree: Json): Json {
         imageUrl: b.imageUrl ?? '',
         order: b.order ?? i + 1,
         isSelectable: b.isSelectable ?? true,
-        skillsetId: b.skillsetId ?? null,
+        categoryId: b.categoryId ?? null,
         isActive: b.isActive ?? true,
       }))
       .sort(byCode),
@@ -188,13 +188,46 @@ function assertCodesExist(rows: Json[], tree: Json): void {
     throw new Error(`Mapping khoá học không hợp lệ:\n - ${problems.join('\n - ')}`);
 }
 
+/**
+ * Khớp khoá theo TIÊU ĐỀ, không theo `courseId` lưu trong file.
+ *
+ * `courseId` đổi mỗi khi collection `courses` bị seed lại — đã xảy ra thật: một
+ * lần seed lại làm mọi id trong file này thành id chết, bước này 404 ở khoá đầu
+ * tiên, và 32/32 khoá mất sạch nhãn onboarding mà không ai hay. Tiêu đề thì do
+ * file nội dung quyết nên bền qua mọi lần seed. `courseId` trong file chỉ còn là
+ * ghi chú, không được đọc.
+ */
+async function resolveCourseIds(rows: Json[]): Promise<Map<string, string>> {
+  const key = (s: string) => (s ?? '').normalize('NFC').trim();
+  const page = await api('GET', '/courses?page=1&take=500&isAll=true');
+  const byTitle = new Map<string, string[]>();
+  for (const c of page.items ?? []) {
+    const t = key(c.title?.vi);
+    byTitle.set(t, [...(byTitle.get(t) ?? []), String(c._id)]);
+  }
+
+  const resolved = new Map<string, string>();
+  const problems: string[] = [];
+  for (const row of rows) {
+    const ids = byTitle.get(key(row.title)) ?? [];
+    if (ids.length === 0) problems.push(`không có khoá nào tên "${row.title}"`);
+    else if (ids.length > 1) problems.push(`${ids.length} khoá cùng tên "${row.title}" — không biết gắn nhãn vào khoá nào`);
+    else resolved.set(row.title, ids[0]);
+  }
+  if (problems.length)
+    throw new Error(`Không khớp được khoá theo tiêu đề:\n - ${problems.join('\n - ')}`);
+  return resolved;
+}
+
 async function applyCourseLabels(): Promise<number> {
   const rows: Json[] = readJson('onboarding-course-labels.json');
   assertCodesExist(rows, readJson('onboarding-taxonomy.json'));
+  const ids = await resolveCourseIds(rows);
 
   let changed = 0;
   for (const row of rows) {
-    const course = await api('GET', `/courses/${row.courseId}`);
+    const courseId = ids.get(row.title);
+    const course = await api('GET', `/courses/${courseId}`);
     const isSame =
       same([...(course.onboardingLabelCodes ?? [])].sort(), [
         ...row.labelCodes,
@@ -205,7 +238,7 @@ async function applyCourseLabels(): Promise<number> {
     if (isSame) continue;
     changed += 1;
     if (DRY_RUN) continue;
-    await api('PUT', `/courses/${row.courseId}`, {
+    await api('PUT', `/courses/${courseId}`, {
       onboardingLabelCodes: row.labelCodes,
       onboardingDesireCodes: row.desireCodes,
     });
