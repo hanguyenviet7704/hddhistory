@@ -79,6 +79,9 @@ export function isPublicDomain(license: string | undefined, attributionRequired?
   return PD_RE.test(license.trim());
 }
 
+/** Commons gắn ?utm_source=... vào thumburl; bỏ đi cho URL sạch. */
+const cleanUrl = (u: string) => u.replace(/\?utm_[^#]*$/, '');
+
 const stripHtml = (s: string) =>
   s.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
@@ -131,7 +134,7 @@ async function commonsLicense(fileTitle: string): Promise<Omit<Hit, 'source'> | 
     const imgUrl: string = info.thumburl || info.url;
     if (isPublicDomain(license, md.AttributionRequired?.value) && /^https:\/\//.test(imgUrl || '')) {
       const artist = md.Artist?.value ? stripHtml(md.Artist.value) : undefined;
-      out = { file: page.title, url: imgUrl, license, author: artist || undefined };
+      out = { file: page.title, url: cleanUrl(imgUrl), license, author: artist || undefined };
     }
   }
   cache.files[fileTitle] = out;
@@ -188,6 +191,10 @@ async function main() {
 
   const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf-8'));
   const names = new Map<string, string>(seed.entities.map((e: any) => [e.id, e.name]));
+
+  // Dữ liệu ghi từ lần chạy trước có thể còn ?utm_*.
+  data.skillsets.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach((l: any) =>
+    l.keypoints.forEach((k: Card) => { if (k.image) k.image = cleanUrl(k.image); }))));
 
   let processed = 0;
   const persist = () => {
