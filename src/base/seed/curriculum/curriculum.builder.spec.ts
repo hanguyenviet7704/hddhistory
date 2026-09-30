@@ -65,6 +65,16 @@ describe('buildSeedPlan', () => {
     expect(ly.description.vi).toContain('1225');
   });
 
+  it('mô tả chủ đề CHỈ là khoảng năm, không lặp lại tên thời kỳ', () => {
+    // Dòng thời gian ở tab Khám phá đặt tên thời kỳ và khoảng năm trên hai
+    // dòng riêng. Mô tả mà lặp lại tên thì app phải tách chuỗi bằng regex,
+    // vốn vỡ ngay khi một tên thời kỳ tự chứa dấu ngoặc.
+    const plan = buildSeedPlan(FILE, PERIODS);
+    const ly = plan.categories.find((s) => s.title.vi === 'Nhà Lý');
+    expect(ly.description.vi).toBe('1009 – 1225');
+    expect(ly.description.vi).not.toContain('Nhà Lý');
+  });
+
   it('chỉ điền locale vi, không bịa các locale khác', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
     expect(Object.keys(plan.skillsets[0].title)).toEqual(['vi']);

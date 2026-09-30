@@ -209,7 +209,9 @@ export function buildSeedPlan(
       _localKey: period.id,
       index: order.get(period.id),
       title: { vi: period.name },
-      description: { vi: `${period.name} (${period.start} – ${period.end})` },
+      // Chỉ khoảng năm: tên thời kỳ đã nằm ở `title`, và dòng thời gian ở tab
+      // Khám phá hiển thị hai thứ trên hai dòng riêng.
+      description: { vi: `${period.start} – ${period.end}` },
       status: 'published',
       image,
     });
