@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Không bao giờ commit cấu hình môi trường
+.env
+.env.*
+!.env.example
