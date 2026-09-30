@@ -106,3 +106,24 @@ android/vendor/
 ios/build/
 tmp/
 coverage/
+# ── Khoá ký và bí mật ─────────────────────────────────────────────────────
+# Những tệp này TỪNG được commit vào repo (xem lịch sử). Chúng gồm keystore
+# Play Store cùng mật khẩu của nó, khoá API App Store Connect, service
+# account đăng bản lên Google Play, và cấu hình Firebase cả ba môi trường —
+# đủ để người lạ đẩy một bản cập nhật giả mạo lên cả hai cửa hàng.
+#
+# Đã gỡ khỏi phần được theo dõi, nhưng LỊCH SỬ VẪN CÒN: muốn xoá hẳn phải
+# viết lại toàn bộ lịch sử (git filter-repo) và thu hồi/cấp lại khoá.
+# Lấy các tệp này từ người phụ trách hạ tầng, đừng commit lại.
+.env/
+.info/key/
+android/key.properties
+android/app/upload-keystore.jks
+**/google-services.json
+**/GoogleService-Info.plist
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+*.certSigningRequest
