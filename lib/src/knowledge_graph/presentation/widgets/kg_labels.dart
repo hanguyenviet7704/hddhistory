@@ -43,6 +43,9 @@ const Map<String, String> _kKgRelationLabels = {
   'developed': 'phát triển',
   'allied_with': 'liên minh với',
   'renamed_from': 'đổi tên từ',
+  'worships': 'thờ phụng',
+  'native_of': 'quê ở',
+  'sibling_of': 'là anh chị em với',
 };
 
 /// Nhãn của một loại quan hệ. Mã lạ (dữ liệu được soạn tiếp ở server) rơi về
