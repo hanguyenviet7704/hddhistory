@@ -4,8 +4,10 @@ import { Connection, FilterQuery, Model, Types } from 'mongoose';
 import { I18nContext } from 'nestjs-i18n/dist';
 
 import { AbstractRepository } from '@base/database/mongodb/abstract.repository';
+import { ITranslation } from '@utils/interface/common.interface';
 
 import { GetListKeypointDto } from '../dto/get-list-keypoint.dto';
+import { IKeypointEntityContext } from '../interface/keypoint.interface';
 import { Keypoint } from '../schema/keypoint.schema';
 
 @Injectable()
@@ -110,6 +112,42 @@ export class KeypointRepository extends AbstractRepository<Keypoint> {
 
   async findKeypointsByIds(ids: string[]) {
     return this.model.find({ _id: { $in: ids } }).lean();
+  }
+
+  /**
+   * Tiêu đề và `entityIds` của một keypoint — đủ cho coach lịch sử mở cuộc trò
+   * chuyện "hỏi về bài này". Id không phải ObjectId hợp lệ trả null (để nơi
+   * gọi ra 404) thay vì ném CastError thành 500.
+   */
+  async findEntityContextById(
+    id: string,
+  ): Promise<IKeypointEntityContext | null> {
+    if (!Types.ObjectId.isValid(id)) return null;
+
+    const row = await this.model
+      .findById(id, { title: 1, entityIds: 1 })
+      .lean<{ _id: unknown; title: ITranslation; entityIds?: string[] }>();
+    if (!row) return null;
+
+    return {
+      _id: String(row._id),
+      title: row.title,
+      entityIds: row.entityIds ?? [],
+    };
+  }
+
+  /**
+   * Keypoint nhắc tới một thực thể đồ thị tri thức — chiều ngược của
+   * `entityIds`, cho mục "Bài học nhắc tới" trên hồ sơ thực thể. Có chỉ mục
+   * `{ entityIds: 1 }` nên không quét cả collection.
+   */
+  async findBriefByEntityId(
+    entityId: string,
+  ): Promise<{ _id: string; title: ITranslation }[]> {
+    const rows = await this.model
+      .find({ entityIds: entityId }, { title: 1 })
+      .lean<{ _id: unknown; title: ITranslation }[]>();
+    return rows.map(row => ({ _id: String(row._id), title: row.title }));
   }
 
   async findAllForExport(keypointIds?: string[]) {

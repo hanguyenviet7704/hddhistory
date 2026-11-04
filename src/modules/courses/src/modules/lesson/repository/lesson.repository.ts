@@ -7,6 +7,7 @@ import { AbstractRepository } from '@base/database/mongodb/abstract.repository';
 import { OrderType } from '@utils/type/orderByType';
 
 import { GetListLessonDto } from '../dto/get-list-lesson.dto';
+import { LessonStatus } from '../enum/lesson.enum';
 import { Lesson } from '../schema/lesson.schema';
 
 @Injectable()
@@ -103,6 +104,22 @@ export class LessonRepository extends AbstractRepository<Lesson> {
       .find({ courseId })
       .select('title index keypoints courseId')
       .sort({ index: -1 })
+      .lean();
+  }
+
+  /**
+   * Bài ĐÃ PHÁT HÀNH chứa một trong các keypoint này, kèm tiêu đề — cho mục
+   * "Bài học nhắc tới" trên hồ sơ thực thể. Bài nháp bị loại: người học bấm
+   * vào sẽ gặp một bài chưa mở.
+   */
+  async findPublishedBriefByKeypointIds(keypointIds: string[]) {
+    if (!keypointIds.length) return [];
+    return this.model
+      .find({
+        keypoints: { $in: keypointIds },
+        status: LessonStatus.PUBLISHED,
+      })
+      .select('title courseId keypoints index')
       .lean();
   }
 

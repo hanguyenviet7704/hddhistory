@@ -14,7 +14,16 @@ export class KnowledgeGraphController {
   constructor(private readonly svc: KnowledgeGraphService) {}
 
   @ApiOperation({
-    summary: 'Tìm thực thể lịch sử theo tên (gõ không dấu vẫn khớp)',
+    summary: 'Toàn cảnh đồ thị: các thời kỳ kèm số thực thể và quy mô dữ liệu',
+  })
+  @Get('overview')
+  getOverview() {
+    return this.svc.getOverview();
+  }
+
+  @ApiOperation({
+    summary:
+      'Tìm thực thể theo tên hoặc bí danh (gõ không dấu vẫn khớp), lọc theo loại/thời kỳ',
   })
   @Get('entities')
   search(@Query() dto: SearchEntityDto) {

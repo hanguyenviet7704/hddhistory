@@ -64,6 +64,8 @@ export interface IKeypoint {
   estimateCompleTime?: ITranslation;
   estimateCompleTimeNumber?: number;
   tag: string[];
+  /** Id thực thể đồ thị tri thức mà bài nói tới (xem `Keypoint.entityIds`). */
+  entityIds?: string[];
   image: string;
   index: number;
   learningItems?: any;
@@ -75,4 +77,11 @@ export interface IKeypointBrief {
   description?: ITranslation;
   estimateCompleTime?: ITranslation;
   estimateCompleTimeNumber?: number;
+}
+
+/** Đủ để coach lịch sử mở ngữ cảnh "hỏi về bài này". */
+export interface IKeypointEntityContext {
+  _id: string;
+  title: ITranslation;
+  entityIds: string[];
 }

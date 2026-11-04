@@ -1,6 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+
+export const KG_ENTITY_TYPES = [
+  'figure',
+  'event',
+  'organization',
+  'place',
+] as const;
 
 export class SearchEntityDto {
   @ApiPropertyOptional({
@@ -11,12 +18,34 @@ export class SearchEntityDto {
   @IsString()
   q?: string;
 
-  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    enum: KG_ENTITY_TYPES,
+    description: 'Chỉ lấy một loại thực thể',
+  })
+  @IsOptional()
+  @IsIn(KG_ENTITY_TYPES)
+  type?: string;
+
+  @ApiPropertyOptional({
+    example: 'p05_tran',
+    description: 'Chỉ lấy thực thể thuộc một thời kỳ',
+  })
+  @IsOptional()
+  @IsString()
+  periodId?: string;
+
+  @ApiPropertyOptional({
+    default: 20,
+    minimum: 1,
+    maximum: 300,
+    description:
+      'Tối đa 300 để duyệt trọn một thời kỳ hay một loại trong một lần gọi',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(300)
   limit?: number = 20;
 }
 

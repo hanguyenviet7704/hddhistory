@@ -38,6 +38,7 @@ import { LessonRepository } from './repository/lesson.repository';
 import { Lesson } from './schema/lesson.schema';
 import { AvatarRepository } from '../avatar/repository/avatar.repository';
 import { CourseService } from '../course/course.service';
+import { CourseRepository } from '../course/repository/course.repository';
 import { RoadmapRepository } from '../course/repository/roadmap.repository';
 import { ContentSource } from '../course-version/content-source.service';
 import { KeypointRepository } from '../keypoint/repository/keypoint.repository';
@@ -63,6 +64,59 @@ export class LessonService {
     private readonly moduleRef: ModuleRef,
     private readonly contentSource: ContentSource,
   ) {}
+
+  /**
+   * Bài học (đã phát hành, thuộc khoá đang hiện) nhắc tới một thực thể đồ thị
+   * tri thức, mỗi bài kèm đúng những keypoint nhắc tới nó theo thứ tự trong
+   * bài — để hồ sơ thực thể dẫn thẳng vào chỗ học.
+   *
+   * Ba truy vấn theo chiều keypoint → bài → khoá, không ghép dữ liệu ở client:
+   * `Keypoint.entityIds` là nguồn duy nhất của liên kết này.
+   */
+  async findByEntity(entityId: string) {
+    const keypoints = await this.keypointRepository.findBriefByEntityId(
+      entityId,
+    );
+    if (!keypoints.length) return [];
+    const keypointById = new Map(keypoints.map(k => [k._id, k]));
+
+    const lessons = await this.lessonRepository.findPublishedBriefByKeypointIds(
+      [...keypointById.keys()],
+    );
+    if (!lessons.length) return [];
+
+    // CourseRepository lấy qua ModuleRef như CourseService ở trên: CourseModule
+    // và module này import vòng nhau (forwardRef), tiêm qua constructor dễ
+    // vỡ thứ tự khởi tạo.
+    const courseRepository = this.moduleRef.get(CourseRepository, {
+      strict: false,
+    });
+    const courses = await courseRepository.findBriefByIds([
+      ...new Set(lessons.map(lesson => lesson.courseId)),
+    ]);
+    const courseById = new Map(courses.map(c => [String(c._id), c]));
+
+    return (
+      lessons
+        // Khoá nháp/ẩn không có trong `courses` → bỏ bài của nó.
+        .filter(lesson => courseById.has(lesson.courseId))
+        .map(lesson => ({
+          lessonId: String(lesson._id),
+          lessonTitle: lesson.title,
+          lessonIndex: lesson.index ?? 0,
+          courseId: lesson.courseId,
+          courseTitle: courseById.get(lesson.courseId)?.title,
+          keypoints: (lesson.keypoints ?? [])
+            .map((id: string) => keypointById.get(String(id)))
+            .filter(Boolean),
+        }))
+        .sort(
+          (a, b) =>
+            a.courseId.localeCompare(b.courseId) ||
+            a.lessonIndex - b.lessonIndex,
+        )
+    );
+  }
 
   private get user() {
     return this.requestService.user;

@@ -4,6 +4,7 @@ import { GetRelatedEntityDto, SearchEntityDto } from './dto/search-entity.dto';
 import {
   IKgEntityProfile,
   IKgEntitySummary,
+  IKgOverview,
   IKgRelatedEntity,
 } from './interface/entity-profile.interface';
 import { KnowledgeGraphRepository } from './repository/knowledge-graph.repository';
@@ -15,7 +16,14 @@ export class KnowledgeGraphService {
   ) {}
 
   async search(dto: SearchEntityDto): Promise<IKgEntitySummary[]> {
-    return this.knowledgeGraphRepository.search(dto.q ?? '', dto.limit ?? 20);
+    return this.knowledgeGraphRepository.search(dto.q ?? '', dto.limit ?? 20, {
+      type: dto.type,
+      periodId: dto.periodId,
+    });
+  }
+
+  async getOverview(): Promise<IKgOverview> {
+    return this.knowledgeGraphRepository.findOverview();
   }
 
   async getProfile(id: string): Promise<IKgEntityProfile> {

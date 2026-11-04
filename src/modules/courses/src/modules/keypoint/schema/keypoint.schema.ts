@@ -28,6 +28,15 @@ export class Keypoint extends AbstractDocument implements IKeypoint {
   @Prop({ type: SchemaTypes.Array })
   tag: string[];
 
+  /**
+   * Id thực thể đồ thị tri thức (Neo4j `Entity.id`) mà bài nói tới — hợp các
+   * `entityIds` của các thẻ trong bài, theo thứ tự xuất hiện. Coach lịch sử
+   * dùng nó làm ngữ cảnh khi người học hỏi "về bài này". Ghi bởi seed
+   * (`curriculum.builder.ts`) và `npm run backfill:keypoint-entities`.
+   */
+  @Prop({ type: [String], default: [] })
+  entityIds?: string[];
+
   @Prop()
   image: string;
 
@@ -43,6 +52,7 @@ export class Keypoint extends AbstractDocument implements IKeypoint {
 export const KeypointSchema = SchemaFactory.createForClass(Keypoint);
 
 KeypointSchema.index({ index: 1 });
+KeypointSchema.index({ entityIds: 1 });
 
 // Per-language indexes backing KeypointRepository.findOption()'s
 // `title.${lang}` / `description.${lang}` regex search and
