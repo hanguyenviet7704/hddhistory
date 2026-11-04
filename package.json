@@ -12,6 +12,7 @@
     "seed:study-themes": "ts-node scripts/seed-study-themes.ts",
     "seed:chat-rooms": "ts-node scripts/seed-community-chat-rooms.ts",
     "seed:knowledge-graph": "ts-node scripts/seed-knowledge-graph.ts",
+    "backfill:keypoint-entities": "ts-node -r ./scripts/_register-aliases.js scripts/backfill-keypoint-entities.ts",
     "seed:dev-user": "ts-node -r ./scripts/_register-aliases.js scripts/seed-dev-user.ts",
     "seed:vn-history": "ts-node -r ./scripts/_register-aliases.js scripts/seed-vn-history.ts",
     "fetch:card-images": "ts-node scripts/fetch-card-images.ts",

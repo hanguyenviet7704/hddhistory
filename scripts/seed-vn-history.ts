@@ -148,6 +148,7 @@ async function main() {
         image: k.image,
         index: k.index,
         tag: k.tag,
+        entityIds: k.entityIds,
       });
       id = String(doc._id);
       created++;

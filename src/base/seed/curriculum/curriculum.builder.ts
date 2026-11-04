@@ -1,4 +1,9 @@
-import { CurriculumFile, CurriculumImageMeta, CurriculumKeypoint } from './curriculum.types';
+import {
+  CurriculumFile,
+  CurriculumImageMeta,
+  CurriculumKeypoint,
+  CurriculumLesson,
+} from './curriculum.types';
 import { normalizeKey } from './curriculum.validator';
 
 export interface PeriodRef {
@@ -57,6 +62,12 @@ export interface KeypointDoc {
    * `_localKey` (đã đủ điều kiện: thời kỳ::khoá::bài::keypoint) đi vào đây.
    */
   tag: string[];
+  /**
+   * Thực thể đồ thị tri thức mà bài nói tới: hợp các `entityIds` của mọi thẻ
+   * trong bài, theo thứ tự xuất hiện, bỏ trùng. Trang thực thể tra ngược từ
+   * đây ra "bài học nhắc tới" (`GET /courses-lessons/by-entity/:id`).
+   */
+  entityIds: string[];
 }
 
 /**
@@ -136,6 +147,20 @@ export const DEFAULT_STATIC_BASE_URL = 'http://localhost:4000';
  * chỉ đổi khoá cache, không đổi file được phục vụ.
  */
 export const PLACEHOLDER_ART_VERSION = 2;
+
+/** Hợp `entityIds` của các thẻ trong bài, giữ thứ tự xuất hiện, bỏ trùng. */
+export function lessonEntityIds(
+  lesson: Pick<CurriculumLesson, 'keypoints'>,
+): string[] {
+  const ids = new Set<string>();
+  for (const card of lesson.keypoints ?? []) {
+    for (const id of card.entityIds ?? []) {
+      const trimmed = typeof id === 'string' ? id.trim() : '';
+      if (trimmed) ids.add(trimmed);
+    }
+  }
+  return [...ids];
+}
 
 function imageFor(staticBaseUrl: string, periodId: string): string {
   const base = staticBaseUrl.replace(/\/+$/, '');
@@ -293,6 +318,7 @@ export function buildSeedPlan(
           description: { vi: l.descriptionVi },
           image: lessonImage,
           tag: ['vn-history', keypointKey],
+          entityIds: lessonEntityIds(l),
         });
         plan.learningItems.push({
           _localKey: keypointKey,
