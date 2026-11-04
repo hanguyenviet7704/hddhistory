@@ -15,6 +15,12 @@
  *   npm run seed:knowledge-graph -- --file ../knowledge-graph/data/vn_history/vn_history_seed.json
  *   npm run seed:knowledge-graph -- --reset     (xoá sạch đồ thị cũ trước khi nạp)
  *
+ * Ngoài hồ sơ và quan hệ, seeder còn nạp những thứ coach lịch sử cần để dẫn
+ * nguồn: `Entity.date`, `Entity.aliases` (+ `searchAliases` đã bỏ dấu),
+ * `RELATION.sourceIds`, và các nhận định tranh cãi
+ * `(:Claim {id, description})-[:ABOUT]->(:Entity)` cùng
+ * `(:Claim)-[:POSITION {text, order}]->(:Source)`.
+ *
  * Đọc NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD từ env/.env
  */
 import 'dotenv/config';
@@ -22,6 +28,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import neo4j, { Driver } from 'neo4j-driver';
+
+import { normalizeVietnamese } from '../src/modules/knowledge-graph/util/normalize-vietnamese.util';
 
 interface SeedPeriod {
   id: string;
@@ -38,6 +46,9 @@ interface SeedEntity {
   id: string;
   type: string;
   name: string;
+  aliases?: string[];
+  /** Mốc thời gian dạng chữ, vd "1075–1077", "1258, 1285, 1288". */
+  date?: string | null;
   description?: string;
   note?: string;
   period_id?: string | null;
@@ -50,11 +61,22 @@ interface SeedRelation {
   note?: string;
   source_ids?: string[];
 }
+interface SeedClaimPosition {
+  source_id: string;
+  claim: string;
+}
+interface SeedClaim {
+  id: string;
+  topic_entity_id: string;
+  description: string;
+  positions: SeedClaimPosition[];
+}
 interface SeedFile {
   periods: SeedPeriod[];
   sources: SeedSource[];
   entities: SeedEntity[];
   relations: SeedRelation[];
+  claims?: SeedClaim[];
 }
 
 const DEFAULT_FILE = path.join(
@@ -66,22 +88,6 @@ const DEFAULT_FILE = path.join(
   'data',
   'vn_history_seed.json',
 );
-
-/**
- * Bỏ dấu tiếng Việt để tìm kiếm không dấu vẫn khớp. Giữ đồng bộ với
- * src/modules/knowledge-graph/util/normalize-vietnamese.util.ts — nếu sửa một
- * bên mà quên bên kia, dữ liệu nạp vào sẽ không khớp được với truy vấn.
- */
-function normalizeVietnamese(input: string): string {
-  return input
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ');
-}
 
 function parseArgs(): { file: string; reset: boolean } {
   const argv = process.argv.slice(2);
@@ -103,10 +109,12 @@ async function run(): Promise<void> {
   }
 
   const data: SeedFile = JSON.parse(fs.readFileSync(file, 'utf-8'));
+  const claims = data.claims ?? [];
   console.log(
     `Nguồn: ${file}\n` +
       `  ${data.periods.length} thời kỳ, ${data.sources.length} nguồn, ` +
-      `${data.entities.length} thực thể, ${data.relations.length} quan hệ`,
+      `${data.entities.length} thực thể, ${data.relations.length} quan hệ, ` +
+      `${claims.length} nhận định`,
   );
 
   const driver: Driver = neo4j.driver(
@@ -118,14 +126,16 @@ async function run(): Promise<void> {
   try {
     if (reset) {
       await session.run(
-        'MATCH (n) WHERE n:Entity OR n:Period OR n:Source DETACH DELETE n',
+        `MATCH (n)
+         WHERE n:Entity OR n:Period OR n:Source OR n:Claim
+         DETACH DELETE n`,
       );
       console.log('Đã xoá đồ thị cũ (--reset)');
     }
 
     // Ràng buộc duy nhất kiêm chỉ mục — tra cứu theo id là truy vấn nóng nhất
     // của cả ba endpoint, không có chỉ mục thì Neo4j quét toàn bộ nhãn.
-    for (const label of ['Entity', 'Period', 'Source']) {
+    for (const label of ['Entity', 'Period', 'Source', 'Claim']) {
       await session.run(
         `CREATE CONSTRAINT ${label.toLowerCase()}_id_unique IF NOT EXISTS
          FOR (n:${label}) REQUIRE n.id IS UNIQUE`,
@@ -157,16 +167,27 @@ async function run(): Promise<void> {
        MERGE (e:Entity {id: row.id})
        SET e.type = row.type, e.name = row.name,
            e.searchName = row.searchName,
+           e.aliases = row.aliases, e.searchAliases = row.searchAliases,
+           e.date = row.date,
            e.description = row.description, e.note = row.note`,
       {
-        rows: data.entities.map((e) => ({
-          id: e.id,
-          type: e.type,
-          name: e.name,
-          searchName: normalizeVietnamese(e.name),
-          description: e.description ?? null,
-          note: e.note ?? null,
-        })),
+        rows: data.entities.map((e) => {
+          const aliases = (e.aliases ?? [])
+            .map((alias) => alias.trim())
+            .filter(Boolean);
+          return {
+            id: e.id,
+            type: e.type,
+            name: e.name,
+            searchName: normalizeVietnamese(e.name),
+            // Mảng rỗng chứ không null: bên đọc luôn nhận về một danh sách.
+            aliases,
+            searchAliases: aliases.map((alias) => normalizeVietnamese(alias)),
+            date: e.date?.trim() || null,
+            description: e.description ?? null,
+            note: e.note ?? null,
+          };
+        }),
       },
     );
 
@@ -199,14 +220,58 @@ async function run(): Promise<void> {
       `UNWIND $rows AS row
        MATCH (h:Entity {id: row.head}), (t:Entity {id: row.tail})
        MERGE (h)-[r:RELATION {type: row.relation}]->(t)
-       SET r.note = row.note`,
+       SET r.note = row.note, r.sourceIds = row.sourceIds`,
       {
         rows: data.relations.map((r) => ({
           head: r.head,
           tail: r.tail,
           relation: r.relation,
           note: r.note ?? null,
+          sourceIds: r.source_ids ?? [],
         })),
+      },
+    );
+
+    // Nhận định tranh cãi: một Claim nói VỀ một thực thể, mỗi nguồn giữ một
+    // lập trường. Cạnh của claim được xoá rồi dựng lại mỗi lần chạy thay vì
+    // MERGE: hai lập trường có thể cùng một nguồn, và một lập trường bị bỏ
+    // khỏi tệp phải biến mất khỏi đồ thị — MERGE không làm được cả hai.
+    // `order` giữ đúng thứ tự trong tệp để bên đọc liệt kê như người soạn.
+    await session.run(
+      `UNWIND $rows AS row
+       MERGE (c:Claim {id: row.id})
+       SET c.description = row.description
+       WITH c
+       OPTIONAL MATCH (c)-[old:ABOUT|POSITION]->()
+       DELETE old`,
+      {
+        rows: claims.map((c) => ({ id: c.id, description: c.description })),
+      },
+    );
+    await session.run(
+      `UNWIND $rows AS row
+       MATCH (c:Claim {id: row.claimId}), (e:Entity {id: row.entityId})
+       MERGE (c)-[:ABOUT]->(e)`,
+      {
+        rows: claims.map((c) => ({
+          claimId: c.id,
+          entityId: c.topic_entity_id,
+        })),
+      },
+    );
+    await session.run(
+      `UNWIND $rows AS row
+       MATCH (c:Claim {id: row.claimId}), (s:Source {id: row.sourceId})
+       CREATE (c)-[:POSITION {text: row.text, order: row.order}]->(s)`,
+      {
+        rows: claims.flatMap((c) =>
+          (c.positions ?? []).map((position, order) => ({
+            claimId: c.id,
+            sourceId: position.source_id,
+            text: position.claim,
+            order,
+          })),
+        ),
       },
     );
 
@@ -217,7 +282,19 @@ async function run(): Promise<void> {
        MATCH ()-[r:RELATION]->() WITH entities, periods, sources, count(r) AS relations
        MATCH ()-[ip:IN_PERIOD]->() WITH entities, periods, sources, relations, count(ip) AS inPeriod
        MATCH ()-[c:CITED_BY]->()
-       RETURN entities, periods, sources, relations, inPeriod, count(c) AS citedBy`,
+       WITH entities, periods, sources, relations, inPeriod, count(c) AS citedBy
+       OPTIONAL MATCH (cl:Claim)
+       WITH entities, periods, sources, relations, inPeriod, citedBy,
+            count(cl) AS claims
+       OPTIONAL MATCH (:Claim)-[pos:POSITION]->(:Source)
+       WITH entities, periods, sources, relations, inPeriod, citedBy, claims,
+            count(pos) AS positions
+       OPTIONAL MATCH (dated:Entity) WHERE dated.date IS NOT NULL
+       WITH entities, periods, sources, relations, inPeriod, citedBy, claims,
+            positions, count(dated) AS dated
+       OPTIONAL MATCH (aliased:Entity) WHERE size(aliased.aliases) > 0
+       RETURN entities, periods, sources, relations, inPeriod, citedBy, claims,
+              positions, dated, count(aliased) AS aliased`,
     );
     const row = counts.records[0];
     console.log(
@@ -227,7 +304,10 @@ async function run(): Promise<void> {
         `${row.get('sources')} nguồn, ` +
         `${row.get('relations')} quan hệ, ` +
         `${row.get('inPeriod')} liên kết thời kỳ, ` +
-        `${row.get('citedBy')} liên kết nguồn`,
+        `${row.get('citedBy')} liên kết nguồn, ` +
+        `${row.get('claims')} nhận định (${row.get('positions')} lập trường), ` +
+        `${row.get('dated')} thực thể có ngày, ` +
+        `${row.get('aliased')} thực thể có bí danh`,
     );
   } finally {
     await session.close();
