@@ -9,12 +9,12 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 
-const ACCESS = 'hdd_access';
-const REFRESH = 'hdd_refresh';
-const USER = 'hdd_user';
-
-/** 30 ngày — khớp tuổi refresh token của API. */
-const MAX_AGE = 60 * 60 * 24 * 30;
+import {
+  ACCESS_COOKIE as ACCESS,
+  REFRESH_COOKIE as REFRESH,
+  USER_COOKIE as USER,
+  sessionCookieOptions,
+} from './session-cookies';
 
 export interface SessionUser {
   id: string;
@@ -47,15 +47,7 @@ export async function saveSession(
   user: SessionUser,
 ): Promise<void> {
   const jar = await cookies();
-  const base = {
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    path: '/',
-    maxAge: MAX_AGE,
-    // Chỉ bật secure khi chạy https thật: máy cá nhân chạy http://localhost,
-    // cookie secure sẽ bị trình duyệt bỏ và không ai đăng nhập được.
-    secure: process.env.NODE_ENV === 'production',
-  };
+  const base = sessionCookieOptions;
   jar.set(ACCESS, accessToken, base);
   jar.set(REFRESH, refreshToken, base);
   jar.set(USER, JSON.stringify(user), base);

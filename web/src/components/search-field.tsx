@@ -21,11 +21,18 @@ export function SearchField({
   basePath,
   placeholder,
   label,
+  onSubmitQuery,
 }: {
   initialQuery: string;
   basePath: string;
   placeholder: string;
   label: string;
+  /**
+   * Gọi khi người dùng CHỦ ĐỘNG gửi (Enter) — để ghi lịch sử tìm kiếm. Không
+   * gọi theo từng lần gõ: ghi cả "Tr", "Trầ", "Trần" là rác chứ không phải
+   * lịch sử.
+   */
+  onSubmitQuery?: (query: string) => Promise<void>;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -68,6 +75,12 @@ export function SearchField({
         event.preventDefault();
         if (timer.current) clearTimeout(timer.current);
         push(value);
+        if (onSubmitQuery && value.trim()) {
+          const query = value.trim();
+          startTransition(async () => {
+            await onSubmitQuery(query);
+          });
+        }
       }}
     >
       <label htmlFor={id} className="sr-only">

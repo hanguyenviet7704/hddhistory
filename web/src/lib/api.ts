@@ -44,8 +44,16 @@ export async function request<T>(
   const headers: Record<string, string> = {
     // App gửi header này ở mọi request; API dùng nó để chọn ngôn ngữ nội dung.
     lang: 'vi',
+    // Phút lệch UTC, giống app gửi ở mọi request. API dùng nó để chia ngày cho
+    // chuỗi ngày học, hạn mức keypoint/ngày và lịch nhắc của Coach; thiếu thì
+    // tính theo UTC, và học lúc 0h–7h giờ Việt Nam bị ghi vào hôm trước. Web
+    // chỉ phục vụ tiếng Việt nên cố định múi giờ Việt Nam.
+    'x-timezone-offset': '420',
   };
-  if (body) headers['Content-Type'] = 'application/json';
+  // FormData (tải tệp lên) để fetch tự đặt Content-Type kèm boundary; đặt tay
+  // là mất boundary và API không tách được các phần.
+  const isForm = body instanceof FormData;
+  if (body && !isForm) headers['Content-Type'] = 'application/json';
   if (!anonymous) {
     const token = await getAccessToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -56,7 +64,7 @@ export async function request<T>(
     res = await fetch(`${BASE_URL}${path}`, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: isForm ? body : body ? JSON.stringify(body) : undefined,
       // Chỉ GET mới được cache; POST luôn phải đi thật.
       ...(method === 'GET'
         ? { next: { revalidate } }

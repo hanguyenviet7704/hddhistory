@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { AppNav } from '@/components/app-nav';
+import { mondayIndex } from '@/components/progress/format';
+import { StreakCheckIn } from '@/components/progress/streak-check-in';
 import { ApiError, request } from '@/lib/api';
+import { getStreak, getStreakConfig, localToday } from '@/lib/progress';
 import { getSessionUser } from '@/lib/session';
 
 interface Me {
@@ -40,6 +43,14 @@ export default async function AppLayout({
 
   const name = me?.name || session.name;
 
+  // Điểm danh chuỗi ngày học sau N giây ở trong app, như app làm. Đặt ở layout
+  // chứ không ở một trang: layout không dựng lại khi chuyển trang, nên bộ đếm
+  // chạy liền mạch thay vì về 0 mỗi lần người học bấm sang bài khác.
+  const [streak, streakConfig] = await Promise.all([
+    getStreak().catch(() => null),
+    getStreakConfig().catch(() => null),
+  ]);
+
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="bg-brand-900">
@@ -70,6 +81,15 @@ export default async function AppLayout({
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10">
         {children}
       </main>
+
+      {streak ? (
+        <StreakCheckIn
+          checkedIn={streak.weekStudy?.[mondayIndex(localToday())] ?? false}
+          triggerAfterSeconds={streakConfig?.triggerAfterSeconds ?? 120}
+          popupEnabled={streakConfig?.popupEnabled ?? true}
+          autoHideSeconds={streakConfig?.autoHideSeconds ?? 3}
+        />
+      ) : null}
     </div>
   );
 }

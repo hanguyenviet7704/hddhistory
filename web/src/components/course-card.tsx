@@ -36,19 +36,31 @@ export function CourseCard({ course }: { course: Course }) {
   return (
     <Link
       href={`/khoa-hoc/${encodeURIComponent(course._id)}`}
-      className="block rounded-xl border border-hairline bg-surface p-4 transition hover:border-brand-200 hover:shadow-sm"
+      className="flex gap-3 rounded-xl border border-hairline bg-surface p-4 transition hover:border-brand-200 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <h3 className="font-semibold text-ink">{title || 'Khoá học'}</h3>
-      {text(course.description) ? (
-        <p className="mt-1 line-clamp-2 text-sm text-ink-muted">
-          {text(course.description)}
-        </p>
+      {course.image ? (
+        // Ảnh từ CDN của API (và Wikimedia), tên miền không cố định.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={course.image}
+          alt=""
+          loading="lazy"
+          className="size-16 shrink-0 rounded-lg bg-surface-alt object-cover"
+        />
       ) : null}
-      <p className="mt-2 text-xs text-ink-faint">
-        {total > 0 ? `${total} bài học` : 'Chưa có bài học'}
-        {course.author ? ` · ${course.author}` : ''}
-      </p>
-      <Progress done={done} total={total} />
+      <div className="min-w-0 flex-1">
+        <h3 className="font-semibold text-ink">{title || 'Khoá học'}</h3>
+        {text(course.description) ? (
+          <p className="mt-1 line-clamp-2 text-sm text-ink-muted">
+            {text(course.description)}
+          </p>
+        ) : null}
+        <p className="mt-2 text-xs text-ink-faint">
+          {total > 0 ? `${total} bài học` : 'Chưa có bài học'}
+          {course.author ? ` · ${course.author}` : ''}
+        </p>
+        <Progress done={done} total={total} />
+      </div>
     </Link>
   );
 }

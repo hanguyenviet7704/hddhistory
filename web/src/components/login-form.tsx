@@ -1,64 +1,73 @@
 'use client';
 
+import Link from 'next/link';
 import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
 
+import { SubmitButton, inputClass } from '@/components/ui';
 import { login } from '@/lib/auth-actions';
 
-function SubmitButton() {
-  // useFormStatus phải nằm trong một component CON của <form>, không phải cùng
-  // component chứa form — nếu không nó luôn trả pending = false.
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full rounded-xl bg-brand py-3 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-60"
-    >
-      {pending ? 'Đang đăng nhập…' : 'Đăng nhập'}
-    </button>
-  );
-}
-
-export function LoginForm() {
+export function LoginForm({ defaultEmail = '' }: { defaultEmail?: string }) {
   const [state, formAction] = useActionState(login, null);
 
   return (
-    <form action={formAction} className="space-y-3">
-      <div>
-        <label htmlFor="email" className="mb-1 block text-sm text-ink-muted">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          className="w-full rounded-xl border border-hairline bg-surface px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
-        />
-      </div>
-      <div>
-        <label htmlFor="password" className="mb-1 block text-sm text-ink-muted">
-          Mật khẩu
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="w-full rounded-xl border border-hairline bg-surface px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
-        />
-      </div>
+    <div>
+      <form action={formAction} className="space-y-3">
+        <div>
+          <label htmlFor="email" className="mb-1 block text-sm text-ink-muted">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            defaultValue={defaultEmail}
+            required
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <div className="mb-1 flex items-baseline justify-between gap-3">
+            <label htmlFor="password" className="block text-sm text-ink-muted">
+              Mật khẩu
+            </label>
+            <Link
+              href="/quen-mat-khau"
+              className="text-sm font-semibold text-brand-700 hover:underline"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className={inputClass}
+          />
+        </div>
 
-      {state?.error ? (
-        <p role="alert" className="text-sm font-medium text-red-700">
-          {state.error}
-        </p>
-      ) : null}
+        {state?.error ? (
+          <p role="alert" className="text-sm font-medium text-red-700">
+            {state.error}
+          </p>
+        ) : null}
 
-      <SubmitButton />
-    </form>
+        <SubmitButton pendingLabel="Đang đăng nhập…" className="w-full py-3">
+          Đăng nhập
+        </SubmitButton>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-ink-muted">
+        Thành viên mới?{' '}
+        <Link
+          href="/dang-ky"
+          className="font-semibold text-brand-700 hover:underline"
+        >
+          Tạo tài khoản
+        </Link>
+      </p>
+    </div>
   );
 }

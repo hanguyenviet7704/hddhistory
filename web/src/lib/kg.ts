@@ -17,6 +17,10 @@ export interface KgEntitySummary {
   type: KgEntityType;
   name: string;
   description?: string;
+  /** Tên gọi khác: miếu hiệu, tên húy, tên thường gọi… */
+  aliases?: string[];
+  /** Mốc thời gian dạng chữ, vd "sinh khoảng năm 1228, mất năm 1300". */
+  date?: string;
 }
 
 export interface KgPeriod {
@@ -35,6 +39,39 @@ export interface KgSource {
 export interface KgRelation {
   relation: string;
   entity: KgEntitySummary;
+  /** Ghi chú của người soạn về chính quan hệ này (thuyết khác, phạm vi…). */
+  note?: string;
+  sources?: KgSource[];
+}
+
+/** Điều các nguồn chưa thống nhất — mỗi nguồn giữ một lập trường. */
+export interface KgClaim {
+  id: string;
+  description: string;
+  positions: { source: KgSource; text: string }[];
+}
+
+export interface KgPeriodOverview extends KgPeriod {
+  entityCount: number;
+}
+
+export interface KgOverview {
+  periods: KgPeriodOverview[];
+  totals: {
+    entities: number;
+    relations: number;
+    claims: number;
+    byType: Partial<Record<KgEntityType, number>>;
+  };
+}
+
+/** Bài học nhắc tới một thực thể (`Keypoint.entityIds`), kèm đúng các phần nhắc tới. */
+export interface KgEntityLesson {
+  lessonId: string;
+  lessonTitle?: { vi?: string; en?: string };
+  courseId: string;
+  courseTitle?: { vi?: string; en?: string };
+  keypoints: { _id: string; title?: { vi?: string; en?: string } }[];
 }
 
 export interface KgEntityProfile extends KgEntitySummary {
@@ -46,6 +83,8 @@ export interface KgEntityProfile extends KgEntitySummary {
   incoming: KgRelation[];
   samePeriod: KgEntitySummary[];
   sources: KgSource[];
+  /** Có từ khi API nạp nhận định; API cũ không trả trường này. */
+  claims?: KgClaim[];
 }
 
 export interface KgRelatedEntity extends KgEntitySummary {
@@ -54,8 +93,8 @@ export interface KgRelatedEntity extends KgEntitySummary {
 }
 
 /**
- * Nhãn tiếng Việt cho 35 loại quan hệ. Giữ khớp với
- * `kg_labels.dart` bên Flutter.
+ * Nhãn tiếng Việt cho các loại quan hệ. Giữ khớp với `kg_labels.dart` bên
+ * Flutter và `kg-relation-labels.ts` bên API.
  */
 const RELATION_LABELS: Record<string, string> = {
   served: 'phụng sự',
@@ -93,6 +132,9 @@ const RELATION_LABELS: Record<string, string> = {
   developed: 'phát triển',
   allied_with: 'liên minh với',
   renamed_from: 'đổi tên từ',
+  worships: 'thờ phụng',
+  native_of: 'quê ở',
+  sibling_of: 'là anh chị em với',
 };
 
 /** Mã lạ rơi về dạng đọc được thay vì hiện gạch dưới. */
@@ -117,10 +159,42 @@ export const TYPE_COLORS: Record<KgEntityType, string> = {
   unknown: '#7F8EA4',
 };
 
+export const ENTITY_TYPES: Exclude<KgEntityType, 'unknown'>[] = [
+  'figure',
+  'event',
+  'organization',
+  'place',
+];
+
 /** "1225 – 1400", hoặc chỉ một đầu nếu đầu kia trống. */
 export function periodRange(period: KgPeriod): string {
   if (!period.start && !period.end) return '';
   if (!period.end) return period.start;
   if (!period.start) return period.end;
   return `${period.start} – ${period.end}`;
+}
+
+/**
+ * Bỏ dấu tiếng Việt để so khớp không dấu — cùng luật với
+ * `normalize-vietnamese.util.ts` của API (đ→d, bỏ dấu, chữ thường).
+ */
+export function normalizeVietnamese(input: string): string {
+  return input
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+/** Bí danh đã khớp từ khoá, khi tên chính KHÔNG khớp — để giải thích kết quả. */
+export function matchedAlias(
+  entity: Pick<KgEntitySummary, 'name' | 'aliases'>,
+  query: string,
+): string | undefined {
+  const q = normalizeVietnamese(query);
+  if (!q || normalizeVietnamese(entity.name).includes(q)) return undefined;
+  return entity.aliases?.find((alias) => normalizeVietnamese(alias).includes(q));
 }

@@ -1,131 +1,140 @@
-import { CourseGrid } from '@/components/course-card';
-import { Notice, SectionHeader } from '@/components/section';
-import { getMyCourses, getSavedCourses, text, type Course } from '@/lib/content';
-import {
-  getSavedCards,
-  getUserLessons,
-  getWeekRecaps,
-  type SavedCard,
-  type UserLesson,
-  type WeekRecap,
-} from '@/lib/progress';
+import Link from 'next/link';
 
+import { CourseGrid } from '@/components/course-card';
+import { formatWeekRange } from '@/components/progress/format';
+import { SavedCardList } from '@/components/learning/saved-card-list';
+import { Notice, SectionHeader } from '@/components/section';
+import { buttonClass } from '@/components/ui-classes';
+import { getMyCourses, getSavedCourses } from '@/lib/content';
+import { getSavedCardPage } from '@/lib/learning';
+import { getWeekRecapArchive, type WeekRecapSummary } from '@/lib/progress';
+
+/**
+ * Tab Thư viện — cùng bố cục với `LibraryPage` của app: dải "Đang học" (kèm
+ * lối sang Lịch sử học), rồi các kệ Bài tôi tạo · Đã lưu · Thẻ đã lưu · Sổ tay
+ * tuần. Kệ trống thì ẩn đi như app, để người mới thấy một trang ngắn thay vì
+ * bốn ô "chưa có gì".
+ */
 export default async function LibraryPage() {
-  // Năm dải độc lập; mỗi dải tự chịu lỗi của mình để một cái hỏng không làm
-  // trắng cả trang.
-  const [mine, saved, cards, lessons, recaps] = await Promise.all([
-    getMyCourses(1, 30).then((p) => p.items, () => null),
-    getSavedCourses(1, 30).then((p) => p.items, () => null),
-    getSavedCards().then((p) => p.items, () => null),
-    getUserLessons().then((p) => p.items, () => null),
-    getWeekRecaps().then((p) => p.items, () => null),
+  const [mine, saved, cards, recaps] = await Promise.all([
+    getMyCourses(1, 30).then(
+      (p) => p.items,
+      () => null,
+    ),
+    getSavedCourses(1, 4).then(
+      (p) => p.items,
+      () => null,
+    ),
+    getSavedCardPage(1, 4).then(
+      (p) => p.items,
+      () => null,
+    ),
+    getWeekRecapArchive(1).then(
+      (p) => p.items,
+      () => null,
+    ),
   ]);
+
+  // "Đang học" của app = khoá còn bài chưa xong; khoá đã xong nằm ở Lịch sử.
+  const inProgress = mine?.filter(
+    (c) =>
+      !c.numberOfLesson || (c.numberOfLessonPassed ?? 0) < c.numberOfLesson,
+  );
 
   return (
     <div className="pt-5">
       <h1 className="text-2xl font-bold tracking-tight text-brand-900">
-        Thư viện
+        Thư viện của tôi
       </h1>
 
-      <Shelf title="Đang học" empty="Bạn chưa bắt đầu khoá học nào.">
-        {mine && mine.length > 0 ? <CourseGrid courses={mine} /> : null}
-      </Shelf>
-      <Shelf title="Đã lưu" empty="Bạn chưa lưu khoá học nào.">
-        {saved && saved.length > 0 ? <CourseGrid courses={saved} /> : null}
-      </Shelf>
+      <SectionHeader
+        title="Đang học"
+        href="/thu-vien/lich-su"
+        linkLabel="Lịch sử học"
+      />
+      {inProgress === undefined ? (
+        <Notice>Không tải được thư viện của bạn.</Notice>
+      ) : inProgress.length === 0 ? (
+        <div className="rounded-xl border border-hairline bg-surface p-4">
+          <p className="font-semibold text-ink">Chưa có bài nào đang học</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            Bắt đầu một khoá học, nó sẽ chờ bạn ở đây.
+          </p>
+          <Link href="/kham-pha" className={`${buttonClass.secondary} mt-3`}>
+            Khám phá khoá học
+          </Link>
+        </div>
+      ) : (
+        <CourseGrid courses={inProgress.slice(0, 6)} />
+      )}
 
-      <Shelf title="Thẻ đã lưu" empty="Bạn chưa lưu thẻ ghi nhớ nào.">
-        {cards && cards.length > 0 ? (
-          <ul className="space-y-2">
-            {cards.map((card, index) => (
-              <SavedCardRow key={card._id ?? index} card={card} />
-            ))}
-          </ul>
-        ) : null}
-      </Shelf>
-
-      <Shelf
-        title="Bài học của tôi"
-        empty="Bạn chưa tạo bài học nào. Tính năng tạo bài từ PDF/YouTube hiện chỉ có trên ứng dụng."
+      <Link
+        href="/bai-cua-toi"
+        className="mt-6 flex items-center gap-3 rounded-xl border border-brand-200 bg-brand-100/50 p-4 transition hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
-        {lessons && lessons.length > 0 ? (
-          <ul className="space-y-2">
-            {lessons.map((lesson, index) => (
-              <UserLessonRow key={lesson._id ?? index} lesson={lesson} />
-            ))}
-          </ul>
-        ) : null}
-      </Shelf>
+        <span className="flex-1">
+          <span className="block font-semibold text-brand-900">
+            Bài tôi tạo
+          </span>
+          <span className="block text-sm text-ink-muted">
+            Những bài học bạn tự tạo từ PDF hoặc YouTube
+          </span>
+        </span>
+        <span aria-hidden className="text-brand-700">
+          →
+        </span>
+      </Link>
 
-      <Shelf title="Sổ tay tuần" empty="Chưa có bản tổng kết tuần nào.">
-        {recaps && recaps.length > 0 ? (
+      {saved && saved.length > 0 ? (
+        <section>
+          <SectionHeader title="Đã lưu" href="/thu-vien/da-luu" />
+          <CourseGrid courses={saved} />
+        </section>
+      ) : null}
+
+      {cards && cards.length > 0 ? (
+        <section>
+          <SectionHeader title="Thẻ đã lưu" href="/thu-vien/the-da-luu" />
+          <SavedCardList cards={cards} />
+        </section>
+      ) : null}
+
+      {recaps && recaps.length > 0 ? (
+        <section>
+          <SectionHeader title="Sổ tay tuần" href="/tien-do/tuan" />
           <ul className="space-y-2">
             {recaps.map((recap, index) => (
-              <WeekRecapRow key={recap._id ?? index} recap={recap} />
+              <WeekRecapRow key={recap.id ?? index} recap={recap} />
             ))}
           </ul>
-        ) : null}
-      </Shelf>
+        </section>
+      ) : null}
+
+      {saved?.length === 0 && cards?.length === 0 ? (
+        <p className="mt-6 text-sm text-ink-faint">
+          Chạm “Lưu khoá học” trên một khoá, hoặc “Lưu thẻ” ở cuối một phần học,
+          để giữ chúng ở đây.
+        </p>
+      ) : null}
     </div>
   );
 }
 
-/**
- * Một dải của Thư viện. `children` rỗng nghĩa là không có gì để hiện — hoặc vì
- * danh sách trống, hoặc vì lời gọi hỏng; cả hai đều hiện cùng một dòng nhắc
- * thay vì để một khoảng trắng không giải thích gì.
- */
-function Shelf({
-  title,
-  empty,
-  children,
-}: {
-  title: string;
-  empty: string;
-  children: React.ReactNode;
-}) {
+/** Một tuần trong sổ tay — mở tấm "Hành trình tuần qua" của trang Tiến độ. */
+function WeekRecapRow({ recap }: { recap: WeekRecapSummary }) {
   return (
-    <section>
-      <SectionHeader title={title} />
-      {children ?? <Notice>{empty}</Notice>}
-    </section>
-  );
-}
-
-function SavedCardRow({ card }: { card: SavedCard }) {
-  return (
-    <li className="rounded-xl border border-hairline bg-surface p-3">
-      <p className="font-semibold text-ink">{text(card.title) || 'Thẻ'}</p>
-      {text(card.content) ? (
-        <p className="mt-1 text-sm text-ink-muted">{text(card.content)}</p>
-      ) : null}
-    </li>
-  );
-}
-
-function UserLessonRow({ lesson }: { lesson: UserLesson }) {
-  return (
-    <li className="rounded-xl border border-hairline bg-surface p-3">
-      <p className="font-semibold text-ink">{lesson.title || 'Bài học'}</p>
-      {lesson.status ? (
-        <p className="mt-0.5 text-xs text-ink-faint">{lesson.status}</p>
-      ) : null}
-    </li>
-  );
-}
-
-function WeekRecapRow({ recap }: { recap: WeekRecap }) {
-  const from = recap.weekStartDate?.slice(0, 10) ?? '';
-  const to = recap.weekEndDate?.slice(0, 10) ?? '';
-  return (
-    <li className="rounded-xl border border-hairline bg-surface p-3">
-      <p className="font-semibold text-ink">
-        Tuần {from}
-        {to ? ` – ${to}` : ''}
-      </p>
-      <p className="mt-0.5 text-sm text-ink-muted">
-        {recap.stats?.lessons ?? 0} bài học · {recap.stats?.minutes ?? 0} phút
-      </p>
+    <li>
+      <Link
+        href={`/tien-do/tuan/${encodeURIComponent(recap.id)}`}
+        className="block rounded-xl border border-hairline bg-surface p-3 transition hover:border-brand-200"
+      >
+        <span className="block font-semibold text-ink">
+          Tuần {recap.weekNumber}
+        </span>
+        <span className="mt-0.5 block text-sm text-ink-muted">
+          {formatWeekRange(recap.weekStart, recap.weekEnd)}
+        </span>
+      </Link>
     </li>
   );
 }

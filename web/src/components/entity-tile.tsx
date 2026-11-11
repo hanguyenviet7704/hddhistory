@@ -39,12 +39,18 @@ export function EntityTile({
   type,
   name,
   description,
+  date,
+  aliasHint,
   trailing,
 }: {
   id: string;
   type: KgEntityType;
   name: string;
   description?: string;
+  /** Mốc thời gian, hiện cạnh tên — đủ để phân biệt hai người trùng tên. */
+  date?: string;
+  /** Bí danh đã khớp từ khoá tìm kiếm. */
+  aliasHint?: string;
   trailing?: React.ReactNode;
 }) {
   return (
@@ -58,7 +64,15 @@ export function EntityTile({
           <span className="flex flex-wrap items-baseline gap-x-2">
             <span className="font-semibold text-ink">{name}</span>
             <span className="text-xs text-ink-faint">{TYPE_LABELS[type]}</span>
+            {date ? (
+              <span className="text-xs text-ink-faint">· {date}</span>
+            ) : null}
           </span>
+          {aliasHint ? (
+            <span className="mt-0.5 block text-xs text-brand-700">
+              còn gọi là {aliasHint}
+            </span>
+          ) : null}
           {description ? (
             <span className="mt-0.5 block text-sm text-ink-muted">
               {description}
