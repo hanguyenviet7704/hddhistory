@@ -1,0 +1,467 @@
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  FormControlLabel,
+  IconButton,
+  Paper,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+} from "@mui/material";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+
+import { coachService } from "../../services/coachService";
+import {
+  CoachConfig,
+  CoachHotline,
+} from "../../types/interface/coach.interface";
+import { useNotification } from "../../utils/hooks/useNotification";
+
+const LOCALES = ["en", "vi", "zh", "ja", "ko"];
+
+const EMPTY: CoachConfig = {
+  enabled: false,
+  hotlines: [],
+  geminiModel: "",
+  geminiSceneModel: "",
+  geminiFallbackModels: "",
+  onboardAskStyle: true,
+  onboardAskAge: true,
+  onboardAskGender: true,
+  onboardAskJob: true,
+  ratingAskEnabled: true,
+  ratingAskMinDays: 7,
+  ratingAskSnoozeDays: 3,
+  ratingAskEveryNthExit: 1,
+  ratingAskProbability: 100,
+  ratingAskMaxPerUser: 0,
+};
+
+/**
+ * Các cổng quyết định có hiện popup đánh giá sau ⟨Vẫn đóng⟩ hay không.
+ *
+ * Server bắt buộc PHẢI qua hết mọi cổng — không phải chọn một kiểu. Mỗi cổng có
+ * một giá trị trung tính (cột "Tắt bằng") để tắt riêng nó, nên admin chỉ dùng
+ * một cách thì cứ để các cổng còn lại ở giá trị đó.
+ */
+const RATING_KNOBS: {
+  key: keyof CoachConfig;
+  label: string;
+  hint: string;
+  min: number;
+  max: number;
+}[] = [
+  {
+    key: "ratingAskMinDays",
+    label: "Giãn cách sau khi đã gửi (ngày)",
+    hint: "Người vừa gửi đánh giá thì chờ bấy nhiêu ngày mới hỏi lại. 0 = tắt cổng này.",
+    min: 0,
+    max: 365,
+  },
+  {
+    key: "ratingAskSnoozeDays",
+    label: 'Giãn cách sau khi "Để sau" (ngày)',
+    hint: "Người bấm ⟨Để sau⟩ chỉ nói rằng lúc này không tiện, nên chờ ngắn hơn. 0 = tắt cổng này.",
+    min: 0,
+    max: 365,
+  },
+  {
+    key: "ratingAskEveryNthExit",
+    label: "Mỗi N lần thoát",
+    hint: "Cứ N lần đóng Coach mới tính một lần đủ điều kiện hỏi. 1 = mọi lần thoát.",
+    min: 1,
+    max: 50,
+  },
+  {
+    key: "ratingAskProbability",
+    label: "Xác suất mỗi lần (%)",
+    hint: "Bốc thăm SAU khi đã qua các cổng trên. 100 = hỏi hết, 0 = không bao giờ hỏi.",
+    min: 0,
+    max: 100,
+  },
+  {
+    key: "ratingAskMaxPerUser",
+    label: "Trần mỗi người",
+    hint: "Hỏi tối đa bấy nhiêu lần một người rồi thôi hẳn. 0 = không giới hạn.",
+    min: 0,
+    max: 100,
+  },
+];
+
+/** Bốn câu onboarding tắt được — ba câu đầu (mục tiêu, khó khăn, đang làm) luôn hỏi. */
+const ONBOARD_TOGGLES: { key: keyof CoachConfig; label: string; hint: string }[] = [
+  { key: "onboardAskStyle", label: "Hỏi cách học", hint: "Nghe · Đọc · Thực hành — practice làm Coach trả lời ngắn hơn." },
+  { key: "onboardAskAge", label: "Hỏi độ tuổi", hint: "Sáng sẵn từ user.age nếu app đã biết; ghi ngược lại vào user." },
+  { key: "onboardAskGender", label: "Hỏi giới tính", hint: "Có lựa chọn không nói; sáng sẵn từ user.gender." },
+  { key: "onboardAskJob", label: "Hỏi công việc", hint: "Gõ tay được — server gom về 6 nhóm để chọn cảnh cho đúng người." },
+];
+
+const CoachConfigPage: React.FC = () => {
+  const { showSuccess, showError } = useNotification();
+
+  const [form, setForm] = useState<CoachConfig>(EMPTY);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await coachService.getConfig();
+      const d = res?.data ?? {};
+      setForm({
+        enabled: d.enabled ?? false,
+        hotlines: Array.isArray(d.hotlines) ? d.hotlines : [],
+        geminiModel: d.geminiModel ?? "",
+        geminiSceneModel: d.geminiSceneModel ?? "",
+        geminiFallbackModels: d.geminiFallbackModels ?? "",
+        onboardAskStyle: d.onboardAskStyle ?? true,
+        onboardAskAge: d.onboardAskAge ?? true,
+        onboardAskGender: d.onboardAskGender ?? true,
+        onboardAskJob: d.onboardAskJob ?? true,
+        ratingAskEnabled: d.ratingAskEnabled ?? true,
+        ratingAskMinDays: d.ratingAskMinDays ?? 7,
+        ratingAskSnoozeDays: d.ratingAskSnoozeDays ?? 3,
+        ratingAskEveryNthExit: d.ratingAskEveryNthExit ?? 1,
+        ratingAskProbability: d.ratingAskProbability ?? 100,
+        ratingAskMaxPerUser: d.ratingAskMaxPerUser ?? 0,
+      });
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? "Không tải được cấu hình");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await coachService.updateConfig(form);
+      showSuccess("Đã lưu cấu hình AI Coach");
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Lưu thất bại");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const patchHotline = (index: number, patch: Partial<CoachHotline>) =>
+    setForm((prev) => ({
+      ...prev,
+      hotlines: prev.hotlines.map((h, i) =>
+        i === index ? { ...h, ...patch } : h
+      ),
+    }));
+
+  const addHotline = () =>
+    setForm((prev) => ({
+      ...prev,
+      hotlines: [
+        ...prev.hotlines,
+        { locale: "vi", country: "", label: "", number: "" },
+      ],
+    }));
+
+  const removeHotline = (index: number) =>
+    setForm((prev) => ({
+      ...prev,
+      hotlines: prev.hotlines.filter((_, i) => i !== index),
+    }));
+
+  if (loading) {
+    return (
+      <div className="flex justify-center p-10">
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">AI Coach</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Công tắc tổng và số đường dây nóng cho đường thoát an toàn.
+        </p>
+      </div>
+
+      {error && <Alert severity="error">{error}</Alert>}
+
+      <Paper className="p-5 space-y-3">
+        <FormControlLabel
+          control={
+            <Switch
+              checked={form.enabled}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, enabled: e.target.checked }))
+              }
+            />
+          }
+          label="Bật AI Coach"
+        />
+        <p className="text-sm text-gray-500">
+          Tắt thì bong bóng không hiện ở đâu cả và các endpoint phiên đều từ
+          chối. Mặc định là tắt — Coach nói chuyện với người thật về chuyện khó
+          nói, nên nó bật khi có người quyết định bật.
+        </p>
+      </Paper>
+
+      <Paper className="p-5 space-y-4">
+        <div>
+          <h2 className="text-lg font-medium">Model AI</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Đổi ở đây ăn ngay (ưu tiên hơn biến môi trường của server), không
+            cần deploy. Để trống = dùng env <code>GEMINI_MODEL</code> /{" "}
+            <code>GEMINI_SCENE_MODEL</code>.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextField
+            label="Model hội thoại"
+            size="small"
+            fullWidth
+            placeholder="vd: gemini-flash-lite-latest"
+            value={form.geminiModel ?? ""}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, geminiModel: e.target.value }))
+            }
+            helperText="Chạy trên MỌI lượt trả lời của Coach — model to lên là giá mỗi lượt tăng theo."
+          />
+          <TextField
+            label="Model viết cảnh"
+            size="small"
+            fullWidth
+            placeholder="vd: gemini-flash-latest"
+            value={form.geminiSceneModel ?? ""}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, geminiSceneModel: e.target.value }))
+            }
+            helperText="Chỉ chạy 1 lần mỗi lượt luyện tình huống (prompt nặng nhất) — nên để model mạnh hơn hội thoại. Trống = theo model hội thoại."
+          />
+        </div>
+        <TextField
+          label="Model dự phòng khi quá tải"
+          size="small"
+          fullWidth
+          placeholder="vd: gemini-flash-latest,gemini-flash-lite-latest"
+          value={form.geminiFallbackModels ?? ""}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              geminiFallbackModels: e.target.value,
+            }))
+          }
+          helperText='Model chính báo 429/503 (quá tải) thì lượt đó chạy tiếp bằng model kế trong danh sách, cách nhau bằng dấu phẩy, không chờ giữa hai lần. Trống = mặc định của server. Gõ "off" để tắt hẳn.'
+        />
+      </Paper>
+
+      <Paper className="p-5 space-y-3">
+        <div>
+          <h2 className="text-lg font-medium">Onboarding Coach</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Phiên Home đầu tiên của mỗi người: Coach tự giới thiệu, hỏi xưng hô,
+            mục tiêu, khó khăn, đang làm gì — rồi bốn câu dưới đây nếu bật. Ai
+            đã qua onboarding (có <code>onboardedAt</code>) sẽ không gặp lại.
+            Mọi câu đều bỏ qua được trừ xưng hô.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+          {ONBOARD_TOGGLES.map((t) => (
+            <div key={t.key} className="py-1">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={Boolean(form[t.key])}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, [t.key]: e.target.checked }))
+                    }
+                  />
+                }
+                label={t.label}
+              />
+              <p className="text-xs text-gray-500 -mt-1 ml-12">{t.hint}</p>
+            </div>
+          ))}
+        </div>
+      </Paper>
+
+      <Paper className="p-5 space-y-3">
+        <div>
+          <h2 className="text-lg font-medium">Hỏi đánh giá</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Popup đánh giá hiện <strong>sau khi user bấm ⟨Vẫn đóng⟩</strong> ở
+            màn níu — đường duy nhất còn lại để thu feedback (toast 👍/👎 giữa
+            phiên đã bỏ). Câu trả lời đổ về trang <em>Đánh giá</em>.
+            <br />
+            Mọi cổng dưới đây phải qua <strong>hết</strong> thì mới hỏi, không
+            phải chọn một kiểu. Muốn dùng đúng một cách thì để các cổng còn lại
+            ở giá trị tắt ghi trong chú thích.
+          </p>
+        </div>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={Boolean(form.ratingAskEnabled)}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, ratingAskEnabled: e.target.checked }))
+              }
+            />
+          }
+          label="Bật hỏi đánh giá"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          {RATING_KNOBS.map((k) => (
+            <div key={k.key} className="py-1">
+              <TextField
+                type="number"
+                size="small"
+                fullWidth
+                label={k.label}
+                disabled={!form.ratingAskEnabled}
+                inputProps={{ min: k.min, max: k.max }}
+                value={form[k.key] ?? k.min}
+                onChange={(e) => {
+                  const raw = Number(e.target.value);
+                  const safe = Number.isFinite(raw)
+                    ? Math.min(k.max, Math.max(k.min, Math.trunc(raw)))
+                    : k.min;
+                  setForm((prev) => ({ ...prev, [k.key]: safe }));
+                }}
+              />
+              <p className="text-xs text-gray-500 mt-1">{k.hint}</p>
+            </div>
+          ))}
+        </div>
+      </Paper>
+
+      <Paper className="p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium">Đường dây nóng</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Tra theo locale + quốc gia, thiếu thì rơi về dòng cùng locale
+              không có quốc gia, cuối cùng là <code>en</code>. Để trống hết cũng
+              hợp lệ — app sẽ nói &ldquo;hãy liên hệ cấp cứu tại địa phương&rdquo;
+              thay vì đưa một số không gọi được ở nơi họ đang sống.
+            </p>
+          </div>
+          <Button
+            variant="outlined"
+            startIcon={<PlusIcon className="w-4 h-4" />}
+            onClick={addHotline}
+          >
+            Thêm dòng
+          </Button>
+        </div>
+
+        {form.hotlines.length === 0 ? (
+          <p className="text-sm text-gray-400 italic py-4">
+            Chưa có số nào.
+          </p>
+        ) : (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell width={110}>Locale</TableCell>
+                <TableCell width={110}>Quốc gia</TableCell>
+                <TableCell>Tên hiển thị</TableCell>
+                <TableCell width={180}>Số</TableCell>
+                <TableCell width={60} />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {form.hotlines.map((hotline, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      SelectProps={{ native: true }}
+                      value={hotline.locale}
+                      onChange={(e) =>
+                        patchHotline(index, { locale: e.target.value })
+                      }
+                    >
+                      {LOCALES.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </TextField>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      placeholder="VN"
+                      value={hotline.country ?? ""}
+                      onChange={(e) =>
+                        patchHotline(index, { country: e.target.value })
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      placeholder="Đường dây nóng Ngày Mai"
+                      value={hotline.label}
+                      onChange={(e) =>
+                        patchHotline(index, { label: e.target.value })
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      placeholder="096 306 1414"
+                      value={hotline.number}
+                      onChange={(e) =>
+                        patchHotline(index, { number: e.target.value })
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title="Xoá dòng">
+                      <IconButton
+                        size="small"
+                        onClick={() => removeHotline(index)}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Paper>
+
+      <div className="flex gap-2">
+        <Button variant="contained" onClick={save} disabled={saving}>
+          {saving ? "Đang lưu…" : "Lưu"}
+        </Button>
+        <Button variant="text" onClick={load} disabled={saving}>
+          Tải lại
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default CoachConfigPage;

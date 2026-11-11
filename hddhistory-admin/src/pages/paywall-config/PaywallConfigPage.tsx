@@ -1,0 +1,565 @@
+// Admin editor for `paywall_config`, now stored in MySQL (append-only,
+// versioned) instead of Firebase Remote Config -- see
+// hddhistory-api/src/modules/paywall-config for the source of truth. Job: an
+// operator reviews/edits the sale strategies (default user / new user / sale
+// event) and publishes. There is no environment switch anymore: each
+// deployment's API only ever reads/writes its own database, so dev vs prod
+// is the deployment itself, not a toggle on this page. Version history
+// (previously free from the Remote Config console) lives in the drawer
+// opened from "History".
+//
+// Client-side validation in `paywallConfigDraft.ts` mirrors
+// `PaywallConfigService.validateShape` + `assertProductsExist` field-for-
+// field (same `field` path strings the backend uses) so inline errors work
+// immediately, without depending on a round trip. That matters today
+// because the shared `AllExceptionsFilter` + `BaseValidationPipe` in
+// hddhistory-api collapse the backend's structured `errors` array down to a
+// single message string before it ever reaches the browser -- see
+// `paywallConfigApiErrors.ts` for the full note. This page still reads
+// `err.response.data.errors` defensively so a future backend fix lights up
+// automatically.
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ArrowPathIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  RocketLaunchIcon,
+} from "@heroicons/react/24/outline";
+import { useActivePaywallProducts } from "../../components/paywall-config/useActivePaywallProducts";
+import ConfirmDialog from "../../components/paywall-config/ConfirmDialog";
+import { paywallConfigService } from "../../services/paywallConfigService";
+import {
+  PaywallConfigResponse,
+  PaywallConfigVersion,
+} from "../../types/interface/paywall-config.interface";
+import { useNotification } from "../../utils/hooks/useNotification";
+import {
+  extractErrorMessage,
+  extractFieldErrors,
+  isNotFound,
+} from "./paywallConfigApiErrors";
+import {
+  ConfigDraft,
+  defaultDraft,
+  fromDraft,
+  hasAnyError,
+  toDraft,
+  validateDraft,
+} from "./paywallConfigDraft";
+import BodyExperimentStatsSection from "./components/BodyExperimentStatsSection";
+import CompactPaywallSection from "./components/CompactPaywallSection";
+import DefaultUserSection from "./components/DefaultUserSection";
+import EntryPointVariantsSection from "./components/EntryPointVariantsSection";
+import GeneralSection from "./components/GeneralSection";
+import GiftCampaignSection from "./components/GiftCampaignSection";
+import WinBackSection from "./components/WinBackSection";
+import LogicSalesSection from "./components/LogicSalesSection";
+import ReviewsSection from "./components/ReviewsSection";
+import SaleEventSection from "./components/SaleEventSection";
+import VersionHistoryDrawer from "./components/VersionHistoryDrawer";
+import VersionInfoPanel from "./components/VersionInfoPanel";
+
+interface VersionMeta {
+  version: PaywallConfigResponse["version"];
+  publishedAt: PaywallConfigResponse["publishedAt"];
+  publishedBy: PaywallConfigResponse["publishedBy"];
+}
+
+const unwrap = <T,>(payload: any): T => payload?.data ?? payload;
+
+export default function PaywallConfigPage() {
+  const { showSuccess, showError } = useNotification();
+
+  const [draft, setDraft] = useState<ConfigDraft | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  const [versionMeta, setVersionMeta] = useState<VersionMeta | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  /** Số ảnh đại diện đang tải lên — nút Đăng khoá khi còn > 0. */
+  const [avatarUploads, setAvatarUploads] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [versions, setVersions] = useState<PaywallConfigVersion[] | null>(null);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState<string | null>(null);
+  const [restoreTarget, setRestoreTarget] = useState<PaywallConfigVersion | null>(null);
+  const [restoringVersion, setRestoringVersion] = useState<number | null>(null);
+
+  const {
+    productsByPlatform,
+    loading: productsLoading,
+    error: productsError,
+    refetch: refetchProducts,
+  } = useActivePaywallProducts();
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    setNotFound(false);
+    setFieldErrors({});
+    try {
+      const envelope = await paywallConfigService.getConfig();
+      const payload = unwrap<PaywallConfigResponse>(envelope);
+      const newDraft = toDraft(payload.config);
+      setDraft(newDraft);
+      setSavedSnapshot(JSON.stringify(newDraft));
+      setVersionMeta({
+        version: payload.version,
+        publishedAt: payload.publishedAt,
+        publishedBy: payload.publishedBy,
+      });
+    } catch (err: any) {
+      if (isNotFound(err)) {
+        setNotFound(true);
+        setDraft(null);
+        setSavedSnapshot(null);
+        setVersionMeta(null);
+      } else {
+        const message = extractErrorMessage(err, "Không tải được cấu hình paywall");
+        setLoadError(message);
+        showError(message);
+      }
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const isDirty = useMemo(() => {
+    if (!draft) return false;
+    if (savedSnapshot === null) return true; // started from defaults, never saved
+    return JSON.stringify(draft) !== savedSnapshot;
+  }, [draft, savedSnapshot]);
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
+  const handleStartFromDefaults = () => {
+    setNotFound(false);
+    setDraft(defaultDraft());
+    setSavedSnapshot(null);
+    setFieldErrors({});
+  };
+
+  const patchDraft = (patch: Partial<ConfigDraft>) =>
+    setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
+
+  const handlePublishClick = () => {
+    if (!draft || loading || saving || productsLoading) return;
+    const errors = validateDraft(draft, productsByPlatform);
+    setFieldErrors(errors);
+    if (hasAnyError(errors)) {
+      showError("Sửa các trường được đánh dấu trước khi đăng.");
+      return;
+    }
+    setConfirmPublishOpen(true);
+  };
+
+  const handleConfirmPublish = async () => {
+    if (!draft) return;
+    setSaving(true);
+    try {
+      const payload = fromDraft(draft);
+      const envelope = await paywallConfigService.updateConfig(payload);
+      const data = unwrap<PaywallConfigResponse>(envelope);
+      const newDraft = toDraft(data.config);
+      setDraft(newDraft);
+      setSavedSnapshot(JSON.stringify(newDraft));
+      setVersionMeta({
+        version: data.version,
+        publishedAt: data.publishedAt,
+        publishedBy: data.publishedBy,
+      });
+      setFieldErrors({});
+      setNotFound(false);
+      showSuccess(`Đã đăng cấu hình paywall (phiên bản ${data.version}).`);
+    } catch (err: any) {
+      setFieldErrors(extractFieldErrors(err));
+      showError(extractErrorMessage(err, "Không đăng được cấu hình paywall"));
+    } finally {
+      setSaving(false);
+      setConfirmPublishOpen(false);
+    }
+  };
+
+  const loadVersions = useCallback(async () => {
+    setVersionsLoading(true);
+    setVersionsError(null);
+    try {
+      const envelope = await paywallConfigService.getVersions();
+      const rows = unwrap<PaywallConfigVersion[]>(envelope);
+      setVersions(rows ?? []);
+    } catch (err: any) {
+      setVersionsError(extractErrorMessage(err, "Không tải được lịch sử phiên bản"));
+    } finally {
+      setVersionsLoading(false);
+    }
+  }, []);
+
+  const handleOpenHistory = () => {
+    setHistoryOpen(true);
+    loadVersions();
+  };
+
+  const handleRequestRestore = (entry: PaywallConfigVersion) => {
+    if (entry.isCurrent || restoringVersion !== null) return;
+    setRestoreTarget(entry);
+  };
+
+  const handleConfirmRestore = async () => {
+    if (!restoreTarget) return;
+    const target = restoreTarget;
+    setRestoringVersion(target.version);
+    try {
+      const envelope = await paywallConfigService.restoreVersion(target.version);
+      const data = unwrap<PaywallConfigResponse>(envelope);
+      const newDraft = toDraft(data.config);
+      setDraft(newDraft);
+      setSavedSnapshot(JSON.stringify(newDraft));
+      setVersionMeta({
+        version: data.version,
+        publishedAt: data.publishedAt,
+        publishedBy: data.publishedBy,
+      });
+      setFieldErrors({});
+      setNotFound(false);
+      showSuccess(
+        `Đã khôi phục phiên bản ${target.version} thành bản đang chạy mới (phiên bản ${data.version}).`
+      );
+      loadVersions();
+    } catch (err: any) {
+      showError(extractErrorMessage(err, "Không khôi phục được phiên bản này"));
+    } finally {
+      setRestoringVersion(null);
+      setRestoreTarget(null);
+    }
+  };
+
+  const errorEntries = Object.entries(fieldErrors);
+  const disabled = loading || saving;
+  const showVersionSkeleton = loading && !versionMeta;
+
+  // Shared by EntryPointVariantsSection (setting the variant) and
+  // CompactPaywallSection (filling the list) so both surface the same
+  // "chosen compact but nothing to show" warning from the same numbers.
+  const compactCounts = useMemo(
+    () => ({
+      defaultUser: draft?.defaultUser.compactProducts.length ?? 0,
+      saleEvent: draft?.saleEvent.compactProducts.length ?? 0,
+    }),
+    [draft]
+  );
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto space-y-5">
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur pb-4 mb-1 border-b border-slate-200/80 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+              Cấu hình paywall
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Chỉnh giá trị <code className="font-mono">paywall_config</code> mà app
+              đọc. Đăng là áp dụng ngay, không có bước staging.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => load()}
+              disabled={disabled}
+              aria-label="Tải lại cấu hình"
+              title="Tải lại"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            >
+              <ArrowPathIcon className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenHistory}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            >
+              <ClockIcon className="h-5 w-5" />
+              Lịch sử phiên bản
+            </button>
+            <button
+              type="button"
+              onClick={handlePublishClick}
+              // Đăng giữa chừng sẽ đăng một cấu hình THIẾU đúng cái ảnh vừa
+              // chọn — URL chỉ được điền vào sau khi tải xong, và không có gì
+              // báo là nó đã bị bỏ lại.
+              disabled={
+                disabled || !draft || productsLoading || avatarUploads > 0
+              }
+              className="relative min-w-[170px] justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            >
+              {isDirty && !saving && (
+                <span
+                  className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-amber-400 border-2 border-slate-50"
+                  aria-hidden="true"
+                />
+              )}
+              {saving ? (
+                <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <RocketLaunchIcon className="h-5 w-5" />
+              )}
+              {saving ? "Đang đăng..." : "Đăng thay đổi"}
+            </button>
+          </div>
+        </div>
+
+        {showVersionSkeleton ? (
+          <div className="h-10 rounded-xl border border-slate-100 bg-slate-100 animate-pulse" />
+        ) : (
+          versionMeta && (
+            <VersionInfoPanel
+              version={versionMeta.version}
+              publishedAt={versionMeta.publishedAt}
+              publishedBy={versionMeta.publishedBy}
+            />
+          )
+        )}
+      </div>
+
+      {loading && !draft ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-40 rounded-2xl border border-slate-100 bg-slate-100 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : loadError ? (
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-8 text-center space-y-3">
+          <ExclamationTriangleIcon className="h-8 w-8 text-red-500 mx-auto" />
+          <p className="text-sm text-red-700">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => load()}
+            className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          >
+            Thử lại
+          </button>
+        </div>
+      ) : notFound && !draft ? (
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-8 text-center space-y-3">
+          <ExclamationTriangleIcon className="h-8 w-8 text-amber-500 mx-auto" />
+          <p className="text-sm font-medium text-slate-800">
+            Chưa có paywall_config nào được đăng.
+          </p>
+          <p className="text-xs text-slate-500">
+            Điền các trường bên dưới rồi bấm Đăng để tạo mới.
+          </p>
+          <button
+            type="button"
+            onClick={handleStartFromDefaults}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+          >
+            Dùng giá trị mặc định
+          </button>
+        </div>
+      ) : draft ? (
+        <>
+          {isDirty && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 flex items-center gap-2">
+              <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
+              Có thay đổi chưa được đăng - bấm "Đăng thay đổi" để áp dụng.
+            </div>
+          )}
+
+          {errorEntries.length > 0 && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 space-y-1">
+              <p className="text-xs font-semibold text-red-800 flex items-center gap-1.5">
+                <ExclamationTriangleIcon className="h-4 w-4 flex-shrink-0" />
+                Validate thất bại - sửa các trường được đánh dấu:
+              </p>
+              {errorEntries.map(([field, message]) => (
+                <p key={field} className="text-xs text-red-700 pl-5">
+                  <code className="font-mono text-[11px] text-red-800">{field}</code>: {message}
+                </p>
+              ))}
+            </div>
+          )}
+
+          <GeneralSection
+            draft={draft}
+            onChange={patchDraft}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+          />
+
+          <BodyExperimentStatsSection
+            experimentKey={draft.bodyExperiment.key}
+          />
+
+          <EntryPointVariantsSection
+            value={draft.entryPointVariants}
+            onChange={(entryPointVariants) => patchDraft({ entryPointVariants })}
+            disabled={disabled}
+            compactCounts={compactCounts}
+          />
+
+          <CompactPaywallSection
+            entryPointVariants={draft.entryPointVariants}
+            compactCounts={compactCounts}
+            defaultUserCompactProducts={draft.defaultUser.compactProducts}
+            onChangeDefaultUserCompactProducts={(compactProducts) =>
+              patchDraft({ defaultUser: { ...draft.defaultUser, compactProducts } })
+            }
+            value={draft.compactPaywall}
+            onChange={(compactPaywall) => patchDraft({ compactPaywall })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={refetchProducts}
+          />
+
+          <DefaultUserSection
+            value={draft.defaultUser}
+            onChange={(defaultUser) => patchDraft({ defaultUser })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={refetchProducts}
+          />
+
+          <SaleEventSection
+            value={draft.saleEvent}
+            onChange={(saleEvent) => patchDraft({ saleEvent })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={refetchProducts}
+          />
+
+          <LogicSalesSection
+            value={draft.logicSales}
+            onChange={(logicSales) => patchDraft({ logicSales })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            productsByPlatform={productsByPlatform}
+            productsLoading={productsLoading}
+            productsError={productsError}
+            onRefreshProducts={refetchProducts}
+          />
+
+          <GiftCampaignSection
+            value={draft.giftCampaign}
+            onChange={(giftCampaign) => patchDraft({ giftCampaign })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+          />
+
+          {/* Right after the gift campaign: both send the reader to the compact
+              sheet, so they read together. */}
+          <WinBackSection
+            enabled={draft.winBackEnabled}
+            delaySeconds={draft.winBackDelaySeconds}
+            maxPerSession={draft.winBackMaxPerSession}
+            onChange={(next) =>
+              patchDraft({
+                winBackEnabled: next.enabled,
+                winBackDelaySeconds: next.delaySeconds,
+                winBackMaxPerSession: next.maxPerSession,
+              })
+            }
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+          />
+
+          <ReviewsSection
+            value={draft.reviews}
+            onChange={(reviews) => patchDraft({ reviews })}
+            disabled={disabled}
+            fieldErrors={fieldErrors}
+            onUploadingChange={(uploading) =>
+              // ĐẾM chứ không phải cờ bật/tắt: nhiều review có thể tải ảnh cùng
+              // lúc, và một cái xong sẽ tắt cờ của những cái còn đang chạy.
+              setAvatarUploads((n) => Math.max(0, n + (uploading ? 1 : -1)))
+            }
+          />
+        </>
+      ) : null}
+
+      <ConfirmDialog
+        open={confirmPublishOpen}
+        title="Đăng những thay đổi này?"
+        message={
+          <>
+            Cấu hình này sẽ trở thành <code className="font-mono">paywall_config</code>{" "}
+            đang chạy ngay lập tức - mọi app trên deployment này sẽ đọc giá trị
+            mới ở lần fetch tiếp theo. Không có bước staging.
+          </>
+        }
+        confirmLabel={saving ? "Đang đăng..." : "Đăng"}
+        loading={saving}
+        onConfirm={handleConfirmPublish}
+        onCancel={() => setConfirmPublishOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(restoreTarget)}
+        title={`Khôi phục phiên bản ${restoreTarget?.version}?`}
+        message={
+          <>
+            Thao tác này sẽ đăng lại cấu hình của phiên bản {restoreTarget?.version}{" "}
+            thành một phiên bản mới và áp dụng ngay lập tức, thay thế cấu hình
+            đang chạy hiện tại.
+          </>
+        }
+        confirmLabel={restoringVersion !== null ? "Đang khôi phục..." : "Khôi phục"}
+        tone="danger"
+        loading={restoringVersion !== null}
+        onConfirm={handleConfirmRestore}
+        onCancel={() => setRestoreTarget(null)}
+      />
+
+      <VersionHistoryDrawer
+        open={historyOpen}
+        versions={versions}
+        loading={versionsLoading}
+        error={versionsError}
+        restoringVersion={restoringVersion}
+        onRetry={loadVersions}
+        onRestore={handleRequestRestore}
+        onClose={() => setHistoryOpen(false)}
+      />
+
+      {!loading && !loadError && draft && !isDirty && errorEntries.length === 0 && versionMeta && (
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+          <CheckCircleIcon className="h-4 w-4" />
+          Đã đồng bộ với bản đang chạy (phiên bản {versionMeta.version}).
+        </div>
+      )}
+    </div>
+  );
+}

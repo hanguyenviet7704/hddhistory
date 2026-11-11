@@ -1,0 +1,450 @@
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  MenuItem,
+  Pagination,
+  Skeleton,
+  TextField,
+} from "@mui/material";
+import { EyeIcon, EyeOffIcon, PinIcon, PinOffIcon } from "lucide-react";
+
+import { communityService } from "../../services/communityService";
+import {
+  CommunityContentStatus,
+  ICommunityAdminChatMessage,
+  ICommunityChatRoom,
+} from "../../types/interface/community.interface";
+import { useNotification } from "../../utils/hooks/useNotification";
+import CommunityContentCard from "./CommunityContentCard";
+import ModerationReasonDialog from "./ModerationReasonDialog";
+
+const TAKE = 20;
+
+/**
+ * The group chat's moderation queue.
+ *
+ * Newest first and unfiltered by default is deliberate: a chat room is watched,
+ * not audited. A moderator opens this to see what was just said, which is the
+ * opposite of the reports queue — there is no "pending" state here, because a
+ * chat line nobody reported is still the thing most likely to need taking down.
+ */
+const ModerationChatTab: React.FC = () => {
+  const { showSuccess, showError } = useNotification();
+
+  const [messages, setMessages] = useState<ICommunityAdminChatMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<CommunityContentStatus | "">("");
+  const [rooms, setRooms] = useState<ICommunityChatRoom[]>([]);
+  const [room, setRoom] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ slug: "", name: "" });
+  const [hiding, setHiding] = useState<ICommunityAdminChatMessage | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+  const [pinning, setPinning] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await communityService.getChatMessages({
+        page,
+        take: TAKE,
+        ...(status ? { status } : {}),
+        ...(room ? { room } : {}),
+        ...(search.trim() ? { search: search.trim() } : {}),
+      });
+      setMessages(res?.items ?? []);
+      setTotalPages(res?.totalPages || 1);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ?? "Không tải được tin nhắn trong nhóm"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [page, status, room, search]);
+
+  useEffect(() => {
+    const timer = setTimeout(load, 300);
+    return () => clearTimeout(timer);
+  }, [load]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [status, room, search]);
+
+  const loadRooms = useCallback(async () => {
+    try {
+      setRooms(await communityService.getChatRooms());
+    } catch {
+      // The picker is a convenience; the table below still works without it,
+      // and a second red bar for it would bury the one that matters.
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRooms();
+  }, [loadRooms]);
+
+  /**
+   * Opens a room, or renames the one already on that slug.
+   *
+   * This is the only way to create one without a Mongo shell — the app opens
+   * `hoi-ban-tron` by name, so an environment missing that row answers the chat
+   * button with a 404 and nothing in the panel can fix it.
+   */
+  const saveRoom = async () => {
+    const slug = form.slug.trim();
+    const name = form.name.trim();
+    if (!slug || !name) return;
+
+    setSaving(true);
+    try {
+      await communityService.upsertChatRoom({ slug, name });
+      showSuccess(`Đã lưu phòng "${name}"`);
+      setCreating(false);
+      setForm({ slug: "", name: "" });
+      loadRooms();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không lưu được phòng");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /**
+   * Says something in the selected room, as the team.
+   *
+   * Requires a room to be picked: "Tất cả" is a filter over every room at once,
+   * and a message has to land in exactly one. The composer says so rather than
+   * guessing at the first room in the list.
+   */
+  const send = async () => {
+    const body = reply.trim();
+    if (!body || !room) return;
+
+    setSending(true);
+    try {
+      await communityService.sendChatMessage(room, body);
+      showSuccess("Đã gửi vào phòng");
+      setReply("");
+      load();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không gửi được tin nhắn");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  /**
+   * Pin or unpin a line.
+   *
+   * This is the only place pinning happens — the app draws pins but cannot make
+   * them, because anybody can sign into this panel and there is no role behind
+   * it to tell staff from a reader.
+   *
+   * Reloads rather than patching the row in place: the server decides whether a
+   * pin actually took (pinning what is already pinned is a no-op, so the bar's
+   * order does not shuffle), and guessing here would drift from that.
+   */
+  const pin = async (message: ICommunityAdminChatMessage) => {
+    setPinning(message.id);
+    try {
+      await communityService.pinChatMessage(message.id, !message.isPinned);
+      await load();
+      showSuccess(message.isPinned ? "Đã bỏ ghim" : "Đã ghim tin nhắn");
+    } catch (err: any) {
+      showError(
+        err?.response?.data?.message ??
+          (message.isPinned ? "Không bỏ ghim được" : "Không ghim được")
+      );
+    } finally {
+      setPinning(null);
+    }
+  };
+
+  const act = async (
+    message: ICommunityAdminChatMessage,
+    payload: Parameters<typeof communityService.moderateChatMessage>[1],
+    successMessage: string
+  ) => {
+    setSaving(true);
+    try {
+      await communityService.moderateChatMessage(message.id, payload);
+      showSuccess(successMessage);
+      setHiding(null);
+      load();
+    } catch (err: any) {
+      showError(err?.response?.data?.message ?? "Không thực hiện được");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <TextField
+          size="small"
+          placeholder="Tìm trong nội dung tin nhắn"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="min-w-[240px]"
+        />
+        <TextField
+          select
+          size="small"
+          label="Trạng thái"
+          value={status}
+          onChange={(event) =>
+            setStatus(event.target.value as CommunityContentStatus | "")
+          }
+          className="min-w-[160px]"
+        >
+          <MenuItem value="">Tất cả</MenuItem>
+          <MenuItem value={CommunityContentStatus.VISIBLE}>Đang hiện</MenuItem>
+          <MenuItem value={CommunityContentStatus.HIDDEN}>Đã ẩn</MenuItem>
+        </TextField>
+        <TextField
+          select
+          size="small"
+          label="Phòng"
+          value={room}
+          onChange={(event) => setRoom(event.target.value)}
+          className="min-w-[180px]"
+        >
+          <MenuItem value="">Tất cả</MenuItem>
+          {rooms.map((item) => (
+            <MenuItem key={item.id} value={item.slug}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <Button size="small" onClick={load} disabled={loading}>
+          Tải lại
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => setCreating(true)}
+        >
+          Tạo phòng
+        </Button>
+      </div>
+
+      {/* Trả lời trong phòng, dưới danh nghĩa đội ngũ. Chỉ mở khi đã chọn một
+          phòng cụ thể — "Tất cả" là bộ lọc, không phải một nơi để nói. */}
+      <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <TextField
+          size="small"
+          fullWidth
+          multiline
+          maxRows={4}
+          placeholder={
+            room
+              ? "Trả lời trong phòng này với tư cách HDDhistory…"
+              : "Chọn một phòng ở trên để trả lời"
+          }
+          value={reply}
+          onChange={(event) => setReply(event.target.value)}
+          disabled={!room || sending}
+        />
+        <Button
+          variant="contained"
+          onClick={send}
+          disabled={!room || !reply.trim() || sending}
+        >
+          Gửi
+        </Button>
+      </div>
+
+      {rooms.length === 0 && !loading && (
+        // Not an error — an environment nobody has opened a room on yet. Said
+        // plainly, because the symptom on the phone (a 404 behind the chat
+        // button) gives no hint that this is what is missing.
+        <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+          Chưa có phòng chat nào. App mở phòng theo slug{" "}
+          <code>hoi-ban-tron</code> — bấm "Tạo phòng" với đúng slug đó để nút
+          chat trong app hết báo lỗi.
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <Dialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Tạo / sửa phòng chat</DialogTitle>
+        <DialogContent className="flex flex-col gap-4 pt-2">
+          <TextField
+            size="small"
+            label="Slug"
+            value={form.slug}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, slug: event.target.value }))
+            }
+            helperText="Chữ thường, nối bằng dấu gạch. App đang mở: hoi-ban-tron"
+          />
+          <TextField
+            size="small"
+            label="Tên phòng"
+            value={form.name}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, name: event.target.value }))
+            }
+            helperText="Tên hiện trên đầu màn chat"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreating(false)}>Huỷ</Button>
+          <Button
+            variant="contained"
+            onClick={saveRoom}
+            disabled={saving || !form.slug.trim() || !form.name.trim()}
+          >
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <div className="space-y-3">
+        {loading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={104} />
+          ))}
+
+        {!loading && !messages.length && (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-500">
+            Không có tin nhắn nào khớp bộ lọc.
+          </div>
+        )}
+
+        {!loading &&
+          messages.map((message) => (
+            <CommunityContentCard
+              key={message.id}
+              author={message.author}
+              createdAt={message.createdAt}
+              status={message.status}
+              body={message.body}
+              // The pill the room itself shows next to a moderator's line, so
+              // the panel and the room agree on who was speaking on duty.
+              flags={
+                [
+                  message.isModerator ? "Quản trị viên" : null,
+                  // Says so in the table, because the pin is otherwise only
+                  // visible by opening the room on a phone.
+                  message.isPinned ? "Đã ghim" : null,
+                ].filter(Boolean) as string[]
+              }
+              likeCount={message.likeCount}
+              reportCount={message.reportCount}
+              note={
+                message.hiddenReason ? (
+                  <span className="text-amber-700">
+                    Lý do ẩn: {message.hiddenReason}
+                  </span>
+                ) : null
+              }
+              actions={
+                <>
+                  {message.status === CommunityContentStatus.VISIBLE && (
+                    <>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={
+                          message.isPinned ? (
+                            <PinOffIcon size={15} />
+                          ) : (
+                            <PinIcon size={15} />
+                          )
+                        }
+                        disabled={pinning === message.id}
+                        onClick={() => pin(message)}
+                      >
+                        {message.isPinned ? "Bỏ ghim" : "Ghim"}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        startIcon={<EyeOffIcon size={15} />}
+                        disabled={saving}
+                        onClick={() => setHiding(message)}
+                      >
+                        Ẩn tin nhắn
+                      </Button>
+                    </>
+                  )}
+                  {message.status === CommunityContentStatus.HIDDEN && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<EyeIcon size={15} />}
+                      disabled={saving}
+                      onClick={() =>
+                        act(
+                          message,
+                          { status: CommunityContentStatus.VISIBLE },
+                          "Đã hiện lại tin nhắn"
+                        )
+                      }
+                    >
+                      Hiện lại
+                    </Button>
+                  )}
+                </>
+              }
+            />
+          ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-end">
+          <Pagination
+            page={page}
+            count={totalPages}
+            onChange={(_, next) => setPage(next)}
+          />
+        </div>
+      )}
+
+      <ModerationReasonDialog
+        open={!!hiding}
+        title="Ẩn tin nhắn này?"
+        description="Tin nhắn sẽ biến khỏi phòng chat với mọi người. Bản ghi vẫn được giữ nên có thể hiện lại nếu đây là quyết định sai."
+        saving={saving}
+        onClose={() => setHiding(null)}
+        onConfirm={(reason) =>
+          hiding &&
+          act(
+            hiding,
+            { status: CommunityContentStatus.HIDDEN, hiddenReason: reason },
+            "Đã ẩn tin nhắn"
+          )
+        }
+      />
+    </div>
+  );
+};
+
+export default ModerationChatTab;

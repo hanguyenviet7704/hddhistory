@@ -1,0 +1,61 @@
+import { ITranslation } from "../../utils/translation";
+
+export enum LangCode {
+  EN = "en",
+  VI = "vi",
+  ZH = "zh",
+  JA = "ja",
+  KO = "ko",
+}
+
+export enum OrderType {
+  ASC = "asc",
+  DESC = "desc",
+}
+
+export interface ILablel {
+  id: number;
+  icon: string;
+  title: ITranslation;
+  label: ITranslation;
+  trackingLabel: string;
+}
+
+export interface LablelPayload {
+  id: number;
+  icon: string;
+  title: ITranslation;
+  label: ITranslation;
+  trackingLabel?: string;
+}
+
+export interface IMotivation {
+  image: string;
+  content: ITranslation;
+}
+
+export enum OnboardingSymptom {
+  MOTIVATION_DISAPPEARS = "MOTIVATION_DISAPPEARS",
+  LIFE_FEELS_OVERWHELMING = "LIFE_FEELS_OVERWHELMING",
+  ENDLESS_SCROLLING_FEELS_EMPTY = "ENDLESS_SCROLLING_FEELS_EMPTY",
+
+  OVERTHINKING = "OVERTHINKING",
+  TRYING_TO_DO_TOO_MUCH = "TRYING_TO_DO_TOO_MUCH",
+  RUSHED_DECISIONS = "RUSHED_DECISIONS",
+
+  DIFFICULTY_BUILDING_HABITS = "DIFFICULTY_BUILDING_HABITS",
+  TIME_SLIPS_AWAY = "TIME_SLIPS_AWAY",
+  STRUGGLING_TO_BREAK_BAD_HABITS = "STRUGGLING_TO_BREAK_BAD_HABITS",
+
+  ANXIETY_AROUND_HARD_CONVERSATIONS = "ANXIETY_AROUND_HARD_CONVERSATIONS",
+  WANT_TO_LISTEN_MORE_DEEPLY = "WANT_TO_LISTEN_MORE_DEEPLY",
+  REGRET_SAYING_THINGS_IN_EMOTION = "REGRET_SAYING_THINGS_IN_EMOTION",
+
+  LEARNING_DOES_NOT_STICK = "LEARNING_DOES_NOT_STICK",
+  FORGETTING_AFTER_STUDYING = "FORGETTING_AFTER_STUDYING",
+  LOSING_TRAIN_OF_THOUGHT = "LOSING_TRAIN_OF_THOUGHT",
+
+  CURIOUS_ABOUT_BODY = "CURIOUS_ABOUT_BODY",
+  LOVE_LEARNING_FROM_GREAT_MINDS = "LOVE_LEARNING_FROM_GREAT_MINDS",
+  AMAZED_BY_HUMAN_BODY = "AMAZED_BY_HUMAN_BODY",
+}
