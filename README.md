@@ -13,6 +13,9 @@ nội dung liên quan.
 | `knowledge-graph/` | Tầng tri thức: pipeline trích xuất từ Wikidata, huấn luyện KGE (TransE), đo độ tương đồng, và **bộ dữ liệu lịch sử Việt Nam tự soạn** |
 | `web/` | Giao diện web (Next.js): tra cứu đồ thị, đọc nội dung khoá học |
 | `bao-cao/` | Mã nguồn sinh quyển báo cáo (`.docx`) |
+| `hddhistory-api/` | Backend NestJS 9 (REST + WebSocket), dùng MongoDB + MySQL |
+| `hddhistory-admin/` | Trang quản trị nội dung (React 19, CRA) |
+| `hddhistory-flutter/` | Ứng dụng di động (Flutter, Clean Architecture) |
 
 ## Bộ dữ liệu
 
@@ -65,8 +68,60 @@ npm install
 node build.js                  # sinh bao-cao-do-an.docx
 ```
 
-## Quan hệ với nền tảng Meup
+### API (`hddhistory-api/`)
 
-Phần tích hợp vào ứng dụng di động và API của nền tảng Meup (thuộc EUP) **không
-nằm trong repo này**. Repo này chỉ chứa phần do tác giả tự xây dựng: tầng tri
-thức, bộ dữ liệu, giao diện web và quyển báo cáo.
+Cần Node 18+, MongoDB và MySQL.
+
+```bash
+cd hddhistory-api
+cp .env.example .env                                # điền chuỗi kết nối DB, khoá Firebase, R2, Gemini…
+cp google-service.example.json google-service.json  # nếu dùng import từ Google Drive/Sheets
+npm install
+npm run start:dev                                   # http://localhost:4000/api/v1/...
+```
+
+Migration MySQL tự chạy khi khởi động, không cần lệnh riêng.
+
+### Admin (`hddhistory-admin/`)
+
+```bash
+cd hddhistory-admin
+cp .env.example .env          # REACT_APP_BACKEND_URL trỏ vào API
+npm install
+npm start                     # http://localhost:3000
+```
+
+### App di động (`hddhistory-flutter/`)
+
+Cần Flutter SDK (xem `hddhistory-flutter/pubspec.yaml` để biết phiên bản Dart).
+Tạo file `hddhistory-flutter/.env/.env.dev` với các khoá:
+
+```
+API_BASE_URL=
+SOCKET_BASE_URL=
+AI_SERVICE_BASE_URL=
+API_KEY=
+CONNECT_TIMEOUT=
+RECEIVE_TIMEOUT=
+APP_ENVIRONMENT=
+```
+
+```bash
+cd hddhistory-flutter
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart run slang
+flutter run --flavor dev --dart-define-from-file=.env/.env.dev
+```
+
+Hoặc dùng các script trong `tools/macos/build/` (`run_app.sh`, `build_apk.sh`…).
+
+> Các file `.env` thật **không** nằm trong repo — xin chủ repo gửi riêng.
+
+## Nguồn gốc mã nguồn ứng dụng
+
+`hddhistory-api/`, `hddhistory-admin/` và `hddhistory-flutter/` được tách
+(fork) từ nền tảng Meup rồi đổi tên thành HDDhistory; lịch sử commit của từng
+phần được giữ nguyên trong repo này. Một số tên gắn với hạ tầng của Meup (domain
+`meup.training`, Firebase project `meup-bf64f`, mã sản phẩm IAP `meup_*`) vẫn
+được giữ nguyên.
