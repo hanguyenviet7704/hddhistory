@@ -331,7 +331,7 @@ keypoint thì **không lộ gì** vì `keypoint.schema.ts` không có `courseId`
 ## 9. Không làm (YAGNI)
 
 Diff nội dung giữa hai tag (chỉ diff working-tree ↔ current) · version cho
-skillset/roadmap toàn cục · thay đổi ở hddhistory-flutter · copy-on-write và logical
+category/roadmap toàn cục · thay đổi ở hddhistory-flutter · copy-on-write và logical
 id (mô hình snapshot không cần). Ghi ngược tag vào working tree **không còn**
 trong danh sách này: nó có sẵn miễn phí qua export-tag → import (mục 8c).
 

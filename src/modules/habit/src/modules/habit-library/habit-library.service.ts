@@ -81,7 +81,7 @@ export class HabitLibraryService {
     }
 
     return this.habitLibraryRepository.findList({
-      skillsetId: dto.skillsetId,
+      categoryId: dto.categoryId,
       keypointId: dto.keypointId,
       keypointIds,
       status,
@@ -330,7 +330,7 @@ export class HabitLibraryService {
    *
    * Two things the shared doc cannot carry are knowingly dropped: a
    * per-keypoint suggestion order (the sheet may put H1 first on one keypoint
-   * and third on another — first seen wins) and a per-course skillset (first
+   * and third on another — first seen wins) and a per-course category (first
    * seen wins as well).
    */
   async importReplace(dto: ImportHabitLibraryDto, user?: IUser) {
@@ -358,7 +358,7 @@ export class HabitLibraryService {
     type ResolvedRow = {
       titleKey: string;
       title: Record<string, string>;
-      skillsetId: any;
+      categoryId: any;
       order: number;
       kpId: string;
       course: string;
@@ -406,7 +406,7 @@ export class HabitLibraryService {
         resolvedRows.push({
           titleKey: this.habitTitleKey(r.title),
           title: this.pickLangs(r.title),
-          skillsetId: course.skillsetId,
+          categoryId: course.categoryId,
           order: (r.habitIndex ?? 1) - 1,
           kpId,
           course: label,
@@ -422,7 +422,7 @@ export class HabitLibraryService {
     // ---- Phase 2: one group per habit, keypointIds as the union.
     type HabitGroup = {
       title: Record<string, string>;
-      skillsetId: any;
+      categoryId: any;
       order: number;
       kpIds: Set<string>;
       course: string;
@@ -437,7 +437,7 @@ export class HabitLibraryService {
       const group = groups.get(row.titleKey);
       if (group) {
         group.kpIds.add(row.kpId);
-        // Unlike skillsetId and order — where the first row seen wins — the
+        // Unlike categoryId and order — where the first row seen wins — the
         // first NON-EMPTY picture wins. One habit is repeated across every
         // keypoint that suggests it, often dozens of rows; making an editor
         // paste the same url into all of them to avoid a blank one clobbering
@@ -451,7 +451,7 @@ export class HabitLibraryService {
       } else {
         groups.set(row.titleKey, {
           title: row.title,
-          skillsetId: row.skillsetId,
+          categoryId: row.categoryId,
           order: row.order,
           kpIds: new Set([row.kpId]),
           course: row.course,
@@ -480,7 +480,7 @@ export class HabitLibraryService {
       try {
         const fields = {
           title: group.title,
-          skillsetId: group.skillsetId,
+          categoryId: group.categoryId,
           order: group.order,
           status: HabitLibraryStatus.PUBLISHED,
           keypointIds: Array.from(group.kpIds),

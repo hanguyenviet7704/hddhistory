@@ -8,7 +8,7 @@
       "imageUrl": "",
       "order": 1,
       "isSelectable": true,
-      "skillsetId": "6abbdc3b85cb392a7b18058a",
+      "categoryId": "6abbdc3b85cb392a7b18058a",
       "isActive": true
     },
     {
@@ -19,7 +19,7 @@
       "imageUrl": "",
       "order": 2,
       "isSelectable": true,
-      "skillsetId": "6abbdc3b85cb392a7b180595",
+      "categoryId": "6abbdc3b85cb392a7b180595",
       "isActive": true
     },
     {
@@ -30,7 +30,7 @@
       "imageUrl": "",
       "order": 3,
       "isSelectable": true,
-      "skillsetId": "6abbdc3b85cb392a7b1805b1",
+      "categoryId": "6abbdc3b85cb392a7b1805b1",
       "isActive": true
     },
     {
@@ -41,7 +41,7 @@
       "imageUrl": "",
       "order": 4,
       "isSelectable": true,
-      "skillsetId": "6abbe3cba9a99a1e7f476e0d",
+      "categoryId": "6abbe3cba9a99a1e7f476e0d",
       "isActive": true
     },
     {
@@ -52,7 +52,7 @@
       "imageUrl": "",
       "order": 5,
       "isSelectable": true,
-      "skillsetId": "6abc6e438a08ea34cebc124d",
+      "categoryId": "6abc6e438a08ea34cebc124d",
       "isActive": true
     },
     {
@@ -63,7 +63,7 @@
       "imageUrl": "",
       "order": 6,
       "isSelectable": true,
-      "skillsetId": "6abc6e438a08ea34cebc1264",
+      "categoryId": "6abc6e438a08ea34cebc1264",
       "isActive": true
     },
     {
@@ -74,7 +74,7 @@
       "imageUrl": "",
       "order": 7,
       "isSelectable": true,
-      "skillsetId": "6abc7479115fec9ca848ba5f",
+      "categoryId": "6abc7479115fec9ca848ba5f",
       "isActive": true
     },
     {
@@ -85,7 +85,7 @@
       "imageUrl": "",
       "order": 8,
       "isSelectable": true,
-      "skillsetId": "6abc7479115fec9ca848ba65",
+      "categoryId": "6abc7479115fec9ca848ba65",
       "isActive": true
     }
   ],

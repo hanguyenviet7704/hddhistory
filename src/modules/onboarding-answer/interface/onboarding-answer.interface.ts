@@ -16,7 +16,7 @@ export interface IRecommendedCourse {
   title: Record<string, string>;
   description?: Record<string, string>;
   image: string;
-  skillsetId: string;
+  categoryId: string;
   numberOfLesson: number;
   status: string;
   matchReason: {

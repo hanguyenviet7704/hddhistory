@@ -14,7 +14,7 @@ const course = (
   _id: new Types.ObjectId(),
   title: { vi: title },
   image: '',
-  skillsetId: 's',
+  categoryId: 's',
   numberOfLesson: lessons,
   status: CourseStatus.PUBLISHED,
   createdAt: new Date('2026-01-01'),

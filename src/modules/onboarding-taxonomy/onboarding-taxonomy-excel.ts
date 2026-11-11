@@ -37,7 +37,7 @@ export const BRANCH_HEADERS = [
   'Ảnh URL',
   'Thứ tự',
   'Hiện ở câu 1 (Y/N)',
-  'Skillset ID (tuỳ chọn)',
+  'ID chủ đề (tuỳ chọn)',
 ];
 export const PACKAGE_HEADERS = [
   'Mã nhánh',
@@ -147,8 +147,8 @@ export function parseTaxonomyWorkbook(
         text(
           pick(row, ['Hiện ở câu 1 (Y/N)', 'Hiện ở câu 1']),
         ).toUpperCase() !== 'N',
-      skillsetId:
-        text(pick(row, ['Skillset ID (tuỳ chọn)', 'Skillset ID'])) || null,
+      categoryId:
+        text(pick(row, ['ID chủ đề (tuỳ chọn)', 'ID chủ đề'])) || null,
       isActive: true,
     }));
     branches.forEach((b, i) => {
@@ -388,7 +388,7 @@ export function buildTaxonomyWorkbook(
       b.imageUrl ?? '',
       b.order,
       b.isSelectable ? 'Y' : 'N',
-      b.skillsetId ?? '',
+      b.categoryId ?? '',
     ]);
   }
 
@@ -481,7 +481,7 @@ export function mergeWithExistingTaxonomy(
         subtitle: mergeTranslation(b.subtitle, prev.subtitle),
         iconUrl: b.iconUrl || prev.iconUrl,
         imageUrl: b.imageUrl || prev.imageUrl,
-        skillsetId: b.skillsetId || prev.skillsetId,
+        categoryId: b.categoryId || prev.categoryId,
         isActive: prev.isActive,
       };
     }),

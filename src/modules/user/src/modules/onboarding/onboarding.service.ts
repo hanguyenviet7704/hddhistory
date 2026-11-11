@@ -46,7 +46,7 @@ export class OnboardingService {
         intro: [],
         age: [],
         gender: [],
-        skillsetWantToMaster: [],
+        categoryWantToMaster: [],
         learningGoal: [],
         learningStruggles: [],
         comfortableLearningTime: [],

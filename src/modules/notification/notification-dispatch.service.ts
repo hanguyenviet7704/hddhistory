@@ -5,7 +5,7 @@ import { CourseRepository } from 'src/modules/courses/src/modules/course/reposit
 import { UserProgressRepository } from 'src/modules/courses/src/modules/progress/src/modules/user-progress/repository/user-progress.repository';
 import { WeekRecapRepository } from 'src/modules/courses/src/modules/progress/src/modules/week-recap/repository/week-recap.repository';
 import { QuoteRepository } from 'src/modules/courses/src/modules/quotes/repository/quote.repository';
-import { SkillsetRepository } from 'src/modules/courses/src/modules/skillset/repository/skillset.repository';
+import { CategoryRepository } from 'src/modules/courses/src/modules/category/repository/category.repository';
 import { UserHabitState } from 'src/modules/habit/src/modules/user-habit/enum/user-habit.enum';
 import { HabitCheckinRepository } from 'src/modules/habit/src/modules/user-habit/repository/habit-checkin.repository';
 import { UserHabitRepository } from 'src/modules/habit/src/modules/user-habit/repository/user-habit.repository';
@@ -76,17 +76,17 @@ export class NotificationDispatchService {
   } | null = null;
 
   /**
-   * Skillset titles behind `{topic_name}`, briefly cached.
+   * Category titles behind `{topic_name}`, briefly cached.
    *
    * The unfinished-lesson nudge needs the title of whatever course THAT reader
    * stopped in, so unlike the newest course it cannot be hoisted out of the user
    * loop. Titles change far less often than a tick runs, and there are only as
-   * many as there are skillsets, so a short cache removes the per-user read
+   * many as there are categories, so a short cache removes the per-user read
    * without holding anything meaningful stale.
    */
-  private static readonly SKILLSET_TITLE_TTL_MS = 5 * 60 * 1000;
+  private static readonly CATEGORY_TITLE_TTL_MS = 5 * 60 * 1000;
 
-  private skillsetTitleCache = new Map<
+  private categoryTitleCache = new Map<
     string,
     { title: unknown; expiresAt: number }
   >();
@@ -95,7 +95,7 @@ export class NotificationDispatchService {
     private readonly userRepository: UserRepository,
     private readonly userProgressRepository: UserProgressRepository,
     private readonly courseRepository: CourseRepository,
-    private readonly skillsetRepository: SkillsetRepository,
+    private readonly categoryRepository: CategoryRepository,
     private readonly userHabitRepository: UserHabitRepository,
     private readonly habitCheckinRepository: HabitCheckinRepository,
     private readonly quoteRepository: QuoteRepository,
@@ -588,7 +588,7 @@ export class NotificationDispatchService {
       newCourse: {
         courseId: String((course as any)._id),
         title: (course as any).title,
-        topicTitle: await this.skillsetTitle((course as any).skillsetId),
+        topicTitle: await this.categoryTitle((course as any).categoryId),
       },
     };
   }
@@ -653,12 +653,12 @@ export class NotificationDispatchService {
           variables: {
             user_name: userName,
             course_name: courseName,
-            // The course's skillset, for the wordings that name the topic the
-            // reader is working on. Empty for a course with no skillset, which
+            // The course's category, for the wordings that name the topic the
+            // reader is working on. Empty for a course with no category, which
             // makes the picker skip those wordings instead of rendering the
             // placeholder.
             topic_name: this.pickTranslation(
-              await this.skillsetTitle((course as any)?.skillsetId),
+              await this.categoryTitle((course as any)?.categoryId),
               candidate.language,
             ),
             // Deprecated alias, deliberately fed the course name. Templates
@@ -703,7 +703,7 @@ export class NotificationDispatchService {
             stops[0].courseId,
           );
           topicName = this.pickTranslation(
-            await this.skillsetTitle((lastCourse as any)?.skillsetId),
+            await this.categoryTitle((lastCourse as any)?.categoryId),
             candidate.language,
           );
         }
@@ -926,31 +926,31 @@ export class NotificationDispatchService {
   }
 
   /**
-   * A skillset's title translations, cached for
-   * [SKILLSET_TITLE_TTL_MS]. Null for a course with no skillset, or a skillset id
+   * A category's title translations, cached for
+   * [CATEGORY_TITLE_TTL_MS]. Null for a course with no category, or a category id
    * that no longer resolves — `{topic_name}` then stays empty and the wordings
    * that need it drop out of the rotation.
    */
-  private async skillsetTitle(skillsetId?: string): Promise<unknown> {
-    if (!skillsetId) return null;
+  private async categoryTitle(categoryId?: string): Promise<unknown> {
+    if (!categoryId) return null;
 
     const now = Date.now();
-    const cached = this.skillsetTitleCache.get(skillsetId);
+    const cached = this.categoryTitleCache.get(categoryId);
     if (cached && cached.expiresAt > now) return cached.title;
 
     let title: unknown = null;
     try {
-      const skillset = await this.skillsetRepository.findById(skillsetId);
-      title = (skillset as any)?.title ?? null;
+      const category = await this.categoryRepository.findById(categoryId);
+      title = (category as any)?.title ?? null;
     } catch (error: any) {
       // A malformed id casts badly; that is a content problem, not a reason to
       // abort everybody's notification.
-      this.logger.warn(`Could not read skillset ${skillsetId}: ${error?.message}`);
+      this.logger.warn(`Could not read category ${categoryId}: ${error?.message}`);
     }
 
-    this.skillsetTitleCache.set(skillsetId, {
+    this.categoryTitleCache.set(categoryId, {
       title,
-      expiresAt: now + NotificationDispatchService.SKILLSET_TITLE_TTL_MS,
+      expiresAt: now + NotificationDispatchService.CATEGORY_TITLE_TTL_MS,
     });
     return title;
   }

@@ -1199,7 +1199,7 @@ export class AnalyticsDashboardRepository {
   }
 
   /**
-   * Top courses / skillsets by distinct readers.
+   * Top courses / categories by distinct readers.
    *
    * Grouped on the *param* the app already sends with every content event, so
    * no join and no extra config: `params.course_name` is written by

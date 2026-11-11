@@ -9,8 +9,8 @@ export interface IOnboardingBranch {
   imageUrl: string;
   order: number;
   isSelectable: boolean;
-  /** Skillset tương ứng để Home xếp thứ tự theo nhánh đã chọn. */
-  skillsetId: string | null;
+  /** Chủ đề tương ứng để Home xếp thứ tự theo nhánh đã chọn. */
+  categoryId: string | null;
   isActive: boolean;
 }
 

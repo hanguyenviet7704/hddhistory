@@ -9,7 +9,7 @@ const branch = (code: string) => ({
   imageUrl: '',
   order: 1,
   isSelectable: true,
-  skillsetId: null,
+  categoryId: null,
   isActive: true,
 });
 const pkg = (code: string, branchCode: string) => ({

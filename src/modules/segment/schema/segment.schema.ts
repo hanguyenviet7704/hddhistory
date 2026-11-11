@@ -47,7 +47,7 @@ export class SegmentCriteria implements SegmentCriteriaShape {
   @Prop({
     type: [Number],
     default: [],
-    comment: 'onboarding.skillsetWantToMaster ids, ANY match',
+    comment: 'onboarding.categoryWantToMaster ids, ANY match',
   })
   topicIds: number[];
 

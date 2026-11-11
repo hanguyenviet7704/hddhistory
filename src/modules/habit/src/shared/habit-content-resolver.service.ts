@@ -6,7 +6,7 @@ import { LessonRepository } from 'src/modules/courses/src/modules/lesson/reposit
 
 export interface ResolvedCourse {
   courseId: string;
-  skillsetId: string;
+  categoryId: string;
   titleEn: string;
 }
 
@@ -102,7 +102,7 @@ export class HabitContentResolver {
         // The rail's reach chip. Sibling of `author` and blank for the same
         // reason — the card hides the chip rather than claiming "0 views".
         viewCount: course.viewCount ?? null,
-        skillsetId: course.skillsetId?.toString() ?? '',
+        categoryId: course.categoryId?.toString() ?? '',
         keypointHits: hitsByCourse.get(course._id.toString()) ?? 0,
       }))
       .sort((a, b) => b.keypointHits - a.keypointHits);
@@ -188,7 +188,7 @@ export class HabitContentResolver {
       const titleEn = ((course?.title?.en ?? '') as string).trim();
       const entry: ResolvedCourse = {
         courseId: course._id.toString(),
-        skillsetId: course?.skillsetId ? course.skillsetId.toString() : '',
+        categoryId: course?.categoryId ? course.categoryId.toString() : '',
         titleEn,
       };
       byId.set(entry.courseId, entry);

@@ -160,7 +160,7 @@ function toRecommended(
     title: c.title,
     description: c.description,
     image: c.image,
-    skillsetId: c.skillsetId,
+    categoryId: c.categoryId,
     numberOfLesson: c.numberOfLesson ?? 0,
     status: c.status,
     matchReason,

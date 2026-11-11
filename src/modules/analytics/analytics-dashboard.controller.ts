@@ -50,7 +50,7 @@ export class AnalyticsDashboardController {
   }
 
   @Get('learning')
-  @ApiOperation({ summary: 'Learning milestones plus top courses and skillsets' })
+  @ApiOperation({ summary: 'Learning milestones plus top courses and categories' })
   getLearning(@Query() dto: GetDashboardDto) {
     return this.svc.getLearning(dto);
   }

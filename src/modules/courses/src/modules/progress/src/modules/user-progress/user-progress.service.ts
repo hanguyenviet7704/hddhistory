@@ -74,13 +74,13 @@ import { LearningItemRepository } from '../../../../learning-item/repository/lea
 import { LessonType } from '../../../../lesson/enum/lesson.enum';
 import { ILessonBrief2 } from '../../../../lesson/interface/lesson.interface';
 import { LessonRepository } from '../../../../lesson/repository/lesson.repository';
-import { SkillsetStatus } from '../../../../skillset/enum/skillset.enum';
-import { SkillsetRepository } from '../../../../skillset/repository/skillset.repository';
+import { CategoryStatus } from '../../../../category/enum/category.enum';
+import { CategoryRepository } from '../../../../category/repository/category.repository';
 import { UserStreakService } from '../user-streak/user-streak.service';
 
 interface AchievementsCatalog {
-  skillsets: any[];
-  skillsetCoursesMap: Map<string, any[]>;
+  categories: any[];
+  categoryCoursesMap: Map<string, any[]>;
   roadmapMap: Map<string, any>;
 }
 
@@ -97,7 +97,7 @@ interface DailyWarmUpResponse {
 @Injectable()
 export class UserProgressService {
   // getAchievements() previously re-fetched the ENTIRE published course
-  // catalog (skillsets + courses + roadmaps) from scratch on every call, for
+  // catalog (categories + courses + roadmaps) from scratch on every call, for
   // every user — identical data reused across every request. This service is
   // request-scoped (it depends on RequestService/`this.user`), so an
   // instance field would be recreated empty on every request just like it
@@ -119,7 +119,7 @@ export class UserProgressService {
     private readonly lessonRepository: LessonRepository,
     private readonly keypointRepository: KeypointRepository,
     private readonly roadmapRepository: RoadmapRepository,
-    private readonly skillsetRepository: SkillsetRepository,
+    private readonly categoryRepository: CategoryRepository,
     private readonly userProgressExportRepository: UserProgressExportRepository,
     private readonly userFeedbackRepository: UserFeedbackRepository,
     private readonly r2Service: R2Service,
@@ -301,15 +301,15 @@ export class UserProgressService {
 
     const course = await this.courseRepository.findOne(
       { _id: courseId },
-      { skillsetId: 1 },
+      { categoryId: 1 },
       { lean: true },
     );
 
-    if (!course?.skillsetId) return courseId;
+    if (!course?.categoryId) return courseId;
 
     return (
-      (await this.courseRepository.findRandomPublishedCourseIdInSkillset(
-        course.skillsetId,
+      (await this.courseRepository.findRandomPublishedCourseIdInCategory(
+        course.categoryId,
         courseId,
         this.viewerMarkets,
       )) ?? courseId
@@ -821,7 +821,7 @@ export class UserProgressService {
       page: 1,
       take: dto.take,
       isAll: true,
-      // Same statuses the skillsets catalog exposes. Without this, a course
+      // Same statuses the categories catalog exposes. Without this, a course
       // unpublished after the user started it keeps its "Continue learning"
       // card on Home -- and tapping that card opened a course the catalog
       // cannot resolve, which the app had no state to render.
@@ -1224,7 +1224,7 @@ export class UserProgressService {
       );
   }
 
-  // Skillsets/courses/roadmaps are identical for every user and only change
+  // Categories/courses/roadmaps are identical for every user and only change
   // via admin edits — cached with a short TTL instead of re-fetched on every
   // getAchievements() call. NOT invalidated on write (unlike
   // QuoteRepository.clearCache()); an admin publishing/editing a course can
@@ -1237,26 +1237,26 @@ export class UserProgressService {
       return cached.data;
     }
 
-    const skillsetDocs = await this.skillsetRepository.findOption({
+    const categoryDocs = await this.categoryRepository.findOption({
       page: 1,
       take: 1000,
-      status: SkillsetStatus.PUBLISHED,
+      status: CategoryStatus.PUBLISHED,
     } as any);
 
-    // Fetch all courses for these skillsets
-    const skillsetIds = skillsetDocs.items.map(s => s._id.toString());
-    const skillsetCoursesMap = new Map<string, any[]>();
+    // Fetch all courses for these categories
+    const categoryIds = categoryDocs.items.map(s => s._id.toString());
+    const categoryCoursesMap = new Map<string, any[]>();
     const courses = await this.courseRepository.model
       .find(
-        { skillsetId: { $in: skillsetIds }, status: CourseStatus.PUBLISHED },
-        'title _id skillsetId level image description status numberOfLesson',
+        { categoryId: { $in: categoryIds }, status: CourseStatus.PUBLISHED },
+        'title _id categoryId level image description status numberOfLesson',
       )
       .sort({ createdAt: OrderType.ASC })
       .lean();
     for (const course of courses) {
-      const key = course.skillsetId.toString();
-      skillsetCoursesMap.set(key, [
-        ...(skillsetCoursesMap.get(key) || []),
+      const key = course.categoryId.toString();
+      categoryCoursesMap.set(key, [
+        ...(categoryCoursesMap.get(key) || []),
         course,
       ]);
     }
@@ -1272,8 +1272,8 @@ export class UserProgressService {
     }
 
     const data: AchievementsCatalog = {
-      skillsets: skillsetDocs.items,
-      skillsetCoursesMap,
+      categories: categoryDocs.items,
+      categoryCoursesMap,
       roadmapMap,
     };
     UserProgressService.achievementsCatalogCache = {
@@ -1302,7 +1302,7 @@ export class UserProgressService {
         )
         .lean(),
     ]);
-    const { skillsets, skillsetCoursesMap, roadmapMap } = catalog;
+    const { categories, categoryCoursesMap, roadmapMap } = catalog;
 
     const progressMap = new Map<string, ProgressSnapshot>();
     for (const p of progresses) {
@@ -1318,15 +1318,15 @@ export class UserProgressService {
 
     const results: IAchievenmentResponse[] = [];
 
-    for (const skillset of skillsets) {
+    for (const category of categories) {
       const courseAchievements: ICourseLevelProgress[] = [];
-      const courses = skillsetCoursesMap.get(skillset._id.toString()) || [];
+      const courses = categoryCoursesMap.get(category._id.toString()) || [];
 
-      // Skillset-wide keypoint totals across EVERY level of EVERY course, so the
+      // Category-wide keypoint totals across EVERY level of EVERY course, so the
       // client shows real fractional progress. Deduped per course (a keypoint
       // lives in one roadmap level, but union guards against overlaps).
-      let skillsetTotalKp = 0;
-      let skillsetCompletedKp = 0;
+      let categoryTotalKp = 0;
+      let categoryCompletedKp = 0;
 
       for (const course of courses) {
         const roadmap = roadmapMap.get(course._id.toString());
@@ -1346,9 +1346,9 @@ export class UserProgressService {
           if (!Array.isArray(level.keypointIds)) continue;
           for (const k of level.keypointIds) if (k) courseKeys.add(k);
         }
-        skillsetTotalKp += courseKeys.size;
+        categoryTotalKp += courseKeys.size;
         for (const k of courseKeys) {
-          if (progress.passedEffective.has(k)) skillsetCompletedKp++;
+          if (progress.passedEffective.has(k)) categoryCompletedKp++;
         }
 
         const highest = this.findHighestLevelDone(
@@ -1364,11 +1364,11 @@ export class UserProgressService {
 
       if (courseAchievements.length) {
         results.push({
-          skillsetId: skillset._id.toString(),
-          skillsetTitle: this.localizeTranslation(skillset.title),
+          categoryId: category._id.toString(),
+          categoryTitle: this.localizeTranslation(category.title),
           courses: courseAchievements,
-          totalKeypoints: skillsetTotalKp,
-          completedKeypoints: skillsetCompletedKp,
+          totalKeypoints: categoryTotalKp,
+          completedKeypoints: categoryCompletedKp,
         });
       }
     }
@@ -1521,7 +1521,7 @@ export class UserProgressService {
         title: 1,
         description: 1,
         image: 1,
-        skillsetId: 1,
+        categoryId: 1,
         numberOfLesson: 1,
         isNew: 1,
         publishAt: 1,
@@ -1572,7 +1572,7 @@ export class UserProgressService {
       title: course.title,
       description: course.description,
       image: course.image,
-      skillsetId: course.skillsetId?.toString() ?? null,
+      categoryId: course.categoryId?.toString() ?? null,
       numberOfLesson: course.numberOfLesson ?? 0,
       isNew: course.isNew ?? false,
       publishAt: course.publishAt ?? null,

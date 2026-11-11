@@ -74,7 +74,7 @@ kê trong admin, và lý do đó không phải là thiếu sót của thiết k�
 | Tab | `library` | — | branch 5 — tách khỏi Profile 2026-08-14, `myLessons` nằm trong đây |
 | Học | `course-roadmap` | `courseId?` | Không truyền → roadmap của course đang chọn |
 | Học | `lesson` | `courseId`, `keypointId?` | Qua roadmap rồi mở bài — dùng lại `setPendingResumeKeypointId` |
-| Học | `skillset-courses` | `skillsetId` | Grid đầy đủ của một skillset |
+| Học | `category-courses` | `categoryId` | Grid đầy đủ của một chủ đề |
 | Tiền | `paywall` | `variant?` (`full`\|`compact`) | Push lên trên, không relocate |
 | Tiền | `manage-subscription` | — | dưới tab Profile |
 | Engagement | `daily-warm-up` | — | dưới tab Home |
@@ -164,7 +164,7 @@ cách duy nhất đếm được người đã cài app. Tên event mới cần 
 { key, label, group, minAppBuild, note?, params: [{ name, required, picker, options? }] }
 ```
 
-`picker` nói cho admin biết render gì: `course` | `skillset` | `keypoint` | `select` |
+`picker` nói cho admin biết render gì: `course` | `category` | `keypoint` | `select` |
 `text`. Với `select` thì `options` mang sẵn các giá trị hợp lệ — `variant` của paywall
 là `["full", "compact"]`, và đó phải là danh sách server khai, không phải hằng số gõ
 lại trong admin.
@@ -197,7 +197,7 @@ Bố cục hai phần, phần trên trả lời đúng "GIẢI PHÁP NGẮN HẠ
 1. **Bảng màn phổ biến** — các key không tham số, mỗi dòng một nút Copy. Trường hợp
    thường gặp nhất không phải mở form nào cả.
 2. **Form sinh link** — chọn màn → form param tự dựng theo `params[].source` (picker
-   course/skillset/keypoint dùng service đã có) → ô campaign → **hai** ô kết quả
+   course/category/keypoint dùng service đã có) → ô campaign → **hai** ô kết quả
    read-only kèm nút Copy: link web `https://…` và link trong app `hddhistory://…`.
 
 Các trạng thái phải có: đang tải danh mục, tải danh mục lỗi, chưa chọn màn, thiếu
@@ -237,7 +237,7 @@ hành vi rơi về đúng như hôm nay.
 | Khoá lạ, app đang mở ở vùng đã đăng nhập | về Home, trả `true` | `unknown_destination` |
 | Khoá lạ, cold start / đang pre-auth | **không điều hướng**, trả `false` để splash lo | `unknown_destination_deferred` |
 | Thiếu param bắt buộc | về Home, trừ khi có biến thể không param hợp lệ (`course-roadmap`) | `missing_param` |
-| Course/skillset không tồn tại hoặc đã unpublish | về Home — giống `course_not_found` của luồng widget | `entity_not_found` |
+| Course/category không tồn tại hoặc đã unpublish | về Home — giống `course_not_found` của luồng widget | `entity_not_found` |
 | Bài bị lock / chưa mua | tới roadmap, để gate sẵn có xử | — (coi là thành công) |
 | Đang ở pre-auth / onboarding | giữ lại, replay sau | — |
 | Chưa có navigator context | log + bỏ, giữ nguyên hành vi hiện tại | `missing_context` |

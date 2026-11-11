@@ -6,7 +6,7 @@ import { HabitLibraryStatus } from '../enum/habit-library.enum';
 
 export interface IHabitLibrary {
   title: ITranslation;
-  skillsetId: Types.ObjectId | string;
+  categoryId: Types.ObjectId | string;
   status: HabitLibraryStatus;
   image?: string;
   /**

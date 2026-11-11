@@ -113,6 +113,71 @@ export class UserProgressRepository extends AbstractRepository<UserProgress> {
   }
 
   /**
+   * Every keypoint this user has PASSED, across every course, with where it
+   * sits and when it was last submitted. Seeds the spaced-review schedule:
+   * a keypoint enters review one interval after the reader learned it.
+   *
+   * A keypoint passed in two courses keeps the most recent submission.
+   */
+  async findPassedKeypoints(userId: string): Promise<
+    {
+      keypointId: string;
+      lessonId: string;
+      courseId: string;
+      submittedAt: Date | null;
+    }[]
+  > {
+    const rows = await this.model
+      .find(
+        { userId },
+        {
+          courseId: 1,
+          'lessonsResult.lessonId': 1,
+          'lessonsResult.keypointsResult.keypointId': 1,
+          'lessonsResult.keypointsResult.passed': 1,
+          'lessonsResult.keypointsResult.submittedAt': 1,
+        },
+      )
+      .lean();
+
+    const byKeypoint = new Map<
+      string,
+      {
+        keypointId: string;
+        lessonId: string;
+        courseId: string;
+        submittedAt: Date | null;
+      }
+    >();
+    for (const row of rows as any[]) {
+      for (const lesson of row.lessonsResult ?? []) {
+        for (const keypoint of lesson.keypointsResult ?? []) {
+          if (!keypoint?.passed || !keypoint.keypointId) continue;
+          const keypointId = keypoint.keypointId.toString();
+          const submittedAt = keypoint.submittedAt
+            ? new Date(keypoint.submittedAt)
+            : null;
+          const previous = byKeypoint.get(keypointId);
+          if (
+            previous &&
+            (previous.submittedAt?.getTime() ?? 0) >=
+              (submittedAt?.getTime() ?? 0)
+          ) {
+            continue;
+          }
+          byKeypoint.set(keypointId, {
+            keypointId,
+            lessonId: lesson.lessonId?.toString() ?? '',
+            courseId: row.courseId?.toString() ?? '',
+            submittedAt,
+          });
+        }
+      }
+    }
+    return Array.from(byKeypoint.values());
+  }
+
+  /**
    * Progress rows for a specific set of courses, carrying only what
    * `countPassedItems` needs. Backs the saved-courses list, which has to know
    * each saved course's completion before it can bucket it into

@@ -1,5 +1,5 @@
 /**
- * Đổ cây nội dung lịch sử Việt Nam vào Mongo: Skillset → Course → Lesson →
+ * Đổ cây nội dung lịch sử Việt Nam vào Mongo: Chủ đề → Course → Lesson →
  * Keypoint.
  *
  * Idempotent theo kiểu *chèn-nếu-thiếu*, cố ý KHÔNG ghi đè bản ghi đã có —
@@ -30,7 +30,7 @@ import { KeypointSchema } from '../src/modules/courses/src/modules/keypoint/sche
 import { RoadmapSchema } from '../src/modules/courses/src/modules/course/schema/roadmap.schema';
 import { LearningItemSchema } from '../src/modules/courses/src/modules/learning-item/schema/learning-item.schema';
 import { LessonSchema } from '../src/modules/courses/src/modules/lesson/schema/lesson.schema';
-import { SkillsetSchema } from '../src/modules/courses/src/modules/skillset/schema/skillset.schema';
+import { CategorySchema } from '../src/modules/courses/src/modules/category/schema/category.schema';
 
 const CURRICULUM_FILE = path.join(process.cwd(), 'scripts/data/vn-history-curriculum.json');
 const SEED_FILE = path.join(
@@ -63,7 +63,7 @@ async function main() {
     process.env.STATIC_BASE_URL || DEFAULT_STATIC_BASE_URL,
   );
   console.log(
-    `Dự kiến: ${plan.skillsets.length} skillset, ${plan.courses.length} khoá, ` +
+    `Dự kiến: ${plan.categories.length} chủ đề, ${plan.courses.length} khoá, ` +
       `${plan.lessons.length} bài, ${plan.keypoints.length} keypoint, ${plan.learningItems.length} learning item, ${plan.roadmaps.length} roadmap.`,
   );
 
@@ -78,39 +78,39 @@ async function main() {
   // Chờ tối đa 5 giây rồi báo lỗi, thay vì treo vô hạn khi quên bật Docker.
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
 
-  const Skillset = mongoose.model('Skillset', SkillsetSchema);
+  const Category = mongoose.model('Category', CategorySchema);
   const Course = mongoose.model('Course', CourseSchema);
   const Lesson = mongoose.model('Lesson', LessonSchema);
   const Keypoint = mongoose.model('Keypoint', KeypointSchema);
   const LearningItem = mongoose.model('LearningItem', LearningItemSchema);
   const Roadmap = mongoose.model('Roadmap', RoadmapSchema);
 
-  const skillsetIds = new Map<string, string>();
+  const categoryIds = new Map<string, string>();
   let created = 0;
   let skipped = 0;
 
-  for (const s of plan.skillsets) {
-    const found = await Skillset.findOne({ 'title.vi': s.title.vi });
+  for (const s of plan.categories) {
+    const found = await Category.findOne({ 'title.vi': s.title.vi });
     if (found) {
-      skillsetIds.set(s._localKey, String(found._id));
+      categoryIds.set(s._localKey, String(found._id));
       skipped++;
       continue;
     }
-    const doc = await Skillset.create({
+    const doc = await Category.create({
       index: s.index,
       title: s.title,
       description: s.description,
       status: s.status,
       image: s.image,
     });
-    skillsetIds.set(s._localKey, String(doc._id));
+    categoryIds.set(s._localKey, String(doc._id));
     created++;
   }
 
   const courseIds = new Map<string, string>();
   for (const c of plan.courses) {
-    const skillsetId = skillsetIds.get(c.skillsetLocalKey);
-    const found = await Course.findOne({ 'title.vi': c.title.vi, skillsetId });
+    const categoryId = categoryIds.get(c.categoryLocalKey);
+    const found = await Course.findOne({ 'title.vi': c.title.vi, categoryId });
     if (found) {
       courseIds.set(c._localKey, String(found._id));
       skipped++;
@@ -121,7 +121,7 @@ async function main() {
       description: c.description,
       status: c.status,
       image: c.image,
-      skillsetId,
+      categoryId,
       numberOfLesson: c.numberOfLesson,
     });
     courseIds.set(c._localKey, String(doc._id));

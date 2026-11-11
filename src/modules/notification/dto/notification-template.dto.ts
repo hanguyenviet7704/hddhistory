@@ -29,7 +29,7 @@ export class NotificationCopyDto {
   @ApiProperty({
     example: '🌱 Hey {user_name}, "{course_name}" is waiting for you.',
     description:
-      'Supports {user_name}, {course_name}, {topic_name} (the course skillset) and {quote}. {lesson_name} still resolves (to the course name) for copy saved before the rename.',
+      'Supports {user_name}, {course_name}, {topic_name} (the course category) and {quote}. {lesson_name} still resolves (to the course name) for copy saved before the rename.',
   })
   @IsString()
   @IsNotEmpty()

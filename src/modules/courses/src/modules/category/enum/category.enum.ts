@@ -1,9 +1,9 @@
-export enum SkillsetStatus {
+export enum CategoryStatus {
   DRAFT = 'draft',
   PUBLISHED = 'published',
 }
 
-export enum SkillsetOnboardingIntroduce {
+export enum CategoryOnboardingIntroduce {
   MY_FEELINGS_FEEL_LOUD = 'MY_FEELINGS_FEEL_LOUD',
   MY_THOUGHTS_CIRCLE = 'MY_THOUGHTS_CIRCLE',
   IM_BUSY_ALL_DAY = 'IM_BUSY_ALL_DAY',

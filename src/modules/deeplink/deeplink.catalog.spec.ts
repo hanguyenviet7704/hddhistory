@@ -18,7 +18,7 @@ describe('DEEPLINK_DESTINATIONS', () => {
     'library',
     'course-roadmap',
     'lesson',
-    'skillset-courses',
+    'category-courses',
     'paywall',
     'manage-subscription',
     'daily-warm-up',

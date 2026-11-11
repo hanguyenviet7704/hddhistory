@@ -37,8 +37,8 @@ const variant = (
  * tap lands on the course roadmap — and the sentences say "khoá học" for the same
  * reason. `{lesson_name}` still renders for copy saved before the rename.
  *
- * Variants 5 and 6 need `{topic_name}` (the course's skillset). The picker drops
- * them for a course with no skillset rather than pushing the raw placeholder.
+ * Variants 5 and 6 need `{topic_name}` (the course's category). The picker drops
+ * them for a course with no category rather than pushing the raw placeholder.
  */
 const PROGRESS_FINISH_VARIANTS: INotificationVariant[] = [
   variant('v1', {

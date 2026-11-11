@@ -35,7 +35,7 @@ const RECENT_PROGRESS_LOOKBACK = 20;
 /**
  * Candidates pulled before narrowing to three suggestions. Wider than the three
  * shown so the shuffle has something to choose from — otherwise "random three
- * in the skillset" would be the same three every time for a small skillset.
+ * in the category" would be the same three every time for a small category.
  */
 const BECAUSE_YOU_CANDIDATE_POOL = 12;
 
@@ -219,10 +219,10 @@ export class ExploreService {
         break;
       }
     }
-    if (!finished?.skillsetId) return null;
+    if (!finished?.categoryId) return null;
 
-    const candidates = await this.courseRepository.findPublishedInSkillsets({
-      skillsetIds: [finished.skillsetId.toString()],
+    const candidates = await this.courseRepository.findPublishedInCategories({
+      categoryIds: [finished.categoryId.toString()],
       // Nothing the reader has already opened: suggesting a course they
       // finished last week reads as the app not paying attention.
       excludeIds: studiedIds,
@@ -236,7 +236,7 @@ export class ExploreService {
     if (candidates.length < EXPLORE_BECAUSE_YOU_SIZE) return null;
 
     // WHICH three, not just their order: the spec asks for three random courses
-    // from the skillset, and the candidate pool is wider than three precisely
+    // from the category, and the candidate pool is wider than three precisely
     // so this choice has something to choose from.
     const picked = shuffle(candidates);
 

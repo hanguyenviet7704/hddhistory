@@ -30,7 +30,7 @@ trong trang "Thông báo định kỳ", bắn theo giờ user chọn.
 
 | Collection | Field | Ghi chú |
 |---|---|---|
-| `onboarding_branches` | `code` (unique, IN HOA: `CX`), `label: ITranslation`, `subtitle: ITranslation`, `iconUrl`, `imageUrl`, `order`, `isSelectable` (hiện ở câu 1), `skillsetId: string\|null`, `isActive` | `KP` (Khám phá não bộ) có `isSelectable=false`: chỉ để gắn khoá. `skillsetId` để Home xếp skillset theo nhánh đã chọn. |
+| `onboarding_branches` | `code` (unique, IN HOA: `CX`), `label: ITranslation`, `subtitle: ITranslation`, `iconUrl`, `imageUrl`, `order`, `isSelectable` (hiện ở câu 1), `categoryId: string\|null`, `isActive` | `KP` (Khám phá não bộ) có `isSelectable=false`: chỉ để gắn khoá. `categoryId` để Home xếp chủ đề theo nhánh đã chọn. |
 | `onboarding_packages` | `code` (unique: `CX-1`), `branchCode`, `problemLabel: ITranslation` (đáp án câu 2), `desireLabel: ITranslation` (đáp án câu 3), `order`, `isActive` | **1 gói = 1 vấn đề = 1 mong muốn.** Mã mong muốn == mã gói. |
 | `onboarding_labels` | `code` (unique: `CX01`), `packageCode`, `label: ITranslation`, `order` | Nhãn chi tiết, KHÔNG hiện cho user; chỉ là khớp nối gói ↔ khoá. Có 3 nhãn trùng chữ khác mã (CX12/QH07, CV04/QH03, CV21/QH04) — luôn khoá theo MÃ. |
 
@@ -142,7 +142,7 @@ tại; mỗi gói ≥1 nhãn; `problemLabel.vi`/`desireLabel.vi` không rỗng; 
 `^([01]\d|2[0-3]):(00|15|30|45)$`.
 
 **Import xlsx** (dùng `courses/src/modules/import/excel-import.util.ts`, `import * as ExcelJS`):
-- Sheet `Nhánh`: `Mã nhánh | Tên nhánh (vi) | Tên nhánh (en) | Mô tả ngắn (vi) | Mô tả ngắn (en) | Thứ tự | Hiện ở câu 1 (Y/N) | Skillset ID (tuỳ chọn)`.
+- Sheet `Nhánh`: `Mã nhánh | Tên nhánh (vi) | Tên nhánh (en) | Mô tả ngắn (vi) | Mô tả ngắn (en) | Thứ tự | Hiện ở câu 1 (Y/N) | Chủ đề ID (tuỳ chọn)`.
 - Sheet `Gói nhãn`: `Mã nhánh | Mã gói | Vấn đề — đáp án câu 2 (vi) | … (en) | Mong muốn — đáp án câu 3 (vi) | … (en) | Nhãn chi tiết (vi) | Mã nhãn chi tiết | Thứ tự` — hai cột nhãn ngăn bằng `|`, số phần tử phải bằng nhau. Chấp nhận cả header của sheet gốc (không hậu tố `(vi)`) và cột `(zh)/(ja)/(ko)` tuỳ chọn.
 - Sheet `Mapping Khoá học`: `Course ID (tuỳ chọn) | Khoá học | Nhánh nội dung | Trạng thái (tham khảo) | Mã nhãn vấn đề | Mã gói mong muốn`. Khớp theo `Course ID`; trống thì khớp `title.vi` (trim, bỏ phân biệt hoa thường, gộp khoảng trắng). Mã không có trong taxonomy → **lỗi, huỷ cả import**; khoá không tìm thấy → **cảnh báo, bỏ qua dòng**, ghi vào sheet `import_warnings`. Khoá không có trong sheet giữ nguyên tag.
 - Cột dẫn xuất của sheet gốc (Số nhãn…, Khoá mang nhãn…, Gói tới được, Trong đó gán thêm tay) bị bỏ qua.
@@ -154,7 +154,7 @@ tại; mỗi gói ≥1 nhãn; `problemLabel.vi`/`desireLabel.vi` không rỗng; 
 | POST | `/onboarding-answers` | Auth (token ẩn danh đủ) | body mọi field optional: `branchCodes, packageCodes, desireCode, reminderEnabled, reminderTime, chosenCourseId, ageKey`; upsert theo `requestService.user`; đồng bộ `User.studyReminderTime`; **luôn** trả `{ answers, recommendations[] }` (tính lại từ answers đã merge) |
 | GET | `/onboarding-answers/me` | Auth | answers + recommendations |
 
-`recommendations[]`: `_id, title, description, image, skillsetId, numberOfLesson, status,
+`recommendations[]`: `_id, title, description, image, categoryId, numberOfLesson, status,
 matchReason: { desire: boolean, labelCodes: string[], packageCodes: string[] }`.
 
 ### 4.3 Noti `onboarding_study_reminder` — sao y `coach_plan_reminder`
@@ -175,7 +175,7 @@ matchReason: { desire: boolean, labelCodes: string[], packageCodes: string[] }`.
 ## 5. Admin (hddhistory-admin)
 1. Trang mới **"Onboarding Taxonomy"** (`/onboarding-taxonomy`, sidebar nhóm Onboarding): nút Tải mẫu /
    Import Excel (`ExcelImportButton`) / Export / Lưu; cây Nhánh → Gói → Nhãn sửa inline (vi/en,
-   order, active, skillset typeahead cho nhánh); lưu bằng `PUT` cây đầy đủ.
+   order, active, chủ đề typeahead cho nhánh); lưu bằng `PUT` cây đầy đủ.
 2. `CourseModal`: khối mới "Nhãn onboarding" — 2 Autocomplete multi: *Nhãn vấn đề (chi tiết)* nhóm
    theo gói, *Mong muốn (gói)* nhóm theo nhánh; nguồn `GET /onboarding-taxonomy/admin`. Khối
    "Onboarding Symptoms" cũ giữ, ghi "legacy — app cũ".
@@ -220,13 +220,13 @@ Xoá path-map (page + 4 widget p6), symptom page, path selection page, `OnboardV
 `OnboardV2ConfigMapper`, 4 file scaffold chết (`onboard_v2_api/entity/repository/usecases`). Enum
 `OnboardingPath/OnboardingSymptom` GIỮ trong `course_model.dart` (CourseModel còn decode
 `onboardingSymptoms`). `UserState.onboardingPathOrder: List<OnboardingPath>` →
-`onboardingSkillsetOrder: List<String>` (skillsetId từ `branch.skillsetId`), `home_state.dart`
+`onboardingCategoryOrder: List<String>` (categoryId từ `branch.categoryId`), `home_state.dart`
 xếp theo id thay cho enum. Tracking: page name mới, gửi mã thay enum; thêm
 `onboardV2P10View/onboardV2P11View`.
 
 ## 7. Thứ tự deploy
 API trước (thuần cộng thêm: app cũ vẫn chạy `GET /onboarding-config` + `?onboardingSymptoms=`),
-import `onboarding-taxonomy-template.xlsx` trên admin dev, gắn `skillsetId` cho 5 nhánh, bật noti
+import `onboarding-taxonomy-template.xlsx` trên admin dev, gắn `categoryId` cho 5 nhánh, bật noti
 type 8 khi muốn; rồi admin; rồi Flutter. API và Flutter KHÔNG bắt buộc đi cùng.
 
 ## 8. Kiểm chứng

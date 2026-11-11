@@ -257,7 +257,7 @@ const templates = [
           ['description_ja', 'optional', 'Mo ta tieng Nhat.'],
           ['description_ko', 'optional', 'Mo ta tieng Han.'],
           ['image', 'optional', 'URL anh khoa hoc.'],
-          ['skillsetId', 'optional', 'ObjectId cua skillset da co trong CMS.'],
+          ['categoryId', 'optional', 'ObjectId cua category da co trong CMS.'],
           ['status', 'optional', 'draft hoac published.'],
         ],
         sampleRows: [
@@ -275,7 +275,7 @@ const templates = [
             description_ja: '',
             description_ko: '',
             image: 'english-basic.jpg',
-            skillsetId: '',
+            categoryId: '',
             status: 'draft',
           },
         ],

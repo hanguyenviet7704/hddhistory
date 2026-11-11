@@ -71,7 +71,7 @@ mọi tiêu chí optional, AND với nhau; tiêu chí rỗng = không lọc.
 | Lifecycle Stage D0–D30 | tính từ `createdAt` (số ngày từ first session) | ✅ derived |
 | user_id | `_id` allow-list | ✅ |
 | user_goal | `onboarding.learningGoal` (id câu trả lời onboard_v2) | ✅ |
-| user_topic_follow | `onboarding.skillsetWantToMaster` (map "chủ đề" ≈ skillset) | ✅ |
+| user_topic_follow | `onboarding.categoryWantToMaster` (map "chủ đề") | ✅ |
 | user_type | `anonymous` (guest) + premium từ MySQL `subscriptions` (is_pro_lifetime/is_pro_subscription/is_free_logged_in/is_free_guest) | ✅ cross-DB |
 | **Gender** | field `gender` CÓ trong schema nhưng **chưa nơi nào thu thập** (onboarding không hỏi, profile edit không có) | ⚠️ để ngoài v1 |
 | **user_level** (beginner→advanced) | **không tồn tại** — onboarding không hỏi level | ⚠️ cần thêm câu hỏi onboarding hoặc suy từ progress |

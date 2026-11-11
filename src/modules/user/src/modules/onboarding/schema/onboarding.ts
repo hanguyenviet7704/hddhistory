@@ -24,7 +24,7 @@ export class Onboarding extends AbstractDocument implements IOnboarding {
   gender: ILablel[];
 
   @Prop({ type: SchemaTypes.Array })
-  skillsetWantToMaster: ILablel[];
+  categoryWantToMaster: ILablel[];
 
   @Prop({ type: SchemaTypes.Array })
   learningGoal: ILablel[];

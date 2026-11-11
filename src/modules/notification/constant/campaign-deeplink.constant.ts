@@ -32,7 +32,7 @@ export const CAMPAIGN_NOTI_TYPE = 'campaign';
  *
  * Danh sách này là biên VALIDATE, không phải danh sách hiện trong dropdown: màn
  * soạn campaign tự lọc bỏ khoá cần tham số bắt buộc (`lesson`,
- * `skillset-courses`) vì ở đó không có picker chọn khoá học/bài.
+ * `category-courses`) vì ở đó không có picker chọn khoá học/bài.
  */
 export const CAMPAIGN_DEEPLINK_KEYS: string[] = Array.from(
   new Set<string>([

@@ -42,7 +42,7 @@ export interface SegmentCriteriaShape {
   userIds?: string[];
   /** onboarding.learningGoal answer ids. */
   userGoals?: number[];
-  /** onboarding.skillsetWantToMaster ids ("chủ đề" ≈ skillset), ANY match. */
+  /** onboarding.categoryWantToMaster ids ("chủ đề"), ANY match. */
   topicIds?: number[];
   /** Audience buckets — see USER_TYPES. */
   userTypes?: string[];

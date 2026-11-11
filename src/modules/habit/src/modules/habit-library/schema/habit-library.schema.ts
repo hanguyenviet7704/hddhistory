@@ -13,7 +13,7 @@ export class HabitLibrary extends AbstractDocument implements IHabitLibrary {
   title: ITranslation;
 
   @Prop({ type: SchemaTypes.ObjectId, required: true })
-  skillsetId: Types.ObjectId;
+  categoryId: Types.ObjectId;
 
   @Prop({
     type: String,
@@ -25,7 +25,7 @@ export class HabitLibrary extends AbstractDocument implements IHabitLibrary {
   /**
    * The habit's own picture, an absolute CDN url as everywhere else in the
    * catalog. Null until an editor sets one, and the app falls back to the
-   * skillset's logo then, so an unset habit looks exactly as it did before.
+   * category's logo then, so an unset habit looks exactly as it did before.
    */
   @Prop({ type: String, default: null })
   image?: string;
@@ -60,5 +60,5 @@ export class HabitLibrary extends AbstractDocument implements IHabitLibrary {
 
 export const HabitLibrarySchema = SchemaFactory.createForClass(HabitLibrary);
 
-HabitLibrarySchema.index({ skillsetId: 1, status: 1, order: 1 });
+HabitLibrarySchema.index({ categoryId: 1, status: 1, order: 1 });
 HabitLibrarySchema.index({ keypointIds: 1, status: 1 });

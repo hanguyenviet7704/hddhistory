@@ -557,9 +557,9 @@ export class CourseService {
 
     // The course blurb the roadmap header prints under "Inside this course".
     //
-    // It rides on the roadmap rather than on the skillsets/course LIST payload
+    // It rides on the roadmap rather than on the categories/course LIST payload
     // on purpose: that list deliberately drops `description` because it is an
-    // ITranslation across 5 languages and was ~30% of /skillsets, and no list
+    // ITranslation across 5 languages and was ~30% of /categories, and no list
     // surface renders it. The roadmap is fetched for ONE course, so carrying it
     // here costs a single copy and saves the app a second round trip.
     const course = await this.courseRepository.findOne(
@@ -1000,7 +1000,7 @@ export class CourseService {
           'description_ja',
           'description_ko',
           'image',
-          'skillsetId',
+          'categoryId',
           'status',
         ],
         sampleRows: [
@@ -1176,7 +1176,7 @@ export class CourseService {
         ...translationCells(course.title),
         ...translationCells(course.description),
         course.image ?? '',
-        course.skillsetId ?? '',
+        course.categoryId ?? '',
         course.status ?? '',
       ]);
 
@@ -1218,7 +1218,7 @@ export class CourseService {
           ...translationHeaders('title'),
           ...translationHeaders('description'),
           'image',
-          'skillsetId',
+          'categoryId',
           'status',
         ],
         sampleRows: courseRows,
@@ -1366,7 +1366,7 @@ export class CourseService {
     const title = translationFromValues(values, 'title');
     const description = translationFromValues(values, 'description');
     const image = resolveAssetUrl(values.image, cdn);
-    const skillsetId = text(values.skillsetId);
+    const categoryId = text(values.categoryId);
     const status = text(values.status);
 
     if (isCreate) {
@@ -1377,7 +1377,7 @@ export class CourseService {
       this.assignTranslationUpdate(payload, 'description', description);
     }
     if (image) payload.image = image;
-    if (skillsetId) payload.skillsetId = skillsetId;
+    if (categoryId) payload.categoryId = categoryId;
     if (status) payload.status = status;
 
     return payload;

@@ -8,7 +8,7 @@ export interface ICourse {
   title: ITranslation;
   description: ITranslation;
   image: string;
-  skillsetId: string;
+  categoryId: string;
   onboardingSymptoms?: OnboardingSymptom[] | null;
   /** Onboarding v3: mã nhãn chi tiết (vấn đề) khoá này giải quyết. */
   onboardingLabelCodes?: string[];

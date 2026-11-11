@@ -3047,13 +3047,13 @@
             }
           },
           {
-            "name": "skillsetIds",
+            "name": "categoryIds",
             "required": false,
             "in": "query",
             "example": [
               "68fe63134a13cd7ab2d5ac5a"
             ],
-            "description": "Filter courses by skillset ids.",
+            "description": "Filter courses by category ids.",
             "schema": {
               "type": "array",
               "items": {
@@ -3068,7 +3068,7 @@
             "example": [
               "AMAZED_BY_HUMAN_BODY"
             ],
-            "description": "Filter skillsets by one or more onboarding introduce options.",
+            "description": "Filter categories by one or more onboarding introduce options.",
             "schema": {
               "type": "array",
               "items": {
@@ -3746,6 +3746,40 @@
         ],
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "COURSES-LESSONS"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/courses-lessons/by-entity/{entityId}": {
+      "get": {
+        "operationId": "LessonController_findByEntity",
+        "parameters": [
+          {
+            "name": "entityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "required": false,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -6204,7 +6238,7 @@
     "/api/v1/analytics/dashboard/learning": {
       "get": {
         "operationId": "AnalyticsDashboardController_getLearning",
-        "summary": "Learning milestones plus top courses and skillsets",
+        "summary": "Learning milestones plus top courses and categories",
         "parameters": [
           {
             "name": "from",
@@ -12202,9 +12236,35 @@
         ]
       }
     },
-    "/api/v1/skillsets": {
+    "/api/v1/spaced-review/today": {
+      "get": {
+        "operationId": "SpacedReviewController_getToday",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "header",
+            "required": false,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "COURSES-SPACED-REVIEW"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/spaced-review/answers": {
       "post": {
-        "operationId": "SkillsetController_create",
+        "operationId": "SpacedReviewController_submit",
         "parameters": [
           {
             "name": "lang",
@@ -12218,7 +12278,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSkillsetDto"
+                "$ref": "#/components/schemas/SubmitSpacedReviewDto"
               }
             }
           }
@@ -12229,7 +12289,43 @@
           }
         },
         "tags": [
-          "SKILLSETS"
+          "COURSES-SPACED-REVIEW"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/categories": {
+      "post": {
+        "operationId": "CategoryController_create",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "header",
+            "required": false,
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CATEGORY"
         ],
         "security": [
           {
@@ -12238,7 +12334,7 @@
         ]
       },
       "get": {
-        "operationId": "SkillsetController_findAll",
+        "operationId": "CategoryController_findAll",
         "parameters": [
           {
             "name": "order",
@@ -12309,7 +12405,7 @@
             "example": [
               "MY_FEELINGS_FEEL_LOUD"
             ],
-            "description": "Filter skillsets by one or more onboarding introduce options.",
+            "description": "Filter categories by one or more onboarding introduce options.",
             "schema": {
               "type": "array",
               "items": {
@@ -12339,7 +12435,7 @@
           }
         },
         "tags": [
-          "SKILLSETS"
+          "CATEGORY"
         ],
         "security": [
           {
@@ -12348,9 +12444,9 @@
         ]
       }
     },
-    "/api/v1/skillsets/{id}": {
+    "/api/v1/categories/{id}": {
       "put": {
-        "operationId": "SkillsetController_update",
+        "operationId": "CategoryController_update",
         "parameters": [
           {
             "name": "id",
@@ -12372,7 +12468,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSkillsetDto"
+                "$ref": "#/components/schemas/UpdateCategoryDto"
               }
             }
           }
@@ -12383,7 +12479,7 @@
           }
         },
         "tags": [
-          "SKILLSETS"
+          "CATEGORY"
         ],
         "security": [
           {
@@ -12392,7 +12488,7 @@
         ]
       },
       "get": {
-        "operationId": "SkillsetController_findOne",
+        "operationId": "CategoryController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -12415,7 +12511,7 @@
           }
         },
         "tags": [
-          "SKILLSETS"
+          "CATEGORY"
         ],
         "security": [
           {
@@ -12424,7 +12520,7 @@
         ]
       },
       "delete": {
-        "operationId": "SkillsetController_remove",
+        "operationId": "CategoryController_remove",
         "parameters": [
           {
             "name": "id",
@@ -12447,7 +12543,7 @@
           }
         },
         "tags": [
-          "SKILLSETS"
+          "CATEGORY"
         ],
         "security": [
           {
@@ -13237,10 +13333,10 @@
         "operationId": "HabitLibraryController_findAll",
         "parameters": [
           {
-            "name": "skillsetId",
+            "name": "categoryId",
             "required": false,
             "in": "query",
-            "description": "Filter by skillset (category) id",
+            "description": "Filter by category (category) id",
             "schema": {
               "type": "string"
             }
@@ -17638,10 +17734,37 @@
         ]
       }
     },
+    "/api/v1/knowledge-graph/overview": {
+      "get": {
+        "operationId": "KnowledgeGraphController_getOverview",
+        "summary": "Toàn cảnh đồ thị: các thời kỳ kèm số thực thể và quy mô dữ liệu",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "header",
+            "required": false,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "KNOWLEDGE-GRAPH"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/knowledge-graph/entities": {
       "get": {
         "operationId": "KnowledgeGraphController_search",
-        "summary": "Tìm thực thể lịch sử theo tên (gõ không dấu vẫn khớp)",
+        "summary": "Tìm thực thể theo tên hoặc bí danh (gõ không dấu vẫn khớp), lọc theo loại/thời kỳ",
         "parameters": [
           {
             "name": "q",
@@ -17654,12 +17777,38 @@
             }
           },
           {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ lấy một loại thực thể",
+            "schema": {
+              "enum": [
+                "figure",
+                "event",
+                "organization",
+                "place"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "periodId",
+            "required": false,
+            "in": "query",
+            "example": "p05_tran",
+            "description": "Chỉ lấy thực thể thuộc một thời kỳ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
+            "description": "Tối đa 300 để duyệt trọn một thời kỳ hay một loại trong một lần gọi",
             "schema": {
               "minimum": 1,
-              "maximum": 100,
+              "maximum": 300,
               "default": 20,
               "type": "number"
             }
@@ -21486,12 +21635,12 @@
             "example": 1,
             "description": "id of dailyLearningGoal onboarding"
           },
-          "skillsetWantToMaster": {
+          "categoryWantToMaster": {
             "example": [
               1,
               2
             ],
-            "description": "ids of skillsetWantToMaster onboarding",
+            "description": "ids of categoryWantToMaster onboarding",
             "type": "array",
             "items": {
               "type": "number"
@@ -22092,7 +22241,7 @@
               "$ref": "#/components/schemas/LabelDto"
             }
           },
-          "skillsetWantToMaster": {
+          "categoryWantToMaster": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LabelDto"
@@ -22999,9 +23148,9 @@
             "type": "string",
             "example": "image1"
           },
-          "skillsetId": {
+          "categoryId": {
             "type": "string",
-            "example": "skillsetId"
+            "example": "categoryId"
           },
           "onboardingSymptoms": {
             "type": "array",
@@ -23132,9 +23281,9 @@
             "type": "string",
             "example": "image1"
           },
-          "skillsetId": {
+          "categoryId": {
             "type": "string",
-            "example": "skillsetId"
+            "example": "categoryId"
           },
           "onboardingSymptoms": {
             "type": "array",
@@ -26158,21 +26307,55 @@
           "query"
         ]
       },
-      "CreateSkillsetDto": {
+      "SpacedReviewResultDto": {
+        "type": "object",
+        "properties": {
+          "keypointId": {
+            "type": "string",
+            "description": "Keypoint vừa được ôn",
+            "example": "6650f1c2a1b2c3d4e5f60718"
+          },
+          "correct": {
+            "type": "boolean",
+            "description": "true khi mọi câu của keypoint này trong phiên đều đúng; một câu sai là false",
+            "example": true
+          }
+        },
+        "required": [
+          "keypointId",
+          "correct"
+        ]
+      },
+      "SubmitSpacedReviewDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "description": "Kết quả theo từng keypoint của phiên ôn vừa xong",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpacedReviewResultDto"
+            }
+          }
+        },
+        "required": [
+          "results"
+        ]
+      },
+      "CreateCategoryDto": {
         "type": "object",
         "properties": {
           "title": {
             "type": "object",
             "example": {
-              "en": "Skillset title",
-              "vi": "Tiêu đề Skillset"
+              "en": "Category title",
+              "vi": "Tiêu đề chủ đề"
             }
           },
           "description": {
             "type": "object",
             "example": {
-              "en": "Skillset Description",
-              "vi": "Mô tả Skillset"
+              "en": "Category Description",
+              "vi": "Mô tả chủ đề"
             }
           },
           "image": {
@@ -26198,28 +26381,28 @@
               "NOTHING_FEELS_NEW"
             ],
             "example": "MY_FEELINGS_FEEL_LOUD",
-            "description": "Intro option shown in onboarding flow for the selected skillset."
+            "description": "Intro option shown in onboarding flow for the selected category."
           }
         },
         "required": [
           "title"
         ]
       },
-      "UpdateSkillsetDto": {
+      "UpdateCategoryDto": {
         "type": "object",
         "properties": {
           "title": {
             "type": "object",
             "example": {
-              "en": "Skillset title",
-              "vi": "Tiêu đề Skillset"
+              "en": "Category title",
+              "vi": "Tiêu đề chủ đề"
             }
           },
           "description": {
             "type": "object",
             "example": {
-              "en": "Skillset Description",
-              "vi": "Mô tả Skillset"
+              "en": "Category Description",
+              "vi": "Mô tả chủ đề"
             }
           },
           "image": {
@@ -26245,7 +26428,7 @@
               "NOTHING_FEELS_NEW"
             ],
             "example": "MY_FEELINGS_FEEL_LOUD",
-            "description": "Intro option shown in onboarding flow for the selected skillset."
+            "description": "Intro option shown in onboarding flow for the selected category."
           },
           "index": {
             "type": "number",
@@ -26351,9 +26534,9 @@
               "vi": "Hít thở 2 phút để cân bằng lại"
             }
           },
-          "skillsetId": {
+          "categoryId": {
             "type": "string",
-            "description": "Skillset (category) id"
+            "description": "Category (category) id"
           },
           "status": {
             "type": "string",
@@ -26366,7 +26549,7 @@
           "image": {
             "type": "string",
             "example": "https://cdn.meup.training/habits/breathing-break.png",
-            "description": "The habit's own picture. Absolute CDN url, as returned by POST /cloudflares/upload. Omit to keep showing the skillset's logo."
+            "description": "The habit's own picture. Absolute CDN url, as returned by POST /cloudflares/upload. Omit to keep showing the category's logo."
           },
           "description": {
             "type": "object",
@@ -26423,7 +26606,7 @@
         },
         "required": [
           "title",
-          "skillsetId"
+          "categoryId"
         ]
       },
       "HabitImportRow": {
@@ -26532,9 +26715,9 @@
               "vi": "Hít thở 2 phút để cân bằng lại"
             }
           },
-          "skillsetId": {
+          "categoryId": {
             "type": "string",
-            "description": "Skillset (category) id"
+            "description": "Category (category) id"
           },
           "status": {
             "type": "string",
@@ -26547,7 +26730,7 @@
           "image": {
             "type": "string",
             "example": "https://cdn.meup.training/habits/breathing-break.png",
-            "description": "The habit's own picture. Absolute CDN url, as returned by POST /cloudflares/upload. Omit to keep showing the skillset's logo."
+            "description": "The habit's own picture. Absolute CDN url, as returned by POST /cloudflares/upload. Omit to keep showing the category's logo."
           },
           "description": {
             "type": "object",
@@ -27404,7 +27587,7 @@
               "library",
               "course-roadmap",
               "lesson",
-              "skillset-courses",
+              "category-courses",
               "paywall",
               "manage-subscription",
               "daily-warm-up",
@@ -27498,7 +27681,7 @@
               "library",
               "course-roadmap",
               "lesson",
-              "skillset-courses",
+              "category-courses",
               "paywall",
               "manage-subscription",
               "daily-warm-up",
@@ -27560,7 +27743,7 @@
           "body": {
             "type": "string",
             "example": "🌱 Hey {user_name}, \"{course_name}\" is waiting for you.",
-            "description": "Supports {user_name}, {course_name}, {topic_name} (the course skillset) and {quote}. {lesson_name} still resolves (to the course name) for copy saved before the rename."
+            "description": "Supports {user_name}, {course_name}, {topic_name} (the course category) and {quote}. {lesson_name} still resolves (to the course name) for copy saved before the rename."
           }
         },
         "required": [
@@ -28965,7 +29148,7 @@
           "isSelectable": {
             "type": "boolean"
           },
-          "skillsetId": {
+          "categoryId": {
             "type": "string",
             "nullable": true
           },

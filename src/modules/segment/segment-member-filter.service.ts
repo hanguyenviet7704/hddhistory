@@ -179,7 +179,7 @@ export class SegmentMemberFilterService {
 
     if (criteria.topicIds?.length) {
       and.push({
-        'onboarding.skillsetWantToMaster': { $in: criteria.topicIds },
+        'onboarding.categoryWantToMaster': { $in: criteria.topicIds },
       });
     }
 

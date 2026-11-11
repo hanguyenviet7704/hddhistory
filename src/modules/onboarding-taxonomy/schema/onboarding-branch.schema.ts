@@ -33,7 +33,7 @@ export class OnboardingBranch
   isSelectable: boolean;
 
   @Prop({ type: String, default: null })
-  skillsetId: string | null;
+  categoryId: string | null;
 
   @Prop({ default: true })
   isActive: boolean;

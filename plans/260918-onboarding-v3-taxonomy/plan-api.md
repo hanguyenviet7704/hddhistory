@@ -80,7 +80,7 @@ src/app.module.ts
 
 **Interfaces — Produces:**
 ```ts
-IOnboardingBranch { code; label: ITranslation; subtitle: ITranslation; iconUrl: string; imageUrl: string; order: number; isSelectable: boolean; skillsetId: string | null; isActive: boolean }
+IOnboardingBranch { code; label: ITranslation; subtitle: ITranslation; iconUrl: string; imageUrl: string; order: number; isSelectable: boolean; categoryId: string | null; isActive: boolean }
 IOnboardingPackage { code; branchCode; problemLabel: ITranslation; desireLabel: ITranslation; order: number; isActive: boolean }
 IOnboardingLabel { code; packageCode; label: ITranslation; order: number }
 IOnboardingTaxonomyTree { branches: IOnboardingBranch[]; packages: IOnboardingPackage[]; labels: IOnboardingLabel[] }
@@ -105,8 +105,8 @@ export interface IOnboardingBranch {
   imageUrl: string;
   order: number;
   isSelectable: boolean;
-  /** Skillset tương ứng để Home xếp thứ tự theo nhánh đã chọn. */
-  skillsetId: string | null;
+  /** Chủ đề tương ứng để Home xếp thứ tự theo nhánh đã chọn. */
+  categoryId: string | null;
   isActive: boolean;
 }
 
@@ -184,7 +184,7 @@ export class OnboardingBranch
   isSelectable: boolean;
 
   @Prop({ type: String, default: null })
-  skillsetId: string | null;
+  categoryId: string | null;
 
   @Prop({ default: true })
   isActive: boolean;
@@ -368,7 +368,7 @@ import { IOnboardingTaxonomyTree } from './interface/onboarding-taxonomy.interfa
 
 const branch = (code: string) => ({
   code, label: { vi: code }, subtitle: {}, iconUrl: '', imageUrl: '',
-  order: 1, isSelectable: true, skillsetId: null, isActive: true,
+  order: 1, isSelectable: true, categoryId: null, isActive: true,
 });
 const pkg = (code: string, branchCode: string) => ({
   code, branchCode, problemLabel: { vi: 'p ' + code }, desireLabel: { vi: 'd ' + code },
@@ -534,7 +534,7 @@ export class TaxonomyBranchDto {
   @ApiPropertyOptional() @IsOptional() @IsString() imageUrl?: string;
   @ApiPropertyOptional() @IsOptional() @IsInt() order?: number;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isSelectable?: boolean;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() skillsetId?: string | null;
+  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() categoryId?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
 }
 
@@ -627,7 +627,7 @@ export function normalizeTree(input: SaveOnboardingTaxonomyDto | IOnboardingTaxo
   const branches: IOnboardingBranch[] = (input.branches ?? []).map((b, i) => ({
     code: up(b.code), label: b.label ?? {}, subtitle: b.subtitle ?? {},
     iconUrl: b.iconUrl ?? '', imageUrl: b.imageUrl ?? '', order: b.order ?? i + 1,
-    isSelectable: b.isSelectable ?? true, skillsetId: b.skillsetId ?? null, isActive: b.isActive ?? true,
+    isSelectable: b.isSelectable ?? true, categoryId: b.categoryId ?? null, isActive: b.isActive ?? true,
   }));
   const packages: IOnboardingPackage[] = (input.packages ?? []).map((p, i) => ({
     code: up(p.code), branchCode: up(p.branchCode), problemLabel: p.problemLabel ?? {},
@@ -711,7 +711,7 @@ CourseRepository.findOnboardingCandidates(params: { labelCodes: string[]; desire
 CourseRepository.findPublishedFallback(params: { excludeIds: string[]; desireCodes: string[]; limit: number; viewerMarkets?: string[] | null }): Promise<IOnboardingCourseCandidate[]>
 CourseRepository.updateOnboardingTags(courseId: string, tags: { onboardingLabelCodes: string[]; onboardingDesireCodes: string[] }): Promise<void>
 CourseRepository.findIdByViTitle(title: string): Promise<string | null>
-export interface IOnboardingCourseCandidate { _id: Types.ObjectId; title; description; image; skillsetId; numberOfLesson; status; createdAt; onboardingLabelCodes: string[]; onboardingDesireCodes: string[] }
+export interface IOnboardingCourseCandidate { _id: Types.ObjectId; title; description; image; categoryId; numberOfLesson; status; createdAt; onboardingLabelCodes: string[]; onboardingDesireCodes: string[] }
 ```
 
 - [ ] **Step 1: Schema + interface + DTO**
@@ -761,7 +761,7 @@ export interface IOnboardingCourseCandidate {
   title: Record<string, string>;
   description?: Record<string, string>;
   image: string;
-  skillsetId: string;
+  categoryId: string;
   numberOfLesson?: number;
   status: CourseStatus;
   createdAt?: Date;
@@ -770,7 +770,7 @@ export interface IOnboardingCourseCandidate {
 }
 
 const ONBOARDING_CANDIDATE_FIELDS =
-  '_id title description image skillsetId numberOfLesson status createdAt onboardingLabelCodes onboardingDesireCodes';
+  '_id title description image categoryId numberOfLesson status createdAt onboardingLabelCodes onboardingDesireCodes';
 
 // ...trong class:
 /** Ứng viên cho gợi ý onboarding: published + hiện được ở thị trường + chạm ≥1 nhãn hoặc mong muốn. */
@@ -880,7 +880,7 @@ Routes: POST /onboarding-taxonomy/import (multipart 'file') · GET /onboarding-t
 ```
 
 Header chính thức (khớp `onboarding-taxonomy-template.xlsx`):
-- `Nhánh`: `Mã nhánh | Tên nhánh (vi) | Tên nhánh (en) | Mô tả ngắn (vi) | Mô tả ngắn (en) | Thứ tự | Hiện ở câu 1 (Y/N) | Skillset ID (tuỳ chọn)`
+- `Nhánh`: `Mã nhánh | Tên nhánh (vi) | Tên nhánh (en) | Mô tả ngắn (vi) | Mô tả ngắn (en) | Thứ tự | Hiện ở câu 1 (Y/N) | Chủ đề ID (tuỳ chọn)`
 - `Gói nhãn`: `Mã nhánh | Mã gói | Vấn đề — đáp án câu 2 (vi) | Vấn đề — đáp án câu 2 (en) | Mong muốn — đáp án câu 3 (vi) | Mong muốn — đáp án câu 3 (en) | Nhãn chi tiết (vi) | Mã nhãn chi tiết | Thứ tự`
 - `Mapping Khoá học`: `Course ID (tuỳ chọn) | Khoá học | Nhánh nội dung | Trạng thái (tham khảo) | Mã nhãn vấn đề | Mã gói mong muốn`
 Alias chấp nhận thêm: header không hậu tố `(vi)` (= vi); `Nhánh` (tên nhánh, khi sheet gốc chưa có `Mã nhánh`) → tra `Tên nhánh (vi)` trong sheet `Nhánh` hoặc `existingBranches`; `Mã nhãn mong muốn` (= `Mã gói mong muốn`); `Nhãn chi tiết` (= vi). Cột `(zh)/(ja)/(ko)` tuỳ chọn cùng quy tắc.
@@ -902,7 +902,7 @@ describe('parseTaxonomyWorkbook', () => {
   it('parses the three sheets of the template into a tree + course rows', () => {
     const wb = new ExcelJS.Workbook();
     sheet(wb, 'Nhánh', [
-      ['Mã nhánh', 'Tên nhánh (vi)', 'Tên nhánh (en)', 'Mô tả ngắn (vi)', 'Mô tả ngắn (en)', 'Thứ tự', 'Hiện ở câu 1 (Y/N)', 'Skillset ID (tuỳ chọn)'],
+      ['Mã nhánh', 'Tên nhánh (vi)', 'Tên nhánh (en)', 'Mô tả ngắn (vi)', 'Mô tả ngắn (en)', 'Thứ tự', 'Hiện ở câu 1 (Y/N)', 'Category ID (tuỳ chọn)'],
       ['CX', 'Cảm xúc & tinh thần', 'Emotions', 'sub vi', 'sub en', 1, 'Y', ''],
       ['KP', 'Khám phá não bộ', '', '', '', 6, 'N', '64abc'],
     ]);
@@ -919,7 +919,7 @@ describe('parseTaxonomyWorkbook', () => {
     const { tree, courseRows, errors } = parseTaxonomyWorkbook(wb, []);
 
     expect(errors).toEqual([]);
-    expect(tree.branches.map(b => [b.code, b.isSelectable, b.skillsetId])).toEqual([['CX', true, null], ['KP', false, '64abc']]);
+    expect(tree.branches.map(b => [b.code, b.isSelectable, b.categoryId])).toEqual([['CX', true, null], ['KP', false, '64abc']]);
     expect(tree.packages).toEqual([
       expect.objectContaining({ code: 'CX-1', branchCode: 'CX', problemLabel: { vi: 'Dễ căng thẳng', en: 'Stressed' }, desireLabel: { vi: 'Thả lỏng được trong ngày', en: 'Relax' }, order: 1 }),
     ]);
@@ -939,7 +939,7 @@ describe('parseTaxonomyWorkbook', () => {
       ['Nhánh', 'Mã gói', 'Vấn đề — đáp án câu 2', 'Mong muốn — đáp án câu 3', 'Số nhãn chi tiết', 'Nhãn chi tiết', 'Mã nhãn chi tiết'],
       ['Cảm xúc & tinh thần', 'CX-2', 'Suy nghĩ nhiều', 'Đầu óc yên hơn', 2, 'X | Y', 'CX06 | CX07'],
     ]);
-    const existing = [{ code: 'CX', label: { vi: 'Cảm xúc & tinh thần' }, subtitle: {}, iconUrl: '', imageUrl: '', order: 1, isSelectable: true, skillsetId: null, isActive: true }];
+    const existing = [{ code: 'CX', label: { vi: 'Cảm xúc & tinh thần' }, subtitle: {}, iconUrl: '', imageUrl: '', order: 1, isSelectable: true, categoryId: null, isActive: true }];
 
     const { tree, errors } = parseTaxonomyWorkbook(wb, existing);
 
@@ -975,7 +975,7 @@ describe('buildTaxonomyWorkbook', () => {
   it('writes the three sheets with the template headers and joins lists with " | "', () => {
     const wb = buildTaxonomyWorkbook(
       {
-        branches: [{ code: 'CX', label: { vi: 'Cảm xúc', en: 'Emo' }, subtitle: { vi: 's' }, iconUrl: '', imageUrl: '', order: 1, isSelectable: true, skillsetId: null, isActive: true }],
+        branches: [{ code: 'CX', label: { vi: 'Cảm xúc', en: 'Emo' }, subtitle: { vi: 's' }, iconUrl: '', imageUrl: '', order: 1, isSelectable: true, categoryId: null, isActive: true }],
         packages: [{ code: 'CX-1', branchCode: 'CX', problemLabel: { vi: 'p' }, desireLabel: { vi: 'd' }, order: 1, isActive: true }],
         labels: [{ code: 'CX01', packageCode: 'CX-1', label: { vi: 'A' }, order: 1 }, { code: 'CX02', packageCode: 'CX-1', label: { vi: 'B' }, order: 2 }],
       },
@@ -1015,7 +1015,7 @@ export const SHEET_MAPPING = ['Mapping Khoá học', 'Mapping Khoa hoc'];
 
 const LANGS = ['vi', 'en', 'zh', 'ja', 'ko'] as const;
 
-export const BRANCH_HEADERS = ['Mã nhánh', 'Tên nhánh (vi)', 'Tên nhánh (en)', 'Mô tả ngắn (vi)', 'Mô tả ngắn (en)', 'Thứ tự', 'Hiện ở câu 1 (Y/N)', 'Skillset ID (tuỳ chọn)'];
+export const BRANCH_HEADERS = ['Mã nhánh', 'Tên nhánh (vi)', 'Tên nhánh (en)', 'Mô tả ngắn (vi)', 'Mô tả ngắn (en)', 'Thứ tự', 'Hiện ở câu 1 (Y/N)', 'Category ID (tuỳ chọn)'];
 export const PACKAGE_HEADERS = ['Mã nhánh', 'Mã gói', 'Vấn đề — đáp án câu 2 (vi)', 'Vấn đề — đáp án câu 2 (en)', 'Mong muốn — đáp án câu 3 (vi)', 'Mong muốn — đáp án câu 3 (en)', 'Nhãn chi tiết (vi)', 'Mã nhãn chi tiết', 'Thứ tự'];
 export const MAPPING_HEADERS = ['Course ID (tuỳ chọn)', 'Khoá học', 'Nhánh nội dung', 'Trạng thái (tham khảo)', 'Mã nhãn vấn đề', 'Mã gói mong muốn'];
 
@@ -1077,7 +1077,7 @@ export function parseTaxonomyWorkbook(
       imageUrl: text(pick(row, ['Ảnh URL'])),
       order: numberValue(pick(row, ['Thứ tự'])) ?? i + 1,
       isSelectable: text(pick(row, ['Hiện ở câu 1 (Y/N)', 'Hiện ở câu 1'])).toUpperCase() !== 'N',
-      skillsetId: text(pick(row, ['Skillset ID (tuỳ chọn)', 'Skillset ID'])) || null,
+      categoryId: text(pick(row, ['Category ID (tuỳ chọn)', 'Category ID'])) || null,
       isActive: true,
     }));
     branches.forEach((b, i) => {
@@ -1195,7 +1195,7 @@ export function buildTaxonomyWorkbook(tree: IOnboardingTaxonomyTree, courses: Ex
   const bs = wb.addWorksheet(SHEET_BRANCH);
   bs.addRow(BRANCH_HEADERS);
   for (const b of [...tree.branches].sort((a, z) => a.order - z.order)) {
-    bs.addRow([b.code, b.label?.vi ?? '', b.label?.en ?? '', b.subtitle?.vi ?? '', b.subtitle?.en ?? '', b.order, b.isSelectable ? 'Y' : 'N', b.skillsetId ?? '']);
+    bs.addRow([b.code, b.label?.vi ?? '', b.label?.en ?? '', b.subtitle?.vi ?? '', b.subtitle?.en ?? '', b.order, b.isSelectable ? 'Y' : 'N', b.categoryId ?? '']);
   }
 
   const ps = wb.addWorksheet(SHEET_PACKAGE[0]);
@@ -1325,7 +1325,7 @@ export class OnboardingTaxonomyImportService {
     if (tree.packages.length) return this.export();
     const wb: ExcelJS.Workbook = buildTaxonomyWorkbook(
       {
-        branches: [{ code: 'CX', label: { vi: 'Cảm xúc & tinh thần', en: 'Emotions & mind' }, subtitle: { vi: 'Hiểu cảm xúc để làm chủ cuộc sống' }, iconUrl: '', imageUrl: '', order: 1, isSelectable: true, skillsetId: null, isActive: true }],
+        branches: [{ code: 'CX', label: { vi: 'Cảm xúc & tinh thần', en: 'Emotions & mind' }, subtitle: { vi: 'Hiểu cảm xúc để làm chủ cuộc sống' }, iconUrl: '', imageUrl: '', order: 1, isSelectable: true, categoryId: null, isActive: true }],
         packages: [{ code: 'CX-1', branchCode: 'CX', problemLabel: { vi: 'Dễ căng thẳng' }, desireLabel: { vi: 'Thả lỏng được trong ngày' }, order: 1, isActive: true }],
         labels: [{ code: 'CX01', packageCode: 'CX-1', label: { vi: 'Người lúc nào cũng căng cứng' }, order: 1 }],
       },
@@ -1429,7 +1429,7 @@ import { IOnboardingCourseCandidate } from 'src/modules/courses/src/modules/cour
 import { rankCourses } from './onboarding-recommendation.ranker';
 
 const course = (title: string, labels: string[], desires: string[], lessons = 5): IOnboardingCourseCandidate => ({
-  _id: new Types.ObjectId(), title: { vi: title }, image: '', skillsetId: 's', numberOfLesson: lessons,
+  _id: new Types.ObjectId(), title: { vi: title }, image: '', categoryId: 's', numberOfLesson: lessons,
   status: CourseStatus.PUBLISHED, createdAt: new Date('2026-01-01'),
   onboardingLabelCodes: labels, onboardingDesireCodes: desires,
 });
@@ -1579,7 +1579,7 @@ export interface IRecommendedCourse {
   title: Record<string, string>;
   description?: Record<string, string>;
   image: string;
-  skillsetId: string;
+  categoryId: string;
   numberOfLesson: number;
   status: string;
   matchReason: { desire: boolean; labelCodes: string[]; packageCodes: string[] };
@@ -1798,7 +1798,7 @@ export class OnboardingAnswerService {
 function toRecommended(c: IOnboardingCourseCandidate, matchReason: IRecommendedCourse['matchReason']): IRecommendedCourse {
   return {
     _id: String(c._id), title: c.title, description: c.description, image: c.image,
-    skillsetId: c.skillsetId, numberOfLesson: c.numberOfLesson ?? 0, status: c.status, matchReason,
+    categoryId: c.categoryId, numberOfLesson: c.numberOfLesson ?? 0, status: c.status, matchReason,
   };
 }
 ```

@@ -81,7 +81,7 @@ import { CoachSituationModule } from '../situation/coach-situation.module';
     // repository the library screen writes.
     SavedCourseModule,
     // The card's selector: what the reader has already studied (progress),
-    // and courses in a skillset they have not started (catalogue). Neither
+    // and courses in a category they have not started (catalogue). Neither
     // module imports anything under coach/, so no cycle to forwardRef.
     UserProgressModule,
     CourseModule,

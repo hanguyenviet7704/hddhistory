@@ -316,7 +316,7 @@ async function lookupTopic(topic: string): Promise<Hit | null> {
 }
 
 const forEachCard = (d: any, fn: (k: Card, l: any) => void) =>
-  d.skillsets.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach((l: any) =>
+  d.categories.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach((l: any) =>
     l.keypoints.forEach((k: Card) => fn(k, l)))));
 
 
@@ -336,7 +336,7 @@ export function dominantEntity(
 export const isPublicDomainLicense = (license: string | undefined) => PD_RE.test((license ?? '').trim());
 
 const forEachLesson = (d: any, fn: (l: any) => void) =>
-  d.skillsets.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach(fn)));
+  d.categories.forEach((s: any) => s.courses.forEach((c: any) => c.lessons.forEach(fn)));
 
 const COVER_KEYS = ['image', 'imageAuthor', 'imageLicense', 'imageFile', 'imageSource'] as const;
 /** Đặt trường bìa ngay sau descriptionVi (trước keypoints) để file đọc tự nhiên. */
@@ -353,7 +353,7 @@ async function runCovers(data: any, names: Map<string, string>) {
   const stats = { pdCard: 0, pdFetched: 0, ccCard: 0, ccFetched: 0, none: 0 };
   const log: string[] = [];
 
-  for (const s of data.skillsets) for (const c of s.courses) {
+  for (const s of data.categories) for (const c of s.courses) {
     for (let i = 0; i < c.lessons.length; i++) {
       const l = c.lessons[i];
       const cards: Card[] = l.keypoints;
@@ -475,7 +475,7 @@ async function main() {
 
   let processed = 0;
 
-  outer: for (const s of data.skillsets) for (const c of s.courses) for (const l of c.lessons) {
+  outer: for (const s of data.categories) for (const c of s.courses) for (const l of c.lessons) {
     const used = new Map<string, number>();
     (l.keypoints as Card[]).forEach((k) => k.image && k.imageFile && used.set(k.imageFile, (used.get(k.imageFile) ?? 0) + 1));
     let touched = false;

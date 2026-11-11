@@ -6,14 +6,14 @@ import { I18nContext } from 'nestjs-i18n/dist';
 import { AbstractRepository } from '@base/database/mongodb/abstract.repository';
 import { OrderType } from '@utils/type/orderByType';
 
-import { GetListSkillsetDto } from '../dto/get-list-skillset.dto';
-import { Skillset } from '../schema/skillset.schema';
+import { GetListCategoryDto } from '../dto/get-list-category.dto';
+import { Category } from '../schema/category.schema';
 
 @Injectable()
-export class SkillsetRepository extends AbstractRepository<Skillset> {
-  protected readonly logger = new Logger(SkillsetRepository.name);
+export class CategoryRepository extends AbstractRepository<Category> {
+  protected readonly logger = new Logger(CategoryRepository.name);
   constructor(
-    @InjectModel(Skillset.name) model: Model<Skillset>,
+    @InjectModel(Category.name) model: Model<Category>,
     @InjectConnection() connection: Connection,
   ) {
     super(model, connection);
@@ -31,11 +31,11 @@ export class SkillsetRepository extends AbstractRepository<Skillset> {
       .filter(Boolean);
   }
 
-  async findOption(getListSkillsetDto: GetListSkillsetDto) {
-    const where: FilterQuery<Skillset> = {};
+  async findOption(getListCategoryDto: GetListCategoryDto) {
+    const where: FilterQuery<Category> = {};
 
     const { page, take, search, isAll, status, onboardingIntroduces } =
-      getListSkillsetDto;
+      getListCategoryDto;
 
     if (status && !isAll) {
       where.status = status;
@@ -52,7 +52,7 @@ export class SkillsetRepository extends AbstractRepository<Skillset> {
       ];
     }
 
-    return this.paginateQuery<Skillset>({
+    return this.paginateQuery<Category>({
       where,
       page,
       take,
@@ -65,20 +65,20 @@ export class SkillsetRepository extends AbstractRepository<Skillset> {
     const normalizedTitle = title?.trim();
     if (!normalizedTitle) return null;
 
-    const skillset = await this.model.exists({
+    const category = await this.model.exists({
       [`title.${lang}`]: normalizedTitle,
     });
-    return skillset;
+    return category;
   }
 
   async getNextIndex() {
-    const lastSkillset = await this.model
+    const lastCategory = await this.model
       .findOne({}, { index: 1 })
       .sort({ index: -1 })
       .lean()
       .exec();
 
-    const lastIndex = lastSkillset?.index ?? 0;
+    const lastIndex = lastCategory?.index ?? 0;
     return lastIndex + 1;
   }
 }

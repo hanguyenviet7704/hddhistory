@@ -213,7 +213,7 @@ export class CreateOnboardingDto {
   })
   @ValidateNested({ each: true })
   @Type(() => LabelDto)
-  skillsetWantToMaster: LabelDto[];
+  categoryWantToMaster: LabelDto[];
 
   @IsArray()
   @IsOptional()

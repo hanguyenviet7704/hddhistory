@@ -16,7 +16,7 @@ Two changes to the scheduled notifications:
 |---|---|
 | New-course trigger | **Always send** the newest course by `createdAt`, re-announcing the same course on later days when nothing newer exists. (The sheet said "only when a course published today"; the product call was daily reach.) |
 | Variant selection | **Random, avoiding the last three days per user** — for both types. The sheet's behaviour-based split for `new_course` was dropped. |
-| `{topic_name}` | The **skillset title of the course the notification names** (`course.skillsetId` → `skillset.title`), not the reader's onboarding interests. |
+| `{topic_name}` | The **category title of the course the notification names** (`course.categoryId` → `category.title`), not the reader's onboarding interests. |
 | Locales seeded | **vi/en/ko/zh/ja**. id/ms/fil keep falling back to `en`, as they already did. |
 | Deeplink | New symbolic value **`new_course`**, handled in the app; older builds log it as unsupported and just come to the foreground. |
 | Daily cap | `MAX_NOTIFICATIONS_PER_DAY` **2 → 4**. |
@@ -86,7 +86,7 @@ rules, the earlier ones the cooldown memory. No extra query per tick.
   course is the same document for everybody. Returns null on an empty catalog,
   and the tick then skips the candidate query entirely.
 - Payload carries `courseId`; `meta` records `courseId` + `courseName`.
-- `{topic_name}` uses a 5-minute skillset-title cache, which also serves progress
+- `{topic_name}` uses a 5-minute category-title cache, which also serves progress
   finish (there the course differs per reader, so it cannot be hoisted).
 
 ## Rolling the copy out

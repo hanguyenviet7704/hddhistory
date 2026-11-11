@@ -21,7 +21,7 @@ export class Course extends AbstractDocument implements ICourse {
   image: string;
 
   @Prop()
-  skillsetId: string;
+  categoryId: string;
 
   @Prop({ type: [String], enum: Object.values(OnboardingSymptom) })
   onboardingSymptoms?: OnboardingSymptom[] | null;
@@ -109,7 +109,7 @@ export const CourseSchema = SchemaFactory.createForClass(Course);
 CourseSchema.index({ onboardingSymptoms: 1, status: 1 });
 CourseSchema.index({ onboardingLabelCodes: 1, status: 1 });
 CourseSchema.index({ onboardingDesireCodes: 1, status: 1 });
-CourseSchema.index({ skillsetId: 1, status: 1 });
+CourseSchema.index({ categoryId: 1, status: 1 });
 
 // Backs `findNewestPublished()` — the daily new-course notification's "newest
 // published course" lookup, which would otherwise sort the whole published set

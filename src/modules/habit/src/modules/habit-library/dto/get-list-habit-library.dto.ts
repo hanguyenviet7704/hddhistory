@@ -7,11 +7,11 @@ import { HabitLibraryStatus } from '../enum/habit-library.enum';
 
 export class GetListHabitLibraryDto {
   @ApiPropertyOptional({
-    description: 'Filter by skillset (category) id',
+    description: 'Filter by category (category) id',
   })
   @IsOptional()
   @IsMongoId()
-  skillsetId?: string;
+  categoryId?: string;
 
   @ApiPropertyOptional({
     description: 'Filter by keypoint id (habits suggested in this keypoint)',

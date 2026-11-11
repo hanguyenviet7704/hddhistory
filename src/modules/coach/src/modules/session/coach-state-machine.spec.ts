@@ -715,7 +715,7 @@ describe('coach state machine — T2 tình huống', () => {
     ).toBe(CoachStep.END);
   });
 
-  // Đúng hướng: one specific praise, then the card in the same skill set —
+  // Đúng hướng: one specific praise, then the card in the same category —
   // "không mời tập thêm cảnh nữa trong phiên". No course → the talk goes on.
   it('an answer on track ends on the card, or on one line', () => {
     expect(

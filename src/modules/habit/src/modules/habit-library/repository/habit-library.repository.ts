@@ -18,11 +18,11 @@ export class HabitLibraryRepository extends AbstractRepository<HabitLibrary> {
     super(model, connection);
   }
 
-  async findPublished(skillsetId?: string, keypointId?: string) {
+  async findPublished(categoryId?: string, keypointId?: string) {
     return this.model
       .find({
         status: HabitLibraryStatus.PUBLISHED,
-        ...(skillsetId ? { skillsetId } : {}),
+        ...(categoryId ? { categoryId } : {}),
         ...(keypointId ? { keypointIds: keypointId } : {}),
       })
       .sort({ order: 1 })
@@ -30,7 +30,7 @@ export class HabitLibraryRepository extends AbstractRepository<HabitLibrary> {
   }
 
   async findList(filter: {
-    skillsetId?: string;
+    categoryId?: string;
     keypointId?: string;
     /**
      * Any-of match. An empty array means "a course was asked for and it owns
@@ -43,7 +43,7 @@ export class HabitLibraryRepository extends AbstractRepository<HabitLibrary> {
     return this.model
       .find({
         ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.skillsetId ? { skillsetId: filter.skillsetId } : {}),
+        ...(filter.categoryId ? { categoryId: filter.categoryId } : {}),
         ...(filter.keypointId ? { keypointIds: filter.keypointId } : {}),
         ...(filter.keypointIds
           ? { keypointIds: { $in: filter.keypointIds } }

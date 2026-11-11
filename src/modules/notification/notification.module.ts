@@ -6,7 +6,7 @@ import { CourseModule } from 'src/modules/courses/src/modules/course/course.modu
 import { UserProgressModule } from 'src/modules/courses/src/modules/progress/src/modules/user-progress/user-progress.module';
 import { WeekRecapModule } from 'src/modules/courses/src/modules/progress/src/modules/week-recap/week-recap.module';
 import { QuoteModule } from 'src/modules/courses/src/modules/quotes/quote.module';
-import { SkillsetModule } from 'src/modules/courses/src/modules/skillset/skillset.module';
+import { CategoryModule } from 'src/modules/courses/src/modules/category/category.module';
 import { UserHabitModule } from 'src/modules/habit/src/modules/user-habit/user-habit.module';
 import { AuthModule } from 'src/modules/user/src/modules/auth/auth.module';
 
@@ -66,10 +66,10 @@ import {
     UserProgressModule,
     WeekRecapModule,
     CourseModule,
-    // Only for `{topic_name}`: the skillset title behind the course a
-    // notification names. forwardRef because SkillsetModule reaches back to
+    // Only for `{topic_name}`: the category title behind the course a
+    // notification names. forwardRef because CategoryModule reaches back to
     // CourseModule, which this module also imports.
-    forwardRef(() => SkillsetModule),
+    forwardRef(() => CategoryModule),
     UserHabitModule,
     QuoteModule,
     // Segment targeting per notification type. forwardRef because SegmentModule

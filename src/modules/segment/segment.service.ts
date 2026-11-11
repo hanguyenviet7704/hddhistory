@@ -214,7 +214,7 @@ export class SegmentService {
       ],
       userType,
       learningGoal: user.onboarding?.learningGoal ?? null,
-      topicIds: user.onboarding?.skillsetWantToMaster ?? [],
+      topicIds: user.onboarding?.categoryWantToMaster ?? [],
     };
   }
 

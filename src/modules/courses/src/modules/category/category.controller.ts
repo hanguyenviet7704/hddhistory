@@ -13,30 +13,30 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { AuthGuard } from '@base/guard/auth.guard';
 
-import { CreateSkillsetDto } from './dto/create-skillset.dto';
-import { GetListSkillsetDto } from './dto/get-list-skillset.dto';
-import { UpdateSkillsetDto } from './dto/update-skillset.dto';
-import { SkillsetService } from './skillset.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { GetListCategoryDto } from './dto/get-list-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryService } from './category.service';
 
-@ApiTags('SKILLSETS')
+@ApiTags('CATEGORY')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-@Controller({ path: 'skillsets', version: '1' })
-export class SkillsetController {
-  constructor(private readonly svc: SkillsetService) {}
+@Controller({ path: 'categories', version: '1' })
+export class CategoryController {
+  constructor(private readonly svc: CategoryService) {}
 
   @Post('')
-  create(@Body() dto: CreateSkillsetDto) {
+  create(@Body() dto: CreateCategoryDto) {
     return this.svc.create(dto);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateSkillsetDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.svc.update(id, dto);
   }
 
   @Get('')
-  findAll(@Query() dto: GetListSkillsetDto) {
+  findAll(@Query() dto: GetListCategoryDto) {
     return this.svc.findAll(dto);
   }
 

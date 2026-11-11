@@ -82,10 +82,10 @@ export interface ICompletedLevelAdditionalContentRequest {
   submittedAt: Date;
 }
 export interface IAchievenmentResponse {
-  skillsetId: string;
-  skillsetTitle: ITranslation;
+  categoryId: string;
+  categoryTitle: ITranslation;
   courses: ICourseLevelProgress[];
-  // Skillset-wide keypoint totals across ALL levels of ALL published courses —
+  // Category-wide keypoint totals across ALL levels of ALL published courses —
   // lets the client show real fractional learning progress (completed/total
   // keypoints) instead of a coarse "fully-completed courses / total courses".
   totalKeypoints: number;

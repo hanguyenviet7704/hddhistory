@@ -126,7 +126,7 @@ export function viewerMarketsForRequest(
  * The viewer's markets from the request headers the app already sends.
  *
  * A thin adapter over [[resolveViewerMarkets]] so the three services that need
- * it (`course`, `skillset`, `user-progress`) do not each carry their own copy
+ * it (`course`, `category`, `user-progress`) do not each carry their own copy
  * of the header names — one of them would drift the first time a signal is
  * added, and a market filter that reads the wrong header fails by showing the
  * wrong catalogue, with nothing in the logs.

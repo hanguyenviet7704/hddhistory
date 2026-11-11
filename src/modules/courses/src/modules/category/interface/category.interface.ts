@@ -2,16 +2,16 @@ import { ITranslation } from '@utils/interface/common.interface';
 
 import { ICourse } from '../../course/interface/course.interface';
 import {
-  SkillsetOnboardingIntroduce,
-  SkillsetStatus,
-} from '../enum/skillset.enum';
+  CategoryOnboardingIntroduce,
+  CategoryStatus,
+} from '../enum/category.enum';
 
-export interface ISkillset {
+export interface ICategory {
   title: ITranslation;
   description?: ITranslation;
-  status: SkillsetStatus;
+  status: CategoryStatus;
   image: string;
-  onboardingIntroduce?: SkillsetOnboardingIntroduce;
+  onboardingIntroduce?: CategoryOnboardingIntroduce;
   courses?: ICourse[];
   index?: number;
 }

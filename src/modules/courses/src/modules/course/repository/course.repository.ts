@@ -19,7 +19,7 @@ import { Course } from '../schema/course.schema';
  * reads that as "this course has no lessons yet" and refuses to open it.
  */
 export const COURSE_CARD_FIELDS =
-  'title _id skillsetId level image description status numberOfLesson isNew publishAt newDurationDays author viewCount';
+  'title _id categoryId level image description status numberOfLesson isNew publishAt newDurationDays author viewCount';
 
 /** A course as a candidate for onboarding recommendation — card fields plus
  * the two onboarding v3 tag arrays the matching logic filters on. */
@@ -28,7 +28,7 @@ export interface IOnboardingCourseCandidate {
   title: Record<string, string>;
   description?: Record<string, string>;
   image: string;
-  skillsetId: string;
+  categoryId: string;
   numberOfLesson?: number;
   status: CourseStatus;
   createdAt?: Date;
@@ -37,7 +37,7 @@ export interface IOnboardingCourseCandidate {
 }
 
 const ONBOARDING_CANDIDATE_FIELDS =
-  '_id title description image skillsetId numberOfLesson status createdAt onboardingLabelCodes onboardingDesireCodes';
+  '_id title description image categoryId numberOfLesson status createdAt onboardingLabelCodes onboardingDesireCodes';
 
 @Injectable()
 export class CourseRepository extends AbstractRepository<Course> {
@@ -88,7 +88,7 @@ export class CourseRepository extends AbstractRepository<Course> {
       orderBy,
       ids,
       isAll,
-      skillsetIds,
+      categoryIds,
       onboardingSymptoms,
     } = getListCourseDto;
 
@@ -129,8 +129,8 @@ export class CourseRepository extends AbstractRepository<Course> {
       where.level = level;
     }
 
-    if (skillsetIds?.length) {
-      where.skillsetId = { $in: skillsetIds };
+    if (categoryIds?.length) {
+      where.categoryId = { $in: categoryIds };
     }
 
     if (onboardingSymptoms?.length) {
@@ -166,13 +166,13 @@ export class CourseRepository extends AbstractRepository<Course> {
   }
 
   async findAllBrief(
-    skillsetId: string,
+    categoryId: string,
     order: OrderType,
     orderBy: string,
     viewerMarkets?: string[] | null,
   ) {
     const where: FilterQuery<Course> = {
-      skillsetId,
+      categoryId,
       status: { $in: [CourseStatus.PUBLISHED, CourseStatus.COMING_SOON] },
     };
 
@@ -180,23 +180,23 @@ export class CourseRepository extends AbstractRepository<Course> {
       .find(withMarketVisibility(where, viewerMarkets))
       .sort({ [orderBy]: order })
       .select(
-        'title _id skillsetId level image description status numberOfLesson isNew publishAt newDurationDays author viewCount',
+        'title _id categoryId level image description status numberOfLesson isNew publishAt newDurationDays author viewCount',
       )
       .lean();
 
     return { list };
   }
 
-  async findBriefBySkillsetIds(
-    skillsetIds: string[],
+  async findBriefByCategoryIds(
+    categoryIds: string[],
     order: OrderType,
     orderBy: string,
     viewerMarkets?: string[] | null,
   ) {
-    if (!skillsetIds.length) return [];
+    if (!categoryIds.length) return [];
 
     const where: FilterQuery<Course> = {
-      skillsetId: { $in: skillsetIds },
+      categoryId: { $in: categoryIds },
       status: { $in: [CourseStatus.PUBLISHED, CourseStatus.COMING_SOON] },
     };
 
@@ -205,11 +205,11 @@ export class CourseRepository extends AbstractRepository<Course> {
         .find(withMarketVisibility(where, viewerMarkets))
         .sort({ [orderBy]: order })
         // `description` (ITranslation, 5 languages, ~450B/course) is intentionally
-        // omitted: no surface that consumes this skillsets brief renders a course
+        // omitted: no surface that consumes this categories brief renders a course
         // description (Home, Explore, change-course, my-courses show only title +
-        // image + badge). It was ~30% of the /skillsets payload.
+        // image + badge). It was ~30% of the /categories payload.
         .select(
-          'title _id skillsetId level image status numberOfLesson isNew publishAt newDurationDays author viewCount',
+          'title _id categoryId level image status numberOfLesson isNew publishAt newDurationDays author viewCount',
         )
         .lean()
     );
@@ -265,7 +265,7 @@ export class CourseRepository extends AbstractRepository<Course> {
     return this.model
       .find(where)
       .select(
-        'title _id skillsetId level image description status numberOfLesson isNew publishAt newDurationDays author viewCount',
+        'title _id categoryId level image description status numberOfLesson isNew publishAt newDurationDays author viewCount',
       )
       .lean();
   }
@@ -371,13 +371,13 @@ export class CourseRepository extends AbstractRepository<Course> {
     await this.model.updateOne({ _id: id }, { numberOfLesson: number });
   }
 
-  // Every course's id + title + skillset, all statuses — used by the
+  // Every course's id + title + category, all statuses — used by the
   // habit/reanchor export-import resolver to map a course's English title to
-  // its id (and reuse the course's skillsetId when seeding habits).
+  // its id (and reuse the course's categoryId when seeding habits).
   async findAllBriefTitles() {
     return this.model
       .find({})
-      .select('title _id skillsetId voiceoverViProvider')
+      .select('title _id categoryId voiceoverViProvider')
       .lean();
   }
 
@@ -400,7 +400,7 @@ export class CourseRepository extends AbstractRepository<Course> {
     if (!ids.length) return [];
     return this.model
       .find({ _id: { $in: ids }, status: CourseStatus.PUBLISHED })
-      .select('title image author skillsetId viewCount')
+      .select('title image author categoryId viewCount')
       .lean();
   }
 
@@ -442,7 +442,7 @@ export class CourseRepository extends AbstractRepository<Course> {
   }
 
   /**
-   * Published courses with lessons in any of these skillsets, none of the
+   * Published courses with lessons in any of these categories, none of the
    * excluded ids, newest first.
    *
    * Newest rather than `$sample` on purpose: the Coach's course card is
@@ -451,8 +451,8 @@ export class CourseRepository extends AbstractRepository<Course> {
    * visibility as the catalogue — a course the reader cannot open in the app
    * is not a suggestion.
    */
-  async findPublishedInSkillsets(params: {
-    skillsetIds: string[];
+  async findPublishedInCategories(params: {
+    categoryIds: string[];
     excludeIds: string[];
     viewerMarkets?: string[] | null;
     limit?: number;
@@ -464,20 +464,20 @@ export class CourseRepository extends AbstractRepository<Course> {
     select?: string;
   }) {
     const {
-      skillsetIds,
+      categoryIds,
       excludeIds,
       viewerMarkets,
       limit = 5,
-      select = 'title image author skillsetId viewCount',
+      select = 'title image author categoryId viewCount',
     } = params;
-    if (!skillsetIds.length) return [];
+    if (!categoryIds.length) return [];
 
     const excluded = excludeIds
       .filter(id => Types.ObjectId.isValid(id))
       .map(id => new Types.ObjectId(id));
 
     const where: FilterQuery<Course> = {
-      skillsetId: { $in: skillsetIds },
+      categoryId: { $in: categoryIds },
       status: CourseStatus.PUBLISHED,
       numberOfLesson: { $gt: 0 },
       ...(excluded.length ? { _id: { $nin: excluded } } : {}),
@@ -491,13 +491,13 @@ export class CourseRepository extends AbstractRepository<Course> {
       .lean();
   }
 
-  async findRandomPublishedCourseIdInSkillset(
-    skillsetId: string,
+  async findRandomPublishedCourseIdInCategory(
+    categoryId: string,
     excludedCourseId?: string,
     viewerMarkets?: string[] | null,
   ): Promise<string | null> {
     const match: FilterQuery<Course> = {
-      skillsetId,
+      categoryId,
       status: CourseStatus.PUBLISHED,
       numberOfLesson: { $gt: 0 },
     };

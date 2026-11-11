@@ -62,8 +62,8 @@ lib/src/onboard_v2/
        onboard_v2_notification_page.dart, onboard_v2_course_picker_page.dart (nội dung chuyển sang result), widgets/p6/onboard_v2_path_map*.dart (4 file),
        helpers/onboard_v2_path_resolver.dart, onboard_v2_symptom_selection_mapper.dart, onboard_v2_random_course_picker.dart,
        data/*, domain/* của onboard_v2 (scaffold chết), onboard_v2.g.dart nếu không còn json
-lib/src/auth/presentation/cubits/user_state.dart, user_cubit.dart   (onboardingSkillsetOrder)
-lib/src/home/presentation/cubits/home_state.dart                    (xếp theo skillsetId)
+lib/src/auth/presentation/cubits/user_state.dart, user_cubit.dart   (onboardingCategoryOrder)
+lib/src/home/presentation/cubits/home_state.dart                    (xếp theo categoryId)
 assets/i18n/{en,vi,zh,ja,ko}/onboarding.yaml
 test/unit/onboard_v2/presentation/helpers/onboard_v2_selection_rules_test.dart (mới)
 ```
@@ -76,7 +76,7 @@ test/unit/onboard_v2/presentation/helpers/onboard_v2_selection_rules_test.dart (
 
 **Interfaces — Produces:**
 ```dart
-OnboardingBranchEntity { code, label: BaseMultiLanguage, subtitle: BaseMultiLanguage, iconUrl, imageUrl, order, isSelectable, skillsetId (String?), isActive }
+OnboardingBranchEntity { code, label: BaseMultiLanguage, subtitle: BaseMultiLanguage, iconUrl, imageUrl, order, isSelectable, categoryId (String?), isActive }
 OnboardingPackageEntity { code, branchCode, problemLabel, desireLabel, order, isActive }
 OnboardingTaxonomyEntity { branches: List<OnboardingBranchEntity>, packages: List<OnboardingPackageEntity> }
 OnboardingAnswersRequest { branchCodes?, packageCodes?, desireCode?, reminderEnabled?, reminderTime?, chosenCourseId?, ageKey?, completed? }  // toJson bỏ null
@@ -111,7 +111,7 @@ abstract class OnboardingBranchEntity with _$OnboardingBranchEntity {
     @Default('') String imageUrl,
     @Default(0) int order,
     @Default(true) bool isSelectable,
-    String? skillsetId,
+    String? categoryId,
     @Default(true) bool isActive,
   }) = _OnboardingBranchEntity;
 }
@@ -210,7 +210,7 @@ abstract class OnboardingBranchModel with _$OnboardingBranchModel {
     @Default('') String imageUrl,
     @Default(0) int order,
     @Default(true) bool isSelectable,
-    String? skillsetId,
+    String? categoryId,
     @Default(true) bool isActive,
   }) = _OnboardingBranchModel;
   factory OnboardingBranchModel.fromJson(Map<String, dynamic> json) => _$OnboardingBranchModelFromJson(json);
@@ -228,7 +228,7 @@ abstract class OnboardingRecommendedCourseModel with _$OnboardingRecommendedCour
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
-    @Default('') String skillsetId,
+    @Default('') String categoryId,
     @Default(0) int numberOfLesson,
     @Default(OnboardingMatchReasonModel()) OnboardingMatchReasonModel matchReason,
   }) = _OnboardingRecommendedCourseModel;
@@ -247,7 +247,7 @@ extension OnboardingRecommendationModelX on OnboardingRecommendationModel {
   OnboardingRecommendationEntity toEntity() => OnboardingRecommendationEntity(
     courses: [
       for (final c in recommendations)
-        CourseEntity(id: c.id, title: c.title, description: c.description, image: c.image, skillsetId: c.skillsetId, numberOfLesson: c.numberOfLesson),
+        CourseEntity(id: c.id, title: c.title, description: c.description, image: c.image, categoryId: c.categoryId, numberOfLesson: c.numberOfLesson),
     ],
     matchReasons: {for (final c in recommendations) c.id: OnboardingMatchReasonEntity(desire: c.matchReason.desire, labelCodes: c.matchReason.labelCodes, packageCodes: c.matchReason.packageCodes)},
   );
@@ -533,7 +533,7 @@ List<OnboardingReminderPresetEntity> reminderPresets;   // từ config.reminder.
 OnboardV2RecommendStatus recommendStatus; List<CourseEntity> recommendedCourses; Map<String, OnboardingMatchReasonEntity> matchReasons; int currentCourseIndex; String? recommendErrorMessage;
 CourseEntity? chosenCourse; DateTime? loadingStartedAt;
 // bỏ: selectedPaths, availableSymptoms, selectedSymptoms, courseStatus, courseErrorMessage, pendingHandoffCourse, pendingHandoffIsBrowse
-// getters: canContinueBranches, canContinueProblems, canContinueDesire, currentCourse, hasRecommendedCourses, selectedSkillsetIds (map branch→skillsetId, bỏ null)
+// getters: canContinueBranches, canContinueProblems, canContinueDesire, currentCourse, hasRecommendedCourses, selectedCategoryIds (map branch→categoryId, bỏ null)
 ```
 **Produces (cubit):**
 ```dart
@@ -557,11 +557,11 @@ Future<void> prewarmHomeData();                  // giữ nguyên
 void goBack();                                   // chặn ở p9Loading, p10Result; p8→p7, p5→p4 …
 ```
 
-- [ ] **Step 1: State** — viết lại file theo khối trên (giữ `onboardStatus/p3SubmitStatus/onboardData/showPaywallAfterOnboarding/name/selectedAge/navigationStatus/onboardErrorMessage/p3ErrorMessage/navigationErrorMessage`). `selectedSkillsetIds`:
+- [ ] **Step 1: State** — viết lại file theo khối trên (giữ `onboardStatus/p3SubmitStatus/onboardData/showPaywallAfterOnboarding/name/selectedAge/navigationStatus/onboardErrorMessage/p3ErrorMessage/navigationErrorMessage`). `selectedCategoryIds`:
 ```dart
-List<String> get selectedSkillsetIds => [
+List<String> get selectedCategoryIds => [
   for (final code in selectedBranchCodes)
-    if (taxonomy.branchByCode(code)?.skillsetId case final id? when id.isNotEmpty) id,
+    if (taxonomy.branchByCode(code)?.categoryId case final id? when id.isNotEmpty) id,
 ];
 ```
 
@@ -1108,34 +1108,34 @@ git commit -m "feat: copy 5 ngôn ngữ cho các màn onboarding mới" -m "Co-A
 
 ---
 
-### Task 6: Theme → Home; Home xếp skillset theo nhánh đã chọn
+### Task 6: Theme → Home; Home xếp chủ đề theo nhánh đã chọn
 
 **Files:**
 - Modify: `lib/src/onboard_v2/presentation/pages/onboard_v2_pick_theme_page.dart:130-206`
 - Modify: `lib/src/auth/presentation/cubits/user_state.dart:18`, `user_cubit.dart:90, 243-251`
 - Modify: `lib/src/home/presentation/cubits/home_state.dart:45-92`
 
-- [ ] **Step 1: UserCubit** — `onboardingPathOrder: List<OnboardingPath>` → `@Default([]) List<String> onboardingSkillsetOrder`; setter `void setOnboardingSkillsetOrder(List<String> skillsetIds)`; `clearData()` giữ field mới thay field cũ. Chạy build_runner (auth.freezed/g).
+- [ ] **Step 1: UserCubit** — `onboardingPathOrder: List<OnboardingPath>` → `@Default([]) List<String> onboardingCategoryOrder`; setter `void setOnboardingCategoryOrder(List<String> categoryIds)`; `clearData()` giữ field mới thay field cũ. Chạy build_runner (auth.freezed/g).
 
 - [ ] **Step 2: home_state** — thay hai hàm cuối:
 ```dart
-/// Thứ tự skillset theo nhánh user chọn ở onboarding (branch.skillsetId, theo
-/// thứ tự chọn) — xem [UserCubit.setOnboardingSkillsetOrder]. Skillset ngoài
+/// Thứ tự chủ đề theo nhánh user chọn ở onboarding (branch.categoryId, theo
+/// thứ tự chọn) — xem [UserCubit.setOnboardingCategoryOrder]. Chủ đề ngoài
 /// danh sách (hoặc chưa set) giữ thứ tự backend, xếp sau.
-List<SkillsetEntity> get skillsets => _orderSkillsetsByIds(pageData.items, AppDI.injector.get<UserCubit>().state.onboardingSkillsetOrder);
+List<CategoryEntity> get categories => _orderCategoriesByIds(pageData.items, AppDI.injector.get<UserCubit>().state.onboardingCategoryOrder);
 
-List<SkillsetEntity> _orderSkillsetsByIds(List<SkillsetEntity> skillsets, List<String> idOrder) {
-  if (idOrder.isEmpty || skillsets.isEmpty) return skillsets;
-  final buckets = List<List<SkillsetEntity>>.generate(idOrder.length, (_) => []);
-  final unranked = <SkillsetEntity>[];
-  for (final skillset in skillsets) {
-    final rank = idOrder.indexOf(skillset.id);
-    if (rank >= 0) buckets[rank].add(skillset); else unranked.add(skillset);
+List<CategoryEntity> _orderCategoriesByIds(List<CategoryEntity> categories, List<String> idOrder) {
+  if (idOrder.isEmpty || categories.isEmpty) return categories;
+  final buckets = List<List<CategoryEntity>>.generate(idOrder.length, (_) => []);
+  final unranked = <CategoryEntity>[];
+  for (final category in categories) {
+    final rank = idOrder.indexOf(category.id);
+    if (rank >= 0) buckets[rank].add(category); else unranked.add(category);
   }
   return [...buckets.expand((b) => b), ...unranked];
 }
 ```
-Xoá `_skillsetIntroduceForPath` và import `OnboardingPath` nếu không còn dùng trong file.
+Xoá `_categoryIntroduceForPath` và import `OnboardingPath` nếu không còn dùng trong file.
 
 - [ ] **Step 3: pick_theme `_startExplore` + `_dispatchRoute`**
 
@@ -1156,7 +1156,7 @@ void _dispatchHome() {
   try {
     final onboardCubit = context.read<OnboardV2Cubit>();
     final userCubit = context.read<UserCubit>();
-    userCubit.setOnboardingSkillsetOrder(onboardCubit.state.selectedSkillsetIds);
+    userCubit.setOnboardingCategoryOrder(onboardCubit.state.selectedCategoryIds);
     OnboardV2Tracking.track(TrackingKey.onboardV2Complete, parameters: {'chosen_course_id': onboardCubit.state.chosenCourse?.id});
     HomeRoute().go(context);
     context.read<PageCubit>().setCurrentRouteName(RouteNamed.home);
@@ -1175,7 +1175,7 @@ Kiểm `RouteNamed.home` tồn tại (grep `RouteNamed` trong lib/config/routes)
 Run: `cd /Users/nguyenvietha/Source/HDDhistory/hddhistory-flutter && /Users/nguyenvietha/development/flutter/bin/dart run build_runner build --delete-conflicting-outputs 2>&1 | tail -3 && /Users/nguyenvietha/development/flutter/bin/flutter analyze` → No issues (toàn repo — vì có thể còn chỗ khác tham chiếu `onboardingPathOrder`; grep `onboardingPathOrder` phải = 0 ngoài generated).
 ```bash
 git add lib/src/onboard_v2/presentation/pages/onboard_v2_pick_theme_page.dart lib/src/auth/presentation/cubits/user_state.dart lib/src/auth/presentation/cubits/user_cubit.dart lib/src/auth/auth.freezed.dart lib/src/auth/auth.g.dart lib/src/home/presentation/cubits/home_state.dart
-git commit -m "feat: sau chọn theme về Home; Home xếp skillset theo nhánh đã chọn ở onboarding" -m "Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+git commit -m "feat: sau chọn theme về Home; Home xếp chủ đề theo nhánh đã chọn ở onboarding" -m "Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 ```
 (Đường dẫn file freezed/g của auth: kiểm bằng `git status --short lib/src/auth`.)
 
@@ -1188,7 +1188,7 @@ git commit -m "feat: sau chọn theme về Home; Home xếp skillset theo nhánh
 - Test cũ: `test/unit/onboard_v2/**` tham chiếu `selectedPaths`/`OnboardingSymptom` → sửa hoặc xoá các test không còn đúng (liệt kê file bị hỏng bằng `flutter analyze test/unit/onboard_v2`).
 
 - [ ] **Step 1:** Xoá + build_runner + `flutter analyze` (toàn repo) sạch; `flutter test test/unit/onboard_v2/presentation/helpers/onboard_v2_selection_rules_test.dart` PASS.
-- [ ] **Step 2:** Chạy simulator theo skill `build-simulator`/`sim-test` với api-dev đã có taxonomy: đi hết 12 màn, kiểm: S4 hiện 5 nhánh; chọn LV+CX → S5 hiện 10 chip 5/5 xen kẽ; chọn 2 chip → S6 hiện 4 dòng; S8 đổi giờ bằng bánh xe + chip; S9 ≥2,4s; S10 3 card, card 1 badge; theme → Home; Home xếp skillset LV, CX trước.
+- [ ] **Step 2:** Chạy simulator theo skill `build-simulator`/`sim-test` với api-dev đã có taxonomy: đi hết 12 màn, kiểm: S4 hiện 5 nhánh; chọn LV+CX → S5 hiện 10 chip 5/5 xen kẽ; chọn 2 chip → S6 hiện 4 dòng; S8 đổi giờ bằng bánh xe + chip; S9 ≥2,4s; S10 3 card, card 1 badge; theme → Home; Home xếp chủ đề LV, CX trước.
 - [ ] **Step 3:** Commit
 ```bash
 git rm -r lib/src/onboard_v2/data lib/src/onboard_v2/domain

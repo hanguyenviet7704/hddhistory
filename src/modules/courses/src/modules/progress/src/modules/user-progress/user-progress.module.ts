@@ -24,11 +24,11 @@ import { FeedbackModule } from '../../../../feedback/user-feedback/user-feedback
 import { KeypointModule } from '../../../../keypoint/keypoint.module';
 import { LearningItemModule } from '../../../../learning-item/learning-item.module';
 import { LessonModule } from '../../../../lesson/lesson.module';
-import { SkillsetRepository } from '../../../../skillset/repository/skillset.repository';
+import { CategoryRepository } from '../../../../category/repository/category.repository';
 import {
-  Skillset,
-  SkillsetSchema,
-} from '../../../../skillset/schema/skillset.schema';
+  Category,
+  CategorySchema,
+} from '../../../../category/schema/category.schema';
 import { UserStreakModule } from '../user-streak/user-streak.module';
 
 @Module({
@@ -38,7 +38,7 @@ import { UserStreakModule } from '../user-streak/user-streak.module';
     MongooseModule.forFeature([
       { name: UserProgress.name, schema: UserProgressSchema },
       { name: UserProgressExport.name, schema: UserProgressExportSchema },
-      { name: Skillset.name, schema: SkillsetSchema },
+      { name: Category.name, schema: CategorySchema },
     ]),
     forwardRef(() => AuthModule),
     forwardRef(() => FileModule),
@@ -60,7 +60,7 @@ import { UserStreakModule } from '../user-streak/user-streak.module';
     UserProgressService,
     UserProgressRepository,
     UserProgressExportRepository,
-    SkillsetRepository,
+    CategoryRepository,
   ],
   exports: [UserProgressService, UserProgressRepository],
 })

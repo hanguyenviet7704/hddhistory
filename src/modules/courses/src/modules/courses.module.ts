@@ -21,7 +21,8 @@ import { RecentlyViewedModule } from './recently-viewed/recently-viewed.module';
 import { SavedCardModule } from './saved-card/saved-card.module';
 import { SavedCourseModule } from './saved-course/saved-course.module';
 import { SearchHistoryModule } from './search-history/search-history.module';
-import { SkillsetModule } from './skillset/skillset.module';
+import { SpacedReviewModule } from './spaced-review/spaced-review.module';
+import { CategoryModule } from './category/category.module';
 import { TagModule } from './tags/tag.module';
 import { VoiceoverModule } from './voiceover/voiceover.module';
 import { WarmUpModule } from './warm-up/warm-up.module';
@@ -50,7 +51,8 @@ import { WarmUpConfigModule } from './warm-up-config/warm-up-config.module';
     SavedCardModule,
     SavedCourseModule,
     SearchHistoryModule,
-    SkillsetModule,
+    SpacedReviewModule,
+    CategoryModule,
     TagModule,
     VoiceoverModule,
     WarmUpConfigModule,

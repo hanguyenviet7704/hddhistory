@@ -7,7 +7,7 @@ const PERIODS: PeriodRef[] = [
 ];
 
 const FILE: CurriculumFile = {
-  skillsets: [
+  categories: [
     {
       periodId: 'p05_tran',
       courses: [
@@ -52,15 +52,15 @@ const FILE: CurriculumFile = {
 };
 
 describe('buildSeedPlan', () => {
-  it('xếp skillset theo thứ tự thời gian của periods, không theo thứ tự trong file', () => {
+  it('xếp chủ đề theo thứ tự thời gian của periods, không theo thứ tự trong file', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(plan.skillsets.map((s) => s.title.vi)).toEqual(['Nhà Lý', 'Nhà Trần']);
-    expect(plan.skillsets.map((s) => s.index)).toEqual([0, 1]);
+    expect(plan.categories.map((s) => s.title.vi)).toEqual(['Nhà Lý', 'Nhà Trần']);
+    expect(plan.categories.map((s) => s.index)).toEqual([0, 1]);
   });
 
-  it('đặt tên skillset và mô tả từ periods, kèm mốc năm', () => {
+  it('đặt tên chủ đề và mô tả từ periods, kèm mốc năm', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    const ly = plan.skillsets.find((s) => s.title.vi === 'Nhà Lý');
+    const ly = plan.categories.find((s) => s.title.vi === 'Nhà Lý');
     expect(ly.description.vi).toContain('1009');
     expect(ly.description.vi).toContain('1225');
   });
@@ -77,17 +77,17 @@ describe('buildSeedPlan', () => {
 
   it('chỉ điền locale vi, không bịa các locale khác', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(Object.keys(plan.skillsets[0].title)).toEqual(['vi']);
+    expect(Object.keys(plan.categories[0].title)).toEqual(['vi']);
     expect(Object.keys(plan.keypoints[0].title)).toEqual(['vi']);
   });
 
   it('gán ảnh placeholder tuyệt đối .png theo thời kỳ cho mọi node', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
     const abs = /^http:\/\/localhost:4000\/static\/history\/p\d{2}_\w+\.png\?v=\d+$/;
-    expect(plan.skillsets[0].image).toBe(
+    expect(plan.categories[0].image).toBe(
       `http://localhost:4000/static/history/p04_ly.png?v=${PLACEHOLDER_ART_VERSION}`,
     );
-    [plan.skillsets, plan.courses, plan.lessons, plan.keypoints].forEach(
+    [plan.categories, plan.courses, plan.lessons, plan.keypoints].forEach(
       (docs) => {
         expect(docs.length).toBeGreaterThan(0);
         docs.forEach((d) => expect(d.image).toMatch(abs));
@@ -97,7 +97,7 @@ describe('buildSeedPlan', () => {
 
   it('nhận base URL do nơi gọi truyền vào, bỏ dấu / thừa cuối', () => {
     const plan = buildSeedPlan(FILE, PERIODS, 'https://cdn.example.com/');
-    expect(plan.skillsets[0].image).toBe(
+    expect(plan.categories[0].image).toBe(
       `https://cdn.example.com/static/history/p04_ly.png?v=${PLACEHOLDER_ART_VERSION}`,
     );
     plan.keypoints.forEach((k) =>
@@ -105,10 +105,10 @@ describe('buildSeedPlan', () => {
     );
   });
 
-  it('nối course về đúng skillset và lesson về đúng course qua _localKey', () => {
+  it('nối course về đúng chủ đề và lesson về đúng course qua _localKey', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
     const course = plan.courses.find((c) => c.title.vi === 'Dời đô về Thăng Long');
-    expect(course.skillsetLocalKey).toBe('p04_ly');
+    expect(course.categoryLocalKey).toBe('p04_ly');
     const lesson = plan.lessons.find((l) => l.title.vi === 'Chiếu dời đô');
     expect(lesson.courseLocalKey).toBe(course._localKey);
   });
@@ -147,23 +147,23 @@ describe('buildSeedPlan', () => {
 
   it('dùng status published để app thấy được ngay', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(plan.skillsets[0].status).toBe('published');
+    expect(plan.categories[0].status).toBe('published');
     expect(plan.courses[0].status).toBe('published');
     expect(plan.lessons[0].status).toBe('published');
   });
 
   it('ném lỗi khi periodId không có trong periods thay vì sinh ảnh sai', () => {
     const bad: CurriculumFile = {
-      skillsets: [{ periodId: 'p99_khong_co', courses: [] }],
+      categories: [{ periodId: 'p99_khong_co', courses: [] }],
     };
     expect(() => buildSeedPlan(bad, PERIODS)).toThrow('p99_khong_co');
   });
 
   it('_localKey dùng NFC và trim, khớp với validator', () => {
     const nfd: CurriculumFile = JSON.parse(JSON.stringify(FILE));
-    nfd.skillsets[1].courses[0].titleVi = ` ${'Dời đô'.normalize('NFD')} `;
+    nfd.categories[1].courses[0].titleVi = ` ${'Dời đô'.normalize('NFD')} `;
     const nfc: CurriculumFile = JSON.parse(JSON.stringify(FILE));
-    nfc.skillsets[1].courses[0].titleVi = 'Dời đô'.normalize('NFC');
+    nfc.categories[1].courses[0].titleVi = 'Dời đô'.normalize('NFC');
     expect(buildSeedPlan(nfd, PERIODS).courses.map((c) => c._localKey)).toEqual(
       buildSeedPlan(nfc, PERIODS).courses.map((c) => c._localKey),
     );
@@ -190,7 +190,7 @@ describe('buildSeedPlan', () => {
     it('documents[] một thẻ cho mỗi mục của bài, đúng thứ tự, id ổn định', () => {
       const plan = buildSeedPlan(FILE, PERIODS);
       const lessons = [...plan.lessons];
-      const src = FILE.skillsets
+      const src = FILE.categories
         .flatMap((s) => s.courses)
         .flatMap((c) => c.lessons);
       lessons.forEach((l, i) => {
@@ -226,7 +226,7 @@ describe('buildSeedPlan', () => {
 
     describe('ảnh minh hoạ của thẻ', () => {
       const WITH_IMAGE: CurriculumFile = JSON.parse(JSON.stringify(FILE));
-      const kps = WITH_IMAGE.skillsets[0].courses[0].lessons[0].keypoints;
+      const kps = WITH_IMAGE.categories[0].courses[0].lessons[0].keypoints;
       kps[1].image = 'https://upload.wikimedia.org/thumb/1200px-x.jpg';
       kps[1].imageFile = 'File:x.jpg';
       kps[1].imageLicense = 'CC BY-SA 4.0';
@@ -249,7 +249,7 @@ describe('buildSeedPlan', () => {
 
       it('không rõ tác giả: lời ghi công chỉ nêu giấy phép và Wikimedia Commons', () => {
         const f: CurriculumFile = JSON.parse(JSON.stringify(WITH_IMAGE));
-        const k = f.skillsets[0].courses[0].lessons[0].keypoints[1];
+        const k = f.categories[0].courses[0].lessons[0].keypoints[1];
         delete k.imageAuthor;
         const credit = (x: CurriculumFile) =>
           (docsOf(x)[1].document[1].data as { content: { vi: string } }).content.vi;
@@ -268,7 +268,7 @@ describe('buildSeedPlan', () => {
 
       it('ảnh bìa của bài thay ảnh placeholder cho Lesson.image; bài không có giữ placeholder', () => {
         const f: CurriculumFile = JSON.parse(JSON.stringify(FILE));
-        const lessons = f.skillsets[0].courses[0].lessons;
+        const lessons = f.categories[0].courses[0].lessons;
         lessons[0].image = 'https://upload.wikimedia.org/thumb/cover.jpg';
         const plan = buildSeedPlan(f, PERIODS);
         const first = plan.lessons.find((l) => l.title.vi === lessons[0].titleVi);
@@ -276,14 +276,14 @@ describe('buildSeedPlan', () => {
         plan.lessons
           .filter((l) => l !== first)
           .forEach((l) => expect(l.image).toMatch(/\/static\/history\/p\d{2}_\w+\.png\?v=\d+$/));
-        // Chỉ Lesson.image đổi; keypoint/course/skillset vẫn là placeholder.
+        // Chỉ Lesson.image đổi; keypoint/course/category vẫn là placeholder.
         expect(plan.keypoints[0].image).toMatch(/\.png\?v=\d+$/);
         expect(plan.courses[0].image).toMatch(/\.png\?v=\d+$/);
       });
 
       it('không sinh khối ảnh khi image là chuỗi rỗng, và không đụng file đầu vào', () => {
         const f: CurriculumFile = JSON.parse(JSON.stringify(FILE));
-        f.skillsets[0].courses[0].lessons[0].keypoints[0].image = '';
+        f.categories[0].courses[0].lessons[0].keypoints[0].image = '';
         expect(docsOf(f)[0].document.map((b) => b.type)).toEqual(['title', 'text']);
         const snapshot = JSON.stringify(WITH_IMAGE);
         buildSeedPlan(WITH_IMAGE, PERIODS);
@@ -306,7 +306,7 @@ describe('buildSeedPlan', () => {
 
   describe('roadmaps', () => {
     const MULTI: CurriculumFile = {
-      skillsets: [
+      categories: [
         {
           periodId: 'p04_ly',
           courses: [

@@ -41,7 +41,7 @@ nào đã học xong / đang học / đã "Lưu để sau".
 
 **Cả sản phẩm chỉ định hướng đúng một lần** — lúc onboarding: lọc khoá theo
 triệu chứng rồi chọn ngẫu nhiên (`OnboardV2RandomCoursePicker`). Triệu chứng
-không được gửi lên server (server chỉ giữ `learningGoal`, `skillsetWantToMaster`,
+không được gửi lên server (server chỉ giữ `learningGoal`, `categoryWantToMaster`,
 `learningStruggles`). Sau onboarding không còn ai chỉ đường nữa. Coach là chỗ
 tự nhiên nhất để làm việc đó.
 
@@ -98,7 +98,7 @@ theo thứ tự, dừng ở bậc đầu tiên có kết quả:
 | 0 | **Loại** khoá đã có progress (đang học hoặc xong) và khoá `sourceCourseId` của mọi habit user đang theo | `user_progress` (distinct `courseId`), `user_habits.sourceCourseId` | — |
 | 1 | Khoá dạy keypoint của habit **đang vướng** — có ≥2 dòng `BARRIER` hoặc ≥2 lần `missed` | `coach_problem_statements(kind=barrier)`, `coach_plans.lastAnswer` | `coach.course.reasonBarrier` {habit}: "Vì bạn còn vướng ở «{habit}»" |
 | 2 | Khoá dạy keypoint của habit phiên này | `habit.keypointIds` → lesson → course (như cũ), trừ bậc 0 | `coach.course.reasonHabit` {habit}: "Nối tiếp «{habit}» bạn đang tập" |
-| 3 | Khoá cùng skillset với habit user đang theo, chưa bắt đầu | `habits.skillsetId` → `courses.skillsetId`, market visibility của request | `coach.course.reasonSkillset`: "Cùng hướng với thói quen bạn đang tập" |
+| 3 | Khoá cùng chủ đề với habit user đang theo, chưa bắt đầu | `habits.categoryId` → `courses.categoryId`, market visibility của request | `coach.course.reasonCategory`: "Cùng hướng với thói quen bạn đang tập" |
 | 4 | Khoá đã "Lưu để sau" mà chưa bắt đầu | `saved_courses` − bậc 0 | `coach.course.reasonSaved`: "Bạn đã lưu khoá này" |
 | 5 | Không còn gì → **không hiện card** | | |
 
@@ -227,7 +227,7 @@ hành vi. (②C đã gỡ — §3.1.)
 | `shrinkDoneNote` | Mình đổi sang bản nhỏ hơn. Giờ nhắc giữ nguyên. |
 | `courseReasonBarrier` | "Vì bạn còn vướng ở «${habit}»" |
 | `courseReasonHabit` | "Nối tiếp «${habit}» bạn đang tập" |
-| `courseReasonSkillset` | Cùng hướng với thói quen bạn đang tập |
+| `courseReasonCategory` | Cùng hướng với thói quen bạn đang tập |
 | `courseReasonSaved` | Bạn đã lưu khoá này |
 | `stepShrinkAsk` | thu nhỏ nhắc hẹn |
 | `promptIntent` (sửa) | "Hôm trước bạn nói: ${context} sẽ ${action}. Có dịp nào chưa?" |

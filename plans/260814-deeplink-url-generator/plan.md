@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- **17 khoá đích. Giá trị chuỗi phải khớp TỪNG KÝ TỰ giữa cả 3 stack:** `home`, `explore`, `habit`, `profile`, `library`, `course-roadmap`, `lesson`, `skillset-courses`, `paywall`, `manage-subscription`, `daily-warm-up`, `learning-streak`, `daily-check-in`, `my-lessons`, `import-lesson`, `notification-setting`, `change-language`.
+- **17 khoá đích. Giá trị chuỗi phải khớp TỪNG KÝ TỰ giữa cả 3 stack:** `home`, `explore`, `habit`, `profile`, `library`, `course-roadmap`, `lesson`, `category-courses`, `paywall`, `manage-subscription`, `daily-warm-up`, `learning-streak`, `daily-check-in`, `my-lessons`, `import-lesson`, `notification-setting`, `change-language`.
 - Base URL: `https://meup.training/open` (web) và `hddhistory://open` (in-app). **Host không được đổi** — entitlement iOS là `applinks:meup.training` không wildcard.
 - Ba dạng cũ phải tiếp tục chạy: `hddhistory://`, `hddhistory://paywall`, `hddhistory://course-roadmap?...`.
 - **Không chạy full test suite** — `npm test` không tham số và `flutter test` không tham số làm hết RAM máy này. Chỉ chạy file đơn lẻ.
@@ -125,7 +125,7 @@ enum DeeplinkDestination {
   profile('profile'),
   courseRoadmap('course-roadmap'),
   lesson('lesson'),
-  skillsetCourses('skillset-courses'),
+  categoryCourses('category-courses'),
   paywall('paywall'),
   manageSubscription('manage-subscription'),
   dailyWarmUp('daily-warm-up'),
@@ -482,7 +482,7 @@ git commit -m "feat: thay bảng deeplink 3 nhánh bằng registry đích có ev
 - Modify: `hddhistory-flutter/lib/src/common/presentation/cubits/deeplink/deeplink_cubit.dart` (thêm `case` vào `_navigateToDestination`)
 
 **Interfaces:**
-- Consumes: `_navigateToDestination` (Task 2); `_openCourseRoadmap(BuildContext, String?, String)` — đã có ở dòng 189; `CourseCubit.setAllCourseSource(String)`, `CourseCubit.jumpToSkillset(int)`, `HomeCubit.state.selectedSkillsetIndex`
+- Consumes: `_navigateToDestination` (Task 2); `_openCourseRoadmap(BuildContext, String?, String)` — đã có ở dòng 189; `CourseCubit.setAllCourseSource(String)`, `CourseCubit.jumpToCategory(int)`, `HomeCubit.state.selectedCategoryIndex`
 - Produces: `static const String DeeplinkCubit.deeplinkRoadmapSource = 'deeplink'`
 
 - [ ] **Step 1: Thêm hằng số source**
@@ -503,10 +503,10 @@ Cạnh `_newCourseRoadmapSource` (dòng 333) trong `deeplink_cubit.dart`:
         // Đúng chuỗi mà một cú bấm tab "Khám phá" chạy (xem
         // PageCubit.handleShellRouteNavigation case 3): mở Explore đã cuộn tới
         // course đang học, không reset về đầu danh sách.
-        final selectedSkillsetIndex = AppDI.injector.get<HomeCubit>().state.selectedSkillsetIndex;
+        final selectedCategoryIndex = AppDI.injector.get<HomeCubit>().state.selectedCategoryIndex;
         AppDI.injector.get<CourseCubit>()
           ..setAllCourseSource(deeplinkRoadmapSource)
-          ..jumpToSkillset(selectedSkillsetIndex);
+          ..jumpToCategory(selectedCategoryIndex);
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.course);
         CourseRoute().go(navContext);
         return true;
@@ -565,13 +565,13 @@ git commit -m "feat: nối đích deeplink cho explore, habit, profile và cours
 
 ---
 
-### Task 4: Flutter — hai đích cần tham số (`lesson`, `skillset-courses`)
+### Task 4: Flutter — hai đích cần tham số (`lesson`, `category-courses`)
 
 **Files:**
 - Modify: `hddhistory-flutter/lib/src/common/presentation/cubits/deeplink/deeplink_cubit.dart`
 
 **Interfaces:**
-- Consumes: `CourseRoadmapCubit.setPendingResumeKeypointId(String)`, `.clearPendingResumeKeypointId()`; `_openCourseRoadmap`; `SkillsetCoursesRoute({required String skillsetId})`; `deeplinkRoadmapSource` (Task 3)
+- Consumes: `CourseRoadmapCubit.setPendingResumeKeypointId(String)`, `.clearPendingResumeKeypointId()`; `_openCourseRoadmap`; `CategoryCoursesRoute({required String categoryId})`; `deeplinkRoadmapSource` (Task 3)
 
 - [ ] **Step 1: Thêm hai `case`, ngay trước `default:`**
 
@@ -603,9 +603,9 @@ git commit -m "feat: nối đích deeplink cho explore, habit, profile và cours
         }
         return true;
 
-      case DeeplinkDestination.skillsetCourses:
-        final skillsetId = target.params['skillsetId']?.trim() ?? '';
-        if (skillsetId.isEmpty) {
+      case DeeplinkDestination.categoryCourses:
+        final categoryId = target.params['categoryId']?.trim() ?? '';
+        if (categoryId.isEmpty) {
           HomeRoute().go(navContext);
           _trackDeeplinkOpen(target, resolved: false, reason: 'missing_param');
           return true;
@@ -613,7 +613,7 @@ git commit -m "feat: nối đích deeplink cho explore, habit, profile và cours
         // Claim branch 1 trước, rồi push trang con: cú push trong branch có
         // didPush nên trang con tự nhận tên của mình qua route observer.
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-        SkillsetCoursesRoute(skillsetId: skillsetId).go(navContext);
+        CategoryCoursesRoute(categoryId: categoryId).go(navContext);
         return true;
 ```
 
@@ -627,14 +627,14 @@ Expected: `No issues found!`.
 
 - [ ] **Step 3: Kiểm chứng trên simulator**
 
-Lấy `courseId`, `keypointId`, `skillsetId` thật từ admin trước.
+Lấy `courseId`, `keypointId`, `categoryId` thật từ admin trước.
 
 ```bash
 xcrun simctl openurl booted "hddhistory://open/lesson?courseId=<id>&keypointId=<id>"
 xcrun simctl openurl booted "hddhistory://open/lesson?courseId=<id>"
 xcrun simctl openurl booted "hddhistory://open/lesson"
-xcrun simctl openurl booted "hddhistory://open/skillset-courses?skillsetId=<id>"
-xcrun simctl openurl booted "hddhistory://open/skillset-courses"
+xcrun simctl openurl booted "hddhistory://open/category-courses?categoryId=<id>"
+xcrun simctl openurl booted "hddhistory://open/category-courses"
 ```
 
 Expected: có keypointId → mở đúng bài; chỉ courseId → dừng ở roadmap; thiếu param → Home. Thử thêm một keypoint **premium** với tài khoản free: phải thấy lock/paywall, **không** được vào bài.
@@ -644,7 +644,7 @@ Expected: có keypointId → mở đúng bài; chỉ courseId → dừng ở roa
 ```bash
 cd /Users/nguyenvietha/Source/HDDhistory/hddhistory-flutter && \
 git add lib/src/common/presentation/cubits/deeplink/deeplink_cubit.dart && \
-git commit -m "feat: nối đích deeplink cho lesson theo keypoint và grid skillset"
+git commit -m "feat: nối đích deeplink cho lesson theo keypoint và grid category"
 ```
 
 ---
@@ -865,7 +865,7 @@ git commit -m "feat: giữ deeplink lại khi chưa qua onboarding và chạy l�
 
 **Interfaces:**
 - Produces:
-  - `enum DeeplinkParamPicker { COURSE='course', SKILLSET='skillset', KEYPOINT='keypoint', SELECT='select', TEXT='text' }`
+  - `enum DeeplinkParamPicker { COURSE='course', CATEGORY='category', KEYPOINT='keypoint', SELECT='select', TEXT='text' }`
   - `interface DeeplinkParamDef { name: string; required: boolean; picker: DeeplinkParamPicker; options?: string[] }`
   - `interface DeeplinkDestinationDef { key: string; label: string; group: string; minAppBuild: number; note?: string; params: DeeplinkParamDef[] }`
   - `const DEEPLINK_DESTINATIONS: DeeplinkDestinationDef[]` — 16 phần tử
@@ -894,7 +894,7 @@ describe('DEEPLINK_DESTINATIONS', () => {
     'profile',
     'course-roadmap',
     'lesson',
-    'skillset-courses',
+    'category-courses',
     'paywall',
     'manage-subscription',
     'daily-warm-up',
@@ -975,7 +975,7 @@ Tạo `hddhistory-api/src/modules/deeplink/deeplink.catalog.ts`:
  */
 export enum DeeplinkParamPicker {
   COURSE = 'course',
-  SKILLSET = 'skillset',
+  CATEGORY = 'category',
   KEYPOINT = 'keypoint',
   SELECT = 'select',
   TEXT = 'text',
@@ -1032,11 +1032,11 @@ export const DEEPLINK_DESTINATIONS: DeeplinkDestinationDef[] = [
     ],
   },
   {
-    key: 'skillset-courses',
+    key: 'category-courses',
     label: 'Tất cả khoá của một kỹ năng',
     group: 'Học',
     minAppBuild: 130,
-    params: [{ name: 'skillsetId', required: true, picker: DeeplinkParamPicker.SKILLSET }],
+    params: [{ name: 'categoryId', required: true, picker: DeeplinkParamPicker.CATEGORY }],
   },
   {
     key: 'paywall',
@@ -1177,7 +1177,7 @@ git commit -m "feat: thêm endpoint danh mục đích deeplink cho admin"
 **Interfaces:**
 - Consumes: `GET /api/v1/deeplink/destinations` (Task 7); `axiosClient` từ `src/services/axiosClient`
 - Produces:
-  - `type DeeplinkParamPicker = "course" | "skillset" | "keypoint" | "select" | "text"`
+  - `type DeeplinkParamPicker = "course" | "category" | "keypoint" | "select" | "text"`
   - `interface IDeeplinkParam { name: string; required: boolean; picker: DeeplinkParamPicker; options?: string[] }`
   - `interface IDeeplinkDestination { key: string; label: string; group: string; minAppBuild: number; note?: string; params: IDeeplinkParam[] }`
   - `deeplinkService.getDestinations(): Promise<IDeeplinkDestination[]>`
@@ -1284,7 +1284,7 @@ Tạo `hddhistory-admin/src/types/interface/deeplink.interface.ts`:
 /** Picker mà admin render cho một tham số. Khớp `DeeplinkParamPicker` ở API. */
 export type DeeplinkParamPicker =
   | "course"
-  | "skillset"
+  | "category"
   | "keypoint"
   | "select"
   | "text";
@@ -1350,14 +1350,14 @@ git commit -m "feat: thêm service danh mục đích và hàm dựng link vào m
 - Modify: `hddhistory-admin/src/components/layout/Sidebar.tsx` (thêm một item vào nhóm `Operations`, ngay dưới `"Link tải app"`)
 
 **Interfaces:**
-- Consumes: `deeplinkService.getDestinations()`, `buildDeeplinkUrl`, `DEEPLINK_WEB_BASE`, `DEEPLINK_APP_BASE`, `IDeeplinkDestination`, `IDeeplinkParam` (Task 8); `courseService.getList({ isAll: true })`, `courseService.getRoadmap(courseId)`, `skillsetService.getList()`, `lessonService.getById(lessonId)`
+- Consumes: `deeplinkService.getDestinations()`, `buildDeeplinkUrl`, `DEEPLINK_WEB_BASE`, `DEEPLINK_APP_BASE`, `IDeeplinkDestination`, `IDeeplinkParam` (Task 8); `courseService.getList({ isAll: true })`, `courseService.getRoadmap(courseId)`, `categoryService.getList()`, `lessonService.getById(lessonId)`
 
 **Hình dạng dữ liệu cho picker — đã xác minh từng cái trong repo, dùng đúng như đây:**
 
 | Nguồn | Gọi | Lấy dữ liệu ra | Field |
 |---|---|---|---|
 | Course | `courseService.getList({ isAll: true, take: 1000 })` | `response.data.items` | `ICourse._id`, `title: ITranslation` |
-| Skillset | `skillsetService.getList({ isAll: true, take: 1000 })` | `response.data.items` | `ISkillset._id`, `title: ITranslation` |
+| Category | `categoryService.getList({ isAll: true, take: 1000 })` | `response.data.items` | `ICategory._id`, `title: ITranslation` |
 | Lesson | `courseService.getRoadmap(courseId)` | `res.data?.data \|\| res.data` → `IRoadmap` | `levels[].nodes[].lessons?: ILessonBrief[]`, `ILessonBrief._id` |
 | Keypoint | `lessonService.getById(lessonId)` | `res.data?.data ?? res.data` | `keypoints: IKeypoint[]`, `IKeypoint._id` |
 
@@ -1375,7 +1375,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { courseService } from "../../services/courseService";
 import { deeplinkService } from "../../services/deeplinkService";
 import { lessonService } from "../../services/lessonService";
-import { skillsetService } from "../../services/skillsetService";
+import { categoryService } from "../../services/categoryService";
 import {
   IDeeplinkDestination,
   IDeeplinkParam,
@@ -1406,7 +1406,7 @@ export default function DeeplinkGenerator() {
   const [campaign, setCampaign] = useState("");
 
   const [courses, setCourses] = useState<Option[]>([]);
-  const [skillsets, setSkillsets] = useState<Option[]>([]);
+  const [categories, setCategories] = useState<Option[]>([]);
   const [lessons, setLessons] = useState<Option[]>([]);
   const [keypoints, setKeypoints] = useState<Option[]>([]);
   // Bước trung gian của picker keypoint. KHÔNG phải tham số của link.
@@ -1473,20 +1473,20 @@ export default function DeeplinkGenerator() {
   }, [needsPicker]);
 
   useEffect(() => {
-    if (!needsPicker("skillset")) return;
+    if (!needsPicker("category")) return;
     let isActive = true;
     (async () => {
       try {
-        const response = await skillsetService.getList({ isAll: true, take: 1000 });
+        const response = await categoryService.getList({ isAll: true, take: 1000 });
         if (!isActive) return;
-        setSkillsets(
-          (response.data.items ?? []).map((skillset: any) => ({
-            id: skillset._id,
-            label: labelOf(skillset.title),
+        setCategories(
+          (response.data.items ?? []).map((category: any) => ({
+            id: category._id,
+            label: labelOf(category.title),
           }))
         );
       } catch (error) {
-        console.error("Failed to load skillsets", error);
+        console.error("Failed to load categories", error);
       }
     })();
     return () => {
@@ -1601,7 +1601,7 @@ export default function DeeplinkGenerator() {
 - [ ] **Step 2: Viết JSX — những thứ sau là bắt buộc, không phải gợi ý**
 
 1. **Bảng "Màn phổ biến"** ở trên cùng, đổ từ `quickPicks` — mỗi dòng: `label`, `key` dạng mono, và nút Copy link web. Đây là ca dùng thường gặp nhất và nó không được bắt ai mở form nào. (Đúng phần "GIẢI PHÁP NGẮN HẠN" trong sheet gốc.)
-2. **Form sinh link** ở dưới: `Select` chọn màn với option group theo `groups` → form param dựng động theo `param.picker` (`course`/`skillset` → Select từ `courses`/`skillsets`; `keypoint` → hai Select nối tiếp `lessons` rồi `keypoints`, chỉ `keypointId` ghi vào `paramValues`; `select` → Select từ `param.options`; `text` → TextField) → TextField nhãn campaign → **hai** TextField read-only kèm nút Copy: `webUrl` và `appUrl`.
+2. **Form sinh link** ở dưới: `Select` chọn màn với option group theo `groups` → form param dựng động theo `param.picker` (`course`/`category` → Select từ `courses`/`categories`; `keypoint` → hai Select nối tiếp `lessons` rồi `keypoints`, chỉ `keypointId` ghi vào `paramValues`; `select` → Select từ `param.options`; `text` → TextField) → TextField nhãn campaign → **hai** TextField read-only kèm nút Copy: `webUrl` và `appUrl`.
 3. **Chú thích `minAppBuild`** của màn đang chọn, nguyên văn: `Chỉ hoạt động trên bản app build ≥ {selected.minAppBuild}. Người dùng bản cũ hơn sẽ về Trang chủ.`
 4. Hiện `selected.note` khi có.
 5. **Trạng thái không được bỏ:** `isLoadingCatalog` (spinner/skeleton) · `catalogError` (kèm nút Thử lại gọi `loadCatalog`) · chưa chọn màn (empty state) · `missingRequired` không rỗng (**disable cả hai nút Copy** + `helperText` "Bắt buộc" tại đúng ô thiếu) · picker rỗng (ví dụ course chưa có bài nào → "Khoá học này chưa có bài học").

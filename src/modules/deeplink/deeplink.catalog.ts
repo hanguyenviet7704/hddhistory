@@ -13,7 +13,7 @@
  */
 export enum DeeplinkParamPicker {
   COURSE = 'course',
-  SKILLSET = 'skillset',
+  CATEGORY = 'category',
   KEYPOINT = 'keypoint',
   SELECT = 'select',
   TEXT = 'text',
@@ -107,15 +107,15 @@ export const DEEPLINK_DESTINATIONS: DeeplinkDestinationDef[] = [
     ],
   },
   {
-    key: 'skillset-courses',
-    label: 'Tất cả khoá của một kỹ năng',
+    key: 'category-courses',
+    label: 'Tất cả khoá của một chủ đề',
     group: 'Học',
     minAppBuild: 130,
     params: [
       {
-        name: 'skillsetId',
+        name: 'categoryId',
         required: true,
-        picker: DeeplinkParamPicker.SKILLSET,
+        picker: DeeplinkParamPicker.CATEGORY,
       },
     ],
   },

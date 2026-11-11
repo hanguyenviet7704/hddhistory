@@ -1,5 +1,5 @@
 /**
- * Cây nội dung dùng để seed: Skillset → Course → Lesson → Keypoint.
+ * Cây nội dung dùng để seed: Chủ đề → Course → Lesson → Keypoint.
  *
  * Chỉ mang tiếng Việt (`...Vi`). Builder mới là chỗ bọc thành `ITranslation`
  * của app — tách vậy để file nội dung người biên tập đọc/sửa gọn hơn.
@@ -51,12 +51,12 @@ export interface CurriculumCourse {
   lessons: CurriculumLesson[];
 }
 
-export interface CurriculumSkillset {
+export interface CurriculumCategory {
   /** khớp `periods[].id` trong vn_history_seed.json */
   periodId: string;
   courses: CurriculumCourse[];
 }
 
 export interface CurriculumFile {
-  skillsets: CurriculumSkillset[];
+  categories: CurriculumCategory[];
 }

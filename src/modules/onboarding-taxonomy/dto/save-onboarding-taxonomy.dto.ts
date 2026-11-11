@@ -51,7 +51,7 @@ export class TaxonomyBranchDto {
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()
-  skillsetId?: string | null;
+  categoryId?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()

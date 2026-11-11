@@ -548,7 +548,7 @@ export class AuthService {
     // findByFieldAndIds() call, i.e. 5 sequential full-document round-trips of
     // the same multi-KB, multi-language config doc on every /users/me request.
     const fields = await this.onboardingRepository.findFieldsByIds({
-      skillsetWantToMaster: onboarding.skillsetWantToMaster,
+      categoryWantToMaster: onboarding.categoryWantToMaster,
       learningStruggles: onboarding.learningStruggles,
       comfortableLearningTime: [onboarding.comfortableLearningTime],
       dailyLearningGoal: [onboarding.dailyLearningGoal],
@@ -557,7 +557,7 @@ export class AuthService {
 
     return {
       isNativeEnglishSpeaker: onboarding.isNativeEnglishSpeaker,
-      skillsetWantToMaster: fields.skillsetWantToMaster,
+      categoryWantToMaster: fields.categoryWantToMaster,
       learningStruggles: fields.learningStruggles,
       comfortableLearningTime: fields.comfortableLearningTime?.[0] || null,
       dailyLearningGoal: fields.dailyLearningGoal?.[0] || null,

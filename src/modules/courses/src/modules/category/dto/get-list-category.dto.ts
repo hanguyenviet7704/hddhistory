@@ -18,11 +18,11 @@ import { ToBoolean } from '@utils/boolean.utils';
 import { PageOptionsDto } from '@utils/dto/paging/page.dto';
 
 import {
-  SkillsetOnboardingIntroduce,
-  SkillsetStatus,
-} from '../enum/skillset.enum';
+  CategoryOnboardingIntroduce,
+  CategoryStatus,
+} from '../enum/category.enum';
 
-export class GetListSkillsetDto extends IntersectionType(PageOptionsDto) {
+export class GetListCategoryDto extends IntersectionType(PageOptionsDto) {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsNumber()
@@ -33,16 +33,16 @@ export class GetListSkillsetDto extends IntersectionType(PageOptionsDto) {
   @IsNumber()
   take: number;
 
-  @ApiPropertyOptional({ enum: SkillsetStatus })
+  @ApiPropertyOptional({ enum: CategoryStatus })
   @IsOptional()
-  @IsEnum(SkillsetStatus)
-  status?: SkillsetStatus = SkillsetStatus.PUBLISHED;
+  @IsEnum(CategoryStatus)
+  status?: CategoryStatus = CategoryStatus.PUBLISHED;
 
   @ApiPropertyOptional({
     type: [String],
-    example: [SkillsetOnboardingIntroduce.MY_FEELINGS_FEEL_LOUD],
+    example: [CategoryOnboardingIntroduce.MY_FEELINGS_FEEL_LOUD],
     description:
-      'Filter skillsets by one or more onboarding introduce options.',
+      'Filter categories by one or more onboarding introduce options.',
   })
   @IsOptional()
   @Transform(({ value }) => {

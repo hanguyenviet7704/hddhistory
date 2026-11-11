@@ -1034,12 +1034,12 @@ export class CoachSessionService {
     }
     // Luồng 4 — the card connects to the habit THIS session settled on: the
     // one the story matched (in or out of the kho) or the one picked for the
-    // scene. Practice → a course in the same skill set ("cùng skill set với
+    // scene. Practice → a course in the same category ("cùng chủ đề với
     // habit đang tập"); story → a course that teaches the matched habit ("chỉ
     // gợi khi có khoá khớp rõ với chuyện user kể"). Nothing to connect →
     // nothing offered, and never on ①.
     let pickedCourse: PickedCourse | null = null;
-    // Luồng 3 — the recap's card: a course in the same skill set as the one
+    // Luồng 3 — the recap's card: a course in the same category as the one
     // just finished, never the one just finished.
     if (session.talkMode === 'recap' && !session.cardShown) {
       pickedCourse = await this.pickRecapCourse(session as CoachSession);
@@ -1064,7 +1064,7 @@ export class CoachSessionService {
           session as CoachSession,
           connected,
           taskOf(step) === 'T2'
-            ? COACH_COURSE_REASON.SKILLSET
+            ? COACH_COURSE_REASON.CATEGORY
             : COACH_COURSE_REASON.STORY,
         );
       }
@@ -4087,10 +4087,10 @@ export class CoachSessionService {
     if (!session.courseId) return null;
     const [course] = (await this.courseRepository
       .findBriefByIds([session.courseId])
-      .catch(() => [])) as Array<{ skillset?: { title?: ITranslation }; title?: ITranslation }>;
+      .catch(() => [])) as Array<{ category?: { title?: ITranslation }; title?: ITranslation }>;
 
     return (
-      this.pickTranslation(course?.skillset?.title, session.locale) ||
+      this.pickTranslation(course?.category?.title, session.locale) ||
       this.pickTranslation(course?.title, session.locale) ||
       null
     );
@@ -4281,17 +4281,17 @@ export class CoachSessionService {
     }
   }
 
-  /** Luồng 3 — a random published course in the same skill set, never the one just finished. */
+  /** Luồng 3 — a random published course in the same category, never the one just finished. */
   private async pickRecapCourse(session: CoachSession): Promise<PickedCourse | null> {
     if (!session.courseId || session.moodEndLow) return null;
     const [course] = (await this.courseRepository
       .findBriefByIds([session.courseId])
-      .catch(() => [])) as Array<{ skillsetId?: unknown; title?: ITranslation }>;
-    const skillsetId = course?.skillsetId ? String(course.skillsetId) : null;
-    if (!skillsetId) return null;
+      .catch(() => [])) as Array<{ categoryId?: unknown; title?: ITranslation }>;
+    const categoryId = course?.categoryId ? String(course.categoryId) : null;
+    if (!categoryId) return null;
 
     const id = await this.courseRepository
-      .findRandomPublishedCourseIdInSkillset(skillsetId, session.courseId)
+      .findRandomPublishedCourseIdInCategory(categoryId, session.courseId)
       .catch(() => null);
     if (!id) return null;
 
@@ -5400,7 +5400,7 @@ export class CoachSessionService {
    *
    * First a course that TEACHES the habit and the reader has not started;
    * for the practice branch, failing that, any unstarted course in the same
-   * skill set ("cùng skill set với habit đang tập"). Random among what
+   * chủ đề ("cùng chủ đề với habit đang tập"). Random among what
    * qualifies, per-course fatigue respected, and NOTHING when nothing
    * qualifies — a card for the sake of a card is the upsell this feature
    * keeps refusing to become.
@@ -5419,7 +5419,7 @@ export class CoachSessionService {
       this.habitLibraryService.coursesWithHabit(habitId).catch(() => []),
     ]);
     const started = new Set(progressIds as string[]);
-    const rows = containing as Array<{ id: string; skillsetId?: string }>;
+    const rows = containing as Array<{ id: string; categoryId?: string }>;
     const allowed = (courseId: string) =>
       this.boostService
         .allows({
@@ -5438,21 +5438,21 @@ export class CoachSessionService {
       return { id: course.id, reasonKey, reasonArg };
     }
 
-    if (reasonKey !== COACH_COURSE_REASON.SKILLSET) return null;
+    if (reasonKey !== COACH_COURSE_REASON.CATEGORY) return null;
 
-    const skillsetIds = [
-      ...new Set(rows.map((row) => row.skillsetId).filter(Boolean)),
+    const categoryIds = [
+      ...new Set(rows.map((row) => row.categoryId).filter(Boolean)),
     ] as string[];
-    if (!skillsetIds.length) return null;
+    if (!categoryIds.length) return null;
 
-    const inSkillset = (await this.courseRepository
-      .findPublishedInSkillsets({
-        skillsetIds,
+    const inCategory = (await this.courseRepository
+      .findPublishedInCategories({
+        categoryIds,
         excludeIds: [...started, ...rows.map((row) => row.id)],
         limit: 10,
       })
       .catch(() => [])) as Array<{ _id: unknown }>;
-    for (const course of [...inSkillset].sort(() => Math.random() - 0.5)) {
+    for (const course of [...inCategory].sort(() => Math.random() - 0.5)) {
       const id = String(course._id);
       if (!(await allowed(id))) continue;
 
@@ -5810,7 +5810,7 @@ export class CoachSessionService {
    *   1. The habit they keep STOPPING at (≥ `COURSE_STRUGGLE_MIN_BARRIERS`
    *      barrier rows) — a course that teaches it.
    *   2. The habit this session is about — a course that teaches it.
-   *   3. Same skillset as a habit they practise — not started.
+   *   3. Same category as a habit they practise — not started.
    *   4. Saved from an earlier card, never opened.
    *   5. Nothing new → no card. Re-offering an old course is worse than none.
    *
@@ -5878,7 +5878,7 @@ export class CoachSessionService {
     }
 
     // "Không có khoá nào thoả → KHÔNG hiện card." No fallback to a course that
-    // merely shares a skillset: that was this file's own invention, and it is
+    // merely shares a category: that was this file's own invention, and it is
     // how the tail turned into an upsell.
     return null;
   }

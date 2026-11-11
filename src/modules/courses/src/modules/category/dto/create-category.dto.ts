@@ -10,15 +10,15 @@ import {
 import { IsMultiLangString } from '@utils/dto/multi-languge';
 
 import {
-  SkillsetOnboardingIntroduce,
-  SkillsetStatus,
-} from '../enum/skillset.enum';
+  CategoryOnboardingIntroduce,
+  CategoryStatus,
+} from '../enum/category.enum';
 
-export class CreateSkillsetDto {
+export class CreateCategoryDto {
   @ApiProperty({
     type: Object,
     required: true,
-    example: { en: 'Skillset title', vi: 'Tiêu đề Skillset' },
+    example: { en: 'Category title', vi: 'Tiêu đề chủ đề' },
   })
   @IsObject()
   @IsNotEmptyObject()
@@ -28,7 +28,7 @@ export class CreateSkillsetDto {
   @ApiPropertyOptional({
     type: Object,
     required: false,
-    example: { en: 'Skillset Description', vi: 'Mô tả Skillset' },
+    example: { en: 'Category Description', vi: 'Mô tả chủ đề' },
   })
   @IsObject()
   @IsOptional()
@@ -44,22 +44,22 @@ export class CreateSkillsetDto {
   image: string;
 
   @ApiPropertyOptional({
-    enum: SkillsetStatus,
+    enum: CategoryStatus,
     required: false,
-    example: SkillsetStatus.PUBLISHED,
+    example: CategoryStatus.PUBLISHED,
   })
   @IsOptional()
-  @IsEnum(SkillsetStatus)
-  status?: SkillsetStatus;
+  @IsEnum(CategoryStatus)
+  status?: CategoryStatus;
 
   @ApiPropertyOptional({
-    enum: SkillsetOnboardingIntroduce,
+    enum: CategoryOnboardingIntroduce,
     required: false,
-    example: SkillsetOnboardingIntroduce.MY_FEELINGS_FEEL_LOUD,
+    example: CategoryOnboardingIntroduce.MY_FEELINGS_FEEL_LOUD,
     description:
-      'Intro option shown in onboarding flow for the selected skillset.',
+      'Intro option shown in onboarding flow for the selected category.',
   })
   @IsOptional()
-  @IsEnum(SkillsetOnboardingIntroduce)
-  onboardingIntroduce?: SkillsetOnboardingIntroduce;
+  @IsEnum(CategoryOnboardingIntroduce)
+  onboardingIntroduce?: CategoryOnboardingIntroduce;
 }

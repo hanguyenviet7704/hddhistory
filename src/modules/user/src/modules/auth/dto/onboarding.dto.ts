@@ -35,11 +35,11 @@ export class OnboardingDto {
     type: [Number],
     required: false,
     example: [1, 2],
-    description: 'ids of skillsetWantToMaster onboarding',
+    description: 'ids of categoryWantToMaster onboarding',
   })
   @IsOptional()
   @IsNumber({}, { each: true })
-  skillsetWantToMaster: number[];
+  categoryWantToMaster: number[];
 
   @IsArray()
   @ApiPropertyOptional({

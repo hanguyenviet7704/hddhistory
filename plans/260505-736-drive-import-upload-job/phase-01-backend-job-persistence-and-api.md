@@ -5,7 +5,7 @@
 - Backend root: `/Users/nguyenvietha/Source/HDDhistory/hddhistory-api`
 - Existing file module: `/Users/nguyenvietha/Source/HDDhistory/hddhistory-api/src/modules/file/file.module.ts`
 - Existing Cloudflare controller: `/Users/nguyenvietha/Source/HDDhistory/hddhistory-api/src/modules/file/cloudflare/cloudflare.controller.ts`
-- Existing repository pattern: `/Users/nguyenvietha/Source/HDDhistory/hddhistory-api/src/modules/courses/src/modules/skillset/repository/skillset.repository.ts`
+- Existing repository pattern: `/Users/nguyenvietha/Source/HDDhistory/hddhistory-api/src/modules/courses/src/modules/category/repository/category.repository.ts`
 - Existing Mongoose schema pattern: `/Users/nguyenvietha/Source/HDDhistory/hddhistory-api/src/modules/user/src/modules/auth/schema/user.schema.ts`
 
 ## Overview

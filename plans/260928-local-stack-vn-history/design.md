@@ -43,7 +43,7 @@ Bốn rào chặn việc chạy API local:
 |---|---|
 | Mức độc lập | Hoàn toàn — không phụ thuộc server dev |
 | Nơi chạy API | Trên host (`npm run start:dev`), chỉ DB trong Docker |
-| Trục phân loại skillset | Biên niên, bám 12 `periods` có sẵn |
+| Trục phân loại chủ đề | Biên niên, bám 12 `periods` có sẵn |
 | Khối lượng | Dày — mỗi thời kỳ 2–3 khoá |
 | Ngôn ngữ | Chỉ tiếng Việt |
 | Ảnh | Placeholder phân biệt theo thời kỳ |
@@ -106,13 +106,13 @@ không nhân bản).
 | Script | Việc |
 |---|---|
 | `scripts/seed-dev-user.ts` | 1 user test cho `POST /auth/dev-login` |
-| `scripts/seed-vn-history.ts` | dựng cây Skillset → Course → Lesson → Keypoint |
+| `scripts/seed-vn-history.ts` | dựng cây Chủ đề → Course → Lesson → Keypoint |
 | `scripts/generate-placeholder-images.ts` | sinh ảnh placeholder theo thời kỳ |
 
 Thêm 3 lệnh vào `package.json`: `seed:dev-user`, `seed:vn-history`,
 `gen:placeholder-images`.
 
-Khoá idempotent: Skillset theo `title.vi`, Course theo `(title.vi, skillsetId)`,
+Khoá idempotent: Chủ đề theo `title.vi`, Course theo `(title.vi, categoryId)`,
 Lesson theo `(title.vi, courseId)`, Keypoint theo `(title.vi, index)` trong bài.
 
 Nội dung tách khỏi code, đặt ở `scripts/data/vn-history-curriculum.json`. Đây là
@@ -131,9 +131,9 @@ bạn muốn đúng dịch vụ ngoài thì nói, đổi lại rất nhanh.
 
 ## Nội dung
 
-12 skillset bám thẳng 12 `periods` trong
+12 chủ đề bám thẳng 12 `periods` trong
 `src/modules/knowledge-graph/data/vn_history_seed.json`, giữ nguyên tên và mốc
-thời gian để hai bộ dữ liệu không trôi khỏi nhau. `index` của skillset chạy theo
+thời gian để hai bộ dữ liệu không trôi khỏi nhau. `index` của chủ đề chạy theo
 thứ tự thời gian.
 
 Phân bổ khoá (32 khoá, ~160 bài, ~560 keypoint):
@@ -195,8 +195,8 @@ Không chạy full test suite (máy này hết RAM — CLAUDE.md). Các mốc ki
 3. API boot sạch, không lỗi Firebase, migration chạy hết → `typeorm_migrations`
    có 12 dòng.
 4. `POST /api/v1/auth/dev-login` trả token.
-5. `GET /api/v1/skillsets` trả 12 skillset đúng thứ tự thời gian.
-6. Đếm trong Mongo: 12 skillset, 32 course, ~160 lesson, ~560 keypoint.
+5. `GET /api/v1/categories` trả 12 chủ đề đúng thứ tự thời gian.
+6. Đếm trong Mongo: 12 chủ đề, 32 course, ~160 lesson, ~560 keypoint.
 7. Chạy lại seeder lần hai → số lượng không đổi (chứng minh idempotent).
 8. App trên simulator: đăng nhập, mở danh sách, đọc được keypoint thật.
 

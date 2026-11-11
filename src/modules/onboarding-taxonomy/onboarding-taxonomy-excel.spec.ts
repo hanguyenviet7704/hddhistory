@@ -27,7 +27,7 @@ describe('parseTaxonomyWorkbook', () => {
         'Mô tả ngắn (en)',
         'Thứ tự',
         'Hiện ở câu 1 (Y/N)',
-        'Skillset ID (tuỳ chọn)',
+        'ID chủ đề (tuỳ chọn)',
       ],
       ['CX', 'Cảm xúc & tinh thần', 'Emotions', 'sub vi', 'sub en', 1, 'Y', ''],
       ['KP', 'Khám phá não bộ', '', '', '', 6, 'N', '64abc'],
@@ -73,7 +73,7 @@ describe('parseTaxonomyWorkbook', () => {
 
     expect(errors).toEqual([]);
     expect(
-      tree.branches.map(b => [b.code, b.isSelectable, b.skillsetId]),
+      tree.branches.map(b => [b.code, b.isSelectable, b.categoryId]),
     ).toEqual([
       ['CX', true, null],
       ['KP', false, '64abc'],
@@ -150,7 +150,7 @@ describe('parseTaxonomyWorkbook', () => {
         imageUrl: '',
         order: 1,
         isSelectable: true,
-        skillsetId: null,
+        categoryId: null,
         isActive: true,
       },
     ];
@@ -227,7 +227,7 @@ describe('parseTaxonomyWorkbook', () => {
         imageUrl: '',
         order: 1,
         isSelectable: true,
-        skillsetId: null,
+        categoryId: null,
         isActive: true,
       },
     ];
@@ -260,7 +260,7 @@ describe('buildTaxonomyWorkbook', () => {
             imageUrl: '',
             order: 1,
             isSelectable: true,
-            skillsetId: null,
+            categoryId: null,
             isActive: true,
           },
         ],
@@ -339,7 +339,7 @@ describe('mergeWithExistingTaxonomy', () => {
           imageUrl: 'https://cdn/image.png',
           order: 1,
           isSelectable: true,
-          skillsetId: '64abc',
+          categoryId: '64abc',
           isActive: false,
         },
       ],
@@ -375,7 +375,7 @@ describe('mergeWithExistingTaxonomy', () => {
           imageUrl: '',
           order: 1,
           isSelectable: true,
-          skillsetId: null,
+          categoryId: null,
           isActive: true, // parser luôn ghi true — sheet không có cột này
         },
       ],
@@ -409,7 +409,7 @@ describe('mergeWithExistingTaxonomy', () => {
       imageUrl: 'https://cdn/image.png',
       order: 1,
       isSelectable: true,
-      skillsetId: '64abc',
+      categoryId: '64abc',
       isActive: false,
     });
     expect(merged.packages[0]).toEqual({
@@ -439,7 +439,7 @@ describe('mergeWithExistingTaxonomy', () => {
           imageUrl: '',
           order: 2,
           isSelectable: true,
-          skillsetId: null,
+          categoryId: null,
           isActive: true,
         },
       ],

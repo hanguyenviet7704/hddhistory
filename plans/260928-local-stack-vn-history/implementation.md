@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Dựng môi trường dev chạy hoàn toàn cục bộ (không cần VPN, không cần server dev) và đổ vào đó 12 skillset lịch sử Việt Nam theo trục biên niên với ~560 keypoint nội dung thật.
+**Goal:** Dựng môi trường dev chạy hoàn toàn cục bộ (không cần VPN, không cần server dev) và đổ vào đó 12 chủ đề lịch sử Việt Nam theo trục biên niên với ~560 keypoint nội dung thật.
 
 **Architecture:** Docker chỉ chạy Mongo + MySQL; API chạy `npm run start:dev` trên host cổng 4000. Rào Firebase được gỡ bằng một nhánh no-op có chặn `production`. Nội dung nằm trong một file JSON tách khỏi code, đi qua một validator thuần và một builder thuần (cả hai dưới `src/` để jest chạy được), rồi mới tới script ghi Mongo.
 
@@ -449,7 +449,7 @@ Expected: dòng cảnh báo Firebase no-op của Task 1, rồi `Application is r
 
 ```bash
 docker exec meup_mysql mysql -uroot -plocalroot ai_tutor -e 'SELECT COUNT(*) AS n FROM typeorm_migrations'
-curl -s -o /dev/null -w 'skillsets: %{http_code}\n' http://localhost:4000/api/v1/skillsets
+curl -s -o /dev/null -w 'categories: %{http_code}\n' http://localhost:4000/api/v1/categories
 curl -s -o /dev/null -w 'kg: %{http_code}\n' http://localhost:4000/api/v1/knowledge-graph/entities
 ```
 
@@ -768,8 +768,8 @@ Lưu ý: đây là repo **hddhistory-flutter**, khác repo của các task trư�
 **Interfaces:**
 - Consumes: `src/modules/knowledge-graph/data/vn_history_seed.json` (12 `periods`, 176 `entities`).
 - Produces:
-  - `interface CurriculumFile { skillsets: CurriculumSkillset[] }`
-  - `interface CurriculumSkillset { periodId: string; courses: CurriculumCourse[] }`
+  - `interface CurriculumFile { categories: CurriculumCategory[] }`
+  - `interface CurriculumCategory { periodId: string; courses: CurriculumCourse[] }`
   - `interface CurriculumCourse { titleVi: string; descriptionVi: string; lessons: CurriculumLesson[] }`
   - `interface CurriculumLesson { titleVi: string; descriptionVi: string; keypoints: CurriculumKeypoint[] }`
   - `interface CurriculumKeypoint { titleVi: string; descriptionVi: string; entityIds?: string[] }`
@@ -809,7 +809,7 @@ function lesson(i: number) {
 
 function valid(): CurriculumFile {
   return {
-    skillsets: [
+    categories: [
       {
         periodId: 'p04_ly',
         courses: [
@@ -831,16 +831,16 @@ describe('validateCurriculum', () => {
 
   it('bắt periodId không có trong vn_history_seed.json', () => {
     const f = valid();
-    f.skillsets[0].periodId = 'p99_khong_co';
+    f.categories[0].periodId = 'p99_khong_co';
     const errors = validateCurriculum(f, SEED);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('p99_khong_co');
-    expect(errors[0]).toContain('skillsets[0]');
+    expect(errors[0]).toContain('categories[0]');
   });
 
   it('bắt entityId không có trong seed', () => {
     const f = valid();
-    f.skillsets[0].courses[0].lessons[0].keypoints[0].entityIds = ['nguoi_bia'];
+    f.categories[0].courses[0].lessons[0].keypoints[0].entityIds = ['nguoi_bia'];
     const errors = validateCurriculum(f, SEED);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('nguoi_bia');
@@ -848,37 +848,37 @@ describe('validateCurriculum', () => {
 
   it('bắt title rỗng và nêu đúng đường dẫn tới chỗ hỏng', () => {
     const f = valid();
-    f.skillsets[0].courses[0].lessons[0].keypoints[1].titleVi = '   ';
+    f.categories[0].courses[0].lessons[0].keypoints[1].titleVi = '   ';
     const errors = validateCurriculum(f, SEED);
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('skillsets[0].courses[0].lessons[0].keypoints[1]');
+    expect(errors[0]).toContain('categories[0].courses[0].lessons[0].keypoints[1]');
   });
 
   it('bắt bài học có ít hơn 3 keypoint', () => {
     const f = valid();
-    f.skillsets[0].courses[0].lessons[0].keypoints = [keypoint(1)];
+    f.categories[0].courses[0].lessons[0].keypoints = [keypoint(1)];
     const errors = validateCurriculum(f, SEED);
     expect(errors.some((e) => e.includes('keypoint'))).toBe(true);
   });
 
   it('bắt keypoint quá ngắn — dấu hiệu nội dung bỏ dở', () => {
     const f = valid();
-    f.skillsets[0].courses[0].lessons[0].keypoints[0].descriptionVi = 'Ngắn quá.';
+    f.categories[0].courses[0].lessons[0].keypoints[0].descriptionVi = 'Ngắn quá.';
     const errors = validateCurriculum(f, SEED);
     expect(errors.some((e) => e.includes('ngắn'))).toBe(true);
   });
 
   it('bắt hai khoá trùng tên trong cùng một thời kỳ', () => {
     const f = valid();
-    f.skillsets[0].courses.push({ ...f.skillsets[0].courses[0] });
+    f.categories[0].courses.push({ ...f.categories[0].courses[0] });
     const errors = validateCurriculum(f, SEED);
     expect(errors.some((e) => e.includes('trùng'))).toBe(true);
   });
 
   it('gom mọi lỗi chứ không dừng ở lỗi đầu tiên', () => {
     const f = valid();
-    f.skillsets[0].periodId = 'p99_khong_co';
-    f.skillsets[0].courses[0].titleVi = '';
+    f.categories[0].periodId = 'p99_khong_co';
+    f.categories[0].courses[0].titleVi = '';
     expect(validateCurriculum(f, SEED).length).toBeGreaterThanOrEqual(2);
   });
 });
@@ -895,7 +895,7 @@ Tạo `src/base/seed/curriculum/curriculum.types.ts`:
 
 ```typescript
 /**
- * Cây nội dung dùng để seed: Skillset → Course → Lesson → Keypoint.
+ * Cây nội dung dùng để seed: Chủ đề → Course → Lesson → Keypoint.
  *
  * Chỉ mang tiếng Việt (`...Vi`). Builder mới là chỗ bọc thành `ITranslation`
  * của app — tách vậy để file nội dung người biên tập đọc/sửa gọn hơn.
@@ -920,14 +920,14 @@ export interface CurriculumCourse {
   lessons: CurriculumLesson[];
 }
 
-export interface CurriculumSkillset {
+export interface CurriculumCategory {
   /** khớp `periods[].id` trong vn_history_seed.json */
   periodId: string;
   courses: CurriculumCourse[];
 }
 
 export interface CurriculumFile {
-  skillsets: CurriculumSkillset[];
+  categories: CurriculumCategory[];
 }
 ```
 
@@ -964,12 +964,12 @@ export function validateCurriculum(file: unknown, seed: SeedRef): string[] {
   const errors: string[] = [];
   const f = file as CurriculumFile;
 
-  if (!f || !Array.isArray(f.skillsets)) {
-    return ['File curriculum phải có mảng `skillsets`.'];
+  if (!f || !Array.isArray(f.categories)) {
+    return ['File curriculum phải có mảng `categories`.'];
   }
 
-  f.skillsets.forEach((s, si) => {
-    const at = `skillsets[${si}]`;
+  f.categories.forEach((s, si) => {
+    const at = `categories[${si}]`;
 
     if (!seed.periodIds.has(s.periodId)) {
       errors.push(`${at}: periodId "${s.periodId}" không có trong vn_history_seed.json`);
@@ -1085,7 +1085,7 @@ git commit -m "feat: kiểu dữ liệu và validator cho cây nội dung lịch
 - Consumes: `CurriculumFile` từ Task 6.
 - Produces: `buildSeedPlan(file: CurriculumFile, periods: PeriodRef[]): SeedPlan` với
   - `interface PeriodRef { id: string; name: string; start: string; end: string }`
-  - `interface SeedPlan { skillsets: SkillsetDoc[]; courses: CourseDoc[]; lessons: LessonDoc[]; keypoints: KeypointDoc[] }`
+  - `interface SeedPlan { categories: CategoryDoc[]; courses: CourseDoc[]; lessons: LessonDoc[]; keypoints: KeypointDoc[] }`
   - Mỗi doc mang `_localKey` để Task 8 khớp bản ghi đã có mà không cần ObjectId.
 
   Task 8 dùng đúng các tên này.
@@ -1104,7 +1104,7 @@ const PERIODS: PeriodRef[] = [
 ];
 
 const FILE: CurriculumFile = {
-  skillsets: [
+  categories: [
     {
       periodId: 'p05_tran',
       courses: [
@@ -1149,37 +1149,37 @@ const FILE: CurriculumFile = {
 };
 
 describe('buildSeedPlan', () => {
-  it('xếp skillset theo thứ tự thời gian của periods, không theo thứ tự trong file', () => {
+  it('xếp chủ đề theo thứ tự thời gian của periods, không theo thứ tự trong file', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(plan.skillsets.map((s) => s.title.vi)).toEqual(['Nhà Lý', 'Nhà Trần']);
-    expect(plan.skillsets.map((s) => s.index)).toEqual([0, 1]);
+    expect(plan.categories.map((s) => s.title.vi)).toEqual(['Nhà Lý', 'Nhà Trần']);
+    expect(plan.categories.map((s) => s.index)).toEqual([0, 1]);
   });
 
-  it('đặt tên skillset và mô tả từ periods, kèm mốc năm', () => {
+  it('đặt tên chủ đề và mô tả từ periods, kèm mốc năm', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    const ly = plan.skillsets.find((s) => s.title.vi === 'Nhà Lý');
+    const ly = plan.categories.find((s) => s.title.vi === 'Nhà Lý');
     expect(ly.description.vi).toContain('1009');
     expect(ly.description.vi).toContain('1225');
   });
 
   it('chỉ điền locale vi, không bịa các locale khác', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(Object.keys(plan.skillsets[0].title)).toEqual(['vi']);
+    expect(Object.keys(plan.categories[0].title)).toEqual(['vi']);
     expect(Object.keys(plan.keypoints[0].title)).toEqual(['vi']);
   });
 
   it('gán ảnh placeholder theo thời kỳ cho mọi node', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(plan.skillsets[0].image).toBe('/static/history/p04_ly.svg');
+    expect(plan.categories[0].image).toBe('/static/history/p04_ly.svg');
     plan.courses.forEach((c) => expect(c.image).toMatch(/^\/static\/history\/p\d{2}_/));
     plan.lessons.forEach((l) => expect(l.image).toMatch(/^\/static\/history\/p\d{2}_/));
     plan.keypoints.forEach((k) => expect(k.image).toMatch(/^\/static\/history\/p\d{2}_/));
   });
 
-  it('nối course về đúng skillset và lesson về đúng course qua _localKey', () => {
+  it('nối course về đúng chủ đề và lesson về đúng course qua _localKey', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
     const course = plan.courses.find((c) => c.title.vi === 'Dời đô về Thăng Long');
-    expect(course.skillsetLocalKey).toBe('p04_ly');
+    expect(course.categoryLocalKey).toBe('p04_ly');
     const lesson = plan.lessons.find((l) => l.title.vi === 'Chiếu dời đô');
     expect(lesson.courseLocalKey).toBe(course._localKey);
   });
@@ -1196,7 +1196,7 @@ describe('buildSeedPlan', () => {
 
   it('phân biệt được hai keypoint trùng tên ở hai bài khác nhau', () => {
     const dup: CurriculumFile = {
-      skillsets: [
+      categories: [
         {
           periodId: 'p04_ly',
           courses: [
@@ -1251,14 +1251,14 @@ describe('buildSeedPlan', () => {
 
   it('dùng status published để app thấy được ngay', () => {
     const plan = buildSeedPlan(FILE, PERIODS);
-    expect(plan.skillsets[0].status).toBe('published');
+    expect(plan.categories[0].status).toBe('published');
     expect(plan.courses[0].status).toBe('published');
     expect(plan.lessons[0].status).toBe('published');
   });
 
   it('ném lỗi khi periodId không có trong periods thay vì sinh ảnh sai', () => {
     const bad: CurriculumFile = {
-      skillsets: [{ periodId: 'p99_khong_co', courses: [] }],
+      categories: [{ periodId: 'p99_khong_co', courses: [] }],
     };
     expect(() => buildSeedPlan(bad, PERIODS)).toThrow('p99_khong_co');
   });
@@ -1289,7 +1289,7 @@ interface ViOnly {
   vi: string;
 }
 
-export interface SkillsetDoc {
+export interface CategoryDoc {
   _localKey: string;
   index: number;
   title: ViOnly;
@@ -1300,7 +1300,7 @@ export interface SkillsetDoc {
 
 export interface CourseDoc {
   _localKey: string;
-  skillsetLocalKey: string;
+  categoryLocalKey: string;
   title: ViOnly;
   description: ViOnly;
   status: string;
@@ -1336,7 +1336,7 @@ export interface KeypointDoc {
 }
 
 export interface SeedPlan {
-  skillsets: SkillsetDoc[];
+  categories: CategoryDoc[];
   courses: CourseDoc[];
   lessons: LessonDoc[];
   keypoints: KeypointDoc[];
@@ -1351,7 +1351,7 @@ function imageFor(periodId: string): string {
  * Quan hệ cha–con đi qua `_localKey` để Task 8 tự quyết id khi ghi, và để test
  * được mà không cần database.
  *
- * Thứ tự skillset bám `periods` chứ không bám thứ tự trong file nội dung: người
+ * Thứ tự chủ đề bám `periods` chứ không bám thứ tự trong file nội dung: người
  * biên tập thêm thời kỳ theo lô nào cũng được, trục thời gian trong app vẫn đúng.
  */
 export function buildSeedPlan(
@@ -1361,9 +1361,9 @@ export function buildSeedPlan(
   const byId = new Map(periods.map((p) => [p.id, p]));
   const order = new Map(periods.map((p, i) => [p.id, i]));
 
-  const plan: SeedPlan = { skillsets: [], courses: [], lessons: [], keypoints: [] };
+  const plan: SeedPlan = { categories: [], courses: [], lessons: [], keypoints: [] };
 
-  const sorted = [...file.skillsets].sort(
+  const sorted = [...file.categories].sort(
     (a, b) => (order.get(a.periodId) ?? 0) - (order.get(b.periodId) ?? 0),
   );
 
@@ -1376,7 +1376,7 @@ export function buildSeedPlan(
     }
 
     const image = imageFor(period.id);
-    plan.skillsets.push({
+    plan.categories.push({
       _localKey: period.id,
       index: order.get(period.id),
       title: { vi: period.name },
@@ -1389,7 +1389,7 @@ export function buildSeedPlan(
       const courseKey = `${period.id}::${c.titleVi}`;
       plan.courses.push({
         _localKey: courseKey,
-        skillsetLocalKey: period.id,
+        categoryLocalKey: period.id,
         title: { vi: c.titleVi },
         description: { vi: c.descriptionVi },
         status: 'published',
@@ -1447,7 +1447,7 @@ Expected: in ra đúng một dòng — `src/.../community-bot-queue.repository.t
 
 ```bash
 git add src/base/seed/curriculum/curriculum.builder.ts src/base/seed/curriculum/curriculum.builder.spec.ts
-git commit -m "feat: builder thuần dựng cây skillset/course/lesson/keypoint từ curriculum"
+git commit -m "feat: builder thuần dựng cây category/course/lesson/keypoint từ curriculum"
 ```
 
 ---
@@ -1469,7 +1469,7 @@ Tạo `scripts/data/vn-history-curriculum.json` với **một** thời kỳ đã
 
 ```json
 {
-  "skillsets": [
+  "categories": [
     {
       "periodId": "p04_ly",
       "courses": [
@@ -1526,7 +1526,7 @@ Tạo `scripts/seed-vn-history.ts`:
 
 ```typescript
 /**
- * Đổ cây nội dung lịch sử Việt Nam vào Mongo: Skillset → Course → Lesson →
+ * Đổ cây nội dung lịch sử Việt Nam vào Mongo: Chủ đề → Course → Lesson →
  * Keypoint.
  *
  * Idempotent theo kiểu *chèn-nếu-thiếu*, cố ý KHÔNG ghi đè bản ghi đã có —
@@ -1552,7 +1552,7 @@ import { validateCurriculum, SeedRef } from '../src/base/seed/curriculum/curricu
 import { CourseSchema } from '../src/modules/courses/src/modules/course/schema/course.schema';
 import { KeypointSchema } from '../src/modules/courses/src/modules/keypoint/schema/keypoint.schema';
 import { LessonSchema } from '../src/modules/courses/src/modules/lesson/schema/lesson.schema';
-import { SkillsetSchema } from '../src/modules/courses/src/modules/skillset/schema/skillset.schema';
+import { CategorySchema } from '../src/modules/courses/src/modules/category/schema/category.schema';
 
 const CURRICULUM_FILE = path.join(process.cwd(), 'scripts/data/vn-history-curriculum.json');
 const SEED_FILE = path.join(
@@ -1581,7 +1581,7 @@ async function main() {
 
   const plan = buildSeedPlan(curriculum, periods);
   console.log(
-    `Dự kiến: ${plan.skillsets.length} skillset, ${plan.courses.length} khoá, ` +
+    `Dự kiến: ${plan.categories.length} chủ đề, ${plan.courses.length} khoá, ` +
       `${plan.lessons.length} bài, ${plan.keypoints.length} keypoint.`,
   );
 
@@ -1596,37 +1596,37 @@ async function main() {
   // Chờ tối đa 5 giây rồi báo lỗi, thay vì treo vô hạn khi quên bật Docker.
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
 
-  const Skillset = mongoose.model('Skillset', SkillsetSchema);
+  const Category = mongoose.model('Category', CategorySchema);
   const Course = mongoose.model('Course', CourseSchema);
   const Lesson = mongoose.model('Lesson', LessonSchema);
   const Keypoint = mongoose.model('Keypoint', KeypointSchema);
 
-  const skillsetIds = new Map<string, string>();
+  const categoryIds = new Map<string, string>();
   let created = 0;
   let skipped = 0;
 
-  for (const s of plan.skillsets) {
-    const found = await Skillset.findOne({ 'title.vi': s.title.vi });
+  for (const s of plan.categories) {
+    const found = await Category.findOne({ 'title.vi': s.title.vi });
     if (found) {
-      skillsetIds.set(s._localKey, String(found._id));
+      categoryIds.set(s._localKey, String(found._id));
       skipped++;
       continue;
     }
-    const doc = await Skillset.create({
+    const doc = await Category.create({
       index: s.index,
       title: s.title,
       description: s.description,
       status: s.status,
       image: s.image,
     });
-    skillsetIds.set(s._localKey, String(doc._id));
+    categoryIds.set(s._localKey, String(doc._id));
     created++;
   }
 
   const courseIds = new Map<string, string>();
   for (const c of plan.courses) {
-    const skillsetId = skillsetIds.get(c.skillsetLocalKey);
-    const found = await Course.findOne({ 'title.vi': c.title.vi, skillsetId });
+    const categoryId = categoryIds.get(c.categoryLocalKey);
+    const found = await Course.findOne({ 'title.vi': c.title.vi, categoryId });
     if (found) {
       courseIds.set(c._localKey, String(found._id));
       skipped++;
@@ -1637,7 +1637,7 @@ async function main() {
       description: c.description,
       status: c.status,
       image: c.image,
-      skillsetId,
+      categoryId,
       numberOfLesson: c.numberOfLesson,
     });
     courseIds.set(c._localKey, String(doc._id));
@@ -1710,7 +1710,7 @@ main().catch((e) => {
 - [ ] **Step 4: Chạy dry-run trước**
 
 Run: `npm run seed:vn-history -- --dry-run`
-Expected: `Dự kiến: 1 skillset, 1 khoá, 1 bài, 3 keypoint.` và không ghi gì.
+Expected: `Dự kiến: 1 chủ đề, 1 khoá, 1 bài, 3 keypoint.` và không ghi gì.
 
 - [ ] **Step 5: Kiểm hành vi khi Mongo chưa bật (Review Focus #4)**
 
@@ -1727,7 +1727,7 @@ Chờ vài giây cho Mongo sẵn sàng lại trước khi sang Step 6.
 - [ ] **Step 6: Chạy thật**
 
 Run: `npm run seed:vn-history`
-Expected: `Xong. Tạo mới 6, bỏ qua vì đã có 0.` (1 skillset + 1 khoá + 3 keypoint + 1 bài).
+Expected: `Xong. Tạo mới 6, bỏ qua vì đã có 0.` (1 chủ đề + 1 khoá + 3 keypoint + 1 bài).
 
 - [ ] **Step 7: Chạy lại để chứng minh idempotent (Review Focus #1)**
 
@@ -1738,10 +1738,10 @@ Rồi đếm trong Mongo để chắc không nhân bản:
 
 ```bash
 docker exec meup_mongo mongosh -u admin -p PGmnyFWTr9XyAvDX --authenticationDatabase admin hddhistory-api --quiet --eval '
-  ["skillsets","courses","lessons","keypoints"].forEach(c =>
+  ["categories","courses","lessons","keypoints"].forEach(c =>
     print(c + ": " + db.getCollection(c).countDocuments()))'
 ```
-Expected: `skillsets: 1, courses: 1, lessons: 1, keypoints: 3`.
+Expected: `categories: 1, courses: 1, lessons: 1, keypoints: 3`.
 
 Nếu tên collection khác (Mongoose số nhiều hoá tự động), lấy tên thật bằng `db.getCollectionNames()`.
 
@@ -1749,10 +1749,10 @@ Nếu tên collection khác (Mongoose số nhiều hoá tự động), lấy tê
 
 ```bash
 docker exec meup_mongo mongosh -u admin -p PGmnyFWTr9XyAvDX --authenticationDatabase admin hddhistory-api --quiet --eval '
-  db.skillsets.updateOne({}, {$set: {"description.vi": "ADMIN SỬA TAY"}})'
+  db.categories.updateOne({}, {$set: {"description.vi": "ADMIN SỬA TAY"}})'
 npm run seed:vn-history
 docker exec meup_mongo mongosh -u admin -p PGmnyFWTr9XyAvDX --authenticationDatabase admin hddhistory-api --quiet --eval '
-  print(db.skillsets.findOne().description.vi)'
+  print(db.categories.findOne().description.vi)'
 ```
 Expected: vẫn in `ADMIN SỬA TAY`. Nếu bị ghi đè là seeder sai hợp đồng — sửa trước khi đi tiếp.
 
@@ -1829,7 +1829,7 @@ for e in d['entities']:
 
 - [ ] **Step 2: Soạn nội dung và thêm vào curriculum**
 
-Thêm các phần tử `skillsets` mới vào `scripts/data/vn-history-curriculum.json`. Ràng buộc biên tập, lấy từ spec:
+Thêm các phần tử `categories` mới vào `scripts/data/vn-history-curriculum.json`. Ràng buộc biên tập, lấy từ spec:
 
 - Mỗi khoá 5 bài; mỗi bài 3–4 keypoint; mỗi `descriptionVi` của keypoint 80–400 ký tự, một ý trọn vẹn.
 - `entityIds` chỉ trỏ vào id có thật trong seed. Không chắc thì bỏ trống.
@@ -1842,7 +1842,7 @@ Thêm các phần tử `skillsets` mới vào `scripts/data/vn-history-curriculu
 Run: `npm run seed:vn-history -- --dry-run`
 Expected: không lỗi, và số đếm khớp lô vừa thêm.
 
-Validator gom mọi lỗi kèm đường dẫn kiểu `skillsets[3].courses[1].lessons[2].keypoints[0]` — sửa hết rồi mới đi tiếp.
+Validator gom mọi lỗi kèm đường dẫn kiểu `categories[3].courses[1].lessons[2].keypoints[0]` — sửa hết rồi mới đi tiếp.
 
 - [ ] **Step 4: Seed**
 
@@ -1856,10 +1856,10 @@ TOKEN=$(curl -s -X POST http://localhost:4000/api/v1/users/dev-login \
   -H 'Content-Type: application/json' \
   -d '{"email":"dev@hddhistory.local","deviceId":"dev-local-001"}' \
   | python3 -c 'import sys,json; print(json.load(sys.stdin)["data"]["accessToken"])')
-curl -s http://localhost:4000/api/v1/skillsets -H "Authorization: Bearer $TOKEN" \
+curl -s http://localhost:4000/api/v1/categories -H "Authorization: Bearer $TOKEN" \
   | python3 -m json.tool | head -40
 ```
-Expected: các skillset của lô này xuất hiện, đúng thứ tự thời gian.
+Expected: các chủ đề của lô này xuất hiện, đúng thứ tự thời gian.
 
 Nếu đường dẫn tới `accessToken` trong JSON khác (có `ResponseInterceptor` bọc), chỉnh lệnh `python3` cho khớp hình dạng thật.
 
@@ -1883,10 +1883,10 @@ git commit -m "feat: nội dung lịch sử <tên các thời kỳ của lô>"
 
 ```bash
 docker exec meup_mongo mongosh -u admin -p PGmnyFWTr9XyAvDX --authenticationDatabase admin hddhistory-api --quiet --eval '
-  ["skillsets","courses","lessons","keypoints"].forEach(c =>
+  ["categories","courses","lessons","keypoints"].forEach(c =>
     print(c + ": " + db.getCollection(c).countDocuments()))'
 ```
-Expected: `skillsets: 12`, `courses: 32`, `lessons: ~160`, `keypoints: ~560`.
+Expected: `categories: 12`, `courses: 32`, `lessons: ~160`, `keypoints: ~560`.
 
 Lệch so với dự kiến thì đối chiếu `npm run seed:vn-history -- --dry-run` xem lệch ở lô nào.
 
@@ -1917,7 +1917,7 @@ Expected: in ra đúng một dòng — `src/.../community-bot-queue.repository.t
 
 Chạy app bằng lệnh ở Task 5 Step 2, rồi đi qua:
 1. Đăng nhập bằng user dev.
-2. Mở danh sách skillset — thấy 12 thời kỳ theo đúng thứ tự thời gian.
+2. Mở danh sách chủ đề — thấy 12 thời kỳ theo đúng thứ tự thời gian.
 3. Vào một thời kỳ → thấy các khoá.
 4. Vào một khoá → thấy 5 bài.
 5. Mở một bài → **đọc được nội dung keypoint thật**.

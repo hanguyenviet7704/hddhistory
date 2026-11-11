@@ -176,7 +176,7 @@ export class OnboardingTaxonomyImportService {
             imageUrl: '',
             order: 1,
             isSelectable: true,
-            skillsetId: null,
+            categoryId: null,
             isActive: true,
           },
         ],

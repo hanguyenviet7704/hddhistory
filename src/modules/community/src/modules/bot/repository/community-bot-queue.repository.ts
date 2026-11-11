@@ -55,43 +55,25 @@ export class CommunityBotQueueRepository extends AbstractRepository<CommunityBot
   }
 
   async markSent(id: string, resultId: string) {
-    return this.updateOne(
-      { _id: id } as any,
-      {
-        $set: {
-          status: CommunityBotQueueStatus.SENT,
-          resultId,
-          publishedAt: new Date(),
-          updatedAt: new Date(),
-        },
-      },
-    );
+    return this.updateOne({ _id: id } as any, {
+      status: CommunityBotQueueStatus.SENT,
+      resultId,
+      publishedAt: new Date(),
+    });
   }
 
   async markFailed(id: string, error: string) {
-    return this.updateOne(
-      { _id: id } as any,
-      {
-        $set: {
-          status: CommunityBotQueueStatus.FAILED,
-          error: error.slice(0, 500),
-          updatedAt: new Date(),
-        },
-      },
-    );
+    return this.updateOne({ _id: id } as any, {
+      status: CommunityBotQueueStatus.FAILED,
+      error: error.slice(0, 500),
+    });
   }
 
   async markCancelled(id: string, reason?: string) {
-    return this.updateOne(
-      { _id: id } as any,
-      {
-        $set: {
-          status: CommunityBotQueueStatus.CANCELLED,
-          error: reason?.slice(0, 500),
-          updatedAt: new Date(),
-        },
-      },
-    );
+    return this.updateOne({ _id: id } as any, {
+      status: CommunityBotQueueStatus.CANCELLED,
+      error: reason?.slice(0, 500),
+    });
   }
 
   /** Lines this kind has already PUBLISHED since `since` — the daily ceiling. */

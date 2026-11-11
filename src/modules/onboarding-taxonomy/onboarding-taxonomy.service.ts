@@ -105,7 +105,7 @@ export function normalizeTree(
     imageUrl: b.imageUrl ?? '',
     order: b.order ?? i + 1,
     isSelectable: b.isSelectable ?? true,
-    skillsetId: b.skillsetId ?? null,
+    categoryId: b.categoryId ?? null,
     isActive: b.isActive ?? true,
   }));
   const packages: IOnboardingPackage[] = (input.packages ?? []).map((p, i) => ({

@@ -27,10 +27,10 @@ export class CreateHabitLibraryDto {
   @IsMultiLangString()
   title: Record<string, string>;
 
-  @ApiProperty({ required: true, description: 'Skillset (category) id' })
+  @ApiProperty({ required: true, description: 'Category (category) id' })
   @IsNotEmpty()
   @IsMongoId()
-  skillsetId: string;
+  categoryId: string;
 
   @ApiPropertyOptional({ enum: HabitLibraryStatus, example: HabitLibraryStatus.PUBLISHED })
   @IsOptional()
@@ -40,7 +40,7 @@ export class CreateHabitLibraryDto {
   @ApiPropertyOptional({
     example: 'https://cdn.meup.training/habits/breathing-break.png',
     description:
-      "The habit's own picture. Absolute CDN url, as returned by POST /cloudflares/upload. Omit to keep showing the skillset's logo.",
+      "The habit's own picture. Absolute CDN url, as returned by POST /cloudflares/upload. Omit to keep showing the category's logo.",
   })
   @IsOptional()
   @IsString()

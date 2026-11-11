@@ -59,7 +59,7 @@ export class GetListCourseDto extends IntersectionType(PageOptionsDto) {
   @ApiPropertyOptional({
     type: [String],
     example: ['68fe63134a13cd7ab2d5ac5a'],
-    description: 'Filter courses by skillset ids.',
+    description: 'Filter courses by category ids.',
   })
   @IsOptional()
   @Transform(({ value }) => {
@@ -68,13 +68,13 @@ export class GetListCourseDto extends IntersectionType(PageOptionsDto) {
   })
   @IsArray()
   @IsString({ each: true })
-  skillsetIds?: string[];
+  categoryIds?: string[];
 
   @ApiPropertyOptional({
     type: [String],
     example: [OnboardingSymptom.AMAZED_BY_HUMAN_BODY],
     description:
-      'Filter skillsets by one or more onboarding introduce options.',
+      'Filter categories by one or more onboarding introduce options.',
   })
   @IsOptional()
   @Transform(({ value }) => {

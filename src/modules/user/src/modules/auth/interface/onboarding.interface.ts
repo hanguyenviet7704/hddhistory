@@ -1,6 +1,6 @@
 export interface IOnboarding {
   isNativeEnglishSpeaker: boolean;
-  skillsetWantToMaster: number[];
+  categoryWantToMaster: number[];
   learningGoal: number;
   learningStruggles: number[];
   comfortableLearningTime: number;

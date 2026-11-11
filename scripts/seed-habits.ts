@@ -2,9 +2,9 @@
  * Seeds a dev habit library so GET /api/v1/habits (and the adopt / check-in /
  * weekly-review flows) are testable end to end.
  *
- * Idempotent: matches on (title.en, skillsetId) before inserting, safe to
- * re-run. Skillsets are resolved by title match against the ALREADY-SEEDED
- * skillset catalog rather than hardcoded ids, since those differ per
+ * Idempotent: matches on (title.en, categoryId) before inserting, safe to
+ * re-run. Categories are resolved by title match against the ALREADY-SEEDED
+ * category catalog rather than hardcoded ids, since those differ per
  * environment — only the categories that exist on this env get seeded.
  *
  * Titles carry all 5 supported locales (en/vi/zh/ja/ko), matching the app's
@@ -27,7 +27,7 @@ type MultiLang = {
 };
 
 const SEED_HABITS: Array<{
-  skillsetTitleMatch: RegExp;
+  categoryTitleMatch: RegExp;
   habits: Array<{
     title: MultiLang;
     icon: string;
@@ -35,7 +35,7 @@ const SEED_HABITS: Array<{
   }>;
 }> = [
   {
-    skillsetTitleMatch: /feel/i,
+    categoryTitleMatch: /feel/i,
     habits: [
       {
         title: {
@@ -62,7 +62,7 @@ const SEED_HABITS: Array<{
     ],
   },
   {
-    skillsetTitleMatch: /think/i,
+    categoryTitleMatch: /think/i,
     habits: [
       {
         title: {
@@ -89,7 +89,7 @@ const SEED_HABITS: Array<{
     ],
   },
   {
-    skillsetTitleMatch: /connect|relation|social/i,
+    categoryTitleMatch: /connect|relation|social/i,
     habits: [
       {
         title: {
@@ -116,7 +116,7 @@ const SEED_HABITS: Array<{
     ],
   },
   {
-    skillsetTitleMatch: /work|product|focus/i,
+    categoryTitleMatch: /work|product|focus/i,
     habits: [
       {
         title: {
@@ -143,7 +143,7 @@ const SEED_HABITS: Array<{
     ],
   },
   {
-    skillsetTitleMatch: /learn|memory|study/i,
+    categoryTitleMatch: /learn|memory|study/i,
     habits: [
       {
         title: {
@@ -177,22 +177,22 @@ async function main() {
 
   await mongoose.connect(uri);
   const HabitLibraryModel = mongoose.model('HabitLibrary', HabitLibrarySchema, 'habits');
-  const skillsetsCollection = mongoose.connection.collection('skillsets');
+  const categoriesCollection = mongoose.connection.collection('categories');
 
   let created = 0;
   let skipped = 0;
-  let missingSkillsets = 0;
+  let missingCategories = 0;
 
   for (const group of SEED_HABITS) {
-    const skillset = await skillsetsCollection.findOne({
+    const category = await categoriesCollection.findOne({
       status: 'published',
-      'title.en': { $regex: group.skillsetTitleMatch },
+      'title.en': { $regex: group.categoryTitleMatch },
     });
 
-    if (!skillset) {
-      missingSkillsets += 1;
+    if (!category) {
+      missingCategories += 1;
       console.warn(
-        `[seed-habits] No published skillset matching ${group.skillsetTitleMatch} — skipping ${group.habits.length} habit(s).`,
+        `[seed-habits] No published category matching ${group.categoryTitleMatch} — skipping ${group.habits.length} habit(s).`,
       );
       continue;
     }
@@ -200,7 +200,7 @@ async function main() {
     for (const [index, habit] of group.habits.entries()) {
       const exists = await HabitLibraryModel.exists({
         'title.en': habit.title.en,
-        skillsetId: skillset._id,
+        categoryId: category._id,
       });
 
       if (exists) {
@@ -211,7 +211,7 @@ async function main() {
       await HabitLibraryModel.create({
         title: habit.title,
         icon: habit.icon,
-        skillsetId: skillset._id,
+        categoryId: category._id,
         status: HabitLibraryStatus.PUBLISHED,
         defaultReminderTime: habit.defaultReminderTime,
         order: index,
@@ -221,7 +221,7 @@ async function main() {
   }
 
   console.log(
-    `[seed-habits] Done. Created ${created}, skipped ${skipped} (already existed), ${missingSkillsets} skillset group(s) not found on this env.`,
+    `[seed-habits] Done. Created ${created}, skipped ${skipped} (already existed), ${missingCategories} category group(s) not found on this env.`,
   );
   await mongoose.disconnect();
 }

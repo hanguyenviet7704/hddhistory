@@ -5,13 +5,13 @@ import { AbstractDocument } from '@base/database/mongodb/abstract.schema';
 import { ITranslation } from '@utils/interface/common.interface';
 
 import {
-  SkillsetOnboardingIntroduce,
-  SkillsetStatus,
-} from '../enum/skillset.enum';
-import { ISkillset } from '../interface/skillset.interface';
+  CategoryOnboardingIntroduce,
+  CategoryStatus,
+} from '../enum/category.enum';
+import { ICategory } from '../interface/category.interface';
 
 @Schema()
-export class Skillset extends AbstractDocument implements ISkillset {
+export class Category extends AbstractDocument implements ICategory {
   @Prop({ type: Number, default: 0 })
   index: number;
 
@@ -21,18 +21,18 @@ export class Skillset extends AbstractDocument implements ISkillset {
   @Prop({ type: SchemaTypes.Mixed })
   description?: ITranslation;
 
-  @Prop({ enum: SkillsetStatus })
-  status: SkillsetStatus;
+  @Prop({ enum: CategoryStatus })
+  status: CategoryStatus;
 
   @Prop()
   image: string;
 
-  @Prop({ type: String, enum: SkillsetOnboardingIntroduce })
-  onboardingIntroduce?: SkillsetOnboardingIntroduce;
+  @Prop({ type: String, enum: CategoryOnboardingIntroduce })
+  onboardingIntroduce?: CategoryOnboardingIntroduce;
 
   courses?: any[];
 }
 
-export const SkillsetSchema = SchemaFactory.createForClass(Skillset);
+export const CategorySchema = SchemaFactory.createForClass(Category);
 
-SkillsetSchema.index({ status: 1, index: 1 });
+CategorySchema.index({ status: 1, index: 1 });

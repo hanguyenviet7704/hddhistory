@@ -14,17 +14,17 @@ import {
 } from '@utils/translate';
 import { OrderType } from '@utils/type/orderByType';
 
-import { CreateSkillsetDto } from './dto/create-skillset.dto';
-import { GetListSkillsetDto } from './dto/get-list-skillset.dto';
-import { UpdateSkillsetDto } from './dto/update-skillset.dto';
-import { SkillsetRepository } from './repository/skillset.repository';
-import { Skillset } from './schema/skillset.schema';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { GetListCategoryDto } from './dto/get-list-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryRepository } from './repository/category.repository';
+import { Category } from './schema/category.schema';
 import { CourseRepository } from '../course/repository/course.repository';
 
 @Injectable()
-export class SkillsetService {
+export class CategoryService {
   constructor(
-    private readonly skillsetRepository: SkillsetRepository,
+    private readonly categoryRepository: CategoryRepository,
     private readonly courseRepository: CourseRepository,
     private readonly requestService: RequestService,
     private readonly i18n: I18nService,
@@ -35,9 +35,9 @@ export class SkillsetService {
   }
 
   /**
-   * Markets to scope each skillset's course list to, or `null` for the admin
+   * Markets to scope each category's course list to, or `null` for the admin
    * panel. Home and Explore both read their courses through here, so a course
-   * published to Japan only must drop out of a Vietnamese reader's skillsets
+   * published to Japan only must drop out of a Vietnamese reader's categories
    * exactly as it drops out of the catalogue.
    */
   private get viewerMarkets(): string[] | null {
@@ -48,8 +48,8 @@ export class SkillsetService {
     return I18nContext.current()?.lang ?? 'en';
   }
 
-  async create(createSkillsetDto: CreateSkillsetDto): Promise<Skillset> {
-    const { title } = createSkillsetDto;
+  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
+    const { title } = createCategoryDto;
     const titleByLang = getTranslationValue(title, this.lang);
 
     if (!titleByLang && !hasAnyTranslationValue(title)) {
@@ -58,125 +58,125 @@ export class SkillsetService {
 
     if (titleByLang) {
       // check title exists
-      const titleExists = await this.skillsetRepository.checkExitsTitle(
+      const titleExists = await this.categoryRepository.checkExitsTitle(
         titleByLang,
         this.lang,
       );
       if (titleExists)
         throw new ConflictException(
-          this.i18n.t('error.SKILLSET.TITLE_EXISTS', {
+          this.i18n.t('error.CATEGORY.TITLE_EXISTS', {
             lang: this.lang,
           }),
         );
     }
 
-    const skillset = await this.skillsetRepository.create(
+    const category = await this.categoryRepository.create(
       {
-        ...createSkillsetDto,
+        ...createCategoryDto,
         index: 0,
       },
       this.user,
     );
 
-    return skillset;
+    return category;
   }
 
-  async findAll(getListSkillsetDto: GetListSkillsetDto) {
-    const result = await this.skillsetRepository.findOption(getListSkillsetDto);
+  async findAll(getListCategoryDto: GetListCategoryDto) {
+    const result = await this.categoryRepository.findOption(getListCategoryDto);
 
-    // Batch fetch courses for all skillsets in a single query, then group
-    // in-memory. The global createdAt-ASC sort is preserved per skillset
+    // Batch fetch courses for all categories in a single query, then group
+    // in-memory. The global createdAt-ASC sort is preserved per category
     // because grouping a sorted list keeps each bucket's relative order.
-    const skillsetIds = result.items.map(item => item._id.toString());
-    const courses = await this.courseRepository.findBriefBySkillsetIds(
-      skillsetIds,
+    const categoryIds = result.items.map(item => item._id.toString());
+    const courses = await this.courseRepository.findBriefByCategoryIds(
+      categoryIds,
       OrderType.ASC,
       'createdAt',
       this.viewerMarkets,
     );
 
-    const coursesBySkillset = new Map<string, typeof courses>();
+    const coursesByCategory = new Map<string, typeof courses>();
     for (const course of courses) {
-      const key = course.skillsetId.toString();
-      const list = coursesBySkillset.get(key) ?? [];
+      const key = course.categoryId.toString();
+      const list = coursesByCategory.get(key) ?? [];
       list.push(course);
-      coursesBySkillset.set(key, list);
+      coursesByCategory.set(key, list);
     }
 
     for (const item of result.items) {
-      item.courses = coursesBySkillset.get(item._id.toString()) ?? [];
+      item.courses = coursesByCategory.get(item._id.toString()) ?? [];
     }
 
     return result;
   }
 
-  async findOne(id: string): Promise<Skillset> {
-    const skillset = await this.skillsetRepository.findOne({ _id: id });
-    if (!skillset)
+  async findOne(id: string): Promise<Category> {
+    const category = await this.categoryRepository.findOne({ _id: id });
+    if (!category)
       throw new NotFoundException(
-        this.i18n.t('error.SKILLSET.NOT_FOUND', {
+        this.i18n.t('error.CATEGORY.NOT_FOUND', {
           lang: this.lang,
         }),
       );
 
     // lấy danh sách course
     const courses = await this.courseRepository.findAllBrief(
-      skillset._id.toString(),
+      category._id.toString(),
       OrderType.ASC,
       'createdAt',
       this.viewerMarkets,
     );
 
-    skillset.courses = courses.list;
+    category.courses = courses.list;
 
-    return skillset;
+    return category;
   }
 
-  async update(id: string, updateSkillsetDto: UpdateSkillsetDto) {
-    const { title } = updateSkillsetDto;
-    const skillset = await this.skillsetRepository.findOne({ _id: id });
-    if (!skillset)
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    const { title } = updateCategoryDto;
+    const category = await this.categoryRepository.findOne({ _id: id });
+    if (!category)
       throw new NotFoundException(
-        this.i18n.t('error.SKILLSET.NOT_FOUND', {
+        this.i18n.t('error.CATEGORY.NOT_FOUND', {
           lang: this.lang,
         }),
       );
 
     if (title) {
       const titleByLang = getTranslationValue(title, this.lang);
-      const mergedTitle = { ...(skillset.title ?? {}), ...title };
+      const mergedTitle = { ...(category.title ?? {}), ...title };
 
       if (!titleByLang && !hasAnyTranslationValue(mergedTitle)) {
         throw new BadRequestException('title is required');
       }
 
       if (!titleByLang) {
-        return this.skillsetRepository.updateOne(
+        return this.categoryRepository.updateOne(
           { _id: id },
           {
-            ...updateSkillsetDto,
+            ...updateCategoryDto,
           },
           this.user,
         );
       }
 
       // check title exists
-      const titleExists = await this.skillsetRepository.checkExitsTitle(
+      const titleExists = await this.categoryRepository.checkExitsTitle(
         titleByLang,
         this.lang,
       );
       if (titleExists && titleExists._id.toString() !== id)
         throw new ConflictException(
-          this.i18n.t('error.SKILLSET.TITLE_EXISTS', {
+          this.i18n.t('error.CATEGORY.TITLE_EXISTS', {
             lang: this.lang,
           }),
         );
     }
 
-    const update = await this.skillsetRepository.updateOne(
+    const update = await this.categoryRepository.updateOne(
       { _id: id },
       {
-        ...updateSkillsetDto,
+        ...updateCategoryDto,
       },
       this.user,
     );
@@ -185,14 +185,14 @@ export class SkillsetService {
   }
 
   async remove(id: string) {
-    const skillset = await this.skillsetRepository.findOne({ _id: id });
-    if (!skillset)
+    const category = await this.categoryRepository.findOne({ _id: id });
+    if (!category)
       throw new NotFoundException(
-        this.i18n.t('error.SKILLSET.NOT_FOUND', {
+        this.i18n.t('error.CATEGORY.NOT_FOUND', {
           lang: this.lang,
         }),
       );
-    const res = await this.skillsetRepository.deleteOne({ _id: id });
+    const res = await this.categoryRepository.deleteOne({ _id: id });
     return res;
   }
 }

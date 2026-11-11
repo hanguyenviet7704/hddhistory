@@ -52,8 +52,8 @@ Response:
 `suggestedCourseId` rule:
 
 - If latest keypoint is not completed, use current `courseId`.
-- If latest keypoint is completed, choose one random published course in the same skillset.
-- If no other published course exists in the same skillset, fallback to current `courseId`.
+- If latest keypoint is completed, choose one random published course in the same category.
+- If no other published course exists in the same category, fallback to current `courseId`.
 
 ## Performance Notes
 

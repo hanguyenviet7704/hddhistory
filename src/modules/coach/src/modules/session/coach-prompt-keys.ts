@@ -242,11 +242,11 @@ export const COACH_COURSE_REASON = {
   BARRIER: 'coach.course.reasonBarrier',
   /** The habit this session was about; a course they have not taken teaches it. */
   HABIT: 'coach.course.reasonHabit',
-  /** Same skillset as a habit they practise; not started. */
-  SKILLSET: 'coach.course.reasonSkillset',
+  /** Same category as a habit they practise; not started. */
+  CATEGORY: 'coach.course.reasonCategory',
   /** Luồng 4 FREE_TALK — the story itself connected to this course: "Từ chuyện bạn vừa kể". */
   STORY: 'coach.course.reasonStory',
-  /** Luồng 3 — same skill set as the course just finished. */
+  /** Luồng 3 — same category as the course just finished. */
   RECAP: 'coach.course.reasonRecap',
   /** They saved it from an earlier card and never opened it. */
   SAVED: 'coach.course.reasonSaved',

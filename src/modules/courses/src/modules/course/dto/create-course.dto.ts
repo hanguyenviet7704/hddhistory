@@ -47,10 +47,10 @@ export class CreateCourseDto {
   @IsOptional()
   image: string;
 
-  @ApiPropertyOptional({ example: 'skillsetId', required: false })
+  @ApiPropertyOptional({ example: 'categoryId', required: false })
   @IsString()
   @IsOptional()
-  skillsetId: string;
+  categoryId: string;
 
   @ApiPropertyOptional({
     type: [String],

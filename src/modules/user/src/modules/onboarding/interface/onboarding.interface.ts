@@ -42,7 +42,7 @@ export interface IOnboarding {
   intro: IOnboardingIntro[];
   age: ILablel[];
   gender: ILablel[];
-  skillsetWantToMaster: ILablel[];
+  categoryWantToMaster: ILablel[];
   learningGoal: ILablel[];
   learningStruggles: ILablel[];
   comfortableLearningTime: ILablel[];

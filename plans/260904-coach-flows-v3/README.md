@@ -31,7 +31,7 @@ Home bubble (chỉ khi kho ≠ rỗng) → [MOOD 1 lần/ngày] → HUB "Hôm na
   │                                → TELL_ONCE (= SCENE_SHOW: 1 cảnh ≤50 từ + câu hỏi)
   │                                → user trả lời → judgeScene
   │                                     ├ đúng hướng: khen ≤25 từ + câu dẫn cố định
-  │                                     │             → check-in EXERCISE → COURSE_CARD cùng skill set → END
+  │                                     │             → check-in EXERCISE → COURSE_CARD cùng chủ đề → END
   │                                     └ chưa đúng:  chấm ≤35 từ (câu mẫu + vì sao) → SCENE_FIX
   │                                          ├ ⟨Luyện lại cảnh này⟩ → SCENE_RETRY (cùng cảnh, "Vẫn cảnh đó:") → judge
   │                                          │        đúng → như trên · sai lần 2 → câu đóng cố định → END
@@ -65,8 +65,8 @@ không nhắc hẹn (`afterCard` bỏ nhánh PLAN_ASK; `afterCourse` HOME → EN
   đúng hướng + có khoá → nối thêm `COACH_SCENE_CARD_LEAD_LINE`. SCENE_PICK text → khớp tên habit
   trong kho (fold) → `patch.habitId`; không khớp → ở lại SCENE_PICK.
 - Ghi check-in đúng hướng: `userHabitService.checkIn(userHabitId, {done:true, method:EXERCISE})`.
-- Khoá: `pickCourseInSkillsetOf(habitId)` — `coursesWithHabit` → skillsetIds →
-  `findRandomPublishedCourseIdInSkillset` trừ khoá đã học; reason `SKILLSET` (T2) /
+- Khoá: `pickCourseInCategoryOf(habitId)` — `coursesWithHabit` → categoryIds →
+  `findRandomPublishedCourseIdInCategory` trừ khoá đã học; reason `CATEGORY` (T2) /
   `STORY` (T3, "Từ chuyện bạn vừa kể"). T3 chỉ khi đối chiếu ngầm có habit.
 - Câu đóng cố định 5 locale qua `reply` + `COACH_NO_PROMPT_KEY` để END không nói thêm.
 - Bỏ khỏi Home: pendingForAsking/T1, PLAN_ASK ở đuôi, MOOD_END/RATING (steps giữ, park).
@@ -172,7 +172,7 @@ CHƯA: admin đọc memories; vector search; dùng memory pattern thay bộ đ�
   của khoá, ≤5, mới nhất trước; promptArgs {course}) → pick → `lessonTalk(recapWhy)` ≤25 từ
   → RECAP_QUIZ ⟨Làm thử⟩/⟨Để sau⟩. Quiz: **đọc trong chat** (tái dùng QUIZ_IN_CHAT, ≤5 câu
   random từ mọi keypoint của khoá) — lệch design (design dùng KeypointQuizPage) vì client
-  không có sẵn câu hỏi cả khoá. Xong → COURSE_CARD (random cùng skill set, trừ khoá vừa xong,
+  không có sẵn câu hỏi cả khoá. Xong → COURSE_CARD (random cùng chủ đề, trừ khoá vừa xong,
   reason `reasonRecap`) → MOOD_END → RATING → END (đuôi đầy đủ chỉ ở đây).
 - Flutter cho 2/3: ĐANG LÀM.
 ## Luồng 1 · Onboarding Coach — CODE XONG 2026-09-04 (api 9fbe4a0 + 7b84ade, admin 56cd4d8, flutter ea1c98c9)

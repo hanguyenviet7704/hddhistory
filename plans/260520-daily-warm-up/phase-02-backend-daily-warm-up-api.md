@@ -29,7 +29,7 @@
 - Use authenticated `requestService.user` for `userId`.
 - Return `questions: []` when no progress, no latest keypoint, or no flagged attempted questions.
 - Return `isCourseCompleted` from whether the user passed the last keypoint of the current course.
-- Return `suggestedCourseId`: current `courseId` when keypoint is not completed; otherwise a random published course from the same skillset, falling back to current course.
+- Return `suggestedCourseId`: current `courseId` when keypoint is not completed; otherwise a random published course from the same category, falling back to current course.
 - Randomly return max 3 eligible questions.
 - Only include questions where:
   - learning item `type === LearningItemType.EXERCISE`

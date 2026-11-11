@@ -74,7 +74,7 @@ export interface OnboardingBranch {
   order: number;
   /** Hiện ở câu 1. false = chỉ để gắn khoá (vd Khám phá não bộ). */
   isSelectable: boolean;
-  skillsetId: string | null;
+  categoryId: string | null;
   isActive: boolean;
 }
 
@@ -189,12 +189,12 @@ git commit -m "feat: kiểu + service taxonomy onboarding v3, thêm type noti nh
 - Modify: `src/routes/index.tsx` (import + `<Route path="onboarding-taxonomy" .../>` cạnh `onboarding-config`)
 - Modify: `src/components/layout/Sidebar.tsx:126` (thêm mục dưới "Onboarding Config")
 
-**Interfaces — Consumes:** `onboardingTaxonomyService` (Task 1), `ExcelImportButton`, `downloadBlob`, `useNotification`, `skillsetService.getList` (typeahead skillset — tái dùng cách CourseModal.tsx:88-100 debounce query).
+**Interfaces — Consumes:** `onboardingTaxonomyService` (Task 1), `ExcelImportButton`, `downloadBlob`, `useNotification`, `categoryService.getList` (typeahead chủ đề — tái dùng cách CourseModal.tsx:88-100 debounce query).
 
 UI:
 - Header: tiêu đề "Onboarding Taxonomy", mô tả 1 dòng; nút: `Tải file mẫu` (outlined) · `Export Excel` (outlined) · `<ExcelImportButton label="Import Excel" fileName="onboarding-taxonomy-import-result.xlsx" importExcel={onboardingTaxonomyService.importExcel} onSuccess={reload+toast} onError={showError}/>` · `Thêm nhánh` · `Lưu` (contained, disabled khi không dirty).
 - Cảnh báo (Alert info): "Import thay toàn bộ nhánh/gói/nhãn và gắn nhãn cho khoá có trong tab Mapping. File kết quả tải về có cột Course ID đã điền; nếu có sheet `import_warnings` là có khoá không tìm thấy."
-- Thân: mỗi nhánh 1 `TaxonomyBranchCard` (Accordion): header = `code` + label.vi + chip "Không hiện ở câu 1" khi `!isSelectable` + chip "Tắt" khi `!isActive` + số gói; details = form nhánh (code, label vi/en, subtitle vi/en, order, isSelectable switch, isActive switch, skillset typeahead) + bảng gói (cột: Mã gói · Vấn đề (vi) · Vấn đề (en) · Mong muốn (vi) · Mong muốn (en) · Thứ tự · Bật · Nhãn chi tiết (n) · xoá) — mỗi hàng gói có nút mở rộng hiện danh sách nhãn (Mã · Nhãn (vi) · Nhãn (en) · xoá) + "Thêm nhãn"; nút "Thêm gói".
+- Thân: mỗi nhánh 1 `TaxonomyBranchCard` (Accordion): header = `code` + label.vi + chip "Không hiện ở câu 1" khi `!isSelectable` + chip "Tắt" khi `!isActive` + số gói; details = form nhánh (code, label vi/en, subtitle vi/en, order, isSelectable switch, isActive switch, chủ đề typeahead) + bảng gói (cột: Mã gói · Vấn đề (vi) · Vấn đề (en) · Mong muốn (vi) · Mong muốn (en) · Thứ tự · Bật · Nhãn chi tiết (n) · xoá) — mỗi hàng gói có nút mở rộng hiện danh sách nhãn (Mã · Nhãn (vi) · Nhãn (en) · xoá) + "Thêm nhãn"; nút "Thêm gói".
 - Lưu: `onboardingTaxonomyService.replace(tree)`; lỗi 400 → hiện `issues` (entity · code · message) trong Alert error, không toast một dòng.
 - Xoá nhánh xoá luôn gói + nhãn thuộc nó (confirm dialog); xoá gói xoá nhãn thuộc nó.
 
@@ -223,14 +223,14 @@ interface Props {
   onChangeLabel: (code: string, next: OnboardingLabel) => void;
   onAddLabel: (packageCode: string) => void;
   onDeleteLabel: (code: string) => void;
-  skillsetPicker: React.ReactNode; // typeahead do page cung cấp (cần service + debounce)
+  categoryPicker: React.ReactNode; // typeahead do page cung cấp (cần service + debounce)
 }
 
 const small = { size: "small" as const, sx: { minWidth: 160 } };
 
 const TaxonomyBranchCard: React.FC<Props> = ({
   branch, packages, labelsByPackage, onChangeBranch, onDeleteBranch, onChangePackage, onAddPackage,
-  onDeletePackage, onChangeLabel, onAddLabel, onDeleteLabel, skillsetPicker,
+  onDeletePackage, onChangeLabel, onAddLabel, onDeleteLabel, categoryPicker,
 }) => {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const set = (patch: Partial<OnboardingBranch>) => onChangeBranch({ ...branch, ...patch });
@@ -255,7 +255,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
           <TextField {...small} sx={{ minWidth: 260 }} label="Mô tả ngắn (en)" value={branch.subtitle?.en ?? ""} onChange={(e) => set({ subtitle: { ...branch.subtitle, en: e.target.value } })} />
           <TextField {...small} sx={{ width: 90 }} type="number" label="Thứ tự" value={branch.order} onChange={(e) => set({ order: Number(e.target.value) || 0 })} />
           <TextField {...small} sx={{ minWidth: 260 }} label="Icon URL" value={branch.iconUrl ?? ""} onChange={(e) => set({ iconUrl: e.target.value })} />
-          {skillsetPicker}
+          {categoryPicker}
           <FormControlLabel control={<Switch checked={branch.isSelectable} onChange={(e) => set({ isSelectable: e.target.checked })} />} label="Hiện ở câu 1" />
           <FormControlLabel control={<Switch checked={branch.isActive} onChange={(e) => set({ isActive: e.target.checked })} />} label="Đang bật" />
           <Button color="error" startIcon={<TrashIcon size={16} />} onClick={onDeleteBranch}>Xoá nhánh</Button>
@@ -342,7 +342,7 @@ import { DownloadIcon, FileSpreadsheetIcon, PlusIcon, SaveIcon } from "lucide-re
 import ExcelImportButton from "../../components/imports/ExcelImportButton";
 import TaxonomyBranchCard from "../../components/onboarding-taxonomy/TaxonomyBranchCard";
 import { onboardingTaxonomyService } from "../../services/onboardingTaxonomyService";
-import { skillsetService } from "../../services/skillsetService";
+import { categoryService } from "../../services/categoryService";
 import type { OnboardingBranch, OnboardingLabel, OnboardingPackage, OnboardingTaxonomyTree } from "../../types/interface/onboarding-taxonomy.interface";
 import { emptyTaxonomyTree } from "../../types/interface/onboarding-taxonomy.interface";
 import { downloadBlob } from "../../utils/downloadBlob";
@@ -357,7 +357,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [skillsets, setSkillsets] = useState<{ _id: string; title?: Record<string, string> }[]>([]);
+  const [categories, setCategories] = useState<{ _id: string; title?: Record<string, string> }[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -378,8 +378,8 @@ const OnboardingTaxonomyPage: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
-    // Danh sách skillset để gắn cho nhánh — số skillset nhỏ (≈6), tải một lần.
-    skillsetService.getList({ take: 100 } as any).then((res: any) => setSkillsets(res?.items ?? res?.data?.items ?? [])).catch(() => setSkillsets([]));
+    // Danh sách chủ đề để gắn cho nhánh — số chủ đề nhỏ (≈6), tải một lần.
+    categoryService.getList({ take: 100 } as any).then((res: any) => setCategories(res?.items ?? res?.data?.items ?? [])).catch(() => setCategories([]));
   }, []);
 
   const dirty = JSON.stringify(tree) !== saved;
@@ -431,7 +431,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
   };
   const addBranch = () => setTree((t) => ({
     ...t,
-    branches: [...t.branches, { code: "", label: { vi: "" }, subtitle: {}, iconUrl: "", imageUrl: "", order: t.branches.length + 1, isSelectable: true, skillsetId: null, isActive: true }],
+    branches: [...t.branches, { code: "", label: { vi: "" }, subtitle: {}, iconUrl: "", imageUrl: "", order: t.branches.length + 1, isSelectable: true, categoryId: null, isActive: true }],
   }));
   const updatePackage = (code: string, next: OnboardingPackage) => setTree((t) => ({
     ...t,
@@ -453,15 +453,15 @@ const OnboardingTaxonomyPage: React.FC = () => {
   });
   const deleteLabel = (code: string) => setTree((t) => ({ ...t, labels: t.labels.filter((l) => l.code !== code) }));
 
-  const skillsetPicker = (branch: OnboardingBranch) => (
+  const categoryPicker = (branch: OnboardingBranch) => (
     <Autocomplete
       size="small"
       sx={{ minWidth: 240 }}
-      options={skillsets}
+      options={categories}
       getOptionLabel={(s) => s.title?.vi || s.title?.en || s._id}
-      value={skillsets.find((s) => s._id === branch.skillsetId) ?? null}
-      onChange={(_, s) => updateBranch(branch.code, { ...branch, skillsetId: s?._id ?? null })}
-      renderInput={(params) => <TextField {...params} label="Skillset (để Home xếp theo nhánh)" />}
+      value={categories.find((s) => s._id === branch.categoryId) ?? null}
+      onChange={(_, s) => updateBranch(branch.code, { ...branch, categoryId: s?._id ?? null })}
+      renderInput={(params) => <TextField {...params} label="Category (để Home xếp theo nhánh)" />}
     />
   );
 
@@ -522,7 +522,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
             onChangeLabel={updateLabel}
             onAddLabel={addLabel}
             onDeleteLabel={deleteLabel}
-            skillsetPicker={skillsetPicker(branch)}
+            categoryPicker={categoryPicker(branch)}
           />
         ))}
       </Paper>
@@ -532,7 +532,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
 
 export default OnboardingTaxonomyPage;
 ```
-Kiểm tra chữ ký `skillsetService.getList` (src/services/skillsetService.ts:8) và hình trả về (`unwrapApi`?) rồi chỉnh dòng set skillsets cho đúng — đừng để `undefined.map`.
+Kiểm tra chữ ký `categoryService.getList` (src/services/categoryService.ts:8) và hình trả về (`unwrapApi`?) rồi chỉnh dòng set chủ đề cho đúng — đừng để `undefined.map`.
 
 - [ ] **Step 3: Route + sidebar**
 

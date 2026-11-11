@@ -104,18 +104,18 @@ export function validateCurriculum(file: unknown, seed: SeedRef): string[] {
   const errors: string[] = [];
   const f = file as CurriculumFile;
 
-  if (!f || !Array.isArray(f.skillsets)) {
-    return ['File curriculum phải có mảng `skillsets`.'];
+  if (!f || !Array.isArray(f.categories)) {
+    return ['File curriculum phải có mảng `categories`.'];
   }
-  if (f.skillsets.length === 0) {
-    return ['`skillsets` rỗng — file curriculum trống hoặc bị cắt cụt.'];
+  if (f.categories.length === 0) {
+    return ['`categories` rỗng — file curriculum trống hoặc bị cắt cụt.'];
   }
 
   const ctx: Ctx = { seed, errors, descriptions: new Map() };
   const periods = new Map<string, string>();
 
-  f.skillsets.forEach((s, si) => {
-    const at = `skillsets[${si}]`;
+  f.categories.forEach((s, si) => {
+    const at = `categories[${si}]`;
     if (notAnObject(s)) {
       errors.push(`${at}: không phải object`);
       return;
