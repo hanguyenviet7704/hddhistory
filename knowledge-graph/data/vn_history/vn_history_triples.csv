@@ -8,11 +8,9 @@ an_duong_vuong,An Dương Vương (Thục Phán),built,built,thanh_co_loa,Thành
 trieu_da,Triệu Đà,conquered,conquered,au_lac,Nước Âu Lạc
 trieu_da,Triệu Đà,founded,founded,nam_viet,Nước Nam Việt
 hai_ba_trung,"Hai Bà Trưng (Trưng Trắc, Trưng Nhị)",led,led,khoi_nghia_hai_ba_trung,Khởi nghĩa Hai Bà Trưng
-ba_trieu,Bà Triệu (Triệu Thị Trinh),opposed,opposed,nam_viet,Nước Nam Việt
 ly_nam_de,Lý Nam Đế (Lý Bí),founded,founded,van_xuan,Nước Vạn Xuân
 trieu_quang_phuc,Triệu Quang Phục,succeeded,succeeded,ly_nam_de,Lý Nam Đế (Lý Bí)
 duong_dinh_nghe,Dương Đình Nghệ,succeeded,succeeded,khuc_thua_du,Khúc Thừa Dụ
-phung_hung,Phùng Hưng (Bố Cái Đại Vương),contemporary_with,contemporary_with,mai_hac_de,Mai Hắc Đế (Mai Thúc Loan)
 ngo_quyen,Ngô Quyền,led,led,tran_bach_dang_938,Trận Bạch Đằng năm 938
 tran_bach_dang_938,Trận Bạch Đằng năm 938,occurred_at,occurred_at,song_bach_dang,Sông Bạch Đằng
 dinh_bo_linh,Đinh Bộ Lĩnh,founded,founded,nha_dinh,Nhà Đinh
@@ -204,6 +202,484 @@ ly_nhan_tong,Lý Nhân Tông,child_of,child_of,nguyen_phi_y_lan,Nguyên phi Ỷ 
 tran_khanh_du,Trần Khánh Dư,child_of,child_of,tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh)
 minh_menh,Minh Mạng,child_of,child_of,gia_long,Gia Long (Nguyễn Ánh)
 le_duan,Lê Duẩn,served,served,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+to_dinh,Tô Định,served,served,nha_han,Nhà Hán (Trung Quốc)
+ma_vien,Mã Viện,served,served,nha_han,Nhà Hán (Trung Quốc)
+hai_ba_trung,"Hai Bà Trưng (Trưng Trắc, Trưng Nhị)",opposed,opposed,nha_han,Nhà Hán (Trung Quốc)
+le_dai_hanh,Lê Đại Hành (Lê Hoàn),defeated,defeated,nha_tong,Nhà Tống (Trung Quốc)
+ly_thuong_kiet,Lý Thường Kiệt,defeated,defeated,nha_tong,Nhà Tống (Trung Quốc)
+nha_minh,Nhà Minh (Trung Quốc),conquered,conquered,nha_ho,Nhà Hồ
+le_loi,Lê Lợi,defeated,defeated,nha_minh,Nhà Minh (Trung Quốc)
+duong_dinh_nghe,Dương Đình Nghệ,defeated,defeated,nam_han,Nước Nam Hán
+ngo_quyen,Ngô Quyền,defeated,defeated,nam_han,Nước Nam Hán
+nam_han,Nước Nam Hán,participated_in,participated_in,tran_bach_dang_938,Trận Bạch Đằng năm 938
+le_thanh_tong,Lê Thánh Tông,defeated,defeated,chiem_thanh,Chiêm Thành (Champa)
+le_thanh_tong,Lê Thánh Tông,founded,founded,hoi_tao_dan,Hội Tao Đàn
+hoa_ky,Hoa Kỳ,participated_in,participated_in,khang_chien_chong_my,Kháng chiến chống Mỹ
+hoa_ky,Hoa Kỳ,participated_in,participated_in,hiep_dinh_paris_1973,Hiệp định Paris
+hoa_ky,Hoa Kỳ,participated_in,participated_in,su_kien_vinh_bac_bo,Sự kiện Vịnh Bắc Bộ
+khoi_nghia_lam_son,Khởi nghĩa Lam Sơn,occurred_at,occurred_at,thanh_hoa,Thanh Hóa
+khoi_nghia_lam_son,Khởi nghĩa Lam Sơn,occurred_at,occurred_at,nghe_an,Nghệ An
+xo_viet_nghe_tinh,Xô viết Nghệ Tĩnh,occurred_at,occurred_at,nghe_an,Nghệ An
+nha_ho,Nhà Hồ,capital_at,capital_at,thanh_hoa,Thanh Hóa
+khoi_nghia_tay_son,Khởi nghĩa Tây Sơn,occurred_at,occurred_at,quy_nhon,Quy Nhơn
+viet_nam_cong_hoa,Việt Nam Cộng hòa,capital_at,capital_at,sai_gon,Sài Gòn – Gia Định
+giai_phong_mien_nam_1975,"Giải phóng miền Nam, thống nhất đất nước",occurred_at,occurred_at,sai_gon,Sài Gòn – Gia Định
+den_hung,Đền Hùng,worships,worships,hung_vuong,Hùng Vương
+my_chau,Mỵ Châu,child_of,child_of,an_duong_vuong,An Dương Vương (Thục Phán)
+lac_long_quan,Lạc Long Quân,child_of,child_of,kinh_duong_vuong,Kinh Dương Vương
+au_lac,Nước Âu Lạc,followed,followed,van_lang,Nước Văn Lang
+au_lac,Nước Âu Lạc,capital_at,capital_at,thanh_co_loa,Thành Cổ Loa
+nha_han,Nhà Hán (Trung Quốc),conquered,conquered,nam_viet,Nước Nam Việt
+khoi_nghia_hai_ba_trung,Khởi nghĩa Hai Bà Trưng,opposed,opposed,nha_han,Nhà Hán (Trung Quốc)
+le_chan,Lê Chân,served,served,hai_ba_trung,"Hai Bà Trưng (Trưng Trắc, Trưng Nhị)"
+trieu_quang_phuc,Triệu Quang Phục,served,served,van_xuan,Nước Vạn Xuân
+ly_phat_tu,Lý Phật Tử,served,served,van_xuan,Nước Vạn Xuân
+nha_duong,Nhà Đường (Trung Quốc),followed,followed,nha_tuy,Nhà Tùy (Trung Quốc)
+phung_hung,Phùng Hưng (Bố Cái Đại Vương),controlled,controlled,an_nam_do_ho_phu,An Nam đô hộ phủ
+an_nam_do_ho_phu,An Nam đô hộ phủ,capital_at,capital_at,thang_long,Thăng Long
+khuc_hao,Khúc Hạo,child_of,child_of,khuc_thua_du,Khúc Thừa Dụ
+ngo_quyen,Ngô Quyền,served,served,duong_dinh_nghe,Dương Đình Nghệ
+duong_dinh_nghe,Dương Đình Nghệ,native_of,native_of,thanh_hoa,Thanh Hóa
+dinh_bo_linh,Đinh Bộ Lĩnh,native_of,native_of,hoa_lu,Hoa Lư
+dinh_lien,Đinh Liễn,child_of,child_of,dinh_bo_linh,Đinh Bộ Lĩnh
+nha_tong,Nhà Tống (Trung Quốc),participated_in,participated_in,tong_xam_luoc_981,Kháng chiến chống Tống lần 1
+tong_xam_luoc_981,Kháng chiến chống Tống lần 1,occurred_at,occurred_at,song_bach_dang,Sông Bạch Đằng
+ly_thai_tong,Lý Thái Tông,child_of,child_of,ly_thai_to,Lý Thái Tổ (Lý Công Uẩn)
+ly_thai_tong,Lý Thái Tông,served,served,nha_ly,Nhà Lý
+ly_thai_tong,Lý Thái Tông,built,built,chua_mot_cot,Chùa Một Cột
+nha_ly,Nhà Lý,capital_at,capital_at,thang_long,Thăng Long
+ly_nhan_tong,Lý Nhân Tông,developed,developed,van_mieu,Văn Miếu – Quốc Tử Giám
+ly_nhan_tong,Lý Nhân Tông,ruled_during,ruled_during,khang_chien_chong_tong_1075_1077,Kháng chiến chống Tống (1075–1077)
+ly_chieu_hoang,Lý Chiêu Hoàng,served,served,nha_ly,Nhà Lý
+tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh),succeeded,succeeded,ly_chieu_hoang,Lý Chiêu Hoàng
+tran_thanh_tong,Trần Thánh Tông,child_of,child_of,tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh)
+tran_thanh_tong,Trần Thánh Tông,succeeded,succeeded,tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh)
+tran_thanh_tong,Trần Thánh Tông,led,led,hoi_nghi_dien_hong,Hội nghị Diên Hồng
+tran_nhan_tong,Trần Nhân Tông,succeeded,succeeded,tran_thanh_tong,Trần Thánh Tông
+tran_nhan_tong,Trần Nhân Tông,served,served,nha_tran,Nhà Trần
+tran_thu_do,Trần Thủ Độ,served,served,nha_tran,Nhà Trần
+tran_thu_do,Trần Thủ Độ,participated_in,participated_in,khang_chien_mong_nguyen,Ba lần kháng chiến chống Mông-Nguyên
+nha_tran,Nhà Trần,capital_at,capital_at,thang_long,Thăng Long
+tran_hung_dao,Trần Hưng Đạo (Trần Quốc Tuấn),led,led,tran_bach_dang_1288,Trận Bạch Đằng năm 1288
+tran_quoc_toan,Trần Quốc Toản,served,served,nha_tran,Nhà Trần
+ho_quy_ly,Hồ Quý Ly,served,served,nha_tran,Nhà Trần
+ho_han_thuong,Hồ Hán Thương,succeeded,succeeded,ho_quy_ly,Hồ Quý Ly
+nha_minh,Nhà Minh (Trung Quốc),participated_in,participated_in,tran_tot_dong_chuc_dong,Trận Tốt Động – Chúc Động
+nha_minh,Nhà Minh (Trung Quốc),participated_in,participated_in,tran_chi_lang_xuong_giang,Trận Chi Lăng – Xương Giang
+le_loi,Lê Lợi,native_of,native_of,thanh_hoa,Thanh Hóa
+nguyen_trai,Nguyễn Trãi,served,served,nha_le_so,Nhà Lê sơ
+nha_le_so,Nhà Lê sơ,capital_at,capital_at,thang_long,Thăng Long
+le_thanh_tong,Lê Thánh Tông,developed,developed,van_mieu,Văn Miếu – Quốc Tử Giám
+hoang_viet_luat_le,Hoàng Việt luật lệ (Luật Gia Long),followed,followed,luat_hong_duc,Luật Hồng Đức (Quốc triều hình luật)
+mac_dang_dung,Mạc Đăng Dung,served,served,nha_le_so,Nhà Lê sơ
+nha_mac,Nhà Mạc,succeeded,succeeded,nha_le_so,Nhà Lê sơ
+nha_mac,Nhà Mạc,capital_at,capital_at,thang_long,Thăng Long
+le_trung_hung,Nhà Lê Trung hưng,capital_at,capital_at,thanh_hoa,Thanh Hóa
+trinh_kiem,Trịnh Kiểm,native_of,native_of,thanh_hoa,Thanh Hóa
+nguyen_hoang,Nguyễn Hoàng,native_of,native_of,thanh_hoa,Thanh Hóa
+chua_nguyen,Chúa Nguyễn (Đàng Trong),capital_at,capital_at,hue,Huế
+chua_nguyen,Chúa Nguyễn (Đàng Trong),led,led,nam_tien,Công cuộc Nam tiến
+chua_nguyen,Chúa Nguyễn (Đàng Trong),conquered,conquered,chiem_thanh,Chiêm Thành (Champa)
+nguyen_nhac,Nguyễn Nhạc,native_of,native_of,quy_nhon,Quy Nhơn
+nguyen_hue,Nguyễn Huệ (Quang Trung),native_of,native_of,quy_nhon,Quy Nhơn
+nguyen_lu,Nguyễn Lữ,native_of,native_of,quy_nhon,Quy Nhơn
+nguyen_nhac,Nguyễn Nhạc,sibling_of,sibling_of,nguyen_hue,Nguyễn Huệ (Quang Trung)
+nguyen_nhac,Nguyễn Nhạc,sibling_of,sibling_of,nguyen_lu,Nguyễn Lữ
+nguyen_hue,Nguyễn Huệ (Quang Trung),sibling_of,sibling_of,nguyen_lu,Nguyễn Lữ
+nguyen_nhac,Nguyễn Nhạc,controlled,controlled,quy_nhon,Quy Nhơn
+nguyen_hue,Nguyễn Huệ (Quang Trung),defeated,defeated,nha_thanh,Nhà Thanh (Trung Quốc)
+nguyen_hue,Nguyễn Huệ (Quang Trung),defeated,defeated,chua_trinh,Chúa Trịnh (Đàng Ngoài)
+nguyen_hue,Nguyễn Huệ (Quang Trung),capital_at,capital_at,hue,Huế
+nha_thanh,Nhà Thanh (Trung Quốc),participated_in,participated_in,tran_ngoc_hoi_dong_da,Trận Ngọc Hồi – Đống Đa
+tran_ngoc_hoi_dong_da,Trận Ngọc Hồi – Đống Đa,occurred_at,occurred_at,thang_long,Thăng Long
+ngo_thi_nham,Ngô Thì Nhậm,served,served,chua_trinh,Chúa Trịnh (Đàng Ngoài)
+chieu_thong,Lê Chiêu Thống,served,served,le_trung_hung,Nhà Lê Trung hưng
+minh_menh,Minh Mạng,succeeded,succeeded,gia_long,Gia Long (Nguyễn Ánh)
+le_van_duyet,Lê Văn Duyệt,served,served,nha_nguyen,Nhà Nguyễn
+le_van_duyet,Lê Văn Duyệt,controlled,controlled,sai_gon,Sài Gòn – Gia Định
+nguyen_cong_tru,Nguyễn Công Trứ,served,served,minh_menh,Minh Mạng
+ham_nghi,Vua Hàm Nghi,served,served,nha_nguyen,Nhà Nguyễn
+hoang_hoa_tham,Hoàng Hoa Thám (Đề Thám),contemporary_with,contemporary_with,phan_boi_chau,Phan Bội Châu
+phan_boi_chau,Phan Bội Châu,native_of,native_of,nghe_an,Nghệ An
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),native_of,native_of,nghe_an,Nghệ An
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),founded,founded,mat_tran_viet_minh,Mặt trận Việt Minh
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),authored,authored,tuyen_ngon_doc_lap,Tuyên ngôn độc lập
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),initiated,initiated,toan_quoc_khang_chien_1946,Toàn quốc kháng chiến
+tuyen_ngon_doc_lap,Tuyên ngôn độc lập,occurred_at,occurred_at,ha_noi,Hà Nội
+toan_quoc_khang_chien_1946,Toàn quốc kháng chiến,occurred_at,occurred_at,ha_noi,Hà Nội
+cach_mang_thang_tam,Cách mạng tháng Tám,occurred_at,occurred_at,ha_noi,Hà Nội
+cach_mang_thang_tam,Cách mạng tháng Tám,occurred_at,occurred_at,hue,Huế
+cach_mang_thang_tam,Cách mạng tháng Tám,occurred_at,occurred_at,sai_gon,Sài Gòn – Gia Định
+le_duan,Lê Duẩn,led,led,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+truong_chinh,Trường Chinh,led,led,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+truong_chinh,Trường Chinh,participated_in,participated_in,doi_moi_1986,Đổi Mới
+pham_van_dong,Phạm Văn Đồng,participated_in,participated_in,hiep_dinh_geneva_1954,Hiệp định Genève
+ngo_dinh_diem,Ngô Đình Diệm,opposed,opposed,bao_dai,Bảo Đại
+viet_nam_cong_hoa,Việt Nam Cộng hòa,border_at,border_at,song_ben_hai,Sông Bến Hải
+hoa_ky,Hoa Kỳ,allied_with,allied_with,viet_nam_cong_hoa,Việt Nam Cộng hòa
+viet_nam_cong_hoa,Việt Nam Cộng hòa,participated_in,participated_in,hiep_dinh_paris_1973,Hiệp định Paris
+mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam,participated_in,participated_in,tong_tien_cong_tet_mau_than_1968,Tổng tiến công và nổi dậy Tết Mậu Thân
+tong_tien_cong_tet_mau_than_1968,Tổng tiến công và nổi dậy Tết Mậu Thân,occurred_at,occurred_at,hue,Huế
+tong_tien_cong_tet_mau_than_1968,Tổng tiến công và nổi dậy Tết Mậu Thân,occurred_at,occurred_at,sai_gon,Sài Gòn – Gia Định
+dien_bien_phu_tren_khong,Chiến dịch Điện Biên Phủ trên không,occurred_at,occurred_at,ha_noi,Hà Nội
+hoa_ky,Hoa Kỳ,participated_in,participated_in,dien_bien_phu_tren_khong,Chiến dịch Điện Biên Phủ trên không
+chien_dich_ho_chi_minh,Chiến dịch Hồ Chí Minh,occurred_at,occurred_at,sai_gon,Sài Gòn – Gia Định
+dang_cong_san_vn,Đảng Cộng sản Việt Nam,initiated,initiated,phong_trao_dong_khoi,Phong trào Đồng khởi
+bui_thi_xuan,Bùi Thị Xuân,native_of,native_of,quy_nhon,Quy Nhơn
+chu_van_an,Chu Văn An,native_of,native_of,ha_noi,Hà Nội
+le_lai,Lê Lai,served,served,le_loi,Lê Lợi
+nguyen_chich,Nguyễn Chích,served,served,nha_le_so,Nhà Lê sơ
+tran_nguyen_han,Trần Nguyên Hãn,served,served,nha_le_so,Nhà Lê sơ
+nguyen_chich,Nguyễn Chích,native_of,native_of,thanh_hoa,Thanh Hóa
+tran_nguyen_han,Trần Nguyên Hãn,participated_in,participated_in,tran_chi_lang_xuong_giang,Trận Chi Lăng – Xương Giang
+tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh),native_of,native_of,nam_dinh,Nam Định
+luong_the_vinh,Lương Thế Vinh,native_of,native_of,nam_dinh,Nam Định
+ly_thanh_tong,Lý Thánh Tông,defeated,defeated,chiem_thanh,Chiêm Thành (Champa)
+song_gianh,Sông Gianh,part_of,part_of,quang_binh,Quảng Bình
+luy_thay,Lũy Thầy (Lũy Trường Dục – Đồng Hới),part_of,part_of,quang_binh,Quảng Bình
+nguyen_du,Nguyễn Du,native_of,native_of,ha_tinh,Hà Tĩnh
+phan_dinh_phung,Phan Đình Phùng,native_of,native_of,ha_tinh,Hà Tĩnh
+mat_tran_viet_minh,Mặt trận Việt Minh,opposed,opposed,nhat_ban,Nhật Bản
+mat_tran_viet_minh,Mặt trận Việt Minh,opposed,opposed,phap,Pháp
+vo_nguyen_giap,Võ Nguyên Giáp,native_of,native_of,quang_binh,Quảng Bình
+le_duan,Lê Duẩn,native_of,native_of,quang_tri,Quảng Trị
+truong_chinh,Trường Chinh,native_of,native_of,nam_dinh,Nam Định
+bao_dai,Bảo Đại,declared,declared,de_quoc_viet_nam,Đế quốc Việt Nam
+song_ben_hai,Sông Bến Hải,part_of,part_of,quang_tri,Quảng Trị
+trong_thuy,Trọng Thủy,child_of,child_of,trieu_da,Triệu Đà
+my_chau,Mỵ Châu,married,married,trong_thuy,Trọng Thủy
+thi_sach,Thi Sách,married,married,hai_ba_trung,"Hai Bà Trưng (Trưng Trắc, Trưng Nhị)"
+thi_sach,Thi Sách,contemporary_with,contemporary_with,to_dinh,Tô Định
+khoi_nghia_hai_ba_trung,Khởi nghĩa Hai Bà Trưng,occurred_at,occurred_at,me_linh,Mê Linh
+hai_ba_trung,"Hai Bà Trưng (Trưng Trắc, Trưng Nhị)",native_of,native_of,me_linh,Mê Linh
+hai_ba_trung,"Hai Bà Trưng (Trưng Trắc, Trưng Nhị)",capital_at,capital_at,me_linh,Mê Linh
+ba_trieu,Bà Triệu (Triệu Thị Trinh),opposed,opposed,nha_dong_ngo,Nhà Đông Ngô (Trung Quốc)
+nha_dong_ngo,Nhà Đông Ngô (Trung Quốc),followed,followed,nha_han,Nhà Hán (Trung Quốc)
+ba_trieu,Bà Triệu (Triệu Thị Trinh),led,led,khoi_nghia_ba_trieu,Khởi nghĩa Bà Triệu
+khoi_nghia_ba_trieu,Khởi nghĩa Bà Triệu,opposed,opposed,nha_dong_ngo,Nhà Đông Ngô (Trung Quốc)
+khoi_nghia_ba_trieu,Khởi nghĩa Bà Triệu,occurred_at,occurred_at,thanh_hoa,Thanh Hóa
+ba_trieu,Bà Triệu (Triệu Thị Trinh),native_of,native_of,thanh_hoa,Thanh Hóa
+ly_nam_de,Lý Nam Đế (Lý Bí),opposed,opposed,nha_luong,Nhà Lương (Trung Quốc)
+trieu_quang_phuc,Triệu Quang Phục,opposed,opposed,nha_luong,Nhà Lương (Trung Quốc)
+mai_hac_de,Mai Hắc Đế (Mai Thúc Loan),led,led,khoi_nghia_mai_thuc_loan,Khởi nghĩa Mai Thúc Loan
+khoi_nghia_mai_thuc_loan,Khởi nghĩa Mai Thúc Loan,opposed,opposed,nha_duong,Nhà Đường (Trung Quốc)
+khoi_nghia_mai_thuc_loan,Khởi nghĩa Mai Thúc Loan,occurred_at,occurred_at,nghe_an,Nghệ An
+kieu_cong_tien,Kiều Công Tiễn,served,served,duong_dinh_nghe,Dương Đình Nghệ
+kieu_cong_tien,Kiều Công Tiễn,allied_with,allied_with,nam_han,Nước Nam Hán
+ngo_quyen,Ngô Quyền,defeated,defeated,kieu_cong_tien,Kiều Công Tiễn
+ngo_quyen,Ngô Quyền,founded,founded,nha_ngo,Nhà Ngô
+nha_ngo,Nhà Ngô,capital_at,capital_at,thanh_co_loa,Thành Cổ Loa
+ngo_xuong_van,Ngô Xương Văn,served,served,nha_ngo,Nhà Ngô
+loan_12_su_quan,Loạn 12 sứ quân,followed,followed,nha_ngo,Nhà Ngô
+duong_van_nga,Dương Vân Nga (Đại Thắng Minh Hoàng hậu),married,married,dinh_bo_linh,Đinh Bộ Lĩnh
+duong_van_nga,Dương Vân Nga (Đại Thắng Minh Hoàng hậu),married,married,le_dai_hanh,Lê Đại Hành (Lê Hoàn)
+dinh_toan,Đinh Phế Đế (Đinh Toàn),child_of,child_of,dinh_bo_linh,Đinh Bộ Lĩnh
+dinh_toan,Đinh Phế Đế (Đinh Toàn),child_of,child_of,duong_van_nga,Dương Vân Nga (Đại Thắng Minh Hoàng hậu)
+dinh_toan,Đinh Phế Đế (Đinh Toàn),succeeded,succeeded,dinh_bo_linh,Đinh Bộ Lĩnh
+dinh_toan,Đinh Phế Đế (Đinh Toàn),served,served,nha_dinh,Nhà Đinh
+van_hanh,Thiền sư Vạn Hạnh,served,served,le_dai_hanh,Lê Đại Hành (Lê Hoàn)
+van_hanh,Thiền sư Vạn Hạnh,contemporary_with,contemporary_with,ly_thai_to,Lý Thái Tổ (Lý Công Uẩn)
+tong_xam_luoc_981,Kháng chiến chống Tống lần 1,occurred_at,occurred_at,chi_lang,Ải Chi Lăng
+tran_chi_lang_xuong_giang,Trận Chi Lăng – Xương Giang,occurred_at,occurred_at,chi_lang,Ải Chi Lăng
+ly_thanh_tong,Lý Thánh Tông,child_of,child_of,ly_thai_tong,Lý Thái Tông
+ly_thanh_tong,Lý Thánh Tông,succeeded,succeeded,ly_thai_tong,Lý Thái Tông
+ly_thanh_tong,Lý Thánh Tông,served,served,nha_ly,Nhà Lý
+ly_thanh_tong,Lý Thánh Tông,declared,declared,quoc_hieu_dai_viet,Quốc hiệu Đại Việt
+ly_thanh_tong,Lý Thánh Tông,founded,founded,van_mieu,Văn Miếu – Quốc Tử Giám
+nguyen_phi_y_lan,Nguyên phi Ỷ Lan,married,married,ly_thanh_tong,Lý Thánh Tông
+ly_nhan_tong,Lý Nhân Tông,child_of,child_of,ly_thanh_tong,Lý Thánh Tông
+ly_nhan_tong,Lý Nhân Tông,succeeded,succeeded,ly_thanh_tong,Lý Thánh Tông
+quoc_hieu_dai_viet,Quốc hiệu Đại Việt,renamed_from,renamed_from,dai_co_viet,Quốc hiệu Đại Cồ Việt
+ly_than_tong,Lý Thần Tông,succeeded,succeeded,ly_nhan_tong,Lý Nhân Tông
+ly_than_tong,Lý Thần Tông,served,served,nha_ly,Nhà Lý
+ly_anh_tong,Lý Anh Tông,child_of,child_of,ly_than_tong,Lý Thần Tông
+ly_anh_tong,Lý Anh Tông,succeeded,succeeded,ly_than_tong,Lý Thần Tông
+ly_hue_tong,Lý Huệ Tông,served,served,nha_ly,Nhà Lý
+ly_chieu_hoang,Lý Chiêu Hoàng,child_of,child_of,ly_hue_tong,Lý Huệ Tông
+ly_chieu_hoang,Lý Chiêu Hoàng,succeeded,succeeded,ly_hue_tong,Lý Huệ Tông
+tran_thu_do,Trần Thủ Độ,opposed,opposed,ly_hue_tong,Lý Huệ Tông
+chua_thay,Chùa Thầy,worships,worships,tu_dao_hanh,Từ Đạo Hạnh
+nha_ly,Nhà Lý,built,built,chua_thay,Chùa Thầy
+tran_ung_chau,Trận Ung Châu,part_of,part_of,khang_chien_chong_tong_1075_1077,Kháng chiến chống Tống (1075–1077)
+ly_thuong_kiet,Lý Thường Kiệt,led,led,tran_ung_chau,Trận Ung Châu
+nha_tong,Nhà Tống (Trung Quốc),participated_in,participated_in,tran_ung_chau,Trận Ung Châu
+tran_nhu_nguyet,Trận Như Nguyệt,part_of,part_of,khang_chien_chong_tong_1075_1077,Kháng chiến chống Tống (1075–1077)
+tran_nhu_nguyet,Trận Như Nguyệt,occurred_at,occurred_at,song_nhu_nguyet,Sông Như Nguyệt (sông Cầu)
+ly_thuong_kiet,Lý Thường Kiệt,led,led,tran_nhu_nguyet,Trận Như Nguyệt
+nha_tong,Nhà Tống (Trung Quốc),participated_in,participated_in,tran_nhu_nguyet,Trận Như Nguyệt
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),participated_in,participated_in,khang_chien_mong_nguyen,Ba lần kháng chiến chống Mông-Nguyên
+nha_tran,Nhà Trần,defeated,defeated,nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc)
+tran_hung_dao,Trần Hưng Đạo (Trần Quốc Tuấn),defeated,defeated,nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc)
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),conquered,conquered,nha_tong,Nhà Tống (Trung Quốc)
+nha_minh,Nhà Minh (Trung Quốc),followed,followed,nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc)
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),participated_in,participated_in,tran_bach_dang_1288,Trận Bạch Đằng năm 1288
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),participated_in,participated_in,tran_hamtu_chuongduong,Trận Hàm Tử – Chương Dương
+tran_dong_bo_dau,Trận Đông Bộ Đầu,part_of,part_of,khang_chien_mong_nguyen,Ba lần kháng chiến chống Mông-Nguyên
+tran_canh_thai_tong,Trần Thái Tông (Trần Cảnh),led,led,tran_dong_bo_dau,Trận Đông Bộ Đầu
+tran_dong_bo_dau,Trận Đông Bộ Đầu,occurred_at,occurred_at,thang_long,Thăng Long
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),participated_in,participated_in,tran_dong_bo_dau,Trận Đông Bộ Đầu
+tran_nhan_tong,Trần Nhân Tông,led,led,hoi_nghi_binh_than,Hội nghị Bình Than
+hoi_nghi_binh_than,Hội nghị Bình Than,part_of,part_of,khang_chien_mong_nguyen,Ba lần kháng chiến chống Mông-Nguyên
+tran_hung_dao,Trần Hưng Đạo (Trần Quốc Tuấn),participated_in,participated_in,hoi_nghi_binh_than,Hội nghị Bình Than
+tran_khanh_du,Trần Khánh Dư,participated_in,participated_in,hoi_nghi_binh_than,Hội nghị Bình Than
+hoi_nghi_binh_than,Hội nghị Bình Than,preceded,preceded,hoi_nghi_dien_hong,Hội nghị Diên Hồng
+tran_khanh_du,Trần Khánh Dư,led,led,tran_van_don,Trận Vân Đồn
+tran_van_don,Trận Vân Đồn,part_of,part_of,khang_chien_mong_nguyen,Ba lần kháng chiến chống Mông-Nguyên
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),participated_in,participated_in,tran_van_don,Trận Vân Đồn
+tran_van_don,Trận Vân Đồn,preceded,preceded,tran_bach_dang_1288,Trận Bạch Đằng năm 1288
+tran_nhan_tong,Trần Nhân Tông,founded,founded,truc_lam,Thiền phái Trúc Lâm Yên Tử
+phap_loa,Pháp Loa,led,led,truc_lam,Thiền phái Trúc Lâm Yên Tử
+phap_loa,Pháp Loa,succeeded,succeeded,tran_nhan_tong,Trần Nhân Tông
+huyen_quang,Huyền Quang,led,led,truc_lam,Thiền phái Trúc Lâm Yên Tử
+huyen_quang,Huyền Quang,succeeded,succeeded,phap_loa,Pháp Loa
+le_van_huu,Lê Văn Hưu,served,served,nha_tran,Nhà Trần
+le_van_huu,Lê Văn Hưu,authored,authored,dai_viet_su_ky,Đại Việt sử ký (Lê Văn Hưu)
+dai_viet_su_ky,Đại Việt sử ký (Lê Văn Hưu),commissioned_by,commissioned_by,tran_thanh_tong,Trần Thánh Tông
+nha_tran,Nhà Trần,developed,developed,nam_dinh,Nam Định
+tran_bo_co,Trận Bô Cô,occurred_at,occurred_at,nam_dinh,Nam Định
+ho_quy_ly,Hồ Quý Ly,built,built,thanh_tay_do,Thành nhà Hồ (Tây Đô)
+nha_ho,Nhà Hồ,capital_at,capital_at,thanh_tay_do,Thành nhà Hồ (Tây Đô)
+thanh_tay_do,Thành nhà Hồ (Tây Đô),part_of,part_of,thanh_hoa,Thanh Hóa
+ho_quy_ly,Hồ Quý Ly,declared,declared,quoc_hieu_dai_ngu,Quốc hiệu Đại Ngu
+quoc_hieu_dai_ngu,Quốc hiệu Đại Ngu,renamed_from,renamed_from,quoc_hieu_dai_viet,Quốc hiệu Đại Việt
+ho_nguyen_trung,Hồ Nguyên Trừng,child_of,child_of,ho_quy_ly,Hồ Quý Ly
+ho_nguyen_trung,Hồ Nguyên Trừng,served,served,nha_ho,Nhà Hồ
+ho_nguyen_trung,Hồ Nguyên Trừng,served,served,nha_minh,Nhà Minh (Trung Quốc)
+gian_dinh_de,Giản Định Đế (Trần Ngỗi),founded,founded,nha_hau_tran,Nhà Hậu Trần
+trung_quang_de,Trùng Quang Đế (Trần Quý Khoáng),led,led,nha_hau_tran,Nhà Hậu Trần
+trung_quang_de,Trùng Quang Đế (Trần Quý Khoáng),succeeded,succeeded,gian_dinh_de,Giản Định Đế (Trần Ngỗi)
+nha_hau_tran,Nhà Hậu Trần,opposed,opposed,nha_minh,Nhà Minh (Trung Quốc)
+nha_hau_tran,Nhà Hậu Trần,preceded,preceded,khoi_nghia_lam_son,Khởi nghĩa Lam Sơn
+gian_dinh_de,Giản Định Đế (Trần Ngỗi),led,led,tran_bo_co,Trận Bô Cô
+nha_hau_tran,Nhà Hậu Trần,participated_in,participated_in,tran_bo_co,Trận Bô Cô
+nha_minh,Nhà Minh (Trung Quốc),participated_in,participated_in,tran_bo_co,Trận Bô Cô
+lieu_thang,Liễu Thăng,served,served,nha_minh,Nhà Minh (Trung Quốc)
+lieu_thang,Liễu Thăng,participated_in,participated_in,tran_chi_lang_xuong_giang,Trận Chi Lăng – Xương Giang
+vuong_thong,Vương Thông,served,served,nha_minh,Nhà Minh (Trung Quốc)
+vuong_thong,Vương Thông,participated_in,participated_in,tran_tot_dong_chuc_dong,Trận Tốt Động – Chúc Động
+vuong_thong,Vương Thông,participated_in,participated_in,hoi_the_dong_quan,Hội thề Đông Quan
+le_loi,Lê Lợi,led,led,hoi_the_dong_quan,Hội thề Đông Quan
+hoi_the_dong_quan,Hội thề Đông Quan,part_of,part_of,khoi_nghia_lam_son,Khởi nghĩa Lam Sơn
+hoi_the_dong_quan,Hội thề Đông Quan,occurred_at,occurred_at,thang_long,Thăng Long
+hoi_the_dong_quan,Hội thề Đông Quan,ended,ended,thuoc_minh,Thời kỳ thuộc Minh
+nguyen_trai,Nguyễn Trãi,authored,authored,binh_ngo_dai_cao,Bình Ngô đại cáo
+binh_ngo_dai_cao,Bình Ngô đại cáo,commissioned_by,commissioned_by,le_loi,Lê Lợi
+le_thai_tong,Lê Thái Tông,child_of,child_of,le_loi,Lê Lợi
+le_thai_tong,Lê Thái Tông,succeeded,succeeded,le_loi,Lê Lợi
+le_thai_tong,Lê Thái Tông,served,served,nha_le_so,Nhà Lê sơ
+le_nhan_tong,Lê Nhân Tông,child_of,child_of,le_thai_tong,Lê Thái Tông
+le_nhan_tong,Lê Nhân Tông,succeeded,succeeded,le_thai_tong,Lê Thái Tông
+le_thanh_tong,Lê Thánh Tông,child_of,child_of,le_thai_tong,Lê Thái Tông
+le_nghi_dan,Lê Nghi Dân,child_of,child_of,le_thai_tong,Lê Thái Tông
+le_nghi_dan,Lê Nghi Dân,opposed,opposed,le_nhan_tong,Lê Nhân Tông
+le_thanh_tong,Lê Thánh Tông,succeeded,succeeded,le_nghi_dan,Lê Nghi Dân
+ngo_si_lien,Ngô Sĩ Liên,authored,authored,dai_viet_su_ky_toan_thu,Đại Việt sử ký toàn thư
+dai_viet_su_ky_toan_thu,Đại Việt sử ký toàn thư,commissioned_by,commissioned_by,le_thanh_tong,Lê Thánh Tông
+dai_viet_su_ky_toan_thu,Đại Việt sử ký toàn thư,followed,followed,dai_viet_su_ky,Đại Việt sử ký (Lê Văn Hưu)
+nguyen_kim,Nguyễn Kim,founded,founded,le_trung_hung,Nhà Lê Trung hưng
+nguyen_kim,Nguyễn Kim,opposed,opposed,nha_mac,Nhà Mạc
+nguyen_kim,Nguyễn Kim,native_of,native_of,thanh_hoa,Thanh Hóa
+nguyen_hoang,Nguyễn Hoàng,child_of,child_of,nguyen_kim,Nguyễn Kim
+trinh_kiem,Trịnh Kiểm,succeeded,succeeded,nguyen_kim,Nguyễn Kim
+nguyen_binh_khiem,Nguyễn Bỉnh Khiêm,served,served,nha_mac,Nhà Mạc
+nguyen_binh_khiem,Nguyễn Bỉnh Khiêm,contemporary_with,contemporary_with,nguyen_hoang,Nguyễn Hoàng
+chua_trinh,Chúa Trịnh (Đàng Ngoài),participated_in,participated_in,chien_tranh_trinh_nguyen,Chiến tranh Trịnh – Nguyễn
+chua_nguyen,Chúa Nguyễn (Đàng Trong),participated_in,participated_in,chien_tranh_trinh_nguyen,Chiến tranh Trịnh – Nguyễn
+chien_tranh_trinh_nguyen,Chiến tranh Trịnh – Nguyễn,occurred_at,occurred_at,song_gianh,Sông Gianh
+chien_tranh_trinh_nguyen,Chiến tranh Trịnh – Nguyễn,occurred_at,occurred_at,luy_thay,Lũy Thầy (Lũy Trường Dục – Đồng Hới)
+dao_duy_tu,Đào Duy Từ,participated_in,participated_in,chien_tranh_trinh_nguyen,Chiến tranh Trịnh – Nguyễn
+dang_tran_con,Đặng Trần Côn,authored,authored,chinh_phu_ngam,Chinh phụ ngâm
+doan_thi_diem,Đoàn Thị Điểm,authored,authored,chinh_phu_ngam,Chinh phụ ngâm
+doan_thi_diem,Đoàn Thị Điểm,contemporary_with,contemporary_with,dang_tran_con,Đặng Trần Côn
+dong_kinh_nghia_thuc,Đông Kinh Nghĩa Thục,developed,developed,chu_quoc_ngu,Chữ Quốc ngữ
+phong_trao_duy_tan,Phong trào Duy Tân,developed,developed,chu_quoc_ngu,Chữ Quốc ngữ
+viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa,developed,developed,chu_quoc_ngu,Chữ Quốc ngữ
+nguyen_huu_canh,Nguyễn Hữu Cảnh,served,served,chua_nguyen,Chúa Nguyễn (Đàng Trong)
+nguyen_huu_canh,Nguyễn Hữu Cảnh,participated_in,participated_in,nam_tien,Công cuộc Nam tiến
+nguyen_huu_canh,Nguyễn Hữu Cảnh,founded,founded,sai_gon,Sài Gòn – Gia Định
+mac_cuu,Mạc Cửu,served,served,chua_nguyen,Chúa Nguyễn (Đàng Trong)
+mac_cuu,Mạc Cửu,developed,developed,ha_tien,Hà Tiên
+mac_cuu,Mạc Cửu,participated_in,participated_in,nam_tien,Công cuộc Nam tiến
+chua_nguyen,Chúa Nguyễn (Đàng Trong),controlled,controlled,ha_tien,Hà Tiên
+nguyen_phuc_khoat,Nguyễn Phúc Khoát,served,served,chua_nguyen,Chúa Nguyễn (Đàng Trong)
+nguyen_phuc_thuan,Nguyễn Phúc Thuần,child_of,child_of,nguyen_phuc_khoat,Nguyễn Phúc Khoát
+nguyen_phuc_thuan,Nguyễn Phúc Thuần,succeeded,succeeded,nguyen_phuc_khoat,Nguyễn Phúc Khoát
+nguyen_phuc_thuan,Nguyễn Phúc Thuần,served,served,chua_nguyen,Chúa Nguyễn (Đàng Trong)
+khoi_nghia_tay_son,Khởi nghĩa Tây Sơn,ended,ended,chua_nguyen,Chúa Nguyễn (Đàng Trong)
+le_hien_tong,Lê Hiển Tông,served,served,le_trung_hung,Nhà Lê Trung hưng
+ngoc_han_cong_chua,Công chúa Ngọc Hân,child_of,child_of,le_hien_tong,Lê Hiển Tông
+chieu_thong,Lê Chiêu Thống,succeeded,succeeded,le_hien_tong,Lê Hiển Tông
+xiem,Xiêm La,participated_in,participated_in,tran_rach_gam_xoai_mut,Trận Rạch Gầm – Xoài Mút
+nguyen_hue,Nguyễn Huệ (Quang Trung),defeated,defeated,xiem,Xiêm La
+gia_long,Gia Long (Nguyễn Ánh),allied_with,allied_with,xiem,Xiêm La
+ton_si_nghi,Tôn Sĩ Nghị,served,served,nha_thanh,Nhà Thanh (Trung Quốc)
+ton_si_nghi,Tôn Sĩ Nghị,participated_in,participated_in,tran_ngoc_hoi_dong_da,Trận Ngọc Hồi – Đống Đa
+gia_long,Gia Long (Nguyễn Ánh),declared,declared,quoc_hieu_viet_nam,Quốc hiệu Việt Nam
+quoc_hieu_viet_nam,Quốc hiệu Việt Nam,renamed_from,renamed_from,quoc_hieu_dai_viet,Quốc hiệu Đại Việt
+minh_menh,Minh Mạng,declared,declared,quoc_hieu_dai_nam,Quốc hiệu Đại Nam
+quoc_hieu_dai_nam,Quốc hiệu Đại Nam,renamed_from,renamed_from,quoc_hieu_viet_nam,Quốc hiệu Việt Nam
+thieu_tri,Thiệu Trị,child_of,child_of,minh_menh,Minh Mạng
+thieu_tri,Thiệu Trị,succeeded,succeeded,minh_menh,Minh Mạng
+thieu_tri,Thiệu Trị,served,served,nha_nguyen,Nhà Nguyễn
+tu_duc,Tự Đức,child_of,child_of,thieu_tri,Thiệu Trị
+tu_duc,Tự Đức,succeeded,succeeded,thieu_tri,Thiệu Trị
+minh_menh,Minh Mạng,founded,founded,quoc_su_quan,Quốc sử quán triều Nguyễn
+quoc_su_quan,Quốc sử quán triều Nguyễn,part_of,part_of,nha_nguyen,Nhà Nguyễn
+quoc_su_quan,Quốc sử quán triều Nguyễn,authored,authored,dai_nam_thuc_luc,Đại Nam thực lục
+dai_nam_thuc_luc,Đại Nam thực lục,commissioned_by,commissioned_by,minh_menh,Minh Mạng
+le_van_khoi,Lê Văn Khôi,led,led,khoi_nghia_le_van_khoi,Cuộc nổi dậy Lê Văn Khôi
+le_van_khoi,Lê Văn Khôi,child_of,child_of,le_van_duyet,Lê Văn Duyệt
+khoi_nghia_le_van_khoi,Cuộc nổi dậy Lê Văn Khôi,opposed,opposed,minh_menh,Minh Mạng
+khoi_nghia_le_van_khoi,Cuộc nổi dậy Lê Văn Khôi,occurred_at,occurred_at,sai_gon,Sài Gòn – Gia Định
+kenh_vinh_te,Kênh Vĩnh Tế,commissioned_by,commissioned_by,gia_long,Gia Long (Nguyễn Ánh)
+nha_nguyen,Nhà Nguyễn,built,built,kenh_vinh_te,Kênh Vĩnh Tế
+phap,Pháp,initiated,initiated,phap_xam_luoc_da_nang_1858,Pháp tấn công Đà Nẵng
+phap_xam_luoc_da_nang_1858,Pháp tấn công Đà Nẵng,occurred_at,occurred_at,da_nang,Đà Nẵng
+hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất,imposed_on,imposed_on,nha_nguyen,Nhà Nguyễn
+phap,Pháp,participated_in,participated_in,hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất
+hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất,followed,followed,phap_xam_luoc_da_nang_1858,Pháp tấn công Đà Nẵng
+tu_duc,Tự Đức,ruled_during,ruled_during,hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất
+phan_thanh_gian,Phan Thanh Giản,served,served,nha_nguyen,Nhà Nguyễn
+phan_thanh_gian,Phan Thanh Giản,participated_in,participated_in,hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất
+truong_dinh,Trương Định,opposed,opposed,hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất
+truong_dinh,Trương Định,opposed,opposed,phap,Pháp
+nguyen_trung_truc,Nguyễn Trung Trực,led,led,tran_nhat_tao,Trận Nhật Tảo
+nguyen_trung_truc,Nguyễn Trung Trực,opposed,opposed,phap,Pháp
+phap,Pháp,participated_in,participated_in,tran_nhat_tao,Trận Nhật Tảo
+luu_vinh_phuc,Lưu Vĩnh Phúc,led,led,quan_co_den,Quân Cờ Đen
+quan_co_den,Quân Cờ Đen,served,served,nha_nguyen,Nhà Nguyễn
+quan_co_den,Quân Cờ Đen,participated_in,participated_in,tran_cau_giay_1873,Trận Cầu Giấy năm 1873
+luu_vinh_phuc,Lưu Vĩnh Phúc,led,led,tran_cau_giay_1873,Trận Cầu Giấy năm 1873
+tran_cau_giay_1873,Trận Cầu Giấy năm 1873,occurred_at,occurred_at,ha_noi,Hà Nội
+phap,Pháp,participated_in,participated_in,tran_cau_giay_1873,Trận Cầu Giấy năm 1873
+hoa_uoc_giap_tuat_1874,Hòa ước Giáp Tuất,followed,followed,tran_cau_giay_1873,Trận Cầu Giấy năm 1873
+hoa_uoc_giap_tuat_1874,Hòa ước Giáp Tuất,imposed_on,imposed_on,nha_nguyen,Nhà Nguyễn
+phap,Pháp,participated_in,participated_in,hoa_uoc_giap_tuat_1874,Hòa ước Giáp Tuất
+tu_duc,Tự Đức,ruled_during,ruled_during,hoa_uoc_giap_tuat_1874,Hòa ước Giáp Tuất
+phap,Pháp,participated_in,participated_in,hoa_uoc_patenotre_1884,Hòa ước Patenôtre
+ton_that_thuyet,Tôn Thất Thuyết,served,served,nha_nguyen,Nhà Nguyễn
+ton_that_thuyet,Tôn Thất Thuyết,led,led,phan_cong_kinh_thanh_hue_1885,Cuộc phản công ở kinh thành Huế năm 1885
+ton_that_thuyet,Tôn Thất Thuyết,participated_in,participated_in,phong_trao_can_vuong,Phong trào Cần Vương
+phan_cong_kinh_thanh_hue_1885,Cuộc phản công ở kinh thành Huế năm 1885,occurred_at,occurred_at,hue,Huế
+phap,Pháp,participated_in,participated_in,phan_cong_kinh_thanh_hue_1885,Cuộc phản công ở kinh thành Huế năm 1885
+phan_cong_kinh_thanh_hue_1885,Cuộc phản công ở kinh thành Huế năm 1885,led_to,led_to,phong_trao_can_vuong,Phong trào Cần Vương
+ham_nghi,Vua Hàm Nghi,opposed,opposed,phap,Pháp
+phong_trao_can_vuong,Phong trào Cần Vương,opposed,opposed,phap,Pháp
+phan_dinh_phung,Phan Đình Phùng,led,led,khoi_nghia_huong_khe,Khởi nghĩa Hương Khê
+cao_thang,Cao Thắng,participated_in,participated_in,khoi_nghia_huong_khe,Khởi nghĩa Hương Khê
+cao_thang,Cao Thắng,native_of,native_of,ha_tinh,Hà Tĩnh
+khoi_nghia_huong_khe,Khởi nghĩa Hương Khê,part_of,part_of,phong_trao_can_vuong,Phong trào Cần Vương
+khoi_nghia_huong_khe,Khởi nghĩa Hương Khê,occurred_at,occurred_at,ha_tinh,Hà Tĩnh
+khoi_nghia_huong_khe,Khởi nghĩa Hương Khê,opposed,opposed,phap,Pháp
+xo_viet_nghe_tinh,Xô viết Nghệ Tĩnh,occurred_at,occurred_at,ha_tinh,Hà Tĩnh
+hoang_hoa_tham,Hoàng Hoa Thám (Đề Thám),opposed,opposed,phap,Pháp
+khoi_nghia_yen_the,Khởi nghĩa Yên Thế,opposed,opposed,phap,Pháp
+phan_chau_trinh,Phan Châu Trinh,initiated,initiated,phong_trao_duy_tan,Phong trào Duy Tân
+phong_trao_duy_tan,Phong trào Duy Tân,contemporary_with,contemporary_with,phong_trao_dong_du,Phong trào Đông Du
+viet_nam_quoc_dan_dang,Việt Nam Quốc dân Đảng,opposed,opposed,phap,Pháp
+khoi_nghia_yen_bai,Khởi nghĩa Yên Bái,opposed,opposed,phap,Pháp
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),founded,founded,hoi_vn_cach_mang_thanh_nien,Hội Việt Nam Cách mạng Thanh niên
+hoi_vn_cach_mang_thanh_nien,Hội Việt Nam Cách mạng Thanh niên,preceded,preceded,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+dang_cong_san_vn,Đảng Cộng sản Việt Nam,led,led,khoi_nghia_bac_son,Khởi nghĩa Bắc Sơn
+khoi_nghia_bac_son,Khởi nghĩa Bắc Sơn,opposed,opposed,phap,Pháp
+dang_cong_san_vn,Đảng Cộng sản Việt Nam,led,led,khoi_nghia_nam_ky,Khởi nghĩa Nam Kỳ
+khoi_nghia_nam_ky,Khởi nghĩa Nam Kỳ,opposed,opposed,phap,Pháp
+nha_mac,Nhà Mạc,controlled,controlled,cao_bang,Cao Bằng
+chien_dich_bien_gioi_1950,Chiến dịch Biên giới thu đông 1950,occurred_at,occurred_at,cao_bang,Cao Bằng
+vo_nguyen_giap,Võ Nguyên Giáp,led,led,doi_vn_tuyen_truyen_giai_phong_quan,Đội Việt Nam Tuyên truyền Giải phóng quân
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),initiated,initiated,doi_vn_tuyen_truyen_giai_phong_quan,Đội Việt Nam Tuyên truyền Giải phóng quân
+doi_vn_tuyen_truyen_giai_phong_quan,Đội Việt Nam Tuyên truyền Giải phóng quân,part_of,part_of,mat_tran_viet_minh,Mặt trận Việt Minh
+nhat_ban,Nhật Bản,initiated,initiated,nhat_dao_chinh_phap_1945,Nhật đảo chính Pháp
+nhat_dao_chinh_phap_1945,Nhật đảo chính Pháp,led_to,led_to,de_quoc_viet_nam,Đế quốc Việt Nam
+nhat_dao_chinh_phap_1945,Nhật đảo chính Pháp,preceded,preceded,cach_mang_thang_tam,Cách mạng tháng Tám
+tran_trong_kim,Trần Trọng Kim,served,served,de_quoc_viet_nam,Đế quốc Việt Nam
+tran_trong_kim,Trần Trọng Kim,served,served,bao_dai,Bảo Đại
+cach_mang_thang_tam,Cách mạng tháng Tám,ended,ended,de_quoc_viet_nam,Đế quốc Việt Nam
+mat_tran_viet_minh,Mặt trận Việt Minh,led,led,quoc_dan_dai_hoi_tan_trao,Quốc dân Đại hội Tân Trào
+quoc_dan_dai_hoi_tan_trao,Quốc dân Đại hội Tân Trào,part_of,part_of,cach_mang_thang_tam,Cách mạng tháng Tám
+quoc_dan_dai_hoi_tan_trao,Quốc dân Đại hội Tân Trào,occurred_at,occurred_at,tan_trao,Tân Trào
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),participated_in,participated_in,quoc_dan_dai_hoi_tan_trao,Quốc dân Đại hội Tân Trào
+mat_tran_viet_minh,Mặt trận Việt Minh,controlled,controlled,tan_trao,Tân Trào
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),declared,declared,viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),led,led,viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa
+viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa,capital_at,capital_at,ha_noi,Hà Nội
+viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa,participated_in,participated_in,hiep_dinh_geneva_1954,Hiệp định Genève
+viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa,participated_in,participated_in,hiep_dinh_paris_1973,Hiệp định Paris
+viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa,border_at,border_at,song_ben_hai,Sông Bến Hải
+pham_van_dong,Phạm Văn Đồng,served,served,viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,renamed_from,renamed_from,viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,capital_at,capital_at,ha_noi,Hà Nội
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,participated_in,participated_in,gia_nhap_lhq_1977,Việt Nam gia nhập Liên Hợp Quốc
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,participated_in,participated_in,gia_nhap_asean_1995,Việt Nam gia nhập ASEAN
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,participated_in,participated_in,chien_tranh_bien_gioi_1979,Chiến tranh biên giới phía Bắc
+quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam,followed,followed,doi_vn_tuyen_truyen_giai_phong_quan,Đội Việt Nam Tuyên truyền Giải phóng quân
+vo_nguyen_giap,Võ Nguyên Giáp,led,led,quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam
+quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam,participated_in,participated_in,dien_bien_phu,Chiến thắng Điện Biên Phủ
+quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam,participated_in,participated_in,chien_dich_ho_chi_minh,Chiến dịch Hồ Chí Minh
+quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam,built,built,duong_truong_son,Đường Trường Sơn
+nguyen_thi_dinh,Nguyễn Thị Định,served,served,quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam
+ho_chi_minh,Hồ Chí Minh (Nguyễn Ái Quốc),participated_in,participated_in,hiep_dinh_so_bo_1946,Hiệp định Sơ bộ
+phap,Pháp,participated_in,participated_in,hiep_dinh_so_bo_1946,Hiệp định Sơ bộ
+hiep_dinh_so_bo_1946,Hiệp định Sơ bộ,occurred_at,occurred_at,ha_noi,Hà Nội
+pham_van_dong,Phạm Văn Đồng,led,led,hoi_nghi_fontainebleau_1946,Hội nghị Fontainebleau
+phap,Pháp,participated_in,participated_in,hoi_nghi_fontainebleau_1946,Hội nghị Fontainebleau
+hoi_nghi_fontainebleau_1946,Hội nghị Fontainebleau,followed,followed,hiep_dinh_so_bo_1946,Hiệp định Sơ bộ
+phap,Pháp,participated_in,participated_in,khang_chien_chong_phap,Kháng chiến chống Pháp
+chien_dich_viet_bac_1947,Chiến dịch Việt Bắc thu đông 1947,part_of,part_of,khang_chien_chong_phap,Kháng chiến chống Pháp
+vo_nguyen_giap,Võ Nguyên Giáp,led,led,chien_dich_viet_bac_1947,Chiến dịch Việt Bắc thu đông 1947
+phap,Pháp,participated_in,participated_in,chien_dich_viet_bac_1947,Chiến dịch Việt Bắc thu đông 1947
+chien_dich_bien_gioi_1950,Chiến dịch Biên giới thu đông 1950,part_of,part_of,khang_chien_chong_phap,Kháng chiến chống Pháp
+vo_nguyen_giap,Võ Nguyên Giáp,led,led,chien_dich_bien_gioi_1950,Chiến dịch Biên giới thu đông 1950
+phap,Pháp,participated_in,participated_in,chien_dich_bien_gioi_1950,Chiến dịch Biên giới thu đông 1950
+phap,Pháp,participated_in,participated_in,dien_bien_phu,Chiến thắng Điện Biên Phủ
+phap,Pháp,participated_in,participated_in,hiep_dinh_geneva_1954,Hiệp định Genève
+bao_dai,Bảo Đại,led,led,quoc_gia_viet_nam,Quốc gia Việt Nam
+quoc_gia_viet_nam,Quốc gia Việt Nam,capital_at,capital_at,sai_gon,Sài Gòn – Gia Định
+ngo_dinh_diem,Ngô Đình Diệm,served,served,quoc_gia_viet_nam,Quốc gia Việt Nam
+viet_nam_cong_hoa,Việt Nam Cộng hòa,followed,followed,quoc_gia_viet_nam,Quốc gia Việt Nam
+quoc_gia_viet_nam,Quốc gia Việt Nam,participated_in,participated_in,hiep_dinh_geneva_1954,Hiệp định Genève
+truong_chinh,Trường Chinh,led,led,cai_cach_ruong_dat,Cải cách ruộng đất ở miền Bắc
+dang_cong_san_vn,Đảng Cộng sản Việt Nam,initiated,initiated,cai_cach_ruong_dat,Cải cách ruộng đất ở miền Bắc
+duong_van_minh,Dương Văn Minh,led,led,dao_chinh_1963,Đảo chính năm 1963
+dao_chinh_1963,Đảo chính năm 1963,opposed,opposed,ngo_dinh_diem,Ngô Đình Diệm
+dao_chinh_1963,Đảo chính năm 1963,occurred_at,occurred_at,sai_gon,Sài Gòn – Gia Định
+nguyen_van_thieu,Nguyễn Văn Thiệu,participated_in,participated_in,dao_chinh_1963,Đảo chính năm 1963
+nguyen_van_thieu,Nguyễn Văn Thiệu,served,served,viet_nam_cong_hoa,Việt Nam Cộng hòa
+duong_truong_son,Đường Trường Sơn,part_of,part_of,khang_chien_chong_my,Kháng chiến chống Mỹ
+tong_tien_cong_xuan_1975,Tổng tiến công và nổi dậy mùa Xuân 1975,part_of,part_of,khang_chien_chong_my,Kháng chiến chống Mỹ
+chien_dich_ho_chi_minh,Chiến dịch Hồ Chí Minh,part_of,part_of,tong_tien_cong_xuan_1975,Tổng tiến công và nổi dậy mùa Xuân 1975
+tong_tien_cong_xuan_1975,Tổng tiến công và nổi dậy mùa Xuân 1975,resulted_in,resulted_in,giai_phong_mien_nam_1975,"Giải phóng miền Nam, thống nhất đất nước"
+tong_tien_cong_xuan_1975,Tổng tiến công và nổi dậy mùa Xuân 1975,occurred_at,occurred_at,hue,Huế
+tong_tien_cong_xuan_1975,Tổng tiến công và nổi dậy mùa Xuân 1975,occurred_at,occurred_at,da_nang,Đà Nẵng
+mat_tran_dan_toc_giai_phong_mien_nam_viet_nam,Mặt trận Dân tộc Giải phóng miền Nam Việt Nam,founded,founded,chinh_phu_cach_mang_lam_thoi,Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam
+chinh_phu_cach_mang_lam_thoi,Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam,participated_in,participated_in,hiep_dinh_paris_1973,Hiệp định Paris
+chinh_phu_cach_mang_lam_thoi,Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam,opposed,opposed,viet_nam_cong_hoa,Việt Nam Cộng hòa
+nguyen_thi_binh,Nguyễn Thị Bình,served,served,chinh_phu_cach_mang_lam_thoi,Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam
+nguyen_thi_binh,Nguyễn Thị Bình,participated_in,participated_in,hiep_dinh_paris_1973,Hiệp định Paris
+le_duc_tho,Lê Đức Thọ,participated_in,participated_in,hiep_dinh_paris_1973,Hiệp định Paris
+le_duc_tho,Lê Đức Thọ,served,served,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+nguyen_van_linh,Nguyễn Văn Linh,led,led,dang_cong_san_vn,Đảng Cộng sản Việt Nam
+nguyen_van_linh,Nguyễn Văn Linh,participated_in,participated_in,doi_moi_1986,Đổi Mới
+lien_xo,Liên Xô,allied_with,allied_with,viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa
+lien_xo,Liên Xô,participated_in,participated_in,hiep_dinh_geneva_1954,Hiệp định Genève
+trung_quoc_cnh,Cộng hòa Nhân dân Trung Hoa,allied_with,allied_with,viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa
+trung_quoc_cnh,Cộng hòa Nhân dân Trung Hoa,participated_in,participated_in,hiep_dinh_geneva_1954,Hiệp định Genève
+trung_quoc_cnh,Cộng hòa Nhân dân Trung Hoa,participated_in,participated_in,chien_tranh_bien_gioi_1979,Chiến tranh biên giới phía Bắc
+khmer_do,Khmer Đỏ,participated_in,participated_in,chien_tranh_bien_gioi_tay_nam,Chiến tranh biên giới Tây Nam
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,participated_in,participated_in,chien_tranh_bien_gioi_tay_nam,Chiến tranh biên giới Tây Nam
+quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam,defeated,defeated,khmer_do,Khmer Đỏ
+chien_tranh_bien_gioi_tay_nam,Chiến tranh biên giới Tây Nam,contemporary_with,contemporary_with,chien_tranh_bien_gioi_1979,Chiến tranh biên giới phía Bắc
+hoa_ky,Hoa Kỳ,participated_in,participated_in,binh_thuong_hoa_viet_my,Bình thường hóa quan hệ Việt Nam – Hoa Kỳ
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,participated_in,participated_in,binh_thuong_hoa_viet_my,Bình thường hóa quan hệ Việt Nam – Hoa Kỳ
+binh_thuong_hoa_viet_my,Bình thường hóa quan hệ Việt Nam – Hoa Kỳ,followed,followed,doi_moi_1986,Đổi Mới
+gia_nhap_wto_2007,Việt Nam gia nhập WTO,followed,followed,doi_moi_1986,Đổi Mới
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,participated_in,participated_in,gia_nhap_wto_2007,Việt Nam gia nhập WTO
+huyen_quang,Huyền Quang,served,served,nha_tran,Nhà Trần
+gian_dinh_de,Giản Định Đế (Trần Ngỗi),opposed,opposed,nha_minh,Nhà Minh (Trung Quốc)
+trung_quang_de,Trùng Quang Đế (Trần Quý Khoáng),opposed,opposed,nha_minh,Nhà Minh (Trung Quốc)
+luu_vinh_phuc,Lưu Vĩnh Phúc,served,served,nha_nguyen,Nhà Nguyễn
+cao_thang,Cao Thắng,served,served,phan_dinh_phung,Phan Đình Phùng
+nguyen_huu_canh,Nguyễn Hữu Cảnh,defeated,defeated,chiem_thanh,Chiêm Thành (Champa)
 hung_vuong,Hùng Vương,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
 lac_long_quan,Lạc Long Quân,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
 au_co,Âu Cơ,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
@@ -380,3 +856,133 @@ dang_tran_con,Đặng Trần Côn,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhngu
 tran_nguyen_han,Trần Nguyên Hãn,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
 le_van_duyet,Lê Văn Duyệt,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
 viet_nam_cong_hoa,Việt Nam Cộng hòa,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+nha_han,Nhà Hán (Trung Quốc),thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+nha_tong,Nhà Tống (Trung Quốc),thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+nha_minh,Nhà Minh (Trung Quốc),thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+nam_han,Nước Nam Hán,thuoc_thoi_ky,thuộc thời kỳ,p03_ngo_dinh_tienle,Ngô – Đinh – Tiền Lê
+chiem_thanh,Chiêm Thành (Champa),thuoc_thoi_ky,thuộc thời kỳ,p07_leso,Lê sơ
+hoa_ky,Hoa Kỳ,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+hoi_tao_dan,Hội Tao Đàn,thuoc_thoi_ky,thuộc thời kỳ,p07_leso,Lê sơ
+thanh_hoa,Thanh Hóa,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+nghe_an,Nghệ An,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+quy_nhon,Quy Nhơn,thuoc_thoi_ky,thuộc thời kỳ,p09_tayson,Tây Sơn
+sai_gon,Sài Gòn – Gia Định,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+den_hung,Đền Hùng,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
+my_chau,Mỵ Châu,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
+trong_thuy,Trọng Thủy,thuoc_thoi_ky,thuộc thời kỳ,p01_hongbang,Dựng nước / Hồng Bàng
+thi_sach,Thi Sách,thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+me_linh,Mê Linh,thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+nha_dong_ngo,Nhà Đông Ngô (Trung Quốc),thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+khoi_nghia_ba_trieu,Khởi nghĩa Bà Triệu,thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+nha_luong,Nhà Lương (Trung Quốc),thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+khoi_nghia_mai_thuc_loan,Khởi nghĩa Mai Thúc Loan,thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+kieu_cong_tien,Kiều Công Tiễn,thuoc_thoi_ky,thuộc thời kỳ,p02_bacthuoc,Bắc thuộc
+nha_ngo,Nhà Ngô,thuoc_thoi_ky,thuộc thời kỳ,p03_ngo_dinh_tienle,Ngô – Đinh – Tiền Lê
+duong_van_nga,Dương Vân Nga (Đại Thắng Minh Hoàng hậu),thuoc_thoi_ky,thuộc thời kỳ,p03_ngo_dinh_tienle,Ngô – Đinh – Tiền Lê
+dinh_toan,Đinh Phế Đế (Đinh Toàn),thuoc_thoi_ky,thuộc thời kỳ,p03_ngo_dinh_tienle,Ngô – Đinh – Tiền Lê
+van_hanh,Thiền sư Vạn Hạnh,thuoc_thoi_ky,thuộc thời kỳ,p03_ngo_dinh_tienle,Ngô – Đinh – Tiền Lê
+chi_lang,Ải Chi Lăng,thuoc_thoi_ky,thuộc thời kỳ,p03_ngo_dinh_tienle,Ngô – Đinh – Tiền Lê
+ly_thanh_tong,Lý Thánh Tông,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+quoc_hieu_dai_viet,Quốc hiệu Đại Việt,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+ly_than_tong,Lý Thần Tông,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+ly_hue_tong,Lý Huệ Tông,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+chua_thay,Chùa Thầy,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+tran_ung_chau,Trận Ung Châu,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+tran_nhu_nguyet,Trận Như Nguyệt,thuoc_thoi_ky,thuộc thời kỳ,p04_ly,Nhà Lý
+nha_nguyen_mong,Mông Cổ – nhà Nguyên (Trung Quốc),thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+tran_dong_bo_dau,Trận Đông Bộ Đầu,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+hoi_nghi_binh_than,Hội nghị Bình Than,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+tran_van_don,Trận Vân Đồn,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+truc_lam,Thiền phái Trúc Lâm Yên Tử,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+phap_loa,Pháp Loa,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+huyen_quang,Huyền Quang,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+le_van_huu,Lê Văn Hưu,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+dai_viet_su_ky,Đại Việt sử ký (Lê Văn Hưu),thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+nam_dinh,Nam Định,thuoc_thoi_ky,thuộc thời kỳ,p05_tran,Nhà Trần
+thanh_tay_do,Thành nhà Hồ (Tây Đô),thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+quoc_hieu_dai_ngu,Quốc hiệu Đại Ngu,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+ho_nguyen_trung,Hồ Nguyên Trừng,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+nha_hau_tran,Nhà Hậu Trần,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+gian_dinh_de,Giản Định Đế (Trần Ngỗi),thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+trung_quang_de,Trùng Quang Đế (Trần Quý Khoáng),thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+tran_bo_co,Trận Bô Cô,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+lieu_thang,Liễu Thăng,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+vuong_thong,Vương Thông,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+hoi_the_dong_quan,Hội thề Đông Quan,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+binh_ngo_dai_cao,Bình Ngô đại cáo,thuoc_thoi_ky,thuộc thời kỳ,p06_ho_thuocminh_lamson,Hồ – thuộc Minh – Lam Sơn
+le_thai_tong,Lê Thái Tông,thuoc_thoi_ky,thuộc thời kỳ,p07_leso,Lê sơ
+le_nghi_dan,Lê Nghi Dân,thuoc_thoi_ky,thuộc thời kỳ,p07_leso,Lê sơ
+dai_viet_su_ky_toan_thu,Đại Việt sử ký toàn thư,thuoc_thoi_ky,thuộc thời kỳ,p07_leso,Lê sơ
+nguyen_kim,Nguyễn Kim,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+nguyen_binh_khiem,Nguyễn Bỉnh Khiêm,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+chien_tranh_trinh_nguyen,Chiến tranh Trịnh – Nguyễn,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+quang_binh,Quảng Bình,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+chu_quoc_ngu,Chữ Quốc ngữ,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+chinh_phu_ngam,Chinh phụ ngâm,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+doan_thi_diem,Đoàn Thị Điểm,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+nguyen_huu_canh,Nguyễn Hữu Cảnh,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+mac_cuu,Mạc Cửu,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+ha_tien,Hà Tiên,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+nguyen_phuc_khoat,Nguyễn Phúc Khoát,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+nguyen_phuc_thuan,Nguyễn Phúc Thuần,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+le_hien_tong,Lê Hiển Tông,thuoc_thoi_ky,thuộc thời kỳ,p08_trinhnguyen,Nam Bắc triều – Trịnh–Nguyễn phân tranh
+xiem,Xiêm La,thuoc_thoi_ky,thuộc thời kỳ,p09_tayson,Tây Sơn
+ton_si_nghi,Tôn Sĩ Nghị,thuoc_thoi_ky,thuộc thời kỳ,p09_tayson,Tây Sơn
+quoc_hieu_viet_nam,Quốc hiệu Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+quoc_hieu_dai_nam,Quốc hiệu Đại Nam,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+thieu_tri,Thiệu Trị,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+quoc_su_quan,Quốc sử quán triều Nguyễn,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+dai_nam_thuc_luc,Đại Nam thực lục,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+le_van_khoi,Lê Văn Khôi,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+khoi_nghia_le_van_khoi,Cuộc nổi dậy Lê Văn Khôi,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+kenh_vinh_te,Kênh Vĩnh Tế,thuoc_thoi_ky,thuộc thời kỳ,p10_nguyen,Nhà Nguyễn (trước Pháp thuộc)
+phap,Pháp,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+da_nang,Đà Nẵng,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+hoa_uoc_nham_tuat_1862,Hòa ước Nhâm Tuất,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+phan_thanh_gian,Phan Thanh Giản,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+tran_nhat_tao,Trận Nhật Tảo,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+quan_co_den,Quân Cờ Đen,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+luu_vinh_phuc,Lưu Vĩnh Phúc,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+tran_cau_giay_1873,Trận Cầu Giấy năm 1873,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+hoa_uoc_giap_tuat_1874,Hòa ước Giáp Tuất,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+ton_that_thuyet,Tôn Thất Thuyết,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+phan_cong_kinh_thanh_hue_1885,Cuộc phản công ở kinh thành Huế năm 1885,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+khoi_nghia_huong_khe,Khởi nghĩa Hương Khê,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+cao_thang,Cao Thắng,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+ha_tinh,Hà Tĩnh,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+phong_trao_duy_tan,Phong trào Duy Tân,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+hoi_vn_cach_mang_thanh_nien,Hội Việt Nam Cách mạng Thanh niên,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+khoi_nghia_bac_son,Khởi nghĩa Bắc Sơn,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+khoi_nghia_nam_ky,Khởi nghĩa Nam Kỳ,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+cao_bang,Cao Bằng,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+doi_vn_tuyen_truyen_giai_phong_quan,Đội Việt Nam Tuyên truyền Giải phóng quân,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+nhat_ban,Nhật Bản,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+nhat_dao_chinh_phap_1945,Nhật đảo chính Pháp,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+de_quoc_viet_nam,Đế quốc Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+tran_trong_kim,Trần Trọng Kim,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+tan_trao,Tân Trào,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+quoc_dan_dai_hoi_tan_trao,Quốc dân Đại hội Tân Trào,thuoc_thoi_ky,thuộc thời kỳ,p11_phapthuoc,Pháp thuộc
+viet_nam_dan_chu_cong_hoa,Việt Nam Dân chủ Cộng hòa,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+cong_hoa_xhcn_viet_nam,Cộng hòa xã hội chủ nghĩa Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+quan_doi_nhan_dan_viet_nam,Quân đội Nhân dân Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+hiep_dinh_so_bo_1946,Hiệp định Sơ bộ,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+hoi_nghi_fontainebleau_1946,Hội nghị Fontainebleau,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+chien_dich_viet_bac_1947,Chiến dịch Việt Bắc thu đông 1947,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+chien_dich_bien_gioi_1950,Chiến dịch Biên giới thu đông 1950,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+quoc_gia_viet_nam,Quốc gia Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+cai_cach_ruong_dat,Cải cách ruộng đất ở miền Bắc,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+dao_chinh_1963,Đảo chính năm 1963,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+nguyen_van_thieu,Nguyễn Văn Thiệu,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+duong_truong_son,Đường Trường Sơn,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+quang_tri,Quảng Trị,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+chinh_phu_cach_mang_lam_thoi,Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+nguyen_thi_binh,Nguyễn Thị Bình,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+le_duc_tho,Lê Đức Thọ,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+tong_tien_cong_xuan_1975,Tổng tiến công và nổi dậy mùa Xuân 1975,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+nguyen_van_linh,Nguyễn Văn Linh,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+lien_xo,Liên Xô,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+trung_quoc_cnh,Cộng hòa Nhân dân Trung Hoa,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+khmer_do,Khmer Đỏ,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+chien_tranh_bien_gioi_tay_nam,Chiến tranh biên giới Tây Nam,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+binh_thuong_hoa_viet_my,Bình thường hóa quan hệ Việt Nam – Hoa Kỳ,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại
+gia_nhap_wto_2007,Việt Nam gia nhập WTO,thuoc_thoi_ky,thuộc thời kỳ,p12_hiendai,Hiện đại

@@ -2,8 +2,8 @@
   "_meta": {
     "description": "Bộ dữ liệu nền thực thể/sự kiện lịch sử Việt Nam, soạn thủ công (không lấy từ Wikidata), bao quát từ thời dựng nước đến hiện đại. Dùng chung cho: (1) pipeline KG/KGE trong knowledge-graph/src (thay cho subgraph Wikidata demo), (2) nguyên liệu seed cho các collection periods/entities/events/figures/places/sources của app thật sau này.",
     "created": "2026-09-21",
-    "updated": "2026-09-22",
-    "entity_count": "176 thực thể, 203 relations, 5 claims, 12 thời kỳ, 11 nguồn — 16 thực thể nhập qua tools/wikidata_entity_importer.py (đã rà soát 5 thực thể bị gắn cờ), quan hệ được làm giàu bằng tools/wikidata_relation_suggester.py (dò vợ/chồng, cha/mẹ/con qua Wikidata cho các thực thể degree<=1, người rà soát rồi mới thêm tay) — quá trình này còn phát hiện và sửa 1 lỗi mô tả sai (Dương Tam Kha bị ghi nhầm là cha vợ Ngô Quyền, thực ra là em vợ). Mở rộng 4 lượt từ bản gốc 76 thực thể/73 quan hệ.",
+    "updated": "2026-11-04",
+    "entity_count": "306 thực thể, 681 relations (38 loại quan hệ), 14 claims, 12 thời kỳ, 11 nguồn. 16 thực thể nhập qua tools/wikidata_entity_importer.py (đã rà soát 5 thực thể bị gắn cờ), quan hệ được làm giàu bằng tools/wikidata_relation_suggester.py (dò vợ/chồng, cha/mẹ/con qua Wikidata cho các thực thể degree<=1, người rà soát rồi mới thêm tay) — quá trình này còn phát hiện và sửa 1 lỗi mô tả sai (Dương Tam Kha bị ghi nhầm là cha vợ Ngô Quyền, thực ra là em vợ). Mở rộng 4 lượt từ bản gốc 76 thực thể/73 quan hệ. Đợt 2026-10-27: thêm niên đại sinh/mất/trị vì cho 75 nhân vật, 13 thực thể mới và 24 quan hệ — danh sách cần rà soát ở data/vn_history/review-2026-10-27.md. Đợt 2026-11-04: làm dày đồ thị theo nội dung khóa học (hddhistory-api/scripts/data/vn-history-curriculum.json), đối chiếu với thẻ bài học và Wikipedia tiếng Việt — nối quan hệ cho các thực thể ít liên kết, thêm các thực thể khóa học nhắc tới mà đồ thị còn thiếu, bổ sung bí danh/niên đại và claim cho các điểm sử liệu còn tranh luận; gỡ 2 quan hệ sai (ba_trieu —opposed→ nam_viet, phung_hung —contemporary_with→ mai_hac_de); thêm 2 loại quan hệ native_of (quê ở) và sibling_of (là anh chị em với).",
     "note_on_accuracy": "Niên đại giai đoạn Hồng Bàng và đầu Bắc thuộc phần lớn là huyền sử/bán huyền sử, không có xác nhận khảo cổ/văn bản đồng đại chắc chắn — đã đánh dấu rõ trong trường 'note' của từng thực thể liên quan thay vì nêu như sự thật xác quyết. Từ thời Ngô-Đinh trở đi niên đại nhìn chung được giới sử học đồng thuận."
   },
   "periods": [
@@ -142,6 +142,9 @@
       "id": "hung_vuong",
       "type": "figure",
       "name": "Hùng Vương",
+      "aliases": [
+        "Vua Hùng"
+      ],
       "period_id": "p01_hongbang",
       "description": "Danh xưng các vua nước Văn Lang theo truyền thuyết, con cháu Lạc Long Quân và Âu Cơ.",
       "note": "Huyền sử, không có xác nhận khảo cổ/văn bản đồng đại về niên đại và số đời vua cụ thể.",
@@ -153,6 +156,9 @@
       "id": "lac_long_quan",
       "type": "figure",
       "name": "Lạc Long Quân",
+      "aliases": [
+        "Sùng Lãm"
+      ],
       "period_id": "p01_hongbang",
       "description": "Thủy tổ theo truyền thuyết dựng nước, kết duyên với Âu Cơ sinh trăm trứng.",
       "note": "Huyền sử.",
@@ -175,6 +181,9 @@
       "id": "van_lang",
       "type": "organization",
       "name": "Nước Văn Lang",
+      "aliases": [
+        "Văn Lang"
+      ],
       "period_id": "p01_hongbang",
       "description": "Nhà nước sơ khai đầu tiên theo truyền thuyết, do các Hùng Vương cai trị.",
       "source_ids": [
@@ -185,6 +194,10 @@
       "id": "an_duong_vuong",
       "type": "figure",
       "name": "An Dương Vương (Thục Phán)",
+      "aliases": [
+        "Thục Phán",
+        "Thục An Dương Vương"
+      ],
       "period_id": "p01_hongbang",
       "description": "Sáp nhập Văn Lang lập nước Âu Lạc khoảng năm 258 TCN, xây thành Cổ Loa.",
       "source_ids": [
@@ -196,6 +209,9 @@
       "id": "au_lac",
       "type": "organization",
       "name": "Nước Âu Lạc",
+      "aliases": [
+        "Âu Lạc"
+      ],
       "period_id": "p01_hongbang",
       "description": "Nhà nước do An Dương Vương lập nên sau khi hợp nhất với Văn Lang, khoảng 258 TCN.",
       "source_ids": [
@@ -206,6 +222,10 @@
       "id": "thanh_co_loa",
       "type": "place",
       "name": "Thành Cổ Loa",
+      "aliases": [
+        "Cổ Loa",
+        "Loa Thành"
+      ],
       "period_id": "p01_hongbang",
       "description": "Kinh đô Âu Lạc, nay thuộc Đông Anh, Hà Nội, nổi tiếng với cấu trúc thành ốc nhiều vòng.",
       "source_ids": [
@@ -216,7 +236,12 @@
       "id": "trieu_da",
       "type": "figure",
       "name": "Triệu Đà",
+      "aliases": [
+        "Triệu Vũ Đế",
+        "Triệu Vũ Vương"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "mất năm 137 TCN",
       "description": "Tướng nhà Tần, lập nước Nam Việt, đánh chiếm Âu Lạc.",
       "note": "Niên đại thôn tính Âu Lạc còn tranh luận giữa các nguồn (khoảng 179 TCN theo Đại Việt sử ký toàn thư, một số nghiên cứu hiện đại đề xuất mốc khác).",
       "source_ids": [
@@ -227,7 +252,11 @@
       "id": "nam_viet",
       "type": "organization",
       "name": "Nước Nam Việt",
+      "aliases": [
+        "Nam Việt"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "khoảng 207–111 TCN",
       "description": "Nhà nước do Triệu Đà lập, sau bị nhà Hán thôn tính năm 111 TCN, mở đầu thời Bắc thuộc.",
       "source_ids": [
         "s_dvsktt"
@@ -237,7 +266,13 @@
       "id": "hai_ba_trung",
       "type": "figure",
       "name": "Hai Bà Trưng (Trưng Trắc, Trưng Nhị)",
+      "aliases": [
+        "Trưng Trắc",
+        "Trưng Nhị",
+        "Bà Trưng"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "khởi nghĩa năm 40, mất năm 43",
       "description": "Lãnh đạo cuộc khởi nghĩa chống nhà Hán năm 40, xưng vương, giữ độc lập đến năm 43.",
       "source_ids": [
         "s_dvsktt"
@@ -258,7 +293,12 @@
       "id": "ba_trieu",
       "type": "figure",
       "name": "Bà Triệu (Triệu Thị Trinh)",
+      "aliases": [
+        "Triệu Thị Trinh",
+        "Triệu Ẩu"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "sinh khoảng năm 226, mất năm 248",
       "description": "Lãnh đạo khởi nghĩa chống nhà Ngô (Trung Quốc) năm 248.",
       "source_ids": [
         "s_dvsktt"
@@ -268,7 +308,12 @@
       "id": "ly_nam_de",
       "type": "figure",
       "name": "Lý Nam Đế (Lý Bí)",
+      "aliases": [
+        "Lý Bí",
+        "Lý Bôn"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "sinh năm 503, mất năm 548; xưng đế năm 544",
       "description": "Khởi nghĩa chống nhà Lương, lập nước Vạn Xuân, xưng đế năm 544.",
       "source_ids": [
         "s_dvsktt"
@@ -278,7 +323,11 @@
       "id": "van_xuan",
       "type": "organization",
       "name": "Nước Vạn Xuân",
+      "aliases": [
+        "Vạn Xuân"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "544–602",
       "description": "Nhà nước độc lập do Lý Nam Đế lập năm 544.",
       "source_ids": [
         "s_dvsktt"
@@ -288,7 +337,11 @@
       "id": "trieu_quang_phuc",
       "type": "figure",
       "name": "Triệu Quang Phục",
+      "aliases": [
+        "Triệu Việt Vương"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "mất năm 571; xưng Triệu Việt Vương năm 548",
       "description": "Kế tục sự nghiệp Lý Nam Đế, tiếp tục kháng chiến chống nhà Lương, xưng vương (Triệu Việt Vương).",
       "source_ids": [
         "s_dvsktt"
@@ -298,6 +351,9 @@
       "id": "mai_hac_de",
       "type": "figure",
       "name": "Mai Hắc Đế (Mai Thúc Loan)",
+      "aliases": [
+        "Mai Thúc Loan"
+      ],
       "period_id": "p02_bacthuoc",
       "description": "Lãnh đạo khởi nghĩa chống nhà Đường đầu thế kỷ 8 (khoảng 713–722).",
       "source_ids": [
@@ -308,7 +364,11 @@
       "id": "phung_hung",
       "type": "figure",
       "name": "Phùng Hưng (Bố Cái Đại Vương)",
+      "aliases": [
+        "Bố Cái Đại Vương"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "mất khoảng năm 791",
       "description": "Lãnh đạo khởi nghĩa chống nhà Đường cuối thế kỷ 8.",
       "note": "Niên đại chính xác còn chưa thống nhất giữa các nguồn.",
       "source_ids": [
@@ -319,7 +379,11 @@
       "id": "khuc_thua_du",
       "type": "figure",
       "name": "Khúc Thừa Dụ",
+      "aliases": [
+        "Khúc Tiên Chủ"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "mất năm 907; làm Tiết độ sứ từ năm 905",
       "description": "Giành quyền tự chủ khỏi nhà Đường năm 905, xưng Tiết độ sứ.",
       "source_ids": [
         "s_dvsktt"
@@ -330,6 +394,7 @@
       "type": "figure",
       "name": "Dương Đình Nghệ",
       "period_id": "p02_bacthuoc",
+      "date": "mất năm 937",
       "description": "Tiếp tục giữ quyền tự chủ sau họ Khúc, đánh đuổi quân Nam Hán năm 931.",
       "source_ids": [
         "s_dvsktt"
@@ -339,7 +404,11 @@
       "id": "ngo_quyen",
       "type": "figure",
       "name": "Ngô Quyền",
+      "aliases": [
+        "Tiền Ngô Vương"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "sinh năm 897, mất năm 944; xưng vương năm 939",
       "description": "Đánh bại quân Nam Hán trên sông Bạch Đằng năm 938, chấm dứt hơn 1000 năm Bắc thuộc, xưng vương lập nhà Ngô.",
       "source_ids": [
         "s_dvsktt"
@@ -360,6 +429,9 @@
       "id": "song_bach_dang",
       "type": "place",
       "name": "Sông Bạch Đằng",
+      "aliases": [
+        "Bạch Đằng"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
       "description": "Con sông giáp ranh Hải Phòng – Quảng Ninh, nơi diễn ra 3 trận thủy chiến lớn trong lịch sử Việt Nam (938, 981, 1288).",
       "source_ids": [
@@ -370,7 +442,12 @@
       "id": "dinh_bo_linh",
       "type": "figure",
       "name": "Đinh Bộ Lĩnh",
+      "aliases": [
+        "Đinh Tiên Hoàng",
+        "Vạn Thắng Vương"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "sinh năm 924, mất năm 979; trị vì 968–979",
       "description": "Dẹp loạn 12 sứ quân, thống nhất đất nước, lập nhà Đinh năm 968, đặt quốc hiệu Đại Cồ Việt.",
       "source_ids": [
         "s_dvsktt"
@@ -380,7 +457,11 @@
       "id": "nha_dinh",
       "type": "organization",
       "name": "Nhà Đinh",
+      "aliases": [
+        "triều Đinh"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "968–980",
       "description": "Triều đại do Đinh Bộ Lĩnh lập năm 968.",
       "source_ids": [
         "s_dvsktt"
@@ -390,7 +471,11 @@
       "id": "le_dai_hanh",
       "type": "figure",
       "name": "Lê Đại Hành (Lê Hoàn)",
+      "aliases": [
+        "Lê Hoàn"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "sinh năm 941, mất năm 1005; trị vì 980–1005",
       "description": "Lập nhà Tiền Lê năm 980, đánh bại quân Tống xâm lược năm 981.",
       "source_ids": [
         "s_dvsktt"
@@ -400,7 +485,11 @@
       "id": "nha_tien_le",
       "type": "organization",
       "name": "Nhà Tiền Lê",
+      "aliases": [
+        "triều Tiền Lê"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "980–1009",
       "description": "Triều đại do Lê Hoàn lập năm 980, kế tục nhà Đinh.",
       "source_ids": [
         "s_dvsktt"
@@ -410,7 +499,11 @@
       "id": "ly_thai_to",
       "type": "figure",
       "name": "Lý Thái Tổ (Lý Công Uẩn)",
+      "aliases": [
+        "Lý Công Uẩn"
+      ],
       "period_id": "p04_ly",
+      "date": "sinh năm 974, mất năm 1028; trị vì 1009–1028",
       "description": "Lập nhà Lý năm 1009, dời đô từ Hoa Lư về Đại La (đổi tên Thăng Long) năm 1010.",
       "source_ids": [
         "s_dvsktt"
@@ -420,7 +513,11 @@
       "id": "nha_ly",
       "type": "organization",
       "name": "Nhà Lý",
+      "aliases": [
+        "triều Lý"
+      ],
       "period_id": "p04_ly",
+      "date": "1009–1225",
       "description": "Triều đại do Lý Công Uẩn lập năm 1009, kéo dài đến 1225.",
       "source_ids": [
         "s_dvsktt"
@@ -430,7 +527,13 @@
       "id": "thang_long",
       "type": "place",
       "name": "Thăng Long",
+      "aliases": [
+        "Đại La",
+        "Đông Đô",
+        "Đông Quan"
+      ],
       "period_id": "p04_ly",
+      "date": "đặt tên năm 1010",
       "description": "Kinh đô Đại Việt từ 1010, nay là Hà Nội.",
       "source_ids": [
         "s_dvsktt"
@@ -440,7 +543,11 @@
       "id": "ly_thuong_kiet",
       "type": "figure",
       "name": "Lý Thường Kiệt",
+      "aliases": [
+        "Ngô Tuấn"
+      ],
       "period_id": "p04_ly",
+      "date": "sinh năm 1019, mất năm 1105",
       "description": "Danh tướng nhà Lý, chỉ huy kháng chiến chống Tống 1075–1077.",
       "source_ids": [
         "s_dvsktt"
@@ -450,6 +557,9 @@
       "id": "khang_chien_chong_tong_1075_1077",
       "type": "event",
       "name": "Kháng chiến chống Tống (1075–1077)",
+      "aliases": [
+        "kháng chiến chống Tống lần thứ hai"
+      ],
       "period_id": "p04_ly",
       "date": "1075–1077",
       "description": "Lý Thường Kiệt chủ động đánh sang Ung Châu (1075) rồi lập phòng tuyến sông Như Nguyệt chặn quân Tống (1077).",
@@ -461,6 +571,10 @@
       "id": "song_nhu_nguyet",
       "type": "place",
       "name": "Sông Như Nguyệt (sông Cầu)",
+      "aliases": [
+        "sông Cầu",
+        "Như Nguyệt"
+      ],
       "period_id": "p04_ly",
       "description": "Nơi Lý Thường Kiệt lập phòng tuyến chặn quân Tống năm 1077.",
       "source_ids": [
@@ -471,7 +585,11 @@
       "id": "tran_canh_thai_tong",
       "type": "figure",
       "name": "Trần Thái Tông (Trần Cảnh)",
+      "aliases": [
+        "Trần Cảnh"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh năm 1218, mất năm 1277; trị vì 1225–1258",
       "description": "Vua đầu tiên nhà Trần, lên ngôi năm 1225 sau khi Trần Thủ Độ sắp đặt hôn nhân với Lý Chiêu Hoàng.",
       "source_ids": [
         "s_dvsktt"
@@ -481,7 +599,11 @@
       "id": "nha_tran",
       "type": "organization",
       "name": "Nhà Trần",
+      "aliases": [
+        "triều Trần"
+      ],
       "period_id": "p05_tran",
+      "date": "1225–1400",
       "description": "Triều đại kế tục nhà Lý từ năm 1225, nổi bật với 3 lần kháng chiến chống Mông-Nguyên.",
       "source_ids": [
         "s_dvsktt"
@@ -491,7 +613,14 @@
       "id": "tran_hung_dao",
       "type": "figure",
       "name": "Trần Hưng Đạo (Trần Quốc Tuấn)",
+      "aliases": [
+        "Trần Quốc Tuấn",
+        "Hưng Đạo Vương",
+        "Hưng Đạo Đại Vương",
+        "Đức Thánh Trần"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh khoảng năm 1228, mất năm 1300",
       "description": "Tổng chỉ huy quân đội Đại Việt trong 2 lần kháng chiến chống Mông-Nguyên (1285, 1288).",
       "source_ids": [
         "s_dvsktt"
@@ -501,6 +630,11 @@
       "id": "khang_chien_mong_nguyen",
       "type": "event",
       "name": "Ba lần kháng chiến chống Mông-Nguyên",
+      "aliases": [
+        "kháng chiến chống Nguyên Mông",
+        "chống quân Nguyên",
+        "chống quân Mông Cổ"
+      ],
       "period_id": "p05_tran",
       "date": "1258, 1285, 1288",
       "description": "Đại Việt ba lần đánh bại quân xâm lược Mông-Nguyên dưới thời nhà Trần.",
@@ -523,7 +657,12 @@
       "id": "tran_nhan_tong",
       "type": "figure",
       "name": "Trần Nhân Tông",
+      "aliases": [
+        "Phật hoàng Trần Nhân Tông",
+        "Điều Ngự Giác Hoàng"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh năm 1258, mất năm 1308; trị vì 1278–1293",
       "description": "Vua lãnh đạo kháng chiến chống Mông-Nguyên lần 2 và 3, sau nhường ngôi và sáng lập Thiền phái Trúc Lâm.",
       "source_ids": [
         "s_dvsktt"
@@ -533,7 +672,11 @@
       "id": "ho_quy_ly",
       "type": "figure",
       "name": "Hồ Quý Ly",
+      "aliases": [
+        "Lê Quý Ly"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "sinh năm 1336; lên ngôi năm 1400; bị quân Minh bắt năm 1407",
       "description": "Soán ngôi nhà Trần, lập nhà Hồ năm 1400, đổi quốc hiệu Đại Ngu.",
       "source_ids": [
         "s_dvsktt"
@@ -543,7 +686,11 @@
       "id": "nha_ho",
       "type": "organization",
       "name": "Nhà Hồ",
+      "aliases": [
+        "triều Hồ"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "1400–1407",
       "description": "Triều đại ngắn ngủi do Hồ Quý Ly lập năm 1400, sụp đổ năm 1407 khi nhà Minh xâm lược.",
       "source_ids": [
         "s_dvsktt"
@@ -553,6 +700,9 @@
       "id": "thuoc_minh",
       "type": "event",
       "name": "Thời kỳ thuộc Minh",
+      "aliases": [
+        "thuộc Minh"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
       "date": "1407–1427",
       "description": "Nhà Minh (Trung Quốc) đô hộ Đại Việt sau khi đánh bại nhà Hồ, kết thúc bởi khởi nghĩa Lam Sơn.",
@@ -564,7 +714,12 @@
       "id": "le_loi",
       "type": "figure",
       "name": "Lê Lợi",
+      "aliases": [
+        "Lê Thái Tổ",
+        "Bình Định Vương"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "sinh năm 1385, mất năm 1433; trị vì 1428–1433",
       "description": "Lãnh đạo khởi nghĩa Lam Sơn (1418–1427) đánh đuổi quân Minh, sau lên ngôi lập nhà Lê sơ (Lê Thái Tổ, 1428).",
       "source_ids": [
         "s_dvsktt",
@@ -575,6 +730,10 @@
       "id": "khoi_nghia_lam_son",
       "type": "event",
       "name": "Khởi nghĩa Lam Sơn",
+      "aliases": [
+        "nghĩa quân Lam Sơn",
+        "Lam Sơn"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
       "date": "1418–1427",
       "description": "Cuộc khởi nghĩa do Lê Lợi lãnh đạo, đánh đuổi quân Minh, giành lại độc lập.",
@@ -587,7 +746,11 @@
       "id": "nguyen_trai",
       "type": "figure",
       "name": "Nguyễn Trãi",
+      "aliases": [
+        "Ức Trai"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "sinh năm 1380, mất năm 1442",
       "description": "Quân sư của Lê Lợi trong khởi nghĩa Lam Sơn, tác giả Bình Ngô đại cáo (1428).",
       "source_ids": [
         "s_btr"
@@ -597,7 +760,12 @@
       "id": "nha_le_so",
       "type": "organization",
       "name": "Nhà Lê sơ",
+      "aliases": [
+        "Lê sơ",
+        "triều Lê sơ"
+      ],
       "period_id": "p07_leso",
+      "date": "1428–1527",
       "description": "Triều đại do Lê Lợi (Lê Thái Tổ) lập năm 1428, kéo dài đến 1527.",
       "source_ids": [
         "s_dvsktt"
@@ -607,7 +775,11 @@
       "id": "le_thanh_tong",
       "type": "figure",
       "name": "Lê Thánh Tông",
+      "aliases": [
+        "Lê Tư Thành"
+      ],
       "period_id": "p07_leso",
+      "date": "sinh năm 1442, mất năm 1497; trị vì 1460–1497",
       "description": "Vua nhà Lê sơ, trị vì 1460–1497, thời kỳ Hồng Đức thịnh trị, ban hành Bộ luật Hồng Đức.",
       "source_ids": [
         "s_dvsktt"
@@ -617,7 +789,12 @@
       "id": "luat_hong_duc",
       "type": "organization",
       "name": "Luật Hồng Đức (Quốc triều hình luật)",
+      "aliases": [
+        "Quốc triều hình luật",
+        "bộ luật Hồng Đức"
+      ],
       "period_id": "p07_leso",
+      "date": "định hình thời Hồng Đức (1470–1497)",
       "description": "Bộ luật ban hành dưới thời Lê Thánh Tông, một trong những thành tựu pháp luật quan trọng của chế độ phong kiến Việt Nam.",
       "source_ids": [
         "s_dvsktt"
@@ -627,7 +804,11 @@
       "id": "mac_dang_dung",
       "type": "figure",
       "name": "Mạc Đăng Dung",
+      "aliases": [
+        "Mạc Thái Tổ"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "sinh năm 1483, mất năm 1541; trị vì 1527–1529",
       "description": "Cướp ngôi nhà Lê, lập nhà Mạc năm 1527, mở đầu thời kỳ Nam–Bắc triều.",
       "source_ids": [
         "s_dvsktt"
@@ -637,7 +818,11 @@
       "id": "nha_mac",
       "type": "organization",
       "name": "Nhà Mạc",
+      "aliases": [
+        "triều Mạc"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "1527–1677 (ở Thăng Long đến năm 1592)",
       "description": "Triều đại do Mạc Đăng Dung lập năm 1527, tồn tại song song và xung đột với nhà Lê Trung hưng.",
       "source_ids": [
         "s_dvsktt"
@@ -647,7 +832,11 @@
       "id": "le_trung_hung",
       "type": "organization",
       "name": "Nhà Lê Trung hưng",
+      "aliases": [
+        "Lê trung hưng"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "1533–1789",
       "description": "Vương triều Lê được khôi phục danh nghĩa sau khi mất ngôi vào tay nhà Mạc, nhưng quyền lực thực tế nằm trong tay chúa Trịnh.",
       "source_ids": [
         "s_dvsktt"
@@ -657,7 +846,12 @@
       "id": "chua_trinh",
       "type": "organization",
       "name": "Chúa Trịnh (Đàng Ngoài)",
+      "aliases": [
+        "Đàng Ngoài",
+        "họ Trịnh"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "1545–1787",
       "description": "Dòng họ nắm thực quyền cai trị Đàng Ngoài dưới danh nghĩa phò vua Lê.",
       "source_ids": [
         "s_dvsktt"
@@ -667,7 +861,11 @@
       "id": "chua_nguyen",
       "type": "organization",
       "name": "Chúa Nguyễn (Đàng Trong)",
+      "aliases": [
+        "Đàng Trong"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "1558–1777",
       "description": "Dòng họ cai trị Đàng Trong, đối đầu với chúa Trịnh, ranh giới là sông Gianh.",
       "source_ids": [
         "s_dvsktt"
@@ -677,6 +875,9 @@
       "id": "song_gianh",
       "type": "place",
       "name": "Sông Gianh",
+      "aliases": [
+        "Linh Giang"
+      ],
       "period_id": "p08_trinhnguyen",
       "description": "Ranh giới phân chia Đàng Trong và Đàng Ngoài thời Trịnh–Nguyễn phân tranh.",
       "source_ids": [
@@ -687,7 +888,11 @@
       "id": "nguyen_nhac",
       "type": "figure",
       "name": "Nguyễn Nhạc",
+      "aliases": [
+        "Thái Đức"
+      ],
       "period_id": "p09_tayson",
+      "date": "mất năm 1793; xưng hoàng đế năm 1778",
       "description": "Anh cả trong ba anh em Tây Sơn, khởi xướng cuộc khởi nghĩa năm 1771, xưng đế (Thái Đức).",
       "source_ids": [
         "s_dvsktt"
@@ -697,7 +902,13 @@
       "id": "nguyen_hue",
       "type": "figure",
       "name": "Nguyễn Huệ (Quang Trung)",
+      "aliases": [
+        "Quang Trung",
+        "vua Quang Trung",
+        "Bắc Bình Vương"
+      ],
       "period_id": "p09_tayson",
+      "date": "sinh năm 1753, mất năm 1792; lên ngôi hoàng đế năm 1788",
       "description": "Em trai Nguyễn Nhạc, chỉ huy các chiến dịch quân sự lớn, lên ngôi hoàng đế Quang Trung năm 1788.",
       "source_ids": [
         "s_dvsktt"
@@ -707,6 +918,11 @@
       "id": "khoi_nghia_tay_son",
       "type": "event",
       "name": "Khởi nghĩa Tây Sơn",
+      "aliases": [
+        "Tây Sơn",
+        "phong trào Tây Sơn",
+        "nhà Tây Sơn"
+      ],
       "period_id": "p09_tayson",
       "date": "1771–1802",
       "description": "Cuộc khởi nghĩa nông dân do ba anh em Tây Sơn lãnh đạo, lật đổ chúa Nguyễn, chúa Trịnh và vua Lê.",
@@ -718,6 +934,10 @@
       "id": "tran_rach_gam_xoai_mut",
       "type": "event",
       "name": "Trận Rạch Gầm – Xoài Mút",
+      "aliases": [
+        "Rạch Gầm",
+        "Xoài Mút"
+      ],
       "period_id": "p09_tayson",
       "date": "1785",
       "description": "Nguyễn Huệ đánh tan quân Xiêm xâm lược ở Nam Bộ.",
@@ -729,6 +949,11 @@
       "id": "tran_ngoc_hoi_dong_da",
       "type": "event",
       "name": "Trận Ngọc Hồi – Đống Đa",
+      "aliases": [
+        "Ngọc Hồi",
+        "Đống Đa",
+        "trận Đống Đa"
+      ],
       "period_id": "p09_tayson",
       "date": "1789",
       "description": "Quang Trung đánh bại quân Thanh xâm lược trong dịp Tết Kỷ Dậu, giải phóng Thăng Long.",
@@ -740,7 +965,12 @@
       "id": "gia_long",
       "type": "figure",
       "name": "Gia Long (Nguyễn Ánh)",
+      "aliases": [
+        "Nguyễn Ánh",
+        "Nguyễn Phúc Ánh"
+      ],
       "period_id": "p10_nguyen",
+      "date": "sinh năm 1762, mất năm 1820; trị vì 1802–1820",
       "description": "Đánh bại nhà Tây Sơn, thống nhất đất nước, lập nhà Nguyễn năm 1802, đặt quốc hiệu Việt Nam.",
       "source_ids": [
         "s_vnsl"
@@ -750,7 +980,11 @@
       "id": "nha_nguyen",
       "type": "organization",
       "name": "Nhà Nguyễn",
+      "aliases": [
+        "triều Nguyễn"
+      ],
       "period_id": "p10_nguyen",
+      "date": "1802–1945",
       "description": "Triều đại quân chủ cuối cùng của Việt Nam, do Gia Long lập năm 1802, kết thúc năm 1945.",
       "source_ids": [
         "s_vnsl"
@@ -760,7 +994,11 @@
       "id": "minh_menh",
       "type": "figure",
       "name": "Minh Mạng",
+      "aliases": [
+        "Minh Mệnh"
+      ],
       "period_id": "p10_nguyen",
+      "date": "sinh năm 1791, mất năm 1841; trị vì 1820–1841",
       "description": "Vua thứ hai nhà Nguyễn, trị vì 1820–1841, đẩy mạnh trung ương tập quyền và cải cách hành chính.",
       "source_ids": [
         "s_vnsl"
@@ -770,6 +1008,10 @@
       "id": "hue",
       "type": "place",
       "name": "Huế",
+      "aliases": [
+        "Phú Xuân",
+        "cố đô Huế"
+      ],
       "period_id": "p10_nguyen",
       "description": "Kinh đô nhà Nguyễn từ 1802 đến 1945.",
       "source_ids": [
@@ -791,6 +1033,10 @@
       "id": "hoa_uoc_patenotre_1884",
       "type": "event",
       "name": "Hòa ước Patenôtre",
+      "aliases": [
+        "Hòa ước Giáp Thân",
+        "Hòa ước 1884"
+      ],
       "period_id": "p11_phapthuoc",
       "date": "1884",
       "description": "Xác lập chế độ bảo hộ của Pháp trên toàn bộ Việt Nam (Bắc Kỳ, Trung Kỳ, Nam Kỳ).",
@@ -802,7 +1048,11 @@
       "id": "phan_boi_chau",
       "type": "figure",
       "name": "Phan Bội Châu",
+      "aliases": [
+        "Phan Sào Nam"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1867, mất năm 1940",
       "description": "Nhà cách mạng đầu thế kỷ 20, khởi xướng phong trào Đông Du.",
       "source_ids": [
         "s_vnsl"
@@ -812,7 +1062,12 @@
       "id": "phan_chau_trinh",
       "type": "figure",
       "name": "Phan Châu Trinh",
+      "aliases": [
+        "Phan Chu Trinh",
+        "Phan Tây Hồ"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1872, mất năm 1926",
       "description": "Nhà cải cách đầu thế kỷ 20, chủ trương duy tân, khai dân trí.",
       "source_ids": [
         "s_vnsl"
@@ -822,7 +1077,15 @@
       "id": "ho_chi_minh",
       "type": "figure",
       "name": "Hồ Chí Minh (Nguyễn Ái Quốc)",
+      "aliases": [
+        "Bác Hồ",
+        "Nguyễn Ái Quốc",
+        "Nguyễn Tất Thành",
+        "Nguyễn Sinh Cung",
+        "Chủ tịch Hồ Chí Minh"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh ngày 19/5/1890, mất ngày 2/9/1969",
       "description": "Sáng lập Đảng Cộng sản Việt Nam năm 1930, lãnh đạo Cách mạng tháng Tám 1945, đọc Tuyên ngôn độc lập.",
       "source_ids": [
         "s_hcm_tt"
@@ -832,7 +1095,12 @@
       "id": "dang_cong_san_vn",
       "type": "organization",
       "name": "Đảng Cộng sản Việt Nam",
+      "aliases": [
+        "Đảng Cộng sản Đông Dương",
+        "Đảng Lao động Việt Nam"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "ngày 3/2/1930",
       "description": "Thành lập ngày 3/2/1930 tại Hong Kong, do Nguyễn Ái Quốc chủ trì hợp nhất ba tổ chức cộng sản.",
       "source_ids": [
         "s_vkd"
@@ -842,8 +1110,12 @@
       "id": "cach_mang_thang_tam",
       "type": "event",
       "name": "Cách mạng tháng Tám",
+      "aliases": [
+        "Cách mạng tháng 8",
+        "Tổng khởi nghĩa tháng Tám"
+      ],
       "period_id": "p11_phapthuoc",
-      "date": "1945-08-19",
+      "date": "ngày 19/8/1945",
       "description": "Tổng khởi nghĩa giành chính quyền trên cả nước, do Việt Minh (do Đảng Cộng sản Việt Nam lãnh đạo) tổ chức.",
       "source_ids": [
         "s_vkd"
@@ -854,7 +1126,7 @@
       "type": "event",
       "name": "Tuyên ngôn độc lập",
       "period_id": "p11_phapthuoc",
-      "date": "1945-09-02",
+      "date": "ngày 2/9/1945",
       "description": "Hồ Chí Minh đọc Tuyên ngôn độc lập tại Quảng trường Ba Đình, khai sinh nước Việt Nam Dân chủ Cộng hòa.",
       "source_ids": [
         "s_hcm_tt"
@@ -864,6 +1136,10 @@
       "id": "khang_chien_chong_phap",
       "type": "event",
       "name": "Kháng chiến chống Pháp",
+      "aliases": [
+        "cuộc kháng chiến 9 năm",
+        "Chiến tranh Đông Dương lần thứ nhất"
+      ],
       "period_id": "p12_hiendai",
       "date": "1946–1954",
       "description": "Cuộc kháng chiến của Việt Nam Dân chủ Cộng hòa chống thực dân Pháp quay lại xâm lược, bắt đầu bằng Toàn quốc kháng chiến 19/12/1946.",
@@ -875,8 +1151,12 @@
       "id": "dien_bien_phu",
       "type": "event",
       "name": "Chiến thắng Điện Biên Phủ",
+      "aliases": [
+        "Điện Biên Phủ",
+        "chiến dịch Điện Biên Phủ"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1954-05-07",
+      "date": "ngày 7/5/1954",
       "description": "Chiến thắng quyết định của Việt Nam trước quân đội Pháp, dẫn đến Hiệp định Genève.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -886,8 +1166,12 @@
       "id": "hiep_dinh_geneva_1954",
       "type": "event",
       "name": "Hiệp định Genève",
+      "aliases": [
+        "Hiệp định Giơ-ne-vơ",
+        "Hiệp định Geneva"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1954-07-21",
+      "date": "ngày 21/7/1954",
       "description": "Chia cắt tạm thời Việt Nam thành hai miền tại vĩ tuyến 17, dự kiến tổng tuyển cử thống nhất năm 1956 (không diễn ra).",
       "source_ids": [
         "s_lsvn_vsh"
@@ -897,6 +1181,11 @@
       "id": "khang_chien_chong_my",
       "type": "event",
       "name": "Kháng chiến chống Mỹ",
+      "aliases": [
+        "kháng chiến chống Mỹ cứu nước",
+        "chống Mỹ",
+        "Chiến tranh Việt Nam"
+      ],
       "period_id": "p12_hiendai",
       "date": "1954/1960–1975",
       "description": "Cuộc kháng chiến thống nhất đất nước, kết thúc bằng chiến dịch Hồ Chí Minh và sự kiện 30/4/1975.",
@@ -908,8 +1197,12 @@
       "id": "giai_phong_mien_nam_1975",
       "type": "event",
       "name": "Giải phóng miền Nam, thống nhất đất nước",
+      "aliases": [
+        "giải phóng miền Nam",
+        "thống nhất đất nước năm 1975"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1975-04-30",
+      "date": "ngày 30/4/1975",
       "description": "Quân Giải phóng tiến vào Sài Gòn, kết thúc chiến tranh, thống nhất đất nước.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -919,6 +1212,10 @@
       "id": "doi_moi_1986",
       "type": "event",
       "name": "Đổi Mới",
+      "aliases": [
+        "công cuộc Đổi mới",
+        "Đổi mới năm 1986"
+      ],
       "period_id": "p12_hiendai",
       "date": "1986",
       "description": "Đại hội đại biểu toàn quốc lần thứ VI của Đảng Cộng sản Việt Nam khởi xướng công cuộc đổi mới kinh tế.",
@@ -930,6 +1227,9 @@
       "id": "kinh_duong_vuong",
       "type": "figure",
       "name": "Kinh Dương Vương",
+      "aliases": [
+        "Lộc Tục"
+      ],
       "period_id": "p01_hongbang",
       "description": "Theo truyền thuyết, thủy tổ xa hơn của người Việt, cha của Lạc Long Quân.",
       "note": "Huyền sử.",
@@ -951,7 +1251,11 @@
       "id": "ma_vien",
       "type": "figure",
       "name": "Mã Viện",
+      "aliases": [
+        "Phục Ba tướng quân"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "sinh năm 14 TCN, mất năm 49",
       "description": "Tướng nhà Hán được cử sang đàn áp khởi nghĩa Hai Bà Trưng, tái lập ách đô hộ năm 43.",
       "source_ids": [
         "s_dvsktt"
@@ -961,7 +1265,11 @@
       "id": "ly_phat_tu",
       "type": "figure",
       "name": "Lý Phật Tử",
+      "aliases": [
+        "Hậu Lý Nam Đế"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "trị vì 571–602",
       "description": "Nối tiếp Triệu Việt Vương, sau đó nhà Tùy tái lập ách đô hộ.",
       "source_ids": [
         "s_dvsktt"
@@ -971,7 +1279,12 @@
       "id": "nha_duong",
       "type": "organization",
       "name": "Nhà Đường (Trung Quốc)",
+      "aliases": [
+        "nhà Đường",
+        "quân Đường"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "618–907",
       "description": "Triều đại Trung Quốc đô hộ Việt Nam qua bộ máy An Nam đô hộ phủ, bị nhiều cuộc khởi nghĩa chống lại.",
       "source_ids": [
         "s_dvsktt"
@@ -982,6 +1295,7 @@
       "type": "organization",
       "name": "An Nam đô hộ phủ",
       "period_id": "p02_bacthuoc",
+      "date": "679–866",
       "description": "Đơn vị hành chính nhà Đường đặt ra để cai trị Việt Nam.",
       "source_ids": [
         "s_dvsktt"
@@ -991,6 +1305,10 @@
       "id": "loan_12_su_quan",
       "type": "event",
       "name": "Loạn 12 sứ quân",
+      "aliases": [
+        "12 sứ quân",
+        "mười hai sứ quân"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
       "date": "965–968",
       "description": "Thời kỳ cát cứ phân tranh sau khi nhà Ngô suy yếu, kết thúc khi Đinh Bộ Lĩnh thống nhất năm 968.",
@@ -1002,7 +1320,11 @@
       "id": "dai_co_viet",
       "type": "organization",
       "name": "Quốc hiệu Đại Cồ Việt",
+      "aliases": [
+        "Đại Cồ Việt"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "968–1054",
       "description": "Quốc hiệu do Đinh Bộ Lĩnh đặt năm 968, dùng qua các đời Đinh, Tiền Lê và đầu Lý.",
       "source_ids": [
         "s_dvsktt"
@@ -1012,6 +1334,9 @@
       "id": "hoa_lu",
       "type": "place",
       "name": "Hoa Lư",
+      "aliases": [
+        "cố đô Hoa Lư"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
       "description": "Kinh đô của nhà Đinh và Tiền Lê, nay thuộc Ninh Bình.",
       "source_ids": [
@@ -1022,6 +1347,9 @@
       "id": "tong_xam_luoc_981",
       "type": "event",
       "name": "Kháng chiến chống Tống lần 1",
+      "aliases": [
+        "kháng chiến chống Tống năm 981"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
       "date": "981",
       "description": "Lê Hoàn đánh bại quân Tống xâm lược, bảo vệ nền độc lập vừa giành lại.",
@@ -1033,7 +1361,11 @@
       "id": "ly_thai_tong",
       "type": "figure",
       "name": "Lý Thái Tông",
+      "aliases": [
+        "Lý Phật Mã"
+      ],
       "period_id": "p04_ly",
+      "date": "sinh năm 1000, mất năm 1054; trị vì 1028–1054",
       "description": "Vua thứ hai nhà Lý, tiếp tục củng cố và mở mang đất nước.",
       "source_ids": [
         "s_dvsktt"
@@ -1043,7 +1375,11 @@
       "id": "ly_nhan_tong",
       "type": "figure",
       "name": "Lý Nhân Tông",
+      "aliases": [
+        "Lý Càn Đức"
+      ],
       "period_id": "p04_ly",
+      "date": "sinh năm 1066, mất năm 1127; trị vì 1072–1127",
       "description": "Vua nhà Lý trị vì thời kỳ Lý Thường Kiệt kháng chiến chống Tống, giai đoạn thịnh trị của nhà Lý.",
       "source_ids": [
         "s_dvsktt"
@@ -1053,7 +1389,11 @@
       "id": "chua_mot_cot",
       "type": "place",
       "name": "Chùa Một Cột",
+      "aliases": [
+        "chùa Diên Hựu"
+      ],
       "period_id": "p04_ly",
+      "date": "dựng năm 1049",
       "description": "Công trình kiến trúc Phật giáo tiêu biểu do nhà Lý xây dựng tại Thăng Long.",
       "source_ids": [
         "s_btlsqg"
@@ -1063,7 +1403,12 @@
       "id": "van_mieu",
       "type": "organization",
       "name": "Văn Miếu – Quốc Tử Giám",
+      "aliases": [
+        "Văn Miếu",
+        "Quốc Tử Giám"
+      ],
       "period_id": "p04_ly",
+      "date": "dựng năm 1070",
       "description": "Lập năm 1070 (Văn Miếu) và 1076 (Quốc Tử Giám), trường học/thi cử nho học đầu tiên của Việt Nam.",
       "source_ids": [
         "s_dvsktt"
@@ -1074,6 +1419,7 @@
       "type": "figure",
       "name": "Trần Thủ Độ",
       "period_id": "p05_tran",
+      "date": "sinh năm 1194, mất năm 1264",
       "description": "Người sắp đặt việc chuyển ngôi từ nhà Lý sang nhà Trần năm 1225.",
       "source_ids": [
         "s_dvsktt"
@@ -1083,7 +1429,11 @@
       "id": "tran_quoc_toan",
       "type": "figure",
       "name": "Trần Quốc Toản",
+      "aliases": [
+        "Hoài Văn hầu"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh năm 1267, mất năm 1285",
       "description": "Thiếu niên quý tộc nhà Trần, tham gia kháng chiến chống Mông-Nguyên lần 2 dù còn nhỏ tuổi.",
       "source_ids": [
         "s_dvsktt"
@@ -1093,6 +1443,9 @@
       "id": "hoi_nghi_dien_hong",
       "type": "event",
       "name": "Hội nghị Diên Hồng",
+      "aliases": [
+        "Diên Hồng"
+      ],
       "period_id": "p05_tran",
       "date": "1284",
       "description": "Hội nghị các bô lão do Thượng hoàng Trần Thánh Tông triệu tập, đồng lòng quyết chiến chống quân Nguyên.",
@@ -1104,7 +1457,11 @@
       "id": "hich_tuong_si",
       "type": "organization",
       "name": "Hịch tướng sĩ",
+      "aliases": [
+        "Dụ chư tì tướng hịch văn"
+      ],
       "period_id": "p05_tran",
+      "date": "khoảng 1284–1285, trước cuộc kháng chiến lần thứ hai",
       "description": "Văn bản hiệu triệu tướng sĩ do Trần Hưng Đạo soạn trước cuộc kháng chiến chống Nguyên.",
       "source_ids": [
         "s_dvsktt"
@@ -1115,6 +1472,7 @@
       "type": "figure",
       "name": "Lê Lai",
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "mất năm 1419",
       "description": "Liều mình đóng giả Lê Lợi để cứu chủ tướng thoát vòng vây quân Minh năm 1419 ('Lê Lai cứu chúa').",
       "source_ids": [
         "s_dvsktt"
@@ -1125,6 +1483,7 @@
       "type": "figure",
       "name": "Nguyễn Chích",
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "sinh năm 1382, mất năm 1448",
       "description": "Đề xuất chiến lược chuyển hướng vào Nghệ An năm 1424, bước ngoặt của khởi nghĩa Lam Sơn.",
       "source_ids": [
         "s_dvsktt"
@@ -1134,6 +1493,9 @@
       "id": "hoi_the_lung_nhai",
       "type": "event",
       "name": "Hội thề Lũng Nhai",
+      "aliases": [
+        "Lũng Nhai"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
       "date": "1416",
       "description": "Lê Lợi cùng các tướng lĩnh thề nguyện đồng lòng khởi nghĩa chống quân Minh.",
@@ -1145,7 +1507,11 @@
       "id": "le_nhan_tong",
       "type": "figure",
       "name": "Lê Nhân Tông",
+      "aliases": [
+        "Lê Bang Cơ"
+      ],
       "period_id": "p07_leso",
+      "date": "sinh năm 1441, mất năm 1459; trị vì 1442–1459",
       "description": "Vua nhà Lê sơ trị vì trước thời Lê Thánh Tông.",
       "source_ids": [
         "s_dvsktt"
@@ -1166,6 +1532,7 @@
       "type": "organization",
       "name": "Hồng Đức bản đồ",
       "period_id": "p07_leso",
+      "date": "1490",
       "description": "Bộ bản đồ hành chính biên soạn dưới thời Lê Thánh Tông.",
       "source_ids": [
         "s_dvsktt"
@@ -1176,6 +1543,7 @@
       "type": "figure",
       "name": "Trịnh Kiểm",
       "period_id": "p08_trinhnguyen",
+      "date": "sinh năm 1503, mất năm 1570",
       "description": "Người đặt nền móng quyền lực cho dòng chúa Trịnh ở Đàng Ngoài.",
       "source_ids": [
         "s_dvsktt"
@@ -1185,7 +1553,11 @@
       "id": "nguyen_hoang",
       "type": "figure",
       "name": "Nguyễn Hoàng",
+      "aliases": [
+        "chúa Tiên"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "sinh năm 1525, mất năm 1613",
       "description": "Vào trấn thủ Thuận Hóa năm 1558, đặt nền móng cho thế lực chúa Nguyễn ở Đàng Trong.",
       "source_ids": [
         "s_dvsktt"
@@ -1195,6 +1567,9 @@
       "id": "nam_tien",
       "type": "event",
       "name": "Công cuộc Nam tiến",
+      "aliases": [
+        "mở cõi phương Nam"
+      ],
       "period_id": "p08_trinhnguyen",
       "date": "thế kỷ 17–18",
       "description": "Quá trình mở rộng lãnh thổ về phương Nam dưới thời các chúa Nguyễn.",
@@ -1217,6 +1592,7 @@
       "type": "figure",
       "name": "Nguyễn Lữ",
       "period_id": "p09_tayson",
+      "date": "mất năm 1787",
       "description": "Em út trong ba anh em Tây Sơn, tham gia khởi nghĩa cùng Nguyễn Nhạc và Nguyễn Huệ.",
       "source_ids": [
         "s_dvsktt"
@@ -1226,7 +1602,12 @@
       "id": "ngoc_han_cong_chua",
       "type": "figure",
       "name": "Công chúa Ngọc Hân",
+      "aliases": [
+        "Ngọc Hân",
+        "Lê Ngọc Hân"
+      ],
       "period_id": "p09_tayson",
+      "date": "sinh năm 1770, mất năm 1799",
       "description": "Con gái vua Lê Hiển Tông, kết hôn với Nguyễn Huệ năm 1786, gắn kết Tây Sơn với triều Lê.",
       "source_ids": [
         "s_dvsktt"
@@ -1236,7 +1617,11 @@
       "id": "chieu_thong",
       "type": "figure",
       "name": "Lê Chiêu Thống",
+      "aliases": [
+        "Chiêu Thống"
+      ],
       "period_id": "p09_tayson",
+      "date": "sinh năm 1765, mất năm 1793; trị vì 1786–1789",
       "description": "Vua cuối nhà Lê, cầu viện nhà Thanh chống Tây Sơn, dẫn đến trận Ngọc Hồi – Đống Đa năm 1789.",
       "source_ids": [
         "s_dvsktt"
@@ -1246,7 +1631,11 @@
       "id": "nha_thanh",
       "type": "organization",
       "name": "Nhà Thanh (Trung Quốc)",
+      "aliases": [
+        "quân Thanh"
+      ],
       "period_id": "p09_tayson",
+      "date": "1644–1912",
       "description": "Được Lê Chiêu Thống cầu viện, đưa quân sang Đại Việt năm 1788, bị Quang Trung đánh bại tại Ngọc Hồi – Đống Đa.",
       "source_ids": [
         "s_dvsktt"
@@ -1256,7 +1645,12 @@
       "id": "tu_duc",
       "type": "figure",
       "name": "Tự Đức",
+      "aliases": [
+        "Nguyễn Phúc Hồng Nhậm",
+        "Dực Tông"
+      ],
       "period_id": "p10_nguyen",
+      "date": "sinh năm 1829, mất năm 1883; trị vì 1847–1883",
       "description": "Vua nhà Nguyễn trị vì 1847–1883, tại vị khi Pháp bắt đầu xâm lược năm 1858.",
       "source_ids": [
         "s_vnsl"
@@ -1266,7 +1660,11 @@
       "id": "hoang_viet_luat_le",
       "type": "organization",
       "name": "Hoàng Việt luật lệ (Luật Gia Long)",
+      "aliases": [
+        "Luật Gia Long"
+      ],
       "period_id": "p10_nguyen",
+      "date": "ban hành năm 1815",
       "description": "Bộ luật ban hành năm 1815 dưới thời Gia Long.",
       "source_ids": [
         "s_vnsl"
@@ -1276,7 +1674,11 @@
       "id": "ham_nghi",
       "type": "figure",
       "name": "Vua Hàm Nghi",
+      "aliases": [
+        "Hàm Nghi"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1871, mất năm 1943; trị vì 1884–1885",
       "description": "Ban Chiếu Cần Vương năm 1885 sau khi kinh thành Huế thất thủ, khởi xướng phong trào Cần Vương.",
       "source_ids": [
         "s_vnsl"
@@ -1286,6 +1688,10 @@
       "id": "phong_trao_can_vuong",
       "type": "event",
       "name": "Phong trào Cần Vương",
+      "aliases": [
+        "Cần Vương",
+        "chiếu Cần Vương"
+      ],
       "period_id": "p11_phapthuoc",
       "date": "1885–1896",
       "description": "Phong trào kháng Pháp của các sĩ phu và văn thân theo lời kêu gọi của vua Hàm Nghi.",
@@ -1298,6 +1704,7 @@
       "type": "figure",
       "name": "Phan Đình Phùng",
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1847, mất năm 1895",
       "description": "Lãnh đạo khởi nghĩa Hương Khê, cuộc khởi nghĩa tiêu biểu nhất của phong trào Cần Vương.",
       "source_ids": [
         "s_vnsl"
@@ -1307,7 +1714,11 @@
       "id": "hoang_hoa_tham",
       "type": "figure",
       "name": "Hoàng Hoa Thám (Đề Thám)",
+      "aliases": [
+        "Đề Thám"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh khoảng năm 1858, mất năm 1913",
       "description": "Lãnh đạo khởi nghĩa nông dân Yên Thế chống Pháp kéo dài gần 30 năm.",
       "source_ids": [
         "s_vnsl"
@@ -1317,6 +1728,9 @@
       "id": "khoi_nghia_yen_the",
       "type": "event",
       "name": "Khởi nghĩa Yên Thế",
+      "aliases": [
+        "Yên Thế"
+      ],
       "period_id": "p11_phapthuoc",
       "date": "1884–1913",
       "description": "Cuộc khởi nghĩa nông dân do Hoàng Hoa Thám lãnh đạo tại vùng Yên Thế (Bắc Giang), chống Pháp.",
@@ -1329,6 +1743,7 @@
       "type": "organization",
       "name": "Việt Nam Quang phục Hội",
       "period_id": "p11_phapthuoc",
+      "date": "1912",
       "description": "Tổ chức cách mạng do Phan Bội Châu sáng lập năm 1912, chủ trương đấu tranh vũ trang.",
       "source_ids": [
         "s_vnsl"
@@ -1338,7 +1753,12 @@
       "id": "viet_nam_quoc_dan_dang",
       "type": "organization",
       "name": "Việt Nam Quốc dân Đảng",
+      "aliases": [
+        "Quốc dân Đảng",
+        "VNQDĐ"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "ngày 25/12/1927",
       "description": "Chính đảng theo khuynh hướng dân tộc, thành lập 1927, phát động khởi nghĩa Yên Bái 1930.",
       "source_ids": [
         "s_vnsl"
@@ -1349,6 +1769,7 @@
       "type": "figure",
       "name": "Nguyễn Thái Học",
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1902, mất năm 1930",
       "description": "Lãnh đạo Việt Nam Quốc dân Đảng, lãnh đạo khởi nghĩa Yên Bái năm 1930, bị xử tử sau đó.",
       "source_ids": [
         "s_vnsl"
@@ -1359,7 +1780,7 @@
       "type": "event",
       "name": "Khởi nghĩa Yên Bái",
       "period_id": "p11_phapthuoc",
-      "date": "1930-02",
+      "date": "tháng 2/1930",
       "description": "Cuộc khởi nghĩa vũ trang do Việt Nam Quốc dân Đảng phát động, thất bại, nhiều lãnh đạo bị xử tử.",
       "source_ids": [
         "s_vnsl"
@@ -1369,7 +1790,12 @@
       "id": "mat_tran_viet_minh",
       "type": "organization",
       "name": "Mặt trận Việt Minh",
+      "aliases": [
+        "Việt Minh",
+        "Việt Nam Độc lập Đồng minh"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "ngày 19/5/1941",
       "description": "Mặt trận thành lập năm 1941 tại Pác Bó, do lực lượng cộng sản lãnh đạo, tổ chức Cách mạng tháng Tám.",
       "source_ids": [
         "s_vkd"
@@ -1379,6 +1805,9 @@
       "id": "nan_doi_1945",
       "type": "event",
       "name": "Nạn đói năm Ất Dậu",
+      "aliases": [
+        "nạn đói năm 1945"
+      ],
       "period_id": "p11_phapthuoc",
       "date": "1944–1945",
       "description": "Nạn đói lớn khiến hàng trăm nghìn đến khoảng hai triệu người chết, do chính sách của Pháp–Nhật và thiên tai.",
@@ -1390,7 +1819,12 @@
       "id": "vo_nguyen_giap",
       "type": "figure",
       "name": "Võ Nguyên Giáp",
+      "aliases": [
+        "Đại tướng Võ Nguyên Giáp",
+        "tướng Giáp"
+      ],
       "period_id": "p12_hiendai",
+      "date": "sinh năm 1911, mất năm 2013",
       "description": "Đại tướng, Tổng tư lệnh Quân đội Nhân dân Việt Nam, chỉ huy chiến dịch Điện Biên Phủ 1954.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1400,8 +1834,11 @@
       "id": "toan_quoc_khang_chien_1946",
       "type": "event",
       "name": "Toàn quốc kháng chiến",
+      "aliases": [
+        "Lời kêu gọi toàn quốc kháng chiến"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1946-12-19",
+      "date": "ngày 19/12/1946",
       "description": "Lời kêu gọi của Hồ Chí Minh phát động kháng chiến toàn quốc chống Pháp.",
       "source_ids": [
         "s_hcm_tt"
@@ -1411,8 +1848,11 @@
       "id": "hiep_dinh_paris_1973",
       "type": "event",
       "name": "Hiệp định Paris",
+      "aliases": [
+        "Hiệp định Pa-ri"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1973-01-27",
+      "date": "ngày 27/1/1973",
       "description": "Hiệp định chấm dứt chiến tranh, lập lại hòa bình ở Việt Nam, Mỹ rút quân.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1423,7 +1863,7 @@
       "type": "event",
       "name": "Chiến dịch Hồ Chí Minh",
       "period_id": "p12_hiendai",
-      "date": "1975-04",
+      "date": "tháng 4/1975",
       "description": "Chiến dịch quân sự cuối cùng, tiến vào Sài Gòn, kết thúc chiến tranh.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1433,8 +1873,11 @@
       "id": "gia_nhap_asean_1995",
       "type": "event",
       "name": "Việt Nam gia nhập ASEAN",
+      "aliases": [
+        "ASEAN"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1995-07-28",
+      "date": "ngày 28/7/1995",
       "description": "Việt Nam chính thức trở thành thành viên Hiệp hội các quốc gia Đông Nam Á.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1455,6 +1898,7 @@
       "type": "figure",
       "name": "Khúc Hạo",
       "period_id": "p02_bacthuoc",
+      "date": "mất năm 917",
       "description": "Con Khúc Thừa Dụ, tiếp tục giữ quyền tự chủ và tiến hành cải cách hành chính đầu thế kỷ 10.",
       "source_ids": [
         "s_dvsktt"
@@ -1464,7 +1908,11 @@
       "id": "nha_tuy",
       "type": "organization",
       "name": "Nhà Tùy (Trung Quốc)",
+      "aliases": [
+        "nhà Tùy"
+      ],
       "period_id": "p02_bacthuoc",
+      "date": "581–618",
       "description": "Tái chiếm Vạn Xuân, chấm dứt vương triều của Lý Phật Tử khoảng năm 602–603.",
       "source_ids": [
         "s_dvsktt"
@@ -1474,7 +1922,11 @@
       "id": "duong_tam_kha",
       "type": "figure",
       "name": "Dương Tam Kha",
+      "aliases": [
+        "Dương Bình Vương"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "nắm quyền 944–950",
       "description": "Con trai Dương Đình Nghệ, em vợ Ngô Quyền (Ngô Quyền lấy con gái Dương Đình Nghệ). Cướp ngôi sau khi Ngô Quyền mất năm 944, góp phần gây ra loạn 12 sứ quân.",
       "source_ids": [
         "s_dvsktt"
@@ -1484,7 +1936,11 @@
       "id": "ngo_xuong_van",
       "type": "figure",
       "name": "Ngô Xương Văn",
+      "aliases": [
+        "Nam Tấn Vương"
+      ],
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "mất năm 965",
       "description": "Con Ngô Quyền, giành lại ngôi báu từ tay Dương Tam Kha.",
       "source_ids": [
         "s_dvsktt"
@@ -1495,6 +1951,7 @@
       "type": "figure",
       "name": "Đinh Liễn",
       "period_id": "p03_ngo_dinh_tienle",
+      "date": "mất năm 979",
       "description": "Con trai cả Đinh Bộ Lĩnh, được phong vương, tham gia triều chính nhà Đinh.",
       "source_ids": [
         "s_dvsktt"
@@ -1504,7 +1961,11 @@
       "id": "ly_anh_tong",
       "type": "figure",
       "name": "Lý Anh Tông",
+      "aliases": [
+        "Lý Thiên Tộ"
+      ],
       "period_id": "p04_ly",
+      "date": "sinh năm 1136, mất năm 1175; trị vì 1138–1175",
       "description": "Vua nhà Lý trị vì giữa thế kỷ 12.",
       "source_ids": [
         "s_dvsktt"
@@ -1514,7 +1975,12 @@
       "id": "nguyen_phi_y_lan",
       "type": "figure",
       "name": "Nguyên phi Ỷ Lan",
+      "aliases": [
+        "Ỷ Lan",
+        "Linh Nhân Hoàng thái hậu"
+      ],
       "period_id": "p04_ly",
+      "date": "mất năm 1117",
       "description": "Nhiếp chính hai lần dưới thời Lý Thánh Tông và đầu thời Lý Nhân Tông, có nhiều đóng góp trong trị nước.",
       "source_ids": [
         "s_dvsktt"
@@ -1524,6 +1990,9 @@
       "id": "nam_quoc_son_ha",
       "type": "organization",
       "name": "Nam quốc sơn hà",
+      "aliases": [
+        "Sông núi nước Nam"
+      ],
       "period_id": "p04_ly",
       "description": "Bài thơ thần tương truyền của Lý Thường Kiệt, được coi là bản tuyên ngôn độc lập đầu tiên của Việt Nam.",
       "note": "Tác giả và hoàn cảnh ra đời còn được giới nghiên cứu thảo luận.",
@@ -1545,7 +2014,11 @@
       "id": "tran_thanh_tong",
       "type": "figure",
       "name": "Trần Thánh Tông",
+      "aliases": [
+        "Trần Hoảng"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh năm 1240, mất năm 1290; trị vì 1258–1278",
       "description": "Vua nhà Trần, làm Thượng hoàng trong thời gian Trần Nhân Tông kháng chiến chống Mông-Nguyên lần 2 và 3.",
       "source_ids": [
         "s_dvsktt"
@@ -1555,6 +2028,9 @@
       "id": "tran_khanh_du",
       "type": "figure",
       "name": "Trần Khánh Dư",
+      "aliases": [
+        "Nhân Huệ vương"
+      ],
       "period_id": "p05_tran",
       "description": "Tướng thủy quân nhà Trần, có công trong kháng chiến chống Mông-Nguyên.",
       "source_ids": [
@@ -1565,7 +2041,12 @@
       "id": "chu_van_an",
       "type": "figure",
       "name": "Chu Văn An",
+      "aliases": [
+        "Chu An",
+        "Tiều Ẩn"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh năm 1292, mất năm 1370",
       "description": "Nhà giáo nổi tiếng thời Trần, dâng 'Thất trảm sớ' xin chém 7 gian thần.",
       "source_ids": [
         "s_dvsktt"
@@ -1575,6 +2056,10 @@
       "id": "tran_hamtu_chuongduong",
       "type": "event",
       "name": "Trận Hàm Tử – Chương Dương",
+      "aliases": [
+        "Hàm Tử",
+        "Chương Dương"
+      ],
       "period_id": "p05_tran",
       "date": "1285",
       "description": "Quân Trần giành lại Thăng Long từ tay quân Nguyên trong cuộc kháng chiến lần 2.",
@@ -1587,6 +2072,7 @@
       "type": "figure",
       "name": "Hồ Hán Thương",
       "period_id": "p06_ho_thuocminh_lamson",
+      "date": "trị vì 1401–1407",
       "description": "Con Hồ Quý Ly, cùng cha chống quân Minh xâm lược năm 1407.",
       "source_ids": [
         "s_dvsktt"
@@ -1596,6 +2082,10 @@
       "id": "tran_tot_dong_chuc_dong",
       "type": "event",
       "name": "Trận Tốt Động – Chúc Động",
+      "aliases": [
+        "Tốt Động",
+        "Chúc Động"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
       "date": "1426",
       "description": "Chiến thắng lớn của nghĩa quân Lam Sơn trước quân Minh, bước ngoặt cuộc khởi nghĩa.",
@@ -1607,6 +2097,10 @@
       "id": "tran_chi_lang_xuong_giang",
       "type": "event",
       "name": "Trận Chi Lăng – Xương Giang",
+      "aliases": [
+        "Chi Lăng",
+        "Xương Giang"
+      ],
       "period_id": "p06_ho_thuocminh_lamson",
       "date": "1427",
       "description": "Nghĩa quân Lam Sơn giết tướng Liễu Thăng, đánh tan viện binh Minh, quyết định thắng lợi cuối cùng.",
@@ -1618,7 +2112,11 @@
       "id": "luong_the_vinh",
       "type": "figure",
       "name": "Lương Thế Vinh",
+      "aliases": [
+        "Trạng Lường"
+      ],
       "period_id": "p07_leso",
+      "date": "sinh năm 1441; đỗ Trạng nguyên năm 1463",
       "description": "Trạng nguyên, nhà toán học nổi tiếng thời Lê Thánh Tông.",
       "source_ids": [
         "s_dvsktt"
@@ -1629,6 +2127,7 @@
       "type": "figure",
       "name": "Đào Duy Từ",
       "period_id": "p08_trinhnguyen",
+      "date": "sinh năm 1572, mất năm 1634",
       "description": "Quân sư chúa Nguyễn, thiết kế xây dựng hệ thống phòng tuyến Lũy Thầy.",
       "source_ids": [
         "s_dvsktt"
@@ -1638,7 +2137,12 @@
       "id": "luy_thay",
       "type": "place",
       "name": "Lũy Thầy (Lũy Trường Dục – Đồng Hới)",
+      "aliases": [
+        "Lũy Trường Dục",
+        "Lũy Đồng Hới"
+      ],
       "period_id": "p08_trinhnguyen",
+      "date": "đắp năm 1630–1631",
       "description": "Hệ thống phòng tuyến do Đào Duy Từ xây dựng, giúp chúa Nguyễn chống lại các cuộc tấn công của chúa Trịnh.",
       "source_ids": [
         "s_dvsktt"
@@ -1649,6 +2153,7 @@
       "type": "figure",
       "name": "Bùi Thị Xuân",
       "period_id": "p09_tayson",
+      "date": "mất năm 1802",
       "description": "Nữ tướng nhà Tây Sơn, chỉ huy đội tượng binh.",
       "source_ids": [
         "s_dvsktt"
@@ -1658,7 +2163,11 @@
       "id": "ngo_thi_nham",
       "type": "figure",
       "name": "Ngô Thì Nhậm",
+      "aliases": [
+        "Ngô Thời Nhiệm"
+      ],
       "period_id": "p09_tayson",
+      "date": "sinh năm 1746, mất năm 1803",
       "description": "Mưu sĩ, văn thần phục vụ Quang Trung, soạn thảo nhiều văn kiện ngoại giao quan trọng.",
       "source_ids": [
         "s_dvsktt"
@@ -1668,7 +2177,11 @@
       "id": "nguyen_du",
       "type": "figure",
       "name": "Nguyễn Du",
+      "aliases": [
+        "Tố Như"
+      ],
       "period_id": "p10_nguyen",
+      "date": "sinh năm 1765, mất năm 1820",
       "description": "Đại thi hào, tác giả Truyện Kiều, làm quan dưới triều Gia Long.",
       "source_ids": [
         "s_vnsl"
@@ -1678,7 +2191,11 @@
       "id": "truong_dinh",
       "type": "figure",
       "name": "Trương Định",
+      "aliases": [
+        "Bình Tây Đại nguyên soái"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1820, mất năm 1864",
       "description": "Lãnh đạo kháng chiến chống Pháp ở Nam Kỳ giai đoạn 1859–1864.",
       "source_ids": [
         "s_vnsl"
@@ -1688,7 +2205,11 @@
       "id": "nguyen_trung_truc",
       "type": "figure",
       "name": "Nguyễn Trung Trực",
+      "aliases": [
+        "Nguyễn Văn Lịch"
+      ],
       "period_id": "p11_phapthuoc",
+      "date": "sinh năm 1838, mất năm 1868",
       "description": "Đốt cháy tàu chiến Pháp trên sông Nhật Tảo năm 1861, sau bị hành quyết.",
       "source_ids": [
         "s_vnsl"
@@ -1699,6 +2220,7 @@
       "type": "organization",
       "name": "Đông Kinh Nghĩa Thục",
       "period_id": "p11_phapthuoc",
+      "date": "1907",
       "description": "Trường học theo tư tưởng duy tân, hoạt động năm 1907 tại Hà Nội.",
       "source_ids": [
         "s_vnsl"
@@ -1708,6 +2230,9 @@
       "id": "phong_trao_dong_du",
       "type": "event",
       "name": "Phong trào Đông Du",
+      "aliases": [
+        "Đông Du"
+      ],
       "period_id": "p11_phapthuoc",
       "date": "1905–1909",
       "description": "Phan Bội Châu khởi xướng, đưa thanh niên Việt Nam sang Nhật Bản du học nhằm chuẩn bị lực lượng cách mạng.",
@@ -1730,7 +2255,11 @@
       "id": "le_duan",
       "type": "figure",
       "name": "Lê Duẩn",
+      "aliases": [
+        "Lê Văn Nhuận"
+      ],
       "period_id": "p12_hiendai",
+      "date": "sinh năm 1907, mất năm 1986",
       "description": "Bí thư thứ nhất rồi Tổng Bí thư Đảng Cộng sản Việt Nam, giữ vai trò lãnh đạo then chốt giai đoạn kháng chiến chống Mỹ.",
       "source_ids": [
         "s_vkd"
@@ -1741,7 +2270,7 @@
       "type": "event",
       "name": "Sự kiện Vịnh Bắc Bộ",
       "period_id": "p12_hiendai",
-      "date": "1964-08",
+      "date": "tháng 8/1964",
       "description": "Sự kiện Mỹ dùng làm cớ leo thang, mở rộng chiến tranh phá hoại miền Bắc.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1751,6 +2280,10 @@
       "id": "tong_tien_cong_tet_mau_than_1968",
       "type": "event",
       "name": "Tổng tiến công và nổi dậy Tết Mậu Thân",
+      "aliases": [
+        "Tết Mậu Thân",
+        "Mậu Thân 1968"
+      ],
       "period_id": "p12_hiendai",
       "date": "1968",
       "description": "Cuộc tổng tiến công đồng loạt trên nhiều đô thị miền Nam, tác động lớn đến cục diện chiến tranh và dư luận Mỹ.",
@@ -1762,8 +2295,11 @@
       "id": "dien_bien_phu_tren_khong",
       "type": "event",
       "name": "Chiến dịch Điện Biên Phủ trên không",
+      "aliases": [
+        "Hà Nội 12 ngày đêm"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1972-12",
+      "date": "tháng 12/1972",
       "description": "Quân dân Hà Nội đánh bại chiến dịch tập kích B-52 của Mỹ cuối năm 1972, góp phần buộc Mỹ ký Hiệp định Paris.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1774,7 +2310,7 @@
       "type": "event",
       "name": "Việt Nam gia nhập Liên Hợp Quốc",
       "period_id": "p12_hiendai",
-      "date": "1977-09-20",
+      "date": "ngày 20/9/1977",
       "description": "Việt Nam chính thức trở thành thành viên Liên Hợp Quốc sau khi thống nhất đất nước.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1784,8 +2320,11 @@
       "id": "chien_tranh_bien_gioi_1979",
       "type": "event",
       "name": "Chiến tranh biên giới phía Bắc",
+      "aliases": [
+        "chiến tranh biên giới 1979"
+      ],
       "period_id": "p12_hiendai",
-      "date": "1979-02",
+      "date": "tháng 2/1979",
       "description": "Xung đột vũ trang ở biên giới phía Bắc Việt Nam.",
       "source_ids": [
         "s_lsvn_vsh"
@@ -1795,8 +2334,12 @@
       "id": "truong_chinh",
       "type": "figure",
       "name": "Trường Chinh",
+      "aliases": [
+        "Đặng Xuân Khu"
+      ],
       "period_id": "p12_hiendai",
-      "description": "nhà cách mạng, chính trị gia người Việt Nam (1907–1988)",
+      "date": "sinh năm 1907, mất năm 1988",
+      "description": "Nhà cách mạng, chính trị gia người Việt Nam (1907–1988)",
       "note": "Nhập tự động từ Wikidata (Q545539) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1806,7 +2349,11 @@
       "id": "ly_chieu_hoang",
       "type": "figure",
       "name": "Lý Chiêu Hoàng",
+      "aliases": [
+        "Lý Phật Kim"
+      ],
       "period_id": "p05_tran",
+      "date": "sinh năm 1218, mất năm 1278",
       "description": "Hoàng đế Đại Việt giai đoạn 1224–1226",
       "note": "Nhập tự động từ Wikidata (Q713251) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
@@ -1817,8 +2364,12 @@
       "id": "nguyen_cong_tru",
       "type": "figure",
       "name": "Nguyễn Công Trứ",
+      "aliases": [
+        "Hy Văn"
+      ],
       "period_id": "p10_nguyen",
-      "description": "nhà chính trị, nhà quân sự và nhà thơ Đại Nam thời nhà Nguyễn",
+      "date": "sinh năm 1778, mất năm 1858",
+      "description": "Nhà chính trị, nhà quân sự và nhà thơ Đại Nam thời nhà Nguyễn",
       "note": "Nhập tự động từ Wikidata (Q3339357) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1828,8 +2379,12 @@
       "id": "bao_dai",
       "type": "figure",
       "name": "Bảo Đại",
+      "aliases": [
+        "Nguyễn Phúc Vĩnh Thụy"
+      ],
       "period_id": "p12_hiendai",
-      "description": "hoàng đế cuối cùng của nhà Nguyễn và chế độ phong kiến tại Việt Nam",
+      "date": "sinh năm 1913, mất năm 1997; trị vì 1926–1945",
+      "description": "Hoàng đế cuối cùng của nhà Nguyễn và chế độ phong kiến tại Việt Nam",
       "note": "Nhập tự động từ Wikidata (Q223771) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1840,7 +2395,8 @@
       "type": "place",
       "name": "Hà Nội",
       "period_id": "p10_nguyen",
-      "description": "thủ đô của Việt Nam",
+      "date": "đặt tên năm 1831",
+      "description": "Thủ đô của Việt Nam",
       "note": "Nhập tự động từ Wikidata (Q1858) — đã rà soát và sửa tay type/period_id sau khi nhập tự động.",
       "source_ids": [
         "s_wikidata"
@@ -1850,6 +2406,9 @@
       "id": "song_ben_hai",
       "type": "place",
       "name": "Sông Bến Hải",
+      "aliases": [
+        "vĩ tuyến 17"
+      ],
       "period_id": "p12_hiendai",
       "description": "Nơi Việt Nam bị chia cắt làm 2 miền trong quá khứ (1954–1976)",
       "note": "Nhập tự động từ Wikidata (Q1931412) — đã rà soát và sửa tay type/period_id sau khi nhập tự động.",
@@ -1861,8 +2420,12 @@
       "id": "mat_tran_dan_toc_giai_phong_mien_nam_viet_nam",
       "type": "organization",
       "name": "Mặt trận Dân tộc Giải phóng miền Nam Việt Nam",
+      "aliases": [
+        "Mặt trận Giải phóng miền Nam"
+      ],
       "period_id": "p12_hiendai",
-      "description": "liên minh chính trị chống Mỹ và Việt Nam Cộng hoà giai đoạn 1960–1977",
+      "date": "ngày 20/12/1960",
+      "description": "Liên minh chính trị chống Mỹ và Việt Nam Cộng hoà giai đoạn 1960–1977",
       "note": "Nhập tự động từ Wikidata (Q174423) — đã rà soát và sửa tay type/period_id sau khi nhập tự động.",
       "source_ids": [
         "s_wikidata"
@@ -1873,7 +2436,8 @@
       "type": "event",
       "name": "Phong trào Đồng khởi",
       "period_id": "p12_hiendai",
-      "description": "phong trào nổi dậy ở miền Nam Việt Nam",
+      "date": "1959–1960",
+      "description": "Phong trào nổi dậy ở miền Nam Việt Nam",
       "note": "Nhập tự động từ Wikidata (Q10805519) — đã rà soát và sửa tay type/period_id sau khi nhập tự động.",
       "source_ids": [
         "s_wikidata"
@@ -1883,8 +2447,12 @@
       "id": "nguyen_thi_dinh",
       "type": "figure",
       "name": "Nguyễn Thị Định",
+      "aliases": [
+        "Ba Định"
+      ],
       "period_id": "p12_hiendai",
-      "description": "nữ Thiếu tướng Quân đội nhân dân Việt Nam đầu tiên",
+      "date": "sinh năm 1920, mất năm 1992",
+      "description": "Nữ Thiếu tướng Quân đội nhân dân Việt Nam đầu tiên",
       "note": "Nhập tự động từ Wikidata (Q2068489) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1895,7 +2463,8 @@
       "type": "figure",
       "name": "Phạm Văn Đồng",
       "period_id": "p12_hiendai",
-      "description": "thủ tướng đầu tiên của nước Cộng hòa xã hội chủ nghĩa Việt Nam (1976-1987)",
+      "date": "sinh năm 1906, mất năm 2000",
+      "description": "Thủ tướng đầu tiên của nước Cộng hòa xã hội chủ nghĩa Việt Nam (1976-1987)",
       "note": "Nhập tự động từ Wikidata (Q358051) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1906,6 +2475,7 @@
       "type": "figure",
       "name": "Ngô Đình Diệm",
       "period_id": "p12_hiendai",
+      "date": "sinh năm 1901, mất năm 1963",
       "description": "Tổng thống Việt Nam Cộng hòa giai đoạn 1955–1963",
       "note": "Nhập tự động từ Wikidata (Q192502) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
@@ -1916,8 +2486,13 @@
       "id": "duong_van_minh",
       "type": "figure",
       "name": "Dương Văn Minh",
+      "aliases": [
+        "Big Minh",
+        "Minh Lớn"
+      ],
       "period_id": "p12_hiendai",
-      "description": "tướng lĩnh, tổng thống cuối cùng của Việt Nam Cộng hoà",
+      "date": "sinh năm 1916, mất năm 2001",
+      "description": "Tướng lĩnh, tổng thống cuối cùng của Việt Nam Cộng hoà",
       "note": "Nhập tự động từ Wikidata (Q334419) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1928,7 +2503,7 @@
       "type": "figure",
       "name": "Đặng Trần Côn",
       "period_id": "p08_trinhnguyen",
-      "description": "văn sĩ người Việt Nam",
+      "description": "Văn sĩ người Việt Nam",
       "note": "Nhập tự động từ Wikidata (Q1033985) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
@@ -1939,7 +2514,8 @@
       "type": "figure",
       "name": "Trần Nguyên Hãn",
       "period_id": "p06_ho_thuocminh_lamson",
-      "description": "công thần khai quốc nhà Lê sơ",
+      "date": "mất năm 1429",
+      "description": "Công thần khai quốc nhà Lê sơ",
       "note": "Nhập tự động từ Wikidata (Q10829396) — đã rà soát và sửa tay type/period_id sau khi nhập tự động.",
       "source_ids": [
         "s_wikidata"
@@ -1949,14 +2525,149 @@
       "id": "le_van_duyet",
       "type": "figure",
       "name": "Lê Văn Duyệt",
+      "aliases": [
+        "Tả quân Lê Văn Duyệt",
+        "Tả quân Duyệt"
+      ],
       "period_id": "p10_nguyen",
-      "description": "tướng quân, quan thần nhà Nguyễn (1763/1764–1832)",
+      "date": "sinh năm 1763 hoặc 1764, mất năm 1832",
+      "description": "Tướng quân, quan thần nhà Nguyễn (1763/1764–1832)",
       "note": "Nhập tự động từ Wikidata (Q715407) — CẦN RÀ SOÁT: mô tả/loại/thời kỳ có thể chưa chính xác hoặc thiếu.",
       "source_ids": [
         "s_wikidata"
       ]
     },
-    {"id": "viet_nam_cong_hoa", "type": "organization", "name": "Việt Nam Cộng hòa", "period_id": "p12_hiendai", "description": "Chính thể tồn tại ở miền Nam Việt Nam giai đoạn 1955–1975, thủ đô Sài Gòn.", "source_ids": ["s_lsvn_vsh"]}
+    {"id": "viet_nam_cong_hoa", "type": "organization", "name": "Việt Nam Cộng hòa", "aliases": ["VNCH", "chính quyền Sài Gòn"], "period_id": "p12_hiendai", "date": "1955–1975", "description": "Chính thể tồn tại ở miền Nam Việt Nam giai đoạn 1955–1975, thủ đô Sài Gòn.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "nha_han", "type": "organization", "name": "Nhà Hán (Trung Quốc)", "aliases": ["nhà Hán", "quân Hán"], "period_id": "p02_bacthuoc", "date": "206 TCN – 220", "description": "Triều đại Trung Quốc (206 TCN – 220) cai trị vùng đất Giao Chỉ, Cửu Chân, Nhật Nam; Hai Bà Trưng khởi nghĩa chống ách đô hộ nhà Hán năm 40.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nha_tong", "type": "organization", "name": "Nhà Tống (Trung Quốc)", "aliases": ["nhà Tống", "quân Tống"], "period_id": "p04_ly", "date": "960–1279", "description": "Triều đại Trung Quốc (960–1279), hai lần đem quân xâm lược Đại Việt: năm 981 thời Tiền Lê và năm 1075–1077 thời Lý.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nha_minh", "type": "organization", "name": "Nhà Minh (Trung Quốc)", "aliases": ["nhà Minh", "quân Minh"], "period_id": "p06_ho_thuocminh_lamson", "date": "1368–1644", "description": "Triều đại Trung Quốc (1368–1644), xâm lược Đại Ngu năm 1406–1407, lật đổ nhà Hồ và cai trị nước ta đến năm 1427.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nam_han", "type": "organization", "name": "Nước Nam Hán", "aliases": ["Nam Hán", "quân Nam Hán"], "period_id": "p03_ngo_dinh_tienle", "date": "917–971", "description": "Nước ở miền nam Trung Quốc thời Ngũ Đại Thập Quốc (917–971), hai lần đem quân sang Tĩnh Hải quân: bị Dương Đình Nghệ đánh đuổi năm 931 và bị Ngô Quyền đánh tan trên sông Bạch Đằng năm 938.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "chiem_thanh", "type": "organization", "name": "Chiêm Thành (Champa)", "aliases": ["Chiêm Thành", "Champa", "Chăm Pa", "Lâm Ấp"], "period_id": "p07_leso", "date": "khoảng thế kỷ 2 – 1832", "description": "Vương quốc của người Chăm ở miền Trung, tiền thân là Lâm Ấp (khoảng thế kỷ 2); nhiều lần giao tranh rồi giao hảo với Đại Việt. Năm 1471 Lê Thánh Tông đánh chiếm kinh đô Đồ Bàn (Vijaya).", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "hoa_ky", "type": "organization", "name": "Hoa Kỳ", "aliases": ["nước Mỹ"], "period_id": "p12_hiendai", "description": "Hợp chúng quốc Hoa Kỳ, trực tiếp đưa quân chiến đấu vào miền Nam Việt Nam từ năm 1965, rút quân theo Hiệp định Paris năm 1973; bình thường hóa quan hệ với Việt Nam năm 1995.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "hoi_tao_dan", "type": "organization", "name": "Hội Tao Đàn", "aliases": ["Tao Đàn", "Tao Đàn nhị thập bát tú"], "period_id": "p07_leso", "date": "1495", "description": "Hội thơ do Lê Thánh Tông lập năm 1495, gồm 28 văn thần (Tao Đàn nhị thập bát tú), vua làm Tao Đàn nguyên súy.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "thanh_hoa", "type": "place", "name": "Thanh Hóa", "aliases": ["Thanh Hoá", "xứ Thanh"], "period_id": "p06_ho_thuocminh_lamson", "description": "Vùng đất phía nam đồng bằng Bắc Bộ, quê hương khởi nghĩa Lam Sơn; nơi nhà Hồ xây thành Tây Đô năm 1397.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nghe_an", "type": "place", "name": "Nghệ An", "aliases": ["xứ Nghệ"], "period_id": "p06_ho_thuocminh_lamson", "description": "Vùng đất Bắc Trung Bộ; năm 1424 nghĩa quân Lam Sơn theo kế của Nguyễn Chích chuyển vào Nghệ An, lấy làm căn cứ để tiến ra Bắc. Nơi diễn ra phong trào Xô viết Nghệ Tĩnh 1930–1931.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "quy_nhon", "type": "place", "name": "Quy Nhơn", "aliases": ["phủ Quy Nhơn"], "period_id": "p09_tayson", "description": "Phủ Quy Nhơn (nay thuộc Bình Định), nơi có ấp Tây Sơn, quê hương ba anh em Nguyễn Nhạc, Nguyễn Huệ, Nguyễn Lữ, nơi khởi nghĩa Tây Sơn nổ ra năm 1771.", "source_ids": ["s_khamdinh", "s_lsvn_vsh"]},
+    {"id": "sai_gon", "type": "place", "name": "Sài Gòn – Gia Định", "aliases": ["Sài Gòn", "Gia Định", "thành Gia Định", "Thành phố Hồ Chí Minh"], "period_id": "p11_phapthuoc", "description": "Trung tâm của Nam Bộ; quân Pháp đánh chiếm thành Gia Định năm 1859. Sau năm 1955 là thủ đô của Việt Nam Cộng hòa; năm 1976 đổi tên thành Thành phố Hồ Chí Minh.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "den_hung", "type": "place", "name": "Đền Hùng", "aliases": ["núi Nghĩa Lĩnh"], "period_id": "p01_hongbang", "description": "Quần thể đền thờ các Vua Hùng trên núi Nghĩa Lĩnh (Phú Thọ); ngày giỗ Tổ Hùng Vương là mùng 10 tháng 3 âm lịch.", "source_ids": ["s_btlsqg", "s_sgk"]},
+    {"id": "my_chau", "type": "figure", "name": "Mỵ Châu", "aliases": ["Mị Châu"], "period_id": "p01_hongbang", "description": "Con gái An Dương Vương, vợ Trọng Thủy (con Triệu Đà); truyền thuyết kể nàng để lộ bí mật nỏ thần, khiến nước Âu Lạc mất vào tay Triệu Đà.", "note": "Truyền thuyết, chép trong Lĩnh Nam chích quái và Đại Việt sử ký toàn thư; không phải sử liệu đồng đại.", "source_ids": ["s_dvsktt"]},
+    {"id": "trong_thuy", "type": "figure", "name": "Trọng Thủy", "aliases": ["Trọng Thuỷ", "Triệu Trọng Thủy"], "period_id": "p01_hongbang", "description": "Con trai Triệu Đà; theo truyền thuyết được gửi sang làm rể An Dương Vương, lấy Mỵ Châu rồi đánh tráo lẫy nỏ thần, giúp Triệu Đà chiếm nước Âu Lạc.", "note": "Nhân vật truyền thuyết, chép trong Lĩnh Nam chích quái và Đại Việt sử ký toàn thư; không có sử liệu đồng đại xác nhận.", "source_ids": ["s_dvsktt"]},
+    {"id": "thi_sach", "type": "figure", "name": "Thi Sách", "period_id": "p02_bacthuoc", "description": "Chồng Trưng Trắc theo Đại Việt sử ký toàn thư; sử cũ chép ông bị Thái thú Tô Định giết và coi đó là nguyên cớ trực tiếp của khởi nghĩa Hai Bà Trưng năm 40.", "note": "Việc Thi Sách bị giết, và cả việc \"Thi Sách\" có phải tên người hay không, còn tranh luận — xem claim c06.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "me_linh", "type": "place", "name": "Mê Linh", "period_id": "p02_bacthuoc", "description": "Vùng đất quê hương Hai Bà Trưng (nay thuộc Hà Nội), nơi Hai Bà dựng cờ khởi nghĩa năm 40 và Trưng Trắc đóng đô sau khi xưng vương.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "nha_dong_ngo", "type": "organization", "name": "Nhà Đông Ngô (Trung Quốc)", "aliases": ["Đông Ngô", "Tôn Ngô", "nước Ngô thời Tam Quốc"], "period_id": "p02_bacthuoc", "date": "222–280", "description": "Nước Ngô thời Tam Quốc ở Trung Quốc (222–280), cai trị Giao Châu sau khi nhà Hán sụp đổ; Bà Triệu khởi nghĩa chống ách đô hộ của nhà Ngô năm 248.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "khoi_nghia_ba_trieu", "type": "event", "name": "Khởi nghĩa Bà Triệu", "aliases": ["khởi nghĩa Triệu Thị Trinh"], "period_id": "p02_bacthuoc", "date": "248", "description": "Cuộc khởi nghĩa chống ách đô hộ nhà Ngô (Tam Quốc) do Bà Triệu lãnh đạo năm 248, khởi phát từ vùng núi quận Cửu Chân (Thanh Hóa); bị quân Ngô đàn áp ngay trong năm.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "nha_luong", "type": "organization", "name": "Nhà Lương (Trung Quốc)", "aliases": ["nhà Lương", "quân Lương"], "period_id": "p02_bacthuoc", "date": "502–557", "description": "Triều đại Nam triều ở Trung Quốc (502–557) cai trị Giao Châu; Lý Bí khởi nghĩa chống ách đô hộ nhà Lương năm 542, lập nước Vạn Xuân năm 544; Triệu Quang Phục tiếp tục kháng chiến chống quân Lương ở đầm Dạ Trạch.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "khoi_nghia_mai_thuc_loan", "type": "event", "name": "Khởi nghĩa Mai Thúc Loan", "period_id": "p02_bacthuoc", "date": "đầu thế kỷ 8 (713 hoặc 722, còn tranh luận)", "description": "Cuộc khởi nghĩa chống nhà Đường do Mai Thúc Loan lãnh đạo, nổi lên từ vùng Hoan Châu (Nghệ An – Hà Tĩnh) với căn cứ thành Vạn An; có liên kết với các nước láng giềng phía nam. Mai Thúc Loan xưng đế (Mai Hắc Đế) trước khi bị quân Đường đàn áp.", "note": "Niên đại không thống nhất giữa các nguồn — xem claim c04.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "kieu_cong_tien", "type": "figure", "name": "Kiều Công Tiễn", "period_id": "p02_bacthuoc", "date": "mất năm 938", "description": "Nha tướng của Dương Đình Nghệ; năm 937 giết Dương Đình Nghệ để đoạt chức Tiết độ sứ rồi cầu cứu nước Nam Hán; năm 938 bị Ngô Quyền từ Ái Châu kéo quân ra đánh và giết.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nha_ngo", "type": "organization", "name": "Nhà Ngô", "aliases": ["triều Ngô"], "period_id": "p03_ngo_dinh_tienle", "date": "939–965", "description": "Triều đại do Ngô Quyền lập năm 939 sau chiến thắng Bạch Đằng, đóng đô ở Cổ Loa, các vua chỉ xưng vương. Sau khi Ngô Quyền mất (944), Dương Tam Kha cướp quyền (944–950); Ngô Xương Văn khôi phục được ngôi nhưng tử trận năm 965, mở ra loạn 12 sứ quân.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "duong_van_nga", "type": "figure", "name": "Dương Vân Nga (Đại Thắng Minh Hoàng hậu)", "aliases": ["Dương Vân Nga", "Đại Thắng Minh Hoàng hậu", "Dương thái hậu"], "period_id": "p03_ngo_dinh_tienle", "date": "sinh năm 952, mất năm 1000", "description": "Hoàng hậu của Đinh Tiên Hoàng, mẹ vua Đinh Toàn; năm 980, khi quân Tống sắp sang, bà trao áo long cổn tôn Lê Hoàn lên ngôi rồi trở thành hoàng hậu của Lê Đại Hành.", "note": "Sử cũ chỉ chép là thái hậu họ Dương; tên Vân Nga đến từ dã sử.", "source_ids": ["s_dvsktt"]},
+    {"id": "dinh_toan", "type": "figure", "name": "Đinh Phế Đế (Đinh Toàn)", "aliases": ["Đinh Toàn", "Đinh Phế Đế", "Đinh Thiếu Đế"], "period_id": "p03_ngo_dinh_tienle", "date": "sinh năm 974, mất năm 1001; trị vì 979–980", "description": "Con trai nhỏ của Đinh Tiên Hoàng, lên ngôi lúc 6 tuổi sau biến cố năm 979; năm 980 thái hậu họ Dương trao ngôi cho Lê Hoàn, ông bị giáng làm Vệ vương.", "source_ids": ["s_dvsktt"]},
+    {"id": "van_hanh", "type": "figure", "name": "Thiền sư Vạn Hạnh", "aliases": ["Vạn Hạnh"], "period_id": "p03_ngo_dinh_tienle", "date": "sinh năm 938, mất năm 1018", "description": "Thiền sư người châu Cổ Pháp (Bắc Ninh), cố vấn của vua Lê Đại Hành và là thầy của Lý Công Uẩn; sử chép ông đứng sau những lời sấm báo họ Lý sẽ làm vua, góp phần đưa Lý Công Uẩn lên ngôi năm 1009.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "chi_lang", "type": "place", "name": "Ải Chi Lăng", "period_id": "p03_ngo_dinh_tienle", "description": "Cửa ải hiểm yếu ở Lạng Sơn, thung lũng hẹp trên đường từ biên giới phía bắc về đồng bằng; nơi quân Tống bị đánh năm 981 và tướng Minh Liễu Thăng tử trận năm 1427.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "ly_thanh_tong", "type": "figure", "name": "Lý Thánh Tông", "aliases": ["Lý Nhật Tôn"], "period_id": "p04_ly", "date": "sinh năm 1023, mất năm 1072; trị vì 1054–1072", "description": "Vị vua thứ ba nhà Lý; năm 1054 đổi quốc hiệu Đại Cồ Việt thành Đại Việt, năm 1069 thân chinh đánh Chiêm Thành, năm 1070 cho dựng Văn Miếu ở Thăng Long.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "quoc_hieu_dai_viet", "type": "organization", "name": "Quốc hiệu Đại Việt", "aliases": ["Đại Việt"], "period_id": "p04_ly", "date": "1054–1804 (gián đoạn 1400–1427)", "description": "Quốc hiệu do vua Lý Thánh Tông đặt năm 1054 thay cho Đại Cồ Việt; được dùng qua các triều Lý, Trần, Lê, Mạc, Tây Sơn đến năm 1804, trừ thời nhà Hồ (quốc hiệu Đại Ngu) và thời thuộc Minh.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "ly_than_tong", "type": "figure", "name": "Lý Thần Tông", "aliases": ["Lý Dương Hoán"], "period_id": "p04_ly", "date": "sinh năm 1116, mất năm 1138; trị vì 1128–1138", "description": "Vị vua thứ năm nhà Lý, cháu và người kế vị Lý Nhân Tông; dân gian và sử cũ chép truyền thuyết thiền sư Từ Đạo Hạnh thoát xác đầu thai làm vị vua này.", "note": "Chi tiết đầu thai là truyền thuyết.", "source_ids": ["s_dvsktt"]},
+    {"id": "ly_hue_tong", "type": "figure", "name": "Lý Huệ Tông", "aliases": ["Lý Hạo Sảm", "Lý Sảm"], "period_id": "p04_ly", "date": "sinh năm 1194, mất năm 1226; trị vì 1210–1224", "description": "Vị vua thứ tám nhà Lý; năm 1224 truyền ngôi cho con gái là Lý Chiêu Hoàng rồi đi tu, quyền bính rơi vào tay họ Trần; năm 1226 bị Trần Thủ Độ bức tử.", "source_ids": ["s_dvsktt"]},
+    {"id": "chua_thay", "type": "place", "name": "Chùa Thầy", "aliases": ["chùa Thiên Phúc"], "period_id": "p04_ly", "description": "Quần thể chùa dưới chân núi Sài Sơn (Quốc Oai, Hà Nội), dựng từ thời Lý; nơi thiền sư Từ Đạo Hạnh tu hành và được thờ phụng, gắn với lễ hội và nghề múa rối nước.", "source_ids": ["s_btlsqg", "s_lsvn_vsh"]},
+    {"id": "tran_ung_chau", "type": "event", "name": "Trận Ung Châu", "aliases": ["hạ thành Ung Châu"], "period_id": "p04_ly", "date": "1075–1076", "description": "Đòn tiến công phủ đầu sang đất Tống: cuối năm 1075 quân Đại Việt do Lý Thường Kiệt chỉ huy đánh Khâm Châu, Liêm Châu rồi vây thành Ung Châu hơn bốn mươi ngày, hạ thành đầu năm 1076.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "tran_nhu_nguyet", "type": "event", "name": "Trận Như Nguyệt", "aliases": ["trận sông Như Nguyệt", "phòng tuyến sông Như Nguyệt"], "period_id": "p04_ly", "date": "1077", "description": "Trận đánh trên phòng tuyến sông Như Nguyệt (sông Cầu) đầu năm 1077: quân Đại Việt do Lý Thường Kiệt chỉ huy chặn đứng quân Tống, rồi chủ động đề nghị giảng hòa để quân Tống rút về.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "nha_nguyen_mong", "type": "organization", "name": "Mông Cổ – nhà Nguyên (Trung Quốc)", "aliases": ["Đế quốc Mông Cổ", "Đại Nguyên", "Nguyên Mông"], "period_id": "p05_tran", "date": "nhà Nguyên 1271–1368", "description": "Đế quốc Mông Cổ và triều Nguyên do người Mông Cổ lập ở Trung Quốc (1271–1368); ba lần đem quân xâm lược Đại Việt vào các năm 1258, 1285 và 1288, cả ba lần đều thất bại.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "tran_dong_bo_dau", "type": "event", "name": "Trận Đông Bộ Đầu", "aliases": ["Đông Bộ Đầu"], "period_id": "p05_tran", "date": "1258", "description": "Trận phản công đầu năm 1258 của quân Trần do vua Trần Thái Tông chỉ huy vào bến Đông Bộ Đầu sát Thăng Long, đánh bật quân Mông Cổ khỏi kinh thành, kết thúc cuộc kháng chiến lần thứ nhất.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "hoi_nghi_binh_than", "type": "event", "name": "Hội nghị Bình Than", "aliases": ["Bình Than"], "period_id": "p05_tran", "date": "1282", "description": "Hội nghị quân sự do vua Trần Nhân Tông triệu tập tháng 10 năm 1282 ở bến Bình Than, họp vương hầu và trăm quan bàn kế chống quân Nguyên; Trần Quốc Tuấn được trao quyền tổng chỉ huy. Tương truyền Trần Quốc Toản vì nhỏ tuổi không được dự họp, tức giận bóp nát quả cam.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "tran_van_don", "type": "event", "name": "Trận Vân Đồn", "aliases": ["Vân Đồn"], "period_id": "p05_tran", "date": "1288", "description": "Trận đánh đầu năm 1288 ở vùng biển Vân Đồn: Trần Khánh Dư để đại quân Nguyên đi qua rồi đánh tan đoàn thuyền lương đi sau, khiến quân Nguyên lâm vào cảnh thiếu lương.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "truc_lam", "type": "organization", "name": "Thiền phái Trúc Lâm Yên Tử", "aliases": ["Thiền phái Trúc Lâm", "Trúc Lâm", "Trúc Lâm Yên Tử"], "period_id": "p05_tran", "date": "đầu thế kỷ XIV", "description": "Dòng thiền Việt Nam do Trần Nhân Tông sáng lập trên núi Yên Tử sau khi xuất gia, hợp nhất các dòng thiền có trước; ba vị tổ là Trần Nhân Tông, Pháp Loa và Huyền Quang (Trúc Lâm tam tổ).", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "phap_loa", "type": "figure", "name": "Pháp Loa", "period_id": "p05_tran", "date": "sinh năm 1284, mất năm 1330", "description": "Thiền sư, môn đệ của Trần Nhân Tông, tổ thứ hai Thiền phái Trúc Lâm; cho ấn hành Đại tạng kinh và dựng nhiều chùa tháp.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "huyen_quang", "type": "figure", "name": "Huyền Quang", "period_id": "p05_tran", "date": "sinh năm 1254, mất năm 1334", "description": "Thiền sư, nhà thơ thời Trần, từng đỗ khoa thi và làm quan rồi xuất gia theo Trần Nhân Tông; tổ thứ ba Thiền phái Trúc Lâm.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "le_van_huu", "type": "figure", "name": "Lê Văn Hưu", "period_id": "p05_tran", "date": "sinh năm 1230, mất năm 1322", "description": "Sử gia thời Trần, soạn bộ Đại Việt sử ký dâng lên năm 1272 — bộ quốc sử đầu tiên của Việt Nam, mở đầu từ nhà Triệu; bộ sách nay không còn nhưng là nền cho Đại Việt sử ký toàn thư.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "dai_viet_su_ky", "type": "organization", "name": "Đại Việt sử ký (Lê Văn Hưu)", "aliases": ["Đại Việt sử ký"], "period_id": "p05_tran", "date": "1272", "description": "Bộ quốc sử đầu tiên của Việt Nam do Lê Văn Hưu soạn theo lệnh vua Trần, hoàn thành năm 1272, chép từ Triệu Đà đến Lý Chiêu Hoàng; nay đã mất, chỉ còn qua những phần Ngô Sĩ Liên dẫn lại trong Đại Việt sử ký toàn thư.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nam_dinh", "type": "place", "name": "Nam Định", "aliases": ["Thiên Trường"], "period_id": "p05_tran", "description": "Vùng đất hạ lưu sông Hồng, quê gốc họ Trần (hương Tức Mặc); thời Trần đặt phủ Thiên Trường với hành cung cho các Thái thượng hoàng. Năm 1408 quân Hậu Trần thắng lớn ở bến Bô Cô thuộc vùng này.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "thanh_tay_do", "type": "place", "name": "Thành nhà Hồ (Tây Đô)", "aliases": ["Thành nhà Hồ", "thành Tây Đô", "Tây Đô", "thành Tây Giai"], "period_id": "p06_ho_thuocminh_lamson", "date": "xây năm 1397", "description": "Kinh thành bằng đá do Hồ Quý Ly cho xây năm 1397 ở Vĩnh Lộc, Thanh Hóa, kinh đô nước Đại Ngu thời nhà Hồ; thất thủ trước quân Minh năm 1407; được UNESCO công nhận Di sản văn hóa thế giới năm 2011.", "source_ids": ["s_dvsktt", "s_btlsqg"]},
+    {"id": "quoc_hieu_dai_ngu", "type": "organization", "name": "Quốc hiệu Đại Ngu", "aliases": ["Đại Ngu"], "period_id": "p06_ho_thuocminh_lamson", "date": "1400–1407", "description": "Quốc hiệu do Hồ Quý Ly đặt khi lập nhà Hồ năm 1400, thay cho Đại Việt; dùng đến khi nhà Hồ mất vào tay quân Minh năm 1407.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "ho_nguyen_trung", "type": "figure", "name": "Hồ Nguyên Trừng", "aliases": ["Lê Trừng"], "period_id": "p06_ho_thuocminh_lamson", "date": "sinh năm 1374, mất năm 1446", "description": "Con trưởng Hồ Quý Ly, Tả tướng quốc nhà Hồ, chỉ huy chính của quân đội chống quân Minh (1406–1407), nổi tiếng chế tạo súng thần cơ; bị bắt sang Trung Quốc rồi làm quan chế tạo vũ khí cho nhà Minh. Sử chép lời ông: không sợ đánh, chỉ sợ lòng dân không theo.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nha_hau_tran", "type": "organization", "name": "Nhà Hậu Trần", "aliases": ["Hậu Trần"], "period_id": "p06_ho_thuocminh_lamson", "date": "1407–1414", "description": "Chính quyền kháng chiến chống quân Minh do tôn thất nhà Trần dựng lên năm 1407, lần lượt tôn Giản Định Đế (Trần Ngỗi) và Trùng Quang Đế (Trần Quý Khoáng); thắng lớn ở Bô Cô năm 1408 nhưng tan rã năm 1414.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "gian_dinh_de", "type": "figure", "name": "Giản Định Đế (Trần Ngỗi)", "aliases": ["Trần Ngỗi", "Giản Định Đế"], "period_id": "p06_ho_thuocminh_lamson", "date": "sinh năm 1375; ở ngôi 1407–1409", "description": "Con vua Trần Nghệ Tông, được tôn làm vua năm 1407 ở Mô Độ (Ninh Bình), lập nhà Hậu Trần; cùng Đặng Tất đánh bại quân Minh ở Bô Cô năm 1408, về sau bị quân Minh bắt và giết.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "trung_quang_de", "type": "figure", "name": "Trùng Quang Đế (Trần Quý Khoáng)", "aliases": ["Trần Quý Khoáng", "Trùng Quang Đế"], "period_id": "p06_ho_thuocminh_lamson", "date": "mất năm 1414", "description": "Cháu nội vua Trần Nghệ Tông, được các tướng Đặng Dung, Nguyễn Cảnh Dị lập làm vua ở Nghệ An, tiếp tục kháng chiến chống quân Minh đến khi bị bắt năm 1414 — kết thúc nhà Hậu Trần.", "source_ids": ["s_dvsktt"]},
+    {"id": "tran_bo_co", "type": "event", "name": "Trận Bô Cô", "aliases": ["Bô Cô", "Bồ Cô"], "period_id": "p06_ho_thuocminh_lamson", "date": "1408", "description": "Trận đánh cuối năm 1408 ở bến Bô Cô bên sông Đáy (Nam Định): quân Hậu Trần do Giản Định Đế và Đặng Tất chỉ huy đánh bại quân Minh — chiến thắng lớn nhất của nhà Hậu Trần.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "lieu_thang", "type": "figure", "name": "Liễu Thăng", "period_id": "p06_ho_thuocminh_lamson", "date": "mất năm 1427", "description": "Tướng nhà Minh, năm 1427 dẫn đạo viện binh sang cứu quân Minh đang bị vây ở Đông Quan; bị nghĩa quân Lam Sơn phục kích và tử trận ở ải Chi Lăng.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "vuong_thong", "type": "figure", "name": "Vương Thông", "period_id": "p06_ho_thuocminh_lamson", "date": "mất năm 1452", "description": "Tổng binh quân Minh ở Đại Việt; thua trận Tốt Động – Chúc Động năm 1426, bị nghĩa quân Lam Sơn vây ở thành Đông Quan, cuối năm 1427 cam kết rút toàn bộ quân về nước tại Hội thề Đông Quan.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "hoi_the_dong_quan", "type": "event", "name": "Hội thề Đông Quan", "period_id": "p06_ho_thuocminh_lamson", "date": "ngày 10/12/1427", "description": "Lễ thề ngày 10/12/1427 bên ngoài thành Đông Quan (Thăng Long) giữa Lê Lợi và tổng binh Vương Thông: quân Minh cam kết rút hết về nước, phía Đại Việt bảo đảm cho họ ra đi yên ổn, khép lại hai mươi năm thuộc Minh.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "binh_ngo_dai_cao", "type": "organization", "name": "Bình Ngô đại cáo", "period_id": "p06_ho_thuocminh_lamson", "date": "1428", "description": "Bài cáo do Nguyễn Trãi thay lời Lê Lợi soạn đầu năm 1428, tuyên bố kết thúc thắng lợi cuộc kháng chiến chống quân Minh và khẳng định nền độc lập của Đại Việt; thường được gọi là bản tuyên ngôn độc lập thứ hai.", "source_ids": ["s_btr", "s_sgk"]},
+    {"id": "le_thai_tong", "type": "figure", "name": "Lê Thái Tông", "aliases": ["Lê Nguyên Long"], "period_id": "p07_leso", "date": "sinh năm 1423, mất năm 1442; trị vì 1433–1442", "description": "Vị vua thứ hai nhà Lê sơ, con Lê Thái Tổ, lên ngôi lúc 11 tuổi; năm 1442 chết đột ngột ở Lệ Chi Viên trên đường duyệt binh về, dẫn tới vụ án Lệ Chi Viên khiến Nguyễn Trãi bị tru di.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "le_nghi_dan", "type": "figure", "name": "Lê Nghi Dân", "aliases": ["Lạng Sơn vương", "Thiên Hưng Đế"], "period_id": "p07_leso", "date": "sinh năm 1439, mất năm 1460; ở ngôi 1459–1460", "description": "Con trưởng Lê Thái Tông, từng được lập làm thái tử rồi bị phế; cuối năm 1459 làm binh biến giết vua Lê Nhân Tông để tự lập, chưa đầy một năm sau bị các đại thần phế bỏ và đưa Lê Tư Thành (Lê Thánh Tông) lên ngôi.", "source_ids": ["s_dvsktt"]},
+    {"id": "dai_viet_su_ky_toan_thu", "type": "organization", "name": "Đại Việt sử ký toàn thư", "aliases": ["Toàn thư"], "period_id": "p07_leso", "date": "1479 (bản Ngô Sĩ Liên); khắc in năm 1697", "description": "Bộ chính sử do Ngô Sĩ Liên biên soạn năm 1479 dưới thời Lê Thánh Tông, dựa trên Đại Việt sử ký của Lê Văn Hưu và bộ sử của Phan Phu Tiên; về sau được bổ sung và khắc in năm 1697 (bản Chính Hòa), là bộ chính sử cổ nhất còn đầy đủ.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nguyen_kim", "type": "figure", "name": "Nguyễn Kim", "period_id": "p08_trinhnguyen", "date": "sinh năm 1468, mất năm 1545", "description": "Tướng cũ nhà Lê, quê Gia Miêu (Thanh Hóa); chạy sang Ai Lao chiêu tập lực lượng, năm 1533 tôn Lê Trang Tông lên ngôi, mở đầu nhà Lê trung hưng chống nhà Mạc. Ông là cha của Nguyễn Hoàng và cha vợ của Trịnh Kiểm.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"id": "nguyen_binh_khiem", "type": "figure", "name": "Nguyễn Bỉnh Khiêm", "aliases": ["Trạng Trình", "Bạch Vân am cư sĩ"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1491, mất năm 1585", "description": "Danh nho thời Nam – Bắc triều, đỗ Trạng nguyên năm 1535 và làm quan triều Mạc, được phong Trình Quốc công nên dân gian gọi là Trạng Trình; nổi tiếng về đạo đức, thơ văn và tài tiên tri.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "chien_tranh_trinh_nguyen", "type": "event", "name": "Chiến tranh Trịnh – Nguyễn", "aliases": ["Trịnh – Nguyễn phân tranh", "Trịnh Nguyễn phân tranh"], "period_id": "p08_trinhnguyen", "date": "1627–1672", "description": "Bảy lần giao tranh lớn giữa chúa Trịnh ở Đàng Ngoài và chúa Nguyễn ở Đàng Trong từ năm 1627 đến 1672; hai bên ngừng chiến, lấy sông Gianh làm ranh giới chia cắt đất nước hơn một trăm năm.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"id": "quang_binh", "type": "place", "name": "Quảng Bình", "period_id": "p08_trinhnguyen", "description": "Vùng đất Bắc Trung Bộ có sông Gianh và Lũy Thầy (Đồng Hới) — ranh giới và chiến tuyến giữa Đàng Ngoài và Đàng Trong thế kỷ XVII–XVIII; quê hương Đại tướng Võ Nguyên Giáp.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "chu_quoc_ngu", "type": "organization", "name": "Chữ Quốc ngữ", "aliases": ["Quốc ngữ"], "period_id": "p08_trinhnguyen", "date": "hình thành thế kỷ XVII", "description": "Chữ viết ghi âm tiếng Việt bằng chữ cái Latinh, do các giáo sĩ Dòng Tên cùng người Việt xây dựng ở thế kỷ XVII để truyền đạo; từ cuối thế kỷ XIX được đưa vào trường học, công báo và dần trở thành chữ viết chính thức của tiếng Việt.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "chinh_phu_ngam", "type": "organization", "name": "Chinh phụ ngâm", "aliases": ["Chinh phụ ngâm khúc"], "period_id": "p08_trinhnguyen", "date": "nửa đầu thế kỷ XVIII", "description": "Khúc ngâm viết bằng chữ Hán của Đặng Trần Côn, nói nỗi lòng người vợ có chồng ra trận; bản diễn Nôm song thất lục bát phổ biến nhất thường được ghi là của Đoàn Thị Điểm, nhưng có ý kiến cho là của Phan Huy Ích.", "note": "Người diễn Nôm còn tranh luận — xem claim c08.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "doan_thi_diem", "type": "figure", "name": "Đoàn Thị Điểm", "aliases": ["Hồng Hà nữ sĩ"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1705, mất năm 1748 hoặc 1749", "description": "Nữ sĩ thời Lê trung hưng, tác giả Truyền kỳ tân phả; theo truyền thống là người diễn Nôm Chinh phụ ngâm của Đặng Trần Côn.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "nguyen_huu_canh", "type": "figure", "name": "Nguyễn Hữu Cảnh", "aliases": ["Nguyễn Hữu Kính", "Lễ Thành hầu"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1650, mất năm 1700", "description": "Danh tướng thời chúa Nguyễn Phúc Chu; năm 1698 vào kinh lược đất Đồng Nai, lập phủ Gia Định, chia đặt xã thôn, lập sổ đinh, sổ điền — xác lập chủ quyền của chính quyền Đàng Trong ở vùng này.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "mac_cuu", "type": "figure", "name": "Mạc Cửu", "aliases": ["Mạc Kính Cửu"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1655, mất năm 1735", "description": "Thương gia người Hoa khai phá vùng đất Hà Tiên ven vịnh Thái Lan; năm 1708 xin đặt vùng đất này dưới quyền chúa Nguyễn và được giao cai quản.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "ha_tien", "type": "place", "name": "Hà Tiên", "period_id": "p08_trinhnguyen", "description": "Vùng đất ven vịnh Thái Lan do Mạc Cửu khai phá, thuộc quyền chúa Nguyễn từ năm 1708; dưới quyền họ Mạc hoạt động như một thương cảng gần như tự trị.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "nguyen_phuc_khoat", "type": "figure", "name": "Nguyễn Phúc Khoát", "aliases": ["Võ Vương", "Vũ Vương", "chúa Võ"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1714, mất năm 1765; ở ngôi 1738–1765", "description": "Chúa Nguyễn thứ tám ở Đàng Trong; năm 1744 xưng vương ở Phú Xuân, đổi phủ thành điện, định lại triều nghi và y phục; lãnh thổ Đàng Trong mở rộng tới vùng Cà Mau nhưng cuối đời chính sự suy đồi.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "nguyen_phuc_thuan", "type": "figure", "name": "Nguyễn Phúc Thuần", "aliases": ["Định Vương"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1754, mất năm 1777; ở ngôi 1765–1777", "description": "Chúa Nguyễn thứ chín, được quyền thần Trương Phúc Loan lập lên lúc 12 tuổi; mất Phú Xuân vào tay quân Trịnh, chạy vào Gia Định rồi bị quân Tây Sơn bắt giết năm 1777 — chấm dứt cơ nghiệp chúa Nguyễn.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "le_hien_tong", "type": "figure", "name": "Lê Hiển Tông", "aliases": ["Lê Duy Diêu", "vua Cảnh Hưng"], "period_id": "p08_trinhnguyen", "date": "sinh năm 1717, mất năm 1786; trị vì 1740–1786", "description": "Vua nhà Lê trung hưng, niên hiệu Cảnh Hưng, ở ngôi gần nửa thế kỷ trong khi chúa Trịnh nắm thực quyền; năm 1786 gả con gái là công chúa Ngọc Hân cho Nguyễn Huệ và mất ít lâu sau đó.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "xiem", "type": "organization", "name": "Xiêm La", "aliases": ["Xiêm", "quân Xiêm"], "period_id": "p09_tayson", "description": "Vương quốc ở phía tây (nay là Thái Lan); cuối năm 1784 đưa quân sang giúp Nguyễn Ánh đánh Tây Sơn, bị Nguyễn Huệ đánh tan trong trận Rạch Gầm – Xoài Mút đầu năm 1785.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "ton_si_nghi", "type": "figure", "name": "Tôn Sĩ Nghị", "period_id": "p09_tayson", "date": "sinh năm 1720, mất năm 1796", "description": "Tổng đốc Lưỡng Quảng nhà Thanh, cuối năm 1788 chỉ huy quân Thanh sang Đại Việt với danh nghĩa giúp Lê Chiêu Thống; bị vua Quang Trung đánh bại dịp Tết Kỷ Dậu (1789), phải bỏ chạy về nước.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "quoc_hieu_viet_nam", "type": "organization", "name": "Quốc hiệu Việt Nam", "period_id": "p10_nguyen", "date": "1804–1838", "description": "Quốc hiệu do vua Gia Long đặt năm 1804 sau khi được nhà Thanh chấp thuận (thay cho tên Nam Việt mà ông đề nghị); năm 1838 Minh Mạng đổi thành Đại Nam.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "quoc_hieu_dai_nam", "type": "organization", "name": "Quốc hiệu Đại Nam", "aliases": ["Đại Nam"], "period_id": "p10_nguyen", "date": "1838–1945", "description": "Quốc hiệu do vua Minh Mạng đặt năm 1838 thay cho Việt Nam, dùng trong văn bản chính thức của triều Nguyễn cho đến khi chế độ quân chủ chấm dứt.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "thieu_tri", "type": "figure", "name": "Thiệu Trị", "aliases": ["Nguyễn Phúc Miên Tông", "Hiến Tổ"], "period_id": "p10_nguyen", "date": "sinh năm 1807, mất năm 1847; trị vì 1841–1847", "description": "Vị vua thứ ba nhà Nguyễn, con trưởng Minh Mạng; về cơ bản duy trì các chính sách của vua cha.", "source_ids": ["s_vnsl"]},
+    {"id": "quoc_su_quan", "type": "organization", "name": "Quốc sử quán triều Nguyễn", "aliases": ["Quốc sử quán"], "period_id": "p10_nguyen", "date": "1821–1945", "description": "Cơ quan biên soạn quốc sử của triều Nguyễn do vua Minh Mạng lập năm 1821, soạn các bộ Đại Nam thực lục, Khâm định Việt sử thông giám cương mục cùng nhiều sách địa chí, điển lệ.", "source_ids": ["s_khamdinh", "s_vnsl"]},
+    {"id": "dai_nam_thuc_luc", "type": "organization", "name": "Đại Nam thực lục", "period_id": "p10_nguyen", "date": "biên soạn từ năm 1821", "description": "Bộ chính sử biên niên của triều Nguyễn do Quốc sử quán soạn, chép thời các chúa Nguyễn (Tiền biên) và các đời vua Nguyễn (Chính biên); nguồn tư liệu dày nhất về giai đoạn này nhưng mang quan điểm của triều đình.", "source_ids": ["s_khamdinh", "s_lsvn_vsh"]},
+    {"id": "le_van_khoi", "type": "figure", "name": "Lê Văn Khôi", "aliases": ["Nguyễn Hựu Khôi"], "period_id": "p10_nguyen", "date": "mất năm 1834", "description": "Con nuôi Tả quân Lê Văn Duyệt; năm 1833 cầm đầu cuộc nổi dậy chiếm thành Phiên An (Gia Định) chống triều Minh Mạng, mất trong thành năm 1834 trước khi thành bị hạ.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "khoi_nghia_le_van_khoi", "type": "event", "name": "Cuộc nổi dậy Lê Văn Khôi", "aliases": ["khởi nghĩa Lê Văn Khôi", "sự biến thành Phiên An"], "period_id": "p10_nguyen", "date": "1833–1835", "description": "Cuộc nổi dậy chống triều Minh Mạng do Lê Văn Khôi, con nuôi Lê Văn Duyệt, cầm đầu năm 1833, chiếm thành Phiên An (Gia Định) và nhiều tỉnh Nam Kỳ; triều đình vây gần ba năm mới hạ được thành năm 1835.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "kenh_vinh_te", "type": "place", "name": "Kênh Vĩnh Tế", "period_id": "p10_nguyen", "date": "đào 1819–1824", "description": "Kênh đào dài gần 90 km nối Châu Đốc với Hà Tiên dọc biên giới tây nam, khởi công năm 1819 thời Gia Long và hoàn thành năm 1824, huy động hàng vạn dân phu người Việt và người Khmer.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "phap", "type": "organization", "name": "Pháp", "aliases": ["thực dân Pháp", "nước Pháp", "quân Pháp"], "period_id": "p11_phapthuoc", "description": "Nước Pháp; năm 1858 liên quân Pháp – Tây Ban Nha nổ súng ở Đà Nẵng mở đầu cuộc xâm lược, đến năm 1884 đặt ách bảo hộ trên toàn cõi Việt Nam; sau năm 1945 quay lại tái chiếm và chấm dứt chiến tranh sau thất bại ở Điện Biên Phủ, Hiệp định Genève năm 1954.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "da_nang", "type": "place", "name": "Đà Nẵng", "aliases": ["Tourane"], "period_id": "p11_phapthuoc", "description": "Thành phố cảng miền Trung; ngày 1/9/1858 liên quân Pháp – Tây Ban Nha nổ súng tấn công Đà Nẵng, mở đầu cuộc xâm lược Việt Nam; cuối tháng 3/1975 được giải phóng trong cuộc Tổng tiến công mùa Xuân 1975.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "hoa_uoc_nham_tuat_1862", "type": "event", "name": "Hòa ước Nhâm Tuất", "aliases": ["Hoà ước Nhâm Tuất", "Hòa ước 1862", "Hiệp ước Nhâm Tuất"], "period_id": "p11_phapthuoc", "date": "ngày 5/6/1862", "description": "Hòa ước triều Nguyễn ký với Pháp và Tây Ban Nha ngày 5/6/1862 tại Sài Gòn: nhượng ba tỉnh miền Đông Nam Kỳ (Biên Hòa, Gia Định, Định Tường) và đảo Côn Lôn cho Pháp, bồi thường chiến phí, mở ba cửa biển cho tàu buôn.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "phan_thanh_gian", "type": "figure", "name": "Phan Thanh Giản", "period_id": "p11_phapthuoc", "date": "sinh năm 1796, mất năm 1867", "description": "Đại thần triều Nguyễn, tiến sĩ đầu tiên của Nam Kỳ (1826); làm chánh sứ ký Hòa ước Nhâm Tuất năm 1862; năm 1867 để mất ba tỉnh miền Tây Nam Kỳ, ông tuyệt thực mà chết. Vai trò của ông còn được đánh giá khác nhau.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "tran_nhat_tao", "type": "event", "name": "Trận Nhật Tảo", "aliases": ["đốt tàu Espérance"], "period_id": "p11_phapthuoc", "date": "ngày 10/12/1861", "description": "Ngày 10/12/1861, nghĩa quân do Nguyễn Trung Trực chỉ huy giả làm ghe buôn, áp sát rồi đốt cháy tàu chiến Espérance của Pháp trên sông Nhật Tảo.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "quan_co_den", "type": "organization", "name": "Quân Cờ Đen", "aliases": ["Hắc Kỳ quân", "Cờ Đen"], "period_id": "p11_phapthuoc", "description": "Lực lượng vũ trang người Hoa do Lưu Vĩnh Phúc cầm đầu, vốn là tàn quân nổi dậy bên Trung Quốc dạt sang vùng thượng du sông Hồng, được triều Nguyễn thu dụng; hai lần đánh thắng quân Pháp ở Cầu Giấy (1873 và 1883).", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "luu_vinh_phuc", "type": "figure", "name": "Lưu Vĩnh Phúc", "period_id": "p11_phapthuoc", "date": "sinh năm 1837, mất năm 1917", "description": "Thủ lĩnh quân Cờ Đen, người Hoa; được triều Nguyễn thu dụng để chống Pháp ở Bắc Kỳ, chỉ huy các trận Cầu Giấy năm 1873 và 1883; về sau trở về phục vụ nhà Thanh.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "tran_cau_giay_1873", "type": "event", "name": "Trận Cầu Giấy năm 1873", "aliases": ["trận Cầu Giấy lần thứ nhất"], "period_id": "p11_phapthuoc", "date": "ngày 21/12/1873", "description": "Ngày 21/12/1873 quân Cờ Đen của Lưu Vĩnh Phúc phối hợp với quân triều đình phục kích ở Cầu Giấy gần thành Hà Nội, giết chỉ huy Pháp Francis Garnier; sau đó triều Nguyễn vẫn ký Hòa ước Giáp Tuất (1874).", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "hoa_uoc_giap_tuat_1874", "type": "event", "name": "Hòa ước Giáp Tuất", "aliases": ["Hoà ước Giáp Tuất", "Hòa ước 1874", "Hiệp ước Giáp Tuất"], "period_id": "p11_phapthuoc", "date": "ngày 15/3/1874", "description": "Hòa ước triều Nguyễn ký với Pháp ngày 15/3/1874 để Pháp rút quân khỏi Bắc Kỳ: thừa nhận chủ quyền của Pháp trên toàn bộ sáu tỉnh Nam Kỳ, để ngoại giao lệ thuộc Pháp, mở sông Hồng và một số cửa biển cho Pháp buôn bán.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "ton_that_thuyet", "type": "figure", "name": "Tôn Thất Thuyết", "period_id": "p11_phapthuoc", "date": "sinh năm 1839, mất năm 1913", "description": "Phụ chính đại thần triều Nguyễn, thủ lĩnh phái chủ chiến; đêm 4 rạng 5/7/1885 cầm đầu cuộc tấn công quân Pháp ở kinh thành Huế, thất bại thì đưa vua Hàm Nghi ra Tân Sở (Quảng Trị) và nhân danh vua ban chiếu Cần Vương.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "phan_cong_kinh_thanh_hue_1885", "type": "event", "name": "Cuộc phản công ở kinh thành Huế năm 1885", "aliases": ["Sự biến kinh thành Huế 1885", "Kinh thành Huế thất thủ"], "period_id": "p11_phapthuoc", "date": "ngày 5/7/1885", "description": "Đêm 4 rạng sáng 5/7/1885, phái chủ chiến do Tôn Thất Thuyết cầm đầu tấn công đồn Mang Cá và tòa Khâm sứ Pháp ở Huế; cuộc tấn công thất bại, Tôn Thất Thuyết đưa vua Hàm Nghi rời kinh thành, mở đầu phong trào Cần Vương.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "khoi_nghia_huong_khe", "type": "event", "name": "Khởi nghĩa Hương Khê", "period_id": "p11_phapthuoc", "date": "1885–1896", "description": "Cuộc khởi nghĩa tiêu biểu và kéo dài nhất của phong trào Cần Vương, do Phan Đình Phùng lãnh đạo cùng Cao Thắng, địa bàn bốn tỉnh Thanh Hóa, Nghệ An, Hà Tĩnh, Quảng Bình; nghĩa quân tự chế được súng theo mẫu súng Pháp. Kết thúc năm 1896, sau khi Phan Đình Phùng mất.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "cao_thang", "type": "figure", "name": "Cao Thắng", "period_id": "p11_phapthuoc", "date": "sinh năm 1864, mất năm 1893", "description": "Chỉ huy tài giỏi của khởi nghĩa Hương Khê, trợ thủ đắc lực của Phan Đình Phùng; tổ chức chế tạo súng trường theo mẫu súng Pháp cho nghĩa quân; hy sinh năm 1893.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "ha_tinh", "type": "place", "name": "Hà Tĩnh", "period_id": "p11_phapthuoc", "description": "Vùng đất Bắc Trung Bộ, phía nam Nghệ An; địa bàn chính của khởi nghĩa Hương Khê (1885–1896) và một trong hai trung tâm của phong trào Xô viết Nghệ Tĩnh 1930–1931; quê hương Nguyễn Du, Phan Đình Phùng.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "phong_trao_duy_tan", "type": "event", "name": "Phong trào Duy Tân", "aliases": ["Cuộc vận động Duy Tân", "phong trào Duy Tân ở Trung Kỳ"], "period_id": "p11_phapthuoc", "date": "1906–1908", "description": "Cuộc vận động cải cách ở Trung Kỳ do Phan Châu Trinh phát động năm 1906, chủ trương bất bạo động: nâng cao dân trí, mở trường dạy chữ Quốc ngữ, lập hội buôn, cắt tóc ngắn, bỏ lối học khoa cử; bị thực dân Pháp đàn áp sau phong trào chống thuế năm 1908.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"id": "hoi_vn_cach_mang_thanh_nien", "type": "organization", "name": "Hội Việt Nam Cách mạng Thanh niên", "aliases": ["Việt Nam Thanh niên Cách mạng Đồng chí Hội", "Thanh niên Cách mạng Đồng chí Hội"], "period_id": "p11_phapthuoc", "date": "1925–1929", "description": "Tổ chức do Nguyễn Ái Quốc lập tháng 6/1925 ở Quảng Châu (Trung Quốc), mở các lớp huấn luyện chính trị cho thanh niên Việt Nam rồi đưa về nước hoạt động; tiền thân của các tổ chức cộng sản hợp nhất thành Đảng năm 1930.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"id": "khoi_nghia_bac_son", "type": "event", "name": "Khởi nghĩa Bắc Sơn", "period_id": "p11_phapthuoc", "date": "ngày 27/9/1940", "description": "Cuộc khởi nghĩa ngày 27/9/1940 ở châu Bắc Sơn (Lạng Sơn) do Đảng bộ Bắc Sơn lãnh đạo, tước vũ khí tàn quân Pháp rút chạy khi Nhật đánh Lạng Sơn; bị đàn áp nhưng đội du kích Bắc Sơn được giữ lại làm hạt nhân vũ trang đầu tiên.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"id": "khoi_nghia_nam_ky", "type": "event", "name": "Khởi nghĩa Nam Kỳ", "aliases": ["Nam Kỳ khởi nghĩa"], "period_id": "p11_phapthuoc", "date": "ngày 23/11/1940", "description": "Cuộc khởi nghĩa vũ trang đêm 22 rạng 23/11/1940 ở nhiều tỉnh Nam Kỳ do Xứ ủy Nam Kỳ chủ trương; bị thực dân Pháp đàn áp đẫm máu. Lá cờ đỏ sao vàng lần đầu xuất hiện trong cuộc khởi nghĩa này.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"id": "cao_bang", "type": "place", "name": "Cao Bằng", "period_id": "p11_phapthuoc", "description": "Tỉnh miền núi biên giới phía bắc; nơi họ Mạc giữ đất sau khi mất Thăng Long (1592–1677); nơi Nguyễn Ái Quốc về nước năm 1941 (Pác Bó), nơi thành lập Đội Việt Nam Tuyên truyền Giải phóng quân năm 1944 và là chiến trường chính của Chiến dịch Biên giới năm 1950.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "doi_vn_tuyen_truyen_giai_phong_quan", "type": "organization", "name": "Đội Việt Nam Tuyên truyền Giải phóng quân", "aliases": ["Việt Nam Tuyên truyền Giải phóng quân"], "period_id": "p11_phapthuoc", "date": "ngày 22/12/1944", "description": "Đội vũ trang 34 người thành lập ngày 22/12/1944 tại một khu rừng ở Cao Bằng theo chỉ thị của Hồ Chí Minh, do Võ Nguyên Giáp chỉ huy; thắng hai trận Phai Khắt, Nà Ngần ngay sau khi ra đời. Ngày thành lập được lấy làm ngày truyền thống của Quân đội Nhân dân Việt Nam.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "nhat_ban", "type": "organization", "name": "Nhật Bản", "aliases": ["phát xít Nhật", "quân Nhật"], "period_id": "p11_phapthuoc", "description": "Đế quốc Nhật Bản; tháng 9/1940 đưa quân vào Đông Dương, cùng Pháp cai trị Việt Nam; đêm 9/3/1945 đảo chính lật đổ Pháp; đầu hàng Đồng Minh ngày 15/8/1945, tạo thời cơ cho Cách mạng tháng Tám. Đầu thế kỷ XX là nơi Phan Bội Châu đưa thanh niên sang học trong phong trào Đông Du.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "nhat_dao_chinh_phap_1945", "type": "event", "name": "Nhật đảo chính Pháp", "aliases": ["đảo chính ngày 9/3/1945", "Nhật đảo chính Pháp ở Đông Dương"], "period_id": "p11_phapthuoc", "date": "ngày 9/3/1945", "description": "Đêm 9/3/1945 quân Nhật đồng loạt tấn công, tước vũ khí và bắt giữ bộ máy quân sự, hành chính của Pháp trên toàn Đông Dương, chấm dứt chế độ cai trị của Pháp; ba ngày sau Đảng ra chỉ thị \"Nhật – Pháp bắn nhau và hành động của chúng ta\".", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "de_quoc_viet_nam", "type": "organization", "name": "Đế quốc Việt Nam", "period_id": "p11_phapthuoc", "date": "tháng 3/1945 – tháng 8/1945", "description": "Chính thể thân Nhật do vua Bảo Đại tuyên bố độc lập sau khi Nhật đảo chính Pháp (3/1945), nội các do Trần Trọng Kim đứng đầu; chấm dứt khi Bảo Đại thoái vị ngày 30/8/1945.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "tran_trong_kim", "type": "figure", "name": "Trần Trọng Kim", "aliases": ["Lệ Thần"], "period_id": "p11_phapthuoc", "date": "sinh năm 1883, mất năm 1953", "description": "Học giả, nhà giáo, tác giả bộ Việt Nam sử lược (1920); năm 1945 làm Thủ tướng nội các Đế quốc Việt Nam dưới thời Bảo Đại.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"id": "tan_trao", "type": "place", "name": "Tân Trào", "period_id": "p11_phapthuoc", "description": "Xã thuộc Sơn Dương, Tuyên Quang; trung tâm Khu giải phóng Việt Bắc năm 1945, nơi họp Hội nghị toàn quốc của Đảng và Quốc dân Đại hội (16–17/8/1945) quyết định Tổng khởi nghĩa.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"id": "quoc_dan_dai_hoi_tan_trao", "type": "event", "name": "Quốc dân Đại hội Tân Trào", "period_id": "p11_phapthuoc", "date": "ngày 16/8/1945", "description": "Đại hội đại biểu các đoàn thể, dân tộc, tôn giáo trong Mặt trận Việt Minh họp ở đình Tân Trào ngày 16–17/8/1945: tán thành chủ trương Tổng khởi nghĩa, thông qua 10 chính sách của Việt Minh, bầu Ủy ban Dân tộc giải phóng do Hồ Chí Minh làm Chủ tịch, chọn cờ đỏ sao vàng làm quốc kỳ.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"id": "viet_nam_dan_chu_cong_hoa", "type": "organization", "name": "Việt Nam Dân chủ Cộng hòa", "aliases": ["VNDCCH", "nước Việt Nam Dân chủ Cộng hòa"], "period_id": "p12_hiendai", "date": "1945–1976", "description": "Nhà nước do Chủ tịch Hồ Chí Minh tuyên bố thành lập ngày 2/9/1945 tại Hà Nội; lãnh đạo kháng chiến chống Pháp và chống Mỹ; năm 1976 đổi tên thành Cộng hòa xã hội chủ nghĩa Việt Nam sau khi thống nhất.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "cong_hoa_xhcn_viet_nam", "type": "organization", "name": "Cộng hòa xã hội chủ nghĩa Việt Nam", "aliases": ["CHXHCN Việt Nam", "nước Cộng hòa xã hội chủ nghĩa Việt Nam"], "period_id": "p12_hiendai", "date": "từ ngày 2/7/1976", "description": "Tên nước Việt Nam thống nhất do Quốc hội khóa VI quyết định ngày 2/7/1976, thủ đô Hà Nội; cùng kỳ họp đổi tên Sài Gòn – Gia Định thành Thành phố Hồ Chí Minh.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "quan_doi_nhan_dan_viet_nam", "type": "organization", "name": "Quân đội Nhân dân Việt Nam", "aliases": ["QĐND Việt Nam", "Quân đội nhân dân"], "period_id": "p12_hiendai", "date": "thành lập 22/12/1944", "description": "Lực lượng vũ trang của Việt Nam Dân chủ Cộng hòa và nay là Cộng hòa xã hội chủ nghĩa Việt Nam; lấy ngày ra đời Đội Việt Nam Tuyên truyền Giải phóng quân (22/12/1944) làm ngày thành lập; Võ Nguyên Giáp là vị Tổng tư lệnh đầu tiên.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "hiep_dinh_so_bo_1946", "type": "event", "name": "Hiệp định Sơ bộ", "aliases": ["Hiệp định Sơ bộ 6/3/1946", "Hiệp định sơ bộ Pháp – Việt"], "period_id": "p12_hiendai", "date": "ngày 6/3/1946", "description": "Hiệp định ký ở Hà Nội ngày 6/3/1946 giữa Chủ tịch Hồ Chí Minh và đại diện Pháp Jean Sainteny: Pháp công nhận Việt Nam Dân chủ Cộng hòa là một quốc gia tự do có chính phủ, nghị viện, quân đội và tài chính riêng trong Liên hiệp Pháp; Việt Nam đồng ý cho quân Pháp ra Bắc thay quân Tưởng giải giáp quân Nhật.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"id": "hoi_nghi_fontainebleau_1946", "type": "event", "name": "Hội nghị Fontainebleau", "aliases": ["Hội nghị Phông-ten-nơ-blô"], "period_id": "p12_hiendai", "date": "tháng 7/1946 – tháng 9/1946", "description": "Cuộc đàm phán chính thức Việt – Pháp ở Fontainebleau (gần Paris) từ tháng 7 đến tháng 9/1946, đoàn Việt Nam do Phạm Văn Đồng dẫn đầu; không đạt kết quả vì bất đồng về quy chế Nam Kỳ, chỉ dẫn tới bản Tạm ước ngày 14/9/1946.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "chien_dich_viet_bac_1947", "type": "event", "name": "Chiến dịch Việt Bắc thu đông 1947", "aliases": ["Chiến dịch Việt Bắc", "Việt Bắc thu đông 1947"], "period_id": "p12_hiendai", "date": "tháng 10/1947 – tháng 12/1947", "description": "Cuộc phản công của quân dân Việt Nam Dân chủ Cộng hòa đánh bại cuộc hành quân lớn của Pháp lên Việt Bắc (tháng 10–12/1947) nhằm tiêu diệt cơ quan đầu não kháng chiến và bộ đội chủ lực, làm phá sản kế hoạch đánh nhanh thắng nhanh của Pháp.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "chien_dich_bien_gioi_1950", "type": "event", "name": "Chiến dịch Biên giới thu đông 1950", "aliases": ["Chiến dịch Biên giới", "Chiến dịch Lê Hồng Phong II"], "period_id": "p12_hiendai", "date": "tháng 9/1950 – tháng 10/1950", "description": "Chiến dịch do bộ đội chủ lực Việt Nam chủ động mở từ 16/9 đến 14/10/1950 đánh vào tuyến phòng thủ đường số 4 ở Cao Bằng – Lạng Sơn, mở đầu bằng trận Đông Khê; khai thông biên giới Việt – Trung, giành thế chủ động trên chiến trường chính Bắc Bộ.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "quoc_gia_viet_nam", "type": "organization", "name": "Quốc gia Việt Nam", "period_id": "p12_hiendai", "date": "1949–1955", "description": "Chính thể do Pháp và cựu hoàng Bảo Đại lập theo Hiệp định Élysée (3/1949), nằm trong Liên hiệp Pháp, Bảo Đại làm Quốc trưởng, thủ đô Sài Gòn; năm 1955 được thay bằng Việt Nam Cộng hòa sau cuộc trưng cầu dân ý do Thủ tướng Ngô Đình Diệm tổ chức.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "cai_cach_ruong_dat", "type": "event", "name": "Cải cách ruộng đất ở miền Bắc", "aliases": ["Cải cách ruộng đất"], "period_id": "p12_hiendai", "date": "1953–1956", "description": "Chương trình chia lại ruộng đất nông thôn miền Bắc do Đảng Lao động Việt Nam và Chính phủ Việt Nam Dân chủ Cộng hòa tiến hành (Luật Cải cách ruộng đất thông qua tháng 12/1953), lấy ruộng của địa chủ chia cho nông dân; mắc nhiều sai lầm nghiêm trọng, được sửa sai từ năm 1956, Trường Chinh thôi chức Tổng Bí thư.", "source_ids": ["s_vkd", "s_lsvn_vsh"]},
+    {"id": "dao_chinh_1963", "type": "event", "name": "Đảo chính năm 1963", "aliases": ["đảo chính 1/11/1963", "đảo chính lật đổ Ngô Đình Diệm"], "period_id": "p12_hiendai", "date": "ngày 1/11/1963", "description": "Cuộc đảo chính ngày 1/11/1963 của nhóm tướng lĩnh Quân lực Việt Nam Cộng hòa do Dương Văn Minh đứng đầu, được chính phủ Hoa Kỳ ủng hộ, lật đổ Tổng thống Ngô Đình Diệm; Diệm và em trai Ngô Đình Nhu bị giết ngày hôm sau.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "nguyen_van_thieu", "type": "figure", "name": "Nguyễn Văn Thiệu", "period_id": "p12_hiendai", "date": "sinh năm 1923, mất năm 2001", "description": "Tướng Quân lực Việt Nam Cộng hòa, tham gia cuộc đảo chính năm 1963; Tổng thống Việt Nam Cộng hòa từ năm 1967 đến khi từ chức ngày 21/4/1975, chín ngày trước khi chính quyền Sài Gòn sụp đổ.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "duong_truong_son", "type": "place", "name": "Đường Trường Sơn", "aliases": ["Đường Hồ Chí Minh", "đường mòn Hồ Chí Minh", "Đường 559"], "period_id": "p12_hiendai", "date": "1959–1975", "description": "Hệ thống đường vận tải chiến lược chạy dọc dãy Trường Sơn từ miền Bắc vào miền Nam, qua cả đất Lào và Campuchia, do Đoàn 559 của Quân đội Nhân dân Việt Nam mở từ tháng 5/1959 để chi viện người và vũ khí cho chiến trường miền Nam.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "quang_tri", "type": "place", "name": "Quảng Trị", "period_id": "p12_hiendai", "description": "Vùng đất Bắc Trung Bộ có sông Bến Hải — giới tuyến quân sự tạm thời (vĩ tuyến 17) theo Hiệp định Genève 1954; nơi có căn cứ Tân Sở của vua Hàm Nghi năm 1885 và là quê hương Lê Duẩn.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "chinh_phu_cach_mang_lam_thoi", "type": "organization", "name": "Chính phủ Cách mạng lâm thời Cộng hòa miền Nam Việt Nam", "aliases": ["Chính phủ Cách mạng lâm thời", "Cộng hòa miền Nam Việt Nam"], "period_id": "p12_hiendai", "date": "1969–1976", "description": "Chính phủ thành lập ngày 6/6/1969 trên cơ sở Mặt trận Dân tộc Giải phóng miền Nam Việt Nam và các lực lượng yêu nước ở miền Nam; một trong bốn bên ký Hiệp định Paris 1973; quản lý miền Nam sau ngày 30/4/1975 cho đến khi thống nhất nhà nước năm 1976.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "nguyen_thi_binh", "type": "figure", "name": "Nguyễn Thị Bình", "aliases": ["Nguyễn Thị Châu Sa"], "period_id": "p12_hiendai", "date": "sinh năm 1927", "description": "Nhà ngoại giao, trưởng đoàn Mặt trận Dân tộc Giải phóng rồi Chính phủ Cách mạng lâm thời tại Hội nghị Paris; người phụ nữ duy nhất ký Hiệp định Paris năm 1973; về sau là Phó Chủ tịch nước (1992–2002).", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "le_duc_tho", "type": "figure", "name": "Lê Đức Thọ", "aliases": ["Phan Đình Khải"], "period_id": "p12_hiendai", "date": "sinh năm 1911, mất năm 1990", "description": "Ủy viên Bộ Chính trị Đảng Lao động Việt Nam, trực tiếp phụ trách đoàn đàm phán với Hoa Kỳ về Hiệp định Paris; năm 1973 được trao giải Nobel Hòa bình cùng Henry Kissinger nhưng từ chối nhận.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "tong_tien_cong_xuan_1975", "type": "event", "name": "Tổng tiến công và nổi dậy mùa Xuân 1975", "aliases": ["Tổng tiến công mùa Xuân 1975", "Đại thắng mùa Xuân 1975"], "period_id": "p12_hiendai", "date": "tháng 3/1975 – tháng 4/1975", "description": "Cuộc tổng tiến công cuối cùng của kháng chiến chống Mỹ gồm ba chiến dịch: Tây Nguyên (mở đầu bằng trận Buôn Ma Thuột ngày 10/3/1975), Huế – Đà Nẵng (cuối tháng 3) và Chiến dịch Hồ Chí Minh, kết thúc ngày 30/4/1975.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "nguyen_van_linh", "type": "figure", "name": "Nguyễn Văn Linh", "aliases": ["Nguyễn Văn Cúc", "N.V.L."], "period_id": "p12_hiendai", "date": "sinh năm 1915, mất năm 1998", "description": "Tổng Bí thư Đảng Cộng sản Việt Nam (1986–1991), được bầu tại Đại hội VI tháng 12/1986 — đại hội khởi xướng công cuộc Đổi Mới; nổi tiếng với loạt bài \"Những việc cần làm ngay\" ký tên N.V.L.", "source_ids": ["s_vkd", "s_lsvn_vsh"]},
+    {"id": "lien_xo", "type": "organization", "name": "Liên Xô", "aliases": ["Liên bang Xô viết"], "period_id": "p12_hiendai", "date": "1922–1991", "description": "Liên bang Cộng hòa Xã hội chủ nghĩa Xô viết; công nhận Việt Nam Dân chủ Cộng hòa năm 1950, là nguồn viện trợ kinh tế, quân sự lớn cho Việt Nam; đồng chủ tịch Hội nghị Genève 1954.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "trung_quoc_cnh", "type": "organization", "name": "Cộng hòa Nhân dân Trung Hoa", "aliases": ["CHND Trung Hoa", "Trung Quốc"], "period_id": "p12_hiendai", "date": "từ 1949", "description": "Nhà nước thành lập năm 1949; tháng 1/1950 công nhận Việt Nam Dân chủ Cộng hòa, viện trợ vũ khí và cử cố vấn trong kháng chiến chống Pháp, viện trợ trong kháng chiến chống Mỹ; tháng 2/1979 đem quân tấn công các tỉnh biên giới phía bắc Việt Nam; hai nước bình thường hóa quan hệ năm 1991.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "khmer_do", "type": "organization", "name": "Khmer Đỏ", "aliases": ["Campuchia Dân chủ", "Khmer Rouge"], "period_id": "p12_hiendai", "date": "cầm quyền 1975–1979", "description": "Lực lượng cực tả do Pol Pot đứng đầu, cầm quyền ở Campuchia 1975–1979 (Campuchia Dân chủ); liên tục tấn công qua biên giới tây nam Việt Nam, gây nhiều vụ thảm sát như Ba Chúc (1978); bị lật đổ ngày 7/1/1979.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "chien_tranh_bien_gioi_tay_nam", "type": "event", "name": "Chiến tranh biên giới Tây Nam", "aliases": ["Chiến tranh biên giới Việt Nam – Campuchia"], "period_id": "p12_hiendai", "date": "1975–1979", "description": "Xung đột giữa Việt Nam và chính quyền Khmer Đỏ: các cuộc tấn công qua biên giới tây nam tăng dần từ năm 1975; cuối tháng 12/1978 quân đội Việt Nam tiến sang Campuchia, chế độ Khmer Đỏ sụp đổ ngày 7/1/1979; quân Việt Nam rút khỏi Campuchia năm 1989.", "note": "Mốc kết thúc được ghi khác nhau: 1979 (Khmer Đỏ bị lật đổ) hoặc 1989 (Việt Nam rút quân khỏi Campuchia).", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"id": "binh_thuong_hoa_viet_my", "type": "event", "name": "Bình thường hóa quan hệ Việt Nam – Hoa Kỳ", "aliases": ["bình thường hóa quan hệ Việt – Mỹ"], "period_id": "p12_hiendai", "date": "ngày 11/7/1995", "description": "Ngày 11/7/1995 Hoa Kỳ và Việt Nam tuyên bố bình thường hóa quan hệ ngoại giao, khép lại thời kỳ đối đầu sau chiến tranh.", "source_ids": ["s_lsvn_vsh"]},
+    {"id": "gia_nhap_wto_2007", "type": "event", "name": "Việt Nam gia nhập WTO", "aliases": ["WTO", "Tổ chức Thương mại Thế giới"], "period_id": "p12_hiendai", "date": "ngày 11/1/2007", "description": "Ngày 11/1/2007 Việt Nam trở thành thành viên thứ 150 của Tổ chức Thương mại Thế giới (WTO), dấu mốc hội nhập kinh tế quốc tế sau hai mươi năm Đổi Mới.", "source_ids": ["s_lsvn_vsh"]}
   ],
   "relations": [
     {
@@ -2032,14 +2743,6 @@
       ]
     },
     {
-      "head": "ba_trieu",
-      "relation": "opposed",
-      "tail": "nam_viet",
-      "source_ids": [
-        "s_dvsktt"
-      ]
-    },
-    {
       "head": "ly_nam_de",
       "relation": "founded",
       "tail": "van_xuan",
@@ -2059,14 +2762,6 @@
       "head": "duong_dinh_nghe",
       "relation": "succeeded",
       "tail": "khuc_thua_du",
-      "source_ids": [
-        "s_dvsktt"
-      ]
-    },
-    {
-      "head": "phung_hung",
-      "relation": "contemporary_with",
-      "tail": "mai_hac_de",
       "source_ids": [
         "s_dvsktt"
       ]
@@ -3076,6 +3771,7 @@
       "head": "ly_thuong_kiet",
       "relation": "authored",
       "tail": "nam_quoc_son_ha",
+      "note": "Theo truyền thống; các bản chép cổ không ghi tên tác giả — xem claim c07.",
       "source_ids": [
         "s_dvsktt"
       ]
@@ -3371,7 +4067,485 @@
     {"head": "tran_khanh_du", "relation": "child_of", "tail": "tran_canh_thai_tong", "note": "Con nuôi, không phải con ruột — Trần Khánh Dư được Trần Thái Tông nhận làm dưỡng tử.", "source_ids": ["s_wikidata"]},
 
     {"head": "minh_menh", "relation": "child_of", "tail": "gia_long", "note": "Bị bỏ sót ở lượt thêm quan hệ trước — tool phát hiện lại và bổ sung.", "source_ids": ["s_wikidata"]},
-    {"head": "le_duan", "relation": "served", "tail": "dang_cong_san_vn", "source_ids": ["s_wikidata"]}
+    {"head": "le_duan", "relation": "served", "tail": "dang_cong_san_vn", "source_ids": ["s_wikidata"]},
+    {"head": "to_dinh", "relation": "served", "tail": "nha_han", "source_ids": ["s_dvsktt"]},
+    {"head": "ma_vien", "relation": "served", "tail": "nha_han", "source_ids": ["s_dvsktt"]},
+    {"head": "hai_ba_trung", "relation": "opposed", "tail": "nha_han", "note": "Khởi nghĩa năm 40, đánh đuổi Thái thú Tô Định.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_dai_hanh", "relation": "defeated", "tail": "nha_tong", "note": "Kháng chiến chống Tống năm 981.", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thuong_kiet", "relation": "defeated", "tail": "nha_tong", "note": "Kháng chiến chống Tống 1075–1077, trận phòng tuyến sông Như Nguyệt.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_minh", "relation": "conquered", "tail": "nha_ho", "note": "Quân Minh xâm lược năm 1406–1407, bắt cha con Hồ Quý Ly.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_loi", "relation": "defeated", "tail": "nha_minh", "note": "Khởi nghĩa Lam Sơn kết thúc thắng lợi năm 1427.", "source_ids": ["s_dvsktt", "s_btr"]},
+    {"head": "duong_dinh_nghe", "relation": "defeated", "tail": "nam_han", "note": "Năm 931.", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_quyen", "relation": "defeated", "tail": "nam_han", "note": "Trên sông Bạch Đằng năm 938.", "source_ids": ["s_dvsktt"]},
+    {"head": "nam_han", "relation": "participated_in", "tail": "tran_bach_dang_938", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thanh_tong", "relation": "defeated", "tail": "chiem_thanh", "note": "Năm 1471 đánh chiếm kinh đô Đồ Bàn (Vijaya).", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thanh_tong", "relation": "founded", "tail": "hoi_tao_dan", "note": "Năm 1495.", "source_ids": ["s_dvsktt"]},
+    {"head": "hoa_ky", "relation": "participated_in", "tail": "khang_chien_chong_my", "note": "Là phía đối địch, trực tiếp đưa quân chiến đấu từ năm 1965 đến năm 1973.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "hoa_ky", "relation": "participated_in", "tail": "hiep_dinh_paris_1973", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "hoa_ky", "relation": "participated_in", "tail": "su_kien_vinh_bac_bo", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "khoi_nghia_lam_son", "relation": "occurred_at", "tail": "thanh_hoa", "note": "Dấy binh ở Lam Sơn năm 1418.", "source_ids": ["s_dvsktt"]},
+    {"head": "khoi_nghia_lam_son", "relation": "occurred_at", "tail": "nghe_an", "note": "Chuyển vào Nghệ An năm 1424 theo kế của Nguyễn Chích.", "source_ids": ["s_dvsktt"]},
+    {"head": "xo_viet_nghe_tinh", "relation": "occurred_at", "tail": "nghe_an", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nha_ho", "relation": "capital_at", "tail": "thanh_hoa", "note": "Thành Tây Đô, xây năm 1397.", "source_ids": ["s_dvsktt"]},
+    {"head": "khoi_nghia_tay_son", "relation": "occurred_at", "tail": "quy_nhon", "note": "Ấp Tây Sơn, phủ Quy Nhơn, năm 1771.", "source_ids": ["s_khamdinh"]},
+    {"head": "viet_nam_cong_hoa", "relation": "capital_at", "tail": "sai_gon", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "giai_phong_mien_nam_1975", "relation": "occurred_at", "tail": "sai_gon", "note": "Ngày 30/4/1975.", "source_ids": ["s_sgk"]},
+    {"head": "den_hung", "relation": "worships", "tail": "hung_vuong", "source_ids": ["s_btlsqg"]},
+    {"head": "my_chau", "relation": "child_of", "tail": "an_duong_vuong", "source_ids": ["s_dvsktt"]},
+    {"head": "lac_long_quan", "relation": "child_of", "tail": "kinh_duong_vuong", "note": "Huyền sử.", "source_ids": ["s_dvsktt"]},
+    {"head": "au_lac", "relation": "followed", "tail": "van_lang", "source_ids": ["s_dvsktt"]},
+    {"head": "au_lac", "relation": "capital_at", "tail": "thanh_co_loa", "source_ids": ["s_dvsktt", "s_btlsqg"]},
+    {"head": "nha_han", "relation": "conquered", "tail": "nam_viet", "note": "Năm 111 TCN, mở đầu thời kỳ các quận huyện nhà Hán.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "khoi_nghia_hai_ba_trung", "relation": "opposed", "tail": "nha_han", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "le_chan", "relation": "served", "tail": "hai_ba_trung", "note": "Nữ tướng của Hai Bà Trưng, theo thần tích và truyền thuyết địa phương.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "trieu_quang_phuc", "relation": "served", "tail": "van_xuan", "note": "Kế tục Lý Nam Đế, xưng Triệu Việt Vương năm 548.", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_phat_tu", "relation": "served", "tail": "van_xuan", "note": "Hậu Lý Nam Đế, giữ nước Vạn Xuân đến năm 602.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_duong", "relation": "followed", "tail": "nha_tuy", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "phung_hung", "relation": "controlled", "tail": "an_nam_do_ho_phu", "note": "Có một thời gian làm chủ phủ thành Tống Bình cuối thế kỷ 8.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "an_nam_do_ho_phu", "relation": "capital_at", "tail": "thang_long", "note": "Trị sở Tống Bình, sau là thành Đại La — nơi về sau thành Thăng Long.", "source_ids": ["s_dvsktt"]},
+    {"head": "khuc_hao", "relation": "child_of", "tail": "khuc_thua_du", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_quyen", "relation": "served", "tail": "duong_dinh_nghe", "note": "Con rể Dương Đình Nghệ, được giao trấn giữ Ái Châu.", "source_ids": ["s_dvsktt"]},
+    {"head": "duong_dinh_nghe", "relation": "native_of", "tail": "thanh_hoa", "note": "Người Ái Châu.", "source_ids": ["s_dvsktt"]},
+    {"head": "dinh_bo_linh", "relation": "native_of", "tail": "hoa_lu", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "dinh_lien", "relation": "child_of", "tail": "dinh_bo_linh", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_tong", "relation": "participated_in", "tail": "tong_xam_luoc_981", "note": "Là phía xâm lược.", "source_ids": ["s_dvsktt"]},
+    {"head": "tong_xam_luoc_981", "relation": "occurred_at", "tail": "song_bach_dang", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_thai_tong", "relation": "child_of", "tail": "ly_thai_to", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thai_tong", "relation": "served", "tail": "nha_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thai_tong", "relation": "built", "tail": "chua_mot_cot", "note": "Năm 1049.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_ly", "relation": "capital_at", "tail": "thang_long", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_nhan_tong", "relation": "developed", "tail": "van_mieu", "note": "Năm 1076 lập Quốc Tử Giám.", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_nhan_tong", "relation": "ruled_during", "tail": "khang_chien_chong_tong_1075_1077", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_chieu_hoang", "relation": "served", "tail": "nha_ly", "note": "Vị vua cuối cùng nhà Lý (1224–1225).", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_canh_thai_tong", "relation": "succeeded", "tail": "ly_chieu_hoang", "note": "Được Lý Chiêu Hoàng nhường ngôi cuối năm 1225.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thanh_tong", "relation": "child_of", "tail": "tran_canh_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thanh_tong", "relation": "succeeded", "tail": "tran_canh_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thanh_tong", "relation": "led", "tail": "hoi_nghi_dien_hong", "note": "Thượng hoàng Trần Thánh Tông triệu tập các bô lão ở điện Diên Hồng năm 1284.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_nhan_tong", "relation": "succeeded", "tail": "tran_thanh_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_nhan_tong", "relation": "served", "tail": "nha_tran", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thu_do", "relation": "served", "tail": "nha_tran", "note": "Thái sư, người nắm quyền những năm đầu nhà Trần.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thu_do", "relation": "participated_in", "tail": "khang_chien_mong_nguyen", "note": "Cuộc kháng chiến lần thứ nhất năm 1258.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_tran", "relation": "capital_at", "tail": "thang_long", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_hung_dao", "relation": "led", "tail": "tran_bach_dang_1288", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "tran_quoc_toan", "relation": "served", "tail": "nha_tran", "source_ids": ["s_dvsktt"]},
+    {"head": "ho_quy_ly", "relation": "served", "tail": "nha_tran", "note": "Làm quan rồi nắm quyền Phụ chính cuối thời Trần trước khi lập nhà Hồ.", "source_ids": ["s_dvsktt"]},
+    {"head": "ho_han_thuong", "relation": "succeeded", "tail": "ho_quy_ly", "note": "Năm 1401.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_minh", "relation": "participated_in", "tail": "tran_tot_dong_chuc_dong", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_minh", "relation": "participated_in", "tail": "tran_chi_lang_xuong_giang", "source_ids": ["s_dvsktt"]},
+    {"head": "le_loi", "relation": "native_of", "tail": "thanh_hoa", "note": "Hương Lam Sơn.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nguyen_trai", "relation": "served", "tail": "nha_le_so", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_le_so", "relation": "capital_at", "tail": "thang_long", "note": "Thăng Long thời này gọi là Đông Kinh.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thanh_tong", "relation": "developed", "tail": "van_mieu", "note": "Từ năm 1484 cho dựng bia tiến sĩ ở Văn Miếu.", "source_ids": ["s_dvsktt", "s_btlsqg"]},
+    {"head": "hoang_viet_luat_le", "relation": "followed", "tail": "luat_hong_duc", "note": "Thay Quốc triều hình luật làm bộ luật chung của cả nước.", "source_ids": ["s_vnsl"]},
+    {"head": "mac_dang_dung", "relation": "served", "tail": "nha_le_so", "note": "Võ quan nhà Lê sơ trước khi cướp ngôi.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_mac", "relation": "succeeded", "tail": "nha_le_so", "note": "Mạc Đăng Dung phế Lê lập Mạc năm 1527.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_mac", "relation": "capital_at", "tail": "thang_long", "note": "Đến năm 1592.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_trung_hung", "relation": "capital_at", "tail": "thanh_hoa", "note": "Hành tại ở Thanh Hóa trước khi lấy lại Thăng Long năm 1592.", "source_ids": ["s_dvsktt"]},
+    {"head": "trinh_kiem", "relation": "native_of", "tail": "thanh_hoa", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_hoang", "relation": "native_of", "tail": "thanh_hoa", "note": "Gia Miêu, Tống Sơn.", "source_ids": ["s_dvsktt"]},
+    {"head": "chua_nguyen", "relation": "capital_at", "tail": "hue", "note": "Phú Xuân là thủ phủ Đàng Trong từ năm 1687.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chua_nguyen", "relation": "led", "tail": "nam_tien", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chua_nguyen", "relation": "conquered", "tail": "chiem_thanh", "note": "Năm 1693 chiếm phần đất cuối cùng còn lại của Chiêm Thành (vùng Ninh Thuận – Bình Thuận ngày nay).", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_nhac", "relation": "native_of", "tail": "quy_nhon", "note": "Ấp Tây Sơn.", "source_ids": ["s_khamdinh", "s_sgk"]},
+    {"head": "nguyen_hue", "relation": "native_of", "tail": "quy_nhon", "note": "Ấp Tây Sơn.", "source_ids": ["s_khamdinh", "s_sgk"]},
+    {"head": "nguyen_lu", "relation": "native_of", "tail": "quy_nhon", "note": "Ấp Tây Sơn.", "source_ids": ["s_khamdinh", "s_sgk"]},
+    {"head": "nguyen_nhac", "relation": "sibling_of", "tail": "nguyen_hue", "note": "Anh cả trong ba anh em Tây Sơn.", "source_ids": ["s_khamdinh", "s_sgk"]},
+    {"head": "nguyen_nhac", "relation": "sibling_of", "tail": "nguyen_lu", "source_ids": ["s_khamdinh", "s_sgk"]},
+    {"head": "nguyen_hue", "relation": "sibling_of", "tail": "nguyen_lu", "source_ids": ["s_khamdinh", "s_sgk"]},
+    {"head": "nguyen_nhac", "relation": "controlled", "tail": "quy_nhon", "note": "Hạ thành Quy Nhơn năm 1773, về sau đóng đô ở đây.", "source_ids": ["s_khamdinh"]},
+    {"head": "nguyen_hue", "relation": "defeated", "tail": "nha_thanh", "note": "Đại phá quân Thanh dịp Tết Kỷ Dậu (1789).", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nguyen_hue", "relation": "defeated", "tail": "chua_trinh", "note": "Năm 1786 ra Bắc, lật đổ chúa Trịnh.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_hue", "relation": "capital_at", "tail": "hue", "note": "Đóng ở Phú Xuân.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nha_thanh", "relation": "participated_in", "tail": "tran_ngoc_hoi_dong_da", "note": "Là phía xâm lược.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "tran_ngoc_hoi_dong_da", "relation": "occurred_at", "tail": "thang_long", "note": "Các đồn Ngọc Hồi, Đống Đa ở cửa ngõ phía nam kinh thành.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "ngo_thi_nham", "relation": "served", "tail": "chua_trinh", "note": "Làm quan thời chúa Trịnh Sâm trước khi theo Tây Sơn.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chieu_thong", "relation": "served", "tail": "le_trung_hung", "note": "Vị vua cuối cùng nhà Lê trung hưng.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "minh_menh", "relation": "succeeded", "tail": "gia_long", "source_ids": ["s_vnsl"]},
+    {"head": "le_van_duyet", "relation": "served", "tail": "nha_nguyen", "source_ids": ["s_vnsl"]},
+    {"head": "le_van_duyet", "relation": "controlled", "tail": "sai_gon", "note": "Tổng trấn Gia Định thành (1812–1815, 1820–1832).", "source_ids": ["s_vnsl"]},
+    {"head": "nguyen_cong_tru", "relation": "served", "tail": "minh_menh", "note": "Doanh điền sứ, khai hoang lập huyện Tiền Hải, Kim Sơn.", "source_ids": ["s_vnsl"]},
+    {"head": "ham_nghi", "relation": "served", "tail": "nha_nguyen", "source_ids": ["s_vnsl"]},
+    {"head": "hoang_hoa_tham", "relation": "contemporary_with", "tail": "phan_boi_chau", "note": "Nghĩa quân Yên Thế có liên lạc với nhóm của Phan Bội Châu trong thời gian hòa hoãn đầu thế kỷ XX.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "phan_boi_chau", "relation": "native_of", "tail": "nghe_an", "note": "Nam Đàn.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "native_of", "tail": "nghe_an", "note": "Nam Đàn.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "founded", "tail": "mat_tran_viet_minh", "note": "Hội nghị Trung ương 8 tại Pác Bó do Nguyễn Ái Quốc chủ trì, tháng 5/1941.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "authored", "tail": "tuyen_ngon_doc_lap", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "initiated", "tail": "toan_quoc_khang_chien_1946", "note": "Ra Lời kêu gọi toàn quốc kháng chiến đêm 19/12/1946.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "tuyen_ngon_doc_lap", "relation": "occurred_at", "tail": "ha_noi", "note": "Quảng trường Ba Đình.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "toan_quoc_khang_chien_1946", "relation": "occurred_at", "tail": "ha_noi", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "cach_mang_thang_tam", "relation": "occurred_at", "tail": "ha_noi", "note": "Ngày 19/8/1945.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "cach_mang_thang_tam", "relation": "occurred_at", "tail": "hue", "note": "Ngày 23/8/1945.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "cach_mang_thang_tam", "relation": "occurred_at", "tail": "sai_gon", "note": "Ngày 25/8/1945.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "le_duan", "relation": "led", "tail": "dang_cong_san_vn", "note": "Bí thư thứ nhất rồi Tổng Bí thư, 1960–1986.", "source_ids": ["s_vkd"]},
+    {"head": "truong_chinh", "relation": "led", "tail": "dang_cong_san_vn", "note": "Tổng Bí thư 1941–1956 và năm 1986.", "source_ids": ["s_vkd"]},
+    {"head": "truong_chinh", "relation": "participated_in", "tail": "doi_moi_1986", "note": "Tổng Bí thư chuẩn bị Đại hội VI (12/1986).", "source_ids": ["s_vkd"]},
+    {"head": "pham_van_dong", "relation": "participated_in", "tail": "hiep_dinh_geneva_1954", "note": "Trưởng đoàn Việt Nam Dân chủ Cộng hòa.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "ngo_dinh_diem", "relation": "opposed", "tail": "bao_dai", "note": "Truất phế Bảo Đại qua cuộc trưng cầu dân ý năm 1955.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "viet_nam_cong_hoa", "relation": "border_at", "tail": "song_ben_hai", "note": "Giới tuyến quân sự tạm thời ở vĩ tuyến 17.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "hoa_ky", "relation": "allied_with", "tail": "viet_nam_cong_hoa", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "viet_nam_cong_hoa", "relation": "participated_in", "tail": "hiep_dinh_paris_1973", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "mat_tran_dan_toc_giai_phong_mien_nam_viet_nam", "relation": "participated_in", "tail": "tong_tien_cong_tet_mau_than_1968", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "tong_tien_cong_tet_mau_than_1968", "relation": "occurred_at", "tail": "hue", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "tong_tien_cong_tet_mau_than_1968", "relation": "occurred_at", "tail": "sai_gon", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "dien_bien_phu_tren_khong", "relation": "occurred_at", "tail": "ha_noi", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "hoa_ky", "relation": "participated_in", "tail": "dien_bien_phu_tren_khong", "note": "Là phía tiến hành các cuộc ném bom.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chien_dich_ho_chi_minh", "relation": "occurred_at", "tail": "sai_gon", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "dang_cong_san_vn", "relation": "initiated", "tail": "phong_trao_dong_khoi", "note": "Nghị quyết Hội nghị Trung ương 15 (1/1959).", "source_ids": ["s_vkd"]},
+    {"head": "bui_thi_xuan", "relation": "native_of", "tail": "quy_nhon", "note": "Vùng Tây Sơn.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chu_van_an", "relation": "native_of", "tail": "ha_noi", "note": "Làng Quang Liệt, huyện Thanh Đàm (nay là Thanh Trì, Hà Nội).", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "le_lai", "relation": "served", "tail": "le_loi", "note": "Năm 1419 mặc áo chủ tướng xông ra nhận là Lê Lợi, hy sinh để cứu chúa.", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_chich", "relation": "served", "tail": "nha_le_so", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_nguyen_han", "relation": "served", "tail": "nha_le_so", "note": "Công thần khai quốc, bị nghi kỵ và mất năm 1429.", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_chich", "relation": "native_of", "tail": "thanh_hoa", "note": "Huyện Đông Sơn.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "tran_nguyen_han", "relation": "participated_in", "tail": "tran_chi_lang_xuong_giang", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_canh_thai_tong", "relation": "native_of", "tail": "nam_dinh", "note": "Hương Tức Mặc, quê gốc họ Trần.", "source_ids": ["s_dvsktt"]},
+    {"head": "luong_the_vinh", "relation": "native_of", "tail": "nam_dinh", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "ly_thanh_tong", "relation": "defeated", "tail": "chiem_thanh", "note": "Năm 1069 thân chinh, bắt được vua Chiêm Chế Củ.", "source_ids": ["s_dvsktt"]},
+    {"head": "song_gianh", "relation": "part_of", "tail": "quang_binh", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "luy_thay", "relation": "part_of", "tail": "quang_binh", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_du", "relation": "native_of", "tail": "ha_tinh", "note": "Làng Tiên Điền, Nghi Xuân.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "phan_dinh_phung", "relation": "native_of", "tail": "ha_tinh", "source_ids": ["s_vnsl"]},
+    {"head": "mat_tran_viet_minh", "relation": "opposed", "tail": "nhat_ban", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "mat_tran_viet_minh", "relation": "opposed", "tail": "phap", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "vo_nguyen_giap", "relation": "native_of", "tail": "quang_binh", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "le_duan", "relation": "native_of", "tail": "quang_tri", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "truong_chinh", "relation": "native_of", "tail": "nam_dinh", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "bao_dai", "relation": "declared", "tail": "de_quoc_viet_nam", "note": "Tháng 3/1945, sau khi Nhật đảo chính Pháp.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "song_ben_hai", "relation": "part_of", "tail": "quang_tri", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "trong_thuy", "relation": "child_of", "tail": "trieu_da", "note": "Truyền thuyết.", "source_ids": ["s_dvsktt"]},
+    {"head": "my_chau", "relation": "married", "tail": "trong_thuy", "note": "Truyền thuyết.", "source_ids": ["s_dvsktt"]},
+    {"head": "thi_sach", "relation": "married", "tail": "hai_ba_trung", "note": "Chồng Trưng Trắc.", "source_ids": ["s_dvsktt"]},
+    {"head": "thi_sach", "relation": "contemporary_with", "tail": "to_dinh", "note": "Theo Toàn thư, ông bị Tô Định giết.", "source_ids": ["s_dvsktt"]},
+    {"head": "khoi_nghia_hai_ba_trung", "relation": "occurred_at", "tail": "me_linh", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "hai_ba_trung", "relation": "native_of", "tail": "me_linh", "note": "Dòng dõi lạc tướng Mê Linh.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "hai_ba_trung", "relation": "capital_at", "tail": "me_linh", "note": "Trưng Trắc xưng vương, đóng đô ở Mê Linh.", "source_ids": ["s_dvsktt"]},
+    {"head": "ba_trieu", "relation": "opposed", "tail": "nha_dong_ngo", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_dong_ngo", "relation": "followed", "tail": "nha_han", "note": "Thời Tam Quốc sau khi nhà Hán sụp đổ.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "ba_trieu", "relation": "led", "tail": "khoi_nghia_ba_trieu", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "khoi_nghia_ba_trieu", "relation": "opposed", "tail": "nha_dong_ngo", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "khoi_nghia_ba_trieu", "relation": "occurred_at", "tail": "thanh_hoa", "note": "Quận Cửu Chân, vùng núi phía tây Thanh Hóa.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ba_trieu", "relation": "native_of", "tail": "thanh_hoa", "note": "Quận Cửu Chân.", "source_ids": ["s_sgk"]},
+    {"head": "ly_nam_de", "relation": "opposed", "tail": "nha_luong", "note": "Khởi nghĩa năm 542.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "trieu_quang_phuc", "relation": "opposed", "tail": "nha_luong", "note": "Kháng chiến ở đầm Dạ Trạch.", "source_ids": ["s_dvsktt"]},
+    {"head": "mai_hac_de", "relation": "led", "tail": "khoi_nghia_mai_thuc_loan", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "khoi_nghia_mai_thuc_loan", "relation": "opposed", "tail": "nha_duong", "source_ids": ["s_dvsktt"]},
+    {"head": "khoi_nghia_mai_thuc_loan", "relation": "occurred_at", "tail": "nghe_an", "note": "Vùng Hoan Châu, căn cứ thành Vạn An.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "kieu_cong_tien", "relation": "served", "tail": "duong_dinh_nghe", "note": "Nha tướng, về sau giết Dương Đình Nghệ năm 937.", "source_ids": ["s_dvsktt"]},
+    {"head": "kieu_cong_tien", "relation": "allied_with", "tail": "nam_han", "note": "Cầu viện Nam Hán chống Ngô Quyền.", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_quyen", "relation": "defeated", "tail": "kieu_cong_tien", "note": "Năm 938, trước trận Bạch Đằng.", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_quyen", "relation": "founded", "tail": "nha_ngo", "note": "Xưng vương năm 939.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_ngo", "relation": "capital_at", "tail": "thanh_co_loa", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ngo_xuong_van", "relation": "served", "tail": "nha_ngo", "source_ids": ["s_dvsktt"]},
+    {"head": "loan_12_su_quan", "relation": "followed", "tail": "nha_ngo", "note": "Sau khi Ngô Xương Văn tử trận năm 965.", "source_ids": ["s_dvsktt"]},
+    {"head": "duong_van_nga", "relation": "married", "tail": "dinh_bo_linh", "source_ids": ["s_dvsktt"]},
+    {"head": "duong_van_nga", "relation": "married", "tail": "le_dai_hanh", "note": "Trở thành hoàng hậu của Lê Đại Hành sau năm 980.", "source_ids": ["s_dvsktt"]},
+    {"head": "dinh_toan", "relation": "child_of", "tail": "dinh_bo_linh", "source_ids": ["s_dvsktt"]},
+    {"head": "dinh_toan", "relation": "child_of", "tail": "duong_van_nga", "source_ids": ["s_dvsktt"]},
+    {"head": "dinh_toan", "relation": "succeeded", "tail": "dinh_bo_linh", "note": "Năm 979.", "source_ids": ["s_dvsktt"]},
+    {"head": "dinh_toan", "relation": "served", "tail": "nha_dinh", "source_ids": ["s_dvsktt"]},
+    {"head": "van_hanh", "relation": "served", "tail": "le_dai_hanh", "note": "Cố vấn của vua Lê Đại Hành.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "van_hanh", "relation": "contemporary_with", "tail": "ly_thai_to", "note": "Thầy dạy và người ủng hộ Lý Công Uẩn lên ngôi.", "source_ids": ["s_dvsktt"]},
+    {"head": "tong_xam_luoc_981", "relation": "occurred_at", "tail": "chi_lang", "note": "Cánh quân bộ nhà Tống bị đánh ở vùng ải Chi Lăng.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_chi_lang_xuong_giang", "relation": "occurred_at", "tail": "chi_lang", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_thanh_tong", "relation": "child_of", "tail": "ly_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thanh_tong", "relation": "succeeded", "tail": "ly_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thanh_tong", "relation": "served", "tail": "nha_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_thanh_tong", "relation": "declared", "tail": "quoc_hieu_dai_viet", "note": "Năm 1054.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_thanh_tong", "relation": "founded", "tail": "van_mieu", "note": "Năm 1070 dựng Văn Miếu.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nguyen_phi_y_lan", "relation": "married", "tail": "ly_thanh_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_nhan_tong", "relation": "child_of", "tail": "ly_thanh_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_nhan_tong", "relation": "succeeded", "tail": "ly_thanh_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "quoc_hieu_dai_viet", "relation": "renamed_from", "tail": "dai_co_viet", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_than_tong", "relation": "succeeded", "tail": "ly_nhan_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_than_tong", "relation": "served", "tail": "nha_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_anh_tong", "relation": "child_of", "tail": "ly_than_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_anh_tong", "relation": "succeeded", "tail": "ly_than_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_hue_tong", "relation": "served", "tail": "nha_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_chieu_hoang", "relation": "child_of", "tail": "ly_hue_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "ly_chieu_hoang", "relation": "succeeded", "tail": "ly_hue_tong", "note": "Năm 1224.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_thu_do", "relation": "opposed", "tail": "ly_hue_tong", "note": "Năm 1226 bức Lý Huệ Tông tự tử.", "source_ids": ["s_dvsktt"]},
+    {"head": "chua_thay", "relation": "worships", "tail": "tu_dao_hanh", "source_ids": ["s_btlsqg", "s_lsvn_vsh"]},
+    {"head": "nha_ly", "relation": "built", "tail": "chua_thay", "note": "Chùa được dựng từ thời Lý.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "tran_ung_chau", "relation": "part_of", "tail": "khang_chien_chong_tong_1075_1077", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_thuong_kiet", "relation": "led", "tail": "tran_ung_chau", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_tong", "relation": "participated_in", "tail": "tran_ung_chau", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_nhu_nguyet", "relation": "part_of", "tail": "khang_chien_chong_tong_1075_1077", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "tran_nhu_nguyet", "relation": "occurred_at", "tail": "song_nhu_nguyet", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "ly_thuong_kiet", "relation": "led", "tail": "tran_nhu_nguyet", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_tong", "relation": "participated_in", "tail": "tran_nhu_nguyet", "note": "Là phía xâm lược.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_nguyen_mong", "relation": "participated_in", "tail": "khang_chien_mong_nguyen", "note": "Là phía xâm lược.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_tran", "relation": "defeated", "tail": "nha_nguyen_mong", "note": "Ba lần: 1258, 1285, 1288.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "tran_hung_dao", "relation": "defeated", "tail": "nha_nguyen_mong", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_nguyen_mong", "relation": "conquered", "tail": "nha_tong", "note": "Diệt Nam Tống năm 1279.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nha_minh", "relation": "followed", "tail": "nha_nguyen_mong", "note": "Nhà Minh thay nhà Nguyên ở Trung Quốc năm 1368.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nha_nguyen_mong", "relation": "participated_in", "tail": "tran_bach_dang_1288", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_nguyen_mong", "relation": "participated_in", "tail": "tran_hamtu_chuongduong", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_dong_bo_dau", "relation": "part_of", "tail": "khang_chien_mong_nguyen", "note": "Lần thứ nhất, 1258.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "tran_canh_thai_tong", "relation": "led", "tail": "tran_dong_bo_dau", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_dong_bo_dau", "relation": "occurred_at", "tail": "thang_long", "note": "Bến Đông Bộ Đầu bên sông Hồng, sát kinh thành.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_nguyen_mong", "relation": "participated_in", "tail": "tran_dong_bo_dau", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_nhan_tong", "relation": "led", "tail": "hoi_nghi_binh_than", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "hoi_nghi_binh_than", "relation": "part_of", "tail": "khang_chien_mong_nguyen", "note": "Chuẩn bị cho lần thứ hai.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "tran_hung_dao", "relation": "participated_in", "tail": "hoi_nghi_binh_than", "note": "Được trao quyền tổng chỉ huy.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_khanh_du", "relation": "participated_in", "tail": "hoi_nghi_binh_than", "note": "Được cử làm Phó đô tướng quân.", "source_ids": ["s_dvsktt"]},
+    {"head": "hoi_nghi_binh_than", "relation": "preceded", "tail": "hoi_nghi_dien_hong", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_khanh_du", "relation": "led", "tail": "tran_van_don", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "tran_van_don", "relation": "part_of", "tail": "khang_chien_mong_nguyen", "note": "Lần thứ ba.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nha_nguyen_mong", "relation": "participated_in", "tail": "tran_van_don", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_van_don", "relation": "preceded", "tail": "tran_bach_dang_1288", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_nhan_tong", "relation": "founded", "tail": "truc_lam", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap_loa", "relation": "led", "tail": "truc_lam", "note": "Tổ thứ hai.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "phap_loa", "relation": "succeeded", "tail": "tran_nhan_tong", "note": "Kế tục làm tổ Trúc Lâm năm 1308.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "huyen_quang", "relation": "led", "tail": "truc_lam", "note": "Tổ thứ ba.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "huyen_quang", "relation": "succeeded", "tail": "phap_loa", "note": "Kế tục làm tổ Trúc Lâm.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "le_van_huu", "relation": "served", "tail": "nha_tran", "source_ids": ["s_dvsktt"]},
+    {"head": "le_van_huu", "relation": "authored", "tail": "dai_viet_su_ky", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "dai_viet_su_ky", "relation": "commissioned_by", "tail": "tran_thanh_tong", "note": "Soạn theo lệnh vua, dâng năm 1272.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_tran", "relation": "developed", "tail": "nam_dinh", "note": "Dựng phủ Thiên Trường và hành cung cho các Thái thượng hoàng.", "source_ids": ["s_dvsktt"]},
+    {"head": "tran_bo_co", "relation": "occurred_at", "tail": "nam_dinh", "note": "Bến Bô Cô bên sông Đáy.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "ho_quy_ly", "relation": "built", "tail": "thanh_tay_do", "note": "Năm 1397.", "source_ids": ["s_dvsktt", "s_btlsqg"]},
+    {"head": "nha_ho", "relation": "capital_at", "tail": "thanh_tay_do", "source_ids": ["s_dvsktt"]},
+    {"head": "thanh_tay_do", "relation": "part_of", "tail": "thanh_hoa", "source_ids": ["s_dvsktt", "s_btlsqg"]},
+    {"head": "ho_quy_ly", "relation": "declared", "tail": "quoc_hieu_dai_ngu", "note": "Năm 1400.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "quoc_hieu_dai_ngu", "relation": "renamed_from", "tail": "quoc_hieu_dai_viet", "source_ids": ["s_dvsktt"]},
+    {"head": "ho_nguyen_trung", "relation": "child_of", "tail": "ho_quy_ly", "source_ids": ["s_dvsktt"]},
+    {"head": "ho_nguyen_trung", "relation": "served", "tail": "nha_ho", "note": "Tả tướng quốc, chỉ huy quân chống Minh.", "source_ids": ["s_dvsktt"]},
+    {"head": "ho_nguyen_trung", "relation": "served", "tail": "nha_minh", "note": "Sau khi bị bắt năm 1407, làm quan chế tạo vũ khí.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "gian_dinh_de", "relation": "founded", "tail": "nha_hau_tran", "note": "Năm 1407.", "source_ids": ["s_dvsktt"]},
+    {"head": "trung_quang_de", "relation": "led", "tail": "nha_hau_tran", "source_ids": ["s_dvsktt"]},
+    {"head": "trung_quang_de", "relation": "succeeded", "tail": "gian_dinh_de", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_hau_tran", "relation": "opposed", "tail": "nha_minh", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "nha_hau_tran", "relation": "preceded", "tail": "khoi_nghia_lam_son", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "gian_dinh_de", "relation": "led", "tail": "tran_bo_co", "note": "Cùng Đặng Tất.", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_hau_tran", "relation": "participated_in", "tail": "tran_bo_co", "source_ids": ["s_dvsktt"]},
+    {"head": "nha_minh", "relation": "participated_in", "tail": "tran_bo_co", "source_ids": ["s_dvsktt"]},
+    {"head": "lieu_thang", "relation": "served", "tail": "nha_minh", "source_ids": ["s_dvsktt"]},
+    {"head": "lieu_thang", "relation": "participated_in", "tail": "tran_chi_lang_xuong_giang", "note": "Tử trận ở Chi Lăng.", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "vuong_thong", "relation": "served", "tail": "nha_minh", "source_ids": ["s_dvsktt"]},
+    {"head": "vuong_thong", "relation": "participated_in", "tail": "tran_tot_dong_chuc_dong", "note": "Chỉ huy quân Minh, thua trận.", "source_ids": ["s_dvsktt"]},
+    {"head": "vuong_thong", "relation": "participated_in", "tail": "hoi_the_dong_quan", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "le_loi", "relation": "led", "tail": "hoi_the_dong_quan", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "hoi_the_dong_quan", "relation": "part_of", "tail": "khoi_nghia_lam_son", "source_ids": ["s_dvsktt"]},
+    {"head": "hoi_the_dong_quan", "relation": "occurred_at", "tail": "thang_long", "note": "Ngoài thành Đông Quan.", "source_ids": ["s_dvsktt"]},
+    {"head": "hoi_the_dong_quan", "relation": "ended", "tail": "thuoc_minh", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "nguyen_trai", "relation": "authored", "tail": "binh_ngo_dai_cao", "source_ids": ["s_btr", "s_sgk"]},
+    {"head": "binh_ngo_dai_cao", "relation": "commissioned_by", "tail": "le_loi", "note": "Nguyễn Trãi thay lời Lê Lợi soạn.", "source_ids": ["s_btr", "s_sgk"]},
+    {"head": "le_thai_tong", "relation": "child_of", "tail": "le_loi", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thai_tong", "relation": "succeeded", "tail": "le_loi", "note": "Năm 1433.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thai_tong", "relation": "served", "tail": "nha_le_so", "source_ids": ["s_dvsktt"]},
+    {"head": "le_nhan_tong", "relation": "child_of", "tail": "le_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "le_nhan_tong", "relation": "succeeded", "tail": "le_thai_tong", "note": "Năm 1442.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thanh_tong", "relation": "child_of", "tail": "le_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "le_nghi_dan", "relation": "child_of", "tail": "le_thai_tong", "source_ids": ["s_dvsktt"]},
+    {"head": "le_nghi_dan", "relation": "opposed", "tail": "le_nhan_tong", "note": "Binh biến cuối năm 1459, giết Lê Nhân Tông.", "source_ids": ["s_dvsktt"]},
+    {"head": "le_thanh_tong", "relation": "succeeded", "tail": "le_nghi_dan", "note": "Năm 1460 các đại thần phế Nghi Dân, lập Lê Tư Thành.", "source_ids": ["s_dvsktt"]},
+    {"head": "ngo_si_lien", "relation": "authored", "tail": "dai_viet_su_ky_toan_thu", "note": "Năm 1479.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "dai_viet_su_ky_toan_thu", "relation": "commissioned_by", "tail": "le_thanh_tong", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "dai_viet_su_ky_toan_thu", "relation": "followed", "tail": "dai_viet_su_ky", "note": "Kế thừa và mở rộng bộ sử của Lê Văn Hưu.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "nguyen_kim", "relation": "founded", "tail": "le_trung_hung", "note": "Tôn lập Lê Trang Tông năm 1533.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "nguyen_kim", "relation": "opposed", "tail": "nha_mac", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_kim", "relation": "native_of", "tail": "thanh_hoa", "note": "Gia Miêu, Tống Sơn.", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_hoang", "relation": "child_of", "tail": "nguyen_kim", "source_ids": ["s_dvsktt"]},
+    {"head": "trinh_kiem", "relation": "succeeded", "tail": "nguyen_kim", "note": "Con rể Nguyễn Kim, nắm binh quyền Nam triều sau khi ông mất năm 1545.", "source_ids": ["s_dvsktt"]},
+    {"head": "nguyen_binh_khiem", "relation": "served", "tail": "nha_mac", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nguyen_binh_khiem", "relation": "contemporary_with", "tail": "nguyen_hoang", "note": "Dân gian truyền ông khuyên Nguyễn Hoàng: \"Hoành Sơn nhất đái, vạn đại dung thân\".", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chua_trinh", "relation": "participated_in", "tail": "chien_tranh_trinh_nguyen", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "chua_nguyen", "relation": "participated_in", "tail": "chien_tranh_trinh_nguyen", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "chien_tranh_trinh_nguyen", "relation": "occurred_at", "tail": "song_gianh", "source_ids": ["s_dvsktt", "s_sgk"]},
+    {"head": "chien_tranh_trinh_nguyen", "relation": "occurred_at", "tail": "luy_thay", "source_ids": ["s_dvsktt"]},
+    {"head": "dao_duy_tu", "relation": "participated_in", "tail": "chien_tranh_trinh_nguyen", "note": "Mưu sĩ của chúa Nguyễn, người dựng Lũy Thầy.", "source_ids": ["s_dvsktt"]},
+    {"head": "dang_tran_con", "relation": "authored", "tail": "chinh_phu_ngam", "note": "Nguyên bản chữ Hán.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "doan_thi_diem", "relation": "authored", "tail": "chinh_phu_ngam", "note": "Bản diễn Nôm theo truyền thống; người dịch còn tranh luận.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "doan_thi_diem", "relation": "contemporary_with", "tail": "dang_tran_con", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "dong_kinh_nghia_thuc", "relation": "developed", "tail": "chu_quoc_ngu", "note": "Dạy và cổ động dùng chữ Quốc ngữ (1907).", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phong_trao_duy_tan", "relation": "developed", "tail": "chu_quoc_ngu", "note": "Mở trường dạy chữ Quốc ngữ.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "viet_nam_dan_chu_cong_hoa", "relation": "developed", "tail": "chu_quoc_ngu", "note": "Phong trào Bình dân học vụ xóa mù chữ từ năm 1945.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "nguyen_huu_canh", "relation": "served", "tail": "chua_nguyen", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_huu_canh", "relation": "participated_in", "tail": "nam_tien", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nguyen_huu_canh", "relation": "founded", "tail": "sai_gon", "note": "Lập phủ Gia Định năm 1698 — mốc thường được coi là khởi đầu của Sài Gòn – Gia Định.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "mac_cuu", "relation": "served", "tail": "chua_nguyen", "note": "Từ năm 1708.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "mac_cuu", "relation": "developed", "tail": "ha_tien", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "mac_cuu", "relation": "participated_in", "tail": "nam_tien", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chua_nguyen", "relation": "controlled", "tail": "ha_tien", "note": "Từ năm 1708.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_phuc_khoat", "relation": "served", "tail": "chua_nguyen", "note": "Chúa thứ tám, xưng vương năm 1744.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_phuc_thuan", "relation": "child_of", "tail": "nguyen_phuc_khoat", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_phuc_thuan", "relation": "succeeded", "tail": "nguyen_phuc_khoat", "note": "Năm 1765.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_phuc_thuan", "relation": "served", "tail": "chua_nguyen", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "khoi_nghia_tay_son", "relation": "ended", "tail": "chua_nguyen", "note": "Năm 1777 quân Tây Sơn chiếm Gia Định, chúa Nguyễn Phúc Thuần bị giết.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "le_hien_tong", "relation": "served", "tail": "le_trung_hung", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "ngoc_han_cong_chua", "relation": "child_of", "tail": "le_hien_tong", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "chieu_thong", "relation": "succeeded", "tail": "le_hien_tong", "note": "Cháu nội, lên ngôi năm 1786.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "xiem", "relation": "participated_in", "tail": "tran_rach_gam_xoai_mut", "note": "Là phía bị đánh bại.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nguyen_hue", "relation": "defeated", "tail": "xiem", "note": "Trận Rạch Gầm – Xoài Mút đầu năm 1785.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "gia_long", "relation": "allied_with", "tail": "xiem", "note": "Cầu viện quân Xiêm năm 1784.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "ton_si_nghi", "relation": "served", "tail": "nha_thanh", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "ton_si_nghi", "relation": "participated_in", "tail": "tran_ngoc_hoi_dong_da", "note": "Chỉ huy quân Thanh, thua trận bỏ chạy.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "gia_long", "relation": "declared", "tail": "quoc_hieu_viet_nam", "note": "Năm 1804.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "quoc_hieu_viet_nam", "relation": "renamed_from", "tail": "quoc_hieu_dai_viet", "source_ids": ["s_vnsl"]},
+    {"head": "minh_menh", "relation": "declared", "tail": "quoc_hieu_dai_nam", "note": "Năm 1838.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "quoc_hieu_dai_nam", "relation": "renamed_from", "tail": "quoc_hieu_viet_nam", "source_ids": ["s_vnsl"]},
+    {"head": "thieu_tri", "relation": "child_of", "tail": "minh_menh", "source_ids": ["s_vnsl"]},
+    {"head": "thieu_tri", "relation": "succeeded", "tail": "minh_menh", "note": "Năm 1841.", "source_ids": ["s_vnsl"]},
+    {"head": "thieu_tri", "relation": "served", "tail": "nha_nguyen", "source_ids": ["s_vnsl"]},
+    {"head": "tu_duc", "relation": "child_of", "tail": "thieu_tri", "source_ids": ["s_vnsl"]},
+    {"head": "tu_duc", "relation": "succeeded", "tail": "thieu_tri", "note": "Năm 1847.", "source_ids": ["s_vnsl"]},
+    {"head": "minh_menh", "relation": "founded", "tail": "quoc_su_quan", "note": "Năm 1821.", "source_ids": ["s_khamdinh", "s_vnsl"]},
+    {"head": "quoc_su_quan", "relation": "part_of", "tail": "nha_nguyen", "source_ids": ["s_khamdinh"]},
+    {"head": "quoc_su_quan", "relation": "authored", "tail": "dai_nam_thuc_luc", "source_ids": ["s_khamdinh", "s_lsvn_vsh"]},
+    {"head": "dai_nam_thuc_luc", "relation": "commissioned_by", "tail": "minh_menh", "note": "Bắt đầu biên soạn dưới thời Minh Mạng.", "source_ids": ["s_khamdinh"]},
+    {"head": "le_van_khoi", "relation": "led", "tail": "khoi_nghia_le_van_khoi", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "le_van_khoi", "relation": "child_of", "tail": "le_van_duyet", "note": "Con nuôi.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "khoi_nghia_le_van_khoi", "relation": "opposed", "tail": "minh_menh", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "khoi_nghia_le_van_khoi", "relation": "occurred_at", "tail": "sai_gon", "note": "Thành Phiên An (Gia Định).", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "kenh_vinh_te", "relation": "commissioned_by", "tail": "gia_long", "note": "Khởi công năm 1819.", "source_ids": ["s_vnsl"]},
+    {"head": "nha_nguyen", "relation": "built", "tail": "kenh_vinh_te", "note": "Hoàn thành năm 1824.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "phap", "relation": "initiated", "tail": "phap_xam_luoc_da_nang_1858", "note": "Cùng Tây Ban Nha.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap_xam_luoc_da_nang_1858", "relation": "occurred_at", "tail": "da_nang", "note": "Ngày 1/9/1858.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "hoa_uoc_nham_tuat_1862", "relation": "imposed_on", "tail": "nha_nguyen", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "hoa_uoc_nham_tuat_1862", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "hoa_uoc_nham_tuat_1862", "relation": "followed", "tail": "phap_xam_luoc_da_nang_1858", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "tu_duc", "relation": "ruled_during", "tail": "hoa_uoc_nham_tuat_1862", "source_ids": ["s_vnsl"]},
+    {"head": "phan_thanh_gian", "relation": "served", "tail": "nha_nguyen", "source_ids": ["s_vnsl"]},
+    {"head": "phan_thanh_gian", "relation": "participated_in", "tail": "hoa_uoc_nham_tuat_1862", "note": "Chánh sứ phía triều Nguyễn.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "truong_dinh", "relation": "opposed", "tail": "hoa_uoc_nham_tuat_1862", "note": "Không tuân lệnh bãi binh sau hòa ước, tiếp tục kháng chiến.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "truong_dinh", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "nguyen_trung_truc", "relation": "led", "tail": "tran_nhat_tao", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "nguyen_trung_truc", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "tran_nhat_tao", "source_ids": ["s_vnsl"]},
+    {"head": "luu_vinh_phuc", "relation": "led", "tail": "quan_co_den", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "quan_co_den", "relation": "served", "tail": "nha_nguyen", "note": "Được triều đình thu dụng, phong chức giữ biên.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "quan_co_den", "relation": "participated_in", "tail": "tran_cau_giay_1873", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "luu_vinh_phuc", "relation": "led", "tail": "tran_cau_giay_1873", "source_ids": ["s_vnsl"]},
+    {"head": "tran_cau_giay_1873", "relation": "occurred_at", "tail": "ha_noi", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "tran_cau_giay_1873", "source_ids": ["s_vnsl"]},
+    {"head": "hoa_uoc_giap_tuat_1874", "relation": "followed", "tail": "tran_cau_giay_1873", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "hoa_uoc_giap_tuat_1874", "relation": "imposed_on", "tail": "nha_nguyen", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "hoa_uoc_giap_tuat_1874", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "tu_duc", "relation": "ruled_during", "tail": "hoa_uoc_giap_tuat_1874", "source_ids": ["s_vnsl"]},
+    {"head": "phap", "relation": "participated_in", "tail": "hoa_uoc_patenotre_1884", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "ton_that_thuyet", "relation": "served", "tail": "nha_nguyen", "note": "Phụ chính đại thần.", "source_ids": ["s_vnsl"]},
+    {"head": "ton_that_thuyet", "relation": "led", "tail": "phan_cong_kinh_thanh_hue_1885", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "ton_that_thuyet", "relation": "participated_in", "tail": "phong_trao_can_vuong", "note": "Nhân danh vua Hàm Nghi ban chiếu Cần Vương.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phan_cong_kinh_thanh_hue_1885", "relation": "occurred_at", "tail": "hue", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "phan_cong_kinh_thanh_hue_1885", "source_ids": ["s_vnsl"]},
+    {"head": "phan_cong_kinh_thanh_hue_1885", "relation": "led_to", "tail": "phong_trao_can_vuong", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "ham_nghi", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phong_trao_can_vuong", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phan_dinh_phung", "relation": "led", "tail": "khoi_nghia_huong_khe", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "cao_thang", "relation": "participated_in", "tail": "khoi_nghia_huong_khe", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "cao_thang", "relation": "native_of", "tail": "ha_tinh", "note": "Huyện Hương Sơn.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "khoi_nghia_huong_khe", "relation": "part_of", "tail": "phong_trao_can_vuong", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "khoi_nghia_huong_khe", "relation": "occurred_at", "tail": "ha_tinh", "note": "Căn cứ chính ở Hương Khê, Hà Tĩnh; địa bàn gồm cả Thanh Hóa, Nghệ An, Quảng Bình.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "khoi_nghia_huong_khe", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "xo_viet_nghe_tinh", "relation": "occurred_at", "tail": "ha_tinh", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "hoang_hoa_tham", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "khoi_nghia_yen_the", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phan_chau_trinh", "relation": "initiated", "tail": "phong_trao_duy_tan", "note": "Năm 1906.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "phong_trao_duy_tan", "relation": "contemporary_with", "tail": "phong_trao_dong_du", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "viet_nam_quoc_dan_dang", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "khoi_nghia_yen_bai", "relation": "opposed", "tail": "phap", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "founded", "tail": "hoi_vn_cach_mang_thanh_nien", "note": "Tháng 6/1925 ở Quảng Châu.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "hoi_vn_cach_mang_thanh_nien", "relation": "preceded", "tail": "dang_cong_san_vn", "note": "Tiền thân của các tổ chức cộng sản hợp nhất năm 1930.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "dang_cong_san_vn", "relation": "led", "tail": "khoi_nghia_bac_son", "note": "Đảng bộ Bắc Sơn.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "khoi_nghia_bac_son", "relation": "opposed", "tail": "phap", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "dang_cong_san_vn", "relation": "led", "tail": "khoi_nghia_nam_ky", "note": "Xứ ủy Nam Kỳ.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "khoi_nghia_nam_ky", "relation": "opposed", "tail": "phap", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "nha_mac", "relation": "controlled", "tail": "cao_bang", "note": "Từ năm 1592 đến năm 1677.", "source_ids": ["s_dvsktt", "s_lsvn_vsh"]},
+    {"head": "chien_dich_bien_gioi_1950", "relation": "occurred_at", "tail": "cao_bang", "note": "Mở đầu bằng trận Đông Khê.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "vo_nguyen_giap", "relation": "led", "tail": "doi_vn_tuyen_truyen_giai_phong_quan", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "initiated", "tail": "doi_vn_tuyen_truyen_giai_phong_quan", "note": "Ra chỉ thị thành lập.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "doi_vn_tuyen_truyen_giai_phong_quan", "relation": "part_of", "tail": "mat_tran_viet_minh", "note": "Đội quân chủ lực của Việt Minh.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nhat_ban", "relation": "initiated", "tail": "nhat_dao_chinh_phap_1945", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nhat_dao_chinh_phap_1945", "relation": "led_to", "tail": "de_quoc_viet_nam", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nhat_dao_chinh_phap_1945", "relation": "preceded", "tail": "cach_mang_thang_tam", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "tran_trong_kim", "relation": "served", "tail": "de_quoc_viet_nam", "note": "Thủ tướng (Tổng trưởng nội các).", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "tran_trong_kim", "relation": "served", "tail": "bao_dai", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "cach_mang_thang_tam", "relation": "ended", "tail": "de_quoc_viet_nam", "note": "Bảo Đại thoái vị ngày 30/8/1945.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "mat_tran_viet_minh", "relation": "led", "tail": "quoc_dan_dai_hoi_tan_trao", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "quoc_dan_dai_hoi_tan_trao", "relation": "part_of", "tail": "cach_mang_thang_tam", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "quoc_dan_dai_hoi_tan_trao", "relation": "occurred_at", "tail": "tan_trao", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "participated_in", "tail": "quoc_dan_dai_hoi_tan_trao", "note": "Được bầu làm Chủ tịch Ủy ban Dân tộc giải phóng.", "source_ids": ["s_vkd", "s_sgk"]},
+    {"head": "mat_tran_viet_minh", "relation": "controlled", "tail": "tan_trao", "note": "Trung tâm Khu giải phóng Việt Bắc từ tháng 6/1945.", "source_ids": ["s_vkd"]},
+    {"head": "ho_chi_minh", "relation": "declared", "tail": "viet_nam_dan_chu_cong_hoa", "note": "Ngày 2/9/1945.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "ho_chi_minh", "relation": "led", "tail": "viet_nam_dan_chu_cong_hoa", "note": "Chủ tịch nước 1945–1969.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "viet_nam_dan_chu_cong_hoa", "relation": "capital_at", "tail": "ha_noi", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "viet_nam_dan_chu_cong_hoa", "relation": "participated_in", "tail": "hiep_dinh_geneva_1954", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "viet_nam_dan_chu_cong_hoa", "relation": "participated_in", "tail": "hiep_dinh_paris_1973", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "viet_nam_dan_chu_cong_hoa", "relation": "border_at", "tail": "song_ben_hai", "note": "Giới tuyến quân sự tạm thời ở vĩ tuyến 17.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "pham_van_dong", "relation": "served", "tail": "viet_nam_dan_chu_cong_hoa", "note": "Thủ tướng từ năm 1955.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "renamed_from", "tail": "viet_nam_dan_chu_cong_hoa", "note": "Ngày 2/7/1976.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "capital_at", "tail": "ha_noi", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "participated_in", "tail": "gia_nhap_lhq_1977", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "participated_in", "tail": "gia_nhap_asean_1995", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "participated_in", "tail": "chien_tranh_bien_gioi_1979", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quan_doi_nhan_dan_viet_nam", "relation": "followed", "tail": "doi_vn_tuyen_truyen_giai_phong_quan", "note": "Đội Việt Nam Tuyên truyền Giải phóng quân là tiền thân.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "vo_nguyen_giap", "relation": "led", "tail": "quan_doi_nhan_dan_viet_nam", "note": "Tổng tư lệnh.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quan_doi_nhan_dan_viet_nam", "relation": "participated_in", "tail": "dien_bien_phu", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quan_doi_nhan_dan_viet_nam", "relation": "participated_in", "tail": "chien_dich_ho_chi_minh", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quan_doi_nhan_dan_viet_nam", "relation": "built", "tail": "duong_truong_son", "note": "Đoàn 559 mở từ tháng 5/1959.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nguyen_thi_dinh", "relation": "served", "tail": "quan_doi_nhan_dan_viet_nam", "note": "Nữ thiếu tướng đầu tiên, Phó Tư lệnh Quân Giải phóng miền Nam.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "ho_chi_minh", "relation": "participated_in", "tail": "hiep_dinh_so_bo_1946", "note": "Ký với đại diện Pháp Jean Sainteny.", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "hiep_dinh_so_bo_1946", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "hiep_dinh_so_bo_1946", "relation": "occurred_at", "tail": "ha_noi", "source_ids": ["s_hcm_tt", "s_sgk"]},
+    {"head": "pham_van_dong", "relation": "led", "tail": "hoi_nghi_fontainebleau_1946", "note": "Trưởng đoàn Việt Nam.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "hoi_nghi_fontainebleau_1946", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "hoi_nghi_fontainebleau_1946", "relation": "followed", "tail": "hiep_dinh_so_bo_1946", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "khang_chien_chong_phap", "note": "Là phía xâm lược.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chien_dich_viet_bac_1947", "relation": "part_of", "tail": "khang_chien_chong_phap", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "vo_nguyen_giap", "relation": "led", "tail": "chien_dich_viet_bac_1947", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "phap", "relation": "participated_in", "tail": "chien_dich_viet_bac_1947", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chien_dich_bien_gioi_1950", "relation": "part_of", "tail": "khang_chien_chong_phap", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "vo_nguyen_giap", "relation": "led", "tail": "chien_dich_bien_gioi_1950", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "chien_dich_bien_gioi_1950", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "dien_bien_phu", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "phap", "relation": "participated_in", "tail": "hiep_dinh_geneva_1954", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "bao_dai", "relation": "led", "tail": "quoc_gia_viet_nam", "note": "Quốc trưởng.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quoc_gia_viet_nam", "relation": "capital_at", "tail": "sai_gon", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "ngo_dinh_diem", "relation": "served", "tail": "quoc_gia_viet_nam", "note": "Thủ tướng 1954–1955.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "viet_nam_cong_hoa", "relation": "followed", "tail": "quoc_gia_viet_nam", "note": "Năm 1955.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quoc_gia_viet_nam", "relation": "participated_in", "tail": "hiep_dinh_geneva_1954", "note": "Dự hội nghị nhưng không ký bản Tuyên bố cuối cùng.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "truong_chinh", "relation": "led", "tail": "cai_cach_ruong_dat", "note": "Nhận trách nhiệm về sai lầm, thôi chức Tổng Bí thư năm 1956.", "source_ids": ["s_vkd", "s_lsvn_vsh"]},
+    {"head": "dang_cong_san_vn", "relation": "initiated", "tail": "cai_cach_ruong_dat", "note": "Khi đó mang tên Đảng Lao động Việt Nam.", "source_ids": ["s_vkd", "s_lsvn_vsh"]},
+    {"head": "duong_van_minh", "relation": "led", "tail": "dao_chinh_1963", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "dao_chinh_1963", "relation": "opposed", "tail": "ngo_dinh_diem", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "dao_chinh_1963", "relation": "occurred_at", "tail": "sai_gon", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "nguyen_van_thieu", "relation": "participated_in", "tail": "dao_chinh_1963", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_van_thieu", "relation": "served", "tail": "viet_nam_cong_hoa", "note": "Tổng thống 1967–1975.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "duong_truong_son", "relation": "part_of", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "tong_tien_cong_xuan_1975", "relation": "part_of", "tail": "khang_chien_chong_my", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chien_dich_ho_chi_minh", "relation": "part_of", "tail": "tong_tien_cong_xuan_1975", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "tong_tien_cong_xuan_1975", "relation": "resulted_in", "tail": "giai_phong_mien_nam_1975", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "tong_tien_cong_xuan_1975", "relation": "occurred_at", "tail": "hue", "note": "Chiến dịch Huế – Đà Nẵng.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "tong_tien_cong_xuan_1975", "relation": "occurred_at", "tail": "da_nang", "note": "Chiến dịch Huế – Đà Nẵng.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "mat_tran_dan_toc_giai_phong_mien_nam_viet_nam", "relation": "founded", "tail": "chinh_phu_cach_mang_lam_thoi", "note": "Ngày 6/6/1969.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chinh_phu_cach_mang_lam_thoi", "relation": "participated_in", "tail": "hiep_dinh_paris_1973", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chinh_phu_cach_mang_lam_thoi", "relation": "opposed", "tail": "viet_nam_cong_hoa", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_thi_binh", "relation": "served", "tail": "chinh_phu_cach_mang_lam_thoi", "note": "Bộ trưởng Ngoại giao.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "nguyen_thi_binh", "relation": "participated_in", "tail": "hiep_dinh_paris_1973", "note": "Người phụ nữ duy nhất ký hiệp định.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "le_duc_tho", "relation": "participated_in", "tail": "hiep_dinh_paris_1973", "note": "Cố vấn đặc biệt, trực tiếp đàm phán với Hoa Kỳ.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "le_duc_tho", "relation": "served", "tail": "dang_cong_san_vn", "note": "Ủy viên Bộ Chính trị.", "source_ids": ["s_vkd"]},
+    {"head": "nguyen_van_linh", "relation": "led", "tail": "dang_cong_san_vn", "note": "Tổng Bí thư 1986–1991.", "source_ids": ["s_vkd"]},
+    {"head": "nguyen_van_linh", "relation": "participated_in", "tail": "doi_moi_1986", "note": "Được bầu làm Tổng Bí thư tại Đại hội VI.", "source_ids": ["s_vkd", "s_lsvn_vsh"]},
+    {"head": "lien_xo", "relation": "allied_with", "tail": "viet_nam_dan_chu_cong_hoa", "note": "Công nhận năm 1950, viện trợ trong hai cuộc kháng chiến.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "lien_xo", "relation": "participated_in", "tail": "hiep_dinh_geneva_1954", "note": "Đồng chủ tịch hội nghị.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "trung_quoc_cnh", "relation": "allied_with", "tail": "viet_nam_dan_chu_cong_hoa", "note": "Thời kỳ 1950–1975.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "trung_quoc_cnh", "relation": "participated_in", "tail": "hiep_dinh_geneva_1954", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "trung_quoc_cnh", "relation": "participated_in", "tail": "chien_tranh_bien_gioi_1979", "note": "Là phía tấn công.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "khmer_do", "relation": "participated_in", "tail": "chien_tranh_bien_gioi_tay_nam", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "participated_in", "tail": "chien_tranh_bien_gioi_tay_nam", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "quan_doi_nhan_dan_viet_nam", "relation": "defeated", "tail": "khmer_do", "note": "Chế độ Khmer Đỏ sụp đổ ngày 7/1/1979.", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "chien_tranh_bien_gioi_tay_nam", "relation": "contemporary_with", "tail": "chien_tranh_bien_gioi_1979", "source_ids": ["s_lsvn_vsh", "s_sgk"]},
+    {"head": "hoa_ky", "relation": "participated_in", "tail": "binh_thuong_hoa_viet_my", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "participated_in", "tail": "binh_thuong_hoa_viet_my", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "binh_thuong_hoa_viet_my", "relation": "followed", "tail": "doi_moi_1986", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "gia_nhap_wto_2007", "relation": "followed", "tail": "doi_moi_1986", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "cong_hoa_xhcn_viet_nam", "relation": "participated_in", "tail": "gia_nhap_wto_2007", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "huyen_quang", "relation": "served", "tail": "nha_tran", "note": "Làm quan ở Viện Nội hàn trước khi xuất gia.", "source_ids": ["s_lsvn_vsh"]},
+    {"head": "gian_dinh_de", "relation": "opposed", "tail": "nha_minh", "source_ids": ["s_dvsktt"]},
+    {"head": "trung_quang_de", "relation": "opposed", "tail": "nha_minh", "source_ids": ["s_dvsktt"]},
+    {"head": "luu_vinh_phuc", "relation": "served", "tail": "nha_nguyen", "note": "Được triều Nguyễn thu dụng, phong chức.", "source_ids": ["s_vnsl", "s_lsvn_vsh"]},
+    {"head": "cao_thang", "relation": "served", "tail": "phan_dinh_phung", "note": "Trợ thủ đắc lực nhất của Phan Đình Phùng.", "source_ids": ["s_vnsl", "s_sgk"]},
+    {"head": "nguyen_huu_canh", "relation": "defeated", "tail": "chiem_thanh", "note": "Năm 1693 đánh vùng Panduranga, bắt vua Chiêm.", "source_ids": ["s_lsvn_vsh"]}
   ],
   "claims": [
     {
@@ -3442,6 +4616,141 @@
         {
           "source_id": "s_lsvn_vsh",
           "claim": "Sử học hiện đại phần lớn coi Nam Việt/nhà Triệu là thế lực gốc Hán thôn tính Âu Lạc, không tính là một triều đại người Việt bản địa."
+        }
+      ]
+    },
+    {
+      "id": "c06_thisach_cai_chet",
+      "topic_entity_id": "thi_sach",
+      "description": "Việc Thi Sách bị Tô Định giết — nguyên cớ khởi nghĩa Hai Bà Trưng theo sử Việt — không được các nguồn thống nhất.",
+      "positions": [
+        {
+          "source_id": "s_dvsktt",
+          "claim": "Thái thú Tô Định giết Thi Sách, chồng Trưng Trắc; Trưng Trắc vừa báo thù chồng vừa đền nợ nước nên dấy binh năm 40."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Thư tịch Trung Quốc chép sớm hơn không nói tới cái chết của Thi Sách; một số nhà nghiên cứu cho rằng ông vẫn sống và cùng tham gia khởi nghĩa, có ý kiến còn nghi ngờ 'Thi Sách' có phải là tên người."
+        }
+      ]
+    },
+    {
+      "id": "c07_namquocsonha_tacgia",
+      "topic_entity_id": "nam_quoc_son_ha",
+      "description": "Tác giả và hoàn cảnh ra đời của bài thơ Nam quốc sơn hà chưa được xác định chắc chắn.",
+      "positions": [
+        {
+          "source_id": "s_sgk",
+          "claim": "Bài thơ thường được gắn với Lý Thường Kiệt trong trận phòng tuyến sông Như Nguyệt (1077) và được gọi là bản tuyên ngôn độc lập đầu tiên."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Các bản chép cổ không ghi tên tác giả mà kể như lời thần đọc trong đền; một số dị bản gắn bài thơ với sự kiện sớm hơn (cuộc kháng chiến chống Tống năm 981), và các bản chép không trùng khít từng chữ."
+        }
+      ]
+    },
+    {
+      "id": "c08_chinhphungam_dichgia",
+      "topic_entity_id": "chinh_phu_ngam",
+      "description": "Người diễn Nôm bản Chinh phụ ngâm phổ biến hiện nay chưa ngã ngũ.",
+      "positions": [
+        {
+          "source_id": "s_sgk",
+          "claim": "Bản diễn Nôm song thất lục bát quen thuộc theo truyền thống được ghi là của Đoàn Thị Điểm."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Một số nghiên cứu dựa trên tư liệu gia đình họ Phan cho rằng bản diễn Nôm hiện hành là của Phan Huy Ích."
+        }
+      ]
+    },
+    {
+      "id": "c09_haibatrung_ketcuc",
+      "topic_entity_id": "hai_ba_trung",
+      "description": "Kết cục của Hai Bà Trưng sau thất bại năm 43 được sử Việt và sử Trung Quốc chép khác nhau.",
+      "positions": [
+        {
+          "source_id": "s_dvsktt",
+          "claim": "Hai Bà thế cô, thua trận rồi mất (truyền thống dân gian kể Hai Bà gieo mình xuống sông Hát Giang tuẫn tiết)."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Sử Trung Quốc (Hậu Hán thư) chép Trưng Trắc, Trưng Nhị bị Mã Viện bắt và chém, thủ cấp đưa về kinh đô nhà Hán; không có cách nào dung hòa hai bản kể."
+        }
+      ]
+    },
+    {
+      "id": "c10_bienco_979",
+      "topic_entity_id": "dinh_bo_linh",
+      "description": "Thủ phạm thật sự của vụ ám sát Đinh Tiên Hoàng và Đinh Liễn năm 979 còn là nghi vấn.",
+      "positions": [
+        {
+          "source_id": "s_dvsktt",
+          "claim": "Viên quan nhỏ Đỗ Thích nằm mơ thấy điềm làm vua nên ra tay giết hai cha con Đinh Tiên Hoàng."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Nhiều nhà nghiên cứu hiện đại thấy lời giải thích ấy khó tin vì một người không thế lực giết vua cũng chẳng nắm được gì; vụ án đến nay vẫn để ngỏ."
+        }
+      ]
+    },
+    {
+      "id": "c11_hoquyly_danhgia",
+      "topic_entity_id": "ho_quy_ly",
+      "description": "Đánh giá về Hồ Quý Ly và các cải cách của ông khác nhau giữa sử cũ và sử học hiện đại.",
+      "positions": [
+        {
+          "source_id": "s_dvsktt",
+          "claim": "Sử quan phong kiến lên án Hồ Quý Ly là kẻ cướp ngôi, gây mất nước vào tay nhà Minh."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Nhiều nghiên cứu hiện đại nhấn mạnh tính tiến bộ của các cải cách (tiền giấy, hạn điền, hạn nô, đề cao chữ Nôm) và cho rằng thất bại nằm ở cách làm và thời điểm, khi chưa có được lòng dân."
+        }
+      ]
+    },
+    {
+      "id": "c12_macdangdung_1540",
+      "topic_entity_id": "mac_dang_dung",
+      "description": "Việc Mạc Đăng Dung ra cửa quan đầu hàng và dâng đất cho nhà Minh năm 1540 được đánh giá rất khác nhau.",
+      "positions": [
+        {
+          "source_id": "s_khamdinh",
+          "claim": "Sử các triều Lê trung hưng và Nguyễn coi đó là quốc sỉ, bằng chứng nhà Mạc là ngụy triều, không chính thống."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Từ cuối thế kỷ XX nhiều nhà nghiên cứu đặt sự việc vào bối cảnh: vùng đất dâng vốn thuộc vùng ranh giới còn mập mờ, đổi lấy việc tránh một cuộc xâm lăng; xu hướng chung là nhìn nhà Mạc như một triều đại thực sự."
+        }
+      ]
+    },
+    {
+      "id": "c13_taysonnguyen_danhgia",
+      "topic_entity_id": "gia_long",
+      "description": "Đánh giá về Nguyễn Ánh (Gia Long) và phong trào Tây Sơn thay đổi qua các thời kỳ sử học.",
+      "positions": [
+        {
+          "source_id": "s_khamdinh",
+          "claim": "Sử triều Nguyễn gọi Tây Sơn là 'ngụy' và xóa công trạng của họ, đề cao công khôi phục cơ nghiệp của Nguyễn Ánh."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Sử học thế kỷ XX đề cao Tây Sơn như một phong trào nông dân và phê phán Nguyễn Ánh vì cầu viện bên ngoài; vài chục năm gần đây giới nghiên cứu ghi nhận thêm công thống nhất đất nước của nhà Nguyễn — cuộc tranh luận chưa khép."
+        }
+      ]
+    },
+    {
+      "id": "c14_thucphan_nguongoc",
+      "topic_entity_id": "an_duong_vuong",
+      "description": "Nguồn gốc của Thục Phán (An Dương Vương) còn tranh luận.",
+      "positions": [
+        {
+          "source_id": "s_dvsktt",
+          "claim": "Sử cũ chép An Dương Vương họ Thục, gắn với nước Thục ở phương Bắc."
+        },
+        {
+          "source_id": "s_lsvn_vsh",
+          "claim": "Nhiều nghiên cứu hiện đại cho rằng Thục Phán là thủ lĩnh nhóm Âu Việt ở vùng núi phía bắc đồng bằng sông Hồng; chưa có bằng chứng đủ mạnh cho bên nào."
         }
       ]
     }

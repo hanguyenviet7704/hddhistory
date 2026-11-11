@@ -78,6 +78,9 @@ RELATION_LABELS = {
     "developed": "phát triển",
     "allied_with": "liên minh với",
     "renamed_from": "đổi tên từ",
+    "worships": "thờ",
+    "native_of": "quê ở",
+    "sibling_of": "là anh chị em với",
 }
 
 
