@@ -58,7 +58,7 @@ module.exports = () => [
   caption("Hình 3.1: Biểu đồ use case tổng quan của hệ thống"),
 
   h2("3.3 Đặc tả một số use case chính"),
-  p("Phần này đặc tả chi tiết bốn use case tiêu biểu, đại diện cho bốn luồng nghiệp vụ khác nhau của hệ thống."),
+  p("Phần này đặc tả chi tiết sáu use case tiêu biểu, đại diện cho các luồng nghiệp vụ khác nhau của hệ thống: luồng học tập, luồng tra cứu, luồng sinh nội dung tự động, luồng kiểm duyệt, luồng xác thực phiên và luồng theo dõi tiến độ. Mỗi đặc tả trình bày tác nhân, điều kiện trước và sau, luồng chính cùng các luồng thay thế nhằm làm rõ cả trường hợp thành công lẫn các nhánh ngoại lệ cần xử lý."),
 
   h3("3.3.1 Use case: Học một đơn vị tri thức và làm bài kiểm tra"),
   table(
@@ -124,7 +124,55 @@ module.exports = () => [
   ),
   caption("Bảng 3.6: Đặc tả use case Kiểm duyệt và xuất bản nội dung"),
 
-  h2("3.4 Thiết kế kiến trúc tổng thể"),
+  h3("3.3.5 Use case: Đăng nhập và quản lý phiên"),
+  p("Use case này đặc tả luồng xác thực dùng chung cho cả trang quản trị trên nền web và ứng dụng di động. Điểm khác biệt kỹ thuật là cách lưu giữ chứng chỉ phiên: trên web, token làm mới được đặt trong cookie httpOnly để mã kịch bản phía trình duyệt không đọc được, còn token truy cập ngắn hạn được gắn vào tiêu đề Authorization dưới dạng Bearer cho mỗi yêu cầu."),
+  table(
+    ["Mục", "Nội dung"],
+    [
+      ["Mã use case", "UC-05"],
+      ["Tác nhân", "Người học, Biên tập viên, Quản trị viên"],
+      ["Mô tả", "Người dùng đăng nhập, hệ thống cấp cặp token truy cập và token làm mới, duy trì phiên và tự động gia hạn khi token truy cập hết hạn"],
+      ["Điều kiện trước", "Tài khoản tồn tại, đang ở trạng thái hoạt động và chưa bị khoá"],
+      ["Luồng chính", "1. Người dùng nhập thông tin đăng nhập.\n2. Hệ thống xác minh và băm mật khẩu để so khớp.\n3. Hệ thống cấp token truy cập ngắn hạn và token làm mới dài hạn.\n4. Trên web, token làm mới được đặt trong cookie httpOnly; token truy cập gắn vào tiêu đề Authorization dạng Bearer cho các yêu cầu tiếp theo.\n5. Khi token truy cập hết hạn, hệ thống nhận mã lỗi 401, gọi endpoint làm mới token bằng token làm mới rồi phát lại yêu cầu ban đầu.\n6. Khi đăng xuất, hệ thống thu hồi token làm mới và xoá cookie phiên."],
+      ["Luồng thay thế", "2a. Sai thông tin đăng nhập: hệ thống trả về lỗi xác thực mà không tiết lộ trường nào sai.\n5a. Token làm mới hết hạn hoặc bị thu hồi: hệ thống xoá token, kết thúc phiên và chuyển hướng về màn hình đăng nhập.\n1b. Đăng nhập qua nhà cung cấp bên thứ ba: hệ thống xác minh token của nhà cung cấp rồi tiếp tục từ bước 3."],
+      ["Điều kiện sau", "Phiên làm việc được thiết lập; mọi yêu cầu tiếp theo được xác thực; thao tác đăng nhập có thể được ghi nhận phục vụ kiểm toán"],
+    ],
+    [2200, 8000],
+  ),
+  caption("Bảng 3.7: Đặc tả use case Đăng nhập và quản lý phiên"),
+
+  h3("3.3.6 Use case: Theo dõi tiến độ học tập"),
+  table(
+    ["Mục", "Nội dung"],
+    [
+      ["Mã use case", "UC-06"],
+      ["Tác nhân", "Người học"],
+      ["Mô tả", "Người học xem lại kết quả học tập tích luỹ của bản thân: số bài đã hoàn thành, chuỗi ngày học liên tiếp, tỉ lệ trả lời đúng và danh sách câu đã trả lời sai"],
+      ["Điều kiện trước", "Người học đã đăng nhập và đã có ít nhất một lượt học hoặc lượt trả lời được ghi nhận"],
+      ["Luồng chính", "1. Người học mở màn hình tiến độ.\n2. Hệ thống tổng hợp dữ liệu tiến độ: số bài đã học, số câu đã trả lời, tỉ lệ đúng và chuỗi ngày học liên tiếp.\n3. Hệ thống hiển thị bảng tổng quan cùng danh sách câu đã trả lời sai để ôn lại.\n4. Người học chọn một câu sai để quay lại bài học tương ứng.\n5. Màn hình tiến độ tự làm mới khi người học quay lại sau khi hoàn thành thêm bài học."],
+      ["Luồng thay thế", "2a. Chưa có dữ liệu tiến độ: hệ thống hiển thị trạng thái rỗng kèm gợi ý bắt đầu bài học đầu tiên.\n5a. Dữ liệu tiến độ còn mới và chưa thay đổi: hệ thống dùng lại dữ liệu đã tải, không gọi lại máy chủ."],
+      ["Điều kiện sau", "Tiến độ được hiển thị; không thay đổi dữ liệu học tập"],
+    ],
+    [2200, 8000],
+  ),
+  caption("Bảng 3.8: Đặc tả use case Theo dõi tiến độ học tập"),
+
+  h2("3.4 Biểu đồ tuần tự"),
+  p("Biểu đồ tuần tự mô tả trình tự trao đổi thông điệp giữa các thành phần của hệ thống khi thực hiện một use case. Phần này trình bày hai luồng tiêu biểu: luồng học tập kèm kiểm tra (UC-01) đi qua đầy đủ bốn lớp phân tầng của máy chủ, và luồng tra cứu thực thể (UC-02) minh hoạ cách ứng dụng web phối hợp nhiều lời gọi API để dựng nên một hồ sơ hoàn chỉnh."),
+
+  h3("3.4.1 Luồng học và kiểm tra (UC-01)"),
+  p("Khi người học chọn một bài học, ứng dụng di động phát một yêu cầu REST qua chuỗi tầng Cubit → UseCase → Repository → DataSource. Yêu cầu tới máy chủ được controller tiếp nhận: controller kiểm tra token xác thực và hợp lệ hoá tham số, chuyển cho service xử lý nghiệp vụ và kiểm tra quyền truy cập, service gọi repository để truy vấn nội dung bài học từ MongoDB. Dữ liệu trả ngược lên được service ánh xạ sang đối tượng truyền dữ liệu và controller tuần tự hoá để gửi về thiết bị."),
+  p("Sang phần kiểm tra, ứng dụng gọi tiếp endpoint lấy danh sách câu hỏi của bài học — máy chủ cố ý không trả kèm đáp án trong phản hồi này để tránh lộ đáp án ở phía khách. Sau khi người học nộp câu trả lời, một yêu cầu thứ hai mang theo lựa chọn của người học được gửi lên; service chấm điểm, ghi lại lượt trả lời, cập nhật tiến độ và chuỗi ngày học, rồi trả về đáp án đúng kèm giải thích và trích dẫn nguồn. Việc tách hai lượt gọi — lấy câu hỏi không đáp án, rồi nộp để chấm — là một quyết định thiết kế giữ cho đáp án luôn nằm ở phía máy chủ."),
+  figurePlaceholder("Biểu đồ tuần tự luồng học và làm bài kiểm tra (UC-01)"),
+  caption("Hình 3.2: Biểu đồ tuần tự luồng học và làm bài kiểm tra"),
+
+  h3("3.4.2 Luồng tra cứu thực thể (UC-02)"),
+  p("Luồng tra cứu thực thể minh hoạ việc ứng dụng web dựng một hồ sơ từ nhiều lời gọi API nối tiếp. Trước hết, ứng dụng gọi GET /knowledge-graph/entities/{id} để lấy hồ sơ cốt lõi của thực thể: mô tả, thời kỳ, loại thực thể và nguồn tham khảo. Ngay sau khi có thực thể hợp lệ, ứng dụng phát lời gọi thứ hai tới GET /knowledge-graph/entities/{id}/related?maxHops=2 để lấy các thực thể liên quan trong bán kính hai bước quanh nó."),
+  p("Trình tự này là nối tiếp chứ không song song vì lời gọi thứ hai phụ thuộc vào kết quả của lời gọi thứ nhất: nếu lời gọi đầu trả về rỗng — tức thực thể không tồn tại — ứng dụng dừng lại và hiển thị trạng thái không tìm thấy, không phát lời gọi lấy thực thể liên quan. Khi cả hai phản hồi về, service phía web hợp nhất hồ sơ cốt lõi với danh sách thực thể liên quan, nhóm các quan hệ theo loại rồi kết xuất thành giao diện hồ sơ. Tham số maxHops=2 được chọn để mở rộng ngữ cảnh vừa đủ cho người học thấy được các liên hệ gián tiếp mà vẫn giữ kết quả gọn, tránh phình to khi một thực thể trung tâm có rất nhiều quan hệ."),
+  figurePlaceholder("Biểu đồ tuần tự luồng tra cứu thực thể và các thực thể liên quan (UC-02)"),
+  caption("Hình 3.3: Biểu đồ tuần tự luồng tra cứu thực thể"),
+
+  h2("3.5 Thiết kế kiến trúc tổng thể"),
   p("Hệ thống được tổ chức thành bốn thành phần triển khai độc lập, giao tiếp qua giao diện rõ ràng."),
   table(
     ["Thành phần", "Công nghệ", "Quy mô mã nguồn hiện tại"],
@@ -136,20 +184,21 @@ module.exports = () => [
     ],
     [2400, 1800, 6000],
   ),
-  caption("Bảng 3.7: Các thành phần của hệ thống và quy mô mã nguồn"),
+  caption("Bảng 3.9: Các thành phần của hệ thống và quy mô mã nguồn"),
   p("Luồng dữ liệu của một yêu cầu đọc nội dung đi theo thứ tự: ứng dụng di động gọi REST API → controller kiểm tra xác thực và hợp lệ hoá tham số → service xử lý nghiệp vụ và kiểm tra quyền → repository truy vấn cơ sở dữ liệu → dữ liệu được ánh xạ sang đối tượng truyền dữ liệu và trả về. Ràng buộc kiến trúc quan trọng: controller không được gọi trực tiếp repository, và service không được thao tác trực tiếp với thư viện truy cập cơ sở dữ liệu."),
+  p("Việc phân tách rạch ròi ba lớp controller – service – repository không chỉ là quy ước hình thức mà còn phục vụ hai mục tiêu phi chức năng đã nêu ở Bảng 3.2. Thứ nhất, nó giữ cho logic nghiệp vụ độc lập với cả giao thức truyền tải lẫn cơ chế lưu trữ: vì service không biết dữ liệu nằm trên MongoDB hay MySQL, việc thay đổi lược đồ hoặc chuyển một thực thể từ hệ quản trị này sang hệ quản trị kia chỉ chạm tới lớp repository. Thứ hai, nó mở đường cho kiểm thử đơn vị với repository được giả lập, tức kiểm thử nghiệp vụ mà không cần cơ sở dữ liệu thật."),
   figurePlaceholder("Sơ đồ kiến trúc tổng thể hệ thống và luồng dữ liệu giữa các thành phần"),
-  caption("Hình 3.2: Sơ đồ kiến trúc tổng thể hệ thống"),
+  caption("Hình 3.4: Sơ đồ kiến trúc tổng thể hệ thống"),
 
-  h3("3.4.1 Cơ chế xác thực và phân quyền"),
+  h3("3.5.1 Cơ chế xác thực và phân quyền"),
   p("Hệ thống sử dụng JWT cho xác thực. Máy chủ cài đặt bốn lớp bảo vệ ở tầng định tuyến: lớp xác thực JWT đọc token từ tiêu đề Authorization và xác minh chữ ký; lớp xác thực Firebase dùng cho một số luồng đăng nhập qua nhà cung cấp bên thứ ba; lớp kiểm tra vai trò đối chiếu vai trò trong token với vai trò yêu cầu của endpoint; và lớp kiểm tra quyền chi tiết. Các endpoint công khai được đánh dấu bằng siêu dữ liệu riêng để bỏ qua bước xác thực."),
   p("Phía trang quản trị, bộ chặn HTTP tự động gắn token vào mọi yêu cầu. Khi máy chủ trả về mã lỗi 401 và yêu cầu chưa từng thử lại, bộ chặn sẽ gọi endpoint làm mới token, lưu token mới rồi phát lại yêu cầu ban đầu; nếu việc làm mới thất bại thì xoá token và chuyển hướng về trang đăng nhập."),
 
-  h2("3.5 Thiết kế cơ sở dữ liệu"),
-  h3("3.5.1 Phân chia dữ liệu giữa hai hệ quản trị"),
+  h2("3.6 Thiết kế cơ sở dữ liệu"),
+  h3("3.6.1 Phân chia dữ liệu giữa hai hệ quản trị"),
   p("Hệ thống hiện có 112 lược đồ dữ liệu trên MongoDB và 12 thực thể bảng trên MySQL. Nguyên tắc phân chia: nội dung học tập và dữ liệu người dùng lưu trên MongoDB do cấu trúc không đồng đều và nhu cầu đọc là chủ yếu; dữ liệu thanh toán và thuê bao lưu trên MySQL do yêu cầu toàn vẹn giao dịch."),
 
-  h3("3.5.2 Một số lược đồ dữ liệu chính"),
+  h3("3.6.2 Một số lược đồ dữ liệu chính"),
   p("Lược đồ Người dùng (MongoDB) lưu thông tin tài khoản, vai trò và trạng thái:"),
   table(
     ["Trường", "Kiểu", "Mô tả"],
@@ -166,7 +215,7 @@ module.exports = () => [
     ],
     [2900, 1900, 5400],
   ),
-  caption("Bảng 3.8: Các trường chính của lược đồ Người dùng"),
+  caption("Bảng 3.10: Các trường chính của lược đồ Người dùng"),
   p("Lược đồ Khoá học (MongoDB) lưu nội dung học tập ở mức cao nhất:"),
   table(
     ["Trường", "Kiểu", "Mô tả"],
@@ -182,7 +231,21 @@ module.exports = () => [
     ],
     [2900, 1900, 5400],
   ),
-  caption("Bảng 3.9: Các trường chính của lược đồ Khoá học"),
+  caption("Bảng 3.11: Các trường chính của lược đồ Khoá học"),
+  p("Lược đồ Bài học (MongoDB) nằm dưới khoá học một bậc, lưu nội dung chi tiết của một đơn vị tri thức cùng tập câu hỏi kiểm tra kèm theo:"),
+  table(
+    ["Trường", "Kiểu", "Mô tả"],
+    [
+      ["title", "đối tượng đa ngữ", "Tiêu đề bài học, lưu theo từng ngôn ngữ"],
+      ["courseId", "string", "Khoá học mà bài học thuộc về"],
+      ["keypoints", "Array", "Danh sách các ý trọng tâm (keypoint) của bài học"],
+      ["order", "number", "Thứ tự hiển thị của bài học trong khoá học"],
+      ["status", "enum", "Trạng thái bản nháp / chờ duyệt / đã xuất bản"],
+      ["questions", "Array", "Tập câu hỏi kiểm tra gắn với bài học; mỗi câu tham chiếu tới các thực thể mà nó kiểm tra"],
+    ],
+    [2900, 1900, 5400],
+  ),
+  caption("Bảng 3.12: Các trường chính của lược đồ Bài học"),
   p("Bảng Thuê bao (MySQL) lưu trạng thái gói dịch vụ của người dùng, đòi hỏi tính nhất quán cao:"),
   table(
     ["Trường", "Kiểu", "Mô tả"],
@@ -197,10 +260,25 @@ module.exports = () => [
     ],
     [3400, 1800, 5000],
   ),
-  caption("Bảng 3.10: Các trường chính của bảng Thuê bao"),
+  caption("Bảng 3.13: Các trường chính của bảng Thuê bao"),
 
-  h2("3.6 Thiết kế đồ thị tri thức"),
-  h3("3.6.1 Lược đồ khái niệm"),
+  h2("3.7 Thiết kế API module đồ thị tri thức"),
+  p("Module đồ thị tri thức mở ra ba endpoint REST mà ứng dụng web tiêu thụ để phục vụ luồng tra cứu (UC-02). Toàn bộ nằm dưới tiền tố /api/v1/knowledge-graph, và mọi phản hồi tuân theo bao bọc chuẩn của NestJS gồm ba trường statusCode, message và data — trong đó phần dữ liệu nghiệp vụ luôn nằm ở trường data, giúp phía khách xử lý lỗi và dữ liệu một cách thống nhất."),
+  table(
+    ["Endpoint", "Tham số", "Dữ liệu trả về (data)"],
+    [
+      ["GET /knowledge-graph/entities", "q: chuỗi tìm kiếm;\nlimit: số lượng tối đa, mặc định 30", "Danh sách KgEntitySummary — mỗi phần tử gồm mã định danh, tên và loại thực thể, dùng cho gợi ý khi gõ"],
+      ["GET /knowledge-graph/entities/{id}", "id: mã định danh thực thể", "KgEntityProfile — hồ sơ đầy đủ gồm mô tả, thời kỳ, loại và nguồn tham khảo; trả về null nếu không tìm thấy (tương ứng 404)"],
+      ["GET /knowledge-graph/entities/{id}/related", "id: mã định danh;\nmaxHops: số bước lan toả, mặc định 2;\nlimit: số lượng tối đa, mặc định 20", "Mảng KgRelatedEntity — các thực thể liên quan trong bán kính maxHops, kèm loại quan hệ nối tới thực thể gốc"],
+    ],
+    [3200, 3000, 4000],
+  ),
+  caption("Bảng 3.14: Hợp đồng REST của module đồ thị tri thức"),
+  p("Một đặc điểm quan trọng của endpoint tìm kiếm là **tìm kiếm không phân biệt dấu**: người học gõ \"tran hung dao\" không dấu vẫn khớp được thực thể \"Trần Hưng Đạo\". Hệ thống chuẩn hoá cả chuỗi truy vấn lẫn tên thực thể về dạng không dấu rồi mới so khớp, nhờ đó giảm ma sát khi nhập trên bàn phím di động — nơi việc gõ đủ dấu tiếng Việt vốn tốn thao tác. Tham số limit ở mỗi endpoint đặt trần cho kích thước phản hồi, giữ cho danh sách gợi ý và danh sách thực thể liên quan luôn gọn nhẹ."),
+  p("Việc endpoint hồ sơ trả về null thay vì ném lỗi khi không tìm thấy là một lựa chọn có chủ đích: nó cho phép phía khách phân biệt rạch ròi giữa \"thực thể không tồn tại\" (data bằng null, như đã trình bày ở luồng tuần tự UC-02) với lỗi hệ thống thực sự, từ đó hiển thị đúng trạng thái không tìm thấy thay vì trạng thái lỗi."),
+
+  h2("3.8 Thiết kế đồ thị tri thức"),
+  h3("3.8.1 Lược đồ khái niệm"),
   p("Đồ thị tri thức lịch sử được thiết kế với bốn loại thực thể và một tập loại quan hệ mở. Mỗi thực thể thuộc về một thời kỳ lịch sử và có ít nhất một nguồn tham khảo."),
   table(
     ["Loại thực thể", "Ý nghĩa", "Ví dụ"],
@@ -212,9 +290,9 @@ module.exports = () => [
     ],
     [2200, 3600, 4400],
   ),
-  caption("Bảng 3.11: Bốn loại thực thể trong đồ thị tri thức"),
+  caption("Bảng 3.15: Bốn loại thực thể trong đồ thị tri thức"),
 
-  h3("3.6.2 Cấu trúc tệp dữ liệu"),
+  h3("3.8.2 Cấu trúc tệp dữ liệu"),
   p("Dữ liệu đồ thị được lưu dưới dạng một tệp JSON gồm năm khối: periods (danh sách thời kỳ), sources (danh sách nguồn tham khảo), entities (danh sách thực thể), relations (danh sách quan hệ) và claims (các dữ kiện còn tranh luận giữa các nguồn). Cấu trúc này cho phép dùng chung cho cả hai mục đích: nạp vào pipeline nghiên cứu và làm dữ liệu khởi tạo cho cơ sở dữ liệu ứng dụng."),
   code([
     "{",
@@ -237,7 +315,7 @@ module.exports = () => [
   ]),
   p("Khối claims là một điểm thiết kế đáng lưu ý. Với môn Lịch sử, không phải dữ kiện nào cũng có một đáp án duy nhất được mọi nguồn đồng thuận; ví dụ niên đại Triệu Đà thôn tính Âu Lạc được ghi khác nhau giữa chính sử phong kiến và nghiên cứu hiện đại. Thay vì chọn một con số rồi trình bày như sự thật tuyệt đối, hệ thống lưu lại cả các quan điểm khác nhau kèm nguồn tương ứng, để phần tra cứu có thể trình bày trung thực sự khác biệt đó."),
 
-  h3("3.6.3 Ánh xạ sang cơ sở dữ liệu đồ thị"),
+  h3("3.8.3 Ánh xạ sang cơ sở dữ liệu đồ thị"),
   p("Khi nạp vào Neo4j, mỗi thực thể trở thành một nút nhãn Entity với thuộc tính qid và label; mỗi quan hệ trở thành một cạnh RELATION mang thuộc tính pid và label. Thao tác nạp dùng lệnh MERGE thay vì CREATE để bảo đảm tính bất biến khi chạy lại: nạp cùng một tập dữ liệu nhiều lần không tạo thêm nút hay cạnh trùng lặp."),
   code([
     "MERGE (h:Entity {qid: $head_qid})   SET h.label = $head_label",
@@ -247,8 +325,30 @@ module.exports = () => [
   ]),
   p("Chi tiết cần lưu ý: mã quan hệ pid được đưa vào chính mẫu khớp của MERGE chứ không chỉ gán bằng SET sau đó. Nếu không làm vậy, hai quan hệ khác loại giữa cùng một cặp thực thể sẽ bị gộp thành một cạnh duy nhất."),
   figurePlaceholder("Minh hoạ một phần đồ thị tri thức quanh thực thể Trần Hưng Đạo"),
-  caption("Hình 3.3: Minh hoạ một phần đồ thị tri thức"),
+  caption("Hình 3.5: Minh hoạ một phần đồ thị tri thức"),
 
-  h2("3.7 Kết chương"),
-  p("Chương 3 đã phân tích yêu cầu của ba nhóm tác nhân, đặc tả bốn use case tiêu biểu, trình bày kiến trúc bốn thành phần của hệ thống cùng cơ chế xác thực phân quyền, và thiết kế mô hình dữ liệu cho cả cơ sở dữ liệu nghiệp vụ lẫn đồ thị tri thức. Chương tiếp theo đi vào phần trọng tâm của đồ án: xây dựng tầng tri thức và tầng sinh nội dung."),
+  h3("3.8.4 Phân tích bậc và mật độ đồ thị"),
+  p("Đồ thị khởi tạo (seed graph) dùng làm dữ liệu nền cho hệ thống hiện gồm 176 thực thể, 205 quan hệ, 35 loại quan hệ, 12 thời kỳ, 11 nguồn tham khảo và 5 dữ kiện tranh luận. Với 176 nút và 205 cạnh, bậc trung bình của đồ thị ở mức thấp — mỗi thực thể trung bình chỉ nối trực tiếp với một vài thực thể khác. Đặc điểm này phản ánh bản chất của dữ liệu lịch sử được tuyển chọn thủ công theo nguồn: quan hệ được khai báo một cách thận trọng, chỉ khi có nguồn hậu thuẫn, nên đồ thị thưa chứ không dày đặc. Các chỉ số chi tiết về phân bố bậc, thành phần liên thông và ảnh hưởng của độ thưa tới chất lượng nhúng KGE được phân tích đầy đủ ở Chương 5."),
+  p("Tập loại quan hệ cũng phân bố không đều: một số ít loại chiếm phần lớn số cạnh, phần còn lại là các loại quan hệ thưa. Bảng dưới liệt kê các loại quan hệ xuất hiện nhiều nhất cùng tần suất của chúng trong đồ thị khởi tạo."),
+  table(
+    ["Loại quan hệ", "Ý nghĩa", "Tần suất"],
+    [
+      ["served", "Phụng sự, phục vụ dưới quyền", "28"],
+      ["led", "Chỉ huy, lãnh đạo", "23"],
+      ["founded", "Sáng lập, thành lập", "21"],
+      ["opposed", "Chống lại, đối đầu", "16"],
+      ["participated_in", "Tham gia vào sự kiện", "15"],
+      ["succeeded", "Kế vị, kế tục", "13"],
+      ["contemporary_with", "Cùng thời với", "11"],
+      ["part_of", "Là một phần của", "11"],
+      ["child_of", "Là con của", "7"],
+      ["followed", "Nối tiếp, theo sau", "5"],
+    ],
+    [2600, 4600, 3000],
+  ),
+  caption("Bảng 3.16: Các loại quan hệ xuất hiện nhiều nhất trong đồ thị khởi tạo"),
+  p("Sự phân bố lệch này có hệ quả trực tiếp tới thiết kế: các loại quan hệ đông đảo như served, led hay founded cung cấp đủ ví dụ để mô hình nhúng học được quy luật của chúng, trong khi các loại quan hệ thưa như followed chỉ có vài cạnh sẽ khó được mô hình biểu diễn tốt — một hạn chế được bàn kỹ ở Chương 5. Nó cũng gợi ý rằng khi mở rộng đồ thị về sau, nên ưu tiên bổ sung dữ kiện cho các loại quan hệ đang thưa để cân bằng tập huấn luyện."),
+
+  h2("3.9 Kết chương"),
+  p("Chương 3 đã phân tích yêu cầu của ba nhóm tác nhân, đặc tả sáu use case tiêu biểu, mô tả luồng tuần tự của hai nghiệp vụ trọng tâm, trình bày kiến trúc bốn thành phần của hệ thống cùng cơ chế xác thực phân quyền, đặc tả hợp đồng REST của module đồ thị tri thức, và thiết kế mô hình dữ liệu cho cả cơ sở dữ liệu nghiệp vụ lẫn đồ thị tri thức — bao gồm cả bước phân tích sơ bộ về bậc và mật độ của đồ thị khởi tạo. Chương tiếp theo đi vào phần trọng tâm của đồ án: xây dựng tầng tri thức và tầng sinh nội dung."),
 ];

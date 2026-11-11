@@ -1,10 +1,11 @@
-const { p, h1, h2, h3, bullet, table, code, formula, figurePlaceholder, caption } = require("../lib/helpers");
+const { p, h1, h2, h3, bullet, num, table, code, formula, figurePlaceholder, caption } = require("../lib/helpers");
 
 module.exports = () => [
   h1("Chương 2: Các công nghệ sử dụng"),
 
   h2("2.1 Tổng quan lựa chọn công nghệ"),
   p("Hệ thống gồm hai nhóm thành phần có yêu cầu kỹ thuật khác nhau, do đó sử dụng hai nhóm công nghệ tương ứng. Nhóm thứ nhất là nền tảng ứng dụng phục vụ người dùng cuối, gồm máy chủ API, trang quản trị nội dung và ứng dụng di động. Nhóm thứ hai là module nghiên cứu xây dựng tầng tri thức và tầng sinh nội dung, hoạt động độc lập theo dạng pipeline xử lý dữ liệu."),
+  p("Nguyên tắc chung chi phối toàn bộ lựa chọn công nghệ trong đồ án là chọn công cụ theo đúng đặc tính của bài toán con, thay vì ép mọi thành phần vào một ngăn xếp công nghệ duy nhất. Vì vậy hệ thống chấp nhận tính không đồng nhất — Node.js cho tầng ứng dụng nhưng Python cho tầng học biểu diễn, cơ sở dữ liệu tài liệu cho nội dung nhưng cơ sở dữ liệu quan hệ cho thanh toán và cơ sở dữ liệu đồ thị cho tri thức — để mỗi tầng được viết bằng công cụ phù hợp nhất với loại truy vấn và loại ràng buộc toàn vẹn mà nó phải bảo đảm."),
   table(
     ["Thành phần", "Công nghệ chính", "Vai trò"],
     [
@@ -24,6 +25,7 @@ module.exports = () => [
   h2("2.2 NestJS"),
   p("NestJS là framework xây dựng ứng dụng phía máy chủ trên nền Node.js, sử dụng TypeScript và mô hình kiến trúc mô-đun hoá theo kiểu Angular. Máy chủ API của hệ thống sử dụng NestJS phiên bản 9.4.3 cùng TypeScript 4.9.5."),
   p("Lý do lựa chọn NestJS cho đề tài này gồm ba điểm. Thứ nhất, NestJS áp đặt sẵn một cấu trúc phân lớp rõ ràng gồm controller, service và repository; với một hệ thống có quy mô lớn (93 controller, 132 service, 133 repository trong mã nguồn hiện tại) thì ràng buộc kiến trúc này giúp mã nguồn không bị rối. Thứ hai, cơ chế tiêm phụ thuộc (dependency injection) sẵn có cho phép thay thế tầng truy cập dữ liệu mà không sửa tầng nghiệp vụ. Thứ ba, NestJS hỗ trợ đồng thời REST và WebSocket trong cùng một ứng dụng, phù hợp với nhu cầu vừa trả dữ liệu theo yêu cầu vừa đẩy sự kiện thời gian thực."),
+  p("Khái niệm kiến trúc cốt lõi của NestJS là hệ thống module kết hợp với bộ tiêm phụ thuộc. Mỗi tính năng được đóng gói trong một module khai báo tường minh danh sách provider mà nó cung cấp và danh sách module mà nó nhập vào; nhờ đó phạm vi hiển thị của một provider bị giới hạn trong ranh giới module, tránh tình trạng mọi thành phần đều truy cập được lẫn nhau. Khi một lớp khai báo phụ thuộc trong hàm khởi tạo, NestJS tự tra cứu provider tương ứng trong đồ thị phụ thuộc và cung cấp một thể hiện duy nhất theo mặc định (singleton). Hệ quả thực tiễn là tầng nghiệp vụ chỉ phụ thuộc vào trừu tượng của repository chứ không vào hiện thực cụ thể, giúp đổi nguồn dữ liệu hoặc viết kiểm thử với repository giả lập mà không chạm vào service."),
   p("Hệ thống cấu hình tiền tố toàn cục là /api kết hợp cơ chế đánh phiên bản theo URI với phiên bản mặc định là 1, do đó mọi endpoint đều có dạng /api/v1/…"),
   code([
     "// src/main.ts",
@@ -33,16 +35,19 @@ module.exports = () => [
     "  defaultVersion: '1',",
     "});",
   ]),
+  p("Một dòng dữ liệu đi vào máy chủ còn đi qua các lớp cắt ngang do NestJS cung cấp sẵn: guard kiểm tra xác thực và phân quyền trước khi vào controller, pipe xác thực và chuyển kiểu dữ liệu đầu vào theo khai báo DTO, interceptor bao bọc phản hồi và filter bắt ngoại lệ chuyển thành mã lỗi HTTP thống nhất. Việc những mối quan tâm này được tách khỏi logic nghiệp vụ và khai báo bằng decorator giúp mã nguồn của controller chỉ còn mô tả luồng dữ liệu, góp phần giữ tính nhất quán trên hàng chục module."),
 
   h2("2.3 React và hệ sinh thái giao diện quản trị"),
   p("Trang quản trị nội dung được xây dựng bằng React phiên bản 19.1.1 khởi tạo qua Create React App 5.0.1, sử dụng TypeScript 4.9.5. Các thư viện chính gồm React Router DOM 7.9.3 cho điều hướng, Redux Toolkit 2.9.0 cho quản lý trạng thái toàn cục, Material UI 7.3.2 kết hợp Tailwind CSS 3.4.17 cho giao diện, và Axios 1.12.2 cho giao tiếp HTTP."),
-  p("Một đặc điểm đáng chú ý trong thiết kế trạng thái của trang quản trị: Redux chỉ được dùng cho hai lát cắt trạng thái mang tính toàn cục thật sự là ngôn ngữ hiển thị và thông báo hệ thống. Dữ liệu lấy từ máy chủ không được lưu vào Redux mà do từng trang tự gọi service tương ứng và giữ trong trạng thái cục bộ của component. Cách làm này đánh đổi khả năng chia sẻ dữ liệu giữa các trang để lấy sự đơn giản và tránh việc đồng bộ hoá bộ nhớ đệm phức tạp."),
+  p("Mô hình lập trình của React dựa trên component và trạng thái: giao diện được phân rã thành các component độc lập, mỗi component là một hàm nhận đầu vào (props) và trả về mô tả giao diện. Khi trạng thái cục bộ của component hoặc props thay đổi, React tính lại cây giao diện ảo rồi chỉ cập nhật phần khác biệt lên DOM thật. Vì giao diện được suy ra từ trạng thái một cách tất định, lập trình viên mô tả giao diện cần hiển thị ứng với từng trạng thái thay vì thao tác trực tiếp lên DOM, giúp giao diện và dữ liệu luôn đồng bộ."),
+  p("Một đặc điểm đáng chú ý trong thiết kế trạng thái của trang quản trị: Redux chỉ được dùng cho hai lát cắt trạng thái mang tính toàn cục thật sự là ngôn ngữ hiển thị và thông báo hệ thống. Dữ liệu lấy từ máy chủ không được lưu vào Redux mà do từng trang tự gọi service tương ứng và giữ trong trạng thái cục bộ của component. Lý do là phần lớn dữ liệu quản trị có tính cục bộ theo từng trang và vòng đời ngắn: mở trang, chỉnh sửa, lưu rồi rời đi; đưa dữ liệu này vào kho toàn cục chỉ làm phát sinh gánh nặng đồng bộ hoá bộ nhớ đệm mà không đem lại lợi ích chia sẻ thực sự. Cách làm này đánh đổi khả năng chia sẻ dữ liệu giữa các trang để lấy sự đơn giản và tránh việc đồng bộ hoá bộ nhớ đệm phức tạp."),
   p("Ngoài ra, trang quản trị sử dụng một số thư viện chuyên biệt phục vụ công việc biên soạn nội dung: TipTap 2.27.1 làm trình soạn thảo văn bản định dạng, dnd-kit cho thao tác kéo thả sắp xếp thứ tự bài học, Recharts 3.10.1 cho biểu đồ thống kê và thư viện xlsx cho nhập/xuất dữ liệu dạng bảng tính."),
 
   h2("2.4 Flutter"),
   p("Ứng dụng di động sử dụng Flutter với yêu cầu Dart SDK từ phiên bản 3.12.0. Flutter cho phép dùng chung một mã nguồn cho cả iOS và Android, đồng thời kiểm soát được chi tiết giao diện — yếu tố quan trọng với một ứng dụng học tập cần điều chỉnh cỡ chữ, độ tương phản và nhịp hoạt ảnh theo từng nhóm người dùng."),
   p("Các thư viện chính được sử dụng gồm: flutter_bloc 9.1.1 cho quản lý trạng thái theo mô hình BLoC/Cubit, get_it 9.2.1 kết hợp injectable 3.0.0 cho tiêm phụ thuộc, go_router 17.3.0 cho điều hướng khai báo, Dio 5.9.2 kết hợp Retrofit 4.9.2 cho giao tiếp REST, freezed 3.2.5 cho sinh mã lớp dữ liệu bất biến, hydrated_bloc 11.0.0 cho lưu trạng thái xuống bộ nhớ thiết bị, và just_audio 0.10.5 cho phát nội dung thu âm."),
   p("Ứng dụng được tổ chức theo Clean Architecture: mỗi tính năng được chia thành ba lớp data, domain và presentation. Lớp domain định nghĩa thực thể nghiệp vụ, giao diện repository và các use case; lớp data hiện thực repository thông qua các nguồn dữ liệu cục bộ và từ xa; lớp presentation chứa Cubit quản lý trạng thái cùng các trang và widget."),
+  p("Về mặt quản lý trạng thái, mô hình BLoC/Cubit tách rời logic trạng thái khỏi giao diện: Cubit giữ trạng thái bất biến và phát ra trạng thái mới mỗi khi dữ liệu thay đổi, còn widget chỉ lắng nghe và dựng lại theo trạng thái nhận được. Việc xử lý lỗi dùng kiểu TaskEither của thư viện fpdart: mỗi use case trả về một giá trị có thể là lỗi hoặc kết quả thành công, buộc Cubit phải xử lý tường minh cả hai nhánh thay vì để ngoại lệ lan truyền không kiểm soát. Nhờ đó các trạng thái tải, thành công và thất bại được mô hình hoá rõ ràng và giao diện luôn có nhánh hiển thị tương ứng cho từng trường hợp."),
 
   h2("2.5 MongoDB và MySQL"),
   p("Hệ thống sử dụng đồng thời hai cơ sở dữ liệu quan hệ và phi quan hệ cho hai loại dữ liệu có đặc tính khác nhau."),
@@ -60,6 +65,7 @@ module.exports = () => [
     "       o.label AS object, rel.pid AS source_pid",
     "LIMIT $limit",
   ]),
+  p("Khác biệt về chi phí duyệt đồ thị giữa Neo4j và cơ sở dữ liệu quan hệ xuất phát từ cách lưu trữ quan hệ. Trong cơ sở dữ liệu quan hệ, mỗi bước duyệt sang thực thể lân cận là một phép nối bảng phải tra cứu chỉ mục, và truy vấn n bước cần n phép nối lồng nhau với chi phí tăng nhanh theo n cũng như theo kích thước bảng. Neo4j lưu mỗi nút kèm con trỏ trực tiếp tới các cạnh kề của nó — cơ chế gọi là index-free adjacency — nên việc đi từ một nút sang nút láng giềng có chi phí xấp xỉ hằng số và độc lập với tổng số nút trong đồ thị. Nhờ đó chi phí của một truy vấn duyệt phụ thuộc vào số nút thực sự chạm tới quanh điểm xuất phát chứ không vào kích thước toàn đồ thị — đặc tính quyết định đối với truy vấn lân cận đa bước mà tầng sinh nội dung cần."),
   p("Mô hình dữ liệu trên Neo4j được thiết kế tối giản: mọi thực thể là nút mang nhãn Entity với hai thuộc tính qid và label; mọi quan hệ dùng chung một loại cạnh RELATION mang thuộc tính pid và label. Việc dùng một loại cạnh chung thay vì tạo loại cạnh riêng cho từng quan hệ giúp truy vấn đa bước không phải liệt kê trước danh sách loại quan hệ, nhờ đó thêm loại quan hệ mới không cần sửa truy vấn."),
 
   h2("2.7 Đồ thị tri thức và mô hình nhúng TransE"),
@@ -68,6 +74,7 @@ module.exports = () => [
 
   h3("2.7.2 Bài toán nhúng đồ thị tri thức"),
   p("Nhúng đồ thị tri thức (Knowledge Graph Embedding) là kỹ thuật ánh xạ mỗi thực thể và mỗi loại quan hệ thành một vector số trong không gian nhiều chiều, sao cho cấu trúc quan hệ của đồ thị được bảo toàn trong không gian đó. Khi đã có biểu diễn vector, các phép toán vốn khó thực hiện trên đồ thị rời rạc — như đo độ tương đồng giữa hai thực thể hay dự đoán quan hệ còn thiếu — trở thành các phép toán đại số tuyến tính thông thường."),
+  p("Một khó khăn nền tảng của bài toán là đồ thị tri thức chỉ chứa các bộ ba đúng mà không liệt kê các bộ ba sai — đây là giả định thế giới mở (open world assumption): một bộ ba không có mặt trong đồ thị không nhất thiết là sai, có thể chỉ là chưa được ghi nhận. Do không có mẫu âm tường minh để huấn luyện, các mô hình nhúng phải tự sinh mẫu âm giả định qua kỹ thuật negative sampling, trình bày ở mục 2.7.4."),
 
   h3("2.7.3 Mô hình TransE"),
   p("TransE là mô hình nhúng đồ thị tri thức cổ điển và dễ diễn giải nhất, được chọn làm mô hình cơ sở trong đồ án. Ý tưởng của TransE là coi mỗi quan hệ như một phép tịnh tiến trong không gian vector: nếu bộ ba (h, r, t) là đúng thì vector của h cộng với vector của r phải xấp xỉ vector của t."),
@@ -78,16 +85,54 @@ module.exports = () => [
   formula("sim(u, v) = (u · v) / (‖u‖ · ‖v‖)"),
   p("Giá trị nằm trong đoạn [−1, 1]; càng gần 1 thì hai thực thể càng được mô hình đánh giá là xuất hiện trong ngữ cảnh quan hệ tương tự nhau."),
 
-  h3("2.7.4 Độ đo đánh giá"),
+  h3("2.7.4 So sánh các họ mô hình nhúng và lựa chọn TransE"),
+  p("Các mô hình nhúng đồ thị tri thức chia thành ba họ chính theo cách mô hình hoá hàm điểm. Họ tịnh tiến (translational) coi quan hệ là phép dịch chuyển trong không gian vector: TransE dùng chung một không gian cho thực thể và quan hệ; TransH chiếu thực thể lên một siêu phẳng riêng của từng quan hệ trước khi tịnh tiến để xử lý quan hệ một–nhiều và nhiều–một; TransR đi xa hơn bằng cách ánh xạ thực thể sang một không gian quan hệ riêng qua ma trận chiếu. Họ so khớp ngữ nghĩa (semantic-matching) tính điểm bằng tích tương tác giữa các vector: DistMult dùng dạng song tuyến tính với ma trận quan hệ chéo nên đơn giản nhưng đối xứng, không biểu diễn được quan hệ bất đối xứng; ComplEx đưa biểu diễn sang không gian số phức để khắc phục hạn chế này. Họ quay (rotational) như RotatE coi quan hệ là phép quay trong không gian phức, nhờ đó biểu diễn được đồng thời quan hệ đối xứng, bất đối xứng, nghịch đảo và hợp thành."),
+  table(
+    ["Mô hình", "Hàm điểm", "Ưu điểm", "Hạn chế"],
+    [
+      ["TransE", "− ‖ h + r − t ‖", "Ít tham số, dễ diễn giải, huấn luyện nhanh", "Khó biểu diễn quan hệ một–nhiều, đối xứng, nghịch đảo"],
+      ["TransH", "Tịnh tiến trên siêu phẳng của quan hệ", "Xử lý tốt quan hệ một–nhiều/nhiều–một", "Thêm siêu phẳng cho mỗi quan hệ, nhiều tham số hơn"],
+      ["TransR", "Tịnh tiến trong không gian riêng của quan hệ", "Tách không gian thực thể và quan hệ", "Ma trận chiếu làm số tham số tăng mạnh"],
+      ["DistMult", "⟨ h, diag(r), t ⟩", "Đơn giản, hiệu quả với quan hệ đối xứng", "Luôn đối xứng, không biểu diễn quan hệ bất đối xứng"],
+      ["ComplEx", "Re ⟨ h, r, t̄ ⟩ trong không gian phức", "Biểu diễn được quan hệ bất đối xứng", "Khó diễn giải hình học, nhiều tham số hơn"],
+      ["RotatE", "− ‖ h ∘ r − t ‖ (quan hệ là phép quay)", "Biểu diễn đối xứng, bất đối xứng, nghịch đảo, hợp thành", "Chi phí huấn luyện cao, cần nhiều dữ liệu"],
+    ],
+    [1600, 3200, 2800, 2600],
+  ),
+  caption("Bảng 2.2: So sánh các họ mô hình nhúng đồ thị tri thức"),
+  p("Đồ án chọn TransE làm mô hình cơ sở vì ba lý do phù hợp với bối cảnh bài toán. Thứ nhất là tính dễ diễn giải: phép tịnh tiến h + r ≈ t có ý nghĩa hình học trực quan, thuận lợi cho việc giải thích kết quả tương đồng thực thể trong một đồ án học thuật. Thứ hai là số tham số nhỏ: mỗi thực thể và quan hệ chỉ cần một vector duy nhất, không có ma trận chiếu hay biểu diễn phức như các mô hình phức tạp hơn, nên mô hình ít rủi ro quá khớp trên đồ thị cỡ nhỏ. Thứ ba là sự phù hợp với quy mô dữ liệu: bộ dữ liệu lịch sử tự biên soạn của đồ án tương đối nhỏ và phần lớn quan hệ mang tính một–một hoặc phân cấp, nên những hạn chế của TransE với quan hệ một–nhiều ít ảnh hưởng, trong khi các mô hình nhiều tham số hơn cần lượng dữ liệu lớn để phát huy ưu thế. Các mô hình còn lại được nêu ở đây làm nền so sánh và là hướng mở rộng khi dữ liệu lớn hơn."),
+
+  h3("2.7.5 Lấy mẫu âm và giao thức đánh giá"),
+  p("Vì đồ thị tri thức không chứa mẫu âm tường minh, TransE sinh bộ ba sai bằng cách thay thế thực thể đầu hoặc cuối của một bộ ba đúng. Có hai chiến lược lấy mẫu âm. Chiến lược đều (uniform) chọn thực thể thay thế theo phân phối đều trên toàn bộ tập thực thể; cách này đơn giản nhưng với quan hệ một–nhiều dễ sinh ra bộ ba thực chất lại đúng (mẫu âm giả), gây nhiễu cho huấn luyện. Chiến lược Bernoulli điều chỉnh xác suất thay đầu hay thay cuối theo số thực thể trung bình đứng ở mỗi phía của quan hệ: với quan hệ một–nhiều thì ưu tiên thay thực thể đầu, với quan hệ nhiều–một thì ưu tiên thay thực thể cuối, nhờ đó giảm tỉ lệ sinh ra mẫu âm giả."),
+  p("Chất lượng mô hình được đánh giá qua bài toán dự đoán liên kết, nhưng cần phân biệt hai cách xếp hạng. Trong xếp hạng thô (raw), khi che một vị trí của bộ ba kiểm thử và xếp hạng toàn bộ thực thể ứng viên, có thể có những ứng viên tạo thành bộ ba đúng khác đã tồn tại trong tập dữ liệu nhưng vẫn bị xếp trên đáp án cần tìm, khiến thứ hạng của đáp án bị đánh tụt một cách không công bằng. Xếp hạng lọc (filtered) khắc phục bằng cách loại khỏi danh sách ứng viên mọi bộ ba đúng đã biết (trừ chính bộ ba đang xét) trước khi tính thứ hạng:"),
+  formula("rank_filtered(h, r, t) = | { e ∉ KG : score(h, r, e) ≥ score(h, r, t) } | + 1"),
+  p("Nhờ loại trừ các đáp án đúng khác, xếp hạng lọc phản ánh đúng năng lực của mô hình và là giao thức chuẩn trong hầu hết công bố về nhúng đồ thị tri thức; đồ án báo cáo các độ đo theo giao thức lọc này."),
+
+  h3("2.7.6 Độ đo đánh giá"),
   p("Chất lượng mô hình nhúng được đánh giá bằng bài toán dự đoán liên kết: với mỗi bộ ba trong tập kiểm thử, mô hình xếp hạng toàn bộ thực thể có thể đứng ở vị trí cần dự đoán, sau đó xem thực thể đúng nằm ở thứ hạng nào. Hai độ đo được sử dụng:"),
   bullet("**MRR (Mean Reciprocal Rank)** — trung bình của nghịch đảo thứ hạng trên toàn bộ tập kiểm thử. Giá trị càng gần 1 càng tốt."),
   bullet("**Hits@k** — tỉ lệ các bộ ba mà thực thể đúng nằm trong nhóm k thực thể được xếp hạng cao nhất. Đồ án báo cáo Hits@1, Hits@3 và Hits@10."),
+  formula("MRR = (1 / |T|) · Σ 1 / rank_i"),
 
   h2("2.8 PyKEEN"),
   p("PyKEEN là thư viện Python chuyên cho nghiên cứu nhúng đồ thị tri thức, xây dựng trên PyTorch. Đồ án sử dụng PyKEEN phiên bản 1.11.0. Thư viện cung cấp sẵn nhiều mô hình nhúng (TransE, DistMult, ComplEx, RotatE…), cơ chế chia tập huấn luyện/kiểm thử và bộ độ đo đánh giá chuẩn, nhờ đó kết quả có thể so sánh được với các công bố khác."),
+  p("Việc dùng PyKEEN còn giúp bảo đảm tính đúng đắn của giao thức đánh giá: thư viện hiện thực sẵn xếp hạng lọc và các độ đo MRR, Hits@k theo chuẩn chung, loại bỏ nguy cơ sai lệch do tự cài đặt lại phần đánh giá. Nhờ đó đồ án có thể tập trung vào khâu xây dựng dữ liệu và diễn giải kết quả thay vì vào chi tiết hiện thực thuật toán."),
   p("Trong quá trình cài đặt, đồ án gặp một lỗi tương thích thư viện đáng ghi nhận: phiên bản class-resolver từ 0.5.5 trở lên khiến việc nạp mô-đun pykeen.triples thất bại do xung đột kiểm tra kiểu theo chuẩn PEP 612 trên môi trường Python 3.9. Lỗi được xử lý bằng cách ghim class-resolver ở phiên bản 0.5.1 — đúng mức tối thiểu mà PyKEEN khai báo — và ghi chú trực tiếp trong tệp requirements để tránh vô tình nâng cấp về sau."),
 
-  h2("2.9 Wikidata và ngôn ngữ truy vấn SPARQL"),
+  h2("2.9 Thuật toán lặp lại ngắt quãng"),
+  p("Lặp lại ngắt quãng (spaced repetition) là cơ sở lý thuyết cho tầng lập lịch ôn tập mà đồ án đề xuất. Nguyên lý xuất phát từ hiệu ứng giãn cách trong khoa học trí nhớ: cùng một lượng thời gian ôn tập sẽ cho hiệu quả ghi nhớ dài hạn cao hơn nếu các lần ôn được phân bố giãn ra theo thời gian, và tốt nhất là ôn lại ngay trước thời điểm kiến thức sắp bị quên. Vấn đề cốt lõi của một thuật toán lập lịch là ước lượng thời điểm đó cho từng người học và từng đơn vị kiến thức."),
+  h3("2.9.1 Thuật toán SM-2"),
+  p("SM-2 là thuật toán lặp lại ngắt quãng kinh điển, đơn giản và được dùng rộng rãi. Với mỗi thẻ kiến thức, SM-2 duy trì ba đại lượng: khoảng cách ôn tập I (số ngày đến lần ôn kế tiếp), hệ số dễ EF (ease factor) phản ánh mức độ dễ nhớ của thẻ, và số lần ôn đúng liên tiếp n. Sau mỗi lần ôn, người học tự chấm chất lượng hồi tưởng q trên thang từ 0 đến 5. Khoảng cách ôn tập được cập nhật theo quy tắc:"),
+  formula("I₁ = 1 ;  I₂ = 6 ;  Iₙ = Iₙ₋₁ × EF   (n ≥ 3)"),
+  p("Nghĩa là lần ôn đầu cách một ngày, lần thứ hai cách sáu ngày, từ lần thứ ba trở đi khoảng cách được nhân với hệ số dễ nên giãn ra theo cấp số nhân khi thẻ được nhớ tốt. Hệ số dễ cũng được cập nhật sau mỗi lần ôn theo chất lượng hồi tưởng, và bị chặn dưới ở 1,3 để khoảng cách không bao giờ giãn quá nhanh:"),
+  formula("EF ← max(1,3 ;  EF + 0,1 − (5 − q) × (0,08 + (5 − q) × 0,02))"),
+  p("Nếu chất lượng hồi tưởng thấp (q < 3), thẻ bị coi là quên: số lần ôn đúng liên tiếp đặt lại về 0 và khoảng cách trở về mức ban đầu, buộc người học ôn lại từ đầu. Ưu điểm của SM-2 là rất ít tham số và dễ hiện thực; hạn chế là chỉ dựa trên một hệ số dễ tĩnh cho mỗi thẻ, không mô hình hoá tường minh quá trình quên theo thời gian."),
+  h3("2.9.2 Mô hình FSRS"),
+  p("FSRS (Free Spaced Repetition Scheduler) là thế hệ thuật toán mới hơn, mô hình hoá trí nhớ bằng ba thành phần tách bạch cho mỗi thẻ. Độ khó (difficulty) phản ánh mức độ khó ghi nhớ nội tại của thẻ. Độ bền (stability) là khoảng thời gian cần để xác suất nhớ lại giảm từ mức tối đa xuống một ngưỡng định trước — độ bền càng lớn thì kiến thức càng được giữ lâu. Độ truy hồi (retrievability) là xác suất người học nhớ lại được thẻ tại một thời điểm, suy giảm theo thời gian trôi qua kể từ lần ôn gần nhất và được mô hình bằng một hàm quên phụ thuộc vào độ bền:"),
+  formula("R(t) = f( t / S )     với t là thời gian trôi qua, S là độ bền"),
+  p("Sau mỗi lần ôn, FSRS cập nhật đồng thời ba đại lượng theo kết quả hồi tưởng: ôn đúng làm tăng độ bền (tăng mạnh hơn khi ôn đúng lúc độ truy hồi đã thấp, phản ánh nguyên lý ôn ngay trước khi quên), ôn sai làm giảm độ bền và điều chỉnh độ khó. Lần ôn kế tiếp được lập lịch vào thời điểm độ truy hồi dự đoán rơi xuống ngưỡng mục tiêu do người dùng đặt. So với SM-2, FSRS tách rời độ khó với độ bền và mô hình hoá tường minh quá trình quên, nhờ đó lập lịch sát với trí nhớ thực tế hơn; đổi lại thuật toán có nhiều tham số hơn và thường cần hiệu chỉnh trên dữ liệu ôn tập để đạt hiệu quả tốt nhất. Đồ án tham chiếu cả hai thuật toán làm cơ sở cho tầng lập lịch ôn tập ở các chương sau."),
+
+  h2("2.10 Wikidata và ngôn ngữ truy vấn SPARQL"),
   p("Wikidata là cơ sở tri thức mở do cộng đồng xây dựng, lưu dữ liệu dưới dạng RDF. Mỗi thực thể có một mã định danh dạng QID (ví dụ Q8740 là Chiến tranh Việt Nam) và mỗi loại thuộc tính có mã PID (ví dụ P710 là “người tham gia”). Wikidata cung cấp một điểm truy vấn SPARQL công khai, cho phép trích xuất dữ liệu có cấu trúc mà không cần tải toàn bộ kho dữ liệu."),
   p("SPARQL là ngôn ngữ truy vấn chuẩn cho dữ liệu RDF, hoạt động theo nguyên tắc khớp mẫu bộ ba. Truy vấn dưới đây lấy các thực thể có thuộc tính quốc gia là Việt Nam cùng một số loại quan hệ quan tâm:"),
   code([
@@ -102,10 +147,10 @@ module.exports = () => [
   ]),
   p("Wikidata được dùng trong đồ án với hai vai trò: làm dữ liệu công khai để kiểm chứng pipeline xử lý trước khi áp dụng lên dữ liệu tự biên soạn, và làm nguồn đối chiếu chéo để phát hiện sai sót trong bộ dữ liệu tự biên soạn."),
 
-  h2("2.10 Mô hình ngôn ngữ lớn và sinh nội dung có kiểm soát"),
+  h2("2.11 Mô hình ngôn ngữ lớn và sinh nội dung có kiểm soát"),
   p("Mô hình ngôn ngữ lớn được sử dụng ở tầng sinh nội dung để chuyển một tập dữ kiện có cấu trúc thành câu hỏi kiểm tra bằng ngôn ngữ tự nhiên. Tuy nhiên, với môn Lịch sử, việc để mô hình tự do sinh nội dung là rủi ro: mô hình có thể đưa vào câu hỏi những mốc thời gian hoặc tên riêng không tồn tại trong dữ liệu đầu vào."),
   p("Đồ án do đó áp dụng nguyên tắc sinh có kiểm soát gồm hai lớp. Lớp thứ nhất là ràng buộc trong lời nhắc: chỉ cung cấp cho mô hình đúng tập dữ kiện đã trích từ đồ thị, yêu cầu mô hình không dùng bất kỳ tên riêng hay năm nào ngoài tập đó, và bắt buộc trả kết quả theo định dạng JSON có khai báo danh sách thực thể đã sử dụng. Lớp thứ hai — quan trọng hơn — là kiểm chứng tự động sau khi sinh: một đoạn mã đối chiếu mọi số năm bốn chữ số và mọi thực thể được khai báo trong câu hỏi với tập dữ kiện đầu vào, và từ chối câu hỏi nếu phát hiện phần tử không khớp. Chi tiết cơ chế này được trình bày ở mục 4.8."),
 
-  h2("2.11 Kết chương"),
-  p("Chương 2 đã trình bày các công nghệ được lựa chọn cùng lý do lựa chọn tương ứng với từng bài toán cụ thể của hệ thống: NestJS, React và Flutter cho nền tảng ứng dụng; MongoDB và MySQL cho dữ liệu nghiệp vụ; Neo4j cho lưu trữ và truy vấn đồ thị; PyKEEN với mô hình TransE cho học biểu diễn; Wikidata và SPARQL cho nguồn dữ liệu mở; và mô hình ngôn ngữ lớn kèm cơ chế kiểm soát cho sinh nội dung. Chương tiếp theo trình bày phân tích và thiết kế hệ thống trên nền các công nghệ này."),
+  h2("2.12 Kết chương"),
+  p("Chương 2 đã trình bày các công nghệ được lựa chọn cùng lý do lựa chọn tương ứng với từng bài toán cụ thể của hệ thống: NestJS, React và Flutter cho nền tảng ứng dụng; MongoDB và MySQL cho dữ liệu nghiệp vụ; Neo4j cho lưu trữ và truy vấn đồ thị; đồ thị tri thức với mô hình TransE cùng các họ mô hình nhúng và giao thức đánh giá chuẩn cho học biểu diễn; PyKEEN làm công cụ huấn luyện; các thuật toán lặp lại ngắt quãng SM-2 và FSRS làm cơ sở cho tầng lập lịch ôn tập; Wikidata và SPARQL cho nguồn dữ liệu mở; và mô hình ngôn ngữ lớn kèm cơ chế kiểm soát cho sinh nội dung. Chương tiếp theo trình bày phân tích và thiết kế hệ thống trên nền các công nghệ này."),
 ];

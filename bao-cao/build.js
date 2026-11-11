@@ -20,6 +20,7 @@ const chapters = [
   require("./content/ch3"),
   require("./content/ch4"),
   require("./content/ch5"),
+  require("./content/ch_web"),
   require("./content/ch6"),
 ];
 
