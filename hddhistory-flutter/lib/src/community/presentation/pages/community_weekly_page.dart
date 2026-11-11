@@ -1,0 +1,209 @@
+part of '../../community.dart';
+
+/// The weekly question and its answers (design `S-05`).
+///
+/// Answers are ordinary comments on the question post, so everything below the
+/// header is the same machinery as a normal thread.
+class CommunityWeeklyPage extends StatelessWidget {
+  const CommunityWeeklyPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.community;
+
+    return BlocBuilder<CommunityPostCubit, CommunityPostState>(
+      builder: (context, state) {
+        final cubit = context.read<CommunityPostCubit>();
+        final weekly = state.weekly;
+
+        return Scaffold(
+          backgroundColor: studyThemeScaffoldColor(context, AppCustomColor.backgroundGray),
+          appBar: _CommunityAppBar(title: l10n.weeklyTitle),
+          body: state.status == CommunityStatus.loading && weekly == null
+              ? const Center(child: CircularProgressIndicator())
+              : weekly == null
+              ? Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: _CommunityMessage(
+                    // No open question is a real answer, not a failure.
+                    title: l10n.weeklyNoneTitle,
+                    body: l10n.weeklyNoneBody,
+                  ),
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: _CommunityThreadList(
+                        header: _WeeklyHeaderBlock(weekly: weekly),
+                        state: state,
+                      ),
+                    ),
+                    if (state.canComment)
+                      CommunityComposerBar(
+                        isSubmitting: state.isSubmitting,
+                        isCoolingDown: state.isCoolingDown,
+                        replyingToName: state.replyTarget == null ? null : cubit.replyToName,
+                        onCancelReply: cubit.cancelReply,
+                        onSubmit: (body) async {
+                          final sent = await cubit.submitComment(body);
+                          if (sent || !context.mounted) return sent;
+
+                          DMessage.showMessage(
+                            message: cubit.state.errorMessage ?? l10n.errorBody,
+                            type: MessageType.error,
+                          );
+
+                          return sent;
+                        },
+                        hintOverride: l10n.composerHintWeekly,
+                      )
+                    else
+                      _ClosedComposerNote(state: state),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _WeeklyHeaderBlock extends StatelessWidget {
+  const _WeeklyHeaderBlock({required this.weekly});
+
+  final CommunityWeeklyEntity weekly;
+
+  /// "TUẦN 34 · 18—24/08" — week number and the window it covers.
+  ///
+  /// The date range is what makes "còn 3 ngày" concrete; the feed card has room
+  /// for only the week number, this screen has room for both.
+  String _label(BuildContext context) {
+    final l10n = context.l10n.community;
+    final week = weekly.weekNumber;
+    final start = weekly.startsAt;
+    final end = weekly.endsAt;
+    final range = start == null || end == null
+        ? ''
+        : '${start.parseString('dd/MM')}—${end.parseString('dd/MM')}';
+
+    // "CÂU HỎI CỦA TUẦN · TUẦN 35 · 24/08—30/08" does not fit this row at any
+    // phone width — it was ellipsised mid-date, which is the one part of the
+    // line a reader is here for. The prefix goes instead: the app bar directly
+    // above already says "Câu hỏi của tuần", so repeating it cost the dates.
+    // [weeklyWeekRange] is the short form, written for exactly this and unused
+    // until now.
+    if (week != null && range.isNotEmpty) {
+      return l10n.weeklyWeekRange(week: week, range: range);
+    }
+    if (week != null) return l10n.weeklyLabelWithWeek(week: week);
+    return range.isEmpty ? l10n.weeklyLabel : '${l10n.weeklyLabel} · $range';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n.community;
+    final daysLeft = weekly.daysLeft;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(18.w),
+          decoration: BoxDecoration(
+            color: AppCustomColor.brandPrimary50,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppCustomColor.communityWeeklyBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: AppText(
+                      _label(context),
+                      style: AppStyle.textBold10.copyWith(
+                        color: AppCustomColor.streakActive,
+                        letterSpacing: 0.7,
+                      ),
+                      // Wraps rather than clips: a longer locale must cost a
+                      // second line, never the dates at the end of it.
+                      maxLines: 2,
+                    ),
+                  ),
+                  if (daysLeft != null && daysLeft > 0)
+                    AppText(
+                      l10n.weeklyDaysLeft(count: daysLeft),
+                      style: AppStyle.text10.copyWith(color: AppCustomColor.communityMuted),
+                    ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              AppText(
+                weekly.title,
+                style: AppStyle.textBold20.copyWith(
+                  color: AppCustomColor.communityTopicHeading,
+                  height: 1.4,
+                ),
+                maxLines: 100,
+              ),
+              SizedBox(height: 14.h),
+              Row(
+                children: [
+                  // Solid brand disc with a white M — the team's mark here is a
+                  // signature on the question, not a member avatar in a list.
+                  Container(
+                    width: 22.w,
+                    height: 22.w,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppCustomColor.brandPrimary,
+                    ),
+                    child: AppText(
+                      'M',
+                      style: AppStyle.textBold8.copyWith(color: AppCustomColor.textWhite),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  AppText(
+                    l10n.officialAuthorName,
+                    style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Outside the card on purpose: it is house guidance about answering,
+        // not part of the question being asked. Falls back to the app's own
+        // line: the design always shows one, and an empty `note` on the
+        // server's side is a blank the reader would read as a layout gap.
+        Padding(
+          padding: EdgeInsets.only(top: 16.h),
+          child: AppText(
+            weekly.note.isNotEmpty ? weekly.note : l10n.weeklyNote,
+            style: AppStyle.text12.copyWith(
+              // Outside the question card, so it is on the background itself.
+              color: studyThemeCardMuted(context, AppCustomColor.communityMuted),
+              height: 1.5,
+            ),
+            // The note is written by the team in admin and can be longer than
+            // [AppText]'s default ten lines.
+            maxLines: 100,
+          ),
+        ),
+        if (weekly.answerCount > 0)
+          Padding(
+            padding: EdgeInsets.only(top: 18.h),
+            child: AppText(
+              l10n.commentCount(count: weekly.answerCount),
+              style: AppStyle.textBold14.copyWith(
+                color: AppCustomColor.textPrimary,
+              ),
+            ),
+          ),
+        SizedBox(height: 18.h),
+      ],
+    );
+  }
+}

@@ -1,0 +1,92 @@
+# HDDhistory - Project Context
+
+## Project Overview
+**HDDhistory** is a multi-platform Flutter application designed for interactive language learning. It features scripted lessons, AI-driven roleplay, and progress tracking. The project emphasizes automation and cross-platform development parity.
+
+*   **Architecture**: Clean Architecture (Presentation, Domain, Data) with `TaskEither` for functional error handling.
+*   **Tech Stack**: Flutter (Dart), Firebase (Auth, Analytics, Crashlytics), GraphQL/REST (Dio/Retrofit), `go_router`, `flutter_bloc` / `hydrated_bloc`, `slang` (localization).
+*   **Platforms**: Android, iOS (Primary targets), with tooling support for macOS/Linux/Windows.
+
+## Building and Running
+
+### Prerequisites
+*   Flutter SDK (>=3.10.0 <4.0.0)
+*   Standard development tools (Git, etc.)
+
+### Key Commands
+The project relies on OS-specific scripts in `tools/<os>/` (where `<os>` is `macos`, `linux`, or `windows`) to ensure consistent behavior across environments.
+
+**1. Setup & Bootstrap**
+```bash
+# Run the setup script for your OS to install dependencies and configure the environment
+./tools/<os>/config/setup_project.sh
+```
+
+**2. Code Generation & Localization**
+*Vital step after pulling changes or modifying entities/assets.*
+```bash
+# Generate code (Freezed, Retrofit, Injectable, etc.)
+dart run build_runner build --delete-conflicting-outputs
+
+# Sync Localization (Pull -> Generate)
+# This pulls translations from Google Sheets and regenerates the slang files
+./tools/<os>/localization/localization.sh pull
+dart run slang
+dart run slang_build_runner
+```
+
+**3. Running the App**
+Use flavors to target specific environments (dev, stg, prod).
+```bash
+# Development flavor (Default for local dev)
+flutter run --flavor dev -t lib/main_dev.dart
+
+# Staging
+flutter run --flavor stg -t lib/main_stg.dart
+
+# Production
+flutter run --flavor prod -t lib/main_prod.dart
+```
+
+**4. Quality Gates**
+```bash
+flutter analyze
+flutter test
+./tools/<os>/smoke.sh  # Sanity check for the toolchain
+```
+
+## Development Conventions
+
+### Architecture Pattern
+The codebase is structured by feature in `lib/src/<feature>/`, strictly following Clean Architecture:
+
+*   **Presentation** (`lib/src/<feature>/presentation/`): UI Widgets and Cubits/Blocs. Uses `go_router` for navigation.
+*   **Domain** (`lib/src/<feature>/domain/`): Entities, UseCases, and Repository Interfaces. **Pure Dart** (no Flutter dependencies). UseCases must return `TaskEither<AppException, T>`.
+*   **Data** (`lib/src/<feature>/data/`): DTOs, Repository Implementations, and Data Sources.
+
+### Coding Standards
+*   **Dependency Injection**: Use `injectable` annotations (`@LazySingleton`, `@factoryMethod`, `@injectable`). Re-run `build_runner` to update the DI graph.
+*   **State Management**: `flutter_bloc`. Cubits should consume UseCases and fold the `TaskEither` result to emit states.
+*   **Localization**: Driven by Google Sheets. The workflow is strictly: Edit Sheets -> Pull (`localization.sh pull`) -> Generate (`dart run slang`). Do not manually modify generated localization files.
+*   **Error Handling**: Typed exceptions (`AppException`) propagated via `TaskEither`.
+
+### Git Conventions
+*   **Format**: `[type]/[TICKET-ID]: [description]`
+*   **Example**: `feature/TG-123: add login button`
+*   **Types**: `feature`, `fix`, `hotfix`, `release`, `docs`, `style`, `refactor`, `test`, `chore`.
+*   **Rules**:
+    *   Use slash (`/`) between type and Ticket ID.
+    *   Use colon (`:`) after Ticket ID.
+    *   Ticket ID required for feature/fix/hotfix.
+
+### Directory Structure Highlights
+*   `tools/`: Automation scripts separated by OS (`macos`, `linux`, `windows`).
+*   `.info/`: Contains sensitive configuration, keys (git-ignored), and build metadata. **Crucial for builds.**
+*   `lib/config/`: Application-wide configuration (DI, Routes, Themes, Localization).
+*   `assets/i18n/`: Source files for localization.
+
+## Documentation References
+*   `README.md`: High-level quick start.
+*   `AGENTS.md`: Detailed developer guidelines, repository rules, and command reference.
+*   `docs/project-overview-pdr.md`: Product requirements and goals.
+*   `docs/system-architecture.md`: Technical architecture and data flow.

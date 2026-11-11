@@ -1,0 +1,48 @@
+exerciseAnswer: Câu trả lời
+exerciseBadPointsTitle: Có thể cải thiện
+exerciseBadgeCompleteLabel: Huy hiệu kỹ năng
+exerciseBadgeCompleteMessage: Chúc mừng bạn đã hoàn thành khóa học
+exerciseCheckButton: Kiểm tra
+exerciseClickOutNoButton: Tiếp tục học
+exerciseClickOutWarnMessage: Tiến độ bài học sẽ không được lưu lại nếu thoát bây giờ.
+exerciseClickOutWarnTitle: Chờ chút!
+exerciseClickOutYesButton: Thoát
+exerciseCloseExplainButton: Đóng
+exerciseCompleteKeypointSkipButton: Tiếp tục
+exerciseCompleteLessonButton: Hoàn thành!
+exerciseCompleteVoiceTask: Hoàn thành!
+exerciseExplainButton: Giải thích
+exerciseExplanationTitle: Giải thích
+exerciseFeedbackCorrect: Chính xác!
+exerciseFeedbackCorrectAnswer: Câu trả lời đúng
+exerciseFeedbackCorrectTitle: Đúng
+exerciseFeedbackIncorrect: Không đúng!
+exerciseFeedbackIncorrectTitle: Sai
+exerciseFeedbackNotTrue: Không đúng
+exerciseFeedbackRight: Bạn đúng rồi
+exerciseGapFillingInstruction: Chạm vào từ để điền vào chỗ trống
+exerciseGoodPointsTitle: Điểm tốt
+exerciseInlineResultCorrect: Chính xác!
+exerciseKeypointCompleteTitle: Hoàn thành!
+exerciseLessonCompleteMessage: Bạn đang tiến gần hơn một bước tới mục tiêu
+exerciseLessonCompleteTitle: Hoàn thành bài học!
+exerciseLessonsLeftToUnlock: Còn ${count} bài để mở khoá
+exerciseMultiChoicesInstruction: Chọn tất cả đáp án đúng
+exerciseNextLessonLabel: Bài học tiếp theo
+exerciseProgressCompletedPercent: Đã hoàn thành ${percent}%
+exerciseRedoMessage: Làm lại những câu chưa đúng nhé.
+exerciseRedoTitle: Đến giờ ôn lại rồi!
+exerciseSequenceInstruction: Sắp xếp theo thứ tự
+exerciseSingleChoiceInstruction: Chọn đáp án đúng nhất
+exerciseSingleChoiceNoCorrectAnswerInstruction: Chọn phương án phù hợp với bạn
+exerciseSkipButton: Tiếp
+exerciseStressMarkInstruction: Đánh dấu trọng âm
+exerciseSubheaderLabelBuildNonverbal: Xây dựng sự hiện diện phi ngôn ngữ
+exerciseTapToSpeakButton: Chạm để nói
+exerciseVoiceAnalysisTitle: Phân tích câu trả lời
+exerciseYourAnswer: Câu trả lời của bạn
+
+# Shared practice-quiz deck strings (QuizQuestionCard — habit quiz + keypoint practice)
+exerciseSelectOneInstruction: Chọn đáp án đúng nhất
+exerciseSelectManyInstruction: Chọn tất cả đáp án đúng
+exerciseSwipeNextHint: Vuốt lên để sang câu tiếp

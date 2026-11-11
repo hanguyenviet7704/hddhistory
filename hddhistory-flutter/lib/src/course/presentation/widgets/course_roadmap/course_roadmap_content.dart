@@ -1,0 +1,294 @@
+part of '../../../course.dart';
+
+class CourseRoadmapContent extends StatefulWidget {
+  const CourseRoadmapContent({super.key, this.headerTitleOpacity});
+
+  /// Driven as the big course title scrolls away, so the page's sticky header
+  /// can fade its own copy of the title in (design: `courseHdrTitleOpacity`).
+  ///
+  /// A notifier rather than state: the header is a sibling of this list, and
+  /// routing a per-frame scroll value through either widget's setState would
+  /// rebuild the whole roadmap on every pixel of scroll.
+  final ValueNotifier<double>? headerTitleOpacity;
+
+  @override
+  State<CourseRoadmapContent> createState() => _CourseRoadmapContentState();
+}
+
+class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
+  bool _isUserScrolling = false;
+
+  /// The big title in the course header — measured, not guessed at from a
+  /// scroll offset, because the header's height depends on whether the course
+  /// has artwork and on how many lines its title wraps to.
+  final GlobalKey _courseTitleKey = GlobalKey();
+  // Anchors the "PHẦN" node (session) that holds the in-progress lesson, so we
+  // can scroll it into view. A "PHẦN" is a node WITHIN a level (a level can hold
+  // several), so we scroll to the node, not the level.
+  final GlobalKey _currentLessonKey = GlobalKey();
+
+  /// Request an auto-scroll on entering the roadmap via the nav tab (re-entry of
+  /// an already-loaded course): do it now if levels are present. A first load or
+  /// a course switch is handled by the load listener instead.
+  void _requestAutoScrollToCurrentLesson(RoadmapEntity roadmap) {
+    if (roadmap.levels.isNotEmpty) _performAutoScrollToCurrentLesson(roadmap);
+  }
+
+  /// Scroll so the in-progress lesson's "PHẦN" node sits near the top. No-op
+  /// while levels are loading. For a not-started course (nothing completed yet)
+  /// it leaves the list at the TOP so the course header — and, for a Re-anchor
+  /// course, the motivation the prompt just set — stays visible instead of
+  /// jumping to Lesson 1. The list resets to offset 0 on a course switch via its
+  /// ValueKey(courseId), so "no scroll" here genuinely means "top", not "stuck
+  /// at the previous course's offset".
+  void _performAutoScrollToCurrentLesson(RoadmapEntity roadmap) {
+    if (roadmap.levels.isEmpty) return;
+    final completedLessons = roadmap.levels.fold<int>(0, (sum, level) => sum + level.completedLessons);
+    if (completedLessons == 0 || roadmap.lastInProgressLesson == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _currentLessonKey.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.12,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  Future<void> _refreshRoadmapAndProgress() async {
+    final roadmapCubit = context.read<CourseRoadmapCubit>();
+    await roadmapCubit.loadRoadmap();
+    final courseId = roadmapCubit.state.roadmap.courseId;
+    if (!mounted) return;
+    if (courseId.isNotEmpty) {
+      await context.read<ProgressCubit>().loadAllUserProgresss(courseId: courseId, silent: true);
+    }
+  }
+
+  void _showSubmitFailure() {
+    if (!mounted) return;
+    context.showDSnackBar(
+      message: context.l10n.courseroadmap.additionalContentRequestSubmitFailure,
+      type: MessageType.error,
+    );
+  }
+
+  Future<bool> _submitAdditionalContentRequest({
+    required CourseLevel level,
+    required bool requested,
+    String requestText = '',
+  }) async {
+    final success = await context.read<ProgressCubit>().submitCompletedLevelAdditionalContentRequest(
+      level: level,
+      requested: requested,
+      requestText: requestText,
+    );
+    if (!success) _showSubmitFailure();
+    return success;
+  }
+
+  /// LEARNING spec: roadmap_suggest_content / roadmap_skip_suggest_content,
+  /// carrying best-effort skill + course context.
+  void _trackSuggestContent(String eventName) {
+    final courseId = context.read<CourseRoadmapCubit>().state.roadmap.courseId;
+    final trackingData = CourseTrackingData.fromCourseId(context, courseId);
+    AppService.instance.appTrackingService.trackEvent(
+      eventName,
+      parameters: trackingData == null
+          ? null
+          : {
+              'skill_id': trackingData.category.id,
+              'skill_name': trackingData.category.trackingName,
+              'course_id': trackingData.course.id,
+              'course_name': trackingData.course.trackingName,
+            },
+    );
+  }
+
+  Future<bool> _handleNoAdditionalContentRequest(CourseLevel level) {
+    _trackSuggestContent(TrackingKey.roadmapSkipSuggestContent);
+    return _submitAdditionalContentRequest(level: level, requested: false);
+  }
+
+  void _showRequestPopup(CourseLevel level) {
+    _trackSuggestContent(TrackingKey.roadmapSuggestContent);
+    CompletedLevelAdditionalContentRequestPopup.show(
+      context,
+      onSubmit: (requestText) => _submitAdditionalContentRequest(
+        level: level,
+        requested: true,
+        requestText: requestText,
+      ),
+    );
+  }
+
+  /// Hands the sticky header its opacity: 0 while the big title is still fully
+  /// on screen, 1 once it has scrolled up behind the header bar, ramped over
+  /// the title's own height so the two never read as one title in two places.
+  void _updateHeaderTitleOpacity() {
+    final notifier = widget.headerTitleOpacity;
+    if (notifier == null) return;
+
+    final titleContext = _courseTitleKey.currentContext;
+    if (titleContext == null) {
+      // Scrolled far enough that the header block was recycled out of the tree
+      // — the title is long gone, so the sticky one belongs at full strength.
+      notifier.value = 1;
+      return;
+    }
+
+    final box = titleContext.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+
+    final top = box.localToGlobal(Offset.zero).dy;
+    // Where the sticky header bar ends — anything above this line is hidden
+    // behind it.
+    final headerBottom = MediaQuery.paddingOf(context).top + 58.h;
+    final travel = box.size.height;
+    if (travel <= 0) return;
+
+    final hidden = (headerBottom - top) / travel;
+    notifier.value = hidden.clamp(0.0, 1.0);
+  }
+
+  bool _handleScrollNotification(
+    ScrollNotification notification,
+    RoadmapEntity roadmap,
+  ) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    _updateHeaderTitleOpacity();
+    if (notification is ScrollStartNotification && notification.dragDetails != null) {
+      _isUserScrolling = true;
+      return false;
+    }
+    if (notification is ScrollEndNotification) {
+      if (!_isUserScrolling) return false;
+      _isUserScrolling = false;
+      final trackingData = CourseTrackingData.fromCourseId(context, roadmap.courseId);
+      if (trackingData == null) return false;
+      AppService.instance.appTrackingService.trackRoadmapItemScroll(trackingData);
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: MultiBlocListener(
+        listeners: [
+          // Entering the roadmap (tab tap / opened from Home) → jump to the
+          // lesson in progress. Fires on the route-name transition only.
+          BlocListener<PageCubit, PageState>(
+            listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName && current.currentRouteName == RouteNamed.courseRoadmap,
+            listener: (context, _) => _requestAutoScrollToCurrentLesson(context.read<CourseRoadmapCubit>().state.roadmap),
+          ),
+          // A course's roadmap finished its first load, or a different course was
+          // opened (from Explore, Home, search, …) → position the NEW course.
+          // Fires only on these "new course view" transitions (not on progress
+          // ticks or pull-to-refresh, which keep courseId and non-empty levels),
+          // so it always repositions — no entry-pending flag to get consumed by
+          // the previous course, which is what stopped Explore-opened courses
+          // from scrolling.
+          BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
+            listenWhen: (previous, current) => (previous.roadmap.levels.isEmpty && current.roadmap.levels.isNotEmpty) || previous.roadmap.courseId != current.roadmap.courseId,
+            listener: (context, state) => _performAutoScrollToCurrentLesson(state.roadmap),
+          ),
+        ],
+        child: RefreshIndicator(
+          onRefresh: _refreshRoadmapAndProgress,
+          child: BlocBuilder<CourseRoadmapCubit, CourseRoadmapState>(
+            // This builder only reads roadmap + status (see body below) — the
+            // inner ProgressCubit BlocBuilder just below already has its own
+            // correctly-scoped buildWhen. CourseRoadmapCubit is high-frequency,
+            // so without this the whole branch (including the ListView.separated)
+            // re-evaluates on every emission.
+            buildWhen: (previous, current) => previous.roadmap != current.roadmap || previous.status != current.status,
+            builder: (context, roadmapState) {
+              final roadmap = roadmapState.roadmap;
+              if (roadmap.levels.isEmpty) {
+                final loadFailed = roadmapState.status == CourseRoadmapStatus.failure && roadmap.courseId.isNotEmpty;
+                // A bare Center isn't scrollable, so RefreshIndicator could never
+                // be triggered from the empty/failed state — wrap in an
+                // always-scrollable view so pull-to-refresh works here too.
+                return LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SizedBox(
+                      height: constraints.maxHeight,
+                      child: loadFailed
+                          ? CourseRoadmapLoadFailureState(
+                              onRetry: () => context.read<CourseRoadmapCubit>().loadRoadmap(),
+                            )
+                          : const CourseEmptyState(),
+                    ),
+                  ),
+                );
+              }
+              // Same source the paywall itself reads (API -> cache -> Remote
+              // Config -> bundled defaults) so lesson-lock and the paywall
+              // never disagree. See IapCubit.resolvedPaywallConfig.
+              final paywallConfig = AppDI.injector.get<IapCubit>().resolvedPaywallConfig;
+              final isPremium = context.read<ProfileCubit>().state.user.isPremium;
+              final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig, isPremium: isPremium);
+              return BlocBuilder<ProgressCubit, ProgressState>(
+                // The roadmap list only reads userCourseProgress + the
+                // additional-content submit flag. Without buildWhen the whole
+                // ListView.separated rebuilds on every unrelated progress change
+                // (lesson/keypoint/exercise results, status flips, etc.).
+                buildWhen: (previous, current) =>
+                    previous.userCourseProgress != current.userCourseProgress ||
+                    previous.isSubmittingCompletedLevelAdditionalContentRequest != current.isSubmittingCompletedLevelAdditionalContentRequest,
+                builder: (context, progressState) {
+                  return NotificationListener<ScrollNotification>(
+                    onNotification: (notification) => _handleScrollNotification(notification, roadmap),
+                    child: ListView.separated(
+                      // Reset scroll to the top on a course switch: keying the
+                      // list by courseId gives each course a fresh scrollable so
+                      // a newly-opened course can't inherit the previous one's
+                      // scroll offset. Same-course reloads (pull-to-refresh,
+                      // progress ticks) keep the key, so they don't jump.
+                      key: ValueKey(roadmap.courseId),
+                      // Bottom padding so the last card scrolls clear of the
+                      // floating "Start lesson" CTA (which sits above the nav
+                      // bar). Derived from the nav bar's ACTUAL height (varies
+                      // with the device's safe-area inset) instead of a flat
+                      // guess, or it falls short on devices with a taller inset.
+                      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, floatingNavBarHeight(context) + 60.h),
+                      separatorBuilder: (context, index) => 20.verticalSpace,
+                      itemCount: roadmap.levels.length,
+                      itemBuilder: (context, index) {
+                        final level = roadmap.levels[index];
+                        return CourseLevelContent(
+                          roadmapLevel: level,
+                          isFirstLevel: index == 0,
+                          courseTitleKey: index == 0 ? _courseTitleKey : null,
+                          // Anchor + target for auto-scroll: the level holding
+                          // the in-progress lesson keys its matching "PHẦN" node
+                          // with [_currentLessonKey] (null lesson = not started).
+                          currentLesson: roadmap.lastInProgressLesson,
+                          currentLessonKey: _currentLessonKey,
+                          enableSequentialUnlock: roadmap.levelSequentialUnlockFlags.elementAt(index),
+                          lockedLessonKeys: lockedLessonKeys,
+                          additionalContentRequestStatus: roadmap.additionalContentRequestStateFor(
+                            level: level.level,
+                            userProgress: progressState.userCourseProgress,
+                          ),
+                          isSubmittingAdditionalContentRequest: progressState.isSubmittingCompletedLevelAdditionalContentRequest,
+                          onNoAdditionalContentRequest: () => _handleNoAdditionalContentRequest(level.level),
+                          onYesAdditionalContentRequest: () => _showRequestPopup(level.level),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}

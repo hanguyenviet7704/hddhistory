@@ -1,0 +1,178 @@
+part of '../../feedback.dart';
+
+class FeedbackCompleteLessonPopup extends StatefulWidget {
+  const FeedbackCompleteLessonPopup({super.key});
+
+  static Future<void> show(
+    BuildContext context, {
+    FeedbackEntry entry = FeedbackEntry.roleplay,
+    required String courseId,
+    required String lessonId,
+    required String keypointId,
+  }) {
+    context.read<FeedbackCubit>().setActiveFeedback(
+      type: FeedbackType.complete,
+      entry: entry,
+      courseId: courseId,
+      lessonId: lessonId,
+      keypointId: keypointId,
+    );
+    final trackingData = _feedbackCourseTrackingData(context, courseId);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackFeedbackCompleteLessonView(
+        trackingData,
+        source: _feedbackSourceFromEntry(entry),
+      );
+    }
+    return showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'feedbackCompleteLessonPopup',
+      barrierColor: AppCustomColor.scrimOverlay,
+      transitionDuration: const Duration(milliseconds: 500),
+      pageBuilder: (_, _, _) => const SizedBox.shrink(),
+      routeSettings: const RouteSettings(name: RouteNamed.feedbackCompleteLessonPopup),
+      transitionBuilder: (context, animation, _, _) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+                BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+              ],
+              child: const FeedbackCompleteLessonPopup(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  State<FeedbackCompleteLessonPopup> createState() => _FeedbackCompleteLessonPopupState();
+}
+
+class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopup> {
+  bool _submitted = false;
+  bool _hasShownThankYou = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<FeedbackCubit, FeedbackState>(
+      listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
+      listener: (context, state) {
+        if (!_submitted || _hasShownThankYou) return;
+        _hasShownThankYou = true;
+        _submitted = false;
+        context.back();
+        Future.microtask(() {
+          if (!context.mounted) return;
+          FeedbackBeforeYouGoPopup.show(context);
+        });
+      },
+      child: BlocBuilder<FeedbackCubit, FeedbackState>(
+        builder: (context, state) {
+          return FeedbackPopupShell(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20.r),
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    AppCustomColor.backgroundWhite,
+                    AppCustomColor.feedbackGradientMid,
+                    AppCustomColor.feedbackGradientEnd,
+                  ],
+                  stops: const [0.253, 0.701, 1],
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 0),
+                    child: Column(
+                      children: [
+                        FeedbackHeader(
+                          title: context.l10n.feedback.completeTitle,
+                          subtitle: context.l10n.feedback.incompleteSubtitle,
+                        ),
+                        16.verticalSpace,
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
+                    child: Container(
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        color: AppCustomColor.backgroundWhite,
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FeedbackRatingRow(
+                            label: context.l10n.feedback.contentLabel,
+                            rating: state.draftContentRating,
+                            onRatingChanged: context.read<FeedbackCubit>().updateContentRating,
+                            starSize: 24,
+                            spacing: 4,
+                          ),
+                          16.verticalSpace,
+                          FeedbackRatingRow(
+                            label: context.l10n.feedback.experienceLabel,
+                            rating: state.draftExperienceRating,
+                            onRatingChanged: context.read<FeedbackCubit>().updateExperienceRating,
+                            starSize: 24,
+                            spacing: 4,
+                          ),
+                          16.verticalSpace,
+                          FeedbackCommentField(
+                            value: state.draftComment,
+                            hint: context.l10n.feedback.commentHint,
+                            onChanged: context.read<FeedbackCubit>().updateComment,
+                          ),
+                          32.verticalSpace,
+                          FeedbackPrimaryButton(
+                            title: context.l10n.feedback.sendFeedback,
+                            enabled: state.feedbackCompleteCanSubmit,
+                            onTap: () {
+                              if (!state.feedbackCompleteCanSubmit) return;
+
+                              final trackingData = _feedbackCourseTrackingData(context, state.activeCourseId);
+                              if (trackingData != null) {
+                                AppService.instance.appTrackingService.trackFeedbackCompleteLessonSend(
+                                  trackingData,
+                                  source: _feedbackSourceFromEntry(state.activeEntry),
+                                );
+                              }
+                              _submitted = true;
+                              context.read<FeedbackCubit>().submitFeedback();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+CourseTrackingData? _feedbackCourseTrackingData(BuildContext context, String courseId) {
+  if (courseId.isEmpty) return null;
+  return CourseTrackingData.fromCourseId(context, courseId);
+}
+
+String _feedbackSourceFromEntry(FeedbackEntry entry) {
+  return entry == FeedbackEntry.roleplay ? 'roleplay' : 'keypoint';
+}

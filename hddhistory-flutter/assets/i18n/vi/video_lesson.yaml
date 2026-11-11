@@ -1,0 +1,33 @@
+addNoteButton: Thêm ghi chú
+backButton: Quay lại
+checkQuestionButton: Kiểm tra
+continueWatchingButton: Tiếp tục xem
+correctAnswerTitle: Chính xác
+deleteNoteButton: Xóa ghi chú
+deleteNoteMessage: Ghi chú này sẽ bị xóa khỏi bài học này.
+deleteNoteTitle: Xóa ghi chú này?
+editNoteButton: Sửa ghi chú
+explanationTitle: Giải thích
+incorrectAnswerTitle: Chưa đúng
+keepEditingButton: Giữ lại
+lessonCompleteSubtitle: Giữ nhịp học tập của bạn.
+lessonCompleteTitle: Hoàn thành bài học!
+loadMoreNotesButton: Tải thêm ghi chú
+markAsCompleteButton: Đánh dấu hoàn thành
+noteEditorHint: Viết ghi chú của bạn tại đây...
+notesEmptyMessage: Nhấn "Thêm ghi chú" để tạo ghi chú đầu tiên
+notesTitle: Ghi chú
+retryLoadButton: Thử lại
+retryNotesLoadButton: Tải lại ghi chú
+saveNoteButton: Lưu ghi chú
+selectAllThatApplyLabel: Chọn tất cả đáp án phù hợp
+startWatchingButton: Bắt đầu xem
+summaryKeyPointsTitle: Điểm chính
+summaryOverviewTitle: Tổng quan
+summaryTitle: Tóm tắt
+unavailableMessage: Hiện chưa thể mở bài học video này.
+unsupportedQuestionMessage: Dạng câu hỏi này hiện chưa được hỗ trợ trong luồng video
+  lesson.
+unsupportedQuestionTitle: Tiếp tục
+videoDurationFallback: 5 phút
+videoTypeLabel: VIDEO

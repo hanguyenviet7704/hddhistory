@@ -1,0 +1,371 @@
+part of '../../home.dart';
+
+@lazySingleton
+class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState> {
+  final GetAllCategoriesUseCase _getAllUseCase;
+  final GetCategoryUseCase _getUseCase;
+  final GetRandomQuoteUseCase _getRandomQuoteUseCase;
+  final GetSuggestCoursesUseCase _getSuggestCoursesUseCase;
+  final GetHomeBannerUseCase _getHomeBannerUseCase;
+  final MarkHomeBannerImpressionUseCase _markHomeBannerImpressionUseCase;
+  final MarkHomeBannerClickUseCase _markHomeBannerClickUseCase;
+  final MarkHomePopupImpressionUseCase _markHomePopupImpressionUseCase;
+
+  HomeCubit(
+    this._getAllUseCase,
+    this._getUseCase,
+    this._getRandomQuoteUseCase,
+    this._getSuggestCoursesUseCase,
+    this._getHomeBannerUseCase,
+    this._markHomeBannerImpressionUseCase,
+    this._markHomeBannerClickUseCase,
+    this._markHomePopupImpressionUseCase,
+  ) : super(HomeState.initial());
+
+  bool _isInitialized = false;
+  DateTime? _lastInitializedAt;
+  Future<void>? _initInFlight;
+
+  /// How long a successful init stays "fresh". Within this window an
+  /// `isInit` re-entry (splash/auth/handoff/pull-to-refresh) is skipped so we
+  /// don't refetch all 5 endpoints again. A [force] request always refetches.
+  static const _initFreshnessWindow = Duration(seconds: 45);
+
+  /// Self-heal for pages that render the home dataset (Home, Explore grid):
+  /// if the catalog is empty because an earlier load failed or never ran
+  /// (e.g. a first-session prewarm raced/failed right after install) and
+  /// nothing is in flight, force a refetch. No-op when data is present, so
+  /// it's safe to call on every page mount. Without this, a failed first
+  /// load leaves Home/Explore blank until the user pull-to-refreshes or
+  /// restarts the app.
+  Future<void> ensureHomeDataLoaded() {
+    if (!shouldSelfHealHomeData(state)) return Future.value();
+    return initializeData(isInit: true, force: true);
+  }
+
+  Future<void>? _ensureSuggestedInFlight;
+
+  /// Self-heal for Home's "recommended" strip: refetches only the suggested
+  /// courses when they're missing (a suggest-only failure inside
+  /// initializeData is hidden as an empty section and never retried by
+  /// [ensureHomeDataLoaded], whose gate only checks categories). No-op when
+  /// suggestions are present or a fetch is already running, so it's safe to
+  /// call on every Home mount and tab return.
+  Future<void> ensureSuggestedCoursesLoaded() {
+    final inFlight = _ensureSuggestedInFlight;
+    if (inFlight != null) return inFlight;
+    if (!shouldEnsureSuggestedCoursesReload(state)) return Future.value();
+    final future = loadSuggestCourses().whenComplete(() => _ensureSuggestedInFlight = null);
+    _ensureSuggestedInFlight = future;
+    return future;
+  }
+
+  Future<void> initializeData({bool isInit = false, bool force = false}) async {
+    // De-dupe concurrent callers (prewarm + handoff + page mount) onto the SAME
+    // in-flight fetch instead of each starting its own.
+    final inFlight = _initInFlight;
+    if (inFlight != null) return inFlight;
+    if (!force) {
+      // First-load guard: only the initial call (or an explicit isInit) may
+      // load when not yet initialized.
+      if (_isInitialized && !isInit) return;
+      // Freshness guard: a very recent SUCCESSFUL init is reused instead of
+      // hitting all endpoints again for another isInit re-entry.
+      final lastInitializedAt = _lastInitializedAt;
+      if (_isInitialized && lastInitializedAt != null && DateTime.now().difference(lastInitializedAt) < _initFreshnessWindow) {
+        return;
+      }
+    }
+    final future = _runInitializeData();
+    _initInFlight = future;
+    try {
+      await future;
+    } finally {
+      _initInFlight = null;
+    }
+  }
+
+  Future<void> _runInitializeData() async {
+    // Load both courses and categories]
+    await Future.wait<void>([
+      loadAllCategories(isInit: true),
+      loadRandomQuote(),
+      loadSuggestCourses(),
+      loadHomeBanner(),
+      AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
+      AppDI.injector.get<ProfileCubit>().loadUser(),
+    ]);
+    // Only mark the init done + "fresh" when the CRITICAL dataset (categories)
+    // actually loaded. A transient failure — e.g. the onboarding prewarm fires
+    // before the anonymous token is attached, so categories 401 → empty — must
+    // NOT be cached as fresh, otherwise the freshness guard blocks every retry
+    // and Home/Explore stays blank with no API re-fire.
+    final loadedOk = state.categories.isNotEmpty;
+    _isInitialized = loadedOk;
+    _lastInitializedAt = loadedOk ? DateTime.now() : null;
+  }
+
+  static final _fallbackQuote = QuoteEntity(
+    content: const BaseMultiLanguage(
+      en: "Life isn't about finding yourself.\nLife is about creating yourself.",
+      vi: 'Cuộc sống không phải là tìm thấy bản thân.\nCuộc sống là tạo ra bản thân.',
+    ),
+  );
+
+  Future<void> loadRandomQuote() async {
+    await runUseCase<QuoteEntity>(
+      usecase: () => _getRandomQuoteUseCase(),
+      onFailure: (error) => emit(
+        state.copyWith(
+          errorMessage: error,
+          quote: _fallbackQuote,
+        ),
+      ),
+      onSuccess: (quote) => emit(state.copyWith(quote: quote)),
+    );
+  }
+
+  /// Best-effort: the banner is decorative, so a failed fetch keeps
+  /// `homeBanner` null (section stays collapsed) and never sets errorMessage —
+  /// a promo slot must not surface an error over the rest of Home.
+  Future<void> loadHomeBanner() async {
+    await runUseCase<HomeBannerEntity>(
+      usecase: () => _getHomeBannerUseCase(),
+      onFailure: (_) {},
+      onSuccess: (banner) => emit(state.copyWith(homeBanner: banner)),
+    );
+  }
+
+  /// Campaign keys already reported as an impression this app session — for
+  /// the banner carousel and the promo popup respectively. In-memory and
+  /// per-[HomeCubit] instance ON PURPOSE: [HomeCubit] is itself a
+  /// `@lazySingleton`, so this dies with the process exactly like
+  /// [HomePromoPopupHost._shownThisSession] does, and swiping the carousel
+  /// back and forth (or the popup somehow raising twice) must not re-report
+  /// the same campaign.
+  final Set<String> _trackedBannerImpressionKeys = {};
+  final Set<String> _trackedPopupImpressionKeys = {};
+
+  /// Records that a banner carousel slide was actually shown to the reader —
+  /// the initial slide on first build, then each new slide the carousel
+  /// scrolls to. Skips silently when [campaignKey] is empty (a server build
+  /// predating the field) or already reported this session.
+  void trackBannerImpression(String campaignKey) {
+    if (campaignKey.isEmpty || !_trackedBannerImpressionKeys.add(campaignKey)) return;
+    _fireTrackingCall(() => _markHomeBannerImpressionUseCase(campaignKey), label: 'home_banner_impression');
+  }
+
+  /// Records a tap on a banner carousel slide, alongside the existing
+  /// link-opening behaviour. Every tap is a real click, so unlike the
+  /// impression this is not deduplicated. Skips silently when [campaignKey]
+  /// is empty.
+  void trackBannerClick(String campaignKey) {
+    if (campaignKey.isEmpty) return;
+    _fireTrackingCall(() => _markHomeBannerClickUseCase(campaignKey), label: 'home_banner_click');
+  }
+
+  /// Records that the promo popup was actually shown. [HomePromoPopupHost]
+  /// already limits the popup itself to once per app session; this guards
+  /// the same campaign key being reported twice regardless. Skips silently
+  /// when [campaignKey] is empty.
+  void trackPopupImpression(String campaignKey) {
+    if (campaignKey.isEmpty || !_trackedPopupImpressionKeys.add(campaignKey)) return;
+    _fireTrackingCall(() => _markHomePopupImpressionUseCase(campaignKey), label: 'home_popup_impression');
+  }
+
+  /// Shared fire-and-forget shape for the three tracking calls above: never
+  /// awaited by the caller, never emits state (nothing on Home should
+  /// rebuild because a tracking beacon landed), and a failure only ever
+  /// reaches a debug log line — the repository layer already keeps it off
+  /// the UI (`enableErrorMessages: false`).
+  void _fireTrackingCall(TaskEither<AppException, bool> Function() usecase, {required String label}) {
+    unawaited(
+      usecase().run().then(
+        (result) => result.fold(
+          (error) => LogDev.error('$label failed: ${error.message}'),
+          (_) => null,
+        ),
+      ),
+    );
+  }
+
+  Future<void> loadSuggestCourses() async {
+    await runUseCaseList<SuggestedCourseEntity>(
+      usecase: () => _getSuggestCoursesUseCase(6),
+      onFailure: (error) => emit(state.copyWith(errorMessage: error)),
+      onSuccess: (courses) => emit(state.copyWith(suggestedCourses: courses)),
+    );
+  }
+
+  void resetSelection({
+    int categoryIndex = 0,
+    int courseIndex = 0,
+  }) {
+    emit(
+      state.copyWith(
+        selectedCategoryIndex: categoryIndex,
+        selectedCourseIndex: courseIndex,
+      ),
+    );
+  }
+
+  void selectCategoryIndex(int index) => emit(state.copyWith(selectedCategoryIndex: index));
+  void selectCategory(CategoryEntity category) {
+    int categoryIndex = state.categories.indexWhere((s) => s.id == category.id);
+    if (categoryIndex == -1) return;
+    selectCategoryIndex(categoryIndex);
+  }
+
+  void selectCourseIndex(int index) {
+    emit(state.copyWith(selectedCourseIndex: index));
+    AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: state.currentCourse.id);
+  }
+
+  void selectCourse(CourseEntity course) {
+    int courseIndex = state.currentCategory.courses.indexWhere((c) => c.id == course.id);
+    if (courseIndex == -1) {
+      _loadRoadmapOutsideCatalog(course.id);
+      return;
+    }
+    selectCourseIndex(courseIndex);
+  }
+
+  /// Fetches the roadmap for a course the categories catalog does not contain.
+  ///
+  /// The catalog only exposes published and coming-soon courses, and it can
+  /// also simply have failed to load — while /user-progress/my-course hands
+  /// Home a course the user already started, whatever its state. Every caller
+  /// of [selectCourse] / [selectCourseFromCourseId] navigates to the roadmap
+  /// immediately afterwards, and [selectCourseIndex] is the only thing that
+  /// fetches it, so returning early here left the page on the previous
+  /// course's roadmap — or on nothing at all — with no error and no spinner.
+  /// The header keeps its generic title in this case: HomeState.currentCourse
+  /// is derived from a catalog index that by definition has no entry.
+  void _loadRoadmapOutsideCatalog(String courseId) {
+    if (courseId.isEmpty) return;
+    AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: courseId);
+  }
+
+  void selectCourseFromCourseId(String courseId) {
+    final category = state.categories.firstWhere(
+      (s) => s.courses.any((c) => c.id == courseId),
+      orElse: () => CategoryEntity(),
+    );
+    if (category.id.isEmpty) {
+      _loadRoadmapOutsideCatalog(courseId);
+      return;
+    }
+    selectCategory(category);
+    int courseIndex = category.courses.indexWhere((c) => c.id == courseId);
+    if (courseIndex == -1) {
+      _loadRoadmapOutsideCatalog(courseId);
+      return;
+    }
+    selectCourseIndex(courseIndex);
+  }
+
+  bool trySelectCourseFromCourseId(String courseId) {
+    final category = state.categories.firstWhere(
+      (s) => s.courses.any((c) => c.id == courseId),
+      orElse: () => CategoryEntity(),
+    );
+    if (category.id.isEmpty) return false;
+
+    selectCategory(category);
+    final courseIndex = category.courses.indexWhere((c) => c.id == courseId);
+    if (courseIndex == -1) return false;
+
+    selectCourseIndex(courseIndex);
+    return true;
+  }
+
+  Future<void> loadAllCategories({
+    bool isInit = false,
+  }) async {
+    // Prevent multiple simultaneous loads
+    if (!isInit && state.status == HomeStatus.loading) return;
+
+    // Prevent loading if already on last page (unless it's init)
+    if (!isInit && state.pageData.isLastPage) return;
+
+    emit(state.copyWith(status: HomeStatus.loading));
+
+    PageBreakRequest<CategoryFilterRequest> pageRequest;
+    pageRequest = isInit
+        ? const PageBreakRequest<CategoryFilterRequest>(
+            order: PageBreakOrder.asc,
+          )
+        : PageBreakRequest<CategoryFilterRequest>(
+            page: state.pageData.nextPage,
+            order: PageBreakOrder.asc,
+          );
+
+    await runUseCasePageBreak<CategoryEntity>(
+      usecase: () => _getAllUseCase(pageRequest),
+      currentPageData: state.pageData,
+      isInit: isInit,
+      buildLoadingState: () => state.copyWith(status: HomeStatus.loading),
+      onFailure: (error) {
+        emit(
+          state.copyWith(
+            status: HomeStatus.failure,
+            errorMessage: error,
+          ),
+        );
+      },
+      onSuccess: (pageData) {
+        emit(
+          state.copyWith(
+            status: HomeStatus.success,
+            pageData: pageData,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Checks Remote Config for a NEWER, non-forced app version and surfaces the
+  /// optional-update header on Home when one exists. Forced updates are handled
+  /// by the blocking splash dialog, so this never fires for them. Safe to call
+  /// on Home init; no-op emit when nothing changes.
+  Future<void> checkOptionalUpdate() async {
+    try {
+      final available = await AppService.instance.remoteConfigService.optionalUpdateAvailable();
+      if (available && !state.showUpdateBanner) {
+        emit(state.copyWith(showUpdateBanner: true));
+      }
+    } catch (e) {
+      LogDev.error('checkOptionalUpdate: $e');
+    }
+  }
+
+  /// Hides the optional-update header for the rest of this session (reappears
+  /// next launch until the installed version is actually up to date).
+  void dismissUpdateBanner() {
+    if (!state.showUpdateBanner) return;
+    emit(state.copyWith(showUpdateBanner: false));
+  }
+
+  Future<void> loadCategory(String id) async {
+    await runUseCase<CategoryEntity>(
+      usecase: () => _getUseCase(id),
+      buildLoadingState: () => state.copyWith(status: HomeStatus.loading),
+      onFailure: (error) {
+        emit(
+          state.copyWith(
+            status: HomeStatus.failure,
+            errorMessage: error,
+          ),
+        );
+      },
+      onSuccess: (item) {
+        updatePageBreakItem(
+          currentPageData: state.pageData,
+          updatedItem: item,
+          getId: (item) => item.id,
+          onSuccess: (pageData) => emit(state.copyWith(status: HomeStatus.success, pageData: pageData)),
+        );
+      },
+    );
+  }
+}

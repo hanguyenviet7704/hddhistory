@@ -1,0 +1,95 @@
+part of '../../../course.dart';
+
+@lazySingleton
+class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandlerMixin<CourseLessonState> {
+  final GetCourseLessonUseCase _getCourseLessonUseCase;
+  final IRemoteConfigService _remoteConfigService;
+
+  CourseLessonCubit(
+    this._getCourseLessonUseCase,
+    this._remoteConfigService,
+  ) : super(CourseLessonState.initial());
+
+  void reset() => emit(CourseLessonState.initial());
+  void setCurrentKeypointId(String id) => emit(state.copyWith(currentKeypointId: id));
+  void setSelectedLesson(LessonEntity lesson) {
+    if (lesson.id.isEmpty) return;
+    emit(state.copyWith(selectedLesson: lesson, wasLessonCompletedBefore: _wasCompletedBefore(lesson)));
+  }
+
+  /// Moves onto [keypointId] of [lesson] in a SINGLE emission.
+  ///
+  /// For crossing a lesson boundary without the app ever observing the
+  /// in-between state: with `selectedLesson` already swapped but
+  /// `currentKeypointId` still naming a keypoint of the lesson just left,
+  /// `resolvedCurrentKeypoint` falls back to the new lesson's FIRST keypoint —
+  /// and `LessonPage` would sync narration against a keypoint nobody is reading.
+  /// Used by the background listening chain (see [ListenChainController]).
+  void enterLesson({required LessonEntity lesson, required String keypointId}) {
+    if (lesson.id.isEmpty || keypointId.isEmpty) return;
+    emit(
+      state.copyWith(
+        selectedLesson: lesson,
+        currentKeypointId: keypointId,
+        wasLessonCompletedBefore: _wasCompletedBefore(lesson),
+      ),
+    );
+  }
+
+  bool _wasCompletedBefore(LessonEntity lesson) => lesson.roadmapProgress == ProcessEnum.done || lesson.progess == ProcessEnum.done;
+
+  void loadLesson(String id) async {
+    String requestId = id;
+    if (requestId.isEmpty) {
+      requestId = state.selectedLesson.id;
+    }
+    if (requestId.isEmpty) return;
+
+    await runUseCase<LessonEntity>(
+      usecase: () => _getCourseLessonUseCase(requestId),
+      buildLoadingState: () {
+        if (state.selectedLesson.keypoints.isNotEmpty) return state;
+        return state.copyWith(status: CourseLessonStatus.loading);
+      },
+      onFailure: (error) {
+        emit(state.copyWith(status: CourseLessonStatus.failure, errorMessage: error));
+      },
+      onSuccess: (lesson) {
+        // The reader can have moved onto ANOTHER lesson while this refresh was in
+        // flight — `ProgressCubit` fires one after every keypoint write, and the
+        // background listening chain crosses lesson boundaries on its own
+        // ([ListenChainController]). Landing it then would drag `selectedLesson`
+        // back to the lesson just left, `resolvedCurrentKeypoint` would fall back
+        // to ITS first keypoint, and `LessonPage` would reload and re-read a
+        // keypoint the listener heard long ago.
+        if (state.selectedLesson.id.isNotEmpty && state.selectedLesson.id != requestId) {
+          LogDev.warning('CourseLessonCubit: dropping the refresh of $requestId — ${state.selectedLesson.id} is open now');
+          return;
+        }
+        emit(state.copyWith(status: CourseLessonStatus.success, selectedLesson: lesson));
+        checkAndFinishOptionalKeypoints();
+      },
+    );
+  }
+
+  void checkAndFinishOptionalKeypoints() {
+    final courseConfig = _remoteConfigService.courseConfig;
+    if (!courseConfig.enableFinishOptionalKeypoints) return;
+    if (state.selectedLesson.keypoints.isEmpty) return;
+    final LessonResultEntity currentLessonResult = AppDI.injector.get<ProgressCubit>().state.currentLessonResult;
+    final LessonEntity lesson = state.updateLessonWithResults(currentLessonResult);
+    List<KeypointEntity> optionalKeypoints = lesson.keypoints.where((keypoint) => keypoint.strengthLevel == StrengthLevel.optionalPractice).toList();
+    if (optionalKeypoints.isEmpty) return;
+    for (var keypoint in optionalKeypoints) {
+      if (keypoint.progess == ProcessEnum.done) continue;
+      UpdateUserProgressKeypointData keypointData = UpdateUserProgressKeypointData(
+        keypointId: keypoint.id,
+        averageScore: 0.0,
+        passed: true,
+        reviews: '',
+      );
+      UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
+      AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(LessonType.lesson, keypointParams);
+    }
+  }
+}

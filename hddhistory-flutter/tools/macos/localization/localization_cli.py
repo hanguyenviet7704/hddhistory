@@ -1,0 +1,1490 @@
+#!/usr/bin/env python3
+"""
+Localization management CLI.
+
+Features:
+- Pull active sheet (module-per-tab) -> validate -> write module/locale YAML for slang and an intermediate JSON.
+- Migrate legacy sheet/ARB -> new schema -> optional push to new sheet -> write YAML.
+- Push local dataset back to the active sheet with a dry-run diff (auto-creates tabs).
+- Validate placeholders/params/completeness before generation.
+"""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import csv
+import json
+import os
+import re
+import sys
+import textwrap
+import time
+from collections import defaultdict, OrderedDict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+
+import requests
+import yaml
+
+try:
+    import gspread
+    from google.oauth2.service_account import Credentials
+except Exception:  # pragma: no cover - optional dependency path
+    gspread = None
+    Credentials = None
+
+
+class Colors:
+    RED = "\033[0;31m"
+    GREEN = "\033[0;32m"
+    YELLOW = "\033[1;33m"
+    BLUE = "\033[0;34m"
+    PURPLE = "\033[0;35m"
+    CYAN = "\033[0;36m"
+    NC = "\033[0m"  # No Color
+
+
+def log_info(message: str) -> None:
+    print(f"{Colors.BLUE}ℹ️  {message}{Colors.NC}")
+
+
+def log_success(message: str) -> None:
+    print(f"{Colors.GREEN}✅ {message}{Colors.NC}")
+
+
+def log_warning(message: str) -> None:
+    print(f"{Colors.YELLOW}⚠️  {message}{Colors.NC}")
+
+
+def log_error(message: str) -> None:
+    print(f"{Colors.RED}❌ {message}{Colors.NC}")
+
+
+def log_step(message: str) -> None:
+    print(f"{Colors.PURPLE}🔸 {message}{Colors.NC}")
+
+
+def open_spreadsheet_with_retry(client, sheet_id: str, retries: int = 4, base_delay: int = 2):
+    for attempt in range(retries + 1):
+        try:
+            return client.open_by_key(sheet_id)
+        except Exception as exc:
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            if status == 429 and attempt < retries:
+                delay = base_delay * (attempt + 1)
+                log_warning(f"Rate limited by Sheets API (429). Retrying in {delay}s... ({attempt + 1}/{retries})")
+                time.sleep(delay)
+                continue
+            raise
+
+
+RETRYABLE_HTTP_STATUS_CODES = {429, 500, 502, 503, 504}
+RETRYABLE_ERROR_HINTS = (
+    "timeout",
+    "timed out",
+    "temporarily unavailable",
+    "service is currently unavailable",
+    "connection reset",
+    "connection aborted",
+    "remote disconnected",
+)
+
+
+def is_retryable_exception(exc: Exception) -> bool:
+    status = getattr(getattr(exc, "response", None), "status_code", None)
+    if status in RETRYABLE_HTTP_STATUS_CODES:
+        return True
+    message = str(exc).lower()
+    return any(hint in message for hint in RETRYABLE_ERROR_HINTS)
+
+
+def run_with_retry(action: str, fn, retries: int = 3, base_delay: int = 2):
+    for attempt in range(retries + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            if attempt < retries and is_retryable_exception(exc):
+                delay = base_delay * (attempt + 1)
+                log_warning(f"{action} failed: {exc}. Retrying in {delay}s... ({attempt + 1}/{retries})")
+                time.sleep(delay)
+                continue
+            raise
+
+
+ALLOWED_TYPES = {"text", "rich", "plural", "select", "selectordinal", "context"}
+PLURAL_CATEGORIES = {"zero", "one", "two", "few", "many", "other"}
+VALID_STATUSES = {"active", "deprecated", "draft"}
+DEFAULT_SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
+]
+
+README_TITLE = "README"
+
+
+@dataclass
+class LocalizationRecord:
+    module: str
+    key: str
+    type: str
+    params: List[str]
+    context: str
+    description: str
+    status: str
+    tags: List[str]
+    translations: Dict[str, str]
+    last_updated: str = ""
+    source: str = ""
+
+    def identity(self) -> str:
+        return f"{self.module}.{self.key}"
+
+    def missing_languages(self, supported: Sequence[str]) -> List[str]:
+        return [lang for lang in supported if not self.translations.get(lang)]
+
+
+def clone_record(record: LocalizationRecord) -> LocalizationRecord:
+    return LocalizationRecord(
+        module=record.module,
+        key=record.key,
+        type=record.type,
+        params=list(record.params),
+        context=record.context,
+        description=record.description,
+        status=record.status,
+        tags=list(record.tags),
+        translations=dict(record.translations),
+        last_updated=record.last_updated,
+        source=record.source,
+    )
+
+
+def load_config(path: str) -> Dict:
+    cfg_path = Path(path)
+    if not cfg_path.exists():
+        log_error(f"Config not found: {path}")
+        sys.exit(1)
+    with cfg_path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def parse_gid_arguments(raw_gids: Optional[Sequence[str]]) -> List[str]:
+    if not raw_gids:
+        return []
+    gids: List[str] = []
+    for item in raw_gids:
+        if item is None:
+            continue
+        parts = re.split(r"[,\s]+", str(item))
+        gids.extend([p for p in parts if p])
+    return gids
+
+
+def ensure_dir(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def slugify(text: str) -> str:
+    cleaned = re.sub(r"[^\w\s-]", "", text.strip())
+    cleaned = re.sub(r"[-\s]+", "_", cleaned)
+    return cleaned.lower()
+
+
+def filter_sheet_config_by_gids(sheet_cfg: Dict, target_gids: Sequence[str]) -> Dict:
+    if not target_gids:
+        return sheet_cfg
+
+    cfg = copy.deepcopy(sheet_cfg)
+    target_set = {str(g) for g in target_gids}
+
+    cfg["sheet_gids"] = [str(gid) for gid in cfg.get("sheet_gids", []) if str(gid) in target_set]
+
+    tabs = cfg.get("tabs") or []
+    filtered_tabs = []
+    for tab in tabs:
+        gid = str(tab.get("gid")) if tab.get("gid") is not None else None
+        if gid and gid in target_set:
+            filtered_tabs.append(tab)
+    cfg["tabs"] = filtered_tabs
+
+    matched = set(cfg.get("sheet_gids", [])) | {str(tab.get("gid")) for tab in filtered_tabs if tab.get("gid") is not None}
+    missing = target_set - matched
+    if missing:
+        log_warning(f"Requested sheet gid(s) not present in config: {', '.join(sorted(missing))}")
+    return cfg
+
+
+def modules_from_tabs(tabs: Sequence[Dict]) -> List[str]:
+    modules: List[str] = []
+    for tab in tabs or []:
+        module = slugify(tab.get("module", "") or tab.get("title", ""))
+        if module:
+            modules.append(module)
+    return modules
+
+
+def parse_params(params_raw: str) -> List[str]:
+    if not params_raw:
+        return []
+    parts = re.split(r"[;,]", params_raw)
+    params: List[str] = []
+    for part in parts:
+        piece = part.strip()
+        if not piece:
+            continue
+        if ":" in piece:
+            name, _type = piece.split(":", 1)
+            params.append(name.strip())
+        else:
+            params.append(piece)
+    return [p for p in params if p]
+
+
+def parse_key_params(raw_key: str) -> Tuple[str, List[str]]:
+    match = re.match(r"^(.*)\((?:param|params)=([^)]*)\)$", raw_key)
+    if not match:
+        return raw_key, []
+    base = match.group(1)
+    params_raw = match.group(2)
+    params = [p.strip() for p in re.split(r"[,;]", params_raw) if p.strip()]
+    return base, params
+
+
+def detect_placeholders(text: str) -> List[str]:
+    if not text:
+        return []
+    icu_match = re.match(r"^\{\s*(\w+)\s*,\s*(plural|select\w*)\s*,(.*)\}\s*$", text, re.S)
+    if icu_match:
+        # For ICU strings the first token is the selector param (e.g., count).
+        # Collect that param and any placeholders inside category bodies, but
+        # ignore the braces that merely delimit categories like `{zero {Updating}}`.
+        placeholders: Set[str] = {icu_match.group(1)}
+        cat_map = icu_to_category_map(text)
+        if cat_map:
+            for body in cat_map.values():
+                placeholders.update(detect_placeholders(body))
+        return sorted(placeholders)
+
+    brace_placeholders = re.findall(r"\{([a-zA-Z_][\w]*)\}", text)
+    dollar_placeholders = re.findall(r"\$\{?([a-zA-Z_][\w]*)\}?", text)
+    candidates = set(brace_placeholders + dollar_placeholders)
+    return sorted(candidates)
+
+
+def normalize_placeholders(value: str, params: Sequence[str]) -> str:
+    if not value:
+        return value
+    if re.search(r"\{\s*\w+\s*,\s*(plural|select)", value):
+        # ICU string: keep as-is
+        return value
+    # Collapse accidental repeated dollars and normalize parameter placeholders to ${param}
+    normalized = re.sub(r"\$\$+", lambda m: "$", value)
+    for param in params:
+        # Patterns: {param}, ${param}, $param, $$param, $ {param}, etc.
+        normalized = re.sub(
+            rf"\$+\s*\{{?\s*{re.escape(param)}\s*\}}?",
+            lambda m, p=param: f"${{{p}}}",
+            normalized,
+        )
+        normalized = re.sub(
+            rf"\{{\s*{re.escape(param)}\s*\}}",
+            lambda m, p=param: f"${{{p}}}",
+            normalized,
+        )
+    normalized = re.sub(r"\$\$+", lambda m: "$", normalized)
+    return normalized
+
+
+def is_plural_category_dict(value: Dict[str, str]) -> bool:
+    if not value:
+        return False
+    for key in value.keys():
+        if key in PLURAL_CATEGORIES:
+            continue
+        if re.match(r"^=\d+$", key):
+            continue
+        return False
+    return True
+
+
+def plural_dict_to_icu(value: Dict[str, str], param: str) -> str:
+    segments = []
+    for key, text in value.items():
+        segments.append(f"{key} {{{text}}}")
+    return "{" + f"{param}, plural, " + " ".join(segments) + "}"
+
+
+def icu_to_category_map(text: str) -> Optional[Dict[str, str]]:
+    match = re.match(r"^\{\s*(\w+)\s*,\s*(plural|select\w*)\s*,(.*)\}\s*$", text, re.S)
+    if not match:
+        return None
+
+    body = match.group(3).strip()
+    categories: Dict[str, str] = OrderedDict()
+
+    i = 0
+    length = len(body)
+    while i < length:
+        while i < length and body[i].isspace():
+            i += 1
+        if i >= length:
+            break
+        start = i
+        while i < length and not body[i].isspace() and body[i] != '{':
+            i += 1
+        category = body[start:i]
+        while i < length and body[i].isspace():
+            i += 1
+        if i >= length or body[i] != '{':
+            break
+        brace = 0
+        j = i
+        while j < length:
+            if body[j] == '{':
+                brace += 1
+            elif body[j] == '}':
+                brace -= 1
+                if brace == 0:
+                    j += 1
+                    break
+            j += 1
+        content = body[i + 1 : j - 1]
+        categories[category] = content.strip()
+        i = j
+
+    return categories if categories else None
+
+
+def read_csv_text(csv_text: str) -> List[Dict[str, str]]:
+    reader = csv.DictReader(csv_text.splitlines())
+    return [row for row in reader]
+
+
+def load_yaml_records(i18n_dir: Path, languages: Sequence[str], existing_map: Optional[Dict[str, LocalizationRecord]] = None) -> List[LocalizationRecord]:
+    records: Dict[str, LocalizationRecord] = {}
+    if not i18n_dir.exists():
+        log_warning(f"i18n directory not found: {i18n_dir}")
+        return []
+
+    for lang in languages:
+        locale_dir = i18n_dir / lang
+        if not locale_dir.exists():
+            log_warning(f"Locale directory missing: {locale_dir}")
+            continue
+
+        for path in locale_dir.glob("*.yaml"):
+            try:
+                data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+            except Exception as exc:  # pragma: no cover - filesystem
+                log_warning(f"Skipping {path}: {exc}")
+                continue
+
+            if not isinstance(data, dict):
+                log_warning(f"Unexpected structure in {path}; expected flat key/value map.")
+                continue
+
+            module = slugify(path.stem)
+            for key_raw, value in data.items():
+                key, key_params = parse_key_params(key_raw)
+                identity = f"{module}.{key}"
+                base = (existing_map or {}).get(identity)
+
+                if identity not in records:
+                    if base:
+                        record = clone_record(base)
+                        record.module = module
+                        record.key = key
+                        record.source = base.source or "local-yaml"
+                    else:
+                        record = LocalizationRecord(
+                            module=module,
+                            key=key,
+                            type="text",
+                            params=key_params,
+                            context="",
+                            description="",
+                            status="active",
+                            tags=[],
+                            translations={},
+                            last_updated="",
+                            source="local-yaml",
+                        )
+                    records[identity] = record
+
+                record = records[identity]
+                if key_params and not record.params:
+                    record.params = key_params
+
+                if isinstance(value, dict):
+                    if is_plural_category_dict(value):
+                        param = (record.params or key_params or ["count"])[0]
+                        record.type = "plural"
+                        if not record.params:
+                            record.params = [param]
+                        record.translations[lang] = plural_dict_to_icu(value, param)
+                    else:
+                        param = (record.params or key_params or ["value"])[0]
+                        record.type = "select"
+                        if not record.params:
+                            record.params = [param]
+                        segments = [f"{k} {{{v}}}" for k, v in value.items()]
+                        record.translations[lang] = "{" + f"{param}, select, " + " ".join(segments) + "}"
+                    continue
+
+                record.translations[lang] = "" if value is None else str(value)
+
+    return list(records.values())
+
+
+def normalize_type(raw_type: str) -> str:
+    value = (raw_type or "text").strip().lower()
+    if value not in ALLOWED_TYPES:
+        return "text"
+    return value
+
+
+def normalize_status(raw_status: str) -> str:
+    value = (raw_status or "active").strip().lower()
+    if value not in VALID_STATUSES:
+        return "active"
+    return value
+
+
+def is_readme_title(title: str) -> bool:
+    return (title or "").strip().lower() == README_TITLE.lower()
+
+
+def parse_sheet_rows(
+    rows: List[Dict[str, str]],
+    columns: Dict[str, str],
+    languages: Sequence[str],
+    source: str,
+    default_module: Optional[str] = None,
+) -> List[LocalizationRecord]:
+    records: List[LocalizationRecord] = []
+    for row in rows:
+        module_col = (columns.get("module") or "").strip()
+        module_raw = row.get(module_col, "").strip() if module_col else ""
+        if not module_raw and default_module:
+            module_raw = default_module
+        key = row.get(columns.get("key", "") or "", "").strip()
+        if not module_raw or not key:
+            continue
+
+        module = slugify(module_raw)
+        type_value = normalize_type(row.get(columns.get("type", "") or "", "text"))
+        params = parse_params(row.get(columns.get("params", "") or "", ""))
+        context = row.get(columns.get("context", "") or "", "").strip()
+        description = row.get(columns.get("description", "") or "", "").strip()
+        status = normalize_status(row.get(columns.get("status", "") or "", "active"))
+        tags_raw = row.get(columns.get("tags", "") or "", "")
+        tags = [t.strip() for t in re.split(r"[;,]", tags_raw) if t.strip()]
+        updated_at_col = (columns.get("updatedAt") or "").strip()
+        updated_at = row.get(updated_at_col, "").strip() if updated_at_col else ""
+
+        translations: Dict[str, str] = {}
+        for lang in languages:
+            col_name = columns.get(lang) or lang
+            translations[lang] = (row.get(col_name, "") or "").strip()
+
+        record = LocalizationRecord(
+            module=module,
+            key=key,
+            type=type_value,
+            params=params,
+            context=context,
+            description=description,
+            status=status,
+            tags=tags,
+            translations=translations,
+            last_updated=updated_at,
+            source=source,
+        )
+        records.append(record)
+    return records
+
+
+def load_legacy_arb(arb_dir: Path, languages: Sequence[str]) -> List[LocalizationRecord]:
+    records: List[LocalizationRecord] = []
+    if not arb_dir.exists():
+        return records
+
+    for path in arb_dir.rglob("*.arb"):
+        # Skip merged app-level ARB files to avoid duplicating module keys
+        if "/app/" in path.as_posix():
+            continue
+        module = path.stem.split("_")[0]
+        locale = path.stem.split("_")[-1]
+        if locale not in languages:
+            continue
+        with path.open(encoding="utf-8") as f:
+            data = json.load(f)
+
+        for key, value in data.items():
+            if key.startswith("@") or key.startswith("@@"):
+                continue
+            description_key = f"@{key}"
+            description = ""
+            params = []
+            if isinstance(data.get(description_key), dict):
+                description = data.get(description_key, {}).get("description", "")
+                placeholders = data.get(description_key, {}).get("placeholders", {})
+                params = list(placeholders.keys())
+
+            translations = {locale: value}
+            record = LocalizationRecord(
+                module=module,
+                key=key,
+                type="text",
+                params=params,
+                context="",
+                description=description,
+                status="active",
+                tags=[],
+                translations=translations,
+                last_updated="",
+                source="legacy-arb",
+            )
+            records.append(record)
+    return records
+
+
+def merge_records_by_identity(records: Iterable[LocalizationRecord], languages: Sequence[str]) -> List[LocalizationRecord]:
+    merged: Dict[str, LocalizationRecord] = {}
+    for record in records:
+        identity = record.identity()
+        if identity not in merged:
+            merged[identity] = record
+            continue
+
+        existing = merged[identity]
+        for lang in languages:
+            value = record.translations.get(lang)
+            if value:
+                existing.translations[lang] = value
+        if not existing.description and record.description:
+            existing.description = record.description
+        if not existing.params and record.params:
+            existing.params = record.params
+        existing.tags = sorted(set(existing.tags + record.tags))
+        existing.source = ",".join(sorted(set(filter(None, [existing.source, record.source]))))
+        if record.last_updated:
+            existing.last_updated = record.last_updated
+    return list(merged.values())
+
+
+def normalize_translations(
+    records: List[LocalizationRecord],
+    languages: Sequence[str],
+    default_language: Optional[str],
+    fill_missing_from_default: bool = True,
+) -> None:
+    for record in records:
+        default_value = record.translations.get(default_language or "", "")
+        # If params are empty, try to infer from the default translation placeholders
+        if not record.params:
+            inferred = detect_placeholders(default_value)
+            if inferred:
+                record.params = inferred
+
+        for lang in languages:
+            value = record.translations.get(lang, "")
+            if fill_missing_from_default and not value and default_language and default_value:
+                if lang == default_language:
+                    record.translations[lang] = default_value
+                else:
+                    record.translations[lang] = f"({lang.upper()}) {default_value}"
+        for lang, value in list(record.translations.items()):
+            # Fall back to inferring placeholders from each translation if params are still empty
+            params_for_norm = record.params or detect_placeholders(value)
+            record.translations[lang] = normalize_placeholders(value, params_for_norm)
+            # If we still have no declared params, strip stray placeholders to avoid accidental function signatures
+            if not record.params:
+                record.translations[lang] = re.sub(
+                    r"\$+\s*\{?\s*([a-zA-Z_][\w]*)\s*\}?", r"\1", record.translations[lang]
+                )
+
+
+def validate_records(records: List[LocalizationRecord], supported_languages: Sequence[str]) -> Tuple[List[str], List[str]]:
+    warnings: List[str] = []
+    errors: List[str] = []
+
+    seen_identities = set()
+    for record in records:
+        identity = record.identity()
+        if identity in seen_identities:
+            warnings.append(f"Duplicate key {identity}")
+        seen_identities.add(identity)
+
+        if record.type not in ALLOWED_TYPES:
+            warnings.append(f"{identity}: unsupported type '{record.type}', falling back to text")
+
+        placeholders = detect_placeholders(record.translations.get(supported_languages[0], ""))
+        missing_params = sorted(set(placeholders) - set(record.params))
+        if missing_params:
+            warnings.append(f"{identity}: placeholders in text not declared in Params: {', '.join(missing_params)}")
+        missing_declared = sorted(set(record.params) - set(placeholders))
+        if missing_declared:
+            warnings.append(f"{identity}: declared params missing in text: {', '.join(missing_declared)}")
+
+        missing_languages = record.missing_languages(supported_languages)
+        if missing_languages:
+            warnings.append(f"{identity}: missing translations for {', '.join(missing_languages)}")
+
+        if record.status not in VALID_STATUSES:
+            warnings.append(f"{identity}: invalid status '{record.status}', expected one of {', '.join(sorted(VALID_STATUSES))}")
+
+    return warnings, errors
+
+
+def write_intermediate(records: List[LocalizationRecord], temp_dir: Path) -> Path:
+    ensure_dir(temp_dir)
+    dataset_path = temp_dir / "records.json"
+    serializable = [
+        {
+            "module": r.module,
+            "key": r.key,
+            "type": r.type,
+            "params": r.params,
+            "context": r.context,
+            "description": r.description,
+            "status": r.status,
+            "tags": r.tags,
+            "translations": r.translations,
+            "last_updated": r.last_updated,
+            "source": r.source,
+        }
+        for r in sorted(records, key=lambda rec: rec.identity())
+    ]
+    dataset_path.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
+    return dataset_path
+
+
+def build_yaml_payload(records: List[LocalizationRecord], languages: Sequence[str]) -> Dict[str, Dict[str, Dict[str, str]]]:
+    payload: Dict[str, Dict[str, Dict[str, str]]] = {}
+    for record in sorted(records, key=lambda r: (r.module, r.key)):
+        for lang in languages:
+            translated_value = record.translations.get(lang)
+            if not translated_value:
+                continue
+            locale_bucket = payload.setdefault(lang, {})
+            module_bucket = locale_bucket.setdefault(record.module, {})
+            yaml_key = record.key
+            if record.type in {"plural", "select", "selectordinal"} and record.params:
+                yaml_key = f"{record.key}(param={','.join(record.params)})"
+
+            yaml_value: object = translated_value
+            if record.type in {"plural", "select", "selectordinal"}:
+                cat_map = icu_to_category_map(translated_value)
+                if cat_map:
+                    yaml_value = OrderedDict(cat_map)
+            module_bucket[yaml_key] = yaml_value
+    return payload
+
+
+def to_builtin(obj):
+    if isinstance(obj, OrderedDict):
+        return {k: to_builtin(v) for k, v in obj.items()}
+    if isinstance(obj, dict):
+        return {k: to_builtin(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [to_builtin(v) for v in obj]
+    return obj
+
+
+def write_yaml_files(
+    payload: Dict[str, Dict[str, Dict[str, str]]],
+    i18n_dir: Path,
+    encoding: str,
+    clean_all: bool = True,
+) -> None:
+    ensure_dir(i18n_dir)
+
+    if clean_all and i18n_dir.exists():
+        for child in i18n_dir.iterdir():
+            if child.is_dir():
+                for file in child.glob("*.yaml"):
+                    file.unlink()
+
+    for locale, modules in payload.items():
+        locale_dir = i18n_dir / locale
+        ensure_dir(locale_dir)
+
+        # If partial update, only clear the modules we are about to rewrite
+        if not clean_all:
+            for module in modules.keys():
+                target = locale_dir / f"{module}.yaml"
+                if target.exists():
+                    target.unlink()
+
+        for module, content in modules.items():
+            if not content:
+                continue
+            target = locale_dir / f"{module}.yaml"
+            target.write_text(
+                yaml.safe_dump(to_builtin(content), allow_unicode=True, sort_keys=False, default_flow_style=False),
+                encoding=encoding,
+            )
+            log_success(f"Generated {target}")
+
+
+def fetch_sheet_csv(sheet_id: str, gid: str, encoding: str) -> str:
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+
+    def _request() -> str:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        resp.encoding = encoding
+        return resp.text
+
+    return run_with_retry(f"Fetching CSV gid={gid}", _request)
+
+
+def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str, source_label: str, auth_cfg: Optional[Dict] = None) -> List[LocalizationRecord]:
+    sheet_id = sheet_cfg["sheet_id"]
+    tabs = sheet_cfg.get("tabs", []) or []
+    gids = sheet_cfg.get("sheet_gids", []) or []
+    columns = sheet_cfg.get("columns", {})
+    creds = get_credentials(auth_cfg) if auth_cfg is not None else None
+    prefer_auth = creds is not None
+
+    # Skip README/instruction tab if present
+    filtered_tabs = [tab for tab in tabs if not is_readme_title(tab.get("title", "")) and not is_readme_title(tab.get("module", ""))]
+
+    if filtered_tabs:
+        records: List[LocalizationRecord] = []
+        failed_tabs: List[str] = []
+
+        def fetch_tab(tab_cfg: Dict) -> List[LocalizationRecord]:
+            gid = tab_cfg.get("gid")
+            module_override = slugify(tab_cfg.get("module", "") or tab_cfg.get("title", ""))
+            title = tab_cfg.get("title") or tab_cfg.get("module") or gid
+            if not module_override:
+                log_warning(f"Tab {title} has no module name; skipping.")
+                return []
+
+            if gid:
+                log_step(f"Fetching sheet gid={gid} ({title}) from {sheet_id}")
+                rows = []
+                if prefer_auth and gspread is not None and Credentials is not None:
+                    client = gspread.authorize(creds)
+                    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+                    worksheet = run_with_retry(
+                        f"Opening worksheet gid={gid} ({title})",
+                        lambda: spreadsheet.get_worksheet_by_id(int(gid)),
+                    )
+                    rows = run_with_retry(
+                        f"Reading rows gid={gid} ({title})",
+                        lambda: worksheet.get_all_records(),
+                    )
+                else:
+                    csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
+                    rows = read_csv_text(csv_text)
+            else:
+                if gspread is None or Credentials is None:
+                    raise RuntimeError(f"Tab '{title}' has no gid and gspread is unavailable")
+                if creds is None:
+                    raise RuntimeError(f"Tab '{title}' has no gid and credentials are missing")
+                log_step(f"Fetching sheet '{title}' via gspread from {sheet_id}")
+                client = gspread.authorize(creds)
+                spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+                worksheet = run_with_retry(
+                    f"Opening worksheet title={title}",
+                    lambda: spreadsheet.worksheet(title),
+                )
+                rows = run_with_retry(
+                    f"Reading rows title={title}",
+                    lambda: worksheet.get_all_records(),
+                )
+            return parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override)
+
+        # Parallelize CSV exports to reduce wall time
+        with ThreadPoolExecutor(max_workers=min(8, len(filtered_tabs))) as executor:
+            future_to_tab = {executor.submit(fetch_tab, tab): tab for tab in filtered_tabs}
+            for future in as_completed(future_to_tab):
+                tab_cfg = future_to_tab[future]
+                tab_title = tab_cfg.get("title") or tab_cfg.get("module") or tab_cfg.get("gid") or "unknown"
+                try:
+                    records.extend(future.result())
+                except Exception as exc:  # pragma: no cover - network
+                    failed_tabs.append(f"{tab_title}: {exc}")
+                    log_warning(f"Failed to fetch tab '{tab_title}': {exc}")
+
+        if failed_tabs:
+            raise RuntimeError("Failed to fetch required tabs: " + "; ".join(failed_tabs))
+        return records
+
+    # Legacy: list of gids (already filtered/ordered). No README should be included in this list.
+    all_rows: List[Dict[str, str]] = []
+    failed_gids: List[str] = []
+    if prefer_auth and gspread is not None and Credentials is not None:
+        client = gspread.authorize(creds)
+        spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+        for gid in gids:
+            try:
+                log_step(f"Fetching sheet gid={gid} via gspread from {sheet_id}")
+                worksheet = run_with_retry(
+                    f"Opening worksheet gid={gid}",
+                    lambda: spreadsheet.get_worksheet_by_id(int(gid)),
+                )
+                rows = run_with_retry(
+                    f"Reading rows gid={gid}",
+                    lambda: worksheet.get_all_records(),
+                )
+                all_rows.extend(rows)
+            except Exception as exc:
+                failed_gids.append(f"{gid}: {exc}")
+                log_warning(f"Failed to fetch gid {gid}: {exc}")
+    else:
+        with ThreadPoolExecutor(max_workers=min(8, len(gids) or 1)) as executor:
+            futures = {executor.submit(fetch_sheet_csv, sheet_id, str(gid), encoding): gid for gid in gids}
+            for future in as_completed(futures):
+                gid = futures[future]
+                try:
+                    csv_text = future.result()
+                    all_rows.extend(read_csv_text(csv_text))
+                except Exception as exc:
+                    failed_gids.append(f"{gid}: {exc}")
+                    log_warning(f"Failed to fetch gid {gid}: {exc}")
+
+    if failed_gids:
+        raise RuntimeError("Failed to fetch required gids: " + "; ".join(failed_gids))
+    return parse_sheet_rows(all_rows, columns, languages, source_label)
+
+
+def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], languages: Sequence[str]) -> List[List[str]]:
+    module_col = (columns.get("module") or "").strip()
+    updated_at_col = (columns.get("updatedAt") or "").strip()
+    header: List[str] = []
+    if module_col:
+        header.append(module_col)
+    header.extend(
+        [
+            columns.get("key", "Key"),
+            columns.get("type", "Type"),
+            columns.get("context", "Context"),
+            columns.get("params", "Params"),
+            columns.get("description", "Description"),
+            columns.get("status", "Status"),
+            columns.get("tags", "Tags"),
+        ]
+    )
+    if updated_at_col:
+        header.append(updated_at_col)
+    header.extend([columns.get(lang, lang).strip() or lang for lang in languages])
+
+    rows: List[List[str]] = [header]
+    for record in sorted(records, key=lambda r: (r.module, r.key)):
+        row: List[str] = []
+        if module_col:
+            row.append(record.module)
+        row.extend(
+            [
+                record.key,
+                record.type,
+                record.context,
+                ", ".join(record.params),
+                record.description,
+                record.status,
+                ", ".join(record.tags),
+            ]
+        )
+        if updated_at_col:
+            row.append(record.last_updated)
+        for lang in languages:
+            row.append(record.translations.get(lang, ""))
+        rows.append(row)
+    return rows
+
+
+def fetch_sheet_metadata(sheet_id: str, auth_cfg: Optional[Dict]) -> List[Dict[str, str]]:
+    if gspread is None or Credentials is None:
+        log_error("gspread/google-auth not available; cannot refresh sheet gids.")
+        sys.exit(1)
+
+    creds = get_credentials(auth_cfg)
+    if creds is None:
+        log_error("Service account credentials not found; cannot refresh sheet gids.")
+        sys.exit(1)
+
+    client = gspread.authorize(creds)
+    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+    worksheets = spreadsheet.worksheets()
+    return [
+        {
+            "title": ws.title,
+            "gid": str(ws.id),
+            "index": ws.index,
+            "row_count": ws.row_count,
+            "col_count": ws.col_count,
+        }
+        for ws in worksheets
+    ]
+
+
+def ensure_readme_tab(sheet_id: str, auth_cfg: Optional[Dict]) -> None:
+    if gspread is None or Credentials is None:
+        return
+    creds = get_credentials(auth_cfg)
+    if creds is None:
+        return
+    client = gspread.authorize(creds)
+    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+    ws = None
+    created = False
+    try:
+        ws = spreadsheet.worksheet(README_TITLE)
+    except Exception:
+        ws = None
+
+    if ws is None:
+        ws = spreadsheet.add_worksheet(title=README_TITLE, rows=50, cols=12)
+        created = True
+
+    # Instructions content
+    instructions = [
+        ["Localization Sheet README"],
+        ["- One tab per module (common, auth, home, ...)."],
+        ["- Columns: Key, Type(text/rich/plural/select), Context, Params(comma), Description, Status(active/draft/deprecated), Tags, UpdatedAt, English (EN), Vietnamese (VI), Chinese (ZH)."],
+        ["- Do NOT prefix keys with module name; module == tab name."],
+        ["- Missing translation rule: fill '(LANGCODE) <default text>' when unknown."],
+        ["- Always run pull -> edit -> push -> pull -> slang."],
+    ]
+
+    # If newly created or currently empty (first cell blank), write instructions
+    try:
+        cell_val = ws.acell("A1").value
+        if created or not cell_val:
+            ws.update("A1", instructions)
+            log_success(f"Seeded README instructions (id={ws.id}).")
+    except Exception as exc:
+        log_warning(f"Could not seed README instructions: {exc}")
+
+    # Move README to index 0 so it is the default/first tab
+    try:
+        if ws.index != 0:
+            ws.update_index(0)
+            log_info("Moved README tab to index 0 (first position).")
+    except Exception as exc:
+        log_warning(f"Could not reorder README tab: {exc}")
+
+
+def update_localization_json(cfg: Dict, metadata: List[Dict[str, str]]) -> None:
+    json_path = Path(cfg.get("localization_config_path", ""))
+    if not json_path.exists():
+        log_warning(f"Localization config path not found; skipping cache update: {json_path}")
+        return
+
+    try:
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        log_warning(f"Could not read localization config: {exc}")
+        return
+
+    active = data.setdefault("googleSheets", {}).setdefault("active", {})
+    tabs_cfg: List[Dict[str, str]] = active.setdefault("tabs", [])
+
+    # Sort metadata by worksheet index to reflect sheet order
+    metadata_sorted = sorted(metadata, key=lambda m: m.get("index", 0))
+
+    # Map title->gid from metadata (skip README for sheetGids cache)
+    sheet_gids = [str(item["gid"]) for item in metadata_sorted if not is_readme_title(item["title"])]
+    active["sheetGids"] = sheet_gids
+
+    title_to_tab = {tab.get("title") or tab.get("module"): tab for tab in tabs_cfg}
+    tabs_cfg = []  # rebuild in sorted order
+    for item in metadata_sorted:
+        title = item["title"]
+        tab = title_to_tab.get(title)
+        if tab is None:
+            tab = {"module": slugify(title), "title": title}
+        tab["gid"] = str(item["gid"])
+        tab.setdefault("title", title)
+        if not tab.get("module"):
+            tab["module"] = slugify(title)
+        tabs_cfg.append(tab)
+
+    active["tabs"] = tabs_cfg
+
+    json_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    log_success(f"Cached {len(sheet_gids)} tab gid(s) into {json_path}")
+
+
+def get_credentials(auth_cfg: Optional[Dict] = None) -> Optional[Credentials]:
+    json_path = (
+        os.environ.get("LOCALIZATION_SA_PATH")
+        or (auth_cfg or {}).get("service_account_path")
+        or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    )
+    raw_json = os.environ.get("LOCALIZATION_SA_JSON") or (auth_cfg or {}).get("service_account_json")
+
+    if json_path and Path(json_path).expanduser().exists():
+        return Credentials.from_service_account_file(str(Path(json_path).expanduser()), scopes=DEFAULT_SCOPES)
+    if raw_json:
+        return Credentials.from_service_account_info(json.loads(raw_json), scopes=DEFAULT_SCOPES)
+    return None
+
+
+def resolve_worksheet(spreadsheet, tab_cfg: Dict, columns: Dict[str, str], languages: Sequence[str], apply: bool):
+    gid = tab_cfg.get("gid")
+    title = tab_cfg.get("title") or tab_cfg.get("module") or str(gid or "")
+
+    worksheet = None
+    if gid is not None:
+        try:
+            worksheet = spreadsheet.get_worksheet_by_id(int(gid))
+        except Exception:
+            worksheet = None
+
+    if worksheet is None and title:
+        try:
+            worksheet = spreadsheet.worksheet(title)
+        except Exception:
+            worksheet = None
+
+    if worksheet is None and apply and title:
+        cols = len(columns) + len(languages)
+        worksheet = spreadsheet.add_worksheet(title=title, rows=500, cols=cols)
+        log_success(f"Created worksheet '{title}' (cols={cols})")
+
+    return worksheet
+
+
+def push_to_sheet(
+    records: List[LocalizationRecord],
+    sheet_cfg: Dict,
+    languages: Sequence[str],
+    apply: bool,
+    auth_cfg: Optional[Dict] = None,
+    allowed_modules: Optional[Set[str]] = None,
+) -> None:
+    if gspread is None or Credentials is None:
+        log_error("gspread/google-auth not available. Install requirements via requirements.txt")
+        sys.exit(1)
+
+    creds = get_credentials(auth_cfg)
+    if creds is None:
+        log_error("Service account credentials not found. Set LOCALIZATION_SA_PATH/LOCALIZATION_SA_JSON or configure googleSheets.auth.serviceAccountPath.")
+        sys.exit(1)
+
+    sheet_id = sheet_cfg["sheet_id"]
+    columns = sheet_cfg.get("columns", {})
+    tabs = sheet_cfg.get("tabs", [])
+
+    client = gspread.authorize(creds)
+    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+
+    if not tabs:
+        gid = int(sheet_cfg.get("sheet_gids", [0])[0])
+        worksheet = spreadsheet.get_worksheet_by_id(gid)
+        if worksheet is None:
+            log_error(f"Worksheet gid={gid} not found in sheet {sheet_id}")
+            sys.exit(1)
+
+        rows = dataset_to_rows(records, columns, languages)
+        if not apply:
+            log_info("Dry-run push: no data written. Preview:")
+            log_info(f"Rows to write (including header): {len(rows)}")
+            log_info(f"First payload row: {rows[1] if len(rows) > 1 else 'n/a'}")
+            return
+
+        worksheet.clear()
+        worksheet.update(rows, value_input_option="USER_ENTERED")
+        log_success(f"Pushed {len(rows) - 1} rows to sheet gid={gid}")
+        return
+
+    tab_map = {slugify(tab.get("module", "") or tab.get("title", "")): tab for tab in tabs if tab.get("module") or tab.get("title")}
+
+    target_modules = sorted(set(r.module for r in records))
+    if allowed_modules:
+        target_modules = [m for m in target_modules if m in allowed_modules]
+
+    for module in target_modules:
+        module_records = [r for r in records if r.module == module]
+        tab_cfg = tab_map.get(module, {"module": module, "title": module})
+        title = tab_cfg.get("title") or tab_cfg.get("module") or module
+        rows = dataset_to_rows(module_records, columns, languages)
+        worksheet = resolve_worksheet(spreadsheet, tab_cfg, columns, languages, apply)
+
+        if worksheet is None:
+            if not apply:
+                log_info(f"Dry-run: tab '{title}' missing; would create and push {len(rows) - 1} rows.")
+                continue
+            log_error(f"Worksheet for module '{module}' not found and could not be created (title={title}).")
+            sys.exit(1)
+
+        if not apply:
+            log_info(f"Dry-run push for module '{module}' -> tab '{title}': {len(rows) - 1} rows.")
+            continue
+
+        worksheet.clear()
+        worksheet.update(rows, value_input_option="USER_ENTERED")
+        log_success(f"Pushed {len(rows) - 1} rows to tab '{worksheet.title}' (id={worksheet.id})")
+
+
+def diff_datasets(new_records: List[LocalizationRecord], existing_records: List[LocalizationRecord], languages: Sequence[str]) -> Tuple[List[str], List[str], List[str]]:
+    new_map = {r.identity(): r for r in new_records}
+    existing_map = {r.identity(): r for r in existing_records}
+
+    added = sorted(set(new_map.keys()) - set(existing_map.keys()))
+    removed = sorted(set(existing_map.keys()) - set(new_map.keys()))
+    changed: List[str] = []
+
+    for identity, new_record in new_map.items():
+        if identity not in existing_map:
+            continue
+        old_record = existing_map[identity]
+        for lang in languages:
+            if (new_record.translations.get(lang) or "").strip() != (old_record.translations.get(lang) or "").strip():
+                changed.append(identity)
+                break
+
+    return added, removed, sorted(set(changed))
+
+
+def handle_pull(cfg: Dict, sheet_gids: Optional[Sequence[str]] = None) -> None:
+    languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
+    auth_cfg = cfg.get("auth", {})
+    temp_dir = Path(cfg["paths"]["temp_dir"])
+    i18n_dir = Path(cfg["paths"]["i18n_dir"])
+    encoding = cfg["generation"]["encoding"]
+
+    sheet_cfg = filter_sheet_config_by_gids(cfg["active_sheet"], sheet_gids or [])
+    try:
+        records = load_sheet_records(sheet_cfg, languages, encoding, "active-sheet", auth_cfg)
+    except Exception as exc:  # pragma: no cover - depends on network
+        log_error(f"Localization pull failed: {exc}")
+        sys.exit(1)
+    normalize_translations(records, languages, default_language)
+    warnings, errors = validate_records(records, languages)
+
+    if errors:
+        for err in errors:
+            log_error(err)
+        sys.exit(1)
+
+    for warn in warnings:
+        log_warning(warn)
+
+    modules_retrieved = {r.module for r in records}
+
+    # Merge with existing dataset when pulling a subset of modules
+    dataset_path = temp_dir / "records.json"
+    merged_records: List[LocalizationRecord]
+    if sheet_gids and dataset_path.exists():
+        try:
+            existing_raw = json.loads(dataset_path.read_text(encoding=encoding))
+            existing_records = [
+                LocalizationRecord(
+                    module=item["module"],
+                    key=item["key"],
+                    type=item.get("type", "text"),
+                    params=item.get("params", []),
+                    context=item.get("context", ""),
+                    description=item.get("description", ""),
+                    status=item.get("status", "active"),
+                    tags=item.get("tags", []),
+                    translations=item.get("translations", {}),
+                    last_updated=item.get("last_updated", ""),
+                    source=item.get("source", "local"),
+                )
+                for item in existing_raw
+            ]
+        except Exception as exc:  # pragma: no cover - filesystem
+            log_warning(f"Could not read existing dataset for merge: {exc}")
+            existing_records = []
+
+        merged_map: Dict[str, LocalizationRecord] = {}
+        for rec in existing_records:
+            if rec.module in modules_retrieved:
+                continue  # replace this module with fresh pull
+            merged_map[rec.identity()] = rec
+        for rec in records:
+            merged_map[rec.identity()] = rec
+        merged_records = list(merged_map.values())
+    else:
+        merged_records = records
+
+    dataset_path = write_intermediate(merged_records, temp_dir)
+    payload = build_yaml_payload(records, languages)
+    write_yaml_files(payload, i18n_dir, encoding, clean_all=not bool(sheet_gids))
+
+    log_success(f"Wrote intermediate dataset to {dataset_path}")
+    log_success("Pull complete")
+
+
+def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
+    languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
+    auth_cfg = cfg.get("auth", {})
+    temp_dir = Path(cfg["paths"]["temp_dir"])
+    i18n_dir = Path(cfg["paths"]["i18n_dir"])
+    encoding = cfg["generation"]["encoding"]
+
+    records: List[LocalizationRecord] = []
+    if source == "sheet":
+        records.extend(load_sheet_records(cfg["legacy_sheet"], languages, encoding, "legacy-sheet", auth_cfg))
+    else:
+        records.extend(load_legacy_arb(Path(cfg["paths"]["legacy_arb_dir"]), languages))
+
+    if not records:
+        log_error("No legacy records found to migrate.")
+        sys.exit(1)
+
+    # Fill optional metadata defaults
+    for record in records:
+        if not record.type:
+            record.type = "text"
+        if not record.status:
+            record.status = "active"
+        record.tags = sorted(set(record.tags))
+
+    records = merge_records_by_identity(records, languages)
+    normalize_translations(records, languages, default_language)
+    warnings, errors = validate_records(records, languages)
+    for warn in warnings:
+        log_warning(warn)
+    if errors:
+        for err in errors:
+            log_error(err)
+        sys.exit(1)
+
+    dataset_path = write_intermediate(records, temp_dir)
+    payload = build_yaml_payload(records, languages)
+    write_yaml_files(payload, i18n_dir, encoding)
+
+    log_success(f"Migrated dataset written to {dataset_path}")
+
+    # Optionally push migrated dataset into active sheet
+    if apply:
+        log_step("Pushing migrated dataset into active sheet...")
+        push_to_sheet(records, cfg["active_sheet"], languages, apply=True, auth_cfg=auth_cfg)
+    else:
+        log_info("Migration completed in dry-run mode (no push).")
+
+
+def handle_push(cfg: Dict, apply: bool, sheet_gids: Optional[Sequence[str]] = None) -> None:
+    languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
+    auth_cfg = cfg.get("auth", {})
+    encoding = cfg["generation"]["encoding"]
+    temp_dir = Path(cfg["paths"]["temp_dir"])
+
+    sheet_cfg = filter_sheet_config_by_gids(cfg["active_sheet"], sheet_gids or [])
+    allowed_modules: Set[str] = set(modules_from_tabs(sheet_cfg.get("tabs", []))) if sheet_gids else set()
+
+    dataset_path = temp_dir / "records.json"
+    existing_records: List[LocalizationRecord] = []
+    if dataset_path.exists():
+        records_raw = json.loads(dataset_path.read_text(encoding=encoding))
+        existing_records = [
+            LocalizationRecord(
+                module=item["module"],
+                key=item["key"],
+                type=item.get("type", "text"),
+                params=item.get("params", []),
+                context=item.get("context", ""),
+                description=item.get("description", ""),
+                status=item.get("status", "active"),
+                tags=item.get("tags", []),
+                translations=item.get("translations", {}),
+                last_updated=item.get("last_updated", ""),
+                source=item.get("source", "local"),
+            )
+            for item in records_raw
+        ]
+    else:
+        log_warning(f"records.json not found at {dataset_path}; proceeding with YAML content only.")
+
+    existing_map = {rec.identity(): rec for rec in existing_records}
+    records_map = {identity: clone_record(rec) for identity, rec in existing_map.items()}
+
+    yaml_records = load_yaml_records(Path(cfg["paths"]["i18n_dir"]), languages, existing_map=existing_map)
+    if yaml_records:
+        for record in yaml_records:
+            records_map[record.identity()] = record
+
+    if not records_map:
+        log_error("No localization data found. Run pull first or add YAML keys before pushing.")
+        sys.exit(1)
+
+    records_all = list(records_map.values())
+    normalize_translations(records_all, languages, default_language)
+
+    records_for_scope = records_all if not allowed_modules else [r for r in records_all if r.module in allowed_modules]
+    if allowed_modules and not records_for_scope:
+        log_warning("No records matched requested sheet gid(s); nothing to push.")
+        return
+
+    warnings, errors = validate_records(records_for_scope, languages)
+    for warn in warnings:
+        log_warning(warn)
+    if errors:
+        for err in errors:
+            log_error(err)
+        sys.exit(1)
+
+    # Keep intermediate dataset in sync with YAML edits
+    write_intermediate(records_all, temp_dir)
+
+    try:
+        existing_records_remote = load_sheet_records(sheet_cfg, languages, encoding, "active-sheet", auth_cfg)
+    except Exception as exc:  # pragma: no cover - depends on network
+        log_warning(f"Could not load remote sheet for diff: {exc}")
+        existing_records_remote = []
+
+    if allowed_modules:
+        existing_records_remote = [r for r in existing_records_remote if r.module in allowed_modules]
+
+    added, removed, changed = diff_datasets(records_for_scope, existing_records_remote, languages)
+    log_step("Diff against remote:")
+    log_info(f"Added: {len(added)} | Removed: {len(removed)} | Changed: {len(changed)}")
+    if added:
+        log_info(f"Added keys (sample): {', '.join(added[:5])}" + (" ..." if len(added) > 5 else ""))
+    if changed:
+        log_info(f"Changed keys (sample): {', '.join(changed[:5])}" + (" ..." if len(changed) > 5 else ""))
+
+    modules_touched: Set[str] = set(identity.split(".")[0] for identity in (added + removed + changed))
+    if allowed_modules:
+        modules_touched &= allowed_modules
+
+    if apply:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        touched = set(added + changed)
+        for record in records_for_scope:
+            if record.identity() in touched or not record.last_updated:
+                record.last_updated = now_iso
+
+    if allowed_modules and not modules_touched and not removed:
+        log_info("No modules changed within requested gid set; skipping push.")
+        return
+
+    modules_to_push = modules_touched if modules_touched else allowed_modules
+    push_to_sheet(records_for_scope, sheet_cfg, languages, apply=apply, auth_cfg=auth_cfg, allowed_modules=modules_to_push)
+
+
+def handle_validate(cfg: Dict) -> None:
+    languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
+    encoding = cfg["generation"]["encoding"]
+    temp_dir = Path(cfg["paths"]["temp_dir"])
+
+    dataset_path = temp_dir / "records.json"
+    if not dataset_path.exists():
+        log_error("records.json not found. Run pull or migrate first.")
+        sys.exit(1)
+
+    records_raw = json.loads(dataset_path.read_text(encoding=encoding))
+    records = [
+        LocalizationRecord(
+            module=item["module"],
+            key=item["key"],
+            type=item.get("type", "text"),
+            params=item.get("params", []),
+            context=item.get("context", ""),
+            description=item.get("description", ""),
+            status=item.get("status", "active"),
+            tags=item.get("tags", []),
+            translations=item.get("translations", {}),
+            last_updated=item.get("last_updated", ""),
+            source=item.get("source", "local"),
+        )
+        for item in records_raw
+    ]
+    normalize_translations(records, languages, default_language)
+    warnings, errors = validate_records(records, languages)
+    for warn in warnings:
+        log_warning(warn)
+    if errors:
+        for err in errors:
+            log_error(err)
+        sys.exit(1)
+    log_success("Validation passed")
+
+
+def handle_cache_gids(cfg: Dict, ensure_readme: bool) -> None:
+    auth_cfg = cfg.get("auth", {})
+    sheet_id = cfg["active_sheet"]["sheet_id"]
+    if ensure_readme:
+        ensure_readme_tab(sheet_id, auth_cfg)
+
+    metadata = fetch_sheet_metadata(sheet_id, auth_cfg)
+    update_localization_json(cfg, metadata)
+
+    # Print summary for visibility
+    summary = [f"{item['title']} (gid={item['gid']})" for item in metadata]
+    log_info("Discovered tabs: " + ", ".join(summary))
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Localization CLI (sheets <-> slang yaml)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            Commands:
+              pull                  Fetch active sheet -> YAML + records.json
+              migrate               Import from legacy sheet/ARB -> YAML (+ optional push)
+              push                  Push records.json to active sheet (dry-run by default)
+              validate              Validate records.json for placeholder/supported locale issues
+            """
+        ),
+    )
+    parser.add_argument("--config", required=True, help="Path to generated localization config (JSON)")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    pull_parser = subparsers.add_parser("pull", help="Pull active sheet into YAML + records.json")
+    pull_parser.add_argument(
+        "--sheet-gids",
+        nargs="+",
+        help="Limit pull to specific gid(s); default uses all gids from localization.json",
+    )
+
+    migrate_parser = subparsers.add_parser("migrate", help="Migrate legacy sheet/ARB into new schema")
+    migrate_parser.add_argument(
+        "--source", choices=["sheet", "arb"], default="sheet", help="Use legacy sheet (default) or local ARB assets"
+    )
+    migrate_parser.add_argument("--apply", action="store_true", help="Push migrated data to active sheet")
+
+    push_parser = subparsers.add_parser("push", help="Push local records.json/YAML to active sheet")
+    push_parser.add_argument("--apply", action="store_true", help="Apply changes (default is dry-run)")
+    push_parser.add_argument(
+        "--sheet-gids",
+        nargs="+",
+        help="Limit push to specific gid(s); default uses all gids from localization.json",
+    )
+
+    subparsers.add_parser("validate", help="Validate local records.json")
+    cache_parser = subparsers.add_parser("cache-gids", help="Refresh sheet gid cache into localization.json")
+    cache_parser.add_argument("--ensure-readme", action="store_true", help="Create README tab with instructions if missing")
+    return parser
+
+
+def main() -> None:
+    args = build_arg_parser().parse_args()
+    cfg = load_config(args.config)
+    target_gids = parse_gid_arguments(getattr(args, "sheet_gids", None))
+
+    command = args.command
+    if command == "pull":
+        handle_pull(cfg, sheet_gids=target_gids)
+    elif command == "migrate":
+        handle_migrate(cfg, source=args.source, apply=args.apply)
+    elif command == "push":
+        handle_push(cfg, apply=args.apply, sheet_gids=target_gids)
+    elif command == "validate":
+        handle_validate(cfg)
+    elif command == "cache-gids":
+        handle_cache_gids(cfg, ensure_readme=args.ensure_readme)
+    else:
+        log_error(f"Unknown command {command}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

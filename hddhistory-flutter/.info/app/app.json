@@ -1,0 +1,60 @@
+{
+    "appName": "HDDhistory",
+    "appDisplayName": "HDDhistory",
+    "version": "1.0.0",
+    "buildNumber": "1",
+    "android": {
+        "packageName": "com.hddhistory.app",
+        "compileSdk": 34,
+        "minSdk": 21,
+        "targetSdk": 34,
+        "keystorePath": "android/app/keystore.jks",
+        "keystoreAlias": "upload",
+        "keystoreKeyPath": ".info/android_keystore.properties"
+    },
+    "ios": {
+        "bundleId": "com.hddhistory.app",
+        "teamId": "GK9UEKLL78",
+        "issuerId": "69a6de94-e4e3-47e3-e053-5b8c7c11a4d1",
+        "keyId": "697CNSDLVW",
+        "appStoreConnectAPIKeyPath": ".info/key/AuthKey_697CNSDLVW.p8",
+        "contentProviderId": "118828328",
+        "deploymentTarget": "15.0",
+        "scheme": "Runner"
+    },
+    "flavors": {
+        "dev": {
+            "displayName": "HDDhistory Dev",
+            "android": {
+                "packageName": "com.hddhistory.app.dev",
+                "applicationIdSuffix": ".dev"
+            },
+            "ios": {
+                "bundleId": "com.hddhistory.app.dev",
+                "bundleIdSuffix": ".dev"
+            }
+        },
+        "stg": {
+            "displayName": "HDDhistory Staging",
+            "android": {
+                "packageName": "com.hddhistory.app.stg",
+                "applicationIdSuffix": ".stg"
+            },
+            "ios": {
+                "bundleId": "com.hddhistory.app.stg",
+                "bundleIdSuffix": ".stg"
+            }
+        },
+        "prod": {
+            "displayName": "HDDhistory",
+            "android": {
+                "packageName": "com.hddhistory.app",
+                "applicationIdSuffix": ""
+            },
+            "ios": {
+                "bundleId": "com.hddhistory.app",
+                "bundleIdSuffix": ""
+            }
+        }
+    }
+}

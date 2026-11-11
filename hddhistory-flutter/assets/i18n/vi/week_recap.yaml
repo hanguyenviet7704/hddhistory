@@ -1,0 +1,44 @@
+bannerTitle: Hành trình tuần qua
+bannerSubtitle: Xem lại hành trình 7 ngày qua của bạn
+bannerPillNew: MỚI
+notebookRowTitle: Sổ hành trình
+notebookRowSubtitle: Những tuần bạn đã đi qua
+notebookRowCount(param=count):
+  one: ${count} tuần
+  other: ${count} tuần
+notebookTitle: Sổ hành trình
+weekLabel: Tuần ${number}
+posterTitle: Tuần qua của ${name} thế nào?
+mondayTitle: ${week} đã sẵn sàng
+mondayBody: Hành trình được lưu vào Sổ tay để bạn xem lại bất cứ lúc nào.
+mondayPrimary: Xem hành trình
+mondaySecondary: Để sau
+lockedTitle: Hành trình đang tiếp diễn
+lockedBody: Mỗi thứ Hai, hành trình của tuần sẽ được gói lại cho bạn.
+lockedPrimary: Nhắc tôi vào thứ Hai
+lockedSecondary: Xem lại các tuần trước
+encouragementPerfect: Trọn vẹn cả 7 ngày! Bạn đã có mặt mỗi ngày trong tuần. Thật đáng nể — cứ giữ nhịp này nhé!
+encouragementStrong: Một tuần thật đáng nhớ! Bạn đã có mặt ${days}/7 ngày và không bỏ cuộc. Cứ giữ nhịp này nhé — bạn đang làm rất tốt!
+encouragementSteady: Bạn đã có mặt ${days}/7 ngày trong tuần này. Không cần hoàn hảo, chỉ cần quay lại — và bạn đã làm được điều đó.
+encouragementGentle: Tuần này bạn có mặt ${days}/7 ngày. Bắt đầu lại luôn khó hơn bắt đầu, vậy mà bạn vẫn ở đây.
+posterTitleWord: Tuần
+posterBadge: Nâng cấp bản thân
+posterLessonsLabel: Bài học tuần qua
+posterQuote: "Không cần thấy hết cầu thang, chỉ cần bước bước đầu tiên."
+statStreakLabel: Chuỗi
+statHabitLabel: Thói quen
+statLessonLabel: Bài học
+statMinutesLabel: Phút học
+habitsHeading: "Thói quen đã giữ:"
+favouriteCourseLabel: Khoá học ưa thích
+habitsClosingNote: Và nhiều thói quen khác vẫn đang được xây mỗi ngày…
+shareDownload: Tải xuống
+shareIgStory: IG Story
+shareFbStory: FB Story
+shareMore: Thêm
+shareSaved: Đã lưu ảnh vào thư viện
+shareFailed: Chưa chia sẻ được lúc này.
+shareMessage: Đây là hành trình tuần qua của tôi trên HDDhistory.
+archiveEmpty: Chưa có tuần nào trong sổ tay của bạn.
+loadFailed: Không tải được hành trình của bạn.
+retry: Thử lại

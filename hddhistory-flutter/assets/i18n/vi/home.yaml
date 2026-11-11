@@ -1,0 +1,54 @@
+continueLearning: Tiếp tục khoá học
+coursesCount(param=count):
+  zero: Chưa có khóa học
+  other: ${count} khóa học
+homeAllCourseButton: Tất cả
+homeCourseButton: Khóa học
+homeExploreButton: Khám phá
+homeGrowthButton: Phát triển
+homeGreetingPrefix: Xin chào
+homeGreetingQuestion: Hôm nay bạn muốn học gì?
+homeGreetingTitle: Hôm nay bạn muốn khám phá điều gì, ${username}?
+homeMindQuestion: Hôm nay bạn nghĩ gì thế?
+homeJumpBackIn: Học tiếp nào
+homeStreakEmptyPrompt: Hoàn thành một bài học để bắt đầu chuỗi
+homeExploreTopics: Khám phá nhiều khóa học
+homeExploreTopicsSub: Tìm khóa học tiếp theo
+homeTodayHabit: Thói quen hôm nay
+homeTodayHabitSub: Duy trì thói quen của bạn
+homeHomeButton: Trang chủ
+homeQuoteLabel: Câu nói hôm nay
+homePremiumLabel: Premium
+homeRecommendCourse: Bắt đầu một kỹ năng mới
+homeRecommended: Gợi ý cho bạn
+homeRecommendedNewCourse: Khoá học mới
+homeNewTodayLabel: Khoá học mới hôm nay
+homeRecommendedSeeAll: Xem tất cả
+homeSeeAllLearningListButton: Tất cả
+homeSettingButton: Hồ sơ
+homeWidgetInProgressEmptyTitle: Chọn khóa học để bắt đầu
+homeWidgetProgressText: ${completed}/${total} bài học
+homeWidgetStreakActiveSubtitle: Tiếp tục nhé!
+homeWidgetStreakEmptySubtitle: Bắt đầu chuỗi hôm nay
+homeWidgetSuggestExhaustedSubtitle: Sắp có thêm!
+homeWidgetSuggestExhaustedTitle: Bạn đã hoàn thành mọi khóa học!
+homeWidgetSuggestLabel: Gợi ý hôm nay
+inAppSurveyCloseSemantics: Đóng khảo sát
+inAppSurveyEntrySemantics: Có góp ý? HDDhistory luôn lắng nghe.
+inAppSurveyEntrySubtitle: HDDhistory luôn lắng nghe.
+inAppSurveyEntryTitle: Có góp ý?
+inAppSurveyFeedbackHint: Có thể nếu HDDhistory...
+inAppSurveyFeedbackSemantics: Phản hồi khảo sát
+inAppSurveyPageTitle: Khảo sát trong ứng dụng
+inAppSurveyPlaceholderDescription: Kết nối logic domain qua Cubit đã inject hoặc xoá
+  màn hình này nếu chỉ cần UI thuần.
+inAppSurveyPlaceholderTitle: Màn hình đã sẵn sàng!
+inAppSurveyRatingAmazing: Tuyệt vời
+inAppSurveyRatingAwful: Rất tệ
+inAppSurveyRatingSemantics: Mức đánh giá ${rating}
+inAppSurveySendFeedback: Gửi góp ý
+inAppSurveySendWithoutFeedback: Gửi không kèm góp ý
+updateBannerTitle: Đã có bản cập nhật mới
+updateBannerSubtitle: Nhanh hơn, mượt hơn, ổn định hơn — cập nhật ngay!
+updateBannerAction: Cập nhật
+homeBannerSemantic: Khuyến mãi

@@ -1,0 +1,235 @@
+{
+  "identifier" : "B1E4A0C2-6D3F-4A17-9C88-7F2E5D9A4B31",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6752000000",
+    "_developerTeamID" : "GK9UEKLL78",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21500001",
+      "localizations" : [
+
+      ],
+      "name" : "HDDhistory Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — monthly",
+              "displayName" : "Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1m",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — monthly (sale 50%)",
+              "displayName" : "Monthly (sale 50%)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1m_50off",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly 50off",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510003",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — monthly (sale 70%)",
+              "displayName" : "Monthly (sale 70%)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1m_70off",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly 70off",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "59.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510004",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — yearly",
+              "displayName" : "Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1y",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "47.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510005",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — yearly (sale 20%)",
+              "displayName" : "Yearly (sale 20%)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1y_20off",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly 20off",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "41.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510006",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — yearly (sale 30%)",
+              "displayName" : "Yearly (sale 30%)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1y_30off",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly 30off",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "35.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510007",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — yearly (sale 40%)",
+              "displayName" : "Yearly (sale 40%)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1y_40off",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly 40off",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21510008",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HDDhistory Premium — yearly (sale 50%)",
+              "displayName" : "Yearly (sale 50%)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "meup_sub_1y_50off",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly 50off",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

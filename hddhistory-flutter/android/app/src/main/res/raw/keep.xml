@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Resources the shrinker must not remove.
+
+  `audio_service`'s media-control icons are named from Dart at runtime
+  (`MediaControl.play` carries the STRING 'drawable/audio_service_play_arrow',
+  which the plugin resolves with `Resources.getIdentifier`), so nothing in the
+  Java/Kotlin/XML the shrinker reads ever mentions them. With
+  `isShrinkResources = true` they were marked "not reachable" and stripped from
+  the APK — the devRelease shrinker report listed all seven.
+
+  What that broke, in order: `getIdentifier` returned 0, building the
+  notification action with icon id 0 threw
+  `IllegalArgumentException: You must specify an icon resource id to build a
+  CustomAction` inside `AudioService.onMethodCall`, so every `playbackState`
+  push from Dart died BEFORE the service could call `startForeground()`
+  (`startForegroundCount=0` in `dumpsys activity services`). No
+  `startForeground` means Android never created the notification channel, never
+  showed the media notification, and left the service merely bound — so it lost
+  priority and playback stopped the moment the app left the foreground. Lesson
+  "Listen mode" therefore had no background audio and no media controls on
+  Android, while iOS was unaffected (no resource shrinker, and iOS maps the
+  controls through its own API rather than looking up a drawable).
+
+  Keeping these by name is deliberately narrower than turning
+  `isShrinkResources` off: everything else in the app stays shrunk.
+-->
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/audio_service_*" />

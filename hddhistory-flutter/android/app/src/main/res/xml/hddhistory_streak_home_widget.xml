@@ -1,0 +1,13 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:description="@string/hddhistory_streak_widget_description"
+  android:initialLayout="@layout/glance_default_loading_layout"
+  android:previewImage="@drawable/hddhistory_widget_streak_preview"
+  android:minWidth="110dp"
+  android:minHeight="70dp"
+  android:minResizeWidth="110dp"
+  android:minResizeHeight="70dp"
+  android:resizeMode="horizontal|vertical"
+  android:targetCellWidth="2"
+  android:targetCellHeight="2"
+  android:updatePeriodMillis="0"
+  android:widgetCategory="home_screen" />

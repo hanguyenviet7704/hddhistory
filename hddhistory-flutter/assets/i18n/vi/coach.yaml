@@ -1,0 +1,485 @@
+sheetTitle: HDDhistory Coach
+bubbleSemantics: Mở HDDhistory Coach
+failedTitle: Có lỗi ở phía mình. Những gì bạn nói không mất đi đâu cả.
+retry: Thử lại
+inputHint: "Gõ hoặc bấm mic…"
+
+escapeLabel: Hôm nay chỉ ghi lại thôi
+
+promptMood: Trước khi bắt đầu — hôm nay bạn thấy thế nào?
+promptMoodEnd: Trước khi đóng — giờ bạn thấy thế nào?
+promptPickNew: Bạn vừa thêm mấy habit mới. Mình nói về cái nào trước?
+promptPickHabit: Mình hiểu sai rồi — bạn muốn nói về habit nào?
+pickReroll: Gợi ý 3 thói quen khác
+habitChipLead: Đang nói về
+scopeKeypoint: "Keypoint"
+scopeCourse: "Khoá"
+habitChipChange: Đổi habit
+habitChipChangeEcho: Đổi habit khác.
+promptPersona: Bạn muốn mình nói kiểu nào hôm nay?
+promptTime: Hôm nay bạn có bao nhiêu thời gian?
+promptTell: Kể mình nghe chuyện gần nhất của bạn với thói quen này. Cứ nói tự do, mình không chen.
+promptTellFollowUp: "Mình hỏi lại đúng điều đã xảy ra: lúc đó ai nói gì, ai làm gì?"
+promptFree: Hôm nay có chuyện gì không? Kể mình nghe.
+promptIntentTell: "Kể mình nghe một câu: lúc đó bạn nói hay làm gì?"
+promptNextAction: Vậy lần tới bạn sẽ làm gì?
+promptCheckin: Mấy hôm nay habit này có dịp nào dùng tới không?
+promptPlan: "Viết bằng chữ của bạn: khi nào, và sẽ làm gì?"
+promptSchedule: "Ghi rồi. Nhắc bạn lúc nào?"
+promptLoop: Còn một nhắc hẹn nữa. Nói tiếp hay dừng ở đây?
+promptRating: Cảm ơn bạn.
+promptEnd: Bạn muốn làm gì tiếp?
+promptJot: Được. Ghi một dòng cho hôm nay thôi, mình không hỏi gì thêm.
+promptSafety: Cảm ơn bạn đã nói ra điều này. Mình muốn bạn không phải ở một mình với nó.
+promptTwoCols: Mình gom lại thành nháp hai cột — toàn bằng lời bạn. Kéo dòng nào là vấn đề thật của bạn sang phải, rồi viết lại một câu.
+promptIntent: "Hôm trước bạn nói: ${context} sẽ ${action}. Có dịp nào chưa?"
+
+fallbackReply: Mình nghe rồi.
+fallbackNetwork: Mạng chập chờn, tin vừa rồi chưa tới nơi — gửi lại giúp mình nhé.
+
+
+personaFriend: Người bạn
+personaDirect: Người thẳng
+personaGuide: Người dẫn
+
+scriptShort: Ngắn · dưới 1 phút
+scriptMedium: Vừa · khoảng 3 phút
+scriptLong: Dài · thoải mái
+scriptPractice: Chỉ tập, không trò chuyện
+
+intentDone: Đã làm được
+intentMissed: Có dịp nhưng chưa làm
+intentNone: Không có tình huống nào
+
+checkinYes: Có
+checkinNo: Chưa
+
+loopContinue: Nói tiếp nhắc hẹn nữa
+loopStop: Dừng ở đây
+
+planContextHint: "Khi nào? vd: khi họp nhóm"
+planActionHint: "Sẽ làm gì? vd: nói ra ý mình"
+planSave: Lưu nhắc hẹn
+
+daysDaily: hằng ngày
+daysWeekdays: T2–T6
+daysWeekends: cuối tuần
+reminderOn: Bật nhắc
+reminderOff: Tắt nhắc
+
+ratingUp: Ổn
+ratingDown: Chưa ổn
+ratingSkip: Bỏ qua
+
+endGoToCourse: Mở khoá học
+endKeepTalking: Tiếp tục trò chuyện
+endClose: Đóng
+
+twoColsLeftTitle: Mình quan sát được
+twoColsRightTitle: Vấn đề thật của tôi
+twoColsHint: Tap để kéo dòng sang phải. Coach chỉ dựng nháp bằng lời bạn đã kể.
+lineEdit: Sửa dòng này
+lineDelete: Xoá dòng này
+lineSave: Xong
+twoColsEmpty: Chưa có dòng nào
+
+courseInviteTitle: Một khoá gần với chuyện bạn kể
+courseInviteCaption: Lời mời, không phải chẩn đoán. Bỏ qua cũng được.
+
+safetyLabel: Đường thoát an toàn
+safetyHotlineTitle: Có người nghe bạn ngay lúc này
+safetyOpening: Cảm ơn bạn đã nói ra điều này. Mình muốn bạn không phải ở một mình với nó.
+safetyBody: Nếu bạn đang không an toàn, xin liên hệ cấp cứu tại nơi bạn ở. Nếu có một người bạn tin, hãy nói với họ hôm nay.
+safetyNoHotline: Mình chưa có số đường dây nóng cho khu vực của bạn. Xin liên hệ cấp cứu tại địa phương.
+safetyDisclaimer: Mình là AI, không thay thế được chuyên gia tâm lý.
+
+# Header subtitle + control labels
+close: Đóng
+micListening: Đang nghe…
+micSemantics: Nói thay vì gõ
+planLabel: "Nhắc hẹn — chữ của bạn"
+scheduleLabel: "Nhắc bạn lúc nào?"
+ratingLabel: Lượt vừa rồi thế nào?
+stepMood: "mood đầu ngày · 5 mức, 1 chạm"
+stepPickHabit: chọn thói quen
+stepPersona: cách mình nói chuyện
+stepTime: thời gian hôm nay
+stepTelling: Coach hỏi lại điều đã xảy ra
+stepTwoCols: "nhịp 3 · tách 2 cột"
+stepSituation: luyện tập tình huống
+stepIntent: hỏi lại Nhắc hẹn cũ
+stepCheckin: thói quen tuần này
+stepPlan: "Nhắc hẹn — chữ của bạn"
+stepSchedule: đặt giờ + thứ trong tuần
+stepLoop: còn một nhắc hẹn nữa
+stepMoodEnd: "mood cuối phiên · 5 mức"
+stepRating: đánh giá cuộc trò chuyện
+stepJot: một dòng cho hôm nay
+
+# Mood 5 mức · nhịp 4/5 · ⑧
+mood1: Tệ
+mood2: Hơi mệt
+mood3: Bình thường
+rejectDraft: Không đúng với mình
+redraftPrompt: "Mình hiểu sai rồi. Vậy bạn kể lại giúp mình: chuyện gì đã xảy ra?"
+keypointsLabel: Có thể giúp bạn
+explainSimpler: Giải thích đơn giản hơn
+closingContinue: Tiếp tục
+stepNextAction: bạn sẽ làm gì
+stepClosing: trước khi khép lại
+stepRedraft: bằng lời của bạn
+
+# BA flow 2026-08-26 — one spine, two doors
+mood4: Ổn
+mood5: Tốt
+promptStory: "Hôm nay có chuyện gì mới không?"
+storySkip: Không có gì đặc biệt
+storyPickHabit: hoặc chọn habit muốn bàn
+storyPickHabitEcho: Mình muốn bàn một habit.
+promptDepth: Bạn muốn chia sẻ thêm không?
+promptJotAck: Mình ghi lại rồi nhé.
+depthShallow: Chỉ ghi lại thôi
+depthDeep: Kể sâu hơn
+promptBarrier: "Có dịp mà chưa làm là chuyện thường, mình không tính là thất bại. Lúc đó điều gì làm bạn dừng lại?"
+shrinkLabel: Thu nhỏ nhắc hẹn — sửa được
+shrinkAccept: Thu nhỏ như vậy
+shrinkKeep: Giữ nguyên, thử lại
+promptContextAsk: "Chưa tới dịp thì thôi, mình để nguyên. Bối cảnh “${context}” có hay xảy ra không?"
+contextKeep: Giữ nguyên
+contextChange: Đổi bối cảnh
+promptContextEdit: Vậy bối cảnh mới là gì?
+planSlept: Cái hẹn này mình tạm cất đi nhé. Khi nào cần thì bạn gọi lại.
+promptInvite: "Mình có một cảnh ngắn để tập. Không bắt buộc — bỏ qua cũng được."
+promptSceneAgain: Thử nói lại theo cách của bạn xem?
+sceneAgainYes: Nói lại
+sceneAgainYesEcho: Nói lại.
+sceneAgainNo: Đủ rồi
+sceneAgainNoEcho: Đủ rồi.
+promptSceneDone: Vậy mình dừng cảnh ở đây nhé.
+promptHub: Xong rồi. Còn gì bạn muốn nói không?
+hubOpen: Hôm nay bạn muốn làm gì?
+promptHubBack: "Hôm trước bạn kể chuyện ${topic}. Hôm nay thế nào?"
+hubTaskT1: Xem lại nhắc hẹn
+hubTaskT2: "Luyện tập tình huống"
+hubTaskT3: "Kể chuyện hôm nay"
+hubTaskT4: Đặt Nhắc hẹn
+hubStop: Mình dừng ở đây
+hubStopEcho: Mình dừng ở đây.
+promptSceneFeeling: Lúc đó, bạn cảm thấy thế nào?
+promptSceneFeelingThird: Nếu là người đó, lúc đó bạn cảm thấy thế nào?
+sceneFeelingAck: Cảm giác đó dễ hiểu.
+promptSceneMet: Ngoài đời bạn gặp chuyện kiểu này chưa?
+sceneMetYes: Rồi
+sceneMetYesEcho: Rồi.
+sceneMetNo: Chưa
+sceneMetNoEcho: Chưa.
+promptSceneWhen: Lúc đó là lúc nào?
+promptSceneDid: Hôm đó bạn làm gì?
+promptSceneChange: Lần sau gặp lại, bạn muốn làm khác đi không?
+courseReasonOutside: Chuyện bạn vừa kể chạm tới một thứ chưa có trong kho của bạn
+promptClosingHeard: Mình nghe rồi. Khi nào muốn nói tiếp thì mình ở đây.
+inviteYes: Tập thử một cảnh
+inviteNo: Hôm nay bỏ qua
+promptPlanAsk: "Muốn đặt một Nhắc hẹn cho lần tới không?"
+planAskYes: Có, đặt Nhắc hẹn
+planAskNo: Không, đóng luôn
+courseCardTitle: Một khoá gần với chuyện bạn kể
+courseCardReason: Khớp với habit “${habit}”
+courseCardSave: Lưu để sau
+courseCardClose: Bỏ qua
+nextStop: Dừng ở đây
+nextAgain: Bắt đầu phiên mới
+closingWithPlan: "Vậy mai ${context} nhé. Mình nhắc bạn ${time}."
+closingWithPlanNoTime: "Vậy mai ${context} nhé."
+closingNoPlan: Ghi lại rồi nhé. Khi nào muốn nói tiếp thì mình ở đây.
+promptEndLesson: Tập vậy là đủ cho hôm nay.
+daysCustom: tự chọn
+day1: T2
+day2: T3
+day3: T4
+day4: T5
+day5: T6
+day6: T7
+day7: CN
+ratingChipMissed: Không hiểu ý tôi
+ratingChipGeneric: Trả lời chung chung
+ratingChipLong: Quá dài
+ratingChipVoice: Giọng điệu không phù hợp
+ratingChipImposed: Áp đặt suy nghĩ của tôi
+ratingSend: Gửi
+personaLabel: Giọng
+stepStory: "“Hôm nay có chuyện gì mới không?”"
+stepDepth: ghi lại hay kể sâu
+stepHub: còn gì muốn nói không
+stepBarrier: điều gì đã cản
+stepShrink: thu nhỏ nhắc hẹn
+stepContext: bối cảnh nhắc hẹn
+stepCourse: "card course · 3 lựa chọn"
+stepNextSession: "dừng hay bắt đầu phiên mới?"
+problemHint: "Vấn đề thật của tôi là…"
+problemPrefix: Vấn đề thật của tôi là
+problemAck: Đó là câu của bạn, mình không sửa.
+lineMoveSemantics: Chạm để chuyển sang cột kia, giữ để sửa
+lineEditHint: Sửa dòng này — xoá hết để bỏ
+
+# design v2 (HDDhistory AI Coach.html, 2026-08-26)
+intentNoneNote: Vậy là bối cảnh chưa xuất hiện, không phải bạn tránh. Mình giữ nhắc hẹn này lại.
+intentTellDone: Mình lưu nguyên văn câu bạn vừa kể.
+intentTellMissed: Mình ghi nhận.
+intentDoneEcho: Mình làm được rồi.
+intentMissedEcho: Có dịp mà mình chưa làm.
+intentNoneEcho: Chưa có dịp nào.
+promptStoryMore: "Hôm nay còn chuyện gì mới không?"
+storySkipEcho: Không có gì đặc biệt.
+rejectDraftEcho: Không đúng với mình.
+inviteYesEcho: Tập thử.
+inviteNoEcho: Hôm nay bỏ qua.
+sceneAck: "Mình nghe rồi — không chấm đúng sai. Đây là cách bạn nhìn tình huống đó hôm nay."
+lessonIntro: "Bạn vừa thêm “${habit}”."
+retryScene: "Tình huống này bạn từng gặp ba tuần trước. Thử lại xem sao?"
+retryAck: "Ghi rồi. Recap thứ 2 sẽ đặt hai câu cạnh nhau và im lặng — không bình luận."
+teaserRetry: "Tình huống ba tuần trước…"
+planAskYesEcho: Có.
+planAskNoEcho: Không, đóng luôn.
+reminderOffEcho: Tắt nhắc.
+scheduleEcho: "Nhắc lúc ${time} · ${days}"
+modeOnce: Chỉ một lần
+modeDaily: Hằng ngày
+modeWeekly: Hằng tuần
+dateToday: Hôm nay
+promptCourseCard: Có một khoá gần với chuyện bạn vừa nói tới.
+courseOpen: Đi tới khoá học
+courseOpenEcho: Đi tới khoá học.
+courseCardSaveEcho: Lưu để sau.
+courseHarderScene: "Luyện cảnh khó hơn"
+courseHarderSceneEcho: "Luyện cảnh khó hơn."
+courseCardCloseEcho: Bỏ qua.
+promptCourseLeave: Mình mở khoá đó cho bạn. Cứ xem một lesson thôi cũng được.
+endLeave: Sang Roadmap khoá học
+ratingToastTitle: Đánh giá cuộc trò chuyện vừa rồi
+ratingIssuesTitle: "Chỗ nào chưa ổn?"
+ratingChipQuestions: Hỏi quá nhiều
+ratingChipOther: Khác
+ratingOtherHint: "Nói rõ hơn…"
+nextAgainEcho: Bắt đầu phiên mới.
+nextStopEcho: Dừng ở đây.
+promptEndStop: Vậy mình dừng ở đây nhé.
+endCloseHome: "Đóng · về chỗ vừa rời đi"
+endCloseLesson: "Đóng · về Roadmap"
+endNextKeypoint: "Sang phần tiếp theo"
+stepIntentTell: hỏi thực chất
+stepInvite: mời luyện tập tình huống
+stepRetry: tập lại tình huống cũ
+stepPlanAsk: "muốn đặt Nhắc hẹn không?"
+stepLeave: sang Roadmap khoá học
+stepEnd: "câu chốt · rồi đóng"
+stepWait: "đang trả lời…"
+stepSafety: đường thoát an toàn
+sceneLead: "Một cảnh ngắn:"
+
+# hướng đi (2026-08-26): thu nhỏ nhắc hẹn · lý do card course
+promptShrinkAsk: Bạn có muốn thay đổi nhắc hẹn cho đơn giản hơn không?
+shrinkAskYes: Thu nhỏ lại
+shrinkAskNo: Giữ nguyên, thử lại
+shrinkAskYesEcho: Thu nhỏ lại.
+shrinkAskNoEcho: Giữ nguyên.
+promptShrinkEdit: "Sửa lại cho nhỏ hơn — vẫn là chữ của bạn."
+shrinkDoneNote: Mình đổi sang bản nhỏ hơn. Giờ nhắc giữ nguyên.
+courseReasonBarrier: "Vì bạn còn vướng ở «${habit}»"
+courseReasonHabit: "Bài đầu tiên của khoá này là «${habit}»"
+courseReasonCategory: Cùng hướng với thói quen bạn đang tập
+courseReasonKeypoint: Ý mình vừa nói nằm trong khoá này
+courseReasonSaved: Bạn đã lưu khoá này
+stepShrinkAsk: thu nhỏ nhắc hẹn
+
+# tầng 4 "Reflect" (2026-08-27): chấm theo rubric của kỹ năng, rồi cho tập lại
+promptSceneScore: "Mình bước ra khỏi tình huống một chút."
+sceneScoreRetry: Thử lại tình huống này
+sceneScoreGoOn: Đi tiếp
+sceneScoreRetryEcho: Thử lại tình huống này.
+sceneScoreGoOnEcho: Đi tiếp.
+stepSceneScore: xem lại cách bạn xử lý
+score:
+  title: CÁCH BẠN XỬ LÝ
+  outOf: /10
+  level: "Độ khó ${level}/5"
+  strength: "Làm được:"
+  improve: "Sắc hơn được:"
+  tip: "Mẹo:"
+  betterPhrasing: CÓ THỂ NÓI THẾ NÀY
+  skill: "Điểm kỹ năng ${score}/100 · ${scenes} lần tập"
+  trendUp: "▲ ${points}"
+  trendDown: "▼ ${points}"
+
+# cảnh chia thành nhiều bong bóng có tiêu đề đậm (2026-08-27)
+sceneHabitLabel: "Với thói quen:"
+sceneSetupLabel: "Tôi có tình huống:"
+
+# câu mở theo mood — 5 mức x 3 biến thể, xoay vòng theo ngày (2026-08-27)
+# Mood chỉ chỉnh ĐỘ MỞ của câu hỏi, không được lộ ra thành lời.
+storyOpenBad1: "Hôm nay thế nào?"
+storyOpenBad2: "Hôm nay của bạn ra sao?"
+storyOpenBad3: "Giờ này bạn thế nào?"
+storyOpenTired1: "Có gì đang chiếm chỗ trong đầu bạn không?"
+storyOpenTired2: "Đang có gì vướng trong đầu không?"
+storyOpenTired3: "Có chuyện gì đang lởn vởn không?"
+storyOpenOk1: "Hôm nay có chuyện gì mới không?"
+storyOpenOk2: "Hôm nay có gì mới không?"
+storyOpenOk3: "Có chuyện gì hôm nay không?"
+storyOpenGood1: "Hôm nay có gì đáng kể lại không?"
+storyOpenGood2: "Có chuyện gì đáng kể lại hôm nay không?"
+storyOpenGood3: "Hôm nay có gì muốn kể không?"
+storyOpenGreat1: "Hôm nay có chuyện gì hay không?"
+storyOpenGreat2: "Có chuyện gì hay hôm nay không?"
+storyOpenGreat3: "Hôm nay có gì vui không?"
+
+# Luồng 4 (design "AI Coach Flows", 2026-09-03) — the Home scene.
+hubHint: "Hoặc kể luôn chuyện hôm nay của bạn…"
+promptScenePick: "Bạn muốn tập cái nào trong kho của bạn?"
+promptSceneRetry: "Một tình huống tương tự:"
+sceneFixRetry: "Luyện lại cảnh này"
+sceneFixRetryEcho: "Luyện lại cảnh này."
+sceneFixLater: "Để sau"
+sceneFixLaterEcho: "Để sau."
+stepScenePick: "chọn habit để tập"
+courseReasonStory: "Từ chuyện bạn vừa kể"
+
+# Luồng 5 (design 2026-09-03) — the Habit screen's coach row.
+hubTaskCheckin: "Ghi nhận hôm nay"
+hubTaskQuiz: "Làm quiz với mình"
+promptCheckinAsk: "Hôm nay bạn có dịp nào ${habit} chưa?"
+promptCheckinAskNoName: "Hôm nay bạn có dịp nào dùng tới thói quen này chưa?"
+promptCheckinTell: "Kể mình một câu: lúc đó bạn đã nói hay làm gì?"
+checkinAskYes: "Có, mình làm được"
+checkinAskYesEcho: "Có, mình làm được."
+checkinAskNo: "Chưa, hôm nay không có dịp"
+checkinAskNoEcho: "Chưa, hôm nay không có dịp."
+checkinOfferYes: "Ghi nhận habit đó"
+checkinOfferYesEcho: "Ghi nhận habit đó."
+checkinOfferLater: "Để sau"
+checkinOfferLaterEcho: "Để sau."
+stepCheckinToday: "ghi nhận hôm nay"
+stepQuiz: "quiz trong chat"
+
+# Luồng 6 (design 2026-09-03) — the plea at ⟨Đóng⟩.
+exitPleaStory: "Bạn kể chưa hết mà. Ở thêm một câu nữa nhé?"
+exitPleaScene: "Cảnh này còn một câu nữa là xong. Nói thử rồi mình đóng?"
+exitPleaGeneric: "Mình vẫn ở đây mà. Nói thêm một câu rồi đóng cũng được?"
+exitPleaQuiz: "Còn ${n} câu thôi. Làm nốt rồi mình ghi hôm nay cho bạn nhé?"
+exitPleaStay: "Ở lại một câu"
+exitPleaLeave: "Vẫn đóng"
+
+# Luồng 2/3 (design 2026-09-03) — the talk after a keypoint, the course recap.
+promptTalkAsk: "Nói một chút về phần vừa học nhé? Bắt đầu kiểu nào?"
+promptQuizHandoff: "Vài câu về phần này nhé."
+promptTalkWhen: "Học tiếp phần sau chứ?"
+promptRecapPick: "Bạn vừa xong «${course}». Nhìn lại một chút nhé? Bài nào ở lại với bạn lâu nhất?"
+promptRecapQuiz: "Làm vài câu random từ cả khoá xem còn nhớ gì nhé?"
+hubTaskSummary: "Bàn luận về bài vừa học"
+hubTaskTalkQuiz: "Làm quiz"
+talkAskHint: "Hoặc kể luôn điều bạn nhớ nhất…"
+quizStart: "Bắt đầu"
+quizStartEcho: "Bắt đầu."
+quizLater: "Thôi, để sau"
+quizLaterEcho: "Thôi, để sau."
+learnContinue: "Học tiếp"
+learnContinueEcho: "Học tiếp."
+learnLater: "Để sau"
+learnLaterEcho: "Để sau."
+recapTry: "Làm thử"
+recapTryEcho: "Làm thử."
+recapLater: "Để sau"
+recapLaterEcho: "Để sau."
+stepTalk: "thảo luận bài vừa học"
+stepRecap: "nhìn lại cả khoá"
+courseReasonRecap: "Cùng nhóm kỹ năng với khoá bạn vừa xong"
+courseReasonResume: "Khoá bạn đang học dở"
+inviteBubble: "Bạn vừa học xong một phần — nói một chút về nó nhé?"
+inviteRecapBubble: "Bạn vừa xong cả khoá «${course}» — nhìn lại một chút nhé?"
+inviteRecapBubbleNoName: "Bạn vừa xong cả khoá — nhìn lại một chút nhé?"
+inviteAccept: "Thực hành với Coach"
+inviteLater: "Bỏ qua, sang bài tiếp theo"
+inviteCourseDone: "Hoàn thành khoá học"
+inviteRecapAccept: "Nhìn lại cả khoá"
+
+# Luồng 1 (design 2026-09-03) — Onboarding Coach, phiên Home đầu tiên.
+promptOnboardAddress: "Mình gọi bạn là gì cho tiện nhỉ?"
+promptOnboardAddressConfirm: "Mình gọi là ${name} nhé?"
+promptOnboardGoal: "Bạn muốn cải thiện điều gì nhất khi trò chuyện với mọi người?"
+promptOnboardGoalTo: "${address} muốn cải thiện điều gì nhất khi trò chuyện với mọi người?"
+promptOnboardBarrier: "Điều gì hay làm bạn khó mở lời nhất?"
+promptOnboardBarrierTo: "Điều gì hay làm ${address} khó mở lời nhất?"
+promptOnboardCurrent: "Hiện tại bạn đang làm gì để luyện nói?"
+promptOnboardCurrentTo: "Hiện tại ${address} đang làm gì để luyện nói?"
+promptOnboardStyle: "Bạn học kiểu nào thấy vào nhất?"
+promptOnboardStyleTo: "${address} học kiểu nào thấy vào nhất?"
+promptOnboardAge: "Bạn ở khoảng tuổi nào? Để mình chọn tình huống cho hợp."
+promptOnboardAgeTo: "${address} ở khoảng tuổi nào? Để mình chọn tình huống cho hợp."
+promptOnboardGender: "Mình nên xưng hô với bạn theo giới tính nào? Không nói cũng được."
+promptOnboardGenderTo: "Mình nên hiểu ${address} theo giới tính nào? Không nói cũng được."
+promptOnboardJob: "Bạn đang làm công việc gì? Gõ tay cũng được."
+promptOnboardJobTo: "${address} đang làm công việc gì? Gõ tay cũng được."
+onboardIntroHint: "Hoặc hỏi mình gì đó trước…"
+onboardAddressHint: "Hoặc gõ tên bạn muốn mình gọi…"
+onboardHint: "Hoặc gõ câu trả lời của bạn…"
+onboardProgress: "Câu ${n}/${total}"
+onboardSkip: "Bỏ qua"
+onboardSkipEcho: "Bỏ qua."
+onboardConfirmYes: "Đúng rồi"
+onboardConfirmYesEcho: "Đúng rồi."
+onboardConfirmNo: "Không, gọi khác"
+onboardConfirmNoEcho: "Không, gọi khác."
+
+# Vạch ngăn giữa hai phiên khi mở lại.
+dividerToday: "Hôm nay"
+dividerYesterday: "Hôm qua"
+doorHome: "Trang chủ"
+doorLesson: "Bài học"
+doorHabit: "Thói quen"
+
+# Home · "Kể chuyện hôm nay" (owner 2026-09-04): one open question, no chips.
+promptStoryOpen: "Ừ, kể mình nghe đi. Dạo này thế nào rồi — có gì vui hay đang nghĩ về chuyện gì không?"
+teaserFirstHabit: "Chưa có thói quen nào trong kho. Học một bài để thêm nhé?"
+teaserHabit: "Kể mình nghe một lần thật, hay làm quiz cùng mình?"
+teaserHome: "Vào trò chuyện một chút nhé?"
+teaserOnboard: "Mình làm quen với bạn một chút nhé?"
+sceneShuffle: "Xáo trộn"
+inviteNewHabitBubble: "Bạn vừa thêm một thói quen. Tập thử ngay nhé, lúc còn nhớ vì sao mình thêm?"
+inviteNewHabitsBubble: "Bạn vừa thêm ${n} thói quen. Tập thử một cái ngay nhé, lúc còn nhớ vì sao mình thêm?"
+inviteNewHabitKicker: "Vừa thêm thói quen"
+inviteNewHabitsKicker: "Vừa thêm ${n} thói quen"
+inviteNewHabitAccept: "Tập thử ngay"
+sceneAnswerOther: Khác
+# Luồng 6 (2026-09-14) — popup đánh giá sau ⟨Vẫn đóng⟩. Đường DUY NHẤT thu
+# feedback: toast 👍/👎 giữa phiên đã bỏ. Tần suất hỏi do admin đặt.
+rateSheetTitle: "Nói chuyện với HDDhistory Coach vừa rồi thế nào?"
+rateSheetSubtitle: "Chọn những gì đúng với bạn, rồi viết thêm nếu muốn."
+rateChipUnderstood: "Coach hiểu đúng chuyện mình kể"
+rateChipRightQuestions: "Câu hỏi đúng chỗ"
+rateChipTooLong: "Nói nhiều quá"
+rateChipImposed: "Áp đặt suy nghĩ của mình"
+rateChipNotHelpful: "Chưa giúp được gì"
+rateNoteHint: "Viết đánh giá của bạn..."
+rateSend: "Gửi đánh giá"
+rateLater: "Để sau"
+# Bộ chip theo LOẠI việc user đang làm lúc đóng (2026-09-14). Loại do server
+# gửi xuống (sessionKind); client không tự đoán.
+rateChipSceneRealistic: "Tình huống giống đời thật"
+rateChipSceneUseful: "Gợi ý trả lời dùng được"
+rateChipSceneUnrealistic: "Tình huống không giống đời mình"
+rateChipSceneUnnatural: "Câu gợi ý nghe không tự nhiên"
+rateChipRecapAccurate: "Tóm đúng ý mình"
+rateChipRecapOnPoint: "Câu hỏi ôn đúng trọng tâm"
+rateChipRecapWrong: "Tóm sai hoặc thiếu ý"
+rateChipRecapBadLevel: "Câu hỏi quá dễ hoặc quá khó"
+rateChipOnboardEasy: "Câu hỏi dễ trả lời"
+rateChipOnboardTooMany: "Hỏi quá nhiều"
+rateChipOnboardTooPersonal: "Hỏi riêng tư quá"
+rateChipOnboardUnclear: "Chưa hiểu Coach để làm gì"
+rateChipHubUnsure: "Không biết chọn gì"
+rateChipHubNothingFits: "Không có mục nào hợp"
+rateChipHubJustLooking: "Chỉ ghé xem thử"
+rateChipHubBusy: "Đang bận, để sau"
+# Người rời ở hub chưa nói gì với Coach, nên hỏi vì sao chưa bắt đầu.
+rateSheetTitleHub: "Chưa có gì hợp để bắt đầu à?"
+rateSheetSubtitleHub: "Cho mình biết vì sao, để lần sau mở ra đúng thứ bạn cần hơn."

@@ -1,0 +1,33 @@
+assistantName: Eup AI
+chooseNextStepLabel: Chọn bước tiếp theo
+emptyConversationTitle: Cuộc hội thoại đã sẵn sàng. Hãy nhắn tin hoặc chọn một gợi
+  ý để tiếp tục luyện tập.
+endedConversationDescription: Bài luyện tập này đã hoàn tất. Bạn vẫn có thể xem lại
+  nội dung, nhưng không thể gửi thêm phản hồi.
+followUpsLabel: Gợi ý tiếp theo
+headerUsageRemaining: còn ${remaining}/${monthlyLimit} lượt luyện tập
+historyRetryButton: Tải lại lịch sử
+historyRetryTitle: Chưa thể tải các tin nhắn trước đó.
+inputPlaceholder: Nhập câu trả lời của bạn
+introUsageChecking: Đang kiểm tra lượt luyện tập trong tháng...
+introUsageReachedLimit: Bạn không còn lượt luyện tập nào trong tháng này.
+introUsageRemaining: còn ${remaining} lượt luyện tập
+introUsageRemainingSuffix: trong tháng này
+introUsageUnlimited: Gói Premium của bạn bao gồm luyện tập không giới hạn.
+jumpToLatestButton: Mới nhất
+loadingDescription: Đang tham gia phòng luyện tập và tải lịch sử hội thoại.
+loadingTitle: Đang chuẩn bị bài luyện tập...
+practiceLabel: Luyện tập
+retryPracticeButton: Thử lại
+roomRetryButton: Kết nối lại
+roomRetryTitle: Kết nối luyện tập đã bị gián đoạn.
+startPracticeButton: Bắt đầu luyện tập
+startingNewConversationLabel: Đang bắt đầu lượt luyện tập mới...
+summaryContinueDeeper: Đào sâu thêm
+summaryDifferentScenario: Thử tình huống khác
+summaryEndPractice: Kết thúc luyện tập
+summaryNewChallenge: Cho tôi thử thách mới
+summaryStartANewConversation: Bắt đầu lượt luyện tập mới
+thinkingLabel: Đang suy nghĩ...
+unavailableTitle: Hiện chưa thể mở bài luyện tập này.
+userNameLabel: Bạn

@@ -1,0 +1,79 @@
+audioErrorDescription: Đã xảy ra lỗi khi tải âm thanh. Bạn có thể chuyển sang Đọc
+  hoặc thử lại.
+audioErrorTitle: Không thể phát âm thanh
+audioListenLabel: Nghe
+audioReadLabel: Đọc
+audioRetry: Thử lại
+audioSpeedNormal: Bình thường
+audioSpeedSuffix: tốc độ
+audioSpeedTitle: Tốc độ
+checkAnswerButton: Kiểm tra đáp án
+textDisplayTitle: Hiển thị chữ
+fontSizeLabel: Cỡ chữ
+fontFamilyLabel: Phông chữ
+fontDefaultLabel: Mặc định
+fontSerifLabel: Serif
+fontCourierLabel: Courier
+backgroundMusicLabel: Nhạc nền
+startLearningLabel: Bắt đầu
+doneCardTitle: Hoàn thành nội dung trọng tâm
+doneCardSubtitle: Tuyệt vời — bạn đã học hết nội dung này.
+narrationPlaySemantics: Phát giọng đọc
+narrationPauseSemantics: Tạm dừng giọng đọc
+cardProgressSemantics: Thẻ ${current}/${total}
+cardSwipeHint: Vuốt lên để tiếp tục
+cardSwipeBlockedHint: Chọn đáp án để tiếp tục
+cardSwipeReviewHint: Vuốt xuống để xem lại
+cardNotReachedHint: Trả lời câu phía trên để mở câu này
+charCounter: ${currentChars}/${maxChars} ký tự
+checkButton: Kiểm tra
+closePopupDescription: Bài học của bạn sẽ không được lưu nếu bạn thoát bây giờ.
+closePopupKeepLearning: Tiếp tục học
+closePopupQuit: Thoát
+closePopupTitle: Khoan đã!
+emptyPopupCta: Tôi đã hiểu
+emptyPopupDescription: Khóa học đang được cập nhật, \nhãy đón chờ!
+emptyPopupTitle: Sắp ra mắt
+lessonLessonKeypointInstruction: Cách bạn học
+lessonLessonKeypointTitle: Nội dung trọng tâm
+navigationPopupContinueBold: Nhấn Tiếp tục
+navigationPopupContinueRest: để đi tiếp
+navigationPopupScrollBold: Cuộn xuống
+navigationPopupScrollRest: để quay lại
+navigationPopupTapToContinue: Chạm để tiếp tục
+navigationPopupTitle: Cách điều hướng
+typeYourAnswerHint: Nhập câu trả lời của bạn...
+liveActivityInLesson: ĐANG HỌC
+liveActivityContinueLearning: HỌC TIẾP
+liveActivityResumeLesson: Tiếp tục học
+liveActivityNextLesson: Bài tiếp theo
+liveActivityNudge(param=count): ~${count} phút để hoàn thành bài tiếp theo
+liveActivityNudgeDone: Chạm để bắt đầu bài tiếp theo
+liveActivityCourseComplete: Hoàn thành khóa học
+liveActivityNudgeNotifTitle: Bài học của bạn còn dang dở
+liveActivityNudgeNotifBody(param=count): Hoàn thành ${count} phút cuối ngay, trước khi quên.
+liveActivityDoneNotifTitle: Giữ kiến thức tươi mới ngày mai
+liveActivityDoneNotifBody(param=course): Bạn đã hoàn thành ${course}. Quay lại ngày mai để ghi nhớ lâu.
+
+# Keypoint peek card + per-keypoint practice quiz (design "3 · Learning")
+practiceQuizDoneTitle: Hoàn thành quiz
+practiceQuizDoneSubtitle: Vuốt xuống để xem lại câu bất kỳ.
+practiceQuizScore: Đúng ${correct}/${total}
+practiceQuizDoneButton: Quay lại lộ trình
+# Lesson complete + practice hub (design "3 · Learning")
+peekRecapHint: Chạm để xem tóm tắt
+lessonCompleteTitle: Hoàn thành bài học!
+lessonCompletePracticeNow: Luyện tập ngay
+lessonCompleteSkip: Bỏ qua, sang bài tiếp theo
+practiceHubTitle: Luyện tập
+practiceHubSubtitle: Chọn cách bạn muốn luyện tập
+practiceModeQuizTitle: Quiz
+practiceModeQuizSubtitle: Vài câu hỏi về nội dung bạn vừa học
+practiceModeRoleplayTitle: Nhập vai
+practiceModeRoleplaySubtitle: Trò chuyện cùng một người bạn AI
+practiceModeVideoTitle: Video ngắn
+practiceModeVideoSubtitle: Xem kỹ năng được dùng trong tình huống thật
+practiceComingSoon: Sắp có
+lockedCardTitle: Hết lượt học miễn phí hôm nay
+lockedCardBody: Quay lại vào ngày mai, hoặc nâng cấp Premium để học tiếp ngay.
+lockedCardCta: Nâng cấp Premium

@@ -1,0 +1,17 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.eup.meup",
+            "sha256_cert_fingerprints": [
+                "0B:ED:AB:A9:18:73:98:B4:85:9F:5B:C4:A2:77:FC:31:D5:E9:8E:A7:72:ED:C3:70:5A:26:5E:62:42:09:11:03",
+                "4A:1C:FD:9E:7B:A8:27:9D:40:EB:D1:87:0B:6A:41:9E:B2:C0:7E:A2:C7:77:9C:EA:2E:87:70:B9:FF:C8:03:76",
+                "94:51:01:3b:6f:ae:19:8a:a0:27:0a:64:f2:29:33:64:a7:62:ea:44:2b:b7:28:e3:8d:e9:2a:b2:15:1f:1f:dd",
+                "04:80:5a:1d:5f:3e:1d:a0:f1:a6:05:8e:bb:e6:39:88:70:ba:3d:cd:fd:8d:3d:cf:b9:66:d9:6c:d8:cc:ad:86"
+            ]
+        }
+    }
+]

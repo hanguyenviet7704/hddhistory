@@ -1,0 +1,214 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+def tools_platform
+  return "macos" if RUBY_PLATFORM.include?("darwin")
+  return "linux" if RUBY_PLATFORM.include?("linux")
+
+  "macos"
+end
+
+def tools_script_path(*parts)
+  File.join("..", "..", "tools", tools_platform, *parts)
+end
+
+platform :android do
+  desc "Runs all the tests"
+  # Example: bundle exec fastlane test
+  lane :test do
+    gradle(task: "test")
+  end
+
+  # Example: bundle exec fastlane build_apk
+  # Example: bundle exec fastlane build_apk flavor:dev
+  # Example: bundle exec fastlane build_apk flavor:stg
+  # Example: bundle exec fastlane build_apk flavor:prod
+  desc "Build APK for specified flavor"
+  lane :build_apk do |options|
+    flavor = options[:flavor] || "dev"
+    sh("#{tools_script_path('build', 'build_apk.sh')} #{flavor}")
+  end
+
+  # Example: bundle exec fastlane build_bundle
+  # Example: bundle exec fastlane build_bundle flavor:dev
+  # Example: bundle exec fastlane build_bundle flavor:stg
+  # Example: bundle exec fastlane build_bundle flavor:prod
+  desc "Build App Bundle for specified flavor"
+  lane :build_bundle do |options|
+    flavor = options[:flavor] || "dev"
+    sh("#{tools_script_path('build', 'build_appbundle.sh')} #{flavor}")
+  end
+
+  # Example: bundle exec fastlane beta
+  # Example: bundle exec fastlane beta flavor:dev
+  # Example: bundle exec fastlane beta flavor:stg
+  # Example: bundle exec fastlane beta flavor:prod
+  # Example: bundle exec fastlane beta flavor:dev use_plugin:true
+  desc "Submit a new Beta Build to Firebase App Distribution"
+  lane :beta do |options|
+    flavor = options[:flavor] || "dev"
+    use_plugin = options[:use_plugin] || false
+
+    if use_plugin
+      # Using Firebase App Distribution plugin (requires: fastlane add_plugin firebase_app_distribution)
+      # Install plugin first: fastlane add_plugin firebase_app_distribution
+
+      # Build APK using custom script with Flutter flavors and obfuscation
+      build_apk(flavor: flavor)
+
+      # Load Firebase configuration from firebase.json
+      firebase_config = JSON.parse(File.read("../../.info/app/firebase.json"))
+      app_id = firebase_config["apps"]["android"][flavor]["appId"]
+      project_id = firebase_config["projects"][flavor]
+      groups = firebase_config["distribution"]["groups"][flavor].join(",")
+      testers = firebase_config["distribution"]["testers"][flavor].join(",")
+
+      # Generate release notes from template
+      version = sh("cd .. && grep 'version:' pubspec.yaml | tail -1 | awk '{print $2}' | tr -d '\n'", log: false).strip
+      release_notes_template = firebase_config["distribution"]["releaseNotes"]["template"]
+      release_notes = release_notes_template
+        .gsub("{{version}}", version)
+        .gsub("{{flavor}}", flavor)
+        .gsub("{{date}}", Time.now.strftime("%Y-%m-%d %H:%M:%S"))
+
+      # Upload to Firebase App Distribution
+      apk_path = "../build/app/outputs/flutter-apk/app-#{flavor}-release.apk"
+      firebase_app_distribution(
+        app: app_id,
+        groups: groups,
+        testers: testers,
+        release_notes: release_notes,
+        android_artifact_path: apk_path,
+        android_artifact_type: "APK"
+      )
+    else
+      # Default: Use custom distribution script with build-first option
+      sh("#{tools_script_path('distribution', 'distribute_android.sh')} apk #{flavor} --build-first")
+    end
+  end
+
+  # Example: bundle exec fastlane beta_bundle
+  # Example: bundle exec fastlane beta_bundle flavor:dev
+  # Example: bundle exec fastlane beta_bundle flavor:stg
+  # Example: bundle exec fastlane beta_bundle flavor:prod
+  # Example: bundle exec fastlane beta_bundle flavor:dev use_plugin:true
+  desc "Submit a new Beta Build using App Bundle to Firebase App Distribution"
+  lane :beta_bundle do |options|
+    flavor = options[:flavor] || "dev"
+    use_plugin = options[:use_plugin] || false
+
+    if use_plugin
+      # Using Firebase App Distribution plugin (requires: fastlane add_plugin firebase_app_distribution)
+      # Install plugin first: fastlane add_plugin firebase_app_distribution
+
+      # Build App Bundle using custom script with Flutter flavors and obfuscation
+      build_bundle(flavor: flavor)
+
+      # Load Firebase configuration from firebase.json
+      firebase_config = JSON.parse(File.read("../../.info/app/firebase.json"))
+      app_id = firebase_config["apps"]["android"][flavor]["appId"]
+      project_id = firebase_config["projects"][flavor]
+      groups = firebase_config["distribution"]["groups"][flavor].join(",")
+      testers = firebase_config["distribution"]["testers"][flavor].join(",")
+
+      # Generate release notes from template
+      version = sh("cd .. && grep 'version:' pubspec.yaml | tail -1 | awk '{print $2}' | tr -d '\n'", log: false).strip
+      release_notes_template = firebase_config["distribution"]["releaseNotes"]["template"]
+      release_notes = release_notes_template
+        .gsub("{{version}}", version)
+        .gsub("{{flavor}}", flavor)
+        .gsub("{{date}}", Time.now.strftime("%Y-%m-%d %H:%M:%S"))
+
+      # Upload to Firebase App Distribution (App Bundle)
+      aab_path = "../build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab"
+      firebase_app_distribution(
+        app: app_id,
+        groups: groups,
+        testers: testers,
+        release_notes: release_notes,
+        android_artifact_path: aab_path,
+        android_artifact_type: "AAB"
+      )
+    else
+      # Default: Use custom distribution script with build-first option
+      sh("#{tools_script_path('distribution', 'distribute_android.sh')} appbundle #{flavor} --build-first")
+    end
+  end
+
+  # Example: bundle exec fastlane deploy
+  # Example: bundle exec fastlane deploy flavor:prod track:internal
+  # Example: bundle exec fastlane deploy flavor:stg track:alpha
+  # Example: bundle exec fastlane deploy flavor:prod track:production
+  #
+  # Metadata upload options (all disabled by default except changelogs):
+  # Example: bundle exec fastlane deploy flavor:prod track:internal upload_metadata:true
+  # Example: bundle exec fastlane deploy flavor:prod track:internal upload_screenshots:true
+  # Example: bundle exec fastlane deploy flavor:prod track:internal upload_images:true
+  # Example: bundle exec fastlane deploy flavor:prod track:internal upload_all_metadata:true
+  desc "Deploy a new version to the Google Play Store"
+  lane :deploy do |options|
+    flavor = options[:flavor] || "prod"
+    track = options[:track] || "internal"
+
+    # Metadata upload options (disabled by default except changelogs)
+    upload_metadata = options[:upload_metadata] || false
+    upload_screenshots = options[:upload_screenshots] || false
+    upload_images = options[:upload_images] || false
+    upload_all_metadata = options[:upload_all_metadata] || false
+
+    # Build App Bundle for Play Store
+    build_bundle(flavor: flavor)
+
+    aab_path = "../build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab"
+
+    # Upload to Google Play Store with selective metadata upload
+    upload_to_play_store(
+      track: track,
+      aab: aab_path,
+      # Always upload changelogs by default (skip = false means upload)
+      skip_upload_changelogs: false,
+      # Other metadata uploads are controlled by options (skip = true means don't upload)
+      skip_upload_metadata: !(upload_all_metadata || upload_metadata),
+      skip_upload_images: !(upload_all_metadata || upload_images),
+      skip_upload_screenshots: !(upload_all_metadata || upload_screenshots)
+    )
+  end
+
+  # Example: bundle exec fastlane deploy_alpha
+  # Example: bundle exec fastlane deploy_alpha flavor:stg
+  desc "Deploy to Play Store Alpha track"
+  lane :deploy_alpha do |options|
+    flavor = options[:flavor] || "prod"
+    deploy(flavor: flavor, track: "alpha")
+  end
+
+  # Example: bundle exec fastlane deploy_beta
+  # Example: bundle exec fastlane deploy_beta flavor:stg
+  desc "Deploy to Play Store Beta track"
+  lane :deploy_beta do |options|
+    flavor = options[:flavor] || "prod"
+    deploy(flavor: flavor, track: "beta")
+  end
+
+  # Example: bundle exec fastlane deploy_production
+  # Example: bundle exec fastlane deploy_production flavor:prod
+  desc "Deploy to Play Store Production"
+  lane :deploy_production do |options|
+    flavor = options[:flavor] || "prod"
+    deploy(flavor: flavor, track: "production")
+  end
+end

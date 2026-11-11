@@ -1,0 +1,7 @@
+Key,Type,Context,Params,Description,Status,Tags,UpdatedAt,English (EN),Vietnamese (VI),Chinese (ZH)
+appTitle,text,,,"App title shown in system UI",active,,2024-01-01T00:00:00Z,HDDhistory,HDDhistory,HDDhistory
+homeHomeButton,text,,,"Bottom navigation label: Home",active,,2024-01-01T00:00:00Z,Home,Trang chủ,首页
+greeting,text,,name:String,"Greeting with a name placeholder",active,,2024-01-01T00:00:00Z,Hello ${name},Xin chào ${name},你好，${name}
+notifications,plural,,count:int,"Notifications count copy with plural support",active,,2024-01-01T00:00:00Z,{count, plural, =0{No notifications} =1{1 notification} other{{count} notifications}},{count, plural, =0{Không có thông báo} =1{1 thông báo} other{{count} thông báo}},{count, plural, =0{暂无通知} =1{1 条通知} other{{count} 条通知}}
+welcomeBack,select,gender,gender:String,"Welcome text that varies by gender",active,,2024-01-01T00:00:00Z,{gender, select, female{Welcome back, Ms.} male{Welcome back, Mr.} other{Welcome back!}},{gender, select, female{Chào mừng trở lại!} male{Chào mừng trở lại!} other{Chào mừng trở lại!}},{gender, select, female{欢迎回来！} male{欢迎回来！} other{欢迎回来！}}
+formattedNotice,rich,,day:String,"Rich text example with placeholder",draft,beta,2024-01-01T00:00:00Z,"<b>Next session:</b> ${day}","<b>Buổi tiếp theo:</b> ${day}","<b>下次课程：</b> ${day}"

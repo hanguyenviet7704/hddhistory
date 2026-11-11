@@ -1,0 +1,374 @@
+part of '../../video_lesson.dart';
+
+extension _VideoLessonPageControllerActions on _VideoLessonPageState {
+  static const _controllerInitializationTimeout = Duration(seconds: 12);
+
+  Future<void> _initializeController(String url) async {
+    if (url.isEmpty || _controllerUrl == url) return;
+    final initStopwatch = Stopwatch()..start();
+    var warmupState = _VideoLessonWarmupState.miss;
+
+    _disposeController();
+    _updatePlayerViewState(
+      controllerUrl: url,
+      isInitializingController: true,
+    );
+
+    final warmupResolution = await _videoLessonPlayerWarmupCache.take(url);
+    warmupState = warmupResolution.state;
+    final prewarmedController = warmupResolution.controller;
+
+    if (prewarmedController != null) {
+      prewarmedController.addListener(_handleControllerTick);
+      if (!mounted) {
+        await prewarmedController.dispose();
+        return;
+      }
+
+      _updatePlayerViewState(
+        controller: prewarmedController,
+        controllerUrl: url,
+        isInitializingController: false,
+      );
+      _cubit.updatePlaybackProgress(
+        position: prewarmedController.value.position,
+        duration: prewarmedController.value.duration,
+      );
+      _trackPlayerInitialization(
+        state: _cubit.state,
+        initStatus: 'success',
+        warmupState: warmupState,
+        timeToFirstFrameMs: initStopwatch.elapsedMilliseconds,
+      );
+      await _maybeAutoplayInitialLoad(prewarmedController);
+      return;
+    }
+
+    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    controller.addListener(_handleControllerTick);
+
+    try {
+      await controller.initialize().timeout(_controllerInitializationTimeout);
+      await controller.setLooping(false);
+    } catch (error) {
+      controller.removeListener(_handleControllerTick);
+      await controller.dispose();
+      if (!mounted) return;
+      _updatePlayerViewState(
+        controllerUrl: '',
+        isInitializingController: false,
+      );
+      _trackPlayerInitialization(
+        state: _cubit.state,
+        initStatus: error is TimeoutException ? 'timeout' : 'failure',
+        warmupState: warmupState,
+      );
+      _cubit.setLoadFailure(context.l10n.videoLesson.unavailableMessage);
+      return;
+    }
+
+    if (!mounted) {
+      await controller.dispose();
+      return;
+    }
+
+    _updatePlayerViewState(
+      controller: controller,
+      controllerUrl: url,
+      isInitializingController: false,
+    );
+    _cubit.updatePlaybackProgress(
+      position: controller.value.position,
+      duration: controller.value.duration,
+    );
+    _trackPlayerInitialization(
+      state: _cubit.state,
+      initStatus: 'success',
+      warmupState: warmupState,
+      timeToFirstFrameMs: initStopwatch.elapsedMilliseconds,
+    );
+    await _maybeAutoplayInitialLoad(controller);
+  }
+
+  void _disposeController() {
+    final controller = _controller;
+    _updatePlayerViewState(
+      controllerUrl: '',
+      isInitializingController: false,
+      clearController: true,
+    );
+    if (controller == null) return;
+    controller.removeListener(_handleControllerTick);
+    controller.dispose();
+  }
+
+  void _handleControllerTick() {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized || _isSeeking) return;
+
+    final value = controller.value;
+    final previousState = _cubit.state;
+    final previousPosition = previousState.positionSeconds;
+
+    _cubit.updatePlaybackProgress(
+      position: value.position,
+      duration: value.duration,
+    );
+
+    if (previousState.isPlaying &&
+        _cubit.processPlaybackAdvance(
+          fromSecond: previousPosition,
+          toSecond: value.position.inSeconds,
+        )) {
+      unawaited(controller.pause());
+      _cancelControlsAutoHide();
+    }
+
+    final playbackStateChanged = value.isPlaying != _cubit.state.isPlaying;
+    if (playbackStateChanged) {
+      _cubit.setPlaybackState(
+        isPlaying: value.isPlaying,
+        controlsVisible: value.isPlaying ? _cubit.state.controlsVisible : true,
+      );
+      if (value.isPlaying) {
+        _scheduleControlsAutoHide();
+      } else {
+        _cancelControlsAutoHide();
+      }
+    }
+
+    final reachedEnd = value.isCompleted || (value.duration > Duration.zero && value.position >= value.duration);
+    if (reachedEnd && !_cubit.state.isEndVisible && !_cubit.state.isQuestionVisible && !_cubit.state.isQuestionResultVisible && !_cubit.state.hasPendingSkippedQuestions) {
+      unawaited(controller.pause());
+      _cubit.showEndOverlay();
+      _cancelControlsAutoHide();
+    }
+  }
+
+  void _cancelControlsAutoHide() {
+    _controlsAutoHideTimer?.cancel();
+    _controlsAutoHideTimer = null;
+  }
+
+  void _scheduleControlsAutoHide() {
+    if (!_cubit.state.isPlaying || !_cubit.state.controlsVisible || _cubit.state.hasBlockingOverlay) {
+      return;
+    }
+    _controlsAutoHideTimer?.cancel();
+    _controlsAutoHideTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      if (_cubit.state.isPlaying && !_cubit.state.hasBlockingOverlay) {
+        _cubit.setControlsVisible(false);
+      }
+    });
+  }
+
+  Future<void> _handlePlayPause(VideoLessonState state) async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized || state.isEndVisible) {
+      return;
+    }
+
+    final trackingData = _trackingData(state);
+    if (controller.value.isPlaying) {
+      await controller.pause();
+      _cancelControlsAutoHide();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackVideoLessonPauseClick(
+          trackingData,
+          nodeId: state.nodeId,
+          videoPosition: state.positionSeconds,
+        );
+      }
+      _cubit.setPlaybackState(isPlaying: false, controlsVisible: true);
+      return;
+    }
+
+    if (_cubit.maybeTriggerZeroSecondQuestion()) {
+      _cancelControlsAutoHide();
+      return;
+    }
+
+    await controller.play();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackVideoLessonPlayClick(
+        trackingData,
+        nodeId: state.nodeId,
+      );
+    }
+    _cubit.setPlaybackState(isPlaying: true, controlsVisible: false);
+    _scheduleControlsAutoHide();
+  }
+
+  void _handleSurfaceTap() {
+    _cubit.toggleControlsVisibility();
+    if (_cubit.state.controlsVisible) {
+      _scheduleControlsAutoHide();
+    }
+  }
+
+  void _handleSeekStart(double value) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    _isSeeking = true;
+    _resumePlaybackAfterSeek = controller.value.isPlaying;
+    _cancelControlsAutoHide();
+    if (_resumePlaybackAfterSeek) {
+      unawaited(controller.pause());
+    }
+    _cubit.setPlaybackState(isPlaying: false, controlsVisible: true);
+  }
+
+  void _handleSeekChanged(double value) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    final seconds = value.round().clamp(0, controller.value.duration.inSeconds);
+    _cubit.updatePlaybackProgress(
+      position: Duration(seconds: seconds),
+      duration: controller.value.duration,
+    );
+  }
+
+  Future<void> _handleSeekEnd(double value) async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    final seekStopwatch = Stopwatch()..start();
+    final currentState = _cubit.state;
+    final fromSecond = controller.value.position.inSeconds;
+    final toSecond = value.round().clamp(0, controller.value.duration.inSeconds);
+    _isSeeking = false;
+
+    if (fromSecond == toSecond) {
+      if (_resumePlaybackAfterSeek) {
+        await controller.play();
+        _cubit.setPlaybackState(isPlaying: true, controlsVisible: false);
+        _scheduleControlsAutoHide();
+      }
+      _resumePlaybackAfterSeek = false;
+      return;
+    }
+
+    final trackingData = _trackingData(currentState);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackVideoLessonSeek(
+        trackingData,
+        nodeId: currentState.nodeId,
+        seekFromSecond: fromSecond,
+        seekToSecond: toSecond,
+        seekLatencyMs: seekStopwatch.elapsedMilliseconds,
+      );
+    }
+
+    await controller.seekTo(Duration(seconds: toSecond));
+    _cubit.updatePlaybackProgress(
+      position: Duration(seconds: toSecond),
+      duration: controller.value.duration,
+    );
+
+    var openedOverlay = false;
+    if (toSecond > fromSecond) {
+      openedOverlay = _cubit.handleForwardSeek(
+        fromSecond: fromSecond,
+        toSecond: toSecond,
+        wasPlayingBeforeSeek: _resumePlaybackAfterSeek,
+      );
+    } else {
+      _cubit.handleBackwardSeek(
+        targetSecond: toSecond,
+        wasPlayingBeforeSeek: _resumePlaybackAfterSeek,
+      );
+    }
+
+    if (!openedOverlay && _resumePlaybackAfterSeek && !_cubit.state.hasBlockingOverlay) {
+      await controller.play();
+      _cubit.setPlaybackState(isPlaying: true, controlsVisible: false);
+      _scheduleControlsAutoHide();
+    } else {
+      _cubit.setPlaybackState(isPlaying: false, controlsVisible: true);
+    }
+
+    _resumePlaybackAfterSeek = false;
+  }
+
+  Future<void> _maybeAutoplayInitialLoad(
+    VideoPlayerController controller,
+  ) async {
+    final state = _cubit.state;
+    final autoplayAction = videoLessonResolveInitialAutoplayAction(
+      hasTriggeredInitialAutoplay: _hasTriggeredInitialAutoplay,
+      state: state,
+    );
+    if (autoplayAction == VideoLessonInitialAutoplayAction.none) return;
+
+    _hasTriggeredInitialAutoplay = true;
+    if (autoplayAction == VideoLessonInitialAutoplayAction.openZeroSecondQuestion) {
+      _cubit.maybeTriggerZeroSecondQuestion();
+      _cancelControlsAutoHide();
+      return;
+    }
+
+    await controller.play();
+    _cubit.setPlaybackState(isPlaying: true, controlsVisible: false);
+    _scheduleControlsAutoHide();
+  }
+
+  void _trackPlayerInitialization({
+    required VideoLessonState state,
+    required String initStatus,
+    required _VideoLessonWarmupState warmupState,
+    int? timeToFirstFrameMs,
+  }) {
+    final trackingData = _trackingData(state);
+    if (trackingData == null) return;
+
+    AppService.instance.appTrackingService.trackVideoLessonPlayerInit(
+      trackingData,
+      nodeId: state.nodeId,
+      initStatus: initStatus,
+      warmupState: _warmupStateName(warmupState),
+      timeToFirstFrameMs: timeToFirstFrameMs,
+    );
+  }
+
+  String _warmupStateName(_VideoLessonWarmupState state) {
+    switch (state) {
+      case _VideoLessonWarmupState.miss:
+        return 'miss';
+      case _VideoLessonWarmupState.hitReady:
+        return 'hit_ready';
+      case _VideoLessonWarmupState.hitPending:
+        return 'hit_pending';
+      case _VideoLessonWarmupState.failed:
+        return 'failed';
+    }
+  }
+}
+
+enum VideoLessonInitialAutoplayAction {
+  none,
+  play,
+  openZeroSecondQuestion,
+}
+
+VideoLessonInitialAutoplayAction videoLessonResolveInitialAutoplayAction({
+  required bool hasTriggeredInitialAutoplay,
+  required VideoLessonState state,
+}) {
+  if (hasTriggeredInitialAutoplay || !state.isReady) {
+    return VideoLessonInitialAutoplayAction.none;
+  }
+  if (state.isEndVisible || state.hasBlockingOverlay) {
+    return VideoLessonInitialAutoplayAction.none;
+  }
+
+  final hasZeroSecondQuestion = state.learningItem.videoQuestions.any(
+    (question) => question.atSecond == 0,
+  );
+  if (hasZeroSecondQuestion) {
+    return VideoLessonInitialAutoplayAction.openZeroSecondQuestion;
+  }
+
+  return VideoLessonInitialAutoplayAction.play;
+}

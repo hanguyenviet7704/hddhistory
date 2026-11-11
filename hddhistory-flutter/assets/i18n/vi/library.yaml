@@ -1,0 +1,62 @@
+navLabel: Thư viện
+title: Thư viện của tôi
+inProgressSection: Đang học
+myHistoryLink: Lịch sử học
+myHistoryTitle: Lịch sử học
+filterInProgress: Đang học
+filterFinished: Đã hoàn thành
+myCreationsTitle: Bài tôi tạo
+myCreationsSubtitle: Những bài học bạn tự tạo
+myCreationsCount(param=count):
+  other: ${count} bài học
+emptyInProgressTitle: Chưa có bài nào đang học
+emptyInProgressBody: Bắt đầu một khoá học, nó sẽ chờ bạn ở đây.
+emptyInProgressCta: Khám phá khoá học
+emptyHistoryInProgress: Hiện chưa có khoá học nào đang học.
+emptyHistoryFinished: Bạn chưa hoàn thành khoá học nào.
+loadFailed: Không tải được thư viện của bạn.
+savedRowTitle: Đã lưu
+savedRowSubtitle: Khoá học bạn đã đánh dấu
+savedTitle: Đã lưu
+savedCount(param=count):
+  other: ${count} khoá học
+savedCardsRowTitle: Thẻ đã lưu
+savedCardsRowSubtitle: Những phần tóm tắt bạn giữ lại
+savedCardsTitle: Thẻ đã lưu
+savedCardsCount(param=count):
+  other: ${count} thẻ
+filterUpNext: Sắp học
+emptySavedUpNext: Chưa lưu gì cả. Chạm vào dấu trang ở khoá học bất kỳ để giữ nó ở đây.
+emptySavedInProgress: Chưa có khoá học nào đã lưu đang học dở.
+emptySavedFinished: Bạn chưa hoàn thành khoá học nào đã lưu.
+emptySavedCards: Chưa có thẻ nào. Chạm dấu trang ở cuối một keypoint để giữ lại phần tóm tắt.
+deckHint: Vuốt để xem thẻ tiếp theo, chạm để lật
+gridViewLabel: Dạng lưới
+deckViewLabel: Dạng chồng thẻ
+shareLabel: Chia sẻ
+saveCardLabel: Lưu thẻ
+unsaveCardLabel: Bỏ khỏi mục đã lưu
+courseOptionsLabel: Tuỳ chọn khác
+saveCourseLabel: Lưu khoá học này
+unsaveCourseLabel: Bỏ khỏi mục đã lưu
+shareCourseLabel: Chia sẻ khoá học này
+shareSheetTitle: Chia sẻ
+shareCopyLink: Chép liên kết
+shareInstagramStory: IG Story
+shareFacebookStory: FB Story
+shareMore: Thêm
+shareLinkCopiedShort: Đã chép
+shareLinkCopied: Đã chép liên kết.
+shareStoryBadge: Mình đang học cái này
+shareStoryFooter: HDDhistory · Nâng cấp bản thân
+shareOpenInApp: Mở trong HDDhistory
+cardSavedToast: Đã lưu vào thẻ của bạn
+cardRemovedToast: Đã bỏ khỏi mục đã lưu
+courseSavedToast: Đã lưu vào thư viện
+courseRemovedToast: Đã bỏ khỏi mục đã lưu
+shareFailed: Chưa chia sẻ được lúc này.
+shareCardMessage(param=title): Một điều đáng giữ lại, từ HDDhistory - ${title}
+shareCourseMessage(param=title): Mình đang học ${title} trên HDDhistory. Tham gia cùng nhé!
+
+# Section "see all" link, shared by every Library shelf (design note 2026-09-04)
+seeAllLink: Xem tất cả

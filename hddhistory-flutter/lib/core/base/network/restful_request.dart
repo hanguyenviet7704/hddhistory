@@ -1,0 +1,328 @@
+part of '../base.dart';
+
+@pragma('vm:entry-point')
+Future<BaseResponseList<T>> requestListIsolate<T>({
+  required Future<BaseResponseList<T>> Function() apiCall,
+}) async {
+  BaseResponseList<T> result = await apiCall();
+  return result;
+}
+
+@pragma('vm:entry-point')
+Future<BaseResponse<T>> requestIsolate<T>({
+  required Future<BaseResponse<T>> Function() apiCall,
+}) async {
+  BaseResponse<T> result = await apiCall();
+  return result;
+}
+
+mixin RestfulRequestHandlerMixin {
+  void _showErrorMessage(Object e, StackTrace stackTrace) {
+    AppService.instance.appTrackingService.trackError(e, errorType: 'RestfulRequestHandlerMixin', stackTrace: stackTrace);
+    if (e is DioException) {
+      if (e.response?.statusCode == 401) return;
+      // Server error bodies aren't always JSON — a 5xx can return an HTML/plain
+      // "Service Unavailable" page, so `response.data` may be a String. Indexing
+      // a String with `['message']` throws ("String is not a subtype of int"),
+      // and because this runs inside TaskEither's onError mapper that throw
+      // escapes the error path entirely — callers (e.g. the course roadmap)
+      // then never receive their failure and hang on the loading spinner.
+      // Only read `['message']` when the body is actually a Map.
+      final data = e.response?.data;
+      final serverMessage = data is Map ? data['message']?.toString() : null;
+      DMessage.showMessage(
+        type: MessageType.error,
+        message: serverMessage ?? e.toString(),
+      );
+      return;
+    }
+
+    DMessage.showMessage(
+      type: MessageType.error,
+      message: e.toString(),
+    );
+  }
+
+  TaskEither<AppException, T> callApiCustom<T>({
+    required Future<T> Function() apiCall,
+    bool enableIsolate = false,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        T response;
+        if (enableIsolate) {
+          response = await Isolate.run(apiCall);
+          return response;
+        }
+        response = await apiCall();
+        return response;
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  /// Enhanced API call with caching and fallback support
+  ///
+  /// [apiCall] - The API function to execute
+  /// [onSuccess] - Optional callback after successful API call (for caching)
+  /// [onError] - Optional fallback function when API fails (for cache retrieval)
+  /// [enableIsolate] - Run API call in isolate
+  /// [enableErrorMessages] - Show error messages to user
+  TaskEither<AppException, T> executeApiCall<T>({
+    required Future<T> Function() apiCall,
+    Future<void> Function(T data)? onSuccess,
+    Future<T?> Function()? onError,
+    bool enableIsolate = false,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        try {
+          T response;
+          if (enableIsolate) {
+            response = await Isolate.run(apiCall);
+          } else {
+            response = await apiCall();
+          }
+
+          // Execute success callback (e.g., caching)
+          if (onSuccess != null) {
+            await onSuccess(response);
+          }
+
+          return response;
+        } catch (e) {
+          // Try fallback (e.g., cache retrieval)
+          if (onError != null) {
+            final fallbackData = await onError();
+            if (fallbackData != null) {
+              return fallbackData;
+            }
+          }
+          rethrow;
+        }
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  /// API call with automatic BaseResponse handling, caching and fallback
+  ///
+  /// [apiCall] - The API function returning `BaseResponse<T>`
+  /// [transform] - Transform response data to desired type (e.g., model.toEntity())
+  /// [onSuccess] - Optional callback after successful API call (for caching)
+  /// [onError] - Optional fallback function when API fails (for cache retrieval)
+  /// [defaultValue] - Default value if response data is null
+  /// [enableIsolate] - Run API call in isolate
+  /// [enableErrorMessages] - Show error messages to user
+  TaskEither<AppException, R> callApiWithTransform<T, R>({
+    required Future<BaseResponse<T>> Function() apiCall,
+    required R Function(T data) transform,
+    Future<void> Function(T? data)? onSuccess,
+    Future<R?> Function()? onError,
+    R? defaultValue,
+    bool enableIsolate = false,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        try {
+          BaseResponse<T> response;
+          if (enableIsolate) {
+            response = await Isolate.run(apiCall);
+          } else {
+            response = await apiCall();
+          }
+
+          // Execute success callback (e.g., caching)
+          if (onSuccess != null) {
+            await onSuccess(response.data);
+          }
+
+          // Transform and return
+          if (response.data != null) {
+            return transform(response.data as T);
+          } else if (defaultValue != null) {
+            return defaultValue;
+          } else {
+            throw Exception('Response data is null and no default value provided');
+          }
+        } catch (e) {
+          // Try fallback (e.g., cache retrieval)
+          if (onError != null) {
+            final fallbackData = await onError();
+            if (fallbackData != null) {
+              return fallbackData;
+            }
+          }
+          rethrow;
+        }
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  /// API call with automatic BaseResponseList handling, caching and fallback
+  ///
+  /// [apiCall] - The API function returning `BaseResponseList<T>`
+  /// [transform] - Transform each item in response data (e.g., model.toEntity())
+  /// [onSuccess] - Optional callback after successful API call (for caching)
+  /// [onError] - Optional fallback function when API fails (for cache retrieval)
+  /// [enableIsolate] - Run API call in isolate
+  /// [enableErrorMessages] - Show error messages to user
+  TaskEither<AppException, List<R>> callApiListWithTransform<T, R>({
+    required Future<BaseResponseList<T>> Function() apiCall,
+    required R Function(T data) transform,
+    Future<void> Function(List<T> data)? onSuccess,
+    Future<List<R>?> Function()? onError,
+    bool enableIsolate = false,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        try {
+          BaseResponseList<T> response;
+          if (enableIsolate) {
+            response = await Isolate.run(apiCall);
+          } else {
+            response = await apiCall();
+          }
+
+          // Execute success callback (e.g., caching)
+          if (onSuccess != null) {
+            await onSuccess(response.data);
+          }
+
+          // Transform and return
+          return response.data.map((item) => transform(item)).toList();
+        } catch (e) {
+          // Try fallback (e.g., cache retrieval)
+          if (onError != null) {
+            final fallbackData = await onError();
+            if (fallbackData != null) {
+              return fallbackData;
+            }
+          }
+          rethrow;
+        }
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  /// Simple API execution with standardized error handling
+  ///
+  /// [apiCall] - The API function to execute
+  /// [onSuccess] - Optional callback after successful API call
+  /// [enableErrorMessages] - Show error messages to user
+  TaskEither<AppException, Unit> executeApiAction({
+    required Future<void> Function() apiCall,
+    Future<void> Function()? onSuccess,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        await apiCall();
+
+        if (onSuccess != null) {
+          await onSuccess();
+        }
+
+        return unit;
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  /// API call with automatic BasePageBreak handling, caching and fallback
+  ///
+  /// [apiCall] - The API function returning `BaseResponse<BasePageBreak<T>>`
+  /// [transform] - Transform each item in page data (e.g., model.toEntity())
+  /// [onSuccess] - Optional callback after successful API call (for caching)
+  /// [onError] - Optional fallback function when API fails (for cache retrieval)
+  /// [enableIsolate] - Run API call in isolate
+  /// [enableErrorMessages] - Show error messages to user
+  TaskEither<AppException, BasePageBreak<R>> callApiPageBreak<T, R>({
+    required Future<BaseResponse<BasePageBreak<T>>> Function() apiCall,
+    required R Function(T data) transform,
+    Future<void> Function(BasePageBreak<T> pageData)? onSuccess,
+    Future<BasePageBreak<R>?> Function()? onError,
+    bool enableIsolate = false,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        try {
+          BaseResponse<BasePageBreak<T>> response;
+          if (enableIsolate) {
+            response = await Isolate.run(apiCall);
+          } else {
+            response = await apiCall();
+          }
+
+          // Execute success callback (e.g., caching)
+          if (onSuccess != null && response.data != null) {
+            await onSuccess(response.data!);
+          }
+
+          // Transform and return
+          if (response.data != null) {
+            final transformedItems = response.data!.items.map((item) => transform(item)).toList();
+            return BasePageBreak<R>(
+              totalPages: response.data!.totalPages,
+              currentPage: response.data!.currentPage,
+              itemsPerPage: response.data!.itemsPerPage,
+              items: transformedItems,
+            );
+          } else {
+            throw Exception('Response data is null');
+          }
+        } catch (e) {
+          // Try fallback (e.g., cache retrieval)
+          if (onError != null) {
+            final fallbackData = await onError();
+            if (fallbackData != null) {
+              return fallbackData;
+            }
+          }
+          rethrow;
+        }
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+}

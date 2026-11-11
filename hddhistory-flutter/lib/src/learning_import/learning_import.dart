@@ -1,0 +1,71 @@
+library;
+
+//* Dart imports
+import 'dart:math' as math;
+
+//* Single project import
+// Also re-exports dart:async (Timer), modal_bottom_sheet, file_picker and
+// flutter_bloc — importing those directly here is flagged as redundant.
+import 'package:hddhistory/hddhistory.dart';
+
+//* Package imports
+import 'package:dio/dio.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:fpdart/fpdart.dart' hide State;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:retrofit/retrofit.dart';
+// Same dashed connector the catalogue roadmap draws — see UserLessonRoadmapPage.
+import 'package:timeline_tile_plus/timeline_tile_plus.dart';
+
+//* Domain Layer - Entities
+part 'domain/entities/learning_import_job_entity.dart';
+part 'domain/entities/user_lesson_entity.dart';
+part 'domain/entities/import_quota_entity.dart';
+
+//* Data Layer - Models, Datasource, Repository impl
+part 'data/models/learning_import_job_model.dart';
+part 'data/models/user_lesson_model.dart';
+part 'data/models/import_quota_model.dart';
+part 'data/datasources/remote/learning_import_api.dart';
+part 'data/repositories/learning_import_repository.dart';
+
+//* Domain Layer - Mappers
+part 'domain/mappers/user_lesson_course_mapper.dart';
+
+//* Domain Layer - Repository interface, Use cases
+part 'domain/repositories/i_learning_import_repository.dart';
+part 'domain/usecases/create_learning_import_usecase.dart';
+part 'domain/usecases/get_learning_import_job_usecase.dart';
+part 'domain/usecases/get_import_quota_usecase.dart';
+part 'domain/usecases/get_user_lessons_usecase.dart';
+part 'domain/usecases/get_user_lesson_usecase.dart';
+part 'domain/usecases/update_user_lesson_progress_usecase.dart';
+part 'domain/usecases/delete_user_lesson_usecase.dart';
+part 'domain/usecases/request_user_lesson_additional_content_usecase.dart';
+
+//* Presentation Layer - Cubits + States
+part 'presentation/cubits/learning_import_state.dart';
+part 'presentation/cubits/import_progress_creep.dart';
+part 'presentation/cubits/learning_import_cubit.dart';
+part 'presentation/cubits/user_lesson_state.dart';
+part 'presentation/cubits/user_lesson_cubit.dart';
+
+//* Presentation Layer - Pages + Sheets
+part 'presentation/pages/my_lessons_page.dart';
+part 'presentation/pages/user_lesson_roadmap_page.dart';
+part 'presentation/pages/import_lesson_page.dart';
+part 'presentation/pages/import_generating_page.dart';
+
+//* Presentation Layer - Shell host
+part 'presentation/widgets/import_done_popup_host.dart';
+part 'presentation/widgets/import_progress_bar.dart';
+part 'presentation/widgets/import_progress_toast.dart';
+part 'presentation/widgets/import_ticket_popups.dart';
+part 'presentation/widgets/mock_lesson_artwork.dart';
+part 'presentation/widgets/next_keypoint_generating_popup.dart';
+part 'presentation/widgets/user_lesson_additional_content_panel.dart';
+
+//* Parts for generated files
+part 'learning_import.freezed.dart';
+part 'learning_import.g.dart';

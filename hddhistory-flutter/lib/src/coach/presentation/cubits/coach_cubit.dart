@@ -1,0 +1,792 @@
+part of '../../coach.dart';
+
+/// One conversation.
+///
+/// Holds no state machine of its own — every step, every composer, every
+/// transition comes from the server, and this only renders what it is handed
+/// and posts back what the reader did. That is deliberate: the rules this
+/// feature runs on are rules about what gets written, and a second copy of them
+/// here would drift from the first one the week after it shipped.
+@injectable
+class CoachCubit extends Cubit<CoachState> {
+  final OpenCoachSessionUseCase _openSession;
+  final SendCoachTurnUseCase _sendTurn;
+  final CloseCoachSessionUseCase _closeSession;
+  final ExplainAgainUseCase _explainAgain;
+  final SetCoachPersonaUseCase _setPersona;
+  final ExitCoachSessionUseCase _exitSession;
+  final CoachStreamDataSource _stream;
+
+  CoachCubit(
+    this._openSession,
+    this._sendTurn,
+    this._closeSession,
+    this._explainAgain,
+    this._setPersona,
+    this._exitSession,
+    this._stream,
+  ) : super(const CoachState());
+
+  // ---------------------------------------------------------- xem trước
+
+  final List<StreamSubscription<dynamic>> _streamSubs = [];
+
+  /// Mở kênh xem trước và lắng nghe.
+  ///
+  /// Gọi khi mở sheet. Hỏng thì im lặng bỏ qua: cả tầng này là trang trí, và
+  /// một lỗi socket không được phép làm hỏng việc mở hội thoại.
+  void _listenPreview() {
+    if (_streamSubs.isNotEmpty) return;
+
+    try {
+      _stream.connect();
+      _streamSubs
+        ..add(_stream.onStarted().listen((_) => _clearPreview()))
+        ..add(_stream.onEnded().listen((_) {}))
+        ..add(
+          _stream.onChunk().listen((delta) {
+            // Chỉ vẽ khi đang thật sự chờ. Một mẩu tới muộn sau khi đáp REST đã
+            // về sẽ gõ chữ thừa dưới câu trả lời thật.
+            if (!state.typing) return;
+            emit(state.copyWith(streamingText: state.streamingText + delta));
+          }),
+        );
+    } catch (error) {
+      LogDev.warning('[CoachStream] không mở được kênh xem trước: $error');
+    }
+  }
+
+  void _clearPreview() {
+    if (state.streamingText.isEmpty) return;
+    emit(state.copyWith(streamingText: ''));
+  }
+
+  @override
+  Future<void> close() {
+    for (final sub in _streamSubs) {
+      sub.cancel();
+    }
+    _streamSubs.clear();
+    _stream.disconnect();
+
+    return super.close();
+  }
+
+  // ------------------------------------------------------------ luồng 6
+
+  /// The unsent line in the box, kept across a close so "lần sau không phải kể
+  /// lại từ đầu". Keyed by session: a new session starts with an empty box.
+  String _draft = '';
+  String _draftSessionId = '';
+
+  void rememberDraft(String sessionId, String text) {
+    _draftSessionId = sessionId;
+    _draft = text;
+  }
+
+  String draftFor(String sessionId) => sessionId.isNotEmpty && sessionId == _draftSessionId ? _draft : '';
+
+  /// The plea's answer, and — when they left and said why — the reason with it.
+  /// Fire-and-forget: closing must never wait on it.
+  Future<void> recordExit({required bool stayed, List<String>? chips, String? note}) async {
+    final id = state.sessionId;
+    if (id.isEmpty) return;
+
+    if (stayed) {
+      CoachTracking.exitStay(state);
+    } else {
+      CoachTracking.exitLeave(state);
+    }
+    // Answered or skipped, the exit question is done for this session — a
+    // second ✕ in the same sheet must not ask it again. The server decides
+    // whether it comes back next time.
+    emit(state.copyWith(exitPlea: stayed ? true : state.exitPlea, exitFeedback: stayed ? state.exitFeedback : false));
+    await _exitSession(id, stayed: stayed, chips: chips, note: note).run();
+  }
+
+  CoachEntry _entry = CoachEntry.home;
+  String? _lessonId;
+  String? _habitId;
+  String _locale = 'en';
+
+  /// Analytics only — bao nhiêu lượt và bao lâu, đọc ra ở `coach_scr_exit`.
+  /// Đếm ở đây chứ không trong state: chúng không vẽ ra gì cả, và mỗi lần đổi
+  /// là một lần rebuild cả sheet cho không.
+  int _turnCount = 0;
+  DateTime? _openedAt;
+
+  /// Resolves a fixed line's slang key, filling in the reader's own words
+  /// (`args`) where the line quotes them. Injected by the sheet, which is the
+  /// only place with a BuildContext — keeping `context.l10n` out of the cubit
+  /// is what lets the same cubit be driven from a test with no widget tree.
+  String Function(String key, Map<String, String> args)? promptResolver;
+
+  /// Luồng 2 — the keypoint's playable questions, handed in by the page that
+  /// opened the sheet; the quiz runs on them when the server says `runQuiz`.
+  List<QuestionEntity> quizQuestions = const [];
+  String quizTitle = '';
+
+  Future<void> open({
+    required CoachEntry entry,
+    required String locale,
+    String? lessonId,
+    String? habitId,
+    String? keypointId,
+    String? courseId,
+    bool recap = false,
+    // Mở lại tự động sau khi phiên hết hạn 48h, không phải người đọc bấm.
+    // Chỉ đi vào `coach_scr_view` để funnel lọc nó ra.
+    bool reopened = false,
+  }) async {
+    // Mở sớm: cảnh được sinh NGAY trong lượt mở này, và đó là cú chờ dài nhất
+    // trong cả tính năng — kênh phải sẵn sàng trước khi nó bắt đầu viết.
+    _listenPreview();
+    _entry = entry;
+    _lessonId = lessonId;
+    _habitId = habitId;
+    _locale = locale;
+    _turnCount = 0;
+    _openedAt = DateTime.now();
+    // Phiên cũ có thể còn đang nhả bong bóng dở — bỏ số của nó đi, không thì
+    // nó viết tiếp vào cuộc hội thoại vừa mở.
+    _revealToken++;
+
+    // `silent` phải được dọn ở ĐÂY, không thì nó dính lại vĩnh viễn.
+    //
+    // Cubit là singleton, sống qua nhiều lần mở sheet. Một lần mở im lặng đặt
+    // `silent: true` và trước đây không ai đặt lại false, nên mọi lần mở SAU
+    // đó — dù server trả lời tử tế — vẫn mang cờ cũ; sheet nghe thấy bước đầu
+    // tiên đổi là gọi `pop()` ngay (owner on-device 2026-09-09: "bấm tập thử
+    // ngay ở đây thì sẽ bị out luôn"). Một cửa im một lần không được phép làm
+    // hỏng mọi lần mở còn lại của phiên chạy app.
+    emit(
+      state.copyWith(
+        status: CoachStatus.opening,
+        entry: entry,
+        messages: const [],
+        silent: false,
+        silentReasonKey: null,
+        // Lượt mở cũ có thể còn sót chữ xem trước.
+        streamingText: '',
+      ),
+    );
+
+    final result = await _openSession(
+      entry: entry,
+      lessonId: lessonId,
+      habitId: habitId,
+      keypointId: keypointId,
+      courseId: courseId,
+      recap: recap,
+      locale: locale,
+      tzOffsetMinutes: DateTime.now().timeZoneOffset.inMinutes,
+    ).run();
+
+    result.match(
+      (_) {
+        CoachTracking.openFailed(entry);
+        emit(state.copyWith(status: CoachStatus.failed, streamingText: ''));
+      },
+      (turn) {
+        if (turn.silent) {
+          CoachTracking.openSilent(entry, reasonKey: turn.reasonKey);
+          emit(
+            state.copyWith(
+              status: CoachStatus.closed,
+              silent: true,
+              silentReasonKey: turn.reasonKey,
+              streamingText: '',
+            ),
+          );
+
+          return;
+        }
+
+        // Earlier sessions come first, each behind a divider; a resumed
+        // session then follows with everything it showed — its current lines
+        // included, so nothing more is drawn for it. A new session draws its
+        // opening under the history.
+        // Không await: mấy dòng tracking ngay dưới nói về LƯỢT vừa về, không
+        // phải về việc vẽ xong hay chưa — bắt chúng đợi hết vòng nhả là ghi
+        // sai thời điểm phiên mở.
+        unawaited(
+          _emitTurnStaged(
+            state.copyWith(
+              status: CoachStatus.ready,
+              messages: _replayMessages(turn.replay),
+              streamingText: '',
+            ),
+            turn,
+            userLine: null,
+            appendLines: !turn.resumed,
+          ),
+        );
+
+        CoachTracking.scrView(
+          entry: entry,
+          sessionId: turn.sessionId,
+          step: turn.step,
+          resumed: turn.resumed,
+          reopened: reopened,
+        );
+        CoachTracking.profile(persona: turn.persona, lastSessionAt: DateTime.now());
+      },
+    );
+  }
+
+  // ------------------------------------------------------------------ events
+
+  /// Every answer the reader gives is echoed back as their own bubble, chips
+  /// included. Without the label the thread reads as the Coach talking to
+  /// itself — three questions in a row with nothing between them.
+  Future<void> pickMood(int value, String label) => _send({'kind': 'mood', 'mood': value}, userLine: label);
+
+  Future<void> pickMoodEnd(int value, String label) => _send({'kind': 'moodEnd', 'mood': value}, userLine: label);
+
+  Future<void> pickNewHabit(String habitId, String label) => _send({'kind': 'pickNew', 'habitId': habitId}, userLine: label);
+
+  /// ②A — three equal buttons. The label is echoed so the thread shows what
+  /// was answered; the server decides which branch it opens.
+  Future<void> answerIntent(String answer, String label) => _send({'kind': 'intent', 'answer': answer}, userLine: label);
+
+  /// ②A after "có dịp mà chưa làm" — make the commitment smaller, or keep it.
+  Future<void> answerShrinkAsk({required bool accept, required String label}) => _send({'kind': 'shrink', 'accept': accept}, userLine: label);
+
+  /// ② "hoặc bỏ qua" — the story step's second way out.
+  Future<void> skipStory(String label) => _send({'kind': 'skip'}, userLine: label);
+
+  /// "Bạn muốn chia sẻ thêm không?" — `Kể sâu hơn` runs the 5-beat script,
+  /// `Chỉ ghi lại thôi` files the sentence they already wrote and skips
+  /// straight to the commitment question.
+  Future<void> answerDepth({required bool deep, required String label}) => _send({'kind': 'depth', 'deep': deep}, userLine: label);
+
+  /// The same pill, tapped later inside the script: file it and move on.
+  Future<void> fileItInstead(String label) => _send({'kind': 'ack'}, userLine: label);
+
+  /// Nhịp 4 of the scene — "Nói lại" answers the same scene a second time,
+  /// "Đủ rồi" closes it. The beat that makes the task practice rather than one
+  /// question and one answer.
+  Future<void> answerSceneAgain({required bool again, required String label}) => _send({'kind': 'sceneAgain', 'again': again}, userLine: label);
+
+  /// Thanh habit — "đổi": the Coach lists the reader's own kho and puts them
+  /// back on the step they were on. Never refused.
+  Future<void> changeHabit(String label) => _send({'kind': 'changeHabit'}, userLine: label);
+
+  /// Bộ điều phối — start a task by name. The registry decides whether it is
+  /// still allowed; a refused one comes back as an error rather than a guess.
+  Future<void> pickTask(String task, {required String label}) => _send({'kind': 'task', 'task': task}, userLine: label);
+
+  /// Bộ điều phối — "Mình dừng ở đây": card → the one commitment offer → tail.
+  Future<void> stopSession(String label) => _send({'kind': 'stop'}, userLine: label);
+
+  /// Luồng 5 — CHECKIN_ASK: "Có, mình làm được" · "Chưa, hôm nay không có dịp".
+  Future<void> answerCheckin({required bool done, required String label}) => _send({'kind': 'checkin', 'done': done}, userLine: label);
+
+  /// Luồng 5 — QUIZ_IN_CHAT: the option tapped, by index.
+  Future<void> answerQuiz(String answer, String label) => _send({'kind': 'quizAnswer', 'quizAnswer': answer}, userLine: label);
+
+  /// Luồng 2/3 — a generic chip pick for the talk and recap steps.
+  Future<void> pick(String value, String label) => _send({'kind': 'pick', 'value': value}, userLine: label);
+
+  /// Luồng 2 — the keypoint quiz came back from its own screen. Each answer is
+  /// reported with its texts so the Coach can talk about the CONTENT of what
+  /// went wrong, never the score.
+  Future<void> sendQuizDone(List<QuizCardAnswer> answers) {
+    String choiceText(QuizCardAnswer answer, bool Function(int index) keep) => [
+      for (var i = 0; i < answer.choiceOptions.length; i++)
+        if (keep(i)) answer.choiceOptions[i].value.text,
+    ].where((text) => text.isNotEmpty).join(' / ');
+
+    return _send({
+      'kind': 'quizDone',
+      'quizResults': [
+        for (final answer in answers.where((a) => a.hasChecked))
+          {
+            'exerciseId': answer.question.exerciseId.isNotEmpty ? answer.question.exerciseId : '${answer.question.id}',
+            'passed': answer.isCorrect,
+            'question': answer.question.questionText,
+            'chosen': answer.isChoice ? choiceText(answer, answer.selected.contains) : '',
+            'correct': answer.isChoice ? choiceText(answer, (i) => answer.choiceOptions[i].isCorrect) : answer.correctGapWords.join(' '),
+          },
+      ],
+    });
+  }
+
+  /// Nhịp 6 — "Chuyện giống vậy bạn gặp bao giờ chưa?". "Gặp rồi" collects the
+  /// occasion the commitment needs; "Chưa gặp" moves on without a word about it.
+  Future<void> answerSceneMet({required bool met, required String label}) => _send({'kind': 'sceneMet', 'met': met}, userLine: label);
+
+  /// ★ — practise one situation, or not. Never required.
+  Future<void> answerInvite({required bool accept, required String label}) => _send({'kind': 'invite', 'accept': accept}, userLine: label);
+
+  /// Tầng 4 — the rubric card. "Thử lại tình huống này" replays the SAME scene
+  /// once; anything else moves on to the commitment.
+  Future<void> answerSceneScore({required bool retry, required String label}) => _send({'kind': 'sceneScore', 'retry': retry}, userLine: label);
+
+  /// "Muốn đặt Nhắc hẹn không?" — the commitment is optional at every door.
+  Future<void> answerPlanAsk({required bool accept, required String label}) => _send({'kind': 'planAsk', 'accept': accept}, userLine: label);
+
+  /// The course card's three ways out. "Đi tới khoá học" earns one short
+  /// line and a LEAVE step; the END button then hands the course id back to
+  /// whoever opened the sheet.
+  Future<void> courseAction(String action, {String? label}) => _send({'kind': 'course', 'courseAction': action}, userLine: label);
+
+  /// "Dừng phiên hay bắt đầu phiên mới?" — two equal buttons.
+  Future<void> nextSession({required bool again, required String label}) => _send({'kind': 'nextSession', 'again': again}, userLine: label);
+
+  /// The voice, from the header, at any step. Not a turn: nothing in the flow
+  /// moves, so the state is updated first and the server told after.
+  Future<void> setPersona(String persona) async {
+    if (persona == state.persona) return;
+    CoachTracking.profile(persona: persona);
+    emit(state.copyWith(persona: persona));
+    if (state.sessionId.isEmpty) return;
+
+    await _setPersona(sessionId: state.sessionId, persona: persona).run();
+  }
+
+  Future<void> submitText(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return Future.value();
+
+    return _send({'kind': 'text', 'text': trimmed}, userLine: trimmed);
+  }
+
+  /// ⑦ — submit the sentence, carrying the columns as the reader arranged them
+  /// so the server records what they actually pulled across.
+  Future<void> submitProblemStatement(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return Future.value();
+
+    return _send(
+      {
+        'kind': 'text',
+        'text': trimmed,
+        'leftLines': state.columnLeft,
+        'rightLines': state.columnRight,
+      },
+      userLine: trimmed,
+    );
+  }
+
+  Future<void> savePlan({required String context, required String action}) {
+    if (context.trim().isEmpty || action.trim().isEmpty) return Future.value();
+
+    return _send(
+      {
+        'kind': 'plan',
+        'planContext': context.trim(),
+        'planAction': action.trim(),
+      },
+      userLine: '${context.trim()} — ${action.trim()}',
+    );
+  }
+
+  Future<void> saveSchedule({
+    required bool enabled,
+    required String label,
+    int? hour,
+    int? minute,
+    String? days,
+    List<int>? customDays,
+    String? date,
+  }) => _send({
+    'kind': 'schedule',
+    'reminderEnabled': enabled,
+    'reminderHour': ?hour,
+    'reminderMinute': ?minute,
+    'reminderDays': ?days,
+    'reminderCustomDays': ?customDays,
+    'reminderDate': ?date,
+  }, userLine: label);
+
+  Future<void> loop({required bool keepGoing, required String label}) => _send({'kind': 'loop', 'keepGoing': keepGoing}, userLine: label);
+
+  /// A parked session on a retired step (depth, context) still needs its one
+  /// answer sent; the server routes it back onto the spine.
+  Future<void> sendRetired(Map<String, dynamic> payload, {String? label}) => _send(payload, userLine: label);
+
+  /// ⑤ — "Không đúng với mình". The draft was not theirs at all: it is
+  /// thrown away and the Coach asks to hear the story again. Once only.
+  Future<void> rejectDraft(String label) => _send({'kind': 'rejectDraft'}, userLine: label);
+
+  /// "Giải thích đơn giản hơn" — counted against the CONTENT, not the reader.
+  /// Fire-and-forget: a failed count must not interrupt the conversation.
+  Future<void> explainAgain(String keypointId) async {
+    await _explainAgain(keypointId).run();
+  }
+
+  /// ⑦ — move a line between columns. Purely local until the sentence is sent.
+  /// ⑦ — move one drafted line to the other column.
+  ///
+  /// Addressed by index rather than by text: the model can draft two lines that
+  /// read the same, and matching on the string moved both of them.
+  void moveLine(int index, {required bool fromRight}) {
+    final source = [...(fromRight ? state.columnRight : state.columnLeft)];
+    if (index < 0 || index >= source.length) return;
+
+    final line = source.removeAt(index);
+    final target = [...(fromRight ? state.columnLeft : state.columnRight), line];
+
+    emit(
+      state.copyWith(
+        columnLeft: fromRight ? target : source,
+        columnRight: fromRight ? source : target,
+      ),
+    );
+  }
+
+  /// The reader rewrote a line the model got wrong.
+  ///
+  /// The whole exercise rests on the lines being their words; a garbled one they
+  /// cannot correct is the model still holding the pen.
+  void editLine(int index, {required bool inRight, required String text}) {
+    final lines = [...(inRight ? state.columnRight : state.columnLeft)];
+    if (index < 0 || index >= lines.length) return;
+
+    lines[index] = text;
+    emit(
+      state.copyWith(
+        columnLeft: inRight ? state.columnLeft : lines,
+        columnRight: inRight ? lines : state.columnRight,
+      ),
+    );
+  }
+
+  /// A line that was never theirs at all. Dropping it is not the same as ⑧:
+  /// that rejects the whole draft, this is one bad row.
+  void deleteLine(int index, {required bool inRight}) {
+    final lines = [...(inRight ? state.columnRight : state.columnLeft)];
+    if (index < 0 || index >= lines.length) return;
+
+    lines.removeAt(index);
+    emit(
+      state.copyWith(
+        columnLeft: inRight ? state.columnLeft : lines,
+        columnRight: inRight ? lines : state.columnRight,
+      ),
+    );
+  }
+
+  /// Tell the server the sheet is done.
+  ///
+  /// Deliberately NOT named `close`: that is `Cubit`'s own lifecycle method,
+  /// and shadowing it would quietly stop the bloc from ever being disposed
+  /// while looking exactly like this code.
+  Future<void> endSession() async {
+    // Phiên đóng rồi thì đừng vẽ nốt những gì nó định nói.
+    _revealToken++;
+    final id = state.sessionId;
+    if (id.isNotEmpty) {
+      final openedAt = _openedAt;
+      CoachTracking.scrExit(
+        state,
+        turnCount: _turnCount,
+        durationSec: openedAt == null ? 0 : DateTime.now().difference(openedAt).inSeconds,
+      );
+    }
+    emit(state.copyWith(status: CoachStatus.closed));
+    if (id.isEmpty) return;
+
+    await _closeSession(id).run();
+  }
+
+  // ------------------------------------------------------------------ plumbing
+
+  Future<void> _send(Map<String, dynamic> payload, {String? userLine}) async {
+    if (state.typing || state.sessionId.isEmpty) return;
+
+    // Bắn TRƯỚC emit: `step` phải là bước câu trả lời này thuộc về, không phải
+    // bước server đẩy sang sau đó.
+    final kind = payload['kind'] is String ? payload['kind'] as String : '';
+    _turnCount++;
+    CoachTracking.turnSend(state, kind: kind, payload: payload);
+
+    emit(
+      state.copyWith(
+        status: CoachStatus.sending,
+        typing: true,
+        messages: userLine == null ? state.messages : [...state.messages, CoachMessage(isCoach: false, text: userLine)],
+      ),
+    );
+
+    // The chip's words go with the event: the server keeps them so a reopened
+    // sheet can draw this answer again. Typed text is already the payload.
+    final body = {...payload, if (userLine != null && payload['kind'] != 'text') 'label': userLine};
+    final result = await _sendTurn(sessionId: state.sessionId, payload: body).run();
+
+    await result.match(
+      (error) async {
+        // The session expired under us — the 48h TTL that makes "close the
+        // sheet and it's gone" a property of the database. Reopen rather than
+        // report: the reader did nothing wrong and has nothing to fix.
+        if (error.message == CoachRepository.sessionExpiredCode) {
+          CoachTracking.sessionExpired(state, kind: kind);
+          emit(state.copyWith(typing: false));
+          await open(
+            entry: _entry,
+            locale: _locale,
+            lessonId: _lessonId,
+            habitId: _habitId,
+            reopened: true,
+          );
+
+          return;
+        }
+
+        CoachTracking.turnFailed(state, kind: kind, errorType: error.message);
+        emit(state.copyWith(status: CoachStatus.failed, typing: false, streamingText: ''));
+      },
+      // `streamingText: ''` ở ĐÂY, cùng khung với những bong bóng thật: xoá ở
+      // khung trước thì người đọc thấy chữ biến mất rồi mới hiện lại.
+      (turn) async => _emitTurnStaged(
+        state.copyWith(status: CoachStatus.ready, typing: false, streamingText: ''),
+        turn,
+        userLine: null,
+      ),
+    );
+  }
+
+  /// Lượt nhả bong bóng đang chạy. Mỗi lần mở phiên hoặc gửi lượt mới thì tăng
+  /// lên, và vòng nhả đang dở tự dừng khi thấy số của mình đã cũ — không thì
+  /// nó ghi đè lên state của lượt sau.
+  int _revealToken = 0;
+
+  /// Nhả từng bong bóng một, thay vì đổ cả lượt ra màn hình cùng lúc.
+  ///
+  /// Một lượt trả lời sinh ra 4–6 bong bóng — câu trả lời tách theo đoạn, dòng
+  /// ghi chú, tên habit, bối cảnh, câu hỏi (xem `_linesFor`). Trước đây chúng
+  /// hiện ra cùng một khoảnh khắc, đọc như một bức tường chữ rơi xuống chứ
+  /// không giống ai đang nhắn cho mình.
+  ///
+  /// Đây KHÔNG phải streaming, và cố ý không phải. Toàn bộ câu trả lời đã về
+  /// đủ và đã qua hết các chốt phía server trước khi bong bóng đầu tiên xuất
+  /// hiện — bộ lọc rủi ro có quyền vứt sạch câu trả lời (`enterSafety`), chốt
+  /// chống nhại có quyền chạy lại model và thay câu khác. Stream thật thì mấy
+  /// chốt ấy tới quá muộn: chữ đã nằm trên màn hình, không rút lại được.
+  ///
+  /// `ui`/`step` chỉ đổi ở khung CUỐI. Đổi sớm thì người đọc thấy nút chọn
+  /// A/B/C trước cả câu hỏi mà chúng dùng để trả lời.
+  Future<void> _emitTurnStaged(
+    CoachState base,
+    CoachTurnEntity turn, {
+    String? userLine,
+    bool appendLines = true,
+  }) async {
+    final target = _applyTurn(base, turn, userLine: userLine, appendLines: appendLines);
+    final fresh = target.messages.length - base.messages.length;
+
+    // Một bong bóng thì không có gì để nhả dần, và phát lại lịch sử càng không
+    // — lịch sử phải có sẵn ngay khi mở.
+    if (!appendLines || fresh < 2) {
+      emit(target);
+
+      return;
+    }
+
+    final token = ++_revealToken;
+    for (var shown = 1; shown < fresh; shown++) {
+      if (isClosed || token != _revealToken) return;
+      emit(
+        base.copyWith(
+          messages: target.messages.take(base.messages.length + shown).toList(),
+          // Khoá ô nhập suốt lúc nhả: nửa câu trả lời chưa hiện xong thì chưa
+          // phải lúc mời người ta gõ tiếp. Đồng thời chặn luôn `_send` kế tiếp,
+          // vì nó tự thoát khi `typing` đang bật.
+          status: CoachStatus.sending,
+          typing: true,
+        ),
+      );
+      await Future<void>.delayed(
+        _revealGapFor(target.messages[base.messages.length + shown].text),
+      );
+    }
+
+    if (isClosed || token != _revealToken) return;
+    emit(target);
+  }
+
+  /// Khoảng nghỉ trước một bong bóng, dài theo số chữ của chính nó — câu dài
+  /// thì "gõ" lâu hơn.
+  ///
+  /// Chặn cả hai đầu: dưới 240ms thì giật như lỗi render, trên 560ms thì thành
+  /// bắt chờ thêm trên một lượt vốn đã chờ vài giây vì model.
+  static Duration _revealGapFor(String text) =>
+      Duration(milliseconds: (140 + text.length * 8).clamp(240, 560));
+
+  /// One reply split on blank lines, never empty for a reply that says anything.
+  static List<String> _paragraphs(String reply) {
+    final parts = reply.split(RegExp(r'\n\s*\n')).map((part) => part.trim()).where((part) => part.isNotEmpty).toList();
+
+    return parts.isEmpty ? [reply.trim()] : parts;
+  }
+
+  /// Fold one server turn into the state.
+  ///
+  /// The reply and the next step's prompt are two different lines and both may
+  /// arrive together — the reply answers what was just said, the prompt asks
+  /// the next thing. Appending them in that order is what makes the thread read
+  /// like a conversation rather than a form.
+  CoachState _applyTurn(CoachState base, CoachTurnEntity turn, {String? userLine, bool appendLines = true}) {
+    final messages = [...base.messages, if (appendLines) ..._linesFor(turn, userLine: userLine)];
+
+    if (turn.ui.kind == CoachUiKind.courseCard || turn.ui.course != null) {
+      LogDev.data('[CoachDbg] turn: step=${turn.step} kind=${turn.ui.kind} course=${turn.ui.course?.courseId} ended=${turn.ended}'); // TEMP-DEBUG
+    }
+    return base.copyWith(
+      sessionId: turn.sessionId,
+      step: turn.step,
+      persona: turn.persona,
+      messages: messages,
+      ui: turn.ui,
+      courseInvite: turn.courseInvite,
+      columnLeft: turn.ui.columnLeft.isNotEmpty ? turn.ui.columnLeft : base.columnLeft,
+      columnRight: turn.ui.columnRight.isNotEmpty ? turn.ui.columnRight : base.columnRight,
+      ended: turn.ended,
+      exitPlea: turn.exitPlea,
+      exitFeedback: turn.exitFeedback,
+      sessionKind: turn.sessionKind,
+    );
+  }
+
+  /// The bubbles one response adds, in reading order: the reader's own line,
+  /// the reply, the note, the scene, then the step's fixed line. Shared by a
+  /// live turn and by the replay, so a reopened sheet reads exactly as it did.
+  List<CoachMessage> _linesFor(CoachTurnEntity turn, {String? userLine}) {
+    final messages = <CoachMessage>[];
+
+    if (userLine != null) {
+      messages.add(CoachMessage(isCoach: false, text: userLine));
+    }
+    if (turn.reply != null) {
+      // `speaker` set means this line was said IN CHARACTER by the scene's other
+      // person, so the bubble is labelled with their name.
+      //
+      // A reply written as paragraphs — nhịp 4's idea and then nhịp 5's one
+      // piece of praise — arrives as ONE string with a blank line in it, and
+      // each paragraph becomes its own bubble: "chat ra nhiều đoạn để dễ hiểu,
+      // không phải chat 1 cục lớn".
+      for (final part in _paragraphs(turn.reply!)) {
+        messages.add(CoachMessage(isCoach: true, text: part, speaker: turn.speaker));
+      }
+    }
+
+    // A fixed line before the step's own — "Đó là câu của bạn, mình không
+    // sửa.", "Bạn vừa thêm “…”. Một cảnh ngắn:". Some quote the reader's or
+    // the habit's words, so the args travel to it too.
+    final note = turn.noteKey == null ? null : promptResolver?.call(turn.noteKey!, turn.promptArgs);
+    final situation = turn.ui.situation;
+
+    // The note is its own bubble — "Bạn vừa thêm “X”." · "Tình huống này bạn
+    // từng gặp ba tuần trước…" — and the scene follows in a second one. At ①
+    // the scene bubble opens with "Một cảnh ngắn:" so the two read as one
+    // thought split in two, not two unrelated lines.
+    if (note != null && note.isNotEmpty) {
+      messages.add(CoachMessage(isCoach: true, text: note));
+    }
+    // The scene arrives split — habit · setup · question — and goes into the
+    // thread as separate short bubbles with bold headings. One 60-word block
+    // read as a wall of text. Older payloads (no `scene`) keep the single bubble.
+    final scene = turn.ui.scene;
+    if (scene != null) {
+      final habit = scene.habit;
+      if (habit != null && habit.isNotEmpty) {
+        messages.add(
+          CoachMessage(
+            isCoach: true,
+            title: promptResolver?.call('coach.scene.habitLabel', const {}),
+            text: habit,
+          ),
+        );
+      }
+      // The scene's SECOND stage arrives split: its body rides in `situation`
+      // (no "Tôi có tình huống:" label — the same situation continuing), its
+      // question alone in `scene.question`. Only when there is no fresh setup,
+      // which is what distinguishes it from a first showing.
+      if (situation != null && situation.isNotEmpty && scene.setup.isEmpty) {
+        messages.add(CoachMessage(isCoach: true, text: situation));
+      }
+      // The led scene's second beat carries only the question — the setup is
+      // already in the thread, so an empty one gets no bubble.
+      if (scene.setup.isNotEmpty) {
+        messages.add(
+          CoachMessage(
+            isCoach: true,
+            title: promptResolver?.call('coach.scene.setupLabel', const {}),
+            text: scene.setup,
+          ),
+        );
+      }
+      if (scene.question != null) {
+        messages.add(CoachMessage(isCoach: true, text: scene.question!, emphasis: true));
+      }
+      // Ba cách tiếp cận, dưới câu hỏi và mỗi cái một bong bóng — cùng hình
+      // dạng với lúc cảnh phản ứng lại, nên hai khoảnh khắc đọc như một thứ.
+      // KHÔNG đẩy vào `samples`: samples là chip bấm được, mà ở đây bấm-rồi-chép
+      // là đúng cái làm bài tập mất nghĩa. Không nhấn mạnh, vì thứ được nhấn ở
+      // màn này phải là câu hỏi.
+      final optionsLead = scene.optionsLead;
+      if (optionsLead != null && optionsLead.isNotEmpty) {
+        messages.add(CoachMessage(isCoach: true, text: optionsLead));
+      }
+      for (final option in scene.options) {
+        // Chữ cái + tên hướng vào TIÊU ĐỀ in đậm, câu trích xuống dòng dưới:
+        // chữ cái là thứ người đọc với tay tới (gõ "A" cũng chọn được), nên nó
+        // phải nhìn ra ngay. Một `Text` không mang được hai độ đậm.
+        messages.add(
+          CoachMessage(
+            isCoach: true,
+            title: '${option.key}. ${option.label}',
+            text: '"${option.text}"',
+          ),
+        );
+      }
+    } else if (situation != null) {
+      final lead = turn.noteKey == 'coach.prompt.lessonIntro' ? promptResolver?.call('coach.prompt.sceneLead', const {}) : null;
+      messages.add(CoachMessage(isCoach: true, text: lead == null || lead.isEmpty ? situation : '$lead $situation'));
+    }
+
+    // The step's fixed line — unless the scene just closed with its own
+    // question. A scene shown WITHOUT one (the feeling beat holds it back) is
+    // followed by the step's question, emphasised like a scene question is.
+    final sceneAskedItsOwn = scene != null ? scene.question != null : situation != null;
+    if (!sceneAskedItsOwn && turn.promptKey != null) {
+      final resolved = promptResolver?.call(turn.promptKey!, turn.promptArgs);
+      if (resolved != null && resolved.isNotEmpty) {
+        messages.add(CoachMessage(isCoach: true, text: resolved, emphasis: scene != null));
+      }
+    }
+
+    return messages;
+  }
+
+  /// The thread before this response: earlier sessions behind their dividers,
+  /// then — on resume — this session so far. Each exchange is redrawn through
+  /// the same path a live turn takes, keys rendered in the current language.
+  List<CoachMessage> _replayMessages(List<CoachReplayEntity> items) {
+    final out = <CoachMessage>[];
+    for (final item in items) {
+      final divider = item.divider;
+      if (divider != null) {
+        final label = promptResolver?.call('coach.divider', {'at': divider.at.toIso8601String(), 'entry': divider.entry});
+        if (label != null && label.isNotEmpty) out.add(CoachMessage(isCoach: true, text: label, divider: true));
+        continue;
+      }
+      out.addAll(
+        _linesFor(
+          CoachTurnEntity(
+            reply: item.reply,
+            promptKey: item.promptKey,
+            promptArgs: item.promptArgs,
+            noteKey: item.noteKey,
+            speaker: item.speaker,
+            ui: CoachUiEntity(situation: item.situation, scene: item.scene),
+          ),
+          userLine: item.userLine,
+        ),
+      );
+    }
+
+    return out;
+  }
+}

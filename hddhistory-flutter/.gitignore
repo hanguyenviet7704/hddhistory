@@ -1,0 +1,129 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+# .idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+# .vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Logs and other generated files
+logs/
+
+# Generated files
+/lib/config/l10n/app_*.dart
+/lib/core/constants/gen/
+**.g.dart
+**.freezed.dart
+**.config.dart
+**.graphql.dart
+.ruff_cache
+
+# Localization files
+assets/arb/
+# assets/i18n/ is now tracked in git — YAML is the source of truth (Google
+# Sheets workflow retired), so the repo builds cleanly from a fresh clone
+# (slang regenerates the gitignored l10n.g.dart from these YAML sources).
+
+# FVM Version Cache
+.fvm/
+
+# Node Modules
+node_modules/
+
+# Debug symbols
+.obfuscation/
+
+# Crashlytics
+.crashlytics/
+
+# Localization
+.venv_localization/
+.venv/
+
+# Git PR content
+task_ai/
+raw_plan/
+pr_content.md
+prompt_gen.md
+release_content.md
+TEST.md
+example.json
+repomix-output.xml
+
+# AI
+.claude/
+plans/
+.codex/
+.cursor/
+
+# Mason
+bricks/**/hooks/build/
+
+.ignore
+report.xml
+ios/vendor/
+android/vendor/
+.bundle/
+ios/build/
+tmp/
+coverage/
+# ── Khoá ký và bí mật ─────────────────────────────────────────────────────
+# Những tệp này TỪNG được commit vào repo (xem lịch sử). Chúng gồm keystore
+# Play Store cùng mật khẩu của nó, khoá API App Store Connect, service
+# account đăng bản lên Google Play, và cấu hình Firebase cả ba môi trường —
+# đủ để người lạ đẩy một bản cập nhật giả mạo lên cả hai cửa hàng.
+#
+# Đã gỡ khỏi phần được theo dõi, nhưng LỊCH SỬ VẪN CÒN: muốn xoá hẳn phải
+# viết lại toàn bộ lịch sử (git filter-repo) và thu hồi/cấp lại khoá.
+# Lấy các tệp này từ người phụ trách hạ tầng, đừng commit lại.
+.env/
+.info/key/
+android/key.properties
+android/app/upload-keystore.jks
+**/google-services.json
+**/GoogleService-Info.plist
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+*.certSigningRequest

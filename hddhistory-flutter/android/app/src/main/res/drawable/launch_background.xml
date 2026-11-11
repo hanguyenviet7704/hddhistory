@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Native launch splash — solid light #F2F1FA (via @color/splashBackground),
+     matching the Flutter splash (splash_page.dart) so there is no purple/white
+     flash before Flutter draws its first frame. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splashBackground" />
+</layer-list>

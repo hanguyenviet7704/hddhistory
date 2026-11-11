@@ -1,0 +1,9 @@
+# Tester Groups - One group name per line
+# Lines starting with # are comments and will be ignored
+# Empty lines are also ignored
+#
+# Example:
+# qa-team
+# dev-team
+# beta-testers
+

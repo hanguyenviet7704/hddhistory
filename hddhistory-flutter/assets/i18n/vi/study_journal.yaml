@@ -1,0 +1,32 @@
+sectionTitle: Nhật ký học tập
+previousMonth: Tháng trước
+nextMonth: Tháng sau
+weekdays: T2, T3, T4, T5, T6, T7, CN
+weekdayNames: Thứ Hai, Thứ Ba, Thứ Tư, Thứ Năm, Thứ Sáu, Thứ Bảy, Chủ Nhật
+monthName: Tháng ${month}
+legendLess: Ít
+legendMore: Nhiều
+tapHint: Chạm vào ô ngày để xem lịch sử học
+daySemantics(param=count):
+  one: Đã học ${count} keypoint
+  other: Đã học ${count} keypoint
+dayFuture: Ngày ${day}, chưa tới
+dayTitle: "${weekday}, ${day} tháng ${month}"
+sectionLessons: Bài học
+sectionHabits: Thói quen được luyện tập
+lessonCount(param=count):
+  one: ${count} bài học
+  other: ${count} bài học
+minuteCount(param=count):
+  one: ${count} phút
+  other: ${count} phút
+habitCount(param=count):
+  one: ${count} thói quen
+  other: ${count} thói quen
+dayRest: Ngày nghỉ
+dayEmpty: Ngày này bạn chưa học gì.
+dayError: Không tải được ngày này.
+dayLoading: Đang tải…
+retry: Thử lại
+dayEmptyTitle: Không có hoạt động
+dayEmptyBody: Một ngày nghỉ nhỏ. Điều quan trọng là bạn luôn quay lại!

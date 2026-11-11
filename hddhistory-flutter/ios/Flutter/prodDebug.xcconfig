@@ -1,0 +1,9 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+ASSET_PREFIX=prod
+BUNDLE_NAME=HDDhistory
+BUNDLE_DISPLAY_NAME=HDDhistory
+API_BASE_URL=https://prod.api.com
+GID_CLIENT_ID=116378588635-b1cdtenlrjjabjn443sb0el4ll47msog.apps.googleusercontent.com
+REVERSED_CLIENT_ID=com.googleusercontent.apps.116378588635-b1cdtenlrjjabjn443sb0el4ll47msog

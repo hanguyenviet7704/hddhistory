@@ -1,0 +1,1 @@
+Our app supports multiple sign-in options, including Apple and Google. However, users are not required to create an account to access the app. All core features remain fully available without logging in, thanks to the “Continue as Guest” option on the login screen.
