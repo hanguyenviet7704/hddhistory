@@ -1,0 +1,13 @@
+export enum CategoryStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+}
+
+export enum CategoryOnboardingIntroduce {
+  MY_FEELINGS_FEEL_LOUD = 'MY_FEELINGS_FEEL_LOUD',
+  MY_THOUGHTS_CIRCLE = 'MY_THOUGHTS_CIRCLE',
+  IM_BUSY_ALL_DAY = 'IM_BUSY_ALL_DAY',
+  I_TALK_TO_MANY = 'I_TALK_TO_MANY',
+  WHAT_I_LEARN_FADES = 'WHAT_I_LEARN_FADES',
+  NOTHING_FEELS_NEW = 'NOTHING_FEELS_NEW',
+}

@@ -1,0 +1,106 @@
+{
+  "paths": [
+    {
+      "key": "FEEL_BETTER",
+      "title": { "en": "Feel better", "vi": "Cảm xúc tốt hơn" },
+      "shortTitle": "Feel",
+      "iconKey": "ic_heart",
+      "iconUrl": "",
+      "trackingLabel": "FEEL_BETTER",
+      "order": 0,
+      "symptoms": [
+        { "key": "MOTIVATION_DISAPPEARS", "title": { "en": "Motivation disappears", "vi": "Động lực của tôi biến mất" }, "trackingLabel": "MOTIVATION_DISAPPEARS", "order": 0 },
+        { "key": "LIFE_FEELS_OVERWHELMING", "title": { "en": "Life feels overwhelming", "vi": "Cuộc sống khiến tôi quá tải" }, "trackingLabel": "LIFE_FEELS_OVERWHELMING", "order": 1 },
+        { "key": "ENDLESS_SCROLLING_FEELS_EMPTY", "title": { "en": "Endless scrolling feels empty", "vi": "Lướt mãi vẫn thấy trống rỗng" }, "trackingLabel": "ENDLESS_SCROLLING_FEELS_EMPTY", "order": 2 }
+      ]
+    },
+    {
+      "key": "THINK_BETTER",
+      "title": { "en": "Think better", "vi": "Suy nghĩ tốt hơn" },
+      "shortTitle": "Think",
+      "iconKey": "ic_compass",
+      "iconUrl": "",
+      "trackingLabel": "THINK_BETTER",
+      "order": 1,
+      "symptoms": [
+        { "key": "OVERTHINKING", "title": { "en": "I overthink too much", "vi": "Tôi suy nghĩ quá nhiều" }, "trackingLabel": "OVERTHINKING", "order": 0 },
+        { "key": "TRYING_TO_DO_TOO_MUCH", "title": { "en": "I try to do too much", "vi": "Tôi cố làm quá nhiều thứ" }, "trackingLabel": "TRYING_TO_DO_TOO_MUCH", "order": 1 },
+        { "key": "RUSHED_DECISIONS", "title": { "en": "I rush decisions", "vi": "Tôi ra quyết định vội vàng" }, "trackingLabel": "RUSHED_DECISIONS", "order": 2 }
+      ]
+    },
+    {
+      "key": "WORK_BETTER",
+      "title": { "en": "Work better", "vi": "Làm việc tốt hơn" },
+      "shortTitle": "Work",
+      "iconKey": "ic_direct_hit",
+      "iconUrl": "",
+      "trackingLabel": "WORK_BETTER",
+      "order": 2,
+      "symptoms": [
+        { "key": "DIFFICULTY_BUILDING_HABITS", "title": { "en": "Building habits is harder than I'd like", "vi": "Xây dựng thói quen khó hơn tôi muốn" }, "trackingLabel": "DIFFICULTY_BUILDING_HABITS", "order": 0 },
+        { "key": "TIME_SLIPS_AWAY", "title": { "en": "My time slips away from me", "vi": "Thời gian trôi khỏi tay tôi" }, "trackingLabel": "TIME_SLIPS_AWAY", "order": 1 },
+        { "key": "STRUGGLING_TO_BREAK_BAD_HABITS", "title": { "en": "I want to break a bad habit but can't", "vi": "Tôi muốn bỏ thói quen xấu nhưng chưa" }, "trackingLabel": "STRUGGLING_TO_BREAK_BAD_HABITS", "order": 2 }
+      ]
+    },
+    {
+      "key": "CONNECT_BETTER",
+      "title": { "en": "Connect better", "vi": "Kết nối tốt hơn" },
+      "shortTitle": "Connect",
+      "iconKey": "ic_speech_ballon",
+      "iconUrl": "",
+      "trackingLabel": "CONNECT_BETTER",
+      "order": 3,
+      "symptoms": [
+        { "key": "ANXIETY_AROUND_HARD_CONVERSATIONS", "title": { "en": "Hard conversations make me anxious", "vi": "Cuộc trò chuyện khó làm tôi lo" }, "trackingLabel": "ANXIETY_AROUND_HARD_CONVERSATIONS", "order": 0 },
+        { "key": "WANT_TO_LISTEN_MORE_DEEPLY", "title": { "en": "I want to listen more deeply", "vi": "Tôi muốn lắng nghe sâu hơn" }, "trackingLabel": "WANT_TO_LISTEN_MORE_DEEPLY", "order": 1 },
+        { "key": "REGRET_SAYING_THINGS_IN_EMOTION", "title": { "en": "I regret speaking from emotion", "vi": "Tôi hối hận khi nói trong cảm xúc" }, "trackingLabel": "REGRET_SAYING_THINGS_IN_EMOTION", "order": 2 }
+      ]
+    },
+    {
+      "key": "LEARN_BETTER",
+      "title": { "en": "Learn better", "vi": "Học tốt hơn" },
+      "shortTitle": "Learn",
+      "iconKey": "ic_book",
+      "iconUrl": "",
+      "trackingLabel": "LEARN_BETTER",
+      "order": 4,
+      "symptoms": [
+        { "key": "LEARNING_DOES_NOT_STICK", "title": { "en": "Learning does not stick", "vi": "Kiến thức không đọng lại" }, "trackingLabel": "LEARNING_DOES_NOT_STICK", "order": 0 },
+        { "key": "FORGETTING_AFTER_STUDYING", "title": { "en": "I forget soon after studying", "vi": "Tôi quên nhanh sau khi học" }, "trackingLabel": "FORGETTING_AFTER_STUDYING", "order": 1 },
+        { "key": "LOSING_TRAIN_OF_THOUGHT", "title": { "en": "I lose my train of thought", "vi": "Tôi hay mất mạch suy nghĩ" }, "trackingLabel": "LOSING_TRAIN_OF_THOUGHT", "order": 2 }
+      ]
+    },
+    {
+      "key": "EXPLORE_BETTER",
+      "title": { "en": "Explore better", "vi": "Khám phá tốt hơn" },
+      "shortTitle": "Explore",
+      "iconKey": "ic_world_map",
+      "iconUrl": "",
+      "trackingLabel": "EXPLORE_BETTER",
+      "order": 5,
+      "symptoms": [
+        { "key": "CURIOUS_ABOUT_BODY", "title": { "en": "I'm curious about my body", "vi": "Tôi tò mò về cơ thể mình" }, "trackingLabel": "CURIOUS_ABOUT_BODY", "order": 0 },
+        { "key": "LOVE_LEARNING_FROM_GREAT_MINDS", "title": { "en": "I love learning from great minds", "vi": "Tôi thích học từ những bộ óc lớn" }, "trackingLabel": "LOVE_LEARNING_FROM_GREAT_MINDS", "order": 1 },
+        { "key": "AMAZED_BY_HUMAN_BODY", "title": { "en": "The human body amazes me", "vi": "Cơ thể con người khiến tôi kinh ngạc" }, "trackingLabel": "AMAZED_BY_HUMAN_BODY", "order": 2 }
+      ]
+    }
+  ],
+  "copy": [
+    { "key": "onboardingV2P1TitlePrefix", "value": { "en": "Welcome to", "vi": "Chào mừng đến với" } },
+    { "key": "onboardingV2P1TitleBrand", "value": { "en": "HDDhistory", "vi": "HDDhistory" } },
+    { "key": "onboardingV2P1SubtitleLine1", "value": { "en": "Tiny lessons. Massive growth.", "vi": "Bài học nhỏ. Tiến bộ lớn." } },
+    { "key": "onboardingV2P1SubtitleLine2", "value": { "en": "Level up your mind with 5 minutes a day.", "vi": "Nâng cấp tư duy với 5 phút mỗi ngày." } },
+    { "key": "onboardingV2P1GetStartedCta", "value": { "en": "Get started", "vi": "Bắt đầu" } },
+    { "key": "onboardingV2P2HeadingPrefix", "value": { "en": "First, what should", "vi": "Đầu tiên, mình nên" } },
+    { "key": "onboardingV2P2HeadingHighlight", "value": { "en": "we call you?", "vi": "gọi bạn là gì?" } },
+    { "key": "onboardingV2P2Subtitle", "value": { "en": "Make your journey feel like yours", "vi": "Để hành trình này thật sự là của bạn" } },
+    { "key": "onboardingV2P2InputHint", "value": { "en": "Your name", "vi": "Tên của bạn" } },
+    { "key": "onboardingV2P6HeadingPrefix", "value": { "en": "Keep your", "vi": "Giữ" } },
+    { "key": "onboardingV2P6HeadingHighlight", "value": { "en": "momentum", "vi": "nhịp học" } },
+    { "key": "onboardingV2P6Subtitle", "value": { "en": "Only helpful reminders, never spam", "vi": "Chỉ nhắc hữu ích, không làm phiền" } },
+    { "key": "onboardingV2NotificationCardTitle", "value": { "en": "Time to focus", "vi": "Đến giờ tập trung" } },
+    { "key": "onboardingV2NotificationCardBody", "value": { "en": "Your 2-minute lesson is ready", "vi": "Bài học 2 phút của bạn đã sẵn sàng" } },
+    { "key": "onboardingV2NotificationCardTimestamp", "value": { "en": "Now", "vi": "Bây giờ" } },
+    { "key": "onboardingV2NotifyCta", "value": { "en": "Notify me", "vi": "Bật thông báo" } }
+  ]
+}

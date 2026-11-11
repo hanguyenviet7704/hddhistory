@@ -1,0 +1,83 @@
+{
+  "welcome": {
+    "titlePrefix": { "en": "Welcome to", "vi": "Chào mừng đến với" },
+    "titleBrand": "HDDhistory",
+    "subtitle": { "en": "Tiny lessons. Massive growth. Level up your mind with 5 minutes a day.", "vi": "Bài học nhỏ. Tiến bộ lớn. Nâng cấp tư duy với 5 phút mỗi ngày." },
+    "ctaLabel": { "en": "Get started", "vi": "Bắt đầu" },
+    "deck": [
+      { "key": "FEEL_BETTER", "label": { "en": "Feel better", "vi": "Cảm xúc tốt hơn" }, "imageUrl": "", "order": 0 },
+      { "key": "THINK_BETTER", "label": { "en": "Think better", "vi": "Suy nghĩ tốt hơn" }, "imageUrl": "", "order": 1 },
+      { "key": "WORK_BETTER", "label": { "en": "Work better", "vi": "Làm việc tốt hơn" }, "imageUrl": "", "order": 2 },
+      { "key": "CONNECT_BETTER", "label": { "en": "Connect better", "vi": "Kết nối tốt hơn" }, "imageUrl": "", "order": 3 },
+      { "key": "LEARN_BETTER", "label": { "en": "Learn better", "vi": "Học tốt hơn" }, "imageUrl": "", "order": 4 },
+      { "key": "EXPLORE_BETTER", "label": { "en": "Explore better", "vi": "Khám phá tốt hơn" }, "imageUrl": "", "order": 5 }
+    ]
+  },
+  "name": {
+    "heading": { "en": "First, what should", "vi": "Đầu tiên, mình nên" },
+    "headingHighlight": { "en": "we call you?", "vi": "gọi bạn là gì?" },
+    "helper": { "en": "Make your journey feel like yours", "vi": "Để hành trình này thật sự là của bạn" },
+    "inputHint": { "en": "Your name", "vi": "Tên của bạn" },
+    "ctaLabel": { "en": "Continue", "vi": "Tiếp tục" },
+    "iconUrl": ""
+  },
+  "age": {
+    "headingTemplate": { "en": "Nice {name},", "vi": "Rất vui {name}," },
+    "headingHighlight": { "en": "how old are you?", "vi": "bạn bao nhiêu tuổi?" },
+    "iconUrl": "",
+    "ctaLabel": { "en": "Continue", "vi": "Tiếp tục" },
+    "options": [
+      { "key": "UNDER_18", "label": { "en": "Under 18", "vi": "Dưới 18" }, "order": 0 },
+      { "key": "18_24", "label": { "en": "18–24", "vi": "18–24" }, "order": 1 },
+      { "key": "25_34", "label": { "en": "25–34", "vi": "25–34" }, "order": 2 },
+      { "key": "35_44", "label": { "en": "35–44", "vi": "35–44" }, "order": 3 },
+      { "key": "45_PLUS", "label": { "en": "45+", "vi": "45+" }, "order": 4 }
+    ]
+  },
+  "paths": {
+    "heading": { "en": "Which paths", "vi": "Lộ trình nào" },
+    "headingHighlight": { "en": "speak to you?", "vi": "hợp với bạn?" },
+    "helper": { "en": "Pick 1–2 you most want to grow in", "vi": "Chọn 1–2 điều bạn muốn phát triển" },
+    "maxSelect": 2,
+    "items": [
+      { "key": "FEEL_BETTER", "label": { "en": "Feel better", "vi": "Cảm xúc tốt hơn" }, "iconKey": "cat_feel", "iconUrl": "", "order": 0 },
+      { "key": "THINK_BETTER", "label": { "en": "Think better", "vi": "Suy nghĩ tốt hơn" }, "iconKey": "cat_think", "iconUrl": "", "order": 1 },
+      { "key": "WORK_BETTER", "label": { "en": "Work better", "vi": "Làm việc tốt hơn" }, "iconKey": "cat_work", "iconUrl": "", "order": 2 },
+      { "key": "CONNECT_BETTER", "label": { "en": "Connect better", "vi": "Kết nối tốt hơn" }, "iconKey": "cat_connect", "iconUrl": "", "order": 3 },
+      { "key": "LEARN_BETTER", "label": { "en": "Learn better", "vi": "Học tốt hơn" }, "iconKey": "cat_learn", "iconUrl": "", "order": 4 },
+      { "key": "EXPLORE_BETTER", "label": { "en": "Explore better", "vi": "Khám phá tốt hơn" }, "iconKey": "cat_explore", "iconUrl": "", "order": 5 }
+    ]
+  },
+  "brain": {
+    "heading": { "en": "Built on", "vi": "Dựa trên" },
+    "headingHighlight": { "en": "brain science", "vi": "khoa học não bộ" },
+    "unlockedPillTemplate": { "en": "🔓 {n} paths unlocked · your starting point", "vi": "🔓 Mở khoá {n} lộ trình · điểm bắt đầu" },
+    "moreTemplate": { "en": "{m} more waiting to explore", "vi": "Còn {m} lộ trình chờ khám phá" },
+    "imageUrl": ""
+  },
+  "habit": {
+    "heading": { "en": "Sounds like", "vi": "Nghe giống" },
+    "headingHighlight": { "en": "you", "vi": "bạn đấy" },
+    "iconUrl": "",
+    "subtitle": { "en": "Small daily habits, big change over time.", "vi": "Thói quen nhỏ mỗi ngày, thay đổi lớn theo thời gian." },
+    "ctaLabel": { "en": "Continue", "vi": "Tiếp tục" }
+  },
+  "notif": {
+    "heading": { "en": "Keep your", "vi": "Giữ" },
+    "headingHighlight": { "en": "momentum", "vi": "nhịp học" },
+    "iconUrl": "",
+    "subtitle": { "en": "Only helpful reminders, never spam", "vi": "Chỉ nhắc hữu ích, không làm phiền" },
+    "cardTitle": { "en": "Time to focus", "vi": "Đến giờ tập trung" },
+    "cardBody": { "en": "Your 2-minute lesson is ready", "vi": "Bài học 2 phút của bạn đã sẵn sàng" },
+    "cardTimestamp": { "en": "Now", "vi": "Bây giờ" },
+    "ctaLabel": { "en": "Notify me", "vi": "Bật thông báo" }
+  },
+  "pick": {
+    "heading": { "en": "Pick your", "vi": "Chọn" },
+    "headingHighlight": { "en": "course", "vi": "khoá học" },
+    "iconUrl": "",
+    "label": { "en": "Best matched", "vi": "Phù hợp nhất" },
+    "primaryCta": { "en": "Jump in now!", "vi": "Bắt đầu ngay!" },
+    "secondaryCta": { "en": "I'll explore on my own", "vi": "Tôi tự khám phá" }
+  }
+}

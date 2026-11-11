@@ -1,0 +1,320 @@
+{
+  "templates": [
+    {
+      "type": "progress_finish",
+      "localHour": 11,
+      "localMinute": 45,
+      "deeplink": "resume_lesson",
+      "variants": [
+        {
+          "key": "v1",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "Chỉ 5 phút trước bữa trưa 🍜",
+              "body": "Để {user_name} hoàn thành khoá học \"{course_name}\" đang chờ..."
+            },
+            {
+              "locale": "en",
+              "title": "Just 5 minutes before lunch 🍜",
+              "body": "Time for {user_name} to finish \"{course_name}\" — it is still waiting."
+            },
+            {
+              "locale": "ko",
+              "title": "점심 전 딱 5분 🍜",
+              "body": "{user_name}님, 기다리고 있는 \"{course_name}\" 코스를 마무리해 보세요."
+            },
+            {
+              "locale": "zh",
+              "title": "午饭前只需 5 分钟 🍜",
+              "body": "{user_name}，「{course_name}」还在等你完成哦。"
+            },
+            {
+              "locale": "ja",
+              "title": "ランチ前の5分だけ 🍜",
+              "body": "{user_name}さん、まだ途中の「{course_name}」を終わらせましょう。"
+            }
+          ]
+        },
+        {
+          "key": "v2",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "Một chút tiến bộ mỗi ngày là đủ 🌱",
+              "body": "Chỉ 5 phút để {user_name} hoàn thành khoá học còn dang dở 👉 Học ngay"
+            },
+            {
+              "locale": "en",
+              "title": "A little progress each day is enough 🌱",
+              "body": "Five minutes is all {user_name} needs to finish what is left 👉 Start now"
+            },
+            {
+              "locale": "ko",
+              "title": "매일 조금씩이면 충분해요 🌱",
+              "body": "{user_name}님, 5분이면 남은 학습을 마칠 수 있어요 👉 지금 시작"
+            },
+            {
+              "locale": "zh",
+              "title": "每天进步一点就够了 🌱",
+              "body": "{user_name}，只要 5 分钟就能完成没学完的内容 👉 立即学习"
+            },
+            {
+              "locale": "ja",
+              "title": "毎日少しずつで十分です 🌱",
+              "body": "{user_name}さん、5分で途中の学習を終えられます 👉 今すぐ学ぶ"
+            }
+          ]
+        },
+        {
+          "key": "v3",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "5 phút hôm nay, kỹ năng cả đời ⏳",
+              "body": "{user_name} hãy hoàn thành khoá học \"{course_name}\" để phát triển kỹ năng cho mình nhé!"
+            },
+            {
+              "locale": "en",
+              "title": "Five minutes today, a skill for life ⏳",
+              "body": "{user_name}, finish \"{course_name}\" and keep building your skills!"
+            },
+            {
+              "locale": "ko",
+              "title": "오늘의 5분, 평생의 기술 ⏳",
+              "body": "{user_name}님, \"{course_name}\" 코스를 완료하고 실력을 키워 보세요!"
+            },
+            {
+              "locale": "zh",
+              "title": "今天 5 分钟，技能受用一生 ⏳",
+              "body": "{user_name}，完成「{course_name}」，让技能再上一层！"
+            },
+            {
+              "locale": "ja",
+              "title": "今日の5分が一生のスキルに ⏳",
+              "body": "{user_name}さん、「{course_name}」を終えてスキルを伸ばしましょう！"
+            }
+          ]
+        },
+        {
+          "key": "v4",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "Bộ não thích sự đều đặn 🧠",
+              "body": "Tiếp tục khoá học \"{course_name}\" dang dở để tự tổng hợp kiến thức và xây dựng thói quen."
+            },
+            {
+              "locale": "en",
+              "title": "Your brain likes consistency 🧠",
+              "body": "Pick \"{course_name}\" back up to connect what you have learned and keep the habit going."
+            },
+            {
+              "locale": "ko",
+              "title": "뇌는 꾸준함을 좋아해요 🧠",
+              "body": "\"{course_name}\" 코스를 이어서 배우며 배운 내용을 정리하고 습관을 만들어 보세요."
+            },
+            {
+              "locale": "zh",
+              "title": "大脑喜欢规律 🧠",
+              "body": "继续未完成的「{course_name}」，把学过的内容串起来，也把习惯坚持下去。"
+            },
+            {
+              "locale": "ja",
+              "title": "脳は継続が好きです 🧠",
+              "body": "途中の「{course_name}」を再開して、学んだことを整理し習慣を続けましょう。"
+            }
+          ]
+        },
+        {
+          "key": "v5",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "❓ {user_name} vẫn muốn {topic_name} chứ?",
+              "body": "Hãy dành 5 phút để hoàn thành \"{course_name}\" còn dang dở."
+            },
+            {
+              "locale": "en",
+              "title": "❓ Still aiming for {topic_name}, {user_name}?",
+              "body": "Take five minutes and finish \"{course_name}\"."
+            },
+            {
+              "locale": "ko",
+              "title": "❓ {user_name}님, {topic_name} 목표는 그대로죠?",
+              "body": "5분만 내어 \"{course_name}\" 코스를 마무리해 보세요."
+            },
+            {
+              "locale": "zh",
+              "title": "❓ {user_name}，还想继续 {topic_name} 吗？",
+              "body": "花 5 分钟完成没学完的「{course_name}」吧。"
+            },
+            {
+              "locale": "ja",
+              "title": "❓ {user_name}さん、{topic_name} はまだ目標ですか？",
+              "body": "5分だけ使って「{course_name}」を終わらせましょう。"
+            }
+          ]
+        },
+        {
+          "key": "v6",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "Hành động nhỏ, khác biệt lớn 🚀",
+              "body": "5 phút để {topic_name} bằng cách hoàn thành khoá học \"{course_name}\"."
+            },
+            {
+              "locale": "en",
+              "title": "Small action, big difference 🚀",
+              "body": "Five minutes toward {topic_name} — just finish \"{course_name}\"."
+            },
+            {
+              "locale": "ko",
+              "title": "작은 실천, 큰 변화 🚀",
+              "body": "\"{course_name}\" 코스를 마치며 {topic_name}에 5분을 투자해 보세요."
+            },
+            {
+              "locale": "zh",
+              "title": "小行动，大不同 🚀",
+              "body": "用 5 分钟完成「{course_name}」，离 {topic_name} 更近一步。"
+            },
+            {
+              "locale": "ja",
+              "title": "小さな行動が大きな差に 🚀",
+              "body": "「{course_name}」を終えて、{topic_name} に5分を使いましょう。"
+            }
+          ]
+        },
+        {
+          "key": "v7",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "🎧 Thư giãn một chút...",
+              "body": "Sau một buổi sáng chăm chỉ, mở HDDhistory và hoàn thành \"{course_name}\" nhé {user_name} ơi!"
+            },
+            {
+              "locale": "en",
+              "title": "🎧 Time for a little break...",
+              "body": "After a busy morning, open HDDhistory and finish \"{course_name}\", {user_name}!"
+            },
+            {
+              "locale": "ko",
+              "title": "🎧 잠시 쉬어갈 시간...",
+              "body": "바쁜 오전을 보냈으니, HDDhistory을 열고 \"{course_name}\" 코스를 마무리해요 {user_name}님!"
+            },
+            {
+              "locale": "zh",
+              "title": "🎧 稍微放松一下...",
+              "body": "忙了一上午，打开 HDDhistory 完成「{course_name}」吧，{user_name}！"
+            },
+            {
+              "locale": "ja",
+              "title": "🎧 少し休憩しませんか...",
+              "body": "忙しい午前のあとは、HDDhistoryを開いて「{course_name}」を終わらせましょう、{user_name}さん！"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "new_course",
+      "localHour": 20,
+      "localMinute": 0,
+      "deeplink": "new_course",
+      "variants": [
+        {
+          "key": "v1",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "🎯 Học xong rồi, học gì nữa nhỉ?",
+              "body": "\"{course_name}\" là bước tiếp theo cho {user_name}. Thử nhé!"
+            },
+            {
+              "locale": "en",
+              "title": "🎯 Done learning — what is next?",
+              "body": "\"{course_name}\" is a good next step for {user_name}. Give it a try!"
+            },
+            {
+              "locale": "ko",
+              "title": "🎯 다 배웠다면, 다음은 뭘까요?",
+              "body": "{user_name}님의 다음 단계는 \"{course_name}\" 코스예요. 한번 시작해 보세요!"
+            },
+            {
+              "locale": "zh",
+              "title": "🎯 学完了，接下来学什么？",
+              "body": "「{course_name}」是 {user_name} 的下一步，试试看！"
+            },
+            {
+              "locale": "ja",
+              "title": "🎯 学び終えたら、次は何を？",
+              "body": "{user_name}さんの次の一歩は「{course_name}」です。試してみましょう！"
+            }
+          ]
+        },
+        {
+          "key": "v2",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "Khoá mới vừa ra lò 🔥",
+              "body": "Khoá học \"{course_name}\" vừa lên sóng. {user_name} hãy là người đầu tiên khám phá!"
+            },
+            {
+              "locale": "en",
+              "title": "A new course just landed 🔥",
+              "body": "\"{course_name}\" is now live. Be the first to explore it, {user_name}!"
+            },
+            {
+              "locale": "ko",
+              "title": "새 코스가 도착했어요 🔥",
+              "body": "\"{course_name}\" 코스가 공개됐어요. {user_name}님이 가장 먼저 만나 보세요!"
+            },
+            {
+              "locale": "zh",
+              "title": "新课刚刚上线 🔥",
+              "body": "「{course_name}」已经上线，{user_name}，来做第一个探索的人！"
+            },
+            {
+              "locale": "ja",
+              "title": "新しいコースが登場 🔥",
+              "body": "「{course_name}」が公開されました。{user_name}さん、いちばんに体験してみて！"
+            }
+          ]
+        },
+        {
+          "key": "v3",
+          "copies": [
+            {
+              "locale": "vi",
+              "title": "✨ Có khoá mới cho hành trình {topic_name}",
+              "body": "{user_name} ơi, \"{course_name}\" vừa lên sóng. Học thử 5 phút nhé!"
+            },
+            {
+              "locale": "en",
+              "title": "✨ A new course for your {topic_name} journey",
+              "body": "{user_name}, \"{course_name}\" is now live. Try it for five minutes!"
+            },
+            {
+              "locale": "ko",
+              "title": "✨ {topic_name} 여정에 새 코스가 생겼어요",
+              "body": "{user_name}님, \"{course_name}\" 코스가 공개됐어요. 5분만 체험해 보세요!"
+            },
+            {
+              "locale": "zh",
+              "title": "✨ {topic_name} 之旅有新课了",
+              "body": "{user_name}，「{course_name}」已上线，先学 5 分钟看看！"
+            },
+            {
+              "locale": "ja",
+              "title": "✨ {topic_name} の旅に新しいコース",
+              "body": "{user_name}さん、「{course_name}」が公開されました。5分だけ試してみませんか！"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

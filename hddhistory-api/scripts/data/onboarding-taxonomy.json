@@ -1,0 +1,258 @@
+{
+  "branches": [
+    {
+      "code": "CN",
+      "label": { "vi": "Cội nguồn dựng nước" },
+      "subtitle": { "vi": "Hồng Bàng, Văn Lang – Âu Lạc: nước Việt bắt đầu từ đâu" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 1,
+      "isSelectable": true,
+      "categoryId": "6abbdc3b85cb392a7b18058a",
+      "isActive": true
+    },
+    {
+      "code": "BT",
+      "label": { "vi": "Nghìn năm Bắc thuộc" },
+      "subtitle": { "vi": "Bị đô hộ một nghìn năm mà vẫn giữ được mình" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 2,
+      "isSelectable": true,
+      "categoryId": "6abbdc3b85cb392a7b180595",
+      "isActive": true
+    },
+    {
+      "code": "DV",
+      "label": { "vi": "Đại Việt tự chủ" },
+      "subtitle": { "vi": "Từ buổi đầu tự chủ đến Thăng Long thời Lý – Trần" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 3,
+      "isSelectable": true,
+      "categoryId": "6abbdc3b85cb392a7b1805b1",
+      "isActive": true
+    },
+    {
+      "code": "KC",
+      "label": { "vi": "Những cuộc kháng chiến giữ nước" },
+      "subtitle": { "vi": "Bạch Đằng, Chi Lăng, Đống Đa và nghệ thuật lấy ít đánh nhiều" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 4,
+      "isSelectable": true,
+      "categoryId": "6abbe3cba9a99a1e7f476e0d",
+      "isActive": true
+    },
+    {
+      "code": "VH",
+      "label": { "vi": "Văn hoá, luật pháp & chữ viết" },
+      "subtitle": { "vi": "Người Việt xưa tin gì, học gì, cai trị bằng luật nào" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 5,
+      "isSelectable": true,
+      "categoryId": "6abc6e438a08ea34cebc124d",
+      "isActive": true
+    },
+    {
+      "code": "PT",
+      "label": { "vi": "Phân tranh & mở cõi" },
+      "subtitle": { "vi": "Nam – Bắc triều, Trịnh – Nguyễn và hành trình về phương Nam" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 6,
+      "isSelectable": true,
+      "categoryId": "6abc6e438a08ea34cebc1264",
+      "isActive": true
+    },
+    {
+      "code": "CD",
+      "label": { "vi": "Cận đại: nhà Nguyễn & Pháp thuộc" },
+      "subtitle": { "vi": "Vì sao mất nước và những người không chịu mất nước" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 7,
+      "isSelectable": true,
+      "categoryId": "6abc7479115fec9ca848ba5f",
+      "isActive": true
+    },
+    {
+      "code": "HD",
+      "label": { "vi": "Việt Nam hiện đại" },
+      "subtitle": { "vi": "Từ Cách mạng tháng Tám đến thống nhất và Đổi mới" },
+      "iconUrl": "",
+      "imageUrl": "",
+      "order": 8,
+      "isSelectable": true,
+      "categoryId": "6abc7479115fec9ca848ba65",
+      "isActive": true
+    }
+  ],
+  "packages": [
+    {
+      "code": "CN-1",
+      "branchCode": "CN",
+      "problemLabel": { "vi": "Chuyện Lạc Long Quân – Âu Cơ mình chỉ nhớ mang máng" },
+      "desireLabel": { "vi": "Kể lại được gốc tích dân tộc một cách mạch lạc" },
+      "order": 1,
+      "isActive": true
+    },
+    {
+      "code": "CN-2",
+      "branchCode": "CN",
+      "problemLabel": { "vi": "Không phân biệt được đâu là huyền sử, đâu là sử thật" },
+      "desireLabel": { "vi": "Đọc được truyền thuyết bằng con mắt sử học" },
+      "order": 2,
+      "isActive": true
+    },
+    {
+      "code": "BT-1",
+      "branchCode": "BT",
+      "problemLabel": { "vi": "Một nghìn năm Bắc thuộc với mình vẫn là khoảng trống" },
+      "desireLabel": { "vi": "Hiểu vì sao người Việt không bị đồng hoá" },
+      "order": 3,
+      "isActive": true
+    },
+    {
+      "code": "BT-2",
+      "branchCode": "BT",
+      "problemLabel": { "vi": "Chỉ thuộc tên Hai Bà Trưng, còn các cuộc khởi nghĩa thì lẫn hết" },
+      "desireLabel": { "vi": "Kể được mạch khởi nghĩa từ Hai Bà Trưng đến Bạch Đằng" },
+      "order": 4,
+      "isActive": true
+    },
+    {
+      "code": "DV-1",
+      "branchCode": "DV",
+      "problemLabel": { "vi": "Lẫn lộn thứ tự Ngô – Đinh – Tiền Lê – Lý – Trần" },
+      "desireLabel": { "vi": "Xâu chuỗi các triều đại theo đúng mạch thời gian" },
+      "order": 5,
+      "isActive": true
+    },
+    {
+      "code": "DV-2",
+      "branchCode": "DV",
+      "problemLabel": { "vi": "Không hiểu vì sao Thăng Long được chọn làm kinh đô" },
+      "desireLabel": { "vi": "Thấy rõ những quyết định lập quốc đã định hình đất nước" },
+      "order": 6,
+      "isActive": true
+    },
+    {
+      "code": "KC-1",
+      "branchCode": "KC",
+      "problemLabel": { "vi": "Nghe tên Bạch Đằng, Chi Lăng, Đống Đa mà không hình dung nổi trận đánh" },
+      "desireLabel": { "vi": "Nắm được diễn biến từng trận đánh quyết định" },
+      "order": 7,
+      "isActive": true
+    },
+    {
+      "code": "KC-2",
+      "branchCode": "KC",
+      "problemLabel": { "vi": "Không lý giải được vì sao nước nhỏ vẫn thắng giặc mạnh" },
+      "desireLabel": { "vi": "Rút ra được nghệ thuật giữ nước của cha ông" },
+      "order": 8,
+      "isActive": true
+    },
+    {
+      "code": "VH-1",
+      "branchCode": "VH",
+      "problemLabel": { "vi": "Chỉ nhớ các cuộc chiến, gần như mù mờ về đời sống văn hoá" },
+      "desireLabel": { "vi": "Hiểu người Việt xưa tin gì, học gì, viết gì" },
+      "order": 9,
+      "isActive": true
+    },
+    {
+      "code": "VH-2",
+      "branchCode": "VH",
+      "problemLabel": { "vi": "Không biết nhà nước phong kiến Việt Nam vận hành bằng luật lệ nào" },
+      "desireLabel": { "vi": "Nắm được bộ máy và luật pháp qua từng triều đại" },
+      "order": 10,
+      "isActive": true
+    },
+    {
+      "code": "PT-1",
+      "branchCode": "PT",
+      "problemLabel": { "vi": "Rối giữa Nam – Bắc triều với Đàng Trong – Đàng Ngoài" },
+      "desireLabel": { "vi": "Phân biệt rành mạch các thế lực thời phân tranh" },
+      "order": 11,
+      "isActive": true
+    },
+    {
+      "code": "PT-2",
+      "branchCode": "PT",
+      "problemLabel": { "vi": "Không biết lãnh thổ Việt Nam hình thành như thế nào" },
+      "desireLabel": { "vi": "Theo được hành trình Nam tiến mở cõi đến tận Cà Mau" },
+      "order": 12,
+      "isActive": true
+    },
+    {
+      "code": "CD-1",
+      "branchCode": "CD",
+      "problemLabel": { "vi": "Chưa lý giải được vì sao Việt Nam rơi vào tay Pháp" },
+      "desireLabel": { "vi": "Hiểu nguyên nhân mất nước và những nỗ lực canh tân" },
+      "order": 13,
+      "isActive": true
+    },
+    {
+      "code": "CD-2",
+      "branchCode": "CD",
+      "problemLabel": { "vi": "Các phong trào yêu nước đầu thế kỷ XX cứ nhớ lẫn vào nhau" },
+      "desireLabel": { "vi": "Sắp xếp được các phong trào yêu nước cho tới năm 1945" },
+      "order": 14,
+      "isActive": true
+    },
+    {
+      "code": "HD-1",
+      "branchCode": "HD",
+      "problemLabel": { "vi": "Giai đoạn 1945 – 1975 quá nhiều mốc, học mãi không nhớ" },
+      "desireLabel": { "vi": "Nắm gọn mạch sự kiện từ 1945 đến ngày thống nhất" },
+      "order": 15,
+      "isActive": true
+    },
+    {
+      "code": "HD-2",
+      "branchCode": "HD",
+      "problemLabel": { "vi": "Không rõ đất nước sau 1975 đã đổi thay ra sao" },
+      "desireLabel": { "vi": "Hiểu chặng thống nhất và công cuộc Đổi mới" },
+      "order": 16,
+      "isActive": true
+    }
+  ],
+  "labels": [
+    { "code": "CN01", "packageCode": "CN-1", "label": { "vi": "Truyền thuyết Hồng Bàng và nước Văn Lang" }, "order": 1 },
+    { "code": "CN02", "packageCode": "CN-1", "label": { "vi": "Nhà nước Âu Lạc và An Dương Vương" }, "order": 2 },
+    { "code": "CN03", "packageCode": "CN-2", "label": { "vi": "Huyền sử đối chiếu với khảo cổ thời dựng nước" }, "order": 3 },
+    { "code": "CN04", "packageCode": "CN-2", "label": { "vi": "Mất nước Âu Lạc: bài học cảnh giác đầu tiên" }, "order": 4 },
+    { "code": "BT01", "packageCode": "BT-1", "label": { "vi": "Chính sách đô hộ và đồng hoá của phương Bắc" }, "order": 5 },
+    { "code": "BT02", "packageCode": "BT-1", "label": { "vi": "Giữ tiếng nói và phong tục suốt nghìn năm" }, "order": 6 },
+    { "code": "BT03", "packageCode": "BT-2", "label": { "vi": "Khởi nghĩa Hai Bà Trưng và Bà Triệu" }, "order": 7 },
+    { "code": "BT04", "packageCode": "BT-2", "label": { "vi": "Từ Lý Bí đến chiến thắng Bạch Đằng năm 938" }, "order": 8 },
+    { "code": "DV01", "packageCode": "DV-1", "label": { "vi": "Buổi đầu tự chủ sau nghìn năm Bắc thuộc" }, "order": 9 },
+    { "code": "DV02", "packageCode": "DV-1", "label": { "vi": "Đinh Bộ Lĩnh dẹp loạn, lập Đại Cồ Việt" }, "order": 10 },
+    { "code": "DV03", "packageCode": "DV-1", "label": { "vi": "Nhà Trần thay nhà Lý" }, "order": 11 },
+    { "code": "DV04", "packageCode": "DV-2", "label": { "vi": "Dời đô về Thăng Long và Chiếu dời đô" }, "order": 12 },
+    { "code": "DV05", "packageCode": "DV-2", "label": { "vi": "Nhà nước và đời sống Đại Việt thời Lý" }, "order": 13 },
+    { "code": "KC01", "packageCode": "KC-1", "label": { "vi": "Hai lần chống Tống: Lê Hoàn và Lý Thường Kiệt" }, "order": 14 },
+    { "code": "KC02", "packageCode": "KC-1", "label": { "vi": "Ba lần đánh bại quân Mông – Nguyên" }, "order": 15 },
+    { "code": "KC03", "packageCode": "KC-1", "label": { "vi": "Quang Trung và trận Ngọc Hồi – Đống Đa" }, "order": 16 },
+    { "code": "KC04", "packageCode": "KC-2", "label": { "vi": "Khởi nghĩa Lam Sơn và cách đánh lâu dài" }, "order": 17 },
+    { "code": "KC05", "packageCode": "KC-2", "label": { "vi": "Mất nước thời thuộc Minh và bài học cải cách" }, "order": 18 },
+    { "code": "VH01", "packageCode": "VH-1", "label": { "vi": "Phật giáo và văn hoá thời Lý" }, "order": 19 },
+    { "code": "VH02", "packageCode": "VH-1", "label": { "vi": "Thiền phái Trúc Lâm và chữ Nôm" }, "order": 20 },
+    { "code": "VH03", "packageCode": "VH-2", "label": { "vi": "Lê Thánh Tông và bộ luật Hồng Đức" }, "order": 21 },
+    { "code": "VH04", "packageCode": "VH-2", "label": { "vi": "Bộ máy hành chính thời Nguyễn" }, "order": 22 },
+    { "code": "PT01", "packageCode": "PT-1", "label": { "vi": "Mạc Đăng Dung và cục diện Nam – Bắc triều" }, "order": 23 },
+    { "code": "PT02", "packageCode": "PT-1", "label": { "vi": "Trịnh – Nguyễn phân tranh và hai Đàng" }, "order": 24 },
+    { "code": "PT05", "packageCode": "PT-1", "label": { "vi": "Lê Thái Tổ dựng triều Lê sơ" }, "order": 25 },
+    { "code": "PT03", "packageCode": "PT-2", "label": { "vi": "Nam tiến và công cuộc mở cõi phương Nam" }, "order": 26 },
+    { "code": "PT04", "packageCode": "PT-2", "label": { "vi": "Tây Sơn và cục diện cuối thế kỷ XVIII" }, "order": 27 },
+    { "code": "CD01", "packageCode": "CD-1", "label": { "vi": "Gia Long, Minh Mạng và triều Nguyễn buổi đầu" }, "order": 28 },
+    { "code": "CD02", "packageCode": "CD-1", "label": { "vi": "Pháp xâm lược và quá trình mất nước" }, "order": 29 },
+    { "code": "CD03", "packageCode": "CD-2", "label": { "vi": "Cần Vương và các phong trào yêu nước" }, "order": 30 },
+    { "code": "CD04", "packageCode": "CD-2", "label": { "vi": "Đường tới Cách mạng tháng Tám" }, "order": 31 },
+    { "code": "HD01", "packageCode": "HD-1", "label": { "vi": "Kháng chiến chống Pháp 1945 – 1954" }, "order": 32 },
+    { "code": "HD02", "packageCode": "HD-1", "label": { "vi": "Giai đoạn 1954 – 1975" }, "order": 33 },
+    { "code": "HD03", "packageCode": "HD-2", "label": { "vi": "Thống nhất đất nước và công cuộc Đổi mới" }, "order": 34 }
+  ]
+}
