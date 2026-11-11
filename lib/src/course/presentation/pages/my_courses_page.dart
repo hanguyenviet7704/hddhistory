@@ -1,10 +1,10 @@
 part of '../../course.dart';
 
 /// "My course" library screen — reached from Profile → "Khóa học của tôi"
-/// (design 6 · Profile → MeUp App master, "CHANGE COURSE" screen).
+/// (design 6 · Profile → HDDhistory App master, "CHANGE COURSE" screen).
 ///
-/// Skillset chip row (scrolls to a section) + the user's ENROLLED courses
-/// grouped by skillset as row cards (thumbnail + title + progress, check on the
+/// Category chip row (scrolls to a section) + the user's ENROLLED courses
+/// grouped by category as row cards (thumbnail + title + progress, check on the
 /// active course), and a pinned "Explore more courses" CTA back to Explore.
 /// Distinct from [ChangeCoursePage] (the flat switcher): tapping a card opens
 /// that course's roadmap.
@@ -70,9 +70,9 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
     super.dispose();
   }
 
-  GlobalKey _sectionKey(String skillsetId) => _sectionKeys.putIfAbsent(skillsetId, () => GlobalKey());
+  GlobalKey _sectionKey(String categoryId) => _sectionKeys.putIfAbsent(categoryId, () => GlobalKey());
 
-  void _onChipTap(int index, List<SkillsetEntity> sections) {
+  void _onChipTap(int index, List<CategoryEntity> sections) {
     AppService.instance.appTrackingService.trackProfileMycourseCatClick(sections[index].title.text);
     setState(() => _selectedChip = index);
     final ctx = _sectionKeys[sections[index].id]?.currentContext;
@@ -115,17 +115,17 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
       ),
       body: ThemedBackground(
         child: BlocBuilder<HomeCubit, HomeState>(
-          buildWhen: (prev, curr) => prev.skillsets != curr.skillsets || prev.status != curr.status,
+          buildWhen: (prev, curr) => prev.categories != curr.categories || prev.status != curr.status,
           builder: (context, homeState) {
             final progressState = context.watch<ProgressCubit>().state;
             final progressById = progressLookup(progressState);
 
-            // Only skillsets the user is enrolled in (≥1 course in their progress).
-            final sections = homeState.skillsets.where((s) => s.courses.any((c) => progressById.containsKey(c.id))).toList();
+            // Only categories the user is enrolled in (≥1 course in their progress).
+            final sections = homeState.categories.where((s) => s.courses.any((c) => progressById.containsKey(c.id))).toList();
 
             // Only block with a full spinner on a genuine cold load — don't
             // replace an already-loaded list with a spinner when Home refreshes.
-            if ((homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) && homeState.skillsets.isEmpty) {
+            if ((homeState.status == HomeStatus.initial || homeState.status == HomeStatus.loading) && homeState.categories.isEmpty) {
               return const Center(child: CircularProgressIndicator(color: AppCustomColor.brandPrimary));
             }
 
@@ -143,7 +143,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                 // toolbarHeight above, or a gap/overlap reappears.
                 SizedBox(height: MediaQuery.paddingOf(context).top + _kHeaderToolbarHeight.h),
                 _MyCourseChipBar(
-                  skillsets: sections,
+                  categories: sections,
                   selectedIndex: selected,
                   onTap: (i) => _onChipTap(i, sections),
                 ),
@@ -157,9 +157,9 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                         KeyedSubtree(
                           key: _sectionKey(sections[i].id),
                           child: _MyCourseSection(
-                            skillset: sections[i],
+                            category: sections[i],
                             progressState: progressState,
-                            onTapCourse: (skillset, course) => _openCourseRoadmap(context, skillset, course),
+                            onTapCourse: (category, course) => _openCourseRoadmap(context, category, course),
                             showBottomSpacing: i < sections.length - 1,
                           ),
                         ),
@@ -181,7 +181,7 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   }
 
   /// Pops this root-pushed page, then jumps the shell to the course roadmap.
-  void _openCourseRoadmap(BuildContext context, SkillsetEntity skillset, CourseEntity course) {
+  void _openCourseRoadmap(BuildContext context, CategoryEntity category, CourseEntity course) {
     AppService.instance.appTrackingService.trackProfileMycourseItemClick(course.title.text);
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
@@ -196,14 +196,14 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
     // missing from the loaded catalog. selectCourse loads the right roadmap
     // directly in that case.
     AppDI.injector.get<HomeCubit>()
-      ..selectSkillset(skillset)
+      ..selectCategory(category)
       ..selectCourse(course);
     CourseRoadmapRoute().go(shellContext);
     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
   }
 
   /// Pops this page, then jumps the shell to the Explore tab at the current
-  /// skillset (mirrors CourseRoadmapPage._backFromRoadmap / SkillsetCourses).
+  /// category (mirrors CourseRoadmapPage._backFromRoadmap / CategoryCourses).
   void _exploreMore(BuildContext context) {
     AppService.instance.appTrackingService.trackProfileMycourseExplore();
     Navigator.of(context, rootNavigator: true).pop();
@@ -215,15 +215,15 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   }
 }
 
-/// Horizontal skillset chips (icon + label) — tapping scrolls to that section.
+/// Horizontal category chips (icon + label) — tapping scrolls to that section.
 class _MyCourseChipBar extends StatelessWidget {
   const _MyCourseChipBar({
-    required this.skillsets,
+    required this.categories,
     required this.selectedIndex,
     required this.onTap,
   });
 
-  final List<SkillsetEntity> skillsets;
+  final List<CategoryEntity> categories;
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
@@ -234,15 +234,15 @@ class _MyCourseChipBar extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 24.w),
-        itemCount: skillsets.length,
+        itemCount: categories.length,
         separatorBuilder: (_, _) => SizedBox(width: 10.w),
         itemBuilder: (context, index) {
-          final skillset = skillsets[index];
+          final category = categories[index];
           final selected = index == selectedIndex;
           return Semantics(
             button: true,
             selected: selected,
-            label: skillset.title.text,
+            label: category.title.text,
             child: GestureDetector(
               onTap: () {
                 AppHaptic.select();
@@ -257,15 +257,15 @@ class _MyCourseChipBar extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (skillset.image.isNotEmpty) ...[
+                    if (category.image.isNotEmpty) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(6.r),
-                        child: CacheNetworkGraphic(url: skillset.image, width: 20.w, height: 20.w, fit: BoxFit.cover),
+                        child: CacheNetworkGraphic(url: category.image, width: 20.w, height: 20.w, fit: BoxFit.cover),
                       ),
                       8.horizontalSpace,
                     ],
                     AppText(
-                      skillset.title.text,
+                      category.title.text,
                       style: AppStyle.textBold14.copyWith(
                         color: selected ? AppCustomColor.textWhite : AppCustomColor.textPrimary,
                       ),
@@ -281,25 +281,25 @@ class _MyCourseChipBar extends StatelessWidget {
   }
 }
 
-/// One skillset's enrolled courses: header + column of [_MyCourseRow]s.
+/// One category's enrolled courses: header + column of [_MyCourseRow]s.
 class _MyCourseSection extends StatelessWidget {
   const _MyCourseSection({
-    required this.skillset,
+    required this.category,
     required this.progressState,
     required this.onTapCourse,
     required this.showBottomSpacing,
   });
 
-  final SkillsetEntity skillset;
+  final CategoryEntity category;
   final ProgressState progressState;
-  final void Function(SkillsetEntity skillset, CourseEntity course) onTapCourse;
+  final void Function(CategoryEntity category, CourseEntity course) onTapCourse;
   final bool showBottomSpacing;
 
   @override
   Widget build(BuildContext context) {
     final progressById = progressLookup(progressState);
     final enrolled = sortCoursesForExplore(
-      skillset.courses.where((c) => progressById.containsKey(c.id)).toList(),
+      category.courses.where((c) => progressById.containsKey(c.id)).toList(),
       progressById,
     );
     final currentCourseId = context.read<HomeCubit>().state.currentCourse.id;
@@ -310,7 +310,7 @@ class _MyCourseSection extends StatelessWidget {
         // Bare section header sitting directly on the (possibly custom)
         // background — the enrolled-course rows below stay opaque cards.
         AppText(
-          skillset.title.text,
+          category.title.text,
           style: AppStyle.textBold18.copyWith(color: studyThemeOnBg(context, AppCustomColor.textPrimary)),
         ),
         14.verticalSpace,
@@ -325,7 +325,7 @@ class _MyCourseSection extends StatelessWidget {
             completedLessons: resolveCourseProgress(enrolled[i], progressById).passed,
             totalLessons: resolveCourseProgress(enrolled[i], progressById).total,
             isSelected: enrolled[i].id == currentCourseId,
-            onTap: () => onTapCourse(skillset, enrolled[i]),
+            onTap: () => onTapCourse(category, enrolled[i]),
           ),
         ],
         if (showBottomSpacing) 26.verticalSpace,

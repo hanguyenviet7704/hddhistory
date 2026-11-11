@@ -72,7 +72,7 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   /// Opens a course's roadmap, mirroring Home's "Jump back in" card: select the
-  /// skillset + course, then `.go()` the roadmap branch and re-anchor the route
+  /// category + course, then `.go()` the roadmap branch and re-anchor the route
   /// name (a `.go()` into an already-built branch fires no didPush, so the
   /// observer would otherwise leave the nav state on this tab).
   void _openCourse(CourseEntity course) {
@@ -80,10 +80,10 @@ class _LibraryPageState extends State<LibraryPage> {
       CourseLessonEmptyNotiPopup.show(context);
       return;
     }
-    final resolved = course.withSkillset;
+    final resolved = course.withCategory;
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kRoadmapSourceLibrary);
     AppDI.injector.get<HomeCubit>()
-      ..selectSkillset(resolved.skillset)
+      ..selectCategory(resolved.category)
       ..selectCourse(resolved);
     CourseRoadmapRoute().go(context);
     context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   group('Enum unknown fallback parsing', () {

@@ -1,14 +1,14 @@
 part of '../../../roleplay.dart';
 
 class RoleplayTrackingData {
-  final SkillsetEntity skillset;
+  final CategoryEntity category;
   final CourseEntity course;
   final LessonEntity lesson;
   final LearningItemEntity learningItem;
   final RoleplayEntity roleplay;
 
   const RoleplayTrackingData({
-    required this.skillset,
+    required this.category,
     required this.course,
     required this.lesson,
     required this.learningItem,
@@ -23,18 +23,18 @@ class RoleplayTrackingData {
     final roleplay = roleplayState.currentRoleplay;
 
     final homeState = AppDI.injector.get<HomeCubit>().state;
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+    final category = homeState.categories.resolveCategoryByCourseId(
       lesson.courseId,
-      fallback: homeState.currentSkillset,
+      fallback: homeState.currentCategory,
     );
-    final course = homeState.skillsets.resolveCourseByCourseId(
+    final course = homeState.categories.resolveCourseByCourseId(
       lesson.courseId,
       fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
+      categoryFallback: homeState.currentCategory,
     );
 
     return RoleplayTrackingData(
-      skillset: skillset,
+      category: category,
       course: course,
       lesson: lesson,
       learningItem: learningItem,

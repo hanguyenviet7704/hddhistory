@@ -1,5 +1,5 @@
 Key,Type,Context,Params,Description,Status,Tags,UpdatedAt,English (EN),Vietnamese (VI),Chinese (ZH)
-appTitle,text,,,"App title shown in system UI",active,,2024-01-01T00:00:00Z,MeUp,MeUp,MeUp
+appTitle,text,,,"App title shown in system UI",active,,2024-01-01T00:00:00Z,HDDhistory,HDDhistory,HDDhistory
 homeHomeButton,text,,,"Bottom navigation label: Home",active,,2024-01-01T00:00:00Z,Home,Trang chủ,首页
 greeting,text,,name:String,"Greeting with a name placeholder",active,,2024-01-01T00:00:00Z,Hello ${name},Xin chào ${name},你好，${name}
 notifications,plural,,count:int,"Notifications count copy with plural support",active,,2024-01-01T00:00:00Z,{count, plural, =0{No notifications} =1{1 notification} other{{count} notifications}},{count, plural, =0{Không có thông báo} =1{1 thông báo} other{{count} thông báo}},{count, plural, =0{暂无通知} =1{1 条通知} other{{count} 条通知}}

@@ -7,7 +7,7 @@ part of '../../common.dart';
 /// trong app không được đổi những giá trị này. Thêm khoá mới thì được; đổi hoặc
 /// xoá khoá cũ là làm chết link đã phát ra.
 ///
-/// Cùng danh sách này được khai ở `meup-api/src/modules/deeplink/deeplink.catalog.ts`
+/// Cùng danh sách này được khai ở `hddhistory-api/src/modules/deeplink/deeplink.catalog.ts`
 /// để admin dựng dropdown. Hai bên phải khớp từng ký tự.
 enum DeeplinkDestination {
   home('home'),
@@ -17,7 +17,7 @@ enum DeeplinkDestination {
   library('library'),
   courseRoadmap('course-roadmap'),
   lesson('lesson'),
-  skillsetCourses('skillset-courses'),
+  categoryCourses('category-courses'),
   paywall('paywall'),
   manageSubscription('manage-subscription'),
   dailyWarmUp('daily-warm-up'),
@@ -29,11 +29,11 @@ enum DeeplinkDestination {
   changeLanguage('change-language'),
   community('community'),
   communityPost('community-post'),
-  /// `meup://community-chat?room=<slug>` — a discussion room (the weekly
+  /// `hddhistory://community-chat?room=<slug>` — a discussion room (the weekly
   /// question). Where the "someone answered" push lands.
   communityChat('community-chat'),
 
-  /// `meup://coach` — Home underneath, the AI Coach sheet on top. The same
+  /// `hddhistory://coach` — Home underneath, the AI Coach sheet on top. The same
   /// landing the commitment-reminder push uses; the server decides the door.
   coach('coach');
 
@@ -109,9 +109,9 @@ class DeeplinkTarget {
   }
 
   /// `https://meup.training/open/paywall` → `paywall`
-  /// `meup://open/course-roadmap`         → `course-roadmap` (authority là `open`)
-  /// `meup://paywall`                      → `paywall`      (dạng cũ, khoá ở host)
-  /// `meup://` · `https://meup.training/`  → `home`
+  /// `hddhistory://open/course-roadmap`         → `course-roadmap` (authority là `open`)
+  /// `hddhistory://paywall`                      → `paywall`      (dạng cũ, khoá ở host)
+  /// `hddhistory://` · `https://meup.training/`  → `home`
   static String _extractKey(Uri uri) {
     final segments = uri.pathSegments.where((segment) => segment.trim().isNotEmpty).toList();
 

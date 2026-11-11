@@ -62,10 +62,10 @@ class _LibraryHistoryPageState extends State<LibraryHistoryPage> {
       CourseLessonEmptyNotiPopup.show(context);
       return;
     }
-    final resolved = course.withSkillset;
+    final resolved = course.withCategory;
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kRoadmapSourceLibraryHistory);
     AppDI.injector.get<HomeCubit>()
-      ..selectSkillset(resolved.skillset)
+      ..selectCategory(resolved.category)
       ..selectCourse(resolved);
     CourseRoadmapRoute().go(context);
     context.read<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);

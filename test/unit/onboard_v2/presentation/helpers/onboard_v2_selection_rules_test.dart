@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 OnboardingPackageEntity pkg(String code, String branch, int order) => OnboardingPackageEntity(
   code: code, branchCode: branch, order: order,

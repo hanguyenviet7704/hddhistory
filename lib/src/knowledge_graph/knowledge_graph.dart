@@ -3,7 +3,7 @@ library;
 //* Single project import
 // Cũng tái xuất dart:async (Timer, unawaited) và flutter_bloc — import trực
 // tiếp ở đây sẽ bị báo thừa.
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';

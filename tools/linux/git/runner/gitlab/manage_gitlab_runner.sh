@@ -37,7 +37,7 @@ Options:
 Examples:
   ./${SCRIPT_NAME} list
   ./${SCRIPT_NAME} list --json
-  ./${SCRIPT_NAME} delete-one --name gitlab-runner-linux-eup-meup-meup-flutter --yes --strict
+  ./${SCRIPT_NAME} delete-one --name gitlab-runner-linux-eup-hddhistory-hddhistory-flutter --yes --strict
   ./${SCRIPT_NAME} delete-all --yes
   ./${SCRIPT_NAME} clean-cache --yes
 EOF_USAGE

@@ -1,10 +1,10 @@
 part of '../../home.dart';
 
 abstract class IHomeRepository {
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(
-    PageBreakRequest<SkillsetFilterRequest> request,
+  TaskEither<AppException, BasePageBreak<CategoryEntity>> getAllCategories(
+    PageBreakRequest<CategoryFilterRequest> request,
   );
-  TaskEither<AppException, SkillsetEntity> getSkillset(String id);
+  TaskEither<AppException, CategoryEntity> getCategory(String id);
   TaskEither<AppException, QuoteEntity> getRandomQuote();
   TaskEither<AppException, List<SuggestedCourseEntity>> getSuggestCourses(int limit);
   TaskEither<AppException, HomeBannerEntity> getHomeBanner();

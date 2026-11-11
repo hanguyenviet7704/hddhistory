@@ -26,7 +26,7 @@ version: 1.2.1+32   # tăng số sau dấu + mỗi lần upload
 ### 2. Kiểm tra code
 
 ```bash
-cd ~/Source/Meup/meup-flutter
+cd ~/Source/HDDhistory/hddhistory-flutter
 
 flutter analyze        # phải sạch, không có error
 flutter test           # chạy unit tests
@@ -45,7 +45,7 @@ dart run build_runner build --delete-conflicting-outputs
 ### Bước 1 — Build IPA
 
 ```bash
-cd ~/Source/Meup/meup-flutter
+cd ~/Source/HDDhistory/hddhistory-flutter
 ./tools/macos/build/build_ipa.sh prod
 ```
 
@@ -56,7 +56,7 @@ Script tự động:
 
 Output IPA nằm ở đường dẫn được in ra cuối log, ví dụ:
 ```
-build/ios/ipa/meup.ipa
+build/ios/ipa/hddhistory.ipa
 ```
 
 ### Bước 2 — Upload lên TestFlight (tự động)
@@ -70,7 +70,7 @@ Script dùng App Store Connect API key tại `.info/key/AuthKey_697CNSDLVW.p8` �
 Hoặc chỉ định file IPA cụ thể:
 
 ```bash
-./tools/macos/distribution/upload_appstore.sh --file "build/ios/ipa/meup.ipa" --distribution testflight
+./tools/macos/distribution/upload_appstore.sh --file "build/ios/ipa/hddhistory.ipa" --distribution testflight
 ```
 
 ### Bước 2 (thay thế) — Upload thủ công qua Xcode
@@ -93,7 +93,7 @@ Hoặc chỉ định file IPA cụ thể:
 ### Bước 1 — Build App Bundle
 
 ```bash
-cd ~/Source/Meup/meup-flutter
+cd ~/Source/HDDhistory/hddhistory-flutter
 ./tools/macos/build/build_appbundle.sh prod
 ```
 
@@ -143,7 +143,7 @@ Tăng số `+build` trong `pubspec.yaml` và build lại.
 ```bash
 # Setup PATH (mỗi terminal mới)
 export PATH="$HOME/development/flutter/bin:$PATH"
-cd ~/Source/Meup/meup-flutter
+cd ~/Source/HDDhistory/hddhistory-flutter
 
 # 1. Tăng version trong pubspec.yaml trước
 

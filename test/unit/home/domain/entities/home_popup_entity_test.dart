@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// The popup's client-side rules. Targeting and the "already tapped" check live on
 /// the server, so what is left here is the guard against raising a modal we cannot
 /// retire — which is where this deliberately differs from the banner.
-/// See `meup-api/plans/260811-home-popup/README.md`.
+/// See `hddhistory-api/plans/260811-home-popup/README.md`.
 void main() {
   group('HomePopupEntity.isVisible', () {
     const ready = HomePopupEntity(

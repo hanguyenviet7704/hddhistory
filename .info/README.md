@@ -1,6 +1,6 @@
 # .info Directory - Project Configuration
 
-Centralized configuration directory for the Meup Flutter project.
+Centralized configuration directory for the HDDhistory Flutter project.
 
 ## 📁 Directory Structure
 
@@ -34,15 +34,15 @@ Main application configuration:
 **Example:**
 ```json
 {
-  "appName": "Meup",
+  "appName": "HDDhistory",
   "version": "1.0.0",
   "buildNumber": "1",
   "android": {
-    "packageName": "com.eup.meup",
+    "packageName": "com.hddhistory.app",
     "compileSdk": 34
   },
   "ios": {
-    "bundleId": "com.eup.meup",
+    "bundleId": "com.hddhistory.app",
     "teamId": "YOUR_TEAM_ID"
   },
   "flavors": {

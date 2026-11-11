@@ -6,7 +6,7 @@ class TikTokService implements IAppEventService {
   late final MethodChannel _channel;
 
   TikTokService() {
-    _channel = const MethodChannel('com.eup.meup/tiktok');
+    _channel = const MethodChannel('com.hddhistory.app/tiktok');
   }
 
   /// Initialize TikTok SDK

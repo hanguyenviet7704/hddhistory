@@ -52,7 +52,7 @@ Examples:
   ./${SCRIPT_NAME} --project-path eup/meup/meup-flutter
 
   # Use an existing runner token
-  ./${SCRIPT_NAME} --runner-token glrt-xxxxx --name meup-macos-runner
+  ./${SCRIPT_NAME} --runner-token glrt-xxxxx --name hddhistory-macos-runner
 EOF
 }
 

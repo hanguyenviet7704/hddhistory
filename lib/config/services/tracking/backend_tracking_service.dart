@@ -1,6 +1,6 @@
 part of '../services.dart';
 
-/// Mirrors every fired tracking event to meup-api so the admin panel can read a
+/// Mirrors every fired tracking event to hddhistory-api so the admin panel can read a
 /// user's behaviour timeline (`POST /api/v1/analytics/events`).
 ///
 /// Sits beside [FirebaseAnalyticsService] inside the composite bound to

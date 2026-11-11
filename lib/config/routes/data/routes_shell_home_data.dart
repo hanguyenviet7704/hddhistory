@@ -42,6 +42,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
           BlocProvider.value(value: AppDI.injector.get<InAppSurveyCubit>()),
           BlocProvider.value(value: AppDI.injector.get<DailyWarmUpCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<SpacedReviewCubit>()),
           // Feeds Home's "Tiến độ học tập" grid, which moved here from the
           // Profile tab (design note 2026-09-04) along with the cubit it reads.
           BlocProvider.value(value: AppDI.injector.get<AchievenmentProgressCubit>()),
@@ -78,6 +79,42 @@ class DailyWarmUpRoute extends BaseTransitionRouteData with $DailyWarmUpRoute {
     return BlocProvider.value(
       value: AppDI.injector.get<DailyWarmUpCubit>(),
       child: const DailyWarmUpPage(),
+    );
+  }
+}
+
+/// The spaced-review pages render on the ROOT navigator so the full-screen
+/// player covers the bottom nav, and so inherit nothing from Home's providers.
+class SpacedReviewQuestionRoute extends BaseTransitionRouteData with $SpacedReviewQuestionRoute {
+  const SpacedReviewQuestionRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = AppConfig.instance.rootNaviKey;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return BlocProvider.value(
+      value: AppDI.injector.get<SpacedReviewCubit>(),
+      child: const SpacedReviewQuestionPage(),
+    );
+  }
+}
+
+class SpacedReviewCompletionRoute extends BaseTransitionRouteData with $SpacedReviewCompletionRoute {
+  const SpacedReviewCompletionRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = AppConfig.instance.rootNaviKey;
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return BlocProvider.value(
+      value: AppDI.injector.get<SpacedReviewCubit>(),
+      child: const SpacedReviewCompletionPage(),
     );
   }
 }

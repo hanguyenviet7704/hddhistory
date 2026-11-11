@@ -3,7 +3,7 @@
 // open, what the roadmap keeps polling for, and how the planned outline and the
 // written body reconcile into one node list.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 LessonKeypointEntity _keypoint(String title) => LessonKeypointEntity(
   title: title,

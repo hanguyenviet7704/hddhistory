@@ -1,7 +1,7 @@
 part of '../../coach.dart';
 
 /// The bottom of the sheet: white, hairline on top, and whatever the current
-/// step is answered with — drawn as `MeUp AI Coach.html` (v2) draws it.
+/// step is answered with — drawn as `HDDhistory AI Coach.html` (v2) draws it.
 ///
 /// Switches on [CoachUiKind] and nothing else. There is no step logic here and
 /// no branching on what the reader said — the server decided both, and a second

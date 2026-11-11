@@ -173,7 +173,7 @@ bash tools/macos/distribution/fastlane/android_fastlane.sh deploy --dry-run flav
 bash tools/macos/distribution/fastlane/android_fastlane.sh deploy track:production
 bash tools/macos/distribution/fastlane/android_fastlane.sh lane deploy flavor:prod track:production
 bash tools/macos/distribution/fastlane/android_fastlane.sh raw deploy flavor:prod track:production
-bash tools/macos/distribution/fastlane/android_fastlane.sh raw supply init --package_name com.eup.meup
+bash tools/macos/distribution/fastlane/android_fastlane.sh raw supply init --package_name com.hddhistory.app
 
 # iOS
 bash tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
@@ -182,7 +182,7 @@ bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:p
 bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:production upload_metadata:true
 bash tools/macos/distribution/fastlane/ios_fastlane.sh lane deploy flavor:prod track:production upload_metadata:true
 bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deploy flavor:prod track:production upload_metadata:true
-bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
+bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.hddhistory.app --metadata_path fastlane/metadata
 ```
 
 Notes:

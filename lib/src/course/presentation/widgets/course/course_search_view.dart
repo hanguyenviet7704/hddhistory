@@ -11,7 +11,7 @@ class CourseSearchView extends StatelessWidget {
       _showComingSoonSheet(context, course);
       return;
     }
-    // No skillset is in scope on the search/recent surfaces, so skill_id /
+    // No category is in scope on the search/recent surfaces, so skill_id /
     // skill_name are intentionally omitted here (spec).
     ExploreTracking.track(
       TrackingKey.exploreCourseClick,

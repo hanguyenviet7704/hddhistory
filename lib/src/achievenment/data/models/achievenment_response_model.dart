@@ -3,8 +3,8 @@ part of '../../achievenment.dart';
 @freezed
 abstract class AchievenmentResponseModel with _$AchievenmentResponseModel {
   const factory AchievenmentResponseModel({
-    @Default('') String skillsetId,
-    @Default(BaseMultiLanguage()) BaseMultiLanguage skillsetTitle,
+    @Default('') String categoryId,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage categoryTitle,
     @Default([]) List<CourseLevelProgressModel> courses,
   }) = _AchievenmentResponseModel;
 
@@ -13,8 +13,8 @@ abstract class AchievenmentResponseModel with _$AchievenmentResponseModel {
 
 extension AchievenmentResponseModelExtension on AchievenmentResponseModel {
   AchievenmentResponseEntity toEntity() => AchievenmentResponseEntity(
-    skillsetId: skillsetId,
-    skillsetTitle: skillsetTitle,
+    categoryId: categoryId,
+    categoryTitle: categoryTitle,
     courses: courses.map((model) => model.toEntity()).toList(),
   );
 }

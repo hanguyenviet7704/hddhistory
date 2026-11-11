@@ -23,7 +23,7 @@
 // (`CustomTransitionPage` carrying `name: state.name`, see
 // `BaseTransitionRouteData.buildPage`).
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// Records what each navigator observer reports, the way `BaseRouterObserver`
 /// forwards `previousRoute`'s name into `PageCubit.setCurrentRouteName`.

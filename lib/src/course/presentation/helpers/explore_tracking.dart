@@ -22,7 +22,7 @@ class ExploreTracking {
   /// Remaps a raw `allCourseSource` value to the `explore_scr_view` spec set
   /// {nav_explore, home_explore, my_course}: any `home_*` → home_explore,
   /// `my_courses_explore_more`/`my_course` → my_course, everything else →
-  /// nav_explore (covers `unknown`, `skillset_courses_back`, deep-links, …).
+  /// nav_explore (covers `unknown`, `category_courses_back`, deep-links, …).
   static String remapScrViewSource(String? source) {
     final value = source ?? '';
     if (value.startsWith('home')) return 'home_explore';
@@ -32,7 +32,7 @@ class ExploreTracking {
 
   /// `course_state` for [course]: coming → new → done → progress → not_start.
   /// [passed]/[total] override the course's own lesson numbers when a
-  /// progress-merged count is available (the skillset list returns passed=0).
+  /// progress-merged count is available (the category list returns passed=0).
   static String courseState(CourseEntity course, {int? passed, int? total}) {
     if (course.isComingSoonNow) return 'coming';
     if (course.isNewNow) return 'new';
@@ -43,10 +43,10 @@ class ExploreTracking {
     return 'not_start';
   }
 
-  /// {skill_id, skill_name} for [skillset].
-  static Map<String, dynamic> skillsetParams(SkillsetEntity skillset) => {
-    'skill_id': skillset.id,
-    'skill_name': skillset.trackingName,
+  /// {skill_id, skill_name} for [category].
+  static Map<String, dynamic> categoryParams(CategoryEntity category) => {
+    'skill_id': category.id,
+    'skill_name': category.trackingName,
   };
 
   /// {course_id, course_name} for [course].
@@ -57,10 +57,10 @@ class ExploreTracking {
 
   /// {section_type, section_id} for a strip on the Explore tab.
   ///
-  /// Replaces [skillsetParams] on `explore_course_click`. After the redesign
-  /// most tiles belong to no skillset — a collection is hand-picked across
-  /// them — so sending `skill_id` there would have reported an empty skillset
-  /// for nearly every tap on the tab, and the existing skillset breakdown would
+  /// Replaces [categoryParams] on `explore_course_click`. After the redesign
+  /// most tiles belong to no category — a collection is hand-picked across
+  /// them — so sending `skill_id` there would have reported an empty category
+  /// for nearly every tap on the tab, and the existing category breakdown would
   /// have gone quietly wrong rather than obviously missing.
   ///
   /// `section_id` is the collection's id, and empty for the computed strips:

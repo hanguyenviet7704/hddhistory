@@ -35,7 +35,7 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   void setUser(UserEntity user) => emit(state.copyWith(user: user));
 
   /// Self-heal for the Profile page: refetches when the last load FAILED
-  /// (e.g. it lost the race against skillsets inside HomeCubit's
+  /// (e.g. it lost the race against categories inside HomeCubit's
   /// Future.wait), and recovers a blank identity by seeding it from
   /// [UserCubit] — the auth-side source of truth, populated by setAuth and
   /// hydrated independently — because [loadUser] is id-parameterized and

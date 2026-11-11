@@ -1,10 +1,10 @@
 {
-    "appName": "Meup",
-    "appDisplayName": "Meup",
+    "appName": "HDDhistory",
+    "appDisplayName": "HDDhistory",
     "version": "1.0.0",
     "buildNumber": "1",
     "android": {
-        "packageName": "com.eup.meup",
+        "packageName": "com.hddhistory.app",
         "compileSdk": 34,
         "minSdk": 21,
         "targetSdk": 34,
@@ -13,7 +13,7 @@
         "keystoreKeyPath": ".info/android_keystore.properties"
     },
     "ios": {
-        "bundleId": "com.eup.meup",
+        "bundleId": "com.hddhistory.app",
         "teamId": "GK9UEKLL78",
         "issuerId": "69a6de94-e4e3-47e3-e053-5b8c7c11a4d1",
         "keyId": "697CNSDLVW",
@@ -24,35 +24,35 @@
     },
     "flavors": {
         "dev": {
-            "displayName": "Meup Dev",
+            "displayName": "HDDhistory Dev",
             "android": {
-                "packageName": "com.eup.meup.dev",
+                "packageName": "com.hddhistory.app.dev",
                 "applicationIdSuffix": ".dev"
             },
             "ios": {
-                "bundleId": "com.eup.meup.dev",
+                "bundleId": "com.hddhistory.app.dev",
                 "bundleIdSuffix": ".dev"
             }
         },
         "stg": {
-            "displayName": "Meup Staging",
+            "displayName": "HDDhistory Staging",
             "android": {
-                "packageName": "com.eup.meup.stg",
+                "packageName": "com.hddhistory.app.stg",
                 "applicationIdSuffix": ".stg"
             },
             "ios": {
-                "bundleId": "com.eup.meup.stg",
+                "bundleId": "com.hddhistory.app.stg",
                 "bundleIdSuffix": ".stg"
             }
         },
         "prod": {
-            "displayName": "Meup",
+            "displayName": "HDDhistory",
             "android": {
-                "packageName": "com.eup.meup",
+                "packageName": "com.hddhistory.app",
                 "applicationIdSuffix": ""
             },
             "ios": {
-                "bundleId": "com.eup.meup",
+                "bundleId": "com.hddhistory.app",
                 "bundleIdSuffix": ""
             }
         }

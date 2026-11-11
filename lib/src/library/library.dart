@@ -1,7 +1,7 @@
 library;
 
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Dart imports
 import 'dart:math' as math;

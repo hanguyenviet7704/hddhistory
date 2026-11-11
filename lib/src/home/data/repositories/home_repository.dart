@@ -2,23 +2,23 @@ part of '../../home.dart';
 
 @LazySingleton(as: IHomeRepository)
 class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository {
-  final SkillsetApi _skillsetApi;
+  final CategoryApi _categoryApi;
   final HomeLocalDataSource _localDataSource;
   final HomeApi _homeApi;
 
-  HomeRepository(this._skillsetApi, this._localDataSource, this._homeApi);
+  HomeRepository(this._categoryApi, this._localDataSource, this._homeApi);
 
   @override
-  TaskEither<AppException, SkillsetEntity> getSkillset(String id) {
-    return callApiWithTransform<SkillsetModel, SkillsetEntity>(
-      apiCall: () => _skillsetApi.getSkillset(id),
+  TaskEither<AppException, CategoryEntity> getCategory(String id) {
+    return callApiWithTransform<CategoryModel, CategoryEntity>(
+      apiCall: () => _categoryApi.getCategory(id),
       transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheSkillset(data ?? SkillsetModel()),
+      onSuccess: (data) async => await _localDataSource.cacheCategory(data ?? CategoryModel()),
       onError: () async {
-        final cachedModel = await _localDataSource.getCachedSkillset(id);
+        final cachedModel = await _localDataSource.getCachedCategory(id);
         return cachedModel?.toEntity();
       },
-      defaultValue: SkillsetEntity(),
+      defaultValue: CategoryEntity(),
     );
   }
 
@@ -102,20 +102,20 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
   }
 
   @override
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(
-    PageBreakRequest<SkillsetFilterRequest> request,
+  TaskEither<AppException, BasePageBreak<CategoryEntity>> getAllCategories(
+    PageBreakRequest<CategoryFilterRequest> request,
   ) {
-    return callApiPageBreak<SkillsetModel, SkillsetEntity>(
-      apiCall: () => _skillsetApi.getAllSkillsets(request),
+    return callApiPageBreak<CategoryModel, CategoryEntity>(
+      apiCall: () => _categoryApi.getAllCategories(request),
       transform: (model) => model.toEntity(),
       onSuccess: (pageData) async {
-        await _localDataSource.cacheSkillsets(pageData.items);
+        await _localDataSource.cacheCategories(pageData.items);
       },
       onError: () async {
         if (request.filter?.hasFilters ?? false) return null;
-        final cachedModels = await _localDataSource.getCachedSkillsets();
+        final cachedModels = await _localDataSource.getCachedCategories();
         if (cachedModels.isNotEmpty) {
-          return BasePageBreak<SkillsetEntity>(
+          return BasePageBreak<CategoryEntity>(
             currentPage: 1,
             totalPages: 1,
             itemsPerPage: cachedModels.length,

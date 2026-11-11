@@ -32,7 +32,7 @@ const roadmapExploreSources = {
   kRoadmapSourceResumeChipExplore,
   'course_selection',
   'my_courses',
-  'skillset_courses',
+  'category_courses',
   'search',
   'setting_badge',
 };
@@ -148,8 +148,8 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       parameters: backTrackingData == null
           ? null
           : {
-              'skill_id': backTrackingData.skillset.id,
-              'skill_name': backTrackingData.skillset.trackingName,
+              'skill_id': backTrackingData.category.id,
+              'skill_name': backTrackingData.category.trackingName,
               'course_id': backTrackingData.course.id,
               'course_name': backTrackingData.course.trackingName,
             },
@@ -198,13 +198,13 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       page.setCurrentRouteName(RouteNamed.community);
       return;
     }
-    // "View more" opened the full one-skillset grid (SkillsetCoursesRoute, a
+    // "View more" opened the full one-category grid (CategoryCoursesRoute, a
     // child of the roadmap route) — go back to that exact page.
-    if (source == 'skillset_courses') {
-      final skillsetId = AppDI.injector.get<HomeCubit>().state.currentSkillset.id;
-      if (skillsetId.isNotEmpty) {
-        SkillsetCoursesRoute(skillsetId: skillsetId).go(context);
-        context.read<PageCubit>().setCurrentRouteName(RouteNamed.skillsetCourses);
+    if (source == 'category_courses') {
+      final categoryId = AppDI.injector.get<HomeCubit>().state.currentCategory.id;
+      if (categoryId.isNotEmpty) {
+        CategoryCoursesRoute(categoryId: categoryId).go(context);
+        context.read<PageCubit>().setCurrentRouteName(RouteNamed.categoryCourses);
         return;
       }
     }
@@ -236,7 +236,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       return;
     }
     // Grid / search live on the Explore tab — return to it. It used to land on
-    // the current skillset's section; the tab has no skillset sections now, so
+    // the current category's section; the tab has no category sections now, so
     // the destination is simply the tab.
     final page = context.read<PageCubit>();
     AppDI.injector.get<CourseCubit>().setAllCourseSource('roadmap_back');
@@ -546,7 +546,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
                       // card / onboarding (→ back to the Home tab); reached
                       // "naturally" (Courses tab default / roleplay return,
                       // source 'nav_course') → no back arrow. Change-theme
-                      // button on the right. (The skillset course-switcher
+                      // button on the right. (The category course-switcher
                       // dropdown was removed per design.)
                       Stack(
                         alignment: Alignment.center,

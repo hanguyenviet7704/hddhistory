@@ -7,7 +7,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'data/datasources/local/profile_local_data_source.dart';

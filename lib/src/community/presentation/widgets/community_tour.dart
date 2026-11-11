@@ -1,6 +1,6 @@
 part of '../../community.dart';
 
-/// The first-run walk through the forum (design `MeUp Confession.html`,
+/// The first-run walk through the forum (design `HDDhistory Confession.html`,
 /// "Tour lần đầu (bắt buộc)", screens S-T1…S-T6).
 ///
 /// Six beats: a welcome card, then four things pointed at by name — the two

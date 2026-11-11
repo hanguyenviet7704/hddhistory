@@ -4,7 +4,7 @@ part of '../../../monetization.dart';
 /// scroll at the top right, as the design draws it.
 ///
 /// It used to be the right-hand cell of a three-cell header row, which pushed
-/// the `MeUp PREMIUM` lockup off the screen's centre line (it was centred in the
+/// the `HDDhistory PREMIUM` lockup off the screen's centre line (it was centred in the
 /// space LEFT OVER beside the button, not on the screen). Floating it takes the
 /// button out of the flow entirely, so the lockup centres on the page.
 ///
@@ -57,7 +57,7 @@ class _PaywallCloseButton extends StatelessWidget {
   }
 }
 
-/// The `MeUp · PREMIUM` lockup from the design: the wordmark in Poppins next to
+/// The `HDDhistory · PREMIUM` lockup from the design: the wordmark in Poppins next to
 /// a gradient badge. Was a prerendered PNG (`premiumButton`), which could never
 /// match the design's crisp text at every scale and baked the brand colours
 /// into a raster. Text + a gradient box IS the design, at any DPI.
@@ -77,7 +77,7 @@ class PremiumPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppText(
-            'MeUp',
+            'HDDhistory',
             style: TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w800,

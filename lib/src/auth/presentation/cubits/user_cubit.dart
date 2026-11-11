@@ -83,12 +83,12 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     unawaited(_persistAuthSession(auth));
   }
 
-  /// Records the skillset ids (`branch.skillsetId`) in the order the user
+  /// Records the category ids (`branch.categoryId`) in the order the user
   /// chose those branches during onboarding, so Home can show them in that
   /// same order instead of the backend's default sort. Called once, right
   /// when onboarding hands off to Home — see
-  /// [OnboardV2State.selectedSkillsetIds].
-  void setOnboardingSkillsetOrder(List<String> skillsetIds) => emit(state.copyWith(onboardingSkillsetOrder: skillsetIds));
+  /// [OnboardV2State.selectedCategoryIds].
+  void setOnboardingCategoryOrder(List<String> categoryIds) => emit(state.copyWith(onboardingCategoryOrder: categoryIds));
 
   void setIsAppEventConfigured(bool isAppEventConfigured) => emit(state.copyWith(isAppEventConfigured: isAppEventConfigured));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
@@ -241,7 +241,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     bool isUserPassOnboarding = state.isUserPassOnboarding;
     bool hasCompletedFirstTimeNotificationGate = state.hasCompletedFirstTimeNotificationGate;
     bool hasCompletedCourseEntryNotificationGate = state.hasCompletedCourseEntryNotificationGate;
-    List<String> onboardingSkillsetOrder = state.onboardingSkillsetOrder;
+    List<String> onboardingCategoryOrder = state.onboardingCategoryOrder;
     emit(UserState.initial());
     AppDI.injector.get<ProfileCubit>().reset();
     emit(
@@ -249,7 +249,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
         isUserPassOnboarding: isUserPassOnboarding,
         hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate,
         hasCompletedCourseEntryNotificationGate: hasCompletedCourseEntryNotificationGate,
-        onboardingSkillsetOrder: onboardingSkillsetOrder,
+        onboardingCategoryOrder: onboardingCategoryOrder,
       ),
     );
     // The mirror goes with the session it mirrors. Leaving it behind would let

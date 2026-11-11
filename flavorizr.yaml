@@ -58,17 +58,17 @@ app:
 flavors:
   dev:
     app:
-      name: "Meup Dev"
+      name: "HDDhistory Dev"
       icon: "assets/images/common/main_icon.png"
 
     android:
-      applicationId: "com.eup.meup.dev"
+      applicationId: "com.hddhistory.app.dev"
       firebase:
         config: "android/app/src/dev/google-services.json"
       resValues:
         app_name:
           type: string
-          value: "Meup Dev"
+          value: "HDDhistory Dev"
         environment:
           type: string
           value: "development"
@@ -84,9 +84,9 @@ flavors:
           value: "true"
 
     ios:
-      bundleId: "com.eup.meup.dev"
+      bundleId: "com.hddhistory.app.dev"
       buildSettings:
-        PRODUCT_BUNDLE_IDENTIFIER: "com.eup.meup.dev"
+        PRODUCT_BUNDLE_IDENTIFIER: "com.hddhistory.app.dev"
         # DEVELOPMENT_TEAM: S84XV86MSV
         # PROVISIONING_PROFILE_SPECIFIER: "Dev-ProvisioningProfile"
       firebase:
@@ -101,17 +101,17 @@ flavors:
 
   stg:
     app:
-      name: "Meup Staging"
+      name: "HDDhistory Staging"
       icon: "assets/images/common/main_icon.png"
 
     android:
-      applicationId: "com.eup.meup.stg"
+      applicationId: "com.hddhistory.app.stg"
       firebase:
         config: "android/app/src/stg/google-services.json"
       resValues:
         app_name:
           type: string
-          value: "Meup Staging"
+          value: "HDDhistory Staging"
         environment:
           type: string
           value: "staging"
@@ -127,9 +127,9 @@ flavors:
           value: "true"
 
     ios:
-      bundleId: "com.eup.meup.stg"
+      bundleId: "com.hddhistory.app.stg"
       buildSettings:
-        PRODUCT_BUNDLE_IDENTIFIER: "com.eup.meup.stg"
+        PRODUCT_BUNDLE_IDENTIFIER: "com.hddhistory.app.stg"
         # DEVELOPMENT_TEAM: S84XV86MSV
         # PROVISIONING_PROFILE_SPECIFIER: "Staging-ProvisioningProfile"
       firebase:
@@ -144,17 +144,17 @@ flavors:
 
   prod:
     app:
-      name: "Meup"
+      name: "HDDhistory"
       icon: "assets/images/common/main_icon.png"
 
     android:
-      applicationId: "com.eup.meup"
+      applicationId: "com.hddhistory.app"
       firebase:
         config: "android/app/src/prod/google-services.json"
       resValues:
         app_name:
           type: string
-          value: "Meup"
+          value: "HDDhistory"
         environment:
           type: string
           value: "production"
@@ -170,9 +170,9 @@ flavors:
           value: "false"
 
     ios:
-      bundleId: "com.eup.meup"
+      bundleId: "com.hddhistory.app"
       buildSettings:
-        PRODUCT_BUNDLE_IDENTIFIER: "com.eup.meup"
+        PRODUCT_BUNDLE_IDENTIFIER: "com.hddhistory.app"
         # DEVELOPMENT_TEAM: S84XV86MSV
         # PROVISIONING_PROFILE_SPECIFIER: "Production-ProvisioningProfile"
       firebase:

@@ -54,7 +54,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <!-- Add optional android:host to distinguish your app
                 from others in case of conflicting scheme name -->
-        <data android:scheme="meup"/>
+        <data android:scheme="hddhistory"/>
         <!-- <data android:scheme="sample" /> -->
       </intent-filter>
     </activity>
@@ -79,8 +79,8 @@
          so the small icon awesome_notifications sets in Dart does not apply.
          Without these two the SDK falls back to the launcher icon, which Android
          flattens into a white blob silhouette. Same mark + accent as every other
-         Meup notification surface. -->
-    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_meup"/>
+         HDDhistory notification surface. -->
+    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_hddhistory"/>
     <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/notificationAccent"/>
     <!-- Lesson "Listen mode" background audio (audio_service) -->
     <service android:name="com.ryanheise.audioservice.AudioService" android:foregroundServiceType="mediaPlayback" android:exported="true" tools:ignore="Instantiatable">
@@ -97,19 +97,19 @@
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
       </intent-filter>
-      <meta-data android:name="android.appwidget.provider" android:resource="@xml/meup_in_progress_home_widget"/>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/hddhistory_in_progress_home_widget"/>
     </receiver>
     <receiver android:name=".homewidget.StreakHomeWidgetReceiver" android:exported="true">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
       </intent-filter>
-      <meta-data android:name="android.appwidget.provider" android:resource="@xml/meup_streak_home_widget"/>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/hddhistory_streak_home_widget"/>
     </receiver>
     <receiver android:name=".homewidget.SuggestCourseHomeWidgetReceiver" android:exported="true">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
       </intent-filter>
-      <meta-data android:name="android.appwidget.provider" android:resource="@xml/meup_suggest_course_home_widget"/>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/hddhistory_suggest_course_home_widget"/>
     </receiver>
     <!-- Add TikTok App ID (replace YOUR_TIKTOK_APP_ID with your actual App ID) -->
     <meta-data android:name="com.tiktok.sdk.api.app_id" android:value="7532723286929621000"/>

@@ -48,7 +48,7 @@ Options:
 Examples:
   ./${SCRIPT_NAME} --repo owner/repo
   ./${SCRIPT_NAME} --repo owner/repo --labels self-hosted,linux,flutter
-  ./${SCRIPT_NAME} --repo owner/repo --runner-token xxx --name meup-linux-runner
+  ./${SCRIPT_NAME} --repo owner/repo --runner-token xxx --name hddhistory-linux-runner
 EOF_USAGE
 }
 

@@ -1,7 +1,7 @@
 part of '../../../lesson.dart';
 
 /// Terminal card of the unified keypoint swipe screen — the design's recap flip
-/// card (`_MeUp App` → `RECAP (flip cards)` / `_Keypoint Swipe Lab` → `c.isPeek`):
+/// card (`_HDDhistory App` → `RECAP (flip cards)` / `_Keypoint Swipe Lab` → `c.isPeek`):
 /// the keypoint restated as a white quote card that FLIPS on tap to a dark card
 /// carrying the recap text, with Continue at the bottom.
 ///
@@ -258,7 +258,7 @@ class _KeypointDoneCardState extends State<KeypointDoneCard> with SingleTickerPr
   }
 
   /// One slot under the card holding two things that swap as it turns (design
-  /// `_MeUp App` → RECAP): "Tap to see the recap" on the front, Share + Save on
+  /// `_HDDhistory App` → RECAP): "Tap to see the recap" on the front, Share + Save on
   /// the back.
   ///
   /// They cross-fade in place rather than stacking vertically, which is what

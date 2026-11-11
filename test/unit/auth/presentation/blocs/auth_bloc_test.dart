@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   group('resolveAuthSuccessRouteDestination', () {
@@ -142,10 +142,10 @@ void main() {
   group('isCourseEntryDataReady', () {
     final homeReady = HomeState.initial().copyWith(
       status: HomeStatus.success,
-      pageData: const BasePageBreak<SkillsetEntity>(
+      pageData: const BasePageBreak<CategoryEntity>(
         items: [
-          SkillsetEntity(
-            id: 'skillset-1',
+          CategoryEntity(
+            id: 'category-1',
             courses: [CourseEntity(id: 'course-1')],
           ),
         ],

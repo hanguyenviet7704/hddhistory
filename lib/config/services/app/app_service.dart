@@ -140,22 +140,22 @@ class AppService {
     // Mirrors the per-flavor Android applicationId (flavorizr.gradle.kts) so
     // dev/stg/prod each get their own notification channel.
     final androidPackageId = switch (F.appFlavor) {
-      Flavor.dev => 'com.eup.meup.dev',
-      Flavor.stg => 'com.eup.meup.stg',
-      Flavor.prod => 'com.eup.meup',
-      _ => 'com.eup.meup',
+      Flavor.dev => 'com.hddhistory.app.dev',
+      Flavor.stg => 'com.hddhistory.app.stg',
+      Flavor.prod => 'com.hddhistory.app',
+      _ => 'com.hddhistory.app',
     };
 
     final handler = await AudioService.init(
       builder: () => LessonAudioHandler(),
       config: AudioServiceConfig(
         androidNotificationChannelId: '$androidPackageId.audio',
-        androidNotificationChannelName: 'Meup Listen',
+        androidNotificationChannelName: 'HDDhistory Listen',
         // audio_service defaults this to 'mipmap/ic_launcher', and a launcher
         // icon used as a notification SMALL icon is flattened to a white
         // silhouette of the whole rounded square — a blob, not the logo. Point
-        // it at the same monochrome mark every other Meup notification uses.
-        androidNotificationIcon: 'drawable/ic_stat_meup',
+        // it at the same monochrome mark every other HDDhistory notification uses.
+        androidNotificationIcon: 'drawable/ic_stat_hddhistory',
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
       ),

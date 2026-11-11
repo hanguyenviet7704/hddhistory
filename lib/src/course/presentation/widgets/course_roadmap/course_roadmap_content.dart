@@ -100,8 +100,8 @@ class _CourseRoadmapContentState extends State<CourseRoadmapContent> {
       parameters: trackingData == null
           ? null
           : {
-              'skill_id': trackingData.skillset.id,
-              'skill_name': trackingData.skillset.trackingName,
+              'skill_id': trackingData.category.id,
+              'skill_name': trackingData.category.trackingName,
               'course_id': trackingData.course.id,
               'course_name': trackingData.course.trackingName,
             },

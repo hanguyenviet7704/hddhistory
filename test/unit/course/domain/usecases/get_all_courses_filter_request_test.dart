@@ -1,18 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   group('CourseFilterRequest', () {
-    test('removes empty ids and dedupes skillset ids while preserving order', () {
-      final request = CourseFilterRequest.bySkillsets(['', 'a', 'b', 'a', ' ', 'c']);
+    test('removes empty ids and dedupes category ids while preserving order', () {
+      final request = CourseFilterRequest.byCategories(['', 'a', 'b', 'a', ' ', 'c']);
 
-      expect(request.skillsetIds, ['a', 'b', 'c']);
+      expect(request.categoryIds, ['a', 'b', 'c']);
     });
 
-    test('serializes skillset ids and isAll for the courses API', () {
+    test('serializes category ids and isAll for the courses API', () {
       final request = PageBreakRequest<CourseFilterRequest>(
-        filter: CourseFilterRequest.bySkillsets(['skillset_1', 'skillset_2']),
+        filter: CourseFilterRequest.byCategories(['category_1', 'category_2']),
       );
 
       final json = request.toJson();
@@ -21,13 +21,13 @@ void main() {
       expect(
         json,
         containsPair(
-          'skillsetIds',
-          const ListParam<String>(['skillset_1', 'skillset_2'], ListFormat.multi),
+          'categoryIds',
+          const ListParam<String>(['category_1', 'category_2'], ListFormat.multi),
         ),
       );
-      expect(encodedQuery, contains('skillsetIds=skillset_1&skillsetIds=skillset_2'));
-      expect(encodedQuery, isNot(contains('skillsetIds%5B%5D')));
-      expect(encodedQuery, isNot(contains('skillset_1%2Cskillset_2')));
+      expect(encodedQuery, contains('categoryIds=category_1&categoryIds=category_2'));
+      expect(encodedQuery, isNot(contains('categoryIds%5B%5D')));
+      expect(encodedQuery, isNot(contains('category_1%2Ccategory_2')));
       expect(json, containsPair('isAll', true));
       expect(json, containsPair('page', 1));
       expect(json, containsPair('take', 10));

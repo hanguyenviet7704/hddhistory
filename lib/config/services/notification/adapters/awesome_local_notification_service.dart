@@ -1,6 +1,6 @@
 part of '../../services.dart';
 
-const String _notificationActionPortName = 'meup.notification.action.port';
+const String _notificationActionPortName = 'hddhistory.notification.action.port';
 
 ReceivePort? _notificationActionReceivePort;
 AwesomeLocalNotificationService? _notificationActionService;
@@ -313,10 +313,10 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
   Future<void> _initialize() async {
     LogDev.data('[AwesomeLocalNotificationService] initialize');
     await _gateway.initialize(
-      // Monochrome Meup mark (drawable/ic_stat_meup) as the notification small
+      // Monochrome HDDhistory mark (drawable/ic_stat_hddhistory) as the notification small
       // icon — without it awesome_notifications falls back to the full-colour
       // launcher icon, which Android renders as an ugly grey placeholder square.
-      'resource://drawable/ic_stat_meup',
+      'resource://drawable/ic_stat_hddhistory',
       <NotificationChannel>[
         NotificationChannel(
           channelGroupKey: _channelConfig.channelGroupKey,

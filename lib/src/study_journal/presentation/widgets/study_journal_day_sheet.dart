@@ -129,7 +129,7 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
   /// Course row → that course's roadmap.
   ///
   /// The journal only knows the course id, so the entity is fetched before
-  /// navigating: the roadmap is driven by HomeCubit's selected skillset+course
+  /// navigating: the roadmap is driven by HomeCubit's selected category+course
   /// (same contract as Library's own open — see `library_page._openCourse`),
   /// and a half-filled selection would land the user on somebody else's map.
   Future<void> _openCourse(StudyJournalCourseEntity course) async {
@@ -144,10 +144,10 @@ class _StudyJournalDaySheetState extends State<StudyJournalDaySheet> {
       // Close the sheet FIRST: the roadmap is a shell branch, and pushing the
       // tab change under an open modal leaves the sheet floating over it.
       navigator.pop();
-      final resolved = entity.withSkillset;
+      final resolved = entity.withCategory;
       AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kRoadmapSourceStudyJournal);
       AppDI.injector.get<HomeCubit>()
-        ..selectSkillset(resolved.skillset)
+        ..selectCategory(resolved.category)
         ..selectCourse(resolved);
       CourseRoadmapRoute().go(shellContext);
       // `.go()` into an already-built branch fires no didPush, so the observer

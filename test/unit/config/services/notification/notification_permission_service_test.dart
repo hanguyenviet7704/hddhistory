@@ -1,7 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/services.dart';
+import 'package:hddhistory/config/services/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart' as permission_platform;
 

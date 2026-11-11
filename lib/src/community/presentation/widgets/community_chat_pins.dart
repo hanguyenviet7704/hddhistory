@@ -442,7 +442,7 @@ class _GuideRuleBlock extends StatelessWidget {
 /// action people saw in a mock reads as broken.
 /// Menu của một tin nhắn — NEO DƯỚI bong bóng, không phải sheet từ đáy.
 ///
-/// Thiết kế (`MeUp Confession`, khối `m.menuOpen`) vẽ một thẻ trắng rộng 206
+/// Thiết kế (`HDDhistory Confession`, khối `m.menuOpen`) vẽ một thẻ trắng rộng 206
 /// treo ngay dưới bong bóng, lệch trái 41 — đúng bề ngang avatar (30) cộng
 /// khoảng cách (9). Bản trước dùng `showModalBottomSheet`, nên thứ hiện ra nằm
 /// tận đáy màn hình: người đọc vừa chạm vào một dòng cụ thể thì câu trả lời cho

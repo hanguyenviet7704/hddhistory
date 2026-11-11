@@ -1,7 +1,7 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 class _FakeDeviceInfoService implements IDeviceInfoService {
   @override

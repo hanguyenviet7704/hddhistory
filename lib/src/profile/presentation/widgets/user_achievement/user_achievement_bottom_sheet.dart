@@ -4,21 +4,21 @@ class UserAchievementBottomSheet extends StatefulWidget {
   const UserAchievementBottomSheet({
     super.key,
     required this.courseId,
-    required this.skillsetId,
-    required this.skillsetName,
+    required this.categoryId,
+    required this.categoryName,
     this.initialLevel,
   });
 
   final String courseId;
-  final String skillsetId;
-  final String skillsetName;
+  final String categoryId;
+  final String categoryName;
   final CourseLevel? initialLevel;
 
   static Future<void> show(
     BuildContext context, {
     required String courseId,
-    required String skillsetId,
-    required String skillsetName,
+    required String categoryId,
+    required String categoryName,
     CourseLevel? initialLevel,
   }) {
     return showModalBottomSheet(
@@ -37,8 +37,8 @@ class UserAchievementBottomSheet extends StatefulWidget {
         child: UserAchievementBottomSheet(
           courseId: courseId,
           initialLevel: initialLevel,
-          skillsetId: skillsetId,
-          skillsetName: skillsetName,
+          categoryId: categoryId,
+          categoryName: categoryName,
         ),
       ),
     );
@@ -80,8 +80,8 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
 
   CourseTrackingData _buildTrackingData(String courseName) {
     return CourseTrackingData.fromTrackingValues(
-      skillsetId: widget.skillsetId,
-      skillsetName: widget.skillsetName,
+      categoryId: widget.categoryId,
+      categoryName: widget.categoryName,
       courseId: widget.courseId,
       courseName: courseName,
     );

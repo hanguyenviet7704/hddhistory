@@ -41,12 +41,14 @@ mixin RoutePath {
   static const String home = '/';
   static const String homeLearningStreak = 'learning-streak';
   static const String dailyWarmUp = 'daily-warm-up';
+  static const String spacedReviewQuestion = 'spaced-review';
+  static const String spacedReviewCompletion = 'spaced-review-completion';
 
   //* Course
   static const String course = '/course';
   static const String courseRoadmap = '/course-roadmap';
   static const String changeCourse = 'change-course';
-  static const String skillsetCourses = 'skillset-courses/:skillsetId';
+  static const String categoryCourses = 'category-courses/:categoryId';
   static const String lessonList = 'lesson-list';
   static const String lessonExplainPopup = 'lesson-explain-popup';
   static const String courseLessonEmptyNotiPopup = 'course-lesson-empty-noti-popup';
@@ -171,12 +173,14 @@ mixin RouteNamed {
   static const String home = 'Home';
   static const String homeLearningStreak = 'Home Learning Streak';
   static const String dailyWarmUp = 'Daily Warm Up';
+  static const String spacedReviewQuestion = 'Spaced Review Question';
+  static const String spacedReviewCompletion = 'Spaced Review Completion';
 
   //* Course
   static const String course = 'Course';
   static const String courseRoadmap = 'Course Roadmap';
   static const String changeCourse = 'Change Course';
-  static const String skillsetCourses = 'Skillset Courses';
+  static const String categoryCourses = 'Category Courses';
   static const String lessonList = 'Lesson List';
   static const String lessonExplainPopup = 'Lesson Explain Popup';
   static const String roadmapDetailPopup = 'Roadmap Detail Popup';

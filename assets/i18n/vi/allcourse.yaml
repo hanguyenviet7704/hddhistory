@@ -7,7 +7,7 @@ viewMore: Xem thêm
 exploreMoreCourses: Khám phá thêm khoá học
 changeCourseTitle: Đổi khoá học
 changeCourseTabAll: Tất cả
-allcourseExploreSkillsets: Khóa học
+allcourseExploreCategories: Chủ đề
 allcourseMyCourse: Khóa học của tôi
 emptyState: Bắt đầu một khoá học để thêm vào
 errorOccurred: Đã xảy ra lỗi
@@ -35,6 +35,8 @@ searchTypeToSearch: Nhập từ khoá để tìm kiếm
 exploreWeeklyEyebrow: Tuần qua
 exploreWeeklyTitle: Được học nhiều nhất
 exploreTopicsTitle: Tìm kiếm theo chủ đề
+exploreTimelineTitle: Dòng thời gian
+exploreTimelineCourseCount(param=count): ${count} khoá
 exploreBecauseYouTitle: Vì bạn đã học
 exploreLearnerCount(param=count): ${count} người học
 exploreRetry: Tải lại

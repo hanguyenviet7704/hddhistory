@@ -57,7 +57,7 @@ Branch naming is enforced by `quality:merge-request-policy` for merge requests:
 - `develop`
 - `main`
 
-`TICKET` accepts uppercase project keys such as `MEUP` and `KB`.
+`TICKET` accepts uppercase project keys such as `HDDHISTORY` and `KB`.
 
 ## 4. Bootstrap and Secret Injection
 Bootstrap script:

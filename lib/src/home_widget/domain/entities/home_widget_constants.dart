@@ -60,16 +60,16 @@ enum HomeWidgetSyncStatus {
 }
 
 class HomeWidgetStorageKeys {
-  static const inProgressPayload = 'meup_home_widget_in_progress_v1';
-  static const streakPayload = 'meup_home_widget_streak_v1';
-  static const suggestCoursePayload = 'meup_home_widget_suggest_course_v1';
-  static const inProgressImage = 'meup_home_widget_in_progress_image';
-  static const suggestCourseImage = 'meup_home_widget_suggest_course_image';
-  static const bookAsset = 'meup_home_widget_book_asset';
-  static const certificateAsset = 'meup_home_widget_certificate_asset';
-  static const flameAsset = 'meup_home_widget_flame_asset';
-  static const suggestionDate = 'meup_home_widget_suggest_course_date';
-  static const localeCode = 'meup_home_widget_locale_code';
+  static const inProgressPayload = 'hddhistory_home_widget_in_progress_v1';
+  static const streakPayload = 'hddhistory_home_widget_streak_v1';
+  static const suggestCoursePayload = 'hddhistory_home_widget_suggest_course_v1';
+  static const inProgressImage = 'hddhistory_home_widget_in_progress_image';
+  static const suggestCourseImage = 'hddhistory_home_widget_suggest_course_image';
+  static const bookAsset = 'hddhistory_home_widget_book_asset';
+  static const certificateAsset = 'hddhistory_home_widget_certificate_asset';
+  static const flameAsset = 'hddhistory_home_widget_flame_asset';
+  static const suggestionDate = 'hddhistory_home_widget_suggest_course_date';
+  static const localeCode = 'hddhistory_home_widget_locale_code';
 
   static const allKeys = [
     inProgressPayload,
@@ -86,12 +86,12 @@ class HomeWidgetStorageKeys {
 }
 
 class HomeWidgetNativeNames {
-  static const inProgressIOSName = 'MeupInProgressWidget';
-  static const streakIOSName = 'MeupStreakWidget';
-  static const suggestCourseIOSName = 'MeupSuggestCourseWidget';
-  static const inProgressAndroidName = 'com.eup.meup.homewidget.InProgressHomeWidgetReceiver';
-  static const streakAndroidName = 'com.eup.meup.homewidget.StreakHomeWidgetReceiver';
-  static const suggestCourseAndroidName = 'com.eup.meup.homewidget.SuggestCourseHomeWidgetReceiver';
+  static const inProgressIOSName = 'HDDhistoryInProgressWidget';
+  static const streakIOSName = 'HDDhistoryStreakWidget';
+  static const suggestCourseIOSName = 'HDDhistorySuggestCourseWidget';
+  static const inProgressAndroidName = 'com.hddhistory.app.homewidget.InProgressHomeWidgetReceiver';
+  static const streakAndroidName = 'com.hddhistory.app.homewidget.StreakHomeWidgetReceiver';
+  static const suggestCourseAndroidName = 'com.hddhistory.app.homewidget.SuggestCourseHomeWidgetReceiver';
 
   static String iOSName(HomeWidgetType type) {
     return switch (type) {
@@ -111,9 +111,9 @@ class HomeWidgetNativeNames {
 }
 
 class HomeWidgetAppGroups {
-  static const dev = 'group.com.eup.meup.dev.homewidget';
-  static const stg = 'group.com.eup.meup.stg.homewidget';
-  static const prod = 'group.com.eup.meup.homewidget';
+  static const dev = 'group.com.hddhistory.app.dev.homewidget';
+  static const stg = 'group.com.hddhistory.app.stg.homewidget';
+  static const prod = 'group.com.hddhistory.app.homewidget';
 
   static String current() {
     return switch (F.appFlavor) {

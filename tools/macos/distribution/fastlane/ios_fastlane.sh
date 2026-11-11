@@ -36,7 +36,7 @@ Commands:
       Run any lane explicitly (example: lane deploy flavor:prod track:production)
   raw <fastlane args...>
       True passthrough. Everything after 'raw' is forwarded unchanged.
-      Examples: raw lanes | raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata | --dry-run raw deliver --help
+      Examples: raw lanes | raw deliver download_metadata --app_identifier com.hddhistory.app --metadata_path fastlane/metadata | --dry-run raw deliver --help
   Lane aliases (shortcut for 'lane <name>'):
     test build_ios build_ipa beta beta_ipa deploy deploy_alpha deploy_beta deploy_production
 Argument style:
@@ -47,7 +47,7 @@ Bundler behavior:
 Quick examples:
   tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:prod track:production
-  tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
+  tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.hddhistory.app --metadata_path fastlane/metadata
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy track:internal                           # flavor default: prod
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:beta
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy_production                               # flavor default: prod
@@ -59,7 +59,7 @@ Quick examples:
 Deploy mapping to raw:
   deploy ... == lane deploy ... == raw deploy ...
   deploy_alpha ... == raw deploy_alpha ... | deploy_beta ... == raw deploy_beta ... | deploy_production ... == raw deploy_production ...
-  raw deliver download_screenshots --app_identifier com.eup.meup --screenshots_path fastlane/screenshots | --dry-run raw deliver --help | -- raw --version
+  raw deliver download_screenshots --app_identifier com.hddhistory.app --screenshots_path fastlane/screenshots | --dry-run raw deliver --help | -- raw --version
 Execution mapping (runs inside @ios/):
   <alias> ...           -> (cd ios && bundle exec fastlane <alias> ...)
   lane <name> ...       -> (cd ios && bundle exec fastlane <name> ...)

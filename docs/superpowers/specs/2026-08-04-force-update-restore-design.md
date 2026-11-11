@@ -1,12 +1,12 @@
 # Khôi phục Force Update — Design
 
 **Ngày:** 2026-08-04
-**Repo:** meup-flutter
+**Repo:** hddhistory-flutter
 **Trạng thái:** chờ review
 
 ## Vấn đề
 
-Commit `68842531` (2026-07-28, `chore/MEUP: accumulated app fixes and upkeep`) đã xoá toàn bộ cơ chế force update, đồng thời bump version `1.4.2+80` → `1.4.3+83` trong cùng commit đó. Hệ quả:
+Commit `68842531` (2026-07-28, `chore: accumulated app fixes and upkeep`) đã xoá toàn bộ cơ chế force update, đồng thời bump version `1.4.2+80` → `1.4.3+83` trong cùng commit đó. Hệ quả:
 
 - Bản **≤ 1.4.2** vẫn mang code gate trong app nên vẫn bị chặn thật.
 - Bản **1.4.3 / 1.4.4** không còn gate. Cờ `forceUserUpdate` trong Remote Config bị phớt lờ hoàn toàn — bật `true` cũng không chặn được ai.
@@ -111,7 +111,7 @@ Ba key mới, đặt ở `common.yaml` vì dialog chặn toàn app và không th
 
 | Key | en | vi |
 |---|---|---|
-| `forceUpdateTitle` | We're getting better! | MeUp vừa tốt hơn rồi! |
+| `forceUpdateTitle` | We're getting better! | HDDhistory vừa tốt hơn rồi! |
 | `forceUpdateMessage` | Update to unlock new features and a smoother experience. | Cập nhật để dùng tính năng mới và trải nghiệm mượt hơn. |
 | `forceUpdateAction` | Go to Update | Cập nhật ngay |
 

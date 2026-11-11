@@ -32,8 +32,8 @@
 - Aim to cover new logic paths; run `flutter test` before PR; cover success/error branches.
 
 ## Commit & Pull Request Guidelines
-- Branches: `feature/MEUP-123-description` (or `fix/…`, `chore/…`).
-- Commits: `type/MEUP-123: summary` (e.g., `feature/MEUP-123: add artwork cache`).
+- Branches: `feature/123-description` (or `fix/…`, `chore/…`).
+- Commits: `type: summary` (e.g., `feat: add artwork cache`).
 - PR checklist: summary + ticket; UI screenshots/GIFs; `flutter analyze`, `flutter test`; note if `build_runner`/`slang` ran; flag flavor/env touched.
 
 ## Flavor & Environment Tips

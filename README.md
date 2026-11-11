@@ -1,6 +1,6 @@
-# Meup Flutter Application
+# HDDhistory Flutter Application
 
-Meup is a multi-platform Flutter product for interactive language learning.
+HDDhistory is a multi-platform Flutter product for interactive language learning.
 The app uses Clean Architecture with feature modules under `lib/src`, `TaskEither<AppException, T>` use cases, and cross-platform build/localization tooling.
 
 ## Quick Start

@@ -19,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 //* Import all dependencies here
-import 'package:meup/core/core.dart';
+import 'package:hddhistory/core/core.dart';
 
 //* Import all local files here
 import '../../config/di/di.dart';

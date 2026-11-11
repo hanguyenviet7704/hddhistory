@@ -9,7 +9,7 @@ part of '../../onboard_v2.dart';
 /// S10 (kết quả) không kết thúc onboarding — nó ghi khoá đã chọn lên
 /// [OnboardV2Cubit] (`chosenCourse`, null = xem kho khoá học) rồi bàn giao sang
 /// đây; "Start Explore" bên dưới mới đánh dấu hoàn tất onboarding, ghi thứ tự
-/// skillset theo nhánh đã chọn ([OnboardV2State.selectedSkillsetIds]) và điều
+/// chủ đề theo nhánh đã chọn ([OnboardV2State.selectedCategoryIds]) và điều
 /// hướng thẳng về Home.
 class OnboardV2PickThemePage extends StatefulWidget {
   const OnboardV2PickThemePage({super.key});
@@ -111,7 +111,7 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
 
   /// Performs the handoff that used to fire directly from P8's CTA. The
   /// flow now always ends at Home (S10's chosen course/browse-catalog
-  /// choice already drives Home's ordering via `selectedSkillsetIds` — there
+  /// choice already drives Home's ordering via `selectedCategoryIds` — there
   /// is no separate course/roadmap destination to resolve here). The study
   /// theme itself needs no extra work here — [StudyThemeCubit.selectPreset]
   /// already applied (and, for a persistable preset, persisted) it the
@@ -160,7 +160,7 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
       // isOnboarded is now persisted (awaited + retried) in _startExplore
       // before reaching here — see OnboardV2Cubit.markUserOnboarded — so there's
       // no fire-and-forget call at this point anymore.
-      userCubit.setOnboardingSkillsetOrder(onboardCubit.state.selectedSkillsetIds);
+      userCubit.setOnboardingCategoryOrder(onboardCubit.state.selectedCategoryIds);
       final chosenCourse = onboardCubit.state.chosenCourse;
       OnboardV2Tracking.track(TrackingKey.onboardV2Complete, parameters: {'chosen_course_id': chosenCourse?.id});
       if (chosenCourse != null && chosenCourse.id.isNotEmpty) {
@@ -186,7 +186,7 @@ class _OnboardV2PickThemePageState extends State<OnboardV2PickThemePage> {
   /// Home như cũ.
   ///
   /// Đi qua `selectCourseFromCourseId` chứ không `selectCourse`: khoá gợi ý có
-  /// thể không nằm trong danh mục skillset đã tải, và chỉ hàm này mới có nhánh
+  /// thể không nằm trong danh mục chủ đề đã tải, và chỉ hàm này mới có nhánh
   /// dự phòng tự nạp lộ trình theo id. Các cubit lấy thẳng từ DI vì cây
   /// provider của route onboarding không có chúng.
   void _openChosenCourseRoadmap(CourseEntity course) {

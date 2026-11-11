@@ -29,7 +29,7 @@ abstract class OnboardingPathItemEntity with _$OnboardingPathItemEntity {
 
 /// A symptom nested under a path item (screen 5) — `key` must equal an
 /// `OnboardingSymptom` enum `trackingId` (see
-/// `meup-api/plans/260721-onboard-v2-config-driven/contract.md`).
+/// `hddhistory-api/plans/260721-onboard-v2-config-driven/contract.md`).
 @freezed
 abstract class OnboardingPathSymptomEntity with _$OnboardingPathSymptomEntity {
   const factory OnboardingPathSymptomEntity({

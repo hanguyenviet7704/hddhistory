@@ -1,11 +1,11 @@
-# Meup Project Overview & Product Development Requirements
+# HDDhistory Project Overview & Product Development Requirements
 
 **Last Updated:** 2026-06-11
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, Home in-app survey feedback, home screen widgets, daily streak continuity, and progress visibility.
+HDDhistory is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, Home in-app survey feedback, home screen widgets, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -40,7 +40,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `course` | Course listing, roadmap, course lesson views |
 | `data_collect` | Onboarding survey and profile intake steps |
 | `feedback` | User feedback submission/view |
-| `home` | Skillset and dashboard entry |
+| `home` | Category and dashboard entry |
 | `home_widget` | Native widget payload sync, image caching, tap deeplinks, and logout clearing |
 | `in_app_survey` | Home in-app survey config, entry, modal flow, response submit, and tracking |
 | `learning_streak` | Home streak popup and completion streak success overlays |
@@ -143,7 +143,7 @@ Notes:
 - Keep suggested-course payload stable for the local day.
 - Save course images best-effort; native widgets fall back to bundled art when shared image paths are missing.
 - Clear display payloads best-effort on logout/account reset.
-- Route widget taps through sanitized `meup://` / `https://meup.training` deeplinks to Home or Course Roadmap.
+- Route widget taps through sanitized `hddhistory://` / `https://meup.training` deeplinks to Home or Course Roadmap.
 
 ## 5. Non-Functional Requirements
 1. Architecture consistency

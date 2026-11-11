@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:lottie/lottie.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 import '../../../support/test_di.dart';
 import 'daily_warm_up_test_fakes.dart';

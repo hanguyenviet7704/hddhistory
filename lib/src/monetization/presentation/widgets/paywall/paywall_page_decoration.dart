@@ -86,7 +86,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
     final showComparison = context.read<IapCubit>().resolvedBodyVariant == PaywallBodyVariant.comparison && comparisonRows.isNotEmpty;
 
     // Design `6b · Premium`: the close button does NOT sit in a header row with
-    // the wordmark — it floats over the scroll, top-right, so the `MeUp PREMIUM`
+    // the wordmark — it floats over the scroll, top-right, so the `HDDhistory PREMIUM`
     // lockup is centred on the screen rather than on the space left beside it.
     return Stack(
       children: [
@@ -216,7 +216,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             const _PaywallCredibilityBlock(),
             6.verticalSpace,
           ],
-          // "What people say about MeUp" — the carousel below is unlabelled
+          // "What people say about HDDhistory" — the carousel below is unlabelled
           // otherwise, and the design gives the section its own heading.
           32.verticalSpace,
           AppText(

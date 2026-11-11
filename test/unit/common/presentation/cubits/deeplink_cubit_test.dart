@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 class _FakeDeepLinkService implements IDeepLinkService {
   final StreamController<Uri> _controller = StreamController<Uri>.broadcast();
@@ -46,7 +46,7 @@ void main() {
 
   group('resolveDeeplinkRoutePath', () {
     test('maps host-only home deeplinks to the home route', () {
-      expect(resolveDeeplinkRoutePath(Uri.parse('meup://home')), RoutePath.home);
+      expect(resolveDeeplinkRoutePath(Uri.parse('hddhistory://home')), RoutePath.home);
     });
 
     test('keeps explicit app-link paths intact', () {
@@ -56,7 +56,7 @@ void main() {
     test('maps widget host-style course roadmap links to the route path', () {
       expect(
         resolveDeeplinkRoutePath(
-          Uri.parse('meup://course-roadmap?courseId=course-1&source=home_widget&widgetType=in_progress_course'),
+          Uri.parse('hddhistory://course-roadmap?courseId=course-1&source=home_widget&widgetType=in_progress_course'),
         ),
         RoutePath.courseRoadmap,
       );
@@ -66,7 +66,7 @@ void main() {
   group('HomeWidgetDeeplinkTarget', () {
     test('parses ready course widget links as course roadmap targets', () {
       final target = HomeWidgetDeeplinkTarget.tryParse(
-        Uri.parse('meup://course-roadmap?courseId=course-1&source=home_widget&widgetType=suggest_course'),
+        Uri.parse('hddhistory://course-roadmap?courseId=course-1&source=home_widget&widgetType=suggest_course'),
       );
 
       expect(target?.routePath, RoutePath.courseRoadmap);
@@ -87,10 +87,10 @@ void main() {
 
     test('parses empty and exhausted widget links as home targets', () {
       final emptyTarget = HomeWidgetDeeplinkTarget.tryParse(
-        Uri.parse('meup://home?source=home_widget&widgetType=in_progress_course&state=empty'),
+        Uri.parse('hddhistory://home?source=home_widget&widgetType=in_progress_course&state=empty'),
       );
       final exhaustedTarget = HomeWidgetDeeplinkTarget.tryParse(
-        Uri.parse('meup://home?source=home_widget&widgetType=suggest_course&state=exhausted'),
+        Uri.parse('hddhistory://home?source=home_widget&widgetType=suggest_course&state=exhausted'),
       );
 
       expect(emptyTarget?.routePath, RoutePath.home);
@@ -100,9 +100,9 @@ void main() {
     });
 
     test('rejects non-widget and unsupported widget links', () {
-      expect(HomeWidgetDeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?widgetType=suggest_course')), isNull);
+      expect(HomeWidgetDeeplinkTarget.tryParse(Uri.parse('hddhistory://course-roadmap?widgetType=suggest_course')), isNull);
       expect(
-        HomeWidgetDeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?source=home_widget&widgetType=unknown')),
+        HomeWidgetDeeplinkTarget.tryParse(Uri.parse('hddhistory://course-roadmap?source=home_widget&widgetType=unknown')),
         isNull,
       );
     });
@@ -133,22 +133,22 @@ void main() {
       expect(utmOnly?.trackingParams, containsPair('campaign', 'tet-2027'));
     });
 
-    test('parses the in-app meup://open/<key> form', () {
-      final target = DeeplinkTarget.tryParse(Uri.parse('meup://open/course-roadmap?courseId=c1'));
+    test('parses the in-app hddhistory://open/<key> form', () {
+      final target = DeeplinkTarget.tryParse(Uri.parse('hddhistory://open/course-roadmap?courseId=c1'));
 
       expect(target?.destination, DeeplinkDestination.courseRoadmap);
       expect(target?.params['courseId'], 'c1');
     });
 
     test('keeps the legacy prefix-less forms working', () {
-      expect(DeeplinkTarget.tryParse(Uri.parse('meup://paywall'))?.destination, DeeplinkDestination.paywall);
-      expect(DeeplinkTarget.tryParse(Uri.parse('meup://'))?.destination, DeeplinkDestination.home);
+      expect(DeeplinkTarget.tryParse(Uri.parse('hddhistory://paywall'))?.destination, DeeplinkDestination.paywall);
+      expect(DeeplinkTarget.tryParse(Uri.parse('hddhistory://'))?.destination, DeeplinkDestination.home);
       expect(DeeplinkTarget.tryParse(Uri.parse('https://meup.training/'))?.destination, DeeplinkDestination.home);
-      expect(DeeplinkTarget.tryParse(Uri.parse('meup://open'))?.destination, DeeplinkDestination.home);
+      expect(DeeplinkTarget.tryParse(Uri.parse('hddhistory://open'))?.destination, DeeplinkDestination.home);
     });
 
     test('reports an unknown key instead of dropping it', () {
-      final target = DeeplinkTarget.tryParse(Uri.parse('meup://open/does-not-exist'));
+      final target = DeeplinkTarget.tryParse(Uri.parse('hddhistory://open/does-not-exist'));
 
       expect(target?.destination, isNull);
       expect(target?.rawKey, 'does-not-exist');
@@ -156,11 +156,11 @@ void main() {
 
     test('leaves home-widget and live-activity links to their own handlers', () {
       expect(
-        DeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?source=home_widget&widgetType=suggest_course')),
+        DeeplinkTarget.tryParse(Uri.parse('hddhistory://course-roadmap?source=home_widget&widgetType=suggest_course')),
         isNull,
       );
       expect(
-        DeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?courseId=c1&source=live_activity')),
+        DeeplinkTarget.tryParse(Uri.parse('hddhistory://course-roadmap?courseId=c1&source=live_activity')),
         isNull,
       );
     });

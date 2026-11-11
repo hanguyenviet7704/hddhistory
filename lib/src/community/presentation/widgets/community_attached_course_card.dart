@@ -60,10 +60,10 @@ class _CommunityAttachedCourseCardState extends State<CommunityAttachedCourseCar
     // Read through the injector rather than context.read: this card renders
     // inside community screens, which do not provide these cubits.
     //
-    // Select BY ID, not via `course.skillset`: the course-detail endpoint's
-    // entity carries a default-empty skillset, so `selectSkillset` no-oped
+    // Select BY ID, not via `course.category`: the course-detail endpoint's
+    // entity carries a default-empty category, so `selectCategory` no-oped
     // silently and the roadmap could open on whatever course was selected
-    // before. `selectCourseFromCourseId` locates the skillset itself and
+    // before. `selectCourseFromCourseId` locates the category itself and
     // falls back to loading the roadmap outside the catalog.
     LogDev.data('[Community] open attached course: ${course.id}');
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(kRoadmapSourceCommunityPost);

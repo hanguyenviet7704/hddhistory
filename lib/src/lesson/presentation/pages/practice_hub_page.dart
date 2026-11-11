@@ -1,7 +1,7 @@
 part of '../../lesson.dart';
 
 /// Practice hub — "pick how you want to practise" (design "3 · Learning" →
-/// Practice, `_MeUp App` pin `practicehub`). Reached from the lesson-complete
+/// Practice, `_HDDhistory App` pin `practicehub`). Reached from the lesson-complete
 /// screen's "Practice now".
 ///
 /// Three modes, exactly the design's list: Quiz is live and opens the keypoint's

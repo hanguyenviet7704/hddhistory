@@ -1,7 +1,7 @@
-# Meup - Project Context
+# HDDhistory - Project Context
 
 ## Project Overview
-**Meup** is a multi-platform Flutter application designed for interactive language learning. It features scripted lessons, AI-driven roleplay, and progress tracking. The project emphasizes automation and cross-platform development parity.
+**HDDhistory** is a multi-platform Flutter application designed for interactive language learning. It features scripted lessons, AI-driven roleplay, and progress tracking. The project emphasizes automation and cross-platform development parity.
 
 *   **Architecture**: Clean Architecture (Presentation, Domain, Data) with `TaskEither` for functional error handling.
 *   **Tech Stack**: Flutter (Dart), Firebase (Auth, Analytics, Crashlytics), GraphQL/REST (Dio/Retrofit), `go_router`, `flutter_bloc` / `hydrated_bloc`, `slang` (localization).

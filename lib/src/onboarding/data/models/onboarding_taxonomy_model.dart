@@ -10,7 +10,7 @@ abstract class OnboardingBranchModel with _$OnboardingBranchModel {
     @Default('') String imageUrl,
     @Default(0) int order,
     @Default(true) bool isSelectable,
-    String? skillsetId,
+    String? categoryId,
     @Default(true) bool isActive,
   }) = _OnboardingBranchModel;
 
@@ -30,7 +30,7 @@ extension OnboardingBranchModelExtension on OnboardingBranchModel {
     imageUrl: imageUrl,
     order: this.order,
     isSelectable: isSelectable,
-    skillsetId: skillsetId,
+    categoryId: categoryId,
     isActive: isActive,
   );
 }

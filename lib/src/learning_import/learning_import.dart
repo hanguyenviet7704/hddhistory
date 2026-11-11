@@ -6,7 +6,7 @@ import 'dart:math' as math;
 //* Single project import
 // Also re-exports dart:async (Timer), modal_bottom_sheet, file_picker and
 // flutter_bloc — importing those directly here is flagged as redundant.
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';

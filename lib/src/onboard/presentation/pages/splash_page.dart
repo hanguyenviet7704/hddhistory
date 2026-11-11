@@ -69,7 +69,7 @@ class _SplashPageState extends State<SplashPage> {
     try {
       if (!mounted) return;
       final splashDelay = Future<void>.delayed(const Duration(milliseconds: 300));
-      // Cổng buộc cập nhật đã bị gỡ khỏi splash: nó đọc Remote Config của Meup,
+      // Cổng buộc cập nhật đã bị gỡ khỏi splash: nó đọc Remote Config của HDDhistory,
       // nên trên bản fork này nó chặn mọi bản build dev bằng một hộp thoại mang
       // thương hiệu sai. Bản cập nhật tuỳ chọn ở Home (HomeCubit.checkOptionalUpdate)
       // không bị ảnh hưởng.

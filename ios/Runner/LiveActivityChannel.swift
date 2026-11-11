@@ -5,10 +5,10 @@ import UIKit
 // Bridges Dart (LessonCubit) to ActivityKit. Activity.request()/.update()/.end()
 // must run in the main app process — the widget extension can only RENDER an
 // Activity, not start one — hence this lives in Runner, not
-// MeupHomeWidgetsExtension. Only one lesson can be open at a time, so a single
+// HDDhistoryHomeWidgetsExtension. Only one lesson can be open at a time, so a single
 // tracked Activity is sufficient (no keyed registry).
 final class LiveActivityChannel {
-  static let channelName = "meup/live_activity"
+  static let channelName = "hddhistory/live_activity"
 
   private var currentActivityId: String?
 
@@ -59,7 +59,7 @@ final class LiveActivityChannel {
     // such orphan back to a single card.
     endAllActivities(dismissImmediately: true)
 
-    let attributes = MeupLessonActivityAttributes(
+    let attributes = HDDhistoryLessonActivityAttributes(
       courseId: courseId,
       courseName: args["courseName"] as? String ?? "",
       courseImagePath: args["courseImagePath"] as? String ?? "",
@@ -69,7 +69,7 @@ final class LiveActivityChannel {
     let state = contentState(from: args)
 
     do {
-      let activity = try Activity<MeupLessonActivityAttributes>.request(
+      let activity = try Activity<HDDhistoryLessonActivityAttributes>.request(
         attributes: attributes,
         content: ActivityContent(state: state, staleDate: nil),
         pushType: nil
@@ -87,7 +87,7 @@ final class LiveActivityChannel {
       result(FlutterError(code: "invalid_args", message: "content state is required", details: nil))
       return
     }
-    guard let activity = Activity<MeupLessonActivityAttributes>.activities.first(where: { $0.id == currentActivityId }) else {
+    guard let activity = Activity<HDDhistoryLessonActivityAttributes>.activities.first(where: { $0.id == currentActivityId }) else {
       // Nothing running (e.g. app relaunched and lost the in-memory id) — a
       // silent no-op is correct here, not an error worth surfacing to Dart.
       result(nil)
@@ -112,7 +112,7 @@ final class LiveActivityChannel {
   @available(iOS 16.2, *)
   private func endAllActivities(dismissImmediately: Bool) {
     currentActivityId = nil
-    let activities = Activity<MeupLessonActivityAttributes>.activities
+    let activities = Activity<HDDhistoryLessonActivityAttributes>.activities
     guard !activities.isEmpty else { return }
     let policy: ActivityUIDismissalPolicy = dismissImmediately ? .immediate : .after(.now + 4)
     Task {
@@ -123,8 +123,8 @@ final class LiveActivityChannel {
   }
 
   @available(iOS 16.2, *)
-  private func contentState(from args: [String: Any]) -> MeupLessonActivityAttributes.ContentState {
-    MeupLessonActivityAttributes.ContentState(
+  private func contentState(from args: [String: Any]) -> HDDhistoryLessonActivityAttributes.ContentState {
+    HDDhistoryLessonActivityAttributes.ContentState(
       progress: args["progress"] as? Double ?? 0,
       isDone: args["isDone"] as? Bool ?? false,
       resumeLabel: args["resumeLabel"] as? String ?? "",

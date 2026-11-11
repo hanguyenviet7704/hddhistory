@@ -1,6 +1,6 @@
 part of '../../community.dart';
 
-/// The MeUp mark on a violet tile — the chat room's face (design `S-03`).
+/// The HDDhistory mark on a violet tile — the chat room's face (design `S-03`).
 ///
 /// A "?" in Poppins rather than an asset: the design sets it as type, and the
 /// family is already bundled. Bold (700) is the heaviest weight that ships, so

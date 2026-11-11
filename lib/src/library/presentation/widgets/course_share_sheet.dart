@@ -433,7 +433,7 @@ class _ShareTargetRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // First in the row because it is the only target that keeps the reader
-              // inside MeUp — the design puts it there for the same reason.
+              // inside HDDhistory — the design puts it there for the same reason.
               ShareTargetButton(
                 key: const Key('course-share-confession'),
                 label: context.l10n.community.title,

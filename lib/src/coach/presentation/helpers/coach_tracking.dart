@@ -39,7 +39,7 @@ class CoachTracking {
   /// Khối định danh đi kèm MỌI event trong phiên.
   ///
   /// `session_id` là id của server, nên một hàng ở Firebase ghép thẳng được với
-  /// `coach_sessions` bên meup-api — không phải suy ra phiên từ dấu thời gian.
+  /// `coach_sessions` bên hddhistory-api — không phải suy ra phiên từ dấu thời gian.
   static Map<String, dynamic> sessionParams(CoachState state) {
     return {
       'session_id': state.sessionId,

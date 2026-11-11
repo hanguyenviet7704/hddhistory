@@ -180,7 +180,7 @@ class CommunityAuthorLine extends StatelessWidget {
       //
       // The team's name comes from the server when somebody has set one in the
       // panel, and falls back to the localised wording otherwise — a brand name
-      // is not translated, but "Đội ngũ MeUp" is, so the fallback has to stay.
+      // is not translated, but "Đội ngũ HDDhistory" is, so the fallback has to stay.
       _ when author.isOfficial && author.name.isNotEmpty => author.name,
       _ when author.isOfficial => l10n.officialAuthorName,
       _ when author.isAnonymous => l10n.anonymousAuthorName,
@@ -227,7 +227,7 @@ class CommunityAuthorLine extends StatelessWidget {
   }
 }
 
-/// The "MEUP" pill next to an official author's name (design `S-04`).
+/// The "HDDHISTORY" pill next to an official author's name (design `S-04`).
 ///
 /// A badge rather than a coloured name: a purple name reads as a tappable link,
 /// and this has to say "the team is answering" at a glance without competing
@@ -244,7 +244,7 @@ class CommunityOfficialBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(99.r),
       ),
       child: AppText(
-        'MEUP',
+        'HDDHISTORY',
         style: AppStyle.textBold8.copyWith(
           color: AppCustomColor.streakActive,
           letterSpacing: 0.4,

@@ -56,7 +56,7 @@ mixin AppCustomColor {
   static const Color paywallAqua = Color(0xFF6BBBD8);
   static const Color paywallBestDeal = Color(0xFFF9D31A);
   // Promo-code block on the paywall. Values come straight from the design
-  // (Claude Design "MeUp App" → pin `paywall`); see
+  // (Claude Design "HDDhistory App" → pin `paywall`); see
   // plans/260727-paywall-redesign/design-spec.md.
   static const Color paywallPromoLink = Color(0xFFA57A0C);
   static const Color paywallPromoLabel = Color(0xFF96690A);
@@ -99,7 +99,7 @@ mixin AppCustomColor {
   // Design `6 · Profile`: the pencil disc beside the name on the identity header.
   static const Color profileEditPencilBg = Color(0xFFF7EBCF);
 
-  // Onboarding v3 (Claude Design "MeUp Onboarding v2", màn S7–S10). Chỉ những
+  // Onboarding v3 (Claude Design "HDDhistory Onboarding v2", màn S7–S10). Chỉ những
   // giá trị KHÔNG trùng token sẵn có mới nằm ở đây: chữ phụ dùng
   // `streakTextMuted` (#5F6F86) và nhấn mạnh dùng `brandPrimary` (#B8860B).
   /// Nền thẻ 4 bước ở S7.
@@ -225,16 +225,16 @@ mixin AppCustomColor {
   static const Color inputFill = Color(0xFFF0F3F9);
 
   // Keypoint v2 — the swipeable theory + exercise card deck. Exact values from
-  // Claude Design "MeUp" → `Keypoint v2.dc.html` / `Keypoint Swipe Lab`. Where a
+  // Claude Design "HDDhistory" → `Keypoint v2.dc.html` / `Keypoint Swipe Lab`. Where a
   // design value already had a token it is reused instead of duplicated here:
   // brand `#B8860B` == brandPrimary, empty gap-slot dash `#EBD08A` ==
   // brandPrimary200, gap-slot label `#96690A` == streakActive, muted caption
   // `#9AA4B2` == textMuted, heading `#0D121C` == textPrimary, arrange badges
   // `#41AE8C`/`#E34646` == successGreen/errorRed.
   // Week recap ("Hành trình tuần qua") — the scrapbook poster and the chrome
-  // around it. Source: Claude Design "MeUp App" -> pins `week-wrap`,
+  // around it. Source: Claude Design "HDDhistory App" -> pins `week-wrap`,
   // `wrap-list`, `week-wrap-monday`, `week-wrap-locked`; see
-  // meup-api/plans/260820-week-recap/README.md.
+  // hddhistory-api/plans/260820-week-recap/README.md.
   //
   // The poster inks are LOCKED TO THE ARTWORK, not to the app theme: the
   // poster is a printed page on cream paper and looks the same in dark mode,
@@ -347,7 +347,7 @@ mixin AppCustomColor {
   static const Color kpPeekSource = Color(0xFF5F6F86);
   static const Color kpPeekHint = Color(0xFF9A844F);
 
-  // Back face of the recap flip card (design `_MeUp App` → RECAP). Exact hex.
+  // Back face of the recap flip card (design `_HDDhistory App` → RECAP). Exact hex.
   static const Color kpRecapBackSurface = Color(0xFF40361B);
 
   // Practice hub mode tiles (design "3 · Learning" → Practice — pick a mode).

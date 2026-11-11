@@ -18,7 +18,7 @@ abstract class OnboardingRecommendedCourseModel with _$OnboardingRecommendedCour
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
-    @Default('') String skillsetId,
+    @Default('') String categoryId,
     @Default(0) int numberOfLesson,
     @Default(OnboardingMatchReasonModel()) OnboardingMatchReasonModel matchReason,
   }) = _OnboardingRecommendedCourseModel;
@@ -44,7 +44,7 @@ extension OnboardingRecommendationModelX on OnboardingRecommendationModel {
           title: c.title,
           description: c.description,
           image: c.image,
-          skillsetId: c.skillsetId,
+          categoryId: c.categoryId,
           numberOfLesson: c.numberOfLesson,
         ),
     ],

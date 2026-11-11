@@ -47,8 +47,8 @@ class ProgressBar extends StatelessWidget {
                   case DataCollectStep.collectLearningGoal:
                     trackingService.trackObdLearningGoalBack();
                     break;
-                  case DataCollectStep.collectSkillsetsWantToMaster:
-                    trackingService.trackObdSkillsetBack();
+                  case DataCollectStep.collectCategoriesWantToMaster:
+                    trackingService.trackObdCategoryBack();
                     break;
                   case DataCollectStep.collectLearningStrugger:
                     trackingService.trackObdStrugglesBack();

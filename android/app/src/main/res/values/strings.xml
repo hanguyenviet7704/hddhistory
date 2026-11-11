@@ -3,7 +3,7 @@
   <string name="facebook_app_id">890336437171010</string>
   <string name="facebook_client_token">df6ed8acccb34631007fcba3e2d296da</string>
   <string name="fb_login_protocol_scheme">fb890336437171010</string>
-  <string name="meup_in_progress_widget_description">Continue your active course</string>
-  <string name="meup_streak_widget_description">Track your weekly learning streak</string>
-  <string name="meup_suggest_course_widget_description">Open today\'s course suggestion</string>
+  <string name="hddhistory_in_progress_widget_description">Continue your active course</string>
+  <string name="hddhistory_streak_widget_description">Track your weekly learning streak</string>
+  <string name="hddhistory_suggest_course_widget_description">Open today\'s course suggestion</string>
 </resources>

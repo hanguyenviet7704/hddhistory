@@ -6,7 +6,7 @@ import TikTokBusinessSDK
 
 @objc public class TikTokPlugin: NSObject {
     private weak var controller: FlutterViewController?
-    private let channelName: String = "com.eup.meup/tiktok"
+    private let channelName: String = "com.hddhistory.app/tiktok"
     private let appId: String = "6755175330"
     private let tiktokAppId: String = "7616621825847132161"
     private let accessToken: String = "TTKsC83KcYdgZKrcohNfRlHq6wsdVmdK"

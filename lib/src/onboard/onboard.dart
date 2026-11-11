@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Parts - internal files using 'part of'

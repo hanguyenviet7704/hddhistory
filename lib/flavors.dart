@@ -21,10 +21,10 @@ class F {
 
   static String get title {
     return switch (appFlavor) {
-      Flavor.dev => 'Meup Dev',
-      Flavor.stg => 'Meup Staging',
-      Flavor.prod => 'Meup',
-      _ => 'Meup',
+      Flavor.dev => 'HDDhistory Dev',
+      Flavor.stg => 'HDDhistory Staging',
+      Flavor.prod => 'HDDhistory',
+      _ => 'HDDhistory',
     };
   }
 

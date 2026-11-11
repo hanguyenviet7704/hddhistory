@@ -66,8 +66,8 @@ final request = PageBreakRequest<LearningItemFilter>(
 ## 5. Existing Retrofit API Patterns
 ### Paginated read APIs
 ```dart
-@GET(AppEndpoint.skillsets)
-Future<BaseResponse<BasePageBreak<SkillsetModel>>> getAllSkillsets(
+@GET(AppEndpoint.categories)
+Future<BaseResponse<BasePageBreak<CategoryModel>>> getAllCategories(
   @Queries() PageBreakRequest request,
 );
 
@@ -84,8 +84,8 @@ Future<BaseResponse<BasePageBreak<LearningItemModel>>> getAllLearningItems(
 
 ### Detail/read APIs
 ```dart
-@GET(AppEndpoint.skillsetsById)
-Future<BaseResponse<SkillsetModel>> getSkillset(@Path('id') String id);
+@GET(AppEndpoint.categoriesById)
+Future<BaseResponse<CategoryModel>> getCategory(@Path('id') String id);
 
 @GET(AppEndpoint.coursesById)
 Future<BaseResponse<CourseModel>> getCourse(@Path('id') String id);

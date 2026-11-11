@@ -2,7 +2,7 @@ part of '../../home.dart';
 
 /// How far the "Today's new course" card is lifted INTO the purple header.
 ///
-/// From the app's own design (`_MeUp App`, pin `app:explore`), which is the
+/// From the app's own design (`_HDDhistory App`, pin `app:explore`), which is the
 /// one the Home screen is drawn against now: the card carries `margin:-64px`.
 /// The older standalone Home mock said -76 against a taller header — following
 /// it left the card sitting deeper in the purple than the screen it belongs to.

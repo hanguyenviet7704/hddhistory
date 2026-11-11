@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// The Home promo carousel's client-side rules. Targeting is NOT here on purpose
 /// — the server filters slides per viewer — so what is left to get right is the
 /// version skew in both directions and never rendering an empty card.
-/// See `meup-api/plans/260811-home-banner-carousel/README.md`.
+/// See `hddhistory-api/plans/260811-home-banner-carousel/README.md`.
 void main() {
   group('HomeBannerEntity.effectiveSlides', () {
     test('renders the slides the server sent, in order', () {

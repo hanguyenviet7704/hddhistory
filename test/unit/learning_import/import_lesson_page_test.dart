@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:mockito/mockito.dart';
 
 import '../../support/test_di.dart';

@@ -154,11 +154,11 @@ class _CollectionCoursesGrid extends StatelessWidget {
     );
 
     final homeCubit = context.read<HomeCubit>();
-    for (final skillset in homeCubit.state.skillsets) {
-      final index = skillset.courses.indexWhere((c) => c.id == course.id);
+    for (final category in homeCubit.state.categories) {
+      final index = category.courses.indexWhere((c) => c.id == course.id);
       if (index >= 0) {
         homeCubit
-          ..selectSkillset(skillset)
+          ..selectCategory(category)
           ..selectCourseIndex(index);
         break;
       }

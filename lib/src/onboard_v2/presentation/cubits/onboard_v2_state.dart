@@ -99,10 +99,10 @@ extension OnboardV2StateX on OnboardV2State {
     return recommendedCourses[index];
   }
 
-  /// Skillset tương ứng các nhánh đã chọn, theo thứ tự chọn — Home dùng để xếp
-  /// skillset. Nhánh chưa gắn `skillsetId` bị bỏ qua.
-  List<String> get selectedSkillsetIds => [
+  /// Chủ đề tương ứng các nhánh đã chọn, theo thứ tự chọn — Home dùng để xếp
+  /// chủ đề. Nhánh chưa gắn `categoryId` bị bỏ qua.
+  List<String> get selectedCategoryIds => [
     for (final code in selectedBranchCodes)
-      if (taxonomy.branchByCode(code)?.skillsetId case final id? when id.isNotEmpty) id,
+      if (taxonomy.branchByCode(code)?.categoryId case final id? when id.isNotEmpty) id,
   ];
 }

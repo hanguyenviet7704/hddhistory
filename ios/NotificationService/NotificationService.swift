@@ -4,7 +4,7 @@ import UserNotifications
 ///
 /// APNs itself never fetches media: without an extension like this one, an
 /// `fcm_options.image` URL is delivered and silently dropped, which is exactly
-/// what MeUp did before — an image-carrying push looked identical to a text-only
+/// what HDDhistory did before — an image-carrying push looked identical to a text-only
 /// one on iOS while Android rendered it fine.
 ///
 /// Runs only when the payload sets `mutable-content: 1`; the server sets that
@@ -74,7 +74,7 @@ class NotificationService: UNNotificationServiceExtension {
 
   /// Where the URL comes from, in order of how much we trust it.
   ///
-  /// `imageUrl` is MeUp's own data key — the same one the Flutter side reads to
+  /// `imageUrl` is HDDhistory's own data key — the same one the Flutter side reads to
   /// render a foreground notification, so server and app agree on one name.
   /// `fcm_options.image` is FCM's field, kept as a fallback so a push composed
   /// outside our own sender (a Firebase console test, say) still shows its image.

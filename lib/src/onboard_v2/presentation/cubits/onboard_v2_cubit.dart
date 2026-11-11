@@ -55,7 +55,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   Future<bool>? _anonymousSessionTask;
 
   /// In-flight (or completed) home-dataset prewarm. Started when the reminder
-  /// screen hands off to the loading screen so the skillset/list-course +
+  /// screen hands off to the loading screen so the category/list-course +
   /// progress + profile calls overlap with the loading animation and the time
   /// the user spends on the result cards — instead of the handoff paying for a
   /// cold fetch on the critical path. See [prewarmHomeData].
@@ -377,7 +377,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   }
 
   void continueFromP7How() {
-    // S7 trên sheet là màn "MeUp giúp bạn thế nào", và `obd_infor_continue` là
+    // S7 trên sheet là màn "HDDhistory giúp bạn thế nào", và `obd_infor_continue` là
     // nút Tiếp tục CỦA NÓ. Trước bản này tên ấy bị màn Mong muốn (S6) mượn
     // mất, nên S7 không bắn gì còn S6 báo cáo dưới tên của màn khác.
     OnboardV2Tracking.track(TrackingKey.onboardV2P6ContinueClick, parameters: OnboardV2Tracking.selectionParams(state));
@@ -522,7 +522,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     emit(state.copyWith(currentPage: OnboardV2PageStep.p10Result));
   }
 
-  /// Loads the home dataset (skillsets/list-course, progress, profile, quote,
+  /// Loads the home dataset (categories/list-course, progress, profile, quote,
   /// suggestions) at most once per flow, after the anonymous session is ready.
   /// Returns the shared in-flight future so the handoff can await the SAME
   /// fetch instead of triggering a second one.

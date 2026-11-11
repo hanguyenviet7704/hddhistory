@@ -97,19 +97,21 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
       unawaited(context.read<HomeCubit>().ensureHomeDataLoaded());
       // The days 1-7 gift popup used to be triggered from here. It moved to
       // GiftPopupHost on the shell: initState only runs on a cold start, so a
-      // reader who resumed MeUp from the background — the ordinary case — never
+      // reader who resumed HDDhistory from the background — the ordinary case — never
       // got it. The host watches for resume as well, and owns the cold start
       // this line used to cover.
       // Same recovery for the "Continue learning" my-courses list — it can
-      // fail independently of skillsets since both load inside the same
+      // fail independently of categories since both load inside the same
       // Future.wait.
       unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
       // And for the recommended-courses strip, hidden when empty.
       unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
+      // "Ôn tập hôm nay": what is due moves with the clock, so always refetch.
+      unawaited(context.read<SpacedReviewCubit>().refresh());
       // Optional-update header: surface the pinned banner when a newer,
       // non-forced app version exists (forced updates are gated at splash).
       unawaited(context.read<HomeCubit>().checkOptionalUpdate());
-      // Per-skillset achievements, which is what the "Tiến độ học tập" grid
+      // Per-category achievements, which is what the "Tiến độ học tập" grid
       // divides by. Cache-first inside the cubit, so this paints from the last
       // known values and refreshes behind them.
       context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
@@ -161,6 +163,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
           unawaited(context.read<ProgressCubit>().ensureMyCoursesLoaded());
           // And for the recommended-courses strip, hidden when empty.
           unawaited(context.read<HomeCubit>().ensureSuggestedCoursesLoaded());
+          // Coming back from a lesson can have made new keypoints due.
+          unawaited(context.read<SpacedReviewCubit>().refresh());
         }
       },
       child: BlocListener<InAppSurveyCubit, InAppSurveyState>(
@@ -227,6 +231,7 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                               // that stays stale.
                               context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
                               unawaited(AppDI.injector.get<StudyJournalCubit>().ensureLoaded());
+                              unawaited(context.read<SpacedReviewCubit>().refresh());
                               await _prefetchLearningStreak();
                               final didOpenPaywall = await _tryOpenPaywallAutoOpen();
                               if (didOpenPaywall) return;
@@ -259,6 +264,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                                   // Collapses to zero height (spacing included) when
                                   // disabled/empty — see HomeBannerCard.
                                   const HomeBannerCard(),
+
+                                  // ── Ôn tập hôm nay (spaced review) ───────────────
+                                  // Collapses to zero height when nothing is due.
+                                  const SpacedReviewHomeCard(),
 
                                   // "Jump back in" is gone from Home. Every course it
                                   // listed is one tap away in the Library tab, which
@@ -527,20 +536,20 @@ void _openSuggestedCourse(
 }) {
   AppHaptic.select();
   final homeCubit = context.read<HomeCubit>();
-  // skill_id/skill_name aren't on SuggestedCourseEntity beyond its skillsetId;
-  // resolve the human-readable name from the loaded skillsets (best-effort —
-  // empty when the skillset isn't cached).
-  final skillset = homeCubit.state.skillsets.firstWhere(
-    (s) => s.id == course.skillsetId || s.courses.any((c) => c.id == course.id),
-    orElse: () => const SkillsetEntity(),
+  // skill_id/skill_name aren't on SuggestedCourseEntity beyond its categoryId;
+  // resolve the human-readable name from the loaded categories (best-effort —
+  // empty when the category isn't cached).
+  final category = homeCubit.state.categories.firstWhere(
+    (s) => s.id == course.categoryId || s.courses.any((c) => c.id == course.id),
+    orElse: () => const CategoryEntity(),
   );
   HomeTracking.track(
     TrackingKey.homeRcmCardClick,
     parameters: {
       'course_id': course.id,
       'course_name': course.title.text,
-      'skill_id': course.skillsetId.isNotEmpty ? course.skillsetId : skillset.id,
-      'skill_name': skillset.title.text,
+      'skill_id': course.categoryId.isNotEmpty ? course.categoryId : category.id,
+      'skill_name': category.title.text,
       'source': source,
     },
   );

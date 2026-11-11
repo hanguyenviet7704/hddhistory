@@ -19,7 +19,7 @@
 
 ## 2. Repository Structure (High-Level)
 ```text
-meup/
+hddhistory/
 ├── lib/
 │   ├── main.dart + main_<flavor>.dart
 │   ├── config/      # DI, routes, services, themes, l10n
@@ -45,7 +45,7 @@ meup/
 | `daily_warm_up` | 25 | 3,323 | Home daily warm-up entry, question/result flow, suggested-course handoff, and privacy-safe tracking |
 | `data_collect` | 45 | 4,438 | Intake/onboarding data collection |
 | `feedback` | 29 | 4,684 | User feedback flow |
-| `home` | 20 | 2,388 | Dashboard/skillset entry, streak chip trigger, daily warm-up route gate, and in-app survey entry overlay |
+| `home` | 20 | 2,388 | Dashboard/category entry, streak chip trigger, daily warm-up route gate, and in-app survey entry overlay |
 | `home_widget` | 15 | 1,175 | Native widget payload sync, image caching, WidgetKit/Glance bridge, tap deeplinks, and logout clearing |
 | `in_app_survey` | 35 | 6,386 | Home in-app survey config, P1-P4 modal flow, response submit, and tracking helpers |
 | `learning_streak` | 21 | 2,581 | Home streak popup + shared completion streak success gate |

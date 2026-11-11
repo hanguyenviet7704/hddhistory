@@ -26,6 +26,7 @@ export 'week_recap/week_recap.dart';
 export 'progress/progress.dart';
 export 'roleplay/roleplay.dart';
 export 'setting/setting.dart';
+export 'spaced_review/spaced_review.dart';
 export 'study_theme/study_theme.dart';
 export 'feedback/feedback.dart';
 export 'video_lesson/video_lesson.dart';

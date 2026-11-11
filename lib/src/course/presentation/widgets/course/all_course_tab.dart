@@ -38,7 +38,7 @@ double courseGridCellExtent(double gridWidth) => (gridWidth - _kCourseGridColGap
 
 /// Resolves the lesson-progress numbers for [course].
 ///
-/// The skillset list endpoint (HomeCubit.skillsets) returns courses WITHOUT
+/// The category list endpoint (HomeCubit.categories) returns courses WITHOUT
 /// per-user progress (`numberOfLessonPassed` is always 0). The user's actual
 /// progress lives in ProgressCubit.myCourses — the same source Home's
 /// "Continue learning" reads. So we prefer the matching entry from
@@ -84,10 +84,10 @@ List<CourseEntity> sortCoursesForExplore(
 ///
 /// Every strip and its ORDER comes from `GET /courses-explore` — the tab walks
 /// the list it is handed and draws each section by its `type`. It used to build
-/// one section per skillset from `HomeCubit`, which is why a scrollspy
+/// one section per category from `HomeCubit`, which is why a scrollspy
 /// (`ScrollablePositionedList`, an active-chip index, a scroll nonce) lived
-/// here; with the skillset sections gone there is nothing to spy on, and a
-/// plain list is the whole of it. Browsing a whole skillset now happens through
+/// here; with the category sections gone there is nothing to spy on, and a
+/// plain list is the whole of it. Browsing a whole category now happens through
 /// the topic chips, which open its full list directly.
 class AllCourseTab extends StatefulWidget {
   const AllCourseTab({super.key});
@@ -216,8 +216,8 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
   /// Opens a course tapped anywhere on the tab.
   ///
-  /// A course arrives here without a skillset — a collection is a hand-picked
-  /// list that crosses skillsets — so the owning one is resolved from the
+  /// A course arrives here without a category — a collection is a hand-picked
+  /// list that crosses categories — so the owning one is resolved from the
   /// catalogue, which is what the roadmap's selection flow needs.
   void _onTapExploreCourse(
     BuildContext context,
@@ -248,16 +248,16 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       },
     );
 
-    final skillsets = context.read<HomeCubit>().state.skillsets;
-    for (final skillset in skillsets) {
-      final index = skillset.courses.indexWhere((c) => c.id == course.id);
+    final categories = context.read<HomeCubit>().state.categories;
+    for (final category in categories) {
+      final index = category.courses.indexWhere((c) => c.id == course.id);
       if (index >= 0) {
-        _handleCourseTap(context, skillset, course, index);
+        _handleCourseTap(context, category, course, index);
         return;
       }
     }
 
-    // Not in the cached catalogue (a course published since the skillsets were
+    // Not in the cached catalogue (a course published since the categories were
     // fetched). Fall back to selecting it by id rather than swallowing the tap.
     if (context.read<HomeCubit>().trySelectCourseFromCourseId(course.id)) {
       context.read<CourseRoadmapCubit>().setRoadmapSource('course_selection');
@@ -268,13 +268,13 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
   void _handleCourseTap(
     BuildContext context,
-    SkillsetEntity skillset,
+    CategoryEntity category,
     CourseEntity course,
     int index,
   ) {
     context.read<CourseRoadmapCubit>().setRoadmapSource('course_selection');
     context.read<HomeCubit>()
-      ..selectSkillset(skillset)
+      ..selectCategory(category)
       ..selectCourseIndex(index);
     CourseRoadmapRoute().go(context);
     // Set the route name explicitly (not just the index): .go() to the roadmap
@@ -287,11 +287,11 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 }
 
-void _showComingSoonSheet(BuildContext context, CourseEntity course, {SkillsetEntity? skillset}) {
+void _showComingSoonSheet(BuildContext context, CourseEntity course, {CategoryEntity? category}) {
   ExploreTracking.track(
     TrackingKey.courseComingsoonView,
     parameters: {
-      if (skillset != null) ...ExploreTracking.skillsetParams(skillset),
+      if (category != null) ...ExploreTracking.categoryParams(category),
       ...ExploreTracking.courseParams(course),
     },
   );
@@ -356,7 +356,7 @@ class _ExploreSection extends StatelessWidget {
       case ExploreSectionType.becauseYou:
         return _BecauseYouSection(section: section, onTapCourse: onTapCourse);
       case ExploreSectionType.topicChips:
-        return const _TopicChipsSection();
+        return const _TimelineSection();
       case ExploreSectionType.unknown:
         return const SizedBox.shrink();
     }
@@ -759,26 +759,51 @@ class _WeeklyTopCard extends StatelessWidget {
   }
 }
 
-/// "Tìm kiếm theo chủ đề" — the skillset catalogue as chips, two rows of three.
+/// "Dòng thời gian" — the 12 historical periods as a vertical timeline.
 ///
 /// Reads `HomeCubit` rather than the Explore payload: the catalogue is already
 /// loaded for Home and the roadmap, and asking the server for it again on every
 /// Explore open would be bytes spent on data the app is holding.
-class _TopicChipsSection extends StatelessWidget {
-  const _TopicChipsSection();
+///
+/// Order is taken as received. `CategoryEntity` carries no `index`, so the
+/// widget cannot sort; the API returns the periods chronologically and that is
+/// the order that matters here.
+///
+/// Every row is the same height and the rail shows ORDER, not duration. The
+/// periods genuinely overlap (Tây Sơn, 1771–1802, sits inside Trịnh–Nguyễn,
+/// 1527–1789) and differ in length by millennia, so a to-scale axis would
+/// either lie about the overlap or squash eleven periods into one pixel.
+class _TimelineSection extends StatelessWidget {
+  const _TimelineSection();
 
   @override
   Widget build(BuildContext context) {
-    final skillsets = context.watch<HomeCubit>().state.skillsets;
-    if (skillsets.isEmpty) return const SizedBox.shrink();
+    return ExploreTimeline(
+      categories: context.watch<HomeCubit>().state.categories,
+      onTapCategory: (category) {
+        AppHaptic.select();
+        ExploreTracking.track(
+          TrackingKey.exploreCatViewmore,
+          parameters: ExploreTracking.categoryParams(category),
+        );
+        CategoryCoursesRoute(categoryId: category.id).push(context);
+      },
+    );
+  }
+}
 
-    // Two rows that scroll sideways together, as designed — NOT a Wrap. A Wrap
-    // looks identical against the design's short mock labels and then collapses
-    // into one chip per line against the real ones ("Hiệu suất & Thói quen",
-    // "Giao tiếp hiệu quả"): two of those exceed the screen width, so every chip
-    // gets a line of its own and the row reads as a vertical list.
-    final half = (skillsets.length / 2).ceil();
-    final rows = [skillsets.take(half).toList(), skillsets.skip(half).toList()];
+/// The timeline itself, kept free of `HomeCubit` and the router so it can be
+/// built in a widget test with plain data and a callback — the same shape as
+/// `CourseRoadmapLoadFailureState(onRetry:)`.
+class ExploreTimeline extends StatelessWidget {
+  const ExploreTimeline({super.key, required this.categories, required this.onTapCategory});
+
+  final List<CategoryEntity> categories;
+  final ValueChanged<CategoryEntity> onTapCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    if (categories.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -786,7 +811,7 @@ class _TopicChipsSection extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: AppText(
-            context.l10n.allcourse.exploreTopicsTitle,
+            context.l10n.allcourse.exploreTimelineTitle,
             maxLines: 2,
             style: TextStyle(
               fontFamily: AppFont.mulish,
@@ -797,91 +822,118 @@ class _TopicChipsSection extends StatelessWidget {
             ),
           ),
         ),
-        10.verticalSpace,
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (int r = 0; r < rows.length; r++) ...[
-                if (r > 0) 8.verticalSpace,
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (int i = 0; i < rows[r].length; i++) ...[
-                      if (i > 0) 8.horizontalSpace,
-                      _TopicChip(skillset: rows[r][i]),
-                    ],
-                  ],
-                ),
-              ],
-            ],
+        12.verticalSpace,
+        for (int i = 0; i < categories.length; i++)
+          _TimelineRow(
+            category: categories[i],
+            isFirst: i == 0,
+            isLast: i == categories.length - 1,
+            onTap: () => onTapCategory(categories[i]),
           ),
-        ),
       ],
     );
   }
 }
 
-class _TopicChip extends StatelessWidget {
-  const _TopicChip({required this.skillset});
+class _TimelineRow extends StatelessWidget {
+  const _TimelineRow({required this.category, required this.isFirst, required this.isLast, required this.onTap});
 
-  final SkillsetEntity skillset;
+  final CategoryEntity category;
+  final bool isFirst;
+  final bool isLast;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final years = category.description.text.trim();
+    final courseCount = category.courses.length;
+    final countLabel = courseCount > 0 ? context.l10n.allcourse.exploreTimelineCourseCount(count: courseCount) : '';
+
+    // One spoken phrase per stop — "Nhà Lý, 1009 – 1225, 3 khoá" — rather than
+    // three separate focus stops for the title, the years and the count.
+    final semanticsLabel = [category.title.text, if (years.isNotEmpty) years, if (countLabel.isNotEmpty) countLabel].join(', ');
+
     return Semantics(
       button: true,
-      label: skillset.title.text,
+      label: semanticsLabel,
+      excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          AppHaptic.select();
-          ExploreTracking.track(
-            TrackingKey.exploreCatViewmore,
-            parameters: ExploreTracking.skillsetParams(skillset),
-          );
-          SkillsetCoursesRoute(skillsetId: skillset.id).push(context);
-        },
-        child: Container(
-          padding: EdgeInsets.fromLTRB(10.w, 7.h, 15.w, 7.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F6FA),
-            borderRadius: BorderRadius.circular(99.r),
-            border: Border.all(color: const Color(0xFFEEF0F6), width: 1.5),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (skillset.image.isNotEmpty) ...[
-                ClipOval(
-                  child: SizedBox(
-                    width: 22.w,
-                    height: 22.w,
-                    // ClipOval on the image itself, not a circular Container
-                    // around it: at this size a shape+clipBehavior container
-                    // leaks the artwork's corners as four pale wedges.
-                    child: CoverArt(url: skillset.image, seed: skillset.id, label: skillset.title.text),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          // IntrinsicHeight so the rail stretches the full row height: a title
+          // that wraps to two lines makes that row taller, and the line must
+          // still meet the next stop without a gap.
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _TimelineRail(isFirst: isFirst, isLast: isLast),
+                12.horizontalSpace,
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // maxLines 2, set explicitly: AppText defaults to 10
+                        // with an ellipsis, and the longest period name
+                        // ("Nam Bắc triều – Trịnh–Nguyễn phân tranh") needs two.
+                        AppText(
+                          category.title.text,
+                          maxLines: 2,
+                          style: TextStyle(
+                            fontFamily: AppFont.mulish,
+                            fontSize: 14.5.sp,
+                            fontWeight: FontWeight.w700,
+                            height: 1.3,
+                            color: studyThemeOnBg(context, AppCustomColor.textPrimary),
+                          ),
+                        ),
+                        if (years.isNotEmpty) ...[
+                          3.verticalSpace,
+                          AppText(
+                            years,
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: AppFont.mulish,
+                              fontSize: 12.5.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppCustomColor.brandPrimary,
+                            ),
+                          ),
+                        ],
+                        if (countLabel.isNotEmpty) ...[
+                          2.verticalSpace,
+                          AppText(
+                            countLabel,
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: AppFont.mulish,
+                              fontSize: 12.sp,
+                              color: studyThemeOnBg(context, AppCustomColor.textTertiary),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-                8.horizontalSpace,
-              ],
-              // No width cap: the strip scrolls sideways, so a long topic name
-              // widens the row instead of being squeezed or wrapped. maxLines 1
-              // keeps every chip the same height whatever the name.
-              AppText(
-                skillset.title.text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: AppFont.mulish,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF3A4250),
+                12.horizontalSpace,
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: SizedBox(
+                      width: 56.w,
+                      height: 56.w,
+                      child: CoverArt(url: category.image, seed: category.id, label: category.title.text),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -889,8 +941,54 @@ class _TopicChip extends StatelessWidget {
   }
 }
 
+/// The vertical line and the stop marker for one row. Decorative: the row's
+/// own semantics label already says which period this is.
+class _TimelineRail extends StatelessWidget {
+  const _TimelineRail({required this.isFirst, required this.isLast});
+
+  final bool isFirst;
+  final bool isLast;
+
+  static const double _width = 18;
+  static const double _dot = 12;
+  static const double _line = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    final lineColor = AppCustomColor.brandPrimary.withValues(alpha: 0.28);
+
+    // The segments above the first stop and below the last are transparent
+    // rather than omitted, so every stop sits at the same x and y position
+    // within its row and the rail reads as one continuous line.
+    Widget segment(bool visible) => Expanded(
+      child: Center(
+        child: Container(width: _line, color: visible ? lineColor : Colors.transparent),
+      ),
+    );
+
+    return SizedBox(
+      width: _width,
+      child: Column(
+        children: [
+          segment(!isFirst),
+          Container(
+            width: _dot,
+            height: _dot,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppCustomColor.brandPrimary,
+              border: Border.all(color: AppCustomColor.brandPrimary50, width: 2.5),
+            ),
+          ),
+          segment(!isLast),
+        ],
+      ),
+    );
+  }
+}
+
 /// "Vì bạn đã học X" — a tinted panel naming the course just finished, with
-/// three suggestions from the same skillset stacked under it.
+/// three suggestions from the same category stacked under it.
 ///
 /// Stacked rows rather than the horizontal strip the collections use: this is a
 /// short, reasoned list ("because of that, these three"), and a sideways
@@ -1122,7 +1220,7 @@ class _CourseGridSkeleton extends StatelessWidget {
   }
 }
 
-/// Vertical grid card shared between [AllCourseTab] and [SkillsetCoursesPage].
+/// Vertical grid card shared between [AllCourseTab] and [CategoryCoursesPage].
 /// Displays a fixed-height thumbnail with badge overlay, then title below.
 class _CourseGridCard extends StatelessWidget {
   const _CourseGridCard({

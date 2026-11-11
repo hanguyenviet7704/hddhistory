@@ -1,13 +1,13 @@
 ---
 date: 2026-06-11
 topic: home widget native bridge implementation
-plan: plans/260611-1406-meup-747-home-widget-generator-native-bridge/plan.md
+plan: plans/260611-1406-747-home-widget-generator-native-bridge/plan.md
 ---
 
 # Home Widget Native Bridge Implementation
 
 ## Context
-MEUP-747 needed native launcher widgets for in-progress course, weekly streak, and suggested course surfaces. The project already had `home_widget` runtime available, but the generator package conflicted with the current analyzer stack.
+#747 needed native launcher widgets for in-progress course, weekly streak, and suggested course surfaces. The project already had `home_widget` runtime available, but the generator package conflicted with the current analyzer stack.
 
 ## What Happened
 - Built the Flutter `home_widget` module around payload builders, local shared storage, API sync, native bridge calls, and Cubit/usecase seams.

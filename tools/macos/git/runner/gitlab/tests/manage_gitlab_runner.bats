@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-SCRIPT="/Users/biendh/StudioProjects/meup/tools/macos/git/runner/gitlab/manage_gitlab_runner.sh"
+SCRIPT="/Users/biendh/StudioProjects/hddhistory/tools/macos/git/runner/gitlab/manage_gitlab_runner.sh"
 
 setup() {
   export TEST_TMP

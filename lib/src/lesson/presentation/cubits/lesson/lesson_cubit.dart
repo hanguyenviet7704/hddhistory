@@ -426,7 +426,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     if (context.courseImageUrl.isNotEmpty) {
       imagePath =
           await AppDI.injector.get<HomeWidgetBridge>().saveImageAndGetPath(
-            key: 'meup_live_activity_course_image',
+            key: 'hddhistory_live_activity_course_image',
             imageUrl: context.courseImageUrl,
           ) ??
           '';
@@ -571,13 +571,13 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     if (courseId.isEmpty) {
       return (courseId: '', courseName: '', courseImageUrl: '', minutes: _kDefaultLessonMinutes, courseProgress: 0, optimisticProgressAfterKeypoint: 0);
     }
-    // Title/image come from the skillset list. Per-user lesson progress does
+    // Title/image come from the category list. Per-user lesson progress does
     // NOT — that endpoint always returns numberOfLessonPassed == 0 (see
     // all_course_tab.resolveCourseProgress). The real completion lives in
     // ProgressCubit.myCourses, the SAME source the Explore / Home course cards
     // read, so the Live Activity ring shows the exact % the user sees on the
     // card (e.g. "Hoàn thành 17%") instead of 0%.
-    final displayCourse = homeState.skillsets.resolveCourseByCourseId(courseId, fallback: homeState.currentCourse);
+    final displayCourse = homeState.categories.resolveCourseByCourseId(courseId, fallback: homeState.currentCourse);
     final progressCourse = _progressCubit.state.myCourses.firstWhere(
       (c) => c.id == courseId,
       orElse: () => displayCourse,

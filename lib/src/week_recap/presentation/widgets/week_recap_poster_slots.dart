@@ -4,7 +4,7 @@ part of '../../week_recap.dart';
 ///
 /// Since 2026-08-20 these are no longer hand-measured: the designer re-laid the
 /// poster for the stripped artwork and put EVERY label into the markup with
-/// explicit coordinates (`_MeUp App.dc.html`, week-wrap section). Rect values
+/// explicit coordinates (`_HDDhistory App.dc.html`, week-wrap section). Rect values
 /// here are those percentages verbatim.
 ///
 /// FONT SIZES ARE WRITTEN AS `<design px> * _k`, NEVER AS A LITERAL. The design
@@ -253,7 +253,7 @@ class WeekRecapSlots {
   static const double trackingLessonCourse = 0.02;
   static const double trackingFavouriteLabel = 0.04;
   //* The wordmark's tracking is NEGATIVE — the sheet sets -2px at 64px, which
-  //* is what makes "MeUp" read as one mark rather than four letters. The old
+  //* is what makes "HDDhistory" read as one mark rather than four letters. The old
   //* hashtag carried +0.1em, the opposite.
   static const double trackingWordmark = -2 / 64;
 

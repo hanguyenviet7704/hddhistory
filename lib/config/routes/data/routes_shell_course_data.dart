@@ -77,10 +77,10 @@ class CollectionCoursesRoute extends BaseTransitionRouteData with $CollectionCou
   );
 }
 
-class SkillsetCoursesRoute extends BaseTransitionRouteData with $SkillsetCoursesRoute {
-  const SkillsetCoursesRoute({required this.skillsetId});
+class CategoryCoursesRoute extends BaseTransitionRouteData with $CategoryCoursesRoute {
+  const CategoryCoursesRoute({required this.categoryId});
 
-  final String skillsetId;
+  final String categoryId;
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromRight;
@@ -94,7 +94,7 @@ class SkillsetCoursesRoute extends BaseTransitionRouteData with $SkillsetCourses
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
     ],
-    child: SkillsetCoursesPage(skillsetId: skillsetId),
+    child: CategoryCoursesPage(categoryId: categoryId),
   );
 }
 

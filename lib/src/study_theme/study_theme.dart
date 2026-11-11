@@ -1,12 +1,12 @@
 library;
 
 //* Dart imports
-// Prefixed: a package in the meup export graph shadows dart:ui's Path (breaks
+// Prefixed: a package in the hddhistory export graph shadows dart:ui's Path (breaks
 // Path.addRRect/computeMetrics), so reference ui.Path / ui.ImageFilter directly.
 import 'dart:ui' as ui;
 
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';

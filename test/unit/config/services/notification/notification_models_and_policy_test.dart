@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/services.dart';
+import 'package:hddhistory/config/services/services.dart';
 
 void main() {
   group('Notification models and policy', () {

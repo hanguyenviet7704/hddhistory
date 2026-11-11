@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// The free tier's daily quota, as the app receives it. The rule itself lives on
 /// the server; what has to be right here is not inventing a cap the server did not
 /// send — a wrong `cardCap` either locks paid-up content or gives the course away.
-/// See `meup-api/plans/260812-daily-keypoint-quota/README.md`.
+/// See `hddhistory-api/plans/260812-daily-keypoint-quota/README.md`.
 void main() {
   group('KeypointAccessModel', () {
     test('carries a real cap through', () {

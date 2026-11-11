@@ -83,9 +83,9 @@ The scripts support three environments:
 
 | Environment | iOS Bundle ID      | Android Package    | Firebase Config File                        |
 | ----------- | ------------------ | ------------------ | ------------------------------------------- |
-| **dev**     | `com.eup.meup.dev` | `com.eup.meup.dev` | `android\app\src\dev\google-services.json`  |
-| **stg**     | `com.eup.meup.stg` | `com.eup.meup.stg` | `android\app\src\stg\google-services.json`  |
-| **prod**    | `com.eup.meup`     | `com.eup.meup`     | `android\app\src\prod\google-services.json` |
+| **dev**     | `com.hddhistory.app.dev` | `com.hddhistory.app.dev` | `android\app\src\dev\google-services.json`  |
+| **stg**     | `com.hddhistory.app.stg` | `com.hddhistory.app.stg` | `android\app\src\stg\google-services.json`  |
+| **prod**    | `com.hddhistory.app`     | `com.hddhistory.app`     | `android\app\src\prod\google-services.json` |
 
 ## Typical Workflow
 

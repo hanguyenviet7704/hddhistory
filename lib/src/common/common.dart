@@ -3,7 +3,7 @@ library;
 //* Single project import
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:darq/darq.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:freezed_annotation/freezed_annotation.dart';

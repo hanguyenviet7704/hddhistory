@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/src/learning_import/learning_import.dart';
+import 'package:hddhistory/src/learning_import/learning_import.dart';
 
 /// The number the premium ticket popup promises ("Your 5 tickets reset in N
 /// days"), so the rounding rules are the behavior under test: always UP, never

@@ -7,7 +7,7 @@ import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Presentation Layer - Widgets

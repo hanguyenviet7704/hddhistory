@@ -10,8 +10,8 @@ part of '../services.dart';
 /// callers never need to platform- or version-check themselves.
 /// Deeplink contract shared with the native Live Activity card and the return
 /// nudge. Mirrors the URL the iOS widget emits in
-/// `ios/MeupHomeWidgetsExtension/MeupLessonLiveActivityView.swift`:
-/// `meup://course-roadmap?courseId=…&source=live_activity`. Unlike the
+/// `ios/HDDhistoryHomeWidgetsExtension/HDDhistoryLessonLiveActivityView.swift`:
+/// `hddhistory://course-roadmap?courseId=…&source=live_activity`. Unlike the
 /// home-widget deeplink this carries no `widgetType`, so it is NOT a
 /// HomeWidgetDeeplinkTarget — DeeplinkCubit handles it via its own branch.
 abstract final class LiveActivityDeeplink {
@@ -26,14 +26,14 @@ abstract final class LiveActivityDeeplink {
   /// [keypointId] is appended only when the card belongs to an open lesson; a
   /// roadmap card stays course-only and so resolves to the roadmap.
   static String resumeUri(String courseId, {String keypointId = ''}) {
-    final base = 'meup://course-roadmap?courseId=$courseId&source=$sourceValue';
+    final base = 'hddhistory://course-roadmap?courseId=$courseId&source=$sourceValue';
     return keypointId.isEmpty ? base : '$base&$keypointIdQueryKey=$keypointId';
   }
 }
 
 @LazySingleton()
 class LiveActivityService {
-  final MethodChannel _channel = const MethodChannel('meup/live_activity');
+  final MethodChannel _channel = const MethodChannel('hddhistory/live_activity');
 
   bool get _isSupportedPlatform => Platform.isIOS || Platform.isAndroid;
 

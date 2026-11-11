@@ -124,7 +124,7 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
   /// Resets Explore to its default entry state.
   ///
   /// Once this also switched view mode and asked the list to scroll to a
-  /// skillset section; the tab has neither a second mode nor skillset sections
+  /// category section; the tab has neither a second mode nor category sections
   /// any more, so all that is left is forgetting where the reader came from —
   /// which matters because `allCourseSource` decides what `explore_scr_view`
   /// reports.

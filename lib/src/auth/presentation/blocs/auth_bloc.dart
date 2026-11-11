@@ -67,7 +67,7 @@ bool isCourseEntryDataReady({
   required ProgressState progressState,
   required ProfileState profileState,
 }) {
-  final hasCourseCatalog = homeState.status == HomeStatus.success && homeState.skillsets.any((skillset) => skillset.courses.isNotEmpty);
+  final hasCourseCatalog = homeState.status == HomeStatus.success && homeState.categories.any((category) => category.courses.isNotEmpty);
   final hasBlockingFailure = progressState.status == ProgressStatus.failure || profileState.status == ProfileStatus.failure;
   return hasCourseCatalog && !hasBlockingFailure;
 }
@@ -302,7 +302,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       case AuthSuccessRouteDestination.course:
         await _homeCubit.initializeData(isInit: true);
         if (selectedTabIndex != null) {
-          _homeCubit.resetSelection(skillsetIndex: selectedTabIndex);
+          _homeCubit.resetSelection(categoryIndex: selectedTabIndex);
         }
         CourseRoute(selectedTabIndex: selectedTabIndex).go(AppConfig.instance.context!);
         return;
@@ -399,9 +399,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   Future<void> _runCourseEntryHomePrewarm() async {
     await _homeCubit.initializeData(isInit: true);
-    // Don't cache an empty/failed prewarm: if skillsets didn't load, drop the
+    // Don't cache an empty/failed prewarm: if categories didn't load, drop the
     // cache so bootstrap's retry re-fetches instead of reusing a blank result.
-    if (_homeCubit.state.skillsets.isEmpty) {
+    if (_homeCubit.state.categories.isEmpty) {
       _courseEntryHomeInitFuture = null;
     }
   }
@@ -441,7 +441,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       return false;
     }
 
-    _homeCubit.resetSelection(skillsetIndex: 0);
+    _homeCubit.resetSelection(categoryIndex: 0);
     return true;
   }
 

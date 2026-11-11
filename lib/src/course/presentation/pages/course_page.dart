@@ -13,7 +13,7 @@ class _CoursePageState extends State<CoursePage> {
   void initState() {
     super.initState();
     _initializeSelection();
-    // The topic chips render HomeCubit's skillsets — recover from a
+    // The topic chips render HomeCubit's categories — recover from a
     // failed/skipped first load (e.g. transient failure right after a fresh
     // install) instead of showing an empty row until app restart. No-op
     // when data is present.
@@ -35,20 +35,20 @@ class _CoursePageState extends State<CoursePage> {
     context.read<CourseCubit>()
       ..selectTab(1)
       ..clearSearch();
-    // Onboarding / auth deep-links name a skillset to land on. That used to
-    // scroll Explore to the skillset's own section; the tab has none, so the
-    // link opens the skillset's full course list instead — the screen the link
+    // Onboarding / auth deep-links name a category to land on. That used to
+    // scroll Explore to the category's own section; the tab has none, so the
+    // link opens the category's full course list instead — the screen the link
     // was always trying to reach.
     final deepLinkIndex = widget.selectedTabIndex;
     if (deepLinkIndex == null || deepLinkIndex < 0) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _openDeepLinkedSkillset(deepLinkIndex));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openDeepLinkedCategory(deepLinkIndex));
   }
 
-  void _openDeepLinkedSkillset(int index) {
+  void _openDeepLinkedCategory(int index) {
     if (!mounted) return;
-    final skillsets = context.read<HomeCubit>().state.skillsets;
-    if (index >= skillsets.length) return;
-    SkillsetCoursesRoute(skillsetId: skillsets[index].id).push(context);
+    final categories = context.read<HomeCubit>().state.categories;
+    if (index >= categories.length) return;
+    CategoryCoursesRoute(categoryId: categories[index].id).push(context);
   }
 
   Future<void> _tryOpenPaywallAutoOpen() async {
@@ -106,7 +106,7 @@ class _CoursePageState extends State<CoursePage> {
 
                     // Browsing scrolls the whole page — the search field and the
                     // import board ride at the top of the list itself, and the
-                    // skillset chip strip is gone (owner, 2026-09-05: "bỏ thanh
+                    // category chip strip is gone (owner, 2026-09-05: "bỏ thanh
                     // scroll ngang… cho cuộn cả thanh tìm kiếm và phần tạo bài
                     // học"). The sections' own headings say where you are.
                     return const Expanded(child: AllCourseTab());

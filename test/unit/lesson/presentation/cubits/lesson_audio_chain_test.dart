@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart' as just_audio;
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 import '../../../../support/test_di.dart';
 

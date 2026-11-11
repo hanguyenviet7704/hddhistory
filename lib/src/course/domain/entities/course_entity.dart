@@ -7,8 +7,8 @@ abstract class CourseEntity with _$CourseEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
-    @Default('') String skillsetId,
-    @Default(SkillsetEntity()) SkillsetEntity skillset,
+    @Default('') String categoryId,
+    @Default(CategoryEntity()) CategoryEntity category,
     @Default(0) int numberOfLesson,
     @Default(0) int numberOfLessonPassed,
     @Default([]) List<OnboardingSymptom> onboardingSymptoms,
@@ -32,13 +32,13 @@ abstract class CourseEntity with _$CourseEntity {
 }
 
 extension CourseEntityExtension on CourseEntity {
-  CourseEntity get withSkillset {
-    List<SkillsetEntity> skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
-    SkillsetEntity skillset = skillsets.firstWhere(
-      (skillset) => skillset.id == skillsetId,
-      orElse: () => SkillsetEntity(),
+  CourseEntity get withCategory {
+    List<CategoryEntity> categories = AppDI.injector.get<HomeCubit>().state.categories;
+    CategoryEntity category = categories.firstWhere(
+      (category) => category.id == categoryId,
+      orElse: () => CategoryEntity(),
     );
-    return copyWith(skillset: skillset);
+    return copyWith(category: category);
   }
 
   /// Completion percentage (0–100) for "Continue learning" cards.

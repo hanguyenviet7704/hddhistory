@@ -1,6 +1,6 @@
 # Change Background / Study Theme — Design Spec
 
-**Ticket:** DC-20260720-01 · **Branch:** `feature/MEUP-habit-builder` · **Status:** approved, in build
+**Ticket:** DC-20260720-01 · **Branch:** `feature/habit-builder` · **Status:** approved, in build
 
 Personalization of the **study background** (color / gradient / image / live video+audio)
 applied across several screens, with a readability **overlay**. This is NOT OS dark mode.
@@ -14,10 +14,10 @@ Scope (confirmed with user):
 ## Source of truth
 - Change table DC-20260720-01 (13 items) — pasted by user.
 - Claude Design project `9c326509-f453-4499-935b-40889a120b66` via DesignSync:
-  - `MeUp App.dc.html` master — `app:home#changebg` pin, `cbPresets`/`_cbLoad`/`_cbPersist`,
+  - `HDDhistory App.dc.html` master — `app:home#changebg` pin, `cbPresets`/`_cbLoad`/`_cbPersist`,
     bottom-sheet markup, FAB markup. (Master is 264.8KB > 256KiB tool cap → the tail getters
     `cbGroups`/`warmCardBg`/`kpScreenBg`/`surveyBtnBg` were truncated; reconstruct from the
-    change-table descriptions or refetch `design_handoff_meup_app/MeUp App.dc.html`.)
+    change-table descriptions or refetch `design_handoff_hddhistory_app/HDDhistory App.dc.html`.)
   - `design/fig-tokens.css` — `--theme-*` palette (7 tones × light/mid/mid-40/dark/darker) =
     the sample color/overlay palette.
   - `assets/bg/*.jpg` (autumn/ocean-photo/ocean-sunset/pastel/rain-photo/water), `cb-theme-icon.svg`.

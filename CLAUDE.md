@@ -123,13 +123,13 @@ Never edit generated files (`*.g.dart`, `*.config.dart`, `*.freezed.dart`). Reru
 - Cubit/BLoC: suffix with `Cubit`/`Bloc`
 
 ### Commit Messages
-Format: `type/MEUP: subject` — no numeric ticket ID (those fell out of use).
+Format: `type: subject` — no numeric ticket ID (those fell out of use).
 - Types: `feature`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `perf`
 - Imperative, lowercase, English or Vietnamese — match surrounding history
-- Example: `feature/MEUP: one swipeable keypoint screen with per-card narration`
+- Example: `feat: one swipeable keypoint screen with per-card narration`
 
 ### Branch Naming
-`type/MEUP-<slug>` (e.g. `feature/MEUP-keypoint-swipe-narration`). The integration
+`type/<slug>` (e.g. `feature/keypoint-swipe-narration`). The integration
 branch is `develop`.
 
 ## Localization

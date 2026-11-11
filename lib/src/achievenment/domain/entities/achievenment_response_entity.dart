@@ -3,10 +3,10 @@ part of '../../achievenment.dart';
 @freezed
 abstract class AchievenmentResponseEntity with _$AchievenmentResponseEntity {
   const factory AchievenmentResponseEntity({
-    @Default('') String skillsetId,
-    @Default(BaseMultiLanguage()) BaseMultiLanguage skillsetTitle,
+    @Default('') String categoryId,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage categoryTitle,
     @Default([]) List<CourseLevelProgressEntity> courses,
-    // Skillset-wide keypoint totals (all levels of all courses) — drives the
+    // Category-wide keypoint totals (all levels of all courses) — drives the
     // fractional learning-progress bar so partial progress shows a real %
     // instead of 0 until a whole course is 100% finished.
     @Default(0) int totalKeypoints,

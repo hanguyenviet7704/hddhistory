@@ -1,4 +1,4 @@
-app_identifier("com.eup.meup") # The bundle identifier of your app
+app_identifier("com.hddhistory.app") # The bundle identifier of your app
 apple_id("biendh@eupgroup.net") # Your Apple Developer Portal username
 team_id("GK9UEKLL78") # Your Apple Developer Team ID
 itc_team_id("118828328") # Your iTunes Connect Team ID

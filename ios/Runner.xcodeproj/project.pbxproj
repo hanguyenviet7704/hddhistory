@@ -7,42 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		055E28013C4E930C284BA8BB /* MeupLessonActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */; };
+		055E28013C4E930C284BA8BB /* HDDhistoryLessonActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE1BDD87340803E5815138D /* HDDhistoryLessonActivityAttributes.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		2B30CBE789E735CAA4A33E75 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D177A0C7B02A9FA44827ACA4 /* NotificationService.swift */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
-		388C167847DD2F41A1B26836 /* meup_widget_book.png in Resources */ = {isa = PBXBuildFile; fileRef = 041007801B538571C50CE0C5 /* meup_widget_book.png */; };
+		388C167847DD2F41A1B26836 /* hddhistory_widget_book.png in Resources */ = {isa = PBXBuildFile; fileRef = 041007801B538571C50CE0C5 /* hddhistory_widget_book.png */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
-		4568ED5932B2377CAC01B9B6 /* MeupHomeWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */; };
+		4568ED5932B2377CAC01B9B6 /* HDDhistoryHomeWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E23F26A922F07922C2A883 /* HDDhistoryHomeWidgetViews.swift */; };
 		466F1228F5604048CD346817 /* stgLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D94EF3CDD42772DA59FB263 /* stgLaunchScreen.storyboard */; };
 		5D0FFB05D2F9AE5E87D912D5 /* LiveActivityChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58B5CFF38FF3151E108ABD39 /* LiveActivityChannel.swift */; };
-		5D9544DCCFA3B32E19A0AB7F /* MeupHomeWidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0A3A47E7E1827A6EA1DD4A /* MeupHomeWidgetData.swift */; };
-		61C7A3B8E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png in Resources */ = {isa = PBXBuildFile; fileRef = 61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */; };
-		61C7A3BAE2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3B9E2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift */; };
-		61C7A3BCE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3BBE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift */; };
-		61C7A3BEE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3BDE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift */; };
+		5D9544DCCFA3B32E19A0AB7F /* HDDhistoryHomeWidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0A3A47E7E1827A6EA1DD4A /* HDDhistoryHomeWidgetData.swift */; };
+		61C7A3B8E2D14F8FA7C23B90 /* hddhistory_widget_streak_medium_art.png in Resources */ = {isa = PBXBuildFile; fileRef = 61C7A3B7E2D14F8FA7C23B90 /* hddhistory_widget_streak_medium_art.png */; };
+		61C7A3BAE2D14F8FA7C23B90 /* HDDhistoryHomeWidgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3B9E2D14F8FA7C23B90 /* HDDhistoryHomeWidgetComponents.swift */; };
+		61C7A3BCE2D14F8FA7C23B90 /* HDDhistoryCourseHomeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3BBE2D14F8FA7C23B90 /* HDDhistoryCourseHomeWidgetView.swift */; };
+		61C7A3BEE2D14F8FA7C23B90 /* HDDhistoryStreakHomeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7A3BDE2D14F8FA7C23B90 /* HDDhistoryStreakHomeWidgetView.swift */; };
 		6F0D3DF348FB2F2EEDB99272 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA86867D7134DC4D6F88EFA6 /* Foundation.framework */; };
 		71547B95C8A892F426A1F256 /* devLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E201F3499727BD5AEB61B996 /* devLaunchScreen.storyboard */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
-		8B11A9C5E9EFD5D227EA00A7 /* MeupLessonLiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4235E902E4F0890CC54B0DE4 /* MeupLessonLiveActivityView.swift */; };
+		8B11A9C5E9EFD5D227EA00A7 /* HDDhistoryLessonLiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4235E902E4F0890CC54B0DE4 /* HDDhistoryLessonLiveActivityView.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A1B2C3D40000000000000001 /* StoryShareChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000002 /* StoryShareChannel.swift */; };
 		A863BBB52E55BD4900E8F211 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A863BBB42E55BD4900E8F211 /* StoreKit.framework */; };
 		A8758F662E3B231600533AF4 /* TikTokPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8758F652E3B231600533AF4 /* TikTokPlugin.swift */; };
-		AEEA07C9BABA7DE78C2FEE5B /* MeupHomeWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D82833060DC59D5E91382E49 /* MeupHomeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AEEA07C9BABA7DE78C2FEE5B /* HDDhistoryHomeWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D82833060DC59D5E91382E49 /* HDDhistoryHomeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BA1B8A213F27F1B40F3C0D43 /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A9AF411115D5E644069F080A /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		BB54980A28C81DCDD518785B /* meup_widget_certificate.png in Resources */ = {isa = PBXBuildFile; fileRef = C47BAE305BCF314E6A7AB0AB /* meup_widget_certificate.png */; };
-		C4548071D19504AFBB7A497A /* meup_widget_flame_star.png in Resources */ = {isa = PBXBuildFile; fileRef = 9921B1C612770BEDAA3228F7 /* meup_widget_flame_star.png */; };
-		C9C3C4917D15CA7C1D5451F0 /* MeupLessonActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */; };
+		BB54980A28C81DCDD518785B /* hddhistory_widget_certificate.png in Resources */ = {isa = PBXBuildFile; fileRef = C47BAE305BCF314E6A7AB0AB /* hddhistory_widget_certificate.png */; };
+		C4548071D19504AFBB7A497A /* hddhistory_widget_flame_star.png in Resources */ = {isa = PBXBuildFile; fileRef = 9921B1C612770BEDAA3228F7 /* hddhistory_widget_flame_star.png */; };
+		C9C3C4917D15CA7C1D5451F0 /* HDDhistoryLessonActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE1BDD87340803E5815138D /* HDDhistoryLessonActivityAttributes.swift */; };
 		CB8DFF9A10077C29E188E62B /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 622C0B908731D738EA07A4F6 /* Pods_Runner.framework */; };
 		DC769DC87CD0CEA218DCA491 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E845031B019FBC1617FCDF9 /* GoogleService-Info.plist */; };
 		E09E72AE2E127612A807E1D7 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DB9B3571D46F8977E443514 /* Pods_RunnerTests.framework */; };
 		EF7992B6BF29DC3D346FA893 /* prodLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8DFBA191DBA17619A12DEDA0 /* prodLaunchScreen.storyboard */; };
 		FC1C1B69BADCADC1E5E37E86 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA86867D7134DC4D6F88EFA6 /* Foundation.framework */; };
-		FE4988C88A375C83B1A019C1 /* MeupHomeWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD817E84C2F982D408F1F4D /* MeupHomeWidgets.swift */; };
+		FE4988C88A375C83B1A019C1 /* HDDhistoryHomeWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD817E84C2F982D408F1F4D /* HDDhistoryHomeWidgets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,7 +51,7 @@
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = FBD5462491226E6B995B93DD;
-			remoteInfo = MeupHomeWidgetsExtension;
+			remoteInfo = HDDhistoryHomeWidgetsExtension;
 		};
 		331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -86,7 +86,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				AEEA07C9BABA7DE78C2FEE5B /* MeupHomeWidgetsExtension.appex in Embed App Extensions */,
+				AEEA07C9BABA7DE78C2FEE5B /* HDDhistoryHomeWidgetsExtension.appex in Embed App Extensions */,
 				BA1B8A213F27F1B40F3C0D43 /* NotificationService.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
@@ -96,7 +96,7 @@
 
 /* Begin PBXFileReference section */
 		01C78A7B8824858F1ABB8936 /* Pods-RunnerTests.release-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-stg.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-stg.xcconfig"; sourceTree = "<group>"; };
-		041007801B538571C50CE0C5 /* meup_widget_book.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = meup_widget_book.png; sourceTree = "<group>"; };
+		041007801B538571C50CE0C5 /* hddhistory_widget_book.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = hddhistory_widget_book.png; sourceTree = "<group>"; };
 		09708A9D92485D1C97A069FE /* Pods-Runner.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-dev.xcconfig"; sourceTree = "<group>"; };
 		0C82BAF51E609A00FFA5081E /* Pods-Runner.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-prod.xcconfig"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
@@ -113,27 +113,27 @@
 		3D7A4DAD980FFE0046E39D80 /* Pods-Runner.debug-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-dev.xcconfig"; sourceTree = "<group>"; };
 		3D94EF3CDD42772DA59FB263 /* stgLaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; name = stgLaunchScreen.storyboard; path = Runner/stgLaunchScreen.storyboard; sourceTree = "<group>"; };
 		3E845031B019FBC1617FCDF9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "flavors/dev/GoogleService-Info.plist"; sourceTree = "<group>"; };
-		4235E902E4F0890CC54B0DE4 /* MeupLessonLiveActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupLessonLiveActivityView.swift; sourceTree = "<group>"; };
-		42A34B9466383C30DA86F7B2 /* Meup.storekit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = Meup.storekit; path = Runner/Meup.storekit; sourceTree = "<group>"; };
+		4235E902E4F0890CC54B0DE4 /* HDDhistoryLessonLiveActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryLessonLiveActivityView.swift; sourceTree = "<group>"; };
+		42A34B9466383C30DA86F7B2 /* HDDhistory.storekit */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = HDDhistory.storekit; path = Runner/HDDhistory.storekit; sourceTree = "<group>"; };
 		43CA5FD8DAF925B4EEF8FFCB /* prodRelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = prodRelease.xcconfig; path = Flutter/prodRelease.xcconfig; sourceTree = "<group>"; };
 		46E3AE3722FAEAF5E121A0C5 /* Pods-Runner.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-prod.xcconfig"; sourceTree = "<group>"; };
 		480DA56195418F12D76CB0F7 /* Pods-Runner.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-dev.xcconfig"; sourceTree = "<group>"; };
 		58B5CFF38FF3151E108ABD39 /* LiveActivityChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityChannel.swift; sourceTree = "<group>"; };
-		61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = meup_widget_streak_medium_art.png; sourceTree = "<group>"; };
-		61C7A3B9E2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetComponents.swift; sourceTree = "<group>"; };
-		61C7A3BBE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupCourseHomeWidgetView.swift; sourceTree = "<group>"; };
-		61C7A3BDE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupStreakHomeWidgetView.swift; sourceTree = "<group>"; };
+		61C7A3B7E2D14F8FA7C23B90 /* hddhistory_widget_streak_medium_art.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = hddhistory_widget_streak_medium_art.png; sourceTree = "<group>"; };
+		61C7A3B9E2D14F8FA7C23B90 /* HDDhistoryHomeWidgetComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryHomeWidgetComponents.swift; sourceTree = "<group>"; };
+		61C7A3BBE2D14F8FA7C23B90 /* HDDhistoryCourseHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryCourseHomeWidgetView.swift; sourceTree = "<group>"; };
+		61C7A3BDE2D14F8FA7C23B90 /* HDDhistoryStreakHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryStreakHomeWidgetView.swift; sourceTree = "<group>"; };
 		622C0B908731D738EA07A4F6 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		63BC6E8C485E68E47E018C74 /* Pods-RunnerTests.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-prod.xcconfig"; sourceTree = "<group>"; };
 		652A8056007DE6552F517671 /* Pods-Runner.release-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-stg.xcconfig"; sourceTree = "<group>"; };
-		65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetViews.swift; sourceTree = "<group>"; };
-		6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupLessonActivityAttributes.swift; sourceTree = "<group>"; };
+		65E23F26A922F07922C2A883 /* HDDhistoryHomeWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryHomeWidgetViews.swift; sourceTree = "<group>"; };
+		6DE1BDD87340803E5815138D /* HDDhistoryLessonActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryLessonActivityAttributes.swift; sourceTree = "<group>"; };
 		73E71D15EE042D27C5214372 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
-		7CD817E84C2F982D408F1F4D /* MeupHomeWidgets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgets.swift; sourceTree = "<group>"; };
+		7CD817E84C2F982D408F1F4D /* HDDhistoryHomeWidgets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryHomeWidgets.swift; sourceTree = "<group>"; };
 		8DB9B3571D46F8977E443514 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DFBA191DBA17619A12DEDA0 /* prodLaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; name = prodLaunchScreen.storyboard; path = Runner/prodLaunchScreen.storyboard; sourceTree = "<group>"; };
 		91723D970D10A70E40676B84 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
@@ -146,10 +146,10 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		98883C5B76DB7F3C3051FD79 /* MeupHomeWidgetsExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = MeupHomeWidgetsExtension.entitlements; sourceTree = "<group>"; };
-		9921B1C612770BEDAA3228F7 /* meup_widget_flame_star.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = meup_widget_flame_star.png; sourceTree = "<group>"; };
+		98883C5B76DB7F3C3051FD79 /* HDDhistoryHomeWidgetsExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = HDDhistoryHomeWidgetsExtension.entitlements; sourceTree = "<group>"; };
+		9921B1C612770BEDAA3228F7 /* hddhistory_widget_flame_star.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = hddhistory_widget_flame_star.png; sourceTree = "<group>"; };
 		9B8FB2A0EC1FC56C27A3EAF8 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
-		9D0A3A47E7E1827A6EA1DD4A /* MeupHomeWidgetData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetData.swift; sourceTree = "<group>"; };
+		9D0A3A47E7E1827A6EA1DD4A /* HDDhistoryHomeWidgetData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HDDhistoryHomeWidgetData.swift; sourceTree = "<group>"; };
 		A1B2C3D40000000000000002 /* StoryShareChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StoryShareChannel.swift; sourceTree = "<group>"; };
 		A1B9CE18A127D2609A174322 /* Pods-Runner.debug-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-stg.xcconfig"; sourceTree = "<group>"; };
 		A804EC312DF2F8440058272D /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
@@ -164,10 +164,10 @@
 		C17764FF6B630AE16EBF87FE /* prodProfile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = prodProfile.xcconfig; path = Flutter/prodProfile.xcconfig; sourceTree = "<group>"; };
 		C3E5F665B8984D0077A62767 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		C41F0C41C862ED477FECD8FB /* Pods-RunnerTests.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-dev.xcconfig"; sourceTree = "<group>"; };
-		C47BAE305BCF314E6A7AB0AB /* meup_widget_certificate.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = meup_widget_certificate.png; sourceTree = "<group>"; };
+		C47BAE305BCF314E6A7AB0AB /* hddhistory_widget_certificate.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = hddhistory_widget_certificate.png; sourceTree = "<group>"; };
 		CBE4C0F3B182953B1E11D59D /* devRelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = devRelease.xcconfig; path = Flutter/devRelease.xcconfig; sourceTree = "<group>"; };
 		D177A0C7B02A9FA44827ACA4 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
-		D82833060DC59D5E91382E49 /* MeupHomeWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MeupHomeWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D82833060DC59D5E91382E49 /* HDDhistoryHomeWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HDDhistoryHomeWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8325954BCDDB3E08E18DF41 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		D90CCE06ABD6F06911C31587 /* stgDebug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = stgDebug.xcconfig; path = Flutter/stgDebug.xcconfig; sourceTree = "<group>"; };
 		DDCC045FBA34261DD3CD09DF /* Pods-RunnerTests.profile-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-stg.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-stg.xcconfig"; sourceTree = "<group>"; };
@@ -262,25 +262,25 @@
 			path = RunnerTests;
 			sourceTree = "<group>";
 		};
-		8D1722C3499EE0FC27DF17F3 /* MeupHomeWidgetsExtension */ = {
+		8D1722C3499EE0FC27DF17F3 /* HDDhistoryHomeWidgetsExtension */ = {
 			isa = PBXGroup;
 			children = (
-				9D0A3A47E7E1827A6EA1DD4A /* MeupHomeWidgetData.swift */,
-				61C7A3B9E2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift */,
-				65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */,
-				61C7A3BBE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift */,
-				61C7A3BDE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift */,
-				7CD817E84C2F982D408F1F4D /* MeupHomeWidgets.swift */,
-				041007801B538571C50CE0C5 /* meup_widget_book.png */,
-				C47BAE305BCF314E6A7AB0AB /* meup_widget_certificate.png */,
-				9921B1C612770BEDAA3228F7 /* meup_widget_flame_star.png */,
-				61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */,
+				9D0A3A47E7E1827A6EA1DD4A /* HDDhistoryHomeWidgetData.swift */,
+				61C7A3B9E2D14F8FA7C23B90 /* HDDhistoryHomeWidgetComponents.swift */,
+				65E23F26A922F07922C2A883 /* HDDhistoryHomeWidgetViews.swift */,
+				61C7A3BBE2D14F8FA7C23B90 /* HDDhistoryCourseHomeWidgetView.swift */,
+				61C7A3BDE2D14F8FA7C23B90 /* HDDhistoryStreakHomeWidgetView.swift */,
+				7CD817E84C2F982D408F1F4D /* HDDhistoryHomeWidgets.swift */,
+				041007801B538571C50CE0C5 /* hddhistory_widget_book.png */,
+				C47BAE305BCF314E6A7AB0AB /* hddhistory_widget_certificate.png */,
+				9921B1C612770BEDAA3228F7 /* hddhistory_widget_flame_star.png */,
+				61C7A3B7E2D14F8FA7C23B90 /* hddhistory_widget_streak_medium_art.png */,
 				2521B090DFF46AD4FFD0A835 /* Info.plist */,
-				98883C5B76DB7F3C3051FD79 /* MeupHomeWidgetsExtension.entitlements */,
-				6DE1BDD87340803E5815138D /* MeupLessonActivityAttributes.swift */,
-				4235E902E4F0890CC54B0DE4 /* MeupLessonLiveActivityView.swift */,
+				98883C5B76DB7F3C3051FD79 /* HDDhistoryHomeWidgetsExtension.entitlements */,
+				6DE1BDD87340803E5815138D /* HDDhistoryLessonActivityAttributes.swift */,
+				4235E902E4F0890CC54B0DE4 /* HDDhistoryLessonLiveActivityView.swift */,
 			);
-			path = MeupHomeWidgetsExtension;
+			path = HDDhistoryHomeWidgetsExtension;
 			sourceTree = "<group>";
 		};
 		9152AA305958E0CADD806EF7 /* NotificationService */ = {
@@ -327,7 +327,7 @@
 				1E9E5D7642AE609913E03971 /* Pods */,
 				3E845031B019FBC1617FCDF9 /* GoogleService-Info.plist */,
 				E1F1ED9808ACAB4057052EE0 /* Frameworks */,
-				8D1722C3499EE0FC27DF17F3 /* MeupHomeWidgetsExtension */,
+				8D1722C3499EE0FC27DF17F3 /* HDDhistoryHomeWidgetsExtension */,
 				9152AA305958E0CADD806EF7 /* NotificationService */,
 			);
 			sourceTree = "<group>";
@@ -337,7 +337,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* .app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
-				D82833060DC59D5E91382E49 /* MeupHomeWidgetsExtension.appex */,
+				D82833060DC59D5E91382E49 /* HDDhistoryHomeWidgetsExtension.appex */,
 				A9AF411115D5E644069F080A /* NotificationService.appex */,
 			);
 			name = Products;
@@ -358,7 +358,7 @@
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				58B5CFF38FF3151E108ABD39 /* LiveActivityChannel.swift */,
 				A1B2C3D40000000000000002 /* StoryShareChannel.swift */,
-				42A34B9466383C30DA86F7B2 /* Meup.storekit */,
+				42A34B9466383C30DA86F7B2 /* HDDhistory.storekit */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -445,9 +445,9 @@
 			productReference = 97C146EE1CF9000F007C117D /* .app */;
 			productType = "com.apple.product-type.application";
 		};
-		FBD5462491226E6B995B93DD /* MeupHomeWidgetsExtension */ = {
+		FBD5462491226E6B995B93DD /* HDDhistoryHomeWidgetsExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6D01C365DF75A1163228E30B /* Build configuration list for PBXNativeTarget "MeupHomeWidgetsExtension" */;
+			buildConfigurationList = 6D01C365DF75A1163228E30B /* Build configuration list for PBXNativeTarget "HDDhistoryHomeWidgetsExtension" */;
 			buildPhases = (
 				0CC62AE321095F74C2825C80 /* Sources */,
 				025F945D204D80F6AEF83959 /* Frameworks */,
@@ -457,9 +457,9 @@
 			);
 			dependencies = (
 			);
-			name = MeupHomeWidgetsExtension;
-			productName = MeupHomeWidgetsExtension;
-			productReference = D82833060DC59D5E91382E49 /* MeupHomeWidgetsExtension.appex */;
+			name = HDDhistoryHomeWidgetsExtension;
+			productName = HDDhistoryHomeWidgetsExtension;
+			productReference = D82833060DC59D5E91382E49 /* HDDhistoryHomeWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -500,7 +500,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
-				FBD5462491226E6B995B93DD /* MeupHomeWidgetsExtension */,
+				FBD5462491226E6B995B93DD /* HDDhistoryHomeWidgetsExtension */,
 				3BF7EE04CB5A334160542828 /* NotificationService */,
 			);
 		};
@@ -511,10 +511,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				388C167847DD2F41A1B26836 /* meup_widget_book.png in Resources */,
-				BB54980A28C81DCDD518785B /* meup_widget_certificate.png in Resources */,
-				C4548071D19504AFBB7A497A /* meup_widget_flame_star.png in Resources */,
-				61C7A3B8E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png in Resources */,
+				388C167847DD2F41A1B26836 /* hddhistory_widget_book.png in Resources */,
+				BB54980A28C81DCDD518785B /* hddhistory_widget_certificate.png in Resources */,
+				C4548071D19504AFBB7A497A /* hddhistory_widget_flame_star.png in Resources */,
+				61C7A3B8E2D14F8FA7C23B90 /* hddhistory_widget_streak_medium_art.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -721,14 +721,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5D9544DCCFA3B32E19A0AB7F /* MeupHomeWidgetData.swift in Sources */,
-				61C7A3BAE2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift in Sources */,
-				4568ED5932B2377CAC01B9B6 /* MeupHomeWidgetViews.swift in Sources */,
-				61C7A3BCE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift in Sources */,
-				61C7A3BEE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift in Sources */,
-				FE4988C88A375C83B1A019C1 /* MeupHomeWidgets.swift in Sources */,
-				C9C3C4917D15CA7C1D5451F0 /* MeupLessonActivityAttributes.swift in Sources */,
-				8B11A9C5E9EFD5D227EA00A7 /* MeupLessonLiveActivityView.swift in Sources */,
+				5D9544DCCFA3B32E19A0AB7F /* HDDhistoryHomeWidgetData.swift in Sources */,
+				61C7A3BAE2D14F8FA7C23B90 /* HDDhistoryHomeWidgetComponents.swift in Sources */,
+				4568ED5932B2377CAC01B9B6 /* HDDhistoryHomeWidgetViews.swift in Sources */,
+				61C7A3BCE2D14F8FA7C23B90 /* HDDhistoryCourseHomeWidgetView.swift in Sources */,
+				61C7A3BEE2D14F8FA7C23B90 /* HDDhistoryStreakHomeWidgetView.swift in Sources */,
+				FE4988C88A375C83B1A019C1 /* HDDhistoryHomeWidgets.swift in Sources */,
+				C9C3C4917D15CA7C1D5451F0 /* HDDhistoryLessonActivityAttributes.swift in Sources */,
+				8B11A9C5E9EFD5D227EA00A7 /* HDDhistoryLessonLiveActivityView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -747,7 +747,7 @@
 				A8758F662E3B231600533AF4 /* TikTokPlugin.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
-				055E28013C4E930C284BA8BB /* MeupLessonActivityAttributes.swift in Sources */,
+				055E28013C4E930C284BA8BB /* HDDhistoryLessonActivityAttributes.swift in Sources */,
 				5D0FFB05D2F9AE5E87D912D5 /* LiveActivityChannel.swift in Sources */,
 				A1B2C3D40000000000000001 /* StoryShareChannel.swift in Sources */,
 			);
@@ -771,8 +771,8 @@
 		};
 		36D80D13CEC05447D6F7073A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = MeupHomeWidgetsExtension;
-			target = FBD5462491226E6B995B93DD /* MeupHomeWidgetsExtension */;
+			name = HDDhistoryHomeWidgetsExtension;
+			target = FBD5462491226E6B995B93DD /* HDDhistoryHomeWidgetsExtension */;
 			targetProxy = 13D33F1F5CBE44681501C7B4 /* PBXContainerItemProxy */;
 		};
 		C5BF7027DDE5E2A6EC8A41C1 /* PBXTargetDependency */ = {
@@ -821,7 +821,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -892,7 +892,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -922,7 +922,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -938,11 +938,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -950,7 +950,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1020,7 +1020,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1050,7 +1050,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1131,7 +1131,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				PRODUCT_NAME = "$(BUNDLE_DISPLAY_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1173,7 +1173,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1191,7 +1191,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
@@ -1207,7 +1207,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
@@ -1219,11 +1219,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1231,7 +1231,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1276,7 +1276,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1383,7 +1383,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -1398,11 +1398,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1410,7 +1410,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1425,11 +1425,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1437,7 +1437,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1507,7 +1507,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -1522,11 +1522,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1534,7 +1534,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1610,7 +1610,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -1641,11 +1641,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1653,7 +1653,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1729,7 +1729,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -1742,11 +1742,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1754,7 +1754,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1842,7 +1842,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -1919,7 +1919,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -2057,7 +2057,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				PRODUCT_NAME = "$(BUNDLE_DISPLAY_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2091,7 +2091,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				PRODUCT_NAME = "$(BUNDLE_DISPLAY_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2141,7 +2141,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2170,7 +2170,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2186,11 +2186,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2198,7 +2198,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2213,11 +2213,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2225,7 +2225,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2330,11 +2330,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2342,7 +2342,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2370,7 +2370,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2385,11 +2385,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2397,7 +2397,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2424,7 +2424,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.dev.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.dev.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2453,7 +2453,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2482,7 +2482,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2552,7 +2552,7 @@
 					"$(PROJECT_DIR)/Flutter",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -2600,7 +2600,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2628,7 +2628,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2644,11 +2644,11 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = MeupHomeWidgetsExtension/MeupHomeWidgetsExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = HDDhistoryHomeWidgetsExtension/HDDhistoryHomeWidgetsExtension.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MeupHomeWidgetsExtension/Info.plist;
+				INFOPLIST_FILE = HDDhistoryHomeWidgetsExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2656,7 +2656,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.eup.meup.stg.MeupHomeWidgetsExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hddhistory.app.stg.HDDhistoryHomeWidgetsExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2707,7 +2707,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6D01C365DF75A1163228E30B /* Build configuration list for PBXNativeTarget "MeupHomeWidgetsExtension" */ = {
+		6D01C365DF75A1163228E30B /* Build configuration list for PBXNativeTarget "HDDhistoryHomeWidgetsExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				85E5FAD0CF289BC8DFCEF5B7 /* Release */,

@@ -1,6 +1,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// JSON dưới đây chép nguyên văn từ phản hồi thật của
 /// `GET /api/v1/knowledge-graph/entities/ngo_quyen` (Neo4j đã nạp bộ dữ liệu

@@ -216,7 +216,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `HomeWidgetRepository` calls the in-progress, suggested-course, and streak APIs, builds display-only JSON payloads, saves course images best-effort through `home_widget`, and preserves previous payloads on API failures.
 - Suggested-course payloads are reused for the same local day to avoid random backend churn on repeated syncs, but course progress on the cached suggestion bypasses the cache so the widget can rotate to the next suggestion.
 - iOS WidgetKit and Android Glance read shared JSON/image data using the same storage keys. Bundled native assets cover book, certificate, and flame fallbacks when shared image paths are missing.
-- Widget taps emit sanitized `meup://` / `https://meup.training` URLs. `DeeplinkCubit` validates `source=home_widget`, routes empty/exhausted states to Home, routes valid course/streak states to Course Roadmap, and tracks tap/result events without raw URLs.
+- Widget taps emit sanitized `hddhistory://` / `https://meup.training` URLs. `DeeplinkCubit` validates `source=home_widget`, routes empty/exhausted states to Home, routes valid course/streak states to Course Roadmap, and tracks tap/result events without raw URLs.
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.

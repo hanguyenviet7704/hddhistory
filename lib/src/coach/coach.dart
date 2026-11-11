@@ -14,7 +14,7 @@ import 'dart:ui' as dartui;
 import 'package:flutter/scheduler.dart' show Ticker;
 
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';

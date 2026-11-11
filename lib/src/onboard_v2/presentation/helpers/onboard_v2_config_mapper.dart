@@ -14,8 +14,8 @@ part of '../../onboard_v2.dart';
 /// đọc thẳng taxonomy từ DB (`GET /onboarding-taxonomy`), config chỉ còn giữ
 /// phần chữ.
 ///
-/// See meup-api/plans/260721-onboard-v2-config-driven/contract.md and
-/// meup-api/plans/260918-onboarding-v3-taxonomy/design.md.
+/// See hddhistory-api/plans/260721-onboard-v2-config-driven/contract.md and
+/// hddhistory-api/plans/260918-onboarding-v3-taxonomy/design.md.
 abstract final class OnboardV2ConfigMapper {
   static OnboardEntity toOnboardEntity(OnboardingContentConfigEntity config) {
     return OnboardEntity(
@@ -134,7 +134,7 @@ abstract final class OnboardV2ConfigMapper {
       OnboardCopyEntity(key: 'onboardingV3P6HeadingPrefix', value: config.desire.heading),
       OnboardCopyEntity(key: 'onboardingV3P6HeadingHighlight', value: config.desire.headingHighlight),
       OnboardCopyEntity(key: 'onboardingV3P6Helper', value: config.desire.helper),
-      // S7 MeUp dạy thế nào.
+      // S7 HDDhistory dạy thế nào.
       OnboardCopyEntity(key: 'onboardingV3P7Eyebrow', value: config.how.eyebrow),
       OnboardCopyEntity(key: 'onboardingV3P7HeadingPrefix', value: config.how.heading),
       OnboardCopyEntity(key: 'onboardingV3P7HeadingHighlight', value: config.how.headingHighlight),

@@ -28,10 +28,10 @@
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>CFBundleURLName</key>
-        <string>com.eup.meup</string>
+        <string>com.hddhistory.app</string>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>meup</string>
+          <string>hddhistory</string>
         </array>
       </dict>
       <dict>
@@ -70,7 +70,7 @@
     <key>FacebookClientToken</key>
     <string>df6ed8acccb34631007fcba3e2d296da</string>
     <key>FacebookDisplayName</key>
-    <string>Meup</string>
+    <string>HDDhistory</string>
     <key>FlutterDeepLinkingEnabled</key>
     <false/>
     <key>GIDClientID</key>

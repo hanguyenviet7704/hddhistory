@@ -207,7 +207,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   // A caller that KNOWS which surface it wants, overriding the entry-point
   // table: the gift popup always opens the ABBREVIATED paywall (spec sheet),
   // and an admin deeplink can name either variant outright
-  // (`meup://paywall?variant=full|compact`). Reset together with the entry
+  // (`hddhistory://paywall?variant=full|compact`). Reset together with the entry
   // point (PaywallPage.dispose), so the override can never leak into a later,
   // ordinary paywall open.
   PaywallProductVariant? _paywallVariantOverride;
@@ -853,7 +853,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   /// The buyer-actionable refusal, or null to keep the generic toast.
   ///
   /// One store account holds one subscription, so paying again from a store
-  /// account whose transaction already belongs to a different Meup account is
+  /// account whose transaction already belongs to a different HDDhistory account is
   /// refused — and until now that surfaced as "Verification failed", which
   /// tells them nothing and reads like we lost their money. Nothing was
   /// charged: the store re-presented the existing transaction.

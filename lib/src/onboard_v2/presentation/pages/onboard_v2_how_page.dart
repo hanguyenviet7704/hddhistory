@@ -1,6 +1,6 @@
 part of '../../onboard_v2.dart';
 
-/// S7 — "MeUp giúp bạn thế nào": 4 thẻ bước (Hiểu / Thử / Ôn / Dùng) trôi lên
+/// S7 — "HDDhistory giúp bạn thế nào": 4 thẻ bước (Hiểu / Thử / Ôn / Dùng) trôi lên
 /// lần lượt rồi lặp lại. Màn thuần chữ, không hỏi gì, nên CTA luôn bật.
 class OnboardV2HowPage extends StatelessWidget {
   const OnboardV2HowPage({super.key});

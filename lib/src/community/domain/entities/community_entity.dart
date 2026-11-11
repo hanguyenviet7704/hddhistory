@@ -374,7 +374,7 @@ abstract class CommunityChatRoomEntity with _$CommunityChatRoomEntity {
     @Default('') String slug,
     @Default('') String name,
 
-    /// Hosted by the MeUp team — drives the brand tile in the header.
+    /// Hosted by the HDDhistory team — drives the brand tile in the header.
     @Default(true) bool isOfficial,
 
     /// Members with a heartbeat in the last few minutes, not open sockets.

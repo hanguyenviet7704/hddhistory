@@ -12,7 +12,7 @@ import 'package:injectable/injectable.dart';
 import 'package:just_audio/just_audio.dart' as just_audio;
 import 'package:flutter/rendering.dart';
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:shimmer/shimmer.dart';
 

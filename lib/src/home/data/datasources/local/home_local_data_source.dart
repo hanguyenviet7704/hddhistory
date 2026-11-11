@@ -2,32 +2,32 @@ part of '../../../home.dart';
 
 /// Local data source for Home
 ///
-/// Handles caching of Skillset data for offline support.
+/// Handles caching of Category data for offline support.
 /// Note: For paginated APIs, only the items are cached, not pagination metadata.
 /// Pagination info (currentPage, totalPages, etc.) should always come fresh from the API.
 abstract class HomeLocalDataSource {
-  /// Get all cached skillsets
+  /// Get all cached categories
   ///
   /// Used as fallback when API fails. The repository will construct
   /// a BasePageBreak with these items for offline support.
-  Future<List<SkillsetModel>> getCachedSkillsets();
+  Future<List<CategoryModel>> getCachedCategories();
 
-  /// Cache multiple skillsets
+  /// Cache multiple categories
   ///
   /// For paginated APIs, the repository passes `pageData.items` (not the entire BasePageBreak).
   /// This keeps the cache simple and avoids stale pagination metadata.
-  Future<void> cacheSkillsets(List<SkillsetModel> models);
+  Future<void> cacheCategories(List<CategoryModel> models);
 
-  /// Get cached skillset by id
-  Future<SkillsetModel?> getCachedSkillset(String id);
+  /// Get cached category by id
+  Future<CategoryModel?> getCachedCategory(String id);
 
-  /// Cache single skillset
+  /// Cache single category
   ///
   /// Used for caching individual items from GET, POST, PUT responses.
-  Future<void> cacheSkillset(SkillsetModel model);
+  Future<void> cacheCategory(CategoryModel model);
 
-  /// Delete cached skillset
-  Future<void> deleteCachedSkillset(String id);
+  /// Delete cached category
+  Future<void> deleteCachedCategory(String id);
 
   /// Clear all cached data
   Future<void> clearCache();
@@ -43,14 +43,14 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   HomeLocalDataSourceImpl(this._localStoreService);
 
   @override
-  Future<List<SkillsetModel>> getCachedSkillsets() async {
+  Future<List<CategoryModel>> getCachedCategories() async {
     try {
       final data = await _localStoreService.getMap(key: _cacheListKey);
       if (data.isEmpty) return [];
 
       final List<dynamic> jsonList = data['items'] ?? [];
       return jsonList
-          .map((json) => SkillsetModel.fromJson(json as Map<String, dynamic>))
+          .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       return [];
@@ -58,7 +58,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   }
 
   @override
-  Future<void> cacheSkillsets(List<SkillsetModel> models) async {
+  Future<void> cacheCategories(List<CategoryModel> models) async {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(
@@ -71,20 +71,20 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   }
 
   @override
-  Future<SkillsetModel?> getCachedSkillset(String id) async {
+  Future<CategoryModel?> getCachedCategory(String id) async {
     try {
       final cacheKey = '${_cacheKey}_$id';
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
 
-      return SkillsetModel.fromJson(data);
+      return CategoryModel.fromJson(data);
     } catch (e) {
       return null;
     }
   }
 
   @override
-  Future<void> cacheSkillset(SkillsetModel model) async {
+  Future<void> cacheCategory(CategoryModel model) async {
     try {
       final cacheKey = '${_cacheKey}_${model.id}';
       await _localStoreService.setMap(
@@ -97,15 +97,15 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   }
 
   @override
-  Future<void> deleteCachedSkillset(String id) async {
+  Future<void> deleteCachedCategory(String id) async {
     try {
       final cacheKey = '${_cacheKey}_$id';
       await _localStoreService.remove(key: cacheKey);
 
       // Also remove from cached list if exists
-      final cachedList = await getCachedSkillsets();
+      final cachedList = await getCachedCategories();
       final updatedList = cachedList.where((item) => item.id != id).toList();
-      await cacheSkillsets(updatedList);
+      await cacheCategories(updatedList);
     } catch (e) {
       // Handle error silently or log
     }

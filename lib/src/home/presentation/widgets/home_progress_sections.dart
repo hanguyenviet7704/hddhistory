@@ -16,7 +16,7 @@ const Color _homeMutedTextColor = Color(0xFF9AA4B2);
 const Color _homeProgressTrackColor = Color(0xFFE7E9F2);
 
 /// Rotating pastel tint palette for the learning-progress icon tiles — the API
-/// has no per-skillset colour, so tiles cycle through a small set of existing
+/// has no per-category colour, so tiles cycle through a small set of existing
 /// soft theme tokens for variety instead of one flat tint everywhere.
 const List<Color> _homeCategoryTints = [
   AppCustomColor.backgroundBrandSoft,
@@ -224,15 +224,15 @@ class HomeJournalSection extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// "Tiến độ học tập" — one tile per skillset, two to a row
+// "Tiến độ học tập" — one tile per category, two to a row
 // ---------------------------------------------------------------------------
 
-/// Per-skillset progress, redrawn as a two-column grid inside ONE card.
+/// Per-category progress, redrawn as a two-column grid inside ONE card.
 ///
 /// It used to be a full-width list of rows with dividers and a chevron each.
 /// Six of those made a very tall block for what is really a glanceable summary,
 /// so the design halved the width, dropped the chevrons and the dividers, and
-/// let the tiles pack two to a row (design `MeUp Home (standalone)`).
+/// let the tiles pack two to a row (design `HDDhistory Home (standalone)`).
 class HomeLearningProgressSection extends StatelessWidget {
   const HomeLearningProgressSection({super.key});
 
@@ -242,7 +242,7 @@ class HomeLearningProgressSection extends StatelessWidget {
       buildWhen: (previous, current) => previous.achievenments != current.achievenments,
       builder: (context, state) {
         final visible = state.achievenments.where((a) => a.totalCourse > 0).toList();
-        // No skillset started yet: nothing to be at 0% about. The section is
+        // No category started yet: nothing to be at 0% about. The section is
         // absent rather than empty — an empty progress card would read as a
         // loading failure.
         if (visible.isEmpty) return const SizedBox.shrink();
@@ -257,12 +257,12 @@ class HomeLearningProgressSection extends StatelessWidget {
                 padding: EdgeInsets.all(12.w),
                 radius: 20,
                 shadow: _homeCardShadow,
-                // The progress denominator is the skillset's whole catalog size,
+                // The progress denominator is the category's whole catalog size,
                 // which lives in HomeCubit — rebuild when it arrives so the bars
                 // aren't stuck on the (much smaller) achievement fallback if
-                // skillsets load late.
+                // categories load late.
                 child: BlocBuilder<HomeCubit, HomeState>(
-                  buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
+                  buildWhen: (prev, curr) => prev.categories != curr.categories,
                   builder: (context, homeState) {
                     return Column(
                       children: [
@@ -314,8 +314,8 @@ class _HomeCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final fraction = _fraction();
     final percent = (fraction * 100).round();
-    final name = achievement.skillsetTitle.text;
-    final imageUrl = homeState.skillsets.where((s) => s.id == achievement.skillsetId).firstOrNull?.image ?? '';
+    final name = achievement.categoryTitle.text;
+    final imageUrl = homeState.categories.where((s) => s.id == achievement.categoryId).firstOrNull?.image ?? '';
 
     return Semantics(
       button: true,
@@ -369,18 +369,18 @@ class _HomeCategoryTile extends StatelessWidget {
     );
   }
 
-  /// Progress over the skillset's WHOLE catalog (every course shown in
+  /// Progress over the category's WHOLE catalog (every course shown in
   /// Explore), each course counting as one unit in [0,1]: a completed course =
   /// 1.0, an in-progress course = its keypoint fraction, an untouched course = 0.
   ///
   /// The achievement API only returns rows for the courses the user has
   /// STARTED (`achievement.totalCourse` counts just those), so dividing by it
   /// made a user who finished the 2 courses they touched read as 100% even
-  /// though the skillset has 9. The denominator must be the catalog size from
-  /// HomeCubit; fall back to `achievement.totalCourse` only if the skillset
+  /// though the category has 9. The denominator must be the catalog size from
+  /// HomeCubit; fall back to `achievement.totalCourse` only if the category
   /// isn't loaded yet, so the bar never divides by zero or disappears.
   double _fraction() {
-    final catalogCount = homeState.skillsets.where((s) => s.id == achievement.skillsetId).firstOrNull?.courses.length ?? 0;
+    final catalogCount = homeState.categories.where((s) => s.id == achievement.categoryId).firstOrNull?.courses.length ?? 0;
     final denominator = catalogCount > 0 ? catalogCount : achievement.totalCourse;
     if (denominator <= 0) return 0;
 
@@ -392,20 +392,20 @@ class _HomeCategoryTile extends StatelessWidget {
     return (completedUnits / denominator).clamp(0.0, 1.0);
   }
 
-  /// Tapping a tile opens that skillset's full course list.
+  /// Tapping a tile opens that category's full course list.
   ///
-  /// It used to drop the reader on the Explore tab scrolled to the skillset's
-  /// own section. Explore no longer has skillset sections, and a tile that
+  /// It used to drop the reader on the Explore tab scrolled to the category's
+  /// own section. Explore no longer has category sections, and a tile that
   /// names ONE topic should not land on a mixed, curated page — so it opens the
-  /// list that is actually about that topic. No-op if the skillset isn't in the
+  /// list that is actually about that topic. No-op if the category isn't in the
   /// catalog.
   void _openInExplore(BuildContext context) {
     final homeCubit = AppDI.injector.get<HomeCubit>();
-    final index = homeCubit.state.skillsets.indexWhere((s) => s.id == achievement.skillsetId);
+    final index = homeCubit.state.categories.indexWhere((s) => s.id == achievement.categoryId);
     if (index < 0) return;
     AppHaptic.select();
-    homeCubit.selectSkillsetIndex(index);
+    homeCubit.selectCategoryIndex(index);
     AppDI.injector.get<CourseCubit>().setAllCourseSource('home_progress');
-    SkillsetCoursesRoute(skillsetId: achievement.skillsetId).push(context);
+    CategoryCoursesRoute(categoryId: achievement.categoryId).push(context);
   }
 }

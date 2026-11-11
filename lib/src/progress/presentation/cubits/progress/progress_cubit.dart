@@ -56,7 +56,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
 
   /// Self-heal for Home's "Continue learning" section: fetches when
   /// my-courses is empty because an earlier load failed or never ran (e.g. it
-  /// lost the race against skillsets inside HomeCubit's Future.wait) and
+  /// lost the race against categories inside HomeCubit's Future.wait) and
   /// nothing is in flight. No-op when data is present, so it's safe to call
   /// on every Home mount and tab return. Mirrors
   /// [HomeCubit.ensureHomeDataLoaded]. Without this, a myCourses-only failure

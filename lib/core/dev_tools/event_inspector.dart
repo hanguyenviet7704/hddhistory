@@ -84,7 +84,7 @@ class EventInspectorStore {
   void clear() => events.value = <InspectedEvent>[];
 
   /// Whole buffer as plain text — for copy-to-clipboard into a bug report or
-  /// for diffing against the "[MeUp] Event Tracking" spec sheet.
+  /// for diffing against the "[HDDhistory] Event Tracking" spec sheet.
   String exportAsText() =>
       events.value.reversed.map((e) => e.asLogLine()).join('\n');
 }

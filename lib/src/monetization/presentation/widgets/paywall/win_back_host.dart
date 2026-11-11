@@ -30,7 +30,7 @@ class _WinBackHostState extends State<WinBackHost> with WidgetsBindingObserver {
 
   /// True while the app is not in the foreground. A win-back that comes due
   /// while the reader is in another app is DROPPED rather than queued: coming
-  /// back to MeUp and being met by a sales sheet you never asked for reads as a
+  /// back to HDDhistory and being met by a sales sheet you never asked for reads as a
   /// bug, and the moment it was selling into has passed anyway.
   bool _backgrounded = false;
 

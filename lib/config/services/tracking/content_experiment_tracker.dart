@@ -18,7 +18,7 @@ class ContentExperimentTracker {
   static ContentExperimentTracker get instance => _instance;
 
   /// Param app đóng dấu nhánh lên. Phải khớp `CONTENT_EXPERIMENT_PARAM` bên
-  /// `meup-api/src/modules/courses/src/modules/course-version/`.
+  /// `hddhistory-api/src/modules/courses/src/modules/course-version/`.
   static const String variantParam = 'content_variant';
 
   /// Param đóng dấu đợt, để phễu không trộn hai đợt trùng khoảng thời gian.

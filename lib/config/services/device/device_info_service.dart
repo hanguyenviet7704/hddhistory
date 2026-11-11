@@ -145,7 +145,7 @@ class DeviceInfoService implements IDeviceInfoService {
       // degrade to a random id rather than stall that await indefinitely.
       final ssaid = await _androidSsaidProvider().timeout(const Duration(seconds: 3));
       if (ssaid == null || ssaid.trim().isEmpty || ssaid == _knownBuggySsaid) return null;
-      return const Uuid().v5(Namespace.url.value, 'meup-android-device-$ssaid');
+      return const Uuid().v5(Namespace.url.value, 'hddhistory-android-device-$ssaid');
     } catch (e) {
       LogDev.warning('SSAID unavailable, falling back to random device token: $e');
       return null;

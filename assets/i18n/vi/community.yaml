@@ -6,8 +6,8 @@ tabTopics: Phòng
 scopeAll: Tất cả bài
 scopeFollowing: Đang theo dõi
 
-officialAuthorName: Đội ngũ MeUp
-deletedAuthorName: Một thành viên MeUp
+officialAuthorName: Đội ngũ HDDhistory
+deletedAuthorName: Một thành viên HDDhistory
 anonymousAuthorName: Người giấu tên
 
 follow: + Theo dõi
@@ -28,7 +28,7 @@ topicNoPostsToday: Chưa có bài mới hôm nay
 topicJustJoined: Vừa tham gia
 
 roomSuggestPromptTitle: Không thấy phòng bạn cần?
-roomSuggestPromptBody: Đề xuất một phòng mới — nếu đủ người quan tâm, MeUp sẽ mở phòng đó.
+roomSuggestPromptBody: Đề xuất một phòng mới — nếu đủ người quan tâm, HDDhistory sẽ mở phòng đó.
 roomSuggestCta: Đề xuất phòng mới
 roomSuggestFormTitle: Đề xuất phòng mới
 roomSuggestNameLabel: TÊN PHÒNG
@@ -58,7 +58,7 @@ weeklyJoin: Vào bàn luận
 weeklyTitle: Câu hỏi của tuần
 weeklyNote: Hãy trả lời bằng trải nghiệm của chính bạn và giữ cho nơi này an toàn.
 weeklyNoneTitle: Tuần này chưa có câu hỏi
-weeklyNoneBody: Mỗi tuần đội ngũ MeUp đặt một câu hỏi mới. Ghé lại sau vài ngày nhé.
+weeklyNoneBody: Mỗi tuần đội ngũ HDDhistory đặt một câu hỏi mới. Ghé lại sau vài ngày nhé.
 weeklyClosed: Câu hỏi tuần này đã đóng. Sẽ có câu mới sớm thôi.
 
 postTitle: Bài viết
@@ -81,7 +81,7 @@ emptyFollowingTitle: Chưa theo dõi thread nào
 emptyFollowingBody: Bấm chuông trên một bài viết để nhận thông báo khi có bình luận mới.
 emptyFollowingAction: Xem tất cả bài
 emptyTopicsTitle: Chưa có phòng nào
-emptyTopicsBody: Đội ngũ MeUp đang chuẩn bị. Ghé lại sau nhé.
+emptyTopicsBody: Đội ngũ HDDhistory đang chuẩn bị. Ghé lại sau nhé.
 emptyTopicFeedTitle: Phòng này chưa có bài
 emptyTopicFeedBody: Bài của bạn có thể là bài đầu tiên.
 emptyCommentsTitle: Chưa có bình luận
@@ -94,14 +94,14 @@ menuDelete: Xoá bài
 deletePostDone: Đã xoá bài của bạn
 
 reportTitle: Báo cáo nội dung này
-reportSubtitle: Đội ngũ MeUp sẽ xem và quyết định. Nội dung không tự động bị ẩn.
+reportSubtitle: Đội ngũ HDDhistory sẽ xem và quyết định. Nội dung không tự động bị ẩn.
 reportSpam: Spam hoặc rao bán
 reportHarassment: Quấy rối, xúc phạm
 reportAdult: Nội dung 18+
 reportMisinformation: Thông tin sai
 reportPrivacy: Tiết lộ danh tính người khác
 reportOther: Lý do khác
-reportSent: Cảm ơn bạn. Đội ngũ MeUp sẽ xem lại.
+reportSent: Cảm ơn bạn. Đội ngũ HDDhistory sẽ xem lại.
 reportFailed: Chưa gửi được báo cáo. Thử lại nhé.
 
 guestTitle: Đăng nhập để tham gia
@@ -134,7 +134,7 @@ attachEmptyCourses: Bạn chưa học khoá nào để đính kèm.
 attachEmptyCards: Bạn chưa lưu card nào.
 attachRemove: Bỏ đính kèm
 
-attachedCourseTitle: Lộ trình MeUp
+attachedCourseTitle: Lộ trình HDDhistory
 attachedCourseHint: Mở khoá học mà bài viết này nhắc tới.
 attachedCourseCta: Xem khoá học
 
@@ -167,8 +167,8 @@ shareStoryDone: Đã chia sẻ lên story
 shareFailed: Chưa chia sẻ được. Thử lại nhé.
 shareThemeLavender: Lavender
 shareThemeSky: Sky
-shareOpenInMeUp: Mở trong MeUp
-shareBrandLine: MeUp · Daily Growth Trainer
+shareOpenInHDDhistory: Mở trong HDDhistory
+shareBrandLine: HDDhistory · Daily Growth Trainer
 shareLearningThis: MÌNH ĐANG HỌC CÁI NÀY
 shareCancel: Huỷ
 
@@ -227,7 +227,7 @@ tourRoomsBody: "Không gian riêng cho từng chủ đề bạn theo đuổi."
 tourChatTitle: "Hội bàn tròn"
 tourChatBody: "Giao lưu cùng cộng đồng, thoải mái đóng góp, không phán xét."
 tourComposeTitle: "Bắt đầu khám phá"
-tourComposeBody: "Bạn có câu chuyện muốn chia sẻ, hay chỉ muốn gửi lời chào tới thành viên MeUp?"
+tourComposeBody: "Bạn có câu chuyện muốn chia sẻ, hay chỉ muốn gửi lời chào tới thành viên HDDhistory?"
 tourComposeCta: "Viết bài đầu tiên"
 # --- Tin nhắn ghim và nội quy nhóm (thiết kế S-03b / S-03c) ---
 chatPinBarJump: Tới tin nhắn đã ghim

@@ -12,7 +12,7 @@ class HomeWidgetPayloadBuilder {
         widgetType: HomeWidgetType.inProgressCourse,
         state: HomeWidgetPayloadState.empty,
         updatedAt: updatedAt,
-        deeplink: 'meup://home?source=home_widget&widgetType=${HomeWidgetType.inProgressCourse.value}&state=${HomeWidgetPayloadState.empty.value}',
+        deeplink: 'hddhistory://home?source=home_widget&widgetType=${HomeWidgetType.inProgressCourse.value}&state=${HomeWidgetPayloadState.empty.value}',
         staticAssetKey: HomeWidgetStorageKeys.bookAsset,
         data: {
           'localeCode': localeCode,
@@ -27,7 +27,7 @@ class HomeWidgetPayloadBuilder {
       widgetType: HomeWidgetType.inProgressCourse,
       state: HomeWidgetPayloadState.ready,
       updatedAt: updatedAt,
-      deeplink: 'meup://course-roadmap?courseId=${Uri.encodeQueryComponent(course.courseId)}&source=home_widget&widgetType=${HomeWidgetType.inProgressCourse.value}',
+      deeplink: 'hddhistory://course-roadmap?courseId=${Uri.encodeQueryComponent(course.courseId)}&source=home_widget&widgetType=${HomeWidgetType.inProgressCourse.value}',
       imageUrl: course.image.isEmpty ? null : course.image,
       data: {
         'courseId': course.courseId,
@@ -57,7 +57,7 @@ class HomeWidgetPayloadBuilder {
       widgetType: HomeWidgetType.weeklyStreak,
       state: HomeWidgetPayloadState.ready,
       updatedAt: updatedAt,
-      deeplink: 'meup://course-roadmap?source=home_widget&widgetType=${HomeWidgetType.weeklyStreak.value}',
+      deeplink: 'hddhistory://course-roadmap?source=home_widget&widgetType=${HomeWidgetType.weeklyStreak.value}',
       staticAssetKey: HomeWidgetStorageKeys.flameAsset,
       data: {
         'localeCode': localeCode,
@@ -86,7 +86,7 @@ class HomeWidgetPayloadBuilder {
         widgetType: HomeWidgetType.suggestCourse,
         state: HomeWidgetPayloadState.exhausted,
         updatedAt: updatedAt,
-        deeplink: 'meup://home?source=home_widget&widgetType=${HomeWidgetType.suggestCourse.value}&state=${HomeWidgetPayloadState.exhausted.value}',
+        deeplink: 'hddhistory://home?source=home_widget&widgetType=${HomeWidgetType.suggestCourse.value}&state=${HomeWidgetPayloadState.exhausted.value}',
         staticAssetKey: HomeWidgetStorageKeys.certificateAsset,
         data: {
           'localeCode': localeCode,
@@ -101,7 +101,7 @@ class HomeWidgetPayloadBuilder {
       widgetType: HomeWidgetType.suggestCourse,
       state: HomeWidgetPayloadState.ready,
       updatedAt: updatedAt,
-      deeplink: 'meup://course-roadmap?courseId=${Uri.encodeQueryComponent(course.courseId)}&source=home_widget&widgetType=${HomeWidgetType.suggestCourse.value}',
+      deeplink: 'hddhistory://course-roadmap?courseId=${Uri.encodeQueryComponent(course.courseId)}&source=home_widget&widgetType=${HomeWidgetType.suggestCourse.value}',
       imageUrl: course.image.isEmpty ? null : course.image,
       data: {
         'courseId': course.courseId,

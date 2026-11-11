@@ -349,8 +349,8 @@ String? coachCourseReason(BuildContext context, String? key, [Map<String, String
       return l10n.courseReasonStory;
     case 'coach.course.reasonRecap':
       return l10n.courseReasonRecap;
-    case 'coach.course.reasonSkillset':
-      return l10n.courseReasonSkillset;
+    case 'coach.course.reasonCategory':
+      return l10n.courseReasonCategory;
     case 'coach.course.reasonSaved':
       return l10n.courseReasonSaved;
     // Ưu tiên cuối — chuyện vừa kể không khớp habit nào, nên card là khoá

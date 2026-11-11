@@ -110,7 +110,7 @@ Sets up the current machine as a GitLab project runner:
 ./tools/macos/git/runner/gitlab/setup_gitlab_runner.sh --project-path eup/meup/meup-flutter
 
 # Register using an existing runner token
-./tools/macos/git/runner/gitlab/setup_gitlab_runner.sh --runner-token glrt-xxxxx --name meup-macos-runner
+./tools/macos/git/runner/gitlab/setup_gitlab_runner.sh --runner-token glrt-xxxxx --name hddhistory-macos-runner
 
 # Strict mode (fail when restart/verify fails)
 ./tools/macos/git/runner/gitlab/setup_gitlab_runner.sh --project-path eup/meup/meup-flutter --strict
@@ -162,7 +162,7 @@ Sets up the current machine as a GitHub self-hosted runner:
 ./tools/macos/git/runner/github/setup_github_runner.sh --repo owner/repo
 
 # Use an existing registration token
-./tools/macos/git/runner/github/setup_github_runner.sh --repo owner/repo --runner-token <token> --name meup-macos-gh-runner
+./tools/macos/git/runner/github/setup_github_runner.sh --repo owner/repo --runner-token <token> --name hddhistory-macos-gh-runner
 
 # Strict mode
 ./tools/macos/git/runner/github/setup_github_runner.sh --repo owner/repo --strict

@@ -6,7 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// Renders the poster to `build/week_recap_poster.png` with the REAL display
 /// faces loaded, so the title's geometry can be measured instead of eyeballed.

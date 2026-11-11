@@ -5,7 +5,7 @@ part of '../../onboarding.dart';
 /// [StudyThemeCubit] catalogue. The course list config (`pick`) calls its two
 /// title fragments `heading`/`headingHighlight`; this section instead mirrors
 /// the API contract's `titlePrefix`/`titleHighlight` naming (see
-/// meup-api/plans/260721-onboard-v2-config-driven/contract.md).
+/// hddhistory-api/plans/260721-onboard-v2-config-driven/contract.md).
 @freezed
 abstract class OnboardingThemeConfigEntity with _$OnboardingThemeConfigEntity {
   const factory OnboardingThemeConfigEntity({

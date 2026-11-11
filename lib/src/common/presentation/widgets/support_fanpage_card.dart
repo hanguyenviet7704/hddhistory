@@ -18,7 +18,7 @@ const _kFacebookGlyphSvg = '''
 </svg>
 ''';
 
-/// "Support" block: the section heading plus one row that opens the MeUp
+/// "Support" block: the section heading plus one row that opens the HDDhistory
 /// fanpage in the system browser.
 ///
 /// Lives in `common` rather than in the profile feature because Profile and

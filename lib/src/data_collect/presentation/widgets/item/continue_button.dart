@@ -42,9 +42,9 @@ class ContinueButton extends StatelessWidget {
       return;
     }
 
-    if (state.currentStep == DataCollectStep.collectSkillsetsWantToMaster) {
-      AppService.instance.appTrackingService.trackObdSkillsetContinue(
-        _trackingLabelValues(state.selectedSkillsetsWantToMaster),
+    if (state.currentStep == DataCollectStep.collectCategoriesWantToMaster) {
+      AppService.instance.appTrackingService.trackObdCategoryContinue(
+        _trackingLabelValues(state.selectedCategoriesWantToMaster),
       );
       DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 01
       return;

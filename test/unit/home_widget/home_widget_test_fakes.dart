@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart' hide State;
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 class FakeHomeWidgetRepository implements IHomeWidgetRepository {
   final List<HomeWidgetSyncParams> syncAllParams = [];

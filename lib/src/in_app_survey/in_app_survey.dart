@@ -3,7 +3,7 @@ library;
 import 'dart:ui' show ImageFilter;
 
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';

@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 class FakeDailyWarmUpRepository implements IDailyWarmUpRepository {
   FakeDailyWarmUpRepository(this.result);

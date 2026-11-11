@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   group('AppInterceptor refresh-token detection', () {
@@ -23,7 +23,7 @@ void main() {
 
     test('attaches authorization header to regular request path when access token exists', () {
       final shouldAttach = shouldAttachAuthorizationHeaderToPath(
-        '/api/v1/skillsets',
+        '/api/v1/categories',
         hasAuthorizationHeader: false,
         hasAccessToken: true,
       );

@@ -3,15 +3,15 @@ part of '../../../profile.dart';
 class UserAchievementCourseItem extends StatelessWidget {
   final CourseLevelProgressEntity course;
   final TextStyle titleStyle;
-  final String skillsetId;
-  final String skillsetName;
+  final String categoryId;
+  final String categoryName;
 
   const UserAchievementCourseItem({
     super.key,
     required this.course,
     required this.titleStyle,
-    required this.skillsetId,
-    required this.skillsetName,
+    required this.categoryId,
+    required this.categoryName,
   });
 
   String _resolveCourseName() {
@@ -22,8 +22,8 @@ class UserAchievementCourseItem extends StatelessWidget {
 
   void _onTap(BuildContext context) {
     final trackingData = CourseTrackingData.fromTrackingValues(
-      skillsetId: skillsetId,
-      skillsetName: skillsetName,
+      categoryId: categoryId,
+      categoryName: categoryName,
       courseId: course.courseId,
       courseName: _resolveCourseName(),
     );
@@ -33,8 +33,8 @@ class UserAchievementCourseItem extends StatelessWidget {
       context,
       courseId: course.courseId,
       initialLevel: course.level,
-      skillsetId: skillsetId,
-      skillsetName: skillsetName,
+      categoryId: categoryId,
+      categoryName: categoryName,
     );
   }
 

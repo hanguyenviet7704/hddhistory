@@ -16,6 +16,9 @@ part of '../routes.dart';
               path: RoutePath.dailyWarmUp,
               name: RouteNamed.dailyWarmUp,
             ),
+            //? Spaced Review ("Ôn tập hôm nay")
+            TypedGoRoute<SpacedReviewQuestionRoute>(path: RoutePath.spacedReviewQuestion, name: RouteNamed.spacedReviewQuestion),
+            TypedGoRoute<SpacedReviewCompletionRoute>(path: RoutePath.spacedReviewCompletion, name: RouteNamed.spacedReviewCompletion),
           ],
         ),
       ],
@@ -26,10 +29,10 @@ part of '../routes.dart';
           path: RoutePath.courseRoadmap,
           name: RouteNamed.courseRoadmap,
           routes: [
-            //? Skillset Courses (full grid for one skillset)
-            TypedGoRoute<SkillsetCoursesRoute>(
-              path: RoutePath.skillsetCourses,
-              name: RouteNamed.skillsetCourses,
+            //? Category Courses (full grid for one category)
+            TypedGoRoute<CategoryCoursesRoute>(
+              path: RoutePath.categoryCourses,
+              name: RouteNamed.categoryCourses,
             ),
             //? Warm Up (return-refresher)
             TypedGoRoute<WarmUpIntroRoute>(path: RoutePath.warmUpIntro, name: RouteNamed.warmUpIntro),

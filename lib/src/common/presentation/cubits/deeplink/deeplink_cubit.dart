@@ -238,7 +238,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         HomeRoute().go(navContext);
         return true;
 
-      // `meup://community-chat?room=<slug>` — a discussion room, where the
+      // `hddhistory://community-chat?room=<slug>` — a discussion room, where the
       // "someone answered in the discussion" push lands. The tab is claimed
       // first and the room pushed over it, so backing out of the notification
       // leaves the reader in the forum rather than wherever they were.
@@ -253,7 +253,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         unawaited(CommunityChatRoute(room: roomSlug).push(navContext));
         return true;
 
-      // `meup://coach` — the AI Coach sheet, over Home. Exactly what the
+      // `hddhistory://coach` — the AI Coach sheet, over Home. Exactly what the
       // reminder push does on tap, so a campaign link and a push land the
       // reader in the same place; which door opens is the server's call.
       case DeeplinkDestination.coach:
@@ -262,7 +262,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         unawaited(_openCoachFromPush(navContext));
         return true;
 
-      // `meup://paywall` — what admin enters as a banner/popup linkUrl to send
+      // `hddhistory://paywall` — what admin enters as a banner/popup linkUrl to send
       // the tap to the paywall. Pushed over wherever the reader is (the link is
       // an offer, not a relocation), with the generic entry point: which
       // campaign sent them is the banner's own tracking's business.
@@ -313,13 +313,13 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         LibraryRoute().go(navContext);
         return true;
 
-      // `meup://community` — the forum tab.
+      // `hddhistory://community` — the forum tab.
       case DeeplinkDestination.community:
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.community);
         const CommunityRoute().go(navContext);
         return true;
 
-      // `meup://community-post?postId=...` — where a community push lands.
+      // `hddhistory://community-post?postId=...` — where a community push lands.
       //
       // The tab is opened first and the thread pushed on top of it, so backing
       // out of the notification leaves the reader in the community rather than
@@ -372,9 +372,9 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         }
         return true;
 
-      case DeeplinkDestination.skillsetCourses:
-        final skillsetId = target.params['skillsetId']?.trim() ?? '';
-        if (skillsetId.isEmpty) {
+      case DeeplinkDestination.categoryCourses:
+        final categoryId = target.params['categoryId']?.trim() ?? '';
+        if (categoryId.isEmpty) {
           HomeRoute().go(navContext);
           _trackDeeplinkOpen(target, resolved: false, reason: 'missing_param');
           return true;
@@ -382,7 +382,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         // Claim branch 1 trước, rồi push trang con: cú push trong branch có
         // didPush nên trang con tự nhận tên của mình qua route observer.
         AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-        SkillsetCoursesRoute(skillsetId: skillsetId).go(navContext);
+        CategoryCoursesRoute(categoryId: categoryId).go(navContext);
         return true;
 
       // Tám đích dưới đây lồng trong một tab. Mỗi cái claim tên của BRANCH nó
@@ -512,7 +512,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   }
 
   /// The iOS Live Activity lock-screen card opens
-  /// `meup://course-roadmap?courseId=…&source=live_activity`. That source is NOT
+  /// `hddhistory://course-roadmap?courseId=…&source=live_activity`. That source is NOT
   /// a home-widget deeplink (it carries no widgetType), so
   /// [HomeWidgetDeeplinkTarget.tryParse] rejects it — before this branch the tap
   /// was logged as an unsupported route and the resume silently no-op'd. Here we
@@ -799,7 +799,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   ///
   /// Opens OUTSIDE the catalog, for the same reason the Coach sheet does: this
   /// tap arrives from a cold start more often than not, and the interaction
-  /// queue is flushed while splash is still up — `HomeCubit.state.skillsets` is
+  /// queue is flushed while splash is still up — `HomeCubit.state.categories` is
   /// then empty, so the strict select refused every course and the push that
   /// announced a new course landed on Home. Which is precisely the bug this
   /// notification is accused of (2026-09-14). A course that really is gone now
@@ -835,7 +835,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   String _resolveLiveActivityCourseName(String courseId) {
     if (courseId.isEmpty) return '';
     try {
-      return AppDI.injector.get<HomeCubit>().state.skillsets.resolveCourseByCourseId(courseId).title.text;
+      return AppDI.injector.get<HomeCubit>().state.categories.resolveCourseByCourseId(courseId).title.text;
     } catch (_) {
       return '';
     }
@@ -956,15 +956,15 @@ String normalizeDeeplinkPath(String path) {
 /// else leaves for the browser/store via `launchURL`.
 ///
 /// The in-app branch deliberately skips the OS round-trip. `launchURL` guards
-/// on `canLaunchUrl`, which for a custom scheme needs `meup` listed in iOS's
-/// `LSApplicationQueriesSchemes` — it is not, so a `meup://…` link died
+/// on `canLaunchUrl`, which for a custom scheme needs `hddhistory` listed in iOS's
+/// `LSApplicationQueriesSchemes` — it is not, so a `hddhistory://…` link died
 /// silently there; and even where it works, bouncing through the OS is a
 /// visible app-switch for a screen we can simply open.
 Future<void> openConfiguredLink(String url) async {
   final trimmed = url.trim();
   if (trimmed.isEmpty) return;
   final uri = Uri.tryParse(trimmed);
-  if (uri != null && uri.scheme.toLowerCase() == 'meup') {
+  if (uri != null && uri.scheme.toLowerCase() == 'hddhistory') {
     AppDI.injector.get<DeeplinkCubit>().navigationFromService(uri);
     return;
   }

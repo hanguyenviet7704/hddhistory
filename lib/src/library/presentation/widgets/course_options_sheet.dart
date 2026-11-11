@@ -7,7 +7,7 @@ const String _kCourseThemeSvg =
     '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="13" height="6" rx="1.6" stroke="#554FF0" stroke-width="1.7"/><path d="M16 7h3.2a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 19.2 12H12a1.5 1.5 0 0 0-1.5 1.5V15" stroke="#554FF0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="8.4" y="15" width="4.2" height="5" rx="1.3" stroke="#554FF0" stroke-width="1.7"/></svg>''';
 
 /// The roadmap's `(...)` menu (design `3 · Learning` → Course detail, and
-/// `_MeUp App` → COURSE OPTIONS SHEET): save the course, share it, or change
+/// `_HDDhistory App` → COURSE OPTIONS SHEET): save the course, share it, or change
 /// the study background.
 ///
 /// Change theme moved in here from the header's own circular button: the design
@@ -143,7 +143,7 @@ class CourseOptionsSheet extends StatelessWidget {
 
   /// The blurb printed on the story card.
   ///
-  /// Read from the ROADMAP, not from the course: `/skillsets` deliberately
+  /// Read from the ROADMAP, not from the course: `/categories` deliberately
   /// omits `description` (5 languages, ~30% of that payload, and no list
   /// surface renders it), so `HomeCubit.currentCourse.description` is always
   /// empty and the card shipped with a title and nothing under it. The roadmap

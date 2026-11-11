@@ -8,7 +8,7 @@ android.apply {
     productFlavors {
         create("dev") {
             dimension = "flavor-type"
-            applicationId = "com.eup.meup.dev"
+            applicationId = "com.hddhistory.app.dev"
             resValue(type = "string", name = "app_name", value = "HDDhistory")
             resValue(type = "string", name = "environment", value = "development")
             buildConfigField(type = "String", name = "APP_ENVIRONMENT", value = "\"dev\"")
@@ -17,8 +17,8 @@ android.apply {
         }
         create("stg") {
             dimension = "flavor-type"
-            applicationId = "com.eup.meup.stg"
-            resValue(type = "string", name = "app_name", value = "Meup Staging")
+            applicationId = "com.hddhistory.app.stg"
+            resValue(type = "string", name = "app_name", value = "HDDhistory Staging")
             resValue(type = "string", name = "environment", value = "staging")
             buildConfigField(type = "String", name = "APP_ENVIRONMENT", value = "\"stg\"")
             buildConfigField(type = "String", name = "API_BASE_URL", value = "\"https://stg.api.com\"")
@@ -26,8 +26,8 @@ android.apply {
         }
         create("prod") {
             dimension = "flavor-type"
-            applicationId = "com.eup.meup"
-            resValue(type = "string", name = "app_name", value = "Meup")
+            applicationId = "com.hddhistory.app"
+            resValue(type = "string", name = "app_name", value = "HDDhistory")
             resValue(type = "string", name = "environment", value = "production")
             buildConfigField(type = "String", name = "APP_ENVIRONMENT", value = "\"prod\"")
             buildConfigField(type = "String", name = "API_BASE_URL", value = "\"https://prod.api.com\"")

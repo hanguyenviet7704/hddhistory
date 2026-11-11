@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   group('AppTrackingService video lesson performance metrics', () {
@@ -108,14 +108,14 @@ void main() {
 }
 
 CourseLessonTrackingData _trackingData() => CourseLessonTrackingData(
-  skillset: const SkillsetEntity(
+  category: const CategoryEntity(
     id: 'skill-1',
     title: BaseMultiLanguage(en: 'Listening'),
   ),
   course: const CourseEntity(
     id: 'course-1',
     title: BaseMultiLanguage(en: 'English'),
-    skillsetId: 'skill-1',
+    categoryId: 'skill-1',
   ),
   lesson: const LessonEntity(
     id: 'lesson-1',
@@ -132,14 +132,14 @@ CourseLessonTrackingData _trackingData() => CourseLessonTrackingData(
 );
 
 KeypointTrackingData _keypointTrackingData() => KeypointTrackingData(
-  skillset: const SkillsetEntity(
+  category: const CategoryEntity(
     id: 'skill-1',
     title: BaseMultiLanguage(en: 'Listening'),
   ),
   course: const CourseEntity(
     id: 'course-1',
     title: BaseMultiLanguage(en: 'English'),
-    skillsetId: 'skill-1',
+    categoryId: 'skill-1',
   ),
   lesson: const LessonEntity(
     id: 'lesson-1',

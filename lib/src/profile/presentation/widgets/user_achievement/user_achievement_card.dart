@@ -25,14 +25,14 @@ class UserAchievementCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _UserAchievementHeader(
-          title: achievement.skillsetTitle.text,
+          title: achievement.categoryTitle.text,
           subtitle: subtitle(context),
         ),
         12.verticalSpace,
         _UserAchievementCourseRow(
           courses: achievement.courses,
-          skillsetId: achievement.skillsetId,
-          skillsetName: achievement.skillsetTitle.en.isNotEmpty ? achievement.skillsetTitle.en : achievement.skillsetTitle.text,
+          categoryId: achievement.categoryId,
+          categoryName: achievement.categoryTitle.en.isNotEmpty ? achievement.categoryTitle.en : achievement.categoryTitle.text,
           itemTitleStyle: AppStyle.text12.copyWith(
             color: AppCustomColor.textPrimary,
             fontWeight: FontWeight.w500,
@@ -85,14 +85,14 @@ class _UserAchievementHeader extends StatelessWidget {
 class _UserAchievementCourseRow extends StatelessWidget {
   final List<CourseLevelProgressEntity> courses;
   final TextStyle itemTitleStyle;
-  final String skillsetId;
-  final String skillsetName;
+  final String categoryId;
+  final String categoryName;
 
   const _UserAchievementCourseRow({
     required this.courses,
     required this.itemTitleStyle,
-    required this.skillsetId,
-    required this.skillsetName,
+    required this.categoryId,
+    required this.categoryName,
   });
 
   @override
@@ -101,8 +101,8 @@ class _UserAchievementCourseRow extends StatelessWidget {
 
     return _UserAchievementCourseRowBody(
       courses: courses,
-      skillsetId: skillsetId,
-      skillsetName: skillsetName,
+      categoryId: categoryId,
+      categoryName: categoryName,
       itemTitleStyle: itemTitleStyle,
     );
   }
@@ -111,14 +111,14 @@ class _UserAchievementCourseRow extends StatelessWidget {
 class _UserAchievementCourseRowBody extends StatefulWidget {
   final List<CourseLevelProgressEntity> courses;
   final TextStyle itemTitleStyle;
-  final String skillsetId;
-  final String skillsetName;
+  final String categoryId;
+  final String categoryName;
 
   const _UserAchievementCourseRowBody({
     required this.courses,
     required this.itemTitleStyle,
-    required this.skillsetId,
-    required this.skillsetName,
+    required this.categoryId,
+    required this.categoryName,
   });
 
   @override
@@ -136,8 +136,8 @@ class _UserAchievementCourseRowBodyState extends State<_UserAchievementCourseRow
 
   CourseTrackingData _buildTrackingData(CourseLevelProgressEntity course) {
     return CourseTrackingData.fromTrackingValues(
-      skillsetId: widget.skillsetId,
-      skillsetName: widget.skillsetName,
+      categoryId: widget.categoryId,
+      categoryName: widget.categoryName,
       courseId: course.courseId,
       courseName: _resolveCourseName(course),
     );
@@ -171,8 +171,8 @@ class _UserAchievementCourseRowBodyState extends State<_UserAchievementCourseRow
               child: UserAchievementCourseItem(
                 course: widget.courses[index],
                 titleStyle: widget.itemTitleStyle,
-                skillsetId: widget.skillsetId,
-                skillsetName: widget.skillsetName,
+                categoryId: widget.categoryId,
+                categoryName: widget.categoryName,
               ),
             ),
           ),

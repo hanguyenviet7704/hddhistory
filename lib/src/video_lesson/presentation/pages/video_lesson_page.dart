@@ -18,7 +18,7 @@ class VideoLessonPage extends StatefulWidget {
 
 class _VideoLessonPageState extends State<VideoLessonPage> {
   static const _shareText =
-      'Found a gem on MeUp! 💎 I had so much fun watching this and learned a lot. '
+      'Found a gem on HDDhistory! 💎 I had so much fun watching this and learned a lot. '
       'Sharing the love in case you need some inspiration today! 🙌\n'
       'Android: https://play.google.com/store/apps/details?id=com.eup.meup\n'
       'IOS: https://apps.apple.com/us/app/meup-up-your-skills/id6755175330';

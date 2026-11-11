@@ -44,12 +44,12 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           12.verticalSpace,
-          BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
-            selector: (s) => s.skillsets,
-            builder: (context, skillsets) {
+          BlocSelector<HomeCubit, HomeState, List<CategoryEntity>>(
+            selector: (s) => s.categories,
+            builder: (context, categories) {
               final tabs = [
                 context.l10n.allcourse.changeCourseTabAll,
-                ...skillsets.map((s) => s.title.text),
+                ...categories.map((s) => s.title.text),
               ];
               return FilterTabBar(
                 tabs: tabs,
@@ -60,17 +60,17 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
           ),
           12.verticalSpace,
           Expanded(
-            child: BlocSelector<HomeCubit, HomeState, ({HomeStatus status, List<CourseEntity> courses, List<SkillsetEntity> skillsets})>(
+            child: BlocSelector<HomeCubit, HomeState, ({HomeStatus status, List<CourseEntity> courses, List<CategoryEntity> categories})>(
               selector: (s) => (
                 status: s.status,
-                courses: s.skillsets.expand((sk) => sk.coursesWithSkillset).toList(),
-                skillsets: s.skillsets,
+                courses: s.categories.expand((sk) => sk.coursesWithCategory).toList(),
+                categories: s.categories,
               ),
               builder: (context, snap) {
                 // Only block with a full spinner on a genuine cold load — never
                 // clobber an already-loaded course list (e.g. Home pull-to-refresh
                 // re-flipping status to loading while this page is open).
-                if ((snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) && snap.skillsets.isEmpty) {
+                if ((snap.status == HomeStatus.initial || snap.status == HomeStatus.loading) && snap.categories.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(color: AppCustomColor.brandPrimary),
                   );
@@ -82,10 +82,10 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
 
                 final filtered = _selectedTabIndex == 0
                     ? snap.courses
-                    : (_selectedTabIndex - 1 < snap.skillsets.length)
+                    : (_selectedTabIndex - 1 < snap.categories.length)
                     ? snap.courses
                           .where(
-                            (c) => c.skillset.id == snap.skillsets[_selectedTabIndex - 1].id,
+                            (c) => c.category.id == snap.categories[_selectedTabIndex - 1].id,
                           )
                           .toList()
                     : snap.courses;
@@ -107,7 +107,7 @@ class _ChangeCoursePageState extends State<ChangeCoursePage> {
                       onTap: () {
                         context.read<CourseRoadmapCubit>().setRoadmapSource('change_course');
                         context.read<HomeCubit>()
-                          ..selectSkillset(course.skillset)
+                          ..selectCategory(course.category)
                           ..selectCourse(course);
                         context.back();
                       },

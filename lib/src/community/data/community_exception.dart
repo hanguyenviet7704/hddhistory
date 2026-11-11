@@ -6,7 +6,7 @@ part of '../community.dart';
 /// know the reader's language, and the app also keys its own behaviour off them.
 /// Both halves are settled by translating here, in the only layer that knows
 /// which language to translate into. Keep them in step with
-/// `meup-api/src/modules/community/src/helper/community-limit.helper.ts` and
+/// `hddhistory-api/src/modules/community/src/helper/community-limit.helper.ts` and
 /// `community-sanction.service.ts`.
 const String _codeRateLimited = 'COMMUNITY_RATE_LIMITED';
 const String _codeDuplicate = 'COMMUNITY_DUPLICATE_CONTENT';
@@ -32,7 +32,7 @@ AppException communityException(Object error) {
 
   // Everything past `message` travels under `meta`: the API's global exception
   // filter forwards `message`, `errors` and `meta`, and drops any other key a
-  // thrower sets. See meup-api/src/base/filters/all-exceptions.filter.ts.
+  // thrower sets. See hddhistory-api/src/base/filters/all-exceptions.filter.ts.
   final rawMeta = body['meta'];
   final meta = rawMeta is Map ? rawMeta : const <dynamic, dynamic>{};
 

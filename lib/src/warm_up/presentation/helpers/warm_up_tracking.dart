@@ -16,13 +16,13 @@ class WarmUpTracking {
   }
 
   /// Best-effort course context: course_id from [WarmUpCubit], course_name
-  /// resolved through the Home skillsets (falls back to id-only on a miss).
+  /// resolved through the Home categories (falls back to id-only on a miss).
   static Map<String, dynamic> courseParams(String courseId) {
     final id = courseId.trim();
     if (id.isEmpty) return const {};
     try {
       final homeState = AppDI.injector.get<HomeCubit>().state;
-      final course = homeState.skillsets.resolveCourseByCourseId(id, fallback: homeState.currentCourse);
+      final course = homeState.categories.resolveCourseByCourseId(id, fallback: homeState.currentCourse);
       final name = course.trackingNameOrText;
       return {
         'course_id': id,

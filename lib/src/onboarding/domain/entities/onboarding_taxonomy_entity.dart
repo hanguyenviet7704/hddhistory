@@ -12,7 +12,7 @@ abstract class OnboardingBranchEntity with _$OnboardingBranchEntity {
     @Default('') String imageUrl,
     @Default(0) int order,
     @Default(true) bool isSelectable,
-    String? skillsetId,
+    String? categoryId,
     @Default(true) bool isActive,
   }) = _OnboardingBranchEntity;
 }

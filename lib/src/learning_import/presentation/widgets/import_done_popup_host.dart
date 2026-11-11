@@ -3,7 +3,7 @@ part of '../../learning_import.dart';
 /// Local latch: the id of the last finished import the reader was told about.
 ///
 /// Persisted rather than kept in memory because the whole point is to survive
-/// the app being closed — someone who starts an import, kills MeUp and comes
+/// the app being closed — someone who starts an import, kills HDDhistory and comes
 /// back ten minutes later must still be told, and must be told only once.
 const String _kLastNotifiedImportJobKey = 'learning_import.last_notified_job';
 

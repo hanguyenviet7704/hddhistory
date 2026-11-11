@@ -1,5 +1,5 @@
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 import 'core/dev_tools/event_inspector.dart';
 import 'core/dev_tools/network_inspector.dart';

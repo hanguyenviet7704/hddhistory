@@ -3,7 +3,7 @@
 import 'package:firebase_core_platform_interface/test.dart';
 import 'package:firebase_remote_config_platform_interface/firebase_remote_config_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -258,7 +258,7 @@ class _FakeFirebaseRemoteConfigPlatform extends FirebaseRemoteConfigPlatform wit
 
 class _FakePackageInfoService implements IPackageInfoService {
   @override
-  String get appName => 'Meup';
+  String get appName => 'HDDhistory';
 
   @override
   String get buildNumber => '1';
@@ -281,7 +281,7 @@ class _FakePackageInfoService implements IPackageInfoService {
   );
 
   @override
-  String get packageName => 'com.eup.meup';
+  String get packageName => 'com.hddhistory.app';
 
   @override
   Map<String, dynamic> toMap() => {

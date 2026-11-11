@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:fpdart/fpdart.dart' hide State;

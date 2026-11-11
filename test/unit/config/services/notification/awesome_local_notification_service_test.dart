@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/services.dart';
+import 'package:hddhistory/config/services/services.dart';
 
 void main() {
   group('AwesomeLocalNotificationService', () {
@@ -249,7 +249,7 @@ void main() {
       final subscription = service.actionStream.listen(received.add);
 
       await service.registerListeners();
-      final actionPort = IsolateNameServer.lookupPortByName('meup.notification.action.port');
+      final actionPort = IsolateNameServer.lookupPortByName('hddhistory.notification.action.port');
 
       expect(actionPort, isNotNull);
 
@@ -293,8 +293,8 @@ void main() {
       final receivedMessages = <dynamic>[];
       final subscription = receivePort.listen(receivedMessages.add);
 
-      IsolateNameServer.removePortNameMapping('meup.notification.action.port');
-      IsolateNameServer.registerPortWithName(receivePort.sendPort, 'meup.notification.action.port');
+      IsolateNameServer.removePortNameMapping('hddhistory.notification.action.port');
+      IsolateNameServer.registerPortWithName(receivePort.sendPort, 'hddhistory.notification.action.port');
 
       await awesomeLocalNotificationActionEntryPoint(
         _receivedAction(
@@ -310,7 +310,7 @@ void main() {
 
       await subscription.cancel();
       receivePort.close();
-      IsolateNameServer.removePortNameMapping('meup.notification.action.port');
+      IsolateNameServer.removePortNameMapping('hddhistory.notification.action.port');
     });
 
     test('returns null when there is no initial action', () async {

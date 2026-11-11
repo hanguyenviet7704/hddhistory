@@ -129,12 +129,12 @@ class _ResumeChipHostState extends State<ResumeChipHost> {
     // Select the course the same way every other entry point does, so the
     // roadmap opens on it and its own "Tiếp tục học" CTA lands on the right
     // lesson. Falling back to selection by id covers a course that is not in
-    // the cached skillset catalogue.
-    for (final skillset in homeCubit.state.skillsets) {
-      final index = skillset.courses.indexWhere((c) => c.id == course.id);
+    // the cached category catalogue.
+    for (final category in homeCubit.state.categories) {
+      final index = category.courses.indexWhere((c) => c.id == course.id);
       if (index >= 0) {
         homeCubit
-          ..selectSkillset(skillset)
+          ..selectCategory(category)
           ..selectCourseIndex(index);
         _goToRoadmap(context);
         return;

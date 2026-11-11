@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// Covers the API -> local cache half of the paywall config resolution
 /// chain (API -> cache -> Remote Config -> bundled defaults). The Remote

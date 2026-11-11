@@ -1,6 +1,6 @@
 part of '../../profile.dart';
 
-/// Full-screen "all achievements" list — one section per skillset with
+/// Full-screen "all achievements" list — one section per category with
 /// badges, each a 3-column grid. Deliberately NOT a go_router route: it's
 /// opened via a plain [Navigator.push] on the root navigator from
 /// [_openAchievements] (see profile_page.dart) so it covers the bottom nav
@@ -164,8 +164,8 @@ class _AchievementsFullPageState extends State<AchievementsFullPage> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => _AchievementBadgeGridItem(
                         course: sections[i].courses[index],
-                        skillsetId: sections[i].skillsetId,
-                        skillsetName: sections[i].skillsetTitle.en.isNotEmpty ? sections[i].skillsetTitle.en : sections[i].skillsetTitle.text,
+                        categoryId: sections[i].categoryId,
+                        categoryName: sections[i].categoryTitle.en.isNotEmpty ? sections[i].categoryTitle.en : sections[i].categoryTitle.text,
                       ),
                       childCount: sections[i].courses.length,
                     ),
@@ -194,7 +194,7 @@ class _AchievementSectionHeader extends StatelessWidget {
       children: [
         Expanded(
           child: AppText(
-            achievement.skillsetTitle.text,
+            achievement.categoryTitle.text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: _poppins(20, FontWeight.w700),
@@ -216,13 +216,13 @@ class _AchievementSectionHeader extends StatelessWidget {
 class _AchievementBadgeGridItem extends StatelessWidget {
   const _AchievementBadgeGridItem({
     required this.course,
-    required this.skillsetId,
-    required this.skillsetName,
+    required this.categoryId,
+    required this.categoryName,
   });
 
   final CourseLevelProgressEntity course;
-  final String skillsetId;
-  final String skillsetName;
+  final String categoryId;
+  final String categoryName;
 
   String _resolveCourseName() {
     final String name = course.courseTitle.en.trim();
@@ -235,8 +235,8 @@ class _AchievementBadgeGridItem extends StatelessWidget {
   // profile-page carousel.
   void _onTap(BuildContext context) {
     final trackingData = CourseTrackingData.fromTrackingValues(
-      skillsetId: skillsetId,
-      skillsetName: skillsetName,
+      categoryId: categoryId,
+      categoryName: categoryName,
       courseId: course.courseId,
       courseName: _resolveCourseName(),
     );
@@ -246,8 +246,8 @@ class _AchievementBadgeGridItem extends StatelessWidget {
       context,
       courseId: course.courseId,
       initialLevel: course.level,
-      skillsetId: skillsetId,
-      skillsetName: skillsetName,
+      categoryId: categoryId,
+      categoryName: categoryName,
     );
   }
 

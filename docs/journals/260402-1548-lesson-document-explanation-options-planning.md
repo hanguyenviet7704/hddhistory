@@ -3,7 +3,7 @@
 ## Context
 
 - Date: 2026-04-02
-- Branch: `feature/MEUP-719`
+- Branch: `feature/719`
 - Scope: lesson `DocumentItem` explanation options only
 
 ## What Happened

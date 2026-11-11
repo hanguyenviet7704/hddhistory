@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   final updatedAt = DateTime.utc(2026, 6, 9);
@@ -26,7 +26,7 @@ void main() {
       expect(payload.data['completedLessons'], 7);
       expect(payload.data['totalLessons'], 6);
       expect(payload.data['progress'], 1);
-      expect(payload.deeplink, 'meup://course-roadmap?courseId=course-1&source=home_widget&widgetType=in_progress_course');
+      expect(payload.deeplink, 'hddhistory://course-roadmap?courseId=course-1&source=home_widget&widgetType=in_progress_course');
     });
 
     test('builds empty in-progress payload when data is null or invalid', () {
@@ -56,7 +56,7 @@ void main() {
         expect(payload.state, HomeWidgetPayloadState.empty);
         expect(payload.imageUrl, isNull);
         expect(payload.data['title'], 'Chọn khóa học để bắt đầu');
-        expect(payload.deeplink, 'meup://home?source=home_widget&widgetType=in_progress_course&state=empty');
+        expect(payload.deeplink, 'hddhistory://home?source=home_widget&widgetType=in_progress_course&state=empty');
       }
     });
 
@@ -90,7 +90,7 @@ void main() {
       expect(payload.data['weekLabels'], ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']);
       expect(payload.data['weekStudy'], [true, false, true, false, false, false, false]);
       expect(payload.data['weekStartDate'], '2026-06-02');
-      expect(payload.deeplink, 'meup://course-roadmap?source=home_widget&widgetType=weekly_streak');
+      expect(payload.deeplink, 'hddhistory://course-roadmap?source=home_widget&widgetType=weekly_streak');
     });
 
     test('builds suggest ready and exhausted payloads', () {
@@ -127,13 +127,13 @@ void main() {
       expect(ready.data['title'], 'Suggested course');
       expect(ready.data['description'], 'Try this next');
       expect(ready.data['suggestionDate'], '2026-06-09');
-      expect(ready.deeplink, 'meup://course-roadmap?courseId=course-2&source=home_widget&widgetType=suggest_course');
+      expect(ready.deeplink, 'hddhistory://course-roadmap?courseId=course-2&source=home_widget&widgetType=suggest_course');
 
       expect(exhausted.state, HomeWidgetPayloadState.exhausted);
       expect(exhausted.data['title'], 'Bạn đã hoàn thành mọi khóa học!');
       expect(exhausted.data['subtitle'], 'Sắp có thêm!');
       expect(exhausted.staticAssetKey, HomeWidgetStorageKeys.certificateAsset);
-      expect(exhausted.deeplink, 'meup://home?source=home_widget&widgetType=suggest_course&state=exhausted');
+      expect(exhausted.deeplink, 'hddhistory://home?source=home_widget&widgetType=suggest_course&state=exhausted');
     });
 
     test('loads widget default text for locale code', () async {

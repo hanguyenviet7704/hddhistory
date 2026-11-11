@@ -28,10 +28,10 @@ mixin TrackingKey {
   static const String obdLearningGoalClick = 'obd_learning_goal_click';
   static const String obdLearningGoalContinue = 'obd_learning_goal_continue';
   static const String obdLearningGoalBack = 'obd_learning_goal_back';
-  static const String obdSkillsetScrView = 'obd_skillset_scr_view';
-  static const String obdSkillsetClick = 'obd_skillset_click';
-  static const String obdSkillsetContinue = 'obd_skillset_continue';
-  static const String obdSkillsetBack = 'obd_skillset_back';
+  static const String obdCategoryScrView = 'obd_category_scr_view';
+  static const String obdCategoryClick = 'obd_category_click';
+  static const String obdCategoryContinue = 'obd_category_continue';
+  static const String obdCategoryBack = 'obd_category_back';
   static const String obdMotivation1ScrView = 'obd_motivation1_scr_view';
   static const String obdMotivation1Continue = 'obd_motivation1_continue';
   static const String obdStrugglesScrView = 'obd_struggles_scr_view';
@@ -72,7 +72,7 @@ mixin TrackingKey {
   static const String obBranchingChooseMyselfClick = 'ob_branching_choose_myself_click';
   static const String obBranchingFallback = 'ob_branching_fallback';
   // Onboard v2 (shipped flow). Event-name VALUES are aligned exactly to the
-  // "[MeUp] Event Tracking" sheet (tab Onboarding, gid 778226447) — that sheet
+  // "[HDDhistory] Event Tracking" sheet (tab Onboarding, gid 778226447) — that sheet
   // is the analytics team's source of truth. Constant NAMES keep the pX/step
   // scheme so call sites don't churn; only the fired strings match the spec.
   static const String onboardV2P1View = 'obd_welcome_scr_view';
@@ -592,12 +592,12 @@ mixin TrackingKey {
   static const String subscriptionCompleted = 'subscription_completed';
 
   //* AI Coach events
-  // Chưa có tab Coach trong sheet "[MeUp] Event Tracking" tại thời điểm gắn
+  // Chưa có tab Coach trong sheet "[HDDhistory] Event Tracking" tại thời điểm gắn
   // (2026-09-04) — tên dưới đây theo đúng công ước của sheet
   // ([màn]_[function]_[action], ≤35 ký tự) và cần analytics duyệt lại.
   //
   // Khối param dùng chung mọi event TRONG phiên: session_id (id server, join
-  // được với coach_sessions bên meup-api), entry (home/habit/lesson), step.
+  // được với coach_sessions bên hddhistory-api), entry (home/habit/lesson), step.
   // Không bao giờ gửi chữ người dùng gõ — chỉ độ dài và lựa chọn dạng scalar.
   static const String coachBubbleView = 'coach_bubble_view';
   static const String coachBubbleClick = 'coach_bubble_click';

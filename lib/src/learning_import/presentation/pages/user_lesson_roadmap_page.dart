@@ -359,7 +359,7 @@ Color _fadeColor(BuildContext context) {
 }
 
 /// Where the material came from, for the strip's left slot. Not localised on
-/// purpose — "YouTube" and "PDF" are the same word everywhere MeUp ships.
+/// purpose — "YouTube" and "PDF" are the same word everywhere HDDhistory ships.
 String _sourceLabel(BuildContext context, ImportSourceTypeEntity source) {
   return switch (source) {
     ImportSourceTypeEntity.youtube => 'YOUTUBE',

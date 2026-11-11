@@ -2,7 +2,7 @@ part of '../../library.dart';
 
 /// Public link to a course's roadmap.
 ///
-/// The https form, not `meup://`: a shared link is opened by someone who may
+/// The https form, not `hddhistory://`: a shared link is opened by someone who may
 /// not have the app. `meup.training` carries the AASA / assetlinks files, so it
 /// opens the app through a Universal Link when installed and the web page when
 /// not. `course-roadmap` is a real [DeeplinkDestination], and `courseId` is the
@@ -15,7 +15,7 @@ String courseRoadmapShareUrl(String courseId) =>
 /// Deliberately NOT localized: the product owner specified one fixed English
 /// line for every locale, so a shared story reads the same wherever it lands.
 String courseShareMessage(String courseId) =>
-    "Look what I found on MeUp! Thought you'd enjoy these ideas too \u{1F447}\n"
+    "Look what I found on HDDhistory! Thought you'd enjoy these ideas too \u{1F447}\n"
     '${courseRoadmapShareUrl(courseId)}';
 
 /// Shares the quote card the reader is looking at, as a picture.
@@ -46,7 +46,7 @@ Future<bool> shareSavedQuoteCard(
     await mediaService.captureAndShareWithRepaintBoundary(
       boundaryKey,
       shareText: message,
-      fileName: 'meup-card.png',
+      fileName: 'hddhistory-card.png',
       // 3x so the card is still crisp when a messaging app re-encodes it.
       pixelRatio: 3,
       sharePositionOrigin: sharePositionOrigin,
@@ -81,7 +81,7 @@ Future<bool> shareCourseStoryCard(
     await mediaService.captureAndShareWithRepaintBoundary(
       boundaryKey,
       shareText: message,
-      fileName: 'meup-course.png',
+      fileName: 'hddhistory-course.png',
       pixelRatio: 3,
       sharePositionOrigin: sharePositionOrigin,
     );

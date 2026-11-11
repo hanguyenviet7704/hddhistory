@@ -9,7 +9,7 @@ status: "resolved"
 
 ## Context
 
-- Branch: `feature/MEUP-719`
+- Branch: `feature/719`
 - Scope: `ContentDocumentType.explanation` in lesson documents
 - Validation target: `flutter analyze` plus focused widget/unit coverage
 

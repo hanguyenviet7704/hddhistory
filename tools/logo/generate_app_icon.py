@@ -43,7 +43,7 @@ SPLASH_CORNER_RATIO = 0.225   # đúng tỉ lệ bo góc icon của iOS
 # Ảnh icon dùng trong app (hộp thoại "Về ứng dụng") — cùng ô bo góc với splash.
 APP_IMAGE = ROOT / "assets/images/common/main_icon.png"
 
-# Logo chữ, thay cho wordmark "MeUp?" cũ ở màn đăng ký.
+# Logo chữ, thay cho wordmark "HDDhistory?" cũ ở màn đăng ký.
 BANNER = ROOT / "assets/images/common/logo_banner.png"
 BANNER_HEIGHT = 313           # giữ đúng chiều cao logo cũ
 BANNER_FONT_SIZE = 130
@@ -53,7 +53,7 @@ BANNER_FONT = ROOT / "assets/fonts/Poppins/Poppins-Bold.ttf"
 INK_DARK = (61, 44, 4)        # brandPrimary900
 INK_GOLD = (184, 134, 11)     # brandPrimary
 
-# Dấu thương hiệu dạng SVG dùng trong onboarding, trước là dấu "?" của MeUp.
+# Dấu thương hiệu dạng SVG dùng trong onboarding, trước là dấu "?" của HDDhistory.
 BRAND_MARK_SVG = ROOT / "assets/svg/app/ob_brand_mark.svg"
 
 
@@ -133,7 +133,7 @@ def write_banner(tile: Image.Image) -> None:
     thì "HDDhistory" bị cắt mất đuôi, mà độ rộng chữ còn đổi theo phông và cỡ.
 
     Nền trong suốt vì màn đăng ký tự đặt nền kem của nó. Chữ hai tông để phần
-    "history" — thứ phân biệt sản phẩm này với Meup — nổi lên bằng màu thương hiệu.
+    "history" — thứ phân biệt sản phẩm này với HDDhistory — nổi lên bằng màu thương hiệu.
     """
     h = BANNER_HEIGHT
     font = ImageFont.truetype(str(BANNER_FONT), BANNER_FONT_SIZE)

@@ -18,11 +18,11 @@ onboardingBranchingRecommendationDefaultSubtitle: Những người có thử th�
 onboardingBranchingRecommendationDefaultTitle: Một khóa học được đề xuất cho bạn
 onboardingBranchingRecommendationLabel: Khóa học phù hợp nhất với bạn
 onboardingBranchingRecommendationUsersSuffix: người dùng
-onboardingBranchingWelcomeSubtitle: Để Meup thiết kế lộ trình học tập cá nhân hóa
+onboardingBranchingWelcomeSubtitle: Để HDDhistory thiết kế lộ trình học tập cá nhân hóa
   cho bạn
 onboardingBranchingWelcomeTitle: Rất vui được gặp bạn, ${userName}!
-onboardingChooseSkillsetSubtitle: Chọn tất cả theo nhu cầu của bạn
-onboardingChooseSkillsetTitle: Bạn muốn nâng cấp kỹ năng nào nhất?
+onboardingChooseCategorySubtitle: Chọn tất cả theo nhu cầu của bạn
+onboardingChooseCategoryTitle: Bạn quan tâm chủ đề nào nhất?
 onboardingDailyGoalSubtitle: Bạn có thể thay đổi sau
 onboardingEarlyCareerAdultOption: 25–34
 onboardingEvaluateBackground: Nền tảng cá nhân
@@ -38,7 +38,7 @@ onboardingFirstScreenContext: Nâng cao kỹ năng giúp bạn tự tin nắm b�
 onboardingHowToLearnCardSubtitle: Học từ các tình huống RolePlay thực tế và luyện
   tập với nhánh kịch bản
 onboardingHowToLearnCardTitle: Học thông qua thực hành
-onboardingHowToLearnNote: Và đây là cách mà MeUp giúp bạn
+onboardingHowToLearnNote: Và đây là cách mà HDDhistory giúp bạn
 onboardingHowToLearnTitle: Học tất cả kỹ năng bạn cần chỉ trong một ứng dụng
 onboardingIntroduceBusyAllDay: Tôi bận rộn cả ngày, nhưng lại cảm thấy chẳng làm được
   gì
@@ -56,7 +56,7 @@ onboardingMaleOption: Nam
 onboardingMascotDialogFirstScreen: Thế giới thay đổi từng ngày<br>Kỹ năng của bạn
   cũng vậy</br>
 onboardingMascotDialogLearningMethod: Luyện tập với phương pháp học độc quyền của
-  MeUp
+  HDDhistory
 onboardingMascotDialogSecondScreen: Cách học truyền thống không còn hiệu quả
 onboardingMascotGreetingMessage: Cho mình biết một chút về bạn nhé!
 onboardingMascotGreetingTitle: Chào bạn!
@@ -130,7 +130,7 @@ onboardingV2NotifyCta: Bật thông báo
 onboardingV2P1GetStartedCta: Bắt đầu
 onboardingV2P1SubtitleLine1: Bài học nhỏ. Tiến bộ lớn.
 onboardingV2P1SubtitleLine2: Nâng cấp tư duy với 5 phút mỗi ngày.
-onboardingV2P1TitleBrand: Meup
+onboardingV2P1TitleBrand: HDDhistory
 onboardingV2P1TitlePrefix: Chào mừng đến với
 onboardingV2P2HeadingHighlight: gọi bạn là gì?
 onboardingV2P2HeadingPrefix: Đầu tiên, mình nên
@@ -190,8 +190,8 @@ onboardingV2PathLearnBetter: Học tốt hơn
 onboardingV2PathThinkBetter: Suy nghĩ tốt hơn
 onboardingV2PathWorkBetter: Làm việc tốt hơn
 onboardingV2RetryCta: Thử lại
-onboardingV2SkillsetEmpty: Chưa có kỹ năng nào
-onboardingV2SkillsetLoadError: Không thể tải kỹ năng
+onboardingV2CategoryEmpty: Chưa có chủ đề nào
+onboardingV2CategoryLoadError: Không thể tải chủ đề
 onboardingV2SymptomAmazedByHumanBody: Tôi ăn uống theo cảm xúc
 onboardingV2SymptomAnxietyAroundHardConversations: Quan hệ nơi làm việc khiến tôi kiệt sức
   lắng
@@ -225,8 +225,8 @@ onboardingV3P6HeadingHighlight: bạn chọn gì?
 onboardingV3P6HeadingPrefix: Nếu chỉ được thay đổi một thứ trong 10 ngày tới,
 onboardingV3P6Helper: Chọn một điều quan trọng nhất với bạn.
 onboardingV3P7Cta: Bắt đầu thôi
-onboardingV3P7Eyebrow: MeUp giúp bạn thế nào
-onboardingV3P7Footer: MeUp đi cùng bạn ở từng bước, từ bài học đầu tiên đến thói quen
+onboardingV3P7Eyebrow: HDDhistory giúp bạn thế nào
+onboardingV3P7Footer: HDDhistory đi cùng bạn ở từng bước, từ bài học đầu tiên đến thói quen
   bạn giữ được mỗi ngày.
 onboardingV3P7HeadingHighlight: Mà phải ứng dụng được
 onboardingV3P7HeadingPrefix: Không dừng ở biết
@@ -234,7 +234,7 @@ onboardingV3P7Step1Body: Bài học siêu ngắn, vừa với lịch của bạn
 onboardingV3P7Step1Title: Hiểu
 onboardingV3P7Step2Body: Luyện tập cùng AI ngay sau khi học
 onboardingV3P7Step2Title: Thử
-onboardingV3P7Step3Body: MeUp nhắc lại trước khi bạn kịp quên
+onboardingV3P7Step3Body: HDDhistory nhắc lại trước khi bạn kịp quên
 onboardingV3P7Step3Title: Ôn
 onboardingV3P7Step4Body: Hướng dẫn mang bài học vào việc thật mỗi ngày
 onboardingV3P7Step4Title: Dùng

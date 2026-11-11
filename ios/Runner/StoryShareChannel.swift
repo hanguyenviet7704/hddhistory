@@ -10,7 +10,7 @@ import UIKit
 ///
 /// Registered from AppDelegate alongside LiveActivityChannel.
 final class StoryShareChannel {
-  static let channelName = "meup/story_share"
+  static let channelName = "hddhistory/story_share"
 
   /// Instagram requires the sharing app's Facebook App ID as
   /// `source_application`, or it silently refuses the hand-off. Read from

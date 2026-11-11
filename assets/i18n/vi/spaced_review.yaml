@@ -1,0 +1,7 @@
+homeCardTitle: Ôn tập hôm nay
+homeCardSubtitle: ${total} phần kiến thức sắp quên · khoảng 3 phút
+startButton: Ôn ngay
+completionTitle: Ôn xong rồi!
+completionScore: Đúng ${correct}/${total} câu
+completionHint: Phần bạn đã nhớ sẽ được hỏi lại thưa dần. Phần chưa nhớ sẽ quay lại vào ngày mai.
+backHomeButton: Về trang chủ

@@ -16,7 +16,7 @@ void syncHomeSelectionForLessonFlowCourse(String courseId) {
   final homeCubit = AppDI.injector.get<HomeCubit>();
   if (homeCubit.state.currentCourse.id == courseId) return;
 
-  final resolvedCourse = homeCubit.state.skillsets.resolveCourseByCourseId(
+  final resolvedCourse = homeCubit.state.categories.resolveCourseByCourseId(
     courseId,
     fallback: homeCubit.state.currentCourse,
   );

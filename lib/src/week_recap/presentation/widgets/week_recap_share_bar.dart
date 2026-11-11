@@ -113,7 +113,7 @@ class _WeekRecapShareBarState extends State<WeekRecapShareBar> {
       await media.captureAndShareWithRepaintBoundary(
         widget.boundaryKey,
         shareText: '$message\n${StoreUrl.shareFooter}',
-        fileName: 'meup-week-recap.png',
+        fileName: 'hddhistory-week-recap.png',
         pixelRatio: 3,
         sharePositionOrigin: origin,
       );
@@ -121,7 +121,7 @@ class _WeekRecapShareBarState extends State<WeekRecapShareBar> {
   }
 
   /// Instagram and Facebook stories, handed over through the existing
-  /// `meup/story_share` channel — the same bridge a shared course card uses.
+  /// `hddhistory/story_share` channel — the same bridge a shared course card uses.
   ///
   /// Falls back to the system sheet when the app is not installed or the native
   /// side refuses: the reader asked to share, and a dead tap is worse than the

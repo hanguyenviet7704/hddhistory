@@ -35,7 +35,7 @@ Commands:
       Run any lane explicitly (example: lane deploy flavor:prod track:internal)
   raw <fastlane args...>
       True passthrough. Everything after 'raw' is forwarded unchanged.
-      Examples: raw lanes | raw supply init --package_name com.eup.meup | --dry-run raw supply --help
+      Examples: raw lanes | raw supply init --package_name com.hddhistory.app | --dry-run raw supply --help
   Lane aliases (shortcut for 'lane <name>'):
     test build_apk build_bundle beta beta_bundle deploy deploy_alpha deploy_beta deploy_production
 Argument style:
@@ -56,7 +56,7 @@ Quick examples:
 Deploy mapping to raw:
   deploy ... == lane deploy ... == raw deploy ...
   deploy_alpha ... == raw deploy_alpha ... | deploy_beta ... == raw deploy_beta ... | deploy_production ... == raw deploy_production ...
-  raw supply init --package_name com.eup.meup | --dry-run raw supply --help | -- raw --version
+  raw supply init --package_name com.hddhistory.app | --dry-run raw supply --help | -- raw --version
 Execution mapping (runs inside @android/):
   <alias> ...           -> (cd android && bundle exec fastlane <alias> ...)
   lane <name> ...       -> (cd android && bundle exec fastlane <name> ...)

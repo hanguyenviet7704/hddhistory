@@ -14,7 +14,7 @@ const _kPollInterval = Duration(seconds: 3);
 /// but without its id on disk the next launch starts with `state.job == null`
 /// and the app goes silent about it: no toast, no progress row on the shelf, and
 /// [ImportDonePopupHost] never says it finished — the very thing that host's own
-/// doc comment promises ("kills MeUp and comes back ten minutes later must still
+/// doc comment promises ("kills HDDhistory and comes back ten minutes later must still
 /// be told"). Cleared the moment a poll sees the job reach a terminal state.
 const String _kActiveImportJobKey = 'learning_import.active_job';
 

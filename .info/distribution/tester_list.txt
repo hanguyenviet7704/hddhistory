@@ -7,4 +7,4 @@
 # tester2@example.com
 # qa-team@example.com
 
-meup_test@eupgroup.net
+hddhistory_test@eupgroup.net

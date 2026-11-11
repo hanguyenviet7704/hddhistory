@@ -35,8 +35,8 @@ class _DataCollectPageState extends State<DataCollectPage> {
       case DataCollectStep.collectLearningGoal:
         AppService.instance.appTrackingService.trackObdLearningGoalScrView();
         break;
-      case DataCollectStep.collectSkillsetsWantToMaster:
-        AppService.instance.appTrackingService.trackObdSkillsetScrView();
+      case DataCollectStep.collectCategoriesWantToMaster:
+        AppService.instance.appTrackingService.trackObdCategoryScrView();
         break;
       case DataCollectStep.collectLearningStrugger:
         AppService.instance.appTrackingService.trackObdStrugglesScrView();
@@ -97,7 +97,7 @@ class StepBody extends StatelessWidget {
       DataCollectStep.collectAge => const AgeCollectBody(),
       DataCollectStep.collectGender => const GenderCollectBody(),
       DataCollectStep.collectLearningGoal => const LearningGoalBody(),
-      DataCollectStep.collectSkillsetsWantToMaster => const SkillsetsWantToMasterBody(),
+      DataCollectStep.collectCategoriesWantToMaster => const CategoriesWantToMasterBody(),
       DataCollectStep.collectLearningStrugger => const LearningStruggerBody(),
       DataCollectStep.motivateHowToLearn => const HowToLearnBody(),
       DataCollectStep.collectDailyLearningGoal => const DailyLearningGoalBody(),

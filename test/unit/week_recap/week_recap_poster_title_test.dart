@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// The poster's title is two separate faces at two origins (design: a serif
 /// "Tuần" plus Billock digits). It rendered as the word ALONE once, silently —

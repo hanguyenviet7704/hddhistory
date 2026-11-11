@@ -107,7 +107,7 @@ mixin AppEndpoint {
   static const String coursesRecentlyViewed = '/api/v1/courses-recently-viewed';
 
   //* Explore tab — every curated/computed strip in one call, already in the
-  //* order they render. Skillset chips are NOT here: the catalogue is already
+  //* order they render. Category chips are NOT here: the catalogue is already
   //* in HomeCubit and re-fetching it would be wasted bytes.
   static const String coursesExplore = '/api/v1/courses-explore';
 
@@ -194,6 +194,10 @@ mixin AppEndpoint {
   //* Warm Up (return-refresher) API
   static const String warmUpForCourse = '/api/v1/warm-up/for-course/{courseId}';
 
+  //* Spaced Review ("Ôn tập hôm nay") API
+  static const String spacedReviewToday = '/api/v1/spaced-review/today';
+  static const String spacedReviewAnswers = '/api/v1/spaced-review/answers';
+
   //* Habit API
   static const String habits = '/api/v1/habits';
   static const String userHabits = '/api/v1/user-habits';
@@ -226,9 +230,9 @@ mixin AppEndpoint {
   //* Analytics API (behaviour event sink read by the admin panel)
   static const String analyticsEvents = '/api/v1/analytics/events';
 
-  //* Skillsets API
-  static const String skillsets = '/api/v1/skillsets';
-  static const String skillsetsById = '/api/v1/skillsets/{id}';
+  //* Categories API
+  static const String categories = '/api/v1/categories';
+  static const String categoriesById = '/api/v1/categories/{id}';
 
   //* Cloudflare Files API
   static const String cloudflareUpload = '/api/v1/cloudflares/upload';

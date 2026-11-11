@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 import '../../../../support/test_di.dart';
 
@@ -43,10 +43,10 @@ class _FakeContentRequestRepository implements IContentRequestRepository {
 
 class _FakeHomeRepository implements IHomeRepository {
   @override
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest<SkillsetFilterRequest> request) =>
-      TaskEither.right(const BasePageBreak<SkillsetEntity>());
+  TaskEither<AppException, BasePageBreak<CategoryEntity>> getAllCategories(PageBreakRequest<CategoryFilterRequest> request) =>
+      TaskEither.right(const BasePageBreak<CategoryEntity>());
   @override
-  TaskEither<AppException, SkillsetEntity> getSkillset(String id) => TaskEither.right(const SkillsetEntity());
+  TaskEither<AppException, CategoryEntity> getCategory(String id) => TaskEither.right(const CategoryEntity());
   @override
   TaskEither<AppException, QuoteEntity> getRandomQuote() => TaskEither.right(const QuoteEntity());
   @override
@@ -181,8 +181,8 @@ void main() {
 
 _Harness _buildHarness(_FakeProgressRepository progressRepository) {
   final homeCubit = HomeCubit(
-    GetAllSkillsetsUseCase(_FakeHomeRepository()),
-    GetSkillsetUseCase(_FakeHomeRepository()),
+    GetAllCategoriesUseCase(_FakeHomeRepository()),
+    GetCategoryUseCase(_FakeHomeRepository()),
     GetRandomQuoteUseCase(_FakeHomeRepository()),
     GetSuggestCoursesUseCase(_FakeHomeRepository()),
   );

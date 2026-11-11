@@ -1,13 +1,13 @@
 part of '../../../../lesson.dart';
 
 class KeypointTrackingData {
-  final SkillsetEntity skillset;
+  final CategoryEntity category;
   final CourseEntity course;
   final LessonEntity lesson;
   final KeypointEntity keypoint;
 
   const KeypointTrackingData({
-    required this.skillset,
+    required this.category,
     required this.course,
     required this.lesson,
     required this.keypoint,
@@ -24,7 +24,7 @@ class KeypointTrackingData {
     if (courseTracking == null) return null;
 
     return KeypointTrackingData(
-      skillset: courseTracking.skillset,
+      category: courseTracking.category,
       course: courseTracking.course,
       lesson: lesson,
       keypoint: keypoint,
@@ -35,7 +35,7 @@ class KeypointTrackingData {
     final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
     final lesson = courseLessonState.selectedLesson;
     if (lesson.id.isEmpty) return null;
-    // A lesson the user generated belongs to no course, and the course/skillset
+    // A lesson the user generated belongs to no course, and the course/category
     // resolution below FALLS BACK to whatever the home screen last had — so
     // every keypoint event from an imported lesson would be filed against an
     // unrelated real course. No event is better than a wrong one; the import
@@ -51,18 +51,18 @@ class KeypointTrackingData {
     if (keypoint.id.isEmpty) return null;
 
     final homeState = AppDI.injector.get<HomeCubit>().state;
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+    final category = homeState.categories.resolveCategoryByCourseId(
       lesson.courseId,
-      fallback: homeState.currentSkillset,
+      fallback: homeState.currentCategory,
     );
-    final course = homeState.skillsets.resolveCourseByCourseId(
+    final course = homeState.categories.resolveCourseByCourseId(
       lesson.courseId,
       fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
+      categoryFallback: homeState.currentCategory,
     );
 
     return KeypointTrackingData(
-      skillset: skillset,
+      category: category,
       course: course,
       lesson: lesson,
       keypoint: keypoint,

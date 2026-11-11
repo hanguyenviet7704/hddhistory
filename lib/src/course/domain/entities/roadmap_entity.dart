@@ -20,7 +20,7 @@ abstract class RoadmapEntity with _$RoadmapEntity {
 
     /// The course blurb for the roadmap header. Carried on the roadmap because
     /// the course LIST payload deliberately omits `description` (5 languages,
-    /// ~30% of /skillsets, and no list surface renders it).
+    /// ~30% of /categories, and no list surface renders it).
     @Default(BaseMultiLanguage()) BaseMultiLanguage courseDescription,
 
     /// Nhánh A/B nội dung của người này ở khoá này. App PHẢI đóng dấu `key` và

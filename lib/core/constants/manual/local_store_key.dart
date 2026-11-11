@@ -13,7 +13,7 @@ class LocalStoreKey {
   static const String authkey = "APP_AUTH_KEY";
   static const String deviceTokenUID = "DEVICE_TOKEN_UID";
   static const String notificationAppPreferenceEnabled = "NOTIFICATION_APP_PREFERENCE_ENABLED";
-  // Pending tracking events waiting to be flushed to meup-api. Persisted so a
+  // Pending tracking events waiting to be flushed to hddhistory-api. Persisted so a
   // kill / offline stretch doesn't lose the behaviour trail.
   static const String trackingEventQueue = "TRACKING_EVENT_QUEUE";
   // A mirror of the signed-in session, kept outside hydrated_bloc.

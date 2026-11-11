@@ -156,7 +156,7 @@ class RoleplayFeedbackPointTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String title = point.title.text.isNotEmpty ? point.title.text : context.l10n.roleplay.rolePlayResultSkillset;
+    final String title = point.title.text.isNotEmpty ? point.title.text : context.l10n.roleplay.rolePlayResultCategory;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Row(

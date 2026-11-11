@@ -1,5 +1,5 @@
-sheetTitle: MeUp Coach
-bubbleSemantics: Mở MeUp Coach
+sheetTitle: HDDhistory Coach
+bubbleSemantics: Mở HDDhistory Coach
 failedTitle: Có lỗi ở phía mình. Những gì bạn nói không mất đi đâu cả.
 retry: Thử lại
 inputHint: "Gõ hoặc bấm mic…"
@@ -222,7 +222,7 @@ problemAck: Đó là câu của bạn, mình không sửa.
 lineMoveSemantics: Chạm để chuyển sang cột kia, giữ để sửa
 lineEditHint: Sửa dòng này — xoá hết để bỏ
 
-# design v2 (MeUp AI Coach.html, 2026-08-26)
+# design v2 (HDDhistory AI Coach.html, 2026-08-26)
 intentNoneNote: Vậy là bối cảnh chưa xuất hiện, không phải bạn tránh. Mình giữ nhắc hẹn này lại.
 intentTellDone: Mình lưu nguyên văn câu bạn vừa kể.
 intentTellMissed: Mình ghi nhận.
@@ -287,7 +287,7 @@ promptShrinkEdit: "Sửa lại cho nhỏ hơn — vẫn là chữ của bạn."
 shrinkDoneNote: Mình đổi sang bản nhỏ hơn. Giờ nhắc giữ nguyên.
 courseReasonBarrier: "Vì bạn còn vướng ở «${habit}»"
 courseReasonHabit: "Bài đầu tiên của khoá này là «${habit}»"
-courseReasonSkillset: Cùng hướng với thói quen bạn đang tập
+courseReasonCategory: Cùng hướng với thói quen bạn đang tập
 courseReasonKeypoint: Ý mình vừa nói nằm trong khoá này
 courseReasonSaved: Bạn đã lưu khoá này
 stepShrinkAsk: thu nhỏ nhắc hẹn
@@ -452,7 +452,7 @@ inviteNewHabitAccept: "Tập thử ngay"
 sceneAnswerOther: Khác
 # Luồng 6 (2026-09-14) — popup đánh giá sau ⟨Vẫn đóng⟩. Đường DUY NHẤT thu
 # feedback: toast 👍/👎 giữa phiên đã bỏ. Tần suất hỏi do admin đặt.
-rateSheetTitle: "Nói chuyện với MeUp Coach vừa rồi thế nào?"
+rateSheetTitle: "Nói chuyện với HDDhistory Coach vừa rồi thế nào?"
 rateSheetSubtitle: "Chọn những gì đúng với bạn, rồi viết thêm nếu muốn."
 rateChipUnderstood: "Coach hiểu đúng chuyện mình kể"
 rateChipRightQuestions: "Câu hỏi đúng chỗ"

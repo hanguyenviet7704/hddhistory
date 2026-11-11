@@ -2,8 +2,8 @@ part of '../../home.dart';
 
 @lazySingleton
 class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState> {
-  final GetAllSkillsetsUseCase _getAllUseCase;
-  final GetSkillsetUseCase _getUseCase;
+  final GetAllCategoriesUseCase _getAllUseCase;
+  final GetCategoryUseCase _getUseCase;
   final GetRandomQuoteUseCase _getRandomQuoteUseCase;
   final GetSuggestCoursesUseCase _getSuggestCoursesUseCase;
   final GetHomeBannerUseCase _getHomeBannerUseCase;
@@ -48,7 +48,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   /// Self-heal for Home's "recommended" strip: refetches only the suggested
   /// courses when they're missing (a suggest-only failure inside
   /// initializeData is hidden as an empty section and never retried by
-  /// [ensureHomeDataLoaded], whose gate only checks skillsets). No-op when
+  /// [ensureHomeDataLoaded], whose gate only checks categories). No-op when
   /// suggestions are present or a fetch is already running, so it's safe to
   /// call on every Home mount and tab return.
   Future<void> ensureSuggestedCoursesLoaded() {
@@ -86,21 +86,21 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   }
 
   Future<void> _runInitializeData() async {
-    // Load both courses and skillsets]
+    // Load both courses and categories]
     await Future.wait<void>([
-      loadAllSkillsets(isInit: true),
+      loadAllCategories(isInit: true),
       loadRandomQuote(),
       loadSuggestCourses(),
       loadHomeBanner(),
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
       AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
-    // Only mark the init done + "fresh" when the CRITICAL dataset (skillsets)
+    // Only mark the init done + "fresh" when the CRITICAL dataset (categories)
     // actually loaded. A transient failure — e.g. the onboarding prewarm fires
-    // before the anonymous token is attached, so skillsets 401 → empty — must
+    // before the anonymous token is attached, so categories 401 → empty — must
     // NOT be cached as fresh, otherwise the freshness guard blocks every retry
     // and Home/Explore stays blank with no API re-fire.
-    final loadedOk = state.skillsets.isNotEmpty;
+    final loadedOk = state.categories.isNotEmpty;
     _isInitialized = loadedOk;
     _lastInitializedAt = loadedOk ? DateTime.now() : null;
   }
@@ -198,22 +198,22 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   }
 
   void resetSelection({
-    int skillsetIndex = 0,
+    int categoryIndex = 0,
     int courseIndex = 0,
   }) {
     emit(
       state.copyWith(
-        selectedSkillsetIndex: skillsetIndex,
+        selectedCategoryIndex: categoryIndex,
         selectedCourseIndex: courseIndex,
       ),
     );
   }
 
-  void selectSkillsetIndex(int index) => emit(state.copyWith(selectedSkillsetIndex: index));
-  void selectSkillset(SkillsetEntity skillset) {
-    int skillSetIndex = state.skillsets.indexWhere((s) => s.id == skillset.id);
-    if (skillSetIndex == -1) return;
-    selectSkillsetIndex(skillSetIndex);
+  void selectCategoryIndex(int index) => emit(state.copyWith(selectedCategoryIndex: index));
+  void selectCategory(CategoryEntity category) {
+    int categoryIndex = state.categories.indexWhere((s) => s.id == category.id);
+    if (categoryIndex == -1) return;
+    selectCategoryIndex(categoryIndex);
   }
 
   void selectCourseIndex(int index) {
@@ -222,7 +222,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   }
 
   void selectCourse(CourseEntity course) {
-    int courseIndex = state.currentSkillset.courses.indexWhere((c) => c.id == course.id);
+    int courseIndex = state.currentCategory.courses.indexWhere((c) => c.id == course.id);
     if (courseIndex == -1) {
       _loadRoadmapOutsideCatalog(course.id);
       return;
@@ -230,7 +230,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     selectCourseIndex(courseIndex);
   }
 
-  /// Fetches the roadmap for a course the skillsets catalog does not contain.
+  /// Fetches the roadmap for a course the categories catalog does not contain.
   ///
   /// The catalog only exposes published and coming-soon courses, and it can
   /// also simply have failed to load — while /user-progress/my-course hands
@@ -247,16 +247,16 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   }
 
   void selectCourseFromCourseId(String courseId) {
-    final skillset = state.skillsets.firstWhere(
+    final category = state.categories.firstWhere(
       (s) => s.courses.any((c) => c.id == courseId),
-      orElse: () => SkillsetEntity(),
+      orElse: () => CategoryEntity(),
     );
-    if (skillset.id.isEmpty) {
+    if (category.id.isEmpty) {
       _loadRoadmapOutsideCatalog(courseId);
       return;
     }
-    selectSkillset(skillset);
-    int courseIndex = skillset.courses.indexWhere((c) => c.id == courseId);
+    selectCategory(category);
+    int courseIndex = category.courses.indexWhere((c) => c.id == courseId);
     if (courseIndex == -1) {
       _loadRoadmapOutsideCatalog(courseId);
       return;
@@ -265,21 +265,21 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
   }
 
   bool trySelectCourseFromCourseId(String courseId) {
-    final skillset = state.skillsets.firstWhere(
+    final category = state.categories.firstWhere(
       (s) => s.courses.any((c) => c.id == courseId),
-      orElse: () => SkillsetEntity(),
+      orElse: () => CategoryEntity(),
     );
-    if (skillset.id.isEmpty) return false;
+    if (category.id.isEmpty) return false;
 
-    selectSkillset(skillset);
-    final courseIndex = skillset.courses.indexWhere((c) => c.id == courseId);
+    selectCategory(category);
+    final courseIndex = category.courses.indexWhere((c) => c.id == courseId);
     if (courseIndex == -1) return false;
 
     selectCourseIndex(courseIndex);
     return true;
   }
 
-  Future<void> loadAllSkillsets({
+  Future<void> loadAllCategories({
     bool isInit = false,
   }) async {
     // Prevent multiple simultaneous loads
@@ -290,17 +290,17 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
 
     emit(state.copyWith(status: HomeStatus.loading));
 
-    PageBreakRequest<SkillsetFilterRequest> pageRequest;
+    PageBreakRequest<CategoryFilterRequest> pageRequest;
     pageRequest = isInit
-        ? const PageBreakRequest<SkillsetFilterRequest>(
+        ? const PageBreakRequest<CategoryFilterRequest>(
             order: PageBreakOrder.asc,
           )
-        : PageBreakRequest<SkillsetFilterRequest>(
+        : PageBreakRequest<CategoryFilterRequest>(
             page: state.pageData.nextPage,
             order: PageBreakOrder.asc,
           );
 
-    await runUseCasePageBreak<SkillsetEntity>(
+    await runUseCasePageBreak<CategoryEntity>(
       usecase: () => _getAllUseCase(pageRequest),
       currentPageData: state.pageData,
       isInit: isInit,
@@ -346,8 +346,8 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     emit(state.copyWith(showUpdateBanner: false));
   }
 
-  Future<void> loadSkillset(String id) async {
-    await runUseCase<SkillsetEntity>(
+  Future<void> loadCategory(String id) async {
+    await runUseCase<CategoryEntity>(
       usecase: () => _getUseCase(id),
       buildLoadingState: () => state.copyWith(status: HomeStatus.loading),
       onFailure: (error) {

@@ -98,7 +98,7 @@ class _ScaffoldLayoutState extends State<ScaffoldLayout> {
               // time counter keeps running across every tab. GiftPopupHost is on
               // the shell for the same reason, plus one of its own: it watches for
               // app RESUME, which is how the days 1-7 gift popup reaches a reader
-              // who left MeUp in the background rather than cold-starting it.
+              // who left HDDhistory in the background rather than cold-starting it.
               // ImportDonePopupHost joins them for both reasons at once: it must
               // survive tab switches, AND it watches RESUME — an import keeps
               // running server-side while the app is suspended, so coming back is

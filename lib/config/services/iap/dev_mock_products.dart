@@ -2,8 +2,8 @@ part of '../services.dart';
 
 /// Stand-in store products for the DEV flavor.
 ///
-/// App Store Connect has no app record for `com.eup.meup.dev` at all (only
-/// `com.eup.meup` exists), so StoreKit can never return a product on a dev
+/// App Store Connect has no app record for `com.hddhistory.app.dev` at all (only
+/// `com.hddhistory.app` exists), so StoreKit can never return a product on a dev
 /// build — on a device, on the Firebase distribution, or on the simulator
 /// without an Xcode-launched `.storekit` file. `getProducts` therefore comes
 /// back empty and the paywall dies at the "Configured store product is
@@ -15,7 +15,7 @@ part of '../services.dart';
 /// Prices are illustrative. They do NOT come from App Store Connect and must
 /// never be read as the real charge — purchasing one of these fails, since no
 /// such product exists in any store. To exercise an actual transaction use the
-/// StoreKit configuration file (`ios/Runner/Meup.storekit`, dev scheme, run
+/// StoreKit configuration file (`ios/Runner/HDDhistory.storekit`, dev scheme, run
 /// from Xcode) or a sandbox account against the production bundle.
 abstract final class DevMockProducts {
   /// Rough VND price points, chosen to look plausible next to the real

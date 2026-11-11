@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   group('shouldSelfHealHomeData', () {
     HomeState stateWith({
-      List<SkillsetEntity> skillsets = const [],
+      List<CategoryEntity> categories = const [],
       HomeStatus status = HomeStatus.initial,
     }) {
       return HomeState(
         status: status,
-        pageData: BasePageBreak<SkillsetEntity>(items: skillsets),
+        pageData: BasePageBreak<CategoryEntity>(items: categories),
       );
     }
 
@@ -26,7 +26,7 @@ void main() {
 
     test('false when the catalog is already loaded (no-op on normal mounts)', () {
       final loaded = stateWith(
-        skillsets: [SkillsetEntity(id: 's1')],
+        categories: [CategoryEntity(id: 's1')],
         status: HomeStatus.success,
       );
       expect(shouldSelfHealHomeData(loaded), isFalse);

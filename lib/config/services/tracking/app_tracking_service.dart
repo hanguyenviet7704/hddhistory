@@ -3,7 +3,7 @@ part of '../services.dart';
 @LazySingleton(as: ITrackingService)
 final class AppTrackingService extends ITrackingService {
   final BaseTrackingService _appTrackingService;
-  // The composite (Firebase Analytics + meup-api behaviour sink), not the bare
+  // The composite (Firebase Analytics + hddhistory-api behaviour sink), not the bare
   // Firebase service — that is what puts every event on both rails.
   AppTrackingService(@Named(DIKey.trackingService) this._appTrackingService);
 
@@ -51,8 +51,8 @@ final class AppTrackingService extends ITrackingService {
 
   Map<String, dynamic> _courseParams(CourseTrackingData trackingData) {
     return {
-      'skill_name': trackingData.skillset.trackingName,
-      'skill_id': trackingData.skillset.id,
+      'skill_name': trackingData.category.trackingName,
+      'skill_id': trackingData.category.id,
       'course_id': trackingData.course.id,
       'course_name': trackingData.course.trackingName,
       ..._contentExperimentParams(trackingData.course.id),
@@ -69,8 +69,8 @@ final class AppTrackingService extends ITrackingService {
 
   Map<String, dynamic> _keypointParams(KeypointTrackingData trackingData) {
     return {
-      'skill_name': trackingData.skillset.trackingName,
-      'skill_id': trackingData.skillset.id,
+      'skill_name': trackingData.category.trackingName,
+      'skill_id': trackingData.category.id,
       'course_id': trackingData.course.id,
       'course_name': trackingData.course.trackingName,
       'lesson_id': trackingData.lesson.id,
@@ -106,8 +106,8 @@ final class AppTrackingService extends ITrackingService {
     final roleplayId = trackingData.learningItem.id.isNotEmpty ? trackingData.learningItem.id : trackingData.lesson.learningItemId;
     final roleplayName = trackingData.learningItem.title.en.isNotEmpty ? trackingData.learningItem.title.en : trackingData.lesson.trackingName;
     return {
-      'skill_name': trackingData.skillset.trackingName,
-      'skill_id': trackingData.skillset.id,
+      'skill_name': trackingData.category.trackingName,
+      'skill_id': trackingData.category.id,
       'course_id': trackingData.course.id,
       'course_name': trackingData.course.trackingName,
       'roleplay_id': roleplayId,
@@ -359,12 +359,12 @@ final class AppTrackingService extends ITrackingService {
       if (!courseAttached.contains(iapCubit.paywallEntryPoint)) return {};
       final trackingData = iapCubit.paywallCourseTrackingData;
       if (trackingData == null) return {};
-      final skillset = trackingData.skillset;
+      final category = trackingData.category;
       final course = trackingData.course;
-      if (skillset.id.isEmpty || course.id.isEmpty) return {};
+      if (category.id.isEmpty || course.id.isEmpty) return {};
       return {
-        'skill_id': skillset.id,
-        'skill_name': skillset.trackingName,
+        'skill_id': category.id,
+        'skill_name': category.trackingName,
         'course_id': course.id,
         'course_name': course.trackingName,
       };
@@ -525,28 +525,28 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackObdSkillsetScrView() async {
-    _appTrackingService.trackEvent(TrackingKey.obdSkillsetScrView);
+  Future<void> trackObdCategoryScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdCategoryScrView);
   }
 
   @override
-  Future<void> trackObdSkillsetClick() async {
-    _appTrackingService.trackEvent(TrackingKey.obdSkillsetClick);
+  Future<void> trackObdCategoryClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdCategoryClick);
   }
 
   @override
-  Future<void> trackObdSkillsetContinue(List<String> skillsets) async {
+  Future<void> trackObdCategoryContinue(List<String> categories) async {
     _appTrackingService.trackEvent(
-      TrackingKey.obdSkillsetContinue,
+      TrackingKey.obdCategoryContinue,
       parameters: {
-        'skillset': _joinTrackingValues(skillsets),
+        'category': _joinTrackingValues(categories),
       },
     );
   }
 
   @override
-  Future<void> trackObdSkillsetBack() async {
-    _appTrackingService.trackEvent(TrackingKey.obdSkillsetBack);
+  Future<void> trackObdCategoryBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdCategoryBack);
   }
 
   @override
@@ -731,11 +731,11 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackHomeSkillClick(SkillsetEntity skillset) async {
+  Future<void> trackHomeSkillClick(CategoryEntity category) async {
     _appTrackingService.trackEvent(
       TrackingKey.homeSkillClick,
       parameters: {
-        'skill_name': skillset.trackingName,
+        'skill_name': category.trackingName,
       },
     );
   }
@@ -1248,22 +1248,22 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackCourseSelectCategoryClick(
-    SkillsetEntity skillset, {
+    CategoryEntity category, {
     required bool isRightDirection,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.courseSelectCategoryClick,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
+        'skill_name': category.trackingName,
+        'skill_id': category.id,
         'is_right_direction': isRightDirection ? 'yes' : 'no',
       },
     );
   }
 
   @override
-  Future<void> trackCourseSelectFirstCourseClick(SkillsetEntity skillset, CourseEntity course) async {
-    final trackingData = CourseTrackingData(skillset: skillset, course: course);
+  Future<void> trackCourseSelectFirstCourseClick(CategoryEntity category, CourseEntity course) async {
+    final trackingData = CourseTrackingData(category: category, course: course);
     _appTrackingService.trackEvent(
       TrackingKey.courseSelectFirstCourseClick,
       parameters: _courseParams(trackingData),
@@ -1272,11 +1272,11 @@ final class AppTrackingService extends ITrackingService {
 
   @override
   Future<void> trackCourseSelectCourseClick(
-    SkillsetEntity skillset,
+    CategoryEntity category,
     CourseEntity course, {
     required String source,
   }) async {
-    final trackingData = CourseTrackingData(skillset: skillset, course: course);
+    final trackingData = CourseTrackingData(category: category, course: course);
     _appTrackingService.trackEvent(
       TrackingKey.courseSelectCourseClick,
       parameters: {
@@ -1331,7 +1331,7 @@ final class AppTrackingService extends ITrackingService {
     if (raw.startsWith('home_recommend')) return 'home_recommend';
     if (raw == 'my_courses') return 'my_course';
     if (raw == 'setting_badge') return 'badge_detail';
-    // skillset_courses / change_course / nav_course / course_selection / search /
+    // category_courses / change_course / nav_course / course_selection / search /
     // onboarding / default → the generic explore bucket.
     return 'nav_explore';
   }

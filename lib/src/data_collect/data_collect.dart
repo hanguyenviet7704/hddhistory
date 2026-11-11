@@ -6,7 +6,7 @@ import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -39,7 +39,7 @@ part 'presentation/widgets/body/01_name_collect_body.dart';
 part 'presentation/widgets/body/02_age_collect_body.dart';
 part 'presentation/widgets/body/03_gender_collect_body.dart';
 part 'presentation/widgets/body/04_learning_goal_body.dart';
-part 'presentation/widgets/body/05_skillset_want_to_master_body.dart';
+part 'presentation/widgets/body/05_category_want_to_master_body.dart';
 part 'presentation/widgets/body/06_learning_strugger_body.dart';
 part 'presentation/widgets/body/07_how_to_learn_body.dart';
 part 'presentation/widgets/body/08_daily_learning_goal_body.dart';

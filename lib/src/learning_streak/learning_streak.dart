@@ -1,7 +1,7 @@
 library;
 
 //* Single project import
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 //* Package imports
 import 'package:dio/dio.dart';
@@ -11,7 +11,7 @@ import 'package:injectable/injectable.dart';
 import 'package:lottie/lottie.dart';
 import 'package:retrofit/retrofit.dart';
 // Prefixed: rive 0.14 (rive_native) exports `File` and `Factory`, which would
-// otherwise collide with dart:io / Flutter foundation via the meup barrel.
+// otherwise collide with dart:io / Flutter foundation via the hddhistory barrel.
 import 'package:rive/rive.dart' as rive;
 
 //* Data Layer - Models, Datasources, Repositories

@@ -25,7 +25,7 @@ abstract class IStoryShareService {
   });
 }
 
-/// Bridges to `meup/story_share`.
+/// Bridges to `hddhistory/story_share`.
 ///
 /// Story hand-off cannot be done from Dart: Instagram wants the image on the
 /// pasteboard under its own item keys before `instagram-stories://share` is
@@ -33,7 +33,7 @@ abstract class IStoryShareService {
 /// Neither is reachable through `Clipboard` or `share_plus`.
 @LazySingleton(as: IStoryShareService)
 class StoryShareService implements IStoryShareService {
-  static const MethodChannel _channel = MethodChannel('meup/story_share');
+  static const MethodChannel _channel = MethodChannel('hddhistory/story_share');
 
   @override
   Future<bool> shareToStory({

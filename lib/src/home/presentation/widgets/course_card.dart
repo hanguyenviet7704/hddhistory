@@ -3,7 +3,7 @@ part of '../../home.dart';
 /// Large portrait course card (335×380) for the Home "Continue learning" PageView.
 ///
 /// Matches the Figma design: mint background, circular course image centred in
-/// the top half, skillset label + course title in the bottom section, and an
+/// the top half, category label + course title in the bottom section, and an
 /// absolute-positioned progress badge in the top-right corner.
 class HomeLargePortraitCourseCard extends StatelessWidget {
   final CourseEntity course;
@@ -27,7 +27,7 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
           AppHaptic.select();
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
-            ..selectSkillset(course.skillset)
+            ..selectCategory(course.category)
             ..selectCourse(course);
           CourseRoadmapRoute().go(context);
           // Not just setCurrentIndex(1): .go() to the roadmap branch root
@@ -80,13 +80,13 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Skillset label + course title
+                  // Category label + course title
                   Padding(
                     padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 24.h),
                     child: Column(
                       children: [
                         AppText(
-                          course.skillset.title.text.toUpperCase(),
+                          course.category.title.text.toUpperCase(),
                           style: AppStyle.textBold12.copyWith(
                             color: AppCustomColor.textPrimary.withValues(alpha: 0.50),
                           ),
@@ -176,7 +176,7 @@ class CourseCardWidget extends StatelessWidget {
           AppHaptic.select();
           context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
           context.read<HomeCubit>()
-            ..selectSkillset(course.skillset)
+            ..selectCategory(course.category)
             ..selectCourse(course);
           CourseRoadmapRoute().go(context);
           // Not just setCurrentIndex(1): .go() to the roadmap branch root
@@ -280,7 +280,7 @@ class CourseCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    course.skillset.title.text.toUpperCase(),
+                    course.category.title.text.toUpperCase(),
                     style: AppStyle.text10.copyWith(
                       color: AppCustomColor.brandPrimary,
                       fontWeight: FontWeight.w700,

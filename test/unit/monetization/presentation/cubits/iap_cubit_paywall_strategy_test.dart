@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:mockito/mockito.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -345,7 +345,7 @@ class _FakeRemoteConfigService implements IRemoteConfigService {
 
 class _FakePackageInfoService implements IPackageInfoService {
   @override
-  String get appName => 'Meup';
+  String get appName => 'HDDhistory';
 
   @override
   String get buildNumber => '1';
@@ -360,7 +360,7 @@ class _FakePackageInfoService implements IPackageInfoService {
   bool isVersionLowerThan(String targetVersion) => false;
 
   @override
-  String get packageName => 'com.meup.test';
+  String get packageName => 'com.hddhistory.test';
 
   @override
   PackageInfo get packageInfo => PackageInfo(appName: appName, packageName: packageName, version: version, buildNumber: buildNumber);

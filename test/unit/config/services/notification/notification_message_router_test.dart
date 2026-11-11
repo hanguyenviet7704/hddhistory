@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/services.dart';
+import 'package:hddhistory/config/services/services.dart';
 
 void main() {
   group('NotificationMessageRouter', () {
@@ -12,7 +12,7 @@ void main() {
         type: 'lesson',
         title: 'Resume lesson',
         body: 'Continue from chapter 3',
-        deeplink: 'meup://lesson/42',
+        deeplink: 'hddhistory://lesson/42',
         entityId: 'lesson-42',
         imageUrl: 'https://cdn.example.com/lesson.png',
         raw: <String, dynamic>{'custom': 'value'},
@@ -21,7 +21,7 @@ void main() {
       final request = router.toLocalRequest(payload);
 
       expect(request.id, 42);
-      expect(request.payload[NotificationConstants.payloadDeeplinkKey], 'meup://lesson/42');
+      expect(request.payload[NotificationConstants.payloadDeeplinkKey], 'hddhistory://lesson/42');
       expect(request.payload[NotificationConstants.payloadEntityIdKey], 'lesson-42');
       expect(
         request.payload[NotificationConstants.payloadImageUrlKey],
@@ -97,7 +97,7 @@ void main() {
       final payload = router.fromRemoteMessage(
         const TransportRemoteMessage(
           data: <String, dynamic>{
-            NotificationConstants.payloadNestedMessageKey: '{"type":"promo","entityId":"promo-2","deeplink":"meup://promo/2"}',
+            NotificationConstants.payloadNestedMessageKey: '{"type":"promo","entityId":"promo-2","deeplink":"hddhistory://promo/2"}',
           },
           messageId: 'remote-2',
         ),
@@ -106,7 +106,7 @@ void main() {
 
       expect(payload.type, 'promo');
       expect(payload.entityId, 'promo-2');
-      expect(payload.deeplink, 'meup://promo/2');
+      expect(payload.deeplink, 'hddhistory://promo/2');
       expect(payload.raw[NotificationConstants.payloadEntityIdKey], 'promo-2');
     });
   });

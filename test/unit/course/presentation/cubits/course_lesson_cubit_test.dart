@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// `CourseLessonCubit` owns which lesson the reader is inside. Two behaviours it
 /// has to get right for the background listening chain, which moves that lesson

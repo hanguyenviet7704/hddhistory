@@ -7,7 +7,7 @@ abstract class SuggestedCourseEntity with _$SuggestedCourseEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
-    @Default('') String skillsetId,
+    @Default('') String categoryId,
     @Default(0) int numberOfLesson,
     @Default(false) bool isNew,
     DateTime? publishAt,

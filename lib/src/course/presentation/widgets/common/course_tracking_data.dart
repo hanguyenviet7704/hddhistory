@@ -1,11 +1,11 @@
 part of '../../../course.dart';
 
 class CourseTrackingData {
-  final SkillsetEntity skillset;
+  final CategoryEntity category;
   final CourseEntity course;
 
   const CourseTrackingData({
-    required this.skillset,
+    required this.category,
     required this.course,
   });
 
@@ -19,41 +19,41 @@ class CourseTrackingData {
   /// reading it from `AppDI.injector` yields the very same instance the other
   /// routes wrap).
   static CourseTrackingData? fromHomeState(HomeState homeState, String courseId) {
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+    final category = homeState.categories.resolveCategoryByCourseId(
       courseId,
-      fallback: homeState.currentSkillset,
+      fallback: homeState.currentCategory,
     );
-    final course = homeState.skillsets.resolveCourseByCourseId(
+    final course = homeState.categories.resolveCourseByCourseId(
       courseId,
       fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
+      categoryFallback: homeState.currentCategory,
     );
 
     return CourseTrackingData(
-      skillset: skillset,
+      category: category,
       course: course,
     );
   }
 
   static CourseTrackingData fromTrackingValues({
-    required String skillsetId,
-    required String skillsetName,
+    required String categoryId,
+    required String categoryName,
     required String courseId,
     required String courseName,
   }) {
-    final skillset = SkillsetEntity(
-      id: skillsetId,
-      title: BaseMultiLanguage(en: skillsetName),
+    final category = CategoryEntity(
+      id: categoryId,
+      title: BaseMultiLanguage(en: categoryName),
     );
     final course = CourseEntity(
       id: courseId,
       title: BaseMultiLanguage(en: courseName),
-      skillsetId: skillsetId,
-      skillset: skillset,
+      categoryId: categoryId,
+      category: category,
     );
 
     return CourseTrackingData(
-      skillset: skillset,
+      category: category,
       course: course,
     );
   }
@@ -63,7 +63,7 @@ class CourseLessonTrackingData extends CourseTrackingData {
   final LessonEntity lesson;
 
   const CourseLessonTrackingData({
-    required super.skillset,
+    required super.category,
     required super.course,
     required this.lesson,
   });
@@ -74,7 +74,7 @@ class CourseLessonTrackingData extends CourseTrackingData {
     if (trackingData == null) return null;
 
     return CourseLessonTrackingData(
-      skillset: trackingData.skillset,
+      category: trackingData.category,
       course: trackingData.course,
       lesson: lesson,
     );
@@ -85,7 +85,7 @@ class LessonExplainTrackingData extends CourseLessonTrackingData {
   final String source;
 
   const LessonExplainTrackingData({
-    required super.skillset,
+    required super.category,
     required super.course,
     required super.lesson,
     required this.source,
@@ -100,7 +100,7 @@ class LessonExplainTrackingData extends CourseLessonTrackingData {
     if (trackingData == null) return null;
 
     return LessonExplainTrackingData(
-      skillset: trackingData.skillset,
+      category: trackingData.category,
       course: trackingData.course,
       lesson: trackingData.lesson,
       source: source,

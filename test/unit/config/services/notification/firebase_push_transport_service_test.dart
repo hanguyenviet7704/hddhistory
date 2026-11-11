@@ -7,8 +7,8 @@ import 'package:firebase_core_platform_interface/firebase_core_platform_interfac
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart' as firebase_messaging_platform;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/services.dart';
-import 'package:meup/flavors.dart';
+import 'package:hddhistory/config/services/services.dart';
+import 'package:hddhistory/flavors.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

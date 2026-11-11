@@ -1,7 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/services.dart';
+import 'package:hddhistory/config/services/services.dart';
 
 /// Nhánh A/B nội dung được nhớ theo courseId. Dán nhánh của khoá A lên event
 /// của khoá B là làm bẩn số liệu theo cách rất khó truy, nên guard này là chỗ

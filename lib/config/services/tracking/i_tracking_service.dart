@@ -34,10 +34,10 @@ abstract interface class ITrackingService {
   Future<void> trackObdLearningGoalClick();
   Future<void> trackObdLearningGoalContinue(String learningGoal);
   Future<void> trackObdLearningGoalBack();
-  Future<void> trackObdSkillsetScrView();
-  Future<void> trackObdSkillsetClick();
-  Future<void> trackObdSkillsetContinue(List<String> skillsets);
-  Future<void> trackObdSkillsetBack();
+  Future<void> trackObdCategoryScrView();
+  Future<void> trackObdCategoryClick();
+  Future<void> trackObdCategoryContinue(List<String> categories);
+  Future<void> trackObdCategoryBack();
   Future<void> trackObdMotivation1ScrView();
   Future<void> trackObdMotivation1Continue();
   Future<void> trackObdStrugglesScrView();
@@ -72,7 +72,7 @@ abstract interface class ITrackingService {
   //* Home events
   Future<void> trackHomeScrView();
   Future<void> trackHomeTabSwitch(String tabType);
-  Future<void> trackHomeSkillClick(SkillsetEntity skillset);
+  Future<void> trackHomeSkillClick(CategoryEntity category);
   Future<void> trackHomeStreakChipClick({required int currentStreak});
   Future<void> trackHomePremiumClick();
   Future<void> trackPaywallWinBackShown({required int delaySeconds});
@@ -181,10 +181,10 @@ abstract interface class ITrackingService {
   Future<void> trackCourseSelectAllCourseView({required String source});
   Future<void> trackCourseSelectMyCourseView({required String source});
   Future<void> trackCourseSelectCategorySlide();
-  Future<void> trackCourseSelectCategoryClick(SkillsetEntity skillset, {required bool isRightDirection});
-  Future<void> trackCourseSelectFirstCourseClick(SkillsetEntity skillset, CourseEntity course);
+  Future<void> trackCourseSelectCategoryClick(CategoryEntity category, {required bool isRightDirection});
+  Future<void> trackCourseSelectFirstCourseClick(CategoryEntity category, CourseEntity course);
   Future<void> trackCourseSelectCourseClick(
-    SkillsetEntity skillset,
+    CategoryEntity category,
     CourseEntity course, {
     required String source,
   });

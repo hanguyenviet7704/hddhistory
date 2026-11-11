@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
   group('PackageInfoService version comparison', () {
     Future<PackageInfoService> buildService({required String version, String buildNumber = '1'}) async {
       PackageInfo.setMockInitialValues(
-        appName: 'Meup',
-        packageName: 'com.eup.meup',
+        appName: 'HDDhistory',
+        packageName: 'com.hddhistory.app',
         version: version,
         buildNumber: buildNumber,
         buildSignature: '',

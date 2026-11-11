@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/flavors.dart';
+import 'package:hddhistory/flavors.dart';
 
 void main() {
   group('F', () {
@@ -12,7 +12,7 @@ void main() {
 
       expect(F.appFlavor, Flavor.stg);
       expect(F.name, 'stg');
-      expect(F.title, 'Meup Staging');
+      expect(F.title, 'HDDhistory Staging');
     });
 
     test('falls back to APP_ENVIRONMENT when no flavor was explicitly assigned', () {

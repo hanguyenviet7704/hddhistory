@@ -693,7 +693,7 @@ class WeekRecapPoster extends StatelessWidget {
 
   /// The poster signs off with the app's icon and its name.
   ///
-  /// It used to be "#MeUp" — a hashtag pointing at a feed the product does not
+  /// It used to be "#HDDhistory" — a hashtag pointing at a feed the product does not
   /// run, on an image whose whole job is to be recognised in someone else's
   /// story. The mark is the launcher icon itself, so what signs the poster is
   /// the same square the reader has on their home screen; its rounded corners
@@ -724,8 +724,8 @@ class WeekRecapPoster extends StatelessWidget {
           WeekRecapInkText(
             // Not localised, and not read from the flavour's display name: this
             // is the brand's own spelling, and a dev build must not sign a
-            // shared poster "Meup Dev".
-            'MeUp',
+            // shared poster "HDDhistory Dev".
+            'HDDhistory',
             style: TextStyle(
               fontFamily: AppFont.mulish,
               fontWeight: FontWeight.w800,

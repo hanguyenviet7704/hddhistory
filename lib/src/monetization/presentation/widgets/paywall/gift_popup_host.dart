@@ -9,7 +9,7 @@ part of '../../../monetization.dart';
 /// It listens for RESUME, which is the part that was missing. The trigger used
 /// to sit in `HomePage.initState`, so it only ever fired on a cold start — and
 /// on a phone a cold start happens when the OS has evicted the app, not when the
-/// reader opens it. Somebody who leaves MeUp in the background overnight, the
+/// reader opens it. Somebody who leaves HDDhistory in the background overnight, the
 /// ordinary case, came back the next day to nothing.
 ///
 /// Mounting also fires the check once, which covers the cold start that

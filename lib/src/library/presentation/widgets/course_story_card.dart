@@ -27,7 +27,7 @@ class CourseStoryCard extends StatelessWidget {
   final String coverUrl;
 
   /// Fixed in the design's markup, not a localized string.
-  static const String kFooter = 'MeUp · Daily Growth Trainer';
+  static const String kFooter = 'HDDhistory · Daily Growth Trainer';
 
   @override
   Widget build(BuildContext context) {

@@ -65,11 +65,11 @@ tools/macos/build/build_ipa.sh <dev|stg|prod>
 ```
 
 ## 4. Native Home Widgets
-- iOS builds include `MeupHomeWidgetsExtension`; Apple Developer App Groups must exist before signed device/archive builds:
-  - dev: `group.com.eup.meup.dev.homewidget`
-  - stg: `group.com.eup.meup.stg.homewidget`
-  - prod: `group.com.eup.meup.homewidget`
-- Android builds register three Glance receivers under `com.eup.meup.homewidget` and provider XML under `android/app/src/main/res/xml/`.
+- iOS builds include `HDDhistoryHomeWidgetsExtension`; Apple Developer App Groups must exist before signed device/archive builds:
+  - dev: `group.com.hddhistory.app.dev.homewidget`
+  - stg: `group.com.hddhistory.app.stg.homewidget`
+  - prod: `group.com.hddhistory.app.homewidget`
+- Android builds register three Glance receivers under `com.hddhistory.app.homewidget` and provider XML under `android/app/src/main/res/xml/`.
 - Local validation: run Android Kotlin compile, Android dev debug APK build, and iOS dev debug no-codesign build after native widget changes.
 
 ## 5. CI-Safe Build Flags and Symbol Upload Behavior

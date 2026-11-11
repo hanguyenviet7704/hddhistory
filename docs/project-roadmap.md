@@ -4,7 +4,7 @@
 **Scope:** product and engineering roadmap tracked from current repository state
 
 ## 1. Current Status
-Meup is in active Flutter mobile development with 22 feature modules under `lib/src`.
+HDDhistory is in active Flutter mobile development with 22 feature modules under `lib/src`.
 
 The current product surface includes first-time onboarding V2, disabled-onboarding course-entry gating, branching onboarding fallback, course roadmap entry, read/listen lessons, daily warm-up Home entry, native home widgets, output-practice conversations, video lessons, roleplay, Home in-app survey feedback, learning streaks, progress, profile/settings, and monetization.
 

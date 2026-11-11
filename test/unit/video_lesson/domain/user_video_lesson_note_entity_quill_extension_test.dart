@@ -1,6 +1,6 @@
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 void main() {
   test('falls back legacy plain text note content into a quill document', () {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 class _InMemoryHydratedStorage implements Storage {
   final Map<String, dynamic> _storage = <String, dynamic>{};

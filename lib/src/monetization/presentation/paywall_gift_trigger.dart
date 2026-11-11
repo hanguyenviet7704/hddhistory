@@ -1,6 +1,6 @@
 import 'package:flutter/scheduler.dart';
 import 'package:injectable/injectable.dart';
-import 'package:meup/meup.dart';
+import 'package:hddhistory/hddhistory.dart';
 
 /// The gift popup's calendar: it may show at the moment the FIRST habit is
 /// adopted (day zero), plus on app open — never for premium accounts.
