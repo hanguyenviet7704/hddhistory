@@ -111,7 +111,7 @@ cd hddhistory-flutter
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 dart run slang
-flutter run --flavor dev --dart-define-from-file=.env/.env.dev
+flutter run --flavor dev -t lib/main_dev.dart --dart-define-from-file=.env/.env.dev
 ```
 
 Hoặc dùng các script trong `tools/macos/build/` (`run_app.sh`, `build_apk.sh`…).
