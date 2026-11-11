@@ -178,7 +178,7 @@ export default function VbeeVoicePanel({
           type="button"
           onClick={handleSave}
           disabled={!dirty || saving}
-          className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-md bg-bronze-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-bronze-700 disabled:opacity-50"
         >
           {saving ? (
             <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
@@ -204,7 +204,7 @@ export default function VbeeVoicePanel({
               }
             }}
             placeholder="Dán mã giọng, ví dụ hn_female_ngochuyen_full_48k-fhg"
-            className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-800 placeholder:font-sans placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none"
+            className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-800 placeholder:font-sans placeholder:text-slate-400 focus:border-bronze-400 focus:outline-none"
           />
           <button
             type="button"
@@ -244,7 +244,7 @@ export default function VbeeVoicePanel({
                 <li
                   key={voice.code}
                   className={`flex items-center gap-3 px-4 py-2 ${
-                    isSelected ? "bg-indigo-50/60" : "hover:bg-slate-50"
+                    isSelected ? "bg-bronze-50/60" : "hover:bg-slate-50"
                   }`}
                 >
                   <input
@@ -252,7 +252,7 @@ export default function VbeeVoicePanel({
                     name="vbee-voice"
                     checked={isSelected}
                     onChange={() => setSelected(voice.code)}
-                    className="h-4 w-4 accent-indigo-600"
+                    className="h-4 w-4 accent-bronze-600"
                     aria-label={`Chọn giọng ${voice.name}`}
                   />
                   <div className="min-w-0 flex-1">

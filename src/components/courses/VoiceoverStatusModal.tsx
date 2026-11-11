@@ -174,7 +174,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Volume2Icon className="h-5 w-5 text-indigo-600" />
+              <Volume2Icon className="h-5 w-5 text-bronze-600" />
               Voiceover status
             </h2>
             <p className="text-sm text-gray-500 truncate max-w-lg">{courseTitle}</p>
@@ -191,7 +191,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             <button
               onClick={handleGenerate}
               disabled={running || starting}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-bronze-700 disabled:opacity-60"
             >
               <Volume2Icon className="h-4 w-4" />
               {running
@@ -219,17 +219,17 @@ const VoiceoverStatusModal: React.FC<Props> = ({
             <>
               {/* Running job progress */}
               {job && job.status === "running" && (
-                <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-                  <div className="flex items-center justify-between text-sm text-indigo-800">
+                <div className="rounded-lg border border-bronze-200 bg-bronze-50 p-4">
+                  <div className="flex items-center justify-between text-sm text-bronze-800">
                     <span className="font-medium">
                       Đang sinh voiceover ở nền… {job.processed}/
                       {job.totalKeypoints} keypoint
                     </span>
-                    <span className="text-xs text-indigo-500">tự cập nhật</span>
+                    <span className="text-xs text-bronze-500">tự cập nhật</span>
                   </div>
-                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-indigo-100">
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-bronze-100">
                     <div
-                      className="h-full rounded-full bg-indigo-500 transition-all"
+                      className="h-full rounded-full bg-bronze-500 transition-all"
                       style={{
                         width: `${
                           job.totalKeypoints
@@ -240,7 +240,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                     />
                   </div>
                   {job.currentKeypointTitle && (
-                    <p className="mt-2 truncate text-xs text-indigo-600">
+                    <p className="mt-2 truncate text-xs text-bronze-600">
                       Keypoint hiện tại:{" "}
                       {getTranslationValue(job.currentKeypointTitle, lang) ||
                         job.currentKeypointId}
@@ -323,7 +323,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                           key={lg}
                           className={`py-2 px-2 font-medium text-center uppercase ${
                             lg === highlightLang
-                              ? "bg-indigo-50 text-indigo-700 rounded-t"
+                              ? "bg-bronze-50 text-bronze-700 rounded-t"
                               : ""
                           }`}
                         >
@@ -348,7 +348,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                             <td
                               key={lg}
                               className={`py-2 px-2 text-center ${
-                                lg === highlightLang ? "bg-indigo-50/60" : ""
+                                lg === highlightLang ? "bg-bronze-50/60" : ""
                               }`}
                             >
                               {actionable ? (
@@ -361,7 +361,7 @@ const VoiceoverStatusModal: React.FC<Props> = ({
                                   title={`${
                                     k.errors?.[lg] || st
                                   } — bấm để chạy lại bài này`}
-                                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${CELL_CLASS[st]} transition hover:ring-2 hover:ring-indigo-300 disabled:opacity-50`}
+                                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${CELL_CLASS[st]} transition hover:ring-2 hover:ring-bronze-300 disabled:opacity-50`}
                                 >
                                   {busy ? "…" : CELL_LABEL[st]}
                                 </button>

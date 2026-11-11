@@ -26,7 +26,7 @@ export const platformIcons: Record<PaymentPlatform, PlatformIcon> = {
 
 export const platformIconTone: Record<PaymentPlatform, string> = {
   [PaymentPlatform.APPLE]: "text-slate-900",
-  [PaymentPlatform.GOOGLE]: "text-blue-600",
+  [PaymentPlatform.GOOGLE]: "text-brand-600",
 };
 
 export const typeLabels: Record<ProductType, string> = {

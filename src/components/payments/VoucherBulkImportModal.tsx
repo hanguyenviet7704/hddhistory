@@ -90,7 +90,7 @@ const VoucherBulkImportModal: React.FC<VoucherBulkImportModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3 py-6 overflow-y-auto">
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden my-auto">
-        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-500 text-white">
+        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-bronze-600 to-purple-500 text-white">
           <div>
             <p className="text-sm uppercase tracking-wide opacity-90">
               Bulk import
@@ -161,7 +161,7 @@ const VoucherBulkImportModal: React.FC<VoucherBulkImportModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-500 text-white hover:from-indigo-700 hover:to-purple-600 shadow-md disabled:opacity-70 flex items-center gap-2 min-w-[160px] justify-center"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-bronze-600 to-purple-500 text-white hover:from-bronze-700 hover:to-purple-600 shadow-md disabled:opacity-70 flex items-center gap-2 min-w-[160px] justify-center"
             >
               {loading && (
                 <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />

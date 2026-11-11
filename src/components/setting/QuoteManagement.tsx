@@ -281,7 +281,7 @@ const QuoteManagement = () => {
             setShowForm(true);
             setEditingQuote(null);
           }}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-bronze-600 text-white rounded-lg hover:bg-bronze-700 transition-colors"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Add Quote
@@ -300,7 +300,7 @@ const QuoteManagement = () => {
             không bị nhân đôi.
           </p>
           <textarea
-            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-xs focus:outline-none focus:ring-2 focus:ring-bronze-500"
             rows={10}
             value={importText}
             onChange={(e) => setImportText(e.target.value)}
@@ -322,7 +322,7 @@ const QuoteManagement = () => {
               type="button"
               onClick={handleImport}
               disabled={importing || !importText.trim()}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-60"
+              className="px-4 py-2 bg-bronze-600 text-white rounded-lg hover:bg-bronze-700 disabled:opacity-60"
             >
               {importing ? "Đang import..." : "Import"}
             </button>
@@ -351,7 +351,7 @@ const QuoteManagement = () => {
                   <div key={code} className="flex gap-2">
                     <span
                       className={`mt-2 w-10 shrink-0 text-xs font-semibold ${
-                        isFallback ? "text-indigo-600" : "text-gray-400"
+                        isFallback ? "text-bronze-600" : "text-gray-400"
                       }`}
                       title={
                         isFallback
@@ -363,7 +363,7 @@ const QuoteManagement = () => {
                       {isFallback ? " *" : ""}
                     </span>
                     <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
                       rows={2}
                       value={formData.content?.[code] || ""}
                       placeholder={
@@ -415,7 +415,7 @@ const QuoteManagement = () => {
                         backgroundColor: e.target.value,
                       }))
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
                   />
                 </div>
               </div>
@@ -445,7 +445,7 @@ const QuoteManagement = () => {
                         textColor: e.target.value,
                       }))
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
                   />
                 </div>
               </div>
@@ -461,7 +461,7 @@ const QuoteManagement = () => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                className="px-4 py-2 bg-bronze-600 text-white rounded-md hover:bg-bronze-700 transition-colors"
               >
                 {editingQuote ? "Update" : "Create"}
               </button>
@@ -507,7 +507,7 @@ const QuoteManagement = () => {
                     <td className="px-6 py-4 text-right text-sm font-medium space-x-2">
                       <button
                         onClick={() => handleEdit(quote)}
-                        className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                        className="text-bronze-600 hover:text-bronze-900 inline-flex items-center"
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>

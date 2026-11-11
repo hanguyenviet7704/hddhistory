@@ -2,7 +2,7 @@ import { unwrapApi } from "./unwrapApi";
 
 /**
  * Phong bì `{ statusCode, message, data }` do `ResponseInterceptor` của
- * meup-api gắn toàn cục. Bóc sai ở đây làm trắng cả trang admin.
+ * hddhistory-api gắn toàn cục. Bóc sai ở đây làm trắng cả trang admin.
  */
 describe("unwrapApi", () => {
   it("bóc phong bì ra payload", () => {

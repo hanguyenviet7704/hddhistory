@@ -53,7 +53,7 @@ const SECTION_LABELS: Array<[string, string]> = [
   ["/courses", "Khoá học"],
   ["/lesson", "Bài học"],
   ["/keypoint", "Keypoint"],
-  ["/skillset", "Skillset"],
+  ["/category", "Category"],
   ["/import", "Nhập nội dung"],
   ["/users", "Người dùng"],
   ["/payment", "Thanh toán"],

@@ -240,7 +240,7 @@ const KeypointDetail: React.FC = () => {
             disabled={!keypoint || savingKeypoint}
             title="Edit Keypoint"
             aria-label="Edit Keypoint"
-            className="px-3 py-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-blue-600 transition-colors shadow-sm disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-brand-600 transition-colors shadow-sm disabled:opacity-50"
           >
             <PencilIcon className="w-5 h-5" />
           </button>
@@ -248,7 +248,7 @@ const KeypointDetail: React.FC = () => {
             <button
               onClick={handleSaveOrder}
               disabled={saving}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
               <SaveIcon className="w-4 h-4" />
               {saving ? "Saving..." : "Save Order"}
@@ -260,7 +260,7 @@ const KeypointDetail: React.FC = () => {
       {/* Loading state */}
       {loading && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-brand-200 border-t-brand-600"></div>
         </div>
       )}
 
@@ -269,9 +269,9 @@ const KeypointDetail: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           {learningItems.length === 0 ? (
             <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand-100 to-bronze-100 rounded-full mb-4">
                 <svg
-                  className="h-8 w-8 text-blue-500"
+                  className="h-8 w-8 text-brand-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -306,7 +306,7 @@ const KeypointDetail: React.FC = () => {
                     <SortableItem key={item._id} id={item._id}>
                       <div className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow h-full flex flex-col">
                         <div className="flex items-center mb-4">
-                          <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
+                          <div className="flex-shrink-0 bg-bronze-100 rounded-md p-3">
                             <svg
                               className="w-6 h-6"
                               fill="none"
@@ -323,7 +323,7 @@ const KeypointDetail: React.FC = () => {
                           </div>
                           <div className="ml-4 flex-1">
                             <h3
-                              className="text-lg font-medium text-gray-900 line-clamp-2 overflow-hidden cursor-pointer hover:text-blue-600 transition-colors"
+                              className="text-lg font-medium text-gray-900 line-clamp-2 overflow-hidden cursor-pointer hover:text-brand-600 transition-colors"
                               onClick={() => handleLearningItemClick(item)}
                             >
                               {getTranslationValue(item.title, lang) || ""}
@@ -348,7 +348,7 @@ const KeypointDetail: React.FC = () => {
                             {item.isSub ? "Yes" : "No"}
                           </span>
                         </div>
-                        <div className="absolute bottom-3 right-3 bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-1 rounded-full">
+                        <div className="absolute bottom-3 right-3 bg-bronze-100 text-bronze-800 text-xs font-medium px-2 py-1 rounded-full">
                           {item.index}{" "}
                           {/* Hiển thị index trực tiếp, vì nó đã bắt đầu từ 1 */}
                         </div>

@@ -219,7 +219,7 @@ export default function VideoQuestionEditor({
                     <div className="flex gap-1">
                       <button
                         type="button"
-                        className="rounded p-1 text-blue-600 hover:text-blue-800"
+                        className="rounded p-1 text-brand-600 hover:text-brand-800"
                         onClick={() => handleOpenEdit(index)}
                         title="Edit"
                       >
@@ -245,7 +245,7 @@ export default function VideoQuestionEditor({
 
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex items-start">
-                      <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                      <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                         At second:
                       </span>
                       <span>{formatSecondsLabel(question.atSecond ?? 0)}</span>
@@ -291,7 +291,7 @@ export default function VideoQuestionEditor({
 
                     {(question.exercise as any)?.explanation && (
                       <div className="flex items-start">
-                        <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                        <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                           Explanation:
                         </span>
                         <TextWithTooltip
@@ -305,7 +305,7 @@ export default function VideoQuestionEditor({
                       (question.exercise as any)?.type === ExerciseType.MULTIPLE_CHOICE) &&
                       Array.isArray((question.exercise as any).options) && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Options:
                           </span>
                           <ul className="mt-1 space-y-1">
@@ -329,7 +329,7 @@ export default function VideoQuestionEditor({
                       ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER &&
                       Array.isArray((question.exercise as any).options) && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Options:
                           </span>
                           <ul className="mt-1 space-y-1">
@@ -357,7 +357,7 @@ export default function VideoQuestionEditor({
                       Array.isArray((question.exercise as any).documentGroups) &&
                       (question.exercise as any).documentGroups.length > 0 && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Document Groups:
                           </span>
                           <div className="mt-1 flex flex-wrap gap-2">
@@ -377,7 +377,7 @@ export default function VideoQuestionEditor({
 
                     {(question.exercise as any)?.type === ExerciseType.DRAG_DROP && (
                       <div>
-                        <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                        <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                           Form Type:
                         </span>
                         <span>{(question.exercise as any).form || "Not specified"}</span>
@@ -387,7 +387,7 @@ export default function VideoQuestionEditor({
                     {(question.exercise as any)?.type === ExerciseType.DRAG_DROP &&
                       (question.exercise as any)?.targetArea && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Target Area:
                           </span>
                           <TextWithTooltip
@@ -401,7 +401,7 @@ export default function VideoQuestionEditor({
                       Array.isArray((question.exercise as any).options) &&
                       (question.exercise as any).options.length > 0 && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Options:
                           </span>
                           <ul className="mt-1 space-y-1">
@@ -420,7 +420,7 @@ export default function VideoQuestionEditor({
                       Array.isArray((question.exercise as any).answer) &&
                       (question.exercise as any).answer.length > 0 && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Answer:
                           </span>
                           <ul className="mt-1 space-y-1">
@@ -441,7 +441,7 @@ export default function VideoQuestionEditor({
                     {(question.exercise as any)?.type === ExerciseType.RECORD &&
                       (question.exercise as any)?.maxDuration != null && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Max Duration:
                           </span>
                           <span>{(question.exercise as any).maxDuration} seconds</span>
@@ -451,7 +451,7 @@ export default function VideoQuestionEditor({
                     {(question.exercise as any)?.type === ExerciseType.RECORD &&
                       (question.exercise as any)?.maxCharacter != null && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Max Character:
                           </span>
                           <span>
@@ -463,7 +463,7 @@ export default function VideoQuestionEditor({
                     {(question.exercise as any)?.type === ExerciseType.RECORD &&
                       Array.isArray((question.exercise as any).scoringCriteria) && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Criteria:
                           </span>
                           <span>
@@ -475,7 +475,7 @@ export default function VideoQuestionEditor({
                     {Array.isArray((question.exercise as any)?.level) &&
                       (question.exercise as any).level.length > 0 && (
                         <div>
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Level:
                           </span>
                           <div className="mt-1 flex flex-wrap gap-1">
@@ -497,7 +497,7 @@ export default function VideoQuestionEditor({
                       !(question.exercise as any)?.explanation &&
                       getExercisePreview(question.exercise, lang) && (
                         <div className="flex items-start">
-                          <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
+                          <span className="mr-2 flex-shrink-0 font-medium text-brand-400">
                             Preview:
                           </span>
                           <TextWithTooltip
@@ -517,7 +517,7 @@ export default function VideoQuestionEditor({
       <div className="flex justify-center pt-2">
         <button
           type="button"
-          className="text-blue-500 transition-colors hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="text-brand-500 transition-colors hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => setShowTypePicker(true)}
           disabled={saving}
         >
@@ -542,10 +542,10 @@ export default function VideoQuestionEditor({
                 <button
                   type="button"
                   onClick={() => handleOpenCreate(ExerciseType.SINGLE_CHOICE)}
-                  className="flex flex-col items-center gap-2 rounded-lg bg-blue-50 p-4 transition hover:bg-blue-100"
+                  className="flex flex-col items-center gap-2 rounded-lg bg-brand-50 p-4 transition hover:bg-brand-100"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                    <span className="font-bold text-blue-600">A</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100">
+                    <span className="font-bold text-brand-600">A</span>
                   </div>
                   <span className="font-medium">Single Choice</span>
                 </button>

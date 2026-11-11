@@ -1,7 +1,7 @@
-# Bulk actions for Habits & Re-anchor Reasons (meup-admin)
+# Bulk actions for Habits & Re-anchor Reasons (hddhistory-admin)
 
 **Date:** 2026-07-14
-**Scope:** meup-admin only (React CRA admin panel). No meup-api or meup-flutter changes.
+**Scope:** hddhistory-admin only (React CRA admin panel). No hddhistory-api or hddhistory-flutter changes.
 
 ## Problem
 
@@ -40,7 +40,7 @@ lists are small (habits ~44, reanchor a few dozen), so N single requests is acce
 
 **Rejected: Approach B — backend bulk endpoints** (`POST /habits/bulk-delete`, etc.).
 Faster for very large N and atomic, but requires controller/service/repository/DTO work
-in meup-api plus a deploy, diverges from the established admin bulk convention, and is
+in hddhistory-api plus a deploy, diverges from the established admin bulk convention, and is
 over-engineered for these small lists. YAGNI.
 
 ## Design
@@ -83,7 +83,7 @@ Derived:
 - **Partial failure:** use `Promise.allSettled` so one failing item doesn't abort the
   batch; report `{succeeded}/{total}` and show an error toast if any failed.
 - **Selection reset:** clear `selectedIds` whenever the search term or any filter
-  (status / skillset / course) changes, so a bulk action can never hit a row that has
+  (status / category / course) changes, so a bulk action can never hit a row that has
   scrolled out of the current filter. Also clear after every completed bulk op.
 - **Double-submit guard:** `bulkBusy` gates the bulk buttons and the confirm action.
 

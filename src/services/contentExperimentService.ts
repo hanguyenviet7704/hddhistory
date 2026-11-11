@@ -44,7 +44,7 @@ export interface ContentExperimentStats {
 /**
  * A/B nội dung khoá học. Hai tag của cùng một khoá làm hai nhánh; chia người
  * bằng hash(key + userId) nên không có bảng gán nhánh và `key` phải đổi mỗi đợt.
- * Xem `meup-api/plans/260908-course-content-ab-test/README.md`.
+ * Xem `hddhistory-api/plans/260908-course-content-ab-test/README.md`.
  */
 export const contentExperimentService = {
   async list() {

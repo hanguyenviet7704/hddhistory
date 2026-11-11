@@ -117,14 +117,14 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-white shadow px-6 py-3 flex items-center relative">
+    <header className="w-full bg-white border-b border-stone-200 px-6 py-3 flex items-center relative">
       {/* Left section - Nút quay lại */}
       <div className="flex items-center">
         <button
           onClick={handleBack}
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 hover:shadow transition-all"
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-stone-100 hover:bg-brand-100 hover:shadow transition-all"
         >
-          <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+          <ArrowLeftIcon className="h-5 w-5 text-stone-600" />
         </button>
       </div>
 
@@ -135,7 +135,7 @@ export default function Header() {
       <div className="flex items-center gap-6">
         <button
           onClick={handleOpenDriveImport}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-200 text-blue-700 hover:bg-blue-50"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 text-brand-700 hover:bg-brand-50"
           aria-label="Import File From Drive"
           title="Import File From Drive"
         >
@@ -151,7 +151,7 @@ export default function Header() {
                 return !prev;
               });
             }}
-            className="flex items-center gap-2 border rounded px-2 py-1 hover:bg-gray-50"
+            className="flex items-center gap-2 border border-stone-200 rounded-lg px-2 py-1 hover:bg-brand-50"
           >
             <ReactCountryFlag
               countryCode={current.countryCode}
@@ -187,9 +187,9 @@ export default function Header() {
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:shadow"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-stone-100 hover:bg-brand-100 hover:shadow"
           >
-            <UserCircleIcon className="h-6 w-6 text-gray-600" />
+            <UserCircleIcon className="h-6 w-6 text-stone-600" />
           </button>
 
           {open && (

@@ -272,7 +272,7 @@ const ProductSection: React.FC = () => {
           label="Google"
           value={stats.android}
           icon={platformIcons[PaymentPlatform.GOOGLE]}
-          accent="from-sky-500 to-blue-500"
+          accent="from-sky-500 to-brand-500"
         />
         <PaymentStatCard
           label="Subscription"
@@ -480,7 +480,7 @@ const ProductSection: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-bronze-50 text-bronze-700">
                           {typeLabels[product.type]}
                         </span>
                       </td>

@@ -286,7 +286,7 @@ export default function NotificationCampaignSection() {
 
   /**
    * Đích mời chọn: mọi màn trong danh mục deeplink KHÔNG cần tham số bắt buộc,
-   * cộng `resume_lesson`. Khoá cần tham số (`lesson`, `skillset-courses`) bị
+   * cộng `resume_lesson`. Khoá cần tham số (`lesson`, `category-courses`) bị
    * loại vì màn này không có picker chọn khoá học/bài — chọn là gửi ra một cú
    * chạm chắc chắn rơi về Trang chủ.
    *

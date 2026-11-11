@@ -326,7 +326,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   type="checkbox"
                   checked={bestDeal}
                   onChange={(e) => setBestDeal(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 text-bronze-600 focus:ring-bronze-500"
                 />
                 <span>Đánh dấu Best deal</span>
               </label>

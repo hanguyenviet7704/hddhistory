@@ -695,7 +695,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     className={`rounded-lg px-6 py-3 font-semibold text-white shadow transition ${
                       saving
                         ? "cursor-not-allowed bg-gray-400"
-                        : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                        : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                     }`}
                   >
                     {saving
@@ -724,7 +724,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                         ),
                       }))
                     }
-                    className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="Video title..."
                   />
                 </div>
@@ -746,7 +746,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                         ),
                       }))
                     }
-                    className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="Short description..."
                   />
                 </div>
@@ -764,7 +764,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           status: event.target.value as LessonStatus,
                         }))
                       }
-                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     >
                       {Object.values(LessonStatus).map((status) => (
                         <option key={status} value={status}>
@@ -788,7 +788,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           index: Number(event.target.value),
                         }))
                       }
-                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     />
                   </div>
                 </div>
@@ -815,7 +815,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                             : courseQuery
                         }
                         onChange={(event) => setCourseQuery(event.target.value)}
-                        className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder="Search course..."
                       />
                       <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
@@ -823,7 +823,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           <Combobox.Option
                             key={course._id}
                             value={course._id}
-                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                            className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                           >
                             {getTranslationValue(course.title, lang)}
                           </Combobox.Option>
@@ -859,7 +859,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           estimateCompleTimeNumber,
                         }));
                       }}
-                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     >
                       <option value="minute">
                         {getEstimateCompleteTimeUnitLabel("minute", lang, 2)}
@@ -893,7 +893,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           estimateCompleTimeNumber,
                         }));
                       }}
-                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 sm:col-span-2"
+                      className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 sm:col-span-2"
                       placeholder="Enter number..."
                     />
                   </div>
@@ -930,7 +930,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           setIconQuery("");
                         }, 150);
                       }}
-                      className="w-full rounded-lg border p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="w-full rounded-lg border p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder="Search icon..."
                     />
 
@@ -1017,7 +1017,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                           setLightIconQuery("");
                         }, 150);
                       }}
-                      className="w-full rounded-lg border p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="w-full rounded-lg border p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder="Search light icon..."
                     />
 

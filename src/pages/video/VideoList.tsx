@@ -123,7 +123,7 @@ export default function VideoList() {
             <Combobox value={selectedCourse} onChange={setSelectedCourse}>
               <div className="relative">
                 <Combobox.Input
-                  className="w-56 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-56 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   placeholder="Search course..."
                   displayValue={(course: ICourse) =>
                     getTranslationValue(course?.title, lang)
@@ -155,7 +155,7 @@ export default function VideoList() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search videos..."
-                className="w-72 rounded-lg border py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-72 rounded-lg border py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg
@@ -178,7 +178,7 @@ export default function VideoList() {
             <button
               type="button"
               onClick={() => navigate("/video/create")}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-white shadow-md transition-all hover:from-blue-700 hover:to-indigo-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-600 to-bronze-600 px-4 py-2 text-white shadow-md transition-all hover:from-brand-700 hover:to-bronze-700"
             >
               <PlusIcon className="h-5 w-5" />
               New Video
@@ -190,7 +190,7 @@ export default function VideoList() {
       <div className="mx-auto max-w-7xl">
         {loading && videos.length === 0 ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-brand-500"></div>
           </div>
         ) : videos.length === 0 ? (
           <div className="py-20 text-center">
@@ -275,7 +275,7 @@ export default function VideoList() {
 
         {loadingMore ? (
           <div className="flex justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-brand-500"></div>
           </div>
         ) : null}
       </div>

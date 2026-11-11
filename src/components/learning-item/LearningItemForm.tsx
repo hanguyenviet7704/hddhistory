@@ -55,7 +55,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
             type="text"
             value={item.keypointId}
             onChange={(e) => handleInputChange("keypointId", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
           />
         </div>
 
@@ -72,7 +72,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
                 updateTranslationValue(item.title, LangCode.EN, e.target.value),
               )
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
           />
         </div>
 
@@ -84,7 +84,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
             type="text"
             value={item.image}
             onChange={(e) => handleInputChange("image", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
           />
         </div>
 
@@ -97,7 +97,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
             onChange={(e) =>
               handleInputChange("type", e.target.value as LearningItemType)
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
           >
             <option value={LearningItemType.THEORY}>Theory</option>
             <option value={LearningItemType.EXERCISE}>Exercise</option>
@@ -114,7 +114,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
             onChange={(e) =>
               handleInputChange("index", parseInt(e.target.value))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500"
           />
         </div>
 
@@ -124,7 +124,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
               type="checkbox"
               checked={item.isSub}
               onChange={(e) => handleInputChange("isSub", e.target.checked)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-bronze-600 focus:ring-bronze-500 border-gray-300 rounded"
             />
             <span className="ml-2 block text-sm text-gray-700">Is Sub</span>
           </label>
@@ -139,7 +139,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
           {item.tag.map((tag, index) => (
             <div
               key={index}
-              className="flex items-center bg-indigo-100 rounded-md"
+              className="flex items-center bg-bronze-100 rounded-md"
             >
               <input
                 type="text"
@@ -174,7 +174,7 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
         <button
           type="button"
           onClick={addTag}
-          className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bronze-500"
         >
           <svg
             className="w-4 h-4 mr-1"

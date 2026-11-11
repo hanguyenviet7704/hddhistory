@@ -27,7 +27,7 @@ interface WinBackSectionProps {
  * stay hardcoded in the app on purpose: it never follows the compact sheet
  * (that would be the same sheet twice), and a delay that elapses while the app
  * is in the background is dropped rather than queued, so nobody comes back to
- * MeUp and is met by a sales pitch.
+ * HDDhistory and is met by a sales pitch.
  */
 const WinBackSection: React.FC<WinBackSectionProps> = ({
   enabled,

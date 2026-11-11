@@ -960,7 +960,7 @@ export default function ExerciseForm({
                                     question,
                                   )
                                 }
-                                className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                className="text-brand-600 hover:text-brand-800 p-1 rounded"
                                 title="Edit"
                               >
                                 <svg
@@ -999,7 +999,7 @@ export default function ExerciseForm({
 
                             {question.tag && (
                               <div className="flex items-start">
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                   Tag:
                                 </span>
                                 <TagDisplay tag={question.tag} lang={lang} />
@@ -1009,7 +1009,7 @@ export default function ExerciseForm({
                             {question.mainQuestion !== undefined &&
                               question.mainQuestion !== null && (
                                 <div className="flex items-start">
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Main question:
                                   </span>
                                   <TextWithTooltip
@@ -1095,7 +1095,7 @@ export default function ExerciseForm({
 
                             {question.explanation && (
                               <div className="flex items-start">
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                   Explanation:
                                 </span>
                                 <TextWithTooltip
@@ -1109,7 +1109,7 @@ export default function ExerciseForm({
                               question.type === ExerciseType.MULTIPLE_CHOICE) &&
                               Array.isArray((question as any).options) && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Options:
                                   </span>
                                   <ul className="mt-1 space-y-1">
@@ -1141,7 +1141,7 @@ export default function ExerciseForm({
                               ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER &&
                               Array.isArray((question as any).options) && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Options:
                                   </span>
                                   <ul className="mt-1 space-y-1">
@@ -1172,7 +1172,7 @@ export default function ExerciseForm({
                               Array.isArray((question as any).documentGroups) &&
                               (question as any).documentGroups.length > 0 && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Document Groups:
                                   </span>
                                   <div className="flex flex-wrap gap-2 mt-1">
@@ -1192,7 +1192,7 @@ export default function ExerciseForm({
 
                             {question.type === ExerciseType.DRAG_DROP && (
                               <div>
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                   Form Type:
                                 </span>
                                 {"form" in question && (
@@ -1206,7 +1206,7 @@ export default function ExerciseForm({
                             {question.type === ExerciseType.DRAG_DROP &&
                               "targetArea" in question && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Target Area:
                                   </span>
                                   <TextWithTooltip
@@ -1221,7 +1221,7 @@ export default function ExerciseForm({
                               Array.isArray(question.options) &&
                               question.options.length > 0 && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Options:
                                   </span>
                                   <ul className="mt-1 space-y-1">
@@ -1247,7 +1247,7 @@ export default function ExerciseForm({
                               Array.isArray(question.answer) &&
                               question.answer.length > 0 && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Answer:
                                   </span>
                                   <ul className="mt-1 space-y-1">
@@ -1271,7 +1271,7 @@ export default function ExerciseForm({
                             {question.type === ExerciseType.RECORD &&
                               "maxDuration" in question && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Max Duration:
                                   </span>
                                   <span>{question.maxDuration} seconds</span>
@@ -1281,7 +1281,7 @@ export default function ExerciseForm({
                             {question.type === ExerciseType.RECORD &&
                               "maxCharacter" in question && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Max Character:
                                   </span>
                                   <span>
@@ -1293,7 +1293,7 @@ export default function ExerciseForm({
                             {question.type === ExerciseType.RECORD &&
                               "scoringCriteria" in question && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Criteria:
                                   </span>
                                   <span>
@@ -1305,7 +1305,7 @@ export default function ExerciseForm({
                             {"level" in question &&
                               (question.level?.length ?? 0) > 0 && (
                                 <div>
-                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                  <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                     Level:
                                   </span>
                                   <div className="flex flex-wrap gap-1 mt-1">
@@ -1333,7 +1333,7 @@ export default function ExerciseForm({
 
             <div className="text-center pt-5">
               <button
-                className="text-blue-500 hover:text-blue-700 transition-colors"
+                className="text-brand-500 hover:text-brand-700 transition-colors"
                 onClick={() => handleOpenExerciseTypePopup(section)}
               >
                 <PlusCircleIcon className="h-8 w-8" />
@@ -1627,7 +1627,7 @@ export default function ExerciseForm({
                   handleDataChange(index, "content", e.target.value)
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             ) : (
@@ -1637,7 +1637,7 @@ export default function ExerciseForm({
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             )}
@@ -1747,7 +1747,7 @@ export default function ExerciseForm({
                   )
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             ) : (
@@ -1762,7 +1762,7 @@ export default function ExerciseForm({
                     e.target.value,
                   )
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             )}
@@ -2424,7 +2424,7 @@ export default function ExerciseForm({
                   e.target.value === "" ? "" : Number(e.target.value),
                 )
               }
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="Enter main question ID"
             />
           </div>
@@ -2438,7 +2438,7 @@ export default function ExerciseForm({
               onChange={(e) =>
                 handleChange("isDailyWarmUp", e.target.checked)
               }
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-bronze-600 focus:ring-bronze-500 border-gray-300 rounded"
             />
             <span className="ml-2 text-sm font-medium text-gray-700">
               Daily Warm-up
@@ -2481,7 +2481,7 @@ export default function ExerciseForm({
                         e.target.value as DocumentType,
                       )
                     }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     <option value={DocumentType.TITLE}>Title</option>
                     <option value={DocumentType.CAPTION}>Caption</option>
@@ -2501,7 +2501,7 @@ export default function ExerciseForm({
             <button
               type="button"
               onClick={addNewDocument}
-              className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+              className="px-3 py-1 bg-brand-600 text-white rounded-md text-sm hover:bg-brand-700"
             >
               Add Content
             </button>
@@ -2519,7 +2519,7 @@ export default function ExerciseForm({
             className="inline-flex items-center gap-1 text-base font-semibold text-gray-700"
           >
             <span>Explanation</span>
-            <span className="text-blue-600">
+            <span className="text-brand-600">
               {isExplanationOpen ? "↑" : "↓"}
             </span>
           </button>
@@ -2540,7 +2540,7 @@ export default function ExerciseForm({
                 )
               }
               rows={3}
-              className="mt-2 border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="mt-2 border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="Enter explanation"
             />
           )}
@@ -2561,7 +2561,7 @@ export default function ExerciseForm({
                     value={getCurrentTranslationValue(opt.value, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
                     onPaste={(e) => handlePasteOptions(idx, e)}
-                    className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder={`Option ${idx + 1}`}
                   />
                   <label className="flex items-center">
@@ -2571,7 +2571,7 @@ export default function ExerciseForm({
                       onChange={(e) =>
                         updateOptionCorrectness(idx, e.target.checked)
                       }
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-bronze-600 focus:ring-bronze-500 border-gray-300 rounded"
                     />
                     <span className="ml-1 text-sm">
                       {questionType === ExerciseType.SINGLE_CHOICE
@@ -2623,7 +2623,7 @@ export default function ExerciseForm({
                     value={getCurrentTranslationValue(opt.value, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
                     onPaste={(e) => handlePasteOptions(idx, e)}
-                    className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder={`Option ${idx + 1}`}
                   />
                   <input
@@ -2633,7 +2633,7 @@ export default function ExerciseForm({
                     onChange={(e) =>
                       updateOptionDocumentGroupId(idx, e.target.value)
                     }
-                    className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="Document group ID (optional)"
                   />
                   <div className="flex justify-end">
@@ -2690,7 +2690,7 @@ export default function ExerciseForm({
                             onChange={(e) =>
                               updateDocumentGroupId(groupIndex, e.target.value)
                             }
-                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                             placeholder="e.g., cardA"
                           />
                         </div>
@@ -2739,7 +2739,7 @@ export default function ExerciseForm({
                                       e.target.value as DocumentType,
                                     )
                                   }
-                                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                                 >
                                   <option value={DocumentType.TITLE}>
                                     Title
@@ -2778,7 +2778,7 @@ export default function ExerciseForm({
                         <button
                           type="button"
                           onClick={() => addDocumentToGroup(groupIndex)}
-                          className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                          className="px-3 py-1 bg-brand-600 text-white rounded-md text-sm hover:bg-brand-700"
                         >
                           Add Content
                         </button>
@@ -2792,7 +2792,7 @@ export default function ExerciseForm({
               <button
                 type="button"
                 onClick={addDocumentGroup}
-                className="text-blue-600 hover:text-blue-800 p-2 rounded-full"
+                className="text-brand-600 hover:text-brand-800 p-2 rounded-full"
                 title="Add Group"
               >
                 <PlusCircleIcon className="h-6 w-6" />
@@ -2809,7 +2809,7 @@ export default function ExerciseForm({
             <select
               value={localFormData.form || FormDragDropType.TextGapFilling}
               onChange={(e) => handleChange("form", e.target.value)}
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option value={FormDragDropType.TextGapFilling}>
                 Text Gap Filling
@@ -2845,7 +2845,7 @@ export default function ExerciseForm({
                   ),
                 )
               }
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-pre-wrap"
               placeholder="Enter target area"
             />
           </div>
@@ -2864,7 +2864,7 @@ export default function ExerciseForm({
                     value={getCurrentTranslationValue(ans.correctAnswer, lang)}
                     onChange={(e) => updateAnswerValue(idx, e.target.value)}
                     onPaste={(e) => handlePasteAnswers(idx, e)}
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder={`Answer ${idx + 1}`}
                   />
                   <button
@@ -2898,7 +2898,7 @@ export default function ExerciseForm({
                 <button
                   type="button"
                   onClick={handleShuffleOptions}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-brand-600 hover:text-brand-700"
                 >
                   Shuffle
                 </button>
@@ -2912,7 +2912,7 @@ export default function ExerciseForm({
                     value={getCurrentTranslationValue(opt.text, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
                     onPaste={(e) => handlePasteOptions(idx, e)}
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder={`Option ${idx + 1}`}
                   />
                   <button
@@ -2947,7 +2947,7 @@ export default function ExerciseForm({
               onChange={(e) =>
                 handleChange("maxDuration", parseInt(e.target.value))
               }
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="Enter max duration"
             />
           </div>
@@ -2964,7 +2964,7 @@ export default function ExerciseForm({
               onChange={(e) =>
                 handleChange("maxCharacter", parseInt(e.target.value))
               }
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="Enter max character"
             />
           </div>
@@ -3028,7 +3028,7 @@ export default function ExerciseForm({
                           }
                           onPaste={(e) => handlePasteCriteria(index, e)}
                           rows={2}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-pre-wrap"
                           placeholder="e.g., Pronunciation clarity"
                         />
                       </div>
@@ -3050,7 +3050,7 @@ export default function ExerciseForm({
                               e.target.value,
                             )
                           }
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                           placeholder="Auto"
                         />
                       </div>
@@ -3081,7 +3081,7 @@ export default function ExerciseForm({
                         );
                     handleChange("level", newLevel);
                   }}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-bronze-600 focus:ring-bronze-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm">{level}</span>
               </label>
@@ -3097,7 +3097,7 @@ export default function ExerciseForm({
             Cancel
           </button>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
             onClick={handleSave}
             disabled={saving}
           >
@@ -3149,7 +3149,7 @@ export default function ExerciseForm({
                     image: e.target.value,
                   }))
                 }
-                className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                 placeholder="Paste image link..."
               />
             </div>
@@ -3177,7 +3177,7 @@ export default function ExerciseForm({
                       title: { ...prev.title, [lang]: e.target.value },
                     }))
                   }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   placeholder="Exercise title..."
                 />
               </div>
@@ -3208,7 +3208,7 @@ export default function ExerciseForm({
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setKeypointQuery(e.target.value)
                       }
-                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                       placeholder="Search keypoint..."
                     />
 
@@ -3223,7 +3223,7 @@ export default function ExerciseForm({
                           <Combobox.Option
                             key={c._id}
                             value={c._id}
-                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                            className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                           >
                             {c.title?.[lang]}
                           </Combobox.Option>
@@ -3242,7 +3242,7 @@ export default function ExerciseForm({
                   {currentExercise.tag?.map((tag, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-indigo-100 rounded-md"
+                      className="flex items-center bg-bronze-100 rounded-md"
                     >
                       <input
                         type="text"
@@ -3297,7 +3297,7 @@ export default function ExerciseForm({
                       tag: [...(currentExercise.tag || []), ""],
                     })
                   }
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bronze-500"
                 >
                   <svg
                     className="w-4 h-4 mr-1"
@@ -3331,7 +3331,7 @@ export default function ExerciseForm({
                           isSub: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-bronze-600 focus:ring-bronze-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 block text-sm text-gray-700">
                       Is Sub
@@ -3347,7 +3347,7 @@ export default function ExerciseForm({
                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                   saving
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                    : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                 }`}
               >
                 {saving ? (
@@ -3411,10 +3411,10 @@ export default function ExerciseForm({
                     onClick={() =>
                       handleSelectExerciseType(ExerciseType.SINGLE_CHOICE)
                     }
-                    className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex flex-col items-center gap-2"
+                    className="p-4 bg-brand-50 rounded-lg hover:bg-brand-100 transition flex flex-col items-center gap-2"
                   >
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-blue-600 font-bold">A</span>
+                    <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
+                      <span className="text-brand-600 font-bold">A</span>
                     </div>
                     <span className="font-medium">Single Choice</span>
                   </button>

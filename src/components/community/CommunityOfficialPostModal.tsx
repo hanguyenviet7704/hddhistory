@@ -29,7 +29,7 @@ interface Props {
 }
 
 /**
- * Compose a post as "Đội ngũ MeUp".
+ * Compose a post as "Đội ngũ HDDhistory".
  *
  * One locale per post, not a translation set: this lands in a feed alongside
  * readers' own posts, and those are single-language by nature. Posting the same
@@ -76,7 +76,7 @@ const CommunityOfficialPostModal: React.FC<Props> = ({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Đăng bài với tư cách Đội ngũ MeUp</DialogTitle>
+      <DialogTitle>Đăng bài với tư cách Đội ngũ HDDhistory</DialogTitle>
       <DialogContent className="space-y-4">
         <TextField
           fullWidth

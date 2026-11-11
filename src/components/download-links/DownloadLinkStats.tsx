@@ -65,7 +65,7 @@ const BucketBars: React.FC<{
               </span>
               <span className="h-2 flex-1 overflow-hidden rounded bg-gray-100">
                 <span
-                  className="block h-full rounded bg-indigo-500"
+                  className="block h-full rounded bg-bronze-500"
                   style={{ width: `${(b.total / max) * 100}%` }}
                 />
               </span>

@@ -5,7 +5,7 @@
 // validation that mirrors `PaywallConfigService.validateShape` +
 // `assertProductsExist` field-for-field so the operator sees inline errors
 // immediately, without a round trip -- see PaywallConfigPage for why this
-// matters (the shared AllExceptionsFilter/BaseValidationPipe in meup-api
+// matters (the shared AllExceptionsFilter/BaseValidationPipe in hddhistory-api
 // collapse structured `errors` arrays down to a single message today).
 import {
   PAYWALL_CONFIG_LOCALES,
@@ -871,7 +871,7 @@ export const fromDraft = (draft: ConfigDraft): PaywallConfig => {
 // ---------------------------------------------------------------------
 // Client-side validation -- mirrors PaywallConfigService.validateShape +
 // assertProductsExist field-for-field (same `field` path strings) so this
-// still works even though the shared exception filter in meup-api does not
+// still works even though the shared exception filter in hddhistory-api does not
 // currently forward structured `errors` arrays back to the client.
 // ---------------------------------------------------------------------
 

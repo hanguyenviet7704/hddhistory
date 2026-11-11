@@ -41,7 +41,7 @@ const CommunityModerationPage: React.FC = () => {
     setSaving(true);
     try {
       await communityService.createOfficialPost(payload);
-      showSuccess("Đã đăng bài với tư cách Đội ngũ MeUp");
+      showSuccess("Đã đăng bài với tư cách Đội ngũ HDDhistory");
       setComposeOpen(false);
     } catch (err: any) {
       showError(err?.response?.data?.message ?? "Đăng bài thất bại");
@@ -61,7 +61,7 @@ const CommunityModerationPage: React.FC = () => {
           startIcon={<MegaphoneIcon size={16} />}
           onClick={() => setComposeOpen(true)}
         >
-          Đăng bài Đội ngũ MeUp
+          Đăng bài Đội ngũ HDDhistory
         </Button>
       </CommunityPageHeader>
 

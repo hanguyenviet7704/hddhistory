@@ -30,7 +30,7 @@ export const userService = {
   },
 
   // The API wraps every response as { statusCode, message, data: <payload> }
-  // (see meup-api ResponseInterceptor), so the reset user lives at
+  // (see hddhistory-api ResponseInterceptor), so the reset user lives at
   // res.data.data — not res.data. Matches onboardingConfigService /
   // studyThemeService.
   async resetOnboarding(payload: ResetOnboardingPayload) {

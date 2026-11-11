@@ -240,7 +240,7 @@ export default function UserBehaviorTab({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={fetchSummary}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-brand-600 hover:text-brand-800"
           >
             Thử lại
           </button>
@@ -270,7 +270,7 @@ export default function UserBehaviorTab({ userId }: { userId: string }) {
             <button
               type="button"
               onClick={fetchSessions}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-brand-600 hover:text-brand-800"
             >
               Thử lại
             </button>

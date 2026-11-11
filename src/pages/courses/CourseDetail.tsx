@@ -807,7 +807,7 @@ const RoadmapPage: React.FC = () => {
     switch (lesson.type) {
       case LessonType.ROLEPLAY:
         icon = "🧭";
-        color = "bg-blue-100 text-blue-800";
+        color = "bg-brand-100 text-brand-800";
         break;
       case LessonType.OUTPUT:
         icon = "🧠";
@@ -872,7 +872,7 @@ const RoadmapPage: React.FC = () => {
           </div>
           {loadingLessons ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto" />
               <p className="mt-4 text-gray-600">Đang tải bài học...</p>
             </div>
           ) : (
@@ -887,7 +887,7 @@ const RoadmapPage: React.FC = () => {
                     key={lesson._id}
                     className={`p-4 rounded-lg border cursor-pointer transition-all ${
                       isSelected
-                        ? "border-blue-500 bg-blue-50"
+                        ? "border-brand-500 bg-brand-50"
                         : "border-gray-200 hover:bg-gray-50"
                     }`}
                     onClick={() => handleLessonSelect(lesson._id)}
@@ -897,7 +897,7 @@ const RoadmapPage: React.FC = () => {
                         {renderLessonBadge(lesson, { clickable: false })}
                       </div>
                       {isMultiple && isSelected && (
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-700 text-sm font-semibold">
                           {orderIndex + 1}
                         </span>
                       )}
@@ -905,7 +905,7 @@ const RoadmapPage: React.FC = () => {
                     {isMultiple && (
                       <div className="mt-2 text-sm text-gray-600 flex items-center gap-2 flex-wrap">
                         {isSelected ? (
-                          <span className="text-blue-700">
+                          <span className="text-brand-700">
                             ✓ Đã chọn · Thứ tự #{orderIndex + 1}
                           </span>
                         ) : (
@@ -930,7 +930,7 @@ const RoadmapPage: React.FC = () => {
               </button>
             )}
             <button
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg mr-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-brand-600 text-white rounded-lg mr-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCompleteLessonSelection}
               disabled={savingRoadmap}
             >
@@ -991,7 +991,7 @@ const RoadmapPage: React.FC = () => {
                       className="bg-slate-100 shadow-lg rounded-full px-5 py-2 border inline-flex items-center space-x-3 cursor-pointer"
                     >
                       <span
-                        className={`px-3 py-1 text-lg font-semibold text-blue-600`}
+                        className={`px-3 py-1 text-lg font-semibold text-brand-600`}
                       >
                         {level.level}
                       </span>
@@ -1058,7 +1058,7 @@ const RoadmapPage: React.FC = () => {
                               {label}
                             </p>
                             {isUploading && (
-                              <p className="text-xs text-blue-600 mt-1">
+                              <p className="text-xs text-brand-600 mt-1">
                                 Đang tải lên...
                               </p>
                             )}
@@ -1110,7 +1110,7 @@ const RoadmapPage: React.FC = () => {
               {/* Nodes section with its own central axis (only if nodes exist) */}
               <div className="relative">
                 {level.nodes.length > 0 && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full" />
+                  <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-2 bg-gradient-to-b from-brand-400 to-brand-600 rounded-full" />
                 )}
 
                 <div className="space-y-16">
@@ -1166,14 +1166,14 @@ const RoadmapPage: React.FC = () => {
                         >
                           {/* connection line from axis to card */}
                           <div
-                            className={`absolute top-1/2 left-1/2 h-1 bg-blue-300 ${
+                            className={`absolute top-1/2 left-1/2 h-1 bg-brand-300 ${
                               isLeft
                                 ? "-translate-y-1/2 -translate-x-full w-16"
                                 : "-translate-y-1/2 w-16"
                             }`}
                           />
                           {/* center dot */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow-lg z-10" />
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-brand-500 rounded-full border-4 border-white shadow-lg z-10" />
                           {/* card */}
                           <div
                             className={`relative ${isLeft ? "pr-8" : "pl-8"}`}
@@ -1333,7 +1333,7 @@ const RoadmapPage: React.FC = () => {
                                       Opening Video
                                     </h4>
                                     <button
-                                      className="text-blue-600 text-sm"
+                                      className="text-brand-600 text-sm"
                                       onClick={() =>
                                         handleEditClick(
                                           levelIndex,
@@ -1350,13 +1350,13 @@ const RoadmapPage: React.FC = () => {
                                   })}
                                 </div>
 
-                                <div className="border-l-4 border-blue-500 pl-4">
+                                <div className="border-l-4 border-brand-500 pl-4">
                                   <div className="flex justify-between items-center mb-2">
                                     <h4 className="font-medium text-gray-700">
                                       Bài Đầu Vào
                                     </h4>
                                     <button
-                                      className="text-blue-600 text-sm"
+                                      className="text-brand-600 text-sm"
                                       onClick={() =>
                                         handleEditClick(
                                           levelIndex,
@@ -1379,7 +1379,7 @@ const RoadmapPage: React.FC = () => {
                                       Các Bài Học
                                     </h4>
                                     <button
-                                      className="text-blue-600 text-sm"
+                                      className="text-brand-600 text-sm"
                                       onClick={() =>
                                         handleEditClick(
                                           levelIndex,
@@ -1396,7 +1396,7 @@ const RoadmapPage: React.FC = () => {
                                       {node.lessons.map((l) => (
                                         <li
                                           key={l._id}
-                                          className="flex items-center cursor-pointer hover:text-blue-600 transition-colors"
+                                          className="flex items-center cursor-pointer hover:text-brand-600 transition-colors"
                                           onClick={() =>
                                             handleLessonNavigate(l)
                                           }
@@ -1424,7 +1424,7 @@ const RoadmapPage: React.FC = () => {
                                       Bài Kết Thúc
                                     </h4>
                                     <button
-                                      className="text-blue-600 text-sm"
+                                      className="text-brand-600 text-sm"
                                       onClick={() =>
                                         handleEditClick(
                                           levelIndex,
@@ -1447,7 +1447,7 @@ const RoadmapPage: React.FC = () => {
                                       Closing Video
                                     </h4>
                                     <button
-                                      className="text-blue-600 text-sm"
+                                      className="text-brand-600 text-sm"
                                       onClick={() =>
                                         handleEditClick(
                                           levelIndex,
@@ -1557,7 +1557,7 @@ const RoadmapPage: React.FC = () => {
                           Hủy
                         </button>
                         <button
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                          className="px-4 py-2 bg-brand-600 text-white rounded-lg"
                           onClick={handleCreateNode}
                         >
                           Tạo Node
@@ -1590,7 +1590,7 @@ const RoadmapPage: React.FC = () => {
             Thêm Level
           </button>
           <button
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => void handleSaveRoadmap()}
             disabled={savingRoadmap}
           >
@@ -1664,7 +1664,7 @@ const RoadmapPage: React.FC = () => {
                           {label}
                         </p>
                         {isUploading && (
-                          <p className="text-xs text-blue-600 mt-1">
+                          <p className="text-xs text-brand-600 mt-1">
                             Đang tải lên...
                           </p>
                         )}
@@ -1723,7 +1723,7 @@ const RoadmapPage: React.FC = () => {
                 Hủy
               </button>
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                className="px-4 py-2 bg-brand-600 text-white rounded-lg"
                 onClick={handleCreateLevel}
               >
                 Tạo Level

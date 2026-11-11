@@ -60,7 +60,7 @@ const statusStyles: Record<UserStatus, string> = {
 
 const roleStyles: Record<UserRole, string> = {
   [UserRole.ADMIN]: "bg-purple-100 text-purple-700",
-  [UserRole.USER]: "bg-blue-100 text-blue-700",
+  [UserRole.USER]: "bg-brand-100 text-brand-700",
 };
 
 const getUserId = (user: Partial<IUser>) =>
@@ -528,7 +528,7 @@ const UserManagement = () => {
           </button>
           <button
             onClick={openCreateForm}
-            className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Thêm người dùng
@@ -543,14 +543,14 @@ const UserManagement = () => {
             placeholder="Search user..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
           />
         </div>
         <div>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as UserRole | "")}
-            className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-[140px]"
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm w-[140px]"
           >
             <option value="">role</option>
             {Object.values(UserRole).map((role) => (
@@ -564,7 +564,7 @@ const UserManagement = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as UserStatus | "")}
-            className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-[140px]"
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm w-[140px]"
           >
             <option value="">status</option>
             {Object.values(UserStatus).map((status) => (
@@ -580,7 +580,7 @@ const UserManagement = () => {
             onChange={(e) =>
               setAnonymousFilter(e.target.value as "" | "true" | "false")
             }
-            className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-[140px]"
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm w-[140px]"
           >
             <option value="">Anony</option>
             <option value="true">Yes</option>
@@ -699,7 +699,7 @@ const UserManagement = () => {
                         </button>
                         <button
                           onClick={() => openEditForm(user)}
-                          className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                          className="text-bronze-600 hover:text-bronze-900 inline-flex items-center"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
@@ -778,7 +778,7 @@ const UserManagement = () => {
                           name: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -794,7 +794,7 @@ const UserManagement = () => {
                           email: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -810,7 +810,7 @@ const UserManagement = () => {
                           phone: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -826,7 +826,7 @@ const UserManagement = () => {
                           age: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -842,7 +842,7 @@ const UserManagement = () => {
                           gender: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -858,7 +858,7 @@ const UserManagement = () => {
                           language: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -874,7 +874,7 @@ const UserManagement = () => {
                           country: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -908,7 +908,7 @@ const UserManagement = () => {
                           enery: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
@@ -923,7 +923,7 @@ const UserManagement = () => {
                           status: e.target.value as UserStatus,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                     >
                       {Object.values(UserStatus).map((status) => (
                         <option key={status} value={status}>
@@ -944,7 +944,7 @@ const UserManagement = () => {
                           role: e.target.value as UserRole,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                     >
                       {Object.values(UserRole).map((role) => (
                         <option key={role} value={role}>
@@ -1034,7 +1034,7 @@ const UserManagement = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-60"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-md hover:bg-brand-700 disabled:opacity-60"
                   disabled={submitting}
                 >
                   {submitting ? "Đang lưu..." : "Lưu"}

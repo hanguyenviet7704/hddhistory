@@ -174,7 +174,7 @@ export interface ICommunityAdminComment {
  * The team's identity in the forum.
  *
  * Both fields may be empty, and empty is meaningful: the app then falls back to
- * its own localised "Đội ngũ MeUp" and the generated "M" disc.
+ * its own localised "Đội ngũ HDDhistory" and the generated "M" disc.
  */
 export interface ICommunityOfficialProfile {
   name: string;

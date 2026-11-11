@@ -15,7 +15,7 @@ export interface ICourse {
   _id: string;
   title: ITranslation;
   description?: ITranslation;
-  skillsetId: string;
+  categoryId: string;
   image: string;
   status: CourseStatus;
   prices?: IPrice[];

@@ -7,7 +7,7 @@ import VersionComparisonPage from "./VersionComparisonPage";
  * Mock ở tầng `axiosClient`, KHÔNG mock service.
  *
  * Có hai lý do và lý do thứ hai mới là lý do thật. Thứ nhất, axiosClient kéo
- * axios (ESM) mà jest của CRA không transform. Thứ hai: meup-api bọc mọi
+ * axios (ESM) mà jest của CRA không transform. Thứ hai: hddhistory-api bọc mọi
  * response trong `{statusCode, message, data}`, và mock service trả thẳng
  * payload sẽ khiến test XANH trong khi bug phong bì vẫn còn sống — đúng cái
  * đã xảy ra ở modal phiên bản nội dung và làm TRẮNG cả trang admin. Mock ở

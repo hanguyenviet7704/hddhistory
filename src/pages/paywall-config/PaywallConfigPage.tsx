@@ -1,6 +1,6 @@
 // Admin editor for `paywall_config`, now stored in MySQL (append-only,
 // versioned) instead of Firebase Remote Config -- see
-// meup-api/src/modules/paywall-config for the source of truth. Job: an
+// hddhistory-api/src/modules/paywall-config for the source of truth. Job: an
 // operator reviews/edits the sale strategies (default user / new user / sale
 // event) and publishes. There is no environment switch anymore: each
 // deployment's API only ever reads/writes its own database, so dev vs prod
@@ -13,7 +13,7 @@
 // field (same `field` path strings the backend uses) so inline errors work
 // immediately, without depending on a round trip. That matters today
 // because the shared `AllExceptionsFilter` + `BaseValidationPipe` in
-// meup-api collapse the backend's structured `errors` array down to a
+// hddhistory-api collapse the backend's structured `errors` array down to a
 // single message string before it ever reaches the browser -- see
 // `paywallConfigApiErrors.ts` for the full note. This page still reads
 // `err.response.data.errors` defensively so a future backend fix lights up

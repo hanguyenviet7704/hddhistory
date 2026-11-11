@@ -611,7 +611,7 @@ export default function TheoryForm({
                                 onClick={() =>
                                   handleOpenModal("documents", theoryDoc)
                                 }
-                                className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                className="text-brand-600 hover:text-brand-800 p-1 rounded"
                                 title="Edit"
                               >
                                 <svg
@@ -641,7 +641,7 @@ export default function TheoryForm({
                           <div className="text-sm text-gray-600 space-y-1">
                             {theoryDoc.tag && (
                               <div className="flex items-start">
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                <span className="font-medium text-brand-400 flex-shrink-0 mr-2">
                                   Tag:
                                 </span>
                                 <div className="flex items-center gap-1">
@@ -764,7 +764,7 @@ export default function TheoryForm({
             ) : null}
             <div className="text-center pt-5">
               <button
-                className="text-blue-500 hover:text-blue-700 transition-colors"
+                className="text-brand-500 hover:text-brand-700 transition-colors"
                 onClick={() => handleOpenModal("documents")}
               >
                 <PlusCircleIcon className="h-8 w-8" />
@@ -962,7 +962,7 @@ export default function TheoryForm({
                   handleDataChange(index, "content", e.target.value)
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             ) : (
@@ -972,7 +972,7 @@ export default function TheoryForm({
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             )}
@@ -993,7 +993,7 @@ export default function TheoryForm({
                   handleDataChange(index, "content", e.target.value)
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder="Enter content"
               />
             </div>
@@ -1036,7 +1036,7 @@ export default function TheoryForm({
                           e.target.value,
                         )
                       }
-                      className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder={`Enter title ${optionIndex + 1}`}
                     />
                     <div className="w-52">
@@ -1071,7 +1071,7 @@ export default function TheoryForm({
                         )
                       }
                       rows={2}
-                      className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder={`Enter explanation ${optionIndex + 1}`}
                     />
                   </div>
@@ -1086,7 +1086,7 @@ export default function TheoryForm({
                   <button
                     type="button"
                     onClick={() => addExplanationOption(index)}
-                    className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                    className="inline-flex items-center px-3 py-1 bg-brand-600 text-white rounded-md text-sm hover:bg-brand-700"
                   >
                     Add Option
                   </button>
@@ -1291,7 +1291,7 @@ export default function TheoryForm({
                         e.target.value as DocumentType,
                       )
                     }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     <option value={DocumentType.TITLE}>Title</option>
                     <option value={DocumentType.CAPTION}>Caption</option>
@@ -1314,7 +1314,7 @@ export default function TheoryForm({
             <button
               type="button"
               onClick={addNewInnerDocument}
-              className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+              className="px-3 py-1 bg-brand-600 text-white rounded-md text-sm hover:bg-brand-700"
             >
               Add Content
             </button>
@@ -1328,7 +1328,7 @@ export default function TheoryForm({
             Cancel
           </button>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
             onClick={handleSave}
             disabled={saving}
           >
@@ -1377,7 +1377,7 @@ export default function TheoryForm({
                     image: e.target.value,
                   }))
                 }
-                className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                 placeholder="Paste image link..."
               />
             </div>
@@ -1401,7 +1401,7 @@ export default function TheoryForm({
                       title: { ...prev.title, [lang]: e.target.value },
                     }))
                   }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   placeholder="Theory title..."
                 />
               </div>
@@ -1429,7 +1429,7 @@ export default function TheoryForm({
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setKeypointQuery(e.target.value)
                       }
-                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                       placeholder="Search keypoint..."
                     />
                     <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
@@ -1443,7 +1443,7 @@ export default function TheoryForm({
                           <Combobox.Option
                             key={c._id}
                             value={c._id}
-                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                            className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                           >
                             {c.title?.[lang]}
                           </Combobox.Option>
@@ -1460,7 +1460,7 @@ export default function TheoryForm({
                   {currentTheory.tag?.map((tag, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-indigo-100 rounded-md"
+                      className="flex items-center bg-bronze-100 rounded-md"
                     >
                       <input
                         type="text"
@@ -1509,7 +1509,7 @@ export default function TheoryForm({
                       tag: [...(currentTheory.tag || []), ""],
                     })
                   }
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bronze-500"
                 >
                   <svg
                     className="w-4 h-4 mr-1"
@@ -1536,7 +1536,7 @@ export default function TheoryForm({
                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                   saving
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                    : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                 }`}
               >
                 {saving ? (

@@ -9,7 +9,7 @@ export interface OnboardingBranch {
   order: number;
   /** Hiện ở câu 1. false = chỉ để gắn khoá (vd Khám phá não bộ). */
   isSelectable: boolean;
-  skillsetId: string | null;
+  categoryId: string | null;
   isActive: boolean;
 }
 

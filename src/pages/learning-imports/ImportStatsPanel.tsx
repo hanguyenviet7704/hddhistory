@@ -101,7 +101,7 @@ export default function ImportStatsPanel() {
             disabled={!config || saving}
             onClick={toggleEnabled}
             className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-              config?.enabled === false ? "bg-gray-300" : "bg-indigo-600"
+              config?.enabled === false ? "bg-gray-300" : "bg-bronze-600"
             }`}
           >
             <span

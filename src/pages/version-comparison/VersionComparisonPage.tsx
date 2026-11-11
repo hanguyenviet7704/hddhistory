@@ -241,7 +241,7 @@ const Header: React.FC<{
 }> = ({ courses, courseId, onCourse, env, onEnv, onReload, loading, generatedAt }) => (
   <div className="space-y-4">
     <p className="text-xs font-medium uppercase tracking-wide text-[#898781]">
-      MeUp · Vận hành nội dung
+      HDDhistory · Vận hành nội dung
     </p>
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-2xl space-y-2">

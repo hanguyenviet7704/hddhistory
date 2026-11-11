@@ -1,4 +1,4 @@
-// Mirrors meup-api's `src/modules/analytics/interface/dashboard.interface.ts`.
+// Mirrors hddhistory-api's `src/modules/analytics/interface/dashboard.interface.ts`.
 // Rates are `number | null` on purpose: null means "not measurable yet" (no
 // denominator, or a cohort too young to have a D7 number) and must render as
 // "chưa đủ dữ liệu", never as 0%.

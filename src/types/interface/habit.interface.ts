@@ -4,11 +4,11 @@ import { HabitStatus } from "../enum/habit.enum";
 export interface IHabit {
   _id: string;
   title: ITranslation;
-  skillsetId: string;
+  categoryId: string;
   status: HabitStatus;
   /**
    * The habit's own picture, an absolute CDN url. Empty means the app keeps
-   * showing the skillset's logo, which is what every habit did before.
+   * showing the category's logo, which is what every habit did before.
    */
   image?: string;
   /** What the habit is and when it applies — grounds the Coach's scenes. */
@@ -31,7 +31,7 @@ export interface IHabit {
 
 export interface HabitPayload {
   title: ITranslation;
-  skillsetId: string;
+  categoryId: string;
   status?: HabitStatus;
   image?: string;
   description?: ITranslation;
@@ -46,10 +46,10 @@ export interface HabitPayload {
 // GET /habits — the admin list always fetches with isAll=true (no pagination
 // envelope, sorted by order asc / createdAt desc on the backend). `status` is
 // ignored by the API when isAll is set, so status filtering happens client
-// side; `skillsetId` still narrows the server-side query.
+// side; `categoryId` still narrows the server-side query.
 export interface HabitListQuery {
   isAll?: boolean;
-  skillsetId?: string;
+  categoryId?: string;
   /** Habits on any keypoint of this course, resolved server side. */
   courseId?: string;
   status?: HabitStatus;

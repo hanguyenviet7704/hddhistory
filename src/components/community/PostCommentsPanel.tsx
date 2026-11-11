@@ -125,7 +125,7 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
         body,
         parentId: replyTo?.id,
       });
-      showSuccess("Đã trả lời với tư cách Đội ngũ MeUp");
+      showSuccess("Đã trả lời với tư cách Đội ngũ HDDhistory");
       setDraft("");
       setReplyTo(null);
       load();
@@ -139,7 +139,7 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
   return (
     // Indented and on a tinted ground, so it reads as belonging to the post
     // above rather than as the next card in the list.
-    <div className="ml-6 mt-1 space-y-2 rounded-b-2xl border-l-2 border-indigo-100 bg-gray-50/70 py-3 pl-4 pr-3">
+    <div className="ml-6 mt-1 space-y-2 rounded-b-2xl border-l-2 border-bronze-100 bg-gray-50/70 py-3 pl-4 pr-3">
       {loading && <Skeleton variant="rounded" height={72} />}
 
       {!loading && error && (
@@ -233,14 +233,14 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
         ))}
 
       {/* The team's composer, at the bottom of the thread where a reply belongs. */}
-      <div className="rounded-[18px] border border-indigo-100 bg-white p-3">
+      <div className="rounded-[18px] border border-bronze-100 bg-white p-3">
         {replyTo && (
-          <div className="mb-2 flex items-center gap-2 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs text-indigo-700">
+          <div className="mb-2 flex items-center gap-2 rounded-lg bg-bronze-50 px-2.5 py-1.5 text-xs text-bronze-700">
             Đang trả lời{" "}
             <strong>{replyTo.author?.name || "(tài khoản đã xoá)"}</strong>
             <button
               type="button"
-              className="ml-auto text-indigo-500 hover:text-indigo-700"
+              className="ml-auto text-bronze-500 hover:text-bronze-700"
               onClick={() => setReplyTo(null)}
             >
               <XIcon size={14} />
@@ -255,8 +255,8 @@ const PostCommentsPanel: React.FC<Props> = ({ postId }) => {
             maxRows={6}
             placeholder={
               replyTo
-                ? "Trả lời với tư cách Đội ngũ MeUp…"
-                : "Bình luận vào bài này với tư cách Đội ngũ MeUp…"
+                ? "Trả lời với tư cách Đội ngũ HDDhistory…"
+                : "Bình luận vào bài này với tư cách Đội ngũ HDDhistory…"
             }
             value={draft}
             onChange={(event) => setDraft(event.target.value)}

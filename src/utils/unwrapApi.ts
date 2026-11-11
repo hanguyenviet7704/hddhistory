@@ -1,5 +1,5 @@
 /**
- * meup-api bọc MỌI response JSON trong `{ statusCode, message, data }` —
+ * hddhistory-api bọc MỌI response JSON trong `{ statusCode, message, data }` —
  * `ResponseInterceptor` gắn toàn cục trong `main.ts`. Response ghi thẳng bằng
  * `@Res()` (tải file/blob) thì KHÔNG bị bọc.
  *

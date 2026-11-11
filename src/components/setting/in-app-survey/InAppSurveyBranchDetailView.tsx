@@ -96,7 +96,7 @@ const InAppSurveyBranchDetailView = ({
             setSearch(event.target.value);
           }}
           placeholder="Search responses..."
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-300"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-bronze-300"
         />
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -113,7 +113,7 @@ const InAppSurveyBranchDetailView = ({
             }}
             className={`rounded-full border px-3 py-1 text-sm ${
               optionId === item.option.id
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                ? "border-bronze-500 bg-bronze-50 text-bronze-700"
                 : "border-slate-200 bg-white text-slate-600"
             }`}
           >
@@ -135,7 +135,7 @@ const InAppSurveyBranchDetailView = ({
               {item.selectedOptions.map((option) => (
                 <span
                   key={option.id}
-                  className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600"
+                  className="rounded-full bg-bronze-50 px-3 py-1 text-sm font-semibold text-bronze-600"
                 >
                   {getPlainTranslationValue(option.value, lang)}
                 </span>

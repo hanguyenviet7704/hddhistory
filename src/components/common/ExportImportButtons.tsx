@@ -6,7 +6,7 @@ import type {
   SkippedRow,
 } from "../../utils/habitContentXlsx";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_AI_TUTOR || "(unknown backend)";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "(unknown backend)";
 
 // Report shape is intentionally loose — the backend returns different keys for
 // reanchor vs habit; we render numbers as a summary and arrays as detail lists.
@@ -213,7 +213,7 @@ const ExportImportButtons: React.FC<Props> = ({
               <button
                 onClick={confirmImport}
                 disabled={importing}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-600 to-bronze-600 text-white hover:from-brand-700 hover:to-bronze-700 disabled:opacity-50"
               >
                 {importing && <Loader2Icon className="h-4 w-4 animate-spin" />}
                 <span>Replace &amp; import</span>

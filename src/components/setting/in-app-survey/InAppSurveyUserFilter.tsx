@@ -55,7 +55,7 @@ const InAppSurveyUserFilter = ({ selectedUserId, onChange }: Props) => {
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
           placeholder="Search by name or email"
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-9 text-sm text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-9 text-sm text-slate-950 outline-none transition focus:border-bronze-400 focus:ring-2 focus:ring-bronze-100"
         />
         {keyword || selectedUserId ? (
           <button
@@ -80,7 +80,7 @@ const InAppSurveyUserFilter = ({ selectedUserId, onChange }: Props) => {
             setKeyword("");
             setUsers([]);
           }}
-          className="mt-2 text-xs font-semibold text-indigo-600"
+          className="mt-2 text-xs font-semibold text-bronze-600"
         >
           Clear selected user: {selectedUserId}
         </button>
@@ -102,7 +102,7 @@ const InAppSurveyUserFilter = ({ selectedUserId, onChange }: Props) => {
                     setKeyword(getUserLabel(user));
                     setUsers([]);
                   }}
-                  className="block w-full px-3 py-2 text-left text-sm hover:bg-indigo-50"
+                  className="block w-full px-3 py-2 text-left text-sm hover:bg-bronze-50"
                 >
                   <div className="font-medium text-slate-900">
                     {user.name || user.email || userId}

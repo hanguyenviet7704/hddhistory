@@ -398,7 +398,7 @@ const GeneralSection: React.FC<GeneralSectionProps> = ({
             {/* Counts keypoints, in roadmap order — NOT the same ordering the
                 lesson-lock count above uses. The client used to count lessons
                 here despite the field name; see
-                meup-api/plans/260803-paywall-entry-point-variants/design.md. */}
+                hddhistory-api/plans/260803-paywall-entry-point-variants/design.md. */}
             <input
               type="number"
               min={0}

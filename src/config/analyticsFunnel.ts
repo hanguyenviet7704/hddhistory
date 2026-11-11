@@ -1,6 +1,6 @@
 // Onboarding funnel steps, in the order the shipped onboard_v2 flow fires them
 // (mirrors the onboardV2P1..P9 constants in
-// meup-flutter/lib/core/constants/manual/tracking_key.dart).
+// hddhistory-flutter/lib/core/constants/manual/tracking_key.dart).
 //
 // The API never knows this order — it only reports when each `obd_*` event was
 // first seen. CHANGE THE ONBOARDING FLOW, CHANGE THIS LIST: nothing else can

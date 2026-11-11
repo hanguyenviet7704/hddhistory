@@ -54,7 +54,7 @@ const ColorInput = ({
         type="text"
         value={color || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         placeholder="#000000"
       />
     </div>
@@ -369,7 +369,7 @@ const RoleplayColorManagement: React.FC = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Roleplay Color Templates</h2>
           <button
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-bronze-600 text-white rounded-lg hover:bg-bronze-700 transition-colors"
             onClick={() => {
               resetForm();
               setShowForm((prev) => !prev);
@@ -396,7 +396,7 @@ const RoleplayColorManagement: React.FC = () => {
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-bronze-500"
                   placeholder="e.g. Calm Conversation"
                 />
               </div>
@@ -454,7 +454,7 @@ const RoleplayColorManagement: React.FC = () => {
 
             <div className="flex gap-3">
               <button
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-60"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-bronze-600 text-white rounded-lg disabled:opacity-60"
                 onClick={handleSave}
                 disabled={saving}
               >

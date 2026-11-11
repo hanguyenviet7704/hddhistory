@@ -23,7 +23,7 @@ const InAppSurveyUserResponseCard = ({ response, lang }: Props) => {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bronze-50 text-sm font-bold text-bronze-600">
             {initials}
           </div>
           <div>
@@ -63,7 +63,7 @@ const InAppSurveyUserResponseCard = ({ response, lang }: Props) => {
           label="Q3"
           title={getQuestionText(response.branch?.openQuestion, lang)}
         >
-          <div className="rounded-xl border-l-4 border-indigo-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-950">
+          <div className="rounded-xl border-l-4 border-bronze-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-950">
             "{response.feedback || "-"}"
           </div>
         </QuestionRow>
@@ -83,7 +83,7 @@ const QuestionRow = ({
 }) => (
   <div>
     <div className="mb-2 flex items-center gap-2">
-      <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-600">
+      <span className="rounded-md bg-bronze-50 px-2 py-1 text-xs font-bold text-bronze-600">
         {label}
       </span>
       <span className="text-sm font-semibold text-slate-500">{title}</span>

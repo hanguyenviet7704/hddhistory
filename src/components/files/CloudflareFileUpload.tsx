@@ -310,7 +310,7 @@ export default function CloudflareFileUpload({
                     href={previewUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-indigo-600 hover:underline"
+                    className="text-bronze-600 hover:underline"
                   >
                     {text.open}
                   </a>
@@ -332,7 +332,7 @@ export default function CloudflareFileUpload({
                   href={previewUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 inline-block text-indigo-600 hover:underline text-xs"
+                  className="mt-1 inline-block text-bronze-600 hover:underline text-xs"
                 >
                   {text.open}
                 </a>

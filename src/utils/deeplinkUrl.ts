@@ -4,7 +4,7 @@
  * không wildcard, nên admin không được phép hiện một host mà app chưa claim.
  */
 export const DEEPLINK_WEB_BASE = "https://meup.training/open";
-export const DEEPLINK_APP_BASE = "meup://open";
+export const DEEPLINK_APP_BASE = "hddhistory://open";
 
 export interface DeeplinkUtm {
   source?: string;
@@ -15,11 +15,11 @@ export interface DeeplinkUtm {
 }
 
 /**
- * UTM chỉ gắn vào link web, KHÔNG gắn vào `meup://`.
+ * UTM chỉ gắn vào link web, KHÔNG gắn vào `hddhistory://`.
  *
  * Hai lý do. Với người chưa cài app, query của link web được `index.html`
  * chuyển tiếp vào `referrer` của Play và sống sót qua lượt cài -- đó là chỗ UTM
- * thực sự làm việc. Còn `meup://` chỉ được dán vào ô linkUrl của Banner/Popup
+ * thực sự làm việc. Còn `hddhistory://` chỉ được dán vào ô linkUrl của Banner/Popup
  * trong admin, tức là người dùng đã ở TRONG app rồi: không có kênh nào để quy
  * cho, và banner đã có tracking riêng của nó.
  */

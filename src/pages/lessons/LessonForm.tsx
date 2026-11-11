@@ -532,7 +532,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
           <h2 className="text-xl font-semibold text-gray-800">{label}</h2>
           <div className="flex flex-wrap items-center gap-2">
             <button
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
               onClick={() => handleOpenModal(section)}
             >
               <PlusIcon className="h-5 w-5" />
@@ -596,7 +596,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                               {itemObj.tag.map((t: any, index: number) => (
                                 <span
                                   key={index}
-                                  className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                                  className="inline-block px-2 py-1 text-xs font-medium bg-brand-100 text-brand-800 rounded-full"
                                 >
                                   {t}
                                 </span>
@@ -695,7 +695,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                       ),
                     }))
                   }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   placeholder="Lesson title..."
                 />
               </div>
@@ -718,7 +718,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                     }))
                   }
                   rows={4}
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition resize-none"
                   placeholder="Short description..."
                 />
               </div>
@@ -735,7 +735,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                       setEstimateCompleTimeUnit(nextUnit);
                       applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
                     }}
-                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   >
                     <option value="minute">
                       {getEstimateCompleteTimeUnitLabel(
@@ -758,7 +758,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                       setEstimateCompleTimeInput(nextAmount);
                       applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
                     }}
-                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Enter number..."
                   />
                 </div>
@@ -799,7 +799,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                       }, 150);
                     }}
                     // Thêm padding bên phải để không bị đè lên nút 'x'
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search icon..."
                   />
 
@@ -892,7 +892,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                         setLightIconQuery("");
                       }, 150);
                     }}
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search light icon..."
                   />
 
@@ -967,7 +967,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                           : prev
                       )
                     }
-                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   >
                     {Object.values(LessonStatus).map((status) => (
                       <option key={status} value={status}>
@@ -1009,7 +1009,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setCourseQuery(e.target.value)
                         }
-                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                         placeholder="Search course..."
                       />
 
@@ -1024,7 +1024,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                             <Combobox.Option
                               key={c._id}
                               value={c._id} // value is courseId (string)
-                              className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                              className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                             >
                               {getTranslationValue(c.title, lang)}
                             </Combobox.Option>
@@ -1043,7 +1043,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                     saving
                       ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                      : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                   }`}
                 >
                   {saving ? (
@@ -1106,7 +1106,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                     value={searchKeypoint}
                     onChange={(e) => setSearchKeypoint(e.target.value)}
                     placeholder="Search keypoint..."
-                    className="border rounded-lg w-full p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   />
                 </div>
 
@@ -1129,7 +1129,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                             animate={{ opacity: 1, y: 0 }}
                             className={`flex items-center gap-4 p-4 cursor-pointer rounded-lg transition-colors border ${
                               selected
-                                ? "bg-blue-50 border-blue-200"
+                                ? "bg-brand-50 border-brand-200"
                                 : "hover:bg-gray-100 border-transparent"
                             }`}
                             onClick={() => toggleKeypointSelection(kp)}
@@ -1137,7 +1137,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                             <div
                               className={`h-6 w-6 rounded-full border flex items-center justify-center ${
                                 selected
-                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  ? "bg-brand-600 border-brand-600 text-white"
                                   : "border-gray-300 text-transparent"
                               }`}
                             >
@@ -1159,7 +1159,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                                   {kp.tag.map((t, index) => (
                                     <span
                                       key={index}
-                                      className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                                      className="inline-block px-2 py-1 text-xs font-medium bg-brand-100 text-brand-800 rounded-full"
                                     >
                                       {t}
                                     </span>
@@ -1179,7 +1179,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
 
                 <div className="mt-4 text-right">
                   <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed mr-2"
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition disabled:opacity-50 disabled:cursor-not-allowed mr-2"
                     disabled={selectedKeypoints.length === 0}
                     onClick={handleAddSelectedKeypoints}
                   >

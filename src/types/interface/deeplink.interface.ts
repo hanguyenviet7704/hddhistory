@@ -1,7 +1,7 @@
 /** Picker mà admin render cho một tham số. Khớp `DeeplinkParamPicker` ở API. */
 export type DeeplinkParamPicker =
   | "course"
-  | "skillset"
+  | "category"
   | "keypoint"
   | "select"
   | "text";

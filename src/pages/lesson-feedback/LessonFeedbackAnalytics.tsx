@@ -199,7 +199,7 @@ export default function LessonFeedbackAnalytics() {
             type="button"
             onClick={onExport}
             disabled={exporting}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-bronze-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
             {exporting ? "Đang xuất…" : "Xuất Excel"}
@@ -318,7 +318,7 @@ export default function LessonFeedbackAnalytics() {
                 <div className="h-2 rounded-full bg-stone-100">
                   <div
                     className={`h-2 rounded-full ${
-                      RATING_COLORS[Math.min(item.rating, 5) - 1] || "bg-indigo-600"
+                      RATING_COLORS[Math.min(item.rating, 5) - 1] || "bg-bronze-600"
                     }`}
                     style={{
                       width: `${Math.max(2, (item.count / Math.max(1, totalRatings)) * 100)}%`,
@@ -416,7 +416,7 @@ export default function LessonFeedbackAnalytics() {
                     <span>{formatDateTime(row.submittedAt)}</span>
                     <Link
                       to={`/progress/user/${row.userId}`}
-                      className="font-semibold text-indigo-600 hover:underline"
+                      className="font-semibold text-bronze-600 hover:underline"
                     >
                       Xem người dùng
                     </Link>

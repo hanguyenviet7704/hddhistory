@@ -61,7 +61,7 @@ const InAppSurveyConfigForm = ({
             onClick={() => setEditLang(option.code)}
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
               editLang === option.code
-                ? "bg-indigo-600 text-white shadow-sm"
+                ? "bg-bronze-600 text-white shadow-sm"
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -112,7 +112,7 @@ const InAppSurveyConfigForm = ({
                 branches: [...prev.branches, emptySurveyBranch(editLang)],
               }))
             }
-            className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="inline-flex items-center gap-2 rounded-full bg-bronze-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-bronze-700"
           >
             <PlusIcon className="h-4 w-4" />
             Add Branch

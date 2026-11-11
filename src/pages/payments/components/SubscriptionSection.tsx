@@ -675,7 +675,7 @@ const SubscriptionSection: React.FC = () => {
           label="Auto-renew"
           value={stats.autoRenew}
           icon={CreditCardIcon}
-          accent="from-indigo-500 to-purple-500"
+          accent="from-bronze-500 to-purple-500"
         />
       </div>
 

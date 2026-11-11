@@ -8,7 +8,7 @@ import {
 const STATUS_STYLES: Record<ImportJobStatus, { label: string; className: string }> =
   {
     queued: { label: "Queued", className: "bg-gray-100 text-gray-700" },
-    processing: { label: "Processing", className: "bg-blue-100 text-blue-700" },
+    processing: { label: "Processing", className: "bg-brand-100 text-brand-700" },
     completed: {
       label: "Completed",
       className: "bg-emerald-100 text-emerald-700",

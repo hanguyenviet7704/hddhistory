@@ -302,7 +302,7 @@ const KeypointModal: React.FC<Props> = ({
                 type="button"
                 onClick={handleGenerateVoiceover}
                 disabled={!keypoint?._id || generatingVoiceover}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-bronze-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Volume2Icon className="h-4 w-4" />
                 {generatingVoiceover ? "Generating…" : "Generate voiceover"}
@@ -327,7 +327,7 @@ const KeypointModal: React.FC<Props> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              className="px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700"
             >
               {isSubmitting ? "Saving..." : "Save"}
             </button>

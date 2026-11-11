@@ -37,7 +37,7 @@ export const REASON_COLORS = [
   "bg-orange-500",
   "bg-amber-500",
   "bg-sky-600",
-  "bg-indigo-600",
+  "bg-bronze-600",
 ];
 
 export const RATING_COLORS = [

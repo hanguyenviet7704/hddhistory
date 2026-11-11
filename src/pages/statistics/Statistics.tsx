@@ -17,7 +17,7 @@ const StatisticsPage: React.FC = () => {
               flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
               ${
                 activeTab === "course"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-brand-500 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
               }
             `}

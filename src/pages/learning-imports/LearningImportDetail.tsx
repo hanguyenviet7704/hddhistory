@@ -81,7 +81,7 @@ export default function LearningImportDetail() {
     <div className="p-6">
       <Link
         to="/learning-imports"
-        className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+        className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-bronze-600 hover:text-bronze-800"
       >
         <ArrowLeftIcon className="h-4 w-4" />
         Back to imports
@@ -118,7 +118,7 @@ export default function LearningImportDetail() {
                   href={source.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-indigo-600 hover:text-indigo-800"
+                  className="text-bronze-600 hover:text-bronze-800"
                 >
                   Open on YouTube
                 </a>
@@ -207,7 +207,7 @@ export default function LearningImportDetail() {
                 key={keypointIndex}
                 className="mt-8 border-t border-gray-200 pt-6 first:border-0"
               >
-                <div className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
+                <div className="text-xs font-semibold uppercase tracking-wide text-bronze-500">
                   Keypoint {keypointIndex + 1} · {keypoint.sections.length}{" "}
                   cards
                 </div>

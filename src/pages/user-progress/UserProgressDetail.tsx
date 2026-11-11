@@ -180,7 +180,7 @@ export default function UserProgressDetail() {
             </button>
             <button
               onClick={() => navigate(-1)}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm shadow-sm"
+              className="px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700 text-sm shadow-sm"
             >
               Quay lại
             </button>

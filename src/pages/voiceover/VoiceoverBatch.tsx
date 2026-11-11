@@ -41,7 +41,7 @@ const STAT_CARDS: Array<{
   { key: "missing", label: "Missing", hint: "Có nội dung, chưa audio", color: "text-sky-600" },
   { key: "failed", label: "Failed", hint: "Lỗi, xem bên dưới", color: "text-red-600" },
   { key: "none", label: "Không có text", hint: "Không có gì để đọc", color: "text-gray-400" },
-  { key: "total", label: "Total", hint: "Tổng số ô ngôn ngữ × keypoint", color: "text-indigo-600" },
+  { key: "total", label: "Total", hint: "Tổng số ô ngôn ngữ × keypoint", color: "text-bronze-600" },
 ];
 
 const CHIP_CLASS: Record<VoiceoverCellStatus, string> = {
@@ -81,7 +81,7 @@ const ROW_BADGE: Record<
 > = {
   running: {
     label: "Đang dub",
-    className: "bg-indigo-100 text-indigo-700",
+    className: "bg-bronze-100 text-bronze-700",
     spinning: true,
   },
   queued: { label: "Đang chờ", className: "bg-slate-100 text-slate-600" },
@@ -433,7 +433,7 @@ export default function VoiceoverBatch() {
       <div className="min-h-[100dvh] bg-slate-100 px-4 py-10">
         <div className="mx-auto flex max-w-6xl justify-center">
           <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-5 py-4 text-slate-700 shadow-sm">
-            <Loader2Icon className="h-5 w-5 animate-spin text-indigo-600" />
+            <Loader2Icon className="h-5 w-5 animate-spin text-bronze-600" />
             Đang tải dữ liệu lồng tiếng…
           </div>
         </div>
@@ -448,7 +448,7 @@ export default function VoiceoverBatch() {
         <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-950">
-              <Volume2Icon className="h-6 w-6 text-indigo-600" />
+              <Volume2Icon className="h-6 w-6 text-bronze-600" />
               Lồng tiếng
             </h1>
             <p className="mt-1 text-sm text-slate-500">
@@ -469,7 +469,7 @@ export default function VoiceoverBatch() {
               type="button"
               onClick={handleGenerateNeeded}
               disabled={anyRunning || starting !== null}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-bronze-700 disabled:opacity-60"
             >
               <Volume2Icon className="h-4 w-4" />
               {starting === "needed" ? "Đang bắt đầu…" : "Dub những cái cần"}
@@ -513,23 +513,23 @@ export default function VoiceoverBatch() {
 
         {/* Running global job */}
         {globalJob && globalJob.status === "running" && (
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-indigo-800">
+          <div className="rounded-xl border border-bronze-200 bg-bronze-50 p-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-bronze-800">
               <span className="flex items-center gap-2 font-medium">
                 <Loader2Icon className="h-4 w-4 animate-spin" />
                 Đang {globalJob.mode === "force" ? "force dub" : "dub"} ở nền…{" "}
                 {globalJob.processedCourses}/{globalJob.totalCourses} course ·{" "}
                 {globalJob.processed}/{globalJob.totalKeypoints} keypoint
               </span>
-              <span className="text-xs text-indigo-500">
+              <span className="text-xs text-bronze-500">
                 {formatEta(globalJob.etaSeconds)
                   ? `còn ~${formatEta(globalJob.etaSeconds)}`
                   : "tự cập nhật mỗi 3s"}
               </span>
             </div>
-            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-indigo-100">
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-bronze-100">
               <div
-                className="h-full rounded-full bg-indigo-500 transition-all"
+                className="h-full rounded-full bg-bronze-500 transition-all"
                 style={{
                   width: `${
                     globalJob.totalKeypoints
@@ -539,21 +539,21 @@ export default function VoiceoverBatch() {
                 }}
               />
             </div>
-            <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-indigo-700 sm:grid-cols-2">
+            <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-bronze-700 sm:grid-cols-2">
               <div className="flex gap-1 truncate">
-                <dt className="text-indigo-500">Course:</dt>
+                <dt className="text-bronze-500">Course:</dt>
                 <dd className="truncate font-medium" title={jobCourseName(globalJob)}>
                   {jobCourseName(globalJob)}
                 </dd>
               </div>
               <div className="flex gap-1 truncate">
-                <dt className="text-indigo-500">Keypoint:</dt>
+                <dt className="text-bronze-500">Keypoint:</dt>
                 <dd className="truncate font-medium" title={jobKeypointName(globalJob)}>
                   {jobKeypointName(globalJob)}
                 </dd>
               </div>
             </dl>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-indigo-700">
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-bronze-700">
               <span>Đã tạo: {globalJob.generated}</span>
               <span>Bỏ qua: {globalJob.skipped}</span>
               <span>Lỗi: {globalJob.failed}</span>
@@ -563,12 +563,12 @@ export default function VoiceoverBatch() {
 
         {/* Per-course runs, when there is no global run to fold them into */}
         {!globalRunning && runningCourseJobs.length > 0 && (
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800 shadow-sm">
+          <div className="rounded-xl border border-bronze-200 bg-bronze-50 p-4 text-sm text-bronze-800 shadow-sm">
             {runningCourseJobs.map((job) => (
               <div key={job.courseId} className="flex flex-wrap items-center gap-2">
                 <Loader2Icon className="h-4 w-4 animate-spin" />
                 <span className="font-medium">Đang dub {jobCourseName(job)}</span>
-                <span className="text-xs text-indigo-600">
+                <span className="text-xs text-bronze-600">
                   {job.processed}/{job.totalKeypoints} keypoint · keypoint hiện tại:{" "}
                   {jobKeypointName(job)}
                   {formatEta(job.etaSeconds) ? ` · còn ~${formatEta(job.etaSeconds)}` : ""}
@@ -662,7 +662,7 @@ export default function VoiceoverBatch() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tên course…"
-                  className="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-bronze-400"
                 />
               </div>
             </div>
@@ -676,7 +676,7 @@ export default function VoiceoverBatch() {
                 onChange={(e) =>
                   setStateFilter(e.target.value as VoiceoverCellStatus | "all")
                 }
-                className="rounded-lg border border-slate-300 py-2 pl-3 pr-8 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="rounded-lg border border-slate-300 py-2 pl-3 pr-8 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-bronze-400"
               >
                 {STATE_FILTERS.map((f) => (
                   <option key={f.value} value={f.value}>
@@ -693,7 +693,7 @@ export default function VoiceoverBatch() {
               <select
                 value={langFilter}
                 onChange={(e) => setLangFilter(e.target.value)}
-                className="rounded-lg border border-slate-300 py-2 pl-3 pr-8 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="rounded-lg border border-slate-300 py-2 pl-3 pr-8 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-bronze-400"
               >
                 <option value="all">Tất cả ngôn ngữ</option>
                 {langs.map((lg) => (
@@ -733,7 +733,7 @@ export default function VoiceoverBatch() {
               <button
                 type="button"
                 onClick={handleScan}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-bronze-700"
               >
                 <RefreshCwIcon className="h-4 w-4" />
                 Quét ngay
@@ -787,7 +787,7 @@ export default function VoiceoverBatch() {
                       <tr
                         key={course.courseId}
                         className={`align-top ${
-                          isCurrent ? "bg-indigo-50/60" : "hover:bg-indigo-50/30"
+                          isCurrent ? "bg-bronze-50/60" : "hover:bg-bronze-50/30"
                         }`}
                       >
                         <td className="max-w-xs px-4 py-3">
@@ -820,7 +820,7 @@ export default function VoiceoverBatch() {
                           )}
                           {rowJob && (
                             <p
-                              className="mt-1 max-w-[14rem] truncate text-[11px] text-indigo-600"
+                              className="mt-1 max-w-[14rem] truncate text-[11px] text-bronze-600"
                               title={jobKeypointName(rowJob)}
                             >
                               {jobKeypointName(rowJob)}
@@ -892,7 +892,7 @@ export default function VoiceoverBatch() {
                               type="button"
                               onClick={() => handleRowDubClick(course)}
                               disabled={anyRunning || rowStarting}
-                              className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                              className="inline-flex items-center gap-1 rounded-md bg-bronze-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-bronze-700 disabled:opacity-50"
                             >
                               {rowStarting ? (
                                 <Loader2Icon className="h-3.5 w-3.5 animate-spin" />

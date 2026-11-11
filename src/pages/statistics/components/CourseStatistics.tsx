@@ -181,7 +181,7 @@ const CourseStatistics: React.FC = () => {
                 event.target.value as StatisticsUsersLearningCoursesOrderBy,
               )
             }
-            className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-200"
           >
             {orderByOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -241,7 +241,7 @@ const CourseStatistics: React.FC = () => {
                     {getTranslationValue(item.title, lang) || "-"}
                   </td>
                   <td className="px-4 py-3 text-slate-700">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 font-semibold">
                       {formatNumber(item.startedUserCount)}
                     </span>
                   </td>
@@ -251,7 +251,7 @@ const CourseStatistics: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-700">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-bronze-50 text-bronze-700 font-semibold">
                       {formatNumber(item.lessonKeypointPassedCount)}
                     </span>
                   </td>

@@ -21,7 +21,7 @@ export interface OnboardingIntroPayload {
 }
 
 // Onboarding v2 — API-driven learning paths / symptoms.
-// See meup-api/plans/260717-onboarding-v2-api-driven/design.md
+// See hddhistory-api/plans/260717-onboarding-v2-api-driven/design.md
 export interface OnboardingSymptom {
   key: string;
   title: ITranslation;
@@ -56,7 +56,7 @@ export interface IOnboarding {
   intro: IOnboardingIntro[];
   age: ILablel[];
   gender: ILablel[];
-  skillsetWantToMaster: ILablel[];
+  categoryWantToMaster: ILablel[];
   learningGoal: ILablel[];
   learningStruggles: ILablel[];
   comfortableLearningTime: ILablel[];
@@ -74,7 +74,7 @@ export interface OnboardingPayload {
   intro: OnboardingIntroPayload[];
   age: LablelPayload[];
   gender: LablelPayload[];
-  skillsetWantToMaster: LablelPayload[];
+  categoryWantToMaster: LablelPayload[];
   learningGoal: LablelPayload[];
   learningStruggles: LablelPayload[];
   comfortableLearningTime: LablelPayload[];

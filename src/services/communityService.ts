@@ -133,7 +133,7 @@ export const communityService = {
     return res.data?.data;
   },
 
-  /** Posts as "Đội ngũ MeUp" — one locale's feed at a time. */
+  /** Posts as "Đội ngũ HDDhistory" — one locale's feed at a time. */
   async createOfficialPost(payload: ICommunityOfficialPostPayload) {
     const res = await axiosClient.post(
       "/community/admin/posts/official",
@@ -149,7 +149,7 @@ export const communityService = {
   },
 
   /**
-   * Answers a thread as Đội ngũ MeUp.
+   * Answers a thread as Đội ngũ HDDhistory.
    *
    * `parentId` replies inside a thread; leaving it off comments on the post.
    */

@@ -8,7 +8,7 @@ import axiosClient from "./axiosClient";
 /**
  * Editor-curated Explore strips.
  *
- * Every read goes through `unwrapApi`: meup-api wraps responses in
+ * Every read goes through `unwrapApi`: hddhistory-api wraps responses in
  * `{ statusCode, message, data }`, and handing a page the envelope means it
  * reads `.title` off `undefined` — which blanks the whole admin with no toast
  * and no console error.

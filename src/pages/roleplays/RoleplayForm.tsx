@@ -636,7 +636,7 @@ export default function RoleplayForm({
                   className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                     saving
                       ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                      : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                   }`}
                 >
                   {saving ? <>Saving...</> : isEditMode ? "Save" : "Create"}
@@ -662,7 +662,7 @@ export default function RoleplayForm({
                       ),
                     }))
                   }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   placeholder="Roleplay lesson title..."
                   required
                 />
@@ -686,7 +686,7 @@ export default function RoleplayForm({
                     }))
                   }
                   rows={4}
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition resize-none"
                   placeholder="Short description..."
                 />
               </div>
@@ -703,7 +703,7 @@ export default function RoleplayForm({
                       setEstimateCompleTimeUnit(nextUnit);
                       applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
                     }}
-                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   >
                     <option value="minute">
                       {getEstimateCompleteTimeUnitLabel(
@@ -726,7 +726,7 @@ export default function RoleplayForm({
                       setEstimateCompleTimeInput(nextAmount);
                       applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
                     }}
-                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Enter number..."
                   />
                 </div>
@@ -747,7 +747,7 @@ export default function RoleplayForm({
                           : prev
                       )
                     }
-                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   >
                     {Object.values(LessonStatus).map((status) => (
                       <option key={status} value={status}>
@@ -786,7 +786,7 @@ export default function RoleplayForm({
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setCourseQuery(e.target.value)
                         }
-                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                         placeholder="Search course..."
                       />
 
@@ -801,7 +801,7 @@ export default function RoleplayForm({
                             <Combobox.Option
                               key={c._id}
                               value={c._id}
-                              className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                              className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                             >
                               {getTranslationValue(c.title, lang)}
                             </Combobox.Option>
@@ -843,7 +843,7 @@ export default function RoleplayForm({
                         setIconQuery("");
                       }, 150);
                     }}
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search icon..."
                   />
 
@@ -935,7 +935,7 @@ export default function RoleplayForm({
                         setLightIconQuery("");
                       }, 150);
                     }}
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search light icon..."
                   />
 
@@ -1022,7 +1022,7 @@ export default function RoleplayForm({
                         setKeypointQuery(e.target.value);
                         setSelectedKeypoint(null);
                       }}
-                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                       placeholder="Search keypoint..."
                     />
 
@@ -1032,7 +1032,7 @@ export default function RoleplayForm({
                           <Combobox.Option
                             key={kp._id}
                             value={kp}
-                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                            className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                           >
                             <div className="font-medium text-gray-800">
                               {getTranslationValue(kp.title, lang) ||
@@ -1059,7 +1059,7 @@ export default function RoleplayForm({
                     currentRoleplayLesson.keypoints.map((kp) => (
                       <span
                         key={kp._id}
-                        className="flex items-center gap-2 bg-blue-50 text-blue-800 px-3 py-1 rounded-full text-sm"
+                        className="flex items-center gap-2 bg-brand-50 text-brand-800 px-3 py-1 rounded-full text-sm"
                       >
                         <span className="truncate max-w-[220px]">
                           {getTranslationValue(kp.title, lang) || "Untitled"}
@@ -1067,7 +1067,7 @@ export default function RoleplayForm({
                         <button
                           type="button"
                           onClick={() => handleRemoveKeypoint(kp._id)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-brand-600 hover:text-brand-800"
                           aria-label={`Remove ${getTranslationValue(
                             kp.title,
                             lang

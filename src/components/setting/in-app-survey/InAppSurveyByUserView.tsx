@@ -71,7 +71,7 @@ const InAppSurveyByUserView = ({
           setSearch(event.target.value);
         }}
         placeholder="Search responses..."
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-300"
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-bronze-300"
       />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-semibold text-slate-500">
@@ -87,7 +87,7 @@ const InAppSurveyByUserView = ({
             }}
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${
               branchId === item.branchId
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                ? "border-bronze-500 bg-bronze-50 text-bronze-700"
                 : "border-slate-200 bg-white text-slate-600"
             }`}
           >

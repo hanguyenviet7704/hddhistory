@@ -51,7 +51,7 @@ interface Props {
   onChangeLabel: (localId: string, next: LocalLabel) => void;
   onAddLabel: (packageCode: string) => void;
   onDeleteLabel: (localId: string) => void;
-  skillsetPicker: React.ReactNode; // typeahead do page cung cấp (cần service + debounce)
+  categoryPicker: React.ReactNode; // typeahead do page cung cấp (cần service + debounce)
 }
 
 const small = { size: "small" as const, sx: { minWidth: 160 } };
@@ -68,7 +68,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
   onChangeLabel,
   onAddLabel,
   onDeleteLabel,
-  skillsetPicker,
+  categoryPicker,
 }) => {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const set = (patch: Partial<OnboardingBranch>) => onChangeBranch({ ...branch, ...patch });
@@ -93,7 +93,7 @@ const TaxonomyBranchCard: React.FC<Props> = ({
           <TextField {...small} sx={{ minWidth: 260 }} label="Mô tả ngắn (en)" value={branch.subtitle?.en ?? ""} onChange={(e) => set({ subtitle: { ...branch.subtitle, en: e.target.value } })} />
           <TextField {...small} sx={{ width: 90 }} type="number" label="Thứ tự" value={branch.order ?? 0} onChange={(e) => set({ order: Number(e.target.value) || 0 })} />
           <TextField {...small} sx={{ minWidth: 260 }} label="Icon URL" value={branch.iconUrl ?? ""} onChange={(e) => set({ iconUrl: e.target.value })} />
-          {skillsetPicker}
+          {categoryPicker}
           <FormControlLabel control={<Switch checked={!!branch.isSelectable} onChange={(e) => set({ isSelectable: e.target.checked })} />} label="Hiện ở câu 1" />
           <FormControlLabel control={<Switch checked={!!branch.isActive} onChange={(e) => set({ isActive: e.target.checked })} />} label="Đang bật" />
           <Button color="error" startIcon={<TrashIcon size={16} />} onClick={onDeleteBranch}>Xoá nhánh</Button>

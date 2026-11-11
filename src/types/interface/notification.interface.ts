@@ -1,4 +1,4 @@
-// Mirrors meup-api src/modules/notification.
+// Mirrors hddhistory-api src/modules/notification.
 export type NotificationType =
   | "daily_remind"
   | "progress_finish"

@@ -1,4 +1,4 @@
-// Admin-editable onboarding config — see meup-api/plans/260721-onboarding-redesign/plan.md (§5).
+// Admin-editable onboarding config — see hddhistory-api/plans/260721-onboarding-redesign/plan.md (§5).
 // The mobile app fetches this singleton once at onboarding start and renders
 // each of its 9 screens (splash is static) from these fields.
 
@@ -57,7 +57,7 @@ export interface OnboardingAgeConfig {
 
 // A symptom nested under a path item. `key` must equal one of the
 // `OnboardingSymptom` enum values consumed by the mobile app (18 total, 3 per
-// path) — see meup-api/plans/260721-onboard-v2-config-driven/contract.md.
+// path) — see hddhistory-api/plans/260721-onboard-v2-config-driven/contract.md.
 // The admin edits it as free text (no fixed dropdown) so content managers can
 // realign keys without a code change; validation only enforces non-empty +
 // unique, mirroring path item keys.
@@ -156,7 +156,7 @@ export interface OnboardingThemeConfig {
   helper: OnboardingMultilang;
 }
 
-// Onboarding v3 (screen 6, "what do you want?") — see meup-api plan-api Task 7.
+// Onboarding v3 (screen 6, "what do you want?") — see hddhistory-api plan-api Task 7.
 export interface OnboardingDesireConfig {
   heading: OnboardingMultilang;
   // Gradient-highlighted trailing part of the title, rendered right after
@@ -165,7 +165,7 @@ export interface OnboardingDesireConfig {
   helper: OnboardingMultilang;
 }
 
-// Onboarding v3 (screen 7, "how MeUp teaches") — see meup-api plan-api Task 7.
+// Onboarding v3 (screen 7, "how HDDhistory teaches") — see hddhistory-api plan-api Task 7.
 export interface OnboardingHowStep {
   title: OnboardingMultilang;
   body: OnboardingMultilang;
@@ -183,7 +183,7 @@ export interface OnboardingHowConfig {
   ctaLabel: OnboardingMultilang;
 }
 
-// Onboarding v3 (screen 8, "set a reminder") — see meup-api plan-api Task 7.
+// Onboarding v3 (screen 8, "set a reminder") — see hddhistory-api plan-api Task 7.
 export interface OnboardingReminderPreset {
   label: OnboardingMultilang;
   // 'HH:mm', e.g. "20:00".
@@ -203,7 +203,7 @@ export interface OnboardingReminderConfig {
 }
 
 // Onboarding v3 (screen 9, "building your roadmap" loading screen) — see
-// meup-api plan-api Task 7.
+// hddhistory-api plan-api Task 7.
 export interface OnboardingLoadingConfig {
   heading: OnboardingMultilang;
   // Gradient-highlighted trailing part of the title, rendered right after

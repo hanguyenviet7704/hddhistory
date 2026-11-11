@@ -81,7 +81,7 @@ export interface CourseVersionList {
 /**
  * Phiên bản nội dung của một khoá học. Sửa nội dung bao nhiêu cũng được, user
  * vẫn đọc tag đang phát hành cho tới khi đánh tag mới; rollback = trỏ current
- * về tag cũ. Xem `meup-api/plans/260907-course-content-versions/README.md`.
+ * về tag cũ. Xem `hddhistory-api/plans/260907-course-content-versions/README.md`.
  */
 export const courseVersionService = {
   async list(courseId: string) {

@@ -1,4 +1,4 @@
-// Mirrors meup-api src/modules/paywall-config/dto/paywall-config.dto.ts --
+// Mirrors hddhistory-api src/modules/paywall-config/dto/paywall-config.dto.ts --
 // keep both in sync if the backend contract changes.
 
 export const PAYWALL_CONFIG_LOCALES = ["en", "vi", "zh", "ja", "ko"] as const;
@@ -409,7 +409,7 @@ export interface PaywallConfig {
   logicSales?: PaywallLogicSale[];
 }
 
-// Mirrors meup-api dto/paywall-config-response.dto.ts. MySQL is now the
+// Mirrors hddhistory-api dto/paywall-config-response.dto.ts. MySQL is now the
 // source of truth (previously Firebase Remote Config's own
 // `template.version`) -- `version` is a monotonically increasing integer
 // starting at 1, append-only: publishing (or restoring) never mutates an

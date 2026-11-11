@@ -374,7 +374,7 @@ const ColorPicker = ({
           type="text"
           value={value || "#000000"}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
           placeholder="#000000"
         />
       </div>
@@ -416,7 +416,7 @@ const AvatarSelector = ({
       </label>
       {loading ? (
         <div className="flex items-center justify-center h-20 border border-gray-200 rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
         </div>
       ) : (
         <div className="border border-gray-200 rounded-lg p-2 max-h-32 overflow-y-auto">
@@ -428,7 +428,7 @@ const AvatarSelector = ({
                 onClick={() => onChange(avatar)}
                 className={`w-full flex flex-col items-center gap-1 p-1 rounded-lg border-2 text-xs ${
                   value?._id === avatar._id
-                    ? "border-blue-500"
+                    ? "border-brand-500"
                     : "border-gray-300"
                 }`}
               >
@@ -532,7 +532,7 @@ const KeypointSelector = ({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setKeypointQuery(e.target.value)
             }
-            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
             placeholder="Search keypoint..."
           />
           <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
@@ -546,7 +546,7 @@ const KeypointSelector = ({
                 <Combobox.Option
                   key={c._id}
                   value={c._id}
-                  className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                  className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                 >
                   {c.title?.[lang]}
                 </Combobox.Option>
@@ -1703,7 +1703,7 @@ export default function RoleplayFromDetail({
               <button
                 type="button"
                 onClick={() => handleSaveRoleplay()}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition text-sm"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-600 text-white rounded-md shadow hover:bg-brand-700 transition text-sm"
                 disabled={saving}
               >
                 {saving ? (
@@ -1744,7 +1744,7 @@ export default function RoleplayFromDetail({
                           )
                         }
                         rows={2}
-                        className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder="Mission content"
                       />
                     </div>
@@ -1764,7 +1764,7 @@ export default function RoleplayFromDetail({
               <button
                 type="button"
                 onClick={addMission}
-                className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                className="flex items-center gap-1 text-brand-600 hover:text-brand-800"
               >
                 <PlusCircleIcon className="h-7 w-7" />
               </button>
@@ -1795,13 +1795,13 @@ export default function RoleplayFromDetail({
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
           <div></div>
           <div className="w-full md:w-64">
-            <label className="block text-[16px] font-medium text-blue-700 mb-1">
+            <label className="block text-[16px] font-medium text-brand-700 mb-1">
               Color Template
             </label>
             <select
               value={roleplayData.colorTemplateId || ""}
               onChange={(e) => updateRoleplayColorTemplate(e.target.value)}
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option value="">Select template</option>
               {colorTemplates.map((template) => (
@@ -1904,7 +1904,7 @@ export default function RoleplayFromDetail({
                                   ID: {content.id}
                                 </span>
                                 {selectedTemplate && (
-                                  <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                  <span className="text-xs text-bronze-600 bg-bronze-50 px-2 py-0.5 rounded-full">
                                     {selectedTemplate.title}
                                   </span>
                                 )}
@@ -2037,7 +2037,7 @@ export default function RoleplayFromDetail({
                                     </span>
                                     {dragDropFormLabel && (
                                       <span className="text-xs flex items-center gap-1 text-gray-400">
-                                        <span className="font-semibold text-blue-700">
+                                        <span className="font-semibold text-brand-700">
                                           Form:
                                         </span>
                                         <span className="text-gray-600">
@@ -2118,7 +2118,7 @@ export default function RoleplayFromDetail({
                                     Array.isArray(content.exercise.options) &&
                                     content.exercise.options.length > 0 && (
                                       <div>
-                                        <span className="font-semibold text-blue-500 text-sm">
+                                        <span className="font-semibold text-brand-500 text-sm">
                                           Options
                                         </span>
                                         <ul className="mt-2 space-y-1 text-sm text-gray-600">
@@ -2160,7 +2160,7 @@ export default function RoleplayFromDetail({
                                     Array.isArray(content.exercise.answer) &&
                                     content.exercise.answer.length > 0 && (
                                       <div>
-                                        <span className="font-semibold text-blue-500 text-sm">
+                                        <span className="font-semibold text-brand-500 text-sm">
                                           Answers
                                         </span>
                                         <ul className="mt-2 space-y-1 text-sm text-gray-600">
@@ -2222,7 +2222,7 @@ export default function RoleplayFromDetail({
                                 onClick={() =>
                                   handleOpenModal(content.type, content)
                                 }
-                                className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                className="text-brand-600 hover:text-brand-800 p-1 rounded"
                                 title="Edit"
                               >
                                 <svg
@@ -2263,7 +2263,7 @@ export default function RoleplayFromDetail({
           )}
           <div className="mt-4 flex justify-center">
             <button
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+              className="flex items-center gap-1 text-brand-600 hover:text-brand-800"
               onClick={handleOpenContentTypePopup}
             >
               <PlusCircleIcon className="h-7 w-7" />
@@ -2698,7 +2698,7 @@ export default function RoleplayFromDetail({
                   handleDataChange(index, "content", e.target.value)
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             ) : (
@@ -2708,7 +2708,7 @@ export default function RoleplayFromDetail({
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder={placeholder}
               />
             )}
@@ -3433,7 +3433,7 @@ export default function RoleplayFromDetail({
                 onChange={(e) =>
                   handleConversationChange("position", e.target.value)
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value={RoleplayConversationPosition.LEFT}>Left</option>
                 <option value={RoleplayConversationPosition.RIGHT}>
@@ -3476,7 +3476,7 @@ export default function RoleplayFromDetail({
                   )
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder="Enter content"
               />
             </div>
@@ -3542,7 +3542,7 @@ export default function RoleplayFromDetail({
                   )
                 }
                 rows={3}
-                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 ${
                   validationErrors.content ? "border-red-500" : ""
                 }`}
                 placeholder="Enter content"
@@ -3607,7 +3607,7 @@ export default function RoleplayFromDetail({
                   )
                 }
                 rows={3}
-                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 ${
                   validationErrors.transitionContent ? "border-red-500" : ""
                 }`}
                 placeholder="Enter content"
@@ -3632,7 +3632,7 @@ export default function RoleplayFromDetail({
                   localFormData.exercise.type || ExerciseType.SINGLE_CHOICE
                 }
                 onChange={(e) => handleExerciseChange("type", e.target.value)}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value={ExerciseType.SINGLE_CHOICE}>
                   Single Choice
@@ -3690,7 +3690,7 @@ export default function RoleplayFromDetail({
                                 e.target.value as DocumentType,
                               )
                             }
-                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                           >
                             <option value={DocumentType.TITLE}>Title</option>
                             <option value={DocumentType.CAPTION}>
@@ -3716,7 +3716,7 @@ export default function RoleplayFromDetail({
                 <button
                   type="button"
                   onClick={addNewDocument}
-                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                  className="px-3 py-1 bg-brand-600 text-white rounded-md text-sm hover:bg-brand-700"
                 >
                   Add Content
                 </button>
@@ -3737,7 +3737,7 @@ export default function RoleplayFromDetail({
                     skipRebalance: isEmpty,
                   });
                 }}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 placeholder="Enter max score"
               />
             </div>
@@ -3762,7 +3762,7 @@ export default function RoleplayFromDetail({
                     ),
                   )
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-pre-wrap"
                 placeholder="Enter explanation"
               />
             </div>
@@ -3784,7 +3784,7 @@ export default function RoleplayFromDetail({
                             updateOptionValue(idx, e.target.value)
                           }
                           onPaste={(e) => handlePasteExerciseOptions(idx, e)}
-                          className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                           placeholder={`Option ${idx + 1}`}
                         />
                         <label className="flex items-center">
@@ -3794,7 +3794,7 @@ export default function RoleplayFromDetail({
                             onChange={(e) =>
                               updateOptionCorrectness(idx, e.target.checked)
                             }
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-bronze-600 focus:ring-bronze-500 border-gray-300 rounded"
                           />
                           <span className="ml-1 text-sm">
                             {localFormData.exercise.type ===
@@ -3838,7 +3838,7 @@ export default function RoleplayFromDetail({
                     FormDragDropType.TextGapFilling
                   }
                   onChange={(e) => handleExerciseChange("form", e.target.value)}
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 >
                   <option value={FormDragDropType.TextGapFilling}>
                     Text Gap Filling
@@ -3877,7 +3877,7 @@ export default function RoleplayFromDetail({
                       ),
                     )
                   }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-pre-wrap"
                   placeholder="Enter target area"
                 />
               </div>
@@ -3902,7 +3902,7 @@ export default function RoleplayFromDetail({
                             updateAnswerValue(idx, e.target.value)
                           }
                           onPaste={(e) => handlePasteExerciseAnswers(idx, e)}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                           placeholder={`Answer ${idx + 1}`}
                         />
                         <button
@@ -3937,7 +3937,7 @@ export default function RoleplayFromDetail({
                     <button
                       type="button"
                       onClick={handleShuffleOptions}
-                      className="text-sm text-blue-600 hover:text-blue-700"
+                      className="text-sm text-brand-600 hover:text-brand-700"
                     >
                       Shuffle
                     </button>
@@ -3954,7 +3954,7 @@ export default function RoleplayFromDetail({
                             updateOptionValue(idx, e.target.value)
                           }
                           onPaste={(e) => handlePasteExerciseOptions(idx, e)}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                           placeholder={`Option ${idx + 1}`}
                         />
                         <button
@@ -3993,7 +3993,7 @@ export default function RoleplayFromDetail({
                       parseInt(e.target.value),
                     )
                   }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   placeholder="Enter max duration"
                 />
               </div>
@@ -4013,7 +4013,7 @@ export default function RoleplayFromDetail({
                       parseInt(e.target.value),
                     )
                   }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   placeholder="Enter max character"
                 />
               </div>
@@ -4077,7 +4077,7 @@ export default function RoleplayFromDetail({
                               }
                               onPaste={(e) => handlePasteCriteria(index, e)}
                               rows={2}
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-pre-wrap"
                               placeholder="e.g., Pronunciation clarity"
                             />
                           </div>
@@ -4099,7 +4099,7 @@ export default function RoleplayFromDetail({
                                   e.target.value,
                                 )
                               }
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                               placeholder="Auto"
                             />
                           </div>
@@ -4133,7 +4133,7 @@ export default function RoleplayFromDetail({
             Cancel
           </button>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
             onClick={handleSave}
             disabled={saving}
           >
@@ -4241,7 +4241,7 @@ export default function RoleplayFromDetail({
                               }))
                         }
                         readOnly={lockTitle}
-                        className={`border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition ${
+                        className={`border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition ${
                           lockTitle ? "bg-gray-100 text-gray-600" : ""
                         }`}
                         placeholder={
@@ -4279,7 +4279,7 @@ export default function RoleplayFromDetail({
                           }))
                         }
                         rows={4}
-                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition resize-none"
                         placeholder="Short description..."
                       />
                     </div>
@@ -4303,7 +4303,7 @@ export default function RoleplayFromDetail({
                     className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                       saving
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                        : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                     }`}
                   >
                     {saving ? (
@@ -4363,12 +4363,12 @@ export default function RoleplayFromDetail({
                     onClick={() =>
                       handleSelectContentType(RoleplayContentType.CONVERSATION)
                     }
-                    className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex flex-col items-center gap-2"
+                    className="p-4 bg-brand-50 rounded-lg hover:bg-brand-100 transition flex flex-col items-center gap-2"
                   >
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-blue-600"
+                        className="h-6 w-6 text-brand-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

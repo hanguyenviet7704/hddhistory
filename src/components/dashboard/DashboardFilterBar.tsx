@@ -17,7 +17,7 @@ interface Props {
 
 const inputClass =
   "h-9 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 " +
-  "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+  "focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500";
 
 /**
  * The one row of controls above every dashboard page.
@@ -45,7 +45,7 @@ const DashboardFilterBar: React.FC<Props> = ({
               aria-pressed={isActive}
               className={`h-9 rounded-lg px-3 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-blue-500 text-white"
+                  ? "bg-brand-500 text-white"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >

@@ -7,8 +7,8 @@ import { store } from "../store";
 import { LangCode } from "../types/enum/common.enum";
 import { getClientInfo } from "../utils/device";
 
-export const API_URL_V1 = `${process.env.REACT_APP_BACKEND_AI_TUTOR}/api/v1`;
-export const API_URL_V2 = `${process.env.REACT_APP_BACKEND_AI_TUTOR}/api/v2`;
+export const API_URL_V1 = `${process.env.REACT_APP_BACKEND_URL}/api/v1`;
+export const API_URL_V2 = `${process.env.REACT_APP_BACKEND_URL}/api/v2`;
 const device = getClientInfo();
 const getAccessToken = () => localStorage.getItem("accessToken");
 const getRefreshToken = () => localStorage.getItem("refreshToken");

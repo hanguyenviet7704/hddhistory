@@ -10,12 +10,12 @@ import { useNotification } from "../../utils/hooks/useNotification";
 /**
  * The team's face in the forum.
  *
- * This existed only in the source until now — `OFFICIAL_AUTHOR_NAME = 'MeUp'`,
+ * This existed only in the source until now — `OFFICIAL_AUTHOR_NAME = 'HDDhistory'`,
  * no picture — so changing what readers see on an official post, or giving the
  * team an avatar at all, meant a deploy. It is brand, not code.
  *
  * Both fields are optional, and empty is a real choice rather than a missing
- * value: with no name the app keeps its own localised "Đội ngũ MeUp", and with
+ * value: with no name the app keeps its own localised "Đội ngũ HDDhistory", and with
  * no picture it keeps drawing the violet "M" disc. The preview below shows
  * exactly what a reader will get, because the whole point of the page is that
  * nobody should have to open the app to find out.
@@ -75,7 +75,7 @@ const CommunityOfficialProfilePage: React.FC = () => {
         name: name.trim(),
         avatar: avatar.trim(),
       });
-      showSuccess("Đã lưu profile Đội ngũ MeUp");
+      showSuccess("Đã lưu profile Đội ngũ HDDhistory");
     } catch (err: any) {
       showError(err?.response?.data?.message ?? "Không lưu được");
     } finally {
@@ -86,7 +86,7 @@ const CommunityOfficialProfilePage: React.FC = () => {
   return (
     <div className="space-y-4 p-6">
       <CommunityPageHeader
-        title="Đội ngũ MeUp"
+        title="Đội ngũ HDDhistory"
         subtitle="Tên và ảnh đại diện hiện trên mọi bài, bình luận và tin nhắn do đội ngũ đăng. Để trống thì app tự dùng tên đã dịch sẵn và ảnh chữ M."
       >
         <Button
@@ -178,7 +178,7 @@ const CommunityOfficialProfilePage: React.FC = () => {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Để trống = dùng tên app đã dịch"
-              helperText='Một tên duy nhất cho cả 5 ngôn ngữ. Để trống thì mỗi ngôn ngữ hiện tên riêng đã dịch ("Đội ngũ MeUp" / "MeUp Team").'
+              helperText='Một tên duy nhất cho cả 5 ngôn ngữ. Để trống thì mỗi ngôn ngữ hiện tên riêng đã dịch ("Đội ngũ HDDhistory" / "HDDhistory Team").'
             />
           </section>
 
@@ -210,13 +210,13 @@ const CommunityOfficialProfilePage: React.FC = () => {
                   </div>
                 )}
                 <span className="text-[13.5px] font-bold text-[#3A4250]">
-                  {name.trim() || "Đội ngũ MeUp"}
+                  {name.trim() || "Đội ngũ HDDhistory"}
                 </span>
                 <span className="text-[11px] font-semibold text-gray-400">
                   · 2 giờ trước
                 </span>
                 <span className="rounded bg-[#EBEAFD] px-1.5 py-0.5 text-[9px] font-bold tracking-wide text-[#4B44CA]">
-                  MEUP
+                  HDDHISTORY
                 </span>
               </div>
               <p className="mt-1 pl-[37px] text-sm leading-[1.55] text-gray-600">

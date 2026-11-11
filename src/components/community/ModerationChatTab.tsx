@@ -253,7 +253,7 @@ const ModerationChatTab: React.FC = () => {
           maxRows={4}
           placeholder={
             room
-              ? "Trả lời trong phòng này với tư cách MeUp…"
+              ? "Trả lời trong phòng này với tư cách HDDhistory…"
               : "Chọn một phòng ở trên để trả lời"
           }
           value={reply}

@@ -51,7 +51,7 @@ const TranslationFields: React.FC<Props> = ({
         <div key={code} className="flex gap-2">
           <span
             className={`mt-2 w-10 shrink-0 text-xs font-semibold ${
-              isFallback ? "text-indigo-600" : "text-gray-400"
+              isFallback ? "text-bronze-600" : "text-gray-400"
             }`}
             title={
               isFallback
@@ -63,7 +63,7 @@ const TranslationFields: React.FC<Props> = ({
             {isFallback ? " *" : ""}
           </span>
           <textarea
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bronze-500 disabled:bg-gray-100"
             rows={rows}
             disabled={disabled}
             value={value?.[code] || ""}

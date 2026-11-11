@@ -51,7 +51,7 @@ const ParamLinks = ({ params }: { params?: Record<string, any> }) => {
         <Link
           key={link.to}
           to={link.to}
-          className="rounded border border-blue-200 px-1 text-[10px] text-blue-600 hover:bg-blue-50"
+          className="rounded border border-brand-200 px-1 text-[10px] text-brand-600 hover:bg-brand-50"
         >
           {link.label}
         </Link>
@@ -91,7 +91,7 @@ const EventRow = ({ event }: { event: IUserBehaviorEvent }) => {
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
-            className="text-xs text-blue-600 hover:text-blue-800"
+            className="text-xs text-brand-600 hover:text-brand-800"
           >
             {open ? "Ẩn params" : "Params"}
           </button>
@@ -273,7 +273,7 @@ export default function SessionTimeline({
                       <button
                         type="button"
                         onClick={() => loadEvents(session.sessionId)}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-brand-600 hover:text-brand-800"
                       >
                         Thử lại
                       </button>

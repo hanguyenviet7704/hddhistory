@@ -47,7 +47,7 @@ const EditCommunityPostDialog: React.FC<Props> = ({
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   // Một dòng một URL — cùng kiểu nhập tay đơn giản như ô ảnh của modal đăng
-  // bài Đội ngũ MeUp, chỉ khác là cho phép nhiều dòng vì một bài đăng thường
+  // bài Đội ngũ HDDhistory, chỉ khác là cho phép nhiều dòng vì một bài đăng thường
   // có thể có tới 4 ảnh.
   const [imagesText, setImagesText] = useState("");
 

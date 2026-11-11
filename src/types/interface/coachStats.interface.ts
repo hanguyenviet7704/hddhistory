@@ -1,6 +1,6 @@
 import { IDashboardRange } from "./dashboard.interface";
 
-// Mirror of `meup-api/src/modules/analytics/interface/coach-dashboard.interface.ts`
+// Mirror of `hddhistory-api/src/modules/analytics/interface/coach-dashboard.interface.ts`
 // plus the weekly-counter payload from `GET /coach-metrics`.
 //
 // Every rate is `number | null` for the same reason it is on the server: a rate

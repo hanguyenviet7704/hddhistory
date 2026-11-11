@@ -154,7 +154,7 @@ export default function RoleplayList() {
             <Combobox value={selectedCourse} onChange={setSelectedCourse}>
               <div className="relative">
                 <Combobox.Input
-                  className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   placeholder="Search course..."
                   displayValue={(course: ICourse) =>
                     getTranslationValue(course?.title, lang)
@@ -186,7 +186,7 @@ export default function RoleplayList() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search roleplays..."
-                className="border rounded-lg pl-10 pr-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border rounded-lg pl-10 pr-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <svg
@@ -208,7 +208,7 @@ export default function RoleplayList() {
 
             <button
               onClick={() => navigate("/roleplay/create")}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white px-4 py-2 rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               <span>New Roleplay</span>
@@ -221,7 +221,7 @@ export default function RoleplayList() {
       <div className="max-w-7xl mx-auto">
         {loading && roleplays.length === 0 ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
           </div>
         ) : roleplays.length === 0 ? (
           <div className="py-20 text-center">
@@ -357,7 +357,7 @@ export default function RoleplayList() {
             {/* Loading more indicator */}
             {loadingMore && (
               <div className="flex justify-center mt-6">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-500"></div>
               </div>
             )}
 

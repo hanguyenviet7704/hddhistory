@@ -1,6 +1,6 @@
 // Best-effort extraction of field-level errors from a failed API call.
 //
-// KNOWN GAP (meup-api, not fixed here): `PaywallConfigService` throws
+// KNOWN GAP (hddhistory-api, not fixed here): `PaywallConfigService` throws
 // `BadRequestException({ message, errors: [{ field, message }] })` for both
 // shape and product-existence failures, but the shared
 // `AllExceptionsFilter` (src/base/filters/all-exceptions.filter.ts) only

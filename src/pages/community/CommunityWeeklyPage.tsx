@@ -103,7 +103,7 @@ const CommunityWeeklyPage: React.FC = () => {
     <div className="p-6 space-y-4">
       <CommunityPageHeader
         title="Câu hỏi của tuần"
-        subtitle="Đội ngũ MeUp đặt một câu hỏi mỗi tuần; user trả lời như bình luận. Câu hỏi hiện cho mọi ngôn ngữ, nên cần dịch đủ 5 thứ tiếng."
+        subtitle="Đội ngũ HDDhistory đặt một câu hỏi mỗi tuần; user trả lời như bình luận. Câu hỏi hiện cho mọi ngôn ngữ, nên cần dịch đủ 5 thứ tiếng."
       >
         <Button
           variant="contained"

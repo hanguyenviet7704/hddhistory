@@ -150,7 +150,7 @@ const ContentExperimentsPage: React.FC = () => {
     <div className="flex flex-col gap-5 p-6">
       <div>
         <h1 className="flex items-center gap-2 text-xl font-semibold">
-          <BeakerIcon className="h-6 w-6 text-indigo-600" />
+          <BeakerIcon className="h-6 w-6 text-bronze-600" />
           A/B test nội dung khoá học
         </h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -279,7 +279,7 @@ const ContentExperimentsPage: React.FC = () => {
             onClick={() =>
               setArms(prev => [...prev, { courseId: "", tagA: "", tagB: "" }])
             }
-            className="inline-flex w-fit items-center gap-1 text-sm text-indigo-600 hover:underline"
+            className="inline-flex w-fit items-center gap-1 text-sm text-bronze-600 hover:underline"
           >
             <PlusIcon className="h-4 w-4" />
             Thêm khoá vào đợt
@@ -289,7 +289,7 @@ const ContentExperimentsPage: React.FC = () => {
         <button
           onClick={create}
           disabled={busy || !canCreate}
-          className="mt-4 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+          className="mt-4 rounded-lg bg-gradient-to-r from-brand-600 to-bronze-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
         >
           Tạo đợt (đang tắt)
         </button>
@@ -343,7 +343,7 @@ const ContentExperimentsPage: React.FC = () => {
                   <button
                     onClick={() => toggle(run)}
                     disabled={busy}
-                    className="rounded-lg border border-indigo-500 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-60"
+                    className="rounded-lg border border-bronze-500 px-3 py-1.5 text-xs font-medium text-bronze-600 hover:bg-bronze-50 disabled:opacity-60"
                   >
                     {run.enabled ? "Tắt" : "Bật"}
                   </button>

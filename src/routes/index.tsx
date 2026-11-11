@@ -12,7 +12,6 @@ import CourseDetail from "../pages/courses/CourseDetail";
 import KeypointList from "../pages/keypoints/KeypointList";
 import UserProgressSummaryList from "../pages/user-progress/UserProgressSummaryList";
 import UserProgressDetail from "../pages/user-progress/UserProgressDetail";
-import CourseDropOffPage from "../pages/user-progress/CourseDropOffPage";
 import TheoryList from "../pages/theories/TheoryList";
 import RoleplayList from "../pages/roleplays/RoleplayList";
 import RoleplayCreate from "../pages/roleplays/RoleplayCreate";
@@ -29,10 +28,7 @@ import OnboardingManagement from "../pages/onboardings/OnboardingManagemant";
 import OnboardingManagemantScenarioBranching from "../pages/onboardings/OnboardingManagemantScenarioBranching";
 import KeypointDetail from "../pages/keypoints/KeypointDetail";
 import SettingsPage from "../pages/setting/Setting";
-import SkillsetList from "../pages/skillsets/skillsetList";
-import HabitList from "../pages/habits/HabitList";
-import HabitCheckinList from "../pages/habit-checkins/HabitCheckinList";
-import HabitCheckinDetail from "../pages/habit-checkins/HabitCheckinDetail";
+import CategoryList from "../pages/categories/categoryList";
 import LearningImportList from "../pages/learning-imports/LearningImportList";
 import LearningImportDetail from "../pages/learning-imports/LearningImportDetail";
 import DownloadLinkList from "../pages/download-links/DownloadLinkList";
@@ -59,11 +55,6 @@ import CommunityWeeklyPage from "../pages/community/CommunityWeeklyPage";
 import ReanchorReasonList from "../pages/reanchor-reasons/ReanchorReasonList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
-import DashboardOverview from "../pages/dashboard/DashboardOverview";
-import DashboardUsers from "../pages/dashboard/DashboardUsers";
-import DashboardSessions from "../pages/dashboard/DashboardSessions";
-import DashboardOnboarding from "../pages/dashboard/DashboardOnboarding";
-import DashboardLearning from "../pages/dashboard/DashboardLearning";
 import VideoList from "../pages/video/VideoList";
 import VideoCreate from "../pages/video/VideoCreate";
 import VideoDetail from "../pages/video/VideoDetail";
@@ -99,27 +90,7 @@ export default function AppRouter() {
               {/* Redirect from "/" to "/course" */}
               <Route index element={<Navigate to="/course" replace />} />
 
-              {/* Product dashboard — one route per sidebar entry, so each page
-                  fetches only the numbers it shows. */}
-              <Route path="dashboard" element={<DashboardOverview />} />
-              <Route path="dashboard/users" element={<DashboardUsers />} />
-              <Route path="dashboard/sessions" element={<DashboardSessions />} />
-              <Route
-                path="dashboard/onboarding"
-                element={<DashboardOnboarding />}
-              />
-              <Route path="dashboard/learning" element={<DashboardLearning />} />
-              <Route path="dashboard/drop-off" element={<CourseDropOffPage />} />
-
-              <Route path="skillset" element={<SkillsetList />} />
-
-              <Route path="habits" element={<HabitList />} />
-
-              <Route path="habit-checkins" element={<HabitCheckinList />} />
-              <Route
-                path="habit-checkins/user/:userId"
-                element={<HabitCheckinDetail />}
-              />
+              <Route path="category" element={<CategoryList />} />
 
               <Route path="learning-imports" element={<LearningImportList />} />
               <Route

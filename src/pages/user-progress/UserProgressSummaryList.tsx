@@ -96,7 +96,7 @@ const getCourseId = (summary: ICourseProgressSummary | any) =>
   summary?.courseId || summary?.id || summary?._id || "";
 
 const lessonTypeStyles: Record<string, string> = {
-  [LessonType.LESSON]: "bg-blue-100 text-blue-700",
+  [LessonType.LESSON]: "bg-brand-100 text-brand-700",
   [LessonType.ROLEPLAY]: "bg-amber-100 text-amber-700",
   [LessonType.OUTPUT]: "bg-emerald-100 text-emerald-700",
 };
@@ -142,7 +142,7 @@ const CompletedLevelsCell = ({ levels }: { levels?: ICompletedLevel[] }) => {
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                     request.requested
-                      ? "bg-blue-100 text-blue-700"
+                      ? "bg-brand-100 text-brand-700"
                       : "bg-gray-100 text-gray-600"
                   }`}
                 >
@@ -544,7 +544,7 @@ export default function UserProgressSummaryList() {
             ) : null}
             <button
               onClick={() => navigate(-1)}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm shadow-sm"
+              className="px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700 text-sm shadow-sm"
             >
               Quay lại
             </button>
@@ -564,7 +564,7 @@ export default function UserProgressSummaryList() {
               onClick={() => setActiveTab(tab.key)}
               className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
                 activeTab === tab.key
-                  ? "border-blue-600 text-blue-700"
+                  ? "border-brand-600 text-brand-700"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -698,7 +698,7 @@ export default function UserProgressSummaryList() {
                               disabled={!canNavigate}
                               className={`inline-flex items-center gap-1 ${
                                 canNavigate
-                                  ? "text-blue-600 hover:text-blue-800"
+                                  ? "text-brand-600 hover:text-brand-800"
                                   : "text-gray-400 cursor-not-allowed"
                               }`}
                             >

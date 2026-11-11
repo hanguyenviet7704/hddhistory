@@ -24,7 +24,7 @@ const statusLabels: Record<CourseImportJob["status"], string> = {
 
 const statusClasses: Record<CourseImportJob["status"], string> = {
   queued: "bg-slate-100 text-slate-700",
-  processing: "bg-blue-100 text-blue-700",
+  processing: "bg-brand-100 text-brand-700",
   completed: "bg-green-100 text-green-700",
   failed: "bg-red-100 text-red-700",
   cancelled: "bg-gray-200 text-gray-700",
@@ -77,7 +77,7 @@ export default function CourseImportJobDetail() {
       <div className="min-h-[100dvh] bg-slate-100 px-4 py-10">
         <div className="mx-auto flex max-w-4xl justify-center">
           <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-5 py-4 text-slate-700 shadow-sm">
-            <Loader2Icon className="h-5 w-5 animate-spin text-blue-600" />
+            <Loader2Icon className="h-5 w-5 animate-spin text-brand-600" />
             Loading import job...
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function CourseImportJobDetail() {
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
                 Excel Import
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-950">
@@ -145,14 +145,14 @@ export default function CourseImportJobDetail() {
               </div>
               <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                 <div
-                  className="h-full rounded-full bg-blue-700 transition-all"
+                  className="h-full rounded-full bg-brand-700 transition-all"
                   style={{ width: `${Math.min(job.percent, 100)}%` }}
                 />
               </div>
             </div>
 
             {isActive && (
-              <div className="flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              <div className="flex items-center gap-2 rounded-lg border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-700">
                 <Loader2Icon className="h-5 w-5 animate-spin" />
                 Import is running. This page will refresh automatically.
               </div>

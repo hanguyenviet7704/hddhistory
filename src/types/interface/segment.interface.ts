@@ -2,7 +2,7 @@
  * Audience segments — admin-only. A segment is a name plus criteria; membership
  * is always computed live server-side (never a stored member list), so the
  * shapes here mirror the API's `UpsertSegmentDto` / `SegmentCriteriaDto`
- * exactly. See meup-api `src/modules/segment/`.
+ * exactly. See hddhistory-api `src/modules/segment/`.
  */
 
 export type SegmentDeviceType = "ios" | "android";
@@ -36,7 +36,7 @@ export interface SegmentCriteria {
   userIds?: string[];
   /** Onboarding learning-goal answer ids. */
   userGoals?: number[];
-  /** Onboarding skillset ("topic") ids — ANY match. */
+  /** Onboarding category ("topic") ids — ANY match. */
   topicIds?: number[];
   userTypes?: SegmentUserType[];
 }

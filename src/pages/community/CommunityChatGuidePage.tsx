@@ -50,7 +50,7 @@ const ListEditor: React.FC<{
   const toneClass = {
     do: "border-emerald-200 bg-emerald-50/60",
     dont: "border-rose-200 bg-rose-50/60",
-    starter: "border-indigo-200 bg-indigo-50/60",
+    starter: "border-bronze-200 bg-bronze-50/60",
   }[tone];
 
   return (
@@ -225,7 +225,7 @@ const CommunityChatGuidePage: React.FC = () => {
           fullWidth
           size="small"
           label="Tiêu đề"
-          placeholder="Nội quy nhóm MeUp"
+          placeholder="Nội quy nhóm HDDhistory"
           value={current.title}
           onChange={(e) => patch({ title: e.target.value })}
         />

@@ -312,7 +312,7 @@ const ReanchorReasonList: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search reason..."
-                className="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <svg
@@ -334,7 +334,7 @@ const ReanchorReasonList: React.FC = () => {
             <select
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
             >
               <option value="">All courses</option>
               {courses.map((course) => (
@@ -348,7 +348,7 @@ const ReanchorReasonList: React.FC = () => {
               onChange={(e) =>
                 setStatusFilter(e.target.value as ReanchorReasonStatus | "")
               }
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
             >
               <option value="">All statuses</option>
               <option value={ReanchorReasonStatus.DRAFT}>Draft</option>
@@ -368,7 +368,7 @@ const ReanchorReasonList: React.FC = () => {
             />
             <button
               onClick={openCreateModal}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white px-4 py-2 rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               <span>Create re-anchor reason</span>
@@ -462,7 +462,7 @@ const ReanchorReasonList: React.FC = () => {
             </p>
             <button
               onClick={openCreateModal}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white px-4 py-2 rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               <span>Create the first reason</span>
@@ -587,7 +587,7 @@ const ReanchorReasonList: React.FC = () => {
                             onClick={() => openEditModal(item)}
                             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                           >
-                            <PencilIcon className="h-4 w-4 text-blue-600" />
+                            <PencilIcon className="h-4 w-4 text-brand-600" />
                           </button>
                           <button
                             aria-label="Delete re-anchor reason"

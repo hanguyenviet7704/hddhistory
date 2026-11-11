@@ -125,7 +125,7 @@ const GiftCampaignSection: React.FC<GiftCampaignSectionProps> = ({
                   : "cursor-pointer border-slate-200 hover:border-slate-300"
               } ${
                 value.openFrequency === option.value && !scheduleDisabled
-                  ? "border-blue-400 bg-blue-50/60"
+                  ? "border-brand-400 bg-brand-50/60"
                   : ""
               }`}
             >
@@ -139,7 +139,7 @@ const GiftCampaignSection: React.FC<GiftCampaignSectionProps> = ({
                   onChange({ ...value, openFrequency: option.value })
                 }
                 disabled={scheduleDisabled}
-                className="mt-0.5 h-4 w-4 flex-shrink-0 accent-blue-600"
+                className="mt-0.5 h-4 w-4 flex-shrink-0 accent-brand-600"
               />
               <span className="flex flex-col gap-0.5">
                 <span
@@ -173,7 +173,7 @@ const GiftCampaignSection: React.FC<GiftCampaignSectionProps> = ({
             onChange={(e) => onChange({ ...value, windowDays: e.target.value })}
             disabled={scheduleDisabled}
             placeholder="7"
-            className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-slate-100 disabled:text-slate-400"
+            className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition disabled:bg-slate-100 disabled:text-slate-400"
           />
           <p className="text-[11px] text-slate-500 mt-1.5">
             {everyOpen
@@ -206,7 +206,7 @@ const GiftCampaignSection: React.FC<GiftCampaignSectionProps> = ({
               }
               disabled={scheduleDisabled}
               placeholder="30"
-              className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-slate-100 disabled:text-slate-400"
+              className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition disabled:bg-slate-100 disabled:text-slate-400"
             />
             <p className="text-[11px] text-slate-500 mt-1.5">
               App kiểm tra mỗi lần user quay lại app, không chỉ lúc mở nguội —

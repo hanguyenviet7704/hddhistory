@@ -127,7 +127,7 @@ const VoucherSharedFields: React.FC<VoucherSharedFieldsProps> = ({
         <p className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
           <InformationCircleIcon className="h-4 w-4 flex-shrink-0" />
           Các giới hạn này giờ do hệ thống affiliate (voucher.eup.ai) quản lý,
-          Meup không còn enforce trực tiếp - trường bên dưới chỉ để đối chiếu.
+          HDDhistory không còn enforce trực tiếp - trường bên dưới chỉ để đối chiếu.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="flex flex-col gap-1 text-sm text-slate-700">

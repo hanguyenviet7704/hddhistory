@@ -48,7 +48,7 @@ const AIConfigEditor: React.FC<AIConfigEditorProps> = ({ value, onChange }) => {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       rows={8}
-      className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-y"
+      className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition resize-y"
       placeholder="Enter AI config..."
     />
   );
@@ -494,7 +494,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       ),
                     }))
                   }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   placeholder="Output title..."
                 />
               </div>
@@ -516,7 +516,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                     }))
                   }
                   rows={4}
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition resize-none"
                   placeholder="Short description..."
                 />
               </div>
@@ -533,7 +533,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       setEstimateCompleTimeUnit(nextUnit);
                       applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
                     }}
-                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   >
                     <option value="minute">
                       {getEstimateCompleteTimeUnitLabel(
@@ -556,7 +556,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       setEstimateCompleTimeInput(nextAmount);
                       applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
                     }}
-                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Enter number..."
                   />
                 </div>
@@ -593,7 +593,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         setIconQuery("");
                       }, 150);
                     }}
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search icon..."
                   />
 
@@ -683,7 +683,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         setLightIconQuery("");
                       }, 150);
                     }}
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search light icon..."
                   />
 
@@ -765,7 +765,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         setAnimationQuery("");
                       }, 150);
                     }}
-                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                     placeholder="Search animation..."
                   />
 
@@ -830,7 +830,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         status: e.target.value as LessonStatus,
                       }))
                     }
-                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   >
                     {Object.values(LessonStatus).map((status) => (
                       <option key={status} value={status}>
@@ -869,7 +869,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setCourseQuery(e.target.value)
                         }
-                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                         placeholder="Search course..."
                       />
 
@@ -884,7 +884,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                             <Combobox.Option
                               key={course._id}
                               value={course._id}
-                              className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                              className="cursor-pointer px-3 py-3 hover:bg-brand-50"
                             >
                               {getTranslationValue(course.title, lang)}
                             </Combobox.Option>
@@ -902,7 +902,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                     saving
                       ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                      : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                   }`}
                 >
                   {saving

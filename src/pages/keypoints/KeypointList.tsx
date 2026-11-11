@@ -164,7 +164,7 @@ const KeypointList: React.FC = () => {
             placeholder="Search keypoint..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-3 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border rounded-lg px-3 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
 
           <button
@@ -187,7 +187,7 @@ const KeypointList: React.FC = () => {
               setSelected(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+            className="flex items-center bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg transition"
           >
             <PlusIcon className="w-4 h-4 mr-2" />
             New Keypoint
@@ -258,7 +258,7 @@ const KeypointList: React.FC = () => {
                       {kp.tag.map((t, index) => (
                         <span
                           key={index}
-                          className="inline-block px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full"
+                          className="inline-block px-3 py-1 text-xs font-medium bg-gradient-to-r from-brand-100 to-bronze-100 text-brand-800 rounded-full"
                         >
                           {t}
                         </span>
@@ -281,13 +281,13 @@ const KeypointList: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <button
-                  className="p-2.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 group"
+                  className="p-2.5 bg-brand-50 rounded-lg hover:bg-brand-100 transition-all duration-200 group"
                   onClick={() => {
                     setSelected(kp);
                     setIsModalOpen(true);
                   }}
                 >
-                  <PencilIcon className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
+                  <PencilIcon className="w-5 h-5 text-brand-600 group-hover:text-brand-700" />
                 </button>
                 <button
                   className="p-2.5 bg-red-50 rounded-lg hover:bg-red-100 transition-all duration-200 group"
@@ -303,23 +303,23 @@ const KeypointList: React.FC = () => {
         {/* Loading indicator for initial load */}
         {loading && keypoints.length === 0 && (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-brand-200 border-t-brand-600"></div>
           </div>
         )}
 
         {/* Loading more indicator */}
         {loadingMore && (
           <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-brand-200 border-t-brand-600"></div>
           </div>
         )}
 
         {/* Nếu không có dữ liệu */}
         {keypoints.length === 0 && !loading && (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand-100 to-bronze-100 rounded-full mb-4">
               <svg
-                className="h-8 w-8 text-blue-500"
+                className="h-8 w-8 text-brand-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

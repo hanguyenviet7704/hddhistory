@@ -113,7 +113,7 @@ const AvatarManagement: React.FC = () => {
           <h2 className="text-lg font-semibold">Avatars</h2>
           <div className="flex gap-2">
             <button
-              className="flex items-center gap-2 text-sm px-3 py-2 bg-blue-600 text-white rounded-lg"
+              className="flex items-center gap-2 text-sm px-3 py-2 bg-brand-600 text-white rounded-lg"
               onClick={() => {
                 resetForm();
                 setShowForm((prev) => !prev);
@@ -133,7 +133,7 @@ const AvatarManagement: React.FC = () => {
                   Name
                 </label>
                 <input
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-500"
                   placeholder="Enter avatar name"
                   value={form.name}
                   onChange={(e) =>
@@ -157,7 +157,7 @@ const AvatarManagement: React.FC = () => {
 
             <div className="flex gap-2">
               <button
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg disabled:opacity-60"
                 onClick={handleSave}
                 disabled={saving}
               >

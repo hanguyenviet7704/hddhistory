@@ -84,7 +84,7 @@ const buildCloudflareDownloadUrl = (value: string): string => {
     return value;
   }
 
-  const apiBase = (process.env.REACT_APP_BACKEND_AI_TUTOR || "").replace(
+  const apiBase = (process.env.REACT_APP_BACKEND_URL || "").replace(
     /\/+$/,
     ""
   );

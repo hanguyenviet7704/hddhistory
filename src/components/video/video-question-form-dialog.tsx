@@ -208,7 +208,7 @@ export default function VideoQuestionFormDialog({
               handleDataChange(index, "content", event.target.value)
             }
             rows={3}
-            className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
             placeholder={`Enter ${label.toLowerCase()}`}
           />
         );
@@ -221,7 +221,7 @@ export default function VideoQuestionFormDialog({
           onChange={(event) =>
             handleDataChange(index, "content", event.target.value)
           }
-          className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
           placeholder={`Enter ${label.toLowerCase()}`}
         />
       );
@@ -488,7 +488,7 @@ export default function VideoQuestionFormDialog({
             onChange={(event) =>
               handleGroupDataChange(groupIndex, docIndex, "content", event.target.value)
             }
-            className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
             placeholder={`Enter ${label.toLowerCase()}`}
           />
         );
@@ -501,7 +501,7 @@ export default function VideoQuestionFormDialog({
           onChange={(event) =>
             handleGroupDataChange(groupIndex, docIndex, "content", event.target.value)
           }
-          className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
           placeholder={`Enter ${label.toLowerCase()}`}
         />
       );
@@ -623,7 +623,7 @@ export default function VideoQuestionFormDialog({
               list="video-question-time-options"
               value={atSecondInput}
               onChange={(event) => setAtSecondInput(event.target.value)}
-              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="0:30 or 90"
             />
             <datalist id="video-question-time-options">
@@ -660,7 +660,7 @@ export default function VideoQuestionFormDialog({
                     onChange={(event) =>
                       handleDocumentChange(index, "type", event.target.value as DocumentType)
                     }
-                    className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     <option value={DocumentType.TITLE}>Title</option>
                     <option value={DocumentType.CAPTION}>Caption</option>
@@ -702,7 +702,7 @@ export default function VideoQuestionFormDialog({
                   ),
                 )
               }
-              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="Enter explanation"
             />
           </div>
@@ -722,7 +722,7 @@ export default function VideoQuestionFormDialog({
                       onChange={(event) =>
                         updateOptionValue(idx, event.target.value)
                       }
-                      className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder={`Option ${idx + 1}`}
                     />
                     <label className="flex items-center gap-1 text-sm">
@@ -779,7 +779,7 @@ export default function VideoQuestionFormDialog({
                         onChange={(event) =>
                           updateOptionValue(idx, event.target.value)
                         }
-                        className="rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder={`Option ${idx + 1}`}
                       />
                       <input
@@ -789,7 +789,7 @@ export default function VideoQuestionFormDialog({
                         onChange={(event) =>
                           updateOptionDocumentGroupId(idx, event.target.value)
                         }
-                        className="rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder="Document group ID"
                       />
                       <div className="flex justify-end">
@@ -819,7 +819,7 @@ export default function VideoQuestionFormDialog({
                   <h3 className="font-medium text-gray-800">Document Groups</h3>
                   <button
                     type="button"
-                    className="text-blue-600 hover:text-blue-700"
+                    className="text-brand-600 hover:text-brand-700"
                     onClick={addDocumentGroup}
                   >
                     <PlusCircleIcon className="h-6 w-6" />
@@ -839,7 +839,7 @@ export default function VideoQuestionFormDialog({
                           onChange={(event) =>
                             updateDocumentGroupId(groupIndex, event.target.value)
                           }
-                          className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                           placeholder="Group ID"
                         />
                         <button
@@ -882,7 +882,7 @@ export default function VideoQuestionFormDialog({
                                   event.target.value as DocumentType,
                                 )
                               }
-                              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                             >
                               <option value={DocumentType.TITLE}>Title</option>
                               <option value={DocumentType.CAPTION}>Caption</option>
@@ -921,7 +921,7 @@ export default function VideoQuestionFormDialog({
                 <select
                   value={localFormData.form || FormDragDropType.TextGapFilling}
                   onChange={(event) => handleChange("form", event.target.value)}
-                  className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 >
                   <option value={FormDragDropType.TextGapFilling}>
                     Text Gap Filling
@@ -955,7 +955,7 @@ export default function VideoQuestionFormDialog({
                       ),
                     )
                   }
-                  className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   placeholder="Enter target area"
                 />
               </div>
@@ -973,7 +973,7 @@ export default function VideoQuestionFormDialog({
                         onChange={(event) =>
                           updateAnswerValue(index, event.target.value)
                         }
-                        className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder={`Answer ${index + 1}`}
                       />
                       <button
@@ -1009,7 +1009,7 @@ export default function VideoQuestionFormDialog({
                         onChange={(event) =>
                           updateOptionValue(index, event.target.value)
                         }
-                        className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="flex-1 rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder={`Option ${index + 1}`}
                       />
                       <button
@@ -1047,7 +1047,7 @@ export default function VideoQuestionFormDialog({
                     onChange={(event) =>
                       handleChange("maxDuration", Number(event.target.value))
                     }
-                    className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
                 <div>
@@ -1060,7 +1060,7 @@ export default function VideoQuestionFormDialog({
                     onChange={(event) =>
                       handleChange("maxCharacter", Number(event.target.value))
                     }
-                    className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
               </div>
@@ -1106,7 +1106,7 @@ export default function VideoQuestionFormDialog({
                           };
                           handleChange("scoringCriteria", next);
                         }}
-                        className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder="Criterion"
                       />
                       <input
@@ -1123,7 +1123,7 @@ export default function VideoQuestionFormDialog({
                           };
                           handleChange("scoringCriteria", next);
                         }}
-                        className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
                         placeholder="Max score"
                       />
                       <div className="flex justify-end">
@@ -1184,7 +1184,7 @@ export default function VideoQuestionFormDialog({
               onChange={(event) =>
                 handleChange("maxScore", Number(event.target.value))
               }
-              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
         </div>
@@ -1199,7 +1199,7 @@ export default function VideoQuestionFormDialog({
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleSave}
                 disabled={saving}
               >

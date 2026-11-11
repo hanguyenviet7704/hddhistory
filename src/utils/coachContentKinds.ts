@@ -25,7 +25,7 @@ export const KIND_META: Record<
   problem_statement: {
     label: "Vấn đề thật",
     hint: "User tự gọi tên vấn đề của mình, sau bản nháp hai cột",
-    color: "bg-indigo-50 text-indigo-800 border-indigo-200",
+    color: "bg-bronze-50 text-bronze-800 border-bronze-200",
   },
   barrier: {
     label: "Rào cản",
@@ -95,7 +95,7 @@ export const dateInput = (daysAgo = 0) => {
  * Câu hỏi cố định Coach hỏi ngay trước mỗi loại, để dựng lại phía Coach cho
  * những phiên đã hết hạn lưu.
  *
- * Chép nguyên văn từ `meup-flutter/assets/i18n/vi/coach.yaml` — API chỉ giữ
+ * Chép nguyên văn từ `hddhistory-flutter/assets/i18n/vi/coach.yaml` — API chỉ giữ
  * KEY của mấy câu này, câu chữ do client render. Đây là tái dựng chứ không
  * phải bản ghi: nó đúng ở chỗ "bước này Coach luôn hỏi câu này", không đúng ở
  * chỗ "hôm đó Coach đã nói đúng từng chữ này" — nên chỗ nào dùng nó cũng phải

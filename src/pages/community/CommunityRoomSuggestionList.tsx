@@ -258,7 +258,7 @@ const CommunityRoomSuggestionList: React.FC = () => {
                       color={STATUS_COLOR[suggestion.status]}
                     />
                     {suggestion.topicId && (
-                      <div className="mt-1 flex items-center justify-end gap-1 text-xs text-indigo-600">
+                      <div className="mt-1 flex items-center justify-end gap-1 text-xs text-bronze-600">
                         <ExternalLinkIcon size={12} />
                         {topicNameById.get(suggestion.topicId) ??
                           suggestion.topicId}

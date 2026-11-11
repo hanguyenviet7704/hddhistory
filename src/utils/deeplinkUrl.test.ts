@@ -13,7 +13,7 @@ describe("buildDeeplinkUrl", () => {
 
   it("dựng link trong app cùng một khoá", () => {
     expect(buildDeeplinkUrl(DEEPLINK_APP_BASE, "habit", {})).toBe(
-      "meup://open/habit"
+      "hddhistory://open/habit"
     );
   });
 
@@ -48,7 +48,7 @@ describe("buildDeeplinkUrl", () => {
     );
   });
 
-  it("KHÔNG gắn UTM vào link meup:// — người dùng đã ở trong app, không có kênh nào để quy", () => {
+  it("KHÔNG gắn UTM vào link hddhistory:// — người dùng đã ở trong app, không có kênh nào để quy", () => {
     expect(
       buildDeeplinkUrl(
         DEEPLINK_APP_BASE,
@@ -56,7 +56,7 @@ describe("buildDeeplinkUrl", () => {
         { variant: "full" },
         { source: "zalo", campaign: "tet-2027" }
       )
-    ).toBe("meup://open/paywall?variant=full");
+    ).toBe("hddhistory://open/paywall?variant=full");
   });
 
   it("bỏ UTM rỗng", () => {

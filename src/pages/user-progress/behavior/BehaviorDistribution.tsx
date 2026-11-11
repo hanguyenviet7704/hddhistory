@@ -29,7 +29,7 @@ const CountTable = ({
               </span>
               <span className="h-1.5 w-24 rounded-full bg-gray-100">
                 <span
-                  className="block h-1.5 rounded-full bg-blue-500"
+                  className="block h-1.5 rounded-full bg-brand-500"
                   style={{ width: `${max ? (row.count / max) * 100 : 0}%` }}
                 />
               </span>

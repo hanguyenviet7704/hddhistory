@@ -120,7 +120,7 @@ export default function ReportList() {
       case "DIFFERENT_FROM_PREVIEW":
         return "bg-amber-100 text-amber-700 border-amber-200";
       case "CONFUSING_EXPLANATION":
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-brand-100 text-brand-700 border-brand-200";
       case "TRANSLATION_ERROR":
         return "bg-purple-100 text-purple-700 border-purple-200";
       case "HARD_TO_READ":
@@ -152,7 +152,7 @@ export default function ReportList() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search comments..."
-                className="border rounded-lg pl-10 pr-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"
+                className="border rounded-lg pl-10 pr-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm bg-white"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <svg
@@ -187,7 +187,7 @@ export default function ReportList() {
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           {loading && items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-3"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500 mb-3"></div>
               <p className="text-gray-500 text-sm">Loading reports...</p>
             </div>
           ) : items.length === 0 ? (
@@ -258,7 +258,7 @@ export default function ReportList() {
                           </Tooltip>
                           {keypointName && (
                             <Tooltip title={keypointName} arrow placement="top">
-                              <p className="text-xs text-indigo-500 mt-0.5 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                              <p className="text-xs text-bronze-500 mt-0.5 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                                 🔑 {keypointName}
                               </p>
                             </Tooltip>

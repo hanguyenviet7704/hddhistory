@@ -78,7 +78,7 @@ type OnboardingArrayField =
   | "intro"
   | "age"
   | "gender"
-  | "skillsetWantToMaster"
+  | "categoryWantToMaster"
   | "learningGoal"
   | "learningStruggles"
   | "comfortableLearningTime"
@@ -1236,7 +1236,7 @@ const OnboardingManagement: React.FC = () => {
     intro: 1,
     age: 1,
     gender: 1,
-    skillsetWantToMaster: 1,
+    categoryWantToMaster: 1,
     learningGoal: 1,
     learningStruggles: 1,
     comfortableLearningTime: 1,
@@ -1273,7 +1273,7 @@ const OnboardingManagement: React.FC = () => {
       "intro",
       "age",
       "gender",
-      "skillsetWantToMaster",
+      "categoryWantToMaster",
       "learningGoal",
       "learningStruggles",
       "comfortableLearningTime",
@@ -1390,8 +1390,8 @@ const OnboardingManagement: React.FC = () => {
         intro: buildIntroPayload(onboarding.intro || []),
         age: buildLabelPayload(onboarding.age || [], false),
         gender: buildLabelPayload(onboarding.gender || [], false),
-        skillsetWantToMaster: buildLabelPayload(
-          onboarding.skillsetWantToMaster || [],
+        categoryWantToMaster: buildLabelPayload(
+          onboarding.categoryWantToMaster || [],
           false,
         ),
         learningGoal: buildLabelPayload(onboarding.learningGoal || [], false),
@@ -2166,12 +2166,12 @@ const OnboardingManagement: React.FC = () => {
                 }}
               >
                 <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                  Skillset to Master
+                  Category to Master
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Edit />}
-                  onClick={() => handleEdit("skillsetWantToMaster")}
+                  onClick={() => handleEdit("categoryWantToMaster")}
                   sx={{
                     transition: "all 0.3s ease",
                     "&:hover": { bgcolor: "primary.main", color: "white" },
@@ -2181,7 +2181,7 @@ const OnboardingManagement: React.FC = () => {
                 </Button>
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {onboarding.skillsetWantToMaster.map((item) =>
+                {onboarding.categoryWantToMaster.map((item) =>
                   renderChipWithIcon(item),
                 )}
               </Box>
@@ -2591,8 +2591,8 @@ const OnboardingManagement: React.FC = () => {
               {activeTab === "intro" && "Edit Introduction Steps"}
               {activeTab === "age" && "Edit Age Options"}
               {activeTab === "gender" && "Edit Gender Options"}
-              {activeTab === "skillsetWantToMaster" &&
-                "Edit Skillset to Master"}
+              {activeTab === "categoryWantToMaster" &&
+                "Edit Category to Master"}
               {activeTab === "learningGoal" && "Edit Learning Goals"}
               {activeTab === "learningStruggles" && "Edit Learning Struggles"}
               {activeTab === "comfortableLearningTime" && "Edit Learning Times"}
@@ -2615,8 +2615,8 @@ const OnboardingManagement: React.FC = () => {
           {activeTab === "age" && renderLabelsTab("age", "Age Options")}
           {activeTab === "gender" &&
             renderLabelsTab("gender", "Gender Options")}
-          {activeTab === "skillsetWantToMaster" &&
-            renderLabelsTab("skillsetWantToMaster", "Skillset to Master")}
+          {activeTab === "categoryWantToMaster" &&
+            renderLabelsTab("categoryWantToMaster", "Category to Master")}
           {activeTab === "learningGoal" &&
             renderLabelsTab("learningGoal", "Learning Goals")}
           {activeTab === "learningStruggles" &&

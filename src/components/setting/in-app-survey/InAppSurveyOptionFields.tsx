@@ -65,12 +65,12 @@ const SortableOptionRow = ({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`grid grid-cols-1 gap-4 rounded-xl border bg-slate-50/70 p-4 md:grid-cols-[auto_160px_1fr_auto] ${
-        isDragging ? "border-indigo-300 shadow-md" : "border-slate-200"
+        isDragging ? "border-bronze-300 shadow-md" : "border-slate-200"
       }`}
     >
       <button
         type="button"
-        className="self-center rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-indigo-50 hover:text-indigo-600"
+        className="self-center rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-bronze-50 hover:text-bronze-600"
         {...attributes}
         {...listeners}
       >
@@ -148,7 +148,7 @@ const InAppSurveyOptionFields = ({
               event.target.value as InAppSurveyClosedQuestionType
             )
           }
-          className="min-w-[170px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          className="min-w-[170px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-bronze-400 focus:ring-2 focus:ring-bronze-100"
         >
           <option value={InAppSurveyClosedQuestionType.MULTIPLE_CHOICE}>
             Multiple choice
@@ -188,7 +188,7 @@ const InAppSurveyOptionFields = ({
         <button
           type="button"
           onClick={onAdd}
-          className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+          className="rounded-full bg-bronze-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-bronze-700"
         >
           Add Option
         </button>

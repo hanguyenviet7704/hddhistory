@@ -127,7 +127,7 @@ const AudioGaps: React.FC<{
         <button
           onClick={onDub}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-bronze-700 disabled:opacity-60"
         >
           <Volume2Icon className={`h-4 w-4 ${busy ? "animate-pulse" : ""}`} />
           {busy ? "Đang ghi…" : "Ghi bù phần thiếu"}
@@ -164,7 +164,7 @@ const AudioGaps: React.FC<{
  * nên nếu không thấy danh sách này thì đánh tag để lấy audio mới sẽ phát hành
  * luôn mấy chỗ sửa chữ còn dở.
  *
- * Xem `meup-api/plans/260907-course-content-versions/README.md`.
+ * Xem `hddhistory-api/plans/260907-course-content-versions/README.md`.
  */
 const CourseVersionsModal: React.FC<Props> = ({
   open,
@@ -329,7 +329,7 @@ const CourseVersionsModal: React.FC<Props> = ({
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <TagIcon className="h-5 w-5 text-indigo-600" />
+              <TagIcon className="h-5 w-5 text-bronze-600" />
               Phiên bản nội dung
             </h2>
             <p className="text-sm text-gray-500 truncate max-w-lg">{courseTitle}</p>
@@ -424,7 +424,7 @@ const CourseVersionsModal: React.FC<Props> = ({
               <button
                 onClick={createTag}
                 disabled={busy || !(tag ?? "").trim()}
-                className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60"
+                className="rounded-lg bg-gradient-to-r from-brand-600 to-bronze-600 px-4 py-2 text-sm font-medium text-white transition hover:from-brand-700 hover:to-bronze-700 disabled:opacity-60"
               >
                 Đánh tag
               </button>
@@ -498,7 +498,7 @@ const CourseVersionsModal: React.FC<Props> = ({
                             <button
                               onClick={() => publish(version.tag)}
                               disabled={busy}
-                              className="rounded-lg border border-indigo-500 px-3 py-2 text-xs font-medium text-indigo-600 transition hover:bg-indigo-50 disabled:opacity-60"
+                              className="rounded-lg border border-bronze-500 px-3 py-2 text-xs font-medium text-bronze-600 transition hover:bg-bronze-50 disabled:opacity-60"
                             >
                               Đặt làm current
                             </button>

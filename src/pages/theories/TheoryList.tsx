@@ -212,7 +212,7 @@ const TheoryList: React.FC = () => {
             <Combobox value={selectedKeypoint} onChange={setSelectedKeypoint}>
               <div className="relative">
                 <Combobox.Input
-                  className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   placeholder="Search keypoint..."
                   displayValue={(keypoint: IKeypoint) =>
                     getTranslationValue(keypoint?.title, lang)
@@ -244,7 +244,7 @@ const TheoryList: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search theories..."
-                className="border rounded-lg pl-10 pr-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border rounded-lg pl-10 pr-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <svg
@@ -281,7 +281,7 @@ const TheoryList: React.FC = () => {
 
             <button
               onClick={() => navigate("/theory/create")}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white px-4 py-2 rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               <span>New Theory</span>
@@ -300,7 +300,7 @@ const TheoryList: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {loading && theories.length === 0 ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
           </div>
         ) : theories.length === 0 ? (
           <div className="py-20 text-center">
@@ -336,7 +336,7 @@ const TheoryList: React.FC = () => {
                     type="checkbox"
                     checked={allVisibleSelected}
                     onChange={toggleAllVisibleTheories}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                   />
                   Select all visible theories
                 </label>
@@ -423,9 +423,9 @@ const TheoryList: React.FC = () => {
                       {/* Content */}
                       <div className="relative p-5 flex flex-col flex-grow">
                         <div className="flex items-center mb-4">
-                          <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
+                          <div className="flex-shrink-0 bg-bronze-100 rounded-md p-3">
                             <svg
-                              className="h-6 w-6 text-indigo-600"
+                              className="h-6 w-6 text-bronze-600"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -451,7 +451,7 @@ const TheoryList: React.FC = () => {
                           {theory.tag.map((tag, index) => (
                             <span
                               key={index}
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-bronze-100 text-bronze-800"
                             >
                               {tag}
                             </span>
@@ -477,7 +477,7 @@ const TheoryList: React.FC = () => {
             {/* Loading more indicator */}
             {loadingMore && (
               <div className="flex justify-center mt-6">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-500"></div>
               </div>
             )}
 

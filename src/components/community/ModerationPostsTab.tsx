@@ -200,7 +200,7 @@ const ModerationPostsTab: React.FC = () => {
           ))}
         </TextField>
         {author && (
-          <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-3 py-1.5 text-xs text-indigo-700">
+          <div className="flex items-center gap-2 rounded-md bg-bronze-50 px-3 py-1.5 text-xs text-bronze-700">
             Chỉ bài của <strong>{author.name}</strong>
             <Button size="small" onClick={() => setAuthor(null)}>
               Bỏ lọc

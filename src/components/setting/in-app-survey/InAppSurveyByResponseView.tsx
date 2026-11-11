@@ -91,7 +91,7 @@ const InAppSurveyByResponseView = ({ data, lang, onViewBranch }: Props) => {
             </span>
             <ProgressBar
               percent={item.percent}
-              className={ratingColors[index] || "bg-indigo-600"}
+              className={ratingColors[index] || "bg-bronze-600"}
             />
             <span className="text-right text-sm text-slate-500">
               <b className="text-slate-900">{formatNumber(item.count)}</b> ·{" "}
@@ -161,7 +161,7 @@ const BranchSummaryCard = ({
                   {formatNumber(item.count)} · {item.percent}%
                 </span>
               </div>
-              <ProgressBar percent={item.percent} className="bg-indigo-600" />
+              <ProgressBar percent={item.percent} className="bg-bronze-600" />
             </div>
           ))}
         </div>
@@ -185,7 +185,7 @@ const BranchSummaryCard = ({
         <button
           type="button"
           onClick={() => onViewBranch(branch)}
-          className="mt-4 text-sm font-semibold text-indigo-600"
+          className="mt-4 text-sm font-semibold text-bronze-600"
         >
           View all {formatNumber(branch.count)} responses →
         </button>

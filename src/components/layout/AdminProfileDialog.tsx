@@ -27,7 +27,7 @@ interface Props {
  * cũng không có trang quản lý Users, nên muốn đổi tên hiển thị thì phải vào
  * thẳng database.
  *
- * Đây KHÔNG phải "Đội ngũ MeUp" (trang riêng trong sidebar). Trang kia là danh
+ * Đây KHÔNG phải "Đội ngũ HDDhistory" (trang riêng trong sidebar). Trang kia là danh
  * tính chung của đội khi đăng bài/trả lời với tư cách team; chỗ này là tên của
  * riêng tài khoản này — thứ hiện lên khi bạn nói với tư cách chính mình.
  */
@@ -178,7 +178,7 @@ const AdminProfileDialog: React.FC<Props> = ({ open, onClose }) => {
               fullWidth
               value={name}
               onChange={(event) => setName(event.target.value)}
-              helperText="Tên này hiện ở MỌI nơi tài khoản xuất hiện — bình luận và tin nhắn bạn viết bằng tài khoản của mình, và cả hàng đợi kiểm duyệt. Muốn nói với tư cách đội ngũ thì dùng ô “với tư cách MeUp”, đừng đổi tên ở đây."
+              helperText="Tên này hiện ở MỌI nơi tài khoản xuất hiện — bình luận và tin nhắn bạn viết bằng tài khoản của mình, và cả hàng đợi kiểm duyệt. Muốn nói với tư cách đội ngũ thì dùng ô “với tư cách HDDhistory”, đừng đổi tên ở đây."
             />
 
             <TextField

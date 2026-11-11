@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# Build image cho meup-admin (CRA + nginx).
+# Build image cho hddhistory-admin (CRA + nginx).
 #
 # Vì sao chậm và đã tối ưu ở đâu:
 #   1. `npm ci` chỉ chạy lại khi package-lock.json đổi (COPY manifest trước source).
@@ -14,7 +14,7 @@
 #      hay ở load > 4 và ít RAM; nới heap ceiling làm V8 hoãn GC rồi tràn vào
 #      swap -> build bò, chậm hơn là nhanh hơn. Để Node tự chọn theo RAM thấy được.
 #
-# Build cục bộ:  DOCKER_BUILDKIT=1 docker build -t meup-admin .
+# Build cục bộ:  DOCKER_BUILDKIT=1 docker build -t hddhistory-admin .
 
 # --- STAGE 1: build ---
 FROM node:20-alpine AS builder

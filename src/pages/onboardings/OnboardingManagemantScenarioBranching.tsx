@@ -546,18 +546,18 @@ const iconButtonClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50";
 
 const iconButtonAddClass =
-  "inline-flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-600 shadow-sm transition hover:border-blue-300 hover:bg-blue-100";
+  "inline-flex h-8 w-8 items-center justify-center rounded-full border border-brand-200 bg-brand-50 text-brand-600 shadow-sm transition hover:border-brand-300 hover:bg-brand-100";
 
 const iconButtonDangerClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-rose-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50";
 
 const toneClasses: Record<"blue" | "emerald" | "amber", string> = {
-  blue: "text-blue-600",
+  blue: "text-brand-600",
   emerald: "text-emerald-600",
   amber: "text-amber-600",
 };
 
-const summaryLabelMainClass = "text-blue-500";
+const summaryLabelMainClass = "text-brand-500";
 const summaryLabelSubClass = "text-green-500";
 
 const TextWithTooltip = ({
@@ -635,7 +635,7 @@ const ConfirmDialog = ({
   if (!open) return null;
   const confirmClass =
     confirmTone === "primary"
-      ? "bg-blue-600 hover:bg-blue-700"
+      ? "bg-brand-600 hover:bg-brand-700"
       : "bg-red-600 hover:bg-red-700";
   return (
     <AnimatePresence>
@@ -761,7 +761,7 @@ const LabelTranslationInput = ({
   const toolbarBtn = (active: boolean) =>
     `inline-flex h-7 min-w-7 items-center justify-center rounded-md border px-2 text-xs font-semibold shadow-sm transition ${
       active
-        ? "border-blue-300 bg-blue-100 text-blue-700"
+        ? "border-brand-300 bg-brand-100 text-brand-700"
         : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
     }`;
 
@@ -1406,7 +1406,7 @@ export default function OnboardingManagemantScenarioBranching() {
                         setSelectedSceneId(option.nextSceneId);
                       }
                     }}
-                    className="text-blue-600 underline decoration-dashed underline-offset-2 hover:text-blue-700"
+                    className="text-brand-600 underline decoration-dashed underline-offset-2 hover:text-brand-700"
                     title={`Go to ${option.nextSceneId}`}
                   >
                     {option.nextSceneId}
@@ -1446,7 +1446,7 @@ export default function OnboardingManagemantScenarioBranching() {
           }}
           className={`rounded-2xl border px-4 py-3 text-left transition-all duration-200 ${
             isActive
-              ? "border-blue-300 bg-blue-50 text-slate-900 shadow-sm"
+              ? "border-brand-300 bg-brand-50 text-slate-900 shadow-sm"
               : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:shadow-sm"
           }`}
         >
@@ -1459,8 +1459,8 @@ export default function OnboardingManagemantScenarioBranching() {
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                     isActive
-                      ? "bg-blue-200 text-blue-800"
-                      : "bg-blue-50 text-blue-700"
+                      ? "bg-brand-200 text-brand-800"
+                      : "bg-brand-50 text-brand-700"
                   }`}
                 >
                   Entry
@@ -2439,7 +2439,7 @@ export default function OnboardingManagemantScenarioBranching() {
             }
           />
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">
               Options
             </p>
           </div>
@@ -2524,7 +2524,7 @@ export default function OnboardingManagemantScenarioBranching() {
                 className={`flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow transition ${
                   isSaving || isLoading
                     ? "cursor-not-allowed bg-gray-400"
-                    : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                    : "bg-gradient-to-r from-brand-600 to-green-500 hover:opacity-90"
                 }`}
               >
                 {isSaving ? "Saving..." : "Save Onboarding"}
@@ -2590,7 +2590,7 @@ export default function OnboardingManagemantScenarioBranching() {
                             sceneId: selectedScene.id,
                           });
                         }}
-                        className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700"
+                        className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-700"
                       >
                         Set Entry
                       </button>
@@ -3286,10 +3286,10 @@ export default function OnboardingManagemantScenarioBranching() {
                   onClick={() =>
                     handleSelectContentType(OnboardingContentType.FACT)
                   }
-                  className="flex flex-col items-center gap-2 rounded-lg bg-blue-50 p-4 transition hover:bg-blue-100"
+                  className="flex flex-col items-center gap-2 rounded-lg bg-brand-50 p-4 transition hover:bg-brand-100"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                    <span className="font-bold text-blue-600">F</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100">
+                    <span className="font-bold text-brand-600">F</span>
                   </div>
                   <span className="font-medium">Fact</span>
                 </button>
@@ -3451,7 +3451,7 @@ export default function OnboardingManagemantScenarioBranching() {
                   type="button"
                   onClick={handleSubmitContentModal}
                   disabled={isSaving}
-                  className="rounded-full border border-blue-600 bg-blue-600 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                  className="rounded-full border border-brand-600 bg-brand-600 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-50"
                 >
                   {contentModal?.mode === "create" ? "Create" : "Update"}
                 </button>

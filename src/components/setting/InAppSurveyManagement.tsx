@@ -81,7 +81,7 @@ const InAppSurveyManagement = () => {
               onClick={() => setActiveTab(tab.key)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 activeTab === tab.key
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-bronze-600 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >

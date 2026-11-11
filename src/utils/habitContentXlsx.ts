@@ -34,7 +34,7 @@ export interface HabitRow {
   keypointTitleVi?: string;
   /**
    * The habit's own picture, absolute CDN url. Blank means the app falls back
-   * to the skillset logo.
+   * to the category logo.
    *
    * A habit repeats across every keypoint that suggests it, so the same url
    * repeats down the column. The server takes the first non-empty one it sees

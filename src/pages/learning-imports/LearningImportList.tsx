@@ -147,7 +147,7 @@ export default function LearningImportList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by filename, video title or URL…"
-              className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-bronze-500"
             />
           </div>
           <select
@@ -156,7 +156,7 @@ export default function LearningImportList() {
               setStatusFilter(e.target.value as StatusFilter);
               setPage(1);
             }}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-bronze-500"
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value || "all"} value={option.value}>
@@ -230,7 +230,7 @@ export default function LearningImportList() {
                     <td className="px-4 py-3 text-right">
                       <Link
                         to={`/learning-imports/${row.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-bronze-600 hover:text-bronze-800"
                       >
                         Detail
                         <ChevronRightIcon className="h-4 w-4" />

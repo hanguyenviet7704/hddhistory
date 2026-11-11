@@ -36,7 +36,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       case "error":
         return "bg-red-50 border-red-200 text-red-800";
       default:
-        return "bg-blue-50 border-blue-200 text-blue-800";
+        return "bg-brand-50 border-brand-200 text-brand-800";
     }
   };
 

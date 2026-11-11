@@ -18,8 +18,8 @@ import { COUNTRY_OPTIONS, countryLabel } from "../../config/countries";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
-import { ISkillset } from "../../types/interface/skillset.interface";
-import { skillsetService } from "../../services/skillsetService";
+import { ICategory } from "../../types/interface/category.interface";
+import { categoryService } from "../../services/categoryService";
 import { onboardingConfigService } from "../../services/onboardingConfigService";
 import { onboardingTaxonomyService } from "../../services/onboardingTaxonomyService";
 import {
@@ -100,14 +100,14 @@ export default function CourseModal({
   const [countries, setCountries] = useState<string[]>([]);
   const [countryQuery, setCountryQuery] = useState("");
 
-  // State cho Skillset
-  const [skillsetId, setSkillsetId] = useState("");
-  const [skillsetQuery, setSkillsetQuery] = useState("");
+  // State cho Category
+  const [categoryId, setCategoryId] = useState("");
+  const [categoryQuery, setCategoryQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
-  const [loadingSkillsets, setLoadingSkillsets] = useState(false);
-  const [showSkillsetDropdown, setShowSkillsetDropdown] = useState(false);
-  const [selectedSkillsetLabel, setSelectedSkillsetLabel] = useState("");
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState("");
 
   // Effect để reset form khi modal mở/đóng hoặc thay đổi initial
   useEffect(() => {
@@ -131,8 +131,8 @@ export default function CourseModal({
       setOnboardingDesireCodes(initial.onboardingDesireCodes ?? []);
       setCountries(initial.countries ?? []);
       setCountryQuery("");
-      setSkillsetId(initial.skillsetId ?? "");
-      setSelectedSkillsetLabel("");
+      setCategoryId(initial.categoryId ?? "");
+      setSelectedCategoryLabel("");
     } else {
       setTitleError("");
       setTitle({});
@@ -150,9 +150,9 @@ export default function CourseModal({
       setOnboardingDesireCodes([]);
       setCountries([]);
       setCountryQuery("");
-      setSkillsetId("");
-      setSkillsetQuery("");
-      setSelectedSkillsetLabel("");
+      setCategoryId("");
+      setCategoryQuery("");
+      setSelectedCategoryLabel("");
     }
 
     setDebouncedQuery("");
@@ -213,48 +213,48 @@ export default function CourseModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    if (!skillsetId) {
-      setSelectedSkillsetLabel("");
+    if (!categoryId) {
+      setSelectedCategoryLabel("");
       return;
     }
-    const selectedSkillset = skillsets.find((s) => s._id === skillsetId);
-    if (!selectedSkillset) return;
-    const label = getTranslationValue(selectedSkillset.title, lang);
-    setSelectedSkillsetLabel((prev) => (prev === label ? prev : label));
-  }, [skillsetId, skillsets, lang, isOpen]);
+    const selectedCategory = categories.find((s) => s._id === categoryId);
+    if (!selectedCategory) return;
+    const label = getTranslationValue(selectedCategory.title, lang);
+    setSelectedCategoryLabel((prev) => (prev === label ? prev : label));
+  }, [categoryId, categories, lang, isOpen]);
 
   // Effect để debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedQuery(skillsetQuery);
+      setDebouncedQuery(categoryQuery);
     }, 300); // Chờ 300ms sau khi người dùng ngừng gõ
 
     return () => {
       clearTimeout(timer); // Dọn dẹp timer cũ
     };
-  }, [skillsetQuery]);
+  }, [categoryQuery]);
 
   // Effect để gọi API khi debouncedQuery thay đổi hoặc modal mở
   useEffect(() => {
     if (isOpen) {
-      const fetchSkillsets = async () => {
-        setLoadingSkillsets(true);
+      const fetchCategories = async () => {
+        setLoadingCategories(true);
         try {
           // GỌI API THẬT TRỰC TIẾP
           // Giả sử hàm getlist nhận vào object { search: query }
-          const response = await skillsetService.getList({
+          const response = await categoryService.getList({
             search: debouncedQuery,
             isAll: true,
           });
-          setSkillsets(response.data.items || []); // Giả sử API trả về { data: [...] }
+          setCategories(response.data.items || []); // Giả sử API trả về { data: [...] }
         } catch (err) {
-          console.error("Failed to fetch skillsets:", err);
-          setSkillsets([]); // Xóa kết quả cũ nếu có lỗi
+          console.error("Failed to fetch categories:", err);
+          setCategories([]); // Xóa kết quả cũ nếu có lỗi
         } finally {
-          setLoadingSkillsets(false);
+          setLoadingCategories(false);
         }
       };
-      fetchSkillsets();
+      fetchCategories();
     }
   }, [debouncedQuery, isOpen]); // Chạy lại khi query hoặc trạng thái mở modal thay đổi
 
@@ -303,7 +303,7 @@ export default function CourseModal({
       image,
       status,
       prices: prices,
-      skillsetId, // Add skillsetId to payload
+      categoryId, // Add categoryId to payload
       onboardingSymptoms,
       onboardingLabelCodes,
       onboardingDesireCodes,
@@ -370,18 +370,18 @@ export default function CourseModal({
     );
   };
 
-  const handleSelectSkillset = (skillset: ISkillset) => {
-    setSkillsetId(skillset._id);
-    setSelectedSkillsetLabel(getTranslationValue(skillset.title, lang));
-    setSkillsetQuery("");
-    setShowSkillsetDropdown(false);
+  const handleSelectCategory = (category: ICategory) => {
+    setCategoryId(category._id);
+    setSelectedCategoryLabel(getTranslationValue(category.title, lang));
+    setCategoryQuery("");
+    setShowCategoryDropdown(false);
   };
 
-  const handleClearSkillset = () => {
-    setSkillsetId("");
-    setSkillsetQuery("");
-    setSelectedSkillsetLabel("");
-    setShowSkillsetDropdown(true);
+  const handleClearCategory = () => {
+    setCategoryId("");
+    setCategoryQuery("");
+    setSelectedCategoryLabel("");
+    setShowCategoryDropdown(true);
   };
 
   const formatOnboardingSymptomLabel = (value: OnboardingSymptom) =>
@@ -423,21 +423,21 @@ export default function CourseModal({
     );
   };
 
-  const handleSkillsetInputChange = (
+  const handleCategoryInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = e.target.value;
-    setSkillsetQuery(value);
+    setCategoryQuery(value);
 
-    // Nếu người dùng xóa hết nội dung, xóa cả skillsetId
+    // Nếu người dùng xóa hết nội dung, xóa cả categoryId
     if (!value.trim()) {
-      setSkillsetId("");
-      setSelectedSkillsetLabel("");
+      setCategoryId("");
+      setSelectedCategoryLabel("");
     }
 
     // Hiển thị dropdown khi người dùng bắt đầu gõ
-    if (!showSkillsetDropdown) {
-      setShowSkillsetDropdown(true);
+    if (!showCategoryDropdown) {
+      setShowCategoryDropdown(true);
     }
   };
 
@@ -505,7 +505,7 @@ export default function CourseModal({
                     setTitle((prev) => ({ ...prev, [lang]: e.target.value }));
                     setTitleError("");
                   }}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
                 />
               </div>
 
@@ -522,56 +522,56 @@ export default function CourseModal({
                       [lang]: e.target.value,
                     }))
                   }
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
                   rows={4}
                 />
               </div>
 
-              {/* Skillset Selection */}
+              {/* Category Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Skillset *
+                  Category *
                 </label>
                 <div className="relative">
                   <input
                     type="text"
-                    value={skillsetQuery || selectedSkillsetLabel}
-                    onChange={handleSkillsetInputChange}
-                    onFocus={() => setShowSkillsetDropdown(true)}
-                    placeholder="Search for a skillset..."
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    value={categoryQuery || selectedCategoryLabel}
+                    onChange={handleCategoryInputChange}
+                    onFocus={() => setShowCategoryDropdown(true)}
+                    placeholder="Search for a category..."
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
                     required
                   />
-                  {skillsetId && (
+                  {categoryId && (
                     <button
                       type="button"
-                      onClick={handleClearSkillset}
+                      onClick={handleClearCategory}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
                       <XMarkIcon className="h-5 w-5" />
                     </button>
                   )}
-                  {loadingSkillsets && !skillsetId && (
+                  {loadingCategories && !categoryId && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <ArrowPathIcon className="h-4 w-4 animate-spin text-gray-400" />
                     </div>
                   )}
 
-                  {showSkillsetDropdown && (
+                  {showCategoryDropdown && (
                     <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {skillsets.length === 0 && !loadingSkillsets ? (
+                      {categories.length === 0 && !loadingCategories ? (
                         <div className="p-3 text-gray-500 text-sm">
-                          No skillsets found
+                          No categories found
                         </div>
                       ) : (
-                        skillsets.map((skillset) => (
+                        categories.map((category) => (
                           <div
-                            key={skillset._id}
-                            onClick={() => handleSelectSkillset(skillset)}
+                            key={category._id}
+                            onClick={() => handleSelectCategory(category)}
                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm font-bold"
                           >
-                            {getTranslationValue(skillset.title, lang) ||
-                              "Unnamed Skillset"}
+                            {getTranslationValue(category.title, lang) ||
+                              "Unnamed Category"}
                           </div>
                         ))
                       )}
@@ -604,7 +604,7 @@ export default function CourseModal({
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as CourseStatus)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition appearance-none bg-white"
                   >
                     <option value={CourseStatus.PUBLISHED}>Published</option>
                     <option value={CourseStatus.DRAFT}>Draft</option>
@@ -638,7 +638,7 @@ export default function CourseModal({
                     type="datetime-local"
                     value={publishAt}
                     onChange={(e) => setPublishAt(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition bg-white"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     When this course should become available. Leave empty for no
@@ -654,7 +654,7 @@ export default function CourseModal({
                     value={newDurationDays}
                     onChange={(e) => setNewDurationDays(e.target.value)}
                     placeholder="e.g. 7"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition bg-white"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     After publishing, show the “New course” badge for this many
@@ -671,7 +671,7 @@ export default function CourseModal({
                     type="checkbox"
                     checked={isNew}
                     onChange={(e) => setIsNew(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                   />
                   <span>
                     <span className="block text-sm font-medium text-gray-700">
@@ -706,7 +706,7 @@ export default function CourseModal({
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                   placeholder="e.g. Sara Kim"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition bg-white"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Not translated — the same name shows in every language.
@@ -721,7 +721,7 @@ export default function CourseModal({
                   value={viewCount}
                   onChange={(e) => setViewCount(e.target.value)}
                   placeholder="e.g. 6300"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition bg-white"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Enter the raw number — the app shortens 6300 to “6.3k”. This is
@@ -747,7 +747,7 @@ export default function CourseModal({
                           onChange={() =>
                             handleToggleOnboardingSymptom(symptom)
                           }
-                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="mt-0.5 h-4 w-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
                         />
                         <span>
                           {symptomLabels[symptom] ??
@@ -897,13 +897,13 @@ export default function CourseModal({
                           value={countryQuery}
                           onChange={(e) => setCountryQuery(e.target.value)}
                           placeholder="Tìm nước hoặc mã (vd: Japan, JP)"
-                          className="flex-1 min-w-[10rem] px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          className="flex-1 min-w-[10rem] px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-brand-500 focus:border-brand-500"
                         />
                         <button
                           type="button"
                           disabled={visibleCodes.length === 0}
                           onClick={() => handleToggleAllCountries(visibleCodes)}
-                          className="text-sm font-medium text-blue-600 hover:text-blue-800 disabled:text-gray-300"
+                          className="text-sm font-medium text-brand-600 hover:text-brand-800 disabled:text-gray-300"
                         >
                           {allVisibleSelected ? "Bỏ chọn" : "Chọn tất cả"}
                           {query ? ` (${visibleCodes.length})` : ""}
@@ -928,7 +928,7 @@ export default function CourseModal({
                                   onChange={() =>
                                     handleToggleCountry(country.code)
                                   }
-                                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                  className="mt-0.5 h-4 w-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
                                 />
                                 <span>
                                   {country.name} ({country.code})
@@ -985,7 +985,7 @@ export default function CourseModal({
                   <button
                     type="button"
                     onClick={handleAddPrice}
-                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="flex items-center gap-1 text-brand-600 hover:text-brand-800 text-sm font-medium"
                   >
                     <PlusIcon className="w-4 h-4" /> Add Price
                   </button>
@@ -1035,7 +1035,7 @@ export default function CourseModal({
                                     e.target.value
                                   )
                                 }
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm focus:ring-1 focus:ring-brand-500 focus:border-brand-500 appearance-none bg-white"
                               >
                                 <option value="USD">USD</option>
                                 <option value="EUR">EUR</option>
@@ -1078,7 +1078,7 @@ export default function CourseModal({
                                     e.target.value
                                   )
                                 }
-                                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-1 focus:ring-brand-500 focus:border-brand-500"
                                 disabled={p.isFree}
                               />
                             </div>
@@ -1102,7 +1102,7 @@ export default function CourseModal({
                                     e.target.value
                                   )
                                 }
-                                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-1 focus:ring-brand-500 focus:border-brand-500"
                                 disabled={p.isFree}
                               />
                             </div>
@@ -1115,7 +1115,7 @@ export default function CourseModal({
                               onChange={(e) =>
                                 handlePriceChange(i, "isFree", e.target.checked)
                               }
-                              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              className="h-4 w-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
                             />
                             <label className="text-sm text-gray-700">
                               Free Course
@@ -1141,7 +1141,7 @@ export default function CourseModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2 disabled:opacity-70"
+                className="px-4 py-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all flex items-center gap-2 disabled:opacity-70"
               >
                 {loading ? (
                   <>

@@ -1,4 +1,4 @@
-// Result of a daily warm-up auto-tagging run. Mirrors the meup-api
+// Result of a daily warm-up auto-tagging run. Mirrors the hddhistory-api
 // DailyWarmUpTaggingResultDto returned by both the preview and apply endpoints.
 export interface DailyWarmUpTaggingResult {
   // Total lessons examined across the whole catalog.

@@ -9,9 +9,9 @@ import TaxonomyBranchCard, {
   LocalPackage,
 } from "../../components/onboarding-taxonomy/TaxonomyBranchCard";
 import { onboardingTaxonomyService } from "../../services/onboardingTaxonomyService";
-import { skillsetService } from "../../services/skillsetService";
+import { categoryService } from "../../services/categoryService";
 import type { OnboardingTaxonomyTree } from "../../types/interface/onboarding-taxonomy.interface";
-import type { ISkillset } from "../../types/interface/skillset.interface";
+import type { ICategory } from "../../types/interface/category.interface";
 import { downloadBlob } from "../../utils/downloadBlob";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { unwrapApi } from "../../utils/unwrapApi";
@@ -63,7 +63,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -85,17 +85,17 @@ const OnboardingTaxonomyPage: React.FC = () => {
   }, [load]);
 
   useEffect(() => {
-    // Danh sách skillset để gắn cho nhánh — số skillset nhỏ (≈6), tải một lần.
-    const loadSkillsets = async () => {
+    // Danh sách chủ đề để gắn cho nhánh — số chủ đề nhỏ (≈6), tải một lần.
+    const loadCategories = async () => {
       try {
-        const res: any = await skillsetService.getList({ isAll: true, take: 1000 } as any);
+        const res: any = await categoryService.getList({ isAll: true, take: 1000 } as any);
         const page = unwrapApi<any>(res);
-        setSkillsets(page?.items ?? []);
+        setCategories(page?.items ?? []);
       } catch {
-        setSkillsets([]);
+        setCategories([]);
       }
     };
-    loadSkillsets();
+    loadCategories();
   }, []);
 
   const dirty = JSON.stringify(tree) !== saved;
@@ -190,7 +190,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
             imageUrl: "",
             order: maxOrder + 1,
             isSelectable: true,
-            skillsetId: null,
+            categoryId: null,
             isActive: true,
             _localId: nextLocalId(),
           },
@@ -276,16 +276,16 @@ const OnboardingTaxonomyPage: React.FC = () => {
 
   const deleteLabel = (localId: string) => setTree((t) => ({ ...t, labels: t.labels.filter((l) => l._localId !== localId) }));
 
-  const skillsetPicker = (branch: LocalBranch) => (
+  const categoryPicker = (branch: LocalBranch) => (
     <Autocomplete
       size="small"
       sx={{ minWidth: 240 }}
-      options={skillsets}
+      options={categories}
       getOptionLabel={(s) => s.title?.vi || s.title?.en || s._id}
       isOptionEqualToValue={(a, b) => a._id === b._id}
-      value={skillsets.find((s) => s._id === branch.skillsetId) ?? null}
-      onChange={(_, s) => updateBranch(branch._localId, { ...branch, skillsetId: s?._id ?? null })}
-      renderInput={(params) => <TextField {...params} label="Skillset (để Home xếp theo nhánh)" />}
+      value={categories.find((s) => s._id === branch.categoryId) ?? null}
+      onChange={(_, s) => updateBranch(branch._localId, { ...branch, categoryId: s?._id ?? null })}
+      renderInput={(params) => <TextField {...params} label="Chủ đề (để Home xếp theo nhánh)" />}
     />
   );
 
@@ -381,7 +381,7 @@ const OnboardingTaxonomyPage: React.FC = () => {
               onChangeLabel={updateLabel}
               onAddLabel={addLabel}
               onDeleteLabel={deleteLabel}
-              skillsetPicker={skillsetPicker(branch)}
+              categoryPicker={categoryPicker(branch)}
             />
           ))}
       </Paper>

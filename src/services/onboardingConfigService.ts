@@ -6,7 +6,7 @@ import axiosClient from "./axiosClient";
 
 export const onboardingConfigService = {
   // The API wraps every response as { statusCode, message, data: <payload> }
-  // (see meup-api ResponseInterceptor), so the config lives at res.data.data
+  // (see hddhistory-api ResponseInterceptor), so the config lives at res.data.data
   // — NOT res.data. Reading res.data here is the exact mistake that caused
   // the study-theme empty-list bug; don't repeat it.
   async getConfig() {

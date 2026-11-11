@@ -11,11 +11,11 @@
 - Plan doc: updated to track the implementation status and acceptance criteria for the fix.
 
 ## Context Links
-- [KeypointDetail.tsx](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/pages/keypoints/KeypointDetail.tsx)
-- [KeypointModal.tsx](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/components/keypoints/KeypointModal.tsx:84)
-- [CloudflareFileUpload.tsx](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/components/files/CloudflareFileUpload.tsx:120)
-- [keypointService.ts](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/services/keypointService.ts:22)
-- [keypoint.interface.ts](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/types/interface/keypoint.interface.ts:19)
+- [KeypointDetail.tsx](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/pages/keypoints/KeypointDetail.tsx)
+- [KeypointModal.tsx](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/components/keypoints/KeypointModal.tsx:84)
+- [CloudflareFileUpload.tsx](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/components/files/CloudflareFileUpload.tsx:120)
+- [keypointService.ts](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/services/keypointService.ts:22)
+- [keypoint.interface.ts](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/types/interface/keypoint.interface.ts:19)
 
 ## Likely Root Cause
 - `CloudflareFileUpload` does emit `onUrlChange("")` on clear, so the UI delete action reaches modal state.
@@ -43,5 +43,5 @@
 
 ## Success Criteria
 - After deleting audio and saving in keypoint edit, the update request carries an explicit clear value accepted by the backend.
-- Reloading [KeypointDetail.tsx](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/pages/keypoints/KeypointDetail.tsx) shows no restored audio.
+- Reloading [KeypointDetail.tsx](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/pages/keypoints/KeypointDetail.tsx) shows no restored audio.
 - No regression for creating or updating keypoints with audio.

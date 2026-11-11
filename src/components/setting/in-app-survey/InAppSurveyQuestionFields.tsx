@@ -24,7 +24,7 @@ const InAppSurveyQuestionFields = ({
   <div
     className={`space-y-4 rounded-2xl border p-4 shadow-sm ${
       tone === "intro"
-        ? "border-sky-100 bg-gradient-to-br from-sky-50 via-white to-indigo-50"
+        ? "border-sky-100 bg-gradient-to-br from-sky-50 via-white to-bronze-50"
         : "border-slate-200 bg-white"
     }`}
   >
@@ -34,7 +34,7 @@ const InAppSurveyQuestionFields = ({
           className={`rounded-full px-2.5 py-1 text-xs font-bold ${
             tone === "intro"
               ? "bg-sky-600 text-white"
-              : "bg-indigo-100 text-indigo-700"
+              : "bg-bronze-100 text-bronze-700"
           }`}
         >
           {questionNumber}
@@ -87,7 +87,7 @@ const InAppSurveyQuestionFields = ({
               ),
             })
           }
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-bronze-400 focus:ring-2 focus:ring-bronze-100"
           required
         />
       )}
@@ -105,7 +105,7 @@ const InAppSurveyQuestionFields = ({
             guide: updateTranslationValue(value.guide, lang, e.target.value),
           })
         }
-        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-bronze-400 focus:ring-2 focus:ring-bronze-100"
         placeholder="Optional guide text"
       />
     </div>

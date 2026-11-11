@@ -118,7 +118,7 @@ const InAppSurveyFeedbackList = ({ lang }: Props) => {
               <button
                 type="button"
                 onClick={handleExport}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                className="rounded-lg bg-brand-600 px-4 py-2 text-white transition hover:bg-brand-700"
               >
                 Download
               </button>

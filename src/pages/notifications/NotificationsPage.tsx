@@ -348,7 +348,7 @@ const ContentSection: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `meup-notifications-${new Date()
+    link.download = `hddhistory-notifications-${new Date()
       .toISOString()
       .slice(0, 10)}.json`;
     link.click();

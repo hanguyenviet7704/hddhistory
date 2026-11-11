@@ -25,7 +25,7 @@ export interface IDownloadLink {
   utmSource?: string | null;
   utmMedium?: string | null;
   utmCampaign?: string | null;
-  /** Preview card served to link crawlers. Empty = generic MeUp card. */
+  /** Preview card served to link crawlers. Empty = generic HDDhistory card. */
   ogTitle?: string | null;
   ogDescription?: string | null;
   /** Absolute https URL, ideally 1200x630 — crawlers reject data: URIs. */

@@ -216,7 +216,7 @@ const DownloadLinkModal: React.FC<Props> = ({
             onChange={(e) => set("ogTitle", e.target.value)}
             fullWidth
             size="small"
-            placeholder="MeUp — Học kỹ năng mềm mỗi ngày"
+            placeholder="HDDhistory — Học kỹ năng mềm mỗi ngày"
           />
           <TextField
             label="Mô tả preview"
@@ -226,7 +226,7 @@ const DownloadLinkModal: React.FC<Props> = ({
             size="small"
             multiline
             minRows={2}
-            placeholder="7 ngày xây thói quen học cùng MeUp."
+            placeholder="7 ngày xây thói quen học cùng HDDhistory."
           />
           <TextField
             label="Ảnh preview (URL)"
@@ -237,13 +237,13 @@ const DownloadLinkModal: React.FC<Props> = ({
             error={Boolean(ogImageError)}
             helperText={
               ogImageError ||
-              "URL https tuyệt đối, nên là ảnh 1200×630. Bỏ trống = ảnh MeUp mặc định."
+              "URL https tuyệt đối, nên là ảnh 1200×630. Bỏ trống = ảnh HDDhistory mặc định."
             }
             placeholder="https://meup.training/og-image.png"
           />
           <p className="-mt-2 text-xs text-gray-500">
             Thẻ hiển thị khi link được dán lên Facebook, Threads, TikTok,
-            Zalo... Bỏ trống thì dùng thẻ MeUp chung.
+            Zalo... Bỏ trống thì dùng thẻ HDDhistory chung.
           </p>
         </div>
 

@@ -10,7 +10,6 @@ import {
   ChatBubbleLeftRightIcon,
   FaceSmileIcon,
   ClockIcon,
-  FireIcon,
 } from "@heroicons/react/24/outline";
 import UserManagement from "../../components/setting/UserManagement";
 import TagManagement from "../../components/setting/TagManagement";
@@ -20,7 +19,6 @@ import RoleplayColorManagement from "../../components/setting/RoleplayColorManag
 import QuoteManagement from "../../components/setting/QuoteManagement";
 import InAppSurveyManagement from "../../components/setting/InAppSurveyManagement";
 import WarmUpManagement from "../../components/setting/WarmUpManagement";
-import HabitSlotManagement from "../../components/setting/HabitSlotManagement";
 import DailyWarmUpQuestionTagging from "../../components/setting/DailyWarmUpQuestionTagging";
 
 const SettingsPage = () => {
@@ -36,7 +34,6 @@ const SettingsPage = () => {
     "quotes",
     "inAppSurvey",
     "warmUp",
-    "habit",
   ] as const;
   type SettingTab = (typeof SETTING_TABS)[number];
   const [searchParams] = useSearchParams();
@@ -58,7 +55,7 @@ const SettingsPage = () => {
               flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
               ${
                 activeTab === "users"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-brand-500 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
               }
             `}
@@ -86,7 +83,7 @@ const SettingsPage = () => {
               flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
               ${
                 activeTab === "avatars"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-brand-600 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
               }
             `}
@@ -114,7 +111,7 @@ const SettingsPage = () => {
               flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
               ${
                 activeTab === "roleplayColors"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-bronze-600 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
               }
             `}
@@ -164,20 +161,6 @@ const SettingsPage = () => {
             <ClockIcon className="h-4 w-4 mr-2" />
             Warm-up
           </button>
-          <button
-            onClick={() => setActiveTab("habit")}
-            className={`
-              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
-              ${
-                activeTab === "habit"
-                  ? "bg-rose-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }
-            `}
-          >
-            <FireIcon className="h-4 w-4 mr-2" />
-            Habit
-          </button>
         </div>
 
         {/* Content based on active tab */}
@@ -194,7 +177,6 @@ const SettingsPage = () => {
             <DailyWarmUpQuestionTagging />
           </div>
         )}
-        {activeTab === "habit" && <HabitSlotManagement />}
       </div>
     </div>
   );

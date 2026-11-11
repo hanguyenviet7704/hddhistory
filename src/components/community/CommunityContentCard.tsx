@@ -102,7 +102,7 @@ const LONG_BODY = 700;
 const BODY_INDENT = 37;
 
 const AUTHOR_BADGE: Partial<Record<CommunityAuthorType, string>> = {
-  [CommunityAuthorType.OFFICIAL]: "Đội ngũ MeUp",
+  [CommunityAuthorType.OFFICIAL]: "Đội ngũ HDDhistory",
   [CommunityAuthorType.ANONYMOUS]: "Đăng ẩn danh",
 };
 
@@ -170,7 +170,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
         ].join(" ")}
       >
         {pinned && (
-          <div className="mb-2 flex items-center gap-1.5 border-b border-gray-100 pb-2 text-xs font-semibold text-indigo-600">
+          <div className="mb-2 flex items-center gap-1.5 border-b border-gray-100 pb-2 text-xs font-semibold text-bronze-600">
             <PinIcon size={13} /> Bài đã ghim
           </div>
         )}
@@ -212,7 +212,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
                     <button
                       type="button"
                       onClick={onAuthorClick}
-                      className="text-[13.5px] font-bold text-[#3A4250] hover:text-indigo-600 hover:underline"
+                      className="text-[13.5px] font-bold text-[#3A4250] hover:text-bronze-600 hover:underline"
                     >
                       {author?.name || "(tài khoản đã xoá)"}
                     </button>
@@ -269,7 +269,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
             {isLong && (
               <button
                 type="button"
-                className="mt-1 text-xs font-semibold text-indigo-600 hover:underline"
+                className="mt-1 text-xs font-semibold text-bronze-600 hover:underline"
                 onClick={() => setExpanded((prev) => !prev)}
               >
                 {expanded ? "Thu gọn" : "Xem thêm"}
@@ -303,7 +303,7 @@ const CommunityContentCard: React.FC<CommunityContentCardProps> = ({
                 href={`/course/${attachedCourseId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-3 flex max-w-md items-center gap-2 rounded-[14px] border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 hover:border-indigo-300 hover:text-indigo-700"
+                className="mt-3 flex max-w-md items-center gap-2 rounded-[14px] border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 hover:border-bronze-300 hover:text-bronze-700"
               >
                 <BookOpenIcon size={14} />
                 Đính kèm khoá học — mở trang khoá

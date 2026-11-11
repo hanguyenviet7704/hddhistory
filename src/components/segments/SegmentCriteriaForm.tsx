@@ -259,7 +259,7 @@ const SegmentCriteriaForm: React.FC<Props> = ({ value, onChange }) => {
           Mục tiêu &amp; chủ đề onboarding
         </Typography>
         <p className="mb-2 text-xs text-gray-500">
-          Id câu trả lời "mục tiêu học" và id chủ đề (skillset) user chọn khi onboarding. {HINT}
+          Id câu trả lời "mục tiêu học" và id chủ đề user chọn khi onboarding. {HINT}
         </p>
         <div className="grid grid-cols-2 gap-3">
           <ChipInputField

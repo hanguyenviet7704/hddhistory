@@ -322,7 +322,7 @@ const TagManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => handleEditTag(tag)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-3"
+                        className="text-bronze-600 hover:text-bronze-900 mr-3"
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>

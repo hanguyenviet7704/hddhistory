@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/meup-admin.iml" filepath="$PROJECT_DIR$/.idea/meup-admin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/hddhistory-admin.iml" filepath="$PROJECT_DIR$/.idea/hddhistory-admin.iml" />
     </modules>
   </component>
 </project>

@@ -193,7 +193,7 @@ function PoolSection({
           type="button"
           disabled={uploading}
           onClick={() => fileInputRef.current?.click()}
-          className="flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-indigo-400 hover:text-indigo-500 disabled:opacity-50"
+          className="flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-bronze-400 hover:text-bronze-500 disabled:opacity-50"
         >
           {uploading ? (
             <CircularProgress size={18} />

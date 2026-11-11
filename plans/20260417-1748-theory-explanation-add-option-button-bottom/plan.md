@@ -6,7 +6,7 @@
 - Scope: Move the `Add Option` action to the bottom of the options list for `DocumentType.EXPLANATION` in `src/pages/theories/TheoryForm.tsx`.
 
 ## Context Links
-- [TheoryForm.tsx](/Users/macbook/Documents/eUp%20Group/admin-ai-tutor/src/pages/theories/TheoryForm.tsx:983)
+- [TheoryForm.tsx](/Users/nguyenvietha/Source/HDDhistory/hddhistory-admin/src/pages/theories/TheoryForm.tsx:983)
 
 ## Current State
 - The Explanation editor renders the `Add Option` button in the section header above the options list.

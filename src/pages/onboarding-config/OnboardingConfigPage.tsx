@@ -3,7 +3,7 @@
 // Admin editor for the admin-editable onboarding config — one singleton
 // document that drives copy/images/ordering for the app's 8 editable
 // onboarding screens (splash + course-pick are out of scope; course-pick's
-// list is dynamic). See meup-api/plans/260721-onboarding-redesign/plan.md §5.
+// list is dynamic). See hddhistory-api/plans/260721-onboarding-redesign/plan.md §5.
 //
 // Job: an operator loads the current config, edits copy/images/order for any
 // screen, and saves the whole document back in one PUT. There is no list to
@@ -1089,7 +1089,7 @@ export default function OnboardingConfigPage() {
                       titleBrand: e.target.value,
                     }))
                   }
-                  helperText="Brand word rendered in the gradient H1, e.g. MeUp"
+                  helperText="Brand word rendered in the gradient H1, e.g. HDDhistory"
                   size="small"
                   sx={{ maxWidth: 320 }}
                 />
@@ -1678,11 +1678,11 @@ export default function OnboardingConfigPage() {
             </AccordionDetails>
           </Accordion>
 
-          {/* How MeUp teaches (screen 7) */}
+          {/* How HDDhistory teaches (screen 7) */}
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                MeUp dạy thế nào (S7)
+                HDDhistory dạy thế nào (S7)
               </Typography>
             </AccordionSummary>
             <AccordionDetails>

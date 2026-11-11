@@ -260,7 +260,7 @@ export default function CourseList() {
   const statusColors: Record<CourseStatus, string> = {
     [CourseStatus.PUBLISHED]: "bg-green-100 text-green-700",
     [CourseStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
-    [CourseStatus.COMING_SOON]: "bg-blue-100 text-blue-700",
+    [CourseStatus.COMING_SOON]: "bg-brand-100 text-brand-700",
   };
 
   const statusLabels: Record<CourseStatus, string> = {
@@ -284,7 +284,7 @@ export default function CourseList() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search courses..."
-                className="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <svg
@@ -364,7 +364,7 @@ export default function CourseList() {
             />
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white px-4 py-2 rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               <span>New Course</span>
@@ -377,7 +377,7 @@ export default function CourseList() {
       <div className="max-w-7xl mx-auto">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
           </div>
         ) : courses.length === 0 ? (
           <div className="py-20 text-center">
@@ -405,7 +405,7 @@ export default function CourseList() {
             </p>
             <button
               onClick={openCreate}
-              className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-bronze-600 text-white px-4 py-2 rounded-lg hover:from-brand-700 hover:to-bronze-700 transition-all shadow-md hover:shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               <span>Create Course</span>
@@ -470,14 +470,14 @@ export default function CourseList() {
                             className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
                             title="Voiceover status & generate (TTS from theory)"
                           >
-                            <SpeakerWaveIcon className="h-5 w-5 text-indigo-600" />
+                            <SpeakerWaveIcon className="h-5 w-5 text-bronze-600" />
                           </button>
                           <button
                             onClick={() => openEdit(course)}
                             className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
                             title="Edit"
                           >
-                            <PencilIcon className="h-5 w-5 text-blue-600" />
+                            <PencilIcon className="h-5 w-5 text-brand-600" />
                           </button>
                           <button
                             onClick={() => openDelete(course)}
@@ -492,7 +492,7 @@ export default function CourseList() {
                       {/* Content */}
                       <div className="p-5 flex flex-col flex-grow">
                         <h2
-                          className="font-semibold text-lg mb-2 truncate cursor-pointer text-gray-900 hover:text-blue-600 transition-colors"
+                          className="font-semibold text-lg mb-2 truncate cursor-pointer text-gray-900 hover:text-brand-600 transition-colors"
                           title={getTranslationValue(course.title, lang)}
                           onClick={() => navigate(`/course/${course._id}`)}
                         >
@@ -523,7 +523,7 @@ export default function CourseList() {
                               <div className="flex items-center gap-2">
                                 {course.prices[0].salePrice ? (
                                   <>
-                                    <span className="text-blue-600 font-semibold text-sm">
+                                    <span className="text-brand-600 font-semibold text-sm">
                                       {course.prices[0].currency}{" "}
                                       {course.prices[0].salePrice.toLocaleString()}
                                     </span>
@@ -588,7 +588,7 @@ export default function CourseList() {
             {/* Loading more indicator */}
             {loadingMore && (
               <div className="flex justify-center mt-6">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-500"></div>
               </div>
             )}
 
@@ -705,7 +705,7 @@ export default function CourseList() {
                             </span>
                           )}
                           {r.action === "updated" && (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-brand-100 text-brand-700">
                               Cập nhật
                             </span>
                           )}

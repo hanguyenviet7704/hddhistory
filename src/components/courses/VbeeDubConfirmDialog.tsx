@@ -70,7 +70,7 @@ export default function VbeeDubConfirmDialog({
       <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
         <header className="border-b border-slate-100 px-5 py-4">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-            <Volume2Icon className="h-4 w-4 text-indigo-600" />
+            <Volume2Icon className="h-4 w-4 text-bronze-600" />
             Dub bằng Vbee — tốn điểm
           </h2>
           <p className="mt-1 truncate text-xs text-slate-500" title={courseTitle}>
@@ -99,7 +99,7 @@ export default function VbeeDubConfirmDialog({
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-2">
                 <dt className="font-medium text-slate-700">Điểm dự kiến</dt>
-                <dd className="text-base font-bold text-indigo-700">
+                <dd className="text-base font-bold text-bronze-700">
                   {formatNumber(estimate.estimatedCredits)}
                 </dd>
               </div>
@@ -132,7 +132,7 @@ export default function VbeeDubConfirmDialog({
                   type="checkbox"
                   checked={force}
                   onChange={(event) => setForce(event.target.checked)}
-                  className="mt-0.5 h-3.5 w-3.5 accent-indigo-600"
+                  className="mt-0.5 h-3.5 w-3.5 accent-bronze-600"
                 />
                 <span>
                   <span className="font-medium">Dub lại từ đầu (force)</span> —
@@ -173,7 +173,7 @@ export default function VbeeDubConfirmDialog({
             type="button"
             onClick={() => onConfirm(force)}
             disabled={!estimate && !error}
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-md bg-bronze-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-bronze-700 disabled:opacity-50"
           >
             Dub ngay
           </button>

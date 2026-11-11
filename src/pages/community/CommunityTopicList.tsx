@@ -119,7 +119,7 @@ const CommunityTopicList: React.FC = () => {
           sees them, and the sidebar already did. */}
       <CommunityPageHeader
         title="Phòng"
-        subtitle="Phòng do MeUp mở — người dùng chỉ theo dõi và đề xuất, không tự tạo được."
+        subtitle="Phòng do HDDhistory mở — người dùng chỉ theo dõi và đề xuất, không tự tạo được."
       >
         <TextField
           size="small"

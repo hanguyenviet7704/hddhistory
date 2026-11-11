@@ -627,7 +627,7 @@ export default function StudyThemeList() {
                         size="small"
                         onClick={() => openEdit(item)}
                       >
-                        <PencilIcon size={16} className="text-blue-600" />
+                        <PencilIcon size={16} className="text-brand-600" />
                       </IconButton>
                       <IconButton
                         aria-label={`Delete ${item.name}`}

@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a React TypeScript admin panel for an AI Tutor platform, built with Create React App. The application manages educational content including courses, lessons, exercises, roleplays, theories, and user progress.
+This is a React TypeScript admin panel for an HDDhistory platform, built with Create React App. The application manages educational content including courses, lessons, exercises, roleplays, theories, and user progress.
 
-It is one of four repos in the Meup workspace — see the parent `../CLAUDE.md` for
+It is one of four repos in the HDDhistory workspace — see the parent `../CLAUDE.md` for
 the shared domain model, the backend it talks to, and the branch/commit conventions.
 
 ## Development Commands
@@ -57,7 +57,7 @@ instead of adding an entity slice.
 
 ### Key Entities
 - **Courses** & **Lessons** - Main educational content structure
-- **Skillsets** - User skill tracking and management
+- **Categories** - User skill tracking and management
 - **Learning Items** - Exercises, roleplays, theories, documents
 - **Keypoints** - Important concepts within lessons
 - **User Progress** - Tracking user completion and performance
@@ -69,7 +69,7 @@ instead of adding an entity slice.
 - Device tracking for enhanced security
 
 ### Environment Variables
-- `REACT_APP_BACKEND_AI_TUTOR` - Backend API base URL
+- `REACT_APP_BACKEND_URL` - Backend API base URL
 
 ## UI Libraries
 - Material-UI (@mui/material) for components

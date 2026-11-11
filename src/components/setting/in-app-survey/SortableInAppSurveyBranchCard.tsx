@@ -55,11 +55,11 @@ const SortableInAppSurveyBranchCard = ({
   };
 
   return (
-    <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between gap-3 border-b border-indigo-100 pb-4">
+    <div className="rounded-2xl border border-bronze-100 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-bronze-100 pb-4">
         <div className="flex items-center gap-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            <div className="text-xs font-semibold uppercase tracking-wide text-bronze-600">
               Branch #{branchIndex + 1}
             </div>
             <div className="text-lg font-semibold text-slate-950">
@@ -86,7 +86,7 @@ const SortableInAppSurveyBranchCard = ({
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(320px,0.8fr)_minmax(460px,1.2fr)]">
         <div className="space-y-4">
-          <div className="rounded-2xl border border-indigo-100 bg-indigo-50/30 p-4">
+          <div className="rounded-2xl border border-bronze-100 bg-bronze-50/30 p-4">
             <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[160px_160px_1fr]">
               <CloudflareFileUpload
                 initialUrl={branch.emoji.darkUrl}
@@ -111,7 +111,7 @@ const SortableInAppSurveyBranchCard = ({
                 uploadPayload={{ prefix: "", folder: "in-app-survey" }}
               />
               <div className="min-w-0">
-                <label className="mb-1 block text-sm font-semibold text-indigo-900">
+                <label className="mb-1 block text-sm font-semibold text-bronze-900">
                   Emoji Name
                 </label>
                 <input
@@ -122,7 +122,7 @@ const SortableInAppSurveyBranchCard = ({
                       emoji: { ...branch.emoji, name: e.target.value },
                     })
                   }
-                  className="w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-bronze-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-bronze-400 focus:ring-2 focus:ring-bronze-100"
                 />
               </div>
             </div>

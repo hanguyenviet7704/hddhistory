@@ -112,7 +112,7 @@ const DailyWarmUpQuestionTagging = () => {
             type="button"
             onClick={handleApply}
             disabled={!hasChanges || applying || previewing}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+            className="inline-flex items-center gap-2 rounded-lg bg-bronze-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-bronze-700 disabled:cursor-not-allowed disabled:bg-bronze-300"
           >
             {applying ? (
               <>

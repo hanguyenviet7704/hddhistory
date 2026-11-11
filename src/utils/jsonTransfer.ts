@@ -75,7 +75,7 @@ export function pickJsonFile(): Promise<any> {
   });
 }
 
-// Fields Mongo/the API attach automatically (see meup-api base schema) that
+// Fields Mongo/the API attach automatically (see hddhistory-api base schema) that
 // must never round-trip back through create/update payloads.
 const SERVER_MANAGED_KEYS = [
   "_id",

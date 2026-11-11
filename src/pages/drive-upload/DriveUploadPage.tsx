@@ -32,7 +32,7 @@ const statusLabels: Record<DriveImportJobStatus, string> = {
 
 const statusClasses: Record<DriveImportJobStatus, string> = {
   queued: "bg-slate-100 text-slate-700",
-  processing: "bg-blue-100 text-blue-700",
+  processing: "bg-brand-100 text-brand-700",
   completed: "bg-green-100 text-green-700",
   completed_with_errors: "bg-amber-100 text-amber-700",
   failed: "bg-red-100 text-red-700",
@@ -162,7 +162,7 @@ export default function DriveUploadPage() {
       <div className="min-h-[100dvh] bg-slate-100 px-4 py-10">
         <div className="mx-auto flex max-w-5xl justify-center">
           <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-5 py-4 text-slate-700 shadow-sm">
-            <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-600" />
+            <ArrowPathIcon className="h-5 w-5 animate-spin text-brand-600" />
             Loading import jobs...
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function DriveUploadPage() {
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <div className="flex flex-col gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Drive Import
             </p>
             <h1 className="text-2xl font-semibold text-slate-950">
@@ -207,13 +207,13 @@ export default function DriveUploadPage() {
               value={folderUrl}
               onChange={(event) => setFolderUrl(event.target.value)}
               placeholder="https://drive.google.com/drive/folders/..."
-              className="min-h-11 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 text-base text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+              className="min-h-11 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 text-base text-slate-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
               disabled={submitting || isActive}
             />
             <button
               type="submit"
               disabled={submitting || isActive || !folderUrl.trim()}
-              className="min-h-11 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+              className="min-h-11 rounded-lg bg-brand-700 px-5 text-sm font-semibold text-white shadow-sm hover:bg-brand-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
             >
               {submitting ? "Starting..." : "Start Import"}
             </button>
@@ -275,7 +275,7 @@ export default function DriveUploadPage() {
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-slate-200">
               <div
-                className="h-full rounded-full bg-blue-700 transition-all"
+                className="h-full rounded-full bg-brand-700 transition-all"
                 style={{ width: `${Math.min(activeJob.percent, 100)}%` }}
               />
             </div>
@@ -406,7 +406,7 @@ function FileList({
                     href={item.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="break-all text-blue-700 hover:underline"
+                    className="break-all text-brand-700 hover:underline"
                   >
                     {item.detail}
                   </a>

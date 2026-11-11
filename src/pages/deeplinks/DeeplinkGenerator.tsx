@@ -20,7 +20,7 @@ import { Copy, HelpCircle } from "lucide-react";
 import { courseService } from "../../services/courseService";
 import { deeplinkService } from "../../services/deeplinkService";
 import { lessonService } from "../../services/lessonService";
-import { skillsetService } from "../../services/skillsetService";
+import { categoryService } from "../../services/categoryService";
 import { IRoadmap } from "../../types/interface/course.interface";
 import {
   IDeeplinkDestination,
@@ -47,7 +47,7 @@ const labelOf = (title?: ITranslation): string =>
 const PARAM_LABELS: Record<string, string> = {
   courseId: "Khoá học",
   keypointId: "Keypoint (bài cụ thể)",
-  skillsetId: "Kỹ năng",
+  categoryId: "Chủ đề",
   variant: "Biến thể paywall",
 };
 
@@ -116,7 +116,7 @@ export default function DeeplinkGenerator() {
   const [tab, setTab] = useState(0);
 
   const [courses, setCourses] = useState<Option[]>([]);
-  const [skillsets, setSkillsets] = useState<Option[]>([]);
+  const [categories, setCategories] = useState<Option[]>([]);
   const [lessons, setLessons] = useState<Option[]>([]);
   const [keypoints, setKeypoints] = useState<Option[]>([]);
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
@@ -163,7 +163,7 @@ export default function DeeplinkGenerator() {
   );
 
   const needsCourses = needsPicker("course") || needsPicker("keypoint");
-  const needsSkillsets = needsPicker("skillset");
+  const needsCategories = needsPicker("category");
   const needsKeypoints = needsPicker("keypoint");
 
   useEffect(() => {
@@ -193,30 +193,30 @@ export default function DeeplinkGenerator() {
   }, [needsCourses, showError]);
 
   useEffect(() => {
-    if (!needsSkillsets) return;
+    if (!needsCategories) return;
     let isActive = true;
     (async () => {
       try {
-        const response = await skillsetService.getList({
+        const response = await categoryService.getList({
           isAll: true,
           take: 1000,
         });
         if (!isActive) return;
-        setSkillsets(
-          (response.data?.items ?? []).map((skillset: any) => ({
-            id: skillset._id,
-            label: labelOf(skillset.title),
+        setCategories(
+          (response.data?.items ?? []).map((category: any) => ({
+            id: category._id,
+            label: labelOf(category.title),
           }))
         );
       } catch (error) {
-        console.error("Failed to load skillsets", error);
-        showError("Không tải được danh sách kỹ năng");
+        console.error("Failed to load categories", error);
+        showError("Không tải được danh sách chủ đề");
       }
     })();
     return () => {
       isActive = false;
     };
-  }, [needsSkillsets, showError]);
+  }, [needsCategories, showError]);
 
   const courseId = paramValues.courseId ?? "";
 
@@ -363,9 +363,9 @@ export default function DeeplinkGenerator() {
     if (param.picker === "course") {
       options = courses;
       emptyHint = "Chưa tải được khoá học nào";
-    } else if (param.picker === "skillset") {
-      options = skillsets;
-      emptyHint = "Chưa tải được kỹ năng nào";
+    } else if (param.picker === "category") {
+      options = categories;
+      emptyHint = "Chưa tải được chủ đề nào";
     } else if (param.picker === "select") {
       options = (param.options ?? []).map((option) => ({
         id: option,
@@ -691,7 +691,7 @@ export default function DeeplinkGenerator() {
                   "Dán vào ô Launch URL / deep link của công cụ push."
                 )}
                 <Alert severity="warning">
-                  Trang <strong>Thông báo định kỳ</strong> của Meup{" "}
+                  Trang <strong>Thông báo định kỳ</strong> của HDDhistory{" "}
                   <strong>không</strong> nhận URL — nó chọn đích bằng danh sách có
                   sẵn (<code>home</code>, <code>resume_lesson</code>,{" "}
                   <code>habit_tracker</code>, <code>new_course</code>,{" "}
@@ -704,7 +704,7 @@ export default function DeeplinkGenerator() {
             {tab === 2 &&
               renderResultBox(
                 "Link cho Popup Home",
-                "Popup nằm trong app nên dùng scheme meup:// — mở thẳng màn, không phải đi vòng qua OS.",
+                "Popup nằm trong app nên dùng scheme hddhistory:// — mở thẳng màn, không phải đi vòng qua OS.",
                 appUrl,
                 "Dán vào ô link của Popup Home. UTM không gắn vào đây: người dùng đã ở trong app."
               )}
@@ -712,7 +712,7 @@ export default function DeeplinkGenerator() {
             {tab === 3 &&
               renderResultBox(
                 "Link cho Banner Home",
-                "Banner nằm trong app nên dùng scheme meup:// — mở thẳng màn, không phải đi vòng qua OS.",
+                "Banner nằm trong app nên dùng scheme hddhistory:// — mở thẳng màn, không phải đi vòng qua OS.",
                 appUrl,
                 "Dán vào ô link của Banner Home. UTM không gắn vào đây: người dùng đã ở trong app."
               )}
